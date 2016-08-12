@@ -56,6 +56,27 @@ void RequestQueueInMemoryStore::RemoveRequests(
                                                 base::Bind(callback, results));
 }
 
+void RequestQueueInMemoryStore::ChangeRequestsState(
+    const std::vector<int64_t>& request_ids,
+    const SavePageRequest::RequestState new_state,
+    const UpdateCallback& callback) {
+  int count = 0;
+
+  for (int64_t request_id : request_ids) {
+    auto pair = requests_.find(request_id);
+    if (pair != requests_.end()) {
+      ++count;
+      pair->second.set_request_state(new_state);
+    }
+  }
+
+  RequestQueueStore::UpdateStatus status =
+      count > 0 ? UpdateStatus::UPDATED : UpdateStatus::FAILED;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, status));
+}
+
 void RequestQueueInMemoryStore::Reset(const ResetCallback& callback) {
   requests_.clear();
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,

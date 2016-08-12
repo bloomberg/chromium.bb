@@ -121,6 +121,10 @@ bool RequestPicker::RequestConditionsSatisfied(const SavePageRequest& request) {
   if (request.completed_attempt_count() >= policy_->GetMaxCompletedTries())
     return false;
 
+  // If the request is paused, do not consider it.
+  if (request.request_state() == SavePageRequest::RequestState::PAUSED)
+    return false;
+
   // If the request is expired, do not consider it.
   // TODO(petewil): We need to remove this from the queue.
   base::TimeDelta requestAge = base::Time::Now() - request.creation_time();

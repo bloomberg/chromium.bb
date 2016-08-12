@@ -130,6 +130,14 @@ void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,
   store_->RemoveRequests(request_ids, base::Bind(RemoveRequestsDone, callback));
 }
 
+void RequestQueue::ChangeRequestsState(
+    const std::vector<int64_t>& request_ids,
+    const SavePageRequest::RequestState new_state,
+    const UpdateRequestCallback& callback) {
+  store_->ChangeRequestsState(request_ids, new_state,
+                              base::Bind(UpdateRequestDone, callback));
+}
+
 void RequestQueue::PurgeRequests(const PurgeRequestsCallback& callback) {}
 
 }  // namespace offline_pages

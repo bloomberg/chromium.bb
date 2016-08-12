@@ -112,6 +112,23 @@ void RequestCoordinator::RemoveRequests(
                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
+void RequestCoordinator::PauseRequests(
+    const std::vector<int64_t>& request_ids) {
+  queue_->ChangeRequestsState(
+      request_ids, SavePageRequest::RequestState::PAUSED,
+      base::Bind(&RequestCoordinator::UpdateMultipleRequestCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void RequestCoordinator::ResumeRequests(
+    const std::vector<int64_t>& request_ids) {
+  queue_->ChangeRequestsState(
+      request_ids, SavePageRequest::RequestState::AVAILABLE,
+      base::Bind(&RequestCoordinator::UpdateMultipleRequestCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
+  // TODO: Should we also schedule a task, in case there is not one scheduled?
+}
+
 void RequestCoordinator::AddRequestResultCallback(
     RequestQueue::AddRequestResult result,
     const SavePageRequest& request) {

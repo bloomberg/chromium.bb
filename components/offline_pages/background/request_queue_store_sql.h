@@ -38,6 +38,9 @@ class RequestQueueStoreSQL : public RequestQueueStore {
                           const UpdateCallback& callback) override;
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       const RemoveCallback& callback) override;
+  void ChangeRequestsState(const std::vector<int64_t>& request_ids,
+                           const SavePageRequest::RequestState new_state,
+                           const UpdateCallback& callback) override;
   void Reset(const ResetCallback& callback) override;
 
  private:
@@ -59,10 +62,19 @@ class RequestQueueStoreSQL : public RequestQueueStore {
       scoped_refptr<base::SingleThreadTaskRunner> runner,
       const std::vector<int64_t>& request_ids,
       const RemoveCallback& callback);
+  static void ChangeRequestsStateSync(
+      sql::Connection* db,
+      scoped_refptr<base::SingleThreadTaskRunner> runner,
+      const std::vector<int64_t>& request_ids,
+      const SavePageRequest::RequestState new_state,
+      const UpdateCallback& callback);
   static void ResetSync(sql::Connection* db,
                         const base::FilePath& db_file_path,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const ResetCallback& callback);
+
+  // Helper functions to return immediately if no database is found.
+  bool CheckDb(const base::Closure& callback);
 
   // Used to initialize DB connection.
   static void OpenConnectionSync(

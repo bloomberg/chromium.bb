@@ -55,7 +55,15 @@ class RequestCoordinator : public KeyedService {
   // TODO(petewil): Add code to cancel an in-progress pre-render.
   void RemoveRequests(const std::vector<int64_t>& request_ids);
 
-  // Callback that receives the response for GetRequests.  Client must
+  // Pause a list of requests by |request_id|.  This will change the state
+  // in the request queue so the request cannot be started.
+  // TODO(petewil): Add code to cancel an in-progress pre-render.
+  void PauseRequests(const std::vector<int64_t>& request_ids);
+
+  // Resume a list of previously paused requests, making them available.
+  void ResumeRequests(const std::vector<int64_t>& request_ids);
+
+  // Callback that receives the response for GetAllRequests.  Client must
   // copy the result right away, it goes out of scope at the end of the
   // callback.
   typedef base::Callback<void(const std::vector<SavePageRequest>&)>

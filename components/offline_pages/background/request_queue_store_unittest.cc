@@ -312,6 +312,69 @@ TYPED_TEST(RequestQueueStoreTest, RemoveRequests) {
             this->last_remove_results().at(1).second);
 }
 
+TYPED_TEST(RequestQueueStoreTest, PauseAndResumeRequest) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStore());
+  base::Time creation_time = base::Time::Now();
+
+  // Create request and add it to the queue.
+  SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
+                           kUserRequested);
+  store->AddOrUpdateRequest(
+      request1, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+                           base::Unretained(this)));
+  this->PumpLoop();
+  this->ClearResults();
+
+  // Pause a request.
+  std::vector<int64_t> request_ids{kRequestId};
+  store->ChangeRequestsState(
+      request_ids, SavePageRequest::RequestState::PAUSED,
+      base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+                 base::Unretained(this)));
+  ASSERT_EQ(LastResult::kNone, this->last_result());
+  this->PumpLoop();
+
+  // Verify pause succeeded
+  ASSERT_EQ(UpdateStatus::UPDATED, this->last_update_status());
+  this->ClearResults();
+
+  // Get the request from the queue to check it out
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  // The request should still be in the queue.
+  ASSERT_EQ(1UL, this->last_requests().size());
+  // Request 1 should be paused.
+  ASSERT_EQ(SavePageRequest::RequestState::PAUSED,
+            this->last_requests().at(0).request_state());
+  this->ClearResults();
+
+  // Now resume the same request we paused.
+  store->ChangeRequestsState(
+      request_ids, SavePageRequest::RequestState::AVAILABLE,
+      base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+                 base::Unretained(this)));
+  ASSERT_EQ(LastResult::kNone, this->last_result());
+  this->PumpLoop();
+
+  // Verify resume succeeded.
+  ASSERT_EQ(UpdateStatus::UPDATED, this->last_update_status());
+  this->ClearResults();
+
+  // Get the request from the queue to check it out
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::kTrue, this->last_result());
+  // The request should still be in the queue.
+  ASSERT_EQ(1UL, this->last_requests().size());
+  // Request 1 should be paused.
+  ASSERT_EQ(SavePageRequest::RequestState::AVAILABLE,
+            this->last_requests().at(0).request_state());
+  this->ClearResults();
+}
+
 TYPED_TEST(RequestQueueStoreTest, ResetStore) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   base::Time creation_time = base::Time::Now();

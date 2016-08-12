@@ -66,6 +66,18 @@ bool DeleteRequestById(sql::Connection* db, int64_t request_id) {
   return statement.Run();
 }
 
+bool ChangeRequestState(sql::Connection* db,
+                        const int64_t request_id,
+                        const SavePageRequest::RequestState new_state) {
+  const char kSql[] = "UPDATE " REQUEST_QUEUE_TABLE_NAME
+                      " SET state=?"
+                      " WHERE request_id=?";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, static_cast<int64_t>(new_state));
+  statement.BindInt64(1, request_id);
+  return statement.Run();
+}
+
 bool DeleteRequestsByIds(sql::Connection* db,
                          const std::vector<int64_t>& request_ids,
                          RequestQueue::UpdateMultipleRequestResults& results) {
@@ -97,6 +109,26 @@ bool DeleteRequestsByIds(sql::Connection* db,
   }
 
   return true;
+}
+
+RequestQueueStore::UpdateStatus ChangeRequestsState(
+    sql::Connection* db,
+    const std::vector<int64_t>& request_ids,
+    SavePageRequest::RequestState new_state) {
+  // If you create a transaction but don't Commit() it is automatically
+  // rolled back by its destructor when it falls out of scope.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return RequestQueueStore::UpdateStatus::FAILED;
+  for (const auto& request_id : request_ids) {
+    if (!ChangeRequestState(db, request_id, new_state))
+      return RequestQueueStore::UpdateStatus::FAILED;
+  }
+
+  if (!transaction.Commit())
+    return RequestQueueStore::UpdateStatus::FAILED;
+
+  return RequestQueueStore::UpdateStatus::UPDATED;
 }
 
 // Create a save page request from a SQL result.  Expects complete rows with
@@ -250,6 +282,19 @@ void RequestQueueStoreSQL::RemoveRequestsSync(
 }
 
 // static
+void RequestQueueStoreSQL::ChangeRequestsStateSync(
+    sql::Connection* db,
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    const std::vector<int64_t>& request_ids,
+    const SavePageRequest::RequestState new_state,
+    const UpdateCallback& callback) {
+  // TODO(fgorski): add UMA metrics here.
+  RequestQueueStore::UpdateStatus status =
+      offline_pages::ChangeRequestsState(db, request_ids, new_state);
+  runner->PostTask(FROM_HERE, base::Bind(callback, status));
+}
+
+// static
 void RequestQueueStoreSQL::ResetSync(
     sql::Connection* db,
     const base::FilePath& db_file_path,
@@ -263,15 +308,22 @@ void RequestQueueStoreSQL::ResetSync(
   runner->PostTask(FROM_HERE, base::Bind(callback, success));
 }
 
-void RequestQueueStoreSQL::GetRequests(const GetRequestsCallback& callback) {
+bool RequestQueueStoreSQL::CheckDb(const base::Closure& callback) {
   DCHECK(db_.get());
   if (!db_.get()) {
     // Nothing to do, but post a callback instead of calling directly
     // to preserve the async style behavior to prevent bugs.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, false, std::vector<SavePageRequest>()));
-    return;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback));
+    return false;
   }
+  return true;
+}
+
+void RequestQueueStoreSQL::GetRequests(const GetRequestsCallback& callback) {
+  DCHECK(db_.get());
+  if (!CheckDb(base::Bind(callback, false, std::vector<SavePageRequest>())))
+    return;
 
   background_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RequestQueueStoreSQL::GetRequestsSync, db_.get(),
@@ -281,13 +333,8 @@ void RequestQueueStoreSQL::GetRequests(const GetRequestsCallback& callback) {
 void RequestQueueStoreSQL::AddOrUpdateRequest(const SavePageRequest& request,
                                               const UpdateCallback& callback) {
   DCHECK(db_.get());
-  if (!db_.get()) {
-    // Nothing to do, but post a callback instead of calling directly
-    // to preserve the async style behavior to prevent bugs.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, UpdateStatus::FAILED));
+  if (!CheckDb(base::Bind(callback, UpdateStatus::FAILED)))
     return;
-  }
 
   background_task_runner_->PostTask(
       FROM_HERE,
@@ -299,18 +346,14 @@ void RequestQueueStoreSQL::AddOrUpdateRequest(const SavePageRequest& request,
 void RequestQueueStoreSQL::RemoveRequests(
     const std::vector<int64_t>& request_ids,
     const RemoveCallback& callback) {
-  DCHECK(db_.get());
-  if (!db_.get()) {
-    RequestQueue::UpdateMultipleRequestResults results;
+  // Set up a failed set of results in case we fail the DB check.
+  RequestQueue::UpdateMultipleRequestResults results;
     for (int64_t request_id : request_ids)
       results.push_back(std::make_pair(
           request_id, RequestQueue::UpdateRequestResult::STORE_FAILURE));
-    // Nothing to do, but post a callback instead of calling directly
-    // to preserve the async style behavior to prevent bugs.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, results));
+
+  if (!CheckDb(base::Bind(callback, results)))
     return;
-  }
 
   background_task_runner_->PostTask(
       FROM_HERE,
@@ -318,15 +361,23 @@ void RequestQueueStoreSQL::RemoveRequests(
                  base::ThreadTaskRunnerHandle::Get(), request_ids, callback));
 }
 
+void RequestQueueStoreSQL::ChangeRequestsState(
+    const std::vector<int64_t>& request_ids,
+    const SavePageRequest::RequestState new_state,
+    const UpdateCallback& callback) {
+  if (!CheckDb(base::Bind(callback, UpdateStatus::FAILED)))
+    return;
+
+  background_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&RequestQueueStoreSQL::ChangeRequestsStateSync,
+                            db_.get(), base::ThreadTaskRunnerHandle::Get(),
+                            request_ids, new_state, callback));
+}
+
 void RequestQueueStoreSQL::Reset(const ResetCallback& callback) {
   DCHECK(db_.get());
-  if (!db_.get()) {
-    // Nothing to do, but post a callback instead of calling directly
-    // to preserve the async style behavior to prevent bugs.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, false));
+  if (!CheckDb(base::Bind(callback, false)))
     return;
-  }
 
   background_task_runner_->PostTask(
       FROM_HERE,

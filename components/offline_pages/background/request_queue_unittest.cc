@@ -213,8 +213,63 @@ TEST_F(RequestQueueTest, RemoveSeveralRequests) {
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
   PumpLoop();
+
+  // Verify both requests are no longer in the queue.
   ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
   ASSERT_EQ(0ul, last_requests().size());
+}
+
+TEST_F(RequestQueueTest, PauseAndResume) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
+                          kUserRequested);
+  queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
+                                          base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(kRequestId, last_added_request()->request_id());
+
+  queue()->GetRequests(
+      base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
+  ASSERT_EQ(1ul, last_requests().size());
+
+  std::vector<int64_t> request_ids;
+  request_ids.push_back(kRequestId);
+
+  // Pause the request.
+  queue()->ChangeRequestsState(
+      request_ids, SavePageRequest::RequestState::PAUSED,
+      base::Bind(&RequestQueueTest::UpdateRequestDone, base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_update_result());
+
+  queue()->GetRequests(
+      base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+
+  // Verify the request is paused.
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
+  ASSERT_EQ(1ul, last_requests().size());
+  ASSERT_EQ(SavePageRequest::RequestState::PAUSED,
+            last_requests().front().request_state());
+
+  // Resume the request.
+  queue()->ChangeRequestsState(
+      request_ids, SavePageRequest::RequestState::AVAILABLE,
+      base::Bind(&RequestQueueTest::UpdateRequestDone, base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_update_result());
+
+  queue()->GetRequests(
+      base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+
+  // Verify the request is no longer paused.
+  ASSERT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
+  ASSERT_EQ(1ul, last_requests().size());
+  ASSERT_EQ(SavePageRequest::RequestState::AVAILABLE,
+            last_requests().front().request_state());
 }
 
 // A longer test populating the request queue with more than one item, properly

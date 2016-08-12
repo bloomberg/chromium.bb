@@ -10,10 +10,10 @@
 
 #include "base/callback.h"
 #include "components/offline_pages/background/request_queue.h"
+#include "components/offline_pages/background/save_page_request.h"
+#include "components/offline_pages/offline_page_item.h"
 
 namespace offline_pages {
-
-class SavePageRequest;
 
 // Interface for classes storing save page requests.
 class RequestQueueStore {
@@ -23,6 +23,8 @@ class RequestQueueStore {
     UPDATED,  // Request was updated successfully.
     FAILED,   // Add or update attempt failed.
   };
+  // TODO(petewil): What if no items were updated?  Maybe this should work more
+  // like DeleteCallback, passing pairs of request_id and status.
 
   typedef base::Callback<void(
       bool /* success */,
@@ -51,6 +53,13 @@ class RequestQueueStore {
   // be deleted, e.g. because it was missing.
   virtual void RemoveRequests(const std::vector<int64_t>& request_ids,
                               const RemoveCallback& callback) = 0;
+
+  // Asynchronously changes the state of requests from the store using their
+  // request id.
+  virtual void ChangeRequestsState(
+      const std::vector<int64_t>& request_ids,
+      const SavePageRequest::RequestState new_state,
+      const UpdateCallback& callback) = 0;
 
   // Resets the store.
   virtual void Reset(const ResetCallback& callback) = 0;

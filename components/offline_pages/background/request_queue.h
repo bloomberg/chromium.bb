@@ -14,12 +14,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/offline_page_item.h"
 
 namespace offline_pages {
 
 class RequestQueueStore;
-class SavePageRequest;
 
 // Class responsible for managing save page requests.
 class RequestQueue {
@@ -87,6 +87,15 @@ class RequestQueue {
   // others.
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       const RemoveRequestsCallback& callback);
+
+  // Changes the state to |new_state_ for requests matching the
+  // |request_ids|. Results are returned through |callback|.
+  // TODO(petewil): Instead of having one function per property,
+  // modify this to have a single update function that updates an entire
+  // request, and doesn't need to care what updates.
+  void ChangeRequestsState(const std::vector<int64_t>& request_ids,
+                           const SavePageRequest::RequestState new_state,
+                           const UpdateRequestCallback& callback);
 
   void GetForUpdateDone(
       const RequestQueue::UpdateRequestCallback& update_callback,
