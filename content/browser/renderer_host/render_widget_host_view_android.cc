@@ -907,9 +907,6 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
 
   if (!src_subrect_in_pixel.IsEmpty())
     request->set_area(src_subrect_in_pixel);
-  // Make sure the current frame doesn't get deleted until we fulfill the
-  // request.
-  LockCompositingSurface();
   surface_factory_->RequestCopyOfSurface(surface_id_, std::move(request));
 }
 
@@ -1888,8 +1885,6 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   TRACE_EVENT0("cc",
                "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
   readback_layer->RemoveFromParent();
-  if (rwhva)
-    rwhva->UnlockCompositingSurface();
   if (!result->HasTexture() || result->IsEmpty() || result->size().IsEmpty())
     return;
   cc::TextureMailbox texture_mailbox;
