@@ -1,54 +1,28 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!doctype html>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/util.js"></script>
 </head>
 <body>
-<p id="description"></p>
-<div id="console"></div>
+<div>
+<textarea id="testTextArea"></textarea>
+<input id="testInput" type="text"></input>
+<div id="testEditable" contenteditable></div>
+<div id="testSourcePlain">You has the right.</div>
+<div id="testSourceDecorated">I have a<b>n ki</b>wi. I have no idea.</div>
+<div id="testSourceMulti">I have an grape. I have an muscat. I don't know.</div>
+</div>
 <script>
-description('Grammar checking for pasted text.');
-
-jsTestIsAsync = true;
-
-var testRoot = document.createElement("div");
-document.body.insertBefore(testRoot, document.body.firstChild);
-
-var testTextArea = document.createElement("textarea");
-testRoot.appendChild(testTextArea);
-
-var testInput = document.createElement("input");
-testInput.setAttribute("type", "text");
-testRoot.appendChild(testInput);
-
-var testEditable = document.createElement("div");
-testEditable.setAttribute("contentEditable", "true");
-testRoot.appendChild(testEditable);
-
-var testSourcePlain = document.createElement("div");
-testSourcePlain.innerHTML = "You has the right.";
-testRoot.appendChild(testSourcePlain);
-
-var testSourceDecorated = document.createElement("div");
-testSourceDecorated.innerHTML = "I have a<b>n ki</b>wi. I have no idea.";
-testRoot.appendChild(testSourceDecorated);
-
-var testSourceMulti = document.createElement("div");
-testSourceMulti.innerHTML = "I have an grape. I have an muscat. I don't know.";
-testRoot.appendChild(testSourceMulti);
+var testTextArea = document.getElementById('testTextArea');
+var testInput = document.getElementById('testInput');
+var testEditable = document.getElementById('testEditable');
+var testSourcePlain = document.getElementById('testSourcePlain');
+var testSourceDecorated = document.getElementById('testSourceDecorated');
+var testSourceMulti = document.getElementById('testSourceMulti');
 
 var sel = window.getSelection();
-
-var tests = [];
-
-function done()
-{
-    var next = tests.shift();
-    if (next)
-        return window.setTimeout(next, 0);
-    testRoot.style.display = "none";
-    finishJSTest();
-}
 
 function findFirstTextNode(node)
 {
@@ -82,58 +56,58 @@ function verifyMarker(node, expectedMarked)
         sel.selectAllChildren(node);
 
     var textNode = findFirstTextNode(node);
-    var num = internals.markerCountForNode(textNode, "grammar");
-    if (num != expectedMarked.length)
-        return false;
+    var num = internals.markerCountForNode(textNode, 'grammar');
+    assert_equals(num, expectedMarked.length);
+
     for (var i = 0; i < num; ++i) {
-        var range = internals.markerRangeForNode(textNode, "grammar", i);
-        if (range.toString() != expectedMarked[i])
-            return false;
+        var range = internals.markerRangeForNode(textNode, 'grammar', i);
+        assert_equals(range.toString(), expectedMarked[i]);
     }
-
-    var nodeContent = node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement ? node.value : node.innerHTML;
-    testPassed(node.tagName + " ungrammatical phrase '" + expectedMarked + "' on '" + nodeContent + "'");
-
-    return true;
 }
 
-var destination = null;
-var expectedMarked = null;
-function pasteAndVerify(source, dest, expectedMarked)
+function pasteText(source, dest)
 {
     sel.selectAllChildren(source);
-    document.execCommand("Copy");
+    document.execCommand('Copy');
     if (dest instanceof HTMLInputElement || dest instanceof HTMLTextAreaElement) {
-        dest.value = "";
+        dest.value = '';
         dest.focus();
     } else {
-        dest.innerHTML = "";
+        dest.innerHTML = '';
         sel.selectAllChildren(dest);
     }
-    document.execCommand("Paste");
-
-    if (window.internals) {
-        destination = dest;
-        ungrammaticalPhrase = expectedMarked;
-        shouldBecomeEqual('verifyMarker(destination, ungrammaticalPhrase)', 'true', done);
-    }
+    document.execCommand('Paste');
 };
 
-tests.push(function() { pasteAndVerify(testSourcePlain, testEditable, ["has"]); });
-tests.push(function() { pasteAndVerify(testSourceDecorated, testEditable, ["a"]); }); // Checks only 'a'.
-tests.push(function() { pasteAndVerify(testSourceMulti, testEditable, ["an", "an"]); });
+var steps = [
+    () => pasteText(testSourcePlain, testEditable),
+    () => pasteText(testSourceDecorated, testEditable),
+    () => pasteText(testSourceMulti, testEditable),
 
-tests.push(function() { pasteAndVerify(testSourcePlain, testInput, ["has"]); });
-tests.push(function() { pasteAndVerify(testSourceDecorated, testInput, ["an"]); });
-tests.push(function() { pasteAndVerify(testSourceMulti, testInput, ["an", "an"]); });
+    () => pasteText(testSourcePlain, testInput),
+    () => pasteText(testSourceDecorated, testInput),
+    () => pasteText(testSourceMulti, testInput),
 
-tests.push(function() { pasteAndVerify(testSourcePlain, testTextArea, ["has"]); });
-tests.push(function() { pasteAndVerify(testSourceDecorated, testTextArea, ["an"]); });
-tests.push(function() { pasteAndVerify(testSourceMulti, testTextArea, ["an", "an"]); });
+    () => pasteText(testSourcePlain, testTextArea),
+    () => pasteText(testSourceDecorated, testTextArea),
+    () => pasteText(testSourceMulti, testTextArea)
+];
 
-done();
+var assertions = [
+    () => verifyMarker(testEditable, ['has']),
+    () => verifyMarker(testEditable, ['a']), // Checks only 'a'.
+    () => verifyMarker(testEditable, ['an', 'an']),
 
-var successfullyParsed = true;
+    () => verifyMarker(testInput, ['has']),
+    () => verifyMarker(testInput, ['an']),
+    () => verifyMarker(testInput, ['an', 'an']),
+
+    () => verifyMarker(testTextArea, ['has']),
+    () => verifyMarker(testTextArea, ['an']),
+    () => verifyMarker(testTextArea, ['an', 'an']),
+];
+
+runSpellingTest(steps, assertions, 'Grammar checking for pasted text.');
 </script>
 </body>
 </html>
