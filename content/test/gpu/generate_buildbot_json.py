@@ -1097,12 +1097,32 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
       'can_use_on_swarming_builders': True,
       'dimension_sets': [
         tester_config['swarming_dimensions']
-      ],
+      ]
     })
     if is_android(tester_config):
       # Override the isolate target to get rid of any "_apk" suffix
       # that would be added by the recipes.
       result['override_isolate_target'] = test
+      # Integrate with the unified logcat system.
+      result['swarming'].update({
+        'cipd_packages': [
+          {
+            'cipd_package': 'infra/tools/luci/logdog/butler/${platform}',
+            'location': 'bin',
+            'revision': 'git_revision:3ff24775a900b675866fbcacf2a8f98a18b2a16a'
+          }
+        ],
+        'output_links': [
+          {
+            'link': [
+              'https://luci-logdog.appspot.com/v/?s',
+              '=android%2Fswarming%2Flogcats%2F',
+              '${TASK_ID}%2F%2B%2Funified_logcats'
+            ],
+            'name': 'shard #${SHARD_INDEX} logcats'
+          }
+        ]
+      })
   if 'desktop_args' in result:
     if not is_android(tester_config):
       if not 'args' in result:
