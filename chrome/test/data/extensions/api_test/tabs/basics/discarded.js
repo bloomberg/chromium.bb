@@ -20,6 +20,7 @@ chrome.test.runTests([
       }));
     },
 
+    // Tests chrome.tabs.onUpdated for Discarded property.
     function discard() {
       // Initially tab isn't discarded.
       assertFalse(testTab.discarded);
@@ -70,5 +71,57 @@ chrome.test.runTests([
     });
 
     chrome.tabs.reload(testTab.id);
+  },
+
+  // Tests chrome.tabs.onUpdated for autoDiscardable property.
+  function setNonAutoDiscardable() {
+    // Initially the tab is auto-discardable.
+    assertTrue(testTab.autoDiscardable);
+
+    var onUpdatedCompleted = chrome.test.listenForever(
+        chrome.tabs.onUpdated,
+        function(tabId, changeInfo, tab) {
+      if ('autoDiscardable' in changeInfo) {
+        // Make sure it's the right tab.
+        assertEq(testTab.id, tab.id);
+
+        // Make sure the auto-discardable state changed correctly.
+        assertFalse(changeInfo.autoDiscardable);
+        assertFalse(tab.autoDiscardable);
+
+        onUpdatedCompleted();
+      }
+    });
+
+    chrome.tabs.update(testTab.id, { autoDiscardable: false },
+                       pass(function(tab) {
+      assertFalse(tab.autoDiscardable);
+      testTab = tab;
+    }));
+  },
+
+  function resetAutoDiscardable() {
+    // Tab was set to non auto-discardable.
+    assertFalse(testTab.autoDiscardable);
+
+    var onUpdatedCompleted = chrome.test.listenForever(
+        chrome.tabs.onUpdated,
+        function(tabId, changeInfo, tab) {
+      if ('autoDiscardable' in changeInfo) {
+        // Make sure it's the right tab.
+        assertEq(testTab.id, tab.id);
+
+        // Make sure the auto-discardable state changed correctly.
+        assertTrue(changeInfo.autoDiscardable);
+        assertTrue(tab.autoDiscardable);
+
+        onUpdatedCompleted();
+      }
+    });
+
+    chrome.tabs.update(testTab.id, { autoDiscardable: true },
+                        pass(function (tab) {
+      assertTrue(tab.autoDiscardable);
+    }));
   }
 ]);

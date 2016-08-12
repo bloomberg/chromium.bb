@@ -94,6 +94,8 @@ class TabsEventRouter : public TabStripModelObserver,
   // memory::TabManagerObserver:
   void OnDiscardedStateChange(content::WebContents* contents,
                               bool is_discarded) override;
+  void OnAutoDiscardableStateChange(content::WebContents* contents,
+                                    bool is_auto_discardable) override;
 
  private:
   // "Synthetic" event. Called from TabInsertedAt if new tab is detected.

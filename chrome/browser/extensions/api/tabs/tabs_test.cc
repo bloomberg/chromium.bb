@@ -1576,6 +1576,118 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardNoTabProtection) {
   EXPECT_TRUE(base::MatchPattern(error, keys::kCannotFindTabToDiscard));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
+  // Create two aditional tabs.
+  content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
+                                NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+                                false);
+  content::WebContents* web_contents_a = browser()->OpenURL(params);
+  content::WebContents* web_contents_b = browser()->OpenURL(params);
+
+  // Creates Tab object to ensure the property is correct for the extension.
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  std::unique_ptr<api::tabs::Tab> tab_object_a =
+      ExtensionTabUtil::CreateTabObject(web_contents_a, tab_strip_model, 0);
+  EXPECT_TRUE(tab_object_a->auto_discardable);
+
+  // Set up query and update functions with the extension.
+  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  auto RunQueryFunction = [this, &extension](const char* query_info) {
+    scoped_refptr<TabsQueryFunction> function = new TabsQueryFunction();
+    function->set_extension(extension.get());
+    return utils::ToList(utils::RunFunctionAndReturnSingleResult(
+        function.get(), query_info, browser()));
+  };
+  auto RunUpdateFunction = [this, &extension](std::string update_info) {
+    scoped_refptr<TabsUpdateFunction> function = new TabsUpdateFunction();
+    function->set_extension(extension.get());
+    return utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+        function.get(), update_info, browser()));
+  };
+
+  // Queries and results used.
+  const char* kAutoDiscardableQueryInfo = "[{\"autoDiscardable\": true}]";
+  const char* kNonAutoDiscardableQueryInfo = "[{\"autoDiscardable\": false}]";
+  std::unique_ptr<base::ListValue> query_result;
+  std::unique_ptr<base::DictionaryValue> update_result;
+
+  // Get auto-discardable tabs. Returns all since tabs are auto-discardable
+  // by default.
+  query_result.reset(RunQueryFunction(kAutoDiscardableQueryInfo));
+  EXPECT_EQ(3u, query_result->GetSize());
+
+  // Get non auto-discardable tabs.
+  query_result.reset(RunQueryFunction(kNonAutoDiscardableQueryInfo));
+  EXPECT_EQ(0u, query_result->GetSize());
+
+  // Update the auto-discardable state of web contents A.
+  int tab_id_a = ExtensionTabUtil::GetTabId(web_contents_a);
+  update_result.reset(RunUpdateFunction(
+      base::StringPrintf("[%u, {\"autoDiscardable\": false}]", tab_id_a)));
+  EXPECT_EQ(tab_id_a, api_test_utils::GetInteger(update_result.get(), "id"));
+  EXPECT_FALSE(
+      api_test_utils::GetBoolean(update_result.get(), "autoDiscardable"));
+
+  // Make sure the property is changed accordingly after updating the tab.
+  tab_object_a =
+      ExtensionTabUtil::CreateTabObject(web_contents_a, tab_strip_model, 0);
+  EXPECT_FALSE(tab_object_a->auto_discardable);
+
+  // Get auto-discardable tabs after changing the status of web contents A.
+  query_result.reset(RunQueryFunction(kAutoDiscardableQueryInfo));
+  EXPECT_EQ(2u, query_result->GetSize());
+
+  // Get non auto-discardable tabs after changing the status of web contents A.
+  query_result.reset(RunQueryFunction(kNonAutoDiscardableQueryInfo));
+  EXPECT_EQ(1u, query_result->GetSize());
+
+  // Make sure the returned tab is the correct one.
+  int id = -1;
+  base::Value* tab = nullptr;
+  EXPECT_TRUE(query_result->Get(0, &tab));
+  utils::ToDictionary(tab)->GetInteger(keys::kIdKey, &id);
+  EXPECT_EQ(tab_id_a, id);
+
+  // Update the auto-discardable state of web contents B.
+  int tab_id_b = ExtensionTabUtil::GetTabId(web_contents_b);
+  update_result.reset(RunUpdateFunction(
+      base::StringPrintf("[%u, {\"autoDiscardable\": false}]", tab_id_b)));
+  EXPECT_EQ(tab_id_b, api_test_utils::GetInteger(update_result.get(), "id"));
+  EXPECT_FALSE(
+      api_test_utils::GetBoolean(update_result.get(), "autoDiscardable"));
+
+  // Get auto-discardable tabs after changing the status of both created tabs.
+  query_result.reset(RunQueryFunction(kAutoDiscardableQueryInfo));
+  EXPECT_EQ(1u, query_result->GetSize());
+
+  // Make sure the returned tab is the correct one.
+  id = -1;
+  tab = nullptr;
+  EXPECT_TRUE(query_result->Get(0, &tab));
+  utils::ToDictionary(tab)->GetInteger(keys::kIdKey, &id);
+  EXPECT_EQ(ExtensionTabUtil::GetTabId(tab_strip_model->GetWebContentsAt(0)),
+            id);
+
+  // Get auto-discardable tabs after changing the status of both created tabs.
+  query_result.reset(RunQueryFunction(kNonAutoDiscardableQueryInfo));
+  EXPECT_EQ(2u, query_result->GetSize());
+
+  // Resets the first tab back to auto-discardable.
+  update_result.reset(RunUpdateFunction(
+      base::StringPrintf("[%u, {\"autoDiscardable\": true}]", tab_id_a)));
+  EXPECT_EQ(tab_id_a, api_test_utils::GetInteger(update_result.get(), "id"));
+  EXPECT_TRUE(
+      api_test_utils::GetBoolean(update_result.get(), "autoDiscardable"));
+
+  // Get auto-discardable tabs after resetting the status of web contents A.
+  query_result.reset(RunQueryFunction(kAutoDiscardableQueryInfo));
+  EXPECT_EQ(2u, query_result->GetSize());
+
+  // Get non auto-discardable tabs after resetting the status of web contents A.
+  query_result.reset(RunQueryFunction(kNonAutoDiscardableQueryInfo));
+  EXPECT_EQ(1u, query_result->GetSize());
+}
+
 // Tester class for the tabs.zoom* api functions.
 class ExtensionTabsZoomTest : public ExtensionTabsTest {
  public:

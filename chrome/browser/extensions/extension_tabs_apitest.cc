@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_GetViewsOfCreatedWindow) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DiscardedState) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OnUpdatedDiscardedState) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "discarded.html")) << message_;
 }
 

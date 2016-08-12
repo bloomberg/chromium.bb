@@ -993,10 +993,15 @@ bool TabsQueryFunction::RunSync() {
         continue;
       }
 
-      // If tab_manager isn't present, then no tabs are discarded.
-      bool discarded = tab_manager && tab_manager->IsTabDiscarded(web_contents);
-      if (!MatchesBool(params->query_info.discarded.get(), discarded))
+      if (!MatchesBool(params->query_info.discarded.get(),
+                       tab_manager->IsTabDiscarded(web_contents))) {
         continue;
+      }
+
+      if (!MatchesBool(params->query_info.auto_discardable.get(),
+                       tab_manager->IsTabAutoDiscardable(web_contents))) {
+        continue;
+      }
 
       if (!MatchesBool(params->query_info.muted.get(),
                        web_contents->IsAudioMuted())) {
@@ -1334,6 +1339,12 @@ bool TabsUpdateFunction::RunAsync() {
       return false;
 
     tab_strip->SetOpenerOfWebContentsAt(tab_index, opener_contents);
+  }
+
+  if (params->update_properties.auto_discardable.get()) {
+    bool state = *params->update_properties.auto_discardable;
+    g_browser_process->GetTabManager()->SetTabAutoDiscardableState(contents,
+                                                                   state);
   }
 
   if (!is_async) {

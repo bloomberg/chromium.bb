@@ -569,4 +569,16 @@ void TabsEventRouter::OnDiscardedStateChange(WebContents* contents,
   }
 }
 
+void TabsEventRouter::OnAutoDiscardableStateChange(WebContents* contents,
+                                                   bool is_auto_discardable) {
+  TabStripModel* tab_strip = nullptr;
+  int tab_index = -1;
+
+  if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
+    std::set<std::string> changed_property_names;
+    changed_property_names.insert(tabs_constants::kAutoDiscardableKey);
+    DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
+  }
+}
+
 }  // namespace extensions

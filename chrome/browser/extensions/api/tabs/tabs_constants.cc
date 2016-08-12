@@ -32,6 +32,7 @@ const char kOpenerTabIdKey[] = "openerTabId";
 const char kPinnedKey[] = "pinned";
 const char kAudibleKey[] = "audible";
 const char kDiscardedKey[] = "discarded";
+const char kAutoDiscardableKey[] = "autoDiscardable";
 const char kMutedKey[] = "muted";
 const char kMutedInfoKey[] = "mutedInfo";
 const char kQualityKey[] = "quality";
