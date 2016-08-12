@@ -4,6 +4,7 @@
 
 #include "ash/app_list/app_list_presenter_delegate.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_types.h"
@@ -41,7 +42,7 @@ const int kMinimalAnchorPositionOffset = 57;
 // Gets arrow location based on shelf alignment.
 views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
   DCHECK(Shell::HasInstance());
-  switch (Shelf::ForWindow(window)->alignment()) {
+  switch (Shelf::ForWindow(WmWindowAura::Get(window))->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       return views::BubbleBorder::BOTTOM_CENTER;
@@ -60,7 +61,8 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(const gfx::Rect& button_bounds,
                                              views::Widget* widget) {
   DCHECK(Shell::HasInstance());
   ShelfAlignment shelf_alignment =
-      Shelf::ForWindow(widget->GetNativeView()->GetRootWindow())->alignment();
+      Shelf::ForWindow(WmLookup::Get()->GetWindowForWidget(widget))
+          ->alignment();
   gfx::Point anchor(button_bounds.CenterPoint());
   switch (shelf_alignment) {
     case SHELF_ALIGNMENT_BOTTOM:
@@ -138,9 +140,9 @@ AppListPresenterDelegate::~AppListPresenterDelegate() {
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)
     keyboard_controller->RemoveObserver(this);
-  views::Widget* widget = view_->GetWidget();
   Shell::GetInstance()->RemovePreTargetHandler(this);
-  Shelf::ForWindow(widget->GetNativeWindow())->RemoveIconObserver(this);
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(view_->GetWidget());
+  Shelf::ForWindow(window)->RemoveIconObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
 }
 
@@ -162,8 +164,8 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
                                   ->GetRootWindowForDisplayId(display_id);
   aura::Window* container = GetRootWindowController(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
-  AppListButton* applist_button =
-      Shelf::ForWindow(container)->GetAppListButton();
+  Shelf* shelf = Shelf::ForWindow(WmWindowAura::Get(container));
+  AppListButton* applist_button = shelf->GetAppListButton();
   is_centered_ = view->ShouldCenterWindow();
   bool is_fullscreen = IsFullscreenAppListEnabled() &&
                        WmShell::Get()
@@ -190,11 +192,9 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
     applist_button_bounds =
         ScreenUtil::ConvertRectFromScreen(root_window, applist_button_bounds);
     view->InitAsBubbleAttachedToAnchor(
-        container, current_apps_page,
-        Shelf::ForWindow(container)->GetAppListButton(),
-        GetAnchorPositionOffsetToShelf(
-            applist_button_bounds,
-            Shelf::ForWindow(container)->GetAppListButton()->GetWidget()),
+        container, current_apps_page, applist_button,
+        GetAnchorPositionOffsetToShelf(applist_button_bounds,
+                                       applist_button->GetWidget()),
         GetBubbleArrow(container), true /* border_accepts_events */);
     view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
   }
@@ -204,21 +204,18 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   if (keyboard_controller)
     keyboard_controller->AddObserver(this);
   Shell::GetInstance()->AddPreTargetHandler(this);
-  views::Widget* widget = view->GetWidget();
-  Shelf::ForWindow(widget->GetNativeWindow())->AddIconObserver(this);
+  shelf->AddIconObserver(this);
 
   // By setting us as DnD recipient, the app list knows that we can
   // handle items.
   view->SetDragAndDropHostOfCurrentAppList(
-      Shelf::ForWindow(root_window)->GetDragAndDropHostForAppList());
+      shelf->GetDragAndDropHostForAppList());
 }
 
 void AppListPresenterDelegate::OnShown(int64_t display_id) {
   is_visible_ = true;
   // Update applist button status when app list visibility is changed.
-  aura::Window* root_window = Shell::GetInstance()
-                                  ->window_tree_host_manager()
-                                  ->GetRootWindowForDisplayId(display_id);
+  WmWindow* root_window = WmShell::Get()->GetRootWindowForDisplayId(display_id);
   Shelf::ForWindow(root_window)->GetAppListButton()->OnAppListShown();
 }
 
@@ -230,14 +227,12 @@ void AppListPresenterDelegate::OnDismissed() {
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  Shell::GetPrimaryRootWindowController()
-      ->GetShelfLayoutManager()
-      ->UpdateAutoHideState();
+  Shelf* shelf =
+      Shelf::ForWindow(WmLookup::Get()->GetWindowForWidget(view_->GetWidget()));
+  shelf->shelf_layout_manager()->UpdateAutoHideState();
 
   // Update applist button status when app list visibility is changed.
-  Shelf::ForWindow(view_->GetWidget()->GetNativeView())
-      ->GetAppListButton()
-      ->OnAppListDismissed();
+  shelf->GetAppListButton()->OnAppListDismissed();
 }
 
 void AppListPresenterDelegate::UpdateBounds() {
@@ -258,11 +253,10 @@ gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  Shell::GetPrimaryRootWindowController()
-      ->GetShelfLayoutManager()
-      ->UpdateAutoHideState();
+  Shelf* shelf = Shelf::ForWindow(WmWindowAura::Get(root_window));
+  shelf->shelf_layout_manager()->UpdateAutoHideState();
 
-  switch (Shelf::ForWindow(root_window)->alignment()) {
+  switch (shelf->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       return gfx::Vector2d(0, kAnimationOffset);

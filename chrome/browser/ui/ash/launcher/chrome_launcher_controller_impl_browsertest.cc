@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_button.h"
@@ -376,7 +377,8 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     int index = model_->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
     DCHECK_GE(index, 0);
     ash::ShelfItem item = model_->items()[index];
-    ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
+    ash::Shelf* shelf =
+        ash::Shelf::ForWindow(ash::WmWindowAura::Get(CurrentContext()));
     std::unique_ptr<LauncherContextMenu> menu(LauncherContextMenu::Create(
         controller_, &item, ash::test::ShelfTestAPI(shelf).wm_shelf()));
     return menu;
@@ -1898,7 +1900,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   // Get a number of interfaces we need.
   DCHECK_EQ(ash::Shell::GetAllRootWindows().size(), 2U);
   aura::Window* secondary_root_window = ash::Shell::GetAllRootWindows()[1];
-  ash::Shelf* secondary_shelf = ash::Shelf::ForWindow(secondary_root_window);
+  ash::Shelf* secondary_shelf =
+      ash::Shelf::ForWindow(ash::WmWindowAura::Get(secondary_root_window));
 
   ui::test::EventGenerator generator(secondary_root_window, gfx::Point());
   ash::test::ShelfViewTestAPI test(

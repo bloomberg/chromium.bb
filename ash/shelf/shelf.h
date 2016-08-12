@@ -22,10 +22,6 @@ namespace app_list {
 class ApplicationDragAndDropHost;
 }
 
-namespace aura {
-class Window;
-}
-
 namespace gfx {
 class Rect;
 }
@@ -66,7 +62,7 @@ class ASH_EXPORT Shelf {
   // Return the shelf for the display that |window| is currently on, or a shelf
   // on primary display if the shelf per display feature is disabled. NULL if no
   // user is logged in yet.
-  static Shelf* ForWindow(const aura::Window* window);
+  static Shelf* ForWindow(const WmWindow* window);
 
   void SetAlignment(ShelfAlignment alignment);
   ShelfAlignment alignment() const { return alignment_; }
@@ -83,11 +79,11 @@ class ASH_EXPORT Shelf {
 
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
-  gfx::Rect GetScreenBoundsOfItemIconForWindow(const aura::Window* window);
+  gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window);
 
   // Updates the icon position given the current window bounds. This is used
   // when dragging panels to reposition them with respect to the other panels.
-  void UpdateIconPositionForWindow(aura::Window* window);
+  void UpdateIconPositionForWindow(WmWindow* window);
 
   // Activates the the shelf item specified by the index in the list of shelf
   // items.

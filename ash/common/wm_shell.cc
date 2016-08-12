@@ -109,9 +109,24 @@ void WmShell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
                     OnPinnedStateChanged(pinned_window));
 }
 
-void WmShell::OnVirtualKeyboardActivated(bool activated) {
+void WmShell::NotifyVirtualKeyboardActivated(bool activated) {
   FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
                     OnVirtualKeyboardStateChanged(activated));
+}
+
+void WmShell::NotifyShelfCreatedForRootWindow(WmWindow* root_window) {
+  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
+                    OnShelfCreatedForRootWindow(root_window));
+}
+
+void WmShell::NotifyShelfAlignmentChanged(WmWindow* root_window) {
+  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
+                    OnShelfAlignmentChanged(root_window));
+}
+
+void WmShell::NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window) {
+  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
+                    OnShelfAutoHideBehaviorChanged(root_window));
 }
 
 void WmShell::AddShellObserver(ShellObserver* observer) {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,7 +16,8 @@ typedef InProcessBrowserTest ShelfBrowserTest;
 // Confirm that a status bubble doesn't cause the shelf to darken.
 IN_PROC_BROWSER_TEST_F(ShelfBrowserTest, StatusBubble) {
   ash::ShelfLayoutManager* shelf_layout_manager =
-      ash::Shelf::ForWindow(browser()->window()->GetNativeWindow())
+      ash::Shelf::ForWindow(
+          ash::WmWindowAura::Get(browser()->window()->GetNativeWindow()))
           ->shelf_layout_manager();
   EXPECT_TRUE(shelf_layout_manager->IsVisible());
 

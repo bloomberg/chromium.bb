@@ -283,16 +283,26 @@ class ASH_EXPORT WmShell {
   // Called after overview mode has ended.
   virtual void OnOverviewModeEnded() = 0;
 
-  // Notifies observers after toggling fullscreen mode in |root_window|.
+  // Notify observers that fullscreen mode has changed for |root_window|.
   void NotifyFullscreenStateChanged(bool is_fullscreen, WmWindow* root_window);
 
-  // Notifies |observers_| when entering or exiting pinned mode for
-  // |pinned_window|. Entering or exiting can be checked by looking at
-  // |pinned_window|'s window state.
+  // Notify observers that |pinned_window| changed its pinned window state.
   void NotifyPinnedStateChanged(WmWindow* pinned_window);
 
-  // Called when virtual keyboard has been activated/deactivated.
-  void OnVirtualKeyboardActivated(bool activated);
+  // Notify observers that the virtual keyboard has been activated/deactivated.
+  void NotifyVirtualKeyboardActivated(bool activated);
+
+  // Notify observers that the shelf was created for |root_window|.
+  // TODO(jamescook): Move to Shelf.
+  void NotifyShelfCreatedForRootWindow(WmWindow* root_window);
+
+  // Notify observers that |root_window|'s shelf changed auto-hide alignment.
+  // TODO(jamescook): Move to Shelf.
+  void NotifyShelfAlignmentChanged(WmWindow* root_window);
+
+  // Notify observers that |root_window|'s shelf changed auto-hide behavior.
+  // TODO(jamescook): Move to Shelf.
+  void NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window);
 
   virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
 

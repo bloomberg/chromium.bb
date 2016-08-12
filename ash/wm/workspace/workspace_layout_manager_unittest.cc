@@ -841,7 +841,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
   window->SetProperty(aura::client::kAlwaysOnTopKey, true);
   window->Show();
 
-  Shelf* shelf = Shelf::ForWindow(window.get());
+  Shelf* shelf = Shelf::ForWindow(WmWindowAura::Get(window.get()));
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   window->SetBounds(ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()));

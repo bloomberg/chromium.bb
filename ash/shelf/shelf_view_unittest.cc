@@ -23,6 +23,7 @@
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/test/material_design_controller_test_api.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -123,7 +124,7 @@ class ShelfViewIconObserverTest : public AshTestBase {
   ShelfViewTestAPI* shelf_view_test() { return shelf_view_test_.get(); }
 
   Shelf* ShelfForSecondaryDisplay() {
-    return Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
+    return Shelf::ForWindow(WmShell::Get()->GetAllRootWindows()[1]);
   }
 
  private:
@@ -1691,7 +1692,8 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
     return;
 
   UpdateDisplay("800x600,800x600");
-  Shelf* secondary_shelf = Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
+  Shelf* secondary_shelf =
+      Shelf::ForWindow(WmShell::Get()->GetAllRootWindows()[1]);
   ShelfView* shelf_view_for_secondary =
       ShelfTestAPI(secondary_shelf).shelf_view();
 
@@ -1760,9 +1762,9 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
     return;
 
   UpdateDisplay("800x600,800x600");
-  ASSERT_EQ(2U, Shell::GetAllRootWindows().size());
+  ASSERT_EQ(2U, WmShell::Get()->GetAllRootWindows().size());
 
-  aura::Window* second_root = Shell::GetAllRootWindows()[1];
+  WmWindow* second_root = WmShell::Get()->GetAllRootWindows()[1];
   Shelf* secondary_shelf = Shelf::ForWindow(second_root);
 
   secondary_shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
@@ -1782,9 +1784,10 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
   // Fetch the start point of dragging.
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
-  ::wm::ConvertPointFromScreen(second_root, &start_point);
+  start_point = second_root->ConvertPointFromScreen(start_point);
 
-  ui::test::EventGenerator generator(second_root, start_point);
+  ui::test::EventGenerator generator(Shell::GetAllRootWindows()[1],
+                                     start_point);
 
   // Rip off the browser item.
   generator.PressLeftButton();

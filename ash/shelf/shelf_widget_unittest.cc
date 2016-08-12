@@ -8,6 +8,8 @@
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/system/status_area_widget.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -20,7 +22,6 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -48,18 +49,18 @@ INSTANTIATE_TEST_CASE_P(
                     MaterialDesignController::MATERIAL_NORMAL,
                     MaterialDesignController::MATERIAL_EXPERIMENTAL));
 
-void TestLauncherAlignment(aura::Window* root,
+void TestLauncherAlignment(WmWindow* root,
                            ShelfAlignment alignment,
-                           const std::string& expected) {
+                           const gfx::Rect& expected) {
   Shelf::ForWindow(root)->SetAlignment(alignment);
-  display::Screen* screen = display::Screen::GetScreen();
-  EXPECT_EQ(expected,
-            screen->GetDisplayNearestWindow(root).work_area().ToString());
+  EXPECT_EQ(expected.ToString(),
+            root->GetDisplayNearestWindow().work_area().ToString());
 }
 
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#if defined(OS_CHROMEOS)
 TEST_P(ShelfWidgetTest, TestAlignment) {
+  if (!SupportsHostWindowResize())
+    return;
+
   // Note that for a left- and right-aligned shelf, this offset must be
   // applied to a maximized window's width rather than its height.
   const int offset = GetMdMaximizedWindowHeightOffset();
@@ -67,75 +68,81 @@ TEST_P(ShelfWidgetTest, TestAlignment) {
   UpdateDisplay("400x400");
   {
     SCOPED_TRACE("Single Bottom");
-    TestLauncherAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_BOTTOM,
-                          gfx::Rect(0, 0, 400, 353 + offset).ToString());
+    TestLauncherAlignment(WmShell::Get()->GetPrimaryRootWindow(),
+                          SHELF_ALIGNMENT_BOTTOM,
+                          gfx::Rect(0, 0, 400, 353 + offset));
   }
   {
     SCOPED_TRACE("Single Locked");
-    TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
+    TestLauncherAlignment(WmShell::Get()->GetPrimaryRootWindow(),
                           SHELF_ALIGNMENT_BOTTOM_LOCKED,
-                          gfx::Rect(0, 0, 400, 353 + offset).ToString());
+                          gfx::Rect(0, 0, 400, 353 + offset));
   }
   {
     SCOPED_TRACE("Single Right");
-    TestLauncherAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_RIGHT,
-                          gfx::Rect(0, 0, 353 + offset, 400).ToString());
+    TestLauncherAlignment(WmShell::Get()->GetPrimaryRootWindow(),
+                          SHELF_ALIGNMENT_RIGHT,
+                          gfx::Rect(0, 0, 353 + offset, 400));
   }
   {
     SCOPED_TRACE("Single Left");
-    TestLauncherAlignment(
-        Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_LEFT,
-        gfx::Rect(kShelfSize, 0, 353 + offset, 400).ToString());
+    TestLauncherAlignment(WmShell::Get()->GetPrimaryRootWindow(),
+                          SHELF_ALIGNMENT_LEFT,
+                          gfx::Rect(kShelfSize, 0, 353 + offset, 400));
   }
+}
+
+TEST_P(ShelfWidgetTest, TestAlignmentForMultipleDisplays) {
   if (!SupportsMultipleDisplays())
     return;
 
+  // Note that for a left- and right-aligned shelf, this offset must be
+  // applied to a maximized window's width rather than its height.
+  const int offset = GetMdMaximizedWindowHeightOffset();
+  const int kShelfSize = GetShelfConstant(SHELF_SIZE);
   UpdateDisplay("300x300,500x500");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  std::vector<WmWindow*> root_windows = WmShell::Get()->GetAllRootWindows();
   {
     SCOPED_TRACE("Primary Bottom");
     TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_BOTTOM,
-                          gfx::Rect(0, 0, 300, 253 + offset).ToString());
+                          gfx::Rect(0, 0, 300, 253 + offset));
   }
   {
     SCOPED_TRACE("Primary Locked");
     TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_BOTTOM_LOCKED,
-                          gfx::Rect(0, 0, 300, 253 + offset).ToString());
+                          gfx::Rect(0, 0, 300, 253 + offset));
   }
   {
     SCOPED_TRACE("Primary Right");
     TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_RIGHT,
-                          gfx::Rect(0, 0, 253 + offset, 300).ToString());
+                          gfx::Rect(0, 0, 253 + offset, 300));
   }
   {
     SCOPED_TRACE("Primary Left");
-    TestLauncherAlignment(
-        root_windows[0], SHELF_ALIGNMENT_LEFT,
-        gfx::Rect(kShelfSize, 0, 253 + offset, 300).ToString());
+    TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_LEFT,
+                          gfx::Rect(kShelfSize, 0, 253 + offset, 300));
   }
   {
     SCOPED_TRACE("Secondary Bottom");
     TestLauncherAlignment(root_windows[1], SHELF_ALIGNMENT_BOTTOM,
-                          gfx::Rect(300, 0, 500, 453 + offset).ToString());
+                          gfx::Rect(300, 0, 500, 453 + offset));
   }
   {
     SCOPED_TRACE("Secondary Locked");
     TestLauncherAlignment(root_windows[1], SHELF_ALIGNMENT_BOTTOM_LOCKED,
-                          gfx::Rect(300, 0, 500, 453 + offset).ToString());
+                          gfx::Rect(300, 0, 500, 453 + offset));
   }
   {
     SCOPED_TRACE("Secondary Right");
     TestLauncherAlignment(root_windows[1], SHELF_ALIGNMENT_RIGHT,
-                          gfx::Rect(300, 0, 453 + offset, 500).ToString());
+                          gfx::Rect(300, 0, 453 + offset, 500));
   }
   {
     SCOPED_TRACE("Secondary Left");
-    TestLauncherAlignment(
-        root_windows[1], SHELF_ALIGNMENT_LEFT,
-        gfx::Rect(300 + kShelfSize, 0, 453 + offset, 500).ToString());
+    TestLauncherAlignment(root_windows[1], SHELF_ALIGNMENT_LEFT,
+                          gfx::Rect(300 + kShelfSize, 0, 453 + offset, 500));
   }
 }
-#endif  // defined(OS_CHROMEOS)
 
 // Makes sure the shelf is initially sized correctly.
 TEST_P(ShelfWidgetTest, LauncherInitiallySized) {
@@ -164,15 +171,17 @@ TEST_P(ShelfWidgetTest, DontReferenceShelfAfterDeletion) {
   widget->SetFullscreen(true);
 }
 
-#if defined(OS_CHROMEOS)
 // Verifies shelf is created with correct size after user login and when its
 // container and status widget has finished sizing.
 // See http://crbug.com/252533
 TEST_P(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   SetUserLoggedIn(false);
   UpdateDisplay("300x200,400x300");
 
-  ShelfWidget* shelf_widget = NULL;
+  ShelfWidget* shelf_widget = nullptr;
   Shell::RootWindowControllerList controllers(
       Shell::GetAllRootWindowControllers());
   for (Shell::RootWindowControllerList::const_iterator i = controllers.begin();
@@ -182,13 +191,13 @@ TEST_P(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
       break;
     }
   }
-  ASSERT_TRUE(shelf_widget != NULL);
+  ASSERT_TRUE(shelf_widget);
 
   SetUserLoggedIn(true);
   Shell::GetInstance()->CreateShelf();
 
   Shelf* shelf = shelf_widget->shelf();
-  ASSERT_TRUE(shelf != NULL);
+  ASSERT_TRUE(shelf);
 
   const int status_width =
       shelf_widget->status_area_widget()->GetWindowBoundsInScreen().width();
@@ -196,7 +205,6 @@ TEST_P(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
   EXPECT_EQ(status_width, shelf_widget->GetContentsView()->width() -
                               test::ShelfTestAPI(shelf).shelf_view()->width());
 }
-#endif  // defined(OS_CHROMEOS)
 
 // Tests that the shelf lets mouse-events close to the edge fall through to the
 // window underneath.

@@ -14,16 +14,12 @@
 #include "ash/common/shelf/shelf_navigator.h"
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window_property.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_util.h"
-#include "ash/shell.h"
-#include "ash/wm/window_properties.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -60,13 +56,14 @@ Shelf::~Shelf() {
 
 // static
 Shelf* Shelf::ForPrimaryDisplay() {
-  return Shelf::ForWindow(Shell::GetPrimaryRootWindow());
+  return Shelf::ForWindow(WmShell::Get()->GetPrimaryRootWindow());
 }
 
 // static
-Shelf* Shelf::ForWindow(const aura::Window* window) {
+Shelf* Shelf::ForWindow(const WmWindow* window) {
+  const aura::Window* aura_window = WmWindowAura::GetAuraWindow(window);
   ShelfWidget* shelf_widget =
-      RootWindowController::ForWindow(window)->shelf_widget();
+      RootWindowController::ForWindow(aura_window)->shelf_widget();
   return shelf_widget ? shelf_widget->shelf() : nullptr;
 }
 
@@ -84,8 +81,8 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   shelf_view_->OnShelfAlignmentChanged();
   shelf_widget_->OnShelfAlignmentChanged();
   WmShell::Get()->shelf_delegate()->OnShelfAlignmentChanged(this);
-  Shell::GetInstance()->OnShelfAlignmentChanged(
-      WmWindowAura::Get(shelf_widget_->GetNativeWindow()->GetRootWindow()));
+  WmShell::Get()->NotifyShelfAlignmentChanged(
+      WmLookup::Get()->GetWindowForWidget(shelf_widget_)->GetRootWindow());
   // ShelfLayoutManager will resize the shelf.
 }
 
@@ -95,8 +92,8 @@ void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
 
   auto_hide_behavior_ = auto_hide_behavior;
   WmShell::Get()->shelf_delegate()->OnShelfAutoHideBehaviorChanged(this);
-  Shell::GetInstance()->OnShelfAutoHideBehaviorChanged(
-      WmWindowAura::Get(shelf_widget_->GetNativeWindow()->GetRootWindow()));
+  WmShell::Get()->NotifyShelfAutoHideBehaviorChanged(
+      WmLookup::Get()->GetWindowForWidget(shelf_widget_)->GetRootWindow());
 }
 
 ShelfAutoHideState Shelf::GetAutoHideState() const {
@@ -107,9 +104,8 @@ ShelfVisibilityState Shelf::GetVisibilityState() const {
   return shelf_widget_->shelf_layout_manager()->visibility_state();
 }
 
-gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(
-    const aura::Window* window) {
-  ShelfID id = GetShelfIDForWindow(window);
+gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
+  ShelfID id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
   gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
   gfx::Point screen_origin;
   views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
@@ -118,11 +114,11 @@ gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(
                    bounds.height());
 }
 
-void Shelf::UpdateIconPositionForWindow(aura::Window* window) {
+void Shelf::UpdateIconPositionForWindow(WmWindow* window) {
+  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
   shelf_view_->UpdatePanelIconPosition(
-      GetShelfIDForWindow(window),
-      ScreenUtil::ConvertRectFromScreen(shelf_widget()->GetNativeView(),
-                                        window->GetBoundsInScreen())
+      window->GetIntProperty(WmWindowProperty::SHELF_ID),
+      shelf_window->ConvertRectFromScreen(window->GetBoundsInScreen())
           .CenterPoint());
 }
 

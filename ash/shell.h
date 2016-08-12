@@ -246,9 +246,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Initializes |shelf_|.  Does nothing if it's already initialized.
   void CreateShelf();
 
-  // Called when the shelf is created for |root_window|.
-  void OnShelfCreatedForRootWindow(WmWindow* root_window);
-
   // Creates a virtual keyboard. Deletes the old virtual keyboard if it already
   // exists.
   void CreateKeyboard();
@@ -355,14 +352,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
-
-  // Called when the alignment for a shelf changes.
-  // TODO(jamescook): Move to Shelf.
-  void OnShelfAlignmentChanged(WmWindow* root_window);
-
-  // Called when the auto-hide behavior for a shelf changes.
-  // TODO(jamescook): Move to Shelf.
-  void OnShelfAutoHideBehaviorChanged(WmWindow* root_window);
 
   // Creates a modal background (a partially-opaque fullscreen window)
   // on all displays for |window|.

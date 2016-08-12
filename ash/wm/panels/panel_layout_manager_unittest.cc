@@ -124,19 +124,20 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     EXPECT_FALSE(window1_bounds.Intersects(window2_bounds));
   }
 
-  void IsPanelAboveLauncherIcon(const aura::Window* panel) {
+  void IsPanelAboveLauncherIcon(aura::Window* panel) {
     // Waits until all shelf view animations are done.
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
 
-    Shelf* shelf = Shelf::ForWindow(panel);
-    gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(panel);
+    WmWindow* wm_panel = WmWindowAura::Get(panel);
+    Shelf* shelf = Shelf::ForWindow(wm_panel);
+    gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(wm_panel);
     ASSERT_FALSE(icon_bounds.width() == 0 && icon_bounds.height() == 0);
 
     gfx::Rect window_bounds = panel->GetBoundsInScreen();
     ASSERT_LT(icon_bounds.width(), window_bounds.width());
     ASSERT_LT(icon_bounds.height(), window_bounds.height());
     gfx::Rect shelf_bounds = shelf->shelf_widget()->GetWindowBoundsInScreen();
-    ShelfAlignment alignment = GetAlignment(panel->GetRootWindow());
+    const ShelfAlignment alignment = shelf->alignment();
 
     if (IsHorizontal(alignment)) {
       // The horizontal bounds of the panel window should contain the bounds of
@@ -163,8 +164,9 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     base::RunLoop().RunUntilIdle();
     views::Widget* widget = GetCalloutWidgetForPanel(panel);
 
-    Shelf* shelf = Shelf::ForWindow(panel);
-    gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(panel);
+    WmWindow* wm_panel = WmWindowAura::Get(panel);
+    Shelf* shelf = Shelf::ForWindow(wm_panel);
+    gfx::Rect icon_bounds = shelf->GetScreenBoundsOfItemIconForWindow(wm_panel);
     ASSERT_FALSE(icon_bounds.IsEmpty());
 
     gfx::Rect panel_bounds = panel->GetBoundsInScreen();
@@ -173,7 +175,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
     EXPECT_TRUE(widget->IsVisible());
 
-    ShelfAlignment alignment = GetAlignment(panel->GetRootWindow());
+    const ShelfAlignment alignment = shelf->alignment();
     if (alignment == SHELF_ALIGNMENT_LEFT)
       EXPECT_EQ(panel_bounds.x(), callout_bounds.right());
     else if (alignment == SHELF_ALIGNMENT_RIGHT)
@@ -215,16 +217,12 @@ class PanelLayoutManagerTest : public test::AshTestBase {
   }
 
   void SetAlignment(aura::Window* root_window, ShelfAlignment alignment) {
-    Shelf::ForWindow(root_window)->SetAlignment(alignment);
-  }
-
-  ShelfAlignment GetAlignment(const aura::Window* root_window) {
-    return Shelf::ForWindow(root_window)->alignment();
+    Shelf::ForWindow(WmWindowAura::Get(root_window))->SetAlignment(alignment);
   }
 
   void SetShelfAutoHideBehavior(aura::Window* window,
                                 ShelfAutoHideBehavior behavior) {
-    Shelf* shelf = Shelf::ForWindow(window);
+    Shelf* shelf = Shelf::ForWindow(WmWindowAura::Get(window));
     shelf->SetAutoHideBehavior(behavior);
     test::ShelfViewTestAPI test_api(GetShelfView(shelf));
     test_api.RunMessageLoopUntilAnimationsDone();
@@ -232,7 +230,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   void SetShelfVisibilityState(aura::Window* window,
                                ShelfVisibilityState visibility_state) {
-    Shelf* shelf = Shelf::ForWindow(window);
+    Shelf* shelf = Shelf::ForWindow(WmWindowAura::Get(window));
     shelf->shelf_layout_manager()->SetState(visibility_state);
   }
 
@@ -523,8 +521,12 @@ TEST_F(PanelLayoutManagerTest, FanWindows) {
   int window_x2 = w2->GetBoundsInRootWindow().CenterPoint().x();
   int window_x3 = w3->GetBoundsInRootWindow().CenterPoint().x();
   Shelf* shelf = Shelf::ForPrimaryDisplay();
-  int icon_x1 = shelf->GetScreenBoundsOfItemIconForWindow(w1.get()).x();
-  int icon_x2 = shelf->GetScreenBoundsOfItemIconForWindow(w2.get()).x();
+  int icon_x1 =
+      shelf->GetScreenBoundsOfItemIconForWindow(WmWindowAura::Get(w1.get()))
+          .x();
+  int icon_x2 =
+      shelf->GetScreenBoundsOfItemIconForWindow(WmWindowAura::Get(w2.get()))
+          .x();
   EXPECT_EQ(window_x2 - window_x1, window_x3 - window_x2);
   int spacing = window_x2 - window_x1;
   EXPECT_GT(spacing, icon_x2 - icon_x1);
@@ -588,7 +590,8 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
       CreatePanelWindow(gfx::Rect(600, 0, 50, 50)));
 
   ShelfView* shelf_view_1st = GetShelfView(Shelf::ForPrimaryDisplay());
-  ShelfView* shelf_view_2nd = GetShelfView(Shelf::ForWindow(root_windows[1]));
+  ShelfView* shelf_view_2nd =
+      GetShelfView(Shelf::ForWindow(WmWindowAura::Get(root_windows[1])));
 
   EXPECT_EQ(root_windows[0], p1_d1->GetRootWindow());
   EXPECT_EQ(root_windows[0], p2_d1->GetRootWindow());

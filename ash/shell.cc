@@ -373,11 +373,6 @@ void Shell::CreateShelf() {
     (*iter)->CreateShelf();
 }
 
-void Shell::OnShelfCreatedForRootWindow(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnShelfCreatedForRootWindow(root_window));
-}
-
 void Shell::CreateKeyboard() {
   if (in_mus_)
     return;
@@ -441,16 +436,6 @@ void Shell::UpdateShelfVisibility() {
        iter != controllers.end(); ++iter)
     if ((*iter)->shelf_widget())
       (*iter)->UpdateShelfVisibility();
-}
-
-void Shell::OnShelfAlignmentChanged(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnShelfAlignmentChanged(root_window));
-}
-
-void Shell::OnShelfAutoHideBehaviorChanged(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnShelfAutoHideBehaviorChanged(root_window));
 }
 
 void Shell::CreateModalBackground(aura::Window* window) {

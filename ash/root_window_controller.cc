@@ -481,7 +481,7 @@ void RootWindowController::CreateShelf() {
   }
 
   // Notify shell observers that the shelf has been created.
-  Shell::GetInstance()->OnShelfCreatedForRootWindow(
+  WmShell::Get()->NotifyShelfCreatedForRootWindow(
       WmWindowAura::Get(GetRootWindow()));
 
   shelf_widget_->PostCreateShelf();
@@ -675,7 +675,7 @@ void RootWindowController::ActivateKeyboard(
   keyboard_controller->AddObserver(workspace_controller_->layout_manager());
   keyboard_controller->AddObserver(
       always_on_top_controller_->GetLayoutManager());
-  WmShell::Get()->OnVirtualKeyboardActivated(true);
+  WmShell::Get()->NotifyVirtualKeyboardActivated(true);
   aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
   aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
@@ -705,7 +705,7 @@ void RootWindowController::DeactivateKeyboard(
         workspace_controller_->layout_manager());
     keyboard_controller->RemoveObserver(
         always_on_top_controller_->GetLayoutManager());
-    WmShell::Get()->OnVirtualKeyboardActivated(false);
+    WmShell::Get()->NotifyVirtualKeyboardActivated(false);
   }
 }
 

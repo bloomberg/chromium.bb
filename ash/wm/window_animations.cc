@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -433,11 +434,12 @@ CreateBrightnessGrayscaleAnimationSequence(float target_value,
 }
 
 gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
-  Shelf* shelf = Shelf::ForWindow(window);
+  WmWindow* wm_window = WmWindowAura::Get(window);
+  Shelf* shelf = Shelf::ForWindow(wm_window);
   // Shelf is created lazily and can be NULL.
   if (!shelf)
     return gfx::Rect();
-  gfx::Rect item_rect = shelf->GetScreenBoundsOfItemIconForWindow(window);
+  gfx::Rect item_rect = shelf->GetScreenBoundsOfItemIconForWindow(wm_window);
 
   // The launcher item is visible and has an icon.
   if (!item_rect.IsEmpty())

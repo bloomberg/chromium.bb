@@ -13,6 +13,7 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -1309,7 +1310,7 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
 }
 
 void ChromeLauncherControllerImpl::SetShelfAutoHideBehaviorFromPrefs() {
-  for (auto* window : ash::Shell::GetAllRootWindows()) {
+  for (ash::WmWindow* window : ash::WmShell::Get()->GetAllRootWindows()) {
     ash::Shelf* shelf = ash::Shelf::ForWindow(window);
     if (shelf) {
       shelf->SetAutoHideBehavior(ash::launcher::GetShelfAutoHideBehaviorPref(
@@ -1322,7 +1323,7 @@ void ChromeLauncherControllerImpl::SetShelfAlignmentFromPrefs() {
   if (!ash::ShelfWidget::ShelfAlignmentAllowed())
     return;
 
-  for (auto* window : ash::Shell::GetAllRootWindows()) {
+  for (ash::WmWindow* window : ash::WmShell::Get()->GetAllRootWindows()) {
     ash::Shelf* shelf = ash::Shelf::ForWindow(window);
     if (shelf) {
       shelf->SetAlignment(ash::launcher::GetShelfAlignmentPref(

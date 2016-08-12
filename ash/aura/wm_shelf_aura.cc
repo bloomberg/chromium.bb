@@ -163,12 +163,11 @@ gfx::Rect WmShelfAura::GetUserWorkAreaBounds() const {
 }
 
 void WmShelfAura::UpdateIconPositionForWindow(WmWindow* window) {
-  shelf_->UpdateIconPositionForWindow(WmWindowAura::GetAuraWindow(window));
+  shelf_->UpdateIconPositionForWindow(window);
 }
 
 gfx::Rect WmShelfAura::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
-  return shelf_->GetScreenBoundsOfItemIconForWindow(
-      WmWindowAura::GetAuraWindow(window));
+  return shelf_->GetScreenBoundsOfItemIconForWindow(window);
 }
 
 bool WmShelfAura::ProcessGestureEvent(const ui::GestureEvent& event) {
