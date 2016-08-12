@@ -1129,8 +1129,8 @@ class CONTENT_EXPORT WebContentsImpl
   // haven't been shown yet.
   std::map<ProcessRoutingIdPair, RenderWidgetHostView*> pending_widget_views_;
 
-  typedef std::map<WebContentsImpl*, DestructionObserver*> DestructionObservers;
-  DestructionObservers destruction_observers_;
+  std::map<WebContentsImpl*, std::unique_ptr<DestructionObserver>>
+      destruction_observers_;
 
   // A list of observers notified when page state changes. Weak references.
   // This MUST be listed above frame_tree_ since at destruction time the

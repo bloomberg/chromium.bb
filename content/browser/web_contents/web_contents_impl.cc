@@ -550,9 +550,6 @@ WebContentsImpl::~WebContentsImpl() {
                     ResetWebContents());
 
   SetDelegate(NULL);
-
-  STLDeleteContainerPairSecondPointers(destruction_observers_.begin(),
-                                       destruction_observers_.end());
 }
 
 WebContentsImpl* WebContentsImpl::CreateWithOpener(
@@ -1651,17 +1648,12 @@ void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
 void WebContentsImpl::AddDestructionObserver(WebContentsImpl* web_contents) {
   if (!ContainsKey(destruction_observers_, web_contents)) {
     destruction_observers_[web_contents] =
-        new DestructionObserver(this, web_contents);
+        base::MakeUnique<DestructionObserver>(this, web_contents);
   }
 }
 
 void WebContentsImpl::RemoveDestructionObserver(WebContentsImpl* web_contents) {
-  DestructionObservers::iterator iter =
-      destruction_observers_.find(web_contents);
-  if (iter != destruction_observers_.end()) {
-    delete destruction_observers_[web_contents];
-    destruction_observers_.erase(iter);
-  }
+  destruction_observers_.erase(web_contents);
 }
 
 void WebContentsImpl::AddObserver(WebContentsObserver* observer) {
