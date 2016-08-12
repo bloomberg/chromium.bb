@@ -10,7 +10,7 @@ const base::Feature kArticleSuggestionsFeature{
     "NTPArticleSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kBookmarkSuggestionsFeature{
-    "NTPBookmarkSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NTPBookmarkSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePageSuggestionsFeature{
     "NTPOfflinePageSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
