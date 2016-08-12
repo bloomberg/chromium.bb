@@ -131,7 +131,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       const std::string& storage_name,
       const GetStorageInfoFromDeviceCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(storage_info_map_, storage_name) || !mtp_client_) {
+    if (!base::ContainsKey(storage_info_map_, storage_name) || !mtp_client_) {
       MtpStorageInfo info;
       callback.Run(info, true /* error */);
       return;
@@ -152,7 +152,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                    const std::string& mode,
                    const OpenStorageCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(storage_info_map_, storage_name) || !mtp_client_) {
+    if (!base::ContainsKey(storage_info_map_, storage_name) || !mtp_client_) {
       callback.Run(std::string(), true);
       return;
     }
@@ -170,7 +170,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   void CloseStorage(const std::string& storage_handle,
                     const CloseStorageCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+    if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(true);
       return;
     }
@@ -188,7 +188,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                        const std::string& directory_name,
                        const CreateDirectoryCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+    if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(true /* error */);
       return;
     }
@@ -207,7 +207,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                      const size_t max_size,
                      const ReadDirectoryCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+    if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(std::vector<MtpFileEntry>(),
                    false /* no more entries */,
                    true /* error */);
@@ -230,7 +230,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                      uint32_t count,
                      const ReadFileCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+    if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(std::string(), true);
       return;
     }
@@ -247,7 +247,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                    uint32_t file_id,
                    const GetFileInfoCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+    if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(MtpFileEntry(), true);
       return;
     }
@@ -270,7 +270,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                     const std::string& new_name,
                     const RenameObjectCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+    if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(true /* error */);
       return;
     }
@@ -289,7 +289,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                          const std::string& file_name,
                          const CopyFileFromLocalCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+    if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(true /* error */);
       return;
     }
@@ -306,7 +306,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                     const uint32_t object_id,
                     const DeleteObjectCallback& callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+    if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(true /* error */);
       return;
     }
@@ -373,7 +373,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(mtp_client_);
     for (size_t i = 0; i < storage_names.size(); ++i) {
-      if (ContainsKey(storage_info_map_, storage_names[i])) {
+      if (base::ContainsKey(storage_info_map_, storage_names[i])) {
         // OnStorageChanged() might have gotten called first.
         continue;
       }
@@ -384,7 +384,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   void OnGetStorageInfo(const MtpStorageInfo& storage_info) {
     DCHECK(thread_checker_.CalledOnValidThread());
     const std::string& storage_name = storage_info.storage_name();
-    if (ContainsKey(storage_info_map_, storage_name)) {
+    if (base::ContainsKey(storage_info_map_, storage_name)) {
       // This should not happen, since MediaTransferProtocolManagerImpl should
       // only call EnumerateStorages() once, which populates |storage_info_map_|
       // with the already-attached devices.
@@ -417,7 +417,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   void OnOpenStorage(const std::string& handle) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, handle)) {
+    if (!base::ContainsKey(handles_, handle)) {
       handles_.insert(handle);
       open_storage_callbacks_.front().Run(handle, false);
     } else {
@@ -435,7 +435,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   void OnCloseStorage() {
     DCHECK(thread_checker_.CalledOnValidThread());
     const std::string& handle = close_storage_callbacks_.front().second;
-    if (ContainsKey(handles_, handle)) {
+    if (base::ContainsKey(handles_, handle)) {
       handles_.erase(handle);
       close_storage_callbacks_.front().first.Run(false);
     } else {

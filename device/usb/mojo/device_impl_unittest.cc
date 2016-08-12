@@ -212,7 +212,7 @@ class USBDeviceImplTest : public testing::Test {
 
   void AddMockConfig(const ConfigBuilder& builder) {
     const UsbConfigDescriptor& config = builder.config();
-    DCHECK(!ContainsKey(mock_configs_, config.configuration_value));
+    DCHECK(!base::ContainsKey(mock_configs_, config.configuration_value));
     mock_configs_.insert(std::make_pair(config.configuration_value, config));
     mock_device_->AddMockConfig(config);
   }
@@ -277,7 +277,7 @@ class USBDeviceImplTest : public testing::Test {
 
   void ReleaseInterface(uint8_t interface_number,
                         const UsbDeviceHandle::ResultCallback& callback) {
-    if (ContainsKey(claimed_interfaces_, interface_number)) {
+    if (base::ContainsKey(claimed_interfaces_, interface_number)) {
       claimed_interfaces_.erase(interface_number);
       callback.Run(true);
     } else {

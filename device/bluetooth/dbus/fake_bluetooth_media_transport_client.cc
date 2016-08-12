@@ -103,7 +103,7 @@ FakeBluetoothMediaTransportClient::Transport::~Transport() {}
 FakeBluetoothMediaTransportClient::FakeBluetoothMediaTransportClient() {}
 
 FakeBluetoothMediaTransportClient::~FakeBluetoothMediaTransportClient() {
-  STLDeleteValues(&endpoint_to_transport_map_);
+  base::STLDeleteValues(&endpoint_to_transport_map_);
 }
 
 // DBusClient override.

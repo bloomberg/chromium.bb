@@ -327,7 +327,7 @@ void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
   for (size_t i = 0; i < device_count; ++i) {
     PlatformUsbDevice platform_device = platform_devices[i];
     // Ignore some devices.
-    if (ContainsValue(ignored_devices_, platform_device)) {
+    if (base::ContainsValue(ignored_devices_, platform_device)) {
       existing_ignored_devices.insert(platform_device);
       refresh_complete.Run();
       continue;
@@ -360,7 +360,7 @@ void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
   for (auto it = ignored_devices_.begin(); it != ignored_devices_.end();
        /* incremented internally */) {
     auto current = it++;
-    if (!ContainsValue(existing_ignored_devices, *current)) {
+    if (!base::ContainsValue(existing_ignored_devices, *current)) {
       libusb_unref_device(*current);
       ignored_devices_.erase(current);
     }
@@ -451,7 +451,7 @@ void UsbServiceImpl::AddDevice(const base::Closure& refresh_complete,
   }
 
   platform_devices_[device->platform_device()] = device;
-  DCHECK(!ContainsKey(devices(), device->guid()));
+  DCHECK(!base::ContainsKey(devices(), device->guid()));
   devices()[device->guid()] = device;
 
   USB_LOG(USER) << "USB device added: vendor=" << device->vendor_id() << " \""
@@ -517,7 +517,7 @@ int LIBUSB_CALL UsbServiceImpl::HotplugCallback(libusb_context* context,
 
 void UsbServiceImpl::OnPlatformDeviceAdded(PlatformUsbDevice platform_device) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!ContainsKey(platform_devices_, platform_device));
+  DCHECK(!base::ContainsKey(platform_devices_, platform_device));
   EnumerateDevice(platform_device, base::Bind(&base::DoNothing));
   libusb_unref_device(platform_device);
 }

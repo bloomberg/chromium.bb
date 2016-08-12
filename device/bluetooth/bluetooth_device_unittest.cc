@@ -96,8 +96,10 @@ TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
   EXPECT_EQ(base::UTF8ToUTF16(kTestDeviceName), device->GetNameForDisplay());
   EXPECT_FALSE(device->IsPaired());
   BluetoothDevice::UUIDList uuids = device->GetUUIDs();
-  EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID(kTestUUIDGenericAccess)));
-  EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID(kTestUUIDGenericAttribute)));
+  EXPECT_TRUE(
+      base::ContainsValue(uuids, BluetoothUUID(kTestUUIDGenericAccess)));
+  EXPECT_TRUE(
+      base::ContainsValue(uuids, BluetoothUUID(kTestUUIDGenericAttribute)));
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
@@ -130,10 +132,10 @@ TEST_F(BluetoothTest, GetUUIDs) {
 
   // Check advertised UUIDs:
   EXPECT_EQ(2u, device->GetUUIDs().size());
-  EXPECT_TRUE(
-      ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDGenericAccess)));
-  EXPECT_TRUE(ContainsValue(device->GetUUIDs(),
-                            BluetoothUUID(kTestUUIDGenericAttribute)));
+  EXPECT_TRUE(base::ContainsValue(device->GetUUIDs(),
+                                  BluetoothUUID(kTestUUIDGenericAccess)));
+  EXPECT_TRUE(base::ContainsValue(device->GetUUIDs(),
+                                  BluetoothUUID(kTestUUIDGenericAttribute)));
 
   // Connect.
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
@@ -152,8 +154,8 @@ TEST_F(BluetoothTest, GetUUIDs) {
 
   // GetUUIDs should return UUIDs of services in device.
   EXPECT_EQ(1u, device->GetUUIDs().size());
-  EXPECT_TRUE(
-      ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDGenericAccess)));
+  EXPECT_TRUE(base::ContainsValue(device->GetUUIDs(),
+                                  BluetoothUUID(kTestUUIDGenericAccess)));
 
 #if defined(OS_MACOSX)
   // Android and Windows don't yet support service changed events.
@@ -169,8 +171,8 @@ TEST_F(BluetoothTest, GetUUIDs) {
 
   // GetUUIDs should return UUIDs of services in device.
   EXPECT_EQ(1u, device->GetUUIDs().size());
-  EXPECT_TRUE(
-      ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDGenericAccess)));
+  EXPECT_TRUE(base::ContainsValue(device->GetUUIDs(),
+                                  BluetoothUUID(kTestUUIDGenericAccess)));
 #endif  // defined(OS_MACOSX)
 
   // Disconnect.
@@ -185,10 +187,10 @@ TEST_F(BluetoothTest, GetUUIDs) {
 
   // Check advertised UUIDs.
   EXPECT_EQ(2u, device->GetUUIDs().size());
-  EXPECT_TRUE(ContainsValue(device->GetUUIDs(),
-                            BluetoothUUID(kTestUUIDImmediateAlert)));
-  EXPECT_TRUE(
-      ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDLinkLoss)));
+  EXPECT_TRUE(base::ContainsValue(device->GetUUIDs(),
+                                  BluetoothUUID(kTestUUIDImmediateAlert)));
+  EXPECT_TRUE(base::ContainsValue(device->GetUUIDs(),
+                                  BluetoothUUID(kTestUUIDLinkLoss)));
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 

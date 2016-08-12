@@ -41,7 +41,7 @@ NfcPeerChromeOS::NfcPeerChromeOS(const dbus::ObjectPath& object_path)
 
 NfcPeerChromeOS::~NfcPeerChromeOS() {
   DBusThreadManager::Get()->GetNfcRecordClient()->RemoveObserver(this);
-  STLDeleteValues(&records_);
+  base::STLDeleteValues(&records_);
 }
 
 void NfcPeerChromeOS::AddObserver(device::NfcPeer::Observer* observer) {

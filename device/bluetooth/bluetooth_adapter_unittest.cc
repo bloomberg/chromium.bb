@@ -634,10 +634,10 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
 
   // Check the initial UUIDs:
-  EXPECT_TRUE(
-      ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDGenericAccess)));
-  EXPECT_FALSE(ContainsValue(device->GetUUIDs(),
-                             BluetoothUUID(kTestUUIDImmediateAlert)));
+  EXPECT_TRUE(base::ContainsValue(device->GetUUIDs(),
+                                  BluetoothUUID(kTestUUIDGenericAccess)));
+  EXPECT_FALSE(base::ContainsValue(device->GetUUIDs(),
+                                   BluetoothUUID(kTestUUIDImmediateAlert)));
 
   // Discover same device again with updated UUIDs:
   observer.Reset();
@@ -648,10 +648,10 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   EXPECT_EQ(device, observer.last_device());
 
   // Expect only new UUIDs:
-  EXPECT_FALSE(
-      ContainsValue(device->GetUUIDs(), BluetoothUUID(kTestUUIDGenericAccess)));
-  EXPECT_TRUE(ContainsValue(device->GetUUIDs(),
-                            BluetoothUUID(kTestUUIDImmediateAlert)));
+  EXPECT_FALSE(base::ContainsValue(device->GetUUIDs(),
+                                   BluetoothUUID(kTestUUIDGenericAccess)));
+  EXPECT_TRUE(base::ContainsValue(device->GetUUIDs(),
+                                  BluetoothUUID(kTestUUIDImmediateAlert)));
 
   // Discover same device again with empty UUIDs:
   observer.Reset();

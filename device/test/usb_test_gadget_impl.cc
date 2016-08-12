@@ -93,7 +93,7 @@ bool ReadFile(const base::FilePath& file_path, std::string* content) {
     return false;
   }
 
-  STLClearObject(content);
+  base::STLClearObject(content);
   int rv;
   do {
     char buf[4096];

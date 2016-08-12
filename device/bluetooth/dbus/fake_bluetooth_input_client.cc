@@ -48,7 +48,7 @@ FakeBluetoothInputClient::FakeBluetoothInputClient() {}
 
 FakeBluetoothInputClient::~FakeBluetoothInputClient() {
   // Clean up Properties structures
-  STLDeleteValues(&properties_map_);
+  base::STLDeleteValues(&properties_map_);
 }
 
 void FakeBluetoothInputClient::Init(dbus::Bus* bus) {}

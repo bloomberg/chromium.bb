@@ -612,7 +612,7 @@ void UsbDeviceHandleImpl::ClaimInterface(int interface_number,
     callback.Run(false);
     return;
   }
-  if (ContainsKey(claimed_interfaces_, interface_number)) {
+  if (base::ContainsKey(claimed_interfaces_, interface_number)) {
     callback.Run(true);
     return;
   }
@@ -626,7 +626,7 @@ void UsbDeviceHandleImpl::ClaimInterface(int interface_number,
 void UsbDeviceHandleImpl::ReleaseInterface(int interface_number,
                                            const ResultCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!device_ || !ContainsKey(claimed_interfaces_, interface_number)) {
+  if (!device_ || !base::ContainsKey(claimed_interfaces_, interface_number)) {
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
     return;
   }
@@ -652,7 +652,7 @@ void UsbDeviceHandleImpl::SetInterfaceAlternateSetting(
     int alternate_setting,
     const ResultCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!device_ || !ContainsKey(claimed_interfaces_, interface_number)) {
+  if (!device_ || !base::ContainsKey(claimed_interfaces_, interface_number)) {
     callback.Run(false);
     return;
   }
@@ -1113,7 +1113,8 @@ void UsbDeviceHandleImpl::SubmitTransfer(std::unique_ptr<Transfer> transfer) {
 void UsbDeviceHandleImpl::TransferComplete(Transfer* transfer,
                                            const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ContainsKey(transfers_, transfer)) << "Missing transfer completed";
+  DCHECK(base::ContainsKey(transfers_, transfer))
+      << "Missing transfer completed";
   transfers_.erase(transfer);
 
   if (transfer->callback_task_runner()->RunsTasksOnCurrentThread()) {

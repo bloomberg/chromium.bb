@@ -37,7 +37,7 @@ void HidReportDescriptor::GetDetails(
   DCHECK(max_input_report_size);
   DCHECK(max_output_report_size);
   DCHECK(max_feature_report_size);
-  STLClearObject(top_level_collections);
+  base::STLClearObject(top_level_collections);
 
   *has_report_id = false;
   *max_input_report_size = 0;

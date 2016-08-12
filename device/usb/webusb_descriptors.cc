@@ -580,15 +580,15 @@ bool FindInWebUsbAllowedOrigins(
   if (!allowed_origins)
     return false;
 
-  if (ContainsValue(allowed_origins->origins, origin))
+  if (base::ContainsValue(allowed_origins->origins, origin))
     return true;
 
   for (const auto& config : allowed_origins->configurations) {
-    if (ContainsValue(config.origins, origin))
+    if (base::ContainsValue(config.origins, origin))
       return true;
 
     for (const auto& function : config.functions) {
-      if (ContainsValue(function.origins, origin))
+      if (base::ContainsValue(function.origins, origin))
         return true;
     }
   }

@@ -252,7 +252,7 @@ void UsbServiceLinux::DeviceReady(scoped_refptr<UsbDeviceLinux> device,
   auto it = devices_by_path_.find(device->device_path());
   if (it != devices_by_path_.end()) {
     if (success) {
-      DCHECK(!ContainsKey(devices(), device->guid()));
+      DCHECK(!base::ContainsKey(devices(), device->guid()));
       devices()[device->guid()] = device;
 
       USB_LOG(USER) << "USB device added: path=" << device->device_path()

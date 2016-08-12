@@ -38,7 +38,7 @@ NfcNdefTagTechnologyChromeOS::NfcNdefTagTechnologyChromeOS(NfcTagChromeOS* tag)
 
 NfcNdefTagTechnologyChromeOS::~NfcNdefTagTechnologyChromeOS() {
   DBusThreadManager::Get()->GetNfcRecordClient()->RemoveObserver(this);
-  STLDeleteValues(&records_);
+  base::STLDeleteValues(&records_);
 }
 
 void NfcNdefTagTechnologyChromeOS::AddObserver(

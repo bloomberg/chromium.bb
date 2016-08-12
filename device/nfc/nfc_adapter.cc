@@ -14,8 +14,8 @@ NfcAdapter::NfcAdapter() {
 }
 
 NfcAdapter::~NfcAdapter() {
-  STLDeleteValues(&peers_);
-  STLDeleteValues(&tags_);
+  base::STLDeleteValues(&peers_);
+  base::STLDeleteValues(&tags_);
 }
 
 void NfcAdapter::GetPeers(PeerList* peer_list) const {

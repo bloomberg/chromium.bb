@@ -74,7 +74,7 @@ bool TryGetHidDataProperty(IOHIDDeviceRef device,
   if (!ref) {
     return false;
   }
-  STLClearObject(result);
+  base::STLClearObject(result);
   const uint8_t* bytes = CFDataGetBytePtr(ref);
   result->insert(result->begin(), bytes, bytes + CFDataGetLength(ref));
   return true;

@@ -91,7 +91,7 @@ HidService::~HidService() {
 
 void HidService::AddDevice(scoped_refptr<HidDeviceInfo> device_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!ContainsKey(devices_, device_info->device_id())) {
+  if (!base::ContainsKey(devices_, device_info->device_id())) {
     devices_[device_info->device_id()] = device_info;
 
     HID_LOG(USER) << "HID device "
