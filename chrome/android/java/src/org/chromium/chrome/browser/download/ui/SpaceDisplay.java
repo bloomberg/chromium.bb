@@ -23,6 +23,8 @@ import java.io.File;
 /** A View that manages the display of space used by the downloads. */
 class SpaceDisplay extends RecyclerView.AdapterDataObserver {
     private static final String TAG = "download_ui";
+    private static final long BYTES_PER_GIGABYTE = 1024 * 1024 * 1024;
+
     private final AsyncTask<Void, Void, Long> mFileSystemBytesTask;
 
     private DownloadHistoryAdapter mHistoryAdapter;
@@ -87,8 +89,10 @@ class SpaceDisplay extends RecyclerView.AdapterDataObserver {
 
             // Display how big the storage is.
             String fileSystemReadable = Formatter.formatFileSize(context, mFileSystemBytes);
-            mSpaceTotalTextView.setText(context.getString(
-                    R.string.download_manager_ui_space_used, fileSystemReadable));
+
+            float fileSystemGigabytes = convertBytesToGigabytes(mFileSystemBytes);
+            mSpaceTotalTextView.setText(context.getResources().getString(
+                    R.string.download_manager_ui_space_available, fileSystemGigabytes));
         }
 
         // Indicate how much space has been used by downloads.
@@ -96,6 +100,13 @@ class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         int percentage =
                 mFileSystemBytes == 0 ? 0 : (int) (100.0 * usedBytes / mFileSystemBytes);
         mSpaceBar.setProgress(percentage);
-        mSpaceUsedTextView.setText(Formatter.formatFileSize(context, usedBytes));
+
+        float usedGigabytes = convertBytesToGigabytes(usedBytes);
+        mSpaceUsedTextView.setText(context.getResources().getString(
+                R.string.download_manager_ui_space_used, usedGigabytes));
+    }
+
+    private float convertBytesToGigabytes(long bytes) {
+        return bytes / (float) BYTES_PER_GIGABYTE;
     }
 }

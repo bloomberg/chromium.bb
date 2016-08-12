@@ -1748,8 +1748,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_OPEN_DOWNLOADED_LABEL" desc="A text label on the snackbar widget to open the downloaded file.">
         Open
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED" desc="String indicating that some amount (not part of this string) of the available space on the device has already been used.">
-        Used of <ph name="TOTAL_SPACE">%1$s<ex>12.55 GB</ex></ph>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_AVAILABLE" desc="String indicating how much storage is available on the device.">
+        <ph name="gigabytes">%1$1.2f<ex>12.5</ex></ph> GB available
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED" desc="String indicating that some amount of storage (in gigabytes or GB) space on the device has been used.">
+        <ph name="gigabytes">%1$1.2f<ex>0.3</ex></ph> GB used
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_ALL_DOWNLOADS" desc="Indicates that clicking on this button shows all of your downloads.">
         All downloads

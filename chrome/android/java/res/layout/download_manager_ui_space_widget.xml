@@ -15,7 +15,7 @@
         android:paddingStart="@dimen/drawer_margin_large"
         android:paddingEnd="@dimen/drawer_margin_large"
         android:textColor="@color/light_active_color"
-        android:textSize="32sp" />
+        android:textSize="28sp" />
 
     <TextView
         android:id="@+id/space_total_display"
@@ -23,7 +23,8 @@
         android:layout_height="wrap_content"
         android:paddingStart="@dimen/drawer_margin_large"
         android:paddingEnd="@dimen/drawer_margin_large"
-        android:textColor="@color/descriptive_text_color" />
+        android:textColor="@color/descriptive_text_color"
+        android:textSize="14sp" />
 
     <!-- TODO(dfalcantara): Style this toolbar as Material on JB & KK.
                             These are currently broken in the support library and look Holo.
