@@ -187,10 +187,10 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result, const FloatPoin
         }
     }
 
-    // pointer-events=boundingBox makes it possible for containers to be direct targets
+    // pointer-events: bounding-box makes it possible for containers to be direct targets.
     if (style()->pointerEvents() == PE_BOUNDINGBOX) {
-        ASSERT(isObjectBoundingBoxValid());
-        if (objectBoundingBox().contains(localPoint)) {
+        // Check for a valid bounding box because it will be invalid for empty containers.
+        if (isObjectBoundingBoxValid() && objectBoundingBox().contains(localPoint)) {
             const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
             updateHitTestResult(result, localLayoutPoint);
             if (result.addNodeToListBasedTestResult(element(), localLayoutPoint) == StopHitTesting)
