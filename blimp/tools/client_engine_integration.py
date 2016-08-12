@@ -19,7 +19,6 @@ import re
 import signal
 import subprocess
 import sys
-import time
 
 SRC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -102,6 +101,7 @@ def RunEngine(output_linux_directory, token_file_path):
                        stderr=subprocess.STDOUT)
 
   for line in iter(p.stdout.readline, ''):
+    sys.stdout.write(line)
     l = line.rstrip()
     match = re.match(PORT_PATTERN, l)
     if match:
@@ -173,10 +173,13 @@ def _Start(args, json_file_path, device):
       args.output_linux_directory, _TOKEN_FILE_PATH)
   json_object['port_number'] = port_number
   json_object['pid'] = engine_process.pid
-  logging.info("Engine port number: %s", port_number)
-  logging.info("Engine running PID: %d", engine_process.pid)
+  logging.info('Engine port number: %s', port_number)
+  logging.info('Engine running PID: %d', engine_process.pid)
 
-  if engine_process.poll() is None:
+  if engine_process.poll() is not None:
+    logging.error('Engine failed to start. Return code: %d',
+                  engine_process.poll())
+  else:
     try:
       port_pairs = [(port_number, port_number)]
       forwarder.Forwarder.Map(port_pairs, device)
@@ -200,11 +203,13 @@ def _Run(args, json_file_path, device):
   try:
     engine_process = _Start(args, json_file_path, device)
     while True:
-      time.sleep(1)
-      return_code = engine_process.poll()
-      if return_code is not None:
+      nextline = engine_process.stdout.readline()
+      if nextline == '' and engine_process.poll() is not None:
         # The engine died.
         sys.exit(1)
+      sys.stdout.write(nextline)
+      sys.stdout.flush()
+
   except KeyboardInterrupt:
     sys.exit(0)
   finally:
