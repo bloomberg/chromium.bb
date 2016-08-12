@@ -249,7 +249,7 @@ void ThreadLog::AddEntry(void* address) {
 void ThreadLog::TakeEntries(std::vector<LogEntry>* destination) {
   base::AutoLock auto_lock(lock_);
   destination->swap(entries_);
-  STLClearObject(&entries_);
+  base::STLClearObject(&entries_);
 }
 
 void ThreadLog::Flush(std::vector<LogEntry>* entries) const {
@@ -273,7 +273,7 @@ void ThreadLog::FlushInternal(std::vector<LogEntry>* entries) const {
             it->time.tv_nsec / 1000, it->pid, it->tid, it->address);
   }
 
-  STLClearObject(entries);
+  base::STLClearObject(entries);
 }
 
 ThreadLogsManager::ThreadLogsManager()
@@ -297,7 +297,7 @@ ThreadLogsManager::~ThreadLogsManager() {
   }
   flush_thread.reset();  // Joins the flush thread.
 
-  STLDeleteContainerPointers(logs_.begin(), logs_.end());
+  base::STLDeleteContainerPointers(logs_.begin(), logs_.end());
 }
 
 void ThreadLogsManager::AddLog(std::unique_ptr<ThreadLog> new_log) {
