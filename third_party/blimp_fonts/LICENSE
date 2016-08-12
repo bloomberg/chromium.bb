@@ -1,6 +1,6 @@
-All the font files are available in the font_bundle subdirectory.
-
 Fonts under Apache License Version 2.0 license:
+
+The font files below are in the font_bundle/marshmallow subdirectory.
 
 AndroidClock.ttf
 AndroidClock_Highlight.ttf
@@ -193,10 +193,95 @@ Roboto-Regular.ttf
 Roboto-ThinItalic.ttf
 Roboto-Thin.ttf
 
+The font files below are in the font_bundle/kitkat subdirectory.
+
+AndroidClock_Highlight.ttf
+AndroidClock_Solid.ttf
+AndroidClock.ttf
+AndroidEmoji.ttf
+Clockopia.ttf
+DroidKufi-Bold.ttf
+DroidKufi-Regular.ttf
+DroidNaskh-Bold.ttf
+DroidNaskh-Regular.ttf
+DroidNaskhUI-Regular.ttf
+DroidSansArabic.ttf
+DroidSansArmenian.ttf
+DroidSans-Bold.ttf
+DroidSansEthiopic-Bold.ttf
+DroidSansEthiopic-Regular.ttf
+DroidSansFallbackFull.ttf
+DroidSansFallbackLegacy.ttf
+DroidSansFallback.ttf
+DroidSansGeorgian.ttf
+DroidSansHebrew-Bold.ttf
+DroidSansHebrew-Regular.ttf
+DroidSansJapanese.ttf
+DroidSansMono.ttf
+DroidSans.ttf
+DroidSerif-BoldItalic.ttf
+DroidSerif-Bold.ttf
+DroidSerif-Italic.ttf
+DroidSerif-Regular.ttf
+fallback_fonts.xml
+MTLc3m.ttf
+MTLmr3m.ttf
+NotoColorEmoji.ttf
+NotoSansBengali-Bold.ttf
+NotoSansBengali-Regular.ttf
+NotoSansBengaliUI-Bold.ttf
+NotoSansBengaliUI-Regular.ttf
+NotoSansDevanagari-Bold.ttf
+NotoSansDevanagari-Regular.ttf
+NotoSansDevanagariUI-Bold.ttf
+NotoSansDevanagariUI-Regular.ttf
+NotoSansKannada-Bold.ttf
+NotoSansKannada-Regular.ttf
+NotoSansKannadaUI-Bold.ttf
+NotoSansKannadaUI-Regular.ttf
+NotoSansKhmer-Bold.ttf
+NotoSansKhmer-Regular.ttf
+NotoSansKhmerUI-Bold.ttf
+NotoSansKhmerUI-Regular.ttf
+NotoSansLao-Bold.ttf
+NotoSansLao-Regular.ttf
+NotoSansLaoUI-Bold.ttf
+NotoSansLaoUI-Regular.ttf
+NotoSansMalayalam-Bold.ttf
+NotoSansMalayalam-Regular.ttf
+NotoSansMalayalamUI-Bold.ttf
+NotoSansMalayalamUI-Regular.ttf
+NotoSansSymbols-Regular.ttf
+NotoSansTamil-Bold.ttf
+NotoSansTamil-Regular.ttf
+NotoSansTamilUI-Bold.ttf
+NotoSansTamilUI-Regular.ttf
+NotoSansTelugu-Bold.ttf
+NotoSansTelugu-Regular.ttf
+NotoSansTeluguUI-Bold.ttf
+NotoSansTeluguUI-Regular.ttf
+NotoSansThai-Bold.ttf
+NotoSansThai-Regular.ttf
+NotoSansThaiUI-Bold.ttf
+NotoSansThaiUI-Regular.ttf
+Roboto-BoldItalic.ttf
+Roboto-Bold.ttf
+RobotoCondensed-BoldItalic.ttf
+RobotoCondensed-Bold.ttf
+RobotoCondensed-Italic.ttf
+RobotoCondensed-Regular.ttf
+Roboto-Italic.ttf
+Roboto-LightItalic.ttf
+Roboto-Light.ttf
+Roboto-Regular.ttf
+Roboto-ThinItalic.ttf
+Roboto-Thin.ttf
+
 
 Fonts under SIL Open Font License, Version 1.1:
 (Full license in LICENSE.OFL)
 
+The font files below are in the font_bundle/marshmallow subdirectory.
 NotoSansJP-Regular.otf
 NotoSansJP-Regular-Subsetted.otf
 NotoSansKR-Regular.otf
@@ -207,6 +292,7 @@ NotoSansTC-Regular.otf
 Copyright (c) 2011 by Ralph du Carrois, with Reserved Font Name 'Carrois'
 This Font Software is licensed under the SIL Open Font License, Version 1.1
 (Full license in LICENSE.OFL)
+The font files below are in the font_bundle/marshmallow subdirectory.
 CarroisGothicSC-Regular.ttf
 
 
@@ -216,6 +302,7 @@ with Reserved Font Name Dancing Script.
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 (Full license in LICENSE.OFL)
 
+The font files below are in the font_bundle/marshmallow subdirectory.
 DancingScript-Bold.ttf
 DancingScript-Regular.ttf
 CutiveMono.ttf
@@ -228,5 +315,31 @@ with Reserved Font Name Nanum, Naver Nanum, NanumGothic, Naver NanumGothic, Nanu
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 (Full license in LICENSE.OFL)
 
+The files below are in the font_bundle/marshmallow subdirectory.
 NanumGothicBold.ttf
 NanumGothic.ttf
+
+
+Copyright (c) 2010, NHN Corporation (http://www.nhncorp.com),
+  (http://hangeul.naver.com/font)
+with Reserved Font Name Nanum, Naver Nanum, NanumGothic, Naver NanumGothic, NanumMyeongjo, Naver NanumMyeongjo, NanumBrush, Naver NanumBrush, NanumPen, Naver NanumPen, Naver NanumGothicEco, NanumGothicEco, Naver NanumMyeongjoEco, NanumMyeongjoEco, Naver NanumGothicLight, NanumGothicLight
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+The files below are in the font_bundle/kitkat subdirectory.
+NanumGothicBold.ttf
+NanumGothic.ttf
+
+
+Copyright SIL International, all rights reserved
+Reserved names: "Padauk"
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+The files below are in the font_bundle/kitkat subdirectory.
+Padauk-bookbold.ttf
+Padauk-book.ttf

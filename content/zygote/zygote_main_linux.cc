@@ -369,13 +369,23 @@ static void ZygotePreSandboxInit() {
 
     if (android_fonts_dir.size() > 0 && android_fonts_dir.back() != '/')
       android_fonts_dir += '/';
-    std::string font_config = android_fonts_dir + "fonts.xml";
+
     SkFontMgr_Android_CustomFonts custom;
     custom.fSystemFontUse =
         SkFontMgr_Android_CustomFonts::SystemFontUse::kOnlyCustom;
     custom.fBasePath = android_fonts_dir.c_str();
+
+    std::string font_config;
+    std::string fallback_font_config;
+    if (android_fonts_dir.find("kitkat") != std::string::npos) {
+      font_config = android_fonts_dir + "system_fonts.xml";
+      fallback_font_config = android_fonts_dir + "fallback_fonts.xml";
+      custom.fFallbackFontsXml = fallback_font_config.c_str();
+    } else {
+      font_config = android_fonts_dir + "fonts.xml";
+      custom.fFallbackFontsXml = nullptr;
+    }
     custom.fFontsXml = font_config.c_str();
-    custom.fFallbackFontsXml = nullptr;
     custom.fIsolated = true;
 
     blink::WebFontRendering::setSkiaFontManager(SkFontMgr_New_Android(&custom));

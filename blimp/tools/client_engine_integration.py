@@ -33,6 +33,7 @@ from devil.android import device_blacklist
 from devil.android import device_utils
 from devil.android import forwarder
 from devil.android.sdk import intent
+from devil.android.sdk import version_codes
 from devil.utils import cmd_helper
 
 _CLIENT_TOKEN_PATH = posixpath.join('/', 'data', 'data',
@@ -74,7 +75,7 @@ def RunClient(device, optional_url):
   device.StartActivity(run_client_intent, blocking=True)
 
 
-def RunEngine(output_linux_directory, token_file_path):
+def RunEngine(output_linux_directory, token_file_path, device):
   """Start running engine
 
   Args:
@@ -87,8 +88,14 @@ def RunEngine(output_linux_directory, token_file_path):
   port = '0'
   blimp_engine_app = os.path.join(output_linux_directory,
                                   'blimp_engine_app')
+
+  sub_dir = "marshmallow"
+  if device.build_version_sdk == version_codes.KITKAT:
+    sub_dir = "kitkat"
   blimp_fonts_path = os.path.join(output_linux_directory, 'gen',
-                                  'third_party', 'blimp_fonts')
+                                  'third_party', 'blimp_fonts',
+                                  'font_bundle', sub_dir)
+
   run_engine_cmd = [
       blimp_engine_app +
       ' --android-fonts-path=' + blimp_fonts_path +
@@ -170,7 +177,7 @@ def _Start(args, json_file_path, device):
   device.PushChangedFiles(host_device_tuples)
 
   port_number, engine_process = RunEngine(
-      args.output_linux_directory, _TOKEN_FILE_PATH)
+      args.output_linux_directory, _TOKEN_FILE_PATH, device)
   json_object['port_number'] = port_number
   json_object['pid'] = engine_process.pid
   logging.info('Engine port number: %s', port_number)

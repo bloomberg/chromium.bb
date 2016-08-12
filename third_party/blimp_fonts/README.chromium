@@ -24,10 +24,12 @@ Not all files from the external repositories are used.
 
 Fonts are pulled from the following repositories:
 - Git repo: https://android.googlesource.com/platform/frameworks/base.git
-  Commit: 6a278db4c4a144829353e81420f28dcf2105f767
+  Commit: 6a278db4c4a144829353e81420f28dcf2105f767 (marshmallow)
+          e89d3c9cebf59a6062974e9d2993adbddeaa4fef (KTU84Z)
   Directory: data/fonts/
 - Git repo: https://android.googlesource.com/platform/external/noto-fonts.git
-  Commit: eb0883544dd538edbfb52cce9a2481509ca5ee9f
+  Commit: eb0883544dd538edbfb52cce9a2481509ca5ee9f (marshmallow)
+          90372d894b5d9c9f2a111315d2eb3b8de1979ee4 (KTU84Z)
   Directory: cjk/, other/
 - Git repo: https://android.googlesource.com/platform/external/roboto-fonts.git
   Commit: f5cf79102af594c746627b392b4f98eedd254571
@@ -45,5 +47,9 @@ Fonts are pulled from the following repositories:
   Commit: 0062a10458d4c357f3082d66bcb129d11913aaae
   Directory: .
 - Git repo: https://android.googlesource.com/platform/external/naver-fonts.git
-  Commit: 91e6e9f94d1d769a8f742649674149ba98ce7d45
+  Commit: 91e6e9f94d1d769a8f742649674149ba98ce7d45 (marshmallow)
+          9238a39d60763f81b98d96f02b087d52b9d4fd52 (KTU84Z)
+  Directory: .
+- Git repo: https://android.googlesource.com/platform/external/sil-fonts.git
+  Commit: 795a2f4339f8a82d6cff187e2a77bb01d5911aac (KTU84Z)
   Directory: .

@@ -9,9 +9,6 @@
     licenses and which fonts use which license.
 1.  Update the `//third_party/blimp_fonts` target to include all the
     current fonts and their license files.
-1.  Update the engine dependencies using
-    `//blimp/tools/generate-engine-manifest.py`. This step is documented in
-    `//blimp/docs/container.md`.
 1.  Run the `upload_to_google_storage.py` (from depot_tools) script to upload
     the files. You must do this in the `//third_party/blimp_fonts` directory.
     To do this, execute:

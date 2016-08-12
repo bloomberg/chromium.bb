@@ -163,7 +163,10 @@ The following flags are required to start an Engine instance:
 * `--disable-cached-picture-raster`: Ensures that rasterized content is not
   destroyed before serialization.
 * `--android-fonts-path=$PATH`: Path to where the fonts are located.
-  Typically this would be `out-linux/Debug/gen/third_party/blimp_fonts`.
+  If the Android client is Kitkat system, this would be
+  `out-linux/Debug/gen/third_party/blimp_fonts/font_bundle/kitkat/`.
+  If the Android client is Marshmallow system, this would be
+  `out-linux/Debug/gen/third_party/blimp_fonts/font_bundle/marshmallow/`.
 * `--disable-remote-fonts`: Disables downloading of custom web fonts in the
   renderer.
 
@@ -173,7 +176,7 @@ One can start the engine using these flags:
 
 ```bash
 out-linux/Debug/blimp_engine_app \
-  --android-fonts-path=out-linux/Debug/gen/third_party/blimp_fonts \
+  --android-fonts-path=out-linux/Debug/gen/third_party/blimp_fonts/font_bundle/marshmallow/ \
   --blimp-client-token-path=/tmp/blimpengine-token \
   --enable-logging=stderr \
   --vmodule="blimp*=1"
