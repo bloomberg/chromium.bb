@@ -64,8 +64,13 @@ do { \
     EXPECT_RECT_EQ(expectedVisualRect, \
         geometryMapper->localToVisualRectInAncestorSpace(inputRect, localPropertyTreeState, ancestorPropertyTreeState, success)); \
     EXPECT_TRUE(success); \
+    EXPECT_RECT_EQ(expectedVisualRect, \
+        geometryMapper->mapToVisualRectInDestinationSpace(inputRect, localPropertyTreeState, ancestorPropertyTreeState, success)); \
+    EXPECT_TRUE(success); \
     EXPECT_RECT_EQ(expectedTransformedRect, \
         geometryMapper->localToAncestorRect(inputRect, localPropertyTreeState, ancestorPropertyTreeState, success)); \
+    EXPECT_RECT_EQ(expectedTransformedRect, \
+        geometryMapper->mapRectToDestinationSpace(inputRect, localPropertyTreeState, ancestorPropertyTreeState, success)); \
     EXPECT_TRUE(success); \
     EXPECT_EQ(expectedTransformToAncestor, getPrecomputedDataForAncestor(ancestorPropertyTreeState).toAncestorTransforms.get(localPropertyTreeState.transform.get())); \
     EXPECT_EQ(expectedClipInAncestorSpace, getPrecomputedDataForAncestor(ancestorPropertyTreeState).toAncestorClipRects.get(localPropertyTreeState.clip.get())); \
@@ -360,13 +365,27 @@ TEST_F(GeometryMapperTest, SiblingTransforms)
     EXPECT_FALSE(success);
     EXPECT_RECT_EQ(input, result);
 
+    result = geometryMapper->localToAncestorRect(input, transform1State, transform2State, success);
+    // Fails, because the transform2state is not an ancestor of transform1State.
+    EXPECT_FALSE(success);
+    EXPECT_RECT_EQ(input, result);
+
     result = geometryMapper->localToVisualRectInAncestorSpace(input, transform2State, transform1State, success);
+    // Fails, because the transform1state is not an ancestor of transform2State.
+    EXPECT_FALSE(success);
+    EXPECT_RECT_EQ(input, result);
+
+    result = geometryMapper->localToAncestorRect(input, transform2State, transform1State, success);
     // Fails, because the transform1state is not an ancestor of transform2State.
     EXPECT_FALSE(success);
     EXPECT_RECT_EQ(input, result);
 
     FloatRect expected = rotateTransform2.inverse().mapRect(rotateTransform1.mapRect(input));
     result = geometryMapper->mapToVisualRectInDestinationSpace(input, transform1State, transform2State, success);
+    EXPECT_TRUE(success);
+    EXPECT_RECT_EQ(expected, result);
+
+    result = geometryMapper->mapRectToDestinationSpace(input, transform1State, transform2State, success);
     EXPECT_TRUE(success);
     EXPECT_RECT_EQ(expected, result);
 }

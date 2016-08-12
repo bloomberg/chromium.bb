@@ -42,7 +42,7 @@ struct PrecomputedDataForAncestor {
 class PLATFORM_EXPORT GeometryMapper {
 public:
     GeometryMapper() {}
-    // The runtime of m calls among LocalToVisualRectInAncestorSpace, LocalToAncestorRect or AncestorToLocalRect
+    // The runtime of m calls among localToVisualRectInAncestorSpace, localToAncestorRect or ancestorToLocalRect
     // with the same |ancestorState| parameter is guaranteed to be O(n + m),  where n is the number of transform and clip
     // nodes in their respective property trees.
 
@@ -54,6 +54,12 @@ public:
     // If that inverse transform is not invertible, sets |success| to false and returns the input rect. Otherwise, sets
     // |success| to true.
     FloatRect mapToVisualRectInDestinationSpace(const FloatRect&,
+        const PropertyTreeState& sourceState,
+        const PropertyTreeState& destinationState,
+        bool& success);
+
+    // Same as mapToVisualRectInDestinationSpace() except that *no* clip is applied.
+    FloatRect mapRectToDestinationSpace(const FloatRect&,
         const PropertyTreeState& sourceState,
         const PropertyTreeState& destinationState,
         bool& success);
@@ -99,6 +105,13 @@ public:
         const PropertyTreeState& ancestorState, bool& success);
 
 private:
+    // Used by mapToVisualRectInDestinationSpace() and mapRectToDestinationSpace() after fast mapping
+    // (assuming destination is an ancestor of source) failed.
+    FloatRect slowMapRectToDestinationSpace(const FloatRect&,
+        const PropertyTreeState& sourceState,
+        const PropertyTreeState& destinationState,
+        bool& success);
+
     // Returns the matrix used in |LocalToAncestorRect|. Sets |success| to failse iff |localTransformNode| is not
     // equal to or a descendant of |ancestorState.transform|.
     const TransformationMatrix& localToAncestorMatrix(

@@ -19,14 +19,31 @@ FloatRect GeometryMapper::mapToVisualRectInDestinationSpace(const FloatRect& rec
     FloatRect result = localToVisualRectInAncestorSpace(rect, sourceState, destinationState, success);
     if (success)
         return result;
+    return slowMapRectToDestinationSpace(rect, sourceState, destinationState, success);
+}
 
-    // TODO(chrishtr): fixed const-ness here.
-    RefPtr<TransformPaintPropertyNode> lcaTransform = const_cast<TransformPaintPropertyNode*>(propertyTreeNearestCommonAncestor<TransformPaintPropertyNode>(sourceState.transform.get(), destinationState.transform.get()));
-    DCHECK(lcaTransform.get());
+FloatRect GeometryMapper::mapRectToDestinationSpace(const FloatRect& rect,
+    const PropertyTreeState& sourceState,
+    const PropertyTreeState& destinationState,
+    bool& success)
+{
+    FloatRect result = localToAncestorRect(rect, sourceState, destinationState, success);
+    if (success)
+        return result;
+    return slowMapRectToDestinationSpace(rect, sourceState, destinationState, success);
+}
+
+FloatRect GeometryMapper::slowMapRectToDestinationSpace(const FloatRect& rect,
+    const PropertyTreeState& sourceState,
+    const PropertyTreeState& destinationState,
+    bool& success)
+{
+    const TransformPaintPropertyNode* lcaTransform = propertyTreeNearestCommonAncestor<TransformPaintPropertyNode>(sourceState.transform.get(), destinationState.transform.get());
+    DCHECK(lcaTransform);
     PropertyTreeState lcaState = sourceState;
     lcaState.transform = lcaTransform;
 
-    result = localToAncestorMatrix(sourceState.transform.get(), lcaState, success).mapRect(rect);
+    FloatRect result = localToAncestorRect(rect, sourceState, lcaState, success);
     DCHECK(success);
 
     const TransformationMatrix& destinationToLca = localToAncestorMatrix(destinationState.transform.get(), lcaState, success);
