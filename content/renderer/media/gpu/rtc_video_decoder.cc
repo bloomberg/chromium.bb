@@ -91,10 +91,10 @@ RTCVideoDecoder::~RTCVideoDecoder() {
   DestroyVDA();
 
   // Delete all shared memories.
-  STLDeleteElements(&available_shm_segments_);
-  STLDeleteValues(&bitstream_buffers_in_decoder_);
-  STLDeleteContainerPairFirstPointers(decode_buffers_.begin(),
-                                      decode_buffers_.end());
+  base::STLDeleteElements(&available_shm_segments_);
+  base::STLDeleteValues(&bitstream_buffers_in_decoder_);
+  base::STLDeleteContainerPairFirstPointers(decode_buffers_.begin(),
+                                            decode_buffers_.end());
   decode_buffers_.clear();
   ClearPendingBuffers();
 }
@@ -812,7 +812,7 @@ std::unique_ptr<base::SharedMemory> RTCVideoDecoder::GetSHM_Locked(
   }
 
   if (num_shm_buffers_ != 0) {
-    STLDeleteElements(&available_shm_segments_);
+    base::STLDeleteElements(&available_shm_segments_);
     num_shm_buffers_ = 0;
   }
 

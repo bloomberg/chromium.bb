@@ -256,7 +256,7 @@ TetheringHandler::TetheringImpl::TetheringImpl(
 }
 
 TetheringHandler::TetheringImpl::~TetheringImpl() {
-  STLDeleteValues(&bound_sockets_);
+  base::STLDeleteValues(&bound_sockets_);
 }
 
 void TetheringHandler::TetheringImpl::Bind(DevToolsCommandId command_id,

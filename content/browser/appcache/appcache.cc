@@ -36,8 +36,8 @@ AppCache::~AppCache() {
   }
   DCHECK(!owning_group_.get());
   storage_->working_set()->RemoveCache(this);
-  STLDeleteContainerPairSecondPointers(
-      executable_handlers_.begin(), executable_handlers_.end());
+  base::STLDeleteContainerPairSecondPointers(executable_handlers_.begin(),
+                                             executable_handlers_.end());
 }
 
 void AppCache::UnassociateHost(AppCacheHost* host) {

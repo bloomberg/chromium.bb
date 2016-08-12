@@ -45,7 +45,7 @@ MouseWheelEventQueue::MouseWheelEventQueue(MouseWheelEventQueueClient* client,
 
 MouseWheelEventQueue::~MouseWheelEventQueue() {
   if (!wheel_queue_.empty())
-    STLDeleteElements(&wheel_queue_);
+    base::STLDeleteElements(&wheel_queue_);
 }
 
 void MouseWheelEventQueue::QueueEvent(

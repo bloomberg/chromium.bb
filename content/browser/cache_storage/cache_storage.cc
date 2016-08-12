@@ -196,13 +196,14 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
   void NotifyCacheCreated(
       const std::string& cache_name,
       std::unique_ptr<CacheStorageCacheHandle> cache_handle) override {
-    DCHECK(!ContainsKey(cache_handles_, cache_name));
+    DCHECK(!base::ContainsKey(cache_handles_, cache_name));
     cache_handles_.insert(std::make_pair(cache_name, std::move(cache_handle)));
   };
 
   void NotifyCacheDoomed(
       std::unique_ptr<CacheStorageCacheHandle> cache_handle) override {
-    DCHECK(ContainsKey(cache_handles_, cache_handle->value()->cache_name()));
+    DCHECK(
+        base::ContainsKey(cache_handles_, cache_handle->value()->cache_name()));
     cache_handles_.erase(cache_handle->value()->cache_name());
   };
 
@@ -238,7 +239,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
   std::unique_ptr<CacheStorageCache> CreateCache(
       const std::string& cache_name) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    DCHECK(ContainsKey(cache_name_to_cache_dir_, cache_name));
+    DCHECK(base::ContainsKey(cache_name_to_cache_dir_, cache_name));
 
     std::string cache_dir = cache_name_to_cache_dir_[cache_name];
     base::FilePath cache_path = origin_path_.AppendASCII(cache_dir);
@@ -286,7 +287,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
 
   void CleanUpDeletedCache(CacheStorageCache* cache) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    DCHECK(ContainsKey(doomed_cache_to_path_, cache));
+    DCHECK(base::ContainsKey(doomed_cache_to_path_, cache));
 
     base::FilePath cache_path =
         origin_path_.AppendASCII(doomed_cache_to_path_[cache]);
@@ -312,7 +313,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     index.set_origin(origin_.spec());
 
     for (size_t i = 0u, max = cache_names.size(); i < max; ++i) {
-      DCHECK(ContainsKey(cache_name_to_cache_dir_, cache_names[i]));
+      DCHECK(base::ContainsKey(cache_name_to_cache_dir_, cache_names[i]));
 
       CacheStorageIndex::Cache* index_cache = index.add_cache();
       index_cache->set_name(cache_names[i]);
@@ -392,8 +393,8 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
 
   void NotifyCacheDoomed(
       std::unique_ptr<CacheStorageCacheHandle> cache_handle) override {
-    DCHECK(ContainsKey(cache_name_to_cache_dir_,
-                       cache_handle->value()->cache_name()));
+    DCHECK(base::ContainsKey(cache_name_to_cache_dir_,
+                             cache_handle->value()->cache_name()));
     auto iter =
         cache_name_to_cache_dir_.find(cache_handle->value()->cache_name());
     doomed_cache_to_path_[cache_handle->value()] = iter->second;
@@ -414,7 +415,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     std::vector<base::FilePath> dirs_to_delete;
     base::FilePath cache_path;
     while (!(cache_path = file_enum.Next()).empty()) {
-      if (!ContainsKey(*cache_dirs, cache_path.BaseName().AsUTF8Unsafe()))
+      if (!base::ContainsKey(*cache_dirs, cache_path.BaseName().AsUTF8Unsafe()))
         dirs_to_delete.push_back(cache_path);
     }
 
@@ -757,7 +758,7 @@ void CacheStorage::CreateCacheDidWriteIndex(
 
 void CacheStorage::HasCacheImpl(const std::string& cache_name,
                                 const BoolAndErrorCallback& callback) {
-  bool has_cache = ContainsKey(cache_map_, cache_name);
+  bool has_cache = base::ContainsKey(cache_map_, cache_name);
   callback.Run(has_cache, CACHE_STORAGE_OK);
 }
 

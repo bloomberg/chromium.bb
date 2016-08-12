@@ -189,7 +189,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     return;
   }
 
-  DCHECK(!ContainsKey(instance_info_, embedded_worker_id))
+  DCHECK(!base::ContainsKey(instance_info_, embedded_worker_id))
       << embedded_worker_id << " already has a process allocated";
 
   if (can_use_existing_process) {

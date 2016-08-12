@@ -219,12 +219,12 @@ void SynchronousCompositorFilter::DidAddSynchronousHandlerProxy(
 void SynchronousCompositorFilter::DidRemoveSynchronousHandlerProxy(
     int routing_id) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  if (ContainsKey(sync_compositor_map_, routing_id)) {
+  if (base::ContainsKey(sync_compositor_map_, routing_id)) {
     DCHECK(compositor_task_runner_->BelongsToCurrentThread());
     DCHECK(sync_compositor_map_.contains(routing_id));
     sync_compositor_map_.erase(routing_id);
   }
-  if (ContainsKey(synchronous_input_handler_proxy_map_, routing_id))
+  if (base::ContainsKey(synchronous_input_handler_proxy_map_, routing_id))
     synchronous_input_handler_proxy_map_.erase(routing_id);
 }
 

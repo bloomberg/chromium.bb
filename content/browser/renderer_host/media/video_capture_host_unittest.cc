@@ -176,8 +176,8 @@ class MockVideoCaptureHost : public VideoCaptureHost {
 
  private:
   ~MockVideoCaptureHost() override {
-    STLDeleteContainerPairSecondPointers(filled_dib_.begin(),
-                                         filled_dib_.end());
+    base::STLDeleteContainerPairSecondPointers(filled_dib_.begin(),
+                                               filled_dib_.end());
   }
 
   // This method is used to dispatch IPC messages to the renderer. We intercept

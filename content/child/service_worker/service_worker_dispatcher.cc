@@ -210,14 +210,15 @@ void ServiceWorkerDispatcher::AddProviderContext(
     ServiceWorkerProviderContext* provider_context) {
   DCHECK(provider_context);
   int provider_id = provider_context->provider_id();
-  DCHECK(!ContainsKey(provider_contexts_, provider_id));
+  DCHECK(!base::ContainsKey(provider_contexts_, provider_id));
   provider_contexts_[provider_id] = provider_context;
 }
 
 void ServiceWorkerDispatcher::RemoveProviderContext(
     ServiceWorkerProviderContext* provider_context) {
   DCHECK(provider_context);
-  DCHECK(ContainsKey(provider_contexts_, provider_context->provider_id()));
+  DCHECK(
+      base::ContainsKey(provider_contexts_, provider_context->provider_id()));
   provider_contexts_.erase(provider_context->provider_id());
 }
 
@@ -225,13 +226,13 @@ void ServiceWorkerDispatcher::AddProviderClient(
     int provider_id,
     blink::WebServiceWorkerProviderClient* client) {
   DCHECK(client);
-  DCHECK(!ContainsKey(provider_clients_, provider_id));
+  DCHECK(!base::ContainsKey(provider_clients_, provider_id));
   provider_clients_[provider_id] = client;
 }
 
 void ServiceWorkerDispatcher::RemoveProviderClient(int provider_id) {
   // This could be possibly called multiple times to ensure termination.
-  if (ContainsKey(provider_clients_, provider_id))
+  if (base::ContainsKey(provider_clients_, provider_id))
     provider_clients_.erase(provider_id);
 }
 
@@ -746,25 +747,25 @@ void ServiceWorkerDispatcher::OnPostMessage(
 
 void ServiceWorkerDispatcher::AddServiceWorker(
     int handle_id, WebServiceWorkerImpl* worker) {
-  DCHECK(!ContainsKey(service_workers_, handle_id));
+  DCHECK(!base::ContainsKey(service_workers_, handle_id));
   service_workers_[handle_id] = worker;
 }
 
 void ServiceWorkerDispatcher::RemoveServiceWorker(int handle_id) {
-  DCHECK(ContainsKey(service_workers_, handle_id));
+  DCHECK(base::ContainsKey(service_workers_, handle_id));
   service_workers_.erase(handle_id);
 }
 
 void ServiceWorkerDispatcher::AddServiceWorkerRegistration(
     int registration_handle_id,
     WebServiceWorkerRegistrationImpl* registration) {
-  DCHECK(!ContainsKey(registrations_, registration_handle_id));
+  DCHECK(!base::ContainsKey(registrations_, registration_handle_id));
   registrations_[registration_handle_id] = registration;
 }
 
 void ServiceWorkerDispatcher::RemoveServiceWorkerRegistration(
     int registration_handle_id) {
-  DCHECK(ContainsKey(registrations_, registration_handle_id));
+  DCHECK(base::ContainsKey(registrations_, registration_handle_id));
   registrations_.erase(registration_handle_id);
 }
 

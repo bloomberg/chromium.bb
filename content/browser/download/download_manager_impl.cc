@@ -190,7 +190,7 @@ DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
     uint32_t id,
     const DownloadCreateInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!ContainsKey(downloads_, id));
+  DCHECK(!base::ContainsKey(downloads_, id));
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
   DownloadItemImpl* download =
@@ -283,7 +283,7 @@ void DownloadManagerImpl::Shutdown() {
     if (download->GetState() == DownloadItem::IN_PROGRESS)
       download->Cancel(false);
   }
-  STLDeleteValues(&downloads_);
+  base::STLDeleteValues(&downloads_);
   downloads_by_guid_.clear();
   url_downloaders_.clear();
 
@@ -411,7 +411,7 @@ void DownloadManagerImpl::OnFileExistenceChecked(uint32_t download_id,
                                                  bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!result) {  // File does not exist.
-    if (ContainsKey(downloads_, download_id))
+    if (base::ContainsKey(downloads_, download_id))
       downloads_[download_id]->OnDownloadedFileRemoved();
   }
 }
@@ -442,14 +442,14 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(content::DownloadItem::kInvalidId, id);
-  DCHECK(!ContainsKey(downloads_, id));
+  DCHECK(!base::ContainsKey(downloads_, id));
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
   DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
       this, id, main_file_path, page_url, mime_type, std::move(request_handle),
       bound_net_log);
   downloads_[download_item->GetId()] = download_item;
-  DCHECK(!ContainsKey(downloads_by_guid_, download_item->GetGuid()));
+  DCHECK(!base::ContainsKey(downloads_by_guid_, download_item->GetGuid()));
   downloads_by_guid_[download_item->GetGuid()] = download_item;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(
       this, download_item));
@@ -623,11 +623,11 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened) {
-  if (ContainsKey(downloads_, id)) {
+  if (base::ContainsKey(downloads_, id)) {
     NOTREACHED();
     return NULL;
   }
-  DCHECK(!ContainsKey(downloads_by_guid_, guid));
+  DCHECK(!base::ContainsKey(downloads_by_guid_, guid));
   DownloadItemImpl* item = item_factory_->CreatePersistedItem(
       this, guid, id, current_path, target_path, url_chain, referrer_url,
       site_url, tab_url, tab_refererr_url, mime_type, original_mime_type,
@@ -666,14 +666,14 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() const {
 }
 
 DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
-  return ContainsKey(downloads_, download_id) ? downloads_[download_id]
-                                              : nullptr;
+  return base::ContainsKey(downloads_, download_id) ? downloads_[download_id]
+                                                    : nullptr;
 }
 
 DownloadItem* DownloadManagerImpl::GetDownloadByGuid(const std::string& guid) {
   DCHECK(guid == base::ToUpperASCII(guid));
-  return ContainsKey(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
-                                               : nullptr;
+  return base::ContainsKey(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
+                                                     : nullptr;
 }
 
 void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {

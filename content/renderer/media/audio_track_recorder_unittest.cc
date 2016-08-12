@@ -180,7 +180,7 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
     EXPECT_EQ(kDefaultSampleRate * kOpusBufferDurationMs / 1000,
               opus_decode_float(
                   opus_decoder_, reinterpret_cast<uint8_t*>(
-                                     string_as_array(encoded_data.get())),
+                                     base::string_as_array(encoded_data.get())),
                   encoded_data->size(), buffer_.get(), kFramesPerBuffer, 0));
 
     DoOnEncodedAudio(params, *encoded_data, timestamp);

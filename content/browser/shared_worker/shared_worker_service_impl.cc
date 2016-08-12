@@ -346,7 +346,7 @@ void SharedWorkerServiceImpl::WorkerContextDestroyed(
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);
   ProcessRouteIdPair key(filter->render_process_id(), worker_route_id);
-  if (!ContainsKey(worker_hosts_, key))
+  if (!base::ContainsKey(worker_hosts_, key))
     return;
   std::unique_ptr<SharedWorkerHost> host(worker_hosts_[key].release());
   worker_hosts_.erase(key);
@@ -374,7 +374,7 @@ void SharedWorkerServiceImpl::WorkerScriptLoadFailed(
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);
   ProcessRouteIdPair key(filter->render_process_id(), worker_route_id);
-  if (!ContainsKey(worker_hosts_, key))
+  if (!base::ContainsKey(worker_hosts_, key))
     return;
   std::unique_ptr<SharedWorkerHost> host(worker_hosts_[key].release());
   worker_hosts_.erase(key);
@@ -530,7 +530,7 @@ void SharedWorkerServiceImpl::RenderProcessReservedCallback(
   ScopedWorkerDependencyChecker checker(
       this, base::Bind(&DecrementWorkerRefCount, worker_process_id));
 
-  if (!ContainsKey(pending_instances_, pending_instance_id))
+  if (!base::ContainsKey(pending_instances_, pending_instance_id))
     return;
   std::unique_ptr<SharedWorkerPendingInstance> pending_instance(
       pending_instances_[pending_instance_id].release());
@@ -581,7 +581,7 @@ void SharedWorkerServiceImpl::RenderProcessReserveFailedCallback(
     int worker_route_id,
     bool is_new_worker) {
   worker_hosts_.erase(std::make_pair(worker_process_id, worker_route_id));
-  if (!ContainsKey(pending_instances_, pending_instance_id))
+  if (!base::ContainsKey(pending_instances_, pending_instance_id))
     return;
   std::unique_ptr<SharedWorkerPendingInstance> pending_instance(
       pending_instances_[pending_instance_id].release());
@@ -595,7 +595,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
     int render_process_id,
     int worker_route_id) {
   ProcessRouteIdPair key = std::make_pair(render_process_id, worker_route_id);
-  if (!ContainsKey(worker_hosts_, key))
+  if (!base::ContainsKey(worker_hosts_, key))
     return nullptr;
   return worker_hosts_[key].get();
 }

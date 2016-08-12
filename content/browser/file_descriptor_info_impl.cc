@@ -52,7 +52,7 @@ bool FileDescriptorInfoImpl::HasID(int id) const {
 }
 
 bool FileDescriptorInfoImpl::OwnsFD(base::PlatformFile file) const {
-  return ContainsValue(owned_descriptors_, file);
+  return base::ContainsValue(owned_descriptors_, file);
 }
 
 base::ScopedFD FileDescriptorInfoImpl::ReleaseFD(base::PlatformFile file) {

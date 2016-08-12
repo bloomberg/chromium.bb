@@ -376,8 +376,8 @@ StoragePartitionImplMap::StoragePartitionImplMap(
 }
 
 StoragePartitionImplMap::~StoragePartitionImplMap() {
-  STLDeleteContainerPairSecondPointers(partitions_.begin(),
-                                       partitions_.end());
+  base::STLDeleteContainerPairSecondPointers(partitions_.begin(),
+                                             partitions_.end());
 }
 
 StoragePartitionImpl* StoragePartitionImplMap::Get(

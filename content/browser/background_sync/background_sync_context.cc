@@ -55,7 +55,7 @@ void BackgroundSyncContext::CreateService(
 void BackgroundSyncContext::ServiceHadConnectionError(
     BackgroundSyncServiceImpl* service) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(ContainsValue(services_, service));
+  DCHECK(base::ContainsValue(services_, service));
 
   services_.erase(service);
   delete service;
@@ -92,7 +92,7 @@ void BackgroundSyncContext::CreateServiceOnIOThread(
 void BackgroundSyncContext::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  STLDeleteElements(&services_);
+  base::STLDeleteElements(&services_);
   background_sync_manager_.reset();
 }
 

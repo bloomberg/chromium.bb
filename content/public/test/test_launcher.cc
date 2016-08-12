@@ -236,13 +236,13 @@ size_t WrapperTestLauncherDelegate::RunTests(
     std::string full_name(test_names[i]);
     std::string pre_test_name(GetPreTestName(full_name));
 
-    while (ContainsKey(all_test_names_, pre_test_name)) {
+    while (base::ContainsKey(all_test_names_, pre_test_name)) {
       additional_tests_to_run_count++;
 
-      DCHECK(!ContainsKey(dependent_test_map_, pre_test_name));
+      DCHECK(!base::ContainsKey(dependent_test_map_, pre_test_name));
       dependent_test_map_[pre_test_name] = full_name;
 
-      DCHECK(!ContainsKey(reverse_dependent_test_map_, full_name));
+      DCHECK(!base::ContainsKey(reverse_dependent_test_map_, full_name));
       reverse_dependent_test_map_[full_name] = pre_test_name;
 
       full_name = pre_test_name;
@@ -256,7 +256,7 @@ size_t WrapperTestLauncherDelegate::RunTests(
     // Make sure no PRE_ tests were requested explicitly.
     DCHECK_EQ(full_name, RemoveAnyPrePrefixes(full_name));
 
-    if (!ContainsKey(user_data_dir_map_, full_name)) {
+    if (!base::ContainsKey(user_data_dir_map_, full_name)) {
       base::FilePath temp_dir;
       CHECK(base::CreateTemporaryDirInDir(temp_dir_.path(),
                                           FILE_PATH_LITERAL("d"), &temp_dir));
@@ -264,7 +264,7 @@ size_t WrapperTestLauncherDelegate::RunTests(
     }
 
     // If the test has any dependencies, get to the root and start with that.
-    while (ContainsKey(reverse_dependent_test_map_, full_name))
+    while (base::ContainsKey(reverse_dependent_test_map_, full_name))
       full_name = GetPreTestName(full_name);
 
     std::vector<std::string> test_list;
@@ -288,7 +288,7 @@ size_t WrapperTestLauncherDelegate::RetryTests(
   // from the very first one.
   for (size_t i = 0; i < test_names.size(); i++) {
     std::string test_name(test_names[i]);
-    while (ContainsKey(reverse_dependent_test_map_, test_name)) {
+    while (base::ContainsKey(reverse_dependent_test_map_, test_name)) {
       test_name = reverse_dependent_test_map_[test_name];
       test_names_set.insert(test_name);
     }
@@ -314,7 +314,7 @@ size_t WrapperTestLauncherDelegate::RetryTests(
     // Make sure PRE_ tests and tests that depend on them share the same
     // data directory - based it on the test name without prefixes.
     std::string test_name_no_pre(RemoveAnyPrePrefixes(full_name));
-    if (!ContainsKey(user_data_dir_map_, test_name_no_pre)) {
+    if (!base::ContainsKey(user_data_dir_map_, test_name_no_pre)) {
       base::FilePath temp_dir;
       CHECK(base::CreateTemporaryDirInDir(temp_dir_.path(),
                                           FILE_PATH_LITERAL("d"), &temp_dir));
@@ -327,7 +327,7 @@ size_t WrapperTestLauncherDelegate::RetryTests(
     std::string test_name = full_name.substr(dot_pos + 1);
     std::string pre_test_name(
         test_case_name + "." + kPreTestPrefix + test_name);
-    if (!ContainsKey(test_names_set, pre_test_name))
+    if (!base::ContainsKey(test_names_set, pre_test_name))
       tests_to_run_now.push_back(full_name);
   }
 
@@ -403,7 +403,7 @@ void WrapperTestLauncherDelegate::RunDependentTest(
     test_result.status = base::TestResult::TEST_SKIPPED;
     test_launcher->OnTestFinished(test_result);
 
-    if (ContainsKey(dependent_test_map_, test_name)) {
+    if (base::ContainsKey(dependent_test_map_, test_name)) {
       RunDependentTest(test_launcher,
                        dependent_test_map_[test_name],
                        test_result);
@@ -435,13 +435,13 @@ void WrapperTestLauncherDelegate::GTestCallback(
 
   result.output_snippet = GetTestOutputSnippet(result, output);
 
-  if (ContainsKey(dependent_test_map_, test_name)) {
+  if (base::ContainsKey(dependent_test_map_, test_name)) {
     RunDependentTest(test_launcher, dependent_test_map_[test_name], result);
   } else {
     // No other tests depend on this, we can delete the temporary directory now.
     // Do so to avoid too many temporary files using lots of disk space.
     std::string test_name_no_pre(RemoveAnyPrePrefixes(test_name));
-    if (ContainsKey(user_data_dir_map_, test_name_no_pre)) {
+    if (base::ContainsKey(user_data_dir_map_, test_name_no_pre)) {
       if (!base::DeleteFile(user_data_dir_map_[test_name_no_pre], true)) {
         LOG(WARNING) << "Failed to delete "
                      << user_data_dir_map_[test_name_no_pre].value();

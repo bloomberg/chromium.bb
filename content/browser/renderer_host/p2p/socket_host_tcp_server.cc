@@ -30,8 +30,8 @@ P2PSocketHostTcpServer::P2PSocketHostTcpServer(IPC::Sender* message_sender,
 }
 
 P2PSocketHostTcpServer::~P2PSocketHostTcpServer() {
-  STLDeleteContainerPairSecondPointers(accepted_sockets_.begin(),
-                                       accepted_sockets_.end());
+  base::STLDeleteContainerPairSecondPointers(accepted_sockets_.begin(),
+                                             accepted_sockets_.end());
 
   if (state_ == STATE_OPEN) {
     DCHECK(socket_.get());

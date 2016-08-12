@@ -599,7 +599,7 @@ void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
   const std::string& uuid = provider_host->client_uuid();
   CHECK(!provider_host->client_uuid().empty());
-  DCHECK(!ContainsKey(controllee_map_, uuid));
+  DCHECK(!base::ContainsKey(controllee_map_, uuid));
   controllee_map_[uuid] = provider_host;
   // Keep the worker alive a bit longer right after a new controllee is added.
   RestartTick(&idle_time_);
@@ -610,7 +610,7 @@ void ServiceWorkerVersion::AddControllee(
 void ServiceWorkerVersion::RemoveControllee(
     ServiceWorkerProviderHost* provider_host) {
   const std::string& uuid = provider_host->client_uuid();
-  DCHECK(ContainsKey(controllee_map_, uuid));
+  DCHECK(base::ContainsKey(controllee_map_, uuid));
   controllee_map_.erase(uuid);
   FOR_EACH_OBSERVER(Listener, listeners_,
                     OnControlleeRemoved(this, provider_host));

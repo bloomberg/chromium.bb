@@ -134,8 +134,8 @@ void EmbeddedWorkerRegistry::OnWorkerStarted(
   if (!worker)
     return;
 
-  if (!ContainsKey(worker_process_map_, process_id) ||
-      !ContainsKey(worker_process_map_[process_id], embedded_worker_id)) {
+  if (!base::ContainsKey(worker_process_map_, process_id) ||
+      !base::ContainsKey(worker_process_map_[process_id], embedded_worker_id)) {
     return;
   }
 
@@ -186,7 +186,7 @@ void EmbeddedWorkerRegistry::AddChildProcessSender(
   process_sender_map_[process_id] = sender;
   process_message_port_message_filter_map_[process_id] =
       message_port_message_filter;
-  DCHECK(!ContainsKey(worker_process_map_, process_id));
+  DCHECK(!base::ContainsKey(worker_process_map_, process_id));
 }
 
 void EmbeddedWorkerRegistry::RemoveChildProcessSender(int process_id) {
@@ -200,7 +200,7 @@ void EmbeddedWorkerRegistry::RemoveChildProcessSender(int process_id) {
          it != worker_set.end();
          ++it) {
       int embedded_worker_id = *it;
-      DCHECK(ContainsKey(worker_map_, embedded_worker_id));
+      DCHECK(base::ContainsKey(worker_map_, embedded_worker_id));
       // Somehow the worker thread has lost contact with the browser process.
       // The renderer may have been killed.  Set the worker's status to STOPPED
       // so a new thread can be created for this version. Use OnDetached rather
@@ -253,13 +253,14 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::SendStartWorker(
   // The ServiceWorkerDispatcherHost is supposed to be created when the process
   // is created, and keep an entry in process_sender_map_ for its whole
   // lifetime.
-  DCHECK(ContainsKey(process_sender_map_, process_id));
+  DCHECK(base::ContainsKey(process_sender_map_, process_id));
 
   int embedded_worker_id = params->embedded_worker_id;
   DCHECK(GetWorker(embedded_worker_id));
   DCHECK_EQ(GetWorker(embedded_worker_id)->process_id(), process_id);
-  DCHECK(!ContainsKey(worker_process_map_, process_id) ||
-         !ContainsKey(worker_process_map_[process_id], embedded_worker_id));
+  DCHECK(
+      !base::ContainsKey(worker_process_map_, process_id) ||
+      !base::ContainsKey(worker_process_map_[process_id], embedded_worker_id));
 
   ServiceWorkerStatusCode status =
       Send(process_id, new EmbeddedWorkerMsg_StartWorker(*params));
@@ -283,9 +284,9 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(
 
 void EmbeddedWorkerRegistry::RemoveWorker(int process_id,
                                           int embedded_worker_id) {
-  DCHECK(ContainsKey(worker_map_, embedded_worker_id));
+  DCHECK(base::ContainsKey(worker_map_, embedded_worker_id));
   worker_map_.erase(embedded_worker_id);
-  if (!ContainsKey(worker_process_map_, process_id))
+  if (!base::ContainsKey(worker_process_map_, process_id))
     return;
   worker_process_map_[process_id].erase(embedded_worker_id);
   if (worker_process_map_[process_id].empty())

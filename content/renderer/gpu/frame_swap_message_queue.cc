@@ -54,7 +54,7 @@ class VisualStateQueue : public FrameSwapMessageSubQueue {
   ~VisualStateQueue() override {
     for (VisualStateQueueMap::iterator i = queue_.begin(); i != queue_.end();
          i++) {
-      STLDeleteElements(&i->second);
+      base::STLDeleteElements(&i->second);
     }
   }
 

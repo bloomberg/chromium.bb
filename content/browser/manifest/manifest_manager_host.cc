@@ -33,7 +33,7 @@ ManifestManagerHost::ManifestManagerHost(WebContents* web_contents)
 }
 
 ManifestManagerHost::~ManifestManagerHost() {
-  STLDeleteValues(&pending_get_callbacks_);
+  base::STLDeleteValues(&pending_get_callbacks_);
 }
 
 ManifestManagerHost::GetCallbackMap*

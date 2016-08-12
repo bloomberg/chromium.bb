@@ -770,8 +770,8 @@ IndexedDBBackingStore::~IndexedDBBackingStore() {
     for (const auto& pid : child_process_ids_granted_)
       policy->RevokeAllPermissionsForFile(pid, blob_path_);
   }
-  STLDeleteContainerPairSecondPointers(incognito_blob_map_.begin(),
-                                       incognito_blob_map_.end());
+  base::STLDeleteContainerPairSecondPointers(incognito_blob_map_.begin(),
+                                             incognito_blob_map_.end());
   // db_'s destructor uses comparator_. The order of destruction is important.
   db_.reset();
   comparator_.reset();
@@ -917,7 +917,8 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
   bool success = false;
   if (file.IsValid()) {
     std::string input_js(file_size, '\0');
-    if (file_size == file.Read(0, string_as_array(&input_js), file_size)) {
+    if (file_size ==
+        file.Read(0, base::string_as_array(&input_js), file_size)) {
       base::JSONReader reader;
       std::unique_ptr<base::DictionaryValue> val(
           base::DictionaryValue::From(reader.ReadToValue(input_js)));
@@ -4005,10 +4006,10 @@ IndexedDBBackingStore::Transaction::Transaction(
 }
 
 IndexedDBBackingStore::Transaction::~Transaction() {
-  STLDeleteContainerPairSecondPointers(
-      blob_change_map_.begin(), blob_change_map_.end());
-  STLDeleteContainerPairSecondPointers(incognito_blob_map_.begin(),
-                                       incognito_blob_map_.end());
+  base::STLDeleteContainerPairSecondPointers(blob_change_map_.begin(),
+                                             blob_change_map_.end());
+  base::STLDeleteContainerPairSecondPointers(incognito_blob_map_.begin(),
+                                             incognito_blob_map_.end());
   DCHECK(!committing_);
 }
 

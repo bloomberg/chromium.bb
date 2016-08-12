@@ -452,7 +452,7 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
 
 TouchEventQueue::~TouchEventQueue() {
   if (!touch_queue_.empty())
-    STLDeleteElements(&touch_queue_);
+    base::STLDeleteElements(&touch_queue_);
 }
 
 void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {

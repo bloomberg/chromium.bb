@@ -250,7 +250,7 @@ VideoCaptureBufferPool::VideoCaptureBufferPool(int count)
 }
 
 VideoCaptureBufferPool::~VideoCaptureBufferPool() {
-  STLDeleteValues(&trackers_);
+  base::STLDeleteValues(&trackers_);
 }
 
 bool VideoCaptureBufferPool::ShareToProcess(

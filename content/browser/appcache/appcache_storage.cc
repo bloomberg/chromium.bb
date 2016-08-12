@@ -23,7 +23,7 @@ AppCacheStorage::AppCacheStorage(AppCacheServiceImpl* service)
 }
 
 AppCacheStorage::~AppCacheStorage() {
-  STLDeleteValues(&pending_info_loads_);
+  base::STLDeleteValues(&pending_info_loads_);
   DCHECK(delegate_references_.empty());
 }
 

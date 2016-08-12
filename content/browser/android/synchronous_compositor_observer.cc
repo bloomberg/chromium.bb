@@ -33,14 +33,14 @@ SynchronousCompositorObserver::SynchronousCompositorObserver(int process_id)
     : render_process_host_(RenderProcessHost::FromID(process_id)),
       window_android_in_vsync_(nullptr) {
   DCHECK(render_process_host_);
-  DCHECK(!ContainsKey(g_instances.Get(), render_process_host_->GetID()));
+  DCHECK(!base::ContainsKey(g_instances.Get(), render_process_host_->GetID()));
   g_instances.Get()[render_process_host_->GetID()] = this;
   render_process_host_->AddObserver(this);
 }
 
 SynchronousCompositorObserver::~SynchronousCompositorObserver() {
   DCHECK(compositor_host_pending_renderer_state_.empty());
-  DCHECK(ContainsKey(g_instances.Get(), render_process_host_->GetID()));
+  DCHECK(base::ContainsKey(g_instances.Get(), render_process_host_->GetID()));
   DCHECK_EQ(this, g_instances.Get()[render_process_host_->GetID()]);
   render_process_host_->RemoveObserver(this);
   g_instances.Get().erase(render_process_host_->GetID());
@@ -59,8 +59,8 @@ void SynchronousCompositorObserver::SyncStateAfterVSync(
          window_android_in_vsync_ == window_android)
       << !!window_android_in_vsync_;
   DCHECK(compositor_host);
-  DCHECK(
-      !ContainsValue(compositor_host_pending_renderer_state_, compositor_host));
+  DCHECK(!base::ContainsValue(compositor_host_pending_renderer_state_,
+                              compositor_host));
   compositor_host_pending_renderer_state_.push_back(compositor_host);
   if (window_android_in_vsync_)
     return;

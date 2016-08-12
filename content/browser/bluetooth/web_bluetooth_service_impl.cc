@@ -274,7 +274,8 @@ void WebBluetoothServiceImpl::GattServicesDiscovered(
   }
 
   // Sending get-service responses unexpectedly queued another request.
-  DCHECK(!ContainsKey(pending_primary_services_requests_, device_address));
+  DCHECK(
+      !base::ContainsKey(pending_primary_services_requests_, device_address));
 }
 
 void WebBluetoothServiceImpl::GattCharacteristicValueChanged(
@@ -282,8 +283,8 @@ void WebBluetoothServiceImpl::GattCharacteristicValueChanged(
     device::BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
   // Don't notify of characteristics that we haven't returned.
-  if (!ContainsKey(characteristic_id_to_service_id_,
-                   characteristic->GetIdentifier())) {
+  if (!base::ContainsKey(characteristic_id_to_service_id_,
+                         characteristic->GetIdentifier())) {
     return;
   }
 

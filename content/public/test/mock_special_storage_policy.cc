@@ -13,25 +13,25 @@ MockSpecialStoragePolicy::MockSpecialStoragePolicy()
 }
 
 bool MockSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
-  return ContainsKey(protected_, origin);
+  return base::ContainsKey(protected_, origin);
 }
 
 bool MockSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
   if (all_unlimited_)
     return true;
-  return ContainsKey(unlimited_, origin);
+  return base::ContainsKey(unlimited_, origin);
 }
 
 bool MockSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
-  return ContainsKey(session_only_, origin);
+  return base::ContainsKey(session_only_, origin);
 }
 
 bool MockSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
-  return ContainsKey(can_query_disk_size_, origin);
+  return base::ContainsKey(can_query_disk_size_, origin);
 }
 
 bool MockSpecialStoragePolicy::HasIsolatedStorage(const GURL& origin) {
-  return ContainsKey(isolated_, origin);
+  return base::ContainsKey(isolated_, origin);
 }
 
 bool MockSpecialStoragePolicy::HasSessionOnlyOrigins() {
@@ -39,7 +39,7 @@ bool MockSpecialStoragePolicy::HasSessionOnlyOrigins() {
 }
 
 bool MockSpecialStoragePolicy::IsStorageDurable(const GURL& origin) {
-  return ContainsKey(durable_, origin);
+  return base::ContainsKey(durable_, origin);
 }
 
 MockSpecialStoragePolicy::~MockSpecialStoragePolicy() {}

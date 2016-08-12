@@ -321,7 +321,7 @@ MHTMLGenerationManager* MHTMLGenerationManager::GetInstance() {
 MHTMLGenerationManager::MHTMLGenerationManager() : next_job_id_(0) {}
 
 MHTMLGenerationManager::~MHTMLGenerationManager() {
-  STLDeleteValues(&id_to_job_);
+  base::STLDeleteValues(&id_to_job_);
 }
 
 void MHTMLGenerationManager::SaveMHTML(WebContents* web_contents,

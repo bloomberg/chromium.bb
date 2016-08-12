@@ -154,7 +154,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
   DCHECK_EQ(INITIALIZED, state_);
 
   // See if there are any stored registrations for the origin.
-  if (!ContainsKey(registered_origins_, document_url.GetOrigin())) {
+  if (!base::ContainsKey(registered_origins_, document_url.GetOrigin())) {
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForDocument(document_url);
@@ -208,7 +208,7 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
   DCHECK_EQ(INITIALIZED, state_);
 
   // See if there are any stored registrations for the origin.
-  if (!ContainsKey(registered_origins_, scope.GetOrigin())) {
+  if (!base::ContainsKey(registered_origins_, scope.GetOrigin())) {
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForPattern(scope);
@@ -262,7 +262,7 @@ void ServiceWorkerStorage::FindRegistrationForId(
   DCHECK_EQ(INITIALIZED, state_);
 
   // See if there are any stored registrations for the origin.
-  if (!ContainsKey(registered_origins_, origin)) {
+  if (!base::ContainsKey(registered_origins_, origin)) {
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForId(registration_id);

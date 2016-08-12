@@ -254,7 +254,7 @@ class DownloadItemTest : public testing::Test {
 
   ~DownloadItemTest() {
     RunAllPendingInMessageLoops();
-    STLDeleteElements(&allocated_downloads_);
+    base::STLDeleteElements(&allocated_downloads_);
   }
 
   DownloadItemImpl* CreateDownloadItemWithCreateInfo(

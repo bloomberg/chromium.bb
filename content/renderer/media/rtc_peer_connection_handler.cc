@@ -1010,7 +1010,7 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
   g_peer_connection_handlers.Get().erase(this);
   if (peer_connection_tracker_)
     peer_connection_tracker_->UnregisterPeerConnection(this);
-  STLDeleteValues(&remote_streams_);
+  base::STLDeleteValues(&remote_streams_);
 
   UMA_HISTOGRAM_COUNTS_10000(
       "WebRTC.NumDataChannelsPerPeerConnection", num_data_channels_created_);

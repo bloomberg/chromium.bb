@@ -217,14 +217,14 @@ TEST_F(ServiceWorkerProcessManagerTest,
   EXPECT_EQ(2, host1->worker_ref_count());
   EXPECT_EQ(0, host2->worker_ref_count());
   EXPECT_EQ(2u, instance_info.size());
-  EXPECT_TRUE(ContainsKey(instance_info, kEmbeddedWorkerId1));
-  EXPECT_TRUE(ContainsKey(instance_info, kEmbeddedWorkerId2));
+  EXPECT_TRUE(base::ContainsKey(instance_info, kEmbeddedWorkerId1));
+  EXPECT_TRUE(base::ContainsKey(instance_info, kEmbeddedWorkerId2));
 
   process_manager_->ReleaseWorkerProcess(kEmbeddedWorkerId1);
   EXPECT_EQ(1, host1->worker_ref_count());
   EXPECT_EQ(0, host2->worker_ref_count());
   EXPECT_EQ(1u, instance_info.size());
-  EXPECT_TRUE(ContainsKey(instance_info, kEmbeddedWorkerId2));
+  EXPECT_TRUE(base::ContainsKey(instance_info, kEmbeddedWorkerId2));
 
   process_manager_->ReleaseWorkerProcess(kEmbeddedWorkerId2);
   EXPECT_EQ(0, host1->worker_ref_count());

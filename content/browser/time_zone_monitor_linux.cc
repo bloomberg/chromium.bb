@@ -74,7 +74,7 @@ class TimeZoneMonitorLinuxImpl
 
   ~TimeZoneMonitorLinuxImpl() {
     DCHECK(!owner_);
-    STLDeleteElements(&file_path_watchers_);
+    base::STLDeleteElements(&file_path_watchers_);
   }
 
   void StartWatchingOnFileThread() {
@@ -104,7 +104,7 @@ class TimeZoneMonitorLinuxImpl
 
   void StopWatchingOnFileThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-    STLDeleteElements(&file_path_watchers_);
+    base::STLDeleteElements(&file_path_watchers_);
   }
 
   void OnTimeZoneFileChanged(const base::FilePath& path, bool error) {

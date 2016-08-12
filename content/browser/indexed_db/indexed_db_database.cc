@@ -479,7 +479,7 @@ IndexedDBTransaction* IndexedDBDatabase::GetTransaction(
 }
 
 bool IndexedDBDatabase::ValidateObjectStoreId(int64_t object_store_id) const {
-  if (!ContainsKey(metadata_.object_stores, object_store_id)) {
+  if (!base::ContainsKey(metadata_.object_stores, object_store_id)) {
     DLOG(ERROR) << "Invalid object_store_id";
     return false;
   }
@@ -493,7 +493,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndIndexId(
     return false;
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores.find(object_store_id)->second;
-  if (!ContainsKey(object_store_metadata.indexes, index_id)) {
+  if (!base::ContainsKey(object_store_metadata.indexes, index_id)) {
     DLOG(ERROR) << "Invalid index_id";
     return false;
   }
@@ -508,7 +508,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndOptionalIndexId(
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores.find(object_store_id)->second;
   if (index_id != IndexedDBIndexMetadata::kInvalidId &&
-      !ContainsKey(object_store_metadata.indexes, index_id)) {
+      !base::ContainsKey(object_store_metadata.indexes, index_id)) {
     DLOG(ERROR) << "Invalid index_id";
     return false;
   }
@@ -522,7 +522,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndNewIndexId(
     return false;
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores.find(object_store_id)->second;
-  if (ContainsKey(object_store_metadata.indexes, index_id)) {
+  if (base::ContainsKey(object_store_metadata.indexes, index_id)) {
     DLOG(ERROR) << "Invalid index_id";
     return false;
   }
@@ -540,7 +540,7 @@ void IndexedDBDatabase::CreateObjectStore(int64_t transaction_id,
     return;
   DCHECK_EQ(transaction->mode(), blink::WebIDBTransactionModeVersionChange);
 
-  if (ContainsKey(metadata_.object_stores, object_store_id)) {
+  if (base::ContainsKey(metadata_.object_stores, object_store_id)) {
     DLOG(ERROR) << "Invalid object_store_id";
     return;
   }

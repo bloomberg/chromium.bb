@@ -350,8 +350,8 @@ VideoCaptureController::GetVideoCaptureFormat() const {
 }
 
 VideoCaptureController::~VideoCaptureController() {
-  STLDeleteContainerPointers(controller_clients_.begin(),
-                             controller_clients_.end());
+  base::STLDeleteContainerPointers(controller_clients_.begin(),
+                                   controller_clients_.end());
 }
 
 void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(

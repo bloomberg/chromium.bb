@@ -42,7 +42,7 @@ void SaveFileManager::Shutdown() {
 // Stop file thread operations.
 void SaveFileManager::OnShutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  STLDeleteValues(&save_file_map_);
+  base::STLDeleteValues(&save_file_map_);
 }
 
 SaveFile* SaveFileManager::LookupSaveFile(SaveItemId save_item_id) {

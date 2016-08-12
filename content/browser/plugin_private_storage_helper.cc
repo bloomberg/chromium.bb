@@ -395,7 +395,7 @@ void ClearPluginPrivateDataOnFileTaskRunner(
   // If a specific origin is provided, then check that it is in the list
   // returned and remove all the other origins.
   if (!storage_origin.is_empty()) {
-    if (!ContainsKey(origins, storage_origin)) {
+    if (!base::ContainsKey(origins, storage_origin)) {
       // Nothing matches, so nothing to do.
       callback.Run();
       return;

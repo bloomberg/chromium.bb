@@ -329,7 +329,7 @@ class CopyOrMoveOperationTestHelper {
         base::FilePath relative;
         root.virtual_path().AppendRelativePath(url.virtual_path(), &relative);
         relative = relative.NormalizePathSeparators();
-        ASSERT_TRUE(ContainsKey(test_case_map, relative));
+        ASSERT_TRUE(base::ContainsKey(test_case_map, relative));
         if (entries[i].is_directory) {
           EXPECT_TRUE(test_case_map[relative]->is_directory);
           directories.push(url);

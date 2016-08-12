@@ -134,12 +134,12 @@ bool BluetoothAllowedDevicesMap::IsOriginAllowedToAccessService(
 
   return id_iter == device_id_to_services_map.end()
              ? false
-             : ContainsKey(id_iter->second, service_uuid);
+             : base::ContainsKey(id_iter->second, service_uuid);
 }
 
 WebBluetoothDeviceId BluetoothAllowedDevicesMap::GenerateUniqueDeviceId() {
   WebBluetoothDeviceId device_id = WebBluetoothDeviceId::Create();
-  while (ContainsKey(device_id_set_, device_id)) {
+  while (base::ContainsKey(device_id_set_, device_id)) {
     LOG(WARNING) << "Generated repeated id.";
     device_id = WebBluetoothDeviceId::Create();
   }

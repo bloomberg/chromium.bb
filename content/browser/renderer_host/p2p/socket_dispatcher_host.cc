@@ -122,10 +122,10 @@ P2PSocketDispatcherHost::P2PSocketDispatcherHost(
 
 void P2PSocketDispatcherHost::OnChannelClosing() {
   // Since the IPC sender is gone, close pending connections.
-  STLDeleteContainerPairSecondPointers(sockets_.begin(), sockets_.end());
+  base::STLDeleteContainerPairSecondPointers(sockets_.begin(), sockets_.end());
   sockets_.clear();
 
-  STLDeleteContainerPointers(dns_requests_.begin(), dns_requests_.end());
+  base::STLDeleteContainerPointers(dns_requests_.begin(), dns_requests_.end());
   dns_requests_.clear();
 
   if (monitoring_networks_) {

@@ -55,7 +55,7 @@ TEST_F(ServiceWorkerContextCoreTest, FailureInfo) {
 
   context()->UpdateVersionFailureCount(kVersionId, SERVICE_WORKER_OK);
   EXPECT_EQ(0, context()->GetVersionFailureCount(kVersionId));
-  EXPECT_FALSE(ContainsKey(context()->failure_counts_, kVersionId));
+  EXPECT_FALSE(base::ContainsKey(context()->failure_counts_, kVersionId));
 }
 
 }  // namespace content

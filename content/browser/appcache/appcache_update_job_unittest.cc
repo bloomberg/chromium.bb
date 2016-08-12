@@ -3047,8 +3047,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Clean up everything that was created on the IO thread.
     protect_newest_cache_ = NULL;
     group_ = NULL;
-    STLDeleteContainerPointers(hosts_.begin(), hosts_.end());
-    STLDeleteContainerPointers(frontends_.begin(), frontends_.end());
+    base::STLDeleteContainerPointers(hosts_.begin(), hosts_.end());
+    base::STLDeleteContainerPointers(frontends_.begin(), frontends_.end());
     response_infos_.clear();
     service_.reset(NULL);
 

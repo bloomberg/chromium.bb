@@ -150,7 +150,7 @@ TEST_F(QuotaPolicyCookieStoreTest, TestPersistence) {
   DestroyStore();
 
   // Reload and test for persistence.
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
   CreateAndLoad(nullptr, &cookies);
   EXPECT_EQ(2U, cookies.size());
   bool found_foo_cookie = false;
@@ -170,10 +170,10 @@ TEST_F(QuotaPolicyCookieStoreTest, TestPersistence) {
   DestroyStore();
 
   // Reload and check if the cookies have been removed.
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
   CreateAndLoad(nullptr, &cookies);
   EXPECT_EQ(0U, cookies.size());
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 }
 
 // Test if data is stored as expected in the QuotaPolicy database.
@@ -201,7 +201,7 @@ TEST_F(QuotaPolicyCookieStoreTest, TestPolicy) {
       net::cookie_util::CookieOriginToURL("nonpersistent.com", false));
 
   // Reload and test for persistence.
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
   CreateAndLoad(storage_policy.get(), &cookies);
   EXPECT_EQ(3U, cookies.size());
 
@@ -212,14 +212,14 @@ TEST_F(QuotaPolicyCookieStoreTest, TestPolicy) {
   // Now close the store, and "nonpersistent.com" should be deleted according to
   // policy.
   DestroyStore();
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
   CreateAndLoad(nullptr, &cookies);
 
   EXPECT_EQ(2U, cookies.size());
   for (auto* cookie : cookies) {
     EXPECT_NE("nonpersistent.com", cookie->Domain());
   }
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 }
 
 TEST_F(QuotaPolicyCookieStoreTest, ForceKeepSessionState) {
@@ -239,7 +239,7 @@ TEST_F(QuotaPolicyCookieStoreTest, ForceKeepSessionState) {
       net::cookie_util::CookieOriginToURL("nonpersistent.com", false));
 
   // Reload and test for persistence
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
   CreateAndLoad(storage_policy.get(), &cookies);
   EXPECT_EQ(1U, cookies.size());
 
@@ -252,11 +252,11 @@ TEST_F(QuotaPolicyCookieStoreTest, ForceKeepSessionState) {
   // deleted.
   store_->SetForceKeepSessionState();
   DestroyStore();
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
   CreateAndLoad(nullptr, &cookies);
 
   EXPECT_EQ(3U, cookies.size());
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 }
 
 // Tests that the special storage policy is properly applied even when the store
@@ -282,11 +282,11 @@ TEST_F(QuotaPolicyCookieStoreTest, TestDestroyOnBackgroundThread) {
   DestroyStoreOnBackgroundThread();
 
   // Reload and test for persistence.
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
   CreateAndLoad(storage_policy.get(), &cookies);
   EXPECT_EQ(0U, cookies.size());
 
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 }
 
 }  // namespace

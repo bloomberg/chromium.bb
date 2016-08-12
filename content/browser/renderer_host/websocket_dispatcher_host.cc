@@ -250,7 +250,7 @@ WebSocketDispatcherHost::~WebSocketDispatcherHost() {
     hosts[i] = NULL;
   }
 
-  STLDeleteContainerPairSecondPointers(hosts_.begin(), hosts_.end());
+  base::STLDeleteContainerPairSecondPointers(hosts_.begin(), hosts_.end());
 }
 
 void WebSocketDispatcherHost::DeleteWebSocketHost(int routing_id) {

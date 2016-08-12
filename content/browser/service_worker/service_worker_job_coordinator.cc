@@ -31,7 +31,7 @@ ServiceWorkerJobCoordinator::JobQueue::JobQueue(const JobQueue& other) =
 ServiceWorkerJobCoordinator::JobQueue::~JobQueue() {
   DCHECK(jobs_.empty()) << "Destroying JobQueue with " << jobs_.size()
                         << " unfinished jobs";
-  STLDeleteElements(&jobs_);
+  base::STLDeleteElements(&jobs_);
 }
 
 ServiceWorkerRegisterJobBase* ServiceWorkerJobCoordinator::JobQueue::Push(
@@ -82,11 +82,11 @@ void ServiceWorkerJobCoordinator::JobQueue::StartOneJob() {
 void ServiceWorkerJobCoordinator::JobQueue::AbortAll() {
   for (size_t i = 0; i < jobs_.size(); ++i)
     jobs_[i]->Abort();
-  STLDeleteElements(&jobs_);
+  base::STLDeleteElements(&jobs_);
 }
 
 void ServiceWorkerJobCoordinator::JobQueue::ClearForShutdown() {
-  STLDeleteElements(&jobs_);
+  base::STLDeleteElements(&jobs_);
 }
 
 ServiceWorkerJobCoordinator::ServiceWorkerJobCoordinator(

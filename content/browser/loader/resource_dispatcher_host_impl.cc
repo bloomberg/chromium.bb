@@ -2559,7 +2559,7 @@ void ResourceDispatcherHostImpl::RegisterResourceMessageDelegate(
 
 void ResourceDispatcherHostImpl::UnregisterResourceMessageDelegate(
     const GlobalRequestID& id, ResourceMessageDelegate* delegate) {
-  DCHECK(ContainsKey(delegate_map_, id));
+  DCHECK(base::ContainsKey(delegate_map_, id));
   DelegateMap::iterator it = delegate_map_.find(id);
   DCHECK(it->second->HasObserver(delegate));
   it->second->RemoveObserver(delegate);

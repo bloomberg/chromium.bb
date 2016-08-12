@@ -110,8 +110,8 @@ TestNavigationObserver::TestNavigationObserver(
 TestNavigationObserver::~TestNavigationObserver() {
   StopWatchingNewWebContents();
 
-  STLDeleteContainerPointers(web_contents_observers_.begin(),
-                             web_contents_observers_.end());
+  base::STLDeleteContainerPointers(web_contents_observers_.begin(),
+                                   web_contents_observers_.end());
 }
 
 void TestNavigationObserver::Wait() {

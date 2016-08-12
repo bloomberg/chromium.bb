@@ -252,7 +252,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
       HandleBackingStoreCorruption(origin, error);
     return;
   }
-  if (!ContainsValue(names, name)) {
+  if (!base::ContainsValue(names, name)) {
     const int64_t version = 0;
     callbacks->OnSuccess(version);
     backing_store = NULL;

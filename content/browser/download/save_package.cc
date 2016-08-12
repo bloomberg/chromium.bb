@@ -192,10 +192,10 @@ SavePackage::~SavePackage() {
                                        completed_count() + in_process_count());
 
   // Free all SaveItems.
-  STLDeleteElements(&waiting_item_queue_);
-  STLDeleteValues(&in_progress_items_);
-  STLDeleteValues(&saved_success_items_);
-  STLDeleteValues(&saved_failed_items_);
+  base::STLDeleteElements(&waiting_item_queue_);
+  base::STLDeleteValues(&in_progress_items_);
+  base::STLDeleteValues(&saved_success_items_);
+  base::STLDeleteValues(&saved_failed_items_);
   // Clear containers that contain (now dangling/invalid) pointers to the
   // save items freed above.  This is not strictly required (as the containers
   // will be destructed soon by ~SavePackage), but seems like good code hygiene.
@@ -573,7 +573,7 @@ void SavePackage::PutInProgressItemToSavedMap(SaveItem* save_item) {
 
   SaveItemIdMap& map = save_item->success() ?
       saved_success_items_ : saved_failed_items_;
-  DCHECK(!ContainsKey(map, save_item->id()));
+  DCHECK(!base::ContainsKey(map, save_item->id()));
   map[save_item->id()] = save_item;
 }
 
@@ -783,7 +783,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
     waiting_item_queue_.pop_front();
 
     // Add the item to |in_progress_items_|.
-    DCHECK(!ContainsKey(in_progress_items_, save_item->id()));
+    DCHECK(!base::ContainsKey(in_progress_items_, save_item->id()));
     in_progress_items_[save_item->id()] = save_item;
     save_item->Start();
 
@@ -1028,7 +1028,7 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
       }
     }
 
-    if (ContainsKey(saved_failed_items_, save_item->id()))
+    if (base::ContainsKey(saved_failed_items_, save_item->id()))
       wrote_to_failed_file_ = true;
 
     return;

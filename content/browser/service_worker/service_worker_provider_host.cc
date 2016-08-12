@@ -289,7 +289,7 @@ void ServiceWorkerProviderHost::AddMatchingRegistration(
   if (!IsContextSecureForServiceWorker())
     return;
   size_t key = registration->pattern().spec().size();
-  if (ContainsKey(matching_registrations_, key))
+  if (base::ContainsKey(matching_registrations_, key))
     return;
   IncreaseProcessReference(registration->pattern());
   registration->AddListener(this);
@@ -300,7 +300,7 @@ void ServiceWorkerProviderHost::AddMatchingRegistration(
 void ServiceWorkerProviderHost::RemoveMatchingRegistration(
     ServiceWorkerRegistration* registration) {
   size_t key = registration->pattern().spec().size();
-  DCHECK(ContainsKey(matching_registrations_, key));
+  DCHECK(base::ContainsKey(matching_registrations_, key));
   DecreaseProcessReference(registration->pattern());
   registration->RemoveListener(this);
   matching_registrations_.erase(key);

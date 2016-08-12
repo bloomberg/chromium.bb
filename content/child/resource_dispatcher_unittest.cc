@@ -147,8 +147,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   }
 
   ~ResourceDispatcherTest() override {
-    STLDeleteContainerPairSecondPointers(shared_memory_map_.begin(),
-                                         shared_memory_map_.end());
+    base::STLDeleteContainerPairSecondPointers(shared_memory_map_.begin(),
+                                               shared_memory_map_.end());
     dispatcher_.reset();
     base::RunLoop().RunUntilIdle();
   }

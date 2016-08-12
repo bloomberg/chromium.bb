@@ -233,13 +233,13 @@ void RendererCdmManager::OnPromiseRejected(int cdm_id,
 int RendererCdmManager::RegisterMediaKeys(ProxyMediaKeys* media_keys) {
   int cdm_id = next_cdm_id_++;
   DCHECK_NE(cdm_id, media::CdmContext::kInvalidCdmId);
-  DCHECK(!ContainsKey(proxy_media_keys_map_, cdm_id));
+  DCHECK(!base::ContainsKey(proxy_media_keys_map_, cdm_id));
   proxy_media_keys_map_[cdm_id] = media_keys;
   return cdm_id;
 }
 
 void RendererCdmManager::UnregisterMediaKeys(int cdm_id) {
-  DCHECK(ContainsKey(proxy_media_keys_map_, cdm_id));
+  DCHECK(base::ContainsKey(proxy_media_keys_map_, cdm_id));
   proxy_media_keys_map_.erase(cdm_id);
 }
 

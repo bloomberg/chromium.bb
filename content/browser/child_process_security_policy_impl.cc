@@ -129,7 +129,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   // Grant certain permissions to a file.
   void GrantPermissionsForFileSystem(const std::string& filesystem_id,
                                      int permissions) {
-    if (!ContainsKey(filesystem_permissions_, filesystem_id))
+    if (!base::ContainsKey(filesystem_permissions_, filesystem_id))
       storage::IsolatedContext::GetInstance()->AddReference(filesystem_id);
     filesystem_permissions_[filesystem_id] |= permissions;
   }
@@ -184,7 +184,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
       return scheme_judgment->second;
 
     // Otherwise, check for permission for specific origin.
-    if (ContainsKey(origin_set_, url::Origin(url)))
+    if (base::ContainsKey(origin_set_, url::Origin(url)))
       return true;
 
     // file:// URLs are more granular.  The child may have been given
@@ -192,7 +192,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     if (url.SchemeIs(url::kFileScheme)) {
       base::FilePath path;
       if (net::FileURLToFilePath(url, &path))
-        return ContainsKey(request_file_set_, path);
+        return base::ContainsKey(request_file_set_, path);
     }
 
     return false;  // Unmentioned schemes are disallowed.
@@ -313,8 +313,8 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
 ChildProcessSecurityPolicyImpl::~ChildProcessSecurityPolicyImpl() {
   web_safe_schemes_.clear();
   pseudo_schemes_.clear();
-  STLDeleteContainerPairSecondPointers(security_state_.begin(),
-                                       security_state_.end());
+  base::STLDeleteContainerPairSecondPointers(security_state_.begin(),
+                                             security_state_.end());
   security_state_.clear();
 }
 
@@ -364,7 +364,7 @@ bool ChildProcessSecurityPolicyImpl::IsWebSafeScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
 
-  return ContainsKey(web_safe_schemes_, scheme);
+  return base::ContainsKey(web_safe_schemes_, scheme);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterPseudoScheme(
@@ -381,7 +381,7 @@ bool ChildProcessSecurityPolicyImpl::IsPseudoScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
 
-  return ContainsKey(pseudo_schemes_, scheme);
+  return base::ContainsKey(pseudo_schemes_, scheme);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantRequestURL(

@@ -597,7 +597,8 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
   }
 
   // Is this the 1st time this renderer contains parts of the main test window?
-  if (main_window && !ContainsKey(main_window_render_process_hosts_, process)) {
+  if (main_window &&
+      !base::ContainsKey(main_window_render_process_hosts_, process)) {
     main_window_render_process_hosts_.insert(process);
 
     // Make sure the new renderer process has a test configuration shared with

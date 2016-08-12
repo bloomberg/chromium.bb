@@ -236,7 +236,7 @@ void P2PSocketHostUdp::HandleReadResult(int result) {
   if (result > 0) {
     std::vector<char> data(recv_buffer_->data(), recv_buffer_->data() + result);
 
-    if (!ContainsKey(connected_peers_, recv_address_)) {
+    if (!base::ContainsKey(connected_peers_, recv_address_)) {
       P2PSocketHost::StunMessageType type;
       bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
       if ((stun && IsRequestOrResponse(type))) {
@@ -270,7 +270,7 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
     return;
   }
 
-  if (!ContainsKey(connected_peers_, to)) {
+  if (!base::ContainsKey(connected_peers_, to)) {
     P2PSocketHost::StunMessageType type = P2PSocketHost::StunMessageType();
     bool stun = GetStunPacketType(&*data.begin(), data.size(), &type);
     if (!stun || type == STUN_DATA_INDICATION) {

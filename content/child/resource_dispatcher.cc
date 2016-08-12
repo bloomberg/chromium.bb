@@ -474,7 +474,7 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
 void ResourceDispatcher::DidChangePriority(int request_id,
                                            net::RequestPriority new_priority,
                                            int intra_priority_value) {
-  DCHECK(ContainsKey(pending_requests_, request_id));
+  DCHECK(base::ContainsKey(pending_requests_, request_id));
   message_sender_->Send(new ResourceHostMsg_DidChangePriority(
       request_id, new_priority, intra_priority_value));
 }

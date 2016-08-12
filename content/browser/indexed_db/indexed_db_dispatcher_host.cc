@@ -260,7 +260,7 @@ std::string IndexedDBDispatcherHost::HoldBlobData(
     blob_data_handle = context->GetBlobDataFromUUID(uuid);
   }
 
-  DCHECK(!ContainsKey(blob_data_handle_map_, uuid));
+  DCHECK(!base::ContainsKey(blob_data_handle_map_, uuid));
   blob_data_handle_map_[uuid] = std::make_pair(blob_data_handle.release(), 1);
   return uuid;
 }
@@ -607,7 +607,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
   int64_t host_transaction_id =
       parent_->HostTransactionId(params.transaction_id);
 
-  if (ContainsKey(transaction_database_map_, host_transaction_id)) {
+  if (base::ContainsKey(transaction_database_map_, host_transaction_id)) {
     DLOG(ERROR) << "Duplicate host_transaction_id.";
     return;
   }
@@ -911,7 +911,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
 
   int64_t host_transaction_id = parent_->HostTransactionId(transaction_id);
   // May have been aborted by back end before front-end could request commit.
-  if (!ContainsKey(transaction_size_map_, host_transaction_id))
+  if (!base::ContainsKey(transaction_size_map_, host_transaction_id))
     return;
   int64_t transaction_size = transaction_size_map_[host_transaction_id];
 
@@ -943,7 +943,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::
     return;
   int64_t host_transaction_id = parent_->HostTransactionId(transaction_id);
   // May have aborted while quota check was pending.
-  if (!ContainsKey(transaction_size_map_, host_transaction_id))
+  if (!base::ContainsKey(transaction_size_map_, host_transaction_id))
     return;
   int64_t transaction_size = transaction_size_map_[host_transaction_id];
 

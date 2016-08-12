@@ -18,7 +18,7 @@ AppCacheBackendImpl::AppCacheBackendImpl()
 }
 
 AppCacheBackendImpl::~AppCacheBackendImpl() {
-  STLDeleteValues(&hosts_);
+  base::STLDeleteValues(&hosts_);
   if (service_)
     service_->UnregisterBackend(this);
 }
