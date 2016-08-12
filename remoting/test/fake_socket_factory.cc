@@ -10,6 +10,8 @@
 #include <math.h>
 #include <stddef.h>
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -21,6 +23,7 @@
 #include "net/base/io_buffer.h"
 #include "remoting/test/leaky_bucket.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
+#include "third_party/webrtc/base/socket.h"
 #include "third_party/webrtc/media/base/rtputils.h"
 
 namespace remoting {
@@ -121,6 +124,10 @@ int FakeUdpSocket::SendTo(const void* data, size_t data_size,
       reinterpret_cast<uint8_t*>(buffer->data()), data_size,
       options.packet_time_params,
       (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
+  SignalSentPacket(
+      this, rtc::SentPacket(options.packet_id, (base::TimeTicks::Now() -
+                                                base::TimeTicks::UnixEpoch())
+                                                   .InMilliseconds()));
   dispatcher_->DeliverPacket(local_address_, address, buffer, data_size);
   return data_size;
 }

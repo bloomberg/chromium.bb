@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <list>
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -20,6 +22,7 @@
 #include "remoting/protocol/socket_util.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 #include "third_party/webrtc/base/nethelpers.h"
+#include "third_party/webrtc/base/socket.h"
 #include "third_party/webrtc/media/base/rtputils.h"
 
 namespace remoting {
@@ -66,11 +69,13 @@ class UdpPacketSocket : public rtc::AsyncPacketSocket {
   struct PendingPacket {
     PendingPacket(const void* buffer,
                   int buffer_size,
-                  const net::IPEndPoint& address);
+                  const net::IPEndPoint& address,
+                  int packet_id);
 
     scoped_refptr<net::IOBufferWithSize> data;
     net::IPEndPoint address;
     bool retried;
+    int packet_id;
   };
 
   void OnBindCompleted(int error);
@@ -100,13 +105,14 @@ class UdpPacketSocket : public rtc::AsyncPacketSocket {
   DISALLOW_COPY_AND_ASSIGN(UdpPacketSocket);
 };
 
-UdpPacketSocket::PendingPacket::PendingPacket(
-    const void* buffer,
-    int buffer_size,
-    const net::IPEndPoint& address)
+UdpPacketSocket::PendingPacket::PendingPacket(const void* buffer,
+                                              int buffer_size,
+                                              const net::IPEndPoint& address,
+                                              int packet_id)
     : data(new net::IOBufferWithSize(buffer_size)),
       address(address),
-      retried(false) {
+      retried(false),
+      packet_id(packet_id) {
   memcpy(data->data(), buffer, buffer_size);
 }
 
@@ -197,7 +203,7 @@ int UdpPacketSocket::SendTo(const void* data, size_t data_size,
     return EWOULDBLOCK;
   }
 
-  PendingPacket packet(data, data_size, endpoint);
+  PendingPacket packet(data, data_size, endpoint, options.packet_id);
   cricket::ApplyPacketOptions(
       reinterpret_cast<uint8_t*>(packet.data->data()), data_size,
       options.packet_time_params,
@@ -321,6 +327,10 @@ void UdpPacketSocket::OnSendCompleted(int result) {
   // Don't need to worry about partial sends because this is a datagram
   // socket.
   send_queue_size_ -= send_queue_.front().data->size();
+  SignalSentPacket(this, rtc::SentPacket(send_queue_.front().packet_id,
+                                         (base::TimeTicks::Now() -
+                                          base::TimeTicks::UnixEpoch())
+                                             .InMilliseconds()));
   send_queue_.pop_front();
   DoSend();
 }
