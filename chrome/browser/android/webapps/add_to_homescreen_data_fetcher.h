@@ -94,18 +94,20 @@ class AddToHomescreenDataFetcher
   void OnFaviconFetched(
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
-  // Creates the launcher icon from the given bitmap and page URL. The page URL
-  // is used to generate an icon if there is no bitmap in |bitmap_result| or the
+  // Creates the launcher icon from the given bitmap. shortcut_info_.url is
+  // used to generate an icon if there is no bitmap in |bitmap_result| or the
   // bitmap is not large enough.
-  void CreateLauncherIconInBackground(
-      const GURL& page_url,
+  void CreateLauncherIconFromFaviconInBackground(
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Called when InstallableManager finishes looking for a manifest and icon.
   void OnDidPerformInstallableCheck(const InstallableData& data);
 
+  // Creates the launcher icon from the given |icon|.
+  void CreateLauncherIconInBackground(const SkBitmap& raw__icon);
+
   // Notifies the observer that the shortcut data is all available.
-  void NotifyObserver(const GURL& icon_url, const SkBitmap& icon);
+  void NotifyObserver(const SkBitmap& icon);
 
   Observer* weak_observer_;
 

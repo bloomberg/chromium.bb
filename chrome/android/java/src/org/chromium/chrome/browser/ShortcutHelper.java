@@ -14,11 +14,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -321,8 +317,8 @@ public class ShortcutHelper {
     }
 
     /**
-     * Adapts a website's icon (e.g. favicon or touch icon) to the Material design style guidelines
-     * for home screen icons. This involves adding some padding and rounding the corners.
+     * Adapts a website's icon (e.g. favicon or touch icon) to make it suitable for the home screen.
+     * This involves adding padding if the icon is a full sized square.
      *
      * @param context Context used to create the intent.
      * @param webIcon The website's favicon or touch icon.
@@ -350,21 +346,19 @@ public class ShortcutHelper {
             return webIcon;
         }
 
-        // Draw the web icon with padding around it.
         Canvas canvas = new Canvas(bitmap);
-        Rect innerBounds = new Rect(padding, padding, outerSize - padding, outerSize - padding);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setFilterBitmap(true);
-        canvas.drawBitmap(webIcon, null, innerBounds, paint);
+        Rect innerBounds;
 
-        // Round the corners.
-        int cornerRadius = Math.round(ICON_CORNER_RADIUS_RATIO * outerSize);
-        Path path = new Path();
-        path.setFillType(Path.FillType.INVERSE_WINDING);
-        RectF innerBoundsF = new RectF(innerBounds);
-        path.addRoundRect(innerBoundsF, cornerRadius, cornerRadius, Path.Direction.CW);
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        canvas.drawPath(path, paint);
+        // Draw the icon with padding around it if all four corners are not transparent. Otherwise,
+        // don't add padding.
+        if (shouldPadIcon(webIcon)) {
+            innerBounds = new Rect(padding, padding, outerSize - padding, outerSize - padding);
+        } else {
+            innerBounds = new Rect(0, 0, outerSize, outerSize);
+        }
+        canvas.drawBitmap(webIcon, null, innerBounds, paint);
 
         return bitmap;
     }
@@ -558,6 +552,23 @@ public class ShortcutHelper {
             getIdealSplashImageSizeInDp(context),
             getMinimumSplashImageSizeInDp(context)
         };
+    }
+
+    /**
+     * Returns true if we should add padding to this icon. We use a heuristic that if the pixels in
+     * all four corners of the icon are not transparent, we assume the icon is square and maximally
+     * sized, i.e. in need of padding. Otherwise, no padding is added.
+     */
+    private static boolean shouldPadIcon(Bitmap icon) {
+        int maxX = icon.getWidth() - 1;
+        int maxY = icon.getHeight() - 1;
+
+        if ((Color.alpha(icon.getPixel(0, 0)) != 0) && (Color.alpha(icon.getPixel(maxX, maxY)) != 0)
+                && (Color.alpha(icon.getPixel(0, maxY)) != 0)
+                && (Color.alpha(icon.getPixel(maxX, 0)) != 0)) {
+            return true;
+        }
+        return false;
     }
 
     private static int getIdealSizeFromResourceInDp(Context context, int resource) {
