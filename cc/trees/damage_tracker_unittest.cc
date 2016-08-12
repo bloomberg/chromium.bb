@@ -27,6 +27,7 @@ namespace cc {
 namespace {
 
 void ExecuteCalculateDrawProperties(LayerImpl* root,
+                                    float device_scale_factor,
                                     LayerImplList* render_surface_layer_list) {
   // Sanity check: The test itself should create the root layer's render
   //               surface, so that the surface (and its damage tracker) can
@@ -35,7 +36,7 @@ void ExecuteCalculateDrawProperties(LayerImpl* root,
 
   FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root);
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), render_surface_layer_list);
+      root, root->bounds(), device_scale_factor, render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   ASSERT_TRUE(root->render_surface());
 }
@@ -47,7 +48,7 @@ void ClearDamageForAllSurfaces(LayerImpl* root) {
   }
 }
 
-void EmulateDrawingOneFrame(LayerImpl* root) {
+void EmulateDrawingOneFrame(LayerImpl* root, float device_scale_factor = 1.f) {
   // This emulates only steps that are relevant to testing the damage tracker:
   //   1. computing the render passes and layerlists
   //   2. updating all damage trackers in the correct order
@@ -55,7 +56,8 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
   //      and surfaces.
 
   LayerImplList render_surface_layer_list;
-  ExecuteCalculateDrawProperties(root, &render_surface_layer_list);
+  ExecuteCalculateDrawProperties(root, device_scale_factor,
+                                 &render_surface_layer_list);
 
   // Iterate back-to-front, so that damage correctly propagates from descendant
   // surfaces to ancestors.
@@ -663,6 +665,57 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
             root_damage_rect);
   EXPECT_EQ(gfx::Rect(-blur_outset, -blur_outset, expect_width, expect_height),
             child_damage_rect);
+}
+
+TEST_F(DamageTrackerTest, VerifyDamageForHighDPIImageFilter) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
+  LayerImpl* child = root->test_properties()->children[0];
+  gfx::Rect root_damage_rect, child_damage_rect;
+
+  // Allow us to set damage on child too.
+  child->SetDrawsContent(true);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(3.f));
+
+  // Setting the filter will damage the whole surface.
+  ClearDamageForAllSurfaces(root);
+  child->test_properties()->force_render_surface = true;
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  int device_scale_factor = 2;
+  EmulateDrawingOneFrame(root, device_scale_factor);
+  child->OnFilterAnimated(filters);
+  EmulateDrawingOneFrame(root, device_scale_factor);
+  root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  child_damage_rect =
+      child->render_surface()->damage_tracker()->current_damage_rect();
+
+  // Blur outset is 9px for a 3px blur, scaled up by DSF.
+  int blur_outset = 9 * device_scale_factor;
+  gfx::Rect original_rect(100, 100, 100, 100);
+  gfx::Rect expected_child_damage_rect(60, 60);
+  expected_child_damage_rect.Inset(-blur_outset, -blur_outset);
+  gfx::Rect expected_root_damage_rect(child_damage_rect);
+  expected_root_damage_rect.Offset(200, 200);
+  gfx::Rect expected_total_damage_rect = expected_root_damage_rect;
+  expected_total_damage_rect.Union(original_rect);
+  EXPECT_EQ(expected_total_damage_rect, root_damage_rect);
+  EXPECT_EQ(expected_child_damage_rect, child_damage_rect);
+
+  // Setting the update rect should damage only the affected area (original,
+  // outset by 3 * blur sigma * DSF).
+  ClearDamageForAllSurfaces(root);
+  child->SetUpdateRect(gfx::Rect(30, 30));
+  EmulateDrawingOneFrame(root, device_scale_factor);
+
+  root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  child_damage_rect =
+      child->render_surface()->damage_tracker()->current_damage_rect();
+
+  EXPECT_EQ(expected_root_damage_rect, root_damage_rect);
+  EXPECT_EQ(expected_child_damage_rect, child_damage_rect);
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {

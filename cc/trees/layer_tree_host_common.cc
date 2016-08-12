@@ -109,11 +109,12 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
                                       const gfx::Transform& device_transform,
+                                      float device_scale_factor,
                                       LayerImplList* render_surface_layer_list)
     : CalcDrawPropsImplInputs(root_layer,
                               device_viewport_size,
                               device_transform,
-                              1.f,
+                              device_scale_factor,
                               1.f,
                               NULL,
                               NULL,
@@ -134,10 +135,33 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
                                       const gfx::Size& device_viewport_size,
+                                      const gfx::Transform& device_transform,
+                                      LayerImplList* render_surface_layer_list)
+    : CalcDrawPropsImplInputsForTesting(root_layer,
+                                        device_viewport_size,
+                                        device_transform,
+                                        1.f,
+                                        render_surface_layer_list) {}
+
+LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
+    CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
+                                      const gfx::Size& device_viewport_size,
                                       LayerImplList* render_surface_layer_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
                                         device_viewport_size,
                                         gfx::Transform(),
+                                        1.f,
+                                        render_surface_layer_list) {}
+
+LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
+    CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
+                                      const gfx::Size& device_viewport_size,
+                                      float device_scale_factor,
+                                      LayerImplList* render_surface_layer_list)
+    : CalcDrawPropsImplInputsForTesting(root_layer,
+                                        device_viewport_size,
+                                        gfx::Transform(),
+                                        device_scale_factor,
                                         render_surface_layer_list) {}
 
 LayerTreeHostCommon::ScrollUpdateInfo::ScrollUpdateInfo()

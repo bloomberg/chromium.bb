@@ -139,7 +139,8 @@ void DamageTracker::UpdateDamageTrackingState(
     damage_rect_for_this_update.Union(damage_from_surface_mask);
     damage_rect_for_this_update.Union(damage_from_leftover_rects);
     damage_rect_for_this_update =
-        filters.MapRect(damage_rect_for_this_update, SkMatrix::I());
+        filters.MapRect(damage_rect_for_this_update,
+                        target_surface->FiltersTransform().matrix());
   }
 
   // Damage accumulates until we are notified that we actually did draw on that

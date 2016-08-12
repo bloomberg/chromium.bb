@@ -156,6 +156,7 @@ class CC_EXPORT RenderSurfaceImpl {
 
   const FilterOperations& Filters() const;
   const FilterOperations& BackgroundFilters() const;
+  gfx::Transform FiltersTransform() const;
 
   bool HasCopyRequest() const;
 

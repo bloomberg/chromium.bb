@@ -171,6 +171,10 @@ const FilterOperations& RenderSurfaceImpl::Filters() const {
   return OwningEffectNode()->filters;
 }
 
+gfx::Transform RenderSurfaceImpl::FiltersTransform() const {
+  return owning_layer_->DrawTransform();
+}
+
 const FilterOperations& RenderSurfaceImpl::BackgroundFilters() const {
   return OwningEffectNode()->background_filters;
 }
