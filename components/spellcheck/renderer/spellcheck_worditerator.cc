@@ -4,7 +4,7 @@
 
 // Implements a custom word iterator used for our spellchecker.
 
-#include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
+#include "components/spellcheck/renderer/spellcheck_worditerator.h"
 
 #include <map>
 #include <memory>
@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/renderer/spellchecker/spellcheck.h"
+#include "components/spellcheck/renderer/spellcheck.h"
 #include "third_party/icu/source/common/unicode/normlzr.h"
 #include "third_party/icu/source/common/unicode/schriter.h"
 #include "third_party/icu/source/common/unicode/uscript.h"

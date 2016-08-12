@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/spellchecker/spellcheck.h"
+#include "components/spellcheck/renderer/spellcheck.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -18,13 +18,13 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/common/channel_info.h"
-#include "chrome/renderer/spellchecker/spellcheck_language.h"
-#include "chrome/renderer/spellchecker/spellcheck_provider.h"
+//#include "chrome/common/channel_info.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
+#include "components/spellcheck/renderer/spellcheck_language.h"
+#include "components/spellcheck/renderer/spellcheck_provider.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"

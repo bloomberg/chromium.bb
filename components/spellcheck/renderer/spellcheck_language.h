@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_LANGUAGE_H_
-#define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_LANGUAGE_H_
+#ifndef COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_LANGUAGE_H_
+#define COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_LANGUAGE_H_
 
 #include <memory>
 #include <queue>
@@ -13,7 +13,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
+#include "components/spellcheck/renderer/spellcheck_worditerator.h"
 
 class SpellingEngine;
 
@@ -96,4 +96,4 @@ class SpellcheckLanguage {
   DISALLOW_COPY_AND_ASSIGN(SpellcheckLanguage);
 };
 
-#endif  // CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_LANGUAGE_H_
+#endif  // COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_LANGUAGE_H_

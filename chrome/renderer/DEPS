@@ -28,6 +28,7 @@ include_rules = [
   "+components/printing/renderer",
   "+components/signin/core/common",
   "+components/spellcheck/common",
+  "+components/spellcheck/renderer",
   "+components/startup_metric_utils/common",
   "+components/strings/grit",  # For generated headers
   "+components/subresource_filter/content/renderer",

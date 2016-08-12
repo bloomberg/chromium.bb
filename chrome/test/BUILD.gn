@@ -1930,22 +1930,12 @@ test("unit_tests") {
             ".",
             "//chrome")
   }
+
   if (enable_spellcheck) {
     sources += rebase_path(
             chrome_tests_unit_gypi_values.chrome_unit_tests_spellchecker_sources,
             ".",
             "//chrome")
-    if (is_mac && !is_ios) {
-      deps += [ "//third_party/hunspell" ]
-    }
-
-    if (is_android) {
-      sources -= [
-        "../renderer/spellchecker/spellcheck_multilingual_unittest.cc",
-        "../renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc",
-        "../renderer/spellchecker/spellcheck_unittest.cc",
-      ]
-    }
   }
 
   if (enable_one_click_signin) {
@@ -2170,8 +2160,6 @@ test("unit_tests") {
       "../browser/ui/tests/ui_gfx_image_unittest.cc",
 
       # This tests Chrome's spellchecker which Mac doesn't use.
-      "../renderer/spellchecker/spellcheck_multilingual_unittest.cc",
-      "../renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc",
       "../tools/convert_dict/convert_dict_unittest.cc",
     ]
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/spellchecker/platform_spelling_engine.h"
+#include "components/spellcheck/renderer/platform_spelling_engine.h"
 
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "content/public/renderer/render_thread.h"

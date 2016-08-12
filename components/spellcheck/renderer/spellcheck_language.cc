@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/spellchecker/spellcheck_language.h"
+#include "components/spellcheck/renderer/spellcheck_language.h"
 
 #include <utility>
 
 #include "base/logging.h"
-#include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
-#include "chrome/renderer/spellchecker/spelling_engine.h"
+#include "components/spellcheck/renderer/spellcheck_worditerator.h"
+#include "components/spellcheck/renderer/spelling_engine.h"
 
 
 SpellcheckLanguage::SpellcheckLanguage()

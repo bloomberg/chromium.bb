@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_PROVIDER_TEST_H_
-#define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_PROVIDER_TEST_H_
+#ifndef COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_PROVIDER_TEST_H_
+#define COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_PROVIDER_TEST_H_
 
 #include <stddef.h>
 
@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
-#include "chrome/renderer/spellchecker/spellcheck_provider.h"
+#include "components/spellcheck/renderer/spellcheck_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
@@ -65,4 +65,4 @@ class SpellCheckProviderTest : public testing::Test {
   TestingSpellCheckProvider provider_;
 };
 
-#endif  // CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_PROVIDER_TEST_H_
+#endif  // COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_PROVIDER_TEST_H_

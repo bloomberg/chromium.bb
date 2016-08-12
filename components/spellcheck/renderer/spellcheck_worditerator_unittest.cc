@@ -13,7 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
+#include "components/spellcheck/renderer/spellcheck_worditerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::i18n::BreakIterator;

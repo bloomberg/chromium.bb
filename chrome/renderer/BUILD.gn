@@ -152,19 +152,7 @@ static_library("renderer") {
                     "..")
   }
   if (enable_spellcheck) {
-    sources +=
-        rebase_path(gypi_values.chrome_renderer_spellchecker_sources, ".", "..")
-    deps += [ "//components/spellcheck/common:common" ]
-
-    if (!is_android) {
-      deps += [ "//third_party/hunspell" ]
-    }
-  }
-  if (!use_browser_spellchecker) {
-    sources -= [
-      "spellchecker/platform_spelling_engine.cc",
-      "spellchecker/platform_spelling_engine.h",
-    ]
+    deps += [ "//components/spellcheck/renderer:renderer" ]
   }
   if (enable_basic_printing || enable_print_preview) {
     deps += [ "//printing" ]
@@ -179,12 +167,6 @@ static_library("renderer") {
 
   if (is_win) {
     deps += [ "//third_party/wtl" ]
-  }
-  if (is_android) {
-    sources -= [
-      "spellchecker/hunspell_engine.cc",
-      "spellchecker/hunspell_engine.h",
-    ]
   }
 
   if (is_chromeos) {

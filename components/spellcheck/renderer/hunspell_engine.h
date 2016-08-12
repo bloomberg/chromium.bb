@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SPELLCHECKER_HUNSPELL_ENGINE_H_
-#define CHROME_RENDERER_SPELLCHECKER_HUNSPELL_ENGINE_H_
+#ifndef COMPONENTS_SPELLCHECK_RENDERER_HUNSPELL_ENGINE_H_
+#define COMPONENTS_SPELLCHECK_RENDERER_HUNSPELL_ENGINE_H_
 
 #include <memory>
 #include <string>
@@ -11,8 +11,8 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/renderer/spellchecker/spelling_engine.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/renderer/spelling_engine.h"
 
 class Hunspell;
 
@@ -60,4 +60,4 @@ class HunspellEngine : public SpellingEngine {
   bool dictionary_requested_;
 };
 
-#endif  // CHROME_RENDERER_SPELLCHECKER_HUNSPELL_ENGINE_H_
+#endif  // COMPONENTS_SPELLCHECK_RENDERER_HUNSPELL_ENGINE_H_

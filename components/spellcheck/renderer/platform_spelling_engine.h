@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SPELLCHECKER_PLATFORM_SPELLING_ENGINE_H_
-#define CHROME_RENDERER_SPELLCHECKER_PLATFORM_SPELLING_ENGINE_H_
+#ifndef COMPONENTS_SPELLCHECK_RENDERER_PLATFORM_SPELLING_ENGINE_H_
+#define COMPONENTS_SPELLCHECK_RENDERER_PLATFORM_SPELLING_ENGINE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/renderer/spellchecker/spelling_engine.h"
+#include "components/spellcheck/renderer/spelling_engine.h"
 
 class PlatformSpellingEngine : public SpellingEngine {
  public:
@@ -19,5 +19,5 @@ class PlatformSpellingEngine : public SpellingEngine {
       std::vector<base::string16>* optional_suggestions) override;
 };
 
-#endif  // CHROME_RENDERER_SPELLCHECKER_PLATFORM_SPELLING_ENGINE_H_
+#endif  // COMPONENTS_SPELLCHECK_RENDERER_PLATFORM_SPELLING_ENGINE_H_
 

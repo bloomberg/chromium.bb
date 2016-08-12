@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/spellchecker/spellcheck_provider_test.h"
+#include "components/spellcheck/renderer/spellcheck_provider_test.h"
 
 #include "base/stl_util.h"
-#include "chrome/renderer/spellchecker/spellcheck.h"
 #include "components/spellcheck/common/spellcheck_marker.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/spellcheck/renderer/spellcheck.h"
 #include "ipc/ipc_message_macros.h"
 
 class MockSpellcheck: public SpellCheck {
@@ -97,5 +97,4 @@ void TestingSpellCheckProvider::ResetResult() {
 
 SpellCheckProviderTest::SpellCheckProviderTest() {}
 SpellCheckProviderTest::~SpellCheckProviderTest() {}
-
 

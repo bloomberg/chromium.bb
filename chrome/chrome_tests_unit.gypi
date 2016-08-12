@@ -389,14 +389,6 @@
       'browser/spellchecker/spellcheck_service_unittest.cc',
       'browser/spellchecker/spelling_service_client_unittest.cc',
       'browser/spellchecker/word_trimmer_unittest.cc',
-      'renderer/spellchecker/custom_dictionary_engine_unittest.cc',
-      'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
-      'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
-      'renderer/spellchecker/spellcheck_provider_mac_unittest.cc',
-      'renderer/spellchecker/spellcheck_provider_test.cc',
-      'renderer/spellchecker/spellcheck_provider_test.h',
-      'renderer/spellchecker/spellcheck_unittest.cc',
-      'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
       'tools/convert_dict/convert_dict_unittest.cc',
     ],
     'chrome_unit_tests_background_sources': [
@@ -2406,13 +2398,6 @@
             ['OS!="mac" and OS!="ios"', {
               'dependencies': [ '../third_party/hunspell/hunspell.gyp:hunspell' ],
             }],
-            ['OS=="android"', {
-              'sources!': [
-                'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
-                'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
-                'renderer/spellchecker/spellcheck_unittest.cc',
-              ],
-            }]
           ],
         }],
         ['enable_one_click_signin==1', {
@@ -2628,8 +2613,6 @@
             'browser/spellchecker/spellcheck_service_unittest.cc',
             'browser/ui/tests/ui_gfx_image_unittest.cc',
             # This tests Chrome's spellchecker which Mac doesn't use.
-            'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
-            'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
             'tools/convert_dict/convert_dict_unittest.cc',
           ],
           'conditions': [

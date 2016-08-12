@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SPELLCHECKER_SPELLING_ENGINE_H_
-#define CHROME_RENDERER_SPELLCHECKER_SPELLING_ENGINE_H_
+#ifndef COMPONENTS_SPELLCHECK_RENDERER_SPELLING_ENGINE_H_
+#define COMPONENTS_SPELLCHECK_RENDERER_SPELLING_ENGINE_H_
 
 #include <string>
 #include <vector>
@@ -30,5 +30,5 @@ class SpellingEngine {
       std::vector<base::string16>* optional_suggestions) = 0;
 };
 
-#endif  // CHROME_RENDERER_SPELLCHECKER_SPELLING_ENGINE_H_
+#endif  // COMPONENTS_SPELLCHECK_RENDERER_SPELLING_ENGINE_H_
 

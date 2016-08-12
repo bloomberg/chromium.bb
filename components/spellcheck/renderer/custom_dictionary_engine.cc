@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
+#include "components/spellcheck/renderer/custom_dictionary_engine.h"
 
 #include <stddef.h>
 

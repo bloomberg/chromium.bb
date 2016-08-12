@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
+#include "components/spellcheck/renderer/custom_dictionary_engine.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(CustomDictionaryTest, HandlesEmptyWordWithInvalidSubstring) {

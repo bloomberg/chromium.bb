@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
-#define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
+#ifndef COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_H_
+#define COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_H_
 
 #include <memory>
 #include <set>
@@ -16,7 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
+#include "components/spellcheck/renderer/custom_dictionary_engine.h"
 #include "content/public/renderer/render_thread_observer.h"
 
 struct SpellCheckBDictLanguage;
@@ -161,4 +161,4 @@ class SpellCheck : public content::RenderThreadObserver,
   DISALLOW_COPY_AND_ASSIGN(SpellCheck);
 };
 
-#endif  // CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
+#endif  // COMPONENTS_SPELLCHECK_RENDERER_SPELLCHECK_H_

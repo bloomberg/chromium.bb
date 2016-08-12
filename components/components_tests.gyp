@@ -753,6 +753,16 @@
       'signin/ios/browser/account_consistency_service_unittest.mm',
       'signin/ios/browser/profile_oauth2_token_service_ios_delegate_unittest.mm',
     ],
+    'spellcheck_unittest_sources': [
+      'spellcheck/renderer/custom_dictionary_engine_unittest.cc',
+      'spellcheck/renderer/spellcheck_multilingual_unittest.cc',
+      'spellcheck/renderer/spellcheck_provider_hunspell_unittest.cc',
+      'spellcheck/renderer/spellcheck_provider_mac_unittest.cc',
+      'spellcheck/renderer/spellcheck_provider_test.cc',
+      'spellcheck/renderer/spellcheck_provider_test.h',
+      'spellcheck/renderer/spellcheck_unittest.cc',
+      'spellcheck/renderer/spellcheck_worditerator_unittest.cc',
+    ],
     'ssl_config_unittest_sources': [
       'ssl_config/ssl_config_service_manager_pref_unittest.cc',
     ],
@@ -1290,6 +1300,7 @@
         'components.gyp:sessions_test_support',
         'components.gyp:signin_core_browser',
         'components.gyp:signin_core_browser_test_support',
+        'components.gyp:spellcheck_renderer',
         'components.gyp:ssl_config',
         'components.gyp:ssl_errors',
         'components.gyp:subresource_filter_core_browser_test_support',
@@ -1368,6 +1379,24 @@
             '<(DEPTH)/ui/views/views.gyp:views_test_support',
             'components.gyp:constrained_window',
           ]
+        }],
+        ['enable_spellcheck==1', {
+          'sources': [ '<@(spellcheck_unittest_sources)' ],
+          'conditions': [
+            ['OS=="android"', {
+              'sources!': [
+                'spellcheck/renderer/spellcheck_multilingual_unittest.cc',
+                'spellcheck/renderer/spellcheck_provider_hunspell_unittest.cc',
+                'spellcheck/renderer/spellcheck_unittest.cc',
+              ],
+            }],
+            ['OS=="mac"', {
+              'sources!': [
+                'spellcheck/renderer/spellcheck_multilingual_unittest.cc',
+                'spellcheck/renderer/spellcheck_provider_hunspell_unittest.cc',
+              ],
+            }],
+          ],
         }],
         ['OS=="win"', {
           'dependencies': [

@@ -17,7 +17,7 @@ source_set("common") {
   ]
 
   deps = [
-    "//base",
+    "//base:i18n",
     "//ipc",
     "//third_party/icu",
   ]

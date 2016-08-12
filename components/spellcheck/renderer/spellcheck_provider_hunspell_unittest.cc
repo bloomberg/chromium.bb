@@ -6,8 +6,8 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/renderer/spellchecker/spellcheck_provider_test.h"
 #include "components/spellcheck/common/spellcheck_marker.h"
+#include "components/spellcheck/renderer/spellcheck_provider_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 

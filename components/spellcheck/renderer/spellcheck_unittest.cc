@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/spellchecker/spellcheck.h"
+#include "components/spellcheck/renderer/spellcheck.h"
 
 #include <stddef.h>
 
@@ -18,10 +18,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/renderer/spellchecker/hunspell_engine.h"
-#include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_result.h"
+#include "components/spellcheck/renderer/hunspell_engine.h"
+#include "components/spellcheck/renderer/spellcheck_language.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"

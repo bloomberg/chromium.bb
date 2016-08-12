@@ -211,23 +211,6 @@
       'renderer/safe_browsing/scorer.cc',
       'renderer/safe_browsing/scorer.h',
     ],
-    'chrome_renderer_spellchecker_sources': [
-      'renderer/spellchecker/custom_dictionary_engine.cc',
-      'renderer/spellchecker/custom_dictionary_engine.h',
-      'renderer/spellchecker/hunspell_engine.cc',
-      'renderer/spellchecker/hunspell_engine.h',
-      'renderer/spellchecker/platform_spelling_engine.cc',
-      'renderer/spellchecker/platform_spelling_engine.h',
-      'renderer/spellchecker/spellcheck.cc',
-      'renderer/spellchecker/spellcheck.h',
-      'renderer/spellchecker/spellcheck_language.cc',
-      'renderer/spellchecker/spellcheck_language.h',
-      'renderer/spellchecker/spellcheck_provider.cc',
-      'renderer/spellchecker/spellcheck_provider.h',
-      'renderer/spellchecker/spellcheck_worditerator.cc',
-      'renderer/spellchecker/spellcheck_worditerator.h',
-      'renderer/spellchecker/spelling_engine.h',
-    ],
     'chrome_renderer_printing_sources': [
       'renderer/printing/chrome_print_web_view_helper_delegate.cc',
       'renderer/printing/chrome_print_web_view_helper_delegate.h',
@@ -357,28 +340,7 @@
           ],
         }],
         ['enable_spellcheck==1', {
-          'sources': [
-            '<@(chrome_renderer_spellchecker_sources)',
-          ],
-          'conditions': [
-            ['OS!="android"', {
-              'dependencies': [
-                '../third_party/hunspell/hunspell.gyp:hunspell',
-              ],
-            }],
-          ],
-        }],
-        ['use_browser_spellchecker==0', {
-          'sources!': [
-            'renderer/spellchecker/platform_spelling_engine.cc',
-            'renderer/spellchecker/platform_spelling_engine.h',
-          ]
-        }],
-        ['OS=="android"', {
-          'sources!': [
-            'renderer/spellchecker/hunspell_engine.cc',
-            'renderer/spellchecker/hunspell_engine.h',
-          ]
+          'dependencies': [ '../components/components.gyp:spellcheck_renderer' ]
         }],
         ['enable_basic_printing==1 or enable_print_preview==1', {
           'dependencies': [
