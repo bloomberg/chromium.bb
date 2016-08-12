@@ -53,6 +53,7 @@ const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
   "{{bundle_resources_dir}}",  // SUBSTITUTION_BUNDLE_RESOURCES_DIR
   "{{bundle_executable_dir}}",  // SUBSTITUTION_BUNDLE_EXECUTABLE_DIR
   "{{bundle_plugins_dir}}",  // SUBSTITUTION_BUNDLE_PLUGINS_DIR
+  "{{bundle_product_type}}",  // SUBSTITUTION_BUNDLE_PRODUCT_TYPE
 
   "{{response_file_name}}",  // SUBSTITUTION_RSP_FILE_NAME
 };
@@ -104,6 +105,7 @@ const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
     "bundle_resources_dir",   // SUBSTITUTION_BUNDLE_RESOURCES_DIR
     "bundle_executable_dir",  // SUBSTITUTION_BUNDLE_EXECUTABLE_DIR
     "bundle_plugins_dir",     // SUBSTITUTION_BUNDLE_PLUGINS_DIR
+    "product_type",           // SUBSTITUTION_BUNDLE_PRODUCT_TYPE
 
     "rspfile",  // SUBSTITUTION_RSP_FILE_NAME
 };
@@ -227,7 +229,8 @@ bool IsValidCopySubstitution(SubstitutionType type) {
 
 bool IsValidCompileXCassetsSubstitution(SubstitutionType type) {
   return IsValidToolSubstitution(type) ||
-         type == SUBSTITUTION_LINKER_INPUTS;
+         type == SUBSTITUTION_LINKER_INPUTS ||
+         type == SUBSTITUTION_BUNDLE_PRODUCT_TYPE;
 }
 
 bool EnsureValidSourcesSubstitutions(

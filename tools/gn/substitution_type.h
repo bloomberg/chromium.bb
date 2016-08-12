@@ -69,6 +69,9 @@ enum SubstitutionType {
   SUBSTITUTION_BUNDLE_EXECUTABLE_DIR,  // {{bundle_executable_dir}}
   SUBSTITUTION_BUNDLE_PLUGINS_DIR,  // {{bundle_plugins_dir}}
 
+  // Valid for compile_xcassets tool.
+  SUBSTITUTION_BUNDLE_PRODUCT_TYPE,  // {{bundle_product_type}}
+
   // Used only for the args of actions.
   SUBSTITUTION_RSP_FILE_NAME,  // {{response_file_name}}
 

@@ -164,6 +164,9 @@ void NinjaCreateBundleTargetWriter::WriteCompileAssetsCatalogStep(
   out_ << " | ";
   path_output_.WriteFile(out_, input_dep);
   out_ << std::endl;
+
+  out_ << "  product_type = " << target_->bundle_data().product_type()
+       << std::endl;
 }
 
 OutputFile

@@ -624,7 +624,7 @@
 
 
 ```
-## **gn format [\--dump-tree] [\--in-place] [\--stdin] BUILD.gn**
+## **gn format [\--dump-tree] (\--stdin | <build_file>)**
 
 ```
   Formats .gn file to a standard format.
@@ -642,6 +642,7 @@
 ```
 
 ### **Arguments**
+
 ```
   --dry-run
       Does not change or output anything, but sets the process exit code
@@ -652,16 +653,12 @@
       - Exit code 2: successful format, but differs from on disk.
 
   --dump-tree
-      For debugging only, dumps the parse tree.
-
-  --in-place
-      Instead of writing the formatted file to stdout, replace the input
-      file with the formatted output. If no reformatting is required,
-      the input file will not be touched, and nothing printed.
+      For debugging, dumps the parse tree to stdout and does not update
+      the file or print formatted output.
 
   --stdin
-      Read input from stdin (and write to stdout). Not compatible with
-      --in-place of course.
+      Read input from stdin and write to stdout rather than update
+      a file in-place.
 
 ```
 
@@ -2563,10 +2560,12 @@
 ```
   The sources assignment filter is a list of patterns that remove files
   from the list implicitly whenever the "sources" variable is
-  assigned to. This is intended to be used to globally filter out files
-  with platform-specific naming schemes when they don't apply, for
-  example, you may want to filter out all "*_win.cc" files on non-
-  Windows platforms.
+  assigned to. This will do nothing for non-lists.
+
+  This is intended to be used to globally filter out files with
+  platform-specific naming schemes when they don't apply, for example
+  you may want to filter out all "*_win.cc" files on non-Windows
+  platforms.
 
   Typically this will be called once in the master build config script
   to set up the filter for the current platform. Subsequent calls will
@@ -3344,7 +3343,17 @@
   copied.
 
   The compile_xcassets tool will be called with one or more source (each
-  an asset catalog) that needs to be compiled to a single output.
+  an asset catalog) that needs to be compiled to a single output. The
+  following substitutions are avaiable:
+
+    {{inputs}}
+        Expands to the list of .xcassets to use as input to compile the
+        asset catalog.
+
+    {{bundle_product_type}}
+        Expands to the product_type of the bundle that will contain the
+        compiled asset catalog. Usually corresponds to the product_type
+        property of the corresponding create_bundle target.
 
 ```
 
@@ -3420,10 +3429,25 @@
     The tool() function call specifies the commands commands to run for
     a given step. See "gn help tool".
 
-  toolchain_args()
-    List of arguments to pass to the toolchain when invoking this
-    toolchain. This applies only to non-default toolchains. See
-    "gn help toolchain_args" for more.
+  toolchain_args
+    Overrides for build arguments to pass to the toolchain when invoking
+    it. This is a variable of type "scope" where the variable names
+    correspond to variables in declare_args() blocks.
+
+    When you specify a target using an alternate toolchain, the master
+    build configuration file is re-interpreted in the context of that
+    toolchain. toolchain_args allows you to control the arguments
+    passed into this alternate invocation of the build.
+
+    Any default system arguments or arguments passed in via "gn args"
+    will also be passed to the alternate invocation unless explicitly
+    overridden by toolchain_args.
+
+    The toolchain_args will be ignored when the toolchain being defined
+    is the default. In this case, it's expected you want the default
+    argument values.
+
+    See also "gn help buildargs" for an overview of these arguments.
 
   deps
     Dependencies of this toolchain. These dependencies will be resolved
@@ -3459,13 +3483,14 @@
       by the toolchain label).
    2. Re-runs the master build configuration file, applying the
       arguments specified by the toolchain_args section of the toolchain
-      definition (see "gn help toolchain_args").
+      definition.
    3. Loads the destination build file in the context of the
       configuration file in the previous step.
 
 ```
 
-### **Example**:
+### **Example**
+
 ```
   toolchain("plugin_toolchain") {
     tool("cc") {
@@ -3473,7 +3498,7 @@
       ...
     }
 
-    toolchain_args() {
+    toolchain_args = {
       is_plugin = true
       is_32bit = true
       is_64bit = false
@@ -3485,40 +3510,10 @@
 ## **toolchain_args**: Set build arguments for toolchain build setup.
 
 ```
-  Used inside a toolchain definition to pass arguments to an alternate
-  toolchain's invocation of the build.
+  DEPRECATED. Instead use:
+    toolchain_args = { ... }
 
-  When you specify a target using an alternate toolchain, the master
-  build configuration file is re-interpreted in the context of that
-  toolchain (see "gn help toolchain"). The toolchain_args function
-  allows you to control the arguments passed into this alternate
-  invocation of the build.
-
-  Any default system arguments or arguments passed in on the command-
-  line will also be passed to the alternate invocation unless explicitly
-  overridden by toolchain_args.
-
-  The toolchain_args will be ignored when the toolchain being defined
-  is the default. In this case, it's expected you want the default
-  argument values.
-
-  See also "gn help buildargs" for an overview of these arguments.
-
-```
-
-### **Example**:
-```
-  toolchain("my_weird_toolchain") {
-    ...
-    toolchain_args() {
-      # Override the system values for a generic Posix system.
-      is_win = false
-      is_posix = true
-
-      # Pass this new value for specific setup for my toolchain.
-      is_my_weird_system = true
-    }
-  }
+  See "gn help toolchain" for documentation.
 
 
 ```
@@ -4170,6 +4165,40 @@
     assert_no_deps = [
       "//evil/*",  # Don't link any code from the evil directory.
       "//foo:test_support",  # This target is also disallowed.
+    ]
+  }
+
+
+```
+## **bundle_deps_filter**: [label list] A list of labels that are filtered out.
+
+```
+  A list of target labels.
+
+  This list contains target label patterns that should be filtered out
+  when creating the bundle. Any target matching one of those label will
+  be removed from the dependencies of the create_bundle target.
+
+  This is mostly useful when creating application extension bundle as
+  the application extension has access to runtime resources from the
+  application bundle and thus do not require a second copy.
+
+  See "gn help create_bundle" for more information.
+
+```
+
+### **Example**
+
+```
+  create_bundle("today_extension") {
+    deps = [
+      "//base"
+    ]
+    bundle_root_dir = "$root_out_dir/today_extension.appex"
+    bundle_deps_filter = [
+      # The extension uses //base but does not use any function calling
+      # into third_party/icu and thus does not need the icudtl.dat file.
+      "//third_party/icu:icudata",
     ]
   }
 
@@ -4827,40 +4856,6 @@
   "gn help data_deps" and "gn help runtime_deps".
 
   See also "public_deps".
-
-
-```
-## **bundle_deps_filter**: [label list] A list of labels that are filtered out.
-
-```
-  A list of target labels.
-
-  This list contains target label patterns that should be filtered out
-  when creating the bundle. Any target matching one of those label will
-  be removed from the dependencies of the create_bundle target.
-
-  This is mostly useful when creating application extension bundle as
-  the application extension has access to runtime resources from the
-  application bundle and thus do not require a second copy.
-
-  See "gn help create_bundle" for more information.
-
-```
-
-### **Example**
-
-```
-  create_bundle("today_extension") {
-    deps = [
-      "//base"
-    ]
-    bundle_root_dir = "$root_out_dir/today_extension.appex"
-    bundle_deps_filter = [
-      # The extension uses //base but does not use any function calling
-      # into third_party/icu and thus does not need the icudtl.dat file.
-      "//third_party/icu:icudata",
-    ]
-  }
 
 
 ```
@@ -5741,7 +5736,7 @@
   toolchain_args section of a toolchain definition. The use-case for
   this is that a toolchain may be building code for a different
   platform, and that it may want to always specify Posix, for example.
-  See "gn help toolchain_args" for more.
+  See "gn help toolchain" for more.
 
   If you specify an override for a build argument that never appears in
   a "declare_args" call, a nonfatal error will be displayed.
@@ -5871,7 +5866,7 @@
 
 
 ```
-## **GN build language grammar**
+## **Language and grammar for GN build files**
 
 ### **Tokens**
 
@@ -5951,6 +5946,13 @@
   To insert an arbitrary byte value, use $0xFF. For example, to
   insert a newline character: "Line one$0x0ALine two".
 
+  An expansion will evaluate the variable following the '$' and insert
+  a stringified version of it into the result. For example, to concat
+  two path components with a slash separating them:
+    "$var_one/$var_two"
+  Use the "${var_one}" format to be explicitly deliniate the variable
+  for otherwise-ambiguous cases.
+
 ```
 
 ### **Punctuation**
@@ -5973,19 +5975,20 @@
       File = StatementList .
 
       Statement     = Assignment | Call | Condition .
-      Assignment    = identifier AssignOp Expr .
+      LValue        = identifier | ArrayAccess | ScopeAccess .
+      Assignment    = LValue AssignOp Expr .
       Call          = identifier "(" [ ExprList ] ")" [ Block ] .
       Condition     = "if" "(" Expr ")" Block
                       [ "else" ( Condition | Block ) ] .
       Block         = "{" StatementList "}" .
       StatementList = { Statement } .
 
-      ArrayAccess = identifier "[" { identifier | integer } "]" .
+      ArrayAccess = identifier "[" Expr "]" .
       ScopeAccess = identifier "." identifier .
       Expr        = UnaryExpr | Expr BinaryOp Expr .
       UnaryExpr   = PrimaryExpr | UnaryOp UnaryExpr .
       PrimaryExpr = identifier | integer | string | Call
-                  | ArrayAccess | ScopeAccess
+                  | ArrayAccess | ScopeAccess | Block
                   | "(" Expr ")"
                   | "[" [ ExprList [ "," ] ] "]" .
       ExprList    = Expr { "," Expr } .
@@ -5999,6 +6002,103 @@
                | "||" .                     // lowest priority
 
   All binary operators are left-associative.
+
+```
+
+### **Types**
+
+```
+  The GN language is dynamically typed. The following types are used:
+
+   - Boolean: Uses the keywords "true" and "false". There is no
+     implicit conversion between booleans and integers.
+
+   - Integers: All numbers in GN are signed 64-bit integers.
+
+   - Strings: Strings are 8-bit with no enforced encoding. When a string
+     is used to interact with other systems with particular encodings
+     (like the Windows and Mac filesystems) it is assumed to be UTF-8.
+     See "String literals" above for more.
+
+   - Lists: Lists are arbitrary-length ordered lists of values. See
+     "Lists" below for more.
+
+   - Scopes: Scopes are like dictionaries that use variable names for
+     keys. See "Scopes" below for more.
+
+```
+
+### **Lists**
+
+```
+  Lists are created with [] and using commas to separate items:
+
+       mylist = [ 0, 1, 2, "some string" ]
+
+  A comma after the last item is optional. Lists are dereferenced using
+  0-based indexing:
+
+       mylist[0] += 1
+       var = mylist[2]
+
+  Lists can be concatenated using the '+' and '+=' operators. Bare
+  values can not be concatenated with lists, to add a single item,
+  it must be put into a list of length one.
+
+  Items can be removed from lists using the '-' and '-=' operators.
+  This will remove all occurrences of every item in the right-hand list
+  from the left-hand list. It is an error to remove an item not in the
+  list. This is to prevent common typos and to detect dead code that
+  is removing things that no longer apply.
+
+  It is an error to use '=' to replace a nonempty list with another
+  nonempty list. This is to prevent accidentally overwriting data
+  when in most cases '+=' was intended. To overwrite a list on purpose,
+  first assign it to the empty list:
+
+    mylist = []
+    mylist = otherlist
+
+  When assigning to a list named 'sources' using '=' or '+=', list
+  items may be automatically filtered out.
+  See "gn help set_sources_assignment_filter" for more.
+
+```
+
+### **Scopes**
+
+```
+  All execution happens in the context of a scope which holds the
+  current state (like variables). With the exception of loops and
+  conditions, '{' introduces a new scope that has a parent reference to
+  the old scope.
+
+  Variable reads recursively search all nested scopes until the
+  variable is found or there are no more scopes. Variable writes always
+  go into the current scope. This means that after the closing '}'
+  (again excepting loops and conditions), all local variables will be
+  restored to the previous values. This also means that "foo = foo"
+  can do useful work by copying a variable into the current scope that
+  was defined in a containing scope.
+
+  Scopes can also be assigned to variables. Such scopes can be created
+  by functions like exec_script, when invoking a template (the template
+  code refers to the variables set by the invoking code by the
+  implicitly-created "invoker" scope), or explicitly like:
+
+    empty_scope = {}
+    myvalues = {
+      foo = 21
+      bar = "something"
+    }
+
+  Inside such a scope definition can be any GN code including
+  conditionals and function calls. After the close of the scope, it will
+  contain all variables explicitly set by the code contained inside it.
+  After this, the values can be read, modified, or added to:
+
+    myvalues.foo += 2
+    empty_scope.new_thing = [ 1, 2, 3 ]
 
 
 ```

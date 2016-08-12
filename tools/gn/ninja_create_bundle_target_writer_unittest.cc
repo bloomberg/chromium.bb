@@ -95,6 +95,7 @@ TEST(NinjaCreateBundleTargetWriter, AssetCatalog) {
   SetupBundleDataDir(&create_bundle.bundle_data(), "//out/Debug");
   create_bundle.set_output_type(Target::CREATE_BUNDLE);
   create_bundle.private_deps().push_back(LabelTargetPair(&bundle_data));
+  create_bundle.bundle_data().product_type().assign("com.apple.product-type");
   create_bundle.SetToolchain(setup.toolchain());
   ASSERT_TRUE(create_bundle.OnResolved(&err));
 
@@ -105,6 +106,7 @@ TEST(NinjaCreateBundleTargetWriter, AssetCatalog) {
   const char expected[] =
       "build bar.bundle/Contents/Resources/Assets.car: compile_xcassets "
           "../../foo/Foo.xcassets | obj/foo/data.stamp\n"
+      "  product_type = com.apple.product-type\n"
       "build obj/baz/bar.stamp: stamp "
           "bar.bundle/Contents/Resources/Assets.car\n"
       "build bar.bundle: phony obj/baz/bar.stamp\n";
@@ -210,6 +212,7 @@ TEST(NinjaCreateBundleTargetWriter, Complex) {
   create_bundle.private_deps().push_back(LabelTargetPair(&bundle_data1));
   create_bundle.private_deps().push_back(LabelTargetPair(&bundle_data2));
   create_bundle.private_deps().push_back(LabelTargetPair(&bundle_data3));
+  create_bundle.bundle_data().product_type().assign("com.apple.product-type");
   create_bundle.SetToolchain(setup.toolchain());
   ASSERT_TRUE(create_bundle.OnResolved(&err));
 
@@ -230,6 +233,7 @@ TEST(NinjaCreateBundleTargetWriter, Complex) {
       "build bar.bundle/Contents/Resources/Assets.car: compile_xcassets "
           "../../foo/Foo.xcassets "
           "../../quz/Quz.xcassets | obj/baz/bar.xcassets.inputdeps.stamp\n"
+      "  product_type = com.apple.product-type\n"
       "build obj/baz/bar.stamp: stamp "
           "bar.bundle/Contents/Info.plist "
           "bar.bundle/Contents/Resources/input1.txt "
