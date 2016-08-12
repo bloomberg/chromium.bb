@@ -22,6 +22,7 @@ enum {
   FILE_CAST_ANDROID_LOG, // Log file location for Android.
 #endif  // defined(OS_ANDROID)
   FILE_CAST_CONFIG, // Config/preferences file path.
+  FILE_CAST_CRL,    // CRL persistent cache file path.
   FILE_CAST_PAK,    // cast_shell.pak file path.
   PATH_END
 };

@@ -47,6 +47,17 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif  // defined(OS_ANDROID)
       return true;
     }
+    case FILE_CAST_CRL: {
+      base::FilePath data_dir;
+#if defined(OS_ANDROID)
+      CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
+      *result = data_dir.Append("cast_shell.crl");
+#else
+      CHECK(PathService::Get(DIR_CAST_HOME, &data_dir));
+      *result = data_dir.Append(".eureka.crl");
+#endif  // defined(OS_ANDROID)
+      return true;
+    }
     case FILE_CAST_PAK: {
       base::FilePath base_dir;
 #if defined(OS_ANDROID)
