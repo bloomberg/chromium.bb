@@ -685,6 +685,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   // above.
   bool InitRenderFrame(RenderFrameHostImpl* render_frame_host);
 
+  // Helper to reinitialize the RenderFrame, RenderView, and the opener chain
+  // for the provided |render_frame_host|.  Used when the |render_frame_host|
+  // needs to be reused for a new navigation, but it is not live.
+  bool ReinitializeRenderFrame(RenderFrameHostImpl* render_frame_host);
+
   // Makes the pending WebUI on the current RenderFrameHost active. Call this
   // when the current RenderFrameHost commits and it has a pending WebUI.
   void CommitPendingWebUI();

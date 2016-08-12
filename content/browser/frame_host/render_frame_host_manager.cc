@@ -238,10 +238,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     // will add an interface to this RFH's InterfaceRegistry).
     dest_render_frame_host->SetUpMojoIfNeeded();
 
-    // Recreate the opener chain.
-    CreateOpenerProxies(dest_render_frame_host->GetSiteInstance(),
-                        frame_tree_node_);
-    if (!InitRenderView(dest_render_frame_host->render_view_host(), nullptr))
+    if (!ReinitializeRenderFrame(dest_render_frame_host))
       return nullptr;
 
     if (GetNavigatingWebUI()) {
@@ -871,10 +868,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // If the RenderFrame that needs to navigate is not live (its process was just
   // created or has crashed), initialize it.
   if (!navigation_rfh->IsRenderFrameLive()) {
-    // Recreate the opener chain.
-    CreateOpenerProxies(navigation_rfh->GetSiteInstance(), frame_tree_node_);
-    if (!InitRenderView(navigation_rfh->render_view_host(), nullptr))
+    if (!ReinitializeRenderFrame(navigation_rfh))
       return nullptr;
+
     notify_webui_of_rv_creation = true;
 
     if (navigation_rfh == render_frame_host_.get()) {
@@ -887,7 +883,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       delegate_->NotifyMainFrameSwappedFromRenderManager(
           nullptr, render_frame_host_->render_view_host());
     }
-    DCHECK(navigation_rfh->IsRenderFrameLive());
   }
 
   // If a WebUI was created in a speculative RenderFrameHost or a new RenderView
@@ -2024,6 +2019,39 @@ bool RenderFrameHostManager::InitRenderFrame(
   return delegate_->CreateRenderFrameForRenderManager(
       render_frame_host, proxy_routing_id, opener_routing_id, parent_routing_id,
       previous_sibling_routing_id);
+}
+
+bool RenderFrameHostManager::ReinitializeRenderFrame(
+    RenderFrameHostImpl* render_frame_host) {
+  // This should be used only when the RenderFrame is not live.
+  DCHECK(!render_frame_host->IsRenderFrameLive());
+
+  // Recreate the opener chain.
+  CreateOpenerProxies(render_frame_host->GetSiteInstance(), frame_tree_node_);
+
+  // Main frames need both the RenderView and RenderFrame reinitialized, so
+  // use InitRenderView.  For cross-process subframes, InitRenderView won't
+  // recreate the RenderFrame, so use InitRenderFrame instead.  Note that for
+  // subframe RenderFrameHosts, the swapped out RenderView in their
+  // SiteInstance will be recreated as part of CreateOpenerProxies above.
+  if (!frame_tree_node_->parent()) {
+    DCHECK(!GetRenderFrameProxyHost(render_frame_host->GetSiteInstance()));
+    if (!InitRenderView(render_frame_host->render_view_host(), nullptr))
+      return false;
+  } else {
+    if (!InitRenderFrame(render_frame_host))
+      return false;
+
+    // When a subframe renderer dies, its RenderWidgetHostView is cleared in
+    // its CrossProcessFrameConnector, so we need to restore it now that it
+    // is re-initialized.
+    RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
+    if (proxy_to_parent)
+      GetProxyToParent()->SetChildRWHView(render_frame_host->GetView());
+  }
+
+  DCHECK(render_frame_host->IsRenderFrameLive());
+  return true;
 }
 
 int RenderFrameHostManager::GetRoutingIdForSiteInstance(

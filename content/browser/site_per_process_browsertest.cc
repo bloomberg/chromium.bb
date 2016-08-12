@@ -7790,4 +7790,60 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(rvh->is_active());
 }
 
+// Test that a crashed subframe can be successfully navigated to the site it
+// was on before crashing.  See https://crbug.com/634368.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateCrashedSubframeToSameSite) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  // Set up a postMessage handler in the main frame for later use.
+  EXPECT_TRUE(ExecuteScript(
+      root->current_frame_host(),
+      "window.addEventListener('message',"
+      "                        function(e) { document.title = e.data; });"));
+
+  // Crash the subframe process.
+  RenderProcessHost* child_process = child->current_frame_host()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  child_process->Shutdown(0, false);
+  crash_observer.Wait();
+  EXPECT_FALSE(child->current_frame_host()->IsRenderFrameLive());
+
+  // When the subframe dies, its RenderWidgetHostView should be cleared and
+  // reset in the CrossProcessFrameConnector.
+  EXPECT_FALSE(child->current_frame_host()->GetView());
+  RenderFrameProxyHost* proxy_to_parent =
+      child->render_manager()->GetProxyToParent();
+  EXPECT_FALSE(
+      proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
+
+  // Navigate the subframe to the same site it was on before crashing.  This
+  // should reuse the subframe's current RenderFrameHost and reinitialize the
+  // RenderFrame in a new process.
+  NavigateFrameToURL(child,
+                     embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(child->current_frame_host()->IsRenderFrameLive());
+
+  // The RenderWidgetHostView for the child should be recreated and set to be
+  // used in the CrossProcessFrameConnector.  Without this, the frame won't be
+  // rendered properly.
+  EXPECT_TRUE(child->current_frame_host()->GetView());
+  EXPECT_EQ(
+      child->current_frame_host()->GetView(),
+      proxy_to_parent->cross_process_frame_connector()->get_view_for_testing());
+
+  // Send a postMessage from the child to its parent.  This verifies that the
+  // parent's proxy in the child's SiteInstance was also restored.
+  base::string16 expected_title(base::UTF8ToUTF16("I am alive!"));
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_TRUE(ExecuteScript(child->current_frame_host(),
+                            "parent.postMessage('I am alive!', '*');"));
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
 }  // namespace content
