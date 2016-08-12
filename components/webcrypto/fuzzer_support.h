@@ -16,6 +16,8 @@ void ImportEcKeyFromDerFuzzData(const uint8_t* data,
                                 size_t size,
                                 blink::WebCryptoKeyFormat format);
 
+void ImportEcKeyFromRawFuzzData(const uint8_t* data, size_t size);
+
 void ImportRsaKeyFromDerFuzzData(const uint8_t* data,
                                  size_t size,
                                  blink::WebCryptoKeyFormat format);

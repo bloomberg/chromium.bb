@@ -51,6 +51,12 @@ class EcAlgorithm : public AlgorithmImplementation {
                                 blink::WebCryptoKey* key) const override;
 
  private:
+  Status ImportKeyRaw(const CryptoData& key_data,
+                      const blink::WebCryptoAlgorithm& algorithm,
+                      bool extractable,
+                      blink::WebCryptoKeyUsageMask usages,
+                      blink::WebCryptoKey* key) const;
+
   Status ImportKeyPkcs8(const CryptoData& key_data,
                         const blink::WebCryptoAlgorithm& algorithm,
                         bool extractable,
@@ -68,6 +74,9 @@ class EcAlgorithm : public AlgorithmImplementation {
                       bool extractable,
                       blink::WebCryptoKeyUsageMask usages,
                       blink::WebCryptoKey* key) const;
+
+  Status ExportKeyRaw(const blink::WebCryptoKey& key,
+                      std::vector<uint8_t>* buffer) const;
 
   Status ExportKeyPkcs8(const blink::WebCryptoKey& key,
                         std::vector<uint8_t>* buffer) const;

@@ -141,6 +141,18 @@ fuzzer_test("webcrypto_ec_import_key_spki_fuzzer") {
   ]
 }
 
+# Tests the import of raw (X9.62) formatted EC keys.
+fuzzer_test("webcrypto_ec_import_key_raw_fuzzer") {
+  sources = [
+    "ec_import_key_raw_fuzzer.cc",
+  ]
+  deps = [
+    ":fuzzer_support",
+    ":webcrypto",
+    "//third_party/WebKit/public:blink_headers",
+  ]
+}
+
 # Tests the import of PKCS8 formatted RSA keys.
 fuzzer_test("webcrypto_rsa_import_key_pkcs8_fuzzer") {
   sources = [

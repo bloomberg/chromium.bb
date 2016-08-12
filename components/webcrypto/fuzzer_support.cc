@@ -95,6 +95,52 @@ void ImportEcKeyFromDerFuzzData(const uint8_t* data,
             Status::ErrorCreateKeyBadUsages().error_details());
 }
 
+void ImportEcKeyFromRawFuzzData(const uint8_t* data, size_t size) {
+  EnsureInitialized();
+
+  // There are 3 possible EC named curves. Consume the first byte to decide on
+  // the curve.
+  uint8_t curve_index = 0;
+  if (size > 0) {
+    curve_index = data[0];
+    data++;
+    size--;
+  }
+
+  blink::WebCryptoNamedCurve curve;
+
+  switch (curve_index % 3) {
+    case 0:
+      curve = blink::WebCryptoNamedCurveP256;
+      break;
+    case 1:
+      curve = blink::WebCryptoNamedCurveP384;
+      break;
+    default:
+      curve = blink::WebCryptoNamedCurveP521;
+      break;
+  }
+
+  // Always use ECDSA as the algorithm. Shouldn't make an difference for import.
+  blink::WebCryptoAlgorithmId algorithm_id = blink::WebCryptoAlgorithmIdEcdsa;
+
+  // Use key usages that are compatible with the chosen algorithm and key type.
+  blink::WebCryptoKeyUsageMask usages = blink::WebCryptoKeyUsageVerify;
+
+  blink::WebCryptoKey key;
+  webcrypto::Status status = webcrypto::ImportKey(
+      blink::WebCryptoKeyFormatRaw,
+      webcrypto::CryptoData(data, base::checked_cast<uint32_t>(size)),
+      CreateEcImportAlgorithm(algorithm_id, curve), true, usages, &key);
+
+  // These errors imply a bad setup of parameters, and means ImportKey() may not
+  // be testing the actual parsing.
+  DCHECK_NE(status.error_details(),
+            Status::ErrorUnsupportedImportKeyFormat().error_details());
+  DCHECK_NE(status.error_details(),
+            Status::ErrorCreateKeyBadUsages().error_details());
+}
+
 void ImportRsaKeyFromDerFuzzData(const uint8_t* data,
                                  size_t size,
                                  blink::WebCryptoKeyFormat format) {
