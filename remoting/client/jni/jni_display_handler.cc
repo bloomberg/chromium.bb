@@ -102,7 +102,8 @@ void JniDisplayHandler::SetCursorShape(
   // the data out of the buffer without mutating it, and doesn't keep any
   // reference to the buffer afterwards. Unfortunately, there seems to be no way
   // to create a read-only ByteBuffer from a pointer-to-const.
-  char* data = string_as_array(const_cast<std::string*>(&cursor_shape.data()));
+  char* data =
+      base::string_as_array(const_cast<std::string*>(&cursor_shape.data()));
   int cursor_total_bytes =
       cursor_shape.width() * cursor_shape.height() * kBytesPerPixel;
 

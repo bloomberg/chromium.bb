@@ -77,7 +77,8 @@ void SecurityKeyMessageReaderImpl::ReadMessage() {
     }
 
     std::string message_data(message_length_bytes, '\0');
-    if (!ReadFromStream(string_as_array(&message_data), message_data.size())) {
+    if (!ReadFromStream(base::string_as_array(&message_data),
+                        message_data.size())) {
       NotifyError();
       return;
     }

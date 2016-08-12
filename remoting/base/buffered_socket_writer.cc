@@ -47,7 +47,7 @@ std::unique_ptr<BufferedSocketWriter> BufferedSocketWriter::CreateForSocket(
 BufferedSocketWriter::BufferedSocketWriter() : weak_factory_(this) {}
 
 BufferedSocketWriter::~BufferedSocketWriter() {
-  STLDeleteElements(&queue_);
+  base::STLDeleteElements(&queue_);
 }
 
 void BufferedSocketWriter::Start(

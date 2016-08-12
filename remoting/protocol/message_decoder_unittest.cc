@@ -107,7 +107,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
     EXPECT_EQ((index % 2) != 0, message->key_event().pressed());
     ++index;
   }
-  STLDeleteElements(&message_list);
+  base::STLDeleteElements(&message_list);
 }
 
 TEST(MessageDecoderTest, SmallReads) {

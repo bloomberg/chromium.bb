@@ -50,7 +50,7 @@ class MessageReaderTest : public testing::Test {
     reader_.reset(new MessageReader());
   }
 
-  void TearDown() override { STLDeleteElements(&messages_); }
+  void TearDown() override { base::STLDeleteElements(&messages_); }
 
   void InitReader() {
     reader_->StartReading(

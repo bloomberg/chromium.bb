@@ -48,7 +48,7 @@ TEST_F(NativeMessagingWriterTest, GoodMessage) {
   int read = read_file_.ReadAtCurrentPos(reinterpret_cast<char*>(&length), 4);
   EXPECT_EQ(4, read);
   std::string content(length, '\0');
-  read = read_file_.ReadAtCurrentPos(string_as_array(&content), length);
+  read = read_file_.ReadAtCurrentPos(base::string_as_array(&content), length);
   EXPECT_EQ(static_cast<int>(length), read);
 
   // |content| should now contain serialized |message|.
@@ -80,7 +80,7 @@ TEST_F(NativeMessagingWriterTest, SecondMessage) {
     read = read_file_.ReadAtCurrentPos(reinterpret_cast<char*>(&length), 4);
     EXPECT_EQ(4, read) << "i = " << i;
     content.resize(length);
-    read = read_file_.ReadAtCurrentPos(string_as_array(&content), length);
+    read = read_file_.ReadAtCurrentPos(base::string_as_array(&content), length);
     EXPECT_EQ(static_cast<int>(length), read) << "i = " << i;
   }
 

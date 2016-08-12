@@ -72,10 +72,10 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 }
 
 JingleSession::~JingleSession() {
-  STLDeleteContainerPointers(pending_requests_.begin(),
-                             pending_requests_.end());
-  STLDeleteContainerPointers(transport_info_requests_.begin(),
-                             transport_info_requests_.end());
+  base::STLDeleteContainerPointers(pending_requests_.begin(),
+                                   pending_requests_.end());
+  base::STLDeleteContainerPointers(transport_info_requests_.begin(),
+                                   transport_info_requests_.end());
 
   session_manager_->SessionDestroyed(this);
 }
