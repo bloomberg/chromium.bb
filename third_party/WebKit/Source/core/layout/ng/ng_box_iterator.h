@@ -6,6 +6,7 @@
 #define NGBoxIterator_h
 
 #include "core/layout/LayoutObject.h"
+#include "core/layout/ng/ng_box.h"
 
 namespace blink {
 
@@ -18,21 +19,21 @@ class CORE_EXPORT NGBoxIterator
   class iterator {
    public:
     iterator& operator=(const iterator& otherValue);
-    iterator(LayoutObject* layoutObject) : m_layoutObject(layoutObject) {}
+    iterator(NGBox box) : box_(box) {}
     iterator& operator++();
     bool operator!=(const iterator& other);
     NGBox operator*();
 
    private:
-    LayoutObject* m_layoutObject;
+    NGBox box_;
   };
-  explicit NGBoxIterator(LayoutObject*);
+  explicit NGBoxIterator(NGBox);
 
   iterator begin() const;
-  iterator end() const { return iterator(nullptr); }
+  iterator end() const { return iterator(NGBox()); }
 
  private:
-  LayoutObject* m_layoutObject;
+  NGBox box_;
 };
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
+#include "core/layout/ng/ng_box_iterator.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/LayoutBox.h"
 
@@ -24,4 +25,11 @@ const ComputedStyle* NGBox::style() const {
   return m_layoutBox->style();
 }
 
+NGBoxIterator NGBox::iterator() {
+  return NGBoxIterator(*this);
+}
+
+NGBox NGBox::nextSibling() const {
+  return m_layoutBox ? NGBox(m_layoutBox->nextSibling()) : NGBox(nullptr);
+}
 }  // namespace blink

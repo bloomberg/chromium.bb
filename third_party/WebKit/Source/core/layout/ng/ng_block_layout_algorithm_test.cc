@@ -28,7 +28,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
 
   NGConstraintSpace space(LayoutUnit(100), LayoutUnit(-1));
 
-  NGBlockLayoutAlgorithm algorithm(style_, NGBoxIterator(nullptr));
+  NGBlockLayoutAlgorithm algorithm(style_, NGBoxIterator(NGBox()));
   NGFragment* frag = algorithm.layout(space);
   EXPECT_EQ(frag->inlineSize(), LayoutUnit(30));
   EXPECT_EQ(frag->blockSize(), LayoutUnit(40));

@@ -7,33 +7,29 @@
 
 namespace blink {
 
-NGBoxIterator::NGBoxIterator(LayoutObject* layoutObject)
-    : m_layoutObject(layoutObject) {}
+NGBoxIterator::NGBoxIterator(NGBox box) : box_(box) {}
 
 NGBoxIterator::iterator& NGBoxIterator::iterator::operator=(
     const NGBoxIterator::iterator& otherValue) {
-  m_layoutObject = otherValue.m_layoutObject;
+  box_ = otherValue.box_;
   return (*this);
 }
 
 NGBoxIterator::iterator& NGBoxIterator::iterator::operator++() {
-  if (m_layoutObject)
-    m_layoutObject = m_layoutObject->nextSibling();
+  box_ = box_.nextSibling();
   return (*this);
 }
 
 bool NGBoxIterator::iterator::operator!=(const iterator& other) {
-  return m_layoutObject != other.m_layoutObject;
+  return box_ != other.box_;
 }
 
 NGBox NGBoxIterator::iterator::operator*() {
-  return NGBox(m_layoutObject);
+  return box_;
 }
 
 NGBoxIterator::iterator NGBoxIterator::begin() const {
-  if (m_layoutObject)
-    return iterator(m_layoutObject->slowFirstChild());
-  return iterator(nullptr);
+  return iterator(box_);
 }
 
 }  // namespace blink
