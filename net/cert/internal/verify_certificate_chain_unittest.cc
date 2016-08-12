@@ -15,15 +15,14 @@ namespace {
 class VerifyCertificateChainDelegate {
  public:
   static void Verify(const ParsedCertificateList& chain,
-                     const TrustAnchors& anchors,
+                     const scoped_refptr<TrustAnchor>& trust_anchor,
                      const der::GeneralizedTime& time,
                      bool expected_result) {
-    ASSERT_EQ(1U, anchors.size());
-    ASSERT_TRUE(anchors.front().get());
+    ASSERT_TRUE(trust_anchor);
 
     SimpleSignaturePolicy signature_policy(1024);
 
-    bool result = VerifyCertificateChain(chain, anchors.front().get(),
+    bool result = VerifyCertificateChain(chain, trust_anchor.get(),
                                          &signature_policy, time);
 
     ASSERT_EQ(expected_result, result);

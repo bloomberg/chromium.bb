@@ -372,7 +372,27 @@ def data_to_pem(block_header, block_data):
           base64.b64encode(block_data), block_header)
 
 
-def write_test_file(description, chain, trusted_certs, utc_time, verify_result,
+class TrustAnchor(object):
+  """Structure that represents a trust anchor."""
+
+  def __init__(self, cert, constrained=False):
+    self.cert = cert
+    self.constrained = constrained
+
+
+  def get_pem(self):
+    """Returns a PEM block string describing this trust anchor."""
+
+    cert_data = self.cert.get_cert_pem()
+    block_name = 'TRUST_ANCHOR_UNCONSTRAINED'
+    if self.constrained:
+      block_name = 'TRUST_ANCHOR_CONSTRAINED'
+
+    # Use a different block name in the .pem file, depending on the anchor type.
+    return cert_data.replace('CERTIFICATE', block_name)
+
+
+def write_test_file(description, chain, trust_anchor, utc_time, verify_result,
                     out_pem=None):
   """Writes a test file that contains all the inputs necessary to run a
   verification on a certificate chain"""
@@ -384,13 +404,7 @@ def write_test_file(description, chain, trusted_certs, utc_time, verify_result,
   for cert in chain:
     test_data += '\n' + cert.get_cert_pem()
 
-  # Write the trust store.
-  for cert in trusted_certs:
-    cert_data = cert.get_cert_pem()
-    # Use a different block type in the .pem file.
-    cert_data = cert_data.replace('CERTIFICATE', 'TRUSTED_CERTIFICATE')
-    test_data += '\n' + cert_data
-
+  test_data += '\n' + trust_anchor.get_pem()
   test_data += '\n' + data_to_pem('TIME', utc_time)
 
   verify_result_string = 'SUCCESS' if verify_result else 'FAIL'

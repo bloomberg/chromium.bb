@@ -9,7 +9,7 @@ certificate is wrong."""
 
 import common
 
-# Self-signed root certificate (part of trust store).
+# Self-signed root certificate (used as trust anchor).
 root = common.create_self_signed_root_certificate('Root')
 
 # Intermediate certificate to include in the certificate chain.
@@ -25,7 +25,7 @@ wrong_intermediate = common.create_intermediate_certificate('Intermediate',
 target = common.create_end_entity_certificate('Target', wrong_intermediate)
 
 chain = [target, intermediate]
-trusted = [root]
+trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = False
 

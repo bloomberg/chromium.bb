@@ -9,7 +9,7 @@ constraints on trust anchors are not enforced.."""
 
 import common
 
-# Self-signed root certificate (part of trust store).
+# Self-signed root certificate (used as trust anchor).
 root = common.create_self_signed_root_certificate('Root')
 root.set_validity_range(common.JANUARY_1_2015_UTC, common.MARCH_1_2015_UTC)
 
@@ -23,7 +23,7 @@ target = common.create_end_entity_certificate('Target', intermediate)
 target.set_validity_range(common.JANUARY_1_2015_UTC, common.JANUARY_1_2016_UTC)
 
 chain = [target, intermediate]
-trusted = [root]
+trusted = common.TrustAnchor(root, constrained=False)
 
 # Both the target and intermediate are valid at this time, however the
 # root is not. This doesn't matter since the root certificate is

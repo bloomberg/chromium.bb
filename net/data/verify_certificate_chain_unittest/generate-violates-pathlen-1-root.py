@@ -9,7 +9,7 @@ invalid chain, however constraints on trust anchors are not validated."""
 
 import common
 
-# Self-signed root certificate (part of trust store).
+# Self-signed root certificate (used as trust anchor).
 root = common.create_self_signed_root_certificate('Root')
 root.get_extensions().set_property('basicConstraints',
                                    'critical,CA:true,pathlen:1')
@@ -25,7 +25,7 @@ intermediate2 = common.create_intermediate_certificate('Intermediate2',
 target = common.create_end_entity_certificate('Target', intermediate2)
 
 chain = [target, intermediate2, intermediate1]
-trusted = [root]
+trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = True
 

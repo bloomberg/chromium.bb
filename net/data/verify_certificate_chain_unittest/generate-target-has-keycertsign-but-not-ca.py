@@ -10,7 +10,7 @@ true."""
 
 import common
 
-# Self-signed root certificate (part of trust store).
+# Self-signed root certificate (used as trust anchor).
 root = common.create_self_signed_root_certificate('Root')
 
 # Intermediate certificate.
@@ -23,7 +23,7 @@ target.get_extensions().set_property('keyUsage',
 
 
 chain = [target, intermediate]
-trusted = [root]
+trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = False
 

@@ -8,7 +8,7 @@ and a target certificate using RSA. Verification is expected to succeed."""
 
 import common
 
-# Self-signed root certificate (part of trust store), using RSA.
+# Self-signed root certificate (used as trust anchor). using RSA.
 root = common.create_self_signed_root_certificate('Root')
 
 # Intermediate using an EC key for the P-384 curve.
@@ -19,7 +19,7 @@ intermediate.generate_ec_key('secp384r1')
 target = common.create_end_entity_certificate('Target', intermediate)
 
 chain = [target, intermediate]
-trusted = [root]
+trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = True
 

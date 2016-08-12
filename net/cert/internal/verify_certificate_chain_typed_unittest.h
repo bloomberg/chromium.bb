@@ -22,96 +22,14 @@ class VerifyCertificateChainTest : public ::testing::Test {
  public:
   void RunTest(const char* file_name) {
     ParsedCertificateList chain;
-    TrustAnchors anchors;
+    scoped_refptr<TrustAnchor> trust_anchor;
     der::GeneralizedTime time;
     bool expected_result;
 
-    ReadTestFromFile(file_name, &chain, &anchors, &time, &expected_result);
+    ReadVerifyCertChainTestFromFile(file_name, &chain, &trust_anchor, &time,
+                                    &expected_result);
 
-    TestDelegate::Verify(chain, anchors, time, expected_result);
-  }
-
- private:
-  // Reads a data file from the unit-test data.
-  std::string ReadTestFileToString(const std::string& file_name) {
-    // Compute the full path, relative to the src/ directory.
-    base::FilePath src_root;
-    PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
-    base::FilePath filepath = src_root.AppendASCII(
-        std::string("net/data/verify_certificate_chain_unittest/") + file_name);
-
-    // Read the full contents of the file.
-    std::string file_data;
-    if (!base::ReadFileToString(filepath, &file_data)) {
-      ADD_FAILURE() << "Couldn't read file: " << filepath.value();
-      return std::string();
-    }
-
-    return file_data;
-  }
-
-  // Reads a test case from |file_name|. Test cases are comprised of a
-  // certificate chain, trust store, a timestamp to validate at, and the
-  // expected result of verification.
-  void ReadTestFromFile(const std::string& file_name,
-                        ParsedCertificateList* chain,
-                        TrustAnchors* anchors,
-                        der::GeneralizedTime* time,
-                        bool* verify_result) {
-    chain->clear();
-    anchors->clear();
-
-    std::string file_data = ReadTestFileToString(file_name);
-
-    std::vector<std::string> pem_headers;
-
-    const char kCertificateHeader[] = "CERTIFICATE";
-    const char kTrustedCertificateHeader[] = "TRUSTED_CERTIFICATE";
-    const char kTimeHeader[] = "TIME";
-    const char kResultHeader[] = "VERIFY_RESULT";
-
-    pem_headers.push_back(kCertificateHeader);
-    pem_headers.push_back(kTrustedCertificateHeader);
-    pem_headers.push_back(kTimeHeader);
-    pem_headers.push_back(kResultHeader);
-
-    bool has_time = false;
-    bool has_result = false;
-
-    PEMTokenizer pem_tokenizer(file_data, pem_headers);
-    while (pem_tokenizer.GetNext()) {
-      const std::string& block_type = pem_tokenizer.block_type();
-      const std::string& block_data = pem_tokenizer.data();
-
-      if (block_type == kCertificateHeader) {
-        ASSERT_TRUE(net::ParsedCertificate::CreateAndAddToVector(
-            reinterpret_cast<const uint8_t*>(block_data.data()),
-            block_data.size(),
-            net::ParsedCertificate::DataSource::INTERNAL_COPY, {}, chain));
-      } else if (block_type == kTrustedCertificateHeader) {
-        scoped_refptr<ParsedCertificate> root =
-            net::ParsedCertificate::CreateFromCertificateData(
-                reinterpret_cast<const uint8_t*>(block_data.data()),
-                block_data.size(),
-                net::ParsedCertificate::DataSource::INTERNAL_COPY, {});
-        ASSERT_TRUE(root);
-        anchors->push_back(
-            TrustAnchor::CreateFromCertificateNoConstraints(std::move(root)));
-      } else if (block_type == kTimeHeader) {
-        ASSERT_FALSE(has_time) << "Duplicate " << kTimeHeader;
-        has_time = true;
-        ASSERT_TRUE(der::ParseUTCTime(der::Input(&block_data), time));
-      } else if (block_type == kResultHeader) {
-        ASSERT_FALSE(has_result) << "Duplicate " << kResultHeader;
-        ASSERT_TRUE(block_data == "SUCCESS" || block_data == "FAIL")
-            << "Unrecognized result: " << block_data;
-        has_result = true;
-        *verify_result = block_data == "SUCCESS";
-      }
-    }
-
-    ASSERT_TRUE(has_time);
-    ASSERT_TRUE(has_result);
+    TestDelegate::Verify(chain, trust_anchor, time, expected_result);
   }
 };
 
@@ -256,7 +174,11 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, KeyRolloverNewChain) {
   this->RunTest("key-rollover-newchain.pem");
 }
 
-// TODO(eroman): Add test that invalidate validity dates where the day or month
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, UnknownRoot) {
+  this->RunTest("unknown-root.pem");
+}
+
+// TODO(eroman): Add test that invalid validity dates where the day or month
 // ordinal not in range, like "March 39, 2016" are rejected.
 
 REGISTER_TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest,
@@ -289,20 +211,7 @@ REGISTER_TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest,
                            KeyRolloverOldChain,
                            KeyRolloverRolloverChain,
                            KeyRolloverLongRolloverChain,
-                           KeyRolloverNewChain);
-
-// Tests that have zero roots or more than one root.
-template <typename TestDelegate>
-class VerifyCertificateChainNonSingleRootTest
-    : public VerifyCertificateChainTest<TestDelegate> {};
-
-TYPED_TEST_CASE_P(VerifyCertificateChainNonSingleRootTest);
-
-TYPED_TEST_P(VerifyCertificateChainNonSingleRootTest, UnknownRoot) {
-  this->RunTest("unknown-root.pem");
-}
-
-REGISTER_TYPED_TEST_CASE_P(VerifyCertificateChainNonSingleRootTest,
+                           KeyRolloverNewChain,
                            UnknownRoot);
 
 }  // namespace net

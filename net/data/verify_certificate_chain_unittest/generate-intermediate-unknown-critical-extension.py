@@ -10,7 +10,7 @@ unrecognized critical extension."""
 
 import common
 
-# Self-signed root certificate (part of trust store).
+# Self-signed root certificate (used as trust anchor).
 root = common.create_self_signed_root_certificate('Root')
 
 # Intermediate that has an unknown critical extension.
@@ -22,7 +22,7 @@ intermediate.get_extensions().add_property('1.2.3.4',
 target = common.create_end_entity_certificate('Target', intermediate)
 
 chain = [target, intermediate]
-trusted = [root]
+trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = False
 

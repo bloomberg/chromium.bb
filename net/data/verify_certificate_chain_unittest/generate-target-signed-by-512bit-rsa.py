@@ -9,7 +9,7 @@ verification is expected to fail."""
 
 import common
 
-# Self-signed root certificate (part of trust store).
+# Self-signed root certificate (used as trust anchor).
 root = common.create_self_signed_root_certificate('Root')
 
 # Intermediate with a very weak key size (512-bit RSA).
@@ -20,7 +20,7 @@ intermediate.generate_rsa_key(512)
 target = common.create_end_entity_certificate('Target', intermediate)
 
 chain = [target, intermediate]
-trusted = [root]
+trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = False
 

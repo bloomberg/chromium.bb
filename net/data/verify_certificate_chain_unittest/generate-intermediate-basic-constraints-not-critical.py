@@ -10,7 +10,7 @@ basicConstraints indicates CA=true as expected."""
 
 import common
 
-# Self-signed root certificate (part of trust store).
+# Self-signed root certificate (used as trust anchor).
 root = common.create_self_signed_root_certificate('Root')
 
 # Intermediate with non-critical basic constarints.
@@ -21,7 +21,7 @@ intermediate.get_extensions().set_property('basicConstraints', 'CA:true')
 target = common.create_end_entity_certificate('Target', intermediate)
 
 chain = [target, intermediate]
-trusted = [root]
+trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = True
 

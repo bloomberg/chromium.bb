@@ -9,7 +9,7 @@ does not chain to a known root."""
 
 import common
 
-# Self-signed root certificate, which is NOT added to the trust store.
+# Self-signed root certificate, which is NOT saved as the trust anchor.
 root = common.create_self_signed_root_certificate('Root')
 
 # Intermediate certificate.
@@ -18,8 +18,12 @@ intermediate = common.create_intermediate_certificate('Intermediate', root)
 # Target certificate.
 target = common.create_end_entity_certificate('Target', intermediate)
 
+# Self-signed root certificate, not part of chain, which is saved as trust
+# anchor.
+bogus_root = common.create_self_signed_root_certificate('BogusRoot')
+
 chain = [target, intermediate]
-trusted = []  # Note that this lacks |root|
+trusted = common.TrustAnchor(bogus_root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = False
 

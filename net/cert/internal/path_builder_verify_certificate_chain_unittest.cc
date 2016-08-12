@@ -16,15 +16,14 @@ namespace {
 class PathBuilderDelegate {
  public:
   static void Verify(const ParsedCertificateList& chain,
-                     const TrustAnchors& anchors,
+                     const scoped_refptr<TrustAnchor>& trust_anchor,
                      const der::GeneralizedTime& time,
                      bool expected_result) {
     SimpleSignaturePolicy signature_policy(1024);
     ASSERT_FALSE(chain.empty());
 
     TrustStore trust_store;
-    for (const auto& anchor : anchors)
-      trust_store.AddTrustAnchor(anchor);
+    trust_store.AddTrustAnchor(trust_anchor);
 
     CertIssuerSourceStatic intermediate_cert_issuer_source;
     for (size_t i = 1; i < chain.size(); ++i)
@@ -47,10 +46,6 @@ class PathBuilderDelegate {
 
 INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
                               VerifyCertificateChainSingleRootTest,
-                              PathBuilderDelegate);
-
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              VerifyCertificateChainNonSingleRootTest,
                               PathBuilderDelegate);
 
 }  // namespace net

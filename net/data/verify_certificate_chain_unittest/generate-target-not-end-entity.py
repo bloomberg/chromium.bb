@@ -9,7 +9,7 @@ code accepts any target certificate."""
 
 import common
 
-# Self-signed root certificate (part of trust store).
+# Self-signed root certificate (used as trust anchor).
 root = common.create_self_signed_root_certificate('Root')
 
 # Intermediate certificate.
@@ -19,7 +19,7 @@ intermediate = common.create_intermediate_certificate('Intermediate', root)
 target = common.create_intermediate_certificate('Target', intermediate)
 
 chain = [target, intermediate]
-trusted = [root]
+trusted = common.TrustAnchor(root, constrained=False)
 time = common.DEFAULT_TIME
 verify_result = True
 

@@ -72,10 +72,10 @@ target = common.create_end_entity_certificate('Target', oldintermediate)
 oldchain = [target, oldintermediate]
 rolloverchain = [target, newintermediate, newrootrollover]
 longrolloverchain = [target, newintermediate, newroot, newrootrollover]
-oldtrusted = [oldroot]
+oldtrusted = common.TrustAnchor(oldroot, constrained=False)
 
 newchain = [target, newintermediate]
-newtrusted = [newroot]
+newtrusted = common.TrustAnchor(newroot, constrained=False)
 
 time = common.DEFAULT_TIME
 verify_result = True

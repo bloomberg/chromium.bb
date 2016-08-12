@@ -100,67 +100,6 @@ class AsyncCertIssuerSourceStatic : public CertIssuerSource {
   int num_async_gets_ = 0;
 };
 
-// Reads a data file from the unit-test data.
-std::string ReadTestFileToString(const std::string& file_name) {
-  // Compute the full path, relative to the src/ directory.
-  base::FilePath src_root;
-  PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
-  base::FilePath filepath = src_root.AppendASCII(file_name);
-
-  // Read the full contents of the file.
-  std::string file_data;
-  if (!base::ReadFileToString(filepath, &file_data)) {
-    ADD_FAILURE() << "Couldn't read file: " << filepath.value();
-    return std::string();
-  }
-
-  return file_data;
-}
-
-// Reads a verify_certificate_chain_unittest-style test case from |file_name|.
-// Test cases are comprised of a certificate chain, trust store, a timestamp to
-// validate at, and the expected result of verification (though the expected
-// result is ignored here).
-void ReadVerifyCertChainTestFromFile(const std::string& file_name,
-                                     std::vector<std::string>* chain,
-                                     scoped_refptr<ParsedCertificate>* root,
-                                     der::GeneralizedTime* time) {
-  chain->clear();
-
-  std::string file_data = ReadTestFileToString(file_name);
-
-  std::vector<std::string> pem_headers;
-
-  const char kCertificateHeader[] = "CERTIFICATE";
-  const char kTrustedCertificateHeader[] = "TRUSTED_CERTIFICATE";
-  const char kTimeHeader[] = "TIME";
-
-  pem_headers.push_back(kCertificateHeader);
-  pem_headers.push_back(kTrustedCertificateHeader);
-  pem_headers.push_back(kTimeHeader);
-
-  bool has_time = false;
-
-  PEMTokenizer pem_tokenizer(file_data, pem_headers);
-  while (pem_tokenizer.GetNext()) {
-    const std::string& block_type = pem_tokenizer.block_type();
-    const std::string& block_data = pem_tokenizer.data();
-
-    if (block_type == kCertificateHeader) {
-      chain->push_back(block_data);
-    } else if (block_type == kTrustedCertificateHeader) {
-      *root = ParsedCertificate::CreateFromCertificateCopy(block_data, {});
-      ASSERT_TRUE(*root);
-    } else if (block_type == kTimeHeader) {
-      ASSERT_FALSE(has_time) << "Duplicate " << kTimeHeader;
-      has_time = true;
-      ASSERT_TRUE(der::ParseUTCTime(der::Input(&block_data), time));
-    }
-  }
-
-  ASSERT_TRUE(has_time);
-}
-
 ::testing::AssertionResult ReadTestPem(const std::string& file_name,
                                        const std::string& block_name,
                                        std::string* result) {
@@ -548,28 +487,23 @@ class PathBuilderKeyRolloverTest : public ::testing::Test {
   PathBuilderKeyRolloverTest() : signature_policy_(1024) {}
 
   void SetUp() override {
-    std::vector<std::string> path;
+    ParsedCertificateList path;
+    bool unused;
 
-    ReadVerifyCertChainTestFromFile(
-        "net/data/verify_certificate_chain_unittest/key-rollover-oldchain.pem",
-        &path, &oldroot_, &time_);
+    ReadVerifyCertChainTestFromFile("key-rollover-oldchain.pem", &path,
+                                    &oldroot_, &time_, &unused);
     ASSERT_EQ(2U, path.size());
-    target_ = ParsedCertificate::CreateFromCertificateCopy(path[0], {});
-    oldintermediate_ =
-        ParsedCertificate::CreateFromCertificateCopy(path[1], {});
+    target_ = path[0];
+    oldintermediate_ = path[1];
     ASSERT_TRUE(target_);
     ASSERT_TRUE(oldintermediate_);
 
-    ReadVerifyCertChainTestFromFile(
-        "net/data/verify_certificate_chain_unittest/"
-        "key-rollover-longrolloverchain.pem",
-        &path, &oldroot_, &time_);
+    ReadVerifyCertChainTestFromFile("key-rollover-longrolloverchain.pem", &path,
+                                    &oldroot_, &time_, &unused);
     ASSERT_EQ(4U, path.size());
-    newintermediate_ =
-        ParsedCertificate::CreateFromCertificateCopy(path[1], {});
-    newroot_ = ParsedCertificate::CreateFromCertificateCopy(path[2], {});
-    newrootrollover_ =
-        ParsedCertificate::CreateFromCertificateCopy(path[3], {});
+    newintermediate_ = path[1];
+    newroot_ = path[2];
+    newrootrollover_ = path[3];
     ASSERT_TRUE(newintermediate_);
     ASSERT_TRUE(newroot_);
     ASSERT_TRUE(newrootrollover_);
@@ -588,7 +522,7 @@ class PathBuilderKeyRolloverTest : public ::testing::Test {
   scoped_refptr<ParsedCertificate> target_;
   scoped_refptr<ParsedCertificate> oldintermediate_;
   scoped_refptr<ParsedCertificate> newintermediate_;
-  scoped_refptr<ParsedCertificate> oldroot_;
+  scoped_refptr<TrustAnchor> oldroot_;
   scoped_refptr<ParsedCertificate> newroot_;
   scoped_refptr<ParsedCertificate> newrootrollover_;
 
@@ -601,7 +535,7 @@ class PathBuilderKeyRolloverTest : public ::testing::Test {
 TEST_F(PathBuilderKeyRolloverTest, TestRolloverOnlyOldRootTrusted) {
   // Only oldroot is trusted.
   TrustStore trust_store;
-  AddTrustedCertificate(oldroot_, &trust_store);
+  trust_store.AddTrustAnchor(oldroot_);
 
   // Old intermediate cert is not provided, so the pathbuilder will need to go
   // through the rollover cert.
@@ -626,7 +560,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverOnlyOldRootTrusted) {
   ASSERT_EQ(2U, path0.certs.size());
   EXPECT_EQ(target_, path0.certs[0]);
   EXPECT_EQ(newintermediate_, path0.certs[1]);
-  EXPECT_EQ(oldroot_, path0.trust_anchor->cert());
+  EXPECT_EQ(oldroot_, path0.trust_anchor);
 
   // Path builder will next attempt:
   // target <- newintermediate <- newrootrollover <- oldroot
@@ -638,7 +572,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverOnlyOldRootTrusted) {
   EXPECT_EQ(target_, path1.certs[0]);
   EXPECT_EQ(newintermediate_, path1.certs[1]);
   EXPECT_EQ(newrootrollover_, path1.certs[2]);
-  EXPECT_EQ(oldroot_, path1.trust_anchor->cert());
+  EXPECT_EQ(oldroot_, path1.trust_anchor);
 }
 
 // Tests that if both old and new roots are trusted it can build a path through
@@ -648,7 +582,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverOnlyOldRootTrusted) {
 TEST_F(PathBuilderKeyRolloverTest, TestRolloverBothRootsTrusted) {
   // Both oldroot and newroot are trusted.
   TrustStore trust_store;
-  AddTrustedCertificate(oldroot_, &trust_store);
+  trust_store.AddTrustAnchor(oldroot_);
   AddTrustedCertificate(newroot_, &trust_store);
 
   // Both old and new intermediates + rollover cert are provided.
@@ -678,7 +612,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverBothRootsTrusted) {
   if (path.certs[1] != newintermediate_) {
     DVLOG(1) << "USED OLD";
     EXPECT_EQ(oldintermediate_, path.certs[1]);
-    EXPECT_EQ(oldroot_, path.trust_anchor->cert());
+    EXPECT_EQ(oldroot_, path.trust_anchor);
   } else {
     DVLOG(1) << "USED NEW";
     EXPECT_EQ(newintermediate_, path.certs[1]);
@@ -693,7 +627,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
   // Both newroot and oldroot are trusted.
   TrustStore trust_store;
   AddTrustedCertificate(newroot_, &trust_store);
-  AddTrustedCertificate(oldroot_, &trust_store);
+  trust_store.AddTrustAnchor(oldroot_);
 
   // Only oldintermediate is supplied, so the path with newroot should fail,
   // oldroot should succeed.
@@ -734,14 +668,14 @@ TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
   ASSERT_EQ(2U, path.certs.size());
   EXPECT_EQ(target_, path.certs[0]);
   EXPECT_EQ(oldintermediate_, path.certs[1]);
-  EXPECT_EQ(oldroot_, path.trust_anchor->cert());
+  EXPECT_EQ(oldroot_, path.trust_anchor);
 }
 
 // Tests that the path builder doesn't build longer than necessary paths.
 TEST_F(PathBuilderKeyRolloverTest, TestRolloverLongChain) {
   // Only oldroot is trusted.
   TrustStore trust_store;
-  AddTrustedCertificate(oldroot_, &trust_store);
+  trust_store.AddTrustAnchor(oldroot_);
 
   // New intermediate and new root are provided synchronously.
   CertIssuerSourceStatic sync_certs;
@@ -771,7 +705,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverLongChain) {
   ASSERT_EQ(2U, path0.certs.size());
   EXPECT_EQ(target_, path0.certs[0]);
   EXPECT_EQ(newintermediate_, path0.certs[1]);
-  EXPECT_EQ(oldroot_, path0.trust_anchor->cert());
+  EXPECT_EQ(oldroot_, path0.trust_anchor);
 
   // Path builder will next attempt:
   // target <- newintermediate <- newroot <- oldroot
@@ -782,7 +716,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverLongChain) {
   EXPECT_EQ(target_, path1.certs[0]);
   EXPECT_EQ(newintermediate_, path1.certs[1]);
   EXPECT_EQ(newroot_, path1.certs[2]);
-  EXPECT_EQ(oldroot_, path1.trust_anchor->cert());
+  EXPECT_EQ(oldroot_, path1.trust_anchor);
 
   // Path builder will skip:
   // target <- newintermediate <- newroot <- newrootrollover <- ...
@@ -797,7 +731,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverLongChain) {
   EXPECT_EQ(target_, path2.certs[0]);
   EXPECT_EQ(newintermediate_, path2.certs[1]);
   EXPECT_EQ(newrootrollover_, path2.certs[2]);
-  EXPECT_EQ(oldroot_, path2.trust_anchor->cert());
+  EXPECT_EQ(oldroot_, path2.trust_anchor);
 }
 
 // If the target cert is a trust anchor, however is not itself *signed* by a
@@ -827,7 +761,7 @@ TEST_F(PathBuilderKeyRolloverTest,
        TestEndEntityHasSameNameAndSpkiAsIntermediate) {
   // Trust oldroot.
   TrustStore trust_store;
-  AddTrustedCertificate(oldroot_, &trust_store);
+  trust_store.AddTrustAnchor(oldroot_);
 
   // New root rollover is provided synchronously.
   CertIssuerSourceStatic sync_certs;
