@@ -1905,7 +1905,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   if (shouldShowFullscreenToolbar_ == visible)
     return;
 
-  [fullscreenToolbarController_ setToolbarFraction:0.0];
   shouldShowFullscreenToolbar_ = visible;
   [self adjustUIForSlidingFullscreenStyle:
             shouldShowFullscreenToolbar_ ? fullscreen_mac::OMNIBOX_TABS_PRESENT
