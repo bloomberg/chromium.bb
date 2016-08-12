@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <xf86drm.h>
 #include <tegra_drm.h>
 
@@ -140,11 +141,31 @@ static int drv_tegra_bo_create(struct bo *bo, uint32_t width,
 	return 0;
 }
 
+static void *drv_tegra_bo_map(struct bo *bo)
+{
+	int ret;
+	struct drm_tegra_gem_mmap gem_map;
+
+	memset(&gem_map, 0, sizeof(gem_map));
+	gem_map.handle = bo->handles[0].u32;
+
+	ret = drmCommandWriteRead(bo->drv->fd, DRM_TEGRA_GEM_MMAP, &gem_map,
+				  sizeof(gem_map));
+	if (ret < 0) {
+		fprintf(stderr, "drv: DRM_TEGRA_GEM_MMAP failed\n");
+		return MAP_FAILED;
+	}
+
+	return mmap(0, bo->sizes[0], PROT_READ | PROT_WRITE, MAP_SHARED,
+		    bo->drv->fd, gem_map.offset);
+}
+
 const struct backend backend_tegra =
 {
 	.name = "tegra",
 	.bo_create = drv_tegra_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_map = drv_tegra_bo_map,
 	.format_list = {
 		/* Linear support */
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},

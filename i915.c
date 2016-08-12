@@ -6,10 +6,10 @@
 
 #ifdef DRV_I915
 
-#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/mman.h>
 #include <xf86drm.h>
 #include <i915_drm.h>
 
@@ -184,6 +184,24 @@ static int drv_i915_bo_create(struct bo *bo,
 	return 0;
 }
 
+static void *drv_i915_bo_map(struct bo *bo)
+{
+	int ret;
+	struct drm_i915_gem_mmap_gtt gem_map;
+
+	memset(&gem_map, 0, sizeof(gem_map));
+	gem_map.handle = bo->handles[0].u32;
+
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_MMAP_GTT, &gem_map);
+	if (ret) {
+		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_MMAP_GTT failed\n");
+		return MAP_FAILED;
+	}
+
+	return mmap(0, bo->sizes[0], PROT_READ | PROT_WRITE, MAP_SHARED,
+		    bo->drv->fd, gem_map.offset);
+}
+
 const struct backend backend_i915 =
 {
 	.name = "i915",
@@ -191,6 +209,7 @@ const struct backend backend_i915 =
 	.close = drv_i915_close,
 	.bo_create = drv_i915_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_map = drv_i915_bo_map,
 	.format_list = {
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},

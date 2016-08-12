@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <xf86drm.h>
 
 #include "drv_priv.h"
@@ -242,6 +243,32 @@ void drv_bo_destroy(struct bo *bo)
 		bo->drv->backend->bo_destroy(bo);
 
 	free(bo);
+}
+
+void *
+drv_bo_map(struct bo *bo)
+{
+	assert(drv_num_buffers_per_bo(bo) == 1);
+
+	if (!bo->map_data || bo->map_data == MAP_FAILED)
+		bo->map_data = bo->drv->backend->bo_map(bo);
+
+	return bo->map_data;
+}
+
+int
+drv_bo_unmap(struct bo *bo)
+{
+	int ret = -1;
+
+	assert(drv_num_buffers_per_bo(bo) == 1);
+
+	if (bo->map_data && bo->map_data != MAP_FAILED)
+		ret = munmap(bo->map_data, bo->sizes[0]);
+
+	bo->map_data = NULL;
+
+	return ret;
 }
 
 struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)

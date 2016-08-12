@@ -27,6 +27,7 @@ struct bo
 	uint32_t strides[DRV_MAX_PLANES];
 	uint64_t format_modifiers[DRV_MAX_PLANES];
 	void *priv;
+	void *map_data;
 };
 
 struct driver {
@@ -44,6 +45,7 @@ struct backend
 	void (*close)(struct driver *drv);
 	int (*bo_create)(struct bo *bo, uint32_t width, uint32_t height,
 			 drv_format_t format, uint32_t flags);
+	void* (*bo_map)(struct bo *bo);
 	int (*bo_destroy)(struct bo *bo);
 	struct format_supported {
 		drv_format_t format;

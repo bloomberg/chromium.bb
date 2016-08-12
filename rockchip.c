@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <xf86drm.h>
 #include <rockchip_drm.h>
 
@@ -73,11 +74,32 @@ static int drv_rockchip_bo_create(struct bo *bo,
 	return ret;
 }
 
+static void *drv_rockchip_bo_map(struct bo *bo)
+{
+	int ret;
+	struct drm_rockchip_gem_map_off gem_map;
+
+	memset(&gem_map, 0, sizeof(gem_map));
+	gem_map.handle = bo->handles[0].u32;
+
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_ROCKCHIP_GEM_MAP_OFFSET,
+		       &gem_map);
+	if (ret) {
+		fprintf(stderr,
+			"drv: DRM_IOCTL_ROCKCHIP_GEM_MAP_OFFSET failed\n");
+		return MAP_FAILED;
+	}
+
+	return mmap(0, bo->sizes[0], PROT_READ | PROT_WRITE, MAP_SHARED,
+		    bo->drv->fd, gem_map.offset);
+}
+
 const struct backend backend_rockchip =
 {
 	.name = "rockchip",
 	.bo_create = drv_rockchip_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_map = drv_rockchip_bo_map,
 	.format_list = {
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <xf86drm.h>
 
 #include "drv_priv.h"
@@ -225,6 +226,24 @@ int drv_gem_bo_destroy(struct bo *bo)
 	return error;
 }
 
+void *drv_dumb_bo_map(struct bo *bo)
+{
+	int ret;
+	struct drm_mode_map_dumb map_dumb;
+
+	memset(&map_dumb, 0, sizeof(map_dumb));
+	map_dumb.handle = bo->handles[0].u32;
+
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_MAP_DUMB, &map_dumb);
+	if (ret) {
+		fprintf(stderr, "drv: DRM_IOCTL_MODE_MAP_DUMB failed \n");
+		return MAP_FAILED;
+	}
+
+	return mmap(0, bo->sizes[0], PROT_READ | PROT_WRITE, MAP_SHARED,
+		    bo->drv->fd, map_dumb.offset);
+}
+
 uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo,
 				  size_t plane)
 {
@@ -258,4 +277,22 @@ void drv_decrement_reference_count(struct driver *drv, struct bo *bo,
 	if (num > 0)
 		drmHashInsert(drv->buffer_table, bo->handles[plane].u32,
 			      (void *) (num - 1));
+}
+
+uint32_t drv_num_buffers_per_bo(struct bo *bo)
+{
+	uint32_t count = 0;
+	size_t plane, p;
+
+	for (plane = 0; plane < bo->num_planes; plane++) {
+		for (p = 0; p < plane; p++) {
+			if (bo->handles[p].u32 == bo->handles[plane].u32)
+				break;
+		}
+
+		if (p == plane)
+			count++;
+	}
+
+	return count;
 }

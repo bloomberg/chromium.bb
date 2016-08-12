@@ -82,11 +82,16 @@ cleanup_planes:
 	return ret;
 }
 
+/*
+ * Use dumb mapping with exynos even though a GEM buffer is created.
+ * libdrm does the same thing in exynos_drm.c
+ */
 const struct backend backend_exynos =
 {
 	.name = "exynos",
 	.bo_create = drv_exynos_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_map = drv_dumb_bo_map,
 	.format_list = {
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},
