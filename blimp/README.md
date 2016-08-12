@@ -21,3 +21,5 @@ For updating the fonts that blimp supports, read more at [fonts](docs/fonts.md).
 ## New to Markdown?
 
 For learning more about Markdown, read more at [markdown](docs/markdown.md).
+Also be sure to read the
+[Google style guide for Markdown](https://github.com/google/styleguide/blob/gh-pages/docguide/style.md).
