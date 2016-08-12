@@ -161,6 +161,7 @@ class CONTENT_EXPORT TextInputManager {
   // TextInputManager.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+  bool HasObserver(Observer* observer) const;
 
   RenderWidgetHostViewBase* active_view_for_testing() { return active_view_; }
   size_t GetRegisteredViewsCountForTesting();

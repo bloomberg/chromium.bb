@@ -266,6 +266,10 @@ void TextInputManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+bool TextInputManager::HasObserver(Observer* observer) const {
+  return observer_list_.HasObserver(observer);
+}
+
 size_t TextInputManager::GetRegisteredViewsCountForTesting() {
   return text_input_state_map_.size();
 }

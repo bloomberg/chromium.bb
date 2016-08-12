@@ -522,6 +522,11 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
     if (!is_guest_view_hack_)
       render_widget_host_->SetView(NULL);
   }
+
+  // In case the view is deleted (by cocoa view) before calling destroy, we need
+  // to remove this view from the observer list of TextInputManager.
+  if (text_input_manager_ && text_input_manager_->HasObserver(this))
+    text_input_manager_->RemoveObserver(this);
 }
 
 void RenderWidgetHostViewMac::SetDelegate(
@@ -541,6 +546,11 @@ ui::TextInputType RenderWidgetHostViewMac::GetTextInputType() {
   if (!GetTextInputManager() || !GetTextInputManager()->GetActiveWidget())
     return ui::TEXT_INPUT_TYPE_NONE;
   return GetTextInputManager()->GetTextInputState()->type;
+}
+
+RenderWidgetHostImpl* RenderWidgetHostViewMac::GetActiveWidget() {
+  return GetTextInputManager() ? GetTextInputManager()->GetActiveWidget()
+                               : nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2918,8 +2928,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // If we are handling a key down event, then ConfirmComposition() will be
   // called in keyEvent: method.
   if (!handlingKeyDown_) {
-    renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
-        base::string16(), gfx::Range::InvalidRange(), false);
+    if (renderWidgetHostView_->GetActiveWidget()) {
+      renderWidgetHostView_->GetActiveWidget()->ImeConfirmComposition(
+          base::string16(), gfx::Range::InvalidRange(), false);
+    }
   } else {
     unmarkTextCalled_ = YES;
   }
@@ -2954,15 +2966,17 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // called in keyEvent: method.
   // Input methods of Mac use setMarkedText calls with an empty text to cancel
   // an ongoing composition. So, we should check whether or not the given text
-  // is empty to update the input method state. (Our input method backend can
+  // is empty to update the input method state. (Our input method backend
   // automatically cancels an ongoing composition when we send an empty text.
   // So, it is OK to send an empty text to the renderer.)
   if (handlingKeyDown_) {
     setMarkedTextReplacementRange_ = gfx::Range(replacementRange);
   } else {
-    renderWidgetHostView_->render_widget_host_->ImeSetComposition(
-        markedText_, underlines_, gfx::Range(replacementRange),
-        newSelRange.location, NSMaxRange(newSelRange));
+    if (renderWidgetHostView_->GetActiveWidget()) {
+      renderWidgetHostView_->GetActiveWidget()->ImeSetComposition(
+          markedText_, underlines_, gfx::Range(replacementRange),
+          newSelRange.location, NSMaxRange(newSelRange));
+    }
   }
 }
 
@@ -2997,7 +3011,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange {
   // An input method has characters to be inserted.
   // Same as Linux, Mac calls this method not only:
-  // * when an input method finishs composing text, but also;
+  // * when an input method finishes composing text, but also;
   // * when we type an ASCII character (without using input methods).
   // When we aren't using input methods, we should send the given character as
   // a Char event so it is dispatched to an onkeypress() event handler of
@@ -3016,8 +3030,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     textToBeInserted_.append(base::SysNSStringToUTF16(im_text));
   } else {
     gfx::Range replacement_range(replacementRange);
-    renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
-        base::SysNSStringToUTF16(im_text), replacement_range, false);
+    if (renderWidgetHostView_->GetActiveWidget()) {
+      renderWidgetHostView_->GetActiveWidget()->ImeConfirmComposition(
+          base::SysNSStringToUTF16(im_text), replacement_range, false);
+    }
   }
 
   // Inserting text will delete all marked text automatically.
@@ -3148,9 +3164,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   if (!hasMarkedText_)
     return;
 
-  if (renderWidgetHostView_->render_widget_host_)
-    renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
+  if (renderWidgetHostView_->GetActiveWidget()) {
+    renderWidgetHostView_->GetActiveWidget()->ImeConfirmComposition(
         base::string16(), gfx::Range::InvalidRange(), false);
+  }
 
   [self cancelComposition];
 }

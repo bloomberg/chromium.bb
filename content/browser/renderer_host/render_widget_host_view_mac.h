@@ -475,6 +475,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // TextInputManager.
   ui::TextInputType GetTextInputType();
 
+  // Helper method to obtain the currently active widget from TextInputManager.
+  // An active widget is a RenderWidget which is currently focused and has a
+  // |TextInputState.type| which is not ui::TEXT_INPUT_TYPE_NONE.
+  RenderWidgetHostImpl* GetActiveWidget();
+
  private:
   friend class RenderWidgetHostViewMacTest;
 

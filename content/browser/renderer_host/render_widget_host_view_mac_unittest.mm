@@ -22,8 +22,10 @@
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
+#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view_mac_delegate.h"
@@ -1247,22 +1249,191 @@ TEST_F(RenderWidgetHostViewMacTest, EventLatencyOSMouseWheelHistogram) {
   host->ShutdownAndDestroyWidget(true);
 }
 
+// This class is used for IME-related unit tests which verify correctness of IME
+// for pages with multiple RWHVs.
+class InputMethodMacTest : public RenderWidgetHostViewMacTest {
+ public:
+  InputMethodMacTest() {}
+  ~InputMethodMacTest() override {}
+  void SetUp() override {
+    RenderWidgetHostViewMacTest::SetUp();
+
+    // Initializing a child frame's view.
+    child_process_host_ = new MockRenderProcessHost(&browser_context_);
+    RenderWidgetHostDelegate* rwh_delegate =
+        RenderWidgetHostImpl::From(rvh()->GetWidget())->delegate();
+    child_widget_ = new RenderWidgetHostImpl(
+        rwh_delegate, child_process_host_,
+        child_process_host_->GetNextRoutingID(), false);
+    child_view_ = new TestRenderWidgetHostView(child_widget_);
+    text_input_manager_ = rwh_delegate->GetTextInputManager();
+    tab_widget_ = RenderWidgetHostImpl::From(rvh()->GetWidget());
+  }
+
+  void TearDown() override {
+    child_widget_->ShutdownAndDestroyWidget(true);
+
+    RenderWidgetHostViewMacTest::TearDown();
+  }
+
+  void SetTextInputType(RenderWidgetHostViewBase* view,
+                        ui::TextInputType type) {
+    TextInputState state;
+    state.type = type;
+    view->TextInputStateChanged(state);
+  }
+
+  IPC::TestSink& tab_sink() { return process()->sink(); }
+  IPC::TestSink& child_sink() { return child_process_host_->sink(); }
+  TextInputManager* text_input_manager() { return text_input_manager_; }
+  RenderWidgetHostViewBase* tab_view() { return rwhv_mac_; }
+  RenderWidgetHostImpl* tab_widget() { return tab_widget_; }
+
+ protected:
+  MockRenderProcessHost* child_process_host_;
+  RenderWidgetHostImpl* child_widget_;
+  TestRenderWidgetHostView* child_view_;
+
+ private:
+  TestBrowserContext browser_context_;
+  TextInputManager* text_input_manager_;
+  RenderWidgetHostImpl* tab_widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputMethodMacTest);
+};
+
+// This test will verify that calling unmarkText on the cocoa view will lead to
+// a confirm composition IPC for the corresponding active widget.
+TEST_F(InputMethodMacTest, UnmarkText) {
+  // Make the child view active and then call unmarkText on the view (Note that
+  // |RenderWidgetHostViewCocoa::handlingKeyDown_| is false so calling
+  // unmarkText would lead to an IPC. This assumption is made in other similar
+  // tests as well). We should observe an IPC being sent to the |child_widget_|.
+  SetTextInputType(child_view_, ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(child_widget_, text_input_manager()->GetActiveWidget());
+  child_sink().ClearMessages();
+  [rwhv_cocoa_ unmarkText];
+  EXPECT_TRUE(!!child_sink().GetFirstMessageMatching(
+      InputMsg_ImeConfirmComposition::ID));
+
+  // Repeat the same steps for the tab's view .
+  SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
+  tab_sink().ClearMessages();
+  [rwhv_cocoa_ unmarkText];
+  EXPECT_TRUE(
+      !!tab_sink().GetFirstMessageMatching(InputMsg_ImeConfirmComposition::ID));
+}
+
+// This test makes sure that calling setMarkedText on the cocoa view will lead
+// to a set composition IPC for the corresponding active widget.
+TEST_F(InputMethodMacTest, SetMarkedText) {
+  // Some values for the call to setMarkedText.
+  base::scoped_nsobject<NSString> text(
+      [[NSString alloc] initWithString:@"sample text"]);
+  NSRange selectedRange = NSMakeRange(0, 4);
+  NSRange replacementRange = NSMakeRange(0, 1);
+
+  // Make the child view active and then call setMarkedText with some values. We
+  // should observe an IPC being sent to the |child_widget_|.
+  SetTextInputType(child_view_, ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(child_widget_, text_input_manager()->GetActiveWidget());
+  child_sink().ClearMessages();
+  [rwhv_cocoa_ setMarkedText:text
+               selectedRange:selectedRange
+            replacementRange:replacementRange];
+  EXPECT_TRUE(
+      !!child_sink().GetFirstMessageMatching(InputMsg_ImeSetComposition::ID));
+
+  // Repeat the same steps for the tab's view.
+  SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
+  tab_sink().ClearMessages();
+  [rwhv_cocoa_ setMarkedText:text
+               selectedRange:selectedRange
+            replacementRange:replacementRange];
+  EXPECT_TRUE(
+      !!tab_sink().GetFirstMessageMatching(InputMsg_ImeSetComposition::ID));
+}
+
+// This test verifies that calling insertText on the cocoa view will lead to a
+// confirm composition IPC sent to the active widget.
+TEST_F(InputMethodMacTest, InsetText) {
+  // Some values for the call to insertText.
+  base::scoped_nsobject<NSString> text(
+      [[NSString alloc] initWithString:@"sample text"]);
+  NSRange replacementRange = NSMakeRange(0, 1);
+
+  // Make the child view active and then call insertText with some values. We
+  // should observe an IPC being sent to the |child_widget_|.
+  SetTextInputType(child_view_, ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(child_widget_, text_input_manager()->GetActiveWidget());
+  child_sink().ClearMessages();
+  [rwhv_cocoa_ insertText:text replacementRange:replacementRange];
+  EXPECT_TRUE(!!child_sink().GetFirstMessageMatching(
+      InputMsg_ImeConfirmComposition::ID));
+
+  // Repeat the same steps for the tab's view.
+  SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
+  [rwhv_cocoa_ insertText:text replacementRange:replacementRange];
+  EXPECT_TRUE(
+      !!tab_sink().GetFirstMessageMatching(InputMsg_ImeConfirmComposition::ID));
+}
+
+// This test makes sure that calling confirmComposition on the cocoa view will
+// lead to a confirm composition IPC for a the corresponding active widget.
+TEST_F(InputMethodMacTest, ConfirmComposition) {
+  // Some values for the call to setMarkedText.
+  base::scoped_nsobject<NSString> text(
+      [[NSString alloc] initWithString:@"sample text"]);
+  NSRange selectedRange = NSMakeRange(0, 4);
+  NSRange replacementRange = NSMakeRange(0, 1);
+
+  // Make child view active and then call confirmComposition. We should observe
+  // an IPC being sent to the |child_widget_|.
+  SetTextInputType(child_view_, ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(child_widget_, text_input_manager()->GetActiveWidget());
+  child_sink().ClearMessages();
+  // In order to confirm composition, we must first have some marked text. So,
+  // we will first call setMarkedText on cocoa view. This would lead to a set
+  // composition IPC in the sink, but it doesn't matter since we will be looking
+  // for a confirm composition IPC for this test.
+  [rwhv_cocoa_ setMarkedText:text
+               selectedRange:selectedRange
+            replacementRange:replacementRange];
+  [rwhv_cocoa_ confirmComposition];
+  EXPECT_TRUE(!!child_sink().GetFirstMessageMatching(
+      InputMsg_ImeConfirmComposition::ID));
+
+  // Repeat the same steps for the tab's view.
+  SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(tab_widget(), text_input_manager()->GetActiveWidget());
+  tab_sink().ClearMessages();
+  [rwhv_cocoa_ setMarkedText:text
+               selectedRange:selectedRange
+            replacementRange:replacementRange];
+  [rwhv_cocoa_ confirmComposition];
+  EXPECT_TRUE(
+      !!tab_sink().GetFirstMessageMatching(InputMsg_ImeConfirmComposition::ID));
+}
+
 // This test creates a test view to mimic a child frame's view and verifies that
 // calling ImeCancelComposition on either the child view or the tab's view will
 // always lead to a call to cancelComposition on the cocoa view.
-TEST_F(RenderWidgetHostViewMacTest, ImeCancelCompositionForAllViews) {
-  TestRenderWidgetHostView* child_view =
-      new TestRenderWidgetHostView(rvh()->GetWidget());
-  // Set the marked test on cocoa view.
-  NSString* text = [[NSString alloc] initWithString:@"sample text"];
+TEST_F(InputMethodMacTest, ImeCancelCompositionForAllViews) {
+  // Some values for the call to setMarkedText.
+  base::scoped_nsobject<NSString> text(
+      [[NSString alloc] initWithString:@"sample text"]);
   NSRange selectedRange = NSMakeRange(0, 1);
   NSRange replacementRange = NSMakeRange(0, 1);
+
   // Make Cocoa view assume there is marked text.
   [rwhv_cocoa_ setMarkedText:text
                selectedRange:selectedRange
             replacementRange:replacementRange];
   EXPECT_TRUE([rwhv_cocoa_ hasMarkedText]);
-  child_view->ImeCancelComposition();
+  child_view_->ImeCancelComposition();
   EXPECT_FALSE([rwhv_cocoa_ hasMarkedText]);
 
   // Repeat for the tab's view.
