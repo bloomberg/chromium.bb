@@ -472,6 +472,24 @@
         "test": "mojo_system_unittests"
       },
       {
+        "override_compile_targets": [
+          "mojo_test_apk"
+        ],
+        "override_isolate_target": "mojo_test_apk",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 300
+        },
+        "test": "mojo_test_apk"
+      },
+      {
         "override_isolate_target": "net_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -757,6 +775,9 @@
       },
       {
         "test": "content_shell_test_apk"
+      },
+      {
+        "test": "mojo_test_apk"
       }
     ],
     "junit_tests": [
