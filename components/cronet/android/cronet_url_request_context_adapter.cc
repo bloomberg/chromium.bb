@@ -16,6 +16,7 @@
 #include "base/android/jni_string.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -50,6 +51,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_server_properties_manager.h"
+#include "net/log/bounded_file_net_log_observer.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/proxy/proxy_config_service_android.h"
@@ -68,6 +70,9 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
+
+// Always split NetLog events into 10 files.
+const int kNumNetLogEventFiles = 10;
 
 // This class wraps a NetLog that also contains network change events.
 class NetLogWithNetworkChangeEvents {
@@ -421,7 +426,8 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
     network_quality_estimator_->RemoveThroughputObserver(this);
     network_quality_estimator_->RemoveEffectiveConnectionTypeObserver(this);
   }
-  // Stop |write_to_file_observer_| if there is one.
+
+  // Stop NetLog observer if there is one.
   StopNetLogHelper();
 }
 
@@ -795,6 +801,21 @@ void CronetURLRequestContextAdapter::StartNetLogToFile(
       /*constants=*/nullptr, /*url_request_context=*/nullptr);
 }
 
+void CronetURLRequestContextAdapter::StartNetLogToDisk(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& jdir_name,
+    jboolean jlog_all,
+    jint jmax_size) {
+  PostTaskToNetworkThread(
+      FROM_HERE,
+      base::Bind(&CronetURLRequestContextAdapter::
+                     StartNetLogToBoundedFileOnNetworkThread,
+                 base::Unretained(this),
+                 base::android::ConvertJavaStringToUTF8(env, jdir_name),
+                 jlog_all, jmax_size));
+}
+
 void CronetURLRequestContextAdapter::StopNetLog(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
@@ -866,11 +887,57 @@ void CronetURLRequestContextAdapter::OnThroughputObservation(
       (timestamp - base::TimeTicks::UnixEpoch()).InMilliseconds(), source);
 }
 
+void CronetURLRequestContextAdapter::StartNetLogToBoundedFileOnNetworkThread(
+    const std::string& dir_path,
+    bool include_socket_bytes,
+    int size) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+
+  // Do nothing if already logging to a directory.
+  if (bounded_file_observer_)
+    return;
+
+  // Filepath for NetLog files must exist and be writable.
+  base::FilePath file_path(dir_path);
+  DCHECK(base::PathIsWritable(file_path));
+
+  bounded_file_observer_.reset(
+      new net::BoundedFileNetLogObserver(GetFileThread()->task_runner()));
+  if (include_socket_bytes) {
+    bounded_file_observer_->set_capture_mode(
+        net::NetLogCaptureMode::IncludeSocketBytes());
+  }
+
+  bounded_file_observer_->StartObserving(g_net_log.Get().net_log(), file_path,
+                                         /*constants=*/nullptr, context_.get(),
+                                         size, kNumNetLogEventFiles);
+}
+
+void CronetURLRequestContextAdapter::StopBoundedFileNetLogOnNetworkThread() {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  bounded_file_observer_->StopObserving(
+      context_.get(),
+      base::Bind(&CronetURLRequestContextAdapter::StopNetLogCompleted,
+                 base::Unretained(this)));
+  bounded_file_observer_.reset();
+}
+
+void CronetURLRequestContextAdapter::StopNetLogCompleted() {
+  Java_CronetUrlRequestContext_stopNetLogCompleted(
+      base::android::AttachCurrentThread(), jcronet_url_request_context_.obj());
+}
+
 void CronetURLRequestContextAdapter::StopNetLogHelper() {
   base::AutoLock lock(write_to_file_observer_lock_);
+  DCHECK(!(write_to_file_observer_ && bounded_file_observer_));
   if (write_to_file_observer_) {
     write_to_file_observer_->StopObserving(/*url_request_context=*/nullptr);
     write_to_file_observer_.reset();
+  } else if (bounded_file_observer_) {
+    PostTaskToNetworkThread(FROM_HERE,
+                            base::Bind(&CronetURLRequestContextAdapter::
+                                           StopBoundedFileNetLogOnNetworkThread,
+                                       base::Unretained(this)));
   }
 }
 

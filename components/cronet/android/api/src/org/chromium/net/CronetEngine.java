@@ -914,10 +914,31 @@ public abstract class CronetEngine {
      *            exists, it is truncated before starting. If actively logging,
      *            this method is ignored.
      * @param logAll {@code true} to include basic events, user cookies,
-     *            credentials and all transferred bytes in the log.
+     *            credentials and all transferred bytes in the log. This option presents
+     *            a privacy risk, since it exposes the user's credentials, and should
+     *            only be used with the user's consent and in situations where the log
+     *            won't be public.
      *            {@code false} to just include basic events.
      */
     public abstract void startNetLogToFile(String fileName, boolean logAll);
+
+    /**
+     * Starts NetLog logging to a specified directory with a bounded size. The NetLog will contain
+     * events emitted by all live CronetEngines. The NetLog is useful for debugging.
+     * The log can be viewed by stitching the files using net/log/stitch_net_log_files.py and
+     * using a Chrome browser navigated to chrome://net-internals/#import
+     * @param dirPath the directory where the log files will be created. It must already exist.
+     *            NetLog files must not already exist in the directory. If actively logging,
+     *            this method is ignored.
+     * @param logAll {@code true} to include basic events, user cookies,
+     *            credentials and all transferred bytes in the log. This option presents a
+     *            privacy risk, since it exposes the user's credentials, and should only be
+     *            used with the user's consent and in situations where the log won't be public.
+     *            {@code false} to just include basic events.
+     * @param maxSize the maximum total disk space in bytes that should be used by NetLog. Actual
+     *            disk space usage may exceed this limit slightly.
+     */
+    public abstract void startNetLogToDisk(String dirPath, boolean logAll, int maxSize);
 
     /**
      * Stops NetLog logging and flushes file to disk. If a logging session is

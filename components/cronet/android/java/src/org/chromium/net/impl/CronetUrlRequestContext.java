@@ -106,6 +106,21 @@ public class CronetUrlRequestContext extends CronetEngine {
     /** Holds CertVerifier data. */
     private String mCertVerifierData;
 
+    private ConditionVariable mStopNetLogCompleted;
+
+    /**
+     * True if a NetLog observer is active.
+     */
+    @GuardedBy("mLock")
+    private boolean mIsLogging;
+
+    /**
+     * True if a NetLog observer that writes to disk with a bounded amount of space has been
+     * activated by calling StartNetLogToDisk().
+     */
+    @GuardedBy("mLock")
+    private boolean mNetLogToDisk;
+
     @UsedByReflection("CronetEngine.java")
     public CronetUrlRequestContext(final CronetEngine.Builder builder) {
         CronetLibraryLoader.ensureInitialized(builder.getContext(), builder);
@@ -220,6 +235,9 @@ public class CronetUrlRequestContext extends CronetEngine {
         // so other thread could access it).
         mInitCompleted.block();
 
+        // If not logging, this is a no-op.
+        stopNetLog();
+
         synchronized (mLock) {
             // It is possible that adapter is already destroyed on another thread.
             if (!haveRequestContextAdapter()) {
@@ -235,15 +253,43 @@ public class CronetUrlRequestContext extends CronetEngine {
         synchronized (mLock) {
             checkHaveAdapter();
             nativeStartNetLogToFile(mUrlRequestContextAdapter, fileName, logAll);
+            mIsLogging = true;
+        }
+    }
+
+    @Override
+    public void startNetLogToDisk(String dirPath, boolean logAll, int maxSize) {
+        synchronized (mLock) {
+            checkHaveAdapter();
+            nativeStartNetLogToDisk(mUrlRequestContextAdapter, dirPath, logAll, maxSize);
+            mIsLogging = true;
+            mNetLogToDisk = true;
         }
     }
 
     @Override
     public void stopNetLog() {
         synchronized (mLock) {
+            if (!mIsLogging) {
+                return;
+            }
             checkHaveAdapter();
             nativeStopNetLog(mUrlRequestContextAdapter);
+            mIsLogging = false;
+            if (!mNetLogToDisk) {
+                return;
+            }
+            mStopNetLogCompleted = new ConditionVariable();
         }
+        mStopNetLogCompleted.block();
+    }
+
+    @CalledByNative
+    public void stopNetLogCompleted() {
+        synchronized (mLock) {
+            mNetLogToDisk = false;
+        }
+        mStopNetLogCompleted.open();
     }
 
     @Override
@@ -558,6 +604,10 @@ public class CronetUrlRequestContext extends CronetEngine {
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeStartNetLogToFile(long nativePtr, String fileName, boolean logAll);
+
+    @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+    private native void nativeStartNetLogToDisk(
+            long nativePtr, String dirPath, boolean logAll, int maxSize);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeStopNetLog(long nativePtr);

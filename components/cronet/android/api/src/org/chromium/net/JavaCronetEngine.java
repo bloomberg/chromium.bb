@@ -91,6 +91,9 @@ final class JavaCronetEngine extends CronetEngine {
     public void startNetLogToFile(String fileName, boolean logAll) {}
 
     @Override
+    public void startNetLogToDisk(String dirPath, boolean logAll, int maxSize) {}
+
+    @Override
     public void stopNetLog() {}
 
     @Override
