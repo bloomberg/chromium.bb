@@ -45,7 +45,7 @@ ModalWindowController::~ModalWindowController() {
 
 void ModalWindowController::AddSystemModalWindow(ServerWindow* window) {
   DCHECK(window);
-  DCHECK(!ContainsValue(system_modal_windows_, window));
+  DCHECK(!base::ContainsValue(system_modal_windows_, window));
 
   window->SetModal();
   system_modal_windows_.push_back(window);

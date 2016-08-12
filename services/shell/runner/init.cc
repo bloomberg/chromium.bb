@@ -60,7 +60,7 @@ void WaitForDebuggerIfNecessary() {
         }
       }
     }
-    if (apps_to_debug.empty() || ContainsValue(apps_to_debug, app)) {
+    if (apps_to_debug.empty() || base::ContainsValue(apps_to_debug, app)) {
 #if defined(OS_WIN)
       base::string16 appw = base::UTF8ToUTF16(app);
       base::string16 message = base::UTF8ToUTF16(

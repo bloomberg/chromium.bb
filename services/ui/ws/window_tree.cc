@@ -983,7 +983,7 @@ void WindowTree::DestroyWindows() {
     if (transient_parent)
       transient_parent->RemoveTransientWindow(pair.second);
   }
-  STLDeleteValues(&created_window_map_copy);
+  base::STLDeleteValues(&created_window_map_copy);
 }
 
 bool WindowTree::CanEmbed(const ClientWindowId& window_id) const {
