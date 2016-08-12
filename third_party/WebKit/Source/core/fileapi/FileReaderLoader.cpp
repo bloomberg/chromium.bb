@@ -307,7 +307,7 @@ FileError::ErrorCode FileReaderLoader::httpStatusCodeToErrorCode(int httpStatusC
     }
 }
 
-DOMArrayBuffer* FileReaderLoader::arrayBufferResult() const
+DOMArrayBuffer* FileReaderLoader::arrayBufferResult()
 {
     ASSERT(m_readType == ReadAsArrayBuffer);
 
@@ -315,7 +315,14 @@ DOMArrayBuffer* FileReaderLoader::arrayBufferResult() const
     if (!m_rawData || m_errorCode)
         return nullptr;
 
-    return DOMArrayBuffer::create(m_rawData->toArrayBuffer());
+    if (m_arrayBufferResult)
+        return m_arrayBufferResult;
+
+    DOMArrayBuffer* result = DOMArrayBuffer::create(m_rawData->toArrayBuffer());
+    if (m_finishedLoading) {
+        m_arrayBufferResult = result;
+    }
+    return result;
 }
 
 String FileReaderLoader::stringResult()

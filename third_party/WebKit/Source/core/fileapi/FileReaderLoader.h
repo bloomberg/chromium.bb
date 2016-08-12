@@ -82,8 +82,8 @@ public:
     void didFinishLoading(unsigned long, double) override;
     void didFail(const ResourceError&) override;
 
+    DOMArrayBuffer* arrayBufferResult();
     String stringResult();
-    DOMArrayBuffer* arrayBufferResult() const;
 
     // Returns the total bytes received. Bytes ignored by m_rawData won't be
     // counted.
@@ -129,6 +129,7 @@ private:
     std::unique_ptr<ArrayBufferBuilder> m_rawData;
     bool m_isRawDataConverted;
 
+    Persistent<DOMArrayBuffer> m_arrayBufferResult;
     String m_stringResult;
 
     // The decoder used to decode the text data.
