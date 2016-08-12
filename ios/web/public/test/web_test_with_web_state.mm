@@ -146,20 +146,6 @@ void WebTestWithWebState::WaitForCondition(ConditionBlock condition) {
                                       base::TimeDelta::FromSeconds(10));
 }
 
-NSString* WebTestWithWebState::EvaluateJavaScriptAsString(NSString* script) {
-  __block base::scoped_nsobject<NSString> evaluationResult;
-  [GetWebController(web_state())
-       evaluateJavaScript:script
-      stringResultHandler:^(NSString* result, NSError*) {
-        DCHECK([result isKindOfClass:[NSString class]]);
-        evaluationResult.reset([result copy]);
-      }];
-  base::test::ios::WaitUntilCondition(^bool() {
-    return evaluationResult;
-  });
-  return [[evaluationResult retain] autorelease];
-}
-
 id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
   __block base::scoped_nsprotocol<id> executionResult;
   __block bool executionCompleted = false;
