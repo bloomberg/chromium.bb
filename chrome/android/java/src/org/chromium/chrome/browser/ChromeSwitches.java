@@ -86,6 +86,12 @@ public abstract class ChromeSwitches {
      */
     public static final String MARKET_URL_FOR_TESTING = "market-url-for-testing";
 
+
+    /**
+     * Show the button for saving an offline page.
+     */
+    public static final String ENABLE_OFFLINE_PAGE_DOWNLOADING = "enable-offline-page-downloading";
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
 
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
@@ -12,25 +12,21 @@
 
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/button_one"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="?attr/listChoiceBackgroundIndicator"
-        android:scaleType="center" />
+        style="@style/OverflowMenuButton" />
 
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/button_two"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="?attr/listChoiceBackgroundIndicator"
-        android:scaleType="center" />
+        style="@style/OverflowMenuButton" />
 
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/button_three"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="?attr/listChoiceBackgroundIndicator"
-        android:scaleType="center" />
+        style="@style/OverflowMenuButton" />
+
+    <org.chromium.chrome.browser.widget.TintedImageButton
+        android:id="@+id/button_four"
+        style="@style/OverflowMenuButton" />
+
+    <org.chromium.chrome.browser.widget.TintedImageButton
+        android:id="@+id/button_five"
+        style="@style/OverflowMenuButton" />
 </LinearLayout>

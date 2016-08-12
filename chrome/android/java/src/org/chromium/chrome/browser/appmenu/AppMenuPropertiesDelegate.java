@@ -4,13 +4,17 @@
 
 package org.chromium.chrome.browser.appmenu;
 
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -104,6 +108,22 @@ public class AppMenuPropertiesDelegate {
 
                 MenuItem bookmarkMenuItem = menu.findItem(R.id.bookmark_this_page_id);
                 updateBookmarkMenuItem(bookmarkMenuItem, currentTab);
+
+                MenuItem offlineMenuItem = menu.findItem(R.id.offline_page_id);
+                if (offlineMenuItem != null) {
+                    if (CommandLine.getInstance().hasSwitch(
+                            ChromeSwitches.ENABLE_OFFLINE_PAGE_DOWNLOADING)) {
+                        offlineMenuItem.setEnabled(!isChromeScheme);
+                        Drawable drawable = offlineMenuItem.getIcon();
+                        if (drawable != null) {
+                            int iconTint = mActivity.getColor(R.color.light_normal_color);
+                            drawable.mutate();
+                            drawable.setColorFilter(iconTint, PorterDuff.Mode.SRC_ATOP);
+                        }
+                    } else {
+                        offlineMenuItem.setVisible(false);
+                    }
+                }
             }
 
             menu.findItem(R.id.downloads_menu_id)
