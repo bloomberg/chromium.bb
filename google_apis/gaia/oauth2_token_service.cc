@@ -398,8 +398,8 @@ OAuth2TokenService::OAuth2TokenService(OAuth2TokenServiceDelegate* delegate)
 
 OAuth2TokenService::~OAuth2TokenService() {
   // Release all the pending fetchers.
-  STLDeleteContainerPairSecondPointers(
-      pending_fetchers_.begin(), pending_fetchers_.end());
+  base::STLDeleteContainerPairSecondPointers(pending_fetchers_.begin(),
+                                             pending_fetchers_.end());
 }
 
 OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() {

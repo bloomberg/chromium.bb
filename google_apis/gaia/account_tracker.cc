@@ -28,7 +28,7 @@ AccountTracker::~AccountTracker() {
 
 void AccountTracker::Shutdown() {
   shutdown_called_ = true;
-  STLDeleteValues(&user_info_requests_);
+  base::STLDeleteValues(&user_info_requests_);
   identity_provider_->GetTokenService()->RemoveObserver(this);
   identity_provider_->RemoveObserver(this);
 }
@@ -205,7 +205,7 @@ void AccountTracker::StartTrackingAccount(const std::string& account_key) {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 AccountTracker::StartTrackingAccount"));
 
-  if (!ContainsKey(accounts_, account_key)) {
+  if (!base::ContainsKey(accounts_, account_key)) {
     DVLOG(1) << "StartTracking " << account_key;
     AccountState account_state;
     account_state.ids.account_key = account_key;
@@ -217,7 +217,7 @@ void AccountTracker::StartTrackingAccount(const std::string& account_key) {
 
 void AccountTracker::StopTrackingAccount(const std::string account_key) {
   DVLOG(1) << "StopTracking " << account_key;
-  if (ContainsKey(accounts_, account_key)) {
+  if (base::ContainsKey(accounts_, account_key)) {
     AccountState& account = accounts_[account_key];
     if (!account.ids.gaia.empty()) {
       UpdateSignInState(account_key, false);
@@ -226,7 +226,7 @@ void AccountTracker::StopTrackingAccount(const std::string account_key) {
     accounts_.erase(account_key);
   }
 
-  if (ContainsKey(user_info_requests_, account_key))
+  if (base::ContainsKey(user_info_requests_, account_key))
     DeleteFetcher(user_info_requests_[account_key]);
 }
 
@@ -242,7 +242,7 @@ void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 AccountTracker::StartFetchingUserInfo"));
 
-  if (ContainsKey(user_info_requests_, account_key)) {
+  if (base::ContainsKey(user_info_requests_, account_key)) {
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
     // is fixed.
     tracked_objects::ScopedTracker tracking_profile1(
@@ -278,7 +278,7 @@ void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
 void AccountTracker::OnUserInfoFetchSuccess(AccountIdFetcher* fetcher,
                                             const std::string& gaia_id) {
   const std::string& account_key = fetcher->account_key();
-  DCHECK(ContainsKey(accounts_, account_key));
+  DCHECK(base::ContainsKey(accounts_, account_key));
   AccountState& account = accounts_[account_key];
 
   account.ids.gaia = gaia_id;
@@ -300,7 +300,7 @@ void AccountTracker::OnUserInfoFetchFailure(AccountIdFetcher* fetcher) {
 void AccountTracker::DeleteFetcher(AccountIdFetcher* fetcher) {
   DVLOG(1) << "DeleteFetcher " << fetcher->account_key();
   const std::string& account_key = fetcher->account_key();
-  DCHECK(ContainsKey(user_info_requests_, account_key));
+  DCHECK(base::ContainsKey(user_info_requests_, account_key));
   DCHECK_EQ(fetcher, user_info_requests_[account_key]);
   user_info_requests_.erase(account_key);
   delete fetcher;

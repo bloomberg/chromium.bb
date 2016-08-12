@@ -27,8 +27,8 @@ RequestSender::RequestSender(
 
 RequestSender::~RequestSender() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  STLDeleteContainerPointers(in_flight_requests_.begin(),
-                             in_flight_requests_.end());
+  base::STLDeleteContainerPointers(in_flight_requests_.begin(),
+                                   in_flight_requests_.end());
 }
 
 base::Closure RequestSender::StartRequestWithAuthRetry(
