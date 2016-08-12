@@ -23,6 +23,7 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
  public:
   virtual ~WindowAndroidCompositor() {}
 
+  virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) = 0;
   virtual void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<cc::CopyOutputRequest> request) = 0;
   virtual void OnVSync(base::TimeTicks frame_time,

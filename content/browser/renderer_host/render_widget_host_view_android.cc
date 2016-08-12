@@ -894,10 +894,17 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
       content_view_core_->GetWindowAndroid()->GetCompositor();
   DCHECK(compositor);
   DCHECK(!surface_id_.is_null());
+  scoped_refptr<cc::Layer> layer =
+      CreateSurfaceLayer(surface_id_, texture_size_in_layer_);
+  layer->SetHideLayerAndSubtree(true);
+  compositor->AttachLayerForReadback(layer);
+
   std::unique_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateRequest(base::Bind(
-          &PrepareTextureCopyOutputResult, weak_ptr_factory_.GetWeakPtr(),
-          dst_size_in_pixel, preferred_color_type, start_time, callback));
+      cc::CopyOutputRequest::CreateRequest(
+          base::Bind(&PrepareTextureCopyOutputResult,
+                     weak_ptr_factory_.GetWeakPtr(), layer, dst_size_in_pixel,
+                     preferred_color_type, start_time, callback));
+
   if (!src_subrect_in_pixel.IsEmpty())
     request->set_area(src_subrect_in_pixel);
   // Make sure the current frame doesn't get deleted until we fulfill the
@@ -1870,6 +1877,7 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
 // static
 void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     base::WeakPtr<RenderWidgetHostViewAndroid> rwhva,
+    scoped_refptr<cc::Layer> readback_layer,
     const gfx::Size& dst_size_in_pixel,
     SkColorType color_type,
     const base::TimeTicks& start_time,
@@ -1879,6 +1887,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
       base::Bind(callback, SkBitmap(), READBACK_FAILED));
   TRACE_EVENT0("cc",
                "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
+  readback_layer->RemoveFromParent();
   if (rwhva)
     rwhva->UnlockCompositingSurface();
   if (!result->HasTexture() || result->IsEmpty() || result->size().IsEmpty())

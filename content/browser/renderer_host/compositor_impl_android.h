@@ -112,6 +112,7 @@ class CONTENT_EXPORT CompositorImpl
   void DidAbortSwapBuffers() override;
 
   // WindowAndroidCompositor implementation.
+  void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) override;
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<cc::CopyOutputRequest> request) override;
   void OnVSync(base::TimeTicks frame_time,

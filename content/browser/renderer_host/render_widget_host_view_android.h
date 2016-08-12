@@ -270,6 +270,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // of the copy.
   static void PrepareTextureCopyOutputResult(
       base::WeakPtr<RenderWidgetHostViewAndroid> rwhva,
+      scoped_refptr<cc::Layer> readback_layer,
       const gfx::Size& dst_size_in_pixel,
       SkColorType color_type,
       const base::TimeTicks& start_time,
