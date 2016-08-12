@@ -14,16 +14,43 @@ namespace net {
 // differently, usually worse, from its expected capabilities.
 // EffectiveConnectionType of a network is independent of if the current
 // connection is metered or not. For example, an unmetered slow connection may
-// have EFFECTIVE_CONNECTION_TYPE_SLOW_2G as its effective connection type.
+// have EFFECTIVE_CONNECTION_TYPE_SLOW_2G as its effective connection type. The
+// effective connection type enums are be in increasing order of quality.
+// An invalid Java prefix to strip is specified to prevent the Java class
+// generator from automatically stripping off the common prefix
+// ("EFFECTIVE_CONNECTION_TYPE_").
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
+// GENERATED_JAVA_PREFIX_TO_STRIP: PREFIX_NOT_PRESENT_
 enum EffectiveConnectionType {
-  // The connection types should be in increasing order of quality.
+  // Effective connection type reported when the network quality is unknown.
   EFFECTIVE_CONNECTION_TYPE_UNKNOWN = 0,
+
+  // Effective connection type reported when the Internet is unreachable, either
+  // because the device does not have a connection or because the
+  // connection is too slow to be usable.
   EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+
+  // Effective connection type reported when the network has the quality of a
+  // poor 2G connection.
   EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+
+  // Effective connection type reported when the network has the quality of a
+  // faster 2G connection.
   EFFECTIVE_CONNECTION_TYPE_2G,
+
+  // Effective connection type reported when the network has the quality of a 3G
+  // connection.
   EFFECTIVE_CONNECTION_TYPE_3G,
+
+  // Effective connection type reported when the network has the quality of a 4G
+  // connection.
   EFFECTIVE_CONNECTION_TYPE_4G,
+
+  // Effective connection type reported when the network has the quality of a
+  // broadband connection.
   EFFECTIVE_CONNECTION_TYPE_BROADBAND,
+
+  // Last value of the effective connection type. This value is unused.
   EFFECTIVE_CONNECTION_TYPE_LAST,
 };
 

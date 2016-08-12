@@ -224,6 +224,11 @@ public class QuicTest extends CronetTestBase {
         // NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC
         assertTrue(rttListener.rttObservationCount(2) > 0);
 
+        // Verify that effective connection type callback is received and
+        // effective connection type is correctly set.
+        assertTrue(mTestFramework.mCronetEngine.getEffectiveConnectionType()
+                != EffectiveConnectionType.EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+
         mTestFramework.mCronetEngine.shutdown();
     }
 }

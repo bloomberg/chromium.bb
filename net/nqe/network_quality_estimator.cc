@@ -1662,7 +1662,7 @@ void NetworkQualityEstimator::MaybeRecomputeEffectiveConnectionType() {
   // last computed or a connection change event was observed since the last
   // computation. Strict inequalities are used to ensure that effective
   // connection type is recomputed on connection change events even if the clock
-  // has not updated.  Recompute the effective connection type if the effective
+  // has not updated. Recompute the effective connection type if the effective
   // connection type was previously unavailable. This is because the RTT
   // observations are voluminous, so it may now be possible to compute the
   // effective connection type.
@@ -1684,6 +1684,7 @@ void NetworkQualityEstimator::MaybeRecomputeEffectiveConnectionType() {
 void NetworkQualityEstimator::
     NotifyObserversOfEffectiveConnectionTypeChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(EFFECTIVE_CONNECTION_TYPE_LAST, effective_connection_type_);
 
   // TODO(tbansal): Add hysteresis in the notification.
   FOR_EACH_OBSERVER(
