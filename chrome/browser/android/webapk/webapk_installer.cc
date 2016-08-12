@@ -84,6 +84,13 @@ std::string ColorToString(int64_t color) {
   return base::StringPrintf("rgba(%d,%d,%d,%.2f)", r, g, b, a);
 }
 
+// Returns task runner for running background tasks.
+scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
+  return content::BrowserThread::GetBlockingPool()
+      ->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+}
+
 }  // anonymous namespace
 
 WebApkInstaller::WebApkInstaller(const ShortcutInfo& shortcut_info,
@@ -117,12 +124,8 @@ void WebApkInstaller::InstallAsyncWithURLRequestContextGetter(
 
   // base::Unretained() is safe because WebApkInstaller owns itself and does not
   // start the timeout timer till after SendCreateWebApkRequest() is called.
-  scoped_refptr<base::TaskRunner> background_task_runner =
-      content::BrowserThread::GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   base::PostTaskAndReplyWithResult(
-      background_task_runner.get(), FROM_HERE,
+      GetBackgroundTaskRunner().get(), FROM_HERE,
       base::Bind(&WebApkInstaller::BuildWebApkProtoInBackground,
                  base::Unretained(this)),
       base::Bind(&WebApkInstaller::SendCreateWebApkRequest,
@@ -210,6 +213,26 @@ void WebApkInstaller::OnWebApkDownloaded(const base::FilePath& file_path,
   timer_.Stop();
 
   if (result != FileDownloader::DOWNLOADED) {
+    OnFailure();
+    return;
+  }
+
+  int posix_permissions = base::FILE_PERMISSION_READ_BY_USER |
+                          base::FILE_PERMISSION_WRITE_BY_USER |
+                          base::FILE_PERMISSION_READ_BY_GROUP |
+                          base::FILE_PERMISSION_READ_BY_OTHERS;
+  base::PostTaskAndReplyWithResult(
+      GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&base::SetPosixFilePermissions, file_path, posix_permissions),
+      base::Bind(&WebApkInstaller::OnWebApkMadeWorldReadable,
+                 weak_ptr_factory_.GetWeakPtr(), file_path, package_name));
+}
+
+void WebApkInstaller::OnWebApkMadeWorldReadable(
+    const base::FilePath& file_path,
+    const std::string& package_name,
+    bool change_permission_success) {
+  if (!change_permission_success) {
     OnFailure();
     return;
   }

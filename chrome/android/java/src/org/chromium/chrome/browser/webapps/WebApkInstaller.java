@@ -37,9 +37,6 @@ public class WebApkInstaller {
                     "WebAPK install failed because installation from unknown sources is disabled.");
             return false;
         }
-        if (!new File(filePath).exists()) {
-            return false;
-        }
         Intent intent = new Intent(Intent.ACTION_VIEW);
         Uri fileUri = Uri.fromFile(new File(filePath));
         intent.setDataAndType(fileUri, "application/vnd.android.package-archive");

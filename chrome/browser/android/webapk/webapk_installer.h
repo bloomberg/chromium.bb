@@ -83,13 +83,23 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   void OnGotWebApkDownloadUrl(const GURL& download_url,
                               const std::string& package_name);
 
-  // Called once the WebAPK has been downloaded. Installs the WebAPK if the
-  // download was successful.
+  // Called once the WebAPK has been downloaded. Makes the downloaded WebAPK
+  // world readable and installs the WebAPK if the download was successful.
   // |file_path| is the file path that the WebAPK was downloaded to.
   // |package_name| is the package name that the WebAPK should be installed at.
   void OnWebApkDownloaded(const base::FilePath& file_path,
                           const std::string& package_name,
                           FileDownloader::Result result);
+
+  // Called once the downloaded WebAPK has been made world readable. Installs
+  // the WebAPK.
+  // |file_path| is the file path that the WebAPK was downloaded to.
+  // |package_name| is the package name that the WebAPK should be installed at.
+  // |change_permission_success| is whether the WebAPK could be made world
+  // readable.
+  void OnWebApkMadeWorldReadable(const base::FilePath& file_path,
+                                 const std::string& package_name,
+                                 bool change_permission_success);
 
   // Populates webapk::WebApk and returns it.
   // Must be called on a worker thread because it encodes an SkBitmap.
