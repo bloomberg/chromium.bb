@@ -23,6 +23,6 @@
 # then makes our calls to them use the implementation that we find in our .dex
 # file, which is broken. We need to rely on these calls resolving to the
 # system's implementation. See crbug.com/488192#c36.
--keep class org.apache.** {
+-keepnames class org.apache.** {
   *;
 }
