@@ -424,7 +424,7 @@ void OobeLocalizationTest::RunLocalizationTest() {
                                               std::string());
 }
 
-IN_PROC_BROWSER_TEST_P(OobeLocalizationTest, LocalizationTest) {
+IN_PROC_BROWSER_TEST_P(OobeLocalizationTest, DISABLE_LocalizationTest) {
   RunLocalizationTest();
 }
 
