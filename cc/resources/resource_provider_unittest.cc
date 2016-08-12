@@ -562,7 +562,8 @@ void CheckCreateResource(ResourceProvider::ResourceType expected_default_type,
   ASSERT_EQ(4U, pixel_size);
 
   ResourceId id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   EXPECT_EQ(1, static_cast<int>(resource_provider->num_resources()));
   if (expected_default_type == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     EXPECT_EQ(0u, context->NumTextures());
@@ -593,7 +594,8 @@ TEST_P(ResourceProviderTest, SimpleUpload) {
   ASSERT_EQ(16U, pixel_size);
 
   ResourceId id = resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
 
   uint8_t image[16] = {0};
   resource_provider_->CopyToResource(id, image, size);
@@ -626,18 +628,21 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
+  gfx::ColorSpace color_space1 = gfx::ColorSpace::CreateSRGB();
   ResourceId id1 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format, color_space1);
   uint8_t data1[4] = { 1, 2, 3, 4 };
   child_resource_provider_->CopyToResource(id1, data1, size);
 
   ResourceId id2 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data2[4] = { 5, 5, 5, 5 };
   child_resource_provider_->CopyToResource(id2, data2, size);
 
   ResourceId id3 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   {
     ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         child_resource_provider_.get(), id3);
@@ -655,10 +660,10 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
                                external_sync_token.GetData());
   EXPECT_TRUE(external_sync_token.HasData());
 
-  gfx::ColorSpace id4_color_space = gfx::ColorSpace::CreateSRGB();
+  gfx::ColorSpace color_space4 = gfx::ColorSpace::CreateXYZD50();
   TextureMailbox id4_mailbox(external_mailbox, external_sync_token,
                              GL_TEXTURE_EXTERNAL_OES);
-  id4_mailbox.set_color_space(id4_color_space);
+  id4_mailbox.set_color_space(color_space4);
   ResourceId id4 = child_resource_provider_->CreateResourceFromTextureMailbox(
       id4_mailbox,
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
@@ -752,10 +757,15 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   EXPECT_FALSE(resource_provider_->IsOverlayCandidate(mapped_id4));
 
   {
+    resource_provider_->WaitSyncTokenIfNeeded(mapped_id1);
+    ResourceProvider::ScopedReadLockGL lock1(resource_provider_.get(),
+                                             mapped_id1);
+    EXPECT_TRUE(lock1.color_space() == color_space1);
+
     resource_provider_->WaitSyncTokenIfNeeded(mapped_id4);
-    ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                            mapped_id4);
-    EXPECT_TRUE(lock.color_space() == id4_color_space);
+    ResourceProvider::ScopedReadLockGL lock4(resource_provider_.get(),
+                                             mapped_id4);
+    EXPECT_TRUE(lock4.color_space() == color_space4);
   }
 
   {
@@ -902,12 +912,14 @@ TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceId id1 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data1[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id1, data1, size);
 
   ResourceId id2 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   {
     // Ensure locking the memory buffer doesn't create an unnecessary sync
     // point.
@@ -1007,7 +1019,8 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   ResourceFormat format = RGBA_8888;
 
   ResourceId id1 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data1[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id1, data1, size);
 
@@ -1076,7 +1089,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   ResourceFormat format = RGBA_8888;
 
   ResourceId id1 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data1[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id1, data1, size);
   child_resource_provider_->EnableReadLockFencesForTesting(id1);
@@ -1133,13 +1147,15 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   ResourceFormat format = RGBA_8888;
 
   ResourceId id1 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id1, data, size);
   child_resource_provider_->EnableReadLockFencesForTesting(id1);
 
   ResourceId id2 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   child_resource_provider_->CopyToResource(id2, data, size);
 
   ReturnedResourceArray returned_to_child;
@@ -1199,13 +1215,15 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   ResourceFormat format = RGBA_8888;
 
   ResourceId id1 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id1, data, size);
   child_resource_provider_->EnableReadLockFencesForTesting(id1);
 
   ResourceId id2 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   child_resource_provider_->CopyToResource(id2, data, size);
 
   ReturnedResourceArray returned_to_child;
@@ -1261,12 +1279,14 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceId id1 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data1[4] = { 1, 2, 3, 4 };
   child_resource_provider_->CopyToResource(id1, data1, size);
 
   ResourceId id2 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data2[4] = { 5, 5, 5, 5 };
   child_resource_provider_->CopyToResource(id2, data2, size);
 
@@ -1480,7 +1500,8 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceId id1 = child_resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data1[4] = { 1, 2, 3, 4 };
   child_resource_provider->CopyToResource(id1, data1, size);
   child_resource_provider->GenerateSyncTokenForResource(id1);
@@ -1528,7 +1549,8 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceId id1 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data1[4] = { 1, 2, 3, 4 };
   child_resource_provider_->CopyToResource(id1, data1, size);
 
@@ -1579,12 +1601,14 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceId id1 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data1[4] = { 1, 2, 3, 4 };
   child_resource_provider_->CopyToResource(id1, data1, size);
 
   ResourceId id2 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data2[4] = {5, 5, 5, 5};
   child_resource_provider_->CopyToResource(id2, data2, size);
 
@@ -1683,12 +1707,14 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceId id1 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data1[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id1, data1, size);
 
   ResourceId id2 = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data2[4] = {5, 5, 5, 5};
   child_resource_provider_->CopyToResource(id2, data2, size);
 
@@ -1804,7 +1830,8 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceId id = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data[4] = { 1, 2, 3, 4 };
   child_resource_provider_->CopyToResource(id, data, size);
 
@@ -1859,7 +1886,8 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceId id = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   uint8_t data[4] = {1, 2, 3, 4};
   child_resource_provider_->CopyToResource(id, data, size);
 
@@ -2015,7 +2043,8 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     ASSERT_EQ(4U, pixel_size);
 
     ResourceId id = child_resource_provider->CreateResource(
-        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+        gfx::ColorSpace());
 
     // The new texture is created with GL_LINEAR.
     EXPECT_CALL(*child_context, bindTexture(GL_TEXTURE_2D, child_texture_id))
@@ -2291,7 +2320,8 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
   ResourceId resource = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   child_resource_provider_->AllocateForTesting(resource);
   // Expect a GL resource to be lost.
   bool should_lose_resource =
@@ -2346,7 +2376,8 @@ TEST_P(ResourceProviderTest, LostResourceInGrandParent) {
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
   ResourceId resource = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   child_resource_provider_->AllocateForTesting(resource);
 
   ReturnedResourceArray returned_to_child;
@@ -2648,7 +2679,8 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
   int texture_id = 1;
 
   ResourceId id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
 
   // Check that the texture gets created with the right sampler settings.
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id))
@@ -2730,7 +2762,8 @@ TEST_P(ResourceProviderTest, ManagedResource) {
 
   // Check that the texture gets created with the right sampler settings.
   ResourceId id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
   EXPECT_CALL(*context,
               texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -2775,7 +2808,8 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
   for (int texture_id = 1; texture_id <= 2; ++texture_id) {
     // Check that the texture gets created with the right sampler settings.
     ResourceId id = resource_provider->CreateResource(
-        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+        gfx::ColorSpace());
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
     EXPECT_CALL(*context,
                 texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -2826,8 +2860,8 @@ TEST_P(ResourceProviderTest, TextureHint) {
   };
   for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
     // Check that the texture gets created with the right sampler settings.
-    ResourceId id =
-        resource_provider->CreateResource(size, hints[texture_id - 1], format);
+    ResourceId id = resource_provider->CreateResource(
+        size, hints[texture_id - 1], format, gfx::ColorSpace());
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
     EXPECT_CALL(*context,
                 texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -3337,7 +3371,8 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
 
   // Lazy allocation. Don't allocate when creating the resource.
   id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
 
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(1);
@@ -3350,7 +3385,8 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
 
   // Do allocate when we set the pixels.
   id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
 
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
@@ -3399,7 +3435,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
     for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
       // Lazy allocation. Don't allocate when creating the resource.
       ResourceId id = resource_provider->CreateResource(
-          size, hints[texture_id - 1], formats[i]);
+          size, hints[texture_id - 1], formats[i], gfx::ColorSpace());
 
       EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
       EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
@@ -3457,7 +3493,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
     for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
       // Lazy allocation. Don't allocate when creating the resource.
       ResourceId id = resource_provider->CreateResource(
-          size, hints[texture_id - 1], formats[i]);
+          size, hints[texture_id - 1], formats[i], gfx::ColorSpace());
 
       EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
       EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
@@ -3506,7 +3542,8 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
           DefaultBufferToTextureTargetMapForTesting()));
 
   id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
 
   EXPECT_CALL(*context, NextTextureId())
       .WillOnce(Return(kTextureId))
@@ -3587,7 +3624,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
   int texture_id = 123;
 
   ResourceId id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, ETC1);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, ETC1, gfx::ColorSpace());
   EXPECT_NE(0u, id);
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
@@ -3622,7 +3659,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Upload) {
   uint8_t pixels[8];
 
   ResourceId id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, ETC1);
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, ETC1, gfx::ColorSpace());
   EXPECT_NE(0u, id);
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
@@ -3679,7 +3716,8 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
             DefaultBufferToTextureTargetMapForTesting()));
 
     ResourceId id = resource_provider->CreateResource(
-        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+        gfx::ColorSpace());
     resource_provider->AllocateForTesting(id);
     Mock::VerifyAndClearExpectations(context);
 
@@ -3697,7 +3735,8 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
             DefaultBufferToTextureTargetMapForTesting()));
 
     ResourceId id = resource_provider->CreateResource(
-        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+        size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+        gfx::ColorSpace());
     resource_provider->AllocateForTesting(id);
     Mock::VerifyAndClearExpectations(context);
 

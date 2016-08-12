@@ -919,7 +919,8 @@ class LayerTreeHostContextTestDontUseLostResources
     frame_data->render_pass_list.push_back(std::move(pass));
 
     ResourceId resource = child_resource_provider_->CreateResource(
-        gfx::Size(4, 4), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+        gfx::Size(4, 4), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+        gfx::ColorSpace());
     ResourceProvider::ScopedWriteLockGL lock(child_resource_provider_.get(),
                                              resource, false);
 

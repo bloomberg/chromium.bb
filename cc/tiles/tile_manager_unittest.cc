@@ -1327,7 +1327,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   EXPECT_TRUE(host_impl()->is_likely_to_require_a_draw());
 
   Resource* resource = host_impl()->resource_pool()->AcquireResource(
-      gfx::Size(256, 256), RGBA_8888);
+      gfx::Size(256, 256), RGBA_8888, gfx::ColorSpace());
 
   host_impl()->tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
   EXPECT_FALSE(host_impl()->is_likely_to_require_a_draw());
@@ -1839,8 +1839,8 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
       &raster_buffer_provider);
 
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
-  auto* resource =
-      host_impl->resource_pool()->AcquireResource(kTileSize, RGBA_8888);
+  auto* resource = host_impl->resource_pool()->AcquireResource(
+      kTileSize, RGBA_8888, gfx::ColorSpace());
   host_impl->resource_pool()->OnContentReplaced(resource->id(), kInvalidatedId);
   host_impl->resource_pool()->ReleaseResource(resource);
   host_impl->resource_pool()->CheckBusyResources();

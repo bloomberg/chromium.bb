@@ -228,7 +228,7 @@ class RasterBufferProviderTest
     std::unique_ptr<ScopedResource> resource(
         ScopedResource::Create(resource_provider_.get()));
     resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-                       RGBA_8888);
+                       RGBA_8888, gfx::ColorSpace());
 
     // The raster buffer has no tile ids associated with it for partial update,
     // so doesn't need to provide a valid dirty rect.
@@ -247,7 +247,7 @@ class RasterBufferProviderTest
     std::unique_ptr<ScopedResource> resource(
         ScopedResource::Create(resource_provider_.get()));
     resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-                       RGBA_8888);
+                       RGBA_8888, gfx::ColorSpace());
 
     std::unique_ptr<RasterBuffer> raster_buffer =
         raster_buffer_provider_->AcquireBufferForRaster(resource.get(), 0, 0);

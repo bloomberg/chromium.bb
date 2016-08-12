@@ -44,7 +44,9 @@ class ResourcePoolTest : public testing::Test {
 TEST_F(ResourcePoolTest, AcquireRelease) {
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;
-  Resource* resource = resource_pool_->AcquireResource(size, format);
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space);
   EXPECT_EQ(size, resource->size());
   EXPECT_EQ(format, resource->format());
   EXPECT_TRUE(resource_provider_->CanLockForWrite(resource->id()));
@@ -60,9 +62,11 @@ TEST_F(ResourcePoolTest, AccountingSingleResource) {
 
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   size_t resource_bytes =
       ResourceUtil::UncheckedSizeInBytes<size_t>(size, format);
-  Resource* resource = resource_pool_->AcquireResource(size, format);
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space);
 
   EXPECT_EQ(resource_bytes, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(resource_bytes, resource_pool_->memory_usage_bytes());
@@ -99,25 +103,36 @@ TEST_F(ResourcePoolTest, SimpleResourceReuse) {
 
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;
+  gfx::ColorSpace color_space1;
+  gfx::ColorSpace color_space2 = gfx::ColorSpace::CreateSRGB();
 
-  Resource* resource = resource_pool_->AcquireResource(size, format);
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space1);
   resource_pool_->ReleaseResource(resource);
   resource_pool_->CheckBusyResources();
   EXPECT_EQ(1u, resource_provider_->num_resources());
 
   // Same size/format should re-use resource.
-  resource = resource_pool_->AcquireResource(size, format);
+  resource = resource_pool_->AcquireResource(size, format, color_space1);
   EXPECT_EQ(1u, resource_provider_->num_resources());
   resource_pool_->ReleaseResource(resource);
   resource_pool_->CheckBusyResources();
   EXPECT_EQ(1u, resource_provider_->num_resources());
 
-  // Different size/format should alloate new resource.
-  resource = resource_pool_->AcquireResource(gfx::Size(50, 50), LUMINANCE_8);
+  // Different size/format should allocate new resource.
+  resource = resource_pool_->AcquireResource(gfx::Size(50, 50), LUMINANCE_8,
+                                             color_space1);
   EXPECT_EQ(2u, resource_provider_->num_resources());
   resource_pool_->ReleaseResource(resource);
   resource_pool_->CheckBusyResources();
   EXPECT_EQ(2u, resource_provider_->num_resources());
+
+  // Different color space should allocate new resource.
+  resource = resource_pool_->AcquireResource(size, format, color_space2);
+  EXPECT_EQ(3u, resource_provider_->num_resources());
+  resource_pool_->ReleaseResource(resource);
+  resource_pool_->CheckBusyResources();
+  EXPECT_EQ(3u, resource_provider_->num_resources());
 }
 
 TEST_F(ResourcePoolTest, LostResource) {
@@ -128,8 +143,10 @@ TEST_F(ResourcePoolTest, LostResource) {
 
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
-  Resource* resource = resource_pool_->AcquireResource(size, format);
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space);
   EXPECT_EQ(1u, resource_provider_->num_resources());
 
   resource_provider_->LoseResourceForTesting(resource->id());
@@ -151,8 +168,10 @@ TEST_F(ResourcePoolTest, BusyResourcesEventuallyFreed) {
 
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;
+  gfx::ColorSpace color_space;
 
-  Resource* resource = resource_pool_->AcquireResource(size, format);
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space);
   EXPECT_EQ(1u, resource_provider_->num_resources());
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(1u, resource_pool_->resource_count());
@@ -188,8 +207,10 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
 
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;
+  gfx::ColorSpace color_space;
 
-  Resource* resource = resource_pool_->AcquireResource(size, format);
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space);
   EXPECT_EQ(1u, resource_provider_->num_resources());
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
@@ -223,11 +244,13 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
 TEST_F(ResourcePoolTest, UpdateContentId) {
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;
+  gfx::ColorSpace color_space;
   uint64_t content_id = 42;
   uint64_t new_content_id = 43;
   gfx::Rect new_invalidated_rect(20, 20, 10, 10);
 
-  Resource* resource = resource_pool_->AcquireResource(size, format);
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space);
   resource_pool_->OnContentReplaced(resource->id(), content_id);
   resource_pool_->ReleaseResource(resource);
   resource_pool_->CheckBusyResources();
@@ -245,13 +268,15 @@ TEST_F(ResourcePoolTest, UpdateContentId) {
 TEST_F(ResourcePoolTest, UpdateContentIdAndInvalidatedRect) {
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;
+  gfx::ColorSpace color_space;
   uint64_t content_ids[] = {42, 43, 44};
   gfx::Rect invalidated_rect(20, 20, 10, 10);
   gfx::Rect second_invalidated_rect(25, 25, 10, 10);
   gfx::Rect expected_total_invalidated_rect(20, 20, 15, 15);
 
   // Acquire a new resource with the first content id.
-  Resource* resource = resource_pool_->AcquireResource(size, format);
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space);
   resource_pool_->OnContentReplaced(resource->id(), content_ids[0]);
 
   // Attempt to acquire this resource. It is in use, so its ID and invalidated

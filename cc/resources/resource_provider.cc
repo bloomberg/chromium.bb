@@ -548,26 +548,29 @@ ResourceFormat ResourceProvider::YuvResourceFormat(int bits) const {
   }
 }
 
-ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
-                                            TextureHint hint,
-                                            ResourceFormat format) {
+ResourceId ResourceProvider::CreateResource(
+    const gfx::Size& size,
+    TextureHint hint,
+    ResourceFormat format,
+    const gfx::ColorSpace& color_space) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
       // GPU memory buffers don't support LUMINANCE_F16.
       if (format != LUMINANCE_F16) {
-        return CreateGLTexture(size, hint, RESOURCE_TYPE_GPU_MEMORY_BUFFER,
-                               format,
-                               gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+        return CreateGLTexture(
+            size, hint, RESOURCE_TYPE_GPU_MEMORY_BUFFER, format,
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, color_space);
       }
     // Fall through and use a regular texture.
     case RESOURCE_TYPE_GL_TEXTURE:
       return CreateGLTexture(size, hint, RESOURCE_TYPE_GL_TEXTURE, format,
-                             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+                             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                             color_space);
 
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
-      return CreateBitmap(size);
+      return CreateBitmap(size, color_space);
   }
 
   LOG(FATAL) << "Invalid default resource type.";
@@ -578,28 +581,31 @@ ResourceId ResourceProvider::CreateGpuMemoryBufferResource(
     const gfx::Size& size,
     TextureHint hint,
     ResourceFormat format,
-    gfx::BufferUsage usage) {
+    gfx::BufferUsage usage,
+    const gfx::ColorSpace& color_space) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
     case RESOURCE_TYPE_GL_TEXTURE: {
       return CreateGLTexture(size, hint, RESOURCE_TYPE_GPU_MEMORY_BUFFER,
-                             format, usage);
+                             format, usage, color_space);
     }
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
-      return CreateBitmap(size);
+      return CreateBitmap(size, color_space);
   }
 
   LOG(FATAL) << "Invalid default resource type.";
   return 0;
 }
 
-ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
-                                             TextureHint hint,
-                                             ResourceType type,
-                                             ResourceFormat format,
-                                             gfx::BufferUsage usage) {
+ResourceId ResourceProvider::CreateGLTexture(
+    const gfx::Size& size,
+    TextureHint hint,
+    ResourceType type,
+    ResourceFormat format,
+    gfx::BufferUsage usage,
+    const gfx::ColorSpace& color_space) {
   DCHECK_LE(size.width(), max_texture_size_);
   DCHECK_LE(size.height(), max_texture_size_);
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -617,10 +623,12 @@ ResourceId ResourceProvider::CreateGLTexture(const gfx::Size& size,
                                   GL_LINEAR, hint, type, format));
   resource->usage = usage;
   resource->allocated = false;
+  resource->color_space = color_space;
   return id;
 }
 
-ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size) {
+ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size,
+                                          const gfx::ColorSpace& color_space) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   std::unique_ptr<SharedBitmap> bitmap =
@@ -633,6 +641,7 @@ ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size) {
       id,
       Resource(pixels, bitmap.release(), size, Resource::INTERNAL, GL_LINEAR));
   resource->allocated = true;
+  resource->color_space = color_space;
   return id;
 }
 

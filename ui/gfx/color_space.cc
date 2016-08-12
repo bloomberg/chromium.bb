@@ -64,6 +64,10 @@ bool ColorSpace::operator==(const ColorSpace& other) const {
          matrix_ == other.matrix_ && range_ == other.range_;
 }
 
+bool ColorSpace::operator!=(const ColorSpace& other) const {
+  return !(*this == other);
+}
+
 bool ColorSpace::operator<(const ColorSpace& other) const {
   if (primaries_ < other.primaries_)
     return true;

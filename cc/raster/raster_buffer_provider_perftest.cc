@@ -240,7 +240,7 @@ class RasterBufferProviderPerfTestBase {
       std::unique_ptr<ScopedResource> resource(
           ScopedResource::Create(resource_provider_.get()));
       resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-                         RGBA_8888);
+                         RGBA_8888, gfx::ColorSpace());
 
       // No tile ids are given to support partial updates.
       std::unique_ptr<RasterBuffer> raster_buffer;

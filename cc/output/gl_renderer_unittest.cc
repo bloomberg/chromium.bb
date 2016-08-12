@@ -1366,7 +1366,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   ResourceId mask = resource_provider_->CreateResource(
       gfx::Size(20, 12), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      resource_provider_->best_texture_format());
+      resource_provider_->best_texture_format(), gfx::ColorSpace());
   resource_provider_->AllocateForTesting(mask);
 
   SkScalar matrix[20];

@@ -945,7 +945,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
     DCHECK_EQ(DetermineResourceFormat(tile), resource->format());
   } else {
     resource = resource_pool_->AcquireResource(tile->desired_texture_size(),
-                                               DetermineResourceFormat(tile));
+                                               DetermineResourceFormat(tile),
+                                               gfx::ColorSpace());
   }
 
   // For LOW_RESOLUTION tiles, we don't draw or predecode images.

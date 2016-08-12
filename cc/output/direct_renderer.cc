@@ -552,7 +552,8 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   if (!texture->id()) {
     texture->Allocate(size,
                       ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
-                      resource_provider_->best_texture_format());
+                      resource_provider_->best_texture_format(),
+                      output_surface_->device_color_space());
   }
   DCHECK(texture->id());
 

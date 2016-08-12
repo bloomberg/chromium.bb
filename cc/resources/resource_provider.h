@@ -135,14 +135,16 @@ class CC_EXPORT ResourceProvider
   // Creates a resource of the default resource type.
   ResourceId CreateResource(const gfx::Size& size,
                             TextureHint hint,
-                            ResourceFormat format);
+                            ResourceFormat format,
+                            const gfx::ColorSpace& color_space);
 
   // Creates a resource for a particular texture target (the distinction between
   // texture targets has no effect in software mode).
   ResourceId CreateGpuMemoryBufferResource(const gfx::Size& size,
                                            TextureHint hint,
                                            ResourceFormat format,
-                                           gfx::BufferUsage usage);
+                                           gfx::BufferUsage usage,
+                                           const gfx::ColorSpace& color_space);
 
   // Wraps an external texture mailbox into a GL resource.
   ResourceId CreateResourceFromTextureMailbox(
@@ -634,8 +636,10 @@ class CC_EXPORT ResourceProvider
                              TextureHint hint,
                              ResourceType type,
                              ResourceFormat format,
-                             gfx::BufferUsage usage);
-  ResourceId CreateBitmap(const gfx::Size& size);
+                             gfx::BufferUsage usage,
+                             const gfx::ColorSpace& color_space);
+  ResourceId CreateBitmap(const gfx::Size& size,
+                          const gfx::ColorSpace& color_space);
   Resource* InsertResource(ResourceId id, Resource resource);
   Resource* GetResource(ResourceId id);
   const Resource* LockForRead(ResourceId id);

@@ -96,9 +96,9 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
 
   std::unique_ptr<ScopedResource> resource =
       ScopedResource::Create(resource_provider);
-  resource->Allocate(internal_content_bounds_,
-                     ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-                     resource_provider->best_texture_format());
+  resource->Allocate(
+      internal_content_bounds_, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      resource_provider->best_texture_format(), gfx::ColorSpace());
   resources_.push_back(std::move(resource));
 }
 

@@ -149,7 +149,7 @@ class CC_EXPORT TileManager {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
       draw_info.resource_ = resource_pool_->AcquireResource(
           tiles[i]->desired_texture_size(),
-          raster_buffer_provider_->GetResourceFormat(false));
+          raster_buffer_provider_->GetResourceFormat(false), gfx::ColorSpace());
     }
   }
 

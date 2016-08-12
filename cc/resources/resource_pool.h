@@ -44,7 +44,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
 
   ~ResourcePool() override;
 
-  Resource* AcquireResource(const gfx::Size& size, ResourceFormat format);
+  Resource* AcquireResource(const gfx::Size& size,
+                            ResourceFormat format,
+                            const gfx::ColorSpace& color_space);
 
   // Tries to acquire the resource with |previous_content_id| for us in partial
   // raster. If successful, this function will retun the invalidated rect which

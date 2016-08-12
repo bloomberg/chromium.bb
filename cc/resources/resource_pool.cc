@@ -95,7 +95,8 @@ ResourcePool::~ResourcePool() {
 }
 
 Resource* ResourcePool::AcquireResource(const gfx::Size& size,
-                                        ResourceFormat format) {
+                                        ResourceFormat format,
+                                        const gfx::ColorSpace& color_space) {
   // Finding resources in |unused_resources_| from MRU to LRU direction, touches
   // LRU resources only if needed, which increases possibility of expiring more
   // LRU resources within kResourceExpirationDelayMs.
@@ -107,6 +108,8 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
     if (resource->format() != format)
       continue;
     if (resource->size() != size)
+      continue;
+    if (resource->color_space() != color_space)
       continue;
 
     // Transfer resource to |in_use_resources_|.
@@ -121,10 +124,11 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
       PoolResource::Create(resource_provider_);
 
   if (use_gpu_memory_buffers_) {
-    pool_resource->AllocateWithGpuMemoryBuffer(size, format, usage_);
+    pool_resource->AllocateWithGpuMemoryBuffer(size, format, usage_,
+                                               color_space);
   } else {
     pool_resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-                            format);
+                            format, color_space);
   }
 
   DCHECK(ResourceUtil::VerifySizeInBytes<size_t>(pool_resource->size(),

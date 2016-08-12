@@ -3659,7 +3659,8 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       break;
   }
   id = resource_provider_->CreateResource(
-      bitmap.GetSize(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      bitmap.GetSize(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      gfx::ColorSpace());
 
   UIResourceData data;
   data.resource_id = id;

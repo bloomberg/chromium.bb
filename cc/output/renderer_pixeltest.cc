@@ -135,7 +135,8 @@ void CreateTestTwoColoredTextureDrawQuad(const gfx::Rect& rect,
     }
   }
   ResourceId resource = resource_provider->CreateResource(
-      rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
   resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
@@ -169,7 +170,8 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
   std::vector<uint32_t> pixels(num_pixels, pixel_color);
 
   ResourceId resource = resource_provider->CreateResource(
-      rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
   resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
@@ -507,9 +509,10 @@ void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
 
   ResourceId y_resource = resource_provider->CreateResource(
       rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
-      resource_provider->YuvResourceFormat(8));
+      resource_provider->YuvResourceFormat(8), gfx::ColorSpace());
   ResourceId u_resource = resource_provider->CreateResource(
-      uv_tex_size, ResourceProvider::TEXTURE_HINT_DEFAULT, RGBA_8888);
+      uv_tex_size, ResourceProvider::TEXTURE_HINT_DEFAULT, RGBA_8888,
+      gfx::ColorSpace());
   ResourceId v_resource = u_resource;
   ResourceId a_resource = 0;
 
@@ -1830,7 +1833,8 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   }
 
   ResourceId mask_resource_id = this->resource_provider_->CreateResource(
-      mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
   {
     SkAutoLockPixels lock(bitmap);
     this->resource_provider_->CopyToResource(
@@ -1923,7 +1927,8 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
   }
 
   ResourceId mask_resource_id = this->resource_provider_->CreateResource(
-      mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
   {
     SkAutoLockPixels lock(bitmap);
     this->resource_provider_->CopyToResource(
@@ -2678,7 +2683,8 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
 
   gfx::Size tile_size(2, 2);
   ResourceId resource = this->resource_provider_->CreateResource(
-      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
 
   {
     SkAutoLockPixels lock(bitmap);
@@ -2728,7 +2734,8 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
 
   gfx::Size tile_size(2, 2);
   ResourceId resource = this->resource_provider_->CreateResource(
-      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
 
   {
     SkAutoLockPixels lock(bitmap);
@@ -2779,7 +2786,8 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
 
   gfx::Size tile_size(2, 2);
   ResourceId resource = this->resource_provider_->CreateResource(
-      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
 
   {
     SkAutoLockPixels lock(bitmap);
@@ -3142,7 +3150,8 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
   }
 
   ResourceId resource = this->resource_provider_->CreateResource(
-      mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
   {
     SkAutoLockPixels lock(bitmap);
     this->resource_provider_->CopyToResource(

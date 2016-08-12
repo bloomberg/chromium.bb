@@ -150,9 +150,11 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
 
   ResourceId resource_yellow = resource_provider()->CreateResource(
-      outer_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      outer_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
   ResourceId resource_cyan = resource_provider()->CreateResource(
-      inner_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      inner_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
 
   SkBitmap yellow_tile;
   yellow_tile.allocN32Pixels(outer_size.width(), outer_size.height());
@@ -221,7 +223,8 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   InitializeRenderer(base::WrapUnique(new SoftwareOutputDevice));
 
   ResourceId resource_cyan = resource_provider()->CreateResource(
-      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
+      gfx::ColorSpace());
 
   SkBitmap cyan_tile;  // The lowest five rows are yellow.
   cyan_tile.allocN32Pixels(tile_size.width(), tile_size.height());

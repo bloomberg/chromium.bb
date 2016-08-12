@@ -129,7 +129,9 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
                        bool alpha);
   gfx::Size SurfaceSize() const { return surface_size_; }
   float device_scale_factor() const { return device_scale_factor_; }
-  const gfx::ColorSpace& color_space() const { return color_space_; }
+  const gfx::ColorSpace& device_color_space() const {
+    return device_color_space_;
+  }
 
   // If supported, this causes a ReclaimResources for all resources that are
   // currently in use.
@@ -196,6 +198,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   std::unique_ptr<SoftwareOutputDevice> software_device_;
   gfx::Size surface_size_;
   float device_scale_factor_ = -1;
+  gfx::ColorSpace device_color_space_;
   bool has_alpha_ = true;
   gfx::ColorSpace color_space_;
   base::ThreadChecker client_thread_checker_;

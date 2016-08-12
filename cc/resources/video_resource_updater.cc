@@ -174,6 +174,7 @@ VideoResourceUpdater::~VideoResourceUpdater() {
 VideoResourceUpdater::ResourceList::iterator
 VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
                                        ResourceFormat format,
+                                       const gfx::ColorSpace& color_space,
                                        bool has_mailbox,
                                        bool immutable_hint) {
   // TODO(danakj): Abstract out hw/sw resource create/delete from
@@ -181,7 +182,7 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
   const ResourceId resource_id = resource_provider_->CreateResource(
       plane_size, immutable_hint ? ResourceProvider::TEXTURE_HINT_IMMUTABLE
                                  : ResourceProvider::TEXTURE_HINT_DEFAULT,
-      format);
+      format, color_space);
   if (resource_id == 0)
     return all_resources_.end();
 
@@ -356,9 +357,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     // Check if we need to allocate a new resource.
     if (resource_it == all_resources_.end()) {
       const bool is_immutable = true;
-      resource_it =
-          AllocateResource(output_plane_resource_size, output_resource_format,
-                           !software_compositor, is_immutable);
+      resource_it = AllocateResource(
+          output_plane_resource_size, output_resource_format,
+          video_frame->ColorSpace(), !software_compositor, is_immutable);
     }
     if (resource_it == all_resources_.end())
       break;
@@ -583,7 +584,7 @@ void VideoResourceUpdater::CopyPlaneTexture(
   if (resource == all_resources_.end()) {
     const bool is_immutable = false;
     resource = AllocateResource(output_plane_resource_size, copy_target_format,
-                                true, is_immutable);
+                                video_frame->ColorSpace(), true, is_immutable);
   }
 
   resource->add_ref();

@@ -893,9 +893,10 @@ std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
   std::unique_ptr<ScopedResource> device_background_texture =
       ScopedResource::Create(resource_provider_);
   // CopyTexImage2D fails when called on a texture having immutable storage.
-  device_background_texture->Allocate(
-      bounding_rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
-      resource_provider_->best_texture_format());
+  device_background_texture->Allocate(bounding_rect.size(),
+                                      ResourceProvider::TEXTURE_HINT_DEFAULT,
+                                      resource_provider_->best_texture_format(),
+                                      output_surface_->device_color_space());
   {
     ResourceProvider::ScopedWriteLockGL lock(
         resource_provider_, device_background_texture->id(), false);
@@ -1039,7 +1040,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     TileDrawQuad* tile_quad = &bypass->second;
     // RGBA_8888 here is arbitrary and unused.
     Resource tile_resource(tile_quad->resource_id(), tile_quad->texture_size,
-                           ResourceFormat::RGBA_8888);
+                           ResourceFormat::RGBA_8888,
+                           output_surface_->device_color_space());
     // The projection matrix used by GLRenderer has a flip.  As tile texture
     // inputs are oriented opposite to framebuffer outputs, don't flip via
     // texture coords and let the projection matrix naturallyd o it.
@@ -2398,7 +2400,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   if (lut_texture_location != -1) {
     unsigned int lut_texture = color_lut_cache_.GetLUT(
-        quad->video_color_space, output_surface_->color_space(), 32);
+        quad->video_color_space, output_surface_->device_color_space(), 32);
     gl_->ActiveTexture(GL_TEXTURE5);
     gl_->BindTexture(GL_TEXTURE_2D, lut_texture);
     gl_->Uniform1i(lut_texture_location, 5);
@@ -3978,7 +3980,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
   // Establish destination texture.
   *resource = overlay_resource_pool_->AcquireResource(
       gfx::Size(updated_dst_rect.width(), updated_dst_rect.height()),
-      ResourceFormat::RGBA_8888);
+      ResourceFormat::RGBA_8888, output_surface_->device_color_space());
   ResourceProvider::ScopedWriteLockGL destination(resource_provider_,
                                                   (*resource)->id(), false);
   GLuint temp_fbo;
