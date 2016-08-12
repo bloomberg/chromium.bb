@@ -10,6 +10,7 @@ import urllib2
 from webkitpy.common.net.rietveld import filter_latest_jobs
 from webkitpy.common.net.rietveld import get_latest_try_job_results
 from webkitpy.common.net.rietveld import latest_try_jobs
+from webkitpy.common.net.rietveld import changed_files
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.outputcapture import OutputCapture
@@ -52,6 +53,10 @@ class RietveldTest(unittest.TestCase):
                         'result': 0
                     },
                 ],
+                'files': {
+                    'some/path/foo.cc': {'status': 'M'},
+                    'some/path/bar.html': {'status': 'M'},
+                }
             }),
             'https://codereview.chromium.org/api/11113333': 'my non-JSON contents',
         })
@@ -110,3 +115,11 @@ class RietveldTest(unittest.TestCase):
         self.assertEqual(
             filter_latest_jobs([Build('foo', 3), Build('bar')]),
             [Build('foo', 3)])
+
+    def test_changed_files(self):
+        self.assertEqual(
+            changed_files(11112222, self.web),
+            ['some/path/bar.html', 'some/path/foo.cc'])
+
+    def test_changed_files_no_results(self):
+        self.assertIsNone(changed_files(11113333, self.web))

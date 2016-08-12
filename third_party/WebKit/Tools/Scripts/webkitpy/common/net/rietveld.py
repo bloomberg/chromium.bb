@@ -48,6 +48,20 @@ def latest_try_jobs(issue_number, builder_names, web, patchset_number=None):
     return filter_latest_jobs(jobs)
 
 
+def changed_files(issue_number, web):
+    """Lists the files included in a CL, or None if this can't be determined.
+
+    File paths are sorted and relative to the repository root.
+    """
+    try:
+        url = _latest_patchset_url(issue_number, web)
+        issue_data = _get_json(url, web)
+        return sorted(issue_data['files'])
+    except (urllib2.URLError, ValueError, KeyError):
+        _log.warning('Failed to list changed files for issue %s.', issue_number)
+        return None
+
+
 def _latest_patchset_url(issue_number, web):
     issue_data = _get_json(_issue_url(issue_number), web)
     latest_patchset_number = issue_data["patchsets"][-1]

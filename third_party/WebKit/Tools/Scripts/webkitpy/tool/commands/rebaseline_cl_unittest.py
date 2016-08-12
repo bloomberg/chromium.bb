@@ -34,6 +34,10 @@ class RebaselineCLTest(BaseTestCase):
                         'buildnumber': 4000,
                     },
                 ],
+                'files': {
+                    'third_party/WebKit/LayoutTests/fast/dom/prototype-inheritance.html': {'status': 'M'},
+                    'third_party/WebKit/LayoutTests/fast/dom/prototype-taco.html': {'status': 'M'},
+                },
             }),
         })
         self.tool.builders = BuilderList({
@@ -55,11 +59,12 @@ class RebaselineCLTest(BaseTestCase):
     @staticmethod
     def command_options(**kwargs):
         options = {
-            'issue': None,
+            'only_changed_tests': False,
             'dry_run': False,
+            'issue': None,
             'optimize': True,
-            'verbose': False,
             'results_directory': None,
+            'verbose': False,
         }
         options.update(kwargs)
         return optparse.Values(dict(**options))
@@ -107,6 +112,24 @@ class RebaselineCLTest(BaseTestCase):
              'Rebaselining fast/dom/prototype-inheritance.html\n'
              'Rebaselining fast/dom/prototype-taco.html\n'
              'Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n'))
+
+    def test_execute_with_only_changed_tests_option(self):
+        oc = OutputCapture()
+        try:
+            oc.capture_output()
+            self.command.execute(self.command_options(issue=11112222, only_changed_tests=True), [], self.tool)
+        finally:
+            _, _, logs = oc.restore_output()
+        # svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html
+        # is in the list of failed tests, but not in the list of files modified
+        # in the given CL; it should be included because all_tests is set to True.
+        self.assertMultiLineEqual(
+            logs,
+            ('Tests to rebaseline:\n'
+             '  fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n'
+             '  fast/dom/prototype-taco.html: MOCK Try Win (5000)\n'
+             'Rebaselining fast/dom/prototype-inheritance.html\n'
+             'Rebaselining fast/dom/prototype-taco.html\n'))
 
     def test_rebaseline_calls(self):
         """Tests the list of commands that are invoked when rebaseline is called."""
