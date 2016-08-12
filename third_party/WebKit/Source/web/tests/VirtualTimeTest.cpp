@@ -56,7 +56,13 @@ namespace {
     }
 }
 
-TEST_F(VirtualTimeTest, DOMTimersFireInExpectedOrder)
+// http://crbug.com/633321
+#if OS(ANDROID)
+#define MAYBE_DOMTimersFireInExpectedOrder DISABLED_DOMTimersFireInExpectedOrder
+#else
+#define MAYBE_DOMTimersFireInExpectedOrder DOMTimersFireInExpectedOrder
+#endif
+TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder)
 {
     webView().scheduler()->enableVirtualTime();
 
@@ -78,7 +84,13 @@ TEST_F(VirtualTimeTest, DOMTimersFireInExpectedOrder)
     EXPECT_EQ("c, b, a", ExecuteJavaScript("run_order.join(', ')"));
 }
 
-TEST_F(VirtualTimeTest, SetInterval)
+// http://crbug.com/633321
+#if OS(ANDROID)
+#define MAYBE_SetInterval DISABLED_SetInterval
+#else
+#define MAYBE_SetInterval SetInterval
+#endif
+TEST_F(VirtualTimeTest, MAYBE_SetInterval)
 {
     webView().scheduler()->enableVirtualTime();
 
@@ -98,7 +110,13 @@ TEST_F(VirtualTimeTest, SetInterval)
     EXPECT_EQ("9, timer, 8, 7, 6, 5, 4, 3, 2, 1, 0", ExecuteJavaScript("run_order.join(', ')"));
 }
 
-TEST_F(VirtualTimeTest, AllowVirtualTimeToAdvance)
+// http://crbug.com/633321
+#if OS(ANDROID)
+#define MAYBE_AllowVirtualTimeToAdvance DISABLED_AllowVirtualTimeToAdvance
+#else
+#define MAYBE_AllowVirtualTimeToAdvance AllowVirtualTimeToAdvance
+#endif
+TEST_F(VirtualTimeTest, MAYBE_AllowVirtualTimeToAdvance)
 {
     webView().scheduler()->enableVirtualTime();
     webView().scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::PAUSE);
@@ -121,7 +139,13 @@ TEST_F(VirtualTimeTest, AllowVirtualTimeToAdvance)
     EXPECT_EQ("c, b, a", ExecuteJavaScript("run_order.join(', ')"));
 }
 
-TEST_F(VirtualTimeTest, VirtualTimeNotAllowedToAdvanceWhileResourcesLoading)
+// http://crbug.com/633321
+#if OS(ANDROID)
+#define MAYBE_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading DISABLED_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading
+#else
+#define MAYBE_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading VirtualTimeNotAllowedToAdvanceWhileResourcesLoading
+#endif
+TEST_F(VirtualTimeTest, MAYBE_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading)
 {
     webView().scheduler()->enableVirtualTime();
     webView().scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
