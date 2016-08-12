@@ -1157,7 +1157,7 @@ void WebURLLoaderImpl::didChangePriority(WebURLRequest::Priority new_priority,
 
 void WebURLLoaderImpl::setLoadingTaskRunner(
     blink::WebTaskRunner* loading_task_runner) {
-  context_->SetTaskRunner(loading_task_runner->toSingleThreadTaskRunner());
+  context_->SetTaskRunner(loading_task_runner->taskRunner());
 }
 
 // This function is implemented here because it uses net functions. it is

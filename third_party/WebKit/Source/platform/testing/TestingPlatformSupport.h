@@ -58,9 +58,6 @@ public:
     void runSingleTask();
     void runAllTasks();
 
-    void addTaskObserver(WebThread::TaskObserver*);
-    void removeTaskObserver(WebThread::TaskObserver*);
-
     // WebScheduler implementation:
     WebTaskRunner* loadingTaskRunner() override;
     WebTaskRunner* timerTaskRunner() override;
@@ -79,8 +76,7 @@ public:
 
 private:
     WTF::Deque<std::unique_ptr<WebTaskRunner::Task>> m_tasks;
-    scoped_refptr<TestingPlatformMockWebTaskRunner> m_mockWebTaskRunner;
-    WebThread::TaskObserver* m_taskObserver;
+    std::unique_ptr<TestingPlatformMockWebTaskRunner> m_mockWebTaskRunner;
 };
 
 class TestingPlatformSupport : public Platform {

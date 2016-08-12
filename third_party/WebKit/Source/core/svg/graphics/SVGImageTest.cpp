@@ -43,7 +43,7 @@ private:
     std::unique_ptr<WebTaskRunner> clone() override { return nullptr; }
     double virtualTimeSeconds() const override { return 0.0; }
     double monotonicallyIncreasingVirtualTimeSeconds() const override { return m_time; }
-    SingleThreadTaskRunner* toSingleThreadTaskRunner() override { return nullptr; }
+    SingleThreadTaskRunner* taskRunner() override { return nullptr; }
 
     double m_time;
     Task* m_currentTask;
