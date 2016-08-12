@@ -219,7 +219,7 @@ class SoftwareGpuProcessSharedPageState(GpuProcessSharedPageState):
     options.AppendExtraBrowserArgs('--gpu-testing-device-id=0x0de1')
     options.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=VMware')
     options.AppendExtraBrowserArgs('--gpu-testing-gl-renderer=SVGA3D')
-    options.AppendExtraBrowserArgs('--gpu-testing-gl-version="2.1 Mesa 10.1"')
+    options.AppendExtraBrowserArgs('--gpu-testing-gl-version=2.1 Mesa 10.1')
 
 
 class SoftwareGpuProcessPage(gpu_test_base.PageBase):
@@ -297,12 +297,11 @@ class DriverBugWorkaroundsUponGLRendererShared(GpuProcessSharedPageState):
       options.AppendExtraBrowserArgs('--gpu-testing-gl-version=OpenGL ES 2.0 ' \
         '(ANGLE 2.1.0.0c0d8006a9dd)')
     elif sys.platform.startswith('linux'):
-      # Hit id 153 from kGpuDriverBugListJson.
+      # Hit id 40 from kGpuDriverBugListJson.
       options.AppendExtraBrowserArgs('--gpu-testing-vendor-id=0x0101')
       options.AppendExtraBrowserArgs('--gpu-testing-device-id=0x0102')
-      options.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=Vivante ' \
-        'Corporation')
-      options.AppendExtraBrowserArgs('--gpu-testing-gl-renderer=Vivante GC1000')
+      options.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=ARM')
+      options.AppendExtraBrowserArgs('--gpu-testing-gl-renderer=Mali-400 MP')
     elif sys.platform == 'darwin':
       # Currently on osx no workaround relies on gl-renderer.
       pass
@@ -317,7 +316,7 @@ class DriverBugWorkaroundsUponGLRendererPage(DriverBugWorkaroundsTestsPage):
       self.expected_workaround = "texsubimage_faster_than_teximage"
       self.unexpected_workaround = "disable_d3d11"
     elif sys.platform.startswith('linux'):
-      self.expected_workaround = "disable_transparent_visuals"
+      self.expected_workaround = "disable_discard_framebuffer"
     elif sys.platform == 'darwin':
       pass
     super(DriverBugWorkaroundsUponGLRendererPage, self).__init__(

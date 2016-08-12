@@ -756,6 +756,14 @@ int BrowserMainLoop::PreCreateThreads() {
   bool enable_transparent_visuals =
       !GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
           gpu::DISABLE_TRANSPARENT_VISUALS);
+
+  // Prevent this flag to be turned off later since it is only used here.
+  if (!enable_transparent_visuals &&
+      !GpuDataManagerImpl::GetInstance()->IsCompleteGpuInfoAvailable()) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        "disable_transparent_visuals");
+  }
+
   Visual* visual = NULL;
   int depth = 0;
   ui::ChooseVisualForWindow(enable_transparent_visuals, &visual, &depth);
