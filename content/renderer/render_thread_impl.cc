@@ -1618,6 +1618,19 @@ blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
 
 std::unique_ptr<cc::BeginFrameSource>
 RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(switches::kUseRemoteCompositing) ||
+      command_line->HasSwitch(switches::kIsRunningInMash) ||
+      command_line->HasSwitch(cc::switches::kDisableBeginFrameScheduling)) {
+    return base::WrapUnique(new cc::DelayBasedBeginFrameSource(
+        base::MakeUnique<cc::DelayBasedTimeSource>(
+            compositor_task_runner_
+                ? compositor_task_runner_.get()
+                : main_thread_compositor_task_runner_.get())));
+  }
+
   return base::WrapUnique(new CompositorExternalBeginFrameSource(
       compositor_message_filter_.get(), sync_message_filter(), routing_id));
 }
