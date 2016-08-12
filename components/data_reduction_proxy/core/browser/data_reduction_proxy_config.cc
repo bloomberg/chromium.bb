@@ -532,9 +532,13 @@ void DataReductionProxyConfig::PopulateAutoLoFiParams() {
   std::string variation_value = variations::GetVariationParamValue(
       field_trial, "effective_connection_type");
   if (!variation_value.empty()) {
-    lofi_effective_connection_type_threshold_ =
-        net::NetworkQualityEstimator::GetEffectiveConnectionTypeForName(
-            variation_value);
+    bool effective_connection_type_available =
+        net::GetEffectiveConnectionTypeForName(
+            variation_value, &lofi_effective_connection_type_threshold_);
+    DCHECK(effective_connection_type_available);
+
+    // Silence unused variable warning in release builds.
+    (void)effective_connection_type_available;
   } else {
     // Use the default parameters.
     lofi_effective_connection_type_threshold_ =

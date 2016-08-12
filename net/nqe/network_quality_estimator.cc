@@ -314,12 +314,12 @@ void RecordEffectiveConnectionTypeAccuracy(
     int32_t metric,
     base::TimeDelta measuring_duration,
     net::EffectiveConnectionType observed_effective_connection_type) {
-  const std::string histogram_name = base::StringPrintf(
-      "%s.EstimatedObservedDiff.%s.%d.%s", prefix,
-      metric >= 0 ? "Positive" : "Negative",
-      static_cast<int32_t>(measuring_duration.InSeconds()),
-      net::NetworkQualityEstimator::GetNameForEffectiveConnectionType(
-          observed_effective_connection_type));
+  const std::string histogram_name =
+      base::StringPrintf("%s.EstimatedObservedDiff.%s.%d.%s", prefix,
+                         metric >= 0 ? "Positive" : "Negative",
+                         static_cast<int32_t>(measuring_duration.InSeconds()),
+                         net::GetNameForEffectiveConnectionType(
+                             observed_effective_connection_type));
 
   base::HistogramBase* histogram = base::Histogram::FactoryGet(
       histogram_name, 0, net::EFFECTIVE_CONNECTION_TYPE_LAST,
@@ -1532,53 +1532,6 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
     external_estimate_provider_quality_.set_downstream_throughput_kbps(
         downstream_throughput_kbps);
   }
-}
-
-// static
-const char* NetworkQualityEstimator::GetNameForEffectiveConnectionType(
-    EffectiveConnectionType type) {
-  switch (type) {
-    case EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
-      return "Unknown";
-    case EFFECTIVE_CONNECTION_TYPE_OFFLINE:
-      return "Offline";
-    case EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
-      return "Slow2G";
-    case EFFECTIVE_CONNECTION_TYPE_2G:
-      return "2G";
-    case EFFECTIVE_CONNECTION_TYPE_3G:
-      return "3G";
-    case EFFECTIVE_CONNECTION_TYPE_4G:
-      return "4G";
-    case EFFECTIVE_CONNECTION_TYPE_BROADBAND:
-      return "Broadband";
-    default:
-      NOTREACHED();
-      break;
-  }
-  return "";
-}
-
-// static
-EffectiveConnectionType
-NetworkQualityEstimator::GetEffectiveConnectionTypeForName(
-    const std::string& connection_type_name) {
-  if (connection_type_name == "Unknown")
-    return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  if (connection_type_name == "Offline")
-    return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
-  if (connection_type_name == "Slow2G")
-    return EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-  if (connection_type_name == "2G")
-    return EFFECTIVE_CONNECTION_TYPE_2G;
-  if (connection_type_name == "3G")
-    return EFFECTIVE_CONNECTION_TYPE_3G;
-  if (connection_type_name == "4G")
-    return EFFECTIVE_CONNECTION_TYPE_4G;
-  if (connection_type_name == "Broadband")
-    return EFFECTIVE_CONNECTION_TYPE_BROADBAND;
-  NOTREACHED();
-  return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 }
 
 void NetworkQualityEstimator::SetTickClockForTesting(

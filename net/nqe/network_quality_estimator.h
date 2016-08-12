@@ -201,14 +201,6 @@ class NET_EXPORT NetworkQualityEstimator
 
   SocketPerformanceWatcherFactory* GetSocketPerformanceWatcherFactory();
 
-  // Returns a string equivalent to |type|.
-  static const char* GetNameForEffectiveConnectionType(
-      EffectiveConnectionType type);
-
-  // Returns an EffectiveConnectionType equivalent to |connection_type_name|.
-  static EffectiveConnectionType GetEffectiveConnectionTypeForName(
-      const std::string& connection_type_name);
-
   // |use_localhost_requests| should only be true when testing against local
   // HTTP server and allows the requests to local host to be used for network
   // quality estimation.

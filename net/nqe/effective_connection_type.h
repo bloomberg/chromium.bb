@@ -5,6 +5,10 @@
 #ifndef NET_NQE_EFFECTIVE_CONNECTION_TYPE_H_
 #define NET_NQE_EFFECTIVE_CONNECTION_TYPE_H_
 
+#include <string>
+
+#include "net/base/net_export.h"
+
 namespace net {
 
 // EffectiveConnectionType is the connection type whose typical performance is
@@ -53,6 +57,20 @@ enum EffectiveConnectionType {
   // Last value of the effective connection type. This value is unused.
   EFFECTIVE_CONNECTION_TYPE_LAST,
 };
+
+// Returns the string equivalent of |type|.
+NET_EXPORT const char* GetNameForEffectiveConnectionType(
+    EffectiveConnectionType type);
+
+// Returns true if the EffectiveConnectionType that corresponds to
+// |connection_type_name| is available, and sets |effective_connection_type| to
+// that value. If the effective connection type is unavailable, false is
+// returned, and |effective_connection_type| is set to
+// EFFECTIVE_CONNECTION_TYPE_UNKNOWN. |effective_connection_type| must be
+// non-null.
+NET_EXPORT bool GetEffectiveConnectionTypeForName(
+    const std::string& connection_type_name,
+    EffectiveConnectionType* effective_connection_type);
 
 }  // namespace net
 
