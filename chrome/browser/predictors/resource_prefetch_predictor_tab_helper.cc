@@ -8,7 +8,6 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/load_from_memory_cache_details.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     predictors::ResourcePrefetchPredictorTabHelper);
@@ -39,7 +38,9 @@ void ResourcePrefetchPredictorTabHelper::DocumentOnLoadCompletedInMainFrame() {
 }
 
 void ResourcePrefetchPredictorTabHelper::DidLoadResourceFromMemoryCache(
-    const content::LoadFromMemoryCacheDetails& details) {
+    const GURL& url,
+    const std::string& mime_type,
+    content::ResourceType resource_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ResourcePrefetchPredictor* predictor =
@@ -50,11 +51,11 @@ void ResourcePrefetchPredictorTabHelper::DidLoadResourceFromMemoryCache(
 
   ResourcePrefetchPredictor::URLRequestSummary summary;
   summary.navigation_id = NavigationID(web_contents());
-  summary.resource_url = details.url;
-  summary.mime_type = details.mime_type;
+  summary.resource_url = url;
+  summary.mime_type = mime_type;
   summary.resource_type =
       ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
-          details.mime_type, details.resource_type);
+          mime_type, resource_type);
   summary.was_cached = true;
   predictor->RecordURLResponse(summary);
 }

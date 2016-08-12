@@ -797,7 +797,7 @@ class CONTENT_EXPORT WebContentsImpl
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest,
                            LoadResourceFromMemoryCacheWithBadSecurityInfo);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest,
-                           LoadResourceFromMemoryCacheWithEmptySecurityInfo);
+                           LoadResourceWithEmptySecurityInfo);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest,
                            ResetJavaScriptDialogOnUserNavigate);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
@@ -914,7 +914,6 @@ class CONTENT_EXPORT WebContentsImpl
   // IPC message handlers.
   void OnThemeColorChanged(SkColor theme_color);
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
-                                        const std::string& security_info,
                                         const std::string& http_request,
                                         const std::string& mime_type,
                                         ResourceType resource_type);

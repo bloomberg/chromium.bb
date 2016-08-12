@@ -20,7 +20,9 @@ class ResourcePrefetchPredictorTabHelper
   // content::WebContentsObserver implementation
   void DocumentOnLoadCompletedInMainFrame() override;
   void DidLoadResourceFromMemoryCache(
-      const content::LoadFromMemoryCacheDetails& details) override;
+      const GURL& url,
+      const std::string& mime_type,
+      content::ResourceType resource_type) override;
 
  private:
   explicit ResourcePrefetchPredictorTabHelper(

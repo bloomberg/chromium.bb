@@ -1438,9 +1438,8 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_UnregisterProtocolHandler,
 // The security info is non empty if the resource was originally loaded over
 // a secure connection.
 // Note: May only be sent once per URL per frame per committed load.
-IPC_MESSAGE_ROUTED5(FrameHostMsg_DidLoadResourceFromMemoryCache,
+IPC_MESSAGE_ROUTED4(FrameHostMsg_DidLoadResourceFromMemoryCache,
                     GURL /* url */,
-                    std::string /* security info */,
                     std::string /* http method */,
                     std::string /* mime type */,
                     content::ResourceType /* resource type */)

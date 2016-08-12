@@ -19,6 +19,7 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/ssl/ssl_policy.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
@@ -3371,23 +3372,10 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   EXPECT_EQ(SK_ColorGREEN, observer.last_theme_color());
 }
 
-// Test that if a renderer reports that it has loaded a resource from
-// memory cache with bad security info (i.e. can't be deserialized), the
-// renderer gets killed.
-TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithBadSecurityInfo) {
-  MockRenderProcessHost* rph = contents()->GetMainFrame()->GetProcess();
-  EXPECT_EQ(0, rph->bad_msg_count());
-
-  contents()->OnDidLoadResourceFromMemoryCache(
-      GURL("http://example.test"), "not valid security info", "GET",
-      "mime type", RESOURCE_TYPE_MAIN_FRAME);
-  EXPECT_EQ(1, rph->bad_msg_count());
-}
-
 // Test that if a resource is loaded with empty security info, the SSLManager
 // does not mistakenly think it has seen a good certificate and thus forget any
 // user exceptions for that host. See https://crbug.com/516808.
-TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithEmptySecurityInfo) {
+TEST_F(WebContentsImplTest, LoadResourceWithEmptySecurityInfo) {
   WebContentsImplTestBrowserClient browser_client;
   SetBrowserClientForTesting(&browser_client);
 
@@ -3399,8 +3387,8 @@ TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithEmptySecurityInfo) {
   backend->AllowCertForHost(*cert, test_url.host(), 1);
   EXPECT_TRUE(backend->HasAllowException(test_url.host()));
 
-  contents()->OnDidLoadResourceFromMemoryCache(test_url, "", "GET", "mime type",
-                                               RESOURCE_TYPE_MAIN_FRAME);
+  contents()->controller_.ssl_manager()->policy()->OnRequestStarted(
+      test_url, 0, 0);
 
   EXPECT_TRUE(backend->HasAllowException(test_url.host()));
 

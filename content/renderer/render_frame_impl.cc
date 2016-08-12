@@ -4172,8 +4172,8 @@ void RenderFrameImpl::didLoadResourceFromMemoryCache(
   // Let the browser know we loaded a resource from the memory cache.  This
   // message is needed to display the correct SSL indicators.
   Send(new FrameHostMsg_DidLoadResourceFromMemoryCache(
-      routing_id_, url, response.securityInfo(), request.httpMethod().utf8(),
-      response.mimeType().utf8(), WebURLRequestToResourceType(request)));
+      routing_id_, url, request.httpMethod().utf8(), response.mimeType().utf8(),
+      WebURLRequestToResourceType(request)));
 }
 
 void RenderFrameImpl::didDisplayInsecureContent() {

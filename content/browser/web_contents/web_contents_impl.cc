@@ -84,7 +84,6 @@
 #include "content/common/page_messages.h"
 #include "content/common/page_state_serialization.h"
 #include "content/common/site_isolation_policy.h"
-#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
@@ -95,7 +94,6 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
-#include "content/public/browser/load_from_memory_cache_details.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
@@ -116,7 +114,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/security_style.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
@@ -3458,25 +3455,12 @@ void WebContentsImpl::OnThemeColorChanged(SkColor theme_color) {
 
 void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
-    const std::string& security_info,
     const std::string& http_method,
     const std::string& mime_type,
     ResourceType resource_type) {
-  SSLStatus status;
-  if (!DeserializeSecurityInfo(security_info, &status)) {
-    bad_message::ReceivedBadMessage(
-        GetRenderProcessHost(),
-        bad_message::WC_MEMORY_CACHE_RESOURCE_BAD_SECURITY_INFO);
-    return;
-  }
-
-  // Send out a notification that we loaded a resource from our memory cache.
-  // TODO(alcutter,eranm): Pass signed_certificate_timestamp_ids into details.
-  LoadFromMemoryCacheDetails details(
-      url, status.cert_id, status.cert_status, http_method, mime_type,
-      resource_type);
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidLoadResourceFromMemoryCache(details));
+                    DidLoadResourceFromMemoryCache(url, mime_type,
+                                                   resource_type));
 
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     scoped_refptr<net::URLRequestContextGetter> request_context(

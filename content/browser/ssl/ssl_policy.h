@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/security_style.h"
@@ -28,7 +29,7 @@ class WebContents;
 // SSL trust indicators.  It relies on the SSLPolicyBackend to actually enact
 // the decisions it reaches.
 //
-class SSLPolicy {
+class CONTENT_EXPORT SSLPolicy {
  public:
   explicit SSLPolicy(SSLPolicyBackend* backend);
 

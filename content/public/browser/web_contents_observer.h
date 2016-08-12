@@ -14,6 +14,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/media_metadata.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/security_style.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -35,7 +36,6 @@ struct AXEventNotificationDetails;
 struct FaviconURL;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
-struct LoadFromMemoryCacheDetails;
 struct Referrer;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
@@ -300,7 +300,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // This method is invoked when content was loaded from an in-memory cache.
   virtual void DidLoadResourceFromMemoryCache(
-      const LoadFromMemoryCacheDetails& details) {}
+      const GURL& url,
+      const std::string& mime_type,
+      ResourceType resource_type) {}
 
   // This method is invoked when a response has been received for a resource
   // request.
