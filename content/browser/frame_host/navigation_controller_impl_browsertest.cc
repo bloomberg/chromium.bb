@@ -3738,6 +3738,57 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// Ensure that going back/forward to an apparently in-page NavigationEntry works
+// when the renderer process hasn't committed anything yet.  This can happen
+// when using Ctrl+Back or after a crash.  See https://crbug.com/635403.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BackInPageInNewWindow) {
+  // Start on an initial page.
+  GURL url_1(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+
+  // Navigate it in-page.
+  GURL url_2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html#foo"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  // Clone the tab but don't load last committed page.
+  std::unique_ptr<WebContentsImpl> new_tab(
+      static_cast<WebContentsImpl*>(shell()->web_contents()->Clone()));
+  NavigationController& new_controller = new_tab->GetController();
+  EXPECT_TRUE(new_controller.IsInitialNavigation());
+  EXPECT_TRUE(new_controller.NeedsReload());
+
+  // Go back in the new tab.
+  {
+    TestNavigationObserver back_load_observer(new_tab.get());
+    new_controller.GoBack();
+    back_load_observer.Wait();
+  }
+
+  // Make sure the new tab isn't still loading.
+  EXPECT_EQ(url_1, new_controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_FALSE(new_tab->IsLoading());
+
+  // Also check going back in the original tab after a renderer crash.
+  NavigationController& controller = shell()->web_contents()->GetController();
+  RenderProcessHost* process = shell()->web_contents()->GetRenderProcessHost();
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(0, false);
+  crash_observer.Wait();
+  {
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    controller.GoBack();
+    back_load_observer.Wait();
+  }
+
+  // Make sure the original tab isn't still loading.
+  EXPECT_EQ(url_1, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_FALSE(shell()->web_contents()->IsLoading());
+}
+
 // Ensures that FrameNavigationEntries for dynamically added iframes can be
 // found correctly when cloning them during a transfer.  If we don't look for
 // them based on unique name in AddOrUpdateFrameEntry, the FrameTreeNode ID

@@ -5513,6 +5513,16 @@ void RenderFrameImpl::NavigateInternal(
                         : blink::WebFrameLoadType::BackForward;
         should_load_request = true;
 
+        // If this is marked as a same document load but we haven't committed
+        // anything, treat it as a new load.  The browser shouldn't let this
+        // happen.
+        // TODO(creis): Add a similar check if the DSN doesn't match, and add a
+        // NOTREACHED when we're confident this won't happen.
+        if (history_load_type == blink::WebHistorySameDocumentLoad &&
+            current_history_item_.isNull()) {
+          history_load_type = blink::WebHistoryDifferentDocumentLoad;
+        }
+
         // If this navigation is to a history item for a new child frame, we may
         // want to ignore it in some cases.  If a Javascript navigation (i.e.,
         // client redirect) interrupted it and has either been scheduled,

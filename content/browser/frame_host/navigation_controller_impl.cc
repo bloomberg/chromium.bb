@@ -1900,9 +1900,16 @@ void NavigationControllerImpl::FindFramesToNavigate(
       new_item->item_sequence_number() != old_item->item_sequence_number() ||
       (new_item->site_instance() != nullptr &&
        new_item->site_instance() != old_item->site_instance())) {
+    // Same document loads happen if the previous item has the same document
+    // sequence number.  Note that we should treat them as different document if
+    // the destination RenderFrameHost (which is necessarily the current
+    // RenderFrameHost for same document navigations) doesn't have a last
+    // committed page.  This case can happen for Ctrl+Back or after a renderer
+    // crash.
     if (old_item &&
         new_item->document_sequence_number() ==
-            old_item->document_sequence_number()) {
+            old_item->document_sequence_number() &&
+        !frame->current_frame_host()->last_committed_url().is_empty()) {
       same_document_loads->push_back(std::make_pair(frame, new_item));
 
       // TODO(avi, creis): This is a bug; we should not return here. Rather, we
