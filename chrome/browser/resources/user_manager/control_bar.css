@@ -1,11 +1,9 @@
 /* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 /* Overrides of styles in chrome/browser/resources/chromeos/login/header_bar.js
-* that are needed by the desktop user chooser screen
-*/
+ * that are needed by the desktop user chooser screen. */
 #login-header-bar {
   background-color: white;
   border-top: 1px solid #e2e2e2;

@@ -199,8 +199,7 @@ input.supervised-user-creation-manager-password,
 }
 
 /* This class will be set for elements with hide-on-import class by JS when
- * page is used in 'import' mode
- */
+ * page is used in 'import' mode. */
 #supervised-user-creation .hidden-on-import {
   display: none;
 }

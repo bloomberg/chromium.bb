@@ -20,8 +20,7 @@
 /* To avoid tabs changing size when they are clicked and their labels become
  * bold, we actually put two labels inside each tab: an inactive label and an
  * active label. Only one is visible at a time, but the bold label is used to
- * size the tab even when it's not visible. This keeps the tab size constant.
- */
+ * size the tab even when it's not visible. This keeps the tab size constant. */
 .subpages-nav-tabs .active-tab-label,
 .subpages-nav-tabs .tab-label:hover {
   font-weight: bold;
@@ -42,9 +41,8 @@ html[dir=rtl] .subpages-nav-tabs .tab-label {
   visibility: hidden;
 }
 
-/* .tab is not removed when .active-tab is added, so we must
- * override the hidden visibility above in the active tab case.
- */
+/* .tab is not removed when .active-tab is added, so we must override the hidden
+ * visibility above in the active tab case. */
 .subpages-nav-tabs .active-tab .active-tab-label {
   visibility: visible;
 }

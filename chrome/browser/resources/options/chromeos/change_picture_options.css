@@ -43,15 +43,13 @@
   padding: 2px;
 }
 
-/**
- * #user-image-preview can have the following classes:
+/* #user-image-preview can have the following classes:
  * .default-image: one of the default images is selected (including the grey
  *                 silhouette);
  * .profile-image: profile image is selected;
  * .online: camera is streaming video;
  * .camera: camera (live or photo) is selected;
- * .live: camera is in live mode (no photo taken yet/last photo removed).
- */
+ * .live: camera is in live mode (no photo taken yet/last photo removed). */
 
 #user-image-preview {
   margin: 18px 10px 0 0;

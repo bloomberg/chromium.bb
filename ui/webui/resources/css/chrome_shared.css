@@ -69,8 +69,7 @@ a:active {
 }
 
 /* Elements that need to be LTR even in an RTL context, but should align
- * right. (Namely, URLs, search engine names, etc.)
- */
+ * right. (Namely, URLs, search engine names, etc.) */
 html[dir='rtl'] .weakrtl {
   direction: ltr;
   text-align: right;
@@ -78,8 +77,7 @@ html[dir='rtl'] .weakrtl {
 
 /* Input fields in search engine table need to be weak-rtl. Since those input
  * fields are generated for all cr.ListItem elements (and we only want weakrtl
- * on some), the class needs to be on the enclosing div.
- */
+ * on some), the class needs to be on the enclosing div. */
 html[dir='rtl'] div.weakrtl input {
   direction: ltr;
   text-align: right;
@@ -92,8 +90,7 @@ html[dir='rtl'] .favicon-cell.weakrtl {
 
 /* weakrtl for selection drop downs needs to account for the fact that
  * Webkit does not honor the text-align attribute for the select element.
- * (See Webkit bug #40216)
- */
+ * (See Webkit bug #40216) */
 html[dir='rtl'] select.weakrtl {
   direction: rtl;
 }
@@ -104,8 +101,7 @@ html[dir='rtl'] select.weakrtl option {
 
 /* WebKit does not honor alignment for text specified via placeholder attribute.
  * This CSS is a workaround. Please remove once WebKit bug is fixed.
- * https://bugs.webkit.org/show_bug.cgi?id=63367
- */
+ * https://bugs.webkit.org/show_bug.cgi?id=63367 */
 html[dir='rtl'] input.weakrtl::-webkit-input-placeholder,
 html[dir='rtl'] .weakrtl input::-webkit-input-placeholder {
   direction: rtl;

@@ -240,10 +240,8 @@ html[dir=rtl] .thumb-ntp .mv-title[style*='direction: rtl'] {
   width: 48px;
 }
 
-/*
-  We use ::after without content to provide an aditional element on top of
-  the thumbnail.
-*/
+/* We use ::after without content to provide an aditional element on top of the
+ * thumbnail. */
 .mv-thumb.failed-img::after {
   border: 8px solid #f2f2f2;
   border-radius: 50%;
@@ -277,10 +275,8 @@ html[dir=rtl] .thumb-ntp .mv-title[style*='direction: rtl'] {
   width: 16px;
 }
 
-/*
-  We use ::after without content to provide the masked X element.
-  The "bottom" div is actually just the gradient.
-*/
+/* We use ::after without content to provide the masked X element. The "bottom"
+ * div is actually just the gradient. */
 .mv-x::after {
   -webkit-mask-image: -webkit-image-set(
       url(chrome-search://local-ntp/images/close_3_mask.png) 1x,

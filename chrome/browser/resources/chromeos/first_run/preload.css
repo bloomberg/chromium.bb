@@ -1,14 +1,10 @@
-/**
- * Copyright 2014 The Chromium Authors. All rights reserved.
+/* Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
-/**
- * Preloads images. Without preloading, background image starts loading in
+/* Preloads images. Without preloading, background image starts loading in
  * the moment when CSS property is applied. Image loading has visible delay and
- * looks like defect.
- */
+ * looks like defect. */
 
 @media all and (-webkit-max-device-pixel-ratio: 1.5) {
   body::after {

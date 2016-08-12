@@ -19,8 +19,7 @@ tabs {
  * 'tabs' or 'tabpanels' elements.
  *
  * TODO(rfevang): Remove when all users are converted to the new style.
- *                (crbug.com/247772).
- */
+ *                (crbug.com/247772). */
 tabs.new-style-tabs {
   -webkit-padding-start: 9px;
   background: #fbfbfb;

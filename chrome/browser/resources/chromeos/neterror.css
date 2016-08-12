@@ -35,10 +35,8 @@ a {
 }
 
 .icon-generic {
-  /**
-   * Can't access chrome://theme/IDR_ERROR_NETWORK_GENERIC from an untrusted
-   * renderer process, so embed the resource manually.
-   */
+  /* Can't access chrome://theme/IDR_ERROR_NETWORK_GENERIC from an untrusted
+   * renderer process, so embed the resource manually. */
   content: -webkit-image-set(
       url(../../../../components/resources/default_100_percent/neterror/error_network_generic.png) 1x,
       url(../../../../components/resources/default_200_percent/neterror/error_network_generic.png) 2x);

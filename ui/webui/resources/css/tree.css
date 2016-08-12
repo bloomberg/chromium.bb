@@ -63,13 +63,8 @@ html[dir=rtl] .expand-icon {
   z-index: 1;
 }
 
-/*
-  WebKit has a bug with attribute selectors so we apply selected to the tree row
-  as well.
-
-  https://bugs.webkit.org/show_bug.cgi?id=12519
-
-*/
+/* WebKit has a bug with attribute selectors so we apply selected to the tree
+ * row as well. https://bugs.webkit.org/show_bug.cgi?id=12519. */
 .tree-row[selected] {
   background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.8),
                                             rgba(255,255,255,0));

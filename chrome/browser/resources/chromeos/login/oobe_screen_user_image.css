@@ -1,7 +1,6 @@
 /* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+ * found in the LICENSE file. */
 
 #user-image {
   min-height: 443px;
@@ -55,16 +54,14 @@
   padding: 2px;
 }
 
-/**
- * #user-image-preview can have the following classes:
+/* #user-image-preview can have the following classes:
  * .default-image: one of the default images is selected (including the grey
  *                 silhouette);
  * .profile-image: profile image is selected;
  * .profile-image-loading: profile image is being loaded;
  * .online: camera is streaming video;
  * .camera: camera (live or photo) is selected;
- * .live: camera is in live mode (no photo taken yet/last photo removed).
- */
+ * .live: camera is in live mode (no photo taken yet/last photo removed). */
 #user-image-preview {
   float: right;
   margin: 4px;

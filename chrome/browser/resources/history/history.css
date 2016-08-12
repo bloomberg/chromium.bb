@@ -332,8 +332,7 @@ html[dir='rtl'] .number-visits {
    * directive would show up incorrectly (e.g. '(www.google.com (5'). Using
    * 'embed' makes the engine set the text in the parentheses as LTR even
    * when the layout is set to RTL, which makes using -webkit-*-start
-   * impossible. So use margins and dir='rtl'.
-   */
+   * impossible. So use margins and dir='rtl'. */
   direction: rtl;
   unicode-bidi: embed;
 }

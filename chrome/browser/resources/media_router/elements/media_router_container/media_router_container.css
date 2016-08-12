@@ -154,8 +154,7 @@ paper-menu {
   overflow-x: hidden;
   /* overflow-y is set to auto when the results are actually displayed to allow
    * scrolling. It is set to hidden by default so the scrollbar isn't displayed
-   * while animating.
-   */
+   * while animating. */
   overflow-y: hidden;
   position: absolute;
   right: 0;
@@ -216,8 +215,7 @@ paper-menu {
 }
 
 /* Separate icon class is a consequence of box-sizing: border-box set by
- * paper-icon-button. This should achieve the same dimensions as .sink-icon.
- */
+ * paper-icon-button. This should achieve the same dimensions as .sink-icon. */
 #sink-search-icon {
   -webkit-margin-start: 4px;
   -webkit-padding-end: 12px;

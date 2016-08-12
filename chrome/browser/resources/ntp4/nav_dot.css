@@ -3,8 +3,8 @@
  * found in the LICENSE file. */
 
 /* TODO(estade): handle overflow better? I tried overflow-x: hidden and
-   overflow-y: visible (for the new dot animation), but this makes a scroll
-   bar appear */
+ * overflow-y: visible (for the new dot animation), but this makes a scroll
+ * bar appear */
 #dot-list {
   /* Expand to take up all available horizontal space.  */
   -webkit-box-flex: 1;
@@ -72,8 +72,7 @@ html.starting-up #dot-list {
 }
 
 /* Everything below here should be themed but we don't have appropriate colors
- * yet.
- */
+ * yet. */
 .dot input {
   color: #b2b2b2;
 }

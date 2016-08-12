@@ -2,8 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
- * Incognito and guest mode NTP shared CSS.
- */
+ * Incognito and guest mode NTP shared CSS. */
 
 body {
   -webkit-font-smoothing: antialiased;
@@ -31,8 +30,7 @@ a:hover {
 }
 
 /* 'Learn More' button styled like a Material Design text button.
- * TODO(edwardjung): Switch styled links to actual text buttons.
- */
+ * TODO(edwardjung): Switch styled links to actual text buttons. */
 .learn-more-button {
   color: rgb(66, 133, 244);
   display: inline-block;

@@ -89,8 +89,7 @@ div.disabled {
 }
 
 /* Omit top padding (currently only on #settings) whenever the search page is
- * showing.
- */
+ * showing. */
 #searchPage:not([hidden]) + #settings {
   padding-top: 0;
 }
@@ -317,8 +316,7 @@ list > [editing] [displaymode='static'] {
   /* Don't use display:none or visibility:hidden because we need to keep an
    * element focusable.
    * We shrink only height.  We don't shrink width to avoid to change the size
-   * of containing boxes.
-   */
+   * of containing boxes. */
   border-bottom: 0 !important;
   border-top: 0 !important;
   height: 0 !important;
@@ -433,8 +431,7 @@ html:not(.focus-outline-visible)
 
 html:not([hasFlashPlugin]) .flash-plugin-area,
 /* If the Flash plug-in supports the NPP_ClearSiteData API, we don't need to
- * show the link to the Flash storage settings manager:
- */
+ * show the link to the Flash storage settings manager: */
 html[flashPluginSupportsClearSiteData] .flash-plugin-area,
 html:not([flashPluginSupportsClearSiteData]) .clear-plugin-lso-data-enabled,
 html[flashPluginSupportsClearSiteData] .clear-plugin-lso-data-disabled,

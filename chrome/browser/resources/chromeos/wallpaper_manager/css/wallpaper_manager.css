@@ -18,15 +18,13 @@ body {
 
 /* Click events are not received in draggable area. Making all clickable areas
  * not draggable to receive click events.
- * TODO(bshe): Remove this when http://crbug.com/142275 fixed.
- */
+ * TODO(bshe): Remove this when http://crbug.com/142275 fixed. */
 .dialog-topbar #navstrip,
 .dialog-topbar #window-close-button,
 .overlay-container .page,
 #author-website,
 /* TODO(bshe): Once http://crbug.com/369651 fixed, use .image-picker instead of
- * #category-container.
- */
+ * #category-container. */
 #category-container,
 #surprise-me {
   -webkit-app-region: no-drag;
@@ -156,8 +154,7 @@ body {
   display: block;
   /* Set font size to 0 to remove the extra vertical margin between two rows of
    * thumbnails.
-   * TODO(bshe): Find the root cause of the margin.
-   */
+   * TODO(bshe): Find the root cause of the margin. */
   font-size: 0;
   height: 287px;
   outline: none;
@@ -219,8 +216,7 @@ body {
 /* The width and height of img tag need to be set here. Otherwise, an incorrect
  * image size may be used during layout. Some images may be misaligned as a
  * result. See http://code.google.com/p/chromium/issues/detail?id=148480 for
- * screen shot.
- */
+ * screen shot. */
 .image-picker img {
   height: 68px;
   width: 108px;
