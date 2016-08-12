@@ -16,7 +16,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/FormData.h"
-#include "core/loader/BeaconLoader.h"
+#include "core/loader/PingLoader.h"
 
 namespace blink {
 
@@ -113,7 +113,7 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator
     bool allowed;
 
     if (data.isArrayBufferView()) {
-        allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, data.getAsArrayBufferView(), bytes);
+        allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, data.getAsArrayBufferView(), bytes);
     } else if (data.isBlob()) {
         Blob* blob = data.getAsBlob();
         if (!FetchUtils::isSimpleContentType(AtomicString(blob->type()))) {
@@ -123,13 +123,13 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator
                 return false;
             }
         }
-        allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, blob, bytes);
+        allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, blob, bytes);
     } else if (data.isString()) {
-        allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, data.getAsString(), bytes);
+        allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, data.getAsString(), bytes);
     } else if (data.isFormData()) {
-        allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, data.getAsFormData(), bytes);
+        allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, data.getAsFormData(), bytes);
     } else {
-        allowed = BeaconLoader::sendBeacon(impl.frame(), allowance, url, String(), bytes);
+        allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, String(), bytes);
     }
 
     return impl.beaconResult(context, allowed, bytes);
