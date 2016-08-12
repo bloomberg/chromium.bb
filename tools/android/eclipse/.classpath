@@ -74,6 +74,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="content/shell/android/shell_apk/src"/>
     <classpathentry kind="src" path="device/battery/android/java/src"/>
     <classpathentry kind="src" path="device/bluetooth/android/java/src"/>
+    <classpathentry kind="src" path="device/gamepad/android/java/src"/>
     <classpathentry kind="src" path="device/usb/android/java/src"/>
     <classpathentry kind="src" path="device/vibration/android/java/src"/>
     <classpathentry kind="src" path="media/base/android/java/src"/>
