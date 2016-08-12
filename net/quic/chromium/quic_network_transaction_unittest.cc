@@ -523,8 +523,7 @@ class QuicNetworkTransactionTest
               session_->quic_stream_factory()->socket_receive_buffer_size());
   }
 
-  void CheckWasQuicResponse(
-      const std::unique_ptr<HttpNetworkTransaction>& trans) {
+  void CheckWasQuicResponse(HttpNetworkTransaction* trans) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != nullptr);
     ASSERT_TRUE(response->headers.get() != nullptr);
@@ -535,15 +534,13 @@ class QuicNetworkTransactionTest
               response->connection_info);
   }
 
-  void CheckResponsePort(const std::unique_ptr<HttpNetworkTransaction>& trans,
-                         uint16_t port) {
+  void CheckResponsePort(HttpNetworkTransaction* trans, uint16_t port) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != nullptr);
     EXPECT_EQ(port, response->socket_address.port());
   }
 
-  void CheckWasHttpResponse(
-      const std::unique_ptr<HttpNetworkTransaction>& trans) {
+  void CheckWasHttpResponse(HttpNetworkTransaction* trans) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != nullptr);
     ASSERT_TRUE(response->headers.get() != nullptr);
@@ -554,14 +551,14 @@ class QuicNetworkTransactionTest
               response->connection_info);
   }
 
-  void CheckResponseData(const std::unique_ptr<HttpNetworkTransaction>& trans,
+  void CheckResponseData(HttpNetworkTransaction* trans,
                          const std::string& expected) {
     std::string response_data;
-    ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
+    ASSERT_THAT(ReadTransaction(trans, &response_data), IsOk());
     EXPECT_EQ(expected, response_data);
   }
 
-  void RunTransaction(const std::unique_ptr<HttpNetworkTransaction>& trans) {
+  void RunTransaction(HttpNetworkTransaction* trans) {
     TestCompletionCallback callback;
     int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -569,11 +566,10 @@ class QuicNetworkTransactionTest
   }
 
   void SendRequestAndExpectHttpResponse(const std::string& expected) {
-    std::unique_ptr<HttpNetworkTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
-    RunTransaction(trans);
-    CheckWasHttpResponse(trans);
-    CheckResponseData(trans, expected);
+    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+    RunTransaction(&trans);
+    CheckWasHttpResponse(&trans);
+    CheckResponseData(&trans, expected);
   }
 
   void SendRequestAndExpectQuicResponse(const std::string& expected) {
@@ -664,16 +660,15 @@ class QuicNetworkTransactionTest
       const std::string& expected,
       bool used_proxy,
       uint16_t port) {
-    std::unique_ptr<HttpNetworkTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
     HeadersHandler headers_handler;
-    trans->SetBeforeHeadersSentCallback(
+    trans.SetBeforeHeadersSentCallback(
         base::Bind(&HeadersHandler::OnBeforeHeadersSent,
                    base::Unretained(&headers_handler)));
-    RunTransaction(trans);
-    CheckWasQuicResponse(trans);
-    CheckResponsePort(trans, port);
-    CheckResponseData(trans, expected);
+    RunTransaction(&trans);
+    CheckWasQuicResponse(&trans);
+    CheckResponsePort(&trans, port);
+    CheckResponseData(&trans, expected);
     EXPECT_EQ(used_proxy, headers_handler.was_proxied());
   }
 };
@@ -909,10 +904,9 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
 
   EXPECT_EQ(0U, test_socket_performance_watcher_factory_.watcher_count());
   for (size_t i = 0; i < 2; ++i) {
-    std::unique_ptr<HttpNetworkTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
     TestCompletionCallback callback;
-    int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+    int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_CLOSED));
     EXPECT_EQ(1 + i, test_socket_performance_watcher_factory_.watcher_count());
@@ -1153,10 +1147,9 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  std::unique_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -1167,7 +1160,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
   // because of migrating port.
   NetErrorDetails details;
   EXPECT_FALSE(details.quic_port_migration_detected);
-  trans->PopulateNetErrorDetails(&details);
+  trans.PopulateNetErrorDetails(&details);
   EXPECT_TRUE(details.quic_port_migration_detected);
 }
 
@@ -1773,18 +1766,17 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  std::unique_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
       QuicSession::HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
-  CheckWasQuicResponse(trans);
-  CheckResponseData(trans, "hello!");
+  CheckWasQuicResponse(&trans);
+  CheckResponseData(&trans, "hello!");
 }
 
 TEST_P(QuicNetworkTransactionTest,
@@ -1820,10 +1812,9 @@ TEST_P(QuicNetworkTransactionTest,
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  std::unique_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -1833,7 +1824,7 @@ TEST_P(QuicNetworkTransactionTest,
   NetErrorDetails details;
   EXPECT_EQ(QUIC_NO_ERROR, details.quic_connection_error);
 
-  trans->PopulateNetErrorDetails(&details);
+  trans.PopulateNetErrorDetails(&details);
   // Verify the error code logged is what sent by the peer.
   EXPECT_EQ(QUIC_CRYPTO_VERSION_NOT_SUPPORTED, details.quic_connection_error);
 }
@@ -1876,10 +1867,9 @@ TEST_P(QuicNetworkTransactionTest,
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  std::unique_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -1888,7 +1878,7 @@ TEST_P(QuicNetworkTransactionTest,
   NetErrorDetails details;
   EXPECT_EQ(QUIC_NO_ERROR, details.quic_connection_error);
 
-  trans->PopulateNetErrorDetails(&details);
+  trans.PopulateNetErrorDetails(&details);
   EXPECT_EQ(QUIC_INVALID_STREAM_ID, details.quic_connection_error);
 }
 
@@ -1928,10 +1918,9 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  std::unique_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -1939,7 +1928,7 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
   // Read the headers.
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
-  const HttpResponseInfo* response = trans->GetResponseInfo();
+  const HttpResponseInfo* response = trans.GetResponseInfo();
   ASSERT_TRUE(response != nullptr);
   ASSERT_TRUE(response->headers.get() != nullptr);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
@@ -1949,8 +1938,7 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
             response->connection_info);
 
   std::string response_data;
-  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR,
-            ReadTransaction(trans.get(), &response_data));
+  ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR, ReadTransaction(&trans, &response_data));
 }
 
 TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
@@ -1985,10 +1973,9 @@ TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
   session_->quic_stream_factory()->set_require_confirmation(true);
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  std::unique_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
@@ -2078,10 +2065,9 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
   CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
-  std::unique_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_SOCKET_NOT_CONNECTED));
   ExpectQuicAlternateProtocolMapping();
@@ -2261,10 +2247,9 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
 
   request_.upload_data_stream = &upload_data;
 
-  std::unique_ptr<HttpNetworkTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
-  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_NE(OK, callback.WaitForResult());
 }

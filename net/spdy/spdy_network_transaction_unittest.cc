@@ -455,10 +455,9 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
     rv = callback.WaitForResult();
 
     // Request the pushed path.
-    std::unique_ptr<HttpNetworkTransaction> trans2(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-    rv = trans2->Start(
-        &CreateGetPushRequest(), callback.callback(), BoundNetLog());
+    HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+    rv = trans2.Start(&CreateGetPushRequest(), callback.callback(),
+                      BoundNetLog());
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     base::RunLoop().RunUntilIdle();
 
@@ -467,7 +466,7 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
 
     // Read the server push body.
     std::string result2;
-    ReadResult(trans2.get(), &result2);
+    ReadResult(&trans2, &result2);
     // Read the response body.
     std::string result;
     ReadResult(trans, &result);
@@ -482,7 +481,7 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
     EXPECT_TRUE(load_timing_info.push_end.is_null());
 
     LoadTimingInfo load_timing_info2;
-    EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
+    EXPECT_TRUE(trans2.GetLoadTimingInfo(&load_timing_info2));
     EXPECT_FALSE(load_timing_info2.push_start.is_null());
     EXPECT_FALSE(load_timing_info2.push_end.is_null());
 
@@ -495,7 +494,7 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
     // Verify the response HEADERS.
     // Copy the response info, because trans goes away.
     *response = *trans->GetResponseInfo();
-    *push_response = *trans2->GetResponseInfo();
+    *push_response = *trans2.GetResponseInfo();
 
     VerifyStreamsClosed(helper);
   }
@@ -508,14 +507,13 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
   static void StartTransactionCallback(HttpNetworkSession* session,
                                        GURL url,
                                        int result) {
-    std::unique_ptr<HttpNetworkTransaction> trans(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
+    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session);
     TestCompletionCallback callback;
     HttpRequestInfo request;
     request.method = "GET";
     request.url = url;
     request.load_flags = 0;
-    int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+    int rv = trans.Start(&request, callback.callback(), BoundNetLog());
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     callback.WaitForResult();
   }
@@ -691,12 +689,9 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGets) {
   // on will negotiate SPDY and will be used for all requests.
   helper.AddData(&data_placeholder1);
   helper.AddData(&data_placeholder2);
-  std::unique_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-  std::unique_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-  std::unique_ptr<HttpNetworkTransaction> trans3(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans3(DEFAULT_PRIORITY, helper.session());
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -706,11 +701,11 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGets) {
   HttpRequestInfo httpreq2 = CreateGetRequest();
   HttpRequestInfo httpreq3 = CreateGetRequest();
 
-  out.rv = trans1->Start(&httpreq1, callback1.callback(), log);
+  out.rv = trans1.Start(&httpreq1, callback1.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
-  out.rv = trans2->Start(&httpreq2, callback2.callback(), log);
+  out.rv = trans2.Start(&httpreq2, callback2.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
-  out.rv = trans3->Start(&httpreq3, callback3.callback(), log);
+  out.rv = trans3.Start(&httpreq3, callback3.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
 
   out.rv = callback1.WaitForResult();
@@ -718,15 +713,15 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGets) {
   out.rv = callback3.WaitForResult();
   ASSERT_THAT(out.rv, IsOk());
 
-  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  const HttpResponseInfo* response1 = trans1.GetResponseInfo();
   EXPECT_TRUE(response1->headers);
   EXPECT_TRUE(response1->was_fetched_via_spdy);
   out.status_line = response1->headers->GetStatusLine();
   out.response_info = *response1;
 
-  trans2->GetResponseInfo();
+  trans2.GetResponseInfo();
 
-  out.rv = ReadTransaction(trans1.get(), &out.response_data);
+  out.rv = ReadTransaction(&trans1, &out.response_data);
   helper.VerifyDataConsumed();
   EXPECT_THAT(out.rv, IsOk());
 
@@ -773,10 +768,8 @@ TEST_F(SpdyNetworkTransactionTest, TwoGetsLateBinding) {
   // the same time which results in two sockets being connected. The first
   // on will negotiate SPDY and will be used for all requests.
   helper.AddData(&data_placeholder);
-  std::unique_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-  std::unique_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -784,9 +777,9 @@ TEST_F(SpdyNetworkTransactionTest, TwoGetsLateBinding) {
   HttpRequestInfo httpreq1 = CreateGetRequest();
   HttpRequestInfo httpreq2 = CreateGetRequest();
 
-  out.rv = trans1->Start(&httpreq1, callback1.callback(), log);
+  out.rv = trans1.Start(&httpreq1, callback1.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
-  out.rv = trans2->Start(&httpreq2, callback2.callback(), log);
+  out.rv = trans2.Start(&httpreq2, callback2.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
 
   out.rv = callback1.WaitForResult();
@@ -794,22 +787,22 @@ TEST_F(SpdyNetworkTransactionTest, TwoGetsLateBinding) {
   out.rv = callback2.WaitForResult();
   ASSERT_THAT(out.rv, IsOk());
 
-  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  const HttpResponseInfo* response1 = trans1.GetResponseInfo();
   EXPECT_TRUE(response1->headers);
   EXPECT_TRUE(response1->was_fetched_via_spdy);
   out.status_line = response1->headers->GetStatusLine();
   out.response_info = *response1;
-  out.rv = ReadTransaction(trans1.get(), &out.response_data);
+  out.rv = ReadTransaction(&trans1, &out.response_data);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
-  const HttpResponseInfo* response2 = trans2->GetResponseInfo();
+  const HttpResponseInfo* response2 = trans2.GetResponseInfo();
   EXPECT_TRUE(response2->headers);
   EXPECT_TRUE(response2->was_fetched_via_spdy);
   out.status_line = response2->headers->GetStatusLine();
   out.response_info = *response2;
-  out.rv = ReadTransaction(trans2.get(), &out.response_data);
+  out.rv = ReadTransaction(&trans2, &out.response_data);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
@@ -858,10 +851,8 @@ TEST_F(SpdyNetworkTransactionTest, TwoGetsLateBindingFromPreconnect) {
   helper.AddData(&data_placeholder);
   helper.AddData(&data_placeholder);
 
-  std::unique_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-  std::unique_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -874,9 +865,9 @@ TEST_F(SpdyNetworkTransactionTest, TwoGetsLateBindingFromPreconnect) {
 
   http_stream_factory->PreconnectStreams(1, httpreq);
 
-  out.rv = trans1->Start(&httpreq, callback1.callback(), log);
+  out.rv = trans1.Start(&httpreq, callback1.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
-  out.rv = trans2->Start(&httpreq, callback2.callback(), log);
+  out.rv = trans2.Start(&httpreq, callback2.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
 
   out.rv = callback1.WaitForResult();
@@ -884,22 +875,22 @@ TEST_F(SpdyNetworkTransactionTest, TwoGetsLateBindingFromPreconnect) {
   out.rv = callback2.WaitForResult();
   ASSERT_THAT(out.rv, IsOk());
 
-  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  const HttpResponseInfo* response1 = trans1.GetResponseInfo();
   EXPECT_TRUE(response1->headers);
   EXPECT_TRUE(response1->was_fetched_via_spdy);
   out.status_line = response1->headers->GetStatusLine();
   out.response_info = *response1;
-  out.rv = ReadTransaction(trans1.get(), &out.response_data);
+  out.rv = ReadTransaction(&trans1, &out.response_data);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
-  const HttpResponseInfo* response2 = trans2->GetResponseInfo();
+  const HttpResponseInfo* response2 = trans2.GetResponseInfo();
   EXPECT_TRUE(response2->headers);
   EXPECT_TRUE(response2->was_fetched_via_spdy);
   out.status_line = response2->headers->GetStatusLine();
   out.response_info = *response2;
-  out.rv = ReadTransaction(trans2.get(), &out.response_data);
+  out.rv = ReadTransaction(&trans2, &out.response_data);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
@@ -972,12 +963,9 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
                                        BoundNetLog(), NULL);
     helper.RunPreTestSetup();
     helper.AddData(&data);
-    std::unique_ptr<HttpNetworkTransaction> trans1(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-    std::unique_ptr<HttpNetworkTransaction> trans2(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-    std::unique_ptr<HttpNetworkTransaction> trans3(
-        new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+    HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+    HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+    HttpNetworkTransaction trans3(DEFAULT_PRIORITY, helper.session());
 
     TestCompletionCallback callback1;
     TestCompletionCallback callback2;
@@ -987,16 +975,16 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
     HttpRequestInfo httpreq2 = CreateGetRequest();
     HttpRequestInfo httpreq3 = CreateGetRequest();
 
-    out.rv = trans1->Start(&httpreq1, callback1.callback(), log);
+    out.rv = trans1.Start(&httpreq1, callback1.callback(), log);
     ASSERT_EQ(out.rv, ERR_IO_PENDING);
     // Run transaction 1 through quickly to force a read of our SETTINGS
     // frame.
     out.rv = callback1.WaitForResult();
     ASSERT_THAT(out.rv, IsOk());
 
-    out.rv = trans2->Start(&httpreq2, callback2.callback(), log);
+    out.rv = trans2.Start(&httpreq2, callback2.callback(), log);
     ASSERT_EQ(out.rv, ERR_IO_PENDING);
-    out.rv = trans3->Start(&httpreq3, callback3.callback(), log);
+    out.rv = trans3.Start(&httpreq3, callback3.callback(), log);
     ASSERT_EQ(out.rv, ERR_IO_PENDING);
     out.rv = callback2.WaitForResult();
     ASSERT_THAT(out.rv, IsOk());
@@ -1004,29 +992,29 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
     out.rv = callback3.WaitForResult();
     ASSERT_THAT(out.rv, IsOk());
 
-    const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+    const HttpResponseInfo* response1 = trans1.GetResponseInfo();
     ASSERT_TRUE(response1);
     EXPECT_TRUE(response1->headers);
     EXPECT_TRUE(response1->was_fetched_via_spdy);
     out.status_line = response1->headers->GetStatusLine();
     out.response_info = *response1;
-    out.rv = ReadTransaction(trans1.get(), &out.response_data);
+    out.rv = ReadTransaction(&trans1, &out.response_data);
     EXPECT_THAT(out.rv, IsOk());
     EXPECT_EQ("HTTP/1.1 200", out.status_line);
     EXPECT_EQ("hello!hello!", out.response_data);
 
-    const HttpResponseInfo* response2 = trans2->GetResponseInfo();
+    const HttpResponseInfo* response2 = trans2.GetResponseInfo();
     out.status_line = response2->headers->GetStatusLine();
     out.response_info = *response2;
-    out.rv = ReadTransaction(trans2.get(), &out.response_data);
+    out.rv = ReadTransaction(&trans2, &out.response_data);
     EXPECT_THAT(out.rv, IsOk());
     EXPECT_EQ("HTTP/1.1 200", out.status_line);
     EXPECT_EQ("hello!hello!", out.response_data);
 
-    const HttpResponseInfo* response3 = trans3->GetResponseInfo();
+    const HttpResponseInfo* response3 = trans3.GetResponseInfo();
     out.status_line = response3->headers->GetStatusLine();
     out.response_info = *response3;
-    out.rv = ReadTransaction(trans3.get(), &out.response_data);
+    out.rv = ReadTransaction(&trans3, &out.response_data);
     EXPECT_THAT(out.rv, IsOk());
     EXPECT_EQ("HTTP/1.1 200", out.status_line);
     EXPECT_EQ("hello!hello!", out.response_data);
@@ -1109,14 +1097,10 @@ TEST_F(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
   helper.RunPreTestSetup();
   helper.AddData(&data);
 
-  std::unique_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-  std::unique_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-  std::unique_ptr<HttpNetworkTransaction> trans3(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-  std::unique_ptr<HttpNetworkTransaction> trans4(
-      new HttpNetworkTransaction(HIGHEST, helper.session()));
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans3(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans4(HIGHEST, helper.session());
 
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
@@ -1128,17 +1112,17 @@ TEST_F(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
   HttpRequestInfo httpreq3 = CreateGetRequest();
   HttpRequestInfo httpreq4 = CreateGetRequest();
 
-  out.rv = trans1->Start(&httpreq1, callback1.callback(), log);
+  out.rv = trans1.Start(&httpreq1, callback1.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
   // Run transaction 1 through quickly to force a read of our SETTINGS frame.
   out.rv = callback1.WaitForResult();
   ASSERT_THAT(out.rv, IsOk());
 
-  out.rv = trans2->Start(&httpreq2, callback2.callback(), log);
+  out.rv = trans2.Start(&httpreq2, callback2.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
-  out.rv = trans3->Start(&httpreq3, callback3.callback(), log);
+  out.rv = trans3.Start(&httpreq3, callback3.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
-  out.rv = trans4->Start(&httpreq4, callback4.callback(), log);
+  out.rv = trans4.Start(&httpreq4, callback4.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
 
   out.rv = callback2.WaitForResult();
@@ -1147,40 +1131,40 @@ TEST_F(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
   out.rv = callback3.WaitForResult();
   ASSERT_THAT(out.rv, IsOk());
 
-  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  const HttpResponseInfo* response1 = trans1.GetResponseInfo();
   EXPECT_TRUE(response1->headers);
   EXPECT_TRUE(response1->was_fetched_via_spdy);
   out.status_line = response1->headers->GetStatusLine();
   out.response_info = *response1;
-  out.rv = ReadTransaction(trans1.get(), &out.response_data);
+  out.rv = ReadTransaction(&trans1, &out.response_data);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
-  const HttpResponseInfo* response2 = trans2->GetResponseInfo();
+  const HttpResponseInfo* response2 = trans2.GetResponseInfo();
   out.status_line = response2->headers->GetStatusLine();
   out.response_info = *response2;
-  out.rv = ReadTransaction(trans2.get(), &out.response_data);
+  out.rv = ReadTransaction(&trans2, &out.response_data);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
   // notice: response3 gets two hellos, response4 gets one
   // hello, so we know dequeuing priority was respected.
-  const HttpResponseInfo* response3 = trans3->GetResponseInfo();
+  const HttpResponseInfo* response3 = trans3.GetResponseInfo();
   out.status_line = response3->headers->GetStatusLine();
   out.response_info = *response3;
-  out.rv = ReadTransaction(trans3.get(), &out.response_data);
+  out.rv = ReadTransaction(&trans3, &out.response_data);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!hello!", out.response_data);
 
   out.rv = callback4.WaitForResult();
   EXPECT_THAT(out.rv, IsOk());
-  const HttpResponseInfo* response4 = trans4->GetResponseInfo();
+  const HttpResponseInfo* response4 = trans4.GetResponseInfo();
   out.status_line = response4->headers->GetStatusLine();
   out.response_info = *response4;
-  out.rv = ReadTransaction(trans4.get(), &out.response_data);
+  out.rv = ReadTransaction(&trans4, &out.response_data);
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
@@ -2856,18 +2840,17 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
   EXPECT_TRUE(response.headers);
   EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
 
-  std::unique_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
   TestCompletionCallback callback2;
-  rv = trans2->Start(&CreateGetPushRequest(), callback2.callback(),
-                     BoundNetLog());
+  rv = trans2.Start(&CreateGetPushRequest(), callback2.callback(),
+                    BoundNetLog());
   rv = callback2.GetResult(rv);
   EXPECT_THAT(rv, IsOk());
-  response = *trans2->GetResponseInfo();
+  response = *trans2.GetResponseInfo();
   EXPECT_TRUE(response.headers);
   EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
   std::string result;
-  ReadResult(trans2.get(), &result);
+  ReadResult(&trans2, &result);
   EXPECT_EQ(kPushedData, result);
 
   data.Resume();
@@ -4193,12 +4176,11 @@ TEST_F(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
     helper.RunPreTestSetup();
 
     for (int i = 0; i < 2; ++i) {
-      std::unique_ptr<HttpNetworkTransaction> trans(
-          new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+      HttpNetworkTransaction trans(DEFAULT_PRIORITY, helper.session());
 
       TestCompletionCallback callback;
-      int rv = trans->Start(
-          &helper.request(), callback.callback(), BoundNetLog());
+      int rv =
+          trans.Start(&helper.request(), callback.callback(), BoundNetLog());
       EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
       // On the second transaction, we trigger the RST.
       if (i == 1) {
@@ -4214,12 +4196,12 @@ TEST_F(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
       rv = callback.WaitForResult();
       EXPECT_THAT(rv, IsOk());
 
-      const HttpResponseInfo* response = trans->GetResponseInfo();
+      const HttpResponseInfo* response = trans.GetResponseInfo();
       ASSERT_TRUE(response);
       EXPECT_TRUE(response->headers);
       EXPECT_TRUE(response->was_fetched_via_spdy);
       std::string response_data;
-      rv = ReadTransaction(trans.get(), &response_data);
+      rv = ReadTransaction(&trans, &response_data);
       EXPECT_THAT(rv, IsOk());
       EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
       EXPECT_EQ("hello!", response_data);
@@ -4427,10 +4409,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
 
   // Request the pushed path.  At this point, we've received the push, but the
   // headers are not yet complete.
-  std::unique_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-  rv = trans2->Start(
-      &CreateGetPushRequest(), callback.callback(), BoundNetLog());
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  rv =
+      trans2.Start(&CreateGetPushRequest(), callback.callback(), BoundNetLog());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   data.Resume();
   data.RunUntilPaused();
@@ -4438,7 +4419,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
 
   // Read the server push body.
   std::string result2;
-  ReadResult(trans2.get(), &result2);
+  ReadResult(&trans2, &result2);
   // Read the response body.
   std::string result;
   ReadResult(trans, &result);
@@ -4453,7 +4434,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
   // Verify the response headers.
   // Copy the response info, because trans goes away.
   response = *trans->GetResponseInfo();
-  response2 = *trans2->GetResponseInfo();
+  response2 = *trans2.GetResponseInfo();
 
   VerifyStreamsClosed(helper);
 
@@ -4543,10 +4524,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
 
   // Request the pushed path.  At this point, we've received the push, but the
   // headers are not yet complete.
-  std::unique_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-  rv = trans2->Start(
-      &CreateGetPushRequest(), callback.callback(), BoundNetLog());
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  rv =
+      trans2.Start(&CreateGetPushRequest(), callback.callback(), BoundNetLog());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   data.Resume();
   data.RunUntilPaused();
@@ -4558,7 +4538,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
 
   // Read the server push body.
   std::string result2;
-  ReadResult(trans2.get(), &result2);
+  ReadResult(&trans2, &result2);
   // Read the response body.
   std::string result;
   ReadResult(trans, &result);
@@ -4569,7 +4549,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   // Verify the response headers.
   // Copy the response info, because trans goes away.
   response = *trans->GetResponseInfo();
-  response2 = *trans2->GetResponseInfo();
+  response2 = *trans2.GetResponseInfo();
 
   VerifyStreamsClosed(helper);
 
@@ -4651,10 +4631,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
 
   // Request the pushed path.  At this point, we've received the push, but the
   // headers are not yet complete.
-  std::unique_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
-  rv = trans2->Start(
-      &CreateGetPushRequest(), callback.callback(), BoundNetLog());
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  rv =
+      trans2.Start(&CreateGetPushRequest(), callback.callback(), BoundNetLog());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   data.Resume();
   data.RunUntilPaused();
@@ -4662,7 +4641,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
 
   // Read the server push body.
   std::string result2;
-  ReadResult(trans2.get(), &result2);
+  ReadResult(&trans2, &result2);
   // Read the response body.
   std::string result;
   ReadResult(trans, &result);
@@ -4917,14 +4896,13 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
   EXPECT_EQ(1u,
             spdy_session->unclaimed_pushed_streams_.count(GURL(url_to_push)));
 
-  std::unique_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
   HttpRequestInfo push_request;
   push_request.method = "GET";
   push_request.url = GURL(url_to_push);
   push_request.load_flags = 0;
   TestCompletionCallback callback1;
-  rv = trans1->Start(&push_request, callback1.callback(), log);
+  rv = trans1.Start(&push_request, callback1.callback(), log);
   rv = callback1.GetResult(rv);
   EXPECT_THAT(rv, IsOk());
 
@@ -4942,12 +4920,12 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
   ReadResult(trans0, &result0);
   EXPECT_EQ("hello!", result0);
 
-  HttpResponseInfo push_response = *trans1->GetResponseInfo();
+  HttpResponseInfo push_response = *trans1.GetResponseInfo();
   EXPECT_TRUE(push_response.headers);
   EXPECT_EQ("HTTP/1.1 200", push_response.headers->GetStatusLine());
 
   std::string result1;
-  ReadResult(trans1.get(), &result1);
+  ReadResult(&trans1, &result1);
   EXPECT_EQ(kPushedData, result1);
 }
 
@@ -5039,14 +5017,13 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   // Request |url_to_fetch1|, during which docs.example.org pushes
   // |url_to_push|, which happens to be for www.example.org, to which there is
   // already an open connection.
-  std::unique_ptr<HttpNetworkTransaction> trans1(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
   HttpRequestInfo request1;
   request1.method = "GET";
   request1.url = GURL(url_to_fetch1);
   request1.load_flags = 0;
   TestCompletionCallback callback1;
-  rv = trans1->Start(&request1, callback1.callback(), log);
+  rv = trans1.Start(&request1, callback1.callback(), log);
   rv = callback1.GetResult(rv);
   EXPECT_THAT(rv, IsOk());
 
@@ -5072,14 +5049,13 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
             spdy_session1->unclaimed_pushed_streams_.count(GURL(url_to_push)));
 
   // Request |url_to_push|, which should be served from the pushed resource.
-  std::unique_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
   HttpRequestInfo push_request;
   push_request.method = "GET";
   push_request.url = GURL(url_to_push);
   push_request.load_flags = 0;
   TestCompletionCallback callback2;
-  rv = trans2->Start(&push_request, callback2.callback(), log);
+  rv = trans2.Start(&push_request, callback2.callback(), log);
   rv = callback2.GetResult(rv);
   EXPECT_THAT(rv, IsOk());
 
@@ -5100,20 +5076,20 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   ReadResult(trans0, &result0);
   EXPECT_EQ(kData0, result0);
 
-  HttpResponseInfo response1 = *trans1->GetResponseInfo();
+  HttpResponseInfo response1 = *trans1.GetResponseInfo();
   EXPECT_TRUE(response1.headers);
   EXPECT_EQ("HTTP/1.1 200", response1.headers->GetStatusLine());
 
   std::string result1;
-  ReadResult(trans1.get(), &result1);
+  ReadResult(&trans1, &result1);
   EXPECT_EQ(kData1, result1);
 
-  HttpResponseInfo push_response = *trans2->GetResponseInfo();
+  HttpResponseInfo push_response = *trans2.GetResponseInfo();
   EXPECT_TRUE(push_response.headers);
   EXPECT_EQ("HTTP/1.1 200", push_response.headers->GetStatusLine());
 
   std::string result2;
-  ReadResult(trans2.get(), &result2);
+  ReadResult(&trans2, &result2);
   EXPECT_EQ(kPushedData, result2);
 }
 
@@ -5272,17 +5248,15 @@ TEST_F(SpdyNetworkTransactionTest, OutOfOrderHeaders) {
   // Now, start both new transactions
   HttpRequestInfo info2 = CreateGetRequest();
   TestCompletionCallback callback2;
-  std::unique_ptr<HttpNetworkTransaction> trans2(
-      new HttpNetworkTransaction(MEDIUM, helper.session()));
-  rv = trans2->Start(&info2, callback2.callback(), BoundNetLog());
+  HttpNetworkTransaction trans2(MEDIUM, helper.session());
+  rv = trans2.Start(&info2, callback2.callback(), BoundNetLog());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   base::RunLoop().RunUntilIdle();
 
   HttpRequestInfo info3 = CreateGetRequest();
   TestCompletionCallback callback3;
-  std::unique_ptr<HttpNetworkTransaction> trans3(
-      new HttpNetworkTransaction(HIGHEST, helper.session()));
-  rv = trans3->Start(&info3, callback3.callback(), BoundNetLog());
+  HttpNetworkTransaction trans3(HIGHEST, helper.session());
+  rv = trans3.Start(&info3, callback3.callback(), BoundNetLog());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   base::RunLoop().RunUntilIdle();
 
