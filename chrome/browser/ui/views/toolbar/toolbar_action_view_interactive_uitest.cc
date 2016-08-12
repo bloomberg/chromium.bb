@@ -61,7 +61,8 @@ void TestOverflowedToolbarAction(Browser* browser,
   gfx::Point action_view_loc =
       ui_test_utils::GetCenterInScreenCoordinates(action_view);
   ui_controls::SendMouseMove(action_view_loc.x(), action_view_loc.y());
-  ui_controls::SendMouseEvents(button, ui_controls::DOWN | ui_controls::UP);
+  EXPECT_TRUE(ui_test_utils::SendMouseEventsSync(
+      button, ui_controls::DOWN | ui_controls::UP));
 }
 
 // Tests the context menu of an overflowed action.
