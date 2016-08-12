@@ -14,9 +14,6 @@ struct Options {
   bool check_enum_last_value = false;
   bool check_templates = false;
   bool follow_macro_expansion = false;
-  // This is needed during the migration from ASTConsumer approach to the
-  // RecursiveASTVisitor approach. See https://crbug.com/436357 for details.
-  bool check_implicit_copy_ctors = false;
   // This is needed for some distributed build-sytems to respect banned
   // paths. See https://crbug.com/583454 for details.
   bool no_realpath = false;

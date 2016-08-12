@@ -59,14 +59,14 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       options_.check_templates = true;
     } else if (args[i] == "follow-macro-expansion") {
       options_.follow_macro_expansion = true;
-    } else if (args[i] == "check-implicit-copy-ctors") {
-      options_.check_implicit_copy_ctors = true;
     } else if (args[i] == "no-realpath") {
       options_.no_realpath = true;
     } else if (args[i] == "check-ipc") {
       options_.check_ipc = true;
     } else if (args[i] == "check-auto-raw-pointer") {
       options_.check_auto_raw_pointer = true;
+    } else if (args[i] == "check-implicit-copy-ctors") {
+      // This is deprecated and will be removed once the flag is not used.
     } else {
       parsed = false;
       llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";
