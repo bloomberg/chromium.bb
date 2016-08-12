@@ -694,6 +694,7 @@ void PaymentRequest::onCompleteTimeout(TimerBase*)
 
 void PaymentRequest::clearResolversAndCloseMojoConnection()
 {
+    m_completeTimer.stop();
     m_completeResolver.clear();
     m_showResolver.clear();
     m_abortResolver.clear();
