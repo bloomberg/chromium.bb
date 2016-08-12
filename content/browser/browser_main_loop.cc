@@ -834,7 +834,7 @@ void BrowserMainLoop::CreateStartupTasks() {
 }
 
 int BrowserMainLoop::CreateThreads() {
-  TRACE_EVENT0("startup", "BrowserMainLoop::CreateThreads");
+  TRACE_EVENT0("startup,rail", "BrowserMainLoop::CreateThreads");
 
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;

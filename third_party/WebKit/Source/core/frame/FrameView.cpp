@@ -857,7 +857,7 @@ std::unique_ptr<TracedValue> FrameView::analyzerCounters()
     return value;
 }
 
-#define PERFORM_LAYOUT_TRACE_CATEGORIES "blink,benchmark," TRACE_DISABLED_BY_DEFAULT("blink.debug.layout")
+#define PERFORM_LAYOUT_TRACE_CATEGORIES "blink,benchmark,rail," TRACE_DISABLED_BY_DEFAULT("blink.debug.layout")
 
 void FrameView::performLayout(bool inSubtreeLayout)
 {

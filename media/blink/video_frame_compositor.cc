@@ -105,7 +105,7 @@ bool VideoFrameCompositor::HasCurrentFrame() {
 }
 
 void VideoFrameCompositor::Start(RenderCallback* callback) {
-  TRACE_EVENT0("media", "VideoFrameCompositor::Start");
+  TRACE_EVENT0("media,rail", "VideoFrameCompositor::Start");
 
   // Called from the media thread, so acquire the callback under lock before
   // returning in case a Stop() call comes in before the PostTask is processed.
@@ -118,7 +118,7 @@ void VideoFrameCompositor::Start(RenderCallback* callback) {
 }
 
 void VideoFrameCompositor::Stop() {
-  TRACE_EVENT0("media", "VideoFrameCompositor::Stop");
+  TRACE_EVENT0("media,rail", "VideoFrameCompositor::Stop");
 
   // Called from the media thread, so release the callback under lock before
   // returning to avoid a pending UpdateCurrentFrame() call occurring before

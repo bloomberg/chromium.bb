@@ -119,7 +119,7 @@ LatencyInfoTracedValue::LatencyInfoTracedValue(base::Value* value)
     : value_(value) {
 }
 
-const char kTraceCategoriesForAsyncEvents[] = "benchmark,latencyInfo";
+const char kTraceCategoriesForAsyncEvents[] = "benchmark,latencyInfo,rail";
 
 struct LatencyInfoEnabledInitializer {
   LatencyInfoEnabledInitializer() :

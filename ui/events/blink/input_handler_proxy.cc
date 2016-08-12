@@ -733,7 +733,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
           blink::WebSize()));
       disallow_horizontal_fling_scroll_ = !vx;
       disallow_vertical_fling_scroll_ = !vy;
-      TRACE_EVENT_ASYNC_BEGIN2("input,benchmark",
+      TRACE_EVENT_ASYNC_BEGIN2("input,benchmark,rail",
                                "InputHandlerProxy::HandleGestureFling::started",
                                this, "vx", vx, "vy", vy);
       // Note that the timestamp will only be used to kickstart the animation if
@@ -751,7 +751,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
     }
     case cc::InputHandler::SCROLL_UNKNOWN:
     case cc::InputHandler::SCROLL_ON_MAIN_THREAD: {
-      TRACE_EVENT_INSTANT0("input",
+      TRACE_EVENT_INSTANT0("input,rail",
                            "InputHandlerProxy::HandleGestureFling::"
                            "scroll_on_main_thread",
                            TRACE_EVENT_SCOPE_THREAD);
@@ -762,7 +762,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
     }
     case cc::InputHandler::SCROLL_IGNORED: {
       TRACE_EVENT_INSTANT0(
-          "input",
+          "input,rail",
           "InputHandlerProxy::HandleGestureFling::ignored",
           TRACE_EVENT_SCOPE_THREAD);
       gesture_scroll_on_impl_thread_ = false;

@@ -2147,7 +2147,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(const WebInputEvent& inputEven
 
     page()->frameHost().visualViewport().startTrackingPinchStats();
 
-    TRACE_EVENT1("input", "WebViewImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type));
+    TRACE_EVENT1("input,rail", "WebViewImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type));
     // If we've started a drag and drop operation, ignore input events until
     // we're done.
     if (m_doingDragAndDrop)

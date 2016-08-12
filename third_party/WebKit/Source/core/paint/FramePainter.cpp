@@ -109,7 +109,7 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
     // by the svg root issue (crbug.com/442939).
     ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
-    TRACE_EVENT1("devtools.timeline", "Paint", "data", InspectorPaintEvent::data(layoutView, LayoutRect(rect), 0));
+    TRACE_EVENT1("devtools.timeline,rail", "Paint", "data", InspectorPaintEvent::data(layoutView, LayoutRect(rect), 0));
 
     bool isTopLevelPainter = !s_inPaintContents;
     s_inPaintContents = true;

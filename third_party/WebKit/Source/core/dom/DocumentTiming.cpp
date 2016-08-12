@@ -34,42 +34,42 @@ void DocumentTiming::notifyDocumentTimingChanged()
 void DocumentTiming::markDomLoading()
 {
     m_domLoading = monotonicallyIncreasingTime();
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "domLoading", m_domLoading, "frame", frame());
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domLoading", m_domLoading, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentTiming::markDomInteractive()
 {
     m_domInteractive = monotonicallyIncreasingTime();
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "domInteractive", m_domInteractive, "frame", frame());
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domInteractive", m_domInteractive, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentTiming::markDomContentLoadedEventStart()
 {
     m_domContentLoadedEventStart = monotonicallyIncreasingTime();
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "domContentLoadedEventStart", m_domContentLoadedEventStart, "frame", frame());
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domContentLoadedEventStart", m_domContentLoadedEventStart, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentTiming::markDomContentLoadedEventEnd()
 {
     m_domContentLoadedEventEnd = monotonicallyIncreasingTime();
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "domContentLoadedEventEnd", m_domContentLoadedEventEnd, "frame", frame());
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domContentLoadedEventEnd", m_domContentLoadedEventEnd, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentTiming::markDomComplete()
 {
     m_domComplete = monotonicallyIncreasingTime();
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "domComplete", m_domComplete, "frame", frame());
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "domComplete", m_domComplete, "frame", frame());
     notifyDocumentTimingChanged();
 }
 
 void DocumentTiming::markFirstLayout()
 {
     m_firstLayout = monotonicallyIncreasingTime();
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "firstLayout", m_firstLayout, "frame", frame());
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "firstLayout", m_firstLayout, "frame", frame());
     notifyDocumentTimingChanged();
 }
 

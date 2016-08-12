@@ -252,7 +252,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     if (!m_contentsChanged)
         return false;
 
-    TRACE_EVENT0("blink", "DrawingBuffer::prepareMailbox");
+    TRACE_EVENT0("blink,rail", "DrawingBuffer::prepareMailbox");
 
     if (m_newMailboxCallback)
         (*m_newMailboxCallback)();

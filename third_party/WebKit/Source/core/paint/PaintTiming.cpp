@@ -51,7 +51,7 @@ void PaintTiming::markFirstTextPaint()
         return;
     m_firstTextPaint = monotonicallyIncreasingTime();
     setFirstContentfulPaint(m_firstTextPaint);
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "firstTextPaint", m_firstTextPaint, "frame", frame());
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "firstTextPaint", m_firstTextPaint, "frame", frame());
     notifyPaintTimingChanged();
 }
 
@@ -61,7 +61,7 @@ void PaintTiming::markFirstImagePaint()
         return;
     m_firstImagePaint = monotonicallyIncreasingTime();
     setFirstContentfulPaint(m_firstImagePaint);
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "firstImagePaint", m_firstImagePaint, "frame", frame());
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "firstImagePaint", m_firstImagePaint, "frame", frame());
     notifyPaintTimingChanged();
 }
 
@@ -92,7 +92,7 @@ void PaintTiming::setFirstPaint(double stamp)
     if (m_firstPaint != 0.0)
         return;
     m_firstPaint = stamp;
-    TRACE_EVENT_INSTANT1("blink.user_timing", "firstPaint", TRACE_EVENT_SCOPE_PROCESS, "frame", frame());
+    TRACE_EVENT_INSTANT1("blink.user_timing,rail", "firstPaint", TRACE_EVENT_SCOPE_PROCESS, "frame", frame());
 }
 
 void PaintTiming::setFirstContentfulPaint(double stamp)
@@ -101,7 +101,7 @@ void PaintTiming::setFirstContentfulPaint(double stamp)
         return;
     setFirstPaint(stamp);
     m_firstContentfulPaint = stamp;
-    TRACE_EVENT_INSTANT1("blink.user_timing", "firstContentfulPaint", TRACE_EVENT_SCOPE_PROCESS, "frame", frame());
+    TRACE_EVENT_INSTANT1("blink.user_timing,rail", "firstContentfulPaint", TRACE_EVENT_SCOPE_PROCESS, "frame", frame());
 }
 
 } // namespace blink

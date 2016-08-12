@@ -197,18 +197,18 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
     const WebInputEvent* input_event,
     ui::LatencyInfo* latency_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT1("input,benchmark", "InputHandlerManager::HandleInputEvent",
+  TRACE_EVENT1("input,benchmark,rail", "InputHandlerManager::HandleInputEvent",
                  "type", WebInputEventTraits::GetName(input_event->type));
 
   auto it = input_handlers_.find(routing_id);
   if (it == input_handlers_.end()) {
-    TRACE_EVENT1("input", "InputHandlerManager::HandleInputEvent",
+    TRACE_EVENT1("input,rail", "InputHandlerManager::HandleInputEvent",
                  "result", "NoInputHandlerFound");
     // Oops, we no longer have an interested input handler..
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   }
 
-  TRACE_EVENT1("input", "InputHandlerManager::HandleInputEvent",
+  TRACE_EVENT1("input,rail", "InputHandlerManager::HandleInputEvent",
                "result", "EventSentToInputHandlerProxy");
   InputHandlerProxy* proxy = it->second->input_handler_proxy();
   InputEventAckState input_event_ack_state = InputEventDispositionToAck(

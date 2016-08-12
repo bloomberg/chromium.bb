@@ -44,7 +44,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 
     for (auto& document : documents) {
         ScopedFrameBlamer frameBlamer(document->frame());
-        TRACE_EVENT0("blink", "PageAnimator::serviceScriptedAnimations");
+        TRACE_EVENT0("blink,rail", "PageAnimator::serviceScriptedAnimations");
         DocumentAnimations::updateAnimationTimingForAnimationFrame(*document);
         if (document->view()) {
             if (document->view()->shouldThrottleRendering())

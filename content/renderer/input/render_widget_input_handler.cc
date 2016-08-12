@@ -243,7 +243,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (base::TimeTicks::IsHighResolution())
     start_time = base::TimeTicks::Now();
 
-  TRACE_EVENT1("renderer,benchmark",
+  TRACE_EVENT1("renderer,benchmark,rail",
                "RenderWidgetInputHandler::OnHandleInputEvent", "event",
                WebInputEventTraits::GetName(input_event.type));
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");

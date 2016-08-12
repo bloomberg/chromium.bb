@@ -2434,7 +2434,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         page->setIsPainting(true);
 #endif
 
-    TRACE_EVENT1("devtools.timeline", "Paint", "data", InspectorPaintEvent::data(m_owningLayer.layoutObject(), LayoutRect(interestRect), graphicsLayer));
+    TRACE_EVENT1("devtools.timeline,rail", "Paint", "data", InspectorPaintEvent::data(m_owningLayer.layoutObject(), LayoutRect(interestRect), graphicsLayer));
 
     PaintLayerFlags paintLayerFlags = 0;
     if (graphicsLayerPaintingPhase & GraphicsLayerPaintBackground)

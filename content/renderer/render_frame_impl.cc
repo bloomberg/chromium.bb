@@ -1175,11 +1175,13 @@ void RenderFrameImpl::Initialize() {
     effective_connection_type_ = parent_frame->getEffectiveConnectionType();
   }
 
-  bool is_tracing = false;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED("navigation", &is_tracing);
-  if (is_tracing) {
+  bool is_tracing_rail = false;
+  bool is_tracing_navigation = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("navigation", &is_tracing_navigation);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("rail", &is_tracing_rail);
+  if (is_tracing_rail || is_tracing_navigation) {
     int parent_id = GetRoutingIdForFrameOrProxy(frame_->parent());
-    TRACE_EVENT2("navigation", "RenderFrameImpl::Initialize",
+    TRACE_EVENT2("navigation,rail", "RenderFrameImpl::Initialize",
                  "id", routing_id_,
                  "parent", parent_id);
   }
@@ -1576,8 +1578,8 @@ void RenderFrameImpl::OnNavigate(
   if (render_thread_impl)
     render_thread_impl->GetRendererScheduler()->OnNavigationStarted();
   DCHECK(!IsBrowserSideNavigationEnabled());
-  TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate", "id", routing_id_,
-               "url", common_params.url.possibly_invalid_spec());
+  TRACE_EVENT2("navigation,rail", "RenderFrameImpl::OnNavigate", "id",
+               routing_id_, "url", common_params.url.possibly_invalid_spec());
   NavigateInternal(common_params, start_params, request_params,
                    std::unique_ptr<StreamOverrideParameters>());
 }
@@ -1600,7 +1602,7 @@ void RenderFrameImpl::SetPendingNavigationParams(
 }
 
 void RenderFrameImpl::OnBeforeUnload(bool is_reload) {
-  TRACE_EVENT1("navigation", "RenderFrameImpl::OnBeforeUnload",
+  TRACE_EVENT1("navigation,rail", "RenderFrameImpl::OnBeforeUnload",
                "id", routing_id_);
   // TODO(creis): Right now, this is only called on the main frame.  Make the
   // browser process send dispatchBeforeUnloadEvent to every frame that needs
@@ -1618,7 +1620,8 @@ void RenderFrameImpl::OnSwapOut(
     int proxy_routing_id,
     bool is_loading,
     const FrameReplicationState& replicated_frame_state) {
-  TRACE_EVENT1("navigation", "RenderFrameImpl::OnSwapOut", "id", routing_id_);
+  TRACE_EVENT1("navigation,rail", "RenderFrameImpl::OnSwapOut",
+               "id", routing_id_);
   RenderFrameProxy* proxy = NULL;
 
   // This codepath should only be hit for subframes when in --site-per-process.
@@ -2782,7 +2785,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
 
   // Tracing analysis uses this to find main frames when this value is
   // MSG_ROUTING_NONE, and build the frame tree otherwise.
-  TRACE_EVENT2("navigation", "RenderFrameImpl::createChildFrame",
+  TRACE_EVENT2("navigation,rail", "RenderFrameImpl::createChildFrame",
                "id", routing_id_,
                "child", child_routing_id);
 
@@ -3182,7 +3185,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
   if (!ds)
     return;
 
-  TRACE_EVENT2("navigation,benchmark",
+  TRACE_EVENT2("navigation,benchmark,rail",
                "RenderFrameImpl::didStartProvisionalLoad", "id", routing_id_,
                "url", ds->request().url().string().utf8());
   DocumentState* document_state = DocumentState::FromDataSource(ds);
@@ -3237,7 +3240,7 @@ void RenderFrameImpl::didFailProvisionalLoad(
     blink::WebLocalFrame* frame,
     const blink::WebURLError& error,
     blink::WebHistoryCommitType commit_type) {
-  TRACE_EVENT1("navigation,benchmark",
+  TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
   DCHECK_EQ(frame_, frame);
   WebDataSource* ds = frame->provisionalDataSource();
@@ -3292,7 +3295,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
-  TRACE_EVENT2("navigation", "RenderFrameImpl::didCommitProvisionalLoad",
+  TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_,
                "url", GetLoadingUrl().possibly_invalid_spec());
   DCHECK_EQ(frame_, frame);
@@ -3572,8 +3575,8 @@ void RenderFrameImpl::didChangeIcon(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
-  TRACE_EVENT1("navigation,benchmark", "RenderFrameImpl::didFinishDocumentLoad",
-               "id", routing_id_);
+  TRACE_EVENT1("navigation,benchmark,rail",
+               "RenderFrameImpl::didFinishDocumentLoad", "id", routing_id_);
   DCHECK_EQ(frame_, frame);
   WebDataSource* ds = frame->dataSource();
   DocumentState* document_state = DocumentState::FromDataSource(ds);
@@ -3659,7 +3662,7 @@ void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
 void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
                                   const blink::WebURLError& error,
                                   blink::WebHistoryCommitType commit_type) {
-  TRACE_EVENT1("navigation", "RenderFrameImpl::didFailLoad",
+  TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didFailLoad",
                "id", routing_id_);
   DCHECK_EQ(frame_, frame);
   // TODO(nasko): Move implementation here. No state needed.
@@ -3685,14 +3688,14 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
-  TRACE_EVENT1("navigation,benchmark", "RenderFrameImpl::didFinishLoad", "id",
-               routing_id_);
+  TRACE_EVENT1("navigation,benchmark,rail",
+               "RenderFrameImpl::didFinishLoad", "id", routing_id_);
   DCHECK_EQ(frame_, frame);
   WebDataSource* ds = frame->dataSource();
   DocumentState* document_state = DocumentState::FromDataSource(ds);
   if (document_state->finish_load_time().is_null()) {
     if (!frame->parent()) {
-      TRACE_EVENT_INSTANT0("WebCore,benchmark", "LoadFinished",
+      TRACE_EVENT_INSTANT0("WebCore,benchmark,rail", "LoadFinished",
                            TRACE_EVENT_SCOPE_PROCESS);
     }
     document_state->set_finish_load_time(Time::Now());
@@ -3711,7 +3714,7 @@ void RenderFrameImpl::didNavigateWithinPage(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type,
     bool content_initiated) {
-  TRACE_EVENT1("navigation", "RenderFrameImpl::didNavigateWithinPage",
+  TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didNavigateWithinPage",
                "id", routing_id_);
   DCHECK_EQ(frame_, frame);
   DocumentState* document_state =
@@ -4770,7 +4773,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 }
 
 void RenderFrameImpl::didStartLoading(bool to_different_document) {
-  TRACE_EVENT1("navigation", "RenderFrameImpl::didStartLoading",
+  TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didStartLoading",
                "id", routing_id_);
   render_view_->FrameDidStartLoading(frame_);
 
@@ -4781,7 +4784,7 @@ void RenderFrameImpl::didStartLoading(bool to_different_document) {
 }
 
 void RenderFrameImpl::didStopLoading() {
-  TRACE_EVENT1("navigation", "RenderFrameImpl::didStopLoading",
+  TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didStopLoading",
                "id", routing_id_);
   render_view_->FrameDidStopLoading(frame_);
   Send(new FrameHostMsg_DidStopLoading(routing_id_));

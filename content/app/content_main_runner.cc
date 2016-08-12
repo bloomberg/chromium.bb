@@ -467,7 +467,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // See note at the initialization of ExitManager, below; basically,
     // only Android builds have the ctor/dtor handlers set up to use
     // TRACE_EVENT right away.
-    TRACE_EVENT0("startup,benchmark", "ContentMainRunnerImpl::Initialize");
+    TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // OS_ANDROID
 
     base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
@@ -624,7 +624,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // Android tracing started at the beginning of the method.
     // Other OSes have to wait till we get here in order for all the memory
     // management setup to be completed.
-    TRACE_EVENT0("startup,benchmark", "ContentMainRunnerImpl::Initialize");
+    TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // !OS_ANDROID
 
 #if defined(OS_MACOSX)

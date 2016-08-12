@@ -13,10 +13,9 @@ namespace benchmark_instrumentation {
 // The benchmarks search for events and their arguments by name.
 
 void IssueImplThreadRenderingStatsEvent(const RenderingStats& stats) {
-  TRACE_EVENT_INSTANT1("benchmark",
-                       "BenchmarkInstrumentation::ImplThreadRenderingStats",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "data", stats.AsTraceableData());
+  TRACE_EVENT_INSTANT1(
+      "benchmark,rail", "BenchmarkInstrumentation::ImplThreadRenderingStats",
+      TRACE_EVENT_SCOPE_THREAD, "data", stats.AsTraceableData());
 }
 
 void IssueDisplayRenderingStatsEvent() {

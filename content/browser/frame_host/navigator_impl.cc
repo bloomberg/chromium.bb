@@ -313,7 +313,7 @@ bool NavigatorImpl::NavigateToEntry(
   // capture the time needed for the RenderFrameHost initialization.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
-      "navigation", "NavigationTiming navigationStart",
+      "navigation,rail", "NavigationTiming navigationStart",
       TRACE_EVENT_SCOPE_GLOBAL, navigation_start.ToInternalValue());
 
   // Determine if LoFi should be used for the navigation.
