@@ -136,7 +136,7 @@ BrokerServicesBase::~BrokerServicesBase() {
     return;
   }
 
-  STLDeleteElements(&tracker_list_);
+  base::STLDeleteElements(&tracker_list_);
   delete thread_pool_;
 
   ::DeleteCriticalSection(&lock_);

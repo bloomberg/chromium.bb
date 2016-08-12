@@ -60,7 +60,7 @@ SharedMemIPCServer::~SharedMemIPCServer() {
     // Better to leak than to crash.
     return;
   }
-  STLDeleteElements(&server_contexts_);
+  base::STLDeleteElements(&server_contexts_);
 
   if (client_control_)
     ::UnmapViewOfFile(client_control_);
