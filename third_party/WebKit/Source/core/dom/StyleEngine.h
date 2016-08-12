@@ -176,6 +176,8 @@ public:
     void scheduleSiblingInvalidationsForElement(Element&, ContainerNode& schedulingParent, unsigned minDirectAdjacent);
     void scheduleInvalidationsForInsertedSibling(Element* beforeElement, Element& insertedElement);
     void scheduleInvalidationsForRemovedSibling(Element* beforeElement, Element& removedElement, Element& afterElement);
+    void scheduleNthPseudoInvalidations(ContainerNode&);
+
     unsigned styleForElementCount() const { return m_styleForElementCount; }
     void incStyleForElementCount() { m_styleForElementCount++; }
 

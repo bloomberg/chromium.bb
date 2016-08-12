@@ -2,10 +2,13 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <style>
-    #t1 > :nth-child(even) {
+    #t1 > span:nth-child(even) {
         background-color: green
     }
-    #t2 > :nth-last-child(even) {
+    #t2 > span:nth-last-child(even) {
+        background-color: green
+    }
+    #t3 > .second:nth-child(2) {
         background-color: green
     }
 </style>
@@ -14,6 +17,12 @@
 </div>
 <div id="t2">
     <span></span>
+</div>
+<div id="t3">
+    <div class="second"></div>
+    <div></div>
+    <div></div>
+    <div></div>
 </div>
 
 <script>
@@ -38,6 +47,15 @@
         assert_equals(t2.firstChild.nextSibling.nodeType, Node.ELEMENT_NODE);
         t2.insertBefore(document.createElement("span"), t2.firstChild.nextSibling);
         assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1);
+    }, "Prepending an element sibling should not affect :nth-last-child of succeeding siblings.");
+
+    test(() => {
+        t3.offsetTop;
+        let second = t3.querySelector(".second");
+        backgroundIsTransparent(second);
+        t3.insertBefore(document.createElement("div"), t3.firstChild);
+        assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2);
+        backgroundIsGreen(second);
     }, "Prepending an element sibling should not affect :nth-last-child of succeeding siblings.");
 
 </script>

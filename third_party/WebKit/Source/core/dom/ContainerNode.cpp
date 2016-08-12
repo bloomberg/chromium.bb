@@ -1232,22 +1232,16 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Ele
     Element* elementAfterChange = !nodeAfterChange || nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange);
     Element* elementBeforeChange = !nodeBeforeChange || nodeBeforeChange->isElementNode() ? toElement(nodeBeforeChange) : ElementTraversal::previousSibling(*nodeBeforeChange);
 
+    // TODO(rune@opera.com): move this code into StyleEngine and collect the
+    // various invalidation sets into a single InvalidationLists object and
+    // schedule with a single scheduleInvalidationSetsForNode for efficiency.
+
     // Forward positional selectors include :nth-child, :nth-of-type,
-    // :first-of-type, and only-of-type. The indirect adjacent selector is the ~
-    // selector. Backward positional selectors include :nth-last-child,
-    // :nth-last-of-type, :last-of-type, and :only-of-type. We have to
-    // invalidate everything following the insertion point in the forward and
-    // indirect adjacent case, and everything before the insertion point in the
-    // backward case. |nodeAfterChange| is nullptr in the parser callback case,
-    // so we won't do any work for the forward case if we don't have to.
-    // For performance reasons we just mark the parent node as changed, since we
-    // don't want to make childrenChanged O(n^2) by crawling all our kids here.
-    // recalcStyle will then force a walk of the children when it sees that this
-    // has happened.
+    // :first-of-type, and only-of-type. Backward positional selectors include
+    // :nth-last-child, :nth-last-of-type, :last-of-type, and :only-of-type.
     if ((childrenAffectedByForwardPositionalRules() && elementAfterChange)
         || (childrenAffectedByBackwardPositionalRules() && elementBeforeChange)) {
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
-        return;
+        document().styleEngine().scheduleNthPseudoInvalidations(*this);
     }
 
     if (childrenAffectedByFirstChildRules() && !elementBeforeChange && elementAfterChange && elementAfterChange->affectedByFirstChildRules()) {

@@ -41,34 +41,34 @@ void StyleInvalidator::invalidate(Document& document)
     m_pendingInvalidationMap.clear();
 }
 
-void StyleInvalidator::scheduleInvalidationSetsForElement(const InvalidationLists& invalidationLists, Element& element)
+void StyleInvalidator::scheduleInvalidationSetsForNode(const InvalidationLists& invalidationLists, ContainerNode& node)
 {
-    ASSERT(element.inActiveDocument());
+    DCHECK(node.inActiveDocument());
     bool requiresDescendantInvalidation = false;
 
-    if (element.getStyleChangeType() < SubtreeStyleChange) {
+    if (node.getStyleChangeType() < SubtreeStyleChange) {
         for (auto& invalidationSet : invalidationLists.descendants) {
             if (invalidationSet->wholeSubtreeInvalid()) {
-                element.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+                node.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
                 requiresDescendantInvalidation = false;
                 break;
             }
 
             if (invalidationSet->invalidatesSelf())
-                element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+                node.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
 
             if (!invalidationSet->isEmpty())
                 requiresDescendantInvalidation = true;
         }
     }
 
-    if (!requiresDescendantInvalidation && (invalidationLists.siblings.isEmpty() || !element.nextSibling()))
+    if (!requiresDescendantInvalidation && (invalidationLists.siblings.isEmpty() || !node.nextSibling()))
         return;
 
-    element.setNeedsStyleInvalidation();
+    node.setNeedsStyleInvalidation();
 
-    PendingInvalidations& pendingInvalidations = ensurePendingInvalidations(element);
-    if (element.nextSibling()) {
+    PendingInvalidations& pendingInvalidations = ensurePendingInvalidations(node);
+    if (node.nextSibling()) {
         for (auto& invalidationSet : invalidationLists.siblings) {
             if (pendingInvalidations.siblings().contains(invalidationSet))
                 continue;
@@ -80,7 +80,7 @@ void StyleInvalidator::scheduleInvalidationSetsForElement(const InvalidationList
         return;
 
     for (auto& invalidationSet : invalidationLists.descendants) {
-        ASSERT(!invalidationSet->wholeSubtreeInvalid());
+        DCHECK(!invalidationSet->wholeSubtreeInvalid());
         if (invalidationSet->isEmpty())
             continue;
         if (pendingInvalidations.descendants().contains(invalidationSet))
@@ -91,6 +91,8 @@ void StyleInvalidator::scheduleInvalidationSetsForElement(const InvalidationList
 
 void StyleInvalidator::scheduleSiblingInvalidationsAsDescendants(const InvalidationLists& invalidationLists, ContainerNode& schedulingParent)
 {
+    DCHECK(invalidationLists.descendants.isEmpty());
+
     if (invalidationLists.siblings.isEmpty())
         return;
 
@@ -145,9 +147,9 @@ StyleInvalidator::~StyleInvalidator()
 
 void StyleInvalidator::RecursionData::pushInvalidationSet(const InvalidationSet& invalidationSet)
 {
-    ASSERT(!m_wholeSubtreeInvalid);
-    ASSERT(!invalidationSet.wholeSubtreeInvalid());
-    ASSERT(!invalidationSet.isEmpty());
+    DCHECK(!m_wholeSubtreeInvalid);
+    DCHECK(!invalidationSet.wholeSubtreeInvalid());
+    DCHECK(!invalidationSet.isEmpty());
     if (invalidationSet.treeBoundaryCrossing())
         m_treeBoundaryCrossing = true;
     if (invalidationSet.insertionPointCrossing())
@@ -178,7 +180,7 @@ ALWAYS_INLINE bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSe
 
 bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSetsAsSlotted(Element& element) const
 {
-    ASSERT(m_invalidatesSlotted);
+    DCHECK(m_invalidatesSlotted);
 
     for (const auto& invalidationSet : m_invalidationSets) {
         if (!invalidationSet->invalidatesSlotted())
@@ -202,7 +204,7 @@ void StyleInvalidator::SiblingData::pushInvalidationSet(const SiblingInvalidatio
 bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(Element& element, RecursionData& recursionData)
 {
     bool thisElementNeedsStyleRecalc = false;
-    ASSERT(!recursionData.wholeSubtreeInvalid());
+    DCHECK(!recursionData.wholeSubtreeInvalid());
 
     unsigned index = 0;
     while (index < m_invalidationEntries.size()) {
@@ -238,7 +240,7 @@ bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(Element& elemen
 void StyleInvalidator::pushInvalidationSetsForContainerNode(ContainerNode& node, RecursionData& recursionData, SiblingData& siblingData)
 {
     PendingInvalidations* pendingInvalidations = m_pendingInvalidationMap.get(&node);
-    ASSERT(pendingInvalidations);
+    DCHECK(pendingInvalidations);
 
     for (const auto& invalidationSet : pendingInvalidations->siblings())
         siblingData.pushInvalidationSet(toSiblingInvalidationSet(*invalidationSet));
@@ -325,7 +327,7 @@ bool StyleInvalidator::invalidate(Element& element, RecursionData& recursionData
         someChildrenNeedStyleRecalc = invalidateChildren(element, recursionData);
 
     if (thisElementNeedsStyleRecalc) {
-        ASSERT(!recursionData.wholeSubtreeInvalid());
+        DCHECK(!recursionData.wholeSubtreeInvalid());
         element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
     } else if (recursionData.hasInvalidationSets() && someChildrenNeedStyleRecalc) {
         // Clone the ComputedStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.

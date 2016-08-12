@@ -102,6 +102,7 @@ public:
     void collectSiblingInvalidationSetForId(InvalidationLists&, Element&, const AtomicString& id, unsigned minDirectAdjacent) const;
     void collectSiblingInvalidationSetForAttribute(InvalidationLists&, Element&, const QualifiedName& attributeName, unsigned minDirectAdjacent) const;
     void collectUniversalSiblingInvalidationSet(InvalidationLists&, unsigned minDirectAdjacent) const;
+    void collectNthInvalidationSet(InvalidationLists&) const;
 
     bool hasIdsInSelectors() const
     {
@@ -141,6 +142,7 @@ private:
     InvalidationSet& ensureIdInvalidationSet(const AtomicString& id, InvalidationType);
     InvalidationSet& ensurePseudoInvalidationSet(CSSSelector::PseudoType, InvalidationType);
     SiblingInvalidationSet& ensureUniversalSiblingInvalidationSet();
+    DescendantInvalidationSet& ensureNthInvalidationSet();
 
     void updateInvalidationSets(const RuleData&);
     void updateInvalidationSetsForContentAttribute(const RuleData&);
@@ -161,6 +163,7 @@ private:
         bool forceSubtree = false;
         bool contentPseudoCrossing = false;
         bool invalidatesSlotted = false;
+        bool hasNthPseudo = false;
     };
 
     static bool extractInvalidationSetFeature(const CSSSelector&, InvalidationSetFeatures&);
@@ -182,6 +185,7 @@ private:
     InvalidationSetMap m_idInvalidationSets;
     PseudoTypeInvalidationSetMap m_pseudoInvalidationSets;
     RefPtr<SiblingInvalidationSet> m_universalSiblingInvalidationSet;
+    RefPtr<DescendantInvalidationSet> m_nthInvalidationSet;
 
     friend class RuleFeatureSetTest;
 };

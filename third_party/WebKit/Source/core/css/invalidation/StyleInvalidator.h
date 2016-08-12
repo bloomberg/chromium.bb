@@ -26,7 +26,7 @@ public:
     StyleInvalidator();
     ~StyleInvalidator();
     void invalidate(Document&);
-    void scheduleInvalidationSetsForElement(const InvalidationLists&, Element&);
+    void scheduleInvalidationSetsForNode(const InvalidationLists&, ContainerNode&);
     void scheduleSiblingInvalidationsAsDescendants(const InvalidationLists&, ContainerNode& schedulingParent);
     void clearInvalidation(ContainerNode&);
 

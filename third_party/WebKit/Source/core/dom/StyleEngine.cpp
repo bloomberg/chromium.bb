@@ -606,7 +606,7 @@ void StyleEngine::classChangedForElement(const SpaceSplitString& changedClasses,
     RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
     for (unsigned i = 0; i < changedSize; ++i)
         ruleFeatureSet.collectInvalidationSetsForClass(invalidationLists, element, changedClasses[i]);
-    m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
+    m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists, element);
 }
 
 void StyleEngine::classChangedForElement(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element& element)
@@ -649,7 +649,7 @@ void StyleEngine::classChangedForElement(const SpaceSplitString& oldClasses, con
         ruleFeatureSet.collectInvalidationSetsForClass(invalidationLists, element, oldClasses[i]);
     }
 
-    m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
+    m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists, element);
 }
 
 void StyleEngine::attributeChangedForElement(const QualifiedName& attributeName, Element& element)
@@ -659,7 +659,7 @@ void StyleEngine::attributeChangedForElement(const QualifiedName& attributeName,
 
     InvalidationLists invalidationLists;
     ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForAttribute(invalidationLists, element, attributeName);
-    m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
+    m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists, element);
 }
 
 void StyleEngine::idChangedForElement(const AtomicString& oldId, const AtomicString& newId, Element& element)
@@ -673,7 +673,7 @@ void StyleEngine::idChangedForElement(const AtomicString& oldId, const AtomicStr
         ruleFeatureSet.collectInvalidationSetsForId(invalidationLists, element, oldId);
     if (!newId.isEmpty())
         ruleFeatureSet.collectInvalidationSetsForId(invalidationLists, element, newId);
-    m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
+    m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists, element);
 }
 
 void StyleEngine::pseudoStateChangedForElement(CSSSelector::PseudoType pseudoType, Element& element)
@@ -683,7 +683,7 @@ void StyleEngine::pseudoStateChangedForElement(CSSSelector::PseudoType pseudoTyp
 
     InvalidationLists invalidationLists;
     ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForPseudoClass(invalidationLists, element, pseudoType);
-    m_styleInvalidator.scheduleInvalidationSetsForElement(invalidationLists, element);
+    m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists, element);
 }
 
 void StyleEngine::scheduleSiblingInvalidationsForElement(Element& element, ContainerNode& schedulingParent, unsigned minDirectAdjacent)
@@ -737,6 +737,13 @@ void StyleEngine::scheduleInvalidationsForRemovedSibling(Element* beforeElement,
 
     for (unsigned i = 2; beforeElement && i <= affectedSiblings; i++, beforeElement = ElementTraversal::previousSibling(*beforeElement))
         scheduleSiblingInvalidationsForElement(*beforeElement, *schedulingParent, i);
+}
+
+void StyleEngine::scheduleNthPseudoInvalidations(ContainerNode& nthParent)
+{
+    InvalidationLists invalidationLists;
+    ensureResolver().ensureUpdatedRuleFeatureSet().collectNthInvalidationSet(invalidationLists);
+    m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists, nthParent);
 }
 
 void StyleEngine::setStatsEnabled(bool enabled)
