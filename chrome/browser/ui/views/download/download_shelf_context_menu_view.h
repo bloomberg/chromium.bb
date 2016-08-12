@@ -23,6 +23,7 @@ class Rect;
 }
 
 namespace views {
+class MenuModelAdapter;
 class MenuRunner;
 class Widget;
 }
@@ -41,6 +42,10 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
            ui::MenuSourceType source_type);
 
  private:
+  // Callback for MenuModelAdapter
+  void OnMenuClosed();
+
+  std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // Time the menu was closed.

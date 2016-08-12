@@ -10,6 +10,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 DownloadShelfContextMenuView::DownloadShelfContextMenuView(
@@ -26,9 +27,14 @@ void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
   // Run() should not be getting called if the DownloadItem was destroyed.
   DCHECK(menu_model);
 
-  menu_runner_.reset(new views::MenuRunner(
-      menu_model,
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
+  menu_model_adapter_.reset(new views::MenuModelAdapter(
+      menu_model, base::Bind(&DownloadShelfContextMenuView::OnMenuClosed,
+                             base::Unretained(this))));
+
+  menu_runner_.reset(new views::MenuRunner(menu_model_adapter_->CreateMenu(),
+                                           views::MenuRunner::HAS_MNEMONICS |
+                                               views::MenuRunner::CONTEXT_MENU |
+                                               views::MenuRunner::ASYNC));
 
   // The menu's alignment is determined based on the UI layout.
   views::MenuAnchorPosition position;
@@ -37,14 +43,11 @@ void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
   else
     position = views::MENU_ANCHOR_TOPLEFT;
 
-  // The return value of RunMenuAt indicates whether the MenuRunner was deleted
-  // while running the menu, which indicates that the containing view may have
-  // been deleted. We ignore the return value because our caller already assumes
-  // that the view could be deleted by the time we return from here.
-  if (menu_runner_->RunMenuAt(
-          parent_widget, NULL, rect, position, source_type) ==
-      views::MenuRunner::MENU_DELETED) {
-    return;
-  }
+  menu_runner_->RunMenuAt(parent_widget, NULL, rect, position, source_type);
+}
+
+void DownloadShelfContextMenuView::OnMenuClosed() {
   close_time_ = base::TimeTicks::Now();
+  menu_model_adapter_.reset();
+  menu_runner_.reset();
 }
