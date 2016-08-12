@@ -36,6 +36,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 
@@ -525,6 +526,13 @@ void Geolocation::pageVisibilityChanged()
 
 void Geolocation::onGeolocationConnectionError()
 {
+    // If a request is outstanding at process shutdown, this error handler will
+    // be called. In that case, blink has already shut down so do nothing.
+    //
+    // TODO(sammc): Remove this once renderer shutdown is no longer graceful.
+    if (!Platform::current())
+        return;
+
     PositionError* error = PositionError::create(PositionError::kPositionUnavailable, failedToStartServiceErrorMessage);
     error->setIsFatal(true);
     handleError(error);
@@ -532,6 +540,13 @@ void Geolocation::onGeolocationConnectionError()
 
 void Geolocation::onPermissionConnectionError()
 {
+    // If a request is outstanding at process shutdown, this error handler will
+    // be called. In that case, blink has already shut down so do nothing.
+    //
+    // TODO(sammc): Remove this once renderer shutdown is no longer graceful.
+    if (!Platform::current())
+        return;
+
     onGeolocationPermissionUpdated(mojom::blink::PermissionStatus::DENIED);
 }
 
