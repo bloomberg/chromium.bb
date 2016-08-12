@@ -198,7 +198,7 @@ void NewAvatarButton::Update() {
   } else if (error_controller_.HasAvatarError()) {
     if (switches::IsMaterialDesignUserMenu()) {
       SetImage(views::Button::STATE_NORMAL,
-               gfx::CreateVectorIcon(gfx::VectorIconId::SYNC_PROBLEM, 13,
+               gfx::CreateVectorIcon(gfx::VectorIconId::SYNC_PROBLEM, 16,
                                      gfx::kGoogleRed700));
     } else {
       SetImage(views::Button::STATE_NORMAL,

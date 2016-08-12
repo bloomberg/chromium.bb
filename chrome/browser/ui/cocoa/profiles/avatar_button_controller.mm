@@ -266,13 +266,15 @@ NSImage* GetImageFromResourceID(int resourceId) {
     NSImage* errorIcon =
         switches::IsMaterialDesignUserMenu()
             ? NSImageFromImageSkia(gfx::CreateVectorIcon(
-                  gfx::VectorIconId::SYNC_PROBLEM, 13, gfx::kGoogleRed700))
+                  gfx::VectorIconId::SYNC_PROBLEM, 16, gfx::kGoogleRed700))
             : GetImageFromResourceID(IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR);
     [button setDefaultImage:errorIcon];
     [button setHoverImage:nil];
     [button setPressedImage:nil];
     [button setImage:errorIcon];
-    [button setImagePosition:NSImageRight];
+    [button setImagePosition:switches::IsMaterialDesignUserMenu()
+                                 ? NSImageLeft
+                                 : NSImageRight];
   } else {
     [button setDefaultImage:nil];
     [button setHoverImage:nil];
