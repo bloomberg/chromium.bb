@@ -106,6 +106,10 @@ class TranslateHelper : public content::RenderFrameObserver,
 
   const mojom::ContentTranslateDriverPtr& GetTranslateDriver();
 
+  // Cleanups all states and pending callbacks associated with the current
+  // running page translation.
+  void ResetPage();
+
   // RenderFrameObserver implementation.
   void OnDestruct() override;
 

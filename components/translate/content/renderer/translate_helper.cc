@@ -122,9 +122,8 @@ TranslateHelper::~TranslateHelper() {
 }
 
 void TranslateHelper::PrepareForUrl(const GURL& url) {
-  // Navigated to a new page, close the binding for previous page.
-  binding_.Close();
-  translate_callback_pending_.Reset();
+  // Navigated to a new url, reset current page translation.
+  ResetPage();
 }
 
 void TranslateHelper::PageCaptured(const base::string16& contents) {
@@ -176,7 +175,7 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
 
   // For the same render frame with the same url, each time when its texts are
   // captured, it should be treated as a new page to do translation.
-  binding_.Close();
+  ResetPage();
   GetTranslateDriver()->RegisterPage(
       binding_.CreateInterfacePtrAndBind(), details,
       !details.has_notranslate && !language.empty());
@@ -469,6 +468,12 @@ const mojom::ContentTranslateDriverPtr& TranslateHelper::GetTranslateDriver() {
   }
 
   return translate_driver_;
+}
+
+void TranslateHelper::ResetPage() {
+  binding_.Close();
+  translate_callback_pending_.Reset();
+  CancelPendingTranslation();
 }
 
 void TranslateHelper::OnDestruct() {
