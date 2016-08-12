@@ -578,9 +578,8 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     /*
        @LargeTest
        @Feature({"Android-TabSwitcher"})
-       Bug http://crbug.com/156746
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/156746")
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testTabsCulling() throws InterruptedException {
         // Open one more tabs than maxTabsDrawn.
@@ -1085,10 +1084,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     /*
         @MediumTest
         @Feature({"Android-TabSwitcher"})
-        Bug http://crbug.com/157259
      */
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/157259")
     public void testSwitchTabStackWithoutClosingTabsInLandscape() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         newIncognitoTabFromMenu();

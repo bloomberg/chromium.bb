@@ -51,9 +51,8 @@ public class WebContentsObserverAndroidTest extends ContentShellTestBase {
     /*
     @SmallTest
     @Feature({"Navigation"})
-    http://crbug.com/411931
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/411931")
     public void testDidFirstVisuallyNonEmptyPaint() throws Throwable {
         TestWebContentsObserver observer = ThreadUtils.runOnUiThreadBlocking(
                 new Callable<TestWebContentsObserver>() {

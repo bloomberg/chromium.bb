@@ -72,12 +72,11 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
 
-    @DisabledTest
-    @Feature({"TabContents"})
     /*
      * @LargeTest
-     * Broken by subpixel precision changes crbug.com/371119
      */
+    @DisabledTest(message = "Broken by subpixel precision changes crbug.com/371119")
+    @Feature({"TabContents"})
     public void testZoomInToSelected() throws Throwable {
         // This should focus the text field and initiate a zoom in.
         Tab tab = getActivity().getActivityTab();
@@ -90,12 +89,11 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
         waitForZoomIn(contentViewCore, initialZoomLevel);
     }
 
-    @DisabledTest
-    @Feature({"TabContents"})
     /*
      * @LargeTest
-     * Broken by subpixel precision changes crbug.com/371119
      */
+    @DisabledTest(message = "Broken by subpixel precision changes crbug.com/371119")
+    @Feature({"TabContents"})
     public void testZoomOutOfSelectedIfOnlyBackPressed() throws Throwable {
         final Tab tab = getActivity().getActivityTab();
         final ContentViewCore contentViewCore = tab.getContentViewCore();

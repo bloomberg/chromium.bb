@@ -252,7 +252,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
      * crashed in background is restored in foreground. This is a regression test for
      * http://crbug.com/399521.
      */
-    @DisabledTest // Flaked on the try bot: http://crbug.com/543153
+    @DisabledTest(message = "crbug.com/543153")
     @LargeTest
     @Feature({"ProcessManagement"})
     public void testCrashInBackground() throws InterruptedException {

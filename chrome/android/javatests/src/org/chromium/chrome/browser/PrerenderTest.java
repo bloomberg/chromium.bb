@@ -49,7 +49,7 @@ public class PrerenderTest extends ChromeTabbedActivityTestBase {
 
     /**
      * We are using Autocomplete Action Predictor to decide whether or not to prerender.
-    /* Without any training data the default action should be no-prerender.
+     * Without any training data the default action should be no-prerender.
      */
     @LargeTest
     @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -127,7 +127,7 @@ public class PrerenderTest extends ChromeTabbedActivityTestBase {
     @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"TabContents"})
     */
-    @DisabledTest  // Prerenderer disables infobars. crbug.com/588808
+    @DisabledTest(message = "Prerenderer disables infobars. crbug.com/588808")
     public void testInfoBarDismissed() throws InterruptedException {
         final String url = mTestServer.getURL(
                 "/chrome/test/data/geolocation/geolocation_on_load.html");

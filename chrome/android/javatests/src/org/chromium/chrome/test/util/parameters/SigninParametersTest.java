@@ -55,9 +55,8 @@ public class SigninParametersTest extends ChromeActivityTestCaseBase<ChromeActiv
     @SmallTest
     @ParameterizedTest(parameters = {
             @Parameter(tag = AddFakeAccountToAppParameter.PARAMETER_TAG)})
-    crbug.com/524189
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/524189")
     public void testIsSignedInOnApp() {
         assertTrue("Should not be signed into app.",
                 mAddFakeAccountToAppParameter.isSignedIn());
@@ -106,9 +105,8 @@ public class SigninParametersTest extends ChromeActivityTestCaseBase<ChromeActiv
     @ParameterizedTest(parameters = {
             @Parameter(tag = AddFakeAccountToAppParameter.PARAMETER_TAG),
             @Parameter(tag = AddFakeAccountToOsParameter.PARAMETER_TAG)})
-    crbug.com/524189
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/524189")
     public void testIsSignedInOnFakeOSandApp() {
         assertTrue("Should be signed in on app.",
                 mAddFakeAccountToAppParameter.isSignedIn());
@@ -133,9 +131,8 @@ public class SigninParametersTest extends ChromeActivityTestCaseBase<ChromeActiv
                             @Parameter.Argument(
                                     name = AddGoogleAccountToOsParameter.ARGUMENT.PASSWORD,
                                     stringVar = GOOGLE_ACCOUNT_PASSWORD)})})
-    crbug.com/524189
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/524189")
     public void testIsSignedInOnAppAndGoogleOS() {
         assertTrue("Should be signed into app.",
                 mAddFakeAccountToAppParameter.isSignedIn());
@@ -184,9 +181,8 @@ public class SigninParametersTest extends ChromeActivityTestCaseBase<ChromeActiv
                             @Parameter.Argument(
                                     name = AddGoogleAccountToOsParameter.ARGUMENT.PASSWORD,
                                     stringVar = GOOGLE_ACCOUNT_PASSWORD)})})
-    crbug.com/524189
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/524189")
     public void testIsSignedInOnAppAndFakeOSandGoogleOS() {
         assertTrue("Should be signed into app.",
                 mAddFakeAccountToAppParameter.isSignedIn());

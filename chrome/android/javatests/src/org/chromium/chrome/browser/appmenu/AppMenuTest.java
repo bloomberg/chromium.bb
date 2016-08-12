@@ -194,9 +194,8 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     /*
     @SmallTest
     @Feature({"Browser", "Main"})
-    crbug.com/458193
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/458193")
     public void testChangingOrientationHidesMenu() throws InterruptedException {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         showAppMenuAndAssertMenuShown();

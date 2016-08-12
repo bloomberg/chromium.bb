@@ -868,8 +868,7 @@ public class BidirectionalStreamTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
-    // Disabled due to timeout. See crbug.com/591112
-    @DisabledTest
+    @DisabledTest(message = "Disabled due to timeout. See crbug.com/591112")
     public void testReadAndWrite() throws Exception {
         String url = Http2TestServer.getEchoStreamUrl();
         TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback() {

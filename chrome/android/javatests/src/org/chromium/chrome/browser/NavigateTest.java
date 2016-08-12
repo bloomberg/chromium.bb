@@ -150,7 +150,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         assertEquals(expectedLocation(url), result);
     }
 
-    @DisabledTest // https://crbug.com/516018
+    @DisabledTest(message = "crbug.com/516018")
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Navigation"})

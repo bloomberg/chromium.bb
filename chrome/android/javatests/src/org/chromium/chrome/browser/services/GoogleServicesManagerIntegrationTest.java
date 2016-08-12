@@ -10,6 +10,9 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
+/**
+ * Google Services Manager tests
+ */
 public class GoogleServicesManagerIntegrationTest
         extends ChromeActivityTestCaseBase<ChromeActivity> {
 
@@ -19,12 +22,11 @@ public class GoogleServicesManagerIntegrationTest
 
     /**
      * Test changing the state of auto login
-     * Bug: crbug.com/413289
      * @Smoke
      * @SmallTest
      * @Feature({"Sync", "Main"})
      */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/413289")
     @UiThreadTest
     public void testSetAutologinState() {
         // TODO(acleung): Add back some sort of test for the GSM.

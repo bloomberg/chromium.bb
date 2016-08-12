@@ -124,7 +124,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Smoke
     @MediumTest
     @Feature({"Browser", "Main"})
-    @DisabledTest // crbug.com/593003
+    @DisabledTest(message = "crbug.com/593003")
     public void testInfoBarForPopUp() throws InterruptedException {
         loadUrl(mTestServer.getURL(POPUP_PAGE));
         assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());

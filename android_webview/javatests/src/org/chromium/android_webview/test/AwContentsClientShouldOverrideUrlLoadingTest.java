@@ -340,9 +340,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     /*
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
-    crbug.com/462306
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/462306")
     public void testCalledWhenTopLevelAboutBlankNavigation() throws Throwable {
         standardSetup();
 

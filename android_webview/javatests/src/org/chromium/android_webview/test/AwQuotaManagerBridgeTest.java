@@ -160,9 +160,8 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
     /*
     @LargeTest
     @Feature({"AndroidWebView", "WebStore"})
-    Too flaky. See crbug.com/609977.
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/609977")
     public void testDeleteAllWithAppCache() throws Exception {
         final long initialUsage = getUsageForOrigin(mOrigin);
 
@@ -186,9 +185,8 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
     /*
     @LargeTest
     @Feature({"AndroidWebView", "WebStore"})
-    Too flaky. See crbug.com/609977.
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/609977")
     public void testDeleteOriginWithAppCache() throws Exception {
         final long initialUsage = getUsageForOrigin(mOrigin);
 
@@ -212,9 +210,8 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
     /*
     @LargeTest
     @Feature({"AndroidWebView", "WebStore"})
-    Too flaky. See crbug.com/609977.
     */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/609977")
     public void testGetResultsMatch() throws Exception {
         useAppCache();
 

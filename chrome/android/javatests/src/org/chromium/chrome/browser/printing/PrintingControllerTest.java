@@ -157,12 +157,11 @@ public class PrintingControllerTest extends ChromeActivityTestCaseBase<ChromeAct
     /**
      * Test for http://crbug.com/528909
      *
-     * Bug: http://crbug.com/532652
      * @SmallTest
      * @Feature({"Printing"})
      */
     @CommandLineFlags.Add(ContentSwitches.DISABLE_POPUP_BLOCKING)
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/532652")
     public void testPrintClosedWindow() throws Throwable {
         if (!ApiCompatibilityUtils.isPrintingSupported()) return;
 

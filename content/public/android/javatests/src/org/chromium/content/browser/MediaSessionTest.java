@@ -313,8 +313,7 @@ public class MediaSessionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"MediaSession"})
-    // Flaky: http:crbug.com/625584.
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/625584")
     public void testMediaDuck() throws Exception {
         assertEquals(AudioManager.AUDIOFOCUS_LOSS, mAudioFocusChangeListener.getAudioFocusState());
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);

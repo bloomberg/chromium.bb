@@ -44,11 +44,11 @@ public class AwSecondBrowserProcessTest extends AwTestBase {
     /*
      * @LargeTest
      * @Feature({"AndroidWebView"})
-     * See crbug.com/582146. We can't test that creating second browser
+     * We can't test that creating second browser
      * process succeeds either, because in debug it will crash due to an assert
      * in the SQL DB code.
      */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/582146")
     public void testCreatingSecondBrowserProcessFails() throws Throwable {
         startSecondBrowserProcess();
         assertFalse(tryStartingBrowserProcess());

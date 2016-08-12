@@ -2290,7 +2290,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests that chained searches load correctly.
      */
-    @DisabledTest // https://crbug.com/551711
+    @DisabledTest(message = "crbug.com/551711")
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})

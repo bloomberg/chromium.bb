@@ -105,11 +105,10 @@ public class TranslateInfoBarTest extends ChromeActivityTestCaseBase<ChromeActiv
     /**
      * Test infobar transitions.
      *
-     * Bug http://crbug.com/514449
      * @MediumTest
      * @Feature({"Browser", "Main"})
      */
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/514449")
     public void testTranslateTransitions() throws InterruptedException {
         loadUrl(mTestServer.getURL(TRANSLATE_PAGE));
         assertTrue("InfoBar not Added", mListener.addInfoBarAnimationFinished());

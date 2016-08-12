@@ -1606,11 +1606,10 @@ public class AwSettingsTest extends AwTestBase {
     }
 
     /*
-     * Disabled due to document.defaultCharset removal. crbug.com/587484
      * @SmallTest
      * @Feature({"AndroidWebView", "Preferences"})
      */
-    @DisabledTest
+    @DisabledTest(message = "Disabled due to document.defaultCharset removal. crbug.com/587484")
     public void testDefaultTextEncodingWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
