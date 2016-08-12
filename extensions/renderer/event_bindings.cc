@@ -272,14 +272,18 @@ void EventBindings::AttachFilteredEvent(
     filter = base::DictionaryValue::From(std::move(filter_value));
   }
 
-  // Hold onto a weak reference to |filter| so that it can be used after passing
-  // ownership to |event_filter|.
-  base::DictionaryValue* filter_weak = filter.get();
   int id = g_event_filter.Get().AddEventMatcher(
       event_name, ParseEventMatcher(std::move(filter)));
+  if (id == -1) {
+    args.GetReturnValue().Set(static_cast<int32_t>(-1));
+    return;
+  }
   attached_matcher_ids_.insert(id);
 
   // Only send IPCs the first time a filter gets added.
+  const EventMatcher* matcher = g_event_filter.Get().GetEventMatcher(id);
+  DCHECK(matcher);
+  base::DictionaryValue* filter_weak = matcher->value();
   std::string extension_id = context()->GetExtensionID();
   if (AddFilter(event_name, extension_id, *filter_weak)) {
     bool lazy = ExtensionFrameHelper::IsContextForEventPage(context());
