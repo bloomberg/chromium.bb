@@ -221,10 +221,6 @@ void SearchTabHelper::OnTabDeactivated() {
   ipc_router_.OnTabDeactivated();
 }
 
-bool SearchTabHelper::IsSearchResultsPage() {
-  return model_.mode().is_origin_search();
-}
-
 void SearchTabHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType /* reload_type */) {

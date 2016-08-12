@@ -85,9 +85,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Called when the tab corresponding to |this| instance is deactivated.
   void OnTabDeactivated();
 
-  // Returns true if the underlying page is a search results page.
-  bool IsSearchResultsPage();
-
   void set_delegate(SearchTabHelperDelegate* delegate) { delegate_ = delegate; }
 
  private:

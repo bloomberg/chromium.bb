@@ -22,12 +22,6 @@
 
 namespace {
 
-// Returns true if the underlying page supports Instant search.
-bool PageSupportsInstantSearch(content::WebContents* contents) {
-  // Search results page supports Instant search.
-  return SearchTabHelper::FromWebContents(contents)->IsSearchResultsPage();
-}
-
 // Returns true if |match| is associated with the default search provider.
 bool MatchIsFromDefaultSearchProvider(const AutocompleteMatch& match,
                                       Profile* profile) {
@@ -126,9 +120,7 @@ bool InstantSearchPrerenderer::CanCommitQuery(
     return false;
   }
 
-  // InstantSearchPrerenderer can commit query to the prerendered page only if
-  // the underlying |source| page doesn't support Instant search.
-  return !PageSupportsInstantSearch(source);
+  return true;
 }
 
 bool InstantSearchPrerenderer::UsePrerenderedPage(
@@ -184,8 +176,7 @@ bool InstantSearchPrerenderer::IsAllowed(const AutocompleteMatch& match,
   // This handles the by-far-the-most-common cases while still being simple and
   // maintainable.
   return source && AutocompleteMatch::IsSearchType(match.type) &&
-      MatchIsFromDefaultSearchProvider(match, profile_) &&
-      !PageSupportsInstantSearch(source);
+      MatchIsFromDefaultSearchProvider(match, profile_);
 }
 
 content::WebContents* InstantSearchPrerenderer::prerender_contents() const {
