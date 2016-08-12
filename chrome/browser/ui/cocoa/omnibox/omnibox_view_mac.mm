@@ -106,9 +106,8 @@ NSColor* SecureSchemeColor(bool in_dark_mode) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return ColorWithRGBBytes(0x07, 0x95, 0x00);
   }
-  return in_dark_mode
-      ? skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x7F))
-      : skia::SkColorToSRGBNSColor(gfx::kGoogleGreen700);
+  return in_dark_mode ? skia::SkColorToSRGBNSColor(SK_ColorWHITE)
+                      : skia::SkColorToSRGBNSColor(gfx::kGoogleGreen700);
 }
 NSColor* SecurityWarningSchemeColor(bool in_dark_mode) {
   return in_dark_mode

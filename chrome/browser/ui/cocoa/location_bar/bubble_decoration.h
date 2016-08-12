@@ -48,6 +48,9 @@ class BubbleDecoration : public LocationBarDecoration {
   // from.  |frame| is the decoration's frame in the containing cell.
   NSRect GetImageRectInFrame(NSRect frame);
 
+  // Returns the text color when the theme is dark.
+  virtual NSColor* GetDarkModeTextColor();
+
  private:
   friend class SelectedKeywordDecorationTest;
   FRIEND_TEST_ALL_PREFIXES(SelectedKeywordDecorationTest,

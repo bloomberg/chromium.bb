@@ -79,6 +79,10 @@ NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
   return image_rect;
 }
 
+NSColor* BubbleDecoration::GetDarkModeTextColor() {
+  return skia::SkColorToSRGBNSColor(kMaterialDarkModeTextColor);
+}
+
 CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
   const CGFloat all_width = GetWidthForImageAndLabel(image_, label_);
   if (all_width <= width)
@@ -124,9 +128,7 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     [line stroke];
 
     NSColor* text_color =
-        in_dark_mode
-            ? skia::SkColorToSRGBNSColor(kMaterialDarkModeTextColor)
-            : GetBackgroundBorderColor();
+        in_dark_mode ? GetDarkModeTextColor() : GetBackgroundBorderColor();
     SetTextColor(text_color);
   }
 

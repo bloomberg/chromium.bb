@@ -52,6 +52,9 @@ class EVBubbleDecoration : public BubbleDecoration {
   // Implement |BubbleDecoration|.
   ui::NinePartImageIds GetBubbleImageIds() override;
 
+ protected:
+  NSColor* GetDarkModeTextColor() override;
+
  private:
   // The real label.  BubbleDecoration's label may be elided.
   base::scoped_nsobject<NSString> full_label_;

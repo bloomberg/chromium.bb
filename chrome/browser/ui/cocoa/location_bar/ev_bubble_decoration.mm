@@ -164,3 +164,7 @@ bool EVBubbleDecoration::AcceptsMousePress() {
 ui::NinePartImageIds EVBubbleDecoration::GetBubbleImageIds() {
   return IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE);
 }
+
+NSColor* EVBubbleDecoration::GetDarkModeTextColor() {
+  return [NSColor whiteColor];
+}
