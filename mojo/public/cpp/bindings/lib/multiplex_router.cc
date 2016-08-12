@@ -346,7 +346,7 @@ void MultiplexRouter::CreateEndpointHandlePair(
     id = next_interface_id_value_++;
     if (set_interface_id_namespace_bit_)
       id |= kInterfaceIdNamespaceMask;
-  } while (ContainsKey(endpoints_, id));
+  } while (base::ContainsKey(endpoints_, id));
 
   InterfaceEndpoint* endpoint = new InterfaceEndpoint(this, id);
   endpoints_[id] = endpoint;
@@ -384,7 +384,7 @@ void MultiplexRouter::CloseEndpointHandle(InterfaceId id, bool is_local) {
   base::AutoLock locker(lock_);
 
   if (!is_local) {
-    DCHECK(ContainsKey(endpoints_, id));
+    DCHECK(base::ContainsKey(endpoints_, id));
     DCHECK(!IsMasterInterfaceId(id));
 
     // We will receive a NotifyPeerEndpointClosed message from the other side.
@@ -393,7 +393,7 @@ void MultiplexRouter::CloseEndpointHandle(InterfaceId id, bool is_local) {
     return;
   }
 
-  DCHECK(ContainsKey(endpoints_, id));
+  DCHECK(base::ContainsKey(endpoints_, id));
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   DCHECK(!endpoint->client());
   DCHECK(!endpoint->closed());
@@ -415,7 +415,7 @@ InterfaceEndpointController* MultiplexRouter::AttachEndpointClient(
   DCHECK(client);
 
   base::AutoLock locker(lock_);
-  DCHECK(ContainsKey(endpoints_, id));
+  DCHECK(base::ContainsKey(endpoints_, id));
 
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   endpoint->AttachClient(client, std::move(runner));
@@ -434,7 +434,7 @@ void MultiplexRouter::DetachEndpointClient(
   DCHECK(IsValidInterfaceId(id));
 
   base::AutoLock locker(lock_);
-  DCHECK(ContainsKey(endpoints_, id));
+  DCHECK(base::ContainsKey(endpoints_, id));
 
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   endpoint->DetachClient();
@@ -494,7 +494,7 @@ bool MultiplexRouter::HasAssociatedEndpoints() const {
   if (endpoints_.size() == 0)
     return false;
 
-  return !ContainsKey(endpoints_, kMasterInterfaceId);
+  return !base::ContainsKey(endpoints_, kMasterInterfaceId);
 }
 
 void MultiplexRouter::EnableTestingMode() {

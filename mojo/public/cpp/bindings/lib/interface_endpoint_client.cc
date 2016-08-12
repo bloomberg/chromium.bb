@@ -242,7 +242,7 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
   controller_->SyncWatch(&response_received);
   // Make sure that this instance hasn't been destroyed.
   if (weak_self) {
-    DCHECK(ContainsKey(sync_responses_, request_id));
+    DCHECK(base::ContainsKey(sync_responses_, request_id));
     auto iter = sync_responses_.find(request_id);
     DCHECK_EQ(&response_received, iter->second->response_received);
     if (response_received) {
