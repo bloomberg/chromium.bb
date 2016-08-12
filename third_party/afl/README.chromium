@@ -12,11 +12,11 @@ Tool for in-process and out-of-process (fork) coverage-guided fuzz testing
 (fuzzing). Similar to libFuzzer.
 
 Local Modifications:
-Use update.py to roll forward.
-update.py renamed afl-2.30b/ to src/.
-update.py removed the following unneeded files/directories:
-  1. src/experimental/argv_fuzzing/
-  2. src/docs/vuln_samples/*.elf
-  3. src/testcases/others/elf
-  4. src/llvm_mode/afl-llvm-pass.so.cc
-  5. src/dictionaries/
+- Use update.py to roll forward.
+- Renamed afl-2.30b/ to src/.
+- Removed the following unneeded files/directories:
+  - src/experimental/argv_fuzzing/
+  - src/docs/vuln_samples/*.elf
+  - src/testcases/others/elf
+  - src/llvm_mode/afl-llvm-pass.so.cc
+  - src/dictionaries/
