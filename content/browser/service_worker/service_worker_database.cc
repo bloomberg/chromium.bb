@@ -117,8 +117,7 @@ const int64_t kCurrentSchemaVersion = 2;
 
 class ServiceWorkerEnv : public leveldb_env::ChromiumEnv {
  public:
-  ServiceWorkerEnv()
-      : ChromiumEnv("LevelDBEnv.ServiceWorker", false /* make_backup */) {}
+  ServiceWorkerEnv() : ChromiumEnv("LevelDBEnv.ServiceWorker") {}
 };
 
 base::LazyInstance<ServiceWorkerEnv>::Leaky g_service_worker_env =

@@ -102,7 +102,6 @@ class UMALogger {
   virtual void RecordErrorAt(MethodID method) const = 0;
   virtual void RecordOSError(MethodID method,
                              base::File::Error error) const = 0;
-  virtual void RecordBackupResult(bool success) const = 0;
 };
 
 class RetrierProvider {
@@ -121,7 +120,6 @@ class ChromiumEnv : public leveldb::Env,
 
   typedef void(ScheduleFunc)(void*);
 
-  static bool MakeBackup(const std::string& fname);
   virtual ~ChromiumEnv();
 
   virtual bool FileExists(const std::string& fname);
@@ -154,7 +152,7 @@ class ChromiumEnv : public leveldb::Env,
                                     leveldb::Logger** result);
 
  protected:
-  ChromiumEnv(const std::string& name, bool make_backup);
+  explicit ChromiumEnv(const std::string& name);
 
   static const char* FileErrorString(base::File::Error error);
 
@@ -165,6 +163,7 @@ class ChromiumEnv : public leveldb::Env,
   void RecordOpenFilesLimit(const std::string& type);
   base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
+  void DeleteBackupFiles(const base::FilePath& dir);
 
   // File locks may not be exclusive within a process (e.g. on POSIX). Track
   // locks held by the ChromiumEnv to prevent access within the process.
@@ -190,10 +189,6 @@ class ChromiumEnv : public leveldb::Env,
     reinterpret_cast<ChromiumEnv*>(arg)->BGThread();
   }
 
-  virtual void RecordBackupResult(bool result) const;
-  void RestoreIfNecessary(const std::string& dir,
-                          std::vector<std::string>* children);
-  base::FilePath RestoreFromBackup(const base::FilePath& base_name);
   void RecordLockFileAncestors(int num_missing_ancestors) const;
   base::HistogramBase* GetMethodIOErrorHistogram() const;
   base::HistogramBase* GetLockFileAncestorHistogram() const;
@@ -208,7 +203,6 @@ class ChromiumEnv : public leveldb::Env,
 
   std::string name_;
   std::string uma_ioerror_base_name_;
-  bool make_backup_;
 
   base::Lock mu_;
   base::ConditionVariable bgsignal_;

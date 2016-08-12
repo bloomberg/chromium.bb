@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #endif
 
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
@@ -220,8 +221,7 @@ class ChromiumWritableFile : public leveldb::WritableFile {
  public:
   ChromiumWritableFile(const std::string& fname,
                        base::File* f,
-                       const UMALogger* uma_logger,
-                       bool make_backup);
+                       const UMALogger* uma_logger);
   virtual ~ChromiumWritableFile() {}
   leveldb::Status Append(const leveldb::Slice& data) override;
   leveldb::Status Close() override;
@@ -237,18 +237,12 @@ class ChromiumWritableFile : public leveldb::WritableFile {
   const UMALogger* uma_logger_;
   Type file_type_;
   std::string parent_dir_;
-  bool make_backup_;
 };
 
 ChromiumWritableFile::ChromiumWritableFile(const std::string& fname,
                                            base::File* f,
-                                           const UMALogger* uma_logger,
-                                           bool make_backup)
-    : filename_(fname),
-      file_(f),
-      uma_logger_(uma_logger),
-      file_type_(kOther),
-      make_backup_(make_backup) {
+                                           const UMALogger* uma_logger)
+    : filename_(fname), file_(f), uma_logger_(uma_logger), file_type_(kOther) {
   FilePath path = FilePath::FromUTF8Unsafe(fname);
   if (path.BaseName().AsUTF8Unsafe().find("MANIFEST") == 0)
     file_type_ = kManifest;
@@ -307,9 +301,6 @@ Status ChromiumWritableFile::Sync() {
     return MakeIOError(filename_, base::File::ErrorToString(error),
                        kWritableFileSync, error);
   }
-
-  if (make_backup_ && file_type_ == kTable)
-    uma_logger_->RecordBackupResult(ChromiumEnv::MakeBackup(filename_));
 
   // leveldb's implicit contract for Sync() is that if this instance is for a
   // manifest file then the directory is also sync'ed. See leveldb's
@@ -500,20 +491,11 @@ bool IndicatesDiskFull(const leveldb::Status& status) {
               base::File::FILE_ERROR_NO_SPACE);
 }
 
-bool ChromiumEnv::MakeBackup(const std::string& fname) {
-  FilePath original_table_name = FilePath::FromUTF8Unsafe(fname);
-  FilePath backup_table_name =
-      original_table_name.ReplaceExtension(backup_table_extension);
-  return base::CopyFile(original_table_name, backup_table_name);
-}
+ChromiumEnv::ChromiumEnv() : ChromiumEnv("LevelDBEnv") {}
 
-ChromiumEnv::ChromiumEnv()
-    : ChromiumEnv("LevelDBEnv", false /* make_backup */) {}
-
-ChromiumEnv::ChromiumEnv(const std::string& name, bool make_backup)
+ChromiumEnv::ChromiumEnv(const std::string& name)
     : kMaxRetryTimeMillis(1000),
       name_(name),
-      make_backup_(make_backup),
       bgsignal_(&mu_),
       started_bgthread_(false) {
   uma_ioerror_base_name_ = name_ + ".IOError.BFE";
@@ -572,55 +554,29 @@ const char* ChromiumEnv::FileErrorString(base::File::Error error) {
   return "Unknown error.";
 }
 
-FilePath ChromiumEnv::RestoreFromBackup(const FilePath& base_name) {
-  FilePath table_name = base_name.AddExtension(table_extension);
-  bool result = base::CopyFile(base_name.AddExtension(backup_table_extension),
-                               table_name);
-  std::string uma_name(name_);
-  uma_name.append(".TableRestore");
-  base::BooleanHistogram::FactoryGet(
-      uma_name, base::Histogram::kUmaTargetedHistogramFlag)->AddBoolean(result);
-  return table_name;
-}
+// Delete unused table backup files - a feature no longer supported.
+// TODO(cmumford): Delete this function once found backup files drop below some
+//                 very small (TBD) number.
+void ChromiumEnv::DeleteBackupFiles(const FilePath& dir) {
+  base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
+      "LevelDBEnv.DeleteTableBackupFile",
+      base::Histogram::kUmaTargetedHistogramFlag);
 
-void ChromiumEnv::RestoreIfNecessary(const std::string& dir,
-                                     std::vector<std::string>* dir_entries) {
-  std::set<FilePath> tables_found;
-  std::set<FilePath> backups_found;
-  for (const std::string& entry : *dir_entries) {
-    FilePath current = FilePath::FromUTF8Unsafe(entry);
-    if (current.MatchesExtension(table_extension))
-      tables_found.insert(current.RemoveExtension());
-    if (current.MatchesExtension(backup_table_extension))
-      backups_found.insert(current.RemoveExtension());
-  }
-  std::set<FilePath> backups_only =
-      base::STLSetDifference<std::set<FilePath>>(backups_found, tables_found);
-
-  if (backups_only.size()) {
-    std::string uma_name(name_);
-    uma_name.append(".MissingFiles");
-    int num_missing_files =
-        backups_only.size() > INT_MAX ? INT_MAX : backups_only.size();
-    base::Histogram::FactoryGet(uma_name,
-                                1 /*min*/,
-                                100 /*max*/,
-                                8 /*num_buckets*/,
-                                base::Histogram::kUmaTargetedHistogramFlag)
-        ->Add(num_missing_files);
-  }
-  FilePath dir_path = FilePath::FromUTF8Unsafe(dir);
-  for (const FilePath& backup : backups_only) {
-    FilePath restored_table_name = RestoreFromBackup(dir_path.Append(backup));
-    dir_entries->push_back(restored_table_name.BaseName().AsUTF8Unsafe());
+  base::FileEnumerator dir_reader(dir, false, base::FileEnumerator::FILES,
+                                  FILE_PATH_LITERAL("*.bak"));
+  for (base::FilePath fname = dir_reader.Next(); !fname.empty();
+       fname = dir_reader.Next()) {
+    histogram->AddBoolean(base::DeleteFile(fname, false));
   }
 }
 
 Status ChromiumEnv::GetChildren(const std::string& dir,
                                 std::vector<std::string>* result) {
+  FilePath dir_path = FilePath::FromUTF8Unsafe(dir);
+  DeleteBackupFiles(dir_path);
+
   std::vector<FilePath> entries;
-  base::File::Error error =
-      GetDirectoryEntries(FilePath::FromUTF8Unsafe(dir), &entries);
+  base::File::Error error = GetDirectoryEntries(dir_path, &entries);
   if (error != base::File::FILE_OK) {
     RecordOSError(kGetChildren, error);
     return MakeIOError(dir, "Could not open/read directory", kGetChildren,
@@ -630,9 +586,6 @@ Status ChromiumEnv::GetChildren(const std::string& dir,
   result->clear();
   for (const auto& entry : entries)
     result->push_back(entry.BaseName().AsUTF8Unsafe());
-
-  if (make_backup_)
-    RestoreIfNecessary(dir, result);
 
   return Status::OK();
 }
@@ -644,10 +597,6 @@ Status ChromiumEnv::DeleteFile(const std::string& fname) {
   if (!base::DeleteFile(fname_filepath, false)) {
     result = MakeIOError(fname, "Could not delete file.", kDeleteFile);
     RecordErrorAt(kDeleteFile);
-  }
-  if (make_backup_ && fname_filepath.MatchesExtension(table_extension)) {
-    base::DeleteFile(fname_filepath.ReplaceExtension(backup_table_extension),
-                     false);
   }
   return result;
 }
@@ -880,7 +829,7 @@ Status ChromiumEnv::NewWritableFile(const std::string& fname,
     return MakeIOError(fname, "Unable to create writable file",
                        kNewWritableFile, f->error_details());
   } else {
-    *result = new ChromiumWritableFile(fname, f.release(), this, make_backup_);
+    *result = new ChromiumWritableFile(fname, f.release(), this);
     return Status::OK();
   }
 }
@@ -896,7 +845,7 @@ Status ChromiumEnv::NewAppendableFile(const std::string& fname,
     return MakeIOError(fname, "Unable to create appendable file",
                        kNewAppendableFile, f->error_details());
   }
-  *result = new ChromiumWritableFile(fname, f.release(), this, make_backup_);
+  *result = new ChromiumWritableFile(fname, f.release(), this);
   return Status::OK();
 }
 
@@ -922,13 +871,6 @@ void ChromiumEnv::RecordOSError(MethodID method,
   DCHECK_LT(error, 0);
   RecordErrorAt(method);
   GetOSErrorHistogram(method, -base::File::FILE_ERROR_MAX)->Add(-error);
-}
-
-void ChromiumEnv::RecordBackupResult(bool result) const {
-  std::string uma_name(name_);
-  uma_name.append(".TableBackup");
-  base::BooleanHistogram::FactoryGet(
-      uma_name, base::Histogram::kUmaTargetedHistogramFlag)->AddBoolean(result);
 }
 
 base::HistogramBase* ChromiumEnv::GetOSErrorHistogram(MethodID method,

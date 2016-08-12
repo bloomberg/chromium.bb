@@ -20503,6 +20503,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LevelDBEnv.DeleteTableBackupFile" enum="BooleanSuccess">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    Tracks the success rate of deleting an unused leveldb table backup file.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.IDB.IOError" enum="LevelDBIOErrorMethods">
   <owner>dgrogan@chromium.org</owner>
   <summary>
@@ -20608,6 +20615,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="LevelDBEnv.IDB.Table" enum="BooleanSuccess">
   <owner>dgrogan@chromium.org</owner>
+  <obsolete>
+    As of M54 no longer creating or using table backup files.
+  </obsolete>
   <summary>
     Success indicates a successful backup or restore operation for .ldb table
     files when used in IndexedDB.
@@ -20785,6 +20795,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="LevelDBEnv.ServiceWorker.Table" enum="BooleanSuccess">
   <owner>nhiroki@chromium.org</owner>
+  <obsolete>
+    As of M54 no longer creating or using table backup files.
+  </obsolete>
   <summary>
     Success indicates a successful backup or restore operation for .ldb table
     files when used in ServiceWorker.
@@ -20801,6 +20814,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="LevelDBEnv.Table" enum="BooleanSuccess">
   <owner>dgrogan@chromium.org</owner>
+  <obsolete>
+    As of M54 no longer creating or using table backup files.
+  </obsolete>
   <summary>
     Success indicates a successful backup or restore operation for .ldb table
     files when used by LevelDB clients other than IndexedDB.
@@ -98565,6 +98581,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="LevelDBEnvBackupRestore" separator="">
+  <obsolete>
+    Deprecated 08/2016.
+  </obsolete>
   <suffix name="Backup" label="Backing up an ldb file."/>
   <suffix name="Restore" label="Restoring an ldb file."/>
   <affected-histogram name="LevelDBEnv.IDB.Table"/>

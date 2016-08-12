@@ -14,9 +14,7 @@ base::LazyInstance<content::LevelDBEnv>::Leaky g_leveldb_env =
 
 namespace content {
 
-LevelDBEnv::LevelDBEnv()
-    : ChromiumEnv("LevelDBEnv.IDB", true /* backup tables */) {
-}
+LevelDBEnv::LevelDBEnv() : ChromiumEnv("LevelDBEnv.IDB") {}
 
 LevelDBEnv* LevelDBEnv::Get() {
   return g_leveldb_env.Pointer();
