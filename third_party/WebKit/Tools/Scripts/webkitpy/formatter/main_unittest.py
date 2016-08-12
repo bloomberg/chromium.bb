@@ -107,3 +107,29 @@ class TestMain(unittest.TestCase):
         host.stdin = StringIO.StringIO(ACTUAL_INPUT)
         main(host, ['--no-autopep8', '--double-quote-strings', '-'])
         self.assertMultiLineEqual(host.stdout.getvalue(), EXPECTED_ONLY_DOUBLE_QUOTED_OUTPUT)
+
+    def test_format_docstrings(self):
+        host = MockSystemHost()
+        host.stdin = StringIO.StringIO('''
+def f():
+    """
+    triple-quoted docstring
+    with multiple lines
+
+    """
+    x = """
+    this is a regular multi-line string, not a docstring
+    """
+    return x
+''')
+        main(host, ['-'])
+        self.assertMultiLineEqual(host.stdout.getvalue(), '''
+def f():
+    """triple-quoted docstring
+    with multiple lines
+    """
+    x = """
+    this is a regular multi-line string, not a docstring
+    """
+    return x
+''')

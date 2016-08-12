@@ -37,7 +37,8 @@ def main(host=None, args=None):
         options.quoting = None
 
     autopep8_options = _autopep8_options_for_style(options.style)
-    fixers = _fixers_for_quoting(options.quoting)
+    fixers = ['webkitpy.formatter.fix_docstrings']
+    fixers.extend(_fixers_for_quoting(options.quoting))
 
     if options.files == ['-']:
         host = host or SystemHost()
