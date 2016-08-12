@@ -37,9 +37,6 @@ class FakeOwnerSettingsService : public OwnerSettingsServiceChromeOS {
   }
 
   // OwnerSettingsServiceChromeOS:
-  void SetManagementSettings(
-      const ManagementSettings& settings,
-      const OnManagementSettingsSetCallback& callback) override;
   bool Set(const std::string& setting, const base::Value& value) override;
 
  private:

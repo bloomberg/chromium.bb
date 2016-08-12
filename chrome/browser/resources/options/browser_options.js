@@ -640,16 +640,6 @@ cr.define('options', function() {
         };
       }
 
-      // Device control section.
-      if (cr.isChromeOS &&
-          UIAccountTweaks.currentUserIsOwner() &&
-          loadTimeData.getBoolean('consumerManagementEnabled')) {
-        $('device-control-section').hidden = false;
-        $('consumer-management-button').onclick = function(event) {
-          PageManager.showPageByName('consumer-management-overlay');
-        };
-      }
-
       // Easy Unlock section.
       if (loadTimeData.getBoolean('easyUnlockAllowed')) {
         $('easy-unlock-section').hidden = false;
@@ -2389,43 +2379,6 @@ cr.define('options', function() {
     // TODO(jhawkins): Investigate the use case for this method.
     BrowserOptions.getLoggedInUsername = function() {
       return BrowserOptions.getInstance().username_;
-    };
-
-    /**
-     * Shows different button text for each consumer management enrollment
-     * status.
-     * @enum {string} status Consumer management service status string.
-     */
-    BrowserOptions.setConsumerManagementStatus = function(status) {
-      var button = $('consumer-management-button');
-      if (status == 'StatusUnknown') {
-        button.hidden = true;
-        return;
-      }
-
-      button.hidden = false;
-      /** @type {string} */ var strId;
-      switch (status) {
-        case ConsumerManagementOverlay.Status.STATUS_UNENROLLED:
-          strId = 'consumerManagementEnrollButton';
-          button.disabled = false;
-          ConsumerManagementOverlay.setStatus(status);
-          break;
-        case ConsumerManagementOverlay.Status.STATUS_ENROLLING:
-          strId = 'consumerManagementEnrollingButton';
-          button.disabled = true;
-          break;
-        case ConsumerManagementOverlay.Status.STATUS_ENROLLED:
-          strId = 'consumerManagementUnenrollButton';
-          button.disabled = false;
-          ConsumerManagementOverlay.setStatus(status);
-          break;
-        case ConsumerManagementOverlay.Status.STATUS_UNENROLLING:
-          strId = 'consumerManagementUnenrollingButton';
-          button.disabled = true;
-          break;
-      }
-      button.textContent = loadTimeData.getString(strId);
     };
 
     /**

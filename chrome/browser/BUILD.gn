@@ -1217,8 +1217,6 @@ static_library("test_support") {
       "chromeos/policy/cloud_external_data_manager_base_test_util.h",
       "chromeos/policy/device_policy_builder.cc",
       "chromeos/policy/device_policy_builder.h",
-      "chromeos/policy/fake_consumer_management_service.cc",
-      "chromeos/policy/fake_consumer_management_service.h",
       "chromeos/policy/fake_device_cloud_policy_initializer.cc",
       "chromeos/policy/fake_device_cloud_policy_initializer.h",
       "chromeos/policy/fake_device_cloud_policy_manager.cc",

@@ -208,8 +208,6 @@ function load() {
                                 [$('account-picture')]);
     PageManager.registerOverlay(StorageClearDriveCacheOverlay.getInstance(),
                                 StorageManager.getInstance());
-    PageManager.registerOverlay(ConsumerManagementOverlay.getInstance(),
-                                BrowserOptions.getInstance());
     PageManager.registerOverlay(DetailsInternetPage.getInstance(),
                                 BrowserOptions.getInstance());
     PageManager.registerOverlay(DisplayOptions.getInstance(),

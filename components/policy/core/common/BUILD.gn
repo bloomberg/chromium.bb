@@ -223,7 +223,6 @@ if (enable_configuration_policy) {
     testonly = true
     sources = [
       "cloud/cloud_policy_client_unittest.cc",
-      "cloud/cloud_policy_constants_unittest.cc",
       "cloud/cloud_policy_core_unittest.cc",
       "cloud/cloud_policy_manager_unittest.cc",
       "cloud/cloud_policy_refresh_scheduler_unittest.cc",

@@ -24,10 +24,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chromeos {
-class OwnerSettingsServiceChromeOS;
-}
-
 namespace policy {
 
 class DeviceCloudPolicyManagerChromeOS;
@@ -50,7 +46,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   DeviceCloudPolicyInitializer(
       PrefService* local_state,
       DeviceManagementService* enterprise_service,
-      DeviceManagementService* consumer_service,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       EnterpriseInstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
@@ -67,12 +62,8 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   // operation.
   // |allowed_modes| specifies acceptable DEVICE_MODE_* constants for
   // enrollment.
-  // |management_mode| should be either MANAGEMENT_MODE_ENTERPRISE or
-  // MANAGEMENT_MODE_CONSUMER.
   virtual void StartEnrollment(
-      ManagementMode management_mode,
       DeviceManagementService* device_management_service,
-      chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
       const EnrollmentConfig& enrollment_config,
       const std::string& auth_token,
       const AllowedDeviceModes& allowed_modes,
@@ -107,7 +98,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
 
   PrefService* local_state_;
   DeviceManagementService* enterprise_service_;
-  DeviceManagementService* consumer_service_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   EnterpriseInstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;

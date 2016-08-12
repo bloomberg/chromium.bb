@@ -410,25 +410,6 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
   EXPECT_TRUE(base::Value::Equals(&expected_accounts, actual_accounts));
 }
 
-TEST_F(DeviceSettingsProviderTest, OwnerIsStillSetWhenDeviceIsConsumerManaged) {
-  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
-            true);
-  device_policy_.policy_data().set_management_mode(
-      em::PolicyData::CONSUMER_MANAGED);
-  device_policy_.policy_data().set_request_token("test request token");
-  device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
-  FlushDeviceSettings();
-
-  // Expect that kDeviceOwner is not empty.
-  const base::Value* value = provider_->Get(kDeviceOwner);
-  ASSERT_TRUE(value);
-  std::string string_value;
-  EXPECT_TRUE(value->GetAsString(&string_value));
-  EXPECT_FALSE(string_value.empty());
-}
-
 TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
   EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
   device_policy_.policy_data().mutable_device_state()->set_device_mode(

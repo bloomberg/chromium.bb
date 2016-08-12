@@ -556,7 +556,6 @@
       'policy/core/browser/url_blacklist_policy_handler_unittest.cc',
       'policy/core/common/async_policy_provider_unittest.cc',
       'policy/core/common/cloud/cloud_policy_client_unittest.cc',
-      'policy/core/common/cloud/cloud_policy_constants_unittest.cc',
       'policy/core/common/cloud/cloud_policy_core_unittest.cc',
       'policy/core/common/cloud/cloud_policy_manager_unittest.cc',
       'policy/core/common/cloud/cloud_policy_refresh_scheduler_unittest.cc',

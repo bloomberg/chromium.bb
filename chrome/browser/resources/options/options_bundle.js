@@ -31,7 +31,6 @@
 <include src="chromeos/proxy_rules_list.js">
 <include src="chromeos/accounts_user_list.js">
 <include src="chromeos/accounts_user_name_edit.js">
-<include src="chromeos/consumer_management_overlay.js">
 <include src="chromeos/display_layout.js">
 <include src="chromeos/display_layout_manager.js">
 <include src="chromeos/display_layout_manager_multi.js">
@@ -46,7 +45,6 @@
 <include src="chromeos/power_overlay.js">
 var AccountsOptions = options.AccountsOptions;
 var ChangePictureOptions = options.ChangePictureOptions;
-var ConsumerManagementOverlay = options.ConsumerManagementOverlay;
 var DetailsInternetPage = options.internet.DetailsInternetPage;
 var DisplayOptions = options.DisplayOptions;
 var DisplayOverscan = options.DisplayOverscan;

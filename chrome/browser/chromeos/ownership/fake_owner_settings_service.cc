@@ -30,13 +30,6 @@ FakeOwnerSettingsService::FakeOwnerSettingsService(
 FakeOwnerSettingsService::~FakeOwnerSettingsService() {
 }
 
-void FakeOwnerSettingsService::SetManagementSettings(
-    const ManagementSettings& settings,
-    const OnManagementSettingsSetCallback& callback) {
-  last_settings_ = settings;
-  callback.Run(set_management_settings_result_);
-}
-
 bool FakeOwnerSettingsService::Set(const std::string& setting,
                                    const base::Value& value) {
   CHECK(settings_provider_);

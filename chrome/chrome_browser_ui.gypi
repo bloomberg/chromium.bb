@@ -1943,8 +1943,6 @@
       'browser/ui/webui/options/chromeos/bluetooth_options_handler.h',
       'browser/ui/webui/options/chromeos/change_picture_options_handler.cc',
       'browser/ui/webui/options/chromeos/change_picture_options_handler.h',
-      'browser/ui/webui/options/chromeos/consumer_management_handler.cc',
-      'browser/ui/webui/options/chromeos/consumer_management_handler.h',
       'browser/ui/webui/options/chromeos/core_chromeos_options_handler.cc',
       'browser/ui/webui/options/chromeos/core_chromeos_options_handler.h',
       'browser/ui/webui/options/chromeos/cros_language_options_handler.cc',

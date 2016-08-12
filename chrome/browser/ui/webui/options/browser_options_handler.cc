@@ -459,18 +459,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_SHORT },
     { "changePicture", IDS_OPTIONS_CHANGE_PICTURE },
     { "changePictureCaption", IDS_OPTIONS_CHANGE_PICTURE_CAPTION },
-    { "consumerManagementDescription",
-      IDS_OPTIONS_CONSUMER_MANAGEMENT_DESCRIPTION },
-    { "consumerManagementEnrollButton",
-      IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLL_BUTTON },
-    { "consumerManagementEnrollingButton",
-      IDS_OPTIONS_CONSUMER_MANAGEMENT_ENROLLING_BUTTON },
-    { "consumerManagementUnenrollButton",
-      IDS_OPTIONS_CONSUMER_MANAGEMENT_UNENROLL_BUTTON },
-    { "consumerManagementUnenrollingButton",
-      IDS_OPTIONS_CONSUMER_MANAGEMENT_UNENROLLING_BUTTON },
     { "datetimeTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME },
-    { "deviceControlTitle", IDS_OPTIONS_DEVICE_CONTROL_SECTION_TITLE },
     { "deviceGroupDescription", IDS_OPTIONS_DEVICE_GROUP_DESCRIPTION },
     { "deviceGroupPointer", IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION },
     { "disableGData", IDS_OPTIONS_DISABLE_GDATA },
@@ -679,10 +668,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
                          proximity_auth::switches::kEnableProximityDetection));
 
 #if defined(OS_CHROMEOS)
-  values->SetBoolean("consumerManagementEnabled",
-                     base::CommandLine::ForCurrentProcess()->HasSwitch(
-                         chromeos::switches::kEnableConsumerManagement));
-
   RegisterTitle(values, "thirdPartyImeConfirmOverlay",
                 IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_TITLE);
   values->SetBoolean("usingNewProfilesUI", false);
@@ -869,11 +854,6 @@ void BrowserOptionsHandler::Uninitialize() {
   ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->RemoveObserver(this);
 #endif
 #if defined(OS_CHROMEOS)
-  policy::ConsumerManagementService* consumer_management =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
-          GetConsumerManagementService();
-  if (consumer_management)
-    consumer_management->RemoveObserver(this);
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(
       Profile::FromWebUI(web_ui()));
   if (arc_prefs)
@@ -1090,14 +1070,6 @@ void BrowserOptionsHandler::InitializePage() {
   OnWallpaperManagedChanged(
       chromeos::WallpaperManager::Get()->IsPolicyControlled(
           user->GetAccountId()));
-
-  policy::ConsumerManagementService* consumer_management =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
-          GetConsumerManagementService();
-  if (consumer_management) {
-    OnConsumerManagementStatusChanged();
-    consumer_management->AddObserver(this);
-  }
 
   if (arc::ArcAuthService::IsAllowedForProfile(profile) &&
       !arc::ArcAuthService::IsOptInVerificationDisabled()) {
@@ -1608,14 +1580,6 @@ void BrowserOptionsHandler::OnPowerwashDialogShow(
       "Reset.ChromeOS.PowerwashDialogShown",
       chromeos::reset::DIALOG_FROM_OPTIONS,
       chromeos::reset::DIALOG_VIEW_TYPE_SIZE);
-}
-
-void BrowserOptionsHandler::OnConsumerManagementStatusChanged() {
-  const std::string& status = g_browser_process->platform_part()->
-      browser_policy_connector_chromeos()->GetConsumerManagementService()->
-          GetStatusString();
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "BrowserOptions.setConsumerManagementStatus", base::StringValue(status));
 }
 
 #endif  // defined(OS_CHROMEOS)

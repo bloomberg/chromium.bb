@@ -33,7 +33,6 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #else  // defined(OS_CHROMEOS)
@@ -64,7 +63,6 @@ class BrowserOptionsHandler
       public ui::SelectFileDialog::Listener,
 #if defined(OS_CHROMEOS)
       public chromeos::system::PointerDeviceObserver::Observer,
-      public policy::ConsumerManagementService::Observer,
       public ArcAppListPrefs::Observer,
 #endif
       public TemplateURLServiceObserver,
@@ -146,9 +144,6 @@ class BrowserOptionsHandler
 
   // Will be called when powerwash dialog is shown.
   void OnPowerwashDialogShow(const base::ListValue* args);
-
-  // ConsumerManagementService::Observer:
-  void OnConsumerManagementStatusChanged() override;
 
   // ArcAppListPrefs::Observer overrides.
   void OnAppReadyChanged(const std::string& app_id, bool ready) override;

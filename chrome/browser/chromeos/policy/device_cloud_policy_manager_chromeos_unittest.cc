@@ -178,7 +178,6 @@ class DeviceCloudPolicyManagerChromeOSTest
     manager_->AddDeviceCloudPolicyManagerObserver(this);
     initializer_.reset(new DeviceCloudPolicyInitializer(
         &local_state_, &device_management_service_,
-        &consumer_device_management_service_,
         base::ThreadTaskRunnerHandle::Get(), install_attributes_.get(),
         &state_keys_broker_, store_, manager_.get()));
     initializer_->Init();
@@ -218,7 +217,6 @@ class DeviceCloudPolicyManagerChromeOSTest
   std::string url_fetcher_response_string_;
   TestingPrefServiceSimple local_state_;
   MockDeviceManagementService device_management_service_;
-  MockDeviceManagementService consumer_device_management_service_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
@@ -377,8 +375,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
 
  protected:
   DeviceCloudPolicyManagerChromeOSEnrollmentTest()
-      : management_mode_(MANAGEMENT_MODE_ENTERPRISE_MANAGED),
-        register_status_(DM_STATUS_SUCCESS),
+      : register_status_(DM_STATUS_SUCCESS),
         policy_fetch_status_(DM_STATUS_SUCCESS),
         robot_auth_fetch_status_(DM_STATUS_SUCCESS),
         store_result_(true),
@@ -425,13 +422,10 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     EXPECT_EQ(EnrollmentStatus::STATUS_SUCCESS, status_.status());
     ASSERT_TRUE(manager_->core()->client());
     EXPECT_TRUE(manager_->core()->client()->is_registered());
-
-    if (management_mode_ != MANAGEMENT_MODE_CONSUMER_MANAGED) {
-      EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_->GetMode());
-      EXPECT_TRUE(store_->has_policy());
-      EXPECT_TRUE(store_->is_managed());
-      VerifyPolicyPopulated();
-    }
+    EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_->GetMode());
+    EXPECT_TRUE(store_->has_policy());
+    EXPECT_TRUE(store_->is_managed());
+    VerifyPolicyPopulated();
   }
 
   void RunTest() {
@@ -457,8 +451,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     EnrollmentConfig enrollment_config;
     enrollment_config.mode = EnrollmentConfig::MODE_MANUAL;
     initializer_->StartEnrollment(
-        management_mode_, &device_management_service_, owner_settings_service,
-        enrollment_config, "auth token", modes,
+        &device_management_service_, enrollment_config, "auth token", modes,
         base::Bind(&DeviceCloudPolicyManagerChromeOSEnrollmentTest::Done,
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
@@ -537,10 +530,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
       url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
     }
 
-    if (management_mode_ == MANAGEMENT_MODE_CONSUMER_MANAGED)
-      FlushDeviceSettings();
-    else
-      base::RunLoop().RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     if (done_)
       return;
@@ -566,8 +556,6 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         *device_policy_.GetNewSigningKey());
     ReloadDeviceSettings();
   }
-
-  ManagementMode management_mode_;
 
   DeviceManagementStatus register_status_;
   em::DeviceManagementResponse register_response_;
@@ -678,23 +666,6 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, LoadError) {
   ExpectFailedEnrollment(EnrollmentStatus::STATUS_STORE_ERROR);
   EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR,
             status_.store_status());
-}
-
-TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
-       SuccessfulConsumerManagementEnrollment) {
-  management_mode_ = MANAGEMENT_MODE_CONSUMER_MANAGED;
-  owner_key_util_->SetPrivateKey(device_policy_.GetNewSigningKey());
-  InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
-            true);
-  FlushDeviceSettings();
-
-  device_policy_.policy_data().set_management_mode(em::PolicyData::LOCAL_OWNER);
-  device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
-  ReloadDeviceSettings();
-
-  RunTest();
-  ExpectSuccessfulEnrollment();
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterSucceeds) {

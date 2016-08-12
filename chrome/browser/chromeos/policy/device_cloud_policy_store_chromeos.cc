@@ -144,20 +144,7 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
       device_settings_service_->status();
 
   const bool is_enterprise_managed = install_attributes_->IsEnterpriseDevice();
-  bool is_or_was_consumer_managed = false;
-  if (policy_data) {
-    const ManagementMode management_mode = GetManagementMode(*policy_data);
-    if (management_mode == MANAGEMENT_MODE_CONSUMER_MANAGED ||
-        (management_mode == MANAGEMENT_MODE_LOCAL_OWNER &&
-         policy() &&
-         GetManagementMode(*policy()) == MANAGEMENT_MODE_CONSUMER_MANAGED)) {
-      // The device is consumer-managed, or was consumer-managed and is now
-      // unmanaged.
-      is_or_was_consumer_managed = true;
-    }
-  }
-
-  if (!is_enterprise_managed && !is_or_was_consumer_managed) {
+  if (!is_enterprise_managed) {
     status_ = STATUS_BAD_STATE;
     NotifyStoreError();
     return;
@@ -166,41 +153,39 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
   // For enterprise devices, once per session, validate internal consistency of
   // enrollment state (DM token must be present on enrolled devices) and in case
   // of failure set flag to indicate that recovery is required.
-  if (is_enterprise_managed) {
-    switch (status) {
-      case chromeos::DeviceSettingsService::STORE_SUCCESS:
-      case chromeos::DeviceSettingsService::STORE_KEY_UNAVAILABLE:
-      case chromeos::DeviceSettingsService::STORE_NO_POLICY:
-      case chromeos::DeviceSettingsService::STORE_INVALID_POLICY:
-      case chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR: {
-        if (!enrollment_validation_done_) {
-          enrollment_validation_done_ = true;
-          const bool has_dm_token =
-              status == chromeos::DeviceSettingsService::STORE_SUCCESS &&
-              policy_data &&
-              policy_data->has_request_token();
+  switch (status) {
+    case chromeos::DeviceSettingsService::STORE_SUCCESS:
+    case chromeos::DeviceSettingsService::STORE_KEY_UNAVAILABLE:
+    case chromeos::DeviceSettingsService::STORE_NO_POLICY:
+    case chromeos::DeviceSettingsService::STORE_INVALID_POLICY:
+    case chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR: {
+      if (!enrollment_validation_done_) {
+        enrollment_validation_done_ = true;
+        const bool has_dm_token =
+            status == chromeos::DeviceSettingsService::STORE_SUCCESS &&
+            policy_data &&
+            policy_data->has_request_token();
 
-          // At the time LoginDisplayHostImpl decides whether enrollment flow is
-          // to be started, policy hasn't been read yet.  To work around this,
-          // once the need for recovery is detected upon policy load, a flag is
-          // stored in prefs which is accessed by LoginDisplayHostImpl early
-          // during (next) boot.
-          if (!has_dm_token) {
-            LOG(ERROR) << "Device policy read on enrolled device yields "
-                       << "no DM token! Status: " << status << ".";
-            chromeos::StartupUtils::MarkEnrollmentRecoveryRequired();
-          }
-          UMA_HISTOGRAM_BOOLEAN("Enterprise.EnrolledPolicyHasDMToken",
-                                has_dm_token);
+        // At the time LoginDisplayHostImpl decides whether enrollment flow is
+        // to be started, policy hasn't been read yet.  To work around this,
+        // once the need for recovery is detected upon policy load, a flag is
+        // stored in prefs which is accessed by LoginDisplayHostImpl early
+        // during (next) boot.
+        if (!has_dm_token) {
+          LOG(ERROR) << "Device policy read on enrolled device yields "
+                     << "no DM token! Status: " << status << ".";
+          chromeos::StartupUtils::MarkEnrollmentRecoveryRequired();
         }
-        break;
+        UMA_HISTOGRAM_BOOLEAN("Enterprise.EnrolledPolicyHasDMToken",
+                              has_dm_token);
       }
-      case chromeos::DeviceSettingsService::STORE_POLICY_ERROR:
-      case chromeos::DeviceSettingsService::STORE_OPERATION_FAILED:
-      case chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
-        // Do nothing for write errors or transient read errors.
-        break;
+      break;
     }
+    case chromeos::DeviceSettingsService::STORE_POLICY_ERROR:
+    case chromeos::DeviceSettingsService::STORE_OPERATION_FAILED:
+    case chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
+      // Do nothing for write errors or transient read errors.
+      break;
   }
 
   switch (status) {

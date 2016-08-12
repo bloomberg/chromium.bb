@@ -52,7 +52,6 @@ bool GetMachineFlag(const std::string& key, bool default_value) {
 DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     PrefService* local_state,
     DeviceManagementService* enterprise_service,
-    DeviceManagementService* consumer_service,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     EnterpriseInstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
@@ -60,7 +59,6 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     DeviceCloudPolicyManagerChromeOS* manager)
     : local_state_(local_state),
       enterprise_service_(enterprise_service),
-      consumer_service_(consumer_service),
       background_task_runner_(background_task_runner),
       install_attributes_(install_attributes),
       state_keys_broker_(state_keys_broker),
@@ -95,9 +93,7 @@ void DeviceCloudPolicyInitializer::Shutdown() {
 }
 
 void DeviceCloudPolicyInitializer::StartEnrollment(
-    ManagementMode management_mode,
     DeviceManagementService* device_management_service,
-    chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
     const EnrollmentConfig& enrollment_config,
     const std::string& auth_token,
     const AllowedDeviceModes& allowed_device_modes,
@@ -108,10 +104,9 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
   manager_->core()->Disconnect();
   enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
       device_store_, install_attributes_, state_keys_broker_,
-      owner_settings_service, CreateClient(device_management_service),
-      background_task_runner_, enrollment_config, auth_token,
-      install_attributes_->GetDeviceId(), manager_->GetDeviceRequisition(),
-      allowed_device_modes, management_mode,
+      CreateClient(device_management_service), background_task_runner_,
+      enrollment_config, auth_token, install_attributes_->GetDeviceId(),
+      manager_->GetDeviceRequisition(), allowed_device_modes,
       base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
                  base::Unretained(this), enrollment_callback)));
   enrollment_handler_->StartEnrollment();
@@ -263,18 +258,7 @@ void DeviceCloudPolicyInitializer::TryToCreateClient() {
       enrollment_handler_) {
     return;
   }
-
-  DeviceManagementService* service = nullptr;
-  if (GetManagementMode(*device_store_->policy()) ==
-      MANAGEMENT_MODE_CONSUMER_MANAGED) {
-    service = consumer_service_;
-  } else if (GetManagementMode(*device_store_->policy()) ==
-             MANAGEMENT_MODE_ENTERPRISE_MANAGED) {
-    service = enterprise_service_;
-  }
-
-  if (service)
-    StartConnection(CreateClient(service));
+  StartConnection(CreateClient(enterprise_service_));
 }
 
 void DeviceCloudPolicyInitializer::StartConnection(

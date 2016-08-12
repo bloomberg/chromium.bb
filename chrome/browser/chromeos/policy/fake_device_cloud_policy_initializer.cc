@@ -14,7 +14,6 @@ FakeDeviceCloudPolicyInitializer::FakeDeviceCloudPolicyInitializer()
     : DeviceCloudPolicyInitializer(
           NULL,  // local_state
           NULL,  // enterprise_service
-          NULL,  // consumer_service
           // background_task_runner
           scoped_refptr<base::SequencedTaskRunner>(NULL),
           NULL,  // install_attributes
@@ -33,9 +32,7 @@ void FakeDeviceCloudPolicyInitializer::Shutdown() {
 }
 
 void FakeDeviceCloudPolicyInitializer::StartEnrollment(
-    ManagementMode management_mode,
     DeviceManagementService* device_management_service,
-    chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
     const EnrollmentConfig& enrollment_config,
     const std::string& auth_token,
     const AllowedDeviceModes& allowed_modes,

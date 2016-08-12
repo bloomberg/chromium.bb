@@ -76,9 +76,6 @@ const char kChildWallpaperSmall[] = "child-wallpaper-small";
 
 const char kConservativeThreshold[] = "conservative";
 
-// Specifies the URL of the consumer device management backend.
-const char kConsumerDeviceManagementUrl[] = "consumer-device-management-url";
-
 // Forces CrOS region value.
 const char kCrosRegion[] = "cros-region";
 
@@ -221,10 +218,6 @@ const char kEafeUrl[] = "eafe-url";
 
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
-
-// Enables consumer management, which allows user to enroll, remotely lock and
-// locate the device.
-const char kEnableConsumerManagement[] = "enable-consumer-management";
 
 // Enables Data Saver prompt on cellular networks.
 const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";

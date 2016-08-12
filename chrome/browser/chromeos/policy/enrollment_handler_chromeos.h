@@ -26,10 +26,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chromeos {
-class OwnerSettingsServiceChromeOS;
-}
-
 namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
@@ -60,12 +56,10 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // are acceptable. If the mode specified by the server is not acceptable,
   // enrollment will fail with an EnrollmentStatus indicating
   // STATUS_REGISTRATION_BAD_MODE.
-  // |management_mode| should be either ENTERPRISE_MANAGED or CONSUMER_MANAGED.
   EnrollmentHandlerChromeOS(
       DeviceCloudPolicyStoreChromeOS* store,
       EnterpriseInstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
-      chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
       std::unique_ptr<CloudPolicyClient> client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const EnrollmentConfig& enrollment_config,
@@ -73,7 +67,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       const std::string& client_id,
       const std::string& requisition,
       const AllowedDeviceModes& allowed_device_modes,
-      ManagementMode management_mode,
       const EnrollmentCallback& completion_callback);
   ~EnrollmentHandlerChromeOS() override;
 
@@ -160,7 +153,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   DeviceCloudPolicyStoreChromeOS* store_;
   EnterpriseInstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
-  chromeos::OwnerSettingsServiceChromeOS* owner_settings_service_;
   std::unique_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
@@ -170,7 +162,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::string client_id_;
   std::string requisition_;
   AllowedDeviceModes allowed_device_modes_;
-  ManagementMode management_mode_;
   EnrollmentCallback completion_callback_;
 
   // The current state key provided by |state_keys_broker_|.
