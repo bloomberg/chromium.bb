@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
 source_set("crash") {
@@ -21,6 +22,8 @@ source_set("crash") {
     "linux/minidump_generator.h",
     "linux/minidump_params.cc",
     "linux/minidump_params.h",
+    "linux/minidump_uploader.cc",
+    "linux/minidump_uploader.h",
     "linux/minidump_writer.cc",
     "linux/minidump_writer.h",
     "linux/synchronized_minidump_manager.cc",
@@ -32,7 +35,35 @@ source_set("crash") {
     "//breakpad:client",
     "//chromecast/base",
     "//chromecast/base:cast_version",
+    "//components/metrics",
+    "//components/prefs",
   ]
+
+  if (chromecast_branding == "public") {
+    deps += [ "//chromecast/base:cast_sys_info" ]
+  } else {
+    deps += [ "//chromecast/base:cast_sys_info_shlib" ]
+  }
+}
+
+executable("crash_uploader") {
+  sources = [
+    "linux/crash_uploader.cc",
+  ]
+
+  deps = [
+    ":crash",
+    "//base",
+    "//chromecast/base",
+    "//chromecast/public",
+    "//chromecast/system/reboot:reboot_util",
+  ]
+
+  if (chromecast_branding == "public") {
+    deps += [ "//chromecast/base:cast_sys_info" ]
+  } else {
+    deps += [ "//chromecast/base:cast_sys_info_shlib" ]
+  }
 }
 
 source_set("test_support") {
@@ -54,6 +85,7 @@ if (is_linux) {
       "cast_crashdump_uploader_unittest.cc",
       "linux/dummy_minidump_generator_unittest.cc",
       "linux/dump_info_unittest.cc",
+      "linux/minidump_uploader_unittest.cc",
       "linux/minidump_writer_unittest.cc",
       "linux/synchronized_minidump_manager_unittest.cc",
     ]
@@ -65,7 +97,10 @@ if (is_linux) {
       "//base/test:run_all_unittests",
       "//base/test:test_support",
       "//breakpad:client",
+      "//chromecast/base:cast_sys_info",
       "//chromecast/base:test_support",
+      "//components/metrics",
+      "//components/prefs:test_support",
       "//testing/gmock",
       "//testing/gtest",
     ]

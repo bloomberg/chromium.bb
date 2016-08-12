@@ -15,6 +15,9 @@ namespace switches {
 extern const char kSwitchValueTrue[];
 extern const char kSwitchValueFalse[];
 
+// Url to upload crash data to.
+extern const char kCrashServerUrl[];
+
 // Media switches
 extern const char kEnableCmaMediaPipeline[];
 

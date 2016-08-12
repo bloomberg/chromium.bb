@@ -16,6 +16,7 @@
 #include <fstream>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -23,7 +24,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/process/launch.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/platform_thread.h"
@@ -39,6 +39,8 @@ namespace {
 const char kLockfileName[] = "lockfile";
 const char kMetadataName[] = "metadata";
 const char kMinidumpSubdir[] = "minidumps";
+
+typedef std::vector<std::unique_ptr<DumpInfo>> DumpList;
 
 // A trivial implementation of SynchronizedMinidumpManager, which does no work
 // to the minidump and exposes its protected members for testing. This simply
@@ -249,7 +251,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
   ASSERT_FALSE(manager.add_entry_return_code());
 
   // Verify the lockfile is untouched.
-  ScopedVector<DumpInfo> dumps;
+  DumpList dumps;
   ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   ASSERT_EQ(0u, dumps.size());
 }
@@ -269,7 +271,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
   ASSERT_TRUE(manager.add_entry_return_code());
 
   // Test that the manager was successful in logging the entry.
-  ScopedVector<DumpInfo> dumps;
+  DumpList dumps;
   ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   ASSERT_EQ(1u, dumps.size());
 
@@ -325,7 +327,7 @@ TEST_F(SynchronizedMinidumpManagerTest, AcquireLockFile_WaitsForOtherThread) {
   EXPECT_TRUE(sleepy_manager.work_done());
 
   // Test that both entries were logged.
-  ScopedVector<DumpInfo> dumps;
+  DumpList dumps;
   ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   EXPECT_EQ(2u, dumps.size());
 }
@@ -372,7 +374,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
   EXPECT_TRUE(manager.work_done());
 
   // Test that both entries were logged.
-  ScopedVector<DumpInfo> dumps;
+  DumpList dumps;
   ASSERT_TRUE(FetchDumps(lockfile_.value(), &dumps));
   EXPECT_EQ(2u, dumps.size());
 }

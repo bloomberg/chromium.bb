@@ -17,8 +17,8 @@
 
 #define RCHECK(cond, retval, err) \
   do {                            \
-    LOG(ERROR) << (err);          \
     if (!(cond)) {                \
+      LOG(ERROR) << (err);        \
       return (retval);            \
     }                             \
   } while (0)
@@ -88,7 +88,7 @@ std::unique_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
 }
 
 bool FetchDumps(const std::string& lockfile_path,
-                ScopedVector<DumpInfo>* dumps) {
+                std::vector<std::unique_ptr<DumpInfo>>* dumps) {
   DCHECK(dumps);
   std::unique_ptr<base::ListValue> dump_list = ParseLockFile(lockfile_path);
   RCHECK(dump_list, false, "Failed to parse lockfile");
@@ -117,7 +117,7 @@ bool CreateFiles(const std::string& lockfile_path,
 
   base::DictionaryValue* ratelimit_fields = new base::DictionaryValue();
   metadata->Set(kRatelimitKey, base::WrapUnique(ratelimit_fields));
-  ratelimit_fields->SetString(kRatelimitPeriodStartKey, "0");
+  ratelimit_fields->SetDouble(kRatelimitPeriodStartKey, 0.0);
   ratelimit_fields->SetInteger(kRatelimitPeriodDumpsKey, 0);
 
   std::unique_ptr<base::ListValue> dumps =

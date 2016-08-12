@@ -329,21 +329,21 @@ void SynchronizedMinidumpManager::ReleaseLockFile() {
   metadata_.reset();
 }
 
-ScopedVector<DumpInfo> SynchronizedMinidumpManager::GetDumps() {
-  ScopedVector<DumpInfo> dumps;
+std::vector<std::unique_ptr<DumpInfo>> SynchronizedMinidumpManager::GetDumps() {
+  std::vector<std::unique_ptr<DumpInfo>> dumps;
 
   for (const auto& elem : *dumps_) {
-    dumps.push_back(new DumpInfo(elem.get()));
+    dumps.push_back(std::unique_ptr<DumpInfo>(new DumpInfo(elem.get())));
   }
 
   return dumps;
 }
 
 bool SynchronizedMinidumpManager::SetCurrentDumps(
-    const ScopedVector<DumpInfo>& dumps) {
+    const std::vector<std::unique_ptr<DumpInfo>>& dumps) {
   dumps_->Clear();
 
-  for (DumpInfo* dump : dumps)
+  for (auto& dump : dumps)
     dumps_->Append(dump->GetAsValue());
 
   return true;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <fstream>
+#include <vector>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -10,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -99,7 +99,7 @@ class CastCrashReporterClientTest : public testing::Test {
     base::FilePath lockfile =
         home_path().Append("minidumps").Append("lockfile");
     ASSERT_TRUE(base::PathExists(lockfile));
-    ScopedVector<DumpInfo> dumps;
+    std::vector<std::unique_ptr<DumpInfo>> dumps;
     ASSERT_TRUE(FetchDumps(lockfile.value(), &dumps));
     ASSERT_EQ(1u, dumps.size());
 

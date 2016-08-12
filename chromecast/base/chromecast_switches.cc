@@ -14,6 +14,11 @@ const char kSwitchValueTrue[] = "true";
 // Value indicating whether flag from command line switch is false.
 const char kSwitchValueFalse[] = "false";
 
+// Server url to upload crash data to.
+// Default is "http://clients2.google.com/cr/report" for prod devices.
+// Default is "http://clients2.google.com/cr/staging_report" for non prod.
+const char kCrashServerUrl[] = "crash-server-url";
+
 // Enable the CMA media pipeline.
 const char kEnableCmaMediaPipeline[] = "enable-cma-media-pipeline";
 

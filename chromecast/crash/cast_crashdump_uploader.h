@@ -42,9 +42,10 @@ class CastCrashdumpUploader {
   explicit CastCrashdumpUploader(const CastCrashdumpData& data);
   ~CastCrashdumpUploader();
 
-  bool AddAttachment(const std::string& label, const std::string& filename);
-  void SetParameter(const std::string& key, const std::string& value);
-  bool Upload(std::string* response);
+  virtual bool AddAttachment(const std::string& label,
+                             const std::string& filename);
+  virtual void SetParameter(const std::string& key, const std::string& value);
+  virtual bool Upload(std::string* response);
 
  private:
   bool CheckRequiredParametersArePresent();

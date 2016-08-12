@@ -5,9 +5,10 @@
 #ifndef CHROMECAST_CRASH_LINUX_SYNCHRONIZED_MINIDUMP_MANAGER_H_
 #define CHROMECAST_CRASH_LINUX_SYNCHRONIZED_MINIDUMP_MANAGER_H_
 
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chromecast/crash/linux/dump_info.h"
 
@@ -65,10 +66,10 @@ class SynchronizedMinidumpManager {
   virtual bool DoWork() = 0;
 
   // Get the current dumps in the lockfile.
-  ScopedVector<DumpInfo> GetDumps();
+  std::vector<std::unique_ptr<DumpInfo>> GetDumps();
 
   // Set |dumps| as the dumps in |lockfile_|, replacing current list of dumps.
-  bool SetCurrentDumps(const ScopedVector<DumpInfo>& dumps);
+  bool SetCurrentDumps(const std::vector<std::unique_ptr<DumpInfo>>& dumps);
 
   // Serialize |dump_info| and append it to the lockfile. Note that the child
   // class must only call this inside DoWork(). This should be the only method
