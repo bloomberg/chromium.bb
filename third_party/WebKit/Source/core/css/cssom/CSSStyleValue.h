@@ -24,6 +24,7 @@ public:
         Unknown,
         AngleType,
         CalcLengthType,
+        ImageType,
         KeywordType,
         NumberType,
         PositionType,

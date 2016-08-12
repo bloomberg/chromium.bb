@@ -24,6 +24,11 @@ CONSOLE MESSAGE: line 137:     getter vmax
 CONSOLE MESSAGE: line 137:     getter vmin
 CONSOLE MESSAGE: line 137:     getter vw
 CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface CSSImageValue : CSSResourceValue
+CONSOLE MESSAGE: line 137:     getter intrinsicHeight
+CONSOLE MESSAGE: line 137:     getter intrinsicRatio
+CONSOLE MESSAGE: line 137:     getter intrinsicWidth
+CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface CSSKeywordValue : CSSStyleValue
 CONSOLE MESSAGE: line 137:     getter keywordValue
 CONSOLE MESSAGE: line 137:     method constructor

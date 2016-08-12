@@ -440,6 +440,12 @@ interface CSSGroupingRule : CSSRule
     method constructor
     method deleteRule
     method insertRule
+interface CSSImageValue : CSSResourceValue
+    attribute @@toStringTag
+    getter intrinsicHeight
+    getter intrinsicRatio
+    getter intrinsicWidth
+    method constructor
 interface CSSImportRule : CSSRule
     attribute @@toStringTag
     getter href
