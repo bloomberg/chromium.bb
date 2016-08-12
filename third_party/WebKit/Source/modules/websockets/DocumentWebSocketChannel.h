@@ -154,6 +154,8 @@ private:
     static const uint64_t receivedDataSizeForFlowControlHighWaterMark = 1 << 15;
 };
 
+std::ostream& operator<<(std::ostream&, const DocumentWebSocketChannel*);
+
 } // namespace blink
 
 #endif // DocumentWebSocketChannel_h

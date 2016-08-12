@@ -25,11 +25,11 @@
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
 #include "core/fetch/ImageResource.h"
+#include "core/fetch/ResourceLoadingLog.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "platform/Logging.h"
 
 namespace blink {
 
@@ -46,7 +46,7 @@ HTMLImageLoader::~HTMLImageLoader()
 
 void HTMLImageLoader::dispatchLoadEvent()
 {
-    WTF_LOG(ResourceLoading, "HTMLImageLoader::dispatchLoadEvent %p", this);
+    RESOURCE_LOADING_DVLOG(1) << "HTMLImageLoader::dispatchLoadEvent " << this;
 
     // HTMLVideoElement uses this class to load the poster image, but it should not fire events for loading or failure.
     if (isHTMLVideoElement(*element()))

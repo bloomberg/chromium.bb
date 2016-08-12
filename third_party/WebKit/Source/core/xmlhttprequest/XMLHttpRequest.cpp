@@ -65,11 +65,11 @@
 #include "platform/FileMetadata.h"
 #include "platform/HTTPNames.h"
 #include "platform/Histogram.h"
-#include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/network/NetworkLog.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
@@ -552,7 +552,7 @@ void XMLHttpRequest::open(const AtomicString& method, const String& urlString, b
 
 void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool async, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p open('%s', '%s', %d)", this, method.utf8().data(), url.elidedString().utf8().data(), async);
+    NETWORK_DVLOG(1) << this << " open(" << method << ", " << url.elidedString() << ", " << async << ")";
 
     if (!internalAbort())
         return;
@@ -685,7 +685,7 @@ bool XMLHttpRequest::areMethodAndURLValidForSend()
 
 void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p send() Document %p", this, document);
+    NETWORK_DVLOG(1) << this << " send() Document " << static_cast<void*>(document);
 
     ASSERT(document);
 
@@ -711,7 +711,7 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
 
 void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p send() String '%s'", this, body.utf8().data());
+    NETWORK_DVLOG(1) << this << " send() String " << body;
 
     if (!initSend(exceptionState))
         return;
@@ -735,7 +735,7 @@ void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState)
 
 void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p send() Blob '%s'", this, body->uuid().utf8().data());
+    NETWORK_DVLOG(1) << this << " send() Blob " << body->uuid();
 
     if (!initSend(exceptionState))
         return;
@@ -770,7 +770,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
 
 void XMLHttpRequest::send(FormData* body, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p send() FormData %p", this, body);
+    NETWORK_DVLOG(1) << this << " send() FormData " << body;
 
     if (!initSend(exceptionState))
         return;
@@ -791,14 +791,14 @@ void XMLHttpRequest::send(FormData* body, ExceptionState& exceptionState)
 
 void XMLHttpRequest::send(DOMArrayBuffer* body, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p send() ArrayBuffer %p", this, body);
+    NETWORK_DVLOG(1) << this << " send() ArrayBuffer " << body;
 
     sendBytesData(body->data(), body->byteLength(), exceptionState);
 }
 
 void XMLHttpRequest::send(DOMArrayBufferView* body, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p send() ArrayBufferView %p", this, body);
+    NETWORK_DVLOG(1) << this << " send() ArrayBufferView " << body;
 
     sendBytesData(body->baseAddress(), body->byteLength(), exceptionState);
 }
@@ -941,7 +941,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
 
 void XMLHttpRequest::abort()
 {
-    WTF_LOG(Network, "XMLHttpRequest %p abort()", this);
+    NETWORK_DVLOG(1) << this << " abort()";
 
     // internalAbort() clears |m_loader|. Compute |sendFlag| now.
     //
@@ -1084,7 +1084,7 @@ void XMLHttpRequest::dispatchProgressEventFromSnapshot(const AtomicString& type)
 
 void XMLHttpRequest::handleNetworkError()
 {
-    WTF_LOG(Network, "XMLHttpRequest %p handleNetworkError()", this);
+    NETWORK_DVLOG(1) << this << " handleNetworkError()";
 
     // Response is cleared next, save needed progress event data.
     long long expectedLength = m_response.expectedContentLength();
@@ -1098,7 +1098,7 @@ void XMLHttpRequest::handleNetworkError()
 
 void XMLHttpRequest::handleDidCancel()
 {
-    WTF_LOG(Network, "XMLHttpRequest %p handleDidCancel()", this);
+    NETWORK_DVLOG(1) << this << " handleDidCancel()";
 
     // Response is cleared next, save needed progress event data.
     long long expectedLength = m_response.expectedContentLength();
@@ -1112,7 +1112,7 @@ void XMLHttpRequest::handleDidCancel()
 
 void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const AtomicString& type, long long receivedLength, long long expectedLength)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p handleRequestError()", this);
+    NETWORK_DVLOG(1) << this << " handleRequestError()";
 
     InspectorInstrumentation::didFailXHRLoading(getExecutionContext(), this, this, m_method, m_url);
 
@@ -1327,7 +1327,7 @@ String XMLHttpRequest::statusText() const
 
 void XMLHttpRequest::didFail(const ResourceError& error)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p didFail()", this);
+    NETWORK_DVLOG(1) << this << " didFail()";
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
     // If we are already in an error state, for instance we called abort(), bail out early.
@@ -1356,7 +1356,7 @@ void XMLHttpRequest::didFail(const ResourceError& error)
 
 void XMLHttpRequest::didFailRedirectCheck()
 {
-    WTF_LOG(Network, "XMLHttpRequest %p didFailRedirectCheck()", this);
+    NETWORK_DVLOG(1) << this << " didFailRedirectCheck()";
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
     handleNetworkError();
@@ -1365,7 +1365,7 @@ void XMLHttpRequest::didFailRedirectCheck()
 
 void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p didFinishLoading(%lu)", this, identifier);
+    NETWORK_DVLOG(1) << this << " didFinishLoading(" << identifier << ")";
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
     if (m_error)
@@ -1414,7 +1414,7 @@ void XMLHttpRequest::didFinishLoadingInternal()
 
 void XMLHttpRequest::didFinishLoadingFromBlob()
 {
-    WTF_LOG(Network, "XMLHttpRequest %p didFinishLoadingFromBlob", this);
+    NETWORK_DVLOG(1) << this << " didFinishLoadingFromBlob";
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
     didFinishLoadingInternal();
@@ -1422,7 +1422,7 @@ void XMLHttpRequest::didFinishLoadingFromBlob()
 
 void XMLHttpRequest::didFailLoadingFromBlob()
 {
-    WTF_LOG(Network, "XMLHttpRequest %p didFailLoadingFromBlob()", this);
+    NETWORK_DVLOG(1) << this << " didFailLoadingFromBlob()";
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
     if (m_error)
@@ -1492,7 +1492,7 @@ void XMLHttpRequest::endLoading()
 
 void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p didSendData(%llu, %llu)", this, bytesSent, totalBytesToBeSent);
+    NETWORK_DVLOG(1) << this << " didSendData(" << bytesSent << ", " << totalBytesToBeSent << ")";
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
     if (!m_upload)
@@ -1511,7 +1511,7 @@ void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long lon
 void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(handle, !handle);
-    WTF_LOG(Network, "XMLHttpRequest %p didReceiveResponse(%lu)", this, identifier);
+    NETWORK_DVLOG(1) << this << " didReceiveResponse(" << identifier << ")";
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
     m_response = response;
@@ -1641,7 +1641,7 @@ void XMLHttpRequest::didDownloadData(int dataLength)
 
 void XMLHttpRequest::handleDidTimeout()
 {
-    WTF_LOG(Network, "XMLHttpRequest %p handleDidTimeout()", this);
+    NETWORK_DVLOG(1) << this << " handleDidTimeout()";
 
     // Response is cleared next, save needed progress event data.
     long long expectedLength = m_response.expectedContentLength();
@@ -1721,6 +1721,11 @@ DEFINE_TRACE_WRAPPERS(XMLHttpRequest)
     visitor->traceWrappers(m_responseLegacyStream);
     visitor->traceWrappers(m_responseDocument);
     visitor->traceWrappers(m_responseArrayBuffer);
+}
+
+std::ostream& operator<<(std::ostream& ostream, const XMLHttpRequest* xhr)
+{
+    return ostream << "XMLHttpRequest " << static_cast<const void*>(xhr);
 }
 
 } // namespace blink

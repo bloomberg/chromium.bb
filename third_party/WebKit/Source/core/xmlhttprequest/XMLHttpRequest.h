@@ -320,6 +320,8 @@ private:
     bool m_responseTextOverflow;
 };
 
+std::ostream& operator<<(std::ostream&, const XMLHttpRequest*);
+
 } // namespace blink
 
 #endif // XMLHttpRequest_h

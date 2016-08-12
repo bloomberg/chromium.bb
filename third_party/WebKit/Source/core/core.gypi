@@ -1716,6 +1716,7 @@
             'fetch/ResourceLoaderOptions.h',
             'fetch/ResourceLoaderSet.cpp',
             'fetch/ResourceLoaderSet.h',
+            'fetch/ResourceLoadingLog.h',
             'fetch/ScriptResource.cpp',
             'fetch/ScriptResource.h',
             'fetch/SubstituteData.h',

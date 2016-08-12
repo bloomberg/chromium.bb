@@ -34,6 +34,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/fetch/ResourceLoadingLog.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -45,7 +46,6 @@
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/svg/graphics/SVGImage.h"
-#include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebCachePolicy.h"
@@ -155,7 +155,7 @@ ImageLoader::ImageLoader(Element* element)
     , m_elementIsProtected(false)
     , m_suppressErrorEvents(false)
 {
-    WTF_LOG(ResourceLoading, "new ImageLoader %p", this);
+    RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
     ThreadState::current()->registerPreFinalizer(this);
 }
 
@@ -165,8 +165,9 @@ ImageLoader::~ImageLoader()
 
 void ImageLoader::dispose()
 {
-    WTF_LOG(ResourceLoading, "~ImageLoader %p; m_hasPendingLoadEvent=%d, m_hasPendingErrorEvent=%d",
-        this, m_hasPendingLoadEvent, m_hasPendingErrorEvent);
+    RESOURCE_LOADING_DVLOG(1) << "~ImageLoader " << this
+        << "; m_hasPendingLoadEvent=" << m_hasPendingLoadEvent
+        << ", m_hasPendingErrorEvent=" << m_hasPendingErrorEvent;
 
     if (m_image) {
         m_image->removeObserver(this);
@@ -433,8 +434,8 @@ bool ImageLoader::shouldLoadImmediately(const KURL& url) const
 
 void ImageLoader::imageNotifyFinished(ImageResource* resource)
 {
-    WTF_LOG(ResourceLoading, "ImageLoader::imageNotifyFinished %p; m_hasPendingLoadEvent=%d",
-        this, m_hasPendingLoadEvent);
+    RESOURCE_LOADING_DVLOG(1) << "ImageLoader::imageNotifyFinished " << this
+        << "; m_hasPendingLoadEvent=" << m_hasPendingLoadEvent;
 
     ASSERT(m_failedLoadURL.isEmpty());
     ASSERT(resource == m_image.get());
@@ -545,7 +546,7 @@ void ImageLoader::timerFired(TimerBase*)
 
 void ImageLoader::dispatchPendingEvent(ImageEventSender* eventSender)
 {
-    WTF_LOG(ResourceLoading, "ImageLoader::dispatchPendingEvent %p", this);
+    RESOURCE_LOADING_DVLOG(1) << "ImageLoader::dispatchPendingEvent " << this;
     ASSERT(eventSender == &loadEventSender() || eventSender == &errorEventSender());
     const AtomicString& eventType = eventSender->eventType();
     if (eventType == EventTypeNames::load)

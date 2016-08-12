@@ -29,8 +29,8 @@
 #include "core/fetch/ResourceClientOrObserverWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/fetch/ResourceLoadingLog.h"
 #include "core/svg/graphics/SVGImage.h"
-#include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
@@ -65,7 +65,7 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest, const Resou
     , m_image(nullptr)
     , m_hasDevicePixelRatioHeaderValue(false)
 {
-    WTF_LOG(ResourceLoading, "new ImageResource(ResourceRequest) %p", this);
+    RESOURCE_LOADING_DVLOG(1) << "new ImageResource(ResourceRequest) " << this;
 }
 
 ImageResource::ImageResource(blink::Image* image, const ResourceLoaderOptions& options)
@@ -74,13 +74,13 @@ ImageResource::ImageResource(blink::Image* image, const ResourceLoaderOptions& o
     , m_image(image)
     , m_hasDevicePixelRatioHeaderValue(false)
 {
-    WTF_LOG(ResourceLoading, "new ImageResource(Image) %p", this);
+    RESOURCE_LOADING_DVLOG(1) << "new ImageResource(Image) " << this;
     setStatus(Cached);
 }
 
 ImageResource::~ImageResource()
 {
-    WTF_LOG(ResourceLoading, "~ImageResource %p", this);
+    RESOURCE_LOADING_DVLOG(1) << "~ImageResource " << this;
     clearImage();
 }
 

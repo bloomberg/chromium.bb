@@ -91,6 +91,9 @@ WTF_EXPORT bool operator==(const CString& a, const CString& b);
 inline bool operator!=(const CString& a, const CString& b) { return !(a == b); }
 WTF_EXPORT bool operator==(const CString& a, const char* b);
 inline bool operator!=(const CString& a, const char* b) { return !(a == b); }
+// Pretty printer for gtest and base/logging.*.  It prepends and appends
+// double-quotes, and escapes characters other than ASCII printables.
+WTF_EXPORT std::ostream& operator<<(std::ostream&, const CString&);
 
 } // namespace WTF
 

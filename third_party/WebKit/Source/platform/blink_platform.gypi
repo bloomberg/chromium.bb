@@ -914,6 +914,7 @@
       'network/LinkHeader.h',
       'network/NetworkHints.cpp',
       'network/NetworkHints.h',
+      'network/NetworkLog.h',
       'network/NetworkUtils.cpp',
       'network/NetworkUtils.h',
       'network/ParsedContentType.cpp',

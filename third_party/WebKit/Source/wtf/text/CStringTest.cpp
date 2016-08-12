@@ -26,8 +26,21 @@
 #include "wtf/text/CString.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include <sstream>
 
 namespace WTF {
+
+namespace {
+
+CString printedString(const CString& string)
+{
+    std::ostringstream output;
+    output << string;
+    const std::string& result = output.str();
+    return CString(result.data(), result.length());
+}
+
+} // anonymous namespace
 
 TEST(CStringTest, NullStringConstructor)
 {
@@ -195,6 +208,14 @@ TEST(CStringTest, Comparison)
     d = "b";
     EXPECT_FALSE(c == d);
     EXPECT_TRUE(c != d);
+}
+
+TEST(CStringTest, Printer)
+{
+    EXPECT_STREQ("<null>", printedString(CString()).data());
+    EXPECT_STREQ("\"abc\"", printedString("abc").data());
+    EXPECT_STREQ("\"\\t\\n\\r\\\"\\\\\"", printedString("\t\n\r\"\\").data());
+    EXPECT_STREQ("\"\\xFF\\x00\\x01xyz\"", printedString(CString("\xff\0\x01xyz", 6)).data());
 }
 
 } // namespace WTF

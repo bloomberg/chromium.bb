@@ -26,6 +26,7 @@
 
 #include "wtf/text/CString.h"
 
+#include "wtf/ASCIICType.h"
 #include "wtf/allocator/PartitionAlloc.h"
 #include "wtf/allocator/Partitions.h"
 #include <string.h>
@@ -126,6 +127,49 @@ bool operator==(const CString& a, const char* b)
     if (!b)
         return true;
     return !strcmp(a.data(), b);
+}
+
+std::ostream& operator<<(std::ostream& ostream, const CString& string)
+{
+    if (string.isNull())
+        return ostream << "<null>";
+
+    ostream << '"';
+    for (size_t index = 0; index < string.length(); ++index) {
+        // Print shorthands for select cases.
+        char character = string.data()[index];
+        switch (character) {
+        case '\t':
+            ostream << "\\t";
+            break;
+        case '\n':
+            ostream << "\\n";
+            break;
+        case '\r':
+            ostream << "\\r";
+            break;
+        case '"':
+            ostream << "\\\"";
+            break;
+        case '\\':
+            ostream << "\\\\";
+            break;
+        default:
+            if (isASCIIPrintable(character)) {
+                ostream << character;
+            } else {
+                // Print "\xHH" for control or non-ASCII characters.
+                ostream << "\\x";
+                if (character >= 0 && character < 0x10)
+                    ostream << "0";
+                ostream.setf(std::ios_base::hex, std::ios_base::basefield);
+                ostream.setf(std::ios::uppercase);
+                ostream << (character & 0xff);
+            }
+            break;
+        }
+    }
+    return ostream << '"';
 }
 
 } // namespace WTF

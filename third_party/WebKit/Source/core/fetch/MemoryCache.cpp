@@ -22,7 +22,7 @@
 
 #include "core/fetch/MemoryCache.h"
 
-#include "platform/Logging.h"
+#include "core/fetch/ResourceLoadingLog.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityOriginHash.h"
@@ -167,7 +167,7 @@ void MemoryCache::add(Resource* resource)
     resources->set(url, MemoryCacheEntry::create(resource));
     update(resource, 0, resource->size(), true);
 
-    WTF_LOG(ResourceLoading, "MemoryCache::add Added '%s', resource %p\n", resource->url().getString().latin1().data(), resource);
+    RESOURCE_LOADING_DVLOG(1) << "MemoryCache::add Added " << resource->url().getString() << ", resource " << resource;
 }
 
 void MemoryCache::remove(Resource* resource)
@@ -365,7 +365,7 @@ void MemoryCache::evict(MemoryCacheEntry* entry)
     ASSERT(WTF::isMainThread());
 
     Resource* resource = entry->resource();
-    WTF_LOG(ResourceLoading, "Evicting resource %p for '%s' from cache", resource, resource->url().getString().latin1().data());
+    RESOURCE_LOADING_DVLOG(1) << "Evicting resource " << resource << " for " << resource->url().getString() << " from cache";
     TRACE_EVENT1("blink", "MemoryCache::evict", "resource", resource->url().getString().utf8());
     // The resource may have already been removed by someone other than our caller,
     // who needed a fresh copy for a reload. See <http://bugs.webkit.org/show_bug.cgi?id=12479#c6>.

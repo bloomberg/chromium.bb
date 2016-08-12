@@ -26,6 +26,8 @@
 #ifndef Logging_h
 #define Logging_h
 
+// This is deprecated.  We'll remove this soon.
+
 #include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
@@ -37,10 +39,6 @@
 #endif
 
 namespace blink {
-
-// WTFLogChannel is deprecated.  Do not add new channels.
-PLATFORM_EXPORT extern WTFLogChannel LogNetwork;
-PLATFORM_EXPORT extern WTFLogChannel LogResourceLoading;
 
 PLATFORM_EXPORT WTFLogChannel* getChannelFromName(const String& channelName);
 

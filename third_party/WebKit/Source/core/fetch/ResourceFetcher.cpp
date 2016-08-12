@@ -34,9 +34,9 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoaderSet.h"
+#include "core/fetch/ResourceLoadingLog.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "platform/Histogram.h"
-#include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
@@ -591,7 +591,7 @@ Resource* ResourceFetcher::createResourceForLoading(FetchRequest& request, const
     const String cacheIdentifier = getCacheIdentifier();
     ASSERT(!memoryCache()->resourceForURL(request.resourceRequest().url(), cacheIdentifier));
 
-    WTF_LOG(ResourceLoading, "Loading Resource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
+    RESOURCE_LOADING_DVLOG(1) << "Loading Resource for " << request.resourceRequest().url().elidedString();
 
     Resource* resource = factory.create(request.resourceRequest(), request.options(), charset);
     resource->setLinkPreload(request.isLinkPreload());
@@ -669,7 +669,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         // We really should discard the new prefetch since the preload has more
         // specific type information! crbug.com/379893
         // fast/dom/HTMLLinkElement/link-and-subresource-test hits this case.
-        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to type mismatch.");
+        RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy reloading due to type mismatch.";
         return Reload;
     }
 
@@ -734,7 +734,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     // Don't reuse resources with Cache-control: no-store.
     if (existingResource->hasCacheControlNoStoreHeader()) {
-        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to Cache-control: no-store.");
+        RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy reloading due to Cache-control: no-store.";
         return Reload;
     }
 
@@ -745,7 +745,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     // "Access-Control-Allow-Origin: *" all the time, but some of the
     // client's requests are made without CORS and some with.
     if (existingResource->resourceRequest().allowStoredCredentials() != request.allowStoredCredentials()) {
-        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to difference in credentials settings.");
+        RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy reloading due to difference in credentials settings.";
         return Reload;
     }
 
@@ -766,13 +766,13 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     // CachePolicyReload always reloads
     if (cachePolicy == CachePolicyReload) {
-        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to CachePolicyReload.");
+        RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy reloading due to CachePolicyReload.";
         return Reload;
     }
 
     // We'll try to reload the resource if it failed last time.
     if (existingResource->errorOccurred()) {
-        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicye reloading due to resource being in the error state");
+        RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicye reloading due to resource being in the error state";
         return Reload;
     }
 
@@ -787,7 +787,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     // If any of the redirects in the chain to loading the resource were not cacheable, we cannot reuse our cached resource.
     if (!existingResource->canReuseRedirectChain()) {
-        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to an uncacheable redirect");
+        RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy reloading due to an uncacheable redirect";
         return Reload;
     }
 
@@ -807,7 +807,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         }
 
         // No, must reload.
-        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to missing cache validators.");
+        RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy reloading due to missing cache validators.";
         return Reload;
     }
 

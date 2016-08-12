@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/fetch/ResourceLoadingLog.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
@@ -61,7 +62,6 @@
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
-#include "platform/Logging.h"
 #include "platform/TracedValue.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/NetworkUtils.h"
@@ -499,7 +499,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     if (originRestriction != FetchRequest::NoOriginRestriction && securityOrigin && !securityOrigin->canDisplay(url)) {
         if (!forPreload)
             FrameLoader::reportLocalLoadFailed(frame(), url.elidedString());
-        WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource URL was not allowed by SecurityOrigin::canDisplay");
+        RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::requestResource URL was not allowed by SecurityOrigin::canDisplay";
         return ResourceRequestBlockedReasonOther;
     }
 

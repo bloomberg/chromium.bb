@@ -49,8 +49,8 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/websockets/CloseEvent.h"
 #include "platform/Histogram.h"
-#include "platform/Logging.h"
 #include "platform/blob/BlobData.h"
+#include "platform/network/NetworkLog.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -284,7 +284,7 @@ void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, E
 {
     UseCounter::count(getExecutionContext(), UseCounter::WebSocket);
 
-    WTF_LOG(Network, "WebSocket %p connect() url='%s'", this, url.utf8().data());
+    NETWORK_DVLOG(1) << "WebSocket " << this << " connect() url=" << url;
     m_url = KURL(KURL(), url);
 
     if (getExecutionContext()->securityContext().getInsecureRequestPolicy() & kUpgradeInsecureRequests && m_url.protocol() == "ws") {
@@ -370,7 +370,7 @@ void DOMWebSocket::reflectBufferedAmountConsumption(TimerBase*)
     ASSERT(m_bufferedAmount >= m_consumedBufferedAmount);
     // Cast to unsigned long long is required since clang doesn't accept
     // combination of %llu and uint64_t (known as unsigned long).
-    WTF_LOG(Network, "WebSocket %p reflectBufferedAmountConsumption() %llu => %llu", this, static_cast<unsigned long long>(m_bufferedAmount), static_cast<unsigned long long>(m_bufferedAmount - m_consumedBufferedAmount));
+    NETWORK_DVLOG(1) << "WebSocket " << this << " reflectBufferedAmountConsumption() " << m_bufferedAmount << " => " << (m_bufferedAmount - m_consumedBufferedAmount);
 
     m_bufferedAmount -= m_consumedBufferedAmount;
     m_consumedBufferedAmount = 0;
@@ -394,7 +394,7 @@ void DOMWebSocket::send(const String& message, ExceptionState& exceptionState)
 {
     CString encodedMessage = message.utf8();
 
-    WTF_LOG(Network, "WebSocket %p send() Sending String '%s'", this, encodedMessage.data());
+    NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending String " << message;
     if (m_state == kConnecting) {
         setInvalidStateErrorForSendMethod(exceptionState);
         return;
@@ -414,7 +414,7 @@ void DOMWebSocket::send(const String& message, ExceptionState& exceptionState)
 
 void DOMWebSocket::send(DOMArrayBuffer* binaryData, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "WebSocket %p send() Sending ArrayBuffer %p", this, binaryData);
+    NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending ArrayBuffer " << binaryData;
     ASSERT(binaryData && binaryData->buffer());
     if (m_state == kConnecting) {
         setInvalidStateErrorForSendMethod(exceptionState);
@@ -433,7 +433,7 @@ void DOMWebSocket::send(DOMArrayBuffer* binaryData, ExceptionState& exceptionSta
 
 void DOMWebSocket::send(DOMArrayBufferView* arrayBufferView, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "WebSocket %p send() Sending ArrayBufferView %p", this, arrayBufferView);
+    NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending ArrayBufferView " << arrayBufferView;
     ASSERT(arrayBufferView);
     if (m_state == kConnecting) {
         setInvalidStateErrorForSendMethod(exceptionState);
@@ -452,7 +452,7 @@ void DOMWebSocket::send(DOMArrayBufferView* arrayBufferView, ExceptionState& exc
 
 void DOMWebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "WebSocket %p send() Sending Blob '%s'", this, binaryData->uuid().utf8().data());
+    NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending Blob " << binaryData->uuid();
     ASSERT(binaryData);
     if (m_state == kConnecting) {
         setInvalidStateErrorForSendMethod(exceptionState);
@@ -496,9 +496,9 @@ void DOMWebSocket::closeInternal(int code, const String& reason, ExceptionState&
 {
     String cleansedReason = reason;
     if (code == WebSocketChannel::CloseEventCodeNotSpecified) {
-        WTF_LOG(Network, "WebSocket %p close() without code and reason", this);
+        NETWORK_DVLOG(1) << "WebSocket " << this << " close() without code and reason";
     } else {
-        WTF_LOG(Network, "WebSocket %p close() code=%d reason='%s'", this, code, reason.utf8().data());
+        NETWORK_DVLOG(1) << "WebSocket " << this << " close() code=" << code << " reason=" << reason;
         if (!(code == WebSocketChannel::CloseEventCodeNormalClosure || (WebSocketChannel::CloseEventCodeMinimumUserDefined <= code && code <= WebSocketChannel::CloseEventCodeMaximumUserDefined))) {
             exceptionState.throwDOMException(InvalidAccessError, "The code must be either 1000, or between 3000 and 4999. " + String::number(code) + " is neither.");
             return;
@@ -604,7 +604,7 @@ ExecutionContext* DOMWebSocket::getExecutionContext() const
 
 void DOMWebSocket::contextDestroyed()
 {
-    WTF_LOG(Network, "WebSocket %p contextDestroyed()", this);
+    NETWORK_DVLOG(1) << "WebSocket " << this << " contextDestroyed()";
     DCHECK(!m_channel);
     DCHECK_EQ(kClosed, m_state);
     ActiveDOMObject::contextDestroyed();
@@ -640,7 +640,7 @@ void DOMWebSocket::stop()
 
 void DOMWebSocket::didConnect(const String& subprotocol, const String& extensions)
 {
-    WTF_LOG(Network, "WebSocket %p didConnect()", this);
+    NETWORK_DVLOG(1) << "WebSocket " << this << " didConnect()";
     if (m_state != kConnecting)
         return;
     m_state = kOpen;
@@ -651,7 +651,7 @@ void DOMWebSocket::didConnect(const String& subprotocol, const String& extension
 
 void DOMWebSocket::didReceiveTextMessage(const String& msg)
 {
-    WTF_LOG(Network, "WebSocket %p didReceiveTextMessage() Text message '%s'", this, msg.utf8().data());
+    NETWORK_DVLOG(1) << "WebSocket " << this << " didReceiveTextMessage() Text message " << msg;
     if (m_state != kOpen)
         return;
     recordReceiveTypeHistogram(WebSocketReceiveTypeString);
@@ -661,7 +661,7 @@ void DOMWebSocket::didReceiveTextMessage(const String& msg)
 
 void DOMWebSocket::didReceiveBinaryMessage(std::unique_ptr<Vector<char>> binaryData)
 {
-    WTF_LOG(Network, "WebSocket %p didReceiveBinaryMessage() %lu byte binary message", this, static_cast<unsigned long>(binaryData->size()));
+    NETWORK_DVLOG(1) << "WebSocket " << this << " didReceiveBinaryMessage() " << binaryData->size() << " byte binary message";
     switch (m_binaryType) {
     case BinaryTypeBlob: {
         size_t size = binaryData->size();
@@ -687,7 +687,7 @@ void DOMWebSocket::didReceiveBinaryMessage(std::unique_ptr<Vector<char>> binaryD
 
 void DOMWebSocket::didError()
 {
-    WTF_LOG(Network, "WebSocket %p didError()", this);
+    NETWORK_DVLOG(1) << "WebSocket " << this << " didError()";
     m_state = kClosed;
     logBinaryTypeChangesAfterOpen();
     m_eventQueue->dispatch(Event::create(EventTypeNames::error));
@@ -696,9 +696,7 @@ void DOMWebSocket::didError()
 void DOMWebSocket::didConsumeBufferedAmount(uint64_t consumed)
 {
     ASSERT(m_bufferedAmount >= consumed + m_consumedBufferedAmount);
-    // Cast to unsigned long long is required since clang doesn't accept
-    // combination of %llu and uint64_t (known as unsigned long).
-    WTF_LOG(Network, "WebSocket %p didConsumeBufferedAmount(%llu)", this, static_cast<unsigned long long>(consumed));
+    NETWORK_DVLOG(1) << "WebSocket " << this << " didConsumeBufferedAmount(" << consumed << ")";
     if (m_state == kClosed)
         return;
     m_consumedBufferedAmount += consumed;
@@ -708,13 +706,13 @@ void DOMWebSocket::didConsumeBufferedAmount(uint64_t consumed)
 
 void DOMWebSocket::didStartClosingHandshake()
 {
-    WTF_LOG(Network, "WebSocket %p didStartClosingHandshake()", this);
+    NETWORK_DVLOG(1) << "WebSocket " << this << " didStartClosingHandshake()";
     m_state = kClosing;
 }
 
 void DOMWebSocket::didClose(ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
 {
-    WTF_LOG(Network, "WebSocket %p didClose()", this);
+    NETWORK_DVLOG(1) << "WebSocket " << this << " didClose()";
     if (!m_channel)
         return;
     bool allDataHasBeenConsumed = m_bufferedAmount == m_consumedBufferedAmount;
