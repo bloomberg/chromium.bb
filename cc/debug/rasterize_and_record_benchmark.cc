@@ -161,7 +161,7 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
         if (display_list->ShouldBeAnalyzedForSolidColor()) {
           gfx::Size layer_size = layer->paint_properties().bounds;
           skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
-          display_list->Raster(&canvas, nullptr, gfx::Rect(), 1.f);
+          display_list->Raster(&canvas, nullptr, gfx::Rect(layer_size), 1.f);
         }
 
         if (memory_used) {

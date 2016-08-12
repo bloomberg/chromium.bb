@@ -83,26 +83,34 @@ PaintArtifactCompositor::~PaintArtifactCompositor()
 
 namespace {
 
+static gfx::Rect largeRect(-200000, -200000, 400000, 400000);
+
 static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem, cc::DisplayItemList* list)
 {
     if (DisplayItem::isDrawingType(displayItem.getType())) {
         const SkPicture* picture = static_cast<const DrawingDisplayItem&>(displayItem).picture();
         if (!picture)
             return;
-        gfx::Rect bounds = gfx::SkIRectToRect(picture->cullRect().roundOut());
-        list->CreateAndAppendDrawingItem<cc::DrawingDisplayItem>(bounds, sk_ref_sp(picture));
+        // In theory we would pass the bounds of the picture, previously done as:
+        // gfx::Rect bounds = gfx::SkIRectToRect(picture->cullRect().roundOut());
+        // or use the visual rect directly. However, clip content layers attempt
+        // to raster in a different space than that of the visual rects. We'll be
+        // reworking visual rects further for SPv2, so for now we just pass a
+        // visual rect large enough to make sure items raster.
+        list->CreateAndAppendDrawingItem<cc::DrawingDisplayItem>(largeRect, sk_ref_sp(picture));
     }
 }
 
 static scoped_refptr<cc::DisplayItemList> recordPaintChunk(const PaintArtifact& artifact, const PaintChunk& chunk, const gfx::Rect& combinedBounds)
 {
     cc::DisplayItemListSettings settings;
-    scoped_refptr<cc::DisplayItemList> list = cc::DisplayItemList::Create(
-        gfx::Rect(combinedBounds.size()), settings);
+    scoped_refptr<cc::DisplayItemList> list = cc::DisplayItemList::Create(settings);
 
     gfx::Transform translation;
     translation.Translate(-combinedBounds.x(), -combinedBounds.y());
-    // TODO(jbroman, wkorman): What visual rectangle is wanted here?
+    // Passing combinedBounds as the visual rect for the begin/end transform item
+    // would normally be the sensible thing to do, but see comment above re:
+    // visual rects for drawing items and further rework in flight.
     list->CreateAndAppendPairedBeginItem<cc::TransformDisplayItem>(translation);
 
     const DisplayItemList& displayItems = artifact.getDisplayItemList();

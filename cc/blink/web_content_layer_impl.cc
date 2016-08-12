@@ -75,7 +75,7 @@ WebContentLayerImpl::PaintContentsToDisplayList(
   settings.use_cached_picture = UseCachedPictureRaster();
 
   scoped_refptr<cc::DisplayItemList> display_list =
-      cc::DisplayItemList::Create(PaintableRegion(), settings);
+      cc::DisplayItemList::Create(settings);
   if (client_) {
     WebDisplayItemListImpl list(display_list.get());
     client_->paintContents(&list, PaintingControlToWeb(painting_control));

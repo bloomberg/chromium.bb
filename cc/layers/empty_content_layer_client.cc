@@ -31,7 +31,7 @@ gfx::Rect EmptyContentLayerClient::PaintableRegion() {
 scoped_refptr<DisplayItemList>
 EmptyContentLayerClient::PaintContentsToDisplayList(
     PaintingControlSetting painting_status) {
-  return DisplayItemList::Create(gfx::Rect(), DisplayItemListSettings());
+  return DisplayItemList::Create(DisplayItemListSettings());
 }
 
 bool EmptyContentLayerClient::FillsBoundsCompletely() const {

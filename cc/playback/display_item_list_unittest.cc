@@ -47,7 +47,7 @@ namespace {
 const gfx::Rect kVisualRect(0, 0, 42, 42);
 
 scoped_refptr<DisplayItemList> CreateDefaultList() {
-  return DisplayItemList::Create(gfx::Rect(), DisplayItemListSettings());
+  return DisplayItemList::Create(DisplayItemListSettings());
 }
 
 sk_sp<const SkPicture> CreateRectPicture(const gfx::Rect& bounds) {
@@ -153,8 +153,9 @@ TEST(DisplayItemListTest, SerializeSingleDrawingItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
+  list->SetRetainVisualRectsForTesting(true);
 
   // Build the DrawingDisplayItem.
   AppendFirstSerializationTestPicture(list, layer_size);
@@ -166,8 +167,9 @@ TEST(DisplayItemListTest, SerializeClipItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
+  list->SetRetainVisualRectsForTesting(true);
 
   // Build the DrawingDisplayItem.
   AppendFirstSerializationTestPicture(list, layer_size);
@@ -192,8 +194,9 @@ TEST(DisplayItemListTest, SerializeClipPathItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
+  list->SetRetainVisualRectsForTesting(true);
 
   // Build the DrawingDisplayItem.
   AppendFirstSerializationTestPicture(list, layer_size);
@@ -217,8 +220,9 @@ TEST(DisplayItemListTest, SerializeCompositingItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
+  list->SetRetainVisualRectsForTesting(true);
 
   // Build the DrawingDisplayItem.
   AppendFirstSerializationTestPicture(list, layer_size);
@@ -242,8 +246,9 @@ TEST(DisplayItemListTest, SerializeFloatClipItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
+  list->SetRetainVisualRectsForTesting(true);
 
   // Build the DrawingDisplayItem.
   AppendFirstSerializationTestPicture(list, layer_size);
@@ -265,8 +270,9 @@ TEST(DisplayItemListTest, SerializeTransformItem) {
   gfx::Size layer_size(10, 10);
 
   DisplayItemListSettings settings;
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(gfx::Rect(layer_size), settings);
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
+  list->SetRetainVisualRectsForTesting(true);
 
   // Build the DrawingDisplayItem.
   AppendFirstSerializationTestPicture(list, layer_size);
@@ -296,8 +302,8 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
   DisplayItemListSettings settings;
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(layer_rect, settings);
+  settings.use_cached_picture = true;
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
 
   gfx::PointF offset(8.f, 9.f);
   gfx::RectF recording_rect(offset, gfx::SizeF(layer_rect.size()));
@@ -339,8 +345,7 @@ TEST(DisplayItemListTest, ClipItem) {
   unsigned char pixels[4 * 100 * 100] = {0};
   DisplayItemListSettings settings;
   settings.use_cached_picture = true;
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(layer_rect, settings);
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
 
   gfx::PointF first_offset(8.f, 9.f);
   gfx::RectF first_recording_rect(first_offset, gfx::SizeF(layer_rect.size()));
@@ -399,8 +404,7 @@ TEST(DisplayItemListTest, TransformItem) {
   unsigned char pixels[4 * 100 * 100] = {0};
   DisplayItemListSettings settings;
   settings.use_cached_picture = true;
-  scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(layer_rect, settings);
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create(settings);
 
   gfx::PointF first_offset(8.f, 9.f);
   gfx::RectF first_recording_rect(first_offset, gfx::SizeF(layer_rect.size()));
@@ -452,10 +456,8 @@ TEST(DisplayItemListTest, FilterItem) {
   gfx::Rect layer_rect(100, 100);
   FilterOperations filters;
   unsigned char pixels[4 * 100 * 100] = {0};
-  DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(layer_rect, settings);
+      DisplayItemList::Create(DisplayItemListSettings());
 
   sk_sp<SkSurface> source_surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* source_canvas = source_surface->getCanvas();
@@ -479,6 +481,24 @@ TEST(DisplayItemListTest, FilterItem) {
   gfx::RectF filter_bounds(10.f, 10.f, 50.f, 50.f);
   list->CreateAndAppendPairedBeginItem<FilterDisplayItem>(filters,
                                                           filter_bounds);
+
+  // Include a rect drawing so that filter is actually applied to something.
+  {
+    SkPictureRecorder recorder;
+    sk_sp<SkCanvas> canvas;
+
+    SkPaint red_paint;
+    red_paint.setColor(SK_ColorRED);
+
+    canvas = sk_ref_sp(recorder.beginRecording(
+        SkRect::MakeXYWH(0, 0, layer_rect.width(), layer_rect.height())));
+    canvas->drawRectCoords(filter_bounds.x(), filter_bounds.y(),
+                           filter_bounds.right(), filter_bounds.bottom(),
+                           red_paint);
+    list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
+        ToNearestRect(filter_bounds), recorder.finishRecordingAsPicture());
+  }
+
   list->CreateAndAppendPairedEndItem<EndFilterDisplayItem>();
   list->Finalize();
 
@@ -511,9 +531,8 @@ TEST(DisplayItemListTest, CompactingItems) {
   gfx::RectF recording_rect(offset, gfx::SizeF(layer_rect.size()));
 
   DisplayItemListSettings no_caching_settings;
-  no_caching_settings.use_cached_picture = false;
   scoped_refptr<DisplayItemList> list_without_caching =
-      DisplayItemList::Create(layer_rect, no_caching_settings);
+      DisplayItemList::Create(no_caching_settings);
 
   canvas =
       sk_ref_sp(recorder.beginRecording(gfx::RectFToSkRect(recording_rect)));
@@ -530,7 +549,7 @@ TEST(DisplayItemListTest, CompactingItems) {
   DisplayItemListSettings caching_settings;
   caching_settings.use_cached_picture = true;
   scoped_refptr<DisplayItemList> list_with_caching =
-      DisplayItemList::Create(layer_rect, caching_settings);
+      DisplayItemList::Create(caching_settings);
   list_with_caching->CreateAndAppendDrawingItem<DrawingDisplayItem>(kVisualRect,
                                                                     picture);
   list_with_caching->Finalize();
@@ -559,7 +578,7 @@ TEST(DisplayItemListTest, ApproximateMemoryUsage) {
   // Using a cached picture, we should get about the right size.
   DisplayItemListSettings caching_settings;
   caching_settings.use_cached_picture = true;
-  list = DisplayItemList::Create(layer_rect, caching_settings);
+  list = DisplayItemList::Create(caching_settings);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(kVisualRect, picture);
   list->Finalize();
   memory_usage = list->ApproximateMemoryUsage();
@@ -569,43 +588,38 @@ TEST(DisplayItemListTest, ApproximateMemoryUsage) {
   // Using no cached picture, we should still get the right size.
   DisplayItemListSettings no_caching_settings;
   no_caching_settings.use_cached_picture = false;
-  list = DisplayItemList::Create(layer_rect, no_caching_settings);
+  list = DisplayItemList::Create(no_caching_settings);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(kVisualRect, picture);
   list->Finalize();
   memory_usage = list->ApproximateMemoryUsage();
   EXPECT_GE(memory_usage, picture_size);
   EXPECT_LE(memory_usage, 2 * picture_size);
-
-  // To avoid double counting, we expect zero size to be computed if both the
-  // picture and items are retained (currently this only happens due to certain
-  // categories being traced).
-  list = new DisplayItemList(layer_rect, caching_settings, true);
-  list->CreateAndAppendDrawingItem<DrawingDisplayItem>(kVisualRect, picture);
-  list->Finalize();
-  memory_usage = list->ApproximateMemoryUsage();
-  EXPECT_EQ(static_cast<size_t>(0), memory_usage);
 }
 
-TEST(DisplayItemListTest, AsValueWithRectAndNoItems) {
+TEST(DisplayItemListTest, AsValueWithNoItems) {
   scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(gfx::Rect(1, 2, 8, 9), DisplayItemListSettings());
+      DisplayItemList::Create(DisplayItemListSettings());
+  list->SetRetainVisualRectsForTesting(true);
   list->Finalize();
 
   std::string value = list->AsValue(true)->ToString();
+  EXPECT_EQ(value.find("\"layer_rect\": [0,0,0,0]"), std::string::npos);
   EXPECT_NE(value.find("\"items\":[]"), std::string::npos);
-  EXPECT_NE(value.find("\"layer_rect\":[1,2,8,9]"), std::string::npos);
+  EXPECT_EQ(value.find("visualRect: [0,0 42x42]"), std::string::npos);
   EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
 
   value = list->AsValue(false)->ToString();
+  EXPECT_EQ(value.find("\"layer_rect\": [0,0,0,0]"), std::string::npos);
   EXPECT_EQ(value.find("\"items\":"), std::string::npos);
-  EXPECT_NE(value.find("\"layer_rect\":[1,2,8,9]"), std::string::npos);
+  EXPECT_EQ(value.find("visualRect: [0,0 42x42]"), std::string::npos);
   EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
 }
 
-TEST(DisplayItemListTest, AsValueWithRectAndItems) {
+TEST(DisplayItemListTest, AsValueWithItems) {
   gfx::Rect layer_rect = gfx::Rect(1, 2, 8, 9);
   scoped_refptr<DisplayItemList> list =
-      DisplayItemList::Create(layer_rect, DisplayItemListSettings());
+      DisplayItemList::Create(DisplayItemListSettings());
+  list->SetRetainVisualRectsForTesting(true);
   gfx::Transform transform;
   transform.Translate(6.f, 7.f);
   list->CreateAndAppendPairedBeginItem<TransformDisplayItem>(transform);
@@ -614,55 +628,18 @@ TEST(DisplayItemListTest, AsValueWithRectAndItems) {
   list->Finalize();
 
   std::string value = list->AsValue(true)->ToString();
+  EXPECT_EQ(value.find("\"layer_rect\": [0,0,42,42]"), std::string::npos);
   EXPECT_NE(value.find("{\"items\":[\"TransformDisplayItem"),
             std::string::npos);
-  EXPECT_NE(value.find("\"layer_rect\":[1,2,8,9]"), std::string::npos);
+  EXPECT_NE(value.find("visualRect: [0,0 42x42]"), std::string::npos);
   EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
 
   value = list->AsValue(false)->ToString();
+  EXPECT_EQ(value.find("\"layer_rect\": [0,0,42,42]"), std::string::npos);
   EXPECT_EQ(value.find("{\"items\":[\"TransformDisplayItem"),
             std::string::npos);
-  EXPECT_NE(value.find("\"layer_rect\":[1,2,8,9]"), std::string::npos);
+  EXPECT_EQ(value.find("visualRect: [0,0 42x42]"), std::string::npos);
   EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
-}
-
-TEST(DisplayItemListTest, AsValueWithEmptyRectAndNoItems) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
-  list->Finalize();
-
-  std::string value = list->AsValue(true)->ToString();
-  EXPECT_NE(value.find("\"items\":[]"), std::string::npos);
-  EXPECT_NE(value.find("\"layer_rect\":[0,0,0,0]"), std::string::npos);
-  EXPECT_EQ(value.find("\"skp64\":"), std::string::npos);
-
-  value = list->AsValue(false)->ToString();
-  EXPECT_EQ(value.find("\"items\":"), std::string::npos);
-  EXPECT_NE(value.find("\"layer_rect\":[0,0,0,0]"), std::string::npos);
-  EXPECT_EQ(value.find("\"skp64\":"), std::string::npos);
-}
-
-TEST(DisplayItemListTest, AsValueWithEmptyRectAndItems) {
-  scoped_refptr<DisplayItemList> list = CreateDefaultList();
-  gfx::Transform transform;
-  transform.Translate(6.f, 7.f);
-  list->CreateAndAppendPairedBeginItem<TransformDisplayItem>(transform);
-  AppendFirstSerializationTestPicture(list, gfx::Size());
-  list->CreateAndAppendPairedEndItem<EndTransformDisplayItem>();
-  list->Finalize();
-
-  std::string value = list->AsValue(true)->ToString();
-  EXPECT_NE(value.find("\"items\":[\"TransformDisplayItem"), std::string::npos);
-  EXPECT_NE(value.find("\"layer_rect\":[0,0,0,0]"), std::string::npos);
-  // There should be one skp64 entry present associated with the test picture
-  // item, though the overall list has no skp64 as the layer rect is empty.
-  EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
-
-  value = list->AsValue(false)->ToString();
-  EXPECT_EQ(value.find("\"items\":"), std::string::npos);
-  EXPECT_NE(value.find("\"layer_rect\":[0,0,0,0]"), std::string::npos);
-  // There should be no skp64 entry present as the items aren't included and the
-  // layer rect is empty.
-  EXPECT_EQ(value.find("\"skp64\":"), std::string::npos);
 }
 
 TEST(DisplayItemListTest, SizeEmpty) {
