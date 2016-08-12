@@ -52,7 +52,7 @@ public:
     virtual void appendEndCompositingItem() { }
 
     // TODO(loyso): This should use CompositorFilterOperation. crbug.com/584551
-    virtual void appendFilterItem(const cc::FilterOperations&, const WebFloatRect& bounds) { }
+    virtual void appendFilterItem(const cc::FilterOperations&, const WebFloatRect& filter_bounds) { }
     virtual void appendEndFilterItem() { }
 
     // Scroll containers are identified by an opaque pointer.

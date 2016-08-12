@@ -62,7 +62,7 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
                              SkColorFilter*) override;
   void appendEndCompositingItem() override;
   void appendFilterItem(const cc::FilterOperations& filters,
-                        const blink::WebFloatRect& bounds) override;
+                        const blink::WebFloatRect& filter_bounds) override;
   void appendEndFilterItem() override;
   void appendScrollItem(const blink::WebSize& scrollOffset,
                         ScrollContainerId) override;

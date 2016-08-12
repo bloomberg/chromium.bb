@@ -943,4 +943,43 @@ TEST(DisplayItemListTest,
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(5));
 }
 
+TEST(DisplayItemListTest, AppendVisualRectOneFilterNoDrawings) {
+  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+
+  // One filter containing no drawings: Bf, Ef
+
+  gfx::Rect filter_bounds(5, 6, 1, 1);
+  list->CreateAndAppendPairedBeginItemWithVisualRect<FilterDisplayItem>(
+      filter_bounds, FilterOperations(), gfx::RectF(filter_bounds));
+
+  list->CreateAndAppendPairedEndItem<EndFilterDisplayItem>();
+
+  EXPECT_EQ(2u, list->size());
+  EXPECT_RECT_EQ(filter_bounds, list->VisualRectForTesting(0));
+  EXPECT_RECT_EQ(filter_bounds, list->VisualRectForTesting(1));
+}
+
+TEST(DisplayItemListTest, AppendVisualRectBlockContainingFilterNoDrawings) {
+  scoped_refptr<DisplayItemList> list = CreateDefaultList();
+
+  // One block containing one filter and no drawings: B1, Bf, Ef, E1.
+
+  gfx::Rect clip_bounds(5, 6, 7, 8);
+  list->CreateAndAppendPairedBeginItem<ClipDisplayItem>(
+      clip_bounds, std::vector<SkRRect>(), true);
+
+  gfx::Rect filter_bounds(5, 6, 1, 1);
+  list->CreateAndAppendPairedBeginItemWithVisualRect<FilterDisplayItem>(
+      filter_bounds, FilterOperations(), gfx::RectF(filter_bounds));
+
+  list->CreateAndAppendPairedEndItem<EndFilterDisplayItem>();
+  list->CreateAndAppendPairedEndItem<EndClipDisplayItem>();
+
+  EXPECT_EQ(4u, list->size());
+  EXPECT_RECT_EQ(filter_bounds, list->VisualRectForTesting(0));
+  EXPECT_RECT_EQ(filter_bounds, list->VisualRectForTesting(1));
+  EXPECT_RECT_EQ(filter_bounds, list->VisualRectForTesting(2));
+  EXPECT_RECT_EQ(filter_bounds, list->VisualRectForTesting(3));
+}
+
 }  // namespace cc

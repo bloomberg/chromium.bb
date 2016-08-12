@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -184,12 +185,13 @@ void WebDisplayItemListImpl::appendEndCompositingItem() {
 
 void WebDisplayItemListImpl::appendFilterItem(
     const cc::FilterOperations& filters,
-    const blink::WebFloatRect& bounds) {
+    const blink::WebFloatRect& filter_bounds) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
-    display_item_list_->CreateAndAppendPairedBeginItem<cc::FilterDisplayItem>(
-        filters, bounds);
+    display_item_list_
+        ->CreateAndAppendPairedBeginItemWithVisualRect<cc::FilterDisplayItem>(
+            gfx::ToEnclosingRect(filter_bounds), filters, filter_bounds);
   } else {
-    cc::FilterDisplayItem item(filters, bounds);
+    cc::FilterDisplayItem item(filters, filter_bounds);
     display_item_list_->RasterIntoCanvas(item);
   }
 }

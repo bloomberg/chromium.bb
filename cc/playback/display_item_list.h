@@ -73,10 +73,24 @@ class CC_EXPORT DisplayItemList
   // Because processing happens in these CreateAndAppend functions, all the set
   // up for the item should be done via the args, which is why the return type
   // needs to be const, to prevent set-after-processing mistakes.
+
+  // Most paired begin item types default to an empty visual rect, which will
+  // subsequently be grown as needed to encompass any contained items that draw
+  // content, such as drawing or filter items.
   template <typename DisplayItemType, typename... Args>
   const DisplayItemType& CreateAndAppendPairedBeginItem(Args&&... args) {
+    return CreateAndAppendPairedBeginItemWithVisualRect<DisplayItemType>(
+        gfx::Rect(), std::forward<Args>(args)...);
+  }
+
+  // This method variant is exposed to allow filters to specify their visual
+  // rect since they may draw content despite containing no drawing items.
+  template <typename DisplayItemType, typename... Args>
+  const DisplayItemType& CreateAndAppendPairedBeginItemWithVisualRect(
+      const gfx::Rect& visual_rect,
+      Args&&... args) {
     size_t item_index = inputs_.visual_rects.size();
-    inputs_.visual_rects.push_back(gfx::Rect());
+    inputs_.visual_rects.push_back(visual_rect);
     inputs_.begin_item_indices.push_back(item_index);
 
     return AllocateAndConstruct<DisplayItemType>(std::forward<Args>(args)...);
