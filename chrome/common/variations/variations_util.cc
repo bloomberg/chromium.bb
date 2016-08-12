@@ -92,6 +92,13 @@ void AssociateParamsFromFieldTrialConfig(const FieldTrialTestingConfig& config,
     base::FieldTrial* trial =
         base::FieldTrialList::CreateFieldTrial(group.study, group.group_name);
 
+    if (!trial) {
+      DLOG(WARNING) << "Field trial config study skipped: " << group.study
+                    << "." << group.group_name
+                    << " (it is overridden from chrome://flags)";
+      continue;
+    }
+
     for (size_t j = 0; j < group.enable_features_size; ++j) {
       feature_list->RegisterFieldTrialOverride(
           group.enable_features[j], base::FeatureList::OVERRIDE_ENABLE_FEATURE,
