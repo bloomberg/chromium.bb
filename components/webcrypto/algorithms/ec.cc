@@ -111,23 +111,23 @@ Status VerifyEcKeyAfterSpkiOrPkcs8Import(
     blink::WebCryptoNamedCurve expected_named_curve) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  crypto::ScopedEC_KEY ec(EVP_PKEY_get1_EC_KEY(pkey));
-  if (!ec.get())
+  EC_KEY* ec = EVP_PKEY_get0_EC_KEY(pkey);
+  if (!ec)
     return Status::ErrorUnexpected();
 
   // When importing an ECPrivateKey, the public key is optional. If it was
   // omitted then the public key will be calculated by BoringSSL and added into
   // the EC_KEY. However an encoding flag is set such that when exporting to
   // PKCS8 format the public key is once again omitted. Remove this flag.
-  unsigned int enc_flags = EC_KEY_get_enc_flags(ec.get());
+  unsigned int enc_flags = EC_KEY_get_enc_flags(ec);
   enc_flags &= ~EC_PKEY_NO_PUBKEY;
-  EC_KEY_set_enc_flags(ec.get(), enc_flags);
+  EC_KEY_set_enc_flags(ec, enc_flags);
 
-  if (!EC_KEY_check_key(ec.get()))
+  if (!EC_KEY_check_key(ec))
     return Status::ErrorEcKeyInvalid();
 
   // Make sure the curve matches the expected curve name.
-  int curve_nid = EC_GROUP_get_curve_name(EC_KEY_get0_group(ec.get()));
+  int curve_nid = EC_GROUP_get_curve_name(EC_KEY_get0_group(ec));
   blink::WebCryptoNamedCurve named_curve = blink::WebCryptoNamedCurveP256;
   Status status = NidToWebCryptoCurve(curve_nid, &named_curve);
   if (status.IsError())
@@ -604,8 +604,8 @@ Status EcAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
 
   EVP_PKEY* pkey = GetEVP_PKEY(key);
 
-  crypto::ScopedEC_KEY ec(EVP_PKEY_get1_EC_KEY(pkey));
-  if (!ec.get())
+  EC_KEY* ec = EVP_PKEY_get0_EC_KEY(pkey);
+  if (!ec)
     return Status::ErrorUnexpected();
 
   // No "alg" is set for EC keys.
@@ -618,13 +618,13 @@ Status EcAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
   if (status.IsError())
     return status;
 
-  int degree_bytes = GetGroupDegreeInBytes(ec.get());
+  int degree_bytes = GetGroupDegreeInBytes(ec);
 
   jwk.SetString("crv", crv);
 
   crypto::ScopedBIGNUM x;
   crypto::ScopedBIGNUM y;
-  status = GetPublicKey(ec.get(), &x, &y);
+  status = GetPublicKey(ec, &x, &y);
   if (status.IsError())
     return status;
 
@@ -637,7 +637,7 @@ Status EcAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
     return status;
 
   if (key.type() == blink::WebCryptoKeyTypePrivate) {
-    const BIGNUM* d = EC_KEY_get0_private_key(ec.get());
+    const BIGNUM* d = EC_KEY_get0_private_key(ec);
     status = WritePaddedBIGNUM("d", d, degree_bytes, &jwk);
     if (status.IsError())
       return status;
