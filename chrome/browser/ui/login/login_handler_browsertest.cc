@@ -103,8 +103,11 @@ const char kSingleRealmTestPage[] = "/login/single_realm.html";
 const char kAuthBasicPage[] = "/auth-basic";
 const char kAuthDigestPage[] = "/auth-digest";
 
-const char kNoAuthPage1[] = "/a";
-const char kNoAuthPage2[] = "/b";
+// It does not matter what pages are selected as no-auth, as long as they exist.
+// Navigating to non-existing pages caused flakes in the past
+// (https://crbug.com/636875).
+const char kNoAuthPage1[] = "/simple.html";
+const char kNoAuthPage2[] = "/form.html";
 
 base::string16 ExpectedTitleFromAuth(const base::string16& username,
                                      const base::string16& password) {
@@ -406,9 +409,7 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnBack) {
 }
 
 // Test login prompt cancellation on navigation to forward.
-// TODO(crbug.com/636875) Flaky on Mac and Linux at least.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       DISABLED_TestCancelAuth_OnForward) {
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnForward) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL kAuthURL = embedded_test_server()->GetURL(kAuthBasicPage);
   const GURL kNoAuthURL1 = embedded_test_server()->GetURL(kNoAuthPage1);
