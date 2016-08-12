@@ -15,19 +15,16 @@
 # Gold for the link, so use_gold=true is a false statement and might
 # cause other problems.
 
-# TODO(dpranke): There needs to be a better way to determine if
-# we are using the custom CrOS toolchains, but for now we check is_clang,
-# which is the same way we check in //build/config/BUILDCONFIG.gn.
-_is_cros_target_toolchain = is_chromeos && !is_clang
-if (target_os == "chromeos") {
-  import("//build/toolchain/cros_toolchain.gni")
-}
+here = get_label_info(".", "dir")
+bootstrap_toolchain = here + "/toolchain:nacl_bootstrap_" + target_cpu
+compiler = "g++"
 
-if (_is_cros_target_toolchain) {
+if (default_toolchain == "//build/toolchain/cros:target") {
+  import("//build/toolchain/cros_toolchain.gni")
   bootstrap_toolchain = "//build/toolchain/cros:nacl_bootstrap"
-} else {
-  here = get_label_info(".", "dir")
-  bootstrap_toolchain = here + "/toolchain:nacl_bootstrap_" + target_cpu
+  compiler = cros_target_cxx
+} else if (current_cpu == "arm" && !is_android) {
+  compiler = "arm-linux-gnueabihf-g++"
 }
 
 if (current_toolchain == bootstrap_toolchain) {
@@ -54,16 +51,6 @@ if (current_toolchain == bootstrap_toolchain) {
     linker_emulation = "elf32ltsmip"
   }
 
-  if (_is_cros_target_toolchain) {
-    compiler = cros_target_cxx
-  } else if (is_android) {
-    compiler = "g++"
-  } else if (current_cpu == "arm") {
-    compiler = "arm-linux-gnueabihf-g++"
-  } else {
-    compiler = "g++"
-  }
-
   static_library("nacl_bootstrap_lib") {
     # This code has very specific requirements related to its static
     # linking and minimal libc use.  It cannot support the normal variety
@@ -83,6 +70,7 @@ if (current_toolchain == bootstrap_toolchain) {
 
     cflags = [
       "-fno-builtin",
+
       # These might be the defaults in the compiler configuration,
       # but we want them all disabled for this build.
       "-fno-stack-protector",
@@ -108,8 +96,8 @@ if (current_toolchain == bootstrap_toolchain) {
     script = "ld_bfd.py"
 
     sources = [
-      linker_script_path,
       bootstrap_lib_path,
+      linker_script_path,
     ]
     outputs = [
       bootstrap_raw_path,
@@ -171,8 +159,17 @@ if (current_toolchain == bootstrap_toolchain) {
 
     bootstrap_out_dir = get_label_info(bootstrap, "root_out_dir")
 
-    deps = [ bootstrap ]
-    sources = [ "$bootstrap_out_dir/nacl_helper_bootstrap" ]
-    outputs = [ "$root_out_dir/nacl_helper_bootstrap" ]
+    deps = [
+      bootstrap,
+    ]
+    sources = [
+      "$bootstrap_out_dir/nacl_helper_bootstrap",
+    ]
+    outputs = [
+      "$root_out_dir/nacl_helper_bootstrap",
+    ]
   }
+
+  # Mark the compiler arg as used.
+  compiler = compiler
 }
