@@ -246,10 +246,12 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
                                     ssl.sct_statuses.begin(),
                                     ssl.sct_statuses.end());
   state->displayed_mixed_content =
-      (ssl.content_status & content::SSLStatus::DISPLAYED_INSECURE_CONTENT)
-          ? true
-          : false;
+      !!(ssl.content_status & content::SSLStatus::DISPLAYED_INSECURE_CONTENT);
   state->ran_mixed_content =
-      (ssl.content_status & content::SSLStatus::RAN_INSECURE_CONTENT) ? true
-                                                                      : false;
+      !!(ssl.content_status & content::SSLStatus::RAN_INSECURE_CONTENT);
+  state->displayed_content_with_cert_errors =
+      !!(ssl.content_status &
+         content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
+  state->ran_content_with_cert_errors =
+      !!(ssl.content_status & content::SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS);
 }

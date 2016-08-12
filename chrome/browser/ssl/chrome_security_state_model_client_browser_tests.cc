@@ -438,6 +438,95 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
       false /* expect cert status error */);
 }
 
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+                       ActiveContentWithCertErrors) {
+  ASSERT_TRUE(https_server_.Start());
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+
+  // Navigate to an HTTPS page and simulate active content with
+  // certificate errors.
+  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/title1.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  entry->GetSSL().content_status |=
+      content::SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS;
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  ASSERT_TRUE(model_client);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model_client->GetSecurityInfo();
+
+  EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
+  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
+  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_RAN,
+            security_info.content_with_cert_errors_status);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+                       PassiveContentWithCertErrors) {
+  ASSERT_TRUE(https_server_.Start());
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+
+  // Navigate to an HTTPS page and simulate passive content with
+  // certificate errors.
+  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/title1.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  entry->GetSSL().content_status |=
+      content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  ASSERT_TRUE(model_client);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model_client->GetSecurityInfo();
+
+  EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
+  EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
+  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+            security_info.content_with_cert_errors_status);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+                       ActiveAndPassiveContentWithCertErrors) {
+  ASSERT_TRUE(https_server_.Start());
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+
+  // Navigate to an HTTPS page and simulate active and passive content
+  // with certificate errors.
+  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/title1.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  entry->GetSSL().content_status |=
+      content::SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS;
+  entry->GetSSL().content_status |=
+      content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  ASSERT_TRUE(model_client);
+  const SecurityStateModel::SecurityInfo& security_info =
+      model_client->GetSecurityInfo();
+
+  EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
+  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
+  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
+            security_info.content_with_cert_errors_status);
+}
+
 // Same as the test above but with a long-lived SHA1 cert.
 IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
                        MixedContentWithBrokenSHA1) {

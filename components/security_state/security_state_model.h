@@ -96,6 +96,10 @@ class SecurityStateModel {
     // |mixed_content_status| describes the presence of content that was
     // loaded over a nonsecure (HTTP) connection.
     ContentStatus mixed_content_status;
+    // |content_with_cert_errors_status| describes the presence of
+    // content that was loaded over an HTTPS connection with
+    // certificate errors.
+    ContentStatus content_with_cert_errors_status;
     // The verification statuses of the signed certificate timestamps
     // for the connection.
     std::vector<net::ct::SCTVerifyStatus> sct_verify_statuses;
@@ -147,6 +151,10 @@ class SecurityStateModel {
     bool displayed_mixed_content;
     // True if the page ran active mixed content.
     bool ran_mixed_content;
+    // True if the page displayed passive subresources with certificate errors.
+    bool displayed_content_with_cert_errors;
+    // True if the page ran active subresources with certificate errors.
+    bool ran_content_with_cert_errors;
     // True if PKP was bypassed due to a local trust anchor.
     bool pkp_bypassed;
   };

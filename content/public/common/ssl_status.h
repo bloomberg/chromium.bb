@@ -23,16 +23,21 @@ struct CONTENT_EXPORT SSLStatus {
   // Flags used for the page security content status.
   enum ContentStatusFlags {
     // HTTP page, or HTTPS page with no insecure content.
-    NORMAL_CONTENT             = 0,
+    NORMAL_CONTENT = 0,
 
     // HTTPS page containing "displayed" HTTP resources (e.g. images, CSS).
     DISPLAYED_INSECURE_CONTENT = 1 << 0,
 
     // HTTPS page containing "executed" HTTP resources (i.e. script).
-    // Also currently used for HTTPS page containing broken-HTTPS resources;
-    // this is wrong and should be fixed (see comments in
-    // SSLPolicy::OnRequestStarted()).
-    RAN_INSECURE_CONTENT       = 1 << 1,
+    RAN_INSECURE_CONTENT = 1 << 1,
+
+    // HTTPS page containing "displayed" HTTPS resources (e.g. images,
+    // CSS) loaded with certificate errors.
+    DISPLAYED_CONTENT_WITH_CERT_ERRORS = 1 << 2,
+
+    // HTTPS page containing "executed" HTTPS resources (i.e. script)
+    // loaded with certificate errors.
+    RAN_CONTENT_WITH_CERT_ERRORS = 1 << 3,
   };
 
   SSLStatus();
