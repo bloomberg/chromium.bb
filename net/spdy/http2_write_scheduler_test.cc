@@ -90,9 +90,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, RegisterAndUnregisterStreams) {
   EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamPrecedence(13).parent_id());
 
   // The parent stream 19 doesn't exist, so this should use 0 as parent stream:
-  EXPECT_SPDY_BUG(
-      scheduler_.RegisterStream(7, SpdyStreamPrecedence(19, 70, false)),
-      "Parent stream 19 not registered");
+  scheduler_.RegisterStream(7, SpdyStreamPrecedence(19, 70, false));
   EXPECT_TRUE(scheduler_.StreamRegistered(7));
   EXPECT_EQ(0u, scheduler_.GetStreamPrecedence(7).parent_id());
   // Now stream 7 already exists, so this should fail:
@@ -125,44 +123,37 @@ TEST_F(Http2PriorityWriteSchedulerTest, RegisterStreamWithSpdy3Priority) {
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest, GetStreamWeight) {
-  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2MinStreamWeight,
-                            scheduler_.GetStreamPrecedence(3).weight()),
-                  "Stream 3 not registered");
+  // Unknown streams tolerated due to b/15676312.
+  EXPECT_EQ(kHttp2MinStreamWeight, scheduler_.GetStreamPrecedence(3).weight());
   scheduler_.RegisterStream(3, SpdyStreamPrecedence(0, 130, true));
   EXPECT_EQ(130, scheduler_.GetStreamPrecedence(3).weight());
   scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 50, true));
   EXPECT_EQ(50, scheduler_.GetStreamPrecedence(3).weight());
   scheduler_.UnregisterStream(3);
-  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2MinStreamWeight,
-                            scheduler_.GetStreamPrecedence(3).weight()),
-                  "Stream 3 not registered");
+  EXPECT_EQ(kHttp2MinStreamWeight, scheduler_.GetStreamPrecedence(3).weight());
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest, GetStreamPriority) {
-  EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority,
-                            scheduler_.GetStreamPrecedence(3).spdy3_priority()),
-                  "Stream 3 not registered");
+  // Unknown streams tolerated due to b/15676312.
+  EXPECT_EQ(kV3LowestPriority,
+            scheduler_.GetStreamPrecedence(3).spdy3_priority());
   scheduler_.RegisterStream(3, SpdyStreamPrecedence(0, 130, true));
   EXPECT_EQ(3, scheduler_.GetStreamPrecedence(3).spdy3_priority());
   scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 50, true));
   EXPECT_EQ(5, scheduler_.GetStreamPrecedence(3).spdy3_priority());
   scheduler_.UnregisterStream(3);
-  EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority,
-                            scheduler_.GetStreamPrecedence(3).spdy3_priority()),
-                  "Stream 3 not registered");
+  EXPECT_EQ(kV3LowestPriority,
+            scheduler_.GetStreamPrecedence(3).spdy3_priority());
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest, GetStreamParent) {
-  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2RootStreamId,
-                            scheduler_.GetStreamPrecedence(3).parent_id()),
-                  "Stream 3 not registered");
+  // Unknown streams tolerated due to b/15676312.
+  EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamPrecedence(3).parent_id());
   scheduler_.RegisterStream(2, SpdyStreamPrecedence(0, 20, false));
   scheduler_.RegisterStream(3, SpdyStreamPrecedence(2, 30, false));
   EXPECT_EQ(2u, scheduler_.GetStreamPrecedence(3).parent_id());
   scheduler_.UnregisterStream(3);
-  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2RootStreamId,
-                            scheduler_.GetStreamPrecedence(3).parent_id()),
-                  "Stream 3 not registered");
+  EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamPrecedence(3).parent_id());
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest, GetStreamChildren) {
@@ -182,9 +173,13 @@ TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamWeight) {
   EXPECT_SPDY_BUG(
       scheduler_.UpdateStreamPrecedence(0, SpdyStreamPrecedence(0, 10, false)),
       "Cannot set precedence of root stream");
-  EXPECT_SPDY_BUG(
-      scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 10, false)),
-      "Stream 3 not registered");
+
+  // For the moment, updating stream precedence on a non-registered stream
+  // should have no effect. In the future, it will lazily cause the stream to
+  // be registered (b/15676312).
+  scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 10, false));
+  EXPECT_FALSE(scheduler_.StreamRegistered(3));
+
   scheduler_.RegisterStream(3, SpdyStreamPrecedence(0, 10, false));
   scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 20, false));
   EXPECT_EQ(20, scheduler_.GetStreamPrecedence(3).weight());
@@ -201,9 +196,6 @@ TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamWeight) {
   ASSERT_TRUE(peer_.ValidateInvariants());
 
   scheduler_.UnregisterStream(3);
-  EXPECT_SPDY_BUG(
-      scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 10, false)),
-      "Stream 3 not registered");
 }
 
 // Basic case of reparenting a subtree.
@@ -257,18 +249,28 @@ TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamParentNonexistent) {
   scheduler_.RegisterStream(1, SpdyStreamPrecedence(0, 100, false));
   scheduler_.RegisterStream(2, SpdyStreamPrecedence(0, 100, false));
   for (bool exclusive : {true, false}) {
-    EXPECT_SPDY_BUG(scheduler_.UpdateStreamPrecedence(
-                        1, SpdyStreamPrecedence(3, 100, exclusive)),
-                    "Parent stream 3 not registered");
-    EXPECT_SPDY_BUG(scheduler_.UpdateStreamPrecedence(
-                        4, SpdyStreamPrecedence(2, 100, exclusive)),
-                    "Stream 4 not registered");
-    EXPECT_SPDY_BUG(scheduler_.UpdateStreamPrecedence(
-                        3, SpdyStreamPrecedence(4, 100, exclusive)),
-                    "Stream 3 not registered");
+    // For the moment, updating stream precedence on a non-registered stream or
+    // attempting to set parent to a nonexistent stream should have no
+    // effect. In the future, it will lazily cause the stream(s) to be
+    // registered (b/15676312).
+
+    // No-op: parent stream 3 not registered
+    scheduler_.UpdateStreamPrecedence(1,
+                                      SpdyStreamPrecedence(3, 100, exclusive));
+
+    // No-op: stream 4 not registered
+    scheduler_.UpdateStreamPrecedence(4,
+                                      SpdyStreamPrecedence(2, 100, exclusive));
+
+    // No-op: stream 3 not registered
+    scheduler_.UpdateStreamPrecedence(3,
+                                      SpdyStreamPrecedence(4, 100, exclusive));
+
     EXPECT_THAT(scheduler_.GetStreamChildren(0), UnorderedElementsAre(1, 2));
     EXPECT_THAT(scheduler_.GetStreamChildren(1), IsEmpty());
     EXPECT_THAT(scheduler_.GetStreamChildren(2), IsEmpty());
+    EXPECT_FALSE(scheduler_.StreamRegistered(3));
+    EXPECT_FALSE(scheduler_.StreamRegistered(4));
   }
   ASSERT_TRUE(peer_.ValidateInvariants());
 }

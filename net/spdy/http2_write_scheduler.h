@@ -224,7 +224,8 @@ void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
 
   StreamInfo* parent = FindStream(precedence.parent_id());
   if (parent == nullptr) {
-    SPDY_BUG << "Parent stream " << precedence.parent_id() << " not registered";
+    // parent_id may legitimately not be registered yet--see b/15676312.
+    DVLOG(1) << "Parent stream " << precedence.parent_id() << " not registered";
     parent = root_stream_info_;
   }
 
@@ -309,7 +310,9 @@ Http2PriorityWriteScheduler<StreamIdType>::GetStreamPrecedence(
     StreamIdType stream_id) const {
   const StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
-    SPDY_BUG << "Stream " << stream_id << " not registered";
+    // Unknown streams tolerated due to b/15676312. However, return lowest
+    // weight.
+    DVLOG(1) << "Stream " << stream_id << " not registered";
     return StreamPrecedenceType(kHttp2RootStreamId, kHttp2MinStreamWeight,
                                 false);
   }
@@ -345,7 +348,8 @@ void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamPrecedence(
 
   StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
-    SPDY_BUG << "Stream " << stream_id << " not registered";
+    // TODO(mpw): add to all_stream_infos_ on demand--see b/15676312.
+    DVLOG(1) << "Stream " << stream_id << " not registered";
     return;
   }
   UpdateStreamParent(stream_info, precedence.parent_id(),
@@ -380,7 +384,8 @@ void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamParent(
   }
   StreamInfo* new_parent = FindStream(parent_id);
   if (new_parent == nullptr) {
-    SPDY_BUG << "Parent stream " << parent_id << " not registered";
+    // parent_id may legitimately not be registered yet--see b/15676312.
+    DVLOG(1) << "Parent stream " << parent_id << " not registered";
     return;
   }
 

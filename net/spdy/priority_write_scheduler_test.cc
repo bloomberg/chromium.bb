@@ -83,16 +83,21 @@ TEST_F(PriorityWriteSchedulerTest, RegisterStreamWithHttp2StreamDependency) {
   EXPECT_TRUE(scheduler_.GetStreamPrecedence(1).is_spdy3_priority());
   EXPECT_EQ(3, scheduler_.GetStreamPrecedence(1).spdy3_priority());
 
+  // Registering stream with a non-existent parent stream is permissible, but
+  // parent stream will always be reset to 0.
   EXPECT_SPDY_BUG(
       scheduler_.RegisterStream(2, SpdyStreamPrecedence(3, 123, false)),
       "Expected SPDY priority");
   EXPECT_TRUE(scheduler_.StreamRegistered(2));
+  EXPECT_FALSE(scheduler_.StreamRegistered(3));
+  EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamPrecedence(2).parent_id());
 }
 
 TEST_F(PriorityWriteSchedulerTest, GetStreamPrecedence) {
-  EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority,
-                            scheduler_.GetStreamPrecedence(1).spdy3_priority()),
-                  "Stream 1 not registered");
+  // Unknown streams tolerated due to b/15676312. However, return lowest
+  // priority.
+  EXPECT_EQ(kV3LowestPriority,
+            scheduler_.GetStreamPrecedence(1).spdy3_priority());
 
   scheduler_.RegisterStream(1, SpdyStreamPrecedence(3));
   EXPECT_TRUE(scheduler_.GetStreamPrecedence(1).is_spdy3_priority());
@@ -121,9 +126,8 @@ TEST_F(PriorityWriteSchedulerTest, GetStreamPrecedence) {
   EXPECT_EQ(6, scheduler_.GetStreamPrecedence(1).spdy3_priority());
 
   scheduler_.UnregisterStream(1);
-  EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority,
-                            scheduler_.GetStreamPrecedence(1).spdy3_priority()),
-                  "Stream 1 not registered");
+  EXPECT_EQ(kV3LowestPriority,
+            scheduler_.GetStreamPrecedence(1).spdy3_priority());
 }
 
 TEST_F(PriorityWriteSchedulerTest, PopNextReadyStreamAndPrecedence) {
@@ -135,15 +139,16 @@ TEST_F(PriorityWriteSchedulerTest, PopNextReadyStreamAndPrecedence) {
 }
 
 TEST_F(PriorityWriteSchedulerTest, UpdateStreamPrecedence) {
-  // Updating priority of unregistered stream should have no effect.
-  EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority,
-                            scheduler_.GetStreamPrecedence(3).spdy3_priority()),
-                  "Stream 3 not registered");
-  EXPECT_SPDY_BUG(scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(1)),
-                  "Stream 3 not registered");
-  EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority,
-                            scheduler_.GetStreamPrecedence(3).spdy3_priority()),
-                  "Stream 3 not registered");
+  // For the moment, updating stream precedence on a non-registered stream
+  // should have no effect. In the future, it will lazily cause the stream to
+  // be registered (b/15676312).
+  EXPECT_EQ(kV3LowestPriority,
+            scheduler_.GetStreamPrecedence(3).spdy3_priority());
+  EXPECT_FALSE(scheduler_.StreamRegistered(3));
+  scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(1));
+  EXPECT_FALSE(scheduler_.StreamRegistered(3));
+  EXPECT_EQ(kV3LowestPriority,
+            scheduler_.GetStreamPrecedence(3).spdy3_priority());
 
   scheduler_.RegisterStream(3, SpdyStreamPrecedence(1));
   EXPECT_EQ(1, scheduler_.GetStreamPrecedence(3).spdy3_priority());
@@ -172,15 +177,15 @@ TEST_F(PriorityWriteSchedulerTest, UpdateStreamPrecedence) {
   EXPECT_EQ(4u, scheduler_.PopNextReadyStream());
 
   scheduler_.UnregisterStream(3);
-  EXPECT_SPDY_BUG(scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(1)),
-                  "Stream 3 not registered");
 }
 
 TEST_F(PriorityWriteSchedulerTest,
        UpdateStreamPrecedenceWithHttp2StreamDependency) {
+  // Unknown streams tolerated due to b/15676312, but should have no effect.
   EXPECT_SPDY_BUG(
       scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 100, false)),
       "Expected SPDY priority");
+  EXPECT_FALSE(scheduler_.StreamRegistered(3));
 
   scheduler_.RegisterStream(3, SpdyStreamPrecedence(3));
   EXPECT_SPDY_BUG(
@@ -192,7 +197,8 @@ TEST_F(PriorityWriteSchedulerTest,
   scheduler_.UnregisterStream(3);
   EXPECT_SPDY_BUG(
       scheduler_.UpdateStreamPrecedence(3, SpdyStreamPrecedence(0, 100, false)),
-      "Stream 3 not registered");
+      "Expected SPDY priority");
+  EXPECT_FALSE(scheduler_.StreamRegistered(3));
 }
 
 TEST_F(PriorityWriteSchedulerTest, MarkStreamReadyBack) {
