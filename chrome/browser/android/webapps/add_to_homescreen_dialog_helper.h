@@ -6,21 +6,21 @@
 #define CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_DIALOG_HELPER_H_
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_weak_ref.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_data_fetcher.h"
-#include "content/public/common/manifest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
 class WebContents;
-}  // namespace content
+}
 
 namespace IPC {
 class Message;
 }
 
 class GURL;
+struct ShortcutInfo;
 
 // AddToHomescreenDialogHelper is the C++ counterpart of
 // org.chromium.chrome.browser's AddToHomescreenDialogHelper in Java. The object

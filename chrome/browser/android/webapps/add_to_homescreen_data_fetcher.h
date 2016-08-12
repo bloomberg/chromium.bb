@@ -7,23 +7,28 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/android/shortcut_info.h"
-#include "chrome/common/web_application_info.h"
-#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/manifest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
 class WebContents;
-}  // namespace content
+}
+
+namespace favicon_base {
+struct FaviconRawBitmapResult;
+}
 
 namespace IPC {
 class Message;
 }
 
 class GURL;
+struct InstallableData;
+struct WebApplicationInfo;
 
 // Aysnchronously fetches and processes data needed to create a shortcut for an
 // Android Home screen launcher.
@@ -53,8 +58,8 @@ class AddToHomescreenDataFetcher
                                  const SkBitmap& icon) = 0;
   };
 
-  // Initialize the fetcher by requesting the information about the page to the
-  // renderer process. The initialization is asynchronous and
+  // Initialize the fetcher by requesting the information about the page from
+  // the renderer process. The initialization is asynchronous and
   // OnDidGetWebApplicationInfo is expected to be called when finished.
   AddToHomescreenDataFetcher(content::WebContents* web_contents,
                              int ideal_icon_size_in_dp,
@@ -70,20 +75,18 @@ class AddToHomescreenDataFetcher
   // IPC message received when the initialization is finished.
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& web_app_info);
 
-  // Called when the Manifest has been parsed, or if no Manifest was found.
-  void OnDidGetManifest(const GURL& manifest_url,
-                        const content::Manifest& manifest);
-
   // Accessors, etc.
   void set_weak_observer(Observer* observer) { weak_observer_ = observer; }
-  bool is_ready() { return is_ready_; }
+  bool is_ready() const { return is_ready_; }
   ShortcutInfo& shortcut_info() { return shortcut_info_; }
-  const SkBitmap& shortcut_icon() { return shortcut_icon_; }
+  const SkBitmap& shortcut_icon() const { return shortcut_icon_; }
 
   // WebContentsObserver
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
+  friend class base::RefCounted<AddToHomescreenDataFetcher>;
+
   ~AddToHomescreenDataFetcher() override;
 
   // Grabs the favicon for the current URL.
@@ -98,37 +101,30 @@ class AddToHomescreenDataFetcher
       const GURL& page_url,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
-  // Callback run after an attempt to download manifest icon has been made. May
-  // kick off the download of a favicon if it failed (i.e. the bitmap is empty).
-  void OnManifestIconFetched(const GURL& icon_url, const SkBitmap& icon);
+  // Called when InstallableManager finishes looking for a manifest and icon.
+  void OnDidPerformInstallableCheck(const InstallableData& data);
 
   // Notifies the observer that the shortcut data is all available.
   void NotifyObserver(const GURL& icon_url, const SkBitmap& icon);
 
-  // Looks up the original, online URL of the site requested.  The URL from the
-  // WebContents may be an offline page or a distilled article which is not
-  // appropriate for a home screen shortcut.
-  GURL GetShortcutUrl(const GURL& original_url);
-
   Observer* weak_observer_;
-
-  bool is_waiting_for_web_application_info_;
-  bool is_icon_saved_;
-  bool is_ready_;
-  base::Timer icon_timeout_timer_;
-  ShortcutInfo shortcut_info_;
-  GURL splash_screen_url_;
 
   // The icon must only be set on the UI thread for thread safety.
   SkBitmap shortcut_icon_;
+  ShortcutInfo shortcut_info_;
+  GURL splash_screen_url_;
+
   base::CancelableTaskTracker favicon_task_tracker_;
+  base::Timer data_timeout_timer_;
 
   const int ideal_icon_size_in_dp_;
   const int minimum_icon_size_in_dp_;
   const int ideal_splash_image_size_in_dp_;
   const int minimum_splash_image_size_in_dp_;
+  bool is_waiting_for_web_application_info_;
+  bool is_icon_saved_;
+  bool is_ready_;
 
-  friend class base::RefCounted<AddToHomescreenDataFetcher>;
   DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcher);
 };
 

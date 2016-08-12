@@ -4,8 +4,6 @@
 
 #include "chrome/browser/android/webapps/add_to_homescreen_dialog_helper.h"
 
-#include <jni.h>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/guid.h"
@@ -16,15 +14,11 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/manifest.h"
 #include "jni/AddToHomescreenDialogHelper_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/color_analysis.h"
-#include "url/gurl.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
-using content::Manifest;
 
 jlong Initialize(JNIEnv* env,
                  const JavaParamRef<jobject>& obj,
