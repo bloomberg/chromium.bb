@@ -23,10 +23,12 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
       logging.info('testSymbolizeMinidump: most recent path = '
           + crash_minidump_path)
     all_paths = self._browser.GetAllMinidumpPaths()
-    logging.info('testSymbolizeMinidump: all paths ' + ''.join(all_paths))
+    if all_paths is not None:
+      logging.info('testSymbolizeMinidump: all paths ' + ''.join(all_paths))
     all_unsymbolized_paths = self._browser.GetAllUnsymbolizedMinidumpPaths()
-    logging.info('testSymbolizeMinidump: all unsymbolized paths '
-        + ''.join(all_unsymbolized_paths))
+    if all_unsymbolized_paths is not None:
+      logging.info('testSymbolizeMinidump: all unsymbolized paths '
+          + ''.join(all_unsymbolized_paths))
     #self.assertTrue(len(all_unsymbolized_paths) == 1)
 
     # Now symbolize that minidump and make sure there are no longer any present
@@ -34,9 +36,10 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
 
     all_unsymbolized_after_symbolize_paths = \
         self._browser.GetAllUnsymbolizedMinidumpPaths()
-    logging.info('testSymbolizeMinidump: after symbolize all '
-        + 'unsymbolized paths: '
-        + ''.join(all_unsymbolized_after_symbolize_paths))
+    if all_unsymbolized_after_symbolize_paths is not None:
+      logging.info('testSymbolizeMinidump: after symbolize all '
+          + 'unsymbolized paths: '
+          + ''.join(all_unsymbolized_after_symbolize_paths))
     #self.assertTrue(len(all_unsymbolized_after_symbolize_paths) == 0)
 
 
@@ -53,14 +56,16 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
       logging.info('testMultipleCrashMinidumps: first crash most recent path'
           + first_crash_path)
     all_paths = self._browser.GetAllMinidumpPaths()
-    logging.info('testMultipleCrashMinidumps: first crash all paths: '
-        + ''.join(all_paths))
+    if all_paths is not None:
+      logging.info('testMultipleCrashMinidumps: first crash all paths: '
+          + ''.join(all_paths))
     #self.assertEquals(len(all_paths), 1)
     #self.assertEqual(all_paths[0], first_crash_path)
     all_unsymbolized_paths = self._browser.GetAllUnsymbolizedMinidumpPaths()
     #self.assertTrue(len(all_unsymbolized_paths) == 1)
-    logging.info('testMultipleCrashMinidumps: first crash all unsymbolized '
-        'paths: ' + ''.join(all_unsymbolized_paths))
+    if all_unsymbolized_paths is not None:
+      logging.info('testMultipleCrashMinidumps: first crash all unsymbolized '
+          'paths: ' + ''.join(all_unsymbolized_paths))
 
     # Restart the browser and then crash a second time
     self._RestartBrowser()
@@ -75,13 +80,15 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
       logging.info('testMultipleCrashMinidumps: second crash most recent path'
           + second_crash_path)
     second_crash_all_paths = self._browser.GetAllMinidumpPaths()
-    logging.info('testMultipleCrashMinidumps: second crash all paths: '
-        + ''.join(second_crash_all_paths))
+    if second_crash_all_paths is not None:
+      logging.info('testMultipleCrashMinidumps: second crash all paths: '
+          + ''.join(second_crash_all_paths))
     second_crash_all_unsymbolized_paths = \
         self._browser.GetAllUnsymbolizedMinidumpPaths()
     #self.assertTrue(len(all_unsymbolized_paths) == 1)
-    logging.info('testMultipleCrashMinidumps: second crash all unsymbolized '
-        'paths: ' + ''.join(second_crash_all_unsymbolized_paths))
+    if second_crash_all_unsymbolized_paths is not None:
+      logging.info('testMultipleCrashMinidumps: second crash all unsymbolized '
+          'paths: ' + ''.join(second_crash_all_unsymbolized_paths))
     #self.assertEquals(len(second_crash_all_paths), 2)
     # Check that both paths are now present and unsymbolized
     #self.assertTrue(first_crash_path in second_crash_all_paths)
@@ -93,14 +100,16 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     # unsymbolized
     self._browser.SymbolizeMinidump(second_crash_path)
     after_symbolize_all_paths = self._browser.GetAllMinidumpPaths()
-    logging.info('testMultipleCrashMinidumps: after symbolize all paths: '
-        + ''.join(after_symbolize_all_paths))
+    if after_symbolize_all_paths is not None:
+      logging.info('testMultipleCrashMinidumps: after symbolize all paths: '
+          + ''.join(after_symbolize_all_paths))
     #self.assertEquals(len(after_symbolize_all_paths), 2)
     after_symbolize_all_unsymbolized_paths = \
         self._browser.GetAllUnsymbolizedMinidumpPaths()
-    logging.info('testMultipleCrashMinidumps: after symbolize all '
-        + 'unsymbolized paths: '
-        + ''.join(after_symbolize_all_unsymbolized_paths))
+    if after_symbolize_all_unsymbolized_paths is not None:
+      logging.info('testMultipleCrashMinidumps: after symbolize all '
+          + 'unsymbolized paths: '
+          + ''.join(after_symbolize_all_unsymbolized_paths))
     #self.assertEquals(after_symbolize_all_unsymbolized_paths,
      #   [first_crash_path])
 
