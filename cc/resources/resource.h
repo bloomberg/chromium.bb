@@ -34,6 +34,9 @@ class CC_EXPORT Resource {
     size_ = size;
     format_ = format;
   }
+  void set_color_space(const gfx::ColorSpace& color_space) {
+    color_space_ = color_space;
+  }
 
  private:
   ResourceId id_;
