@@ -313,7 +313,8 @@ CookieStoreIOS::CookieStoreIOS(
 
 CookieStoreIOS::~CookieStoreIOS() {
   NotificationTrampoline::GetInstance()->RemoveObserver(this);
-  STLDeleteContainerPairSecondPointers(hook_map_.begin(), hook_map_.end());
+  base::STLDeleteContainerPairSecondPointers(hook_map_.begin(),
+                                             hook_map_.end());
 }
 
 // static
