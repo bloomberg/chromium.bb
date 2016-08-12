@@ -64,15 +64,15 @@ def GenerateLicense():
   return '\n'.join(content)
 
 
-def FindThirdPartyDeps(gn_out_dir):
+def FindThirdPartyDeps(gn_path, gn_out_dir):
   # Generate gn project in temp directory and use it to find dependencies.
   # Current gn directory cannot ba used because gn doesn't allow recursive
   # invocations due to potential side effects.
   try:
     tmp_dir = tempfile.mkdtemp(dir = gn_out_dir)
     shutil.copy(gn_out_dir + "/args.gn", tmp_dir)
-    subprocess.check_output(["gn", "gen", tmp_dir])
-    gn_deps = subprocess.check_output(["gn", "desc", tmp_dir, \
+    subprocess.check_output([gn_path, "gen", tmp_dir])
+    gn_deps = subprocess.check_output([gn_path, "desc", tmp_dir,
                                     "//net", "deps", "--as=buildfile", "--all"])
   finally:
     if os.path.exists(tmp_dir):
@@ -97,15 +97,18 @@ def main():
                                  usage='%prog command [options]')
   parser.add_option('--gn', help='Use gn deps to find third party dependencies',
                     action='store_true')
+  parser.add_option('--gn-path', default='gn',
+                    help='Path to gn executable (default: %(default)s)')
   parser.description = (__doc__ +
                        '\nCommands:\n' \
                        '  license [filename]\n' \
                        '    Generate Cronet LICENSE to filename or stdout.\n')
-  (_, args) = parser.parse_args()
+  (flags, args) = parser.parse_args()
+  print flags
 
-  if _.gn:
+  if flags.gn:
     global third_party_dirs
-    third_party_dirs = FindThirdPartyDeps(os.getcwd())
+    third_party_dirs = FindThirdPartyDeps(flags.gn_path, os.getcwd())
 
   if not args:
     parser.print_help()

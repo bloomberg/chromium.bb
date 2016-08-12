@@ -146,6 +146,10 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
     _license_path = "$_package_dir/LICENSE"
 
     script = "//components/cronet/tools/cronet_licenses.py"
+    inputs = [
+      "//build/util/LASTCHANGE",
+      "//buildtools/$host_os/gn",
+    ]
     outputs = [
       _license_path,
     ]
@@ -153,6 +157,8 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
       "license",
       rebase_path(_license_path, root_build_dir),
       "--gn",
+      "--gn-path",
+      rebase_path("//buildtools/$host_os/gn", root_build_dir),
     ]
   }
 
