@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
 #include <string>
 
+#include "base/at_exit.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sys_byteorder.h"
-#include "blimp/net/blimp_connection_statistics.h"
+#include "blimp/net/blimp_stats.h"
 #include "blimp/net/common.h"
 #include "blimp/net/stream_packet_reader.h"
 #include "blimp/net/test_common.h"
@@ -35,20 +38,24 @@ class StreamPacketReaderTest : public testing::Test {
   StreamPacketReaderTest()
       : buffer_(new net::GrowableIOBuffer),
         test_msg_("U WOT M8"),
-        data_reader_(&socket_, &statistics_) {}
+        data_reader_(&socket_) {}
 
   ~StreamPacketReaderTest() override {}
+
+  void SetUp() override {
+    ASSERT_EQ(0, BlimpStats::GetInstance()->Get(BlimpStats::BYTES_RECEIVED));
+  }
 
   void ReadPacket() { data_reader_.ReadPacket(buffer_, callback_.callback()); }
 
  protected:
+  base::ShadowingAtExitManager at_exit_manager;
   base::MessageLoop message_loop_;
   scoped_refptr<net::GrowableIOBuffer> buffer_;
   std::string test_msg_;
   net::TestCompletionCallback callback_;
   testing::StrictMock<MockStreamSocket> socket_;
   testing::InSequence sequence_;
-  BlimpConnectionStatistics statistics_;
   StreamPacketReader data_reader_;
 };
 
@@ -159,12 +166,12 @@ TEST_F(StreamPacketReaderTest, ReadMultipleMessagesSync) {
   ReadPacket();
   ASSERT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
   EXPECT_EQ(static_cast<int>(test_msg_.size()),
-            statistics_.Get(BlimpConnectionStatistics::BYTES_RECEIVED));
+            BlimpStats::GetInstance()->Get(BlimpStats::BYTES_RECEIVED));
 
   ReadPacket();
   ASSERT_EQ(static_cast<int>(test_msg2.size()), callback_.WaitForResult());
   EXPECT_EQ(static_cast<int>(test_msg_.size() + test_msg2.size()),
-            statistics_.Get(BlimpConnectionStatistics::BYTES_RECEIVED));
+            BlimpStats::GetInstance()->Get(BlimpStats::BYTES_RECEIVED));
 
   EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg2.size(), test_msg2));
   EXPECT_FALSE(callback_.have_result());
@@ -371,8 +378,7 @@ TEST_F(StreamPacketReaderTest, ReadPayloadErrorAsync) {
 TEST_F(StreamPacketReaderTest, ReaderDeletedDuringAsyncHeaderRead) {
   net::CompletionCallback cb;
   net::TestCompletionCallback test_cb;
-  std::unique_ptr<StreamPacketReader> reader(
-      new StreamPacketReader(&socket_, &statistics_));
+  std::unique_ptr<StreamPacketReader> reader(new StreamPacketReader(&socket_));
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
       .WillOnce(DoAll(FillBufferFromString<0>(EncodeHeader(test_msg_.size())),
@@ -387,8 +393,7 @@ TEST_F(StreamPacketReaderTest, ReaderDeletedDuringAsyncHeaderRead) {
 // StreamPacketReader object was destroyed.
 TEST_F(StreamPacketReaderTest, ReaderDeletedDuringAsyncPayloadRead) {
   net::CompletionCallback cb;
-  std::unique_ptr<StreamPacketReader> reader(
-      new StreamPacketReader(&socket_, &statistics_));
+  std::unique_ptr<StreamPacketReader> reader(new StreamPacketReader(&socket_));
 
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
       .WillOnce(DoAll(FillBufferFromString<0>(EncodeHeader(test_msg_.size())),

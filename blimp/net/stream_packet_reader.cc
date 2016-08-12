@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "blimp/net/blimp_connection_statistics.h"
+#include "blimp/net/blimp_stats.h"
 #include "blimp/net/common.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -37,12 +37,8 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-StreamPacketReader::StreamPacketReader(net::StreamSocket* socket,
-                                       BlimpConnectionStatistics* statistics)
-    : read_state_(ReadState::IDLE),
-      socket_(socket),
-      statistics_(statistics),
-      weak_factory_(this) {
+StreamPacketReader::StreamPacketReader(net::StreamSocket* socket)
+    : read_state_(ReadState::IDLE), socket_(socket), weak_factory_(this) {
   DCHECK(socket_);
   header_buffer_ = new net::GrowableIOBuffer;
   header_buffer_->SetCapacity(kPacketHeaderSizeBytes);
@@ -140,7 +136,7 @@ int StreamPacketReader::DoReadPayload(int result) {
     return DoRead(payload_buffer_.get(),
                   payload_size_ - payload_buffer_->offset());
   }
-  statistics_->Add(BlimpConnectionStatistics::BYTES_RECEIVED, payload_size_);
+  BlimpStats::GetInstance()->Add(BlimpStats::BYTES_RECEIVED, payload_size_);
 
   // Finished reading the payload.
   read_state_ = ReadState::IDLE;

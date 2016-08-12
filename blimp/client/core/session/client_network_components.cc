@@ -4,6 +4,8 @@
 
 #include "blimp/client/core/session/client_network_components.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "blimp/net/ssl_client_transport.h"
@@ -13,13 +15,8 @@ namespace blimp {
 namespace client {
 
 ClientNetworkComponents::ClientNetworkComponents(
-    std::unique_ptr<NetworkEventObserver> network_observer,
-    std::unique_ptr<BlimpConnectionStatistics> statistics)
-    : connection_handler_(),
-      network_observer_(std::move(network_observer)),
-      connection_statistics_(std::move(statistics)) {
-  DCHECK(connection_statistics_);
-}
+    std::unique_ptr<NetworkEventObserver> network_observer)
+    : connection_handler_(), network_observer_(std::move(network_observer)) {}
 
 ClientNetworkComponents::~ClientNetworkComponents() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -42,13 +39,12 @@ void ClientNetworkComponents::ConnectWithAssignment(
     case Assignment::SSL:
       DCHECK(assignment.cert);
       connection_manager_->AddTransport(base::MakeUnique<SSLClientTransport>(
-          assignment.engine_endpoint, std::move(assignment.cert),
-          connection_statistics_.get(), nullptr));
+          assignment.engine_endpoint, std::move(assignment.cert), nullptr));
       transport_type = "SSL";
       break;
     case Assignment::TCP:
       connection_manager_->AddTransport(base::MakeUnique<TCPClientTransport>(
-          assignment.engine_endpoint, connection_statistics_.get(), nullptr));
+          assignment.engine_endpoint, nullptr));
       transport_type = "TCP";
       break;
     case Assignment::UNKNOWN:

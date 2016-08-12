@@ -17,7 +17,6 @@
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/contents/blimp_contents.h"
 #include "blimp/client/public/session/assignment.h"
-#include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/thread_pipe_manager.h"
 #include "url/gurl.h"
 
@@ -72,10 +71,6 @@ class BlimpClientContextImpl : public BlimpClientContext,
   // The AssignmentSource is used when the user of BlimpClientContextImpl calls
   // Connect() to get a valid assignment and later connect to the engine.
   std::unique_ptr<AssignmentSource> assignment_source_;
-
-  // Collects details of network, such as number of commits and bytes
-  // transferred over network. Owned by ClientNetworkComponents.
-  BlimpConnectionStatistics* blimp_connection_statistics_;
 
   std::unique_ptr<BlimpContentsManager> blimp_contents_manager_;
 

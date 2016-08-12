@@ -17,8 +17,6 @@ class Size;
 }
 
 namespace blimp {
-class BlimpConnectionStatistics;
-
 namespace client {
 
 class RenderWidgetFeature;
@@ -40,8 +38,7 @@ class BlimpView : public BlimpCompositorManagerClient {
             const gfx::Size& real_size,
             const gfx::Size& size,
             float dp_to_px,
-            RenderWidgetFeature* render_widget_feature,
-            BlimpConnectionStatistics* blimp_connection_statistics);
+            RenderWidgetFeature* render_widget_feature);
 
   // Methods called from Java via JNI.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
@@ -111,8 +108,6 @@ class BlimpView : public BlimpCompositorManagerClient {
   int current_surface_format_;
 
   gfx::AcceleratedWidget window_;
-
-  BlimpConnectionStatistics* blimp_connection_statistics_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpView);
 };

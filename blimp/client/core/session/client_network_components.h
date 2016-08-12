@@ -11,7 +11,6 @@
 #include "blimp/client/core/session/assignment_source.h"
 #include "blimp/client/core/session/network_event_observer.h"
 #include "blimp/net/blimp_connection.h"
-#include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/browser_connection_handler.h"
 #include "blimp/net/client_connection_manager.h"
 
@@ -25,9 +24,8 @@ class ClientNetworkComponents : public ConnectionHandler,
                                 public ConnectionErrorObserver {
  public:
   // Can be created on any thread.
-  ClientNetworkComponents(
-      std::unique_ptr<NetworkEventObserver> observer,
-      std::unique_ptr<BlimpConnectionStatistics> blimp_connection_statistics);
+  explicit ClientNetworkComponents(
+      std::unique_ptr<NetworkEventObserver> observer);
   ~ClientNetworkComponents() override;
 
   // Sets up network components.
@@ -52,7 +50,6 @@ class ClientNetworkComponents : public ConnectionHandler,
   BrowserConnectionHandler connection_handler_;
   std::unique_ptr<ClientConnectionManager> connection_manager_;
   std::unique_ptr<NetworkEventObserver> network_observer_;
-  std::unique_ptr<BlimpConnectionStatistics> connection_statistics_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientNetworkComponents);
 };

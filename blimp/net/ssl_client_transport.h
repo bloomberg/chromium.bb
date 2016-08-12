@@ -31,7 +31,6 @@ class TransportSecurityState;
 namespace blimp {
 
 class BlimpConnection;
-class BlimpConnectionStatistics;
 
 // Creates and connects SSL socket connections to an Engine.
 class BLIMP_NET_EXPORT SSLClientTransport : public TCPClientTransport {
@@ -42,7 +41,6 @@ class BLIMP_NET_EXPORT SSLClientTransport : public TCPClientTransport {
   // |net_log|: the socket event log (optional).
   SSLClientTransport(const net::IPEndPoint& ip_endpoint,
                      scoped_refptr<net::X509Certificate> cert,
-                     BlimpConnectionStatistics* statistics,
                      net::NetLog* net_log);
 
   ~SSLClientTransport() override;

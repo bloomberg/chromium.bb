@@ -4,6 +4,7 @@
 
 #include "blimp/client/session/blimp_client_session.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -25,6 +26,7 @@
 #include "blimp/client/feature/settings_feature.h"
 #include "blimp/common/blob_cache/in_memory_blob_cache.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
+#include "blimp/net/blimp_stats.h"
 #include "blimp/net/blob_channel/blob_channel_receiver.h"
 #include "blimp/net/blob_channel/helium_blob_receiver_delegate.h"
 #include "blimp/net/thread_pipe_manager.h"
@@ -44,11 +46,10 @@ BlimpClientSession::BlimpClientSession(const GURL& assigner_endpoint)
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.StartWithOptions(options);
-  blimp_connection_statistics_ = new BlimpConnectionStatistics();
   net_components_.reset(new ClientNetworkComponents(
       base::WrapUnique(new CrossThreadNetworkEventObserver(
-          weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get())),
-      base::WrapUnique(blimp_connection_statistics_)));
+          weak_factory_.GetWeakPtr(),
+          base::SequencedTaskRunnerHandle::Get()))));
 
   assignment_source_.reset(new AssignmentSource(
       assigner_endpoint, io_thread_.task_runner(), io_thread_.task_runner()));
@@ -171,11 +172,6 @@ RenderWidgetFeature* BlimpClientSession::GetRenderWidgetFeature() const {
 
 SettingsFeature* BlimpClientSession::GetSettingsFeature() const {
   return settings_feature_.get();
-}
-
-BlimpConnectionStatistics* BlimpClientSession::GetBlimpConnectionStatistics()
-    const {
-  return blimp_connection_statistics_;
 }
 
 }  // namespace client

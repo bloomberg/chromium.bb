@@ -7,6 +7,7 @@
 #include <android/native_window_jni.h>
 
 #include "blimp/client/app/android/blimp_client_session_android.h"
+#include "blimp/net/blimp_stats.h"
 #include "jni/BlimpView_jni.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/geometry/size.h"
@@ -34,8 +35,7 @@ static jlong Init(JNIEnv* env,
 
   return reinterpret_cast<intptr_t>(new BlimpView(
       env, jobj, gfx::Size(real_width, real_height), gfx::Size(width, height),
-      dp_to_px, client_session->GetRenderWidgetFeature(),
-      client_session->GetBlimpConnectionStatistics()));
+      dp_to_px, client_session->GetRenderWidgetFeature()));
 }
 
 // static
@@ -48,8 +48,7 @@ BlimpView::BlimpView(JNIEnv* env,
                      const gfx::Size& real_size,
                      const gfx::Size& size,
                      float dp_to_px,
-                     RenderWidgetFeature* render_widget_feature,
-                     BlimpConnectionStatistics* blimp_connection_statistics)
+                     RenderWidgetFeature* render_widget_feature)
     : device_scale_factor_(dp_to_px),
       compositor_manager_(
           BlimpCompositorManagerAndroid::Create(real_size,
@@ -57,8 +56,7 @@ BlimpView::BlimpView(JNIEnv* env,
                                                 render_widget_feature,
                                                 this)),
       current_surface_format_(0),
-      window_(gfx::kNullAcceleratedWidget),
-      blimp_connection_statistics_(blimp_connection_statistics) {
+      window_(gfx::kNullAcceleratedWidget) {
   java_obj_.Reset(env, jobj);
 }
 
@@ -186,8 +184,7 @@ void BlimpView::OnSwapBuffersCompleted() {
 }
 
 void BlimpView::DidCommitAndDrawFrame() {
-  DCHECK(blimp_connection_statistics_);
-  blimp_connection_statistics_->Add(BlimpConnectionStatistics::COMMIT, 1);
+  BlimpStats::GetInstance()->Add(BlimpStats::COMMIT, 1);
 }
 
 }  // namespace client

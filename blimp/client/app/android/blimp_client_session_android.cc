@@ -13,6 +13,7 @@
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/core/session/assignment_source.h"
 #include "blimp/client/feature/settings_feature.h"
+#include "blimp/net/blimp_stats.h"
 #include "components/version_info/version_info.h"
 #include "jni/BlimpClientSession_jni.h"
 #include "net/base/net_errors.h"
@@ -122,11 +123,10 @@ base::android::ScopedJavaLocalRef<jintArray>
 BlimpClientSessionAndroid::GetDebugInfo(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobj) {
-  BlimpConnectionStatistics* stats =
-      BlimpClientSession::GetBlimpConnectionStatistics();
-  int metrics[] = {stats->Get(BlimpConnectionStatistics::BYTES_RECEIVED),
-                   stats->Get(BlimpConnectionStatistics::BYTES_SENT),
-                   stats->Get(BlimpConnectionStatistics::COMMIT)};
+  BlimpStats* stats = BlimpStats::GetInstance();
+  int metrics[] = {stats->Get(BlimpStats::BYTES_RECEIVED),
+                   stats->Get(BlimpStats::BYTES_SENT),
+                   stats->Get(BlimpStats::COMMIT)};
   return base::android::ToJavaIntArray(env, metrics, arraysize(metrics));
 }
 

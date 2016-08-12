@@ -50,11 +50,9 @@ BlimpClientContextImpl::BlimpClientContextImpl(
       file_thread_task_runner_(file_thread_task_runner),
       blimp_contents_manager_(new BlimpContentsManager),
       weak_factory_(this) {
-  blimp_connection_statistics_ = new BlimpConnectionStatistics();
   net_components_.reset(new ClientNetworkComponents(
       base::MakeUnique<CrossThreadNetworkEventObserver>(
-          weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get()),
-      base::WrapUnique(blimp_connection_statistics_)));
+          weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get())));
 
   // The |thread_pipe_manager_| must be set up correctly before features are
   // registered.
