@@ -15,6 +15,10 @@ extern const base::Feature kBookmarkSuggestionsFeature;
 extern const base::Feature kRecentOfflineTabSuggestionsFeature;
 extern const base::Feature kDownloadSuggestionsFeature;
 
+// Feature to allow the 'save to offline' option to appear in the snippets
+// context menu.
+extern const base::Feature kSaveToOfflineFeature;
+
 // Global toggle for the whole content suggestions feature. If this is set to
 // false, all the per-provider features are ignored.
 extern const base::Feature kContentSuggestionsFeature;

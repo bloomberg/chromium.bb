@@ -35,6 +35,7 @@ public abstract class ChromeFeatureList {
     public static final String NTP_FAKE_OMNIBOX_TEXT = "NTPFakeOmniboxText";
     public static final String NTP_MATERIAL_DESIGN = "NTPMaterialDesign";
     public static final String NTP_SNIPPETS = "NTPSnippets";
+    public static final String NTP_SNIPPETS_SAVE_TO_OFFLINE = "NTPSaveToOffline";
     public static final String NTP_TOOLBAR = "NTPToolbar";
     public static final String WEB_PAYMENTS = "WebPayments";
     public static final String SYSTEM_DOWNLOAD_MANAGER = "SystemDownloadManager";

@@ -168,7 +168,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     @Override
     public void onSavePageLater(String linkUrl) {
         OfflinePageBridge bridge = OfflinePageBridge.getForProfile(mTab.getProfile());
-        bridge.savePageLaterForDownload(linkUrl);
+        bridge.savePageLaterForDownload(linkUrl, "async_loading");
     }
 
     /**

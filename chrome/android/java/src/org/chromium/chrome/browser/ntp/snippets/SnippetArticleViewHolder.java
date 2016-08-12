@@ -166,7 +166,8 @@ public class SnippetArticleViewHolder extends CardViewHolder
                     R.string.contextmenu_open_in_incognito_tab);
         }
 
-        if (OfflinePageBridge.isBackgroundLoadingEnabled()
+        // TODO(peconn): Only show 'Save for Offline' for appropriate snippet types.
+        if (SnippetsConfig.isSaveToOfflineEnabled()
                 && OfflinePageBridge.canSavePage(mArticle.mUrl)) {
             addContextMenuItem(menu, ID_SAVE_FOR_OFFLINE,
                     R.string.contextmenu_save_offline);
@@ -206,7 +207,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
                         NewTabPageUma.OPEN_SNIPPET_METHODS_SAVE_FOR_OFFLINE);
                 OfflinePageBridge bridge =
                         OfflinePageBridge.getForProfile(Profile.getLastUsedProfile());
-                bridge.savePageLaterForDownload(mArticle.mUrl);
+                bridge.savePageLaterForDownload(mArticle.mUrl, "ntp_suggestions");
                 return true;
             case ID_REMOVE:
                 assert isDismissable() : "Context menu should not be shown for peeking card.";

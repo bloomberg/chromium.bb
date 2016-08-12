@@ -39,6 +39,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPayIntegrationV1,
     &kImportantSitesInCBD,
     &ntp_snippets::kContentSuggestionsFeature,
+    &ntp_snippets::kSaveToOfflineFeature,
     &kNTPFakeOmniboxTextFeature,
     &kNTPMaterialDesign,
     &kNTPOfflinePagesFeature,

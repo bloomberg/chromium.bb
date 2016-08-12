@@ -301,14 +301,15 @@ public class OfflinePageBridge {
 
     /**
      * Save the given URL as an offline page when the network becomes available with a randomly
-     * generated clientId in the 'async_loading' namespace.
+     * generated clientId in the given namespace.
      *
      * @param url The given URL to save for later.
+     * @param namespace The namespace for the offline page to be saved later.
      */
-    public void savePageLaterForDownload(final String url) {
+    public void savePageLaterForDownload(final String url, final String namespace) {
         // Download UI needs "async_loading" namespace and a random (type 4) GUID.
         String uuid = UUID.randomUUID().toString();
-        ClientId clientId = new ClientId("async_loading", uuid);
+        ClientId clientId = new ClientId(namespace, uuid);
         savePageLater(url, clientId);
     }
 
