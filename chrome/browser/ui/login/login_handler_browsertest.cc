@@ -103,6 +103,9 @@ const char kSingleRealmTestPage[] = "/login/single_realm.html";
 const char kAuthBasicPage[] = "/auth-basic";
 const char kAuthDigestPage[] = "/auth-digest";
 
+const char kNoAuthPage1[] = "/a";
+const char kNoAuthPage2[] = "/b";
+
 base::string16 ExpectedTitleFromAuth(const base::string16& username,
                                      const base::string16& password) {
   // The TestServer sets the title to username/password on successful login.
@@ -317,102 +320,130 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestTwoAuths) {
   EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
 }
 
-// Test login prompt cancellation.
-// Flaky on Mac crbug.com/636875
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, DISABLED_TestCancelAuth) {
+// Test manual login prompt cancellation.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_Manual) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL auth_page = embedded_test_server()->GetURL(kAuthBasicPage);
-  GURL no_auth_page_1 = embedded_test_server()->GetURL("/a");
-  GURL no_auth_page_2 = embedded_test_server()->GetURL("/b");
-  GURL no_auth_page_3 = embedded_test_server()->GetURL("/c");
+  const GURL kAuthURL = embedded_test_server()->GetURL(kAuthBasicPage);
 
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationController* controller = &contents->GetController();
+  NavigationController* controller =
+      &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
+
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  WindowedLoadStopObserver load_stop_waiter(controller, 1);
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  browser()->OpenURL(OpenURLParams(kAuthURL, Referrer(), CURRENT_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
+  auth_needed_waiter.Wait();
+  WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+  LoginHandler* handler = *observer.handlers().begin();
+  ASSERT_TRUE(handler);
+  handler->CancelAuth();
+  auth_cancelled_waiter.Wait();
+  load_stop_waiter.Wait();
+  EXPECT_TRUE(observer.handlers().empty());
+}
+
+// Test login prompt cancellation on navigation to a new page.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kAuthURL = embedded_test_server()->GetURL(kAuthBasicPage);
+  const GURL kNoAuthURL = embedded_test_server()->GetURL(kNoAuthPage1);
+
+  NavigationController* controller =
+      &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
+
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // One LOAD_STOP event for kAuthURL and one for kNoAuthURL.
+  const int kLoadStopEvents = 2;
+  WindowedLoadStopObserver load_stop_waiter(controller, kLoadStopEvents);
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  browser()->OpenURL(OpenURLParams(kAuthURL, Referrer(), CURRENT_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
+  auth_needed_waiter.Wait();
+  WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+  // Navigating while auth is requested is the same as cancelling.
+  browser()->OpenURL(OpenURLParams(kNoAuthURL, Referrer(), CURRENT_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
+  auth_cancelled_waiter.Wait();
+  load_stop_waiter.Wait();
+  EXPECT_TRUE(observer.handlers().empty());
+}
+
+// Test login prompt cancellation on navigation to back.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnBack) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kAuthURL = embedded_test_server()->GetURL(kAuthBasicPage);
+  const GURL kNoAuthURL = embedded_test_server()->GetURL(kNoAuthPage1);
+
+  NavigationController* controller =
+      &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
 
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<NavigationController>(controller));
 
   // First navigate to an unauthenticated page so we have something to
   // go back to.
-  ui_test_utils::NavigateToURL(browser(), no_auth_page_1);
+  ui_test_utils::NavigateToURL(browser(), kNoAuthURL);
 
-  // Navigating while auth is requested is the same as cancelling.
-  {
-    // We need to wait for two LOAD_STOP events.  One for auth_page and one for
-    // no_auth_page_2.
-    WindowedLoadStopObserver load_stop_waiter(controller, 2);
-    WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(OpenURLParams(
-        auth_page, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
-        false));
-    auth_needed_waiter.Wait();
-    WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
-    browser()->OpenURL(OpenURLParams(
-        no_auth_page_2, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
-        false));
-    auth_cancelled_waiter.Wait();
-    load_stop_waiter.Wait();
-    EXPECT_TRUE(observer.handlers().empty());
-  }
+  // One LOAD_STOP event for kAuthURL and one for kNoAuthURL.
+  const int kLoadStopEvents = 2;
+  WindowedLoadStopObserver load_stop_waiter(controller, kLoadStopEvents);
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  browser()->OpenURL(OpenURLParams(kAuthURL, Referrer(), CURRENT_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
+  auth_needed_waiter.Wait();
+  WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+  // Navigating back while auth is requested is the same as cancelling.
+  ASSERT_TRUE(controller->CanGoBack());
+  controller->GoBack();
+  auth_cancelled_waiter.Wait();
+  load_stop_waiter.Wait();
+  EXPECT_TRUE(observer.handlers().empty());
+}
 
-  // Try navigating backwards.
-  {
-    // As above, we wait for two LOAD_STOP events; one for each navigation.
-    WindowedLoadStopObserver load_stop_waiter(controller, 2);
-    WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(OpenURLParams(
-        auth_page, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
-        false));
-    auth_needed_waiter.Wait();
-    WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
-    ASSERT_TRUE(chrome::CanGoBack(browser()));
-    chrome::GoBack(browser(), CURRENT_TAB);
-    auth_cancelled_waiter.Wait();
-    load_stop_waiter.Wait();
-    EXPECT_TRUE(observer.handlers().empty());
-  }
+// Test login prompt cancellation on navigation to forward.
+// TODO(crbug.com/636875) Flaky on Mac and Linux at least.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       DISABLED_TestCancelAuth_OnForward) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kAuthURL = embedded_test_server()->GetURL(kAuthBasicPage);
+  const GURL kNoAuthURL1 = embedded_test_server()->GetURL(kNoAuthPage1);
+  const GURL kNoAuthURL2 = embedded_test_server()->GetURL(kNoAuthPage2);
+
+  NavigationController* controller =
+      &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
+
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  ui_test_utils::NavigateToURL(browser(), kNoAuthURL1);
 
   // Now add a page and go back, so we have something to go forward to.
-  ui_test_utils::NavigateToURL(browser(), no_auth_page_3);
+  ui_test_utils::NavigateToURL(browser(), kNoAuthURL2);
   {
     WindowedLoadStopObserver load_stop_waiter(controller, 1);
-    chrome::GoBack(browser(), CURRENT_TAB);  // Should take us to page 1
+    ASSERT_TRUE(controller->CanGoBack());
+    controller->GoBack();
     load_stop_waiter.Wait();
   }
 
-  {
-    // We wait for two LOAD_STOP events; one for each navigation.
-    WindowedLoadStopObserver load_stop_waiter(controller, 2);
-    WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(OpenURLParams(
-        auth_page, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
-        false));
-    auth_needed_waiter.Wait();
-    WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
-    ASSERT_TRUE(chrome::CanGoForward(browser()));
-    chrome::GoForward(browser(), CURRENT_TAB);  // Should take us to page 3
-    auth_cancelled_waiter.Wait();
-    load_stop_waiter.Wait();
-    EXPECT_TRUE(observer.handlers().empty());
-  }
-
-  // Now test that cancelling works as expected.
-  {
-    WindowedLoadStopObserver load_stop_waiter(controller, 1);
-    WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(OpenURLParams(
-        auth_page, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_TYPED,
-        false));
-    auth_needed_waiter.Wait();
-    WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
-    LoginHandler* handler = *observer.handlers().begin();
-    ASSERT_TRUE(handler);
-    handler->CancelAuth();
-    auth_cancelled_waiter.Wait();
-    load_stop_waiter.Wait();
-    EXPECT_TRUE(observer.handlers().empty());
-  }
+  // One LOAD_STOP event for kAuthURL and one for kNoAuthURL.
+  const int kLoadStopEvents = 2;
+  WindowedLoadStopObserver load_stop_waiter(controller, kLoadStopEvents);
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  browser()->OpenURL(OpenURLParams(kAuthURL, Referrer(), CURRENT_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
+  auth_needed_waiter.Wait();
+  WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+  ASSERT_TRUE(controller->CanGoForward());
+  controller->GoForward();
+  auth_cancelled_waiter.Wait();
+  load_stop_waiter.Wait();
+  EXPECT_TRUE(observer.handlers().empty());
 }
 
 // Test handling of resources that require authentication even though
