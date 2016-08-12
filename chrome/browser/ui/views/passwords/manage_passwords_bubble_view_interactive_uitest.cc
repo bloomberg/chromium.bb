@@ -316,8 +316,9 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   content::RunAllPendingInMessageLoop();
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE,
-            PasswordsModelDelegateFromWebContents(web_contents)->GetState());
+  EXPECT_EQ(
+      password_manager::ui::MANAGE_STATE,
+      PasswordsModelDelegateFromWebContents(web_contents)->GetState());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {

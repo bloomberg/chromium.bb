@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
@@ -771,7 +772,7 @@ void ManagePasswordsBubbleView::ActivateBubble() {
 }
 
 content::WebContents* ManagePasswordsBubbleView::web_contents() const {
-  return model_.web_contents();
+  return model_.GetWebContents();
 }
 
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
@@ -779,7 +780,7 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
     views::View* anchor_view,
     DisplayReason reason)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
-      model_(web_contents,
+      model_(PasswordsModelDelegateFromWebContents(web_contents),
              reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
                                  : ManagePasswordsBubbleModel::USER_ACTION),
       initially_focused_view_(nullptr) {

@@ -59,7 +59,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ManagePasswordsUIController);
 ManagePasswordsUIController::ManagePasswordsUIController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      bubble_status_(NOT_SHOWN) {
+      bubble_status_(NOT_SHOWN),
+      weak_ptr_factory_(this) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));
   password_manager::PasswordStore* password_store =
@@ -174,6 +175,8 @@ void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIconView* icon) {
   if (bubble_status_ == SHOULD_POP_UP) {
     DCHECK(!dialog_controller_);
+    // This will detach any existing bubble so OnBubbleHidden() isn't called.
+    weak_ptr_factory_.InvalidateWeakPtrs();
     // We must display the icon before showing the bubble, as the bubble would
     // be otherwise unanchored.
     icon->SetState(GetState());
@@ -189,6 +192,15 @@ void ManagePasswordsUIController::UpdateIconAndBubbleState(
       state = password_manager::ui::INACTIVE_STATE;
     icon->SetState(state);
   }
+}
+
+base::WeakPtr<PasswordsModelDelegate>
+ManagePasswordsUIController::GetModelDelegateProxy() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+content::WebContents* ManagePasswordsUIController::GetWebContents() const {
+  return web_contents();
 }
 
 const GURL& ManagePasswordsUIController::GetOrigin() const {
@@ -298,13 +310,16 @@ void ManagePasswordsUIController::UpdatePassword(
 }
 
 void ManagePasswordsUIController::ChooseCredential(
-    autofill::PasswordForm form,
+    const autofill::PasswordForm& form,
     password_manager::CredentialType credential_type) {
   DCHECK(dialog_controller_);
   DCHECK_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
             credential_type);
+  // Copy the argument before destroying the controller. |form| is a member of
+  // |dialog_controller_|.
+  autofill::PasswordForm copy_form = form;
   dialog_controller_.reset();
-  passwords_data_.ChooseCredential(&form);
+  passwords_data_.ChooseCredential(&copy_form);
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   UpdateBubbleAndIconVisibility();
 }

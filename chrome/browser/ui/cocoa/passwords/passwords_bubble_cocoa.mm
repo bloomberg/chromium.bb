@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "content/public/browser/web_contents.h"
 
 typedef void (^Callback)(void);
@@ -43,7 +44,8 @@ ManagePasswordsBubbleCocoa::ManagePasswordsBubbleCocoa(
     content::WebContents* webContents,
     ManagePasswordsBubbleModel::DisplayReason displayReason,
     ManagePasswordsIcon* icon)
-    : model_(webContents, displayReason),
+    : model_(PasswordsModelDelegateFromWebContents(webContents),
+             displayReason),
       icon_(icon),
       controller_(nil),
       webContents_(webContents),

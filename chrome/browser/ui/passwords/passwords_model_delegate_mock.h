@@ -1,24 +1,23 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_MOCK_H_
-#define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_MOCK_H_
+#ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORDS_MODEL_DELEGATE_MOCK_H_
+#define CHROME_BROWSER_UI_PASSWORDS_PASSWORDS_MODEL_DELEGATE_MOCK_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
-class ManagePasswordsUIControllerMock : public ManagePasswordsUIController {
+class PasswordsModelDelegateMock
+    : public PasswordsModelDelegate,
+      public base::SupportsWeakPtr<PasswordsModelDelegateMock>{
  public:
-  explicit ManagePasswordsUIControllerMock(
-      content::WebContents* contents);
-  ~ManagePasswordsUIControllerMock() override;
+  PasswordsModelDelegateMock();
+  ~PasswordsModelDelegateMock() override;
 
+  MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   MOCK_CONST_METHOD0(GetOrigin, const GURL&());
   MOCK_CONST_METHOD0(GetState, password_manager::ui::State());
   MOCK_CONST_METHOD0(GetPendingPassword, const autofill::PasswordForm&());
@@ -46,7 +45,7 @@ class ManagePasswordsUIControllerMock : public ManagePasswordsUIController {
   MOCK_METHOD0(OnDialogHidden, void());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsUIControllerMock);
+  DISALLOW_COPY_AND_ASSIGN(PasswordsModelDelegateMock);
 };
 
-#endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_MOCK_H_
+#endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORDS_MODEL_DELEGATE_MOCK_H_

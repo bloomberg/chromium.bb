@@ -16,7 +16,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser/profile_sync_service_mock.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -29,6 +29,7 @@
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -96,10 +97,7 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   void SetUp() override {
     test_web_contents_.reset(
         content::WebContentsTester::CreateTestWebContents(&profile_, nullptr));
-    // Create the test UIController here so that it's bound to
-    // |test_web_contents_| and therefore accessible to the model.
-    new testing::StrictMock<ManagePasswordsUIControllerMock>(
-        test_web_contents_.get());
+    mock_delegate_.reset(new testing::StrictMock<PasswordsModelDelegateMock>);
     PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(),
         password_manager::BuildPasswordStore<
@@ -108,8 +106,8 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    // Reset WebContents first. It can happen if the user closes the tab.
-    test_web_contents_.reset();
+    // Reset the delegate first. It can happen if the user closes the tab.
+    mock_delegate_.reset();
     model_.reset();
     variations::testing::ClearAllVariationIDs();
     variations::testing::ClearAllVariationParams();
@@ -126,12 +124,9 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
             .get());
   }
 
-  ManagePasswordsUIControllerMock* controller() {
-    return static_cast<ManagePasswordsUIControllerMock*>(
-        PasswordsModelDelegateFromWebContents(test_web_contents_.get()));
+  PasswordsModelDelegateMock* controller() {
+    return mock_delegate_.get();
   }
-
-  content::WebContents* test_web_contents() { return test_web_contents_.get(); }
 
   ManagePasswordsBubbleModel* model() { return model_.get(); }
 
@@ -155,19 +150,23 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   std::unique_ptr<content::WebContents> test_web_contents_;
   base::FieldTrialList field_trials_;
   std::unique_ptr<ManagePasswordsBubbleModel> model_;
+  std::unique_ptr<PasswordsModelDelegateMock> mock_delegate_;
 };
 
 void ManagePasswordsBubbleModelTest::SetUpWithState(
     password_manager::ui::State state,
     ManagePasswordsBubbleModel::DisplayReason reason) {
-  ManagePasswordsUIControllerMock* mock = controller();
   GURL origin(kSiteOrigin);
-  EXPECT_CALL(*mock, GetOrigin()).WillOnce(ReturnRef(origin));
-  EXPECT_CALL(*mock, GetState()).WillOnce(Return(state));
-  EXPECT_CALL(*mock, OnBubbleShown());
+  EXPECT_CALL(*controller(), GetOrigin()).WillOnce(ReturnRef(origin));
+  EXPECT_CALL(*controller(), GetState()).WillOnce(Return(state));
+  EXPECT_CALL(*controller(), OnBubbleShown());
+  EXPECT_CALL(*controller(), GetWebContents()).WillRepeatedly(
+      Return(test_web_contents_.get()));
   model_.reset(
-      new ManagePasswordsBubbleModel(test_web_contents_.get(), reason));
-  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(mock));
+      new ManagePasswordsBubbleModel(mock_delegate_->AsWeakPtr(), reason));
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
+  EXPECT_CALL(*controller(), GetWebContents()).WillRepeatedly(
+      Return(test_web_contents_.get()));
 }
 
 void ManagePasswordsBubbleModelTest::PretendPasswordWaiting() {
@@ -208,13 +207,9 @@ void ManagePasswordsBubbleModelTest::PretendManagingPasswords() {
 }
 
 void ManagePasswordsBubbleModelTest::DestroyModel() {
-  ManagePasswordsUIControllerMock* mock =
-      test_web_contents_ ? controller() : nullptr;
-  if (mock)
-    EXPECT_CALL(*mock, OnBubbleHidden());
+  EXPECT_CALL(*controller(), OnBubbleHidden());
   model_.reset();
-  if (mock)
-    ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(mock));
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
 }
 
 void ManagePasswordsBubbleModelTest::DestroyModelExpectReason(

@@ -11,8 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -20,7 +20,6 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,15 +62,11 @@ autofill::PasswordForm GetFederationProviderForm() {
 class PasswordDialogControllerTest : public testing::Test {
  public:
   PasswordDialogControllerTest()
-      : test_web_contents_(content::WebContentsTester::CreateTestWebContents(
-            &profile_, nullptr)),
-        ui_controller_mock_(new StrictMock<ManagePasswordsUIControllerMock>(
-            test_web_contents_.get())),
-        controller_(&profile_, ui_controller_mock_) {
+      : controller_(&profile_, &ui_controller_mock_) {
   }
 
-  ManagePasswordsUIControllerMock& ui_controller_mock() {
-    return *ui_controller_mock_;
+  PasswordsModelDelegateMock& ui_controller_mock() {
+    return ui_controller_mock_;
   }
 
   PasswordDialogControllerImpl& controller() { return controller_; }
@@ -81,9 +76,7 @@ class PasswordDialogControllerTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  std::unique_ptr<content::WebContents> test_web_contents_;
-  // Owned by |test_web_contents_|.
-  ManagePasswordsUIControllerMock* ui_controller_mock_;
+  StrictMock<PasswordsModelDelegateMock> ui_controller_mock_;
   PasswordDialogControllerImpl controller_;
 };
 

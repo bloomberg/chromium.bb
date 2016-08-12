@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 
@@ -26,6 +27,9 @@ class GURL;
 // and notify about user actions.
 class PasswordsModelDelegate {
  public:
+  // Returns WebContents* the model is attached to.
+  virtual content::WebContents* GetWebContents() const = 0;
+
   // Returns the URL of the site the current forms are retrieved for.
   virtual const GURL& GetOrigin() const = 0;
 
@@ -76,10 +80,9 @@ class PasswordsModelDelegate {
   virtual void UpdatePassword(const autofill::PasswordForm& password_form) = 0;
 
   // Called from the dialog controller when the user chooses a credential.
-  // Everything is passed by value because the controller can be destroyed
-  // inside the method.
+  // Controller can be destroyed inside the method.
   virtual void ChooseCredential(
-      autofill::PasswordForm form,
+      const autofill::PasswordForm& form,
       password_manager::CredentialType credential_type) = 0;
 
   // Open a new tab pointing to passwords.google.com.
@@ -98,8 +101,7 @@ class PasswordsModelDelegate {
   virtual ~PasswordsModelDelegate() = default;
 };
 
-// Returns ManagePasswordsUIController instance for |contents|
-PasswordsModelDelegate* PasswordsModelDelegateFromWebContents(
-    content::WebContents* web_contents);
+base::WeakPtr<PasswordsModelDelegate>
+PasswordsModelDelegateFromWebContents(content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORDS_MODEL_DELEGATE_H_

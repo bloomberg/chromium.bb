@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
@@ -122,6 +123,8 @@ void TestManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   opened_bubble_ = IsAutomaticallyOpeningBubble();
   ManagePasswordsUIController::UpdateBubbleAndIconVisibility();
   OnUpdateBubbleAndIconVisibility();
+  TestManagePasswordsIconView view;
+  UpdateIconAndBubbleState(&view);
   if (opened_bubble_)
     OnBubbleShown();
 }
@@ -742,4 +745,27 @@ TEST_F(ManagePasswordsUIControllerTest, UpdatePendingStatePasswordAutofilled) {
 
 TEST_F(ManagePasswordsUIControllerTest, ConfirmationStatePasswordAutofilled) {
   TestNotChangingStateOnAutofill(password_manager::ui::CONFIRMATION_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, OpenBubbleTwice) {
+  // Open the autosignin bubble.
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnAutoSignin(std::move(local_credentials),
+                             test_local_form().origin);
+  EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, controller()->GetState());
+  // The delegate used by the bubble for communicating with the controller.
+  base::WeakPtr<PasswordsModelDelegate> proxy_delegate =
+      controller()->GetModelDelegateProxy();
+
+  // Open the bubble again.
+  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnAutoSignin(std::move(local_credentials),
+                             test_local_form().origin);
+  EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, controller()->GetState());
+  // Check the delegate is destroyed. Thus, the first bubble has no way to mess
+  // up with the controller's state.
+  EXPECT_FALSE(proxy_delegate);
 }

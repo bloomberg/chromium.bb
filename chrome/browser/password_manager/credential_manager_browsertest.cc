@@ -44,8 +44,8 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
   CredentialManagerBrowserTest() = default;
 
   bool IsShowingAccountChooser() {
-    return PasswordsModelDelegateFromWebContents(WebContents())->GetState() ==
-        password_manager::ui::CREDENTIAL_REQUEST_STATE;
+    return PasswordsModelDelegateFromWebContents(WebContents())->
+        GetState() == password_manager::ui::CREDENTIAL_REQUEST_STATE;
   }
 
   // Make sure that the password store processed all the previous calls which
@@ -93,8 +93,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
       "navigator.credentials.get({password: true})"
       ".then(cred => window.location = '/password/done.html')"));
   WaitForPasswordStore();
-  ASSERT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
-            PasswordsModelDelegateFromWebContents(WebContents())->GetState());
+  ASSERT_EQ(
+      password_manager::ui::CREDENTIAL_REQUEST_STATE,
+      PasswordsModelDelegateFromWebContents(WebContents())->GetState());
   PasswordsModelDelegateFromWebContents(WebContents())->ChooseCredential(
       signin_form,
       password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);

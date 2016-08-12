@@ -57,40 +57,39 @@ void NavigationObserver::Wait() {
 }
 
 BubbleObserver::BubbleObserver(content::WebContents* web_contents)
-    : passwords_model_delegate_(
-          PasswordsModelDelegateFromWebContents(web_contents)) {}
+    : passwords_ui_controller_(
+          ManagePasswordsUIController::FromWebContents(web_contents)) {}
 
 bool BubbleObserver::IsShowingSavePrompt() const {
-  return passwords_model_delegate_->GetState() ==
+  return passwords_ui_controller_->GetState() ==
       password_manager::ui::PENDING_PASSWORD_STATE;
 }
 
 bool BubbleObserver::IsShowingUpdatePrompt() const {
-  return passwords_model_delegate_->GetState() ==
+  return passwords_ui_controller_->GetState() ==
       password_manager::ui::PENDING_PASSWORD_UPDATE_STATE;
 }
 
 void BubbleObserver::Dismiss() const  {
-  passwords_model_delegate_->OnBubbleHidden();
+  passwords_ui_controller_->OnBubbleHidden();
   // Navigate away to reset the state to inactive.
-  static_cast<content::WebContentsObserver*>(
-      static_cast<ManagePasswordsUIController*>(passwords_model_delegate_))
-                ->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                                       content::FrameNavigateParams());
+  static_cast<content::WebContentsObserver*>(passwords_ui_controller_)
+      ->DidNavigateMainFrame(content::LoadCommittedDetails(),
+                             content::FrameNavigateParams());
   ASSERT_EQ(password_manager::ui::INACTIVE_STATE,
-            passwords_model_delegate_->GetState());
+            passwords_ui_controller_->GetState());
 }
 
 void BubbleObserver::AcceptSavePrompt() const {
   ASSERT_TRUE(IsShowingSavePrompt());
-  passwords_model_delegate_->SavePassword();
+  passwords_ui_controller_->SavePassword();
   EXPECT_FALSE(IsShowingSavePrompt());
 }
 
 void BubbleObserver::AcceptUpdatePrompt(
     const autofill::PasswordForm& form) const {
   ASSERT_TRUE(IsShowingUpdatePrompt());
-  passwords_model_delegate_->UpdatePassword(form);
+  passwords_ui_controller_->UpdatePassword(form);
   EXPECT_FALSE(IsShowingUpdatePrompt());
 }
 

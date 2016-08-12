@@ -16,7 +16,7 @@ namespace autofill {
 struct PasswordForm;
 }
 
-class PasswordsModelDelegate;
+class ManagePasswordsUIController;
 
 class NavigationObserver : public content::WebContentsObserver {
  public:
@@ -81,7 +81,7 @@ class BubbleObserver {
   void AcceptUpdatePrompt(const autofill::PasswordForm& form) const;
 
  private:
-  PasswordsModelDelegate* const passwords_model_delegate_;
+  ManagePasswordsUIController* const passwords_ui_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
 };

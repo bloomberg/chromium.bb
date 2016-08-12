@@ -97,7 +97,7 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
 
   ManagePasswordsUIControllerMock* UIController() {
     return static_cast<ManagePasswordsUIControllerMock*>(
-        PasswordsModelDelegateFromWebContents(test_web_contents_));
+        ManagePasswordsUIController::FromWebContents(test_web_contents_));
   }
 
   ManagePasswordsBubbleController* controller() {
