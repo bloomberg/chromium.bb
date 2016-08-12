@@ -933,6 +933,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
           # http://crbug.com/599451: this test is currently too slow
           # to run on x64 in Debug mode. Need to shard the tests.
           'Win7 x64 Debug (NVIDIA)',
+          # http://crbug.com/637081: the Mac Minis are badly
+          # oversubscribed right now. Save some time by stopping
+          # running the WebGL 2.0 conformance tests on this
+          # configuration temporarily, until more capacity comes
+          # online (http://crbug.com/636472).
+          'Mac 10.10 Release (Intel)',
+          'Optional Mac 10.10 Release (Intel)',
         ],
       },
     ],
