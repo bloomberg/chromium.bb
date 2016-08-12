@@ -6,60 +6,24 @@
 
 namespace blink {
 
-class SameThreadTask : public WebTaskRunner::Task {
-    USING_FAST_MALLOC(SameThreadTask);
-    WTF_MAKE_NONCOPYABLE(SameThreadTask);
-public:
-    explicit SameThreadTask(std::unique_ptr<WTF::Closure> closure)
-        : m_closure(std::move(closure))
-    {
-    }
-
-    void run() override
-    {
-        (*m_closure)();
-    }
-
-private:
-    std::unique_ptr<WTF::Closure> m_closure;
-};
-
-class CrossThreadTask : public WebTaskRunner::Task {
-    USING_FAST_MALLOC(CrossThreadTask);
-    WTF_MAKE_NONCOPYABLE(CrossThreadTask);
-public:
-    explicit CrossThreadTask(std::unique_ptr<CrossThreadClosure> closure)
-        : m_closure(std::move(closure))
-    {
-    }
-
-    void run() override
-    {
-        (*m_closure)();
-    }
-
-private:
-    std::unique_ptr<CrossThreadClosure> m_closure;
-};
-
 void WebTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> task)
 {
-    postTask(location, new CrossThreadTask(std::move(task)));
+    toSingleThreadTaskRunner()->PostTask(location, convertToBaseCallback(std::move(task)));
 }
 
 void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> task, long long delayMs)
 {
-    postDelayedTask(location, new CrossThreadTask(std::move(task)), delayMs);
+    toSingleThreadTaskRunner()->PostDelayedTask(location, convertToBaseCallback(std::move(task)), base::TimeDelta::FromMilliseconds(delayMs));
 }
 
 void WebTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task)
 {
-    postTask(location, new SameThreadTask(std::move(task)));
+    toSingleThreadTaskRunner()->PostTask(location, convertToBaseCallback(std::move(task)));
 }
 
 void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task, long long delayMs)
 {
-    postDelayedTask(location, new SameThreadTask(std::move(task)), delayMs);
+    toSingleThreadTaskRunner()->PostDelayedTask(location, convertToBaseCallback(std::move(task)), base::TimeDelta::FromMilliseconds(delayMs));
 }
 
 } // namespace blink
