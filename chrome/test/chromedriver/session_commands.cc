@@ -525,9 +525,7 @@ Status ExecuteGetNetworkConnection(Session* session,
   int connection_type = 0;
   connection_type = desktop->GetNetworkConnection();
 
-  base::DictionaryValue connection;
-  connection.SetInteger("connection_type", connection_type);
-  value->reset(connection.DeepCopy());
+  value->reset(new base::FundamentalValue(connection_type));
   return Status(kOk);
 }
 

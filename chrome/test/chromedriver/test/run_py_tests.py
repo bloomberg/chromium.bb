@@ -1794,7 +1794,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     connection_type = 0x8
     driver.SetNetworkConnection(connection_type)
     network = driver.GetNetworkConnection()
-    self.assertEquals(network['connection_type'], connection_type)
+    self.assertEquals(network, connection_type)
 
   def testEmulateNetworkConnectionMultipleBits(self):
     driver = self.CreateDriver(
@@ -1805,7 +1805,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     connection_type = 0x38
     driver.SetNetworkConnection(connection_type)
     network = driver.GetNetworkConnection()
-    self.assertEquals(network['connection_type'], connection_type)
+    self.assertEquals(network, connection_type)
 
   def testWifiAndAirplaneModeEmulation(self):
     driver = self.CreateDriver(
@@ -1816,7 +1816,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     connection_type = 0x3
     driver.SetNetworkConnection(connection_type)
     network = driver.GetNetworkConnection()
-    self.assertEquals(network['connection_type'], connection_type)
+    self.assertEquals(network, connection_type)
 
   def testNetworkConnectionTypeIsAppliedToAllTabsImmediately(self):
     def respondWithString(request):
@@ -1871,7 +1871,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     connection_type = 0x1;
     driver.SetNetworkConnection(connection_type)
     network = driver.GetNetworkConnection()
-    self.assertEquals(network['connection_type'], connection_type)
+    self.assertEquals(network, connection_type)
 
     # Navigate to another window.
     driver.FindElement('id', 'link').Click()
@@ -1891,7 +1891,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
     # Test whether first window has old or new network conditions.
     network = driver.GetNetworkConnection()
-    self.assertEquals(network['connection_type'], connection_type)
+    self.assertEquals(network, connection_type)
 
   def testW3cCompliantResponses(self):
     # Asserts that chromedriver has received the correct response.
