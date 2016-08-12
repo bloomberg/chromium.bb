@@ -285,7 +285,7 @@ void SessionRestoreStatsCollector::Observe(
           if (tab_state.loading_state == TAB_IS_LOADED)
             loaded_tabs.push_back(tab_state.controller);
         }
-        for (auto& tab : loaded_tabs)
+        for (auto* tab : loaded_tabs)
           RemoveTab(tab);
       }
       break;
@@ -373,7 +373,7 @@ SessionRestoreStatsCollector::GetTabState(NavigationController* tab) {
 SessionRestoreStatsCollector::TabState*
 SessionRestoreStatsCollector::GetTabState(RenderWidgetHost* tab) {
   for (auto& pair : tabs_tracked_) {
-    auto rwh = GetRenderWidgetHost(pair.first);
+    auto* rwh = GetRenderWidgetHost(pair.first);
     if (rwh == tab)
       return &pair.second;
   }
