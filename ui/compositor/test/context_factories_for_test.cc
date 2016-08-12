@@ -15,7 +15,7 @@
 namespace {
 
 static cc::SurfaceManager* g_surface_manager = nullptr;
-static ui::ContextFactory* g_implicit_factory = NULL;
+static ui::InProcessContextFactory* g_implicit_factory = NULL;
 static gl::DisableNullDrawGLBindings* g_disable_null_draw = NULL;
 
 }  // namespace
@@ -39,8 +39,11 @@ ui::ContextFactory* InitializeContextFactoryForTests(bool enable_pixel_output) {
 }
 
 void TerminateContextFactoryForTests() {
-  delete g_implicit_factory;
-  g_implicit_factory = NULL;
+  if (g_implicit_factory) {
+    g_implicit_factory->SendOnLostResources();
+    delete g_implicit_factory;
+    g_implicit_factory = NULL;
+  }
   delete g_surface_manager;
   g_surface_manager = nullptr;
   delete g_disable_null_draw;
