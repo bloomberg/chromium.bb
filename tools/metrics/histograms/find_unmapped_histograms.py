@@ -24,6 +24,21 @@ import path_util
 import extract_histograms
 
 
+CPP_COMMENT = re.compile(r"""
+    \s*             # Optional whitespace
+    (?:             # Non-capturing group
+        //.*        # C++-style comment
+        \n          # Newline
+        |           # or
+        /\*         # Start C-style comment
+        (?:         # Non-capturing group
+            (?!\*/) # Negative lookahead for comment end
+            [\s\S]  # Any character including newline
+        )*          # Repeated zero or more times
+        \*/         # End C-style comment
+    )               # End group
+    \s*             # Optional whitespace
+    """, re.VERBOSE);
 ADJACENT_C_STRING_REGEX = re.compile(r"""
     ("      # Opening quotation mark
     [^"]*)  # Literal string contents
@@ -77,6 +92,21 @@ class DirectoryNotFoundException(Exception):
 
   def __str__(self):
     return self.msg
+
+
+def removeComments(string):
+  """Remove any comments from an expression, including leading and trailing
+  whitespace. This does not correctly ignore comments embedded in strings,
+  but that shouldn't matter for this script.
+
+  Args:
+    string: The string to remove comments from, e.g.
+    '  // My histogram\n   "My.Important.Counts" '
+
+  Returns:
+    The string with comments removed, e.g. '"My.Important.Counts" '
+  """
+  return CPP_COMMENT.sub('', string)
 
 
 def collapseAdjacentCStrings(string):
@@ -166,6 +196,7 @@ def readChromiumHistograms():
 
     for match in HISTOGRAM_REGEX.finditer(contents):
       histogram = collapseAdjacentCStrings(match.group(1))
+      histogram = removeComments(histogram)
 
       # Must begin and end with a quotation mark.
       if not histogram or histogram[0] != '"' or histogram[-1] != '"':
