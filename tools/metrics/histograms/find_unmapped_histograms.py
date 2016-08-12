@@ -32,10 +32,22 @@ ADJACENT_C_STRING_REGEX = re.compile(r"""
     "       # Another opening quotation mark
     """, re.VERBOSE)
 CONSTANT_REGEX = re.compile(r"""
-    (\w*::)?  # Optional namespace
+    (\w*::)*  # Optional namespace(s)
     k[A-Z]    # Match a constant identifier: 'k' followed by an uppercase letter
     \w*       # Match the rest of the constant identifier
     $         # Make sure there's only the identifier, nothing else
+    """, re.VERBOSE)
+MACRO_STRING_CONCATENATION_REGEX = re.compile(r"""
+    \s*                           # Optional whitespace
+    (                             # Group
+        (                         # Nested group
+            "[^"]*"               # Literal string
+            |                     # or
+            [a-zA-Z][a-zA-Z0-9_]+ # Macro constant name
+        )                         # End of alternation
+        \s*                       # Optional whitespace
+    ){2,}                         # Group repeated 2 or more times
+    $                             # End of string
     """, re.VERBOSE)
 HISTOGRAM_REGEX = re.compile(r"""
     UMA_HISTOGRAM  # Match the shared prefix for standard UMA histogram macros
@@ -109,6 +121,14 @@ def logNonLiteralHistogram(filename, histogram):
 
   # Ignore histogram names that have been pulled out into C++ constants.
   if CONSTANT_REGEX.match(histogram):
+    return
+
+  # A blank value wouldn't compile unless it was in a comment.
+  if histogram == '':
+    return
+
+  # String concatenations involving macros are always constant.
+  if MACRO_STRING_CONCATENATION_REGEX.match(histogram):
     return
 
   # TODO(isherman): This is still a little noisy... needs further filtering to
