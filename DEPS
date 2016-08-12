@@ -54,6 +54,10 @@ vars = {
   # and whatever else without interference from each other.
   'buildtools_revision': 'f8fc76ea5ce4a60cda2fa5d7df3d4a62935b3113',
   # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling SwiftShader
+  # and whatever else without interference from each other.
+  'swiftshader_revision': '3e204de9bb74b5379b42b7eea5c4b898b2698d56',
+  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
   'pdfium_revision': 'd0b6ed1a0842386e474c5fcd6bdbb260bb631bd1',
@@ -102,6 +106,7 @@ allowed_hosts = [
   'boringssl.googlesource.com',
   'pdfium.googlesource.com',
   'android.googlesource.com',
+  'swiftshader.googlesource.com',
 ]
 
 deps = {
@@ -248,6 +253,9 @@ deps = {
 
   'src/third_party/ced/src':
     Var('chromium_git') + '/external/github.com/google/compact_enc_det.git' + '@' + '9012c0ab648025dd0f8df14294bf5d6d73793ac9',
+
+  'src/third_party/swiftshader':
+   'https://swiftshader.googlesource.com/SwiftShader.git' + '@' +  Var('swiftshader_revision'),
 
   'src/third_party/cld_2/src':
     Var('chromium_git') + '/external/github.com/CLD2Owners/cld2.git' + '@' + '84b58a5d7690ebf05a91406f371ce00c3daf31c0',
