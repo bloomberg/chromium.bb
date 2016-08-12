@@ -228,6 +228,9 @@ HitTestResult hitTestInDocument(const Document* document, int x, int y, const Hi
     if (!pointWithScrollAndZoomIfPossible(*document, hitPoint))
         return HitTestResult();
 
+    if (!document->isActive())
+        return HitTestResult();
+
     HitTestResult result(request, hitPoint);
     document->layoutViewItem().hitTest(result);
     return result;
