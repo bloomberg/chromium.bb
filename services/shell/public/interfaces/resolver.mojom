@@ -23,7 +23,7 @@ struct ResolveResult {
   string qualifier;
 
   // The set of capabilities provided and required by |name|.
-  CapabilitySpec capabilities;
+  CapabilitySpec? capabilities;
 
   // A path to the package file specified by |name|.
   mojo.common.mojom.FilePath package_path;

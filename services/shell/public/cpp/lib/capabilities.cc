@@ -4,6 +4,8 @@
 
 #include "services/shell/public/cpp/capabilities.h"
 
+#include <tuple>
+
 namespace shell {
 
 CapabilityRequest::CapabilityRequest() {}
@@ -33,53 +35,3 @@ bool CapabilitySpec::operator<(const CapabilitySpec& other) const {
 }
 
 }  // namespace shell
-
-namespace mojo {
-
-// static
-shell::mojom::CapabilitySpecPtr
-TypeConverter<shell::mojom::CapabilitySpecPtr, shell::CapabilitySpec>::Convert(
-    const shell::CapabilitySpec& input) {
-  shell::mojom::CapabilitySpecPtr spec(shell::mojom::CapabilitySpec::New());
-  spec->provided =
-      mojo::Map<mojo::String, mojo::Array<mojo::String>>::From(input.provided);
-  spec->required =
-      mojo::Map<mojo::String, shell::mojom::CapabilityRequestPtr>::From(
-          input.required);
-  return spec;
-}
-
-// static
-shell::CapabilitySpec
-TypeConverter<shell::CapabilitySpec, shell::mojom::CapabilitySpecPtr>::Convert(
-    const shell::mojom::CapabilitySpecPtr& input) {
-  shell::CapabilitySpec spec;
-  spec.provided =
-      input->provided.To<std::map<shell::Class, shell::Interfaces>>();
-  spec.required =
-      input->required.To<std::map<shell::Name, shell::CapabilityRequest>>();
-  return spec;
-}
-
-// static
-shell::mojom::CapabilityRequestPtr TypeConverter<
-    shell::mojom::CapabilityRequestPtr,
-    shell::CapabilityRequest>::Convert(const shell::CapabilityRequest& input) {
-  shell::mojom::CapabilityRequestPtr request(
-      shell::mojom::CapabilityRequest::New());
-  request->classes = mojo::Array<mojo::String>::From(input.classes);
-  request->interfaces = mojo::Array<mojo::String>::From(input.interfaces);
-  return request;
-}
-
-// static
-shell::CapabilityRequest
-TypeConverter<shell::CapabilityRequest, shell::mojom::CapabilityRequestPtr>::
-    Convert(const shell::mojom::CapabilityRequestPtr& input) {
-  shell::CapabilityRequest request;
-  request.classes = input->classes.To<std::set<std::string>>();
-  request.interfaces = input->interfaces.To<std::set<std::string>>();
-  return request;
-}
-
-}  // namespace mojo

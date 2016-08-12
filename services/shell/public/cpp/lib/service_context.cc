@@ -47,9 +47,9 @@ void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceContext, mojom::Service implementation:
 
-void ServiceContext::OnStart(mojom::IdentityPtr identity,
+void ServiceContext::OnStart(const shell::Identity& identity,
                              const OnStartCallback& callback) {
-  identity_ = identity.To<Identity>();
+  identity_ = identity;
   if (!initialize_handler_.is_null())
     initialize_handler_.Run();
 
@@ -63,16 +63,14 @@ void ServiceContext::OnStart(mojom::IdentityPtr identity,
 }
 
 void ServiceContext::OnConnect(
-    mojom::IdentityPtr source,
+    const Identity& source,
     mojom::InterfaceProviderRequest interfaces,
-    mojom::CapabilityRequestPtr allowed_capabilities) {
-  shell::Identity remote_identity = source.To<Identity>();
+    const CapabilityRequest& allowed_capabilities) {
   std::unique_ptr<InterfaceRegistry> registry(
-      new InterfaceRegistry(remote_identity,
-                            allowed_capabilities.To<CapabilityRequest>()));
+      new InterfaceRegistry(source, allowed_capabilities));
   registry->Bind(std::move(interfaces));
 
-  if (!service_->OnConnect(remote_identity, registry.get()))
+  if (!service_->OnConnect(source, registry.get()))
     return;
 
   // TODO(beng): it appears we never prune this list. We should, when the

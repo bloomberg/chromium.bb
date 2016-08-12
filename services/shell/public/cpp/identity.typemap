@@ -1,0 +1,9 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mojom = "//services/shell/public/interfaces/connector.mojom"
+public_headers = [ "//services/shell/public/cpp/identity.h" ]
+traits_headers = [ "//services/shell/public/cpp/identity_struct_traits.h" ]
+
+type_mappings = [ "shell.mojom.Identity=::shell::Identity" ]

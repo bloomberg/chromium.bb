@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "services/shell/public/interfaces/connector.mojom.h"
-
 namespace shell {
 
 // Represents the identity of an application.
@@ -42,19 +40,5 @@ class Identity {
 };
 
 }  // namespace shell
-
-namespace mojo {
-
-template <>
-struct TypeConverter<shell::mojom::IdentityPtr, shell::Identity> {
-  static shell::mojom::IdentityPtr Convert(const shell::Identity& input);
-};
-
-template <>
-struct TypeConverter<shell::Identity, shell::mojom::IdentityPtr> {
-  static shell::Identity Convert(const shell::mojom::IdentityPtr& input);
-};
-
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_IDENTITY_H_

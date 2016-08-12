@@ -154,7 +154,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
     DCHECK(instances_.empty());
     mojo::Array<mojo::String> names;
     for (size_t i = 0; i < instances.size(); ++i) {
-      shell::Identity identity = instances[i]->identity.To<shell::Identity>();
+      const shell::Identity& identity = instances[i]->identity;
       InsertInstance(identity, instances[i]->pid);
       names.push_back(identity.name());
     }
@@ -163,7 +163,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
   void OnServiceCreated(ServiceInfoPtr instance) override {
-    shell::Identity identity = instance->identity.To<shell::Identity>();
+    shell::Identity identity = instance->identity;
     DCHECK(!ContainsIdentity(identity));
     InsertInstance(identity, instance->pid);
     observer_->OnItemsAdded(static_cast<int>(instances_.size()), 1);
@@ -173,9 +173,8 @@ class TaskViewerContents : public views::WidgetDelegateView,
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
-  void OnServiceStarted(shell::mojom::IdentityPtr identity_ptr,
+  void OnServiceStarted(const shell::Identity& identity,
                         uint32_t pid) override {
-    shell::Identity identity = identity_ptr.To<shell::Identity>();
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if ((*it)->identity == identity) {
         (*it)->pid = pid;
@@ -185,8 +184,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
       }
     }
   }
-  void OnServiceStopped(shell::mojom::IdentityPtr identity_ptr) override {
-    shell::Identity identity = identity_ptr.To<shell::Identity>();
+  void OnServiceStopped(const shell::Identity& identity) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if ((*it)->identity == identity) {
         observer_->OnItemsRemoved(

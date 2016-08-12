@@ -1,0 +1,4 @@
+typemaps = [
+  "//services/shell/public/cpp/capabilities.typemap",
+  "//services/shell/public/cpp/identity.typemap",
+]
