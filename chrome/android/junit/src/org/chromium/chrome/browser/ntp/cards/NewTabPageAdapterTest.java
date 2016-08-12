@@ -65,6 +65,12 @@ public class NewTabPageAdapterTest {
             mCategoryInfo.put(category, info);
         }
 
+        public void silentlyRemoveCategory(int category) {
+            mSuggestions.remove(category);
+            mCategoryStatus.remove(category);
+            mCategoryInfo.remove(category);
+        }
+
         @Override
         public void dismissSuggestion(SnippetArticleListItem suggestion) {
             throw new UnsupportedOperationException();
@@ -132,11 +138,9 @@ public class NewTabPageAdapterTest {
         for (int section : sections) expectedCount += section;
         if (sections.length > 0) expectedCount += 1; // bottom spacer.
         int actualCount = mNtpAdapter.getItemCount();
-        if (expectedCount != actualCount) {
-            assertEquals("Expected " + expectedCount + " items, but the following " + actualCount
-                            + " were present: " + mNtpAdapter.getItems(),
-                    expectedCount, mNtpAdapter.getItemCount());
-        }
+        assertEquals("Expected " + expectedCount + " items, but the following " + actualCount
+                        + " were present: " + mNtpAdapter.getItems(),
+                expectedCount, mNtpAdapter.getItemCount());
     }
 
     /**
@@ -349,20 +353,63 @@ public class NewTabPageAdapterTest {
         assertTrue(progress.isVisible());
 
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
-                CategoryStatus.NOT_PROVIDED);
-        assertFalse(progress.isVisible());
-
-        mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
-                CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
-        assertFalse(progress.isVisible());
-
-        mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.SIGNED_OUT);
         assertFalse(progress.isVisible());
+    }
 
+    /**
+     * Tests that the entire section disappears if its status switches to LOADING_ERROR or
+     * CATEGORY_EXPLICITLY_DISABLED. Also tests that they are not shown when the NTP reloads.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testSectionClearingWhenUnavailable() {
+        List<SnippetArticleListItem> snippets = createDummySnippets(5);
+        mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
+        mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
+        assertItemsFor(section(5));
+
+        // When the category goes away with a hard error, the section is cleared from the UI.
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.LOADING_ERROR);
-        assertFalse(progress.isVisible());
+        assertItemsFor();
+
+        // Same when loading a new NTP.
+        mNtpAdapter = new NewTabPageAdapter(null, null, mSnippetsSource, null);
+        assertItemsFor();
+
+        // Same for CATEGORY_EXPLICITLY_DISABLED.
+        mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
+        mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
+        assertItemsFor(section(5));
+        mSnippetsSource.setStatusForCategory(
+                KnownCategories.ARTICLES, CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
+        assertItemsFor();
+
+        // Same when loading a new NTP.
+        mNtpAdapter = new NewTabPageAdapter(null, null, mSnippetsSource, null);
+        assertItemsFor();
+    }
+
+    /**
+     * Tests that the UI remains untouched if a category switches to NOT_PROVIDED.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testUIUntouchedWhenNotProvided() {
+        List<SnippetArticleListItem> snippets = createDummySnippets(4);
+        mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
+        mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
+        assertItemsFor(section(4));
+
+        // When the category switches to NOT_PROVIDED, UI stays the same.
+        mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.NOT_PROVIDED);
+        mSnippetsSource.silentlyRemoveCategory(KnownCategories.ARTICLES);
+        assertItemsFor(section(4));
+
+        // But it disappears when loading a new NTP.
+        mNtpAdapter = new NewTabPageAdapter(null, null, mSnippetsSource, null);
+        assertItemsFor();
     }
 
     @Test

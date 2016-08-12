@@ -64,21 +64,6 @@ public abstract class StatusListItem implements NewTabPageListItem {
         }
     }
 
-    private static class ErrorListItem extends StatusListItem {
-        public ErrorListItem(int headerStringId, int descriptionStringId) {
-            super(headerStringId, descriptionStringId, 0);
-        }
-        @Override
-        protected void performAction(Context context) {
-            // No action.
-        }
-
-        @Override
-        protected boolean hasAction() {
-            return false;
-        }
-    }
-
     private static class NoSnippets extends StatusListItem {
         private final NewTabPageAdapter mNewTabPageAdapter;
 
@@ -110,26 +95,6 @@ public abstract class StatusListItem implements NewTabPageListItem {
         }
     }
 
-    private static class CategoryExplicitlyDisabled extends ErrorListItem {
-        public CategoryExplicitlyDisabled() {
-            // TODO(pke): Those are technically the wrong strings, but they roughly fit in this
-            // case. This should only be called when the category has been disabled via enterprise
-            // policy. Replace this with proper error card once it has been specified.
-            super(R.string.ntp_status_card_title_empty, R.string.ntp_status_card_body_empty);
-            Log.d(TAG, "Registering card for error: Category Explicitly Disabled");
-        }
-    }
-
-    private static class ProviderError extends ErrorListItem {
-        public ProviderError() {
-            // TODO(pke): Those are technically the wrong strings, but they roughly fit in this
-            // case. This is only called if NTPSnippetsDatabase encounters an error.
-            // Replace this with proper error card once it has been specified.
-            super(R.string.ntp_status_card_title_empty, R.string.ntp_status_card_body_empty);
-            Log.d(TAG, "Registering card for error: Provider Error");
-        }
-    }
-
     private static final String TAG = "NtpCards";
 
     private final int mHeaderStringId;
@@ -149,27 +114,30 @@ public abstract class StatusListItem implements NewTabPageListItem {
                 return new SignedOut();
 
             case CategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED:
-                Log.wtf(TAG, "FATAL: Attempted to create a status card while the feature should be "
-                        + "off.");
+                Log.wtf(TAG, "Attempted to create a status card while the feature should be off.");
                 return null;
 
             case CategoryStatus.CATEGORY_EXPLICITLY_DISABLED:
-                Log.d(TAG, "Not showing ARTICLES suggestions because this category is disabled.");
-                // TODO(pke): Replace this.
-                return new CategoryExplicitlyDisabled();
+                // In this case, the entire section should have been cleared off the UI.
+                Log.wtf(TAG, "Attempted to create a status card for content suggestions "
+                                + " when the category status is CATEGORY_EXPLICITLY_DISABLED.");
+                return null;
 
             case CategoryStatus.NOT_PROVIDED:
-                Log.wtf(TAG, "FATAL: Attempted to create a status card for content suggestions "
-                                + " when provider for ARTICLES is not registered.");
+                // In this case, the UI should remain as it is and also keep the previous category
+                // status, so the NOT_PROVIDED should never reach here.
+                Log.wtf(TAG, "Attempted to create a status card for content suggestions "
+                                + " when the category is NOT_PROVIDED.");
                 return null;
 
             case CategoryStatus.LOADING_ERROR:
-                Log.d(TAG, "Not showing ARTICLES suggestions because of provider error.");
-                // TODO(pke): Replace this.
-                return new ProviderError();
+                // In this case, the entire section should have been cleared off the UI.
+                Log.wtf(TAG, "Attempted to create a status card for content suggestions "
+                                + " when the category is LOADING_ERROR.");
+                return null;
 
             default:
-                Log.wtf(TAG, "FATAL: Attempted to create a status card for an unknown value: %d",
+                Log.wtf(TAG, "Attempted to create a status card for an unknown value: %d",
                         categoryStatus);
                 return null;
         }

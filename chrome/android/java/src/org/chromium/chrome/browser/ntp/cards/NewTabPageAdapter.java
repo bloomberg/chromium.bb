@@ -127,8 +127,14 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mUiConfig = uiConfig;
 
         for (int category : mSuggestionsSource.getCategories()) {
+            int categoryStatus = suggestionsSource.getCategoryStatus(category);
+            assert categoryStatus != CategoryStatus.NOT_PROVIDED;
+            if (categoryStatus == CategoryStatus.LOADING_ERROR
+                    || categoryStatus == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED)
+                continue;
+
             setSuggestions(category, suggestionsSource.getSuggestionsForCategory(category),
-                    suggestionsSource.getCategoryStatus(category));
+                    categoryStatus);
         }
         suggestionsSource.setObserver(this);
         updateGroups();
@@ -173,13 +179,27 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         // If there is no section for this category there is nothing to do.
         if (!mSections.containsKey(category)) return;
 
+        // The section provider has gone away. Keep open UIs as they are.
+        if (status == CategoryStatus.NOT_PROVIDED) return;
+
         SuggestionsSection section = mSections.get(category);
 
         // The section already has suggestions but we just got notified about the provider being
         // enabled. Nothing to do.
         if (SnippetsBridge.isCategoryStatusAvailable(status) && section.hasSuggestions()) return;
 
-        setSuggestions(category, Collections.<SnippetArticleListItem>emptyList(), status);
+        if (status == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED
+                || status == CategoryStatus.LOADING_ERROR) {
+            // Need to remove the entire section from the UI immediately.
+            mSections.remove(category);
+        } else {
+            // Two cases, in both we just want to update the status:
+            // - status is one of the AVAILABLE statuses, but we didn't have suggestions before and
+            //   we're also not getting them now (but probably right after in OnNewSuggestions).
+            // - status is non-AVAILABLE, but also none of the serious ones above, so this will
+            //   show a status card and remove the current content.
+            setSuggestions(category, Collections.<SnippetArticleListItem>emptyList(), status);
+        }
         updateGroups();
     }
 
