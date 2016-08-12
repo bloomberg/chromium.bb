@@ -21,7 +21,7 @@ TouchNoiseFinder::TouchNoiseFinder() : last_noise_time_(ui::EventTimeForNow()) {
 }
 
 TouchNoiseFinder::~TouchNoiseFinder() {
-  STLDeleteElements(&filters_);
+  base::STLDeleteElements(&filters_);
 }
 
 void TouchNoiseFinder::HandleTouches(

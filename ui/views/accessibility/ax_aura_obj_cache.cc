@@ -122,7 +122,7 @@ AXAuraObjCache::AXAuraObjCache()
 
 AXAuraObjCache::~AXAuraObjCache() {
   is_destroying_ = true;
-  STLDeleteContainerPairSecondPointers(cache_.begin(), cache_.end());
+  base::STLDeleteContainerPairSecondPointers(cache_.begin(), cache_.end());
   cache_.clear();
 }
 

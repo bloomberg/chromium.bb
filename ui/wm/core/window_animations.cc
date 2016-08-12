@@ -95,7 +95,7 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
       DCHECK(iter != window_->parent()->children().end());
       aura::Window* topmost_transient_child = NULL;
       for (++iter; iter != window_->parent()->children().end(); ++iter) {
-        if (ContainsValue(transient_children, *iter))
+        if (base::ContainsValue(transient_children, *iter))
           topmost_transient_child = *iter;
       }
       if (topmost_transient_child) {

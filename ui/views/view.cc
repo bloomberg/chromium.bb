@@ -1109,7 +1109,7 @@ void View::AddAccelerator(const ui::Accelerator& accelerator) {
   if (!accelerators_.get())
     accelerators_.reset(new std::vector<ui::Accelerator>());
 
-  if (!ContainsValue(*accelerators_.get(), accelerator))
+  if (!base::ContainsValue(*accelerators_.get(), accelerator))
     accelerators_->push_back(accelerator);
 
   RegisterPendingAccelerators();

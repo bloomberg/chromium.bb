@@ -78,7 +78,7 @@ mojo::String ClipboardMus::GetMimeTypeFor(const FormatType& format) {
 
 bool ClipboardMus::HasMimeType(const mojo::Array<mojo::String>& available_types,
                                const std::string& type) const {
-  return ContainsValue(available_types, type);
+  return base::ContainsValue(available_types, type);
 }
 
 uint64_t ClipboardMus::GetSequenceNumber(ui::ClipboardType type) const {
@@ -98,7 +98,7 @@ bool ClipboardMus::IsFormatAvailable(const FormatType& format,
                                     &available_types);
 
   mojo::String format_in_mime = GetMimeTypeFor(format);
-  return ContainsValue(available_types, format_in_mime);
+  return base::ContainsValue(available_types, format_in_mime);
 }
 
 void ClipboardMus::Clear(ui::ClipboardType type) {

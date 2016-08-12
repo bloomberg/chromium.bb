@@ -706,7 +706,7 @@ bool TextfieldModel::HasCompositionText() const {
 }
 
 void TextfieldModel::ClearEditHistory() {
-  STLDeleteElements(&edit_history_);
+  base::STLDeleteElements(&edit_history_);
   current_edit_ = edit_history_.end();
 }
 
@@ -755,7 +755,7 @@ void TextfieldModel::ClearRedoHistory() {
   }
   EditHistory::iterator delete_start = current_edit_;
   ++delete_start;
-  STLDeleteContainerPointers(delete_start, edit_history_.end());
+  base::STLDeleteContainerPointers(delete_start, edit_history_.end());
   edit_history_.erase(delete_start, edit_history_.end());
 }
 

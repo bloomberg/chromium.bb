@@ -236,7 +236,7 @@ void MessageCenterViewTest::TearDown() {
   widget_->CloseNow();
   widget_.reset();
   message_center_view_.reset();
-  STLDeleteElements(&notifications_);
+  base::STLDeleteElements(&notifications_);
   views::ViewsTestBase::TearDown();
 }
 

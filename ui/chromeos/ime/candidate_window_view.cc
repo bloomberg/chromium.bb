@@ -359,7 +359,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
 
   // Reset all candidate_views_ when orientation changes.
   if (orientation != candidate_window_.orientation())
-    STLDeleteElements(&candidate_views_);
+    base::STLDeleteElements(&candidate_views_);
 
   while (page_size < candidate_views_.size()) {
     delete candidate_views_.back();

@@ -557,7 +557,7 @@ bool IsWindowVisible(XID window) {
   std::vector<XAtom> wm_states;
   if (GetAtomArrayProperty(window, "_NET_WM_STATE", &wm_states)) {
     XAtom hidden_atom = GetAtom("_NET_WM_STATE_HIDDEN");
-    if (ContainsValue(wm_states, hidden_atom))
+    if (base::ContainsValue(wm_states, hidden_atom))
       return false;
   }
 

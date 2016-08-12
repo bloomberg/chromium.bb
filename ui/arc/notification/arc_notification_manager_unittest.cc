@@ -27,8 +27,8 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
   MockMessageCenter() {}
   ~MockMessageCenter() override {
-    STLDeleteContainerPointers(
-        visible_notifications_.begin(), visible_notifications_.end());
+    base::STLDeleteContainerPointers(visible_notifications_.begin(),
+                                     visible_notifications_.end());
   }
 
   void AddNotification(

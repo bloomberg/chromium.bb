@@ -64,7 +64,7 @@ GestureRecognizerImpl::GestureRecognizerImpl() {
 }
 
 GestureRecognizerImpl::~GestureRecognizerImpl() {
-  STLDeleteValues(&consumer_gesture_provider_);
+  base::STLDeleteValues(&consumer_gesture_provider_);
 }
 
 // Checks if this finger is already down, if so, returns the current target.

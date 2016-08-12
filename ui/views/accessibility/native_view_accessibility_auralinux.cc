@@ -46,7 +46,7 @@ class AuraLinuxApplication
       return;
 
     widget = widget->GetTopLevelWidget();
-    if (ContainsValue(widgets_, widget))
+    if (base::ContainsValue(widgets_, widget))
       return;
 
     widgets_.push_back(widget);

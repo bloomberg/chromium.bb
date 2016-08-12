@@ -526,7 +526,7 @@ void MenuItemView::ChildrenChanged() {
     }
   }
 
-  STLDeleteElements(&removed_items_);
+  base::STLDeleteElements(&removed_items_);
 }
 
 void MenuItemView::Layout() {
@@ -599,7 +599,7 @@ MenuItemView::MenuItemView(MenuItemView* parent,
 
 MenuItemView::~MenuItemView() {
   delete submenu_;
-  STLDeleteElements(&removed_items_);
+  base::STLDeleteElements(&removed_items_);
 }
 
 const char* MenuItemView::GetClassName() const {

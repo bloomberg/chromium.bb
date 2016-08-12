@@ -110,7 +110,7 @@ HWNDSubclass* HWNDSubclass::GetHwndSubclassForTarget(HWND target) {
 
 void HWNDSubclass::AddFilter(HWNDMessageFilter* filter) {
   DCHECK(filter);
-  if (!ContainsValue(filters_, filter))
+  if (!base::ContainsValue(filters_, filter))
     filters_.push_back(filter);
 }
 

@@ -189,7 +189,7 @@ InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
 }
 
 InputDeviceFactoryEvdev::~InputDeviceFactoryEvdev() {
-  STLDeleteValues(&converters_);
+  base::STLDeleteValues(&converters_);
 }
 
 void InputDeviceFactoryEvdev::AddInputDevice(int id,

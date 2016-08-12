@@ -61,7 +61,8 @@ NotificationList::NotificationList(MessageCenter* message_center)
 }
 
 NotificationList::~NotificationList() {
-  STLDeleteContainerPointers(notifications_.begin(), notifications_.end());
+  base::STLDeleteContainerPointers(notifications_.begin(),
+                                   notifications_.end());
 }
 
 void NotificationList::SetNotificationsShown(

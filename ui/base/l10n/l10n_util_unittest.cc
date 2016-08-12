@@ -399,7 +399,7 @@ TEST_F(L10nUtilTest, SortStringsUsingFunction) {
   ASSERT_TRUE(UTF8ToUTF16("b") == strings[1]->string());
   ASSERT_TRUE(UTF8ToUTF16("C") == strings[2]->string());
   ASSERT_TRUE(UTF8ToUTF16("d") == strings[3]->string());
-  STLDeleteElements(&strings);
+  base::STLDeleteElements(&strings);
 }
 
 /**

@@ -115,7 +115,7 @@ NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {
         platform_event_dispatcher_.get());
   }
 
-  STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
+  base::STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
 }
 
 void NativeDisplayDelegateX11::Initialize() {
@@ -285,7 +285,7 @@ void NativeDisplayDelegateX11::RemoveObserver(NativeDisplayObserver* observer) {
 void NativeDisplayDelegateX11::InitModes() {
   CHECK(screen_) << "Server not grabbed";
 
-  STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
+  base::STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
   modes_.clear();
 
   for (int i = 0; i < screen_->nmode; ++i) {

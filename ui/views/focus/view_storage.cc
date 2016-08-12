@@ -21,8 +21,8 @@ ViewStorage::ViewStorage() : view_storage_next_id_(0) {
 }
 
 ViewStorage::~ViewStorage() {
-  STLDeleteContainerPairSecondPointers(view_to_ids_.begin(),
-                                       view_to_ids_.end());
+  base::STLDeleteContainerPairSecondPointers(view_to_ids_.begin(),
+                                             view_to_ids_.end());
 }
 
 int ViewStorage::CreateStorageID() {

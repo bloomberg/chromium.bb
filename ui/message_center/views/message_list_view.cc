@@ -185,7 +185,8 @@ void MessageListView::ResetRepositionSession() {
     has_deferred_task_ = false;
     // cancel cause OnBoundsAnimatorDone which deletes |deleted_when_done_|.
     animator_.Cancel();
-    STLDeleteContainerPointers(deleting_views_.begin(), deleting_views_.end());
+    base::STLDeleteContainerPointers(deleting_views_.begin(),
+                                     deleting_views_.end());
     deleting_views_.clear();
     adding_views_.clear();
   }
@@ -226,8 +227,8 @@ void MessageListView::OnBoundsAnimatorProgressed(
 }
 
 void MessageListView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
-  STLDeleteContainerPointers(deleted_when_done_.begin(),
-                             deleted_when_done_.end());
+  base::STLDeleteContainerPointers(deleted_when_done_.begin(),
+                                   deleted_when_done_.end());
   deleted_when_done_.clear();
 
   if (clear_all_started_) {

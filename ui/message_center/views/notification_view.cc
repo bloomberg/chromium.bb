@@ -632,8 +632,8 @@ void NotificationView::CreateOrUpdateActionButtonViews(
 
   if (new_buttons || buttons.size() == 0) {
     // STLDeleteElements also clears the container.
-    STLDeleteElements(&separators_);
-    STLDeleteElements(&action_buttons_);
+    base::STLDeleteElements(&separators_);
+    base::STLDeleteElements(&action_buttons_);
   }
 
   DCHECK(bottom_view_);

@@ -385,7 +385,7 @@ void MessageCenterImpl::RemoveObserver(MessageCenterObserver* observer) {
 }
 
 void MessageCenterImpl::AddNotificationBlocker(NotificationBlocker* blocker) {
-  if (ContainsValue(blockers_, blocker))
+  if (base::ContainsValue(blockers_, blocker))
     return;
 
   blocker->AddObserver(this);

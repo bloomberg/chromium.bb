@@ -219,7 +219,7 @@ void TransientWindowManager::OnWindowDestroying(Window* window) {
   // parent, as destroying an active transient child may otherwise attempt to
   // refocus us.
   Windows transient_children(transient_children_);
-  STLDeleteElements(&transient_children);
+  base::STLDeleteElements(&transient_children);
   DCHECK(transient_children_.empty());
 }
 

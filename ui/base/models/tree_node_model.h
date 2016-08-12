@@ -69,9 +69,7 @@ class TreeNode : public TreeModelNode {
   explicit TreeNode(const base::string16& title)
       : title_(title), parent_(NULL) {}
 
-  ~TreeNode() override {
-    STLDeleteElements(&children_);
-  }
+  ~TreeNode() override { base::STLDeleteElements(&children_); }
 
   // Adds |node| as a child of this node, at |index|.
   virtual void Add(NodeType* node, int index) {

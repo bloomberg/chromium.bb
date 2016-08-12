@@ -24,7 +24,7 @@ void AppendNonTrivialInputScope(std::vector<InputScope>* input_scopes,
   if (input_scope == IS_DEFAULT)
     return;
 
-  if (ContainsValue(*input_scopes, input_scope))
+  if (base::ContainsValue(*input_scopes, input_scope))
     return;
 
   input_scopes->push_back(input_scope);
