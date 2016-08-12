@@ -131,7 +131,7 @@ MojoProxyResolverFactoryImpl::MojoProxyResolverFactoryImpl(
                                    std::move(request)) {}
 
 MojoProxyResolverFactoryImpl::~MojoProxyResolverFactoryImpl() {
-  STLDeleteElements(&jobs_);
+  base::STLDeleteElements(&jobs_);
 }
 
 void MojoProxyResolverFactoryImpl::CreateResolver(

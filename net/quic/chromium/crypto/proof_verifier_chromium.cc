@@ -556,7 +556,7 @@ ProofVerifierChromium::ProofVerifierChromium(
 }
 
 ProofVerifierChromium::~ProofVerifierChromium() {
-  STLDeleteElements(&active_jobs_);
+  base::STLDeleteElements(&active_jobs_);
 }
 
 QuicAsyncStatus ProofVerifierChromium::VerifyProof(

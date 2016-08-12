@@ -106,9 +106,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<TestParams> {
         .Times(AnyNumber());
   }
 
-  ~QuicSentPacketManagerTest() override {
-    STLDeleteElements(&packets_);
-  }
+  ~QuicSentPacketManagerTest() override { base::STLDeleteElements(&packets_); }
 
   QuicByteCount BytesInFlight() {
     return QuicSentPacketManagerPeer::GetBytesInFlight(&manager_);

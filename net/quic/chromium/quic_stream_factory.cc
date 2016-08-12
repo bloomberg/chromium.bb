@@ -860,7 +860,7 @@ QuicStreamFactory::~QuicStreamFactory() {
   }
   while (!active_jobs_.empty()) {
     const QuicServerId server_id = active_jobs_.begin()->first;
-    STLDeleteElements(&(active_jobs_[server_id]));
+    base::STLDeleteElements(&(active_jobs_[server_id]));
     active_jobs_.erase(server_id);
   }
   while (!active_cert_verifier_jobs_.empty())
@@ -912,7 +912,7 @@ bool QuicStreamFactory::CanUseExistingSession(const QuicServerId& server_id,
   if (active_sessions_.empty())
     return false;
 
-  if (ContainsKey(active_sessions_, server_id))
+  if (base::ContainsKey(active_sessions_, server_id))
     return true;
 
   for (const auto& key_value : active_sessions_) {
@@ -991,7 +991,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   if (quic_server_info_factory_.get()) {
     bool load_from_disk_cache = !disable_disk_cache_;
     MaybeInitialize();
-    if (!ContainsKey(quic_supported_servers_at_startup_, destination)) {
+    if (!base::ContainsKey(quic_supported_servers_at_startup_, destination)) {
       // If there is no entry for QUIC, consider that as a new server and
       // don't wait for Cache thread to load the data for that server.
       load_from_disk_cache = false;
@@ -1065,7 +1065,7 @@ bool QuicStreamFactory::OnResolution(const QuicSessionKey& key,
   if (disable_connection_pooling_)
     return false;
   for (const IPEndPoint& address : address_list) {
-    if (!ContainsKey(ip_aliases_, address))
+    if (!base::ContainsKey(ip_aliases_, address))
       continue;
 
     const SessionSet& sessions = ip_aliases_[address];
@@ -1128,7 +1128,7 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
       other_job->Cancel();
   }
 
-  STLDeleteElements(&(active_jobs_[server_id]));
+  base::STLDeleteElements(&(active_jobs_[server_id]));
   active_jobs_.erase(server_id);
   job_requests_map_.erase(server_id);
 }
@@ -1681,16 +1681,16 @@ bool QuicStreamFactory::HasActiveSession(const QuicServerId& server_id) const {
   // TODO(rtenneti): crbug.com/498823 - delete active_sessions_.empty() check.
   if (active_sessions_.empty())
     return false;
-  return ContainsKey(active_sessions_, server_id);
+  return base::ContainsKey(active_sessions_, server_id);
 }
 
 bool QuicStreamFactory::HasActiveJob(const QuicServerId& server_id) const {
-  return ContainsKey(active_jobs_, server_id);
+  return base::ContainsKey(active_jobs_, server_id);
 }
 
 bool QuicStreamFactory::HasActiveCertVerifierJob(
     const QuicServerId& server_id) const {
-  return ContainsKey(active_cert_verifier_jobs_, server_id);
+  return base::ContainsKey(active_cert_verifier_jobs_, server_id);
 }
 
 int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
@@ -1758,7 +1758,7 @@ int QuicStreamFactory::CreateSession(
   TRACE_EVENT0("net", "QuicStreamFactory::CreateSession");
   IPEndPoint addr = *address_list.begin();
   bool enable_port_selection = enable_port_selection_;
-  if (enable_port_selection && ContainsKey(gone_away_aliases_, key)) {
+  if (enable_port_selection && base::ContainsKey(gone_away_aliases_, key)) {
     // Disable port selection when the server is going away.
     // There is no point in trying to return to the same server, if
     // that server is no longer handling requests.
@@ -1851,7 +1851,7 @@ int QuicStreamFactory::CreateSession(
   writer->Initialize(*session, connection);
 
   (*session)->Initialize();
-  bool closed_during_initialize = !ContainsKey(all_sessions_, *session) ||
+  bool closed_during_initialize = !base::ContainsKey(all_sessions_, *session) ||
                                   !(*session)->connection()->connected();
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ClosedDuringInitializeSession",
                         closed_during_initialize);
@@ -1871,7 +1871,7 @@ void QuicStreamFactory::ActivateSession(const QuicSessionKey& key,
   active_sessions_[server_id] = session;
   session_aliases_[session].insert(key);
   const IPEndPoint peer_address = session->connection()->peer_address();
-  DCHECK(!ContainsKey(ip_aliases_[peer_address], session));
+  DCHECK(!base::ContainsKey(ip_aliases_[peer_address], session));
   ip_aliases_[peer_address].insert(session);
 }
 
@@ -1944,8 +1944,8 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
   // TODO(rtenneti): Delete the following histogram after collecting stats.
   // If the AlternativeServiceMap contained an entry for this host, check if
   // the disk cache contained an entry for it.
-  if (ContainsKey(quic_supported_servers_at_startup_,
-                  server_id.host_port_pair())) {
+  if (base::ContainsKey(quic_supported_servers_at_startup_,
+                        server_id.host_port_pair())) {
     UMA_HISTOGRAM_BOOLEAN("Net.QuicServerInfo.ExpectConfigMissingFromDiskCache",
                           server_info->state().server_config.empty());
   }

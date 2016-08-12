@@ -199,12 +199,12 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
         accept_public_header_(true) {}
 
   ~TestQuicVisitor() override {
-    STLDeleteElements(&stream_frames_);
-    STLDeleteElements(&ack_frames_);
-    STLDeleteElements(&stop_waiting_frames_);
-    STLDeleteElements(&padding_frames_);
-    STLDeleteElements(&ping_frames_);
-    STLDeleteElements(&stream_data_);
+    base::STLDeleteElements(&stream_frames_);
+    base::STLDeleteElements(&ack_frames_);
+    base::STLDeleteElements(&stop_waiting_frames_);
+    base::STLDeleteElements(&padding_frames_);
+    base::STLDeleteElements(&ping_frames_);
+    base::STLDeleteElements(&stream_data_);
   }
 
   void OnError(QuicFramer* f) override {

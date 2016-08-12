@@ -384,7 +384,7 @@ TEST_P(QuicEndToEndTest, UberTest) {
   for (size_t i = 0; i < num_requests; ++i) {
     CheckResponse(*consumers[i], "HTTP/1.1 200", kResponseBody);
   }
-  STLDeleteElements(&consumers);
+  base::STLDeleteElements(&consumers);
 }
 
 }  // namespace test

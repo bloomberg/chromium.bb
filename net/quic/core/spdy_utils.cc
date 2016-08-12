@@ -47,7 +47,7 @@ bool SpdyUtils::ParseHeaders(const char* data,
     return false;  // Headers were invalid.
   }
 
-  if (ContainsKey(*headers, "content-length")) {
+  if (base::ContainsKey(*headers, "content-length")) {
     // Check whether multiple values are consistent.
     base::StringPiece content_length_header = (*headers)["content-length"];
     vector<string> values =
@@ -149,7 +149,7 @@ bool SpdyUtils::CopyAndValidateHeaders(const QuicHeaderList& header_list,
     }
   }
 
-  if (ContainsKey(*headers, "content-length")) {
+  if (base::ContainsKey(*headers, "content-length")) {
     // Check whether multiple values are consistent.
     StringPiece content_length_header = (*headers)["content-length"];
     vector<string> values =

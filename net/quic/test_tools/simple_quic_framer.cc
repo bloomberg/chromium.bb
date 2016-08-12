@@ -23,8 +23,8 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   SimpleFramerVisitor() : error_(QUIC_NO_ERROR) {}
 
   ~SimpleFramerVisitor() override {
-    STLDeleteElements(&stream_frames_);
-    STLDeleteElements(&stream_data_);
+    base::STLDeleteElements(&stream_frames_);
+    base::STLDeleteElements(&stream_data_);
   }
 
   void OnError(QuicFramer* framer) override { error_ = framer->error(); }

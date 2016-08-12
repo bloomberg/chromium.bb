@@ -51,7 +51,7 @@ MojoProxyResolverImpl::MojoProxyResolverImpl(
     : resolver_(std::move(resolver)) {}
 
 MojoProxyResolverImpl::~MojoProxyResolverImpl() {
-  STLDeleteElements(&resolve_jobs_);
+  base::STLDeleteElements(&resolve_jobs_);
 }
 
 void MojoProxyResolverImpl::GetProxyForUrl(

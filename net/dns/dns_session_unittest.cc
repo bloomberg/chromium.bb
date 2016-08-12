@@ -194,7 +194,7 @@ TestClientSocketFactory::CreateDatagramClientSocket(
 }
 
 TestClientSocketFactory::~TestClientSocketFactory() {
-  STLDeleteElements(&data_providers_);
+  base::STLDeleteElements(&data_providers_);
 }
 
 TEST_F(DnsSessionTest, AllocateFree) {

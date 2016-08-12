@@ -211,8 +211,8 @@ QuicDispatcher::QuicDispatcher(
 }
 
 QuicDispatcher::~QuicDispatcher() {
-  STLDeleteValues(&session_map_);
-  STLDeleteElements(&closed_session_list_);
+  base::STLDeleteValues(&session_map_);
+  base::STLDeleteElements(&closed_session_list_);
 }
 
 void QuicDispatcher::InitializeWithWriter(QuicPacketWriter* writer) {
@@ -422,7 +422,7 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
 }
 
 void QuicDispatcher::DeleteSessions() {
-  STLDeleteElements(&closed_session_list_);
+  base::STLDeleteElements(&closed_session_list_);
 }
 
 void QuicDispatcher::OnCanWrite() {

@@ -1210,7 +1210,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   session->connection()->CloseConnection(QUIC_PUBLIC_RESET, "test",
                                          ConnectionCloseBehavior::SILENT_CLOSE);
 
-  STLDeleteElements(&streams);
+  base::STLDeleteElements(&streams);
 }
 
 TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {

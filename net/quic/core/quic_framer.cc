@@ -800,7 +800,7 @@ const QuicTime::Delta QuicFramer::CalculateTimestampFromWire(
 
 bool QuicFramer::IsValidPath(QuicPathId path_id,
                              QuicPacketNumber* last_packet_number) {
-  if (ContainsKey(closed_paths_, path_id)) {
+  if (base::ContainsKey(closed_paths_, path_id)) {
     // Path is closed.
     return false;
   }
@@ -810,7 +810,7 @@ bool QuicFramer::IsValidPath(QuicPathId path_id,
     return true;
   }
 
-  if (ContainsKey(last_packet_numbers_, path_id)) {
+  if (base::ContainsKey(last_packet_numbers_, path_id)) {
     *last_packet_number = last_packet_numbers_[path_id];
   } else {
     *last_packet_number = 0;

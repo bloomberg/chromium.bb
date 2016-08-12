@@ -342,7 +342,7 @@ HttpCache::~HttpCache() {
     DeactivateEntry(entry);
   }
 
-  STLDeleteElements(&doomed_entries_);
+  base::STLDeleteElements(&doomed_entries_);
 
   // Before deleting pending_ops_, we have to make sure that the disk cache is
   // done with said operations, or it will attempt to use deleted data.
@@ -366,7 +366,7 @@ HttpCache::~HttpCache() {
       pending_op->callback.Reset();
     }
 
-    STLDeleteElements(&pending_op->pending_queue);
+    base::STLDeleteElements(&pending_op->pending_queue);
     if (delete_pending_op)
       delete pending_op;
   }

@@ -119,7 +119,7 @@ TEST_F(NetworkActivityMontiorTest, Threading) {
         base::Bind(&VerifyBytesReceivedIsMultipleOf, bytes_received));
   }
 
-  STLDeleteElements(&threads);
+  base::STLDeleteElements(&threads);
 
   NetworkActivityMonitor* monitor = NetworkActivityMonitor::GetInstance();
   EXPECT_EQ(num_increments * bytes_received, monitor->GetBytesReceived());

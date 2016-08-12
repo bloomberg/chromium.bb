@@ -170,8 +170,8 @@ void EmbeddedTestServer::ShutdownOnIOThread() {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
   weak_factory_.InvalidateWeakPtrs();
   listen_socket_.reset();
-  STLDeleteContainerPairSecondPointers(connections_.begin(),
-                                       connections_.end());
+  base::STLDeleteContainerPairSecondPointers(connections_.begin(),
+                                             connections_.end());
   connections_.clear();
 }
 
@@ -343,8 +343,8 @@ bool EmbeddedTestServer::FlushAllSocketsAndConnectionsOnUIThread() {
 }
 
 void EmbeddedTestServer::FlushAllSocketsAndConnections() {
-  STLDeleteContainerPairSecondPointers(connections_.begin(),
-                                       connections_.end());
+  base::STLDeleteContainerPairSecondPointers(connections_.begin(),
+                                             connections_.end());
   connections_.clear();
 }
 

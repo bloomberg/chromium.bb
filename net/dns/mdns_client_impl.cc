@@ -209,7 +209,7 @@ MDnsClientImpl::Core::Core(base::Clock* clock, base::Timer* timer)
 }
 
 MDnsClientImpl::Core::~Core() {
-  STLDeleteValues(&listeners_);
+  base::STLDeleteValues(&listeners_);
 }
 
 bool MDnsClientImpl::Core::Init(MDnsSocketFactory* socket_factory) {

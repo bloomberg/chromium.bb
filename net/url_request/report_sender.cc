@@ -29,7 +29,7 @@ ReportSender::ReportSender(URLRequestContext* request_context,
 
 ReportSender::~ReportSender() {
   // Cancel all of the uncompleted requests.
-  STLDeleteElements(&inflight_requests_);
+  base::STLDeleteElements(&inflight_requests_);
 }
 
 void ReportSender::Send(const GURL& report_uri, const std::string& report) {

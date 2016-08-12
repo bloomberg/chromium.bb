@@ -168,7 +168,7 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   StreamInfo* root_stream_info_;
   // Maps from stream IDs to StreamInfo objects.
   StreamInfoMap all_stream_infos_;
-  STLValueDeleter<StreamInfoMap> all_stream_infos_deleter_;
+  base::STLValueDeleter<StreamInfoMap> all_stream_infos_deleter_;
   // Queue containing all ready streams, ordered with streams of higher
   // priority before streams of lower priority, and, among streams of equal
   // priority, streams with lower ordinal before those with higher
@@ -207,7 +207,7 @@ int Http2PriorityWriteScheduler<StreamIdType>::num_streams() const {
 template <typename StreamIdType>
 bool Http2PriorityWriteScheduler<StreamIdType>::StreamRegistered(
     StreamIdType stream_id) const {
-  return ContainsKey(all_stream_infos_, stream_id);
+  return base::ContainsKey(all_stream_infos_, stream_id);
 }
 
 template <typename StreamIdType>

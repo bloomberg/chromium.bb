@@ -54,7 +54,7 @@ base::FilePath::StringType GetCorrectedExtensionUnsafe(
   // "foo.jpg" to "foo.jpeg".
   std::vector<base::FilePath::StringType> all_mime_extensions;
   GetExtensionsForMimeType(mime_type, &all_mime_extensions);
-  if (ContainsValue(all_mime_extensions, extension))
+  if (base::ContainsValue(all_mime_extensions, extension))
     return extension;
 
   // Get the "final" extension. In most cases, this is the same as the
@@ -68,7 +68,7 @@ base::FilePath::StringType GetCorrectedExtensionUnsafe(
   // If there's a double extension, and the second extension is in the
   // list of valid extensions for the given type, keep the double extension.
   // This avoids renaming things like "foo.tar.gz" to "foo.gz".
-  if (ContainsValue(all_mime_extensions, final_extension))
+  if (base::ContainsValue(all_mime_extensions, final_extension))
     return extension;
   return preferred_mime_extension;
 }

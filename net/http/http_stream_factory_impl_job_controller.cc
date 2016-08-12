@@ -515,7 +515,7 @@ void HttpStreamFactoryImpl::JobController::SetSpdySessionKey(
   if (!request_->HasSpdySessionKey()) {
     RequestSet& request_set =
         factory_->spdy_session_request_map_[spdy_session_key];
-    DCHECK(!ContainsKey(request_set, request_));
+    DCHECK(!base::ContainsKey(request_set, request_));
     request_set.insert(request_);
     request_->SetSpdySessionKey(spdy_session_key);
   }
@@ -536,9 +536,9 @@ void HttpStreamFactoryImpl::JobController::
   if (spdy_session_key) {
     SpdySessionRequestMap& spdy_session_request_map =
         factory_->spdy_session_request_map_;
-    DCHECK(ContainsKey(spdy_session_request_map, *spdy_session_key));
+    DCHECK(base::ContainsKey(spdy_session_request_map, *spdy_session_key));
     RequestSet& request_set = spdy_session_request_map[*spdy_session_key];
-    DCHECK(ContainsKey(request_set, request_));
+    DCHECK(base::ContainsKey(request_set, request_));
     request_set.erase(request_);
     if (request_set.empty())
       spdy_session_request_map.erase(*spdy_session_key);
@@ -750,8 +750,8 @@ bool HttpStreamFactoryImpl::JobController::IsQuicWhitelistedForHost(
   if (session_->params().transport_security_state->IsGooglePinnedHost(host))
     return true;
 
-  return ContainsKey(session_->params().quic_host_whitelist,
-                     base::ToLowerASCII(host));
+  return base::ContainsKey(session_->params().quic_host_whitelist,
+                           base::ToLowerASCII(host));
 }
 
 AlternativeService

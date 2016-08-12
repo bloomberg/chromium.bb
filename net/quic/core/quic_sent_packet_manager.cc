@@ -381,7 +381,7 @@ void QuicSentPacketManager::MarkForRetransmission(
   } else {
     // TODO(ianswett): Currently the RTO can fire while there are pending NACK
     // retransmissions for the same data, which is not ideal.
-    if (ContainsKey(pending_retransmissions_, packet_number)) {
+    if (base::ContainsKey(pending_retransmissions_, packet_number)) {
       return;
     }
 

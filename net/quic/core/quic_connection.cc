@@ -338,7 +338,7 @@ QuicConnection::~QuicConnection() {
   if (owns_writer_) {
     delete writer_;
   }
-  STLDeleteElements(&undecryptable_packets_);
+  base::STLDeleteElements(&undecryptable_packets_);
   ClearQueuedPackets();
 }
 
@@ -443,7 +443,7 @@ bool QuicConnection::SelectMutualVersion(
   const QuicVersionVector& supported_versions = framer_.supported_versions();
   for (size_t i = 0; i < supported_versions.size(); ++i) {
     const QuicVersion& version = supported_versions[i];
-    if (ContainsValue(available_versions, version)) {
+    if (base::ContainsValue(available_versions, version)) {
       framer_.set_version(version);
       return true;
     }
@@ -562,7 +562,7 @@ void QuicConnection::OnVersionNegotiationPacket(
     return;
   }
 
-  if (ContainsValue(packet.versions, version())) {
+  if (base::ContainsValue(packet.versions, version())) {
     const string error_details =
         "Server already supports client's version and should have accepted the "
         "connection.";
@@ -2024,7 +2024,7 @@ void QuicConnection::MaybeProcessUndecryptablePackets() {
         debug_visitor_->OnUndecryptablePacket();
       }
     }
-    STLDeleteElements(&undecryptable_packets_);
+    base::STLDeleteElements(&undecryptable_packets_);
   }
 }
 

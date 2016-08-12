@@ -249,7 +249,7 @@ class QuicSessionTestBase : public ::testing::TestWithParam<QuicVersion> {
 
   void CheckClosedStreams() {
     for (QuicStreamId i = kCryptoStreamId; i < 100; i++) {
-      if (!ContainsKey(closed_streams_, i)) {
+      if (!base::ContainsKey(closed_streams_, i)) {
         EXPECT_FALSE(session_.IsClosedStream(i)) << " stream id: " << i;
       } else {
         EXPECT_TRUE(session_.IsClosedStream(i)) << " stream id: " << i;

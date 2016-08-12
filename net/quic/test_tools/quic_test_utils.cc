@@ -329,7 +329,7 @@ PacketSavingConnection::PacketSavingConnection(
                          supported_versions) {}
 
 PacketSavingConnection::~PacketSavingConnection() {
-  STLDeleteElements(&encrypted_packets_);
+  base::STLDeleteElements(&encrypted_packets_);
 }
 
 void PacketSavingConnection::SendOrQueuePacket(SerializedPacket* packet) {

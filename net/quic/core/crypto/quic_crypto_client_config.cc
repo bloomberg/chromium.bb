@@ -62,7 +62,7 @@ QuicCryptoClientConfig::QuicCryptoClientConfig(
 }
 
 QuicCryptoClientConfig::~QuicCryptoClientConfig() {
-  STLDeleteValues(&cached_states_);
+  base::STLDeleteValues(&cached_states_);
 }
 
 QuicCryptoClientConfig::CachedState::CachedState()
@@ -958,7 +958,7 @@ bool QuicCryptoClientConfig::PopulateFromCanonicalConfig(
 
   QuicServerId suffix_server_id(canonical_suffixes_[i], server_id.port(),
                                 server_id.privacy_mode());
-  if (!ContainsKey(canonical_server_map_, suffix_server_id)) {
+  if (!base::ContainsKey(canonical_server_map_, suffix_server_id)) {
     // This is the first host we've seen which matches the suffix, so make it
     // canonical.
     canonical_server_map_[suffix_server_id] = server_id;

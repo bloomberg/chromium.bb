@@ -229,7 +229,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   ASSERT_STREQ("A", cookies[0]->Name().c_str());
   ASSERT_STREQ("B", cookies[0]->Value().c_str());
   DestroyStore();
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 
   // Now corrupt the meta table.
   {
@@ -254,7 +254,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
   ASSERT_STREQ("foo.bar", cookies[0]->Domain().c_str());
   ASSERT_STREQ("X", cookies[0]->Name().c_str());
   ASSERT_STREQ("Y", cookies[0]->Value().c_str());
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 }
 
 // Test if data is stored as expected in the SQLite database.
@@ -277,7 +277,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
   // Now delete the cookie and check persistence again.
   store_->DeleteCookie(*cookies[0]);
   DestroyStore();
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 
   // Reload and check if the cookie has been removed.
   CreateAndLoad(false, false, &cookies);
@@ -346,7 +346,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   db_thread_event_.Signal();
   event.Wait();
   loaded_event_.Wait();
-  STLDeleteElements(&cookies_);
+  base::STLDeleteElements(&cookies_);
   DestroyStore();
 
   // Load the store a third time, this time restoring session cookies. The
@@ -359,7 +359,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
                           base::Unretained(this)));
   loaded_event_.Wait();
   ASSERT_EQ(4u, cookies_.size());
-  STLDeleteElements(&cookies_);
+  base::STLDeleteElements(&cookies_);
 }
 
 // Test that priority load of cookies for a specfic domain key could be
@@ -409,7 +409,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
        it != cookies_.end(); ++it) {
     cookies_loaded.insert((*it)->Domain().c_str());
   }
-  STLDeleteElements(&cookies_);
+  base::STLDeleteElements(&cookies_);
   ASSERT_GT(4U, cookies_loaded.size());
   ASSERT_EQ(true, cookies_loaded.find("www.aaa.com") != cookies_loaded.end());
   ASSERT_EQ(true,
@@ -424,7 +424,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   ASSERT_EQ(4U, cookies_loaded.size());
   ASSERT_EQ(cookies_loaded.find("foo.bar") != cookies_loaded.end(), true);
   ASSERT_EQ(cookies_loaded.find("www.bbb.com") != cookies_loaded.end(), true);
-  STLDeleteElements(&cookies_);
+  base::STLDeleteElements(&cookies_);
 }
 
 // Test that we can force the database to be written by calling Flush().
@@ -477,7 +477,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   ASSERT_STREQ("D", cookies[0]->Value().c_str());
   ASSERT_EQ(COOKIE_PRIORITY_DEFAULT, cookies[0]->Priority());
 
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 }
 
 // Test loading old session cookies from the disk.
@@ -550,7 +550,7 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   ASSERT_TRUE(it != cookie_map.end());
   EXPECT_TRUE(cookie_map[kPersistentName]->IsPersistent());
 
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, PriorityIsPersistent) {
@@ -614,7 +614,7 @@ TEST_F(SQLitePersistentCookieStoreTest, PriorityIsPersistent) {
   ASSERT_TRUE(it != cookie_map.end());
   EXPECT_EQ(COOKIE_PRIORITY_HIGH, cookie_map[kHighName]->Priority());
 
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
@@ -672,7 +672,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
   ASSERT_EQ(1u, cookie_map.count(kStrictName));
   EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie_map[kStrictName]->SameSite());
 
-  STLDeleteElements(&cookies);
+  base::STLDeleteElements(&cookies);
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
@@ -691,7 +691,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
   EXPECT_NE(contents.find("value123XYZ"), std::string::npos);
 
   // Create encrypted cookie store and ensure old cookie still reads.
-  STLDeleteElements(&cookies_);
+  base::STLDeleteElements(&cookies_);
   EXPECT_EQ(0U, cookies_.size());
   CreateAndLoad(true, false, &cookies);
   EXPECT_EQ(1U, cookies_.size());
@@ -705,7 +705,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
   AddCookie(GURL("http://foo.bar"), "other", "something456ABC", std::string(),
             "/", base::Time::Now() + base::TimeDelta::FromInternalValue(10));
   DestroyStore();
-  STLDeleteElements(&cookies_);
+  base::STLDeleteElements(&cookies_);
   CreateAndLoad(true, false, &cookies);
   EXPECT_EQ(2U, cookies_.size());
   CanonicalCookie* cookie_name = nullptr;
@@ -720,7 +720,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
   EXPECT_EQ("encrypted_value123XYZ", cookie_name->Value());
   EXPECT_EQ("something456ABC", cookie_other->Value());
   DestroyStore();
-  STLDeleteElements(&cookies_);
+  base::STLDeleteElements(&cookies_);
 
   // Examine the real record to make sure plaintext version doesn't exist.
   sql::Connection db;
@@ -762,7 +762,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateFromEncryption) {
   EXPECT_EQ(contents.find("value123XYZ"), std::string::npos);
 
   // Create encrypted cookie store and ensure old cookie still reads.
-  STLDeleteElements(&cookies_);
+  base::STLDeleteElements(&cookies_);
   EXPECT_EQ(0U, cookies_.size());
   CreateAndLoad(true, false, &cookies);
   EXPECT_EQ(1U, cookies_.size());
@@ -777,7 +777,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateFromEncryption) {
   AddCookie(GURL("http://foo.bar"), "other", "something456ABC", std::string(),
             "/", base::Time::Now() + base::TimeDelta::FromInternalValue(10));
   DestroyStore();
-  STLDeleteElements(&cookies_);
+  base::STLDeleteElements(&cookies_);
   CreateAndLoad(true, false, &cookies);
   EXPECT_EQ(2U, cookies_.size());
   CanonicalCookie* cookie_name = nullptr;
@@ -792,7 +792,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateFromEncryption) {
   EXPECT_EQ("plaintext_value123XYZ", cookie_name->Value());
   EXPECT_EQ("something456ABC", cookie_other->Value());
   DestroyStore();
-  STLDeleteElements(&cookies_);
+  base::STLDeleteElements(&cookies_);
 
   // Verify that "value" is now visible in the file.
   contents = ReadRawDBContents();

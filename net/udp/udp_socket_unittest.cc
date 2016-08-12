@@ -398,7 +398,7 @@ TEST_F(UDPSocketTest, ConnectRandomBind) {
   EXPECT_THAT(test_socket->GetLocalAddress(&client_address), IsOk());
   EXPECT_EQ(used_ports.back(), client_address.port());
 
-  STLDeleteElements(&sockets);
+  base::STLDeleteElements(&sockets);
 }
 
 // Return a privileged port (under 1024) so binding will fail.

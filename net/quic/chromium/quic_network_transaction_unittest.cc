@@ -132,7 +132,7 @@ class MockQuicData {
  public:
   MockQuicData() : packet_number_(0) {}
 
-  ~MockQuicData() { STLDeleteElements(&packets_); }
+  ~MockQuicData() { base::STLDeleteElements(&packets_); }
 
   void AddSynchronousRead(std::unique_ptr<QuicEncryptedPacket> packet) {
     reads_.push_back(MockRead(SYNCHRONOUS, packet->data(), packet->length(),

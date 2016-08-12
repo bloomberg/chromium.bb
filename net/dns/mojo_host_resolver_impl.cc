@@ -53,7 +53,7 @@ MojoHostResolverImpl::MojoHostResolverImpl(net::HostResolver* resolver,
 
 MojoHostResolverImpl::~MojoHostResolverImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  STLDeleteElements(&pending_jobs_);
+  base::STLDeleteElements(&pending_jobs_);
 }
 
 void MojoHostResolverImpl::Resolve(

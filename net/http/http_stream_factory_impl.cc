@@ -186,7 +186,7 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
     // TODO(willchan): If it's important, switch RequestSet out for a FIFO
     // queue (Order by priority first, then FIFO within same priority). Unclear
     // that it matters here.
-    if (!ContainsKey(spdy_session_request_map_, spdy_session_key))
+    if (!base::ContainsKey(spdy_session_request_map_, spdy_session_key))
       break;
     Request* request = *spdy_session_request_map_[spdy_session_key].begin();
     request->Complete(was_npn_negotiated, negotiated_protocol, using_spdy);

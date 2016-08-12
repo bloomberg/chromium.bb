@@ -45,8 +45,8 @@ HttpServer::HttpServer(std::unique_ptr<ServerSocket> server_socket,
 }
 
 HttpServer::~HttpServer() {
-  STLDeleteContainerPairSecondPointers(
-      id_to_connection_.begin(), id_to_connection_.end());
+  base::STLDeleteContainerPairSecondPointers(id_to_connection_.begin(),
+                                             id_to_connection_.end());
 }
 
 void HttpServer::AcceptWebSocket(

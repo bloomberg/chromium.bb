@@ -431,7 +431,7 @@ CertNetFetcherImpl::CertNetFetcherImpl(URLRequestContext* context)
 }
 
 CertNetFetcherImpl::~CertNetFetcherImpl() {
-  STLDeleteElements(&jobs_);
+  base::STLDeleteElements(&jobs_);
 
   // The CertNetFetcherImpl was destroyed in a FetchCallback. Detach all
   // remaining requests from the job so no further callbacks are called.

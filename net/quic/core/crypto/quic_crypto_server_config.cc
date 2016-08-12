@@ -2038,7 +2038,7 @@ QuicCryptoServerConfig::Config::Config()
       source_address_token_boxer(nullptr) {}
 
 QuicCryptoServerConfig::Config::~Config() {
-  STLDeleteElements(&key_exchanges);
+  base::STLDeleteElements(&key_exchanges);
 }
 
 QuicCryptoProof::QuicCryptoProof() {}

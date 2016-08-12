@@ -1187,7 +1187,7 @@ void SpdySession::ResetStream(SpdyStreamId stream_id,
 }
 
 bool SpdySession::IsStreamActive(SpdyStreamId stream_id) const {
-  return ContainsKey(active_streams_, stream_id);
+  return base::ContainsKey(active_streams_, stream_id);
 }
 
 LoadState SpdySession::GetLoadState() const {
