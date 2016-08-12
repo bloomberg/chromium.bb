@@ -49,7 +49,7 @@ SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
       more_read_data_pending_(false),
       direct_(direct),
       was_npn_negotiated_(false),
-      protocol_negotiated_(kProtoUnknown),
+      negotiated_protocol_(kProtoUnknown),
       weak_factory_(this) {
   DCHECK(spdy_session_.get());
 }
@@ -331,7 +331,7 @@ SpdyResponseHeadersStatus SpdyHttpStream::OnResponseHeadersUpdated(
   // will take care of that part.
   response_info_->was_npn_negotiated = was_npn_negotiated_;
   response_info_->npn_negotiated_protocol =
-      SSLClientSocket::NextProtoToString(protocol_negotiated_);
+      SSLClientSocket::NextProtoToString(negotiated_protocol_);
   response_info_->request_time = stream_->GetRequestTime();
   response_info_->connection_info =
       HttpResponseInfo::ConnectionInfoFromNextProto(kProtoHTTP2);
@@ -450,7 +450,7 @@ void SpdyHttpStream::InitializeStreamHelper() {
   stream_->SetDelegate(this);
   stream_->GetSSLInfo(&ssl_info_);
   was_npn_negotiated_ = stream_->WasNpnNegotiated();
-  protocol_negotiated_ = stream_->GetNegotiatedProtocol();
+  negotiated_protocol_ = stream_->GetNegotiatedProtocol();
 }
 
 void SpdyHttpStream::ResetStreamInternal() {

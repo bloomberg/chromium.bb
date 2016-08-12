@@ -86,7 +86,7 @@ bool SpdyProxyClientSocket::IsUsingSpdy() const {
   return true;
 }
 
-NextProto SpdyProxyClientSocket::GetProtocolNegotiated() const {
+NextProto SpdyProxyClientSocket::GetProxyNegotiatedProtocol() const {
   return spdy_stream_->GetNegotiatedProtocol();
 }
 

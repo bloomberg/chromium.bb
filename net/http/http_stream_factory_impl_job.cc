@@ -197,7 +197,7 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       spdy_certificate_error_(OK),
       establishing_tunnel_(false),
       was_npn_negotiated_(false),
-      protocol_negotiated_(kProtoUnknown),
+      negotiated_protocol_(kProtoUnknown),
       num_streams_(0),
       spdy_session_direct_(false),
       job_status_(STATUS_RUNNING),
@@ -304,8 +304,8 @@ bool HttpStreamFactoryImpl::Job::was_npn_negotiated() const {
   return was_npn_negotiated_;
 }
 
-NextProto HttpStreamFactoryImpl::Job::protocol_negotiated() const {
-  return protocol_negotiated_;
+NextProto HttpStreamFactoryImpl::Job::negotiated_protocol() const {
+  return negotiated_protocol_;
 }
 
 bool HttpStreamFactoryImpl::Job::using_spdy() const {
@@ -987,17 +987,17 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   if (ssl_started && (result == OK || IsCertificateError(result))) {
     if (using_quic_ && result == OK) {
       was_npn_negotiated_ = true;
-      protocol_negotiated_ = kProtoQUIC1SPDY3;
+      negotiated_protocol_ = kProtoQUIC1SPDY3;
     } else {
       SSLClientSocket* ssl_socket =
           static_cast<SSLClientSocket*>(connection_->socket());
       if (ssl_socket->WasNpnNegotiated()) {
         was_npn_negotiated_ = true;
-        protocol_negotiated_ = ssl_socket->GetNegotiatedProtocol();
+        negotiated_protocol_ = ssl_socket->GetNegotiatedProtocol();
         net_log_.AddEvent(
             NetLog::TYPE_HTTP_STREAM_REQUEST_PROTO,
-            base::Bind(&NetLogHttpStreamProtoCallback, protocol_negotiated_));
-        if (protocol_negotiated_ == kProtoHTTP2)
+            base::Bind(&NetLogHttpStreamProtoCallback, negotiated_protocol_));
+        if (negotiated_protocol_ == kProtoHTTP2)
           SwitchToSpdyMode();
       }
     }
@@ -1007,7 +1007,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
       static_cast<ProxyClientSocket*>(connection_->socket());
     if (proxy_socket->IsUsingSpdy()) {
       was_npn_negotiated_ = true;
-      protocol_negotiated_ = proxy_socket->GetProtocolNegotiated();
+      negotiated_protocol_ = proxy_socket->GetProxyNegotiatedProtocol();
       SwitchToSpdyMode();
     }
   }

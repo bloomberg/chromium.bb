@@ -195,7 +195,7 @@ class HttpStreamFactoryImpl::Job {
 
   RequestPriority priority() const { return priority_; }
   bool was_npn_negotiated() const;
-  NextProto protocol_negotiated() const;
+  NextProto negotiated_protocol() const;
   bool using_spdy() const;
   const BoundNetLog& net_log() const { return net_log_; }
   HttpStreamRequest::StreamType stream_type() const { return stream_type_; }
@@ -448,7 +448,7 @@ class HttpStreamFactoryImpl::Job {
   bool was_npn_negotiated_;
 
   // Protocol negotiated with the server.
-  NextProto protocol_negotiated_;
+  NextProto negotiated_protocol_;
 
   // 0 if we're not preconnecting. Otherwise, the number of streams to
   // preconnect.

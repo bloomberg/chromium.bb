@@ -14186,7 +14186,7 @@ class FakeStreamRequest : public HttpStreamRequest,
 
   bool was_npn_negotiated() const override { return false; }
 
-  NextProto protocol_negotiated() const override { return kProtoUnknown; }
+  NextProto negotiated_protocol() const override { return kProtoUnknown; }
 
   bool using_spdy() const override { return false; }
 

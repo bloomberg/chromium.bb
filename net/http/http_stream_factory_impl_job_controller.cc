@@ -170,7 +170,7 @@ void HttpStreamFactoryImpl::JobController::OnStreamReady(
   std::unique_ptr<HttpStream> stream = job->ReleaseStream();
   DCHECK(stream);
 
-  MarkRequestComplete(job->was_npn_negotiated(), job->protocol_negotiated(),
+  MarkRequestComplete(job->was_npn_negotiated(), job->negotiated_protocol(),
                       job->using_spdy());
 
   if (!request_)
@@ -193,7 +193,7 @@ void HttpStreamFactoryImpl::JobController::OnBidirectionalStreamImplReady(
     return;
   }
 
-  MarkRequestComplete(job->was_npn_negotiated(), job->protocol_negotiated(),
+  MarkRequestComplete(job->was_npn_negotiated(), job->negotiated_protocol(),
                       job->using_spdy());
 
   if (!request_)
@@ -216,7 +216,7 @@ void HttpStreamFactoryImpl::JobController::OnWebSocketHandshakeStreamReady(
     WebSocketHandshakeStreamBase* stream) {
   DCHECK(job);
 
-  MarkRequestComplete(job->was_npn_negotiated(), job->protocol_negotiated(),
+  MarkRequestComplete(job->was_npn_negotiated(), job->negotiated_protocol(),
                       job->using_spdy());
 
   if (!request_)
@@ -368,7 +368,7 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
   const SSLConfig used_ssl_config = job->server_ssl_config();
   const ProxyInfo used_proxy_info = job->proxy_info();
   const bool was_npn_negotiated = job->was_npn_negotiated();
-  const NextProto protocol_negotiated = job->protocol_negotiated();
+  const NextProto negotiated_protocol = job->negotiated_protocol();
   const bool using_spdy = job->using_spdy();
   const BoundNetLog net_log = job->net_log();
 
@@ -384,7 +384,7 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
       BindJob(job);
     }
 
-    MarkRequestComplete(was_npn_negotiated, protocol_negotiated, using_spdy);
+    MarkRequestComplete(was_npn_negotiated, negotiated_protocol, using_spdy);
 
     std::unique_ptr<HttpStream> stream;
     std::unique_ptr<BidirectionalStreamImpl> bidirectional_stream_impl;
@@ -411,7 +411,7 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
   if (spdy_session && spdy_session->IsAvailable()) {
     factory->OnNewSpdySessionReady(spdy_session, direct, used_ssl_config,
                                    used_proxy_info, was_npn_negotiated,
-                                   protocol_negotiated, using_spdy, net_log);
+                                   negotiated_protocol, using_spdy, net_log);
   }
   if (is_job_orphaned) {
     OnOrphanedJobComplete(job);
@@ -705,10 +705,10 @@ void HttpStreamFactoryImpl::JobController::OnJobSucceeded(Job* job) {
 
 void HttpStreamFactoryImpl::JobController::MarkRequestComplete(
     bool was_npn_negotiated,
-    NextProto protocol_negotiated,
+    NextProto negotiated_protocol,
     bool using_spdy) {
   if (request_)
-    request_->Complete(was_npn_negotiated, protocol_negotiated, using_spdy);
+    request_->Complete(was_npn_negotiated, negotiated_protocol, using_spdy);
 }
 
 void HttpStreamFactoryImpl::JobController::MaybeNotifyFactoryOfCompletion() {
