@@ -1392,4 +1392,11 @@ TEST(HttpUtilTest, IsValidHeaderValue) {
   EXPECT_TRUE(HttpUtil::IsValidHeaderValue(allowed));
 }
 
+TEST(HttpUtilTest, IsToken) {
+  EXPECT_TRUE(HttpUtil::IsToken("valid"));
+  EXPECT_FALSE(HttpUtil::IsToken(""));
+  EXPECT_FALSE(HttpUtil::IsToken(base::StringPiece()));
+  EXPECT_FALSE(HttpUtil::IsToken("hello, world"));
+}
+
 }  // namespace net
