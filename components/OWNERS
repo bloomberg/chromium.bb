@@ -211,6 +211,8 @@ per-file sync_driver.gypi=file://components/sync_driver/OWNERS
 
 per-file sync_sessions.gypi=file://components/sync_sessions/OWNERS
 
+per-file sync_ui_strings.grdp=file://components/sync/OWNERS
+
 per-file timers.gypi=file://components/timers/OWNERS
 
 per-file tracing.gyp=file://components/tracing/OWNERS

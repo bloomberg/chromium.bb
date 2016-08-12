@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_SYNC_SYNC_SETUP_SERVICE_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -42,7 +43,10 @@ class SyncSetupService : public KeyedService {
     kSyncPasswords,
     kSyncOpenTabs,
     kSyncAutofill,
-    kNumberOfSyncableDatatypes
+    kNumberOfSyncableDatatypes,
+    // TODO(skym): This should be moved above kNumberOfSyncableDatatypes after
+    // downstream handling is in place, tracking bug crbug.com/374865.
+    kSyncPreferences
   } SyncableDatatype;
 
   SyncSetupService(sync_driver::SyncService* sync_service, PrefService* prefs);

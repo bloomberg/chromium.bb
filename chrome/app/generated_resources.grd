@@ -11818,9 +11818,6 @@ Tell us what happened exactly before you got the profile error message:
         <message name="IDS_SYNC_CHOOSE_DATATYPES" desc="A drop-down menu item for users who want to select some datatypes to sync.">
           Choose what to sync
         </message>
-        <message name="IDS_SYNC_DATATYPE_PREFERENCES" desc="Settings, one of the data types that we allow syncing.">
-          Settings
-        </message>
         <if expr="chromeos">
           <message name="IDS_SYNC_DATATYPE_THEMES" desc="Themes, one of the data types that we allow syncing.">
             Themes &amp; wallpapers

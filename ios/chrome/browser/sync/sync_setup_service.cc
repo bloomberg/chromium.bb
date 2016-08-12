@@ -22,11 +22,11 @@ namespace {
 // The set of user-selectable datatypes. This must be in the same order as
 // |SyncSetupService::SyncableDatatype|.
 syncer::ModelType kDataTypes[] = {
-    syncer::BOOKMARKS,
-    syncer::TYPED_URLS,
-    syncer::PASSWORDS,
-    syncer::PROXY_TABS,
-    syncer::AUTOFILL,
+    syncer::BOOKMARKS,  syncer::TYPED_URLS, syncer::PASSWORDS,
+    syncer::PROXY_TABS, syncer::AUTOFILL,
+    // TODO(skym): Uncomment once downstream handles this case correctly,
+    // tracking bug crbug.com/374865.
+    // syncer::PREFERENCES,
 };
 }  // namespace
 

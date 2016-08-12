@@ -16,6 +16,9 @@
     <message name="IDS_SYNC_DATATYPE_PASSWORDS" desc="Saved passwords, one of the data types that we allow syncing.">
       Passwords
     </message>
+    <message name="IDS_SYNC_DATATYPE_PREFERENCES" desc="Settings, one of the data types that we allow syncing.">
+      Settings
+    </message>
     <message name="IDS_SYNC_DATATYPE_TABS" desc="Open Tabs, one of the data types that we allow syncing.">
       Open tabs
     </message>
