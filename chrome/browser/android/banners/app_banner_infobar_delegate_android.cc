@@ -23,7 +23,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/rappor/rappor_utils.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/manifest.h"
@@ -262,11 +261,9 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
       info.UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
 
       const std::string& uid = base::GenerateGUID();
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO, FROM_HERE,
-          base::Bind(&ShortcutHelper::AddToLauncherInBackgroundWithSkBitmap,
-                     web_contents->GetBrowserContext(), info, uid, *icon_.get(),
-                     weak_manager_->FetchWebappSplashScreenImageCallback(uid)));
+      ShortcutHelper::AddToLauncherWithSkBitmap(
+          web_contents->GetBrowserContext(), info, uid, *icon_.get(),
+          weak_manager_->FetchWebappSplashScreenImageCallback(uid));
     }
 
     SendBannerAccepted(web_contents, "web");

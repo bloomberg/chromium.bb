@@ -10,10 +10,10 @@ import static org.junit.Assert.assertTrue;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browsing_data.UrlFilters;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
@@ -749,10 +749,14 @@ public class WebappRegistryTest {
                 WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
     }
 
-    private Intent createShortcutIntent(String url) {
-        return ShortcutHelper.createWebappShortcutIntent("id", "action", url,
-                ShortcutHelper.getScopeFromUrl(url), "name", "shortName", null,
-                ShortcutHelper.WEBAPP_SHORTCUT_VERSION, WebDisplayMode.Standalone, 0, 0, 0, false);
+    private Intent createShortcutIntent(final String url) throws Exception {
+        AsyncTask<Void, Void, Intent> shortcutIntentTask = new AsyncTask<Void, Void, Intent>() {
+            @Override
+            protected Intent doInBackground(Void... nothing) {
+                return ShortcutHelper.createWebappShortcutIntentForTesting("id", url);
+            }
+        };
+        return shortcutIntentTask.execute().get();
     }
 
     private Intent createWebApkIntent(String webappId, String webApkPackage) {

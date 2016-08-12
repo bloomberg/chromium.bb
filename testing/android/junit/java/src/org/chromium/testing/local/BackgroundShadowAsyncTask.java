@@ -47,6 +47,16 @@ public class BackgroundShadowAsyncTask<Params, Progress, Result> extends
         }
     }
 
+    @Implementation
+    public final Result get() {
+        try {
+            runBackgroundTasks();
+            return BackgroundShadowAsyncTask.super.get();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static void runBackgroundTasks() throws Exception {
         sExecutorService.submit(new Runnable() {
             @Override

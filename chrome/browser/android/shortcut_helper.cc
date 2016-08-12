@@ -64,34 +64,30 @@ void GetHomescreenIconAndSplashImageSizes() {
 } // anonymous namespace
 
 // static
-void ShortcutHelper::AddToLauncherInBackgroundWithSkBitmap(
+void ShortcutHelper::AddToLauncherWithSkBitmap(
     content::BrowserContext* browser_context,
     const ShortcutInfo& info,
     const std::string& webapp_id,
     const SkBitmap& icon_bitmap,
     const base::Closure& splash_image_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
   if (info.display == blink::WebDisplayModeStandalone ||
       info.display == blink::WebDisplayModeFullscreen) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableWebApk)) {
-      InstallWebApkInBackgroundWithSkBitmap(browser_context, info, icon_bitmap);
+      InstallWebApkWithSkBitmap(browser_context, info, icon_bitmap);
       return;
     }
-    AddWebappInBackgroundWithSkBitmap(info, webapp_id, icon_bitmap,
-                                      splash_image_callback);
+    AddWebappWithSkBitmap(info, webapp_id, icon_bitmap, splash_image_callback);
     return;
   }
-  AddShortcutInBackgroundWithSkBitmap(info, icon_bitmap);
+  AddShortcutWithSkBitmap(info, icon_bitmap);
 }
 
 // static
-void ShortcutHelper::InstallWebApkInBackgroundWithSkBitmap(
+void ShortcutHelper::InstallWebApkWithSkBitmap(
     content::BrowserContext* browser_context,
     const ShortcutInfo& info,
     const SkBitmap& icon_bitmap) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // WebApkInstaller destroys itself when it is done.
   WebApkInstaller* installer = new WebApkInstaller(info, icon_bitmap);
   installer->InstallAsync(browser_context,
@@ -99,13 +95,11 @@ void ShortcutHelper::InstallWebApkInBackgroundWithSkBitmap(
 }
 
 // static
-void ShortcutHelper::AddWebappInBackgroundWithSkBitmap(
+void ShortcutHelper::AddWebappWithSkBitmap(
     const ShortcutInfo& info,
     const std::string& webapp_id,
     const SkBitmap& icon_bitmap,
     const base::Closure& splash_image_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
   // Send the data to the Java side to create the shortcut.
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_webapp_id =
@@ -151,7 +145,7 @@ void ShortcutHelper::AddWebappInBackgroundWithSkBitmap(
       callback_pointer);
 }
 
-void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
+void ShortcutHelper::AddShortcutWithSkBitmap(
     const ShortcutInfo& info,
     const SkBitmap& icon_bitmap) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -295,7 +289,7 @@ GURL ShortcutHelper::GetScopeFromURL(const GURL& url) {
 
 // Callback used by Java when the shortcut has been created.
 // |splash_image_callback| is a pointer to a base::Closure allocated in
-// AddShortcutInBackgroundWithSkBitmap, so reinterpret_cast it back and run it.
+// AddShortcutWithSkBitmap, so reinterpret_cast it back and run it.
 //
 // This callback should only ever be called when the shortcut was for a
 // webapp-capable site; otherwise, |splash_image_callback| will have never been

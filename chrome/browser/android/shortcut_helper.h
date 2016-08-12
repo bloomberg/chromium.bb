@@ -28,8 +28,7 @@ class ShortcutHelper {
   // added depends on the properties in |info|. Calls one of
   // InstallWebApkInBackgroundWithSkBitmap, AddWebappInBackgroundWithSkBitmap,
   // or AddShortcutInBackgroundWithSkBitmap.
-  // Must not be called on the UI thread.
-  static void AddToLauncherInBackgroundWithSkBitmap(
+  static void AddToLauncherWithSkBitmap(
       content::BrowserContext* browser_context,
       const ShortcutInfo& info,
       const std::string& webapp_id,
@@ -37,8 +36,7 @@ class ShortcutHelper {
       const base::Closure& splash_image_callback);
 
   // Installs WebAPK and adds shortcut to the launcher.
-  // Must not be called on the UI thread.
-  static void InstallWebApkInBackgroundWithSkBitmap(
+  static void InstallWebApkWithSkBitmap(
       content::BrowserContext* browser_context,
       const ShortcutInfo& info,
       const SkBitmap& icon_bitmap);
@@ -48,16 +46,14 @@ class ShortcutHelper {
   // completed. This is necessary as Java will asynchronously create and
   // populate a WebappDataStorage object for standalone-capable sites. This must
   // exist before the splash image can be stored.
-  // Must not be called on the UI thread.
-  static void AddWebappInBackgroundWithSkBitmap(
+  static void AddWebappWithSkBitmap(
       const ShortcutInfo& info,
       const std::string& webapp_id,
       const SkBitmap& icon_bitmap,
       const base::Closure& splash_image_callback);
 
   // Adds a shortcut which opens in a browser tab to the launcher.
-  // Must not be called on the UI thread.
-  static void AddShortcutInBackgroundWithSkBitmap(
+  static void AddShortcutWithSkBitmap(
       const ShortcutInfo& info,
       const SkBitmap& icon_bitmap);
 

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.browsing_data;
 
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -57,6 +59,27 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         startMainActivityOnBlankPage();
     }
 
+    private void registerWebapp(final String webappId, final String webappUrl) throws Exception {
+        AsyncTask<Void, Void, Intent> shortcutIntentTask = new AsyncTask<Void, Void, Intent>() {
+            @Override
+            protected Intent doInBackground(Void... nothing) {
+                return ShortcutHelper.createWebappShortcutIntentForTesting(webappId, webappUrl);
+            }
+        };
+        final Intent shortcutIntent = shortcutIntentTask.execute().get();
+
+        WebappRegistry.registerWebapp(
+                getActivity(), webappId, new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        storage.updateFromShortcutIntent(shortcutIntent);
+                        mCallbackCalled = true;
+                    }
+                });
+
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
+    }
+
     /**
      * Tests that web apps are unregistered after clearing with the "cookies and site data" option.
      * TODO(msramek): Expose more granular datatypes to the Java code, so we can directly test
@@ -71,21 +94,7 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         apps.put("webapp3", "http://example.com/");
 
         for (final Map.Entry<String, String> app : apps.entrySet()) {
-            WebappRegistry.registerWebapp(getActivity(), app.getKey(),
-                    new WebappRegistry.FetchWebappDataStorageCallback() {
-                        @Override
-                        public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                            storage.updateFromShortcutIntent(
-                                    ShortcutHelper.createWebappShortcutIntent(
-                                            app.getKey(), "", app.getValue(), "", "", "", null,
-                                            ShortcutHelper.WEBAPP_SHORTCUT_VERSION, 0, 0, 0, 0,
-                                            false));
-                            mCallbackCalled = true;
-                        }
-                    }
-            );
-
-            CriteriaHelper.pollUiThread(new CallbackCriteria());
+            registerWebapp(app.getKey(), app.getValue());
         }
 
         // Wait for the registration to finish.

@@ -12,10 +12,13 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/webapk.pb.h"
 #include "chrome/browser/profiles/profile.h"
@@ -89,7 +92,7 @@ WebApkInstaller::WebApkInstaller(const ShortcutInfo& shortcut_info,
       shortcut_icon_(shortcut_icon),
       webapk_download_url_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
       download_timeout_ms_(kDownloadTimeoutMs),
-      io_weak_ptr_factory_(this) {
+      weak_ptr_factory_(this) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   server_url_ =
       GURL(command_line->HasSwitch(switches::kWebApkServerUrl)
@@ -101,25 +104,29 @@ WebApkInstaller::~WebApkInstaller() {}
 
 void WebApkInstaller::InstallAsync(content::BrowserContext* browser_context,
                                    const FinishCallback& finish_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  finish_callback_ = finish_callback;
-  // base::Unretained() is safe because WebApkInstaller owns itself and does not
-  // start the timeout timer till after
-  // InitializeRequestContextGetterOnUIThread() is called.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&WebApkInstaller::InitializeRequestContextGetterOnUIThread,
-                 base::Unretained(this), browser_context));
+  InstallAsyncWithURLRequestContextGetter(
+      Profile::FromBrowserContext(browser_context)->GetRequestContext(),
+      finish_callback);
 }
 
 void WebApkInstaller::InstallAsyncWithURLRequestContextGetter(
     net::URLRequestContextGetter* request_context_getter,
     const FinishCallback& finish_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   request_context_getter_ = request_context_getter;
   finish_callback_ = finish_callback;
 
-  SendCreateWebApkRequest();
+  // base::Unretained() is safe because WebApkInstaller owns itself and does not
+  // start the timeout timer till after SendCreateWebApkRequest() is called.
+  scoped_refptr<base::TaskRunner> background_task_runner =
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  base::PostTaskAndReplyWithResult(
+      background_task_runner.get(), FROM_HERE,
+      base::Bind(&WebApkInstaller::BuildWebApkProtoInBackground,
+                 base::Unretained(this)),
+      base::Bind(&WebApkInstaller::SendCreateWebApkRequest,
+                 base::Unretained(this)));
 }
 
 void WebApkInstaller::SetTimeoutMs(int timeout_ms) {
@@ -136,7 +143,6 @@ bool WebApkInstaller::StartDownloadedWebApkInstall(
 }
 
 void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   timer_.Stop();
 
   if (!source->GetStatus().is_success() ||
@@ -163,27 +169,12 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   OnGotWebApkDownloadUrl(signed_download_url, response->package_name());
 }
 
-void WebApkInstaller::InitializeRequestContextGetterOnUIThread(
-    content::BrowserContext* browser_context) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Profile::GetRequestContext() must be called on UI thread.
-  request_context_getter_ =
-      Profile::FromBrowserContext(browser_context)->GetRequestContext();
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&WebApkInstaller::SendCreateWebApkRequest,
-                 io_weak_ptr_factory_.GetWeakPtr()));
-}
-
-void WebApkInstaller::SendCreateWebApkRequest() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  std::unique_ptr<webapk::WebApk> webapk_proto = BuildWebApkProto();
-
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
-                              webapk_download_url_timeout_ms_),
-               base::Bind(&WebApkInstaller::OnTimeout,
-                          io_weak_ptr_factory_.GetWeakPtr()));
+void WebApkInstaller::SendCreateWebApkRequest(
+    std::unique_ptr<webapk::WebApk> webapk_proto) {
+  timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(webapk_download_url_timeout_ms_),
+      base::Bind(&WebApkInstaller::OnTimeout, weak_ptr_factory_.GetWeakPtr()));
 
   url_fetcher_ =
       net::URLFetcher::Create(server_url_, net::URLFetcher::POST, this);
@@ -196,32 +187,26 @@ void WebApkInstaller::SendCreateWebApkRequest() {
 
 void WebApkInstaller::OnGotWebApkDownloadUrl(const GURL& download_url,
                                              const std::string& package_name) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
   base::FilePath output_dir;
   base::android::GetCacheDirectory(&output_dir);
   // TODO(pkotwicz): Download WebAPKs into WebAPK-specific subdirectory
   // directory.
   // TODO(pkotwicz): Figure out when downloaded WebAPK should be deleted.
 
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMilliseconds(download_timeout_ms_),
-               base::Bind(&WebApkInstaller::OnTimeout,
-                          io_weak_ptr_factory_.GetWeakPtr()));
+  timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(download_timeout_ms_),
+      base::Bind(&WebApkInstaller::OnTimeout, weak_ptr_factory_.GetWeakPtr()));
 
   base::FilePath output_path = output_dir.AppendASCII(package_name);
   downloader_.reset(new FileDownloader(
       download_url, output_path, true, request_context_getter_,
       base::Bind(&WebApkInstaller::OnWebApkDownloaded,
-                 io_weak_ptr_factory_.GetWeakPtr(), output_path,
-                 package_name)));
+                 weak_ptr_factory_.GetWeakPtr(), output_path, package_name)));
 }
 
 void WebApkInstaller::OnWebApkDownloaded(const base::FilePath& file_path,
                                          const std::string& package_name,
                                          FileDownloader::Result result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
   timer_.Stop();
 
   if (result != FileDownloader::DOWNLOADED) {
@@ -242,7 +227,10 @@ void WebApkInstaller::OnWebApkDownloaded(const base::FilePath& file_path,
     OnFailure();
 }
 
-std::unique_ptr<webapk::WebApk> WebApkInstaller::BuildWebApkProto() {
+std::unique_ptr<webapk::WebApk>
+WebApkInstaller::BuildWebApkProtoInBackground() {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
   std::unique_ptr<webapk::WebApk> webapk(new webapk::WebApk);
   webapk->set_manifest_url(shortcut_info_.manifest_url.spec());
   webapk->set_requester_application_package(
@@ -278,7 +266,6 @@ std::unique_ptr<webapk::WebApk> WebApkInstaller::BuildWebApkProto() {
 }
 
 void WebApkInstaller::OnTimeout() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   OnFailure();
 }
 

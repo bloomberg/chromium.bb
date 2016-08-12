@@ -18,6 +18,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -28,6 +29,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
@@ -125,55 +127,62 @@ public class ShortcutHelper {
     }
 
     /**
-     * Adds home screen shortcut which opens in a {@link WebappActivity}.
-     * This method must not be called on the UI thread.
+     * Adds home screen shortcut which opens in a {@link WebappActivity}. Creates web app
+     * home screen shortcut and registers web app asynchronously. Calls
+     * ShortcutHelper::OnWebappDataStored() when done.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void addWebapp(String id, String url, String scopeUrl, final String userTitle,
-            String name, String shortName, String iconUrl, Bitmap icon, int displayMode,
-            int orientation, int source, long themeColor, long backgroundColor,
-            final long callbackPointer) {
-        assert !ThreadUtils.runningOnUiThread();
+    private static void addWebapp(final String id, final String url, final String scopeUrl,
+            final String userTitle, final String name, final String shortName, final String iconUrl,
+            final Bitmap icon, final int displayMode, final int orientation, final int source,
+            final long themeColor, final long backgroundColor, final long callbackPointer) {
+        new AsyncTask<Void, Void, Intent>() {
+            @Override
+            protected Intent doInBackground(Void... args0) {
+                // Encoding {@link icon} as a string and computing the mac are expensive.
 
-        Context context = ContextUtils.getApplicationContext();
-        if (TextUtils.isEmpty(scopeUrl)) {
-            scopeUrl = getScopeFromUrl(url);
-        }
+                Context context = ContextUtils.getApplicationContext();
+                String nonEmptyScopeUrl =
+                        TextUtils.isEmpty(scopeUrl) ? getScopeFromUrl(url) : scopeUrl;
+                Intent shortcutIntent = createWebappShortcutIntent(id,
+                        sDelegate.getFullscreenAction(), url, nonEmptyScopeUrl, name, shortName,
+                        icon, WEBAPP_SHORTCUT_VERSION, displayMode, orientation, themeColor,
+                        backgroundColor, iconUrl.isEmpty());
+                shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
+                shortcutIntent.putExtra(EXTRA_SOURCE, source);
+                shortcutIntent.setPackage(context.getPackageName());
+                return shortcutIntent;
+            }
+            @Override
+            protected void onPostExecute(final Intent resultIntent) {
+                Context context = ContextUtils.getApplicationContext();
+                sDelegate.sendBroadcast(
+                        context, createAddToHomeIntent(url, userTitle, icon, resultIntent));
 
-        final Intent shortcutIntent =
-                createWebappShortcutIntent(id, sDelegate.getFullscreenAction(), url, scopeUrl, name,
-                        shortName, icon, WEBAPP_SHORTCUT_VERSION, displayMode, orientation,
-                        themeColor, backgroundColor, iconUrl.isEmpty());
-        shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
-        shortcutIntent.putExtra(EXTRA_SOURCE, source);
-        shortcutIntent.setPackage(context.getPackageName());
-        sDelegate.sendBroadcast(
-                context, createAddToHomeIntent(url, userTitle, icon, shortcutIntent));
+                // Store the webapp data so that it is accessible without the intent. Once this
+                // process is complete, call back to native code to start the splash image
+                // download.
+                WebappRegistry.registerWebapp(
+                        context, id, new WebappRegistry.FetchWebappDataStorageCallback() {
+                            @Override
+                            public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                                storage.updateFromShortcutIntent(resultIntent);
+                                nativeOnWebappDataStored(callbackPointer);
+                            }
+                        });
 
-        // Store the webapp data so that it is accessible without the intent. Once this process
-        // is complete, call back to native code to start the splash image download.
-        WebappRegistry.registerWebapp(context, id,
-                new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        storage.updateFromShortcutIntent(shortcutIntent);
-                        nativeOnWebappDataStored(callbackPointer);
-                    }
-                });
-
-        showAddedToHomescreenToast(userTitle);
+                showAddedToHomescreenToast(userTitle);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
      * Adds home screen shortcut which opens in the browser Activity.
-     * This method must not be called on the UI thread.
      */
     @SuppressWarnings("unused")
     @CalledByNative
     private static void addShortcut(String url, String userTitle, Bitmap icon, int source) {
-        assert !ThreadUtils.runningOnUiThread();
-
         Context context = ContextUtils.getApplicationContext();
         final Intent shortcutIntent = createShortcutIntent(url);
         shortcutIntent.putExtra(EXTRA_SOURCE, source);
@@ -187,23 +196,19 @@ public class ShortcutHelper {
      * Show toast to alert user that the shortcut was added to the home screen.
      */
     private static void showAddedToHomescreenToast(final String title) {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Context applicationContext = ContextUtils.getApplicationContext();
-                String toastText =
-                        applicationContext.getString(R.string.added_to_homescreen, title);
-                Toast toast = Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
+        assert ThreadUtils.runningOnUiThread();
+
+        Context applicationContext = ContextUtils.getApplicationContext();
+        String toastText = applicationContext.getString(R.string.added_to_homescreen, title);
+        Toast toast = Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT);
+        toast.show();
     }
 
     /**
      * Creates a storage location and stores the data for a web app using {@link WebappDataStorage}.
-     * @param id          ID of the webapp which is storing data.
+     * @param id          ID of the web app which is storing data.
      * @param splashImage Image which should be displayed on the splash screen of
-     *                    the webapp. This can be null of there is no image to show.
+     *                    the web app. This can be null of there is no image to show.
      */
     @SuppressWarnings("unused")
     @CalledByNative
@@ -253,10 +258,13 @@ public class ShortcutHelper {
      * @param backgroundColor Background color of the web app.
      * @param isIconGenerated True if the icon is generated by Chromium.
      * @return Intent for onclick action of the shortcut.
+     * This method must not be called on the UI thread.
      */
     public static Intent createWebappShortcutIntent(String id, String action, String url,
             String scope, String name, String shortName, Bitmap icon, int version, int displayMode,
             int orientation, long themeColor, long backgroundColor, boolean isIconGenerated) {
+        assert !ThreadUtils.runningOnUiThread();
+
         // Encode the icon as a base64 string (Launcher drops Bitmaps in the Intent).
         String encodedIcon = encodeBitmapAsString(icon);
 
@@ -276,6 +284,19 @@ public class ShortcutHelper {
                 .putExtra(EXTRA_BACKGROUND_COLOR, backgroundColor)
                 .putExtra(EXTRA_IS_ICON_GENERATED, isIconGenerated);
         return shortcutIntent;
+    }
+
+    /**
+     * Creates an intent with mostly empty parameters for launching a web app on the homescreen.
+     * @param id              Id of the web app.
+     * @param url             Url of the web app.
+     * @return the Intent
+     * This method must not be called on the UI thread.
+     */
+    public static Intent createWebappShortcutIntentForTesting(String id, String url) {
+        assert !ThreadUtils.runningOnUiThread();
+        return createWebappShortcutIntent(id, null, url, getScopeFromUrl(url), null, null, null,
+                WEBAPP_SHORTCUT_VERSION, WebDisplayMode.Standalone, 0, 0, 0, false);
     }
 
     /**

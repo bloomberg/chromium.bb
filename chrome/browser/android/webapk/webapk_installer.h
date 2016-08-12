@@ -73,13 +73,10 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // Initializes |request_context_getter_| on UI thread.
-  void InitializeRequestContextGetterOnUIThread(
-      content::BrowserContext* browser_context);
-
   // Sends request to WebAPK server to create WebAPK. During a successful
   // request the WebAPK server responds with the URL of the generated WebAPK.
-  void SendCreateWebApkRequest();
+  // |webapk| is the proto to send to the WebAPK server.
+  void SendCreateWebApkRequest(std::unique_ptr<webapk::WebApk> webapk_proto);
 
   // Called with the URL of generated WebAPK and the package name that the
   // WebAPK should be installed at.
@@ -95,7 +92,8 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                           FileDownloader::Result result);
 
   // Populates webapk::WebApk and returns it.
-  std::unique_ptr<webapk::WebApk> BuildWebApkProto();
+  // Must be called on a worker thread because it encodes an SkBitmap.
+  std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground();
 
   // Called when the request to the WebAPK server times out or when the WebAPK
   // download times out.
@@ -141,8 +139,8 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // The number of milliseconds to wait for the WebAPK download to complete.
   int download_timeout_ms_;
 
-  // Used to get |weak_ptr_| on the IO thread.
-  base::WeakPtrFactory<WebApkInstaller> io_weak_ptr_factory_;
+  // Used to get |weak_ptr_|.
+  base::WeakPtrFactory<WebApkInstaller> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApkInstaller);
 };
