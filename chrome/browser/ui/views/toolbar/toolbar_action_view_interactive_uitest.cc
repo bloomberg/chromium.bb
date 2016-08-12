@@ -196,8 +196,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   gfx::Point app_button_loc =
       ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
   ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
-  ui_controls::SendMouseEvents(ui_controls::LEFT,
-                               ui_controls::DOWN | ui_controls::UP);
+  EXPECT_TRUE(ui_test_utils::SendMouseEventsSync(
+      ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP));
   base::RunLoop().RunUntilIdle();
 
   TestOverflowedToolbarAction(browser(), ui_controls::LEFT);
@@ -260,8 +260,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   gfx::Point app_button_loc =
       ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
   ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
-  ui_controls::SendMouseEvents(ui_controls::LEFT,
-                               ui_controls::DOWN | ui_controls::UP);
+  EXPECT_TRUE(ui_test_utils::SendMouseEventsSync(
+      ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP));
 
   base::RunLoop().RunUntilIdle();
   TestOverflowedToolbarAction(browser(), ui_controls::RIGHT);
@@ -369,8 +369,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   gfx::Point app_button_loc =
       ui_test_utils::GetCenterInScreenCoordinates(app_menu_button);
   ui_controls::SendMouseMove(app_button_loc.x(), app_button_loc.y());
-  ui_controls::SendMouseEvents(ui_controls::LEFT,
-                               ui_controls::DOWN | ui_controls::UP);
+  EXPECT_TRUE(ui_test_utils::SendMouseEventsSync(
+      ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP));
 
   base::RunLoop().RunUntilIdle();
 
