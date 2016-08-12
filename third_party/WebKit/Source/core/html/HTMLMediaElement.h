@@ -30,7 +30,6 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/AutoplayExperimentHelper.h"
@@ -71,7 +70,7 @@ class WebInbandTextTrack;
 class WebLayer;
 class WebRemotePlaybackClient;
 
-class CORE_EXPORT HTMLMediaElement : public HTMLElement, public Supplementable<HTMLMediaElement>, public ActiveScriptWrappable, public ActiveDOMObject, private WebMediaPlayerClient, private ElementVisibilityObserver::Client {
+class CORE_EXPORT HTMLMediaElement : public HTMLElement, public Supplementable<HTMLMediaElement>, public ActiveScriptWrappable, public ActiveDOMObject, private WebMediaPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
     USING_PRE_FINALIZER(HTMLMediaElement, dispose);
@@ -503,9 +502,7 @@ private:
     void recordAutoplaySourceMetric(int source);
     void recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus);
 
-    // ElementVisibilityObserver::Client implementation
-    void onVisibilityChanged(bool isVisible) override;
-    ExecutionContext* getElementVisibilityExecutionContext() const override { return getExecutionContext(); }
+    void onVisibilityChangedForAutoplay(bool isVisible);
 
     UnthrottledThreadTimer<HTMLMediaElement> m_loadTimer;
     UnthrottledThreadTimer<HTMLMediaElement> m_progressEventTimer;
