@@ -60,6 +60,10 @@ class MetricsReportingHandlerTest : public testing::Test {
     test_web_ui()->ClearTrackedCalls();
   }
 
+  void TearDown() override {
+    handler_.reset();
+  }
+
   PrefService* local_state() { return local_state_->Get(); }
   TestingMetricsReportingHandler* handler() { return handler_.get(); }
   content::TestWebUI* test_web_ui() { return &test_web_ui_; }
