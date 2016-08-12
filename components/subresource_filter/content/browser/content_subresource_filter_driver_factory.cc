@@ -112,9 +112,7 @@ void ContentSubresourceFilterDriverFactory::SetDriverForFrameHostForTesting(
     std::unique_ptr<ContentSubresourceFilterDriver> driver) {
   auto iterator_and_inserted =
       frame_drivers_.insert(std::make_pair(render_frame_host, nullptr));
-  if (iterator_and_inserted.second) {
-    iterator_and_inserted.first->second = std::move(driver);
-  }
+  iterator_and_inserted.first->second = std::move(driver);
 }
 
 ContentSubresourceFilterDriver*
@@ -149,8 +147,10 @@ void ContentSubresourceFilterDriverFactory::SendActivationStateAndPromptUser(
   ContentSubresourceFilterDriver* driver =
       DriverFromFrameHost(render_frame_host);
   driver->ActivateForProvisionalLoad(GetMaximumActivationState());
-  if (GetMaximumActivationState() == ActivationState::ENABLED)
+  if (GetMaximumActivationState() == ActivationState::ENABLED &&
+      render_frame_host == web_contents()->GetMainFrame()) {
     client_->ToggleNotificationVisibility(true /* visible */);
+  }
 }
 
 }  // namespace subresource_filter

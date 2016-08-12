@@ -51,20 +51,27 @@ class ContentSubresourceFilterDriverFactoryTest
   ContentSubresourceFilterDriverFactoryTest() {}
   ~ContentSubresourceFilterDriverFactoryTest() override {}
 
-  // content::RenderViewHostTestHarness:
+  // content::RenderViewHostImplTestHarness:
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
 
     client_ = new MockSubresourceFilterClient();
     ContentSubresourceFilterDriverFactory::CreateForWebContents(
         web_contents(), base::WrapUnique(client()));
-    driver_ = new MockSubresourceFilterDriver(web_contents()->GetMainFrame());
-    factory()->SetDriverForFrameHostForTesting(main_rfh(),
-                                               base::WrapUnique(driver()));
+    driver_ = new MockSubresourceFilterDriver(main_rfh());
+    SetDriverForFrameHostForTesting(main_rfh(), driver());
   }
 
-  void SendActivationStateAndPromptUser() {
-    factory()->SendActivationStateAndPromptUser(main_rfh());
+  void SendActivationStateAndPromptUser(
+      content::RenderFrameHost* render_frame_host) {
+    factory()->SendActivationStateAndPromptUser(render_frame_host);
+  }
+
+  void SetDriverForFrameHostForTesting(
+      content::RenderFrameHost* render_frame_host,
+      ContentSubresourceFilterDriver* driver) {
+    factory()->SetDriverForFrameHostForTesting(render_frame_host,
+                                               base::WrapUnique(driver));
   }
 
   ContentSubresourceFilterDriverFactory* factory() {
@@ -218,7 +225,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationStateEnabled,
       kActivationScopeActivationList);
   EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
-  SendActivationStateAndPromptUser();
+  SendActivationStateAndPromptUser(main_rfh());
   ::testing::Mock::VerifyAndClearExpectations(client());
 }
 
@@ -229,7 +236,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
       kActivationScopeActivationList);
   EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
-  SendActivationStateAndPromptUser();
+  SendActivationStateAndPromptUser(main_rfh());
   ::testing::Mock::VerifyAndClearExpectations(client());
 }
 
@@ -240,8 +247,32 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
       kActivationScopeActivationList);
   EXPECT_CALL(*client(), ToggleNotificationVisibility(true)).Times(1);
-  SendActivationStateAndPromptUser();
+  SendActivationStateAndPromptUser(main_rfh());
   ::testing::Mock::VerifyAndClearExpectations(client());
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       ActivationPromptNotShownForNonMainFrames) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList);
+  // Add a subframe.
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->InitializeRenderFrameIfNeeded();
+  content::RenderFrameHost* subframe_rfh = rfh_tester->AppendChild("Child");
+
+  MockSubresourceFilterDriver* subframe_driver =
+      new MockSubresourceFilterDriver(subframe_rfh);
+  SetDriverForFrameHostForTesting(subframe_rfh, subframe_driver);
+
+  EXPECT_CALL(*subframe_driver, ActivateForProvisionalLoad(::testing::_))
+      .Times(1);
+  EXPECT_CALL(*client(), ToggleNotificationVisibility(true)).Times(0);
+  SendActivationStateAndPromptUser(subframe_rfh);
+  ::testing::Mock::VerifyAndClearExpectations(client());
+  ::testing::Mock::VerifyAndClearExpectations(subframe_driver);
 }
 
 INSTANTIATE_TEST_CASE_P(
