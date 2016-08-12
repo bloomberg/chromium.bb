@@ -147,12 +147,14 @@ void HTMLEmbedElement::updateWidgetInternal()
     if (!layoutObject())
         return;
 
-    // Overwrites the URL and MIME type of a Flash embed to use an
-    // HTML5 embed when possible.
-    KURL overridenUrl = document().frame()->loader().client()->overrideFlashEmbedWithHTML(document().completeURL(m_url));
-    if (!overridenUrl.isEmpty()) {
-        m_url = overridenUrl.getString();
-        m_serviceType = "text/html";
+    // Overwrites the URL and MIME type of a Flash embed to use an HTML5 embed
+    // when outside of a PluginDocument.
+    if (!document().isPluginDocument()) {
+        KURL overridenUrl = document().frame()->loader().client()->overrideFlashEmbedWithHTML(document().completeURL(m_url));
+        if (!overridenUrl.isEmpty()) {
+            m_url = overridenUrl.getString();
+            m_serviceType = "text/html";
+        }
     }
 
     requestObject(m_url, m_serviceType, paramNames, paramValues);

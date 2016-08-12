@@ -178,7 +178,7 @@ DocumentParser* PluginDocument::createParser()
 Widget* PluginDocument::pluginWidget()
 {
     if (m_pluginNode && m_pluginNode->layoutObject()) {
-        ASSERT(m_pluginNode->layoutObject()->isEmbeddedObject());
+        CHECK(m_pluginNode->layoutObject()->isEmbeddedObject());
         return toLayoutEmbeddedObject(m_pluginNode->layoutObject())->widget();
     }
     return 0;
