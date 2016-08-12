@@ -3813,7 +3813,6 @@ void WebViewImpl::sendResizeEventAndRepaint()
             m_client->widgetClient()->didInvalidateRect(damagedRect);
         }
     }
-    updatePageOverlays();
 }
 
 void WebViewImpl::configureAutoResizeMode()
@@ -4075,8 +4074,9 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
     if (view->needsLayout())
         view->layout();
 
-    m_fullscreenController->didUpdateLayout();
+    updatePageOverlays();
 
+    m_fullscreenController->didUpdateLayout();
     m_client->didUpdateLayout();
 }
 
@@ -4259,7 +4259,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         // We register viewport layers here since there may not be a layer
         // tree view prior to this point.
         registerViewportLayersWithCompositor();
-        updatePageOverlays();
+
         // TODO(enne): Work around page visibility changes not being
         // propagated to the WebView in some circumstances.  This needs to
         // be refreshed here when setting a new root layer to avoid being
@@ -4280,10 +4280,12 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 
 void WebViewImpl::invalidateRect(const IntRect& rect)
 {
-    if (m_layerTreeView)
+    if (m_layerTreeView) {
         updateLayerTreeViewport();
-    else if (m_client)
+    } else if (m_client) {
+        // This is only for WebViewPlugin.
         m_client->widgetClient()->didInvalidateRect(rect);
+    }
 }
 
 PaintLayerCompositor* WebViewImpl::compositor() const
