@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <dbghelp.h>
+#include "minidump/minidump_crashpad_info_writer.h"
+
 #include <windows.h>
+#include <dbghelp.h>
 
 #include <map>
 #include <string>
@@ -21,7 +23,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "gtest/gtest.h"
-#include "minidump/minidump_crashpad_info_writer.h"
 #include "minidump/minidump_extensions.h"
 #include "minidump/minidump_file_writer.h"
 #include "minidump/minidump_module_crashpad_info_writer.h"

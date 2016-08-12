@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "minidump/minidump_module_writer.h"
+
 #include <limits>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "minidump/minidump_module_writer.h"
 #include "minidump/minidump_string_writer.h"
 #include "minidump/minidump_writer_util.h"
 #include "snapshot/module_snapshot.h"

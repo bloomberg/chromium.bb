@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "minidump/minidump_thread_writer.h"
+
 #include <string>
 #include <utility>
 
@@ -24,7 +26,6 @@
 #include "minidump/minidump_file_writer.h"
 #include "minidump/minidump_memory_writer.h"
 #include "minidump/minidump_thread_id_map.h"
-#include "minidump/minidump_thread_writer.h"
 #include "minidump/test/minidump_context_test_util.h"
 #include "minidump/test/minidump_file_writer_test_util.h"
 #include "minidump/test/minidump_memory_writer_test_util.h"

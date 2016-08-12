@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "minidump/minidump_file_writer.h"
+
 #include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "minidump/minidump_crashpad_info_writer.h"
 #include "minidump/minidump_exception_writer.h"
-#include "minidump/minidump_file_writer.h"
 #include "minidump/minidump_handle_writer.h"
 #include "minidump/minidump_memory_info_writer.h"
 #include "minidump/minidump_memory_writer.h"

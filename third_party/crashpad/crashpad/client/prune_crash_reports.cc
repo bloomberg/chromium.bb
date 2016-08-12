@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "client/prune_crash_reports.h"
+
 #include <sys/stat.h>
 
 #include <algorithm>
@@ -20,7 +22,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "client/prune_crash_reports.h"
 
 namespace crashpad {
 

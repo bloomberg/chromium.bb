@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "minidump/minidump_file_writer.h"
+
 #include <stdint.h>
 #include <string.h>
 
@@ -22,7 +24,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "gtest/gtest.h"
-#include "minidump/minidump_file_writer.h"
 #include "minidump/minidump_stream_writer.h"
 #include "minidump/minidump_writable.h"
 #include "minidump/test/minidump_file_writer_test_util.h"
