@@ -1211,7 +1211,8 @@ crbug.com/624019 [ Mac ] bluetooth/notifications/stop-without-starting.html [ Sk
 
 crbug.com/487344 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/487344 fast/layers/video-layer.html [ Failure ]
-crbug.com/487344 http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
+# Commented out temporarily for manual rebase and it will be restored after that.
+#crbug.com/487344 http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/487344 media/audio-controls-rendering.html [ Failure ]
 crbug.com/487344 media/audio-repaint.html [ Failure ]
 crbug.com/487344 media/controls-after-reload.html [ Failure ]
@@ -1261,6 +1262,7 @@ crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/data-s
 
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
+crbug.com/588956 http/tests/media/video-buffered-range-contains-currentTime.html [ NeedsManualRebaseline ]
 
 crbug.com/629711 [ Linux Debug ] fast/workers/shared-worker-exception.html [ Crash Pass ]
 crbug.com/629711 [ Linux Debug ] virtual/sharedarraybuffer/fast/workers/shared-worker-exception.html [ Crash Pass ]
