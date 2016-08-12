@@ -27359,6 +27359,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.Cronet.CertVerifierCache.DeserializeTime" units="ms">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    Measures time spent to deserialize and populate the
+    net::CachingCertVerifier's cache.
+  </summary>
+</histogram>
+
+<histogram name="Net.Cronet.CertVerifierCache.SerializeTime" units="ms">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    Measures time spent to serialize the net::CachingCertVerifier's cache.
+  </summary>
+</histogram>
+
 <histogram name="Net.DailyContentLength" units="KB">
   <owner>bolian@chromium.org</owner>
   <summary>

@@ -25,6 +25,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -679,6 +680,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   // If there is a cert_verifier, then populate its cache with
   // |cert_verifier_data|.
   if (!config->cert_verifier_data.empty() && context_->cert_verifier()) {
+    SCOPED_UMA_HISTOGRAM_TIMER("Net.Cronet.CertVerifierCache.DeserializeTime");
     std::string data;
     cronet_pb::CertVerificationCache cert_verification_cache;
     if (base::Base64Decode(config->cert_verifier_data, &data) &&
@@ -813,6 +815,7 @@ void CronetURLRequestContextAdapter::GetCertVerifierDataOnNetworkThread() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   std::string encoded_data;
   if (is_context_initialized_ && context_->cert_verifier()) {
+    SCOPED_UMA_HISTOGRAM_TIMER("Net.Cronet.CertVerifierCache.SerializeTime");
     std::string data;
     cronet_pb::CertVerificationCache cert_cache =
         SerializeCertVerifierCache(*reinterpret_cast<net::CachingCertVerifier*>(
