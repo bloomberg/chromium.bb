@@ -31,7 +31,7 @@ BlobChannelSenderImpl::GetCachedBlobIds() const {
     CacheStateEntry next_output;
     next_output.id = cached_id;
     next_output.was_delivered =
-        ContainsKey(receiver_cache_contents_, cached_id);
+        base::ContainsKey(receiver_cache_contents_, cached_id);
     output.push_back(next_output);
   }
   return output;

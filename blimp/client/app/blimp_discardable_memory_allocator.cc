@@ -117,7 +117,7 @@ BlimpDiscardableMemoryAllocator::BlimpDiscardableMemoryAllocator(
 
 BlimpDiscardableMemoryAllocator::~BlimpDiscardableMemoryAllocator() {
   DCHECK_EQ(0, locked_chunks_);
-  STLDeleteElements(&live_unlocked_chunks_);
+  base::STLDeleteElements(&live_unlocked_chunks_);
 }
 
 std::unique_ptr<base::DiscardableMemory>
