@@ -5,6 +5,7 @@
 #include "cc/output/color_lut_cache.h"
 
 #include <stdint.h>
+#include <cmath>
 #include <vector>
 
 #include "gpu/command_buffer/client/gles2_interface.h"
