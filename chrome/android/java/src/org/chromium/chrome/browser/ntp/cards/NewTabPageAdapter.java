@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
@@ -320,6 +321,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
                                 : NewTabPageUma.SNIPPETS_ACTION_DISMISSED_UNVISITED);
             }
         });
+
+        itemViewHolder.itemView.announceForAccessibility(
+                itemViewHolder.itemView.getResources().getString(
+                        R.string.ntp_accessibility_item_removed, suggestion.mTitle));
 
         mSuggestionsSource.dismissSuggestion(suggestion);
         SuggestionsSection section = (SuggestionsSection) getGroup(position);
