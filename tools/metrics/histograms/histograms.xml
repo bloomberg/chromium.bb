@@ -37204,10 +37204,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Omnibox.FocusToOpenTimeAnyPopupState" units="ms">
   <owner>mpearson@chromium.org</owner>
+  <obsolete>
+    Replaced with Omnibox.FocusToOpenTimeAnyPopupState2 in August, 2016.
+  </obsolete>
   <summary>
     The length of time between when a user focused on the omnibox and opened an
     omnibox match (which could be what they typed or a suggestion).  This is
     recorded regardless of whether the omnibox dropdown (a.k.a. popup) is open.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.FocusToOpenTimeAnyPopupState2" units="ms">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The length of time between when a user focused on the omnibox and opened an
+    omnibox match (which could be what they typed or a suggestion).  This is
+    recorded regardless of whether the omnibox dropdown (a.k.a. popup) is open.
+    It is not recorded if a match is opened without triggering a focus event,
+    e.g., when a user drags a URL to the omnibox to navigate.
+
+    To know how common this last condition is, compare the total count of this
+    histogram to the total number of omnibox events.
   </summary>
 </histogram>
 

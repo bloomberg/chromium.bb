@@ -80,7 +80,8 @@ const char kFocusToEditTimeHistogram[] = "Omnibox.FocusToEditTime";
 
 // Histogram name which counts the number of milliseconds a user takes
 // between focusing and opening an omnibox match.
-const char kFocusToOpenTimeHistogram[] = "Omnibox.FocusToOpenTimeAnyPopupState";
+const char kFocusToOpenTimeHistogram[] =
+    "Omnibox.FocusToOpenTimeAnyPopupState2";
 
 // Split the percentage match histograms into buckets based on the width of the
 // omnibox.
@@ -731,9 +732,11 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   client_->OnURLOpenedFromOmnibox(&log);
   OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);
   LOCAL_HISTOGRAM_BOOLEAN("Omnibox.EventCount", true);
-  DCHECK(!last_omnibox_focus_.is_null())
-      << "An omnibox focus should have occurred before opening a match.";
-  UMA_HISTOGRAM_TIMES(kFocusToOpenTimeHistogram, now - last_omnibox_focus_);
+  if (!last_omnibox_focus_.is_null()) {
+    // Only record focus to open time when a focus actually happened (as
+    // opposed to, say, dragging a link onto the omnibox).
+    UMA_HISTOGRAM_TIMES(kFocusToOpenTimeHistogram, now - last_omnibox_focus_);
+  }
 
   TemplateURLService* service = client_->GetTemplateURLService();
   TemplateURL* template_url = match.GetTemplateURL(service, false);
