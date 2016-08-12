@@ -17,4 +17,11 @@
       } \
     } while (0)
 
+namespace media {
+namespace mp2t {
+const int kMp2tAudioTrackId = 1;
+const int kMp2tVideoTrackId = 2;
+}  // namespace media
+}  // namespace mp2t
+
 #endif  // MEDIA_FORMATS_MP2T_MP2T_COMMON_H_

@@ -76,6 +76,8 @@ class MP4StreamParserTest : public testing::Test {
   AudioDecoderConfig audio_decoder_config_;
   VideoDecoderConfig video_decoder_config_;
   DecodeTimestamp lower_bound_;
+  StreamParser::TrackId audio_track_id_;
+  StreamParser::TrackId video_track_id_;
 
   bool AppendData(const uint8_t* data, size_t length) {
     return parser_->Parse(data, length);
@@ -121,12 +123,14 @@ class MP4StreamParserTest : public testing::Test {
     for (const auto& track : tracks->tracks()) {
       const auto& track_id = track->bytestream_track_id();
       if (track->type() == MediaTrack::Audio) {
+        audio_track_id_ = track_id;
         audio_decoder_config_ = tracks->getAudioConfig(track_id);
         DVLOG(1) << "Audio track " << track_id << " config="
                  << (audio_decoder_config_.IsValidConfig()
                          ? audio_decoder_config_.AsHumanReadableString()
                          : "INVALID");
       } else if (track->type() == MediaTrack::Video) {
+        video_track_id_ = track_id;
         video_decoder_config_ = tracks->getVideoConfig(track_id);
         DVLOG(1) << "Video track " << track_id << " config="
                  << (video_decoder_config_.IsValidConfig()
@@ -154,6 +158,14 @@ class MP4StreamParserTest : public testing::Test {
                    const StreamParser::TextBufferQueueMap& text_map) {
     DumpBuffers("audio_buffers", audio_buffers);
     DumpBuffers("video_buffers", video_buffers);
+
+    // Ensure that track ids are properly assigned on all emitted buffers.
+    for (const auto& buf : audio_buffers) {
+      EXPECT_EQ(audio_track_id_, buf->track_id());
+    }
+    for (const auto& buf : video_buffers) {
+      EXPECT_EQ(video_track_id_, buf->track_id());
+    }
 
     // TODO(wolenetz/acolwell): Add text track support to more MSE parsers. See
     // http://crbug.com/336926.

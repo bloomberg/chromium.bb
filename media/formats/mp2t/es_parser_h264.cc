@@ -279,12 +279,8 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
   // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
   // type and allow multiple video tracks. See https://crbug.com/341581.
   scoped_refptr<StreamParserBuffer> stream_parser_buffer =
-      StreamParserBuffer::CopyFrom(
-          es,
-          access_unit_size,
-          is_key_frame,
-          DemuxerStream::VIDEO,
-          0);
+      StreamParserBuffer::CopyFrom(es, access_unit_size, is_key_frame,
+                                   DemuxerStream::VIDEO, kMp2tVideoTrackId);
   stream_parser_buffer->SetDecodeTimestamp(current_timing_desc.dts);
   stream_parser_buffer->set_timestamp(current_timing_desc.pts);
   return es_adapter_.OnNewBuffer(stream_parser_buffer);

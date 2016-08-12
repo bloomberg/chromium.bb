@@ -70,6 +70,7 @@ class StreamParserTestBase {
   std::unique_ptr<StreamParser> parser_;
   std::stringstream results_stream_;
   AudioDecoderConfig last_audio_config_;
+  StreamParser::TrackId audio_track_id_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamParserTestBase);
 };

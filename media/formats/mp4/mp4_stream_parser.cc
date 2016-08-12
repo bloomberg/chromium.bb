@@ -605,10 +605,9 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
   // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
   // type and allow multiple tracks for same media type, if applicable. See
   // https://crbug.com/341581.
-  scoped_refptr<StreamParserBuffer> stream_buf =
-      StreamParserBuffer::CopyFrom(&frame_buf[0], frame_buf.size(),
-                                   runs_->is_keyframe(),
-                                   buffer_type, 0);
+  scoped_refptr<StreamParserBuffer> stream_buf = StreamParserBuffer::CopyFrom(
+      &frame_buf[0], frame_buf.size(), runs_->is_keyframe(), buffer_type,
+      runs_->track_id());
 
   if (decrypt_config)
     stream_buf->set_decrypt_config(std::move(decrypt_config));

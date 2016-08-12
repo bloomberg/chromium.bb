@@ -80,6 +80,8 @@ class Mp2tStreamParserTest : public testing::Test {
   DecodeTimestamp audio_max_dts_;
   DecodeTimestamp video_min_dts_;
   DecodeTimestamp video_max_dts_;
+  StreamParser::TrackId audio_track_id_;
+  StreamParser::TrackId video_track_id_;
 
   void ResetStats() {
     segment_count_ = 0;
@@ -124,9 +126,11 @@ class Mp2tStreamParserTest : public testing::Test {
     for (const auto& track : tracks->tracks()) {
       const auto& track_id = track->bytestream_track_id();
       if (track->type() == MediaTrack::Audio) {
+        audio_track_id_ = track_id;
         found_audio_track = true;
         EXPECT_TRUE(tracks->getAudioConfig(track_id).IsValidConfig());
       } else if (track->type() == MediaTrack::Video) {
+        video_track_id_ = track_id;
         found_video_track = true;
         EXPECT_TRUE(tracks->getVideoConfig(track_id).IsValidConfig());
       } else {
@@ -159,6 +163,14 @@ class Mp2tStreamParserTest : public testing::Test {
     EXPECT_GT(config_count_, 0);
     DumpBuffers("audio_buffers", audio_buffers);
     DumpBuffers("video_buffers", video_buffers);
+
+    // Ensure that track ids are properly assigned on all emitted buffers.
+    for (const auto& buf : audio_buffers) {
+      EXPECT_EQ(audio_track_id_, buf->track_id());
+    }
+    for (const auto& buf : video_buffers) {
+      EXPECT_EQ(video_track_id_, buf->track_id());
+    }
 
     // TODO(wolenetz/acolwell): Add text track support to more MSE parsers. See
     // http://crbug.com/336926.

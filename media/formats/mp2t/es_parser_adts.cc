@@ -147,11 +147,9 @@ bool EsParserAdts::ParseFromEsQueue() {
     // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
     // type and allow multiple audio tracks. See https://crbug.com/341581.
     scoped_refptr<StreamParserBuffer> stream_parser_buffer =
-        StreamParserBuffer::CopyFrom(
-            adts_frame.data,
-            adts_frame.size,
-            is_key_frame,
-            DemuxerStream::AUDIO, 0);
+        StreamParserBuffer::CopyFrom(adts_frame.data, adts_frame.size,
+                                     is_key_frame, DemuxerStream::AUDIO,
+                                     kMp2tAudioTrackId);
     stream_parser_buffer->set_timestamp(current_pts);
     stream_parser_buffer->SetDecodeTimestamp(
         DecodeTimestamp::FromPresentationTime(current_pts));

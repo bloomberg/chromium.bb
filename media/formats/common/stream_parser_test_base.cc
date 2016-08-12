@@ -93,6 +93,7 @@ bool StreamParserTestBase::OnNewConfig(
   EXPECT_EQ(tracks->tracks().size(), 1u);
   const auto& track = tracks->tracks()[0];
   EXPECT_EQ(track->type(), MediaTrack::Audio);
+  audio_track_id_ = track->bytestream_track_id();
   last_audio_config_ = tracks->getAudioConfig(track->bytestream_track_id());
   EXPECT_TRUE(last_audio_config_.IsValidConfig());
   return true;
@@ -104,6 +105,11 @@ bool StreamParserTestBase::OnNewBuffers(
     const StreamParser::TextBufferQueueMap& text_map) {
   EXPECT_FALSE(audio_buffers.empty());
   EXPECT_TRUE(video_buffers.empty());
+
+  // Ensure that track ids are properly assigned on all emitted buffers.
+  for (const auto& buf : audio_buffers) {
+    EXPECT_EQ(audio_track_id_, buf->track_id());
+  }
 
   // TODO(wolenetz/acolwell): Add text track support to more MSE parsers. See
   // http://crbug.com/336926.
