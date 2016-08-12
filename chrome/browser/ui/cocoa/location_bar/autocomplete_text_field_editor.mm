@@ -489,6 +489,24 @@ BOOL ThePasteboardIsTooDamnBig() {
 
   DCHECK(interpretingKeyEvents_);
   interpretingKeyEvents_ = NO;
+
+  // -[NSTextView interpretKeyEvents:] invalidates the existing layout.
+  //
+  // observer->OnDidChange() calls OmniboxViewMac::ApplyTextStyle, which
+  // invalidates the existing layout again, but in a slightly different way.
+  // Details unclear.
+  //
+  // On older versions of macOS, this results in a single call to -[NSTextView
+  // drawRect:] on the next frame, which paints the correct contents.
+  //
+  // On macOS 10.12 dp4, for unknown reasons, this causes two calls to
+  // -[NSTextView drawRect:] across two(!) frames. The first call to
+  // -[NSTextView drawRect:] draws no text, which causes a flicker in the
+  // omnibox. Forcing a layout ensures that drawRect: is only called once, and
+  // is drawn with the correct contents.
+  // https://crbug.com/634318.
+  [self.layoutManager
+      ensureLayoutForCharacterRange:NSMakeRange(0, self.textStorage.length)];
 }
 
 - (BOOL)shouldChangeTextInRange:(NSRange)affectedCharRange
