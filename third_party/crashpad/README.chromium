@@ -35,4 +35,5 @@ $ cd "${CRASHPAD_DIR}"
 $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
-None.
+- Replaced usage of global functions from base/stl_util.h with the equivalent
+  functions from the base namespace.
