@@ -85,8 +85,6 @@ protected:
     StyleRuleBase(const StyleRuleBase& o) : m_type(o.m_type) { }
 
 private:
-    void destroy();
-
     CSSRule* createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const;
 
     unsigned m_type : 5;

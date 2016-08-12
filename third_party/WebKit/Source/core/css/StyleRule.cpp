@@ -132,46 +132,6 @@ void StyleRuleBase::finalizeGarbageCollectedObject()
     ASSERT_NOT_REACHED();
 }
 
-void StyleRuleBase::destroy()
-{
-    switch (type()) {
-    case Charset:
-        delete toStyleRuleCharset(this);
-        return;
-    case Style:
-        delete toStyleRule(this);
-        return;
-    case Page:
-        delete toStyleRulePage(this);
-        return;
-    case FontFace:
-        delete toStyleRuleFontFace(this);
-        return;
-    case Media:
-        delete toStyleRuleMedia(this);
-        return;
-    case Supports:
-        delete toStyleRuleSupports(this);
-        return;
-    case Import:
-        delete toStyleRuleImport(this);
-        return;
-    case Keyframes:
-        delete toStyleRuleKeyframes(this);
-        return;
-    case Keyframe:
-        delete toStyleRuleKeyframe(this);
-        return;
-    case Namespace:
-        delete toStyleRuleNamespace(this);
-        return;
-    case Viewport:
-        delete toStyleRuleViewport(this);
-        return;
-    }
-    ASSERT_NOT_REACHED();
-}
-
 StyleRuleBase* StyleRuleBase::copy() const
 {
     switch (type()) {

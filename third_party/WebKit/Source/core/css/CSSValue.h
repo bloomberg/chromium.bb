@@ -196,9 +196,6 @@ protected:
     // NOTE: This class is non-virtual for memory and performance reasons.
     // Don't go making it virtual again unless you know exactly what you're doing!
 
-private:
-    void destroy();
-
 protected:
     // The bits in this section are only used by specific subclasses but kept here
     // to maximize struct packing.
