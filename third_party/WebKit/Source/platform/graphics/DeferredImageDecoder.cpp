@@ -98,16 +98,26 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
 
     prepareLazyDecodedFrames();
 
-    DCHECK(index < m_frameData.size());
-    DeferredFrameData* frameData = &m_frameData[index];
-    if (m_actualDecoder)
-        frameData->m_frameBytes = m_actualDecoder->frameBytesAtIndex(index);
-    else
-        frameData->m_frameBytes = m_size.area() * sizeof(ImageFrame::PixelData);
-    // ImageFrameGenerator has the latest known alpha state. There will be a
-    // performance boost if this frame is opaque.
-    DCHECK(m_frameGenerator);
-    return createFrameImageAtIndex(index, !m_frameGenerator->hasAlpha(index));
+    if (index < m_frameData.size()) {
+        DeferredFrameData* frameData = &m_frameData[index];
+        if (m_actualDecoder)
+            frameData->m_frameBytes = m_actualDecoder->frameBytesAtIndex(index);
+        else
+            frameData->m_frameBytes = m_size.area() * sizeof(ImageFrame::PixelData);
+        // ImageFrameGenerator has the latest known alpha state. There will be a
+        // performance boost if this frame is opaque.
+        DCHECK(m_frameGenerator);
+        return createFrameImageAtIndex(index, !m_frameGenerator->hasAlpha(index));
+    }
+
+    if (!m_actualDecoder || m_actualDecoder->failed())
+        return nullptr;
+
+    ImageFrame* frame = m_actualDecoder->frameBufferAtIndex(index);
+    if (!frame || frame->getStatus() == ImageFrame::FrameEmpty)
+        return nullptr;
+
+    return fromSkSp(SkImage::MakeFromBitmap(frame->bitmap()));
 }
 
 PassRefPtr<SharedBuffer> DeferredImageDecoder::data()
