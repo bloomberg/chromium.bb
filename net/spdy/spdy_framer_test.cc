@@ -1004,8 +1004,6 @@ TEST_P(SpdyFramerTest, AcceptMaxFrameSizeSetting) {
 // Test that if we receive a frame with payload length larger than the
 // advertised max size, we set an error of SPDY_INVALID_CONTROL_FRAME_SIZE.
 TEST_P(SpdyFramerTest, ExceedMaxFrameSizeSetting) {
-  FLAGS_chromium_http2_flag_enforce_max_frame_size = true;
-
   if (!IsHttp2()) {
     return;
   }
@@ -1031,36 +1029,6 @@ TEST_P(SpdyFramerTest, ExceedMaxFrameSizeSetting) {
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_OVERSIZED_PAYLOAD, framer.error_code())
       << SpdyFramer::ErrorCodeToString(framer.error_code());
-}
-
-// Test demonstrating pre-flag behavior
-TEST_P(SpdyFramerTest, ExceedMaxFrameSizeSettingFlagOff) {
-  FLAGS_chromium_http2_flag_enforce_max_frame_size = false;
-
-  if (!IsHttp2()) {
-    return;
-  }
-
-  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
-  SpdyFramer framer(spdy_version_);
-  framer.set_visitor(&visitor);
-
-  // DATA frame with too large payload length.
-  unsigned char kH2FrameData[] = {
-      0x00, 0x40, 0x01,        // Length: 2^14 + 1
-      0x00,                    //   Type: HEADERS
-      0x00,                    //  Flags: None
-      0x00, 0x00, 0x00, 0x01,  // Stream: 1
-      0x00, 0x00, 0x00, 0x00,  // Junk payload
-  };
-
-  SpdySerializedFrame frame(reinterpret_cast<char*>(kH2FrameData),
-                            sizeof(kH2FrameData), false);
-  EXPECT_CALL(visitor, OnDataFrameHeader(1, _, false));
-  EXPECT_CALL(visitor, OnStreamFrameData(1, _, 4));
-  EXPECT_SPDY_BUG(framer.ProcessInput(frame.data(), frame.size()),
-                  "DATA frame too large for HTTP/2.");
-  EXPECT_FALSE(framer.HasError());
 }
 
 // Test that if we receive a DATA frame with padding length larger than the
