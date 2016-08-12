@@ -89,6 +89,27 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
+  function registerPrivacyPageTests() {
+    suite('PrivacyPage', function() {
+      /** @type {SettingsPrivacyPageElement} */
+      var page;
+
+      setup(function() {
+        page = document.createElement('settings-privacy-page');
+        document.body.appendChild(page);
+      });
+
+      teardown(function() { page.remove(); });
+
+      test('showClearBrowsingDataDialog', function() {
+        assertFalse(!!page.$$('settings-clear-browsing-data-dialog'));
+        MockInteractions.tap(page.$.clearBrowsingData);
+        Polymer.dom.flush();
+        assertTrue(!!page.$$('settings-clear-browsing-data-dialog'));
+      });
+    });
+  }
+
   function registerClearBrowsingDataTests() {
     suite('ClearBrowsingData', function() {
       /** @type {settings.TestClearBrowsingDataBrowserProxy} */
@@ -234,6 +255,7 @@ cr.define('settings_privacy_page', function() {
         registerNativeCertificateManagerTests();
 
       registerClearBrowsingDataTests();
+      registerPrivacyPageTests();
     },
   };
 });

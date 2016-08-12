@@ -38,10 +38,7 @@ Polymer({
 </if>
 
     /** @private */
-    showClearBrowsingDataDialog_: {
-      computed: 'computeShowClearBrowsingDataDialog_(currentRoute)',
-      type: Boolean,
-    },
+    showClearBrowsingDataDialog_: Boolean,
   },
 
   ready: function() {
