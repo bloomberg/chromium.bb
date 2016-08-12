@@ -43,7 +43,7 @@ static void ToResourceTypeStat(const MemoryCache::TypeStatistic& from,
     to.size = from.size;
     to.liveSize = from.liveSize;
     to.decodedSize = from.decodedSize;
-    to.purgeableSize = from.purgedSize;
+    to.purgeableSize = from.purgeableSize;
     to.purgedSize = from.purgedSize;
 }
 
