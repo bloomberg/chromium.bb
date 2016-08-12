@@ -173,7 +173,7 @@ void SessionManagerOperation::ValidateDeviceSettings(
   // server.
   validator->ValidateAgainstCurrentPolicy(
       policy_data_.get(),
-      policy::CloudPolicyValidatorBase::TIMESTAMP_NOT_REQUIRED,
+      policy::CloudPolicyValidatorBase::TIMESTAMP_NOT_VALIDATED,
       policy::CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED);
   validator->ValidatePolicyType(policy::dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();

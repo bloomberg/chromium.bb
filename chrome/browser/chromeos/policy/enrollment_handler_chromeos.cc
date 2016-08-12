@@ -138,8 +138,9 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
               new em::PolicyFetchResponse(*policy)),
           background_task_runner_));
 
-  validator->ValidateTimestamp(base::Time(), base::Time::NowFromSystemTime(),
-                               CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
+  validator->ValidateTimestamp(
+      base::Time(), base::Time::NowFromSystemTime(),
+      CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED);
 
   // If this is re-enrollment, make sure that the new policy matches the
   // previously-enrolled domain.

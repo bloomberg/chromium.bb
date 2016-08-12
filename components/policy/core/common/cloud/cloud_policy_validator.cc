@@ -79,10 +79,10 @@ void CloudPolicyValidatorBase::ValidateDomain(
 }
 
 void CloudPolicyValidatorBase::ValidateDMToken(
-    const std::string& token,
+    const std::string& expected_dm_token,
     ValidateDMTokenOption dm_token_option) {
-  validation_flags_ |= VALIDATE_TOKEN;
-  token_ = token;
+  validation_flags_ |= VALIDATE_DM_TOKEN;
+  dm_token_ = expected_dm_token;
   dm_token_option_ = dm_token_option;
 }
 
@@ -159,7 +159,7 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
       validation_flags_(0),
       timestamp_not_before_(0),
       timestamp_not_after_(0),
-      timestamp_option_(TIMESTAMP_REQUIRED),
+      timestamp_option_(TIMESTAMP_FULLY_VALIDATED),
       dm_token_option_(DM_TOKEN_REQUIRED),
       canonicalize_user_(false),
       allow_key_rotation_(false),
@@ -227,16 +227,16 @@ void CloudPolicyValidatorBase::RunChecks() {
     int flag;
     Status (CloudPolicyValidatorBase::* checkFunction)();
   } kCheckFunctions[] = {
-    { VALIDATE_SIGNATURE,   &CloudPolicyValidatorBase::CheckSignature },
-    { VALIDATE_INITIAL_KEY, &CloudPolicyValidatorBase::CheckInitialKey },
-    { VALIDATE_CACHED_KEY,  &CloudPolicyValidatorBase::CheckCachedKey },
-    { VALIDATE_POLICY_TYPE, &CloudPolicyValidatorBase::CheckPolicyType },
-    { VALIDATE_ENTITY_ID,   &CloudPolicyValidatorBase::CheckEntityId },
-    { VALIDATE_TOKEN,       &CloudPolicyValidatorBase::CheckToken },
-    { VALIDATE_USERNAME,    &CloudPolicyValidatorBase::CheckUsername },
-    { VALIDATE_DOMAIN,      &CloudPolicyValidatorBase::CheckDomain },
-    { VALIDATE_TIMESTAMP,   &CloudPolicyValidatorBase::CheckTimestamp },
-    { VALIDATE_PAYLOAD,     &CloudPolicyValidatorBase::CheckPayload },
+      { VALIDATE_SIGNATURE,   &CloudPolicyValidatorBase::CheckSignature },
+      { VALIDATE_INITIAL_KEY, &CloudPolicyValidatorBase::CheckInitialKey },
+      { VALIDATE_CACHED_KEY,  &CloudPolicyValidatorBase::CheckCachedKey },
+      { VALIDATE_POLICY_TYPE, &CloudPolicyValidatorBase::CheckPolicyType },
+      { VALIDATE_ENTITY_ID,   &CloudPolicyValidatorBase::CheckEntityId },
+      { VALIDATE_DM_TOKEN,    &CloudPolicyValidatorBase::CheckDMToken },
+      { VALIDATE_USERNAME,    &CloudPolicyValidatorBase::CheckUsername },
+      { VALIDATE_DOMAIN,      &CloudPolicyValidatorBase::CheckDomain },
+      { VALIDATE_TIMESTAMP,   &CloudPolicyValidatorBase::CheckTimestamp },
+      { VALIDATE_PAYLOAD,     &CloudPolicyValidatorBase::CheckPayload },
   };
 
   for (size_t i = 0; i < arraysize(kCheckFunctions); ++i) {
@@ -411,7 +411,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckEntityId() {
 }
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckTimestamp() {
-  if (timestamp_option_ == TIMESTAMP_NOT_REQUIRED)
+  if (timestamp_option_ == TIMESTAMP_NOT_VALIDATED)
     return VALIDATION_OK;
 
   if (!policy_data_->has_timestamp()) {
@@ -428,7 +428,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckTimestamp() {
   // accidentally sends a time from the distant future, this time is stored
   // locally and after the server time is corrected, due to rollback prevention
   // the client could not receive policy updates until that future date.
-  if (timestamp_option_ == TIMESTAMP_REQUIRED &&
+  if (timestamp_option_ == TIMESTAMP_FULLY_VALIDATED &&
       policy_data_->timestamp() > timestamp_not_after_) {
     LOG(ERROR) << "Policy from the future: " << policy_data_->timestamp();
     return VALIDATION_BAD_TIMESTAMP;
@@ -437,19 +437,17 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckTimestamp() {
   return VALIDATION_OK;
 }
 
-CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckToken() {
-  // Make sure the token matches the expected token (if any) and also
-  // make sure the token itself is valid (non-empty if DM_TOKEN_REQUIRED).
+CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDMToken() {
   if (dm_token_option_ == DM_TOKEN_REQUIRED &&
       (!policy_data_->has_request_token() ||
        policy_data_->request_token().empty())) {
-    LOG(ERROR) << "Empty DM token encountered - expected: " << token_;
-    return VALIDATION_WRONG_TOKEN;
+    LOG(ERROR) << "Empty DM token encountered - expected: " << dm_token_;
+    return VALIDATION_BAD_DM_TOKEN;
   }
-  if (!token_.empty() && policy_data_->request_token() != token_) {
+  if (!dm_token_.empty() && policy_data_->request_token() != dm_token_) {
     LOG(ERROR) << "Invalid DM token: " << policy_data_->request_token()
-               << " - expected: " << token_;
-    return VALIDATION_WRONG_TOKEN;
+               << " - expected: " << dm_token_;
+    return VALIDATION_BAD_DM_TOKEN;
   }
 
   return VALIDATION_OK;

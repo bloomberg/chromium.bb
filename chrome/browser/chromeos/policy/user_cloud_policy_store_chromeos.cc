@@ -272,7 +272,7 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
     std::unique_ptr<em::PolicyFetchResponse> policy) {
   // Create and configure a validator.
   std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
-      std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
+      std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED);
   validator->ValidateUsername(account_id_.GetUserEmail(), true);
   if (policy_key_.empty()) {
     validator->ValidateInitialKey(GetPolicyVerificationKey(),
@@ -421,7 +421,7 @@ void UserCloudPolicyStoreChromeOS::OnLegacyLoadFinished(
     // Create and configure a validator for the loaded legacy policy. Note that
     // the signature on this policy is not verified.
     std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
-        std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
+        std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED);
     validator->ValidateUsername(account_id_.GetUserEmail(), true);
     validator.release()->StartValidation(
         base::Bind(&UserCloudPolicyStoreChromeOS::OnLegacyPolicyValidated,
