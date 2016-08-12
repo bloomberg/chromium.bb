@@ -318,7 +318,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestTwoAuths) {
 }
 
 // Test login prompt cancellation.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth) {
+// Flaky on Mac crbug.com/636875
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, DISABLED_TestCancelAuth) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL auth_page = embedded_test_server()->GetURL(kAuthBasicPage);
   GURL no_auth_page_1 = embedded_test_server()->GetURL("/a");
