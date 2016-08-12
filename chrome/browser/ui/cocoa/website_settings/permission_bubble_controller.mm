@@ -65,6 +65,8 @@ const CGFloat kTitlePaddingX = 50.0f;
 const CGFloat kBubbleMinWidth = 315.0f;
 const NSSize kPermissionIconSize = {18, 18};
 
+const NSInteger kFullscreenLeftOffset = 40;
+
 }  // namespace
 
 // NSPopUpButton with a menu containing two items: allow and block.
@@ -208,6 +210,10 @@ const NSSize kPermissionIconSize = {18, 18};
 // Called when the 'close' button is pressed.
 - (void)onClose:(id)sender;
 
+// Returns the constant offset from the left to use for fullscreen permission
+// bubbles. Only used in tests.
++ (NSInteger)getFullscreenLeftOffset;
+
 // Sets the width of both |viewA| and |viewB| to be the larger of the
 // two views' widths.  Does not change either view's origin or height.
 + (CGFloat)matchWidthsOf:(NSView*)viewA andOf:(NSView*)viewB;
@@ -256,9 +262,11 @@ const NSSize kPermissionIconSize = {18, 18};
         [[parentWindow windowController] locationBarBridge];
     anchor = location_bar->GetPageInfoBubblePoint();
   } else {
-    // Center the bubble if there's no location bar.
+    // Position the bubble on the left of the screen if there is no page info
+    // button to point at.
     NSRect contentFrame = [[parentWindow contentView] frame];
-    anchor = NSMakePoint(NSMidX(contentFrame), NSMaxY(contentFrame));
+    anchor = NSMakePoint(NSMinX(contentFrame) + kFullscreenLeftOffset,
+                         NSMaxY(contentFrame));
   }
 
   return ui::ConvertPointFromWindowToScreen(parentWindow, anchor);
@@ -484,8 +492,7 @@ const NSSize kPermissionIconSize = {18, 18};
 }
 
 - (info_bubble::BubbleArrowLocation)getExpectedArrowLocation {
-  return [self hasVisibleLocationBar] ? info_bubble::kTopLeft
-                                      : info_bubble::kNoArrow;
+  return info_bubble::kTopLeft;
 }
 
 - (NSWindow*)getExpectedParentWindow {
@@ -618,6 +625,10 @@ const NSSize kPermissionIconSize = {18, 18};
 - (void)onClose:(id)sender {
   DCHECK(delegate_);
   delegate_->Closing();
+}
+
++ (NSInteger)getFullscreenLeftOffset {
+  return kFullscreenLeftOffset;
 }
 
 - (void)activateTabWithContents:(content::WebContents*)newContents

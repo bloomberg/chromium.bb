@@ -38,6 +38,7 @@
 - (void)onBlock:(id)sender;
 - (void)onCustomize:(id)sender;
 - (void)onCheckboxChanged:(id)sender;
++ (NSInteger)getFullscreenLeftOffset;
 @end
 
 @interface SplitBlockButton (ExposedForTesting)
@@ -374,10 +375,12 @@ TEST_F(PermissionBubbleControllerTest, AnchorPositionWithoutLocationBar) {
 
   NSPoint anchor = [controller_ getExpectedAnchorPoint];
 
-  // Expected anchor location will be top center when there's no location bar.
+  // Expected anchor location will be top left when there's no location bar.
   NSWindow* window = browser()->window()->GetNativeWindow();
-  NSRect frame = [window frame];
-  NSPoint expected = NSMakePoint(frame.size.width / 2, frame.size.height);
+  NSRect frame = [[window contentView] frame];
+  NSPoint expected = NSMakePoint(
+      NSMinX(frame) + [PermissionBubbleController getFullscreenLeftOffset],
+      NSMaxY(frame));
   expected = ui::ConvertPointFromWindowToScreen(window, expected);
   EXPECT_NSEQ(expected, anchor);
 }

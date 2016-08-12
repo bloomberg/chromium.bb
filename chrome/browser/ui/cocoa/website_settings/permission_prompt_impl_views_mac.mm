@@ -28,9 +28,7 @@ gfx::Point PermissionPromptImpl::GetAnchorPoint() {
 }
 
 views::BubbleBorder::Arrow PermissionPromptImpl::GetAnchorArrow() {
-  return [PermissionBubbleController hasVisibleLocationBarForBrowser:browser_]
-             ? views::BubbleBorder::TOP_LEFT
-             : views::BubbleBorder::NONE;
+  return views::BubbleBorder::TOP_LEFT;
 }
 
 // static

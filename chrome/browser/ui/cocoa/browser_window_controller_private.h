@@ -73,11 +73,6 @@ class WebContents;
                           regularWindow:(NSWindow*)regularWindow
                        fullscreenWindow:(NSWindow*)fullscreenWindow;
 
-// Called when a permission bubble closes, and informs the fullscreen toolbar
-// controller that the dropdown can be hidden.  (The dropdown should never be
-// hidden while a permissions bubble is visible.)
-- (void)permissionBubbleWindowWillClose:(NSNotification*)notification;
-
 // Updates the anchor position of the permission bubble.
 - (void)updatePermissionBubbleAnchor;
 

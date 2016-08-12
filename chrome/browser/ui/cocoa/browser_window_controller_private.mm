@@ -447,16 +447,6 @@ willPositionSheet:(NSWindow*)sheet
   [self enableBarVisibilityUpdates];
 }
 
-- (void)permissionBubbleWindowWillClose:(NSNotification*)notification {
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center removeObserver:self
-                    name:NSWindowWillCloseNotification
-                  object:[notification object]];
-  [self releaseBarVisibilityForOwner:[notification object]
-                       withAnimation:YES
-                               delay:YES];
-}
-
 - (void)updatePermissionBubbleAnchor {
   PermissionRequestManager* manager = [self permissionRequestManager];
   if (manager)
@@ -469,23 +459,6 @@ willPositionSheet:(NSWindow*)sheet
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
   BOOL showDropdown =
       !fullscreenForTab && !kioskMode && ([self floatingBarHasFocus]);
-
-  PermissionRequestManager* manager = [self permissionRequestManager];
-  if (manager && manager->IsBubbleVisible()) {
-    NSWindow* bubbleWindow = manager->GetBubbleWindow();
-    DCHECK(bubbleWindow);
-    // A visible permission bubble will force the dropdown to remain
-    // visible.
-    [self lockBarVisibilityForOwner:bubbleWindow withAnimation:NO delay:NO];
-    showDropdown = YES;
-    // Register to be notified when the permission bubble is closed, to
-    // allow fullscreen to hide the dropdown.
-    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self
-               selector:@selector(permissionBubbleWindowWillClose:)
-                   name:NSWindowWillCloseNotification
-                 object:bubbleWindow];
-  }
 
   NSView* contentView = [[self window] contentView];
   [fullscreenToolbarController_
