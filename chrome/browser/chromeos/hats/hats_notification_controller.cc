@@ -111,7 +111,8 @@ HatsNotificationController::HatsNotificationController(
 }
 
 HatsNotificationController::~HatsNotificationController() {
-  network_portal_detector::GetInstance()->RemoveObserver(this);
+  if (network_portal_detector::IsInitialized())
+    network_portal_detector::GetInstance()->RemoveObserver(this);
 }
 
 void HatsNotificationController::Initialize(bool is_new_device) {
