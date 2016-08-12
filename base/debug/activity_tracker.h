@@ -39,29 +39,100 @@ class WaitableEvent;
 
 namespace debug {
 
-// This class manages tracking a stack of activities for a single thread in
-// a persistent manner, implementing a bounded-size stack in a fixed-size
-// memory allocation. In order to support an operational mode where another
-// thread is analyzing this data in real-time, atomic operations are used
-// where necessary to guarantee a consistent view from the outside.
-//
-// This class is not generally used directly but instead managed by the
-// GlobalActivityTracker instance and updated using Scoped*Activity local
-// objects.
-class BASE_EXPORT ThreadActivityTracker {
- public:
-  enum : int {
-    // The maximum number of call-stack addresses stored per activity. This
-    // cannot be changed without also changing the version number of the
-    // structure. See kTypeIdActivityTracker in GlobalActivityTracker.
-    kActivityCallStackSize = 10
-  };
+class ThreadActivityTracker;
 
+enum : int {
+  // The maximum number of call-stack addresses stored per activity. This
+  // cannot be changed without also changing the version number of the
+  // structure. See kTypeIdActivityTracker in GlobalActivityTracker.
+  kActivityCallStackSize = 10,
+};
+
+// The data associated with an activity is dependent upon the activity type.
+// This union defines all of the various fields. All fields must be explicitly
+// sized types to ensure no interoperability problems between 32-bit and
+// 64-bit systems.
+union ActivityData {
+  // Generic activities don't have any defined structure.
+  struct {
+    uint32_t id;   // An arbitrary identifier used for association.
+    int32_t info;  // An arbitrary value used for information purposes.
+  } generic;
+  struct {
+    uint64_t sequence_id;  // The sequence identifier of the posted task.
+  } task;
+  struct {
+    uint64_t lock_address;  // The memory address of the lock object.
+  } lock;
+  struct {
+    uint64_t event_address;  // The memory address of the event object.
+  } event;
+  struct {
+    int64_t thread_id;  // A unique identifier for a thread within a process.
+  } thread;
+  struct {
+    int64_t process_id;  // A unique identifier for a process.
+  } process;
+
+  // These methods create an ActivityData object from the appropriate
+  // parameters. Objects of this type should always be created this way to
+  // ensure that no fields remain unpopulated should the set of recorded
+  // fields change. They're defined inline where practical because they
+  // reduce to loading a small local structure with a few values, roughly
+  // the same as loading all those values into parameters.
+
+  static ActivityData ForGeneric(uint32_t id, int32_t info) {
+    ActivityData data;
+    data.generic.id = id;
+    data.generic.info = info;
+    return data;
+  }
+
+  static ActivityData ForTask(uint64_t sequence) {
+    ActivityData data;
+    data.task.sequence_id = sequence;
+    return data;
+  }
+
+  static ActivityData ForLock(const void* lock) {
+    ActivityData data;
+    data.lock.lock_address = reinterpret_cast<uintptr_t>(lock);
+    return data;
+  }
+
+  static ActivityData ForEvent(const void* event) {
+    ActivityData data;
+    data.event.event_address = reinterpret_cast<uintptr_t>(event);
+    return data;
+  }
+
+  static ActivityData ForThread(const PlatformThreadHandle& handle);
+  static ActivityData ForThread(const int64_t id) {
+    ActivityData data;
+    data.thread.thread_id = id;
+    return data;
+  }
+
+  static ActivityData ForProcess(const int64_t id) {
+    ActivityData data;
+    data.process.process_id = id;
+    return data;
+  }
+};
+
+// A "null" activity-data that can be passed to indicate "do not change".
+extern const ActivityData kNullActivityData;
+
+// This structure is the full contents recorded for every activity pushed
+// onto the stack. The |activity_type| indicates what is actually stored in
+// the |data| field. All fields must be explicitly sized types to ensure no
+// interoperability problems between 32-bit and 64-bit systems.
+struct Activity {
   // The type of an activity on the stack. Activities are broken into
   // categories with the category ID taking the top 4 bits and the lower
   // bits representing an action within that category. This combination
   // makes it easy to "switch" based on the type during analysis.
-  enum ActivityType : uint8_t {
+  enum Type : uint8_t {
     // This "null" constant is used to indicate "do not change" in calls.
     ACT_NULL = 0,
 
@@ -99,142 +170,82 @@ class BASE_EXPORT ThreadActivityTracker {
     ACT_ACTION_MASK = 0xF
   };
 
-  // The data associated with an activity is dependent upon the activity type.
-  // This union defines all of the various fields. All fields must be explicitly
-  // sized types to ensure no interoperability problems between 32-bit and
-  // 64-bit systems.
-  union ActivityData {
-    // Generic activities don't have any defined structure.
-    struct {
-      uint32_t id;   // An arbitrary identifier used for association.
-      int32_t info;  // An arbitrary value used for information purposes.
-    } generic;
-    struct {
-      uint64_t sequence_id;  // The sequence identifier of the posted task.
-    } task;
-    struct {
-      uint64_t lock_address;  // The memory address of the lock object.
-    } lock;
-    struct {
-      uint64_t event_address;  // The memory address of the event object.
-    } event;
-    struct {
-      int64_t thread_id;  // A unique identifier for a thread within a process.
-    } thread;
-    struct {
-      int64_t process_id;  // A unique identifier for a process.
-    } process;
+  // Internal representation of time. During collection, this is in "ticks"
+  // but when returned in a snapshot, it is "wall time".
+  int64_t time_internal;
 
-    // These methods create an ActivityData object from the appropriate
-    // parameters. Objects of this type should always be created this way to
-    // ensure that no fields remain unpopulated should the set of recorded
-    // fields change. They're defined inline where practical because they
-    // reduce to loading a small local structure with a few values, roughly
-    // the same as loading all those values into parameters.
+  // The address that is the origin of the activity if it not obvious from
+  // the call stack. This is useful for things like tasks that are posted
+  // from a completely different thread though most activities will leave
+  // it null.
+  uint64_t origin_address;
 
-    static ActivityData ForGeneric(uint32_t id, int32_t info) {
-      ActivityData data;
-      data.generic.id = id;
-      data.generic.info = info;
-      return data;
-    }
+  // Array of program-counters that make up the top of the call stack.
+  // Despite the fixed size, this list is always null-terminated. Entries
+  // after the terminator have no meaning and may or may not also be null.
+  // The list will be completely empty if call-stack collection is not
+  // enabled.
+  uint64_t call_stack[kActivityCallStackSize];
 
-    static ActivityData ForTask(uint64_t sequence) {
-      ActivityData data;
-      data.task.sequence_id = sequence;
-      return data;
-    }
+  // The (enumerated) type of the activity. This defines what fields of the
+  // |data| record are valid.
+  uint8_t activity_type;
 
-    static ActivityData ForLock(const void* lock) {
-      ActivityData data;
-      data.lock.lock_address = reinterpret_cast<uintptr_t>(lock);
-      return data;
-    }
+  // Padding to ensure that the next member begins on a 64-bit boundary
+  // even on 32-bit builds which ensures inter-operability between CPU
+  // architectures. New fields can be taken from this space.
+  uint8_t padding[7];
 
-    static ActivityData ForEvent(const void* event) {
-      ActivityData data;
-      data.event.event_address = reinterpret_cast<uintptr_t>(event);
-      return data;
-    }
+  // Information specific to the |activity_type|.
+  ActivityData data;
 
-    static ActivityData ForThread(const PlatformThreadHandle& handle);
-    static ActivityData ForThread(const int64_t id) {
-      ActivityData data;
-      data.thread.thread_id = id;
-      return data;
-    }
+  static void FillFrom(Activity* activity,
+                       const void* origin,
+                       Type type,
+                       const ActivityData& data);
+};
 
-    static ActivityData ForProcess(const int64_t id) {
-      ActivityData data;
-      data.process.process_id = id;
-      return data;
-    }
-  };
+// This structure holds a copy of all the internal data at the moment the
+// "snapshot" operation is done. It is disconnected from the live tracker
+// so that continued operation of the thread will not cause changes here.
+struct BASE_EXPORT ActivitySnapshot {
+  // Explicit constructor/destructor are needed because of complex types
+  // with non-trivial default constructors and destructors.
+  ActivitySnapshot();
+  ~ActivitySnapshot();
 
-  // This structure is the full contents recorded for every activity pushed
-  // onto the stack. The |activity_type| indicates what is actually stored in
-  // the |data| field. All fields must be explicitly sized types to ensure no
-  // interoperability problems between 32-bit and 64-bit systems.
-  struct Activity {
-    // Internal representation of time. During collection, this is in "ticks"
-    // but when returned in a snapshot, it is "wall time".
-    int64_t time_internal;
+  // The name of the thread as set when it was created. The name may be
+  // truncated due to internal length limitations.
+  std::string thread_name;
 
-    // The address that is the origin of the activity if it not obvious from
-    // the call stack. This is useful for things like tasks that are posted
-    // from a completely different thread though most activities will leave
-    // it null.
-    uint64_t origin_address;
+  // The process and thread IDs. These values have no meaning other than
+  // they uniquely identify a running process and a running thread within
+  // that process.  Thread-IDs can be re-used across different processes
+  // and both can be re-used after the process/thread exits.
+  int64_t process_id = 0;
+  int64_t thread_id = 0;
 
-    // Array of program-counters that make up the top of the call stack.
-    // Despite the fixed size, this list is always null-terminated. Entries
-    // after the terminator have no meaning and may or may not also be null.
-    // The list will be completely empty if call-stack collection is not
-    // enabled.
-    uint64_t call_stack[kActivityCallStackSize];
+  // The current stack of activities that are underway for this thread. It
+  // is limited in its maximum size with later entries being left off.
+  std::vector<Activity> activity_stack;
 
-    // The (enumerated) type of the activity. This defines what fields of the
-    // |data| record are valid.
-    uint8_t activity_type;
+  // The current total depth of the activity stack, including those later
+  // entries not recorded in the |activity_stack| vector.
+  uint32_t activity_stack_depth = 0;
+};
 
-    // Padding to ensure that the next member begins on a 64-bit boundary
-    // even on 32-bit builds which ensures inter-operability between CPU
-    // architectures. New fields can be taken from this space.
-    uint8_t padding[7];
 
-    // Information specific to the |activity_type|.
-    ActivityData data;
-  };
-
-  // This structure holds a copy of all the internal data at the moment the
-  // "snapshot" operation is done. It is disconnected from the live tracker
-  // so that continued operation of the thread will not cause changes here.
-  struct BASE_EXPORT ActivitySnapshot {
-    // Explicit constructor/destructor are needed because of complex types
-    // with non-trivial default constructors and destructors.
-    ActivitySnapshot();
-    ~ActivitySnapshot();
-
-    // The name of the thread as set when it was created. The name may be
-    // truncated due to internal length limitations.
-    std::string thread_name;
-
-    // The process and thread IDs. These values have no meaning other than
-    // they uniquely identify a running process and a running thread within
-    // that process.  Thread-IDs can be re-used across different processes
-    // and both can be re-used after the process/thread exits.
-    int64_t process_id = 0;
-    int64_t thread_id = 0;
-
-    // The current stack of activities that are underway for this thread. It
-    // is limited in its maximum size with later entries being left off.
-    std::vector<Activity> activity_stack;
-
-    // The current total depth of the activity stack, including those later
-    // entries not recorded in the |activity_stack| vector.
-    uint32_t activity_stack_depth = 0;
-  };
-
+// This class manages tracking a stack of activities for a single thread in
+// a persistent manner, implementing a bounded-size stack in a fixed-size
+// memory allocation. In order to support an operational mode where another
+// thread is analyzing this data in real-time, atomic operations are used
+// where necessary to guarantee a consistent view from the outside.
+//
+// This class is not generally used directly but instead managed by the
+// GlobalActivityTracker instance and updated using Scoped*Activity local
+// objects.
+class BASE_EXPORT ThreadActivityTracker {
+ public:
   // This is the base class for having the compiler manage an activity on the
   // tracker's stack. It does nothing but call methods on the passed |tracker|
   // if it is not null, making it safe (and cheap) to create these objects
@@ -243,7 +254,7 @@ class BASE_EXPORT ThreadActivityTracker {
    public:
     ScopedActivity(ThreadActivityTracker* tracker,
                    const void* origin,
-                   ActivityType type,
+                   Activity::Type type,
                    const ActivityData& data)
         : tracker_(tracker) {
       if (tracker_)
@@ -255,7 +266,7 @@ class BASE_EXPORT ThreadActivityTracker {
         tracker_->PopActivity();
     }
 
-    void ChangeTypeAndData(ActivityType type, const ActivityData& data) {
+    void ChangeTypeAndData(Activity::Type type, const ActivityData& data) {
       if (tracker_)
         tracker_->ChangeActivity(type, data);
     }
@@ -278,7 +289,7 @@ class BASE_EXPORT ThreadActivityTracker {
   // the code, though it can be null if the creator's address is not known.
   // The |type| and |data| describe the activity.
   void PushActivity(const void* origin,
-                    ActivityType type,
+                    Activity::Type type,
                     const ActivityData& data);
 
   // Changes the activity |type| and |data| of the top-most entry on the stack.
@@ -288,7 +299,7 @@ class BASE_EXPORT ThreadActivityTracker {
   // unchanged. The type, if changed, must remain in the same category.
   // Changing both is not atomic so a snapshot operation could occur between
   // the update of |type| and |data| or between update of |data| fields.
-  void ChangeActivity(ActivityType type, const ActivityData& data);
+  void ChangeActivity(Activity::Type type, const ActivityData& data);
 
   // Indicates that an activity has completed.
   void PopActivity();
@@ -306,9 +317,6 @@ class BASE_EXPORT ThreadActivityTracker {
   // Calculates the memory size required for a given stack depth, including
   // the internal header structure for the stack.
   static size_t SizeForStackDepth(int stack_depth);
-
-  // A "null" activity-data that can be passed to indicate "do not change".
-  static const ActivityData kNullActivityData;
 
  private:
   friend class ActivityTrackerTest;
@@ -354,8 +362,8 @@ class BASE_EXPORT GlobalActivityTracker {
       : public ThreadActivityTracker::ScopedActivity {
    public:
     ScopedThreadActivity(const void* origin,
-                         ThreadActivityTracker::ActivityType type,
-                         const ThreadActivityTracker::ActivityData& data,
+                         Activity::Type type,
+                         const ActivityData& data,
                          bool lock_allowed)
         : ThreadActivityTracker::ScopedActivity(
               GetOrCreateTracker(lock_allowed),

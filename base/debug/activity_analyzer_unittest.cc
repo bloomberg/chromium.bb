@@ -48,8 +48,6 @@ class ActivityAnalyzerTest : public testing::Test {
   const int kMemorySize = 1 << 10;  // 1MiB
   const int kStackSize  = 1 << 10;  // 1KiB
 
-  using Activity = ThreadActivityAnalyzer::Activity;
-
   ActivityAnalyzerTest() {}
 
   ~ActivityAnalyzerTest() override {
@@ -86,8 +84,8 @@ class SimpleActivityThread : public SimpleThread {
  public:
   SimpleActivityThread(const std::string& name,
                        const void* source,
-                       ThreadActivityTracker::ActivityType activity,
-                       const ThreadActivityTracker::ActivityData& data)
+                       Activity::Type activity,
+                       const ActivityData& data)
       : SimpleThread(name, Options()),
         source_(source),
         activity_(activity),
@@ -125,8 +123,8 @@ class SimpleActivityThread : public SimpleThread {
 
  private:
   const void* source_;
-  ThreadActivityTracker::ActivityType activity_;
-  ThreadActivityTracker::ActivityData data_;
+  Activity::Type activity_;
+  ActivityData data_;
 
   bool ready_ = false;
   bool exit_ = false;
@@ -153,8 +151,8 @@ TEST_F(ActivityAnalyzerTest, GlobalAnalyzerConstruction) {
   EXPECT_EQ(ta1, analyzer.GetAnalyzerForThread(tk1));
 
   // Create a second thread that will do something.
-  SimpleActivityThread t2("t2", nullptr, ThreadActivityTracker::ACT_TASK,
-                          ThreadActivityTracker::ActivityData::ForTask(11));
+  SimpleActivityThread t2("t2", nullptr, Activity::ACT_TASK,
+                          ActivityData::ForTask(11));
   t2.Start();
   t2.WaitReady();
 

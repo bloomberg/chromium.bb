@@ -33,7 +33,67 @@ const uint64_t kHeaderCookie = 0xC0029B240D4A3092ULL + 1;  // v1
 // The minimum depth a stack should support.
 const int kMinStackDepth = 2;
 
+union ThreadRef {
+  int64_t as_id;
+#if defined(OS_WIN)
+  // On Windows, the handle itself is often a pseudo-handle with a common
+  // value meaning "this thread" and so the thread-id is used. The former
+  // can be converted to a thread-id with a system call.
+  PlatformThreadId as_tid;
+#elif defined(OS_POSIX)
+  // On Posix, the handle is always a unique identifier so no conversion
+  // needs to be done. However, it's value is officially opaque so there
+  // is no one correct way to convert it to a numerical identifier.
+  PlatformThreadHandle::Handle as_handle;
+#endif
+};
+
 }  // namespace
+
+
+// It doesn't matter what is contained in this (though it will be all zeros)
+// as only the address of it is important.
+const ActivityData kNullActivityData = {};
+
+ActivityData ActivityData::ForThread(const PlatformThreadHandle& handle) {
+  ThreadRef thread_ref;
+  thread_ref.as_id = 0;  // Zero the union in case other is smaller.
+#if defined(OS_WIN)
+  thread_ref.as_tid = ::GetThreadId(handle.platform_handle());
+#elif defined(OS_POSIX)
+  thread_ref.as_handle = handle.platform_handle();
+#endif
+  return ForThread(thread_ref.as_id);
+}
+
+// static
+void Activity::FillFrom(Activity* activity,
+                        const void* origin,
+                        Type type,
+                        const ActivityData& data) {
+  activity->time_internal = base::TimeTicks::Now().ToInternalValue();
+  activity->origin_address = reinterpret_cast<uintptr_t>(origin);
+  activity->activity_type = type;
+  activity->data = data;
+
+#if defined(SYZYASAN)
+  // Create a stacktrace from the current location and get the addresses.
+  StackTrace stack_trace;
+  size_t stack_depth;
+  const void* const* stack_addrs = stack_trace.Addresses(&stack_depth);
+  // Copy the stack addresses, ignoring the first one (here).
+  size_t i;
+  for (i = 1; i < stack_depth && i < kActivityCallStackSize; ++i) {
+    activity->call_stack[i - 1] = reinterpret_cast<uintptr_t>(stack_addrs[i]);
+  }
+  activity->call_stack[i - 1] = 0;
+#else
+  activity->call_stack[0] = 0;
+#endif
+}
+
+ActivitySnapshot::ActivitySnapshot() {}
+ActivitySnapshot::~ActivitySnapshot() {}
 
 
 // This information is kept for every thread that is tracked. It is filled
@@ -43,32 +103,19 @@ struct ThreadActivityTracker::Header {
   // This unique number indicates a valid initialization of the memory.
   uint64_t cookie;
 
-  // The process-id and thread-id to which this data belongs. These identifiers
-  // are not guaranteed to mean anything but are unique, in combination, among
-  // all active trackers. It would be nice to always have the process_id be a
-  // 64-bit value but the necessity of having it atomic (for the memory barriers
-  // it provides) limits it to the natural word size of the machine.
+  // The process-id and thread-id (thread_ref.as_id) to which this data belongs.
+  // These identifiers are not guaranteed to mean anything but are unique, in
+  // combination, among all active trackers. It would be nice to always have
+  // the process_id be a 64-bit value but the necessity of having it atomic
+  // (for the memory barriers it provides) limits it to the natural word size
+  // of the machine.
 #ifdef ARCH_CPU_64_BITS
   std::atomic<int64_t> process_id;
 #else
   std::atomic<int32_t> process_id;
   int32_t process_id_padding;
 #endif
-
-  union {
-    int64_t as_id;
-#if defined(OS_WIN)
-    // On Windows, the handle itself is often a pseudo-handle with a common
-    // value meaning "this thread" and so the thread-id is used. The former
-    // can be converted to a thread-id with a system call.
-    PlatformThreadId as_tid;
-#elif defined(OS_POSIX)
-    // On Posix, the handle is always a unique identifier so no conversion
-    // needs to be done. However, it's value is officially opaque so there
-    // is no one correct way to convert it to a numerical identifier.
-    PlatformThreadHandle::Handle as_handle;
-#endif
-  } thread_ref;
+  ThreadRef thread_ref;
 
   // The start-time and start-ticks when the data was created. Each activity
   // record has a |time_internal| value that can be converted to a "wall time"
@@ -100,29 +147,6 @@ struct ThreadActivityTracker::Header {
   // reference.
   char thread_name[32];
 };
-
-// It doesn't matter what is contained in this (though it will be all zeros)
-// as only the address of it is important.
-const ThreadActivityTracker::ActivityData
-    ThreadActivityTracker::kNullActivityData = {};
-
-ThreadActivityTracker::ActivityData
-ThreadActivityTracker::ActivityData::ForThread(
-    const PlatformThreadHandle& handle) {
-  // Header already has a conversion union; reuse that.
-  ThreadActivityTracker::Header header;
-  header.thread_ref.as_id = 0;  // Zero the union in case other is smaller.
-#if defined(OS_WIN)
-  header.thread_ref.as_tid = ::GetThreadId(handle.platform_handle());
-#elif defined(OS_POSIX)
-  header.thread_ref.as_handle = handle.platform_handle();
-#endif
-  return ForThread(header.thread_ref.as_id);
-}
-
-ThreadActivityTracker::ActivitySnapshot::ActivitySnapshot() {}
-ThreadActivityTracker::ActivitySnapshot::~ActivitySnapshot() {}
-
 
 ThreadActivityTracker::ThreadActivityTracker(void* base, size_t size)
     : header_(static_cast<Header*>(base)),
@@ -201,11 +225,12 @@ ThreadActivityTracker::ThreadActivityTracker(void* base, size_t size)
 ThreadActivityTracker::~ThreadActivityTracker() {}
 
 void ThreadActivityTracker::PushActivity(const void* origin,
-                                         ActivityType type,
+                                         Activity::Type type,
                                          const ActivityData& data) {
   // A thread-checker creates a lock to check the thread-id which means
   // re-entry into this code if lock acquisitions are being tracked.
-  DCHECK(type == ACT_LOCK_ACQUIRE || thread_checker_.CalledOnValidThread());
+  DCHECK(type == Activity::ACT_LOCK_ACQUIRE ||
+         thread_checker_.CalledOnValidThread());
 
   // Get the current depth of the stack. No access to other memory guarded
   // by this variable is done here so a "relaxed" load is acceptable.
@@ -223,28 +248,7 @@ void ThreadActivityTracker::PushActivity(const void* origin,
   // Get a pointer to the next activity and load it. No atomicity is required
   // here because the memory is known only to this thread. It will be made
   // known to other threads once the depth is incremented.
-  Activity* activity = &stack_[depth];
-  activity->time_internal = base::TimeTicks::Now().ToInternalValue();
-  activity->origin_address = reinterpret_cast<uintptr_t>(origin);
-  activity->activity_type = type;
-  activity->data = data;
-
-#if defined(SYZYASAN)
-  // Create a stacktrace from the current location and get the addresses.
-  StackTrace stack_trace;
-  size_t stack_depth;
-  const void* const* stack_addrs = stack_trace.Addresses(&stack_depth);
-  // Copy the stack addresses, ignoring the first one (here).
-  size_t i;
-  for (i = 1; i < stack_depth && i < kActivityCallStackSize; ++i) {
-    activity->call_stack[i - 1] = reinterpret_cast<uintptr_t>(stack_addrs[i]);
-  }
-  activity->call_stack[i - 1] = 0;
-#else
-  // Since the memory was initially zero and nothing ever overwrites it in
-  // this "else" case, there is no need to write even the null terminator.
-  //activity->call_stack[0] = 0;
-#endif
+  Activity::FillFrom(&stack_[depth], origin, type, data);
 
   // Save the incremented depth. Because this guards |activity| memory filled
   // above that may be read by another thread once the recorded depth changes,
@@ -252,10 +256,10 @@ void ThreadActivityTracker::PushActivity(const void* origin,
   header_->current_depth.store(depth + 1, std::memory_order_release);
 }
 
-void ThreadActivityTracker::ChangeActivity(ActivityType type,
+void ThreadActivityTracker::ChangeActivity(Activity::Type type,
                                            const ActivityData& data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(type != ACT_NULL || &data != &kNullActivityData);
+  DCHECK(type != Activity::ACT_NULL || &data != &kNullActivityData);
 
   // Get the current depth of the stack and acquire the data held there.
   uint32_t depth = header_->current_depth.load(std::memory_order_acquire);
@@ -265,9 +269,9 @@ void ThreadActivityTracker::ChangeActivity(ActivityType type,
   if (depth <= stack_slots_) {
     Activity* activity = &stack_[depth - 1];
 
-    if (type != ACT_NULL) {
-      DCHECK_EQ(activity->activity_type & ACT_CATEGORY_MASK,
-                type & ACT_CATEGORY_MASK);
+    if (type != Activity::ACT_NULL) {
+      DCHECK_EQ(activity->activity_type & Activity::ACT_CATEGORY_MASK,
+                type & Activity::ACT_CATEGORY_MASK);
       activity->activity_type = type;
     }
 
@@ -288,7 +292,7 @@ void ThreadActivityTracker::PopActivity() {
 
   // A thread-checker creates a lock to check the thread-id which means
   // re-entry into this code if lock acquisitions are being tracked.
-  DCHECK(stack_[depth - 1].activity_type == ACT_LOCK_ACQUIRE ||
+  DCHECK(stack_[depth - 1].activity_type == Activity::ACT_LOCK_ACQUIRE ||
          thread_checker_.CalledOnValidThread());
 
   // The stack has shrunk meaning that some other thread trying to copy the
@@ -700,70 +704,65 @@ void GlobalActivityTracker::OnTLSDestroy(void* value) {
   delete reinterpret_cast<ManagedActivityTracker*>(value);
 }
 
-
 ScopedActivity::ScopedActivity(const tracked_objects::Location& location,
                                uint8_t action,
                                uint32_t id,
                                int32_t info)
     : GlobalActivityTracker::ScopedThreadActivity(
           location.program_counter(),
-          static_cast<ThreadActivityTracker::ActivityType>(
-              ThreadActivityTracker::ACT_GENERIC | action),
-          ThreadActivityTracker::ActivityData::ForGeneric(id, info),
+          static_cast<Activity::Type>(Activity::ACT_GENERIC | action),
+          ActivityData::ForGeneric(id, info),
           /*lock_allowed=*/true),
       id_(id) {
   // The action must not affect the category bits of the activity type.
-  DCHECK_EQ(0, action & ThreadActivityTracker::ACT_CATEGORY_MASK);
+  DCHECK_EQ(0, action & Activity::ACT_CATEGORY_MASK);
 }
 
 void ScopedActivity::ChangeAction(uint8_t action) {
-  DCHECK_EQ(0, action & ThreadActivityTracker::ACT_CATEGORY_MASK);
-  ChangeTypeAndData(static_cast<ThreadActivityTracker::ActivityType>(
-                        ThreadActivityTracker::ACT_GENERIC | action),
-                    ThreadActivityTracker::kNullActivityData);
+  DCHECK_EQ(0, action & Activity::ACT_CATEGORY_MASK);
+  ChangeTypeAndData(static_cast<Activity::Type>(Activity::ACT_GENERIC | action),
+                    kNullActivityData);
 }
 
 void ScopedActivity::ChangeInfo(int32_t info) {
-  ChangeTypeAndData(ThreadActivityTracker::ACT_NULL,
-                    ThreadActivityTracker::ActivityData::ForGeneric(id_, info));
+  ChangeTypeAndData(Activity::ACT_NULL, ActivityData::ForGeneric(id_, info));
 }
 
 void ScopedActivity::ChangeActionAndInfo(uint8_t action, int32_t info) {
-  DCHECK_EQ(0, action & ThreadActivityTracker::ACT_CATEGORY_MASK);
-  ChangeTypeAndData(static_cast<ThreadActivityTracker::ActivityType>(
-                        ThreadActivityTracker::ACT_GENERIC | action),
-                    ThreadActivityTracker::ActivityData::ForGeneric(id_, info));
+  DCHECK_EQ(0, action & Activity::ACT_CATEGORY_MASK);
+  ChangeTypeAndData(static_cast<Activity::Type>(Activity::ACT_GENERIC | action),
+                    ActivityData::ForGeneric(id_, info));
 }
 
 ScopedTaskRunActivity::ScopedTaskRunActivity(const base::PendingTask& task)
     : GlobalActivityTracker::ScopedThreadActivity(
           task.posted_from.program_counter(),
-          ThreadActivityTracker::ACT_TASK_RUN,
-          ThreadActivityTracker::ActivityData::ForTask(task.sequence_num),
+          Activity::ACT_TASK_RUN,
+          ActivityData::ForTask(task.sequence_num),
           /*lock_allowed=*/true) {}
 
 ScopedLockAcquireActivity::ScopedLockAcquireActivity(
     const base::internal::LockImpl* lock)
     : GlobalActivityTracker::ScopedThreadActivity(
           nullptr,
-          ThreadActivityTracker::ACT_LOCK_ACQUIRE,
-          ThreadActivityTracker::ActivityData::ForLock(lock),
+          Activity::ACT_LOCK_ACQUIRE,
+          ActivityData::ForLock(lock),
           /*lock_allowed=*/false) {}
 
 ScopedEventWaitActivity::ScopedEventWaitActivity(
     const base::WaitableEvent* event)
     : GlobalActivityTracker::ScopedThreadActivity(
           nullptr,
-          ThreadActivityTracker::ACT_EVENT_WAIT,
-          ThreadActivityTracker::ActivityData::ForEvent(event),
+          Activity::ACT_EVENT_WAIT,
+          ActivityData::ForEvent(event),
           /*lock_allowed=*/true) {}
 
 ScopedThreadJoinActivity::ScopedThreadJoinActivity(
     const base::PlatformThreadHandle* thread)
     : GlobalActivityTracker::ScopedThreadActivity(
           nullptr,
-          ThreadActivityTracker::ACT_THREAD_JOIN,
-          ThreadActivityTracker::ActivityData::ForThread(*thread),
+          Activity::ACT_THREAD_JOIN,
+          ActivityData::ForThread(*thread),
           /*lock_allowed=*/true) {}
 
 #if !defined(OS_NACL) && !defined(OS_IOS)
@@ -771,8 +770,8 @@ ScopedProcessWaitActivity::ScopedProcessWaitActivity(
     const base::Process* process)
     : GlobalActivityTracker::ScopedThreadActivity(
           nullptr,
-          ThreadActivityTracker::ACT_PROCESS_WAIT,
-          ThreadActivityTracker::ActivityData::ForProcess(process->Pid()),
+          Activity::ACT_PROCESS_WAIT,
+          ActivityData::ForProcess(process->Pid()),
           /*lock_allowed=*/true) {}
 #endif
 

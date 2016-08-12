@@ -45,9 +45,6 @@ class ActivityTrackerTest : public testing::Test {
   const int kMemorySize = 1 << 10;  // 1MiB
   const int kStackSize  = 1 << 10;  // 1KiB
 
-  using Activity = ThreadActivityTracker::Activity;
-  using ActivityData = ThreadActivityTracker::ActivityData;
-
   ActivityTrackerTest() {}
 
   ~ActivityTrackerTest() override {
@@ -84,36 +81,34 @@ class ActivityTrackerTest : public testing::Test {
 
 TEST_F(ActivityTrackerTest, PushPopTest) {
   std::unique_ptr<ThreadActivityTracker> tracker = CreateActivityTracker();
-  ThreadActivityTracker::ActivitySnapshot snapshot;
+  ActivitySnapshot snapshot;
 
   ASSERT_TRUE(tracker->Snapshot(&snapshot));
   ASSERT_EQ(0U, snapshot.activity_stack_depth);
   ASSERT_EQ(0U, snapshot.activity_stack.size());
 
   char origin1;
-  tracker->PushActivity(&origin1, ThreadActivityTracker::ACT_TASK,
+  tracker->PushActivity(&origin1, Activity::ACT_TASK,
                         ActivityData::ForTask(11));
   ASSERT_TRUE(tracker->Snapshot(&snapshot));
   ASSERT_EQ(1U, snapshot.activity_stack_depth);
   ASSERT_EQ(1U, snapshot.activity_stack.size());
   EXPECT_NE(0, snapshot.activity_stack[0].time_internal);
-  EXPECT_EQ(ThreadActivityTracker::ACT_TASK,
-            snapshot.activity_stack[0].activity_type);
+  EXPECT_EQ(Activity::ACT_TASK, snapshot.activity_stack[0].activity_type);
   EXPECT_EQ(reinterpret_cast<uintptr_t>(&origin1),
             snapshot.activity_stack[0].origin_address);
   EXPECT_EQ(11U, snapshot.activity_stack[0].data.task.sequence_id);
 
   char origin2;
   char lock2;
-  tracker->PushActivity(&origin2, ThreadActivityTracker::ACT_LOCK,
+  tracker->PushActivity(&origin2, Activity::ACT_LOCK,
                         ActivityData::ForLock(&lock2));
   ASSERT_TRUE(tracker->Snapshot(&snapshot));
   ASSERT_EQ(2U, snapshot.activity_stack_depth);
   ASSERT_EQ(2U, snapshot.activity_stack.size());
   EXPECT_LE(snapshot.activity_stack[0].time_internal,
             snapshot.activity_stack[1].time_internal);
-  EXPECT_EQ(ThreadActivityTracker::ACT_LOCK,
-            snapshot.activity_stack[1].activity_type);
+  EXPECT_EQ(Activity::ACT_LOCK, snapshot.activity_stack[1].activity_type);
   EXPECT_EQ(reinterpret_cast<uintptr_t>(&origin2),
             snapshot.activity_stack[1].origin_address);
   EXPECT_EQ(reinterpret_cast<uintptr_t>(&lock2),
@@ -123,8 +118,7 @@ TEST_F(ActivityTrackerTest, PushPopTest) {
   ASSERT_TRUE(tracker->Snapshot(&snapshot));
   ASSERT_EQ(1U, snapshot.activity_stack_depth);
   ASSERT_EQ(1U, snapshot.activity_stack.size());
-  EXPECT_EQ(ThreadActivityTracker::ACT_TASK,
-            snapshot.activity_stack[0].activity_type);
+  EXPECT_EQ(Activity::ACT_TASK, snapshot.activity_stack[0].activity_type);
   EXPECT_EQ(reinterpret_cast<uintptr_t>(&origin1),
             snapshot.activity_stack[0].origin_address);
   EXPECT_EQ(11U, snapshot.activity_stack[0].data.task.sequence_id);
@@ -140,7 +134,7 @@ TEST_F(ActivityTrackerTest, ScopedTaskTest) {
 
   ThreadActivityTracker* tracker =
       GlobalActivityTracker::Get()->GetOrCreateTrackerForCurrentThread();
-  ThreadActivityTracker::ActivitySnapshot snapshot;
+  ActivitySnapshot snapshot;
 
   ASSERT_TRUE(tracker->Snapshot(&snapshot));
   ASSERT_EQ(0U, snapshot.activity_stack_depth);
@@ -153,8 +147,7 @@ TEST_F(ActivityTrackerTest, ScopedTaskTest) {
     ASSERT_TRUE(tracker->Snapshot(&snapshot));
     ASSERT_EQ(1U, snapshot.activity_stack_depth);
     ASSERT_EQ(1U, snapshot.activity_stack.size());
-    EXPECT_EQ(ThreadActivityTracker::ACT_TASK,
-              snapshot.activity_stack[0].activity_type);
+    EXPECT_EQ(Activity::ACT_TASK, snapshot.activity_stack[0].activity_type);
 
     {
       PendingTask task2(FROM_HERE, base::Bind(&DoNothing));
@@ -163,15 +156,13 @@ TEST_F(ActivityTrackerTest, ScopedTaskTest) {
       ASSERT_TRUE(tracker->Snapshot(&snapshot));
       ASSERT_EQ(2U, snapshot.activity_stack_depth);
       ASSERT_EQ(2U, snapshot.activity_stack.size());
-      EXPECT_EQ(ThreadActivityTracker::ACT_TASK,
-                snapshot.activity_stack[1].activity_type);
+      EXPECT_EQ(Activity::ACT_TASK, snapshot.activity_stack[1].activity_type);
     }
 
     ASSERT_TRUE(tracker->Snapshot(&snapshot));
     ASSERT_EQ(1U, snapshot.activity_stack_depth);
     ASSERT_EQ(1U, snapshot.activity_stack.size());
-    EXPECT_EQ(ThreadActivityTracker::ACT_TASK,
-              snapshot.activity_stack[0].activity_type);
+    EXPECT_EQ(Activity::ACT_TASK, snapshot.activity_stack[0].activity_type);
   }
 
   ASSERT_TRUE(tracker->Snapshot(&snapshot));
@@ -211,8 +202,8 @@ class SimpleActivityThread : public SimpleThread {
  public:
   SimpleActivityThread(const std::string& name,
                        const void* origin,
-                       ThreadActivityTracker::ActivityType activity,
-                       const ThreadActivityTracker::ActivityData& data)
+                       Activity::Type activity,
+                       const ActivityData& data)
       : SimpleThread(name, Options()),
         origin_(origin),
         activity_(activity),
@@ -250,8 +241,8 @@ class SimpleActivityThread : public SimpleThread {
 
  private:
   const void* origin_;
-  ThreadActivityTracker::ActivityType activity_;
-  ThreadActivityTracker::ActivityData data_;
+  Activity::Type activity_;
+  ActivityData data_;
 
   bool ready_ = false;
   bool exit_ = false;
@@ -267,8 +258,8 @@ TEST_F(ActivityTrackerTest, ThreadDeathTest) {
   const size_t starting_active = GetGlobalActiveTrackerCount();
   const size_t starting_inactive = GetGlobalInactiveTrackerCount();
 
-  SimpleActivityThread t1("t1", nullptr, ThreadActivityTracker::ACT_TASK,
-                          ThreadActivityTracker::ActivityData::ForTask(11));
+  SimpleActivityThread t1("t1", nullptr, Activity::ACT_TASK,
+                          ActivityData::ForTask(11));
   t1.Start();
   t1.WaitReady();
   EXPECT_EQ(starting_active + 1, GetGlobalActiveTrackerCount());
@@ -281,8 +272,8 @@ TEST_F(ActivityTrackerTest, ThreadDeathTest) {
 
   // Start another thread and ensure it re-uses the existing memory.
 
-  SimpleActivityThread t2("t2", nullptr, ThreadActivityTracker::ACT_TASK,
-                          ThreadActivityTracker::ActivityData::ForTask(22));
+  SimpleActivityThread t2("t2", nullptr, Activity::ACT_TASK,
+                          ActivityData::ForTask(22));
   t2.Start();
   t2.WaitReady();
   EXPECT_EQ(starting_active + 1, GetGlobalActiveTrackerCount());

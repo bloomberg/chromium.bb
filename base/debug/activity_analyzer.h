@@ -20,9 +20,6 @@ namespace debug {
 // makes that information available to other code.
 class BASE_EXPORT ThreadActivityAnalyzer {
  public:
-  using Activity = ThreadActivityTracker::Activity;
-  using ActivitySnapshot = ThreadActivityTracker::ActivitySnapshot;
-
   // This class provides keys that uniquely identify a thread, even across
   // multiple processes.
   class ThreadKey {
