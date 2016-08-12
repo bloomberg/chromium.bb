@@ -139,6 +139,10 @@ bool FLAGS_quic_remove_obsolete_forward_secure = false;
 // too large.
 bool FLAGS_quic_close_connection_on_packet_too_large = true;
 
+// Use GetLeastUnacked when updating the packet number length, instead of
+// GetLeastPacketAwaitedByPeer.
+bool FLAGS_quic_least_unacked_packet_number_length = true;
+
 // If true, close the write side of a QUIC spdy stream when all queued bytes
 // have been written and a FIN has been sent.
 bool FLAGS_quic_close_stream_after_writing_queued_data = false;
