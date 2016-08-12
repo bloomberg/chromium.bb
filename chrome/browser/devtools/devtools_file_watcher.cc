@@ -138,7 +138,7 @@ void DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications() {
   }
   pending_paths_.clear();
 
-  for (auto watcher : listeners_) {
+  for (auto* watcher : listeners_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(watcher->callback_, changed_paths));
   }

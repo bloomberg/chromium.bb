@@ -36,7 +36,7 @@ ChromeDevToolsDiscoveryProvider::GetDescriptors() {
   std::vector<DevToolsTargetImpl*> list = DevToolsTargetImpl::EnumerateAll();
   devtools_discovery::DevToolsTargetDescriptor::List result;
   result.reserve(list.size());
-  for (const auto& descriptor : list)
+  for (auto* descriptor : list)
     result.push_back(descriptor);
   return result;
 }
