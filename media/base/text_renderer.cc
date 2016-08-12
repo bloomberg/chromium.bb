@@ -30,7 +30,7 @@ TextRenderer::TextRenderer(
 
 TextRenderer::~TextRenderer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  STLDeleteValues(&text_track_state_map_);
+  base::STLDeleteValues(&text_track_state_map_);
   if (!pause_cb_.is_null())
     base::ResetAndReturn(&pause_cb_).Run();
 }

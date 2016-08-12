@@ -251,7 +251,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
       return;
 
     if (child_task_runner_->BelongsToCurrentThread()) {
-      STLDeleteValues(&client_map_);
+      base::STLDeleteValues(&client_map_);
     } else {
       // Make sure |Client| are deleted on child thread.
       std::unique_ptr<ClientMap> client_map(new ClientMap);
@@ -269,7 +269,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   // Must be static because this method runs after destructor.
   static void DeleteClientMapOnChildThread(
       std::unique_ptr<ClientMap> client_map) {
-    STLDeleteValues(client_map.get());
+    base::STLDeleteValues(client_map.get());
   }
 
   base::WeakPtr<GpuJpegDecodeAccelerator> owner_;

@@ -41,7 +41,7 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
 
  public:
   SessionIdDecryptionKeyMap() {}
-  ~SessionIdDecryptionKeyMap() { STLDeleteValues(&key_list_); }
+  ~SessionIdDecryptionKeyMap() { base::STLDeleteValues(&key_list_); }
 
   // Replaces value if |session_id| is already present, or adds it if not.
   // This |decryption_key| becomes the latest until another insertion or

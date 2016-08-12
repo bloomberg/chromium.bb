@@ -234,7 +234,7 @@ VpxVideoDecoder::MemoryPool::MemoryPool() {
 }
 
 VpxVideoDecoder::MemoryPool::~MemoryPool() {
-  STLDeleteElements(&frame_buffers_);
+  base::STLDeleteElements(&frame_buffers_);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }

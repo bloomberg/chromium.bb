@@ -126,8 +126,8 @@ H264Parser::H264Parser() {
 }
 
 H264Parser::~H264Parser() {
-  STLDeleteValues(&active_SPSes_);
-  STLDeleteValues(&active_PPSes_);
+  base::STLDeleteValues(&active_SPSes_);
+  base::STLDeleteValues(&active_PPSes_);
 }
 
 void H264Parser::Reset() {

@@ -303,7 +303,7 @@ class TestReceiverAudioCallback
 
  protected:
   virtual ~TestReceiverAudioCallback() {
-    STLDeleteElements(&expected_frames_);
+    base::STLDeleteElements(&expected_frames_);
   }
 
  private:

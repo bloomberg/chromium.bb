@@ -507,7 +507,8 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   if (!config.supported_output_formats.empty() &&
-      !ContainsValue(config.supported_output_formats, PIXEL_FORMAT_NV12)) {
+      !base::ContainsValue(config.supported_output_formats,
+                           PIXEL_FORMAT_NV12)) {
     share_nv12_textures_ = false;
     copy_nv12_textures_ = false;
   }

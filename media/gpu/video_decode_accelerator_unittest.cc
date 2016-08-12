@@ -901,7 +901,7 @@ void GLRenderingVDAClient::DeleteDecoder() {
     return;
   weak_vda_ptr_factory_->InvalidateWeakPtrs();
   decoder_.reset();
-  STLClearObject(&encoded_data_);
+  base::STLClearObject(&encoded_data_);
   active_textures_.clear();
 
   // Cascade through the rest of the states to simplify test code below.
@@ -1118,8 +1118,9 @@ void VideoDecodeAcceleratorTest::SetUp() {
 
 void VideoDecodeAcceleratorTest::TearDown() {
   g_env->GetRenderingTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&STLDeleteElements<std::vector<TestVideoFile*>>,
-                            &test_video_files_));
+      FROM_HERE,
+      base::Bind(&base::STLDeleteElements<std::vector<TestVideoFile*>>,
+                 &test_video_files_));
 
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -1487,11 +1488,11 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
 
   g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&STLDeleteElements<std::vector<GLRenderingVDAClient*>>,
+      base::Bind(&base::STLDeleteElements<std::vector<GLRenderingVDAClient*>>,
                  &clients));
   g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&STLDeleteElements<
+      base::Bind(&base::STLDeleteElements<
                      std::vector<ClientStateNotification<ClientState>*>>,
                  &notes));
   WaitUntilIdle();

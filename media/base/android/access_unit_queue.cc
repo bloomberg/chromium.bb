@@ -25,7 +25,7 @@ AccessUnitQueue::AccessUnitQueue()
 }
 
 AccessUnitQueue::~AccessUnitQueue() {
-  STLDeleteContainerPointers(chunks_.begin(), chunks_.end());
+  base::STLDeleteContainerPointers(chunks_.begin(), chunks_.end());
 }
 
 void AccessUnitQueue::PushBack(const DemuxerData& data) {
@@ -108,7 +108,7 @@ void AccessUnitQueue::Advance() {
   if (num_consumed_chunks > history_chunks_amount_) {
     DataChunkQueue::iterator first_to_keep = chunks_.begin();
     std::advance(first_to_keep, num_consumed_chunks - history_chunks_amount_);
-    STLDeleteContainerPointers(chunks_.begin(), first_to_keep);
+    base::STLDeleteContainerPointers(chunks_.begin(), first_to_keep);
     chunks_.erase(chunks_.begin(), first_to_keep);
   }
 }
@@ -117,7 +117,7 @@ void AccessUnitQueue::Flush() {
   // Media thread
   base::AutoLock lock(lock_);
 
-  STLDeleteContainerPointers(chunks_.begin(), chunks_.end());
+  base::STLDeleteContainerPointers(chunks_.begin(), chunks_.end());
   chunks_.clear();
 
   current_chunk_ = chunks_.end();

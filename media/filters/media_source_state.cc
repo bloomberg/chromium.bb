@@ -110,7 +110,7 @@ MediaSourceState::MediaSourceState(
 MediaSourceState::~MediaSourceState() {
   Shutdown();
 
-  STLDeleteValues(&text_stream_map_);
+  base::STLDeleteValues(&text_stream_map_);
 }
 
 void MediaSourceState::Init(

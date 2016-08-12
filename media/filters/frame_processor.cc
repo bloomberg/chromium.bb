@@ -172,7 +172,7 @@ FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb,
 
 FrameProcessor::~FrameProcessor() {
   DVLOG(2) << __func__ << "()";
-  STLDeleteValues(&track_buffers_);
+  base::STLDeleteValues(&track_buffers_);
 }
 
 void FrameProcessor::SetSequenceMode(bool sequence_mode) {

@@ -18,7 +18,7 @@ WebMContentEncodingsClient::WebMContentEncodingsClient(
 }
 
 WebMContentEncodingsClient::~WebMContentEncodingsClient() {
-  STLDeleteElements(&content_encodings_);
+  base::STLDeleteElements(&content_encodings_);
 }
 
 const ContentEncodings& WebMContentEncodingsClient::content_encodings() const {
@@ -30,7 +30,7 @@ WebMParserClient* WebMContentEncodingsClient::OnListStart(int id) {
   if (id == kWebMIdContentEncodings) {
     DCHECK(!cur_content_encoding_.get());
     DCHECK(!content_encryption_encountered_);
-    STLDeleteElements(&content_encodings_);
+    base::STLDeleteElements(&content_encodings_);
     content_encodings_ready_ = false;
     return this;
   }

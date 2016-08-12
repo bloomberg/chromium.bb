@@ -168,7 +168,7 @@ Mp2tStreamParser::Mp2tStreamParser(bool sbr_in_mimetype)
 }
 
 Mp2tStreamParser::~Mp2tStreamParser() {
-  STLDeleteValues(&pids_);
+  base::STLDeleteValues(&pids_);
 }
 
 void Mp2tStreamParser::Init(

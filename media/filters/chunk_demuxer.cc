@@ -991,7 +991,7 @@ void ChunkDemuxer::ChangeState_Locked(State new_state) {
 ChunkDemuxer::~ChunkDemuxer() {
   DCHECK_NE(state_, INITIALIZED);
 
-  STLDeleteValues(&source_state_map_);
+  base::STLDeleteValues(&source_state_map_);
 }
 
 void ChunkDemuxer::ReportError_Locked(PipelineStatus error) {
