@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -432,6 +433,8 @@ void DWriteFontProxyMessageFilter::InitializeDirectWrite() {
   DCHECK(SUCCEEDED(hr));
 
   if (!collection_) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "DirectWrite.Fonts.Proxy.GetSystemFontCollectionResult", hr);
     LogMessageFilterError(ERROR_NO_COLLECTION);
     return;
   }
@@ -462,6 +465,8 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
   HRESULT hr;
   hr = font->CreateFontFace(&font_face);
   if (FAILED(hr)) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("DirectWrite.Fonts.Proxy.CreateFontFaceResult",
+                                hr);
     LogMessageFilterError(ADD_FILES_FOR_FONT_CREATE_FACE_FAILED);
     return false;
   }

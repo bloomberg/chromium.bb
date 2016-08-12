@@ -9184,6 +9184,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DirectWrite.Fonts.Proxy.CreateFontFaceResult" units="HRESULT">
+  <owner>kulshin@chromium.org</owner>
+  <summary>Records the error returned from CreateFontFace.</summary>
+</histogram>
+
 <histogram name="DirectWrite.Fonts.Proxy.Fallback.CacheSize" units="Count">
   <owner>kulshin@chromium.org</owner>
   <summary>Records how many font families are in the fallback cache.</summary>
@@ -9212,6 +9217,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The errors encountered by the DirectWrite font proxy while loading fonts.
   </summary>
+</histogram>
+
+<histogram name="DirectWrite.Fonts.Proxy.GetSystemFontCollectionResult"
+    units="HRESULT">
+  <owner>kulshin@chromium.org</owner>
+  <summary>Records the error returned from GetSystemFontCollection.</summary>
 </histogram>
 
 <histogram name="DirectWrite.Fonts.Proxy.LastResortFontCount" units="fonts">
