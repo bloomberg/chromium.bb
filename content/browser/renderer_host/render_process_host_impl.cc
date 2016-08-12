@@ -110,7 +110,6 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
-#include "content/browser/renderer_host/websocket_dispatcher_host.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
@@ -120,6 +119,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/tracing/trace_message_filter.h"
+#include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
@@ -1046,15 +1046,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new BrowserCdmManager(GetID(), NULL));
 #endif
 
-  WebSocketDispatcherHost::GetRequestContextCallback
-      websocket_request_context_callback(
-          base::Bind(&GetRequestContext, request_context, media_request_context,
-                     RESOURCE_TYPE_SUB_RESOURCE));
-
-  AddFilter(new WebSocketDispatcherHost(
-      GetID(), websocket_request_context_callback, blob_storage_context.get(),
-      storage_partition_impl_));
-
   message_port_message_filter_ = new MessagePortMessageFilter(
       base::Bind(&RenderWidgetHelper::GetNextRoutingID,
                  base::Unretained(widget_helper_.get())));
@@ -1180,6 +1171,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(base::Bind(&DeviceMotionHost::Create));
   registry->AddInterface(base::Bind(&DeviceOrientationHost::Create));
   registry->AddInterface(base::Bind(&DeviceOrientationAbsoluteHost::Create));
+
+  // This is to support usage of WebSockets in cases in which there is no
+  // associated RenderFrame (e.g., Shared Workers).
+  registry->AddInterface(
+      base::Bind(&WebSocketManager::CreateWebSocket, GetID(), MSG_ROUTING_NONE),
+      ui_task_runner);
 
   GetContentClient()->browser()->ExposeInterfacesToRenderer(registry.get(),
                                                             this);

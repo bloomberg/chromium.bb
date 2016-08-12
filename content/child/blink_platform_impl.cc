@@ -47,7 +47,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/web_url_request_util.h"
-#include "content/child/websocket_bridge.h"
 #include "content/child/worker_thread_registry.h"
 #include "content/public/common/content_client.h"
 #include "net/base/data_url.h"
@@ -407,10 +406,6 @@ void BlinkPlatformImpl::UpdateWebThreadTLS(blink::WebThread* thread,
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
-}
-
-blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
-  return new WebSocketBridge;
 }
 
 WebString BlinkPlatformImpl::userAgent() {

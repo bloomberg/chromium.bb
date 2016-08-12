@@ -49,6 +49,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/wake_lock/wake_lock_service_context.h"
+#include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/frame_messages.h"
@@ -2128,6 +2129,14 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 
   GetInterfaceRegistry()->AddInterface<media::mojom::ServiceFactory>(this);
+
+  // This is to support usage of WebSockets in cases in which there is an
+  // associated RenderFrame. This is important for showing the correct security
+  // state of the page and also honoring user override of bad certificates.
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&WebSocketManager::CreateWebSocket,
+                 process_->GetID(),
+                 routing_id_));
 
 #if defined(ENABLE_WEBVR)
   const base::CommandLine& browser_command_line =
