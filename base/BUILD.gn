@@ -2097,10 +2097,6 @@ test("base_unittests") {
 
     deps += [ "//base/test:malloc_wrapper" ]
 
-    if (use_glib) {
-      configs += [ "//build/config/linux:glib" ]
-    }
-
     if (!is_component_build) {
       # Set rpath to find libmalloc_wrapper.so even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
