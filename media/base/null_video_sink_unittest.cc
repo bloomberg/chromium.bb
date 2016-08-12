@@ -114,7 +114,7 @@ TEST_F(NullVideoSinkTest, BasicFunctionality) {
 
   // The sink shouldn't have to be started to use the paint method.
   EXPECT_CALL(*this, FrameReceived(test_frame));
-  sink->PaintSingleFrame(test_frame);
+  sink->PaintSingleFrame(test_frame, false);
 }
 
 TEST_F(NullVideoSinkTest, ClocklessFunctionality) {

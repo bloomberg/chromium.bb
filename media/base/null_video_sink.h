@@ -35,7 +35,8 @@ class MEDIA_EXPORT NullVideoSink : public VideoRendererSink {
   // VideoRendererSink implementation.
   void Start(RenderCallback* callback) override;
   void Stop() override;
-  void PaintSingleFrame(const scoped_refptr<VideoFrame>& frame) override;
+  void PaintSingleFrame(const scoped_refptr<VideoFrame>& frame,
+                        bool repaint_duplicate_frame) override;
 
   void set_tick_clock_for_testing(base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;

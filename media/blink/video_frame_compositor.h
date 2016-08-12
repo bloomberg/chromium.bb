@@ -75,7 +75,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   // same thread (typically the media thread).
   void Start(RenderCallback* callback) override;
   void Stop() override;
-  void PaintSingleFrame(const scoped_refptr<VideoFrame>& frame) override;
+  void PaintSingleFrame(const scoped_refptr<VideoFrame>& frame,
+                        bool repaint_duplicate_frame = false) override;
 
   // Returns |current_frame_| if |client_| is set.  If no |client_| is set,
   // |is_background_rendering_| is true, and |callback_| is set, it requests a
@@ -116,7 +117,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   void OnRendererStateUpdate(bool new_state);
 
   // Handles setting of |current_frame_|.
-  bool ProcessNewFrame(const scoped_refptr<VideoFrame>& frame);
+  bool ProcessNewFrame(const scoped_refptr<VideoFrame>& frame,
+                       bool repaint_duplicate_frame);
 
   // Called by |background_rendering_timer_| when enough time elapses where we
   // haven't seen a Render() call.

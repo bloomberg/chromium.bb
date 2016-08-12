@@ -115,8 +115,7 @@ bool MediaPlayerRendererClient::HasVideo() {
 
 void MediaPlayerRendererClient::OnFrameAvailable() {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  // TODO(tguilbert): Force the repaint of the same frame. See crbug.com/636002.
-  sink_->PaintSingleFrame(stream_texture_wrapper_->GetCurrentFrame());
+  sink_->PaintSingleFrame(stream_texture_wrapper_->GetCurrentFrame(), true);
 }
 
 void MediaPlayerRendererClient::OnError(media::PipelineStatus status) {

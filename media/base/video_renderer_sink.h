@@ -58,7 +58,8 @@ class MEDIA_EXPORT VideoRendererSink {
   // useful for painting poster images or hole frames without having to issue a
   // Start() -> Render() -> Stop(). Clients are free to mix usage of Render()
   // based painting and PaintSingleFrame().
-  virtual void PaintSingleFrame(const scoped_refptr<VideoFrame>& frame) = 0;
+  virtual void PaintSingleFrame(const scoped_refptr<VideoFrame>& frame,
+                                bool repaint_duplicate_frame = false) = 0;
 
   virtual ~VideoRendererSink() {}
 };

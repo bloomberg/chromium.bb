@@ -88,8 +88,9 @@ void NullVideoSink::CallRender() {
                                 delay);
 }
 
-void NullVideoSink::PaintSingleFrame(const scoped_refptr<VideoFrame>& frame) {
-  if (frame == last_frame_)
+void NullVideoSink::PaintSingleFrame(const scoped_refptr<VideoFrame>& frame,
+                                     bool repaint_duplicate_frame) {
+  if (!repaint_duplicate_frame && frame == last_frame_)
     return;
   last_frame_ = frame;
   new_frame_cb_.Run(frame);

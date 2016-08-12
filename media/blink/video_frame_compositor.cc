@@ -132,15 +132,17 @@ void VideoFrameCompositor::Stop() {
 }
 
 void VideoFrameCompositor::PaintSingleFrame(
-    const scoped_refptr<VideoFrame>& frame) {
+    const scoped_refptr<VideoFrame>& frame,
+    bool repaint_duplicate_frame) {
   if (!compositor_task_runner_->BelongsToCurrentThread()) {
     compositor_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoFrameCompositor::PaintSingleFrame,
-                              base::Unretained(this), frame));
+        FROM_HERE,
+        base::Bind(&VideoFrameCompositor::PaintSingleFrame,
+                   base::Unretained(this), frame, repaint_duplicate_frame));
     return;
   }
 
-  if (ProcessNewFrame(frame) && client_)
+  if (ProcessNewFrame(frame, repaint_duplicate_frame) && client_)
     client_->DidReceiveFrame();
 }
 
@@ -178,10 +180,11 @@ base::TimeDelta VideoFrameCompositor::GetCurrentFrameTimestamp() const {
 }
 
 bool VideoFrameCompositor::ProcessNewFrame(
-    const scoped_refptr<VideoFrame>& frame) {
+    const scoped_refptr<VideoFrame>& frame,
+    bool repaint_duplicate_frame) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
 
-  if (frame == current_frame_)
+  if (!repaint_duplicate_frame && frame == current_frame_)
     return false;
 
   // Set the flag indicating that the current frame is unrendered, if we get a
@@ -223,7 +226,8 @@ bool VideoFrameCompositor::CallRender(base::TimeTicks deadline_min,
   }
 
   const bool new_frame = ProcessNewFrame(
-      callback_->Render(deadline_min, deadline_max, background_rendering));
+      callback_->Render(deadline_min, deadline_max, background_rendering),
+      false);
 
   // We may create a new frame here with background rendering, but the provider
   // has no way of knowing that a new frame had been processed, so keep track of
