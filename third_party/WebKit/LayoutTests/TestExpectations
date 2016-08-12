@@ -605,8 +605,6 @@ crbug.com/380217 [ Win ] fast/shapes/shape-outside-floats/shape-outside-floats-i
 crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphens-auto.html [ Skip ]
 crbug.com/605840 [ Android ] fast/text/hyphens/hyphens-auto.html [ Pass ]
 
-crbug.com/628333 svg/W3C-SVG-1.1/struct-image-06-t.svg [ NeedsRebaseline ]
-
 crbug.com/405389 imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ Failure ]
 crbug.com/424365 imported/csswg-test/css-shapes-1/shape-outside/shape-image/shape-image-024.html [ Failure ]
