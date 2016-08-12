@@ -298,8 +298,7 @@ public class ChromeLauncherActivity extends Activity
         }
 
         // Don't open explicitly opted out intents in custom tabs.
-        if (IntentUtils.safeGetBooleanExtra(
-                intent, CustomTabsIntent.EXTRA_USER_OPT_OUT_FROM_CUSTOM_TABS, false)) {
+        if (CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)) {
             return false;
         }
 
@@ -407,8 +406,7 @@ public class ChromeLauncherActivity extends Activity
      */
     public static boolean isCustomTabIntent(Intent intent) {
         if (intent == null
-                || IntentUtils.safeGetBooleanExtra(
-                        intent, CustomTabsIntent.EXTRA_USER_OPT_OUT_FROM_CUSTOM_TABS, false)
+                || CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
                 || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
             return false;
         }
