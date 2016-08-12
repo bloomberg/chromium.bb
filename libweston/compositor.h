@@ -100,38 +100,9 @@ struct weston_mode {
 	struct wl_list link;
 };
 
-struct weston_shell_client {
-	void (*send_configure)(struct weston_surface *surface, int32_t width, int32_t height);
-	void (*send_position)(struct weston_surface *surface, int32_t x, int32_t y);
-};
-
 struct weston_shell_interface {
 	void *shell;			/* either desktop or tablet */
 
-	struct shell_surface *(*create_shell_surface)(void *shell,
-						      struct weston_surface *surface,
-						      const struct weston_shell_client *client);
-	void (*set_toplevel)(struct shell_surface *shsurf);
-
-	void (*set_transient)(struct shell_surface *shsurf,
-			      struct weston_surface *parent,
-			      int x, int y, uint32_t flags);
-	void (*set_fullscreen)(struct shell_surface *shsurf,
-			       uint32_t method,
-			       uint32_t framerate,
-			       struct weston_output *output);
-	void (*set_xwayland)(struct shell_surface *shsurf,
-			       int x, int y, uint32_t flags);
-	int (*move)(struct shell_surface *shsurf, struct weston_pointer *pointer);
-	int (*resize)(struct shell_surface *shsurf,
-		      struct weston_pointer *pointer, uint32_t edges);
-	void (*set_title)(struct shell_surface *shsurf,
-	                  const char *title);
-	void (*set_window_geometry)(struct shell_surface *shsurf,
-				    int32_t x, int32_t y,
-				    int32_t width, int32_t height);
-	void (*set_maximized)(struct shell_surface *shsurf);
-	void (*set_pid)(struct shell_surface *shsurf, pid_t pid);
 	void (*get_output_work_area)(void *shell, struct weston_output *output, pixman_rectangle32_t *area);
 };
 
