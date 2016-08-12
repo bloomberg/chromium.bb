@@ -57,8 +57,9 @@ def main():
                 '-service-account-json', args.service_account_json,
                 'stream', '-source', args.source,
                 '-stream', '-name=%s' % args.name]
-  subprocess.call(logdog_cmd)
-  logging.info('Logcats are located at: %s', url)
+  if os.path.exists(args.logdog_bin_cmd):
+    subprocess.call(logdog_cmd)
+    logging.info('Logcats are located at: %s', url)
   return result
 
 
