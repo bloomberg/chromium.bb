@@ -166,6 +166,12 @@ void SSLManager::DidRunInsecureContent(const GURL& security_origin) {
   UpdateEntry(navigation_entry);
 }
 
+void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
+  NavigationEntryImpl* navigation_entry = controller_->GetLastCommittedEntry();
+  policy()->DidRunContentWithCertErrors(navigation_entry, security_origin);
+  UpdateEntry(navigation_entry);
+}
+
 void SSLManager::DidStartResourceResponse(
     const ResourceRequestDetails& details) {
   // Notify our policy that we started a resource request.  Ideally, the

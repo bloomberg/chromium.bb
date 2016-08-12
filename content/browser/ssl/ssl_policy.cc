@@ -148,6 +148,19 @@ void SSLPolicy::DidRunInsecureContent(NavigationEntryImpl* entry,
                                    site_instance->GetProcess()->GetID());
 }
 
+void SSLPolicy::DidRunContentWithCertErrors(NavigationEntryImpl* entry,
+                                            const GURL& security_origin) {
+  if (!entry)
+    return;
+
+  SiteInstance* site_instance = entry->site_instance();
+  if (!site_instance)
+    return;
+
+  backend_->HostRanContentWithCertErrors(security_origin.host(),
+                                         site_instance->GetProcess()->GetID());
+}
+
 void SSLPolicy::OnRequestStarted(const GURL& url,
                                  int cert_id,
                                  net::CertStatus cert_status) {
@@ -177,16 +190,27 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
                             WebContents* web_contents) {
   DCHECK(entry);
 
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+
   InitializeEntryIfNeeded(entry);
 
   if (entry->GetSSL().security_style == SECURITY_STYLE_UNAUTHENTICATED)
     return;
 
-  if (!web_contents->DisplayedInsecureContent())
+  if (!web_contents_impl->DisplayedInsecureContent())
     entry->GetSSL().content_status &= ~SSLStatus::DISPLAYED_INSECURE_CONTENT;
 
-  if (web_contents->DisplayedInsecureContent())
+  if (web_contents_impl->DisplayedInsecureContent())
     entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
+
+  if (!web_contents_impl->DisplayedContentWithCertErrors())
+    entry->GetSSL().content_status &=
+        ~SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
+
+  if (web_contents_impl->DisplayedContentWithCertErrors())
+    entry->GetSSL().content_status |=
+        SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
 
   SiteInstance* site_instance = entry->site_instance();
   // Note that |site_instance| can be NULL here because NavigationEntries don't
@@ -198,6 +222,13 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
     entry->GetSSL().security_style =
         SECURITY_STYLE_AUTHENTICATION_BROKEN;
     entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
+  }
+
+  if (site_instance &&
+      backend_->DidHostRunContentWithCertErrors(
+          entry->GetURL().host(), site_instance->GetProcess()->GetID())) {
+    entry->GetSSL().security_style = SECURITY_STYLE_AUTHENTICATION_BROKEN;
+    entry->GetSSL().content_status |= SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS;
   }
 }
 

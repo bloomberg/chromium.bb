@@ -85,8 +85,11 @@ class CONTENT_EXPORT SSLManager {
   void DidStartResourceResponse(const ResourceRequestDetails& details);
   void DidReceiveResourceRedirect(const ResourceRedirectDetails& details);
 
-  // Insecure content entry point.
+  // Entry point for insecure mixed content (loaded over HTTP).
   void DidRunInsecureContent(const GURL& security_origin);
+
+  // Entry point for content loaded with HTTPS certificate errors.
+  void DidRunContentWithCertErrors(const GURL& security_origin);
 
  private:
   // Updates the NavigationEntry with our current state. This will

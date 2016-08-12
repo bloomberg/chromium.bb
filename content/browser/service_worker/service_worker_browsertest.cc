@@ -38,6 +38,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -1375,7 +1376,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), https_server.GetURL(kPageUrl));
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-  EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
+  EXPECT_FALSE(static_cast<WebContentsImpl*>(shell()->web_contents())
+                   ->DisplayedInsecureContent());
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetVisibleEntry();
   EXPECT_EQ(SECURITY_STYLE_AUTHENTICATED, entry->GetSSL().security_style);
@@ -1406,7 +1408,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl));
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-  EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
+  EXPECT_FALSE(static_cast<WebContentsImpl*>(shell()->web_contents())
+                   ->DisplayedInsecureContent());
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetVisibleEntry();
   EXPECT_EQ(SECURITY_STYLE_UNAUTHENTICATED, entry->GetSSL().security_style);

@@ -407,6 +407,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       upload_position_(0),
       is_resume_pending_(false),
       displayed_insecure_content_(false),
+      displayed_content_with_cert_errors_(false),
       has_accessed_initial_document_(false),
       theme_color_(SK_ColorTRANSPARENT),
       last_sent_theme_color_(SK_ColorTRANSPARENT),
@@ -1189,10 +1190,6 @@ uint64_t WebContentsImpl::GetUploadPosition() const {
 
 const std::string& WebContentsImpl::GetEncoding() const {
   return canonical_encoding_;
-}
-
-bool WebContentsImpl::DisplayedInsecureContent() const {
-  return displayed_insecure_content_;
 }
 
 void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
@@ -2517,6 +2514,14 @@ void WebContentsImpl::ResizeDueToAutoResize(
     delegate_->ResizeDueToAutoResize(this, new_size);
 }
 
+bool WebContentsImpl::DisplayedInsecureContent() const {
+  return displayed_insecure_content_;
+}
+
+bool WebContentsImpl::DisplayedContentWithCertErrors() const {
+  return displayed_content_with_cert_errors_;
+}
+
 WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
   if (!delegate_)
     return NULL;
@@ -3509,32 +3514,21 @@ void WebContentsImpl::OnDidRunInsecureContent(const GURL& security_origin,
 
 void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
     const GURL& url) {
-  // Check that the main frame navigation entry has a cryptographic
-  // scheme; the security UI is associated with the main frame rather
-  // than the subframe (if any) that actually displayed the subresource
-  // with errors.
-  NavigationEntry* entry = controller_.GetLastCommittedEntry();
-  if (!entry || !entry->GetURL().SchemeIsCryptographic())
-    return;
-
-  displayed_insecure_content_ = true;
+  displayed_content_with_cert_errors_ = true;
   SSLManager::NotifySSLInternalStateChanged(
       GetController().GetBrowserContext());
 }
 
 void WebContentsImpl::OnDidRunContentWithCertificateErrors(
     const GURL& url) {
-  // Check that the main frame navigation entry has a cryptographic
-  // scheme; the security UI is associated with the main frame rather
-  // than the subframe (if any) that actually displayed the subresource
-  // with errors.
-  NavigationEntry* entry = controller_.GetLastCommittedEntry();
-  if (!entry || !entry->GetURL().SchemeIsCryptographic())
+  NavigationEntry* entry = controller_.GetVisibleEntry();
+  if (!entry)
     return;
 
   // TODO(estark): check that this does something reasonable for
   // about:blank and sandboxed origins. https://crbug.com/609527
-  controller_.ssl_manager()->DidRunInsecureContent(entry->GetURL().GetOrigin());
+  controller_.ssl_manager()->DidRunContentWithCertErrors(
+      entry->GetURL().GetOrigin());
   SSLManager::NotifySSLInternalStateChanged(
       GetController().GetBrowserContext());
 }

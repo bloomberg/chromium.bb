@@ -33,6 +33,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
@@ -6288,23 +6289,26 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   ASSERT_TRUE(https_server.Start());
   SetupCrossSiteRedirector(&https_server);
 
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
   GURL iframe_url(
       https_server.GetURL("/mixed-content/basic-passive-in-iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), iframe_url));
-  EXPECT_TRUE(shell()->web_contents()->DisplayedInsecureContent());
+  EXPECT_TRUE(web_contents->DisplayedInsecureContent());
 
   // When the subframe navigates, the WebContents should still be marked
   // as having displayed insecure content.
   GURL navigate_url(https_server.GetURL("/title1.html"));
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
   NavigateFrameToURL(root->child_at(0), navigate_url);
-  EXPECT_TRUE(shell()->web_contents()->DisplayedInsecureContent());
+  EXPECT_TRUE(web_contents->DisplayedInsecureContent());
 
   // When the main frame navigates, it should no longer be marked as
   // displaying insecure content.
   EXPECT_TRUE(
       NavigateToURL(shell(), https_server.GetURL("b.com", "/title1.html")));
-  EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
+  EXPECT_FALSE(web_contents->DisplayedInsecureContent());
 }
 
 // Tests that, when a parent frame is set to strictly block mixed
@@ -6317,12 +6321,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   ASSERT_TRUE(https_server.Start());
   SetupCrossSiteRedirector(&https_server);
 
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
   GURL iframe_url_with_strict_blocking(https_server.GetURL(
       "/mixed-content/basic-passive-in-iframe-with-strict-blocking.html"));
   EXPECT_TRUE(NavigateToURL(shell(), iframe_url_with_strict_blocking));
-  EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
+  EXPECT_FALSE(web_contents->DisplayedInsecureContent());
 
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
   EXPECT_EQ(blink::kBlockAllMixedContent,
             root->current_replication_state().insecure_request_policy);
   EXPECT_EQ(
@@ -6356,12 +6363,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   ASSERT_TRUE(https_server.Start());
   SetupCrossSiteRedirector(&https_server);
 
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
   GURL iframe_url_with_upgrade(https_server.GetURL(
       "/mixed-content/basic-passive-in-iframe-with-upgrade.html"));
   EXPECT_TRUE(NavigateToURL(shell(), iframe_url_with_upgrade));
-  EXPECT_FALSE(shell()->web_contents()->DisplayedInsecureContent());
+  EXPECT_FALSE(web_contents->DisplayedInsecureContent());
 
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
   EXPECT_EQ(blink::kUpgradeInsecureRequests,
             root->current_replication_state().insecure_request_policy);
   EXPECT_EQ(
@@ -6410,21 +6420,20 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   EXPECT_FALSE(mixed_child->has_committed_real_load());
 }
 
-// Test that subresources with certificate errors that are NOT redundant
-// with the main page DO get reported to the browser. That is, if
-// https://nonredundant.test frames https://a.com which loads an image
-// with certificate errors, the browser should be notified about the
-// subresource with certificate errors and downgrade the UI
-// appropriately.
+// Test that subresources with certificate errors get reported to the
+// browser. That is, if https://example.test frames https://a.com which
+// loads an image with certificate errors, the browser should be
+// notified about the subresource with certificate errors and downgrade
+// the UI appropriately.
 IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
-                       SubresourceWithNonRedundantCertificateErrors) {
+                       SubresourceWithCertificateErrors) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
   SetupCrossSiteRedirector(&https_server);
 
   GURL url(https_server.GetURL(
-      "nonredundant.test",
+      "example.test",
       "/mixed-content/non-redundant-cert-error-in-iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -6436,12 +6445,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,
             entry->GetSSL().security_style);
 
-  // The image that the iframe loaded had certificate errors also, and
-  // they were different than the certificate errors of the main
-  // resource, so the page should be marked as having displayed insecure
-  // content.
+  // The image that the iframe loaded had certificate errors also, so
+  // the page should be marked as having displayed subresources with
+  // cert errors.
   EXPECT_TRUE(entry->GetSSL().content_status &
-              SSLStatus::DISPLAYED_INSECURE_CONTENT);
+              SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
 }
 
 // Test setting a cross-origin iframe to display: none.

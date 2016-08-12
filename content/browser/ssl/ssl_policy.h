@@ -38,6 +38,9 @@ class SSLPolicy {
   void DidRunInsecureContent(NavigationEntryImpl* entry,
                              const GURL& security_origin);
 
+  void DidRunContentWithCertErrors(NavigationEntryImpl* entry,
+                                   const GURL& security_origin);
+
   // We have started a resource request for |url| with the given |cert_id| and
   // |cert_status|.
   void OnRequestStarted(const GURL& url,

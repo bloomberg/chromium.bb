@@ -33,6 +33,23 @@ bool SSLPolicyBackend::DidHostRunInsecureContent(const std::string& host,
       host, pid, SSLHostStateDelegate::MIXED_CONTENT);
 }
 
+void SSLPolicyBackend::HostRanContentWithCertErrors(const std::string& host,
+                                                    int id) {
+  if (ssl_host_state_delegate_)
+    ssl_host_state_delegate_->HostRanInsecureContent(
+        host, id, SSLHostStateDelegate::CERT_ERRORS_CONTENT);
+  SSLManager::NotifySSLInternalStateChanged(controller_->GetBrowserContext());
+}
+
+bool SSLPolicyBackend::DidHostRunContentWithCertErrors(const std::string& host,
+                                                       int pid) const {
+  if (!ssl_host_state_delegate_)
+    return false;
+
+  return ssl_host_state_delegate_->DidHostRunInsecureContent(
+      host, pid, SSLHostStateDelegate::CERT_ERRORS_CONTENT);
+}
+
 void SSLPolicyBackend::RevokeUserAllowExceptions(const std::string& host) {
   if (!ssl_host_state_delegate_)
     return;

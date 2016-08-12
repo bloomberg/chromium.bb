@@ -325,9 +325,13 @@ class SSLUITest
         net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
     https_server_mismatched_.AddDefaultHandlers(base::FilePath(kDocRoot));
 
-    // TODO(estark): once http://crbug.com/634171 is fixed and certificate
-    // errors for subresources don't generate DISPLAYED_INSECURE_CONTENT remove
-    // these filters.
+    // Sometimes favicons load before tests check the authentication
+    // state, and sometimes they load after. This is problematic on
+    // tests that load pages with certificate errors, because the page
+    // will be marked as having displayed subresources with certificate
+    // errors only if the favicon loads before the test checks the
+    // authentication state. To avoid this non-determinism, add an
+    // interceptor to hang all favicon requests.
     std::unique_ptr<net::URLRequestInterceptor> interceptor(new FaviconFilter);
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         "https", "127.0.0.1", std::move(interceptor));
@@ -940,11 +944,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreLocalhostCertErrors,
 
   // We should see no interstitial, but we should have an error
   // (red-crossed-out-https) in the URL bar.
-  // TODO(estark): once http://crbug.com/634171 is fixed and certificate
-  // errors for subresources don't generate
-  // DISPLAYED/RAN_INSECURE_CONTENT switch this back to AuthState::NONE.
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 AuthState::RAN_INSECURE_CONTENT);
+                                 AuthState::NONE);
 
   // We should see that the script tag in the page loaded and ran (and
   // wasn't blocked by the certificate error).
@@ -2231,11 +2232,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadFrameNavigation) {
   observer.Wait();
 
   // We should still be authentication broken.
-  // TODO(estark): once http://crbug.com/634171 is fixed and certificate
-  // errors for subresources don't generate
-  // DISPLAYED/RAN_INSECURE_CONTENT switch this back to AuthState::NONE.
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
-                                 AuthState::RAN_INSECURE_CONTENT);
+                                 AuthState::NONE);
 }
 
 // From an HTTP top frame, navigate to good and bad HTTPS (security state should
@@ -2341,6 +2339,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerWithUserException) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  AuthState::NONE);
 
+  ChromeSecurityStateModelClient* client =
+      ChromeSecurityStateModelClient::FromWebContents(tab);
+  ASSERT_TRUE(client);
+  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+            client->GetSecurityInfo().mixed_content_status);
+  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+            client->GetSecurityInfo().content_with_cert_errors_status);
+
   // Navigate to safe page that has Worker loading unsafe content.
   // Expect content to load but be marked as auth broken due to running insecure
   // content.
@@ -2350,8 +2356,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerWithUserException) {
   ui_test_utils::NavigateToURL(
       browser(), https_server_.GetURL(page_with_unsafe_worker_path));
   CheckWorkerLoadResult(tab, true);  // Worker loads insecure content
-  CheckAuthenticationBrokenState(tab, CertError::NONE,
-                                 AuthState::RAN_INSECURE_CONTENT);
+  CheckAuthenticationBrokenState(tab, CertError::NONE, AuthState::NONE);
+
+  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+            client->GetSecurityInfo().mixed_content_status);
+  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_RAN,
+            client->GetSecurityInfo().content_with_cert_errors_status);
 }
 
 // Visits a page with unsafe content and makes sure that if a user exception to
@@ -2360,9 +2370,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_NO_FATAL_FAILURE(SetUpUnsafeContentsWithUserException(
       "/ssl/page_with_unsafe_contents.html"));
-  CheckAuthenticationBrokenState(
-      tab, CertError::NONE,
-      AuthState::RAN_INSECURE_CONTENT | AuthState::DISPLAYED_INSECURE_CONTENT);
+  CheckAuthenticationBrokenState(tab, CertError::NONE, AuthState::NONE);
+
+  ChromeSecurityStateModelClient* client =
+      ChromeSecurityStateModelClient::FromWebContents(tab);
+  ASSERT_TRUE(client);
+  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+            client->GetSecurityInfo().mixed_content_status);
+  EXPECT_EQ(
+      security_state::SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
+      client->GetSecurityInfo().content_with_cert_errors_status);
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -2378,8 +2395,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   EXPECT_TRUE(js_result);
 
   // Test that active subresources with the same certificate errors as
-  // the main resources don't cause mixed content UI downgrades. (Such
-  // errors would be confusing and duplicative.)
+  // the main resources also get noted in |content_with_cert_errors_status|.
   std::string replacement_path;
   GetFilePathWithHostAndPortReplacement(
       "/ssl/page_with_unsafe_contents.html",
@@ -2390,12 +2406,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       tab, "window.domAutomationController.send(IsFooSet());", &js_result));
   EXPECT_TRUE(js_result);
-  // TODO(estark): once http://crbug.com/634171 is fixed and certificate
-  // errors for subresources don't generate
-  // DISPLAYED/RAN_INSECURE_CONTENT switch this back to AuthState::NONE.
-  CheckAuthenticationBrokenState(
-      tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-      AuthState::DISPLAYED_INSECURE_CONTENT | AuthState::RAN_INSECURE_CONTENT);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                 AuthState::NONE);
+
+  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+            client->GetSecurityInfo().mixed_content_status);
+  EXPECT_EQ(
+      security_state::SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
+      client->GetSecurityInfo().content_with_cert_errors_status);
 }
 
 // Like the test above, but only displaying inactive content (an image).
@@ -2403,7 +2421,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeImageWithUserException) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_NO_FATAL_FAILURE(
       SetUpUnsafeContentsWithUserException("/ssl/page_with_unsafe_image.html"));
-  CheckAuthenticatedState(tab, AuthState::DISPLAYED_INSECURE_CONTENT);
+  CheckAuthenticatedState(tab, AuthState::NONE);
+
+  ChromeSecurityStateModelClient* client =
+      ChromeSecurityStateModelClient::FromWebContents(tab);
+  ASSERT_TRUE(client);
+  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+            client->GetSecurityInfo().mixed_content_status);
+  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+            client->GetSecurityInfo().content_with_cert_errors_status);
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(

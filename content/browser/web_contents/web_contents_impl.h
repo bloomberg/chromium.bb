@@ -291,7 +291,6 @@ class CONTENT_EXPORT WebContentsImpl
   uint64_t GetUploadSize() const override;
   uint64_t GetUploadPosition() const override;
   const std::string& GetEncoding() const override;
-  bool DisplayedInsecureContent() const override;
   void IncrementCapturerCount(const gfx::Size& capture_size) override;
   void DecrementCapturerCount() override;
   int GetCapturerCount() const override;
@@ -407,6 +406,14 @@ class CONTENT_EXPORT WebContentsImpl
   void SetAllowOtherViews(bool allow) override;
   bool GetAllowOtherViews() override;
 #endif
+
+  // Returns true if this is a secure page which has displayed content
+  // loaded over insecure HTTP.
+  bool DisplayedInsecureContent() const;
+
+  // Returns true if this page has displayed content loaded over HTTPS
+  // with certificate errors.
+  bool DisplayedContentWithCertErrors() const;
 
   // Implementation of PageNavigator.
   WebContents* OpenURL(const OpenURLParams& params) override;
@@ -1201,8 +1208,13 @@ class CONTENT_EXPORT WebContentsImpl
   // The canonicalized character encoding.
   std::string canonical_encoding_;
 
-  // True if this is a secure page which displayed insecure content.
+  // True if this is a secure page which displayed mixed content (loaded
+  // over HTTP).
   bool displayed_insecure_content_;
+
+  // True if this page displayed subresources loaded with HTTPS
+  // certificate errors.
+  bool displayed_content_with_cert_errors_;
 
   // Whether the initial empty page has been accessed by another page, making it
   // unsafe to show the pending URL. Usually false unless another window tries

@@ -364,9 +364,6 @@ class WebContents : public PageNavigator,
   // Returns the character encoding of the page.
   virtual const std::string& GetEncoding() const = 0;
 
-  // True if this is a secure page which displayed insecure content.
-  virtual bool DisplayedInsecureContent() const = 0;
-
   // Internal state ------------------------------------------------------------
 
   // Indicates whether the WebContents is being captured (e.g., for screenshots

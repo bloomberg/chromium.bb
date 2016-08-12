@@ -21,11 +21,18 @@ class CONTENT_EXPORT SSLPolicyBackend {
  public:
   explicit SSLPolicyBackend(NavigationControllerImpl* controller);
 
-  // Records that a host has run insecure content.
+  // Records that a host has run mixed content loaded over HTTP.
   void HostRanInsecureContent(const std::string& host, int pid);
 
-  // Returns whether the specified host ran insecure content.
+  // Returns whether the specified host ran insecure content loaded over HTTP.
   bool DidHostRunInsecureContent(const std::string& host, int pid) const;
+
+  // Records that a host has run subresources loaded with certificate errors.
+  void HostRanContentWithCertErrors(const std::string& host, int pid);
+
+  // Returns whether the specified host ran subresources loaded with certificate
+  // errors.
+  bool DidHostRunContentWithCertErrors(const std::string& host, int pid) const;
 
   // Revokes all allow exceptions by the user for |host|.
   void RevokeUserAllowExceptions(const std::string& host);
