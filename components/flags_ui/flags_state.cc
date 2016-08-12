@@ -404,7 +404,7 @@ void FlagsState::RemoveFlagsSwitches(
     // For any featrue name in |features| that is not in |switch_added_values| -
     // i.e. it wasn't added by about_flags code, add it to |remaining_features|.
     for (const std::string& feature : features) {
-      if (!ContainsKey(switch_added_values, feature))
+      if (!base::ContainsKey(switch_added_values, feature))
         remaining_features.push_back(feature);
     }
 
@@ -592,7 +592,7 @@ void FlagsState::AddSwitchMapping(
     const std::string& switch_name,
     const std::string& switch_value,
     std::map<std::string, SwitchEntry>* name_to_switch_map) {
-  DCHECK(!ContainsKey(*name_to_switch_map, key));
+  DCHECK(!base::ContainsKey(*name_to_switch_map, key));
 
   SwitchEntry* entry = &(*name_to_switch_map)[key];
   entry->switch_name = switch_name;
@@ -604,7 +604,7 @@ void FlagsState::AddFeatureMapping(
     const std::string& feature_name,
     bool feature_state,
     std::map<std::string, SwitchEntry>* name_to_switch_map) {
-  DCHECK(!ContainsKey(*name_to_switch_map, key));
+  DCHECK(!base::ContainsKey(*name_to_switch_map, key));
 
   SwitchEntry* entry = &(*name_to_switch_map)[key];
   entry->feature_name = feature_name;
@@ -665,11 +665,11 @@ void FlagsState::MergeFeatureCommandLineSwitch(
   std::vector<std::string> features =
       base::FeatureList::SplitFeatureListString(original_switch_value);
   // Only add features that don't already exist in the lists.
-  // Note: The ContainsValue() call results in O(n^2) performance, but in
+  // Note: The base::ContainsValue() call results in O(n^2) performance, but in
   // practice n should be very small.
   for (const auto& entry : feature_switches) {
     if (entry.second == feature_state &&
-        !ContainsValue(features, entry.first)) {
+        !base::ContainsValue(features, entry.first)) {
       features.push_back(entry.first);
       appended_switches_[switch_name].insert(entry.first);
     }

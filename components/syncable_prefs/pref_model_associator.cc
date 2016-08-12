@@ -70,8 +70,8 @@ PrefModelAssociator::~PrefModelAssociator() {
   DCHECK(CalledOnValidThread());
   pref_service_ = NULL;
 
-  STLDeleteContainerPairSecondPointers(synced_pref_observers_.begin(),
-                                       synced_pref_observers_.end());
+  base::STLDeleteContainerPairSecondPointers(synced_pref_observers_.begin(),
+                                             synced_pref_observers_.end());
   synced_pref_observers_.clear();
 }
 

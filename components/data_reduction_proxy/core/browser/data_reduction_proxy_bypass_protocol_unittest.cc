@@ -886,9 +886,9 @@ TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
     EXPECT_EQ(test.expected_bypass_type,
               drp_test_context()->io_data()->bypass_stats()->GetBypassType());
     // Check the bad proxy list.
-    EXPECT_EQ(
-        test.expected_bad_proxy,
-        ContainsKey(context()->proxy_service()->proxy_retry_info(), kPrimary));
+    EXPECT_EQ(test.expected_bad_proxy,
+              base::ContainsKey(context()->proxy_service()->proxy_retry_info(),
+                                kPrimary));
   }
 }
 

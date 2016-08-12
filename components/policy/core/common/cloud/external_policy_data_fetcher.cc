@@ -160,7 +160,7 @@ ExternalPolicyDataFetcherBackend::ExternalPolicyDataFetcherBackend(
 
 ExternalPolicyDataFetcherBackend::~ExternalPolicyDataFetcherBackend() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  STLDeleteContainerPairFirstPointers(job_map_.begin(), job_map_.end());
+  base::STLDeleteContainerPairFirstPointers(job_map_.begin(), job_map_.end());
 }
 
 std::unique_ptr<ExternalPolicyDataFetcher>

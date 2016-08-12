@@ -164,10 +164,10 @@ bool CheckStudyCountry(const Study_Filter& filter, const std::string& country) {
   // that this means this overrides the exclude_country in case that ever occurs
   // (which it shouldn't).
   if (filter.country_size() > 0)
-    return ContainsValue(filter.country(), country);
+    return base::ContainsValue(filter.country(), country);
 
   // Omit if matches any of the exclude entries.
-  return !ContainsValue(filter.exclude_country(), country);
+  return !base::ContainsValue(filter.exclude_country(), country);
 }
 
 bool IsStudyExpired(const Study& study, const base::Time& date_time) {
@@ -288,14 +288,14 @@ void FilterAndValidateStudies(const VariationsSeed& seed,
 
     if (internal::IsStudyExpired(study, reference_date)) {
       expired_studies.push_back(&study);
-    } else if (!ContainsKey(created_studies, study.name())) {
+    } else if (!base::ContainsKey(created_studies, study.name())) {
       ProcessedStudy::ValidateAndAppendStudy(&study, false, filtered_studies);
       created_studies.insert(study.name());
     }
   }
 
   for (size_t i = 0; i < expired_studies.size(); ++i) {
-    if (!ContainsKey(created_studies, expired_studies[i]->name())) {
+    if (!base::ContainsKey(created_studies, expired_studies[i]->name())) {
       ProcessedStudy::ValidateAndAppendStudy(expired_studies[i], true,
                                              filtered_studies);
     }

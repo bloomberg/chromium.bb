@@ -339,9 +339,9 @@ void ContentSettingsRegistry::Register(
     ContentSettingsInfo::IncognitoBehavior incognito_behavior) {
   // Ensure that nothing has been registered yet for the given type.
   DCHECK(!website_settings_registry_->Get(type));
-  DCHECK(incognito_behavior
-             != ContentSettingsInfo::INHERIT_IN_INCOGNITO_EXCEPT_ALLOW
-         || ContainsKey(valid_settings, CONTENT_SETTING_ASK))
+  DCHECK(incognito_behavior !=
+             ContentSettingsInfo::INHERIT_IN_INCOGNITO_EXCEPT_ALLOW ||
+         base::ContainsKey(valid_settings, CONTENT_SETTING_ASK))
       << "If INHERIT_IN_INCOGNITO_EXCEPT_ALLOW is set, ASK must be listed as a "
          "valid setting.";
   std::unique_ptr<base::Value> default_value(
@@ -357,7 +357,7 @@ void ContentSettingsRegistry::Register(
   if (!website_settings_info)
     return;
 
-  DCHECK(!ContainsKey(content_settings_info_, type));
+  DCHECK(!base::ContainsKey(content_settings_info_, type));
   content_settings_info_[type] = base::WrapUnique(
       new ContentSettingsInfo(website_settings_info, whitelisted_schemes,
                               valid_settings, incognito_behavior));

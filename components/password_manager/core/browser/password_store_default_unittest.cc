@@ -156,7 +156,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(Default,
                               PasswordStoreDefaultTestDelegate);
 
 ACTION(STLDeleteElements0) {
-  STLDeleteContainerPointers(arg0.begin(), arg0.end());
+  base::STLDeleteContainerPointers(arg0.begin(), arg0.end());
 }
 
 TEST(PasswordStoreDefaultTest, NonASCIIData) {

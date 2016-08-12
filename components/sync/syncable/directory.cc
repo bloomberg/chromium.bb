@@ -76,8 +76,8 @@ Directory::SaveChangesSnapshot::SaveChangesSnapshot()
     : kernel_info_status(KERNEL_SHARE_INFO_INVALID) {}
 
 Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {
-  STLDeleteElements(&dirty_metas);
-  STLDeleteElements(&delete_journals);
+  base::STLDeleteElements(&dirty_metas);
+  base::STLDeleteElements(&delete_journals);
 }
 
 bool Directory::SaveChangesSnapshot::HasUnsavedMetahandleChanges() const {
@@ -103,8 +103,8 @@ Directory::Kernel::Kernel(
 }
 
 Directory::Kernel::~Kernel() {
-  STLDeleteContainerPairSecondPointers(metahandles_map.begin(),
-                                       metahandles_map.end());
+  base::STLDeleteContainerPairSecondPointers(metahandles_map.begin(),
+                                             metahandles_map.end());
 }
 
 Directory::Directory(
@@ -187,7 +187,7 @@ DirOpenResult Directory::OpenImpl(
 
   // Avoids mem leaks on failure.  Harmlessly deletes the empty hash map after
   // the swap in the success case.
-  STLValueDeleter<MetahandlesMap> deleter(&tmp_handles_map);
+  base::STLValueDeleter<MetahandlesMap> deleter(&tmp_handles_map);
 
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
@@ -739,7 +739,8 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
     WriteTransaction trans(FROM_HERE, PURGE_ENTRIES, this);
 
     EntryKernelSet entries_to_journal;
-    STLElementDeleter<EntryKernelSet> journal_deleter(&entries_to_journal);
+    base::STLElementDeleter<EntryKernelSet> journal_deleter(
+        &entries_to_journal);
 
     {
       ScopedKernelLock lock(this);

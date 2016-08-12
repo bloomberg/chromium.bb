@@ -343,12 +343,12 @@ void AutofillExternalDelegate::InsertDataListValues(
   std::set<base::string16> data_list_set(data_list_values_.begin(),
                                          data_list_values_.end());
   suggestions->erase(
-      std::remove_if(suggestions->begin(), suggestions->end(),
-                     [&data_list_set](const Suggestion& suggestion) {
-                       return suggestion.frontend_id ==
-                                  POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
-                              ContainsKey(data_list_set, suggestion.value);
-                     }),
+      std::remove_if(
+          suggestions->begin(), suggestions->end(),
+          [&data_list_set](const Suggestion& suggestion) {
+            return suggestion.frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
+                   base::ContainsKey(data_list_set, suggestion.value);
+          }),
       suggestions->end());
 
 #if !defined(OS_ANDROID)

@@ -217,8 +217,8 @@ HistoryBackend::HistoryBackend(
 
 HistoryBackend::~HistoryBackend() {
   DCHECK(!scheduled_commit_) << "Deleting without cleanup";
-  STLDeleteContainerPointers(queued_history_db_tasks_.begin(),
-                             queued_history_db_tasks_.end());
+  base::STLDeleteContainerPointers(queued_history_db_tasks_.begin(),
+                                   queued_history_db_tasks_.end());
   queued_history_db_tasks_.clear();
 
   // Release stashed embedder object before cleaning up the databases.
@@ -2243,8 +2243,8 @@ void HistoryBackend::CancelScheduledCommit() {
 void HistoryBackend::ProcessDBTaskImpl() {
   if (!db_) {
     // db went away, release all the refs.
-    STLDeleteContainerPointers(queued_history_db_tasks_.begin(),
-                               queued_history_db_tasks_.end());
+    base::STLDeleteContainerPointers(queued_history_db_tasks_.begin(),
+                                     queued_history_db_tasks_.end());
     queued_history_db_tasks_.clear();
     return;
   }

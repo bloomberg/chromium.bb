@@ -106,7 +106,7 @@ void DomainReliabilityContext::OnBeacon(
 }
 
 void DomainReliabilityContext::ClearBeacons() {
-  STLDeleteElements(&beacons_);
+  base::STLDeleteElements(&beacons_);
   beacons_.clear();
   uploading_beacons_size_ = 0;
 }
@@ -230,7 +230,7 @@ void DomainReliabilityContext::MarkUpload() {
 void DomainReliabilityContext::CommitUpload() {
   auto begin = beacons_.begin();
   auto end = begin + uploading_beacons_size_;
-  STLDeleteContainerPointers(begin, end);
+  base::STLDeleteContainerPointers(begin, end);
   beacons_.erase(begin, end);
   DCHECK_NE(0u, uploading_beacons_size_);
   uploading_beacons_size_ = 0;

@@ -65,7 +65,7 @@ RapporService::RapporService(
 }
 
 RapporService::~RapporService() {
-  STLDeleteValues(&metrics_map_);
+  base::STLDeleteValues(&metrics_map_);
 }
 
 void RapporService::AddDailyObserver(
@@ -136,7 +136,7 @@ void RapporService::InitializeInternal(
 
 void RapporService::CancelNextLogRotation() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  STLDeleteValues(&metrics_map_);
+  base::STLDeleteValues(&metrics_map_);
   log_rotation_timer_.Stop();
 }
 
@@ -177,7 +177,7 @@ bool RapporService::ExportMetrics(RapporReports* reports) {
     report->set_bits(std::string(bytes.begin(), bytes.end()));
     DVLOG(2) << "Exporting metric " << kv.first;
   }
-  STLDeleteValues(&metrics_map_);
+  base::STLDeleteValues(&metrics_map_);
 
   sampler_.ExportMetrics(secret_, reports);
 

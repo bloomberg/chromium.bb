@@ -229,7 +229,7 @@ base::string16 FindChildTextInner(const WebNode& node,
       return base::string16();
     }
 
-    if (element.hasHTMLTagName("div") && ContainsKey(divs_to_skip, node))
+    if (element.hasHTMLTagName("div") && base::ContainsKey(divs_to_skip, node))
       return base::string16();
   }
 
@@ -675,9 +675,11 @@ std::vector<std::string> AncestorTagNames(
 bool IsLabelValid(base::StringPiece16 inferred_label,
     const std::vector<base::char16>& stop_words) {
   // If |inferred_label| has any character other than those in |stop_words|.
-  auto* first_non_stop_word = std::find_if(
-      inferred_label.begin(), inferred_label.end(),
-      [&stop_words](base::char16 c) { return !ContainsValue(stop_words, c); });
+  auto* first_non_stop_word =
+      std::find_if(inferred_label.begin(), inferred_label.end(),
+                   [&stop_words](base::char16 c) {
+                     return !base::ContainsValue(stop_words, c);
+                   });
   return first_non_stop_word != inferred_label.end();
 }
 
@@ -707,7 +709,7 @@ base::string16 InferLabelForElement(const WebFormControlElement& element,
   std::vector<std::string> tag_names = AncestorTagNames(element);
   std::set<std::string> seen_tag_names;
   for (const std::string& tag_name : tag_names) {
-    if (ContainsKey(seen_tag_names, tag_name))
+    if (base::ContainsKey(seen_tag_names, tag_name))
       continue;
 
     seen_tag_names.insert(tag_name);

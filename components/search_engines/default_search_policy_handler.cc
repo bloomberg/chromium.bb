@@ -197,7 +197,7 @@ DefaultSearchPolicyHandler::DefaultSearchPolicyHandler() {
 }
 
 DefaultSearchPolicyHandler::~DefaultSearchPolicyHandler() {
-  STLDeleteElements(&handlers_);
+  base::STLDeleteElements(&handlers_);
 }
 
 bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,

@@ -185,7 +185,7 @@ void AccountTrackerService::NotifyAccountRemoved(const AccountState& state) {
 
 void AccountTrackerService::StartTrackingAccount(
     const std::string& account_id) {
-  if (!ContainsKey(accounts_, account_id)) {
+  if (!base::ContainsKey(accounts_, account_id)) {
     DVLOG(1) << "StartTracking " << account_id;
     AccountState state;
     state.info.account_id = account_id;
@@ -196,7 +196,7 @@ void AccountTrackerService::StartTrackingAccount(
 
 void AccountTrackerService::StopTrackingAccount(const std::string& account_id) {
   DVLOG(1) << "StopTracking " << account_id;
-  if (ContainsKey(accounts_, account_id)) {
+  if (base::ContainsKey(accounts_, account_id)) {
     AccountState& state = accounts_[account_id];
     RemoveFromPrefs(state);
     if (!state.info.gaia.empty())
@@ -209,7 +209,7 @@ void AccountTrackerService::StopTrackingAccount(const std::string& account_id) {
 void AccountTrackerService::SetAccountStateFromUserInfo(
     const std::string& account_id,
     const base::DictionaryValue* user_info) {
-  DCHECK(ContainsKey(accounts_, account_id));
+  DCHECK(base::ContainsKey(accounts_, account_id));
   AccountState& state = accounts_[account_id];
 
   std::string gaia_id;
@@ -244,7 +244,7 @@ void AccountTrackerService::SetAccountStateFromUserInfo(
 
 void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
                                               const bool& is_child_account) {
-  DCHECK(ContainsKey(accounts_, account_id));
+  DCHECK(base::ContainsKey(accounts_, account_id));
   AccountState& state = accounts_[account_id];
   if (state.info.is_child_account == is_child_account)
     return;
@@ -279,7 +279,7 @@ void AccountTrackerService::MigrateToGaiaId() {
     std::string account_id = it->first;
     if (account_id != state.info.gaia) {
       std::string new_account_id = state.info.gaia;
-      if (!ContainsKey(accounts_, new_account_id)) {
+      if (!base::ContainsKey(accounts_, new_account_id)) {
         AccountState new_state = state;
         new_state.info.account_id = new_account_id;
         migrated_accounts.insert(make_pair(new_account_id, new_state));
@@ -291,7 +291,7 @@ void AccountTrackerService::MigrateToGaiaId() {
 
   // Remove any obsolete account.
   for (auto account_id : to_remove) {
-    if (ContainsKey(accounts_, account_id)) {
+    if (base::ContainsKey(accounts_, account_id)) {
       AccountState& state = accounts_[account_id];
       RemoveFromPrefs(state);
       accounts_.erase(account_id);
@@ -469,7 +469,7 @@ std::string AccountTrackerService::PickAccountIdForAccount(
 std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
                                                    const std::string& email) {
   const std::string account_id = PickAccountIdForAccount(gaia, email);
-  const bool already_exists = ContainsKey(accounts_, account_id);
+  const bool already_exists = base::ContainsKey(accounts_, account_id);
   StartTrackingAccount(account_id);
   AccountState& state = accounts_[account_id];
   DCHECK(!already_exists || state.info.gaia.empty() || state.info.gaia == gaia);
@@ -488,7 +488,7 @@ std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
 std::string AccountTrackerService::SeedAccountInfo(AccountInfo info) {
   info.account_id = PickAccountIdForAccount(info.gaia, info.email);
 
-  if (!ContainsKey(accounts_, info.account_id)) {
+  if (!base::ContainsKey(accounts_, info.account_id)) {
     StartTrackingAccount(info.account_id);
   }
 

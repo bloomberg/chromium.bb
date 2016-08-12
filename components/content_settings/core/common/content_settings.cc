@@ -71,7 +71,7 @@ int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
     }
   }
 
-  DCHECK(ContainsKey(kMap, content_setting));
+  DCHECK(base::ContainsKey(kMap, content_setting));
   *num_values = arraysize(kHistogramOrder);
   return kMap[content_setting];
 }

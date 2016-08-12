@@ -294,7 +294,8 @@ bool StorageMonitorLinux::GetStorageInfoForPath(
     return false;
 
   base::FilePath current = path;
-  while (!ContainsKey(mount_info_map_, current) && current != current.DirName())
+  while (!base::ContainsKey(mount_info_map_, current) &&
+         current != current.DirName())
     current = current.DirName();
 
   MountMap::const_iterator mount_info = mount_info_map_.find(current);
@@ -468,7 +469,7 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
 bool StorageMonitorLinux::IsDeviceAlreadyMounted(
     const base::FilePath& mount_device) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return ContainsKey(mount_priority_map_, mount_device);
+  return base::ContainsKey(mount_priority_map_, mount_device);
 }
 
 void StorageMonitorLinux::HandleDeviceMountedMultipleTimes(

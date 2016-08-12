@@ -334,10 +334,10 @@ WebHistoryService::WebHistoryService(
 }
 
 WebHistoryService::~WebHistoryService() {
-  STLDeleteElements(&pending_expire_requests_);
-  STLDeleteElements(&pending_audio_history_requests_);
-  STLDeleteElements(&pending_web_and_app_activity_requests_);
-  STLDeleteElements(&pending_other_forms_of_browsing_history_requests_);
+  base::STLDeleteElements(&pending_expire_requests_);
+  base::STLDeleteElements(&pending_audio_history_requests_);
+  base::STLDeleteElements(&pending_web_and_app_activity_requests_);
+  base::STLDeleteElements(&pending_other_forms_of_browsing_history_requests_);
 }
 
 WebHistoryService::Request* WebHistoryService::CreateRequest(

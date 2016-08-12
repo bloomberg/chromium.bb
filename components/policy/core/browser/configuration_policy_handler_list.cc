@@ -20,7 +20,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList(
       details_callback_(details_callback) {}
 
 ConfigurationPolicyHandlerList::~ConfigurationPolicyHandlerList() {
-  STLDeleteElements(&handlers_);
+  base::STLDeleteElements(&handlers_);
 }
 
 void ConfigurationPolicyHandlerList::AddHandler(

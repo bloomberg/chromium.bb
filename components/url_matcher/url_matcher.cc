@@ -222,7 +222,7 @@ bool URLMatcherCondition::IsMatch(
     const std::set<StringPattern::ID>& matching_patterns,
     const GURL& url) const {
   DCHECK(string_pattern_);
-  if (!ContainsKey(matching_patterns, string_pattern_->id()))
+  if (!base::ContainsKey(matching_patterns, string_pattern_->id()))
     return false;
   // The criteria HOST_CONTAINS, PATH_CONTAINS, QUERY_CONTAINS are based on
   // a substring match on the raw URL. In case of a match, we need to verify
@@ -262,9 +262,9 @@ const char kQuerySeparator = '&';
 URLMatcherConditionFactory::URLMatcherConditionFactory() : id_counter_(0) {}
 
 URLMatcherConditionFactory::~URLMatcherConditionFactory() {
-  STLDeleteElements(&substring_pattern_singletons_);
-  STLDeleteElements(&regex_pattern_singletons_);
-  STLDeleteElements(&origin_and_path_regex_pattern_singletons_);
+  base::STLDeleteElements(&substring_pattern_singletons_);
+  base::STLDeleteElements(&regex_pattern_singletons_);
+  base::STLDeleteElements(&origin_and_path_regex_pattern_singletons_);
 }
 
 std::string URLMatcherConditionFactory::CanonicalizeURLForComponentSearches(
@@ -465,7 +465,7 @@ void URLMatcherConditionFactory::ForgetUnusedPatterns(
       const std::set<StringPattern::ID>& used_patterns) {
   PatternSingletons::iterator i = substring_pattern_singletons_.begin();
   while (i != substring_pattern_singletons_.end()) {
-    if (ContainsKey(used_patterns, (*i)->id())) {
+    if (base::ContainsKey(used_patterns, (*i)->id())) {
       ++i;
     } else {
       delete *i;
@@ -474,7 +474,7 @@ void URLMatcherConditionFactory::ForgetUnusedPatterns(
   }
   i = regex_pattern_singletons_.begin();
   while (i != regex_pattern_singletons_.end()) {
-    if (ContainsKey(used_patterns, (*i)->id())) {
+    if (base::ContainsKey(used_patterns, (*i)->id())) {
       ++i;
     } else {
       delete *i;
@@ -483,7 +483,7 @@ void URLMatcherConditionFactory::ForgetUnusedPatterns(
   }
   i = origin_and_path_regex_pattern_singletons_.begin();
   while (i != origin_and_path_regex_pattern_singletons_.end()) {
-    if (ContainsKey(used_patterns, (*i)->id())) {
+    if (base::ContainsKey(used_patterns, (*i)->id())) {
       ++i;
     } else {
       delete *i;
@@ -784,7 +784,7 @@ bool URLMatcherConditionSet::IsMatch(
   for (QueryConditions::const_iterator i = query_conditions_.begin();
        i != query_conditions_.end();
        ++i) {
-    if (!ContainsKey(matching_patterns, i->string_pattern()->id()))
+    if (!base::ContainsKey(matching_patterns, i->string_pattern()->id()))
       return false;
   }
   for (QueryConditions::const_iterator i = query_conditions_.begin();

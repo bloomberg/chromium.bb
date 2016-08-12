@@ -184,7 +184,7 @@ class QueryNodeList : public QueryNode {
 QueryNodeList::QueryNodeList() {}
 
 QueryNodeList::~QueryNodeList() {
-  STLDeleteElements(&children_);
+  base::STLDeleteElements(&children_);
 }
 
 void QueryNodeList::AddChild(QueryNode* node) {

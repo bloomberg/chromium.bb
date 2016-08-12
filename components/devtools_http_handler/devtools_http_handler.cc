@@ -344,8 +344,8 @@ DevToolsHttpHandler::ServerSocketFactory::CreateForTethering(
 
 DevToolsHttpHandler::~DevToolsHttpHandler() {
   TerminateOnUI(thread_, server_wrapper_, socket_factory_);
-  STLDeleteValues(&descriptor_map_);
-  STLDeleteValues(&connection_to_client_);
+  base::STLDeleteValues(&descriptor_map_);
+  base::STLDeleteValues(&connection_to_client_);
 }
 
 GURL DevToolsHttpHandler::GetFrontendURL(const std::string& path) {
@@ -582,7 +582,7 @@ void DevToolsHttpHandler::OnJsonRequest(
         devtools_discovery::DevToolsDiscoveryManager::GetInstance()->
             GetDescriptors();
     std::sort(descriptors.begin(), descriptors.end(), TimeComparator);
-    STLDeleteValues(&descriptor_map_);
+    base::STLDeleteValues(&descriptor_map_);
     base::ListValue list_value;
     for (DevToolsTargetDescriptor* descriptor : descriptors) {
       descriptor_map_[descriptor->GetId()] = descriptor;

@@ -525,7 +525,7 @@ void AutofillWebDataBackendImpl::DestroyAutofillProfileResult(
   const WDResult<std::vector<AutofillProfile*> >* r =
       static_cast<const WDResult<std::vector<AutofillProfile*> >*>(result);
   std::vector<AutofillProfile*> profiles = r->GetValue();
-  STLDeleteElements(&profiles);
+  base::STLDeleteElements(&profiles);
 }
 
 void AutofillWebDataBackendImpl::DestroyAutofillCreditCardResult(
@@ -535,7 +535,7 @@ void AutofillWebDataBackendImpl::DestroyAutofillCreditCardResult(
       static_cast<const WDResult<std::vector<CreditCard*> >*>(result);
 
   std::vector<CreditCard*> credit_cards = r->GetValue();
-  STLDeleteElements(&credit_cards);
+  base::STLDeleteElements(&credit_cards);
 }
 
 }  // namespace autofill

@@ -93,7 +93,7 @@ void SyncInvalidationScheduler::Stop() {
   is_stopped_ = true;
   is_started_ = false;
   weak_factory_.InvalidateWeakPtrs();
-  STLDeleteElements(&posted_tasks_);
+  base::STLDeleteElements(&posted_tasks_);
 }
 
 void SyncInvalidationScheduler::Schedule(invalidation::TimeDelta delay,
@@ -139,7 +139,7 @@ SyncNetworkChannel::SyncNetworkChannel()
       received_messages_count_(0) {}
 
 SyncNetworkChannel::~SyncNetworkChannel() {
-  STLDeleteElements(&network_status_receivers_);
+  base::STLDeleteElements(&network_status_receivers_);
 }
 
 void SyncNetworkChannel::SetMessageReceiver(

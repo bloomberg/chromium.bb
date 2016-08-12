@@ -481,7 +481,7 @@ AboutSigninInternals::SigninStatus::~SigninStatus() {
   for (TokenInfoMap::iterator it = token_info_map.begin();
        it != token_info_map.end();
        ++it) {
-    STLDeleteElements(&it->second);
+    base::STLDeleteElements(&it->second);
   }
 }
 

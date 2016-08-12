@@ -425,7 +425,7 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
                                 dropped_reason,
                                 DROPPED_REASON_MAX + 1);
     } else {
-      DCHECK(!ContainsKey(info_map, info->id));
+      DCHECK(!base::ContainsKey(info_map, info->id));
       uint32_t id = info->id;
       info_map[id] = info.release();
     }
@@ -453,8 +453,8 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
 
     // Confirm the id has already been seen--if it hasn't, discard the
     // record.
-    DCHECK(ContainsKey(info_map, id));
-    if (!ContainsKey(info_map, id))
+    DCHECK(base::ContainsKey(info_map, id));
+    if (!base::ContainsKey(info_map, id))
       continue;
 
     // Confirm all previous URLs in the chain have already been seen;

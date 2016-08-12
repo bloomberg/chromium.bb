@@ -21,7 +21,7 @@ ContentSettingsInfo::ContentSettingsInfo(
 ContentSettingsInfo::~ContentSettingsInfo() {}
 
 bool ContentSettingsInfo::IsSettingValid(ContentSetting setting) const {
-  return ContainsKey(valid_settings_, setting);
+  return base::ContainsKey(valid_settings_, setting);
 }
 
 }  // namespace content_settings

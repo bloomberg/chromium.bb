@@ -44,7 +44,7 @@ UpdateContext::UpdateContext(
       retry_after_sec_(0) {}
 
 UpdateContext::~UpdateContext() {
-  STLDeleteElements(&update_items);
+  base::STLDeleteElements(&update_items);
 }
 
 UpdateEngine::UpdateEngine(

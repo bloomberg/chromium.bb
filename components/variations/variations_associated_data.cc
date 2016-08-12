@@ -128,7 +128,7 @@ class VariationsParamAssociator {
       return false;
 
     const VariationKey key(trial_name, group_name);
-    if (ContainsKey(variation_params_, key))
+    if (base::ContainsKey(variation_params_, key))
       return false;
 
     variation_params_[key] = params;
@@ -142,7 +142,7 @@ class VariationsParamAssociator {
     const std::string group_name =
         base::FieldTrialList::FindFullName(trial_name);
     const VariationKey key(trial_name, group_name);
-    if (!ContainsKey(variation_params_, key))
+    if (!base::ContainsKey(variation_params_, key))
       return false;
 
     *params = variation_params_[key];

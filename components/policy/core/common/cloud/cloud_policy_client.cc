@@ -69,7 +69,7 @@ CloudPolicyClient::CloudPolicyClient(
 }
 
 CloudPolicyClient::~CloudPolicyClient() {
-  STLDeleteValues(&responses_);
+  base::STLDeleteValues(&responses_);
 }
 
 void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
@@ -82,7 +82,7 @@ void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
   client_id_ = client_id;
   request_jobs_.clear();
   policy_fetch_request_job_.reset();
-  STLDeleteValues(&responses_);
+  base::STLDeleteValues(&responses_);
 
   NotifyRegistrationStateChanged();
 }
@@ -520,7 +520,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
   if (status == DM_STATUS_SUCCESS) {
     const em::DevicePolicyResponse& policy_response =
         response.policy_response();
-    STLDeleteValues(&responses_);
+    base::STLDeleteValues(&responses_);
     for (int i = 0; i < policy_response.response_size(); ++i) {
       const em::PolicyFetchResponse& response = policy_response.response(i);
       em::PolicyData policy_data;
@@ -535,7 +535,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
       if (policy_data.has_settings_entity_id())
         entity_id = policy_data.settings_entity_id();
       std::pair<std::string, std::string> key(type, entity_id);
-      if (ContainsKey(responses_, key)) {
+      if (base::ContainsKey(responses_, key)) {
         LOG(WARNING) << "Duplicate PolicyFetchResponse for type: "
             << type << ", entity: " << entity_id << ", ignoring";
         continue;

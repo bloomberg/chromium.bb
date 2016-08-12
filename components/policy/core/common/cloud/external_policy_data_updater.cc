@@ -306,7 +306,7 @@ ExternalPolicyDataUpdater::ExternalPolicyDataUpdater(
 ExternalPolicyDataUpdater::~ExternalPolicyDataUpdater() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   shutting_down_ = true;
-  STLDeleteValues(&job_map_);
+  base::STLDeleteValues(&job_map_);
 }
 
 void ExternalPolicyDataUpdater::FetchExternalData(

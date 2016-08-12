@@ -397,8 +397,8 @@ LogProofFetcher::LogProofFetcher(net::URLRequestContext* request_context)
 }
 
 LogProofFetcher::~LogProofFetcher() {
-  STLDeleteContainerPointers(inflight_fetches_.begin(),
-                             inflight_fetches_.end());
+  base::STLDeleteContainerPointers(inflight_fetches_.begin(),
+                                   inflight_fetches_.end());
 }
 
 void LogProofFetcher::FetchSignedTreeHead(

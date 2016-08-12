@@ -76,7 +76,7 @@ class MigrationTest : public testing::TestWithParam<int> {
     Directory::MetahandlesMap tmp_handles_map;
     JournalIndex  delete_journals;
     MetahandleSet metahandles_to_purge;
-    STLValueDeleter<Directory::MetahandlesMap> deleter(&tmp_handles_map);
+    base::STLValueDeleter<Directory::MetahandlesMap> deleter(&tmp_handles_map);
     Directory::KernelLoadInfo kernel_load_info;
     return dbs->Load(&tmp_handles_map, &delete_journals, &metahandles_to_purge,
                      &kernel_load_info) == OPENED;
@@ -3330,7 +3330,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
   Directory::MetahandlesMap handles_map;
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
-  STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
+  base::STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
   Directory::KernelLoadInfo load_info;
 
   ASSERT_TRUE(dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
@@ -3569,7 +3569,7 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
   Directory::MetahandlesMap handles_map;
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
-  STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
+  base::STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
   Directory::KernelLoadInfo kernel_load_info;
   ASSERT_EQ(FAILED_DATABASE_CORRUPT,
             dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
@@ -3668,7 +3668,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   Directory::MetahandlesMap handles_map;
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
-  STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
+  base::STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
 
   {
     std::unique_ptr<OnDiskDirectoryBackingStore> dbs(
@@ -4086,7 +4086,7 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   JournalIndex  delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
-  STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
+  base::STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
 
   dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
             &kernel_load_info);
@@ -4097,7 +4097,7 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   to_delete.insert(first_to_die);
   EXPECT_TRUE(dbs->DeleteEntries(to_delete));
 
-  STLDeleteValues(&handles_map);
+  base::STLDeleteValues(&handles_map);
   metahandles_to_purge.clear();
   dbs->LoadEntries(&handles_map, &metahandles_to_purge);
 
@@ -4120,7 +4120,7 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
 
   EXPECT_TRUE(dbs->DeleteEntries(to_delete));
 
-  STLDeleteValues(&handles_map);
+  base::STLDeleteValues(&handles_map);
   metahandles_to_purge.clear();
   dbs->LoadEntries(&handles_map, &metahandles_to_purge);
   EXPECT_EQ(0U, handles_map.size());
@@ -4147,7 +4147,7 @@ TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
   JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
-  STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
+  base::STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
 
   DirOpenResult open_result = dbs->Load(
       &handles_map, &delete_journals, &metahandles_to_purge, &kernel_load_info);

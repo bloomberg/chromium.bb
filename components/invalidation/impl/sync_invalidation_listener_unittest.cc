@@ -779,18 +779,18 @@ TEST_F(SyncInvalidationListenerTest, UnregisterCleansUpStateMapCache) {
   EXPECT_TRUE(GetSavedInvalidations().empty());
   FireInvalidate(id, 1, "hello");
   EXPECT_EQ(1U, GetSavedInvalidations().size());
-  EXPECT_TRUE(ContainsKey(GetSavedInvalidations(), id));
+  EXPECT_TRUE(base::ContainsKey(GetSavedInvalidations(), id));
   FireInvalidate(kPreferencesId_, 2, "world");
   EXPECT_EQ(2U, GetSavedInvalidations().size());
 
-  EXPECT_TRUE(ContainsKey(GetSavedInvalidations(), id));
-  EXPECT_TRUE(ContainsKey(GetSavedInvalidations(), kPreferencesId_));
+  EXPECT_TRUE(base::ContainsKey(GetSavedInvalidations(), id));
+  EXPECT_TRUE(base::ContainsKey(GetSavedInvalidations(), kPreferencesId_));
 
   ObjectIdSet ids;
   ids.insert(id);
   listener_.UpdateRegisteredIds(ids);
   EXPECT_EQ(1U, GetSavedInvalidations().size());
-  EXPECT_TRUE(ContainsKey(GetSavedInvalidations(), id));
+  EXPECT_TRUE(base::ContainsKey(GetSavedInvalidations(), id));
 }
 
 TEST_F(SyncInvalidationListenerTest, DuplicateInvaldiations_Simple) {

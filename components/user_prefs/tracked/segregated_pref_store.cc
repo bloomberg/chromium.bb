@@ -166,14 +166,16 @@ SegregatedPrefStore::~SegregatedPrefStore() {
 }
 
 PersistentPrefStore* SegregatedPrefStore::StoreForKey(const std::string& key) {
-  return (ContainsKey(selected_preference_names_, key)
+  return (base::ContainsKey(selected_preference_names_, key)
               ? selected_pref_store_
-              : default_pref_store_).get();
+              : default_pref_store_)
+      .get();
 }
 
 const PersistentPrefStore* SegregatedPrefStore::StoreForKey(
     const std::string& key) const {
-  return (ContainsKey(selected_preference_names_, key)
+  return (base::ContainsKey(selected_preference_names_, key)
               ? selected_pref_store_
-              : default_pref_store_).get();
+              : default_pref_store_)
+      .get();
 }

@@ -108,7 +108,7 @@ void RegexSetMatcher::RebuildMatcher() {
 }
 
 void RegexSetMatcher::DeleteSubstringPatterns() {
-  STLDeleteElements(&substring_patterns_);
+  base::STLDeleteElements(&substring_patterns_);
 }
 
 }  // namespace url_matcher

@@ -77,7 +77,8 @@ base::File CrashDumpManager::CreateMinidumpFile(int child_process_id) {
 
   {
     base::AutoLock auto_lock(child_process_id_to_minidump_path_lock_);
-    DCHECK(!ContainsKey(child_process_id_to_minidump_path_, child_process_id));
+    DCHECK(!base::ContainsKey(child_process_id_to_minidump_path_,
+                              child_process_id));
     child_process_id_to_minidump_path_[child_process_id] = minidump_path;
   }
   return minidump_file;

@@ -27,7 +27,7 @@ class ParentChildIndexTest : public testing::Test {
   void TearDown() override {
     // To make memory management easier, we take ownership of all EntryKernels
     // returned by our factory methods and delete them here.
-    STLDeleteElements(&owned_entry_kernels_);
+    base::STLDeleteElements(&owned_entry_kernels_);
   }
 
   // Unfortunately, we can't use the regular Entry factory methods, because the

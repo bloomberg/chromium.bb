@@ -409,10 +409,10 @@ TEST_F(FlagsStateTest, RemoveFlagSwitches) {
   // This shouldn't do anything before ConvertFlagsToSwitches() wasn't called.
   flags_state_->RemoveFlagsSwitches(&switch_list);
   ASSERT_EQ(4u, switch_list.size());
-  EXPECT_TRUE(ContainsKey(switch_list, kSwitch1));
-  EXPECT_TRUE(ContainsKey(switch_list, switches::kFlagSwitchesBegin));
-  EXPECT_TRUE(ContainsKey(switch_list, switches::kFlagSwitchesEnd));
-  EXPECT_TRUE(ContainsKey(switch_list, "foo"));
+  EXPECT_TRUE(base::ContainsKey(switch_list, kSwitch1));
+  EXPECT_TRUE(base::ContainsKey(switch_list, switches::kFlagSwitchesBegin));
+  EXPECT_TRUE(base::ContainsKey(switch_list, switches::kFlagSwitchesEnd));
+  EXPECT_TRUE(base::ContainsKey(switch_list, "foo"));
 
   // Call ConvertFlagsToSwitches(), then RemoveFlagsSwitches() again.
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
@@ -424,7 +424,7 @@ TEST_F(FlagsStateTest, RemoveFlagSwitches) {
 
   // Now the about:flags-related switch should have been removed.
   ASSERT_EQ(1u, switch_list.size());
-  EXPECT_TRUE(ContainsKey(switch_list, "foo"));
+  EXPECT_TRUE(base::ContainsKey(switch_list, "foo"));
 }
 
 TEST_F(FlagsStateTest, RemoveFlagSwitches_Features) {
@@ -475,13 +475,13 @@ TEST_F(FlagsStateTest, RemoveFlagSwitches_Features) {
                                          kDisableFeatures);
     auto switch_list = command_line.GetSwitches();
     EXPECT_EQ(cases[i].expected_enable_features != nullptr,
-              ContainsKey(switch_list, kEnableFeatures));
+              base::ContainsKey(switch_list, kEnableFeatures));
     if (cases[i].expected_enable_features)
       EXPECT_EQ(CreateSwitch(cases[i].expected_enable_features),
                 switch_list[kEnableFeatures]);
 
     EXPECT_EQ(cases[i].expected_disable_features != nullptr,
-              ContainsKey(switch_list, kDisableFeatures));
+              base::ContainsKey(switch_list, kDisableFeatures));
     if (cases[i].expected_disable_features)
       EXPECT_EQ(CreateSwitch(cases[i].expected_disable_features),
                 switch_list[kDisableFeatures]);
@@ -491,12 +491,12 @@ TEST_F(FlagsStateTest, RemoveFlagSwitches_Features) {
     switch_list = command_line.GetSwitches();
     flags_state_->RemoveFlagsSwitches(&switch_list);
     EXPECT_EQ(cases[i].existing_enable_features != nullptr,
-              ContainsKey(switch_list, kEnableFeatures));
+              base::ContainsKey(switch_list, kEnableFeatures));
     if (cases[i].existing_enable_features)
       EXPECT_EQ(CreateSwitch(cases[i].existing_enable_features),
                 switch_list[kEnableFeatures]);
     EXPECT_EQ(cases[i].existing_disable_features != nullptr,
-              ContainsKey(switch_list, kEnableFeatures));
+              base::ContainsKey(switch_list, kEnableFeatures));
     if (cases[i].existing_disable_features)
       EXPECT_EQ(CreateSwitch(cases[i].existing_disable_features),
                 switch_list[kDisableFeatures]);

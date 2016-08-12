@@ -430,11 +430,11 @@ void SyncedSessionTracker::Clear() {
   }
 
   // Delete SyncedSession objects (which also deletes all their windows/tabs).
-  STLDeleteValues(&synced_session_map_);
+  base::STLDeleteValues(&synced_session_map_);
 
   // Go through and delete any tabs we had allocated but had not yet placed into
   // a SyncedSession object.
-  STLDeleteElements(&unmapped_tabs_);
+  base::STLDeleteElements(&unmapped_tabs_);
 
   // Get rid of our Window/Tab maps (does not delete the actual Window/Tabs
   // themselves; they should have all been deleted above).

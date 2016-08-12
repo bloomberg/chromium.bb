@@ -897,7 +897,7 @@ void RestoreSessionFromCommands(const ScopedVector<SessionCommand>& commands,
     SortTabsBasedOnVisualOrderAndPrune(&windows, valid_windows);
     UpdateSelectedTabIndex(valid_windows);
   }
-  STLDeleteValues(&tabs);
+  base::STLDeleteValues(&tabs);
   // Don't delete contents of windows, that is done by the caller as all
   // valid windows are added to valid_windows.
 }

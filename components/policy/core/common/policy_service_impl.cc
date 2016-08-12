@@ -100,7 +100,7 @@ PolicyServiceImpl::~PolicyServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
     (*it)->RemoveObserver(this);
-  STLDeleteValues(&observers_);
+  base::STLDeleteValues(&observers_);
 }
 
 void PolicyServiceImpl::AddObserver(PolicyDomain domain,

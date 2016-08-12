@@ -184,7 +184,7 @@ std::unique_ptr<RegistryDict> RegistryDict::RemoveKey(const std::string& name) {
 }
 
 void RegistryDict::ClearKeys() {
-  STLDeleteValues(&keys_);
+  base::STLDeleteValues(&keys_);
 }
 
 base::Value* RegistryDict::GetValue(const std::string& name) {
@@ -221,7 +221,7 @@ std::unique_ptr<base::Value> RegistryDict::RemoveValue(
 }
 
 void RegistryDict::ClearValues() {
-  STLDeleteValues(&values_);
+  base::STLDeleteValues(&values_);
 }
 
 void RegistryDict::Merge(const RegistryDict& other) {

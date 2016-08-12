@@ -394,7 +394,7 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadAndPurgeCache) {
   std::map<std::string, std::string> contents;
   cache_->LoadAllSubkeys("extension-policy", &contents);
   EXPECT_EQ(1u, contents.size());
-  EXPECT_TRUE(ContainsKey(contents, kTestExtension2));
+  EXPECT_TRUE(base::ContainsKey(contents, kTestExtension2));
 }
 
 TEST_F(ComponentCloudPolicyServiceTest, SignInAfterStartup) {
@@ -538,8 +538,8 @@ TEST_F(ComponentCloudPolicyServiceTest, PurgeWhenServerRemovesPolicy) {
   std::map<std::string, std::string> contents;
   cache_->LoadAllSubkeys("extension-policy", &contents);
   ASSERT_EQ(2u, contents.size());
-  EXPECT_TRUE(ContainsKey(contents, kTestExtension));
-  EXPECT_TRUE(ContainsKey(contents, kTestExtension2));
+  EXPECT_TRUE(base::ContainsKey(contents, kTestExtension));
+  EXPECT_TRUE(base::ContainsKey(contents, kTestExtension2));
 
   PolicyBundle expected_bundle;
   const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
@@ -566,8 +566,8 @@ TEST_F(ComponentCloudPolicyServiceTest, PurgeWhenServerRemovesPolicy) {
   contents.clear();
   cache_->LoadAllSubkeys("extension-policy", &contents);
   ASSERT_EQ(1u, contents.size());
-  EXPECT_TRUE(ContainsKey(contents, kTestExtension));
-  EXPECT_FALSE(ContainsKey(contents, kTestExtension2));
+  EXPECT_TRUE(base::ContainsKey(contents, kTestExtension));
+  EXPECT_FALSE(base::ContainsKey(contents, kTestExtension2));
 
   // And the service isn't publishing policy for the second extension anymore.
   expected_bundle.Clear();

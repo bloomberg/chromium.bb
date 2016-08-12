@@ -626,11 +626,11 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
   const StorageObjects& storage_objects = device_details->storage_objects;
   const base::string16& name = device_details->name;
   const base::string16& location = device_details->location;
-  DCHECK(!ContainsKey(device_map_, location));
+  DCHECK(!base::ContainsKey(device_map_, location));
   for (StorageObjects::const_iterator storage_iter = storage_objects.begin();
        storage_iter != storage_objects.end(); ++storage_iter) {
     const std::string& storage_id = storage_iter->object_persistent_id;
-    DCHECK(!ContainsKey(storage_map_, storage_id));
+    DCHECK(!base::ContainsKey(storage_map_, storage_id));
 
     // Keep track of storage id and storage name to see how often we receive
     // empty values.

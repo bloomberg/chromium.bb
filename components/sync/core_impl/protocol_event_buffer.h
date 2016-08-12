@@ -35,7 +35,7 @@ class SYNC_EXPORT ProtocolEventBuffer {
 
  private:
   std::deque<ProtocolEvent*> buffer_;
-  STLElementDeleter<std::deque<ProtocolEvent*>> buffer_deleter_;
+  base::STLElementDeleter<std::deque<ProtocolEvent*>> buffer_deleter_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolEventBuffer);
 };

@@ -702,7 +702,7 @@ bool AutofillTable::AddFormFieldValuesTime(
   for (const FormFieldData& element : elements) {
     if (seen_names.size() >= kMaximumUniqueNames)
       break;
-    if (ContainsKey(seen_names, element.name))
+    if (base::ContainsKey(seen_names, element.name))
       continue;
     result = result && AddFormFieldValueTime(element, changes, time);
     seen_names.insert(element.name);

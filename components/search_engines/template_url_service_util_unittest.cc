@@ -43,8 +43,8 @@ std::unique_ptr<TemplateURL> CreatePrepopulateTemplateURL(
 TEST(TemplateURLServiceUtilTest, RemoveDuplicatePrepopulateIDs) {
   ScopedVector<TemplateURLData> prepopulated_turls;
   TemplateURLService::TemplateURLVector local_turls;
-  STLElementDeleter<TemplateURLService::TemplateURLVector> local_turls_deleter(
-      &local_turls);
+  base::STLElementDeleter<TemplateURLService::TemplateURLVector>
+      local_turls_deleter(&local_turls);
 
   prepopulated_turls.push_back(
       CreatePrepopulateTemplateURLData(1, "winner4", 1).release());

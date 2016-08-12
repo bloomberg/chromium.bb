@@ -65,7 +65,7 @@ RegistrationManager::RegistrationManager(
 
 RegistrationManager::~RegistrationManager() {
   DCHECK(CalledOnValidThread());
-  STLDeleteValues(&registration_statuses_);
+  base::STLDeleteValues(&registration_statuses_);
 }
 
 ObjectIdSet RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
@@ -86,7 +86,7 @@ ObjectIdSet RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
 
   for (ObjectIdSet::const_iterator it = to_register.begin();
        it != to_register.end(); ++it) {
-    if (!ContainsKey(registration_statuses_, *it)) {
+    if (!base::ContainsKey(registration_statuses_, *it)) {
       registration_statuses_.insert(
           std::make_pair(*it, new RegistrationStatus(*it, this)));
     }

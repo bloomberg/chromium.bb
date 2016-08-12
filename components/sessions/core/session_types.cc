@@ -71,7 +71,7 @@ SessionWindow::SessionWindow()
       show_state(ui::SHOW_STATE_DEFAULT) {}
 
 SessionWindow::~SessionWindow() {
-  STLDeleteElements(&tabs);
+  base::STLDeleteElements(&tabs);
 }
 
 sync_pb::SessionWindow SessionWindow::ToSyncData() const {

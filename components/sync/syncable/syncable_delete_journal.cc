@@ -19,7 +19,7 @@ DeleteJournal::DeleteJournal(JournalIndex* initial_journal) {
 }
 
 DeleteJournal::~DeleteJournal() {
-  STLDeleteElements(&delete_journals_);
+  base::STLDeleteElements(&delete_journals_);
 }
 
 size_t DeleteJournal::GetDeleteJournalSize(BaseTransaction* trans) const {

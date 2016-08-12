@@ -155,8 +155,8 @@ AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
 }
 
 AutofillDownloadManager::~AutofillDownloadManager() {
-  STLDeleteContainerPairFirstPointers(url_fetchers_.begin(),
-                                      url_fetchers_.end());
+  base::STLDeleteContainerPairFirstPointers(url_fetchers_.begin(),
+                                            url_fetchers_.end());
 }
 
 bool AutofillDownloadManager::StartQueryRequest(

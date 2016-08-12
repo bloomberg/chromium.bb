@@ -104,7 +104,7 @@ bool PolicyBundle::Equals(const PolicyBundle& other) const {
 }
 
 void PolicyBundle::Clear() {
-  STLDeleteValues(&policy_bundle_);
+  base::STLDeleteValues(&policy_bundle_);
 }
 
 }  // namespace policy

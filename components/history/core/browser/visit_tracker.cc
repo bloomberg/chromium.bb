@@ -22,7 +22,8 @@ VisitTracker::VisitTracker() {
 }
 
 VisitTracker::~VisitTracker() {
-  STLDeleteContainerPairSecondPointers(contexts_.begin(), contexts_.end());
+  base::STLDeleteContainerPairSecondPointers(contexts_.begin(),
+                                             contexts_.end());
 }
 
 // This function is potentially slow because it may do up to two brute-force

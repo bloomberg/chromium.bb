@@ -374,8 +374,10 @@ TEST_F(NetworkSessionConfiguratorTest, QuicWhitelistFromParams) {
   ParseFieldTrials();
 
   EXPECT_EQ(2u, params_.quic_host_whitelist.size());
-  EXPECT_TRUE(ContainsKey(params_.quic_host_whitelist, "www.example.org"));
-  EXPECT_TRUE(ContainsKey(params_.quic_host_whitelist, "www.example.com"));
+  EXPECT_TRUE(
+      base::ContainsKey(params_.quic_host_whitelist, "www.example.org"));
+  EXPECT_TRUE(
+      base::ContainsKey(params_.quic_host_whitelist, "www.example.com"));
 }
 
 TEST_F(NetworkSessionConfiguratorTest, TCPFastOpenHttpsEnabled) {

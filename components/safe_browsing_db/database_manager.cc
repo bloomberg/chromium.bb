@@ -101,7 +101,7 @@ void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
           OnCheckApiBlacklistUrlResult(check->url(), ThreatMetadata());
     }
   }
-  STLDeleteElements(&api_checks_);
+  base::STLDeleteElements(&api_checks_);
 }
 
 SafeBrowsingDatabaseManager::ApiCheckSet::iterator

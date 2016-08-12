@@ -767,7 +767,7 @@ void HostContentSettingsMap::OnContentSettingChanged(
 
 HostContentSettingsMap::~HostContentSettingsMap() {
   DCHECK(!prefs_);
-  STLDeleteValues(&content_settings_providers_);
+  base::STLDeleteValues(&content_settings_providers_);
 }
 
 void HostContentSettingsMap::ShutdownOnUIThread() {

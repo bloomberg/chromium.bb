@@ -66,7 +66,7 @@ UniquePosition UniquePosition::FromProto(const sync_pb::UniquePosition& proto) {
 
     un_gzipped.resize(uncompressed_len);
     int result = uncompress(
-        reinterpret_cast<Bytef*>(string_as_array(&un_gzipped)),
+        reinterpret_cast<Bytef*>(base::string_as_array(&un_gzipped)),
         &uncompressed_len,
         reinterpret_cast<const Bytef*>(proto.compressed_value().data()),
         proto.compressed_value().size());

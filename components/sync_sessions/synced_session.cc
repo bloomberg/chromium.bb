@@ -12,7 +12,7 @@ SyncedSession::SyncedSession()
     : session_tag("invalid"), device_type(TYPE_UNSET) {}
 
 SyncedSession::~SyncedSession() {
-  STLDeleteContainerPairSecondPointers(windows.begin(), windows.end());
+  base::STLDeleteContainerPairSecondPointers(windows.begin(), windows.end());
 }
 
 sync_pb::SessionHeader SyncedSession::ToSessionHeader() const {

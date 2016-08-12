@@ -209,7 +209,7 @@ DirectoryLoader::DirectoryLoader(
 }
 
 DirectoryLoader::~DirectoryLoader() {
-  STLDeleteElements(&fast_fetch_feed_fetcher_set_);
+  base::STLDeleteElements(&fast_fetch_feed_fetcher_set_);
 }
 
 void DirectoryLoader::AddObserver(ChangeListLoaderObserver* observer) {

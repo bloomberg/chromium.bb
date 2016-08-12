@@ -277,7 +277,7 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
 TemplateURLService::~TemplateURLService() {
   // |web_data_service_| should be deleted during Shutdown().
   DCHECK(!web_data_service_.get());
-  STLDeleteElements(&template_urls_);
+  base::STLDeleteElements(&template_urls_);
 }
 
 // static

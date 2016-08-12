@@ -77,8 +77,8 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
 
   // The fallback: delete the current database and return a fresh one.  We can
   // fetch the user's data from the cloud.
-  STLDeleteValues(handles_map);
-  STLDeleteElements(delete_journals);
+  base::STLDeleteValues(handles_map);
+  base::STLDeleteElements(delete_journals);
 
   ResetAndCreateConnection();
 

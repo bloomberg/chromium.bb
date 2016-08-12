@@ -210,7 +210,7 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
     if (device_id.empty() || storage_label.empty())
       return;
 
-    DCHECK(!ContainsKey(storage_map_, location));
+    DCHECK(!base::ContainsKey(storage_map_, location));
 
     StorageInfo storage_info(device_id, location, storage_label,
                              vendor_name, product_name, 0);

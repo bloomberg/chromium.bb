@@ -97,7 +97,7 @@ KeyedService* KeyedServiceFactory::GetServiceForContext(
 
 void KeyedServiceFactory::Associate(base::SupportsUserData* context,
                                     std::unique_ptr<KeyedService> service) {
-  DCHECK(!ContainsKey(mapping_, context));
+  DCHECK(!base::ContainsKey(mapping_, context));
   mapping_.insert(std::make_pair(context, service.release()));
 }
 

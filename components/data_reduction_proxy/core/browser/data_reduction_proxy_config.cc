@@ -774,8 +774,8 @@ void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
           params::IsIncludedInLoFiControlFieldTrial()) &&
          !params::IsLoFiSlowConnectionsOnlyViaFlags());
   DCHECK_EQ(0, measuring_duration.InMilliseconds() % 1000);
-  DCHECK(
-      ContainsValue(GetLofiAccuracyRecordingIntervals(), measuring_duration));
+  DCHECK(base::ContainsValue(GetLofiAccuracyRecordingIntervals(),
+                             measuring_duration));
 
   if (network_quality_at_last_query_ == NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN)
     return;

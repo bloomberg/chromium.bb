@@ -62,8 +62,8 @@ class DomainReliabilityUploaderImpl
 
   ~DomainReliabilityUploaderImpl() override {
     // Delete any in-flight URLFetchers.
-    STLDeleteContainerPairFirstPointers(
-        upload_callbacks_.begin(), upload_callbacks_.end());
+    base::STLDeleteContainerPairFirstPointers(upload_callbacks_.begin(),
+                                              upload_callbacks_.end());
   }
 
   // DomainReliabilityUploader implementation:

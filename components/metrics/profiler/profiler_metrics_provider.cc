@@ -107,7 +107,8 @@ void ProfilerMetricsProvider::RecordProfilerData(
   if (IsCellularLogicEnabled())
     return;
 
-  const bool new_phase = !ContainsKey(profiler_events_cache_, profiling_phase);
+  const bool new_phase =
+      !base::ContainsKey(profiler_events_cache_, profiling_phase);
   ProfilerEventProto* profiler_event = &profiler_events_cache_[profiling_phase];
 
   if (new_phase) {

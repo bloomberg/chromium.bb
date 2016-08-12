@@ -55,7 +55,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
   ~FakeInvalidationClient() override {}
 
   void LoseRegistration(const invalidation::ObjectId& oid) {
-    EXPECT_TRUE(ContainsKey(registered_ids_, oid));
+    EXPECT_TRUE(base::ContainsKey(registered_ids_, oid));
     registered_ids_.erase(oid);
   }
 
@@ -70,7 +70,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
   void Acknowledge(const invalidation::AckHandle& handle) override {}
 
   void Register(const invalidation::ObjectId& oid) override {
-    EXPECT_FALSE(ContainsKey(registered_ids_, oid));
+    EXPECT_FALSE(base::ContainsKey(registered_ids_, oid));
     registered_ids_.insert(oid);
   }
 
@@ -79,7 +79,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
   }
 
   void Unregister(const invalidation::ObjectId& oid) override {
-    EXPECT_TRUE(ContainsKey(registered_ids_, oid));
+    EXPECT_TRUE(base::ContainsKey(registered_ids_, oid));
     registered_ids_.erase(oid);
   }
 

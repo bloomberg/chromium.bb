@@ -419,7 +419,7 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
         hash_prefix_map_[next_smallest_prefix_size] += next_smallest_prefix_old;
 
         if (calculate_checksum) {
-          checksum_ctx->Update(string_as_array(&next_smallest_prefix_old),
+          checksum_ctx->Update(base::string_as_array(&next_smallest_prefix_old),
                                next_smallest_prefix_size);
         }
       } else {
@@ -440,8 +440,9 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
           next_smallest_prefix_additions;
 
       if (calculate_checksum) {
-        checksum_ctx->Update(string_as_array(&next_smallest_prefix_additions),
-                             next_smallest_prefix_size);
+        checksum_ctx->Update(
+            base::string_as_array(&next_smallest_prefix_additions),
+            next_smallest_prefix_size);
       }
 
       // Update the iterator map, which means that we have merged one hash
@@ -462,7 +463,7 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
 
   if (calculate_checksum) {
     std::string checksum(crypto::kSHA256Length, 0);
-    checksum_ctx->Finish(string_as_array(&checksum), checksum.size());
+    checksum_ctx->Finish(base::string_as_array(&checksum), checksum.size());
     if (checksum != expected_checksum) {
       std::string checksum_base64, expected_checksum_base64;
       base::Base64Encode(checksum, &checksum_base64);

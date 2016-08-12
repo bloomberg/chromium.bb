@@ -115,7 +115,8 @@ void FileWriteWatcher::FileWriteWatcherImpl::StartWatch(
 FileWriteWatcher::FileWriteWatcherImpl::~FileWriteWatcherImpl() {
   DCHECK(file_task_runner_->BelongsToCurrentThread());
 
-  STLDeleteContainerPairSecondPointers(watchers_.begin(), watchers_.end());
+  base::STLDeleteContainerPairSecondPointers(watchers_.begin(),
+                                             watchers_.end());
 }
 
 void FileWriteWatcher::FileWriteWatcherImpl::DestroyOnFileThread() {

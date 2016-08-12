@@ -252,7 +252,7 @@ FakeDriveService::FakeDriveService()
 
 FakeDriveService::~FakeDriveService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  STLDeleteValues(&entries_);
+  base::STLDeleteValues(&entries_);
 }
 
 bool FakeDriveService::LoadAppListForDriveApi(

@@ -308,7 +308,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(profile, *consumer.result()[0]);
-  STLDeleteElements(&consumer.result());
+  base::STLDeleteElements(&consumer.result());
 }
 
 TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
@@ -327,7 +327,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(profile, *consumer.result()[0]);
-  STLDeleteElements(&consumer.result());
+  base::STLDeleteElements(&consumer.result());
 
   // Check that GUID-based notification was sent.
   const AutofillProfileChange expected_change(
@@ -372,7 +372,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   ASSERT_EQ(2U, consumer.result().size());
   EXPECT_EQ(profile2, *consumer.result()[0]);
   EXPECT_EQ(profile1, *consumer.result()[1]);
-  STLDeleteElements(&consumer.result());
+  base::STLDeleteElements(&consumer.result());
 
   AutofillProfile profile2_changed(profile2);
   profile2_changed.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Bill"));
@@ -395,7 +395,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   EXPECT_EQ(profile2_changed, *consumer2.result()[0]);
   EXPECT_NE(profile2, *consumer2.result()[0]);
   EXPECT_EQ(profile1, *consumer2.result()[1]);
-  STLDeleteElements(&consumer2.result());
+  base::STLDeleteElements(&consumer2.result());
 }
 
 TEST_F(WebDataServiceAutofillTest, CreditAdd) {
@@ -410,7 +410,7 @@ TEST_F(WebDataServiceAutofillTest, CreditAdd) {
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(card, *consumer.result()[0]);
-  STLDeleteElements(&consumer.result());
+  base::STLDeleteElements(&consumer.result());
 }
 
 TEST_F(WebDataServiceAutofillTest, CreditCardRemove) {
@@ -427,7 +427,7 @@ TEST_F(WebDataServiceAutofillTest, CreditCardRemove) {
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(credit_card, *consumer.result()[0]);
-  STLDeleteElements(&consumer.result());
+  base::STLDeleteElements(&consumer.result());
 
   // Remove the credit card.
   wds_->RemoveCreditCard(credit_card.guid());
@@ -461,7 +461,7 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   ASSERT_EQ(2U, consumer.result().size());
   EXPECT_EQ(card2, *consumer.result()[0]);
   EXPECT_EQ(card1, *consumer.result()[1]);
-  STLDeleteElements(&consumer.result());
+  base::STLDeleteElements(&consumer.result());
 
   CreditCard card2_changed(card2);
   card2_changed.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Bill"));
@@ -478,7 +478,7 @@ TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
   EXPECT_NE(card2, *consumer2.result()[0]);
   EXPECT_EQ(card2_changed, *consumer2.result()[0]);
   EXPECT_EQ(card1, *consumer2.result()[1]);
-  STLDeleteElements(&consumer2.result());
+  base::STLDeleteElements(&consumer2.result());
 }
 
 TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
@@ -498,7 +498,7 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   EXPECT_EQ(handle, profile_consumer.handle());
   ASSERT_EQ(1U, profile_consumer.result().size());
   EXPECT_EQ(profile, *profile_consumer.result()[0]);
-  STLDeleteElements(&profile_consumer.result());
+  base::STLDeleteElements(&profile_consumer.result());
 
   // Add a credit card.
   CreditCard credit_card;
@@ -512,7 +512,7 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
   EXPECT_EQ(handle, card_consumer.handle());
   ASSERT_EQ(1U, card_consumer.result().size());
   EXPECT_EQ(credit_card, *card_consumer.result()[0]);
-  STLDeleteElements(&card_consumer.result());
+  base::STLDeleteElements(&card_consumer.result());
 
   // Check that GUID-based notification was sent for the profile.
   const AutofillProfileChange expected_profile_change(

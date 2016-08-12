@@ -21,7 +21,7 @@ DevToolsDiscoveryManager::DevToolsDiscoveryManager() {
 }
 
 DevToolsDiscoveryManager::~DevToolsDiscoveryManager() {
-  STLDeleteElements(&providers_);
+  base::STLDeleteElements(&providers_);
 }
 
 void DevToolsDiscoveryManager::AddProvider(std::unique_ptr<Provider> provider) {

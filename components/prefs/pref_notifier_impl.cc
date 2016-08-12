@@ -32,8 +32,8 @@ PrefNotifierImpl::~PrefNotifierImpl() {
   if (!init_observers_.empty())
     LOG(WARNING) << "Init observer found at shutdown.";
 
-  STLDeleteContainerPairSecondPointers(pref_observers_.begin(),
-                                       pref_observers_.end());
+  base::STLDeleteContainerPairSecondPointers(pref_observers_.begin(),
+                                             pref_observers_.end());
   pref_observers_.clear();
   init_observers_.clear();
 }

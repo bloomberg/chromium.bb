@@ -89,7 +89,7 @@ RefcountedKeyedServiceFactory::GetServiceForContext(
 void RefcountedKeyedServiceFactory::Associate(
     base::SupportsUserData* context,
     const scoped_refptr<RefcountedKeyedService>& service) {
-  DCHECK(!ContainsKey(mapping_, context));
+  DCHECK(!base::ContainsKey(mapping_, context));
   mapping_.insert(std::make_pair(context, service));
 }
 

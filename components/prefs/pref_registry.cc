@@ -59,8 +59,8 @@ void PrefRegistry::RegisterPreference(const std::string& path,
          "invalid preference type: " << orig_type;
   DCHECK(!defaults_->GetValue(path, NULL)) <<
       "Trying to register a previously registered pref: " << path;
-  DCHECK(!ContainsKey(registration_flags_, path)) <<
-      "Trying to register a previously registered pref: " << path;
+  DCHECK(!base::ContainsKey(registration_flags_, path))
+      << "Trying to register a previously registered pref: " << path;
 
   defaults_->SetDefaultValue(path, base::WrapUnique(default_value));
   if (flags != NO_REGISTRATION_FLAGS)

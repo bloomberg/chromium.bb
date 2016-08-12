@@ -488,7 +488,7 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
   }
   std::string id_string;
   if (schema.GetString(schema::kId, &id_string)) {
-    if (ContainsKey(*id_map, id_string)) {
+    if (base::ContainsKey(*id_map, id_string)) {
       *error = "Duplicated id: " + id_string;
       return false;
     }

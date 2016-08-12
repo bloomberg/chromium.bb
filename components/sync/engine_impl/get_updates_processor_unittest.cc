@@ -91,7 +91,7 @@ class GetUpdatesProcessorTest : public ::testing::Test {
  private:
   ModelTypeSet enabled_types_;
   UpdateHandlerMap update_handler_map_;
-  STLValueDeleter<UpdateHandlerMap> update_handler_deleter_;
+  base::STLValueDeleter<UpdateHandlerMap> update_handler_deleter_;
   std::unique_ptr<GetUpdatesProcessor> get_updates_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(GetUpdatesProcessorTest);

@@ -1608,7 +1608,7 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   EXPECT_EQ(CreditCard::OK, outputs[0]->GetServerStatus());
   EXPECT_EQ(CreditCard::EXPIRED, outputs[1]->GetServerStatus());
 
-  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  base::STLDeleteContainerPointers(outputs.begin(), outputs.end());
 }
 
 TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
@@ -1633,7 +1633,7 @@ TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
   EXPECT_TRUE(CreditCard::FULL_SERVER_CARD == outputs[0]->record_type());
   EXPECT_EQ(full_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
 
-  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  base::STLDeleteContainerPointers(outputs.begin(), outputs.end());
   outputs.clear();
 
   // Re-mask the number, we should only get the last 4 digits out.
@@ -1643,7 +1643,7 @@ TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
   EXPECT_TRUE(CreditCard::MASKED_SERVER_CARD == outputs[0]->record_type());
   EXPECT_EQ(masked_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
 
-  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  base::STLDeleteContainerPointers(outputs.begin(), outputs.end());
   outputs.clear();
 }
 
@@ -1674,7 +1674,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   EXPECT_TRUE(outputs[0]->record_type() == CreditCard::FULL_SERVER_CARD);
   EXPECT_EQ(full_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
 
-  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  base::STLDeleteContainerPointers(outputs.begin(), outputs.end());
   outputs.clear();
 
   // Call set again with the masked number.
@@ -1687,7 +1687,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   EXPECT_TRUE(outputs[0]->record_type() == CreditCard::FULL_SERVER_CARD);
   EXPECT_EQ(full_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
 
-  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  base::STLDeleteContainerPointers(outputs.begin(), outputs.end());
   outputs.clear();
 
   // Set inputs that do not include our old card.
@@ -1707,7 +1707,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   EXPECT_EQ(random_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(ASCIIToUTF16("2222"), outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
 
-  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  base::STLDeleteContainerPointers(outputs.begin(), outputs.end());
   outputs.clear();
 
   // Putting back the original card masked should make it masked (this tests
@@ -1720,7 +1720,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(ASCIIToUTF16("1111"), outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
 
-  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  base::STLDeleteContainerPointers(outputs.begin(), outputs.end());
   outputs.clear();
 }
 
@@ -1826,7 +1826,7 @@ TEST_F(AutofillTableTest, SetServerProfile) {
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(one.server_id(), outputs[0]->server_id());
 
-  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  base::STLDeleteContainerPointers(outputs.begin(), outputs.end());
   outputs.clear();
 
   // Set a different profile.
@@ -1839,7 +1839,7 @@ TEST_F(AutofillTableTest, SetServerProfile) {
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(two.server_id(), outputs[0]->server_id());
 
-  STLDeleteContainerPointers(outputs.begin(), outputs.end());
+  base::STLDeleteContainerPointers(outputs.begin(), outputs.end());
   outputs.clear();
 }
 

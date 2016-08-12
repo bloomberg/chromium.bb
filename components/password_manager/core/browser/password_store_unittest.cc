@@ -98,7 +98,7 @@ class PasswordStoreTest : public testing::Test {
 };
 
 ACTION(STLDeleteElements0) {
-  STLDeleteContainerPointers(arg0.begin(), arg0.end());
+  base::STLDeleteContainerPointers(arg0.begin(), arg0.end());
 }
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {

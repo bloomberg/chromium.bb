@@ -162,7 +162,7 @@ void StorageMonitorCros::OnMountEvent(
 
   switch (event) {
     case DiskMountManager::MOUNTING: {
-      if (ContainsKey(mount_map_, mount_info.mount_path)) {
+      if (base::ContainsKey(mount_map_, mount_info.mount_path)) {
         NOTREACHED();
         return;
       }
@@ -210,7 +210,7 @@ bool StorageMonitorCros::GetStorageInfoForPath(
     return false;
 
   base::FilePath current = path;
-  while (!ContainsKey(mount_map_, current.value()) &&
+  while (!base::ContainsKey(mount_map_, current.value()) &&
          current != current.DirName()) {
     current = current.DirName();
   }
@@ -280,7 +280,7 @@ void StorageMonitorCros::AddMountedPath(
     bool has_dcim) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (ContainsKey(mount_map_, mount_info.mount_path)) {
+  if (base::ContainsKey(mount_map_, mount_info.mount_path)) {
     // CheckExistingMountPointsOnUIThread() added the mount point information
     // in the map before the device attached handler is called. Therefore, an
     // entry for the device already exists in the map.
