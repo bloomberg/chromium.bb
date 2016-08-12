@@ -74,19 +74,6 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
       const gfx::Transform& transform,
       base::TimeDelta duration);
 
-  // Creates an element that counters a transition to the given transform.
-  // This element maintains the invariant uninverted_transition->at(t) *
-  // this->at(t) == base_transform * this->at(t_start) for any t. The caller
-  // owns the return value.
-  static LayerAnimationElement* CreateInverseTransformElement(
-      const gfx::Transform& base_transform,
-      const LayerAnimationElement* uninverted_transition);
-
-
-  // Duplicates elements as created by CreateInverseTransformElement.
-  static LayerAnimationElement* CloneInverseTransformElement(
-      const LayerAnimationElement* other);
-
   // Creates an element that transitions to another in a way determined by an
   // interpolated transform. The element accepts ownership of the interpolated
   // transform. NB: at every step, the interpolated transform clobbers the

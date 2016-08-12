@@ -48,40 +48,6 @@ class Pause : public LayerAnimationElement {
   DISALLOW_COPY_AND_ASSIGN(Pause);
 };
 
-// TransformTransition ---------------------------------------------------------
-
-class TransformTransition : public LayerAnimationElement {
- public:
-    TransformTransition(const gfx::Transform& target, base::TimeDelta duration)
-      : LayerAnimationElement(TRANSFORM, duration),
-        target_(target) {
-  }
-    ~TransformTransition() override {}
-
- protected:
-  void OnStart(LayerAnimationDelegate* delegate) override {
-    start_ = delegate->GetTransformForAnimation();
-  }
-
-  bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
-    delegate->SetTransformFromAnimation(
-        gfx::Tween::TransformValueBetween(t, start_, target_));
-    return true;
-  }
-
-  void OnGetTarget(TargetValue* target) const override {
-    target->transform = target_;
-  }
-
-  void OnAbort(LayerAnimationDelegate* delegate) override {}
-
- private:
-  gfx::Transform start_;
-  const gfx::Transform target_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransformTransition);
-};
-
 // InterpolatedTransformTransition ---------------------------------------------
 
 class InterpolatedTransformTransition : public LayerAnimationElement {
@@ -146,41 +112,6 @@ class BoundsTransition : public LayerAnimationElement {
   const gfx::Rect target_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundsTransition);
-};
-
-// OpacityTransition -----------------------------------------------------------
-
-class OpacityTransition : public LayerAnimationElement {
- public:
-  OpacityTransition(float target, base::TimeDelta duration)
-      : LayerAnimationElement(OPACITY, duration),
-        start_(0.0f),
-        target_(target) {
-  }
-  ~OpacityTransition() override {}
-
- protected:
-  void OnStart(LayerAnimationDelegate* delegate) override {
-    start_ = delegate->GetOpacityForAnimation();
-  }
-
-  bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
-    delegate->SetOpacityFromAnimation(
-        gfx::Tween::FloatValueBetween(t, start_, target_));
-    return true;
-  }
-
-  void OnGetTarget(TargetValue* target) const override {
-    target->opacity = target_;
-  }
-
-  void OnAbort(LayerAnimationDelegate* delegate) override {}
-
- private:
-  float start_;
-  const float target_;
-
-  DISALLOW_COPY_AND_ASSIGN(OpacityTransition);
 };
 
 // VisibilityTransition --------------------------------------------------------
@@ -489,110 +420,6 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
   DISALLOW_COPY_AND_ASSIGN(ThreadedTransformTransition);
 };
 
-// InverseTransformTransision --------------------------------------------------
-
-class InverseTransformTransition : public ThreadedLayerAnimationElement {
- public:
-  InverseTransformTransition(const gfx::Transform& base_transform,
-                             const LayerAnimationElement* uninverted_transition)
-      : ThreadedLayerAnimationElement(*uninverted_transition),
-        base_transform_(base_transform),
-        uninverted_transition_(
-            CheckAndCast<const ThreadedTransformTransition*>(
-              uninverted_transition)) {
-  }
-  ~InverseTransformTransition() override {}
-
-  static InverseTransformTransition* Clone(const LayerAnimationElement* other) {
-    const InverseTransformTransition* other_inverse =
-      CheckAndCast<const InverseTransformTransition*>(other);
-    return new InverseTransformTransition(
-        other_inverse->base_transform_, other_inverse->uninverted_transition_);
-  }
-
- protected:
-  void OnStart(LayerAnimationDelegate* delegate) override {
-    gfx::Transform start(delegate->GetTransformForAnimation());
-    effective_start_ = base_transform_ * start;
-
-    TargetValue target;
-    uninverted_transition_->GetTargetValue(&target);
-    base_target_ = target.transform;
-
-    set_tween_type(uninverted_transition_->tween_type());
-
-    TransformAnimationCurveAdapter base_curve(tween_type(),
-                                              base_transform_,
-                                              base_target_,
-                                              duration());
-
-    animation_curve_.reset(new InverseTransformCurveAdapter(
-        base_curve, start, duration()));
-    computed_target_transform_ = ComputeWithBaseTransform(effective_start_,
-                                                          base_target_);
-  }
-
-  void OnAbort(LayerAnimationDelegate* delegate) override {
-    if (delegate && Started()) {
-      ThreadedLayerAnimationElement::OnAbort(delegate);
-      delegate->SetTransformFromAnimation(ComputeCurrentTransform());
-    }
-  }
-
-  void OnEnd(LayerAnimationDelegate* delegate) override {
-    delegate->SetTransformFromAnimation(computed_target_transform_);
-  }
-
-  std::unique_ptr<cc::Animation> CreateCCAnimation() override {
-    std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
-        animation_curve_->Clone(), animation_id(), animation_group_id(),
-        cc::TargetProperty::TRANSFORM));
-    return animation;
-  }
-
-  void OnGetTarget(TargetValue* target) const override {
-    target->transform = computed_target_transform_;
-  }
-
- private:
-  gfx::Transform ComputeCurrentTransform() const {
-    gfx::Transform base_current = gfx::Tween::TransformValueBetween(
-        gfx::Tween::CalculateValue(tween_type(), last_progressed_fraction()),
-        base_transform_,
-        base_target_);
-    return ComputeWithBaseTransform(effective_start_, base_current);
-  }
-
-  gfx::Transform ComputeWithBaseTransform(gfx::Transform start,
-                                          gfx::Transform target) const {
-    gfx::Transform to_return(gfx::Transform::kSkipInitialization);
-    bool success = target.GetInverse(&to_return);
-    DCHECK(success) << "Target transform must be invertible.";
-
-    to_return.PreconcatTransform(start);
-    return to_return;
-  }
-
-  template <typename T>
-  static T CheckAndCast(const LayerAnimationElement* element) {
-    AnimatableProperties properties = element->properties();
-    DCHECK(properties & TRANSFORM);
-    return static_cast<T>(element);
-  }
-
-  gfx::Transform effective_start_;
-  gfx::Transform computed_target_transform_;
-
-  const gfx::Transform base_transform_;
-  gfx::Transform base_target_;
-
-  std::unique_ptr<cc::AnimationCurve> animation_curve_;
-
-  const ThreadedTransformTransition* const uninverted_transition_;
-
-  DISALLOW_COPY_AND_ASSIGN(InverseTransformTransition);
-};
-
 }  // namespace
 
 // LayerAnimationElement::TargetValue ------------------------------------------
@@ -775,19 +602,6 @@ LayerAnimationElement* LayerAnimationElement::CreateTransformElement(
     const gfx::Transform& transform,
     base::TimeDelta duration) {
   return new ThreadedTransformTransition(transform, duration);
-}
-
-// static
-LayerAnimationElement* LayerAnimationElement::CreateInverseTransformElement(
-    const gfx::Transform& base_transform,
-    const LayerAnimationElement* uninverted_transition) {
-  return new InverseTransformTransition(base_transform, uninverted_transition);
-}
-
-// static
-LayerAnimationElement* LayerAnimationElement::CloneInverseTransformElement(
-    const LayerAnimationElement* other) {
-  return InverseTransformTransition::Clone(other);
 }
 
 // static
