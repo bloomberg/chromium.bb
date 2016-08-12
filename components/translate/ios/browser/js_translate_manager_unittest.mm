@@ -24,8 +24,7 @@ using base::TimeDelta;
 @implementation JsTranslateManager (Testing)
 // Returns the time in milliseconds.
 - (double)performanceNow {
-  NSString* result =
-      web::EvaluateJavaScriptAsString(self.receiver, @"performance.now()");
+  id result = web::ExecuteJavaScript(self.receiver, @"performance.now()");
   return [result doubleValue];
 }
 @end
@@ -45,7 +44,7 @@ class JsTranslateManagerTest : public PlatformTest {
   bool IsDefined(NSString* name) {
     NSString* script =
         [NSString stringWithFormat:@"typeof %@ != 'undefined'", name];
-    return [web::EvaluateJavaScriptAsString(receiver_, script) isEqual:@"true"];
+    return [web::ExecuteJavaScript(receiver_, script) boolValue];
   }
 
   base::scoped_nsobject<CRWTestJSInjectionReceiver> receiver_;
