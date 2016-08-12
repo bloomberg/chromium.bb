@@ -139,6 +139,11 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // establishing the connection (or NULL if no channel ID was used).
   virtual crypto::ECPrivateKey* GetChannelIDKey() const = 0;
 
+  // Returns true if the CECPQ1 (experimental post-quantum) experiment is
+  // enabled.  This should be removed after the experiment is ended, around
+  // 2017-18.
+  static bool IsPostQuantumExperimentEnabled();
+
  protected:
   void set_signed_cert_timestamps_received(
       bool signed_cert_timestamps_received) {

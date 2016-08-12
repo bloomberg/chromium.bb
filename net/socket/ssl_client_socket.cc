@@ -4,9 +4,11 @@
 
 #include "net/socket/ssl_client_socket.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/socket/ssl_client_socket_impl.h"
@@ -14,6 +16,13 @@
 #include "net/ssl/ssl_config_service.h"
 
 namespace net {
+
+namespace {
+#if !defined(OS_NACL)
+const base::Feature kPostQuantumExperiment{"SSLPostQuantumExperiment",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+}  // namespace
 
 SSLClientSocket::SSLClientSocket()
     : signed_cert_timestamps_received_(false),
@@ -77,6 +86,15 @@ bool SSLClientSocket::IgnoreCertError(int error, int load_flags) {
     return true;
   return (load_flags & LOAD_IGNORE_ALL_CERT_ERRORS) &&
          IsCertificateError(error);
+}
+
+// static
+bool SSLClientSocket::IsPostQuantumExperimentEnabled() {
+#if !defined(OS_NACL)
+  return base::FeatureList::IsEnabled(kPostQuantumExperiment);
+#else
+  return false;
+#endif
 }
 
 // static

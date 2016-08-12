@@ -31738,11 +31738,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Net.SSL_Connection_Latency_PostQuantumSupported_Full_Handshake"
+    units="ms">
+  <owner>mab@chromium.org</owner>
+  <summary>
+    Time from when the Connect() starts until it completes (full handshakes
+    only), for a set of domains that we expect to always offer the experimental
+    post-quantum (CECPQ1) ciphersuites.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSL_Connection_Latency_Resume_Handshake" units="ms">
   <owner>agl@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes for resumption
     handshakes.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSL_Connection_PostQuantum_Negotiated"
+    enum="BooleanSupported">
+  <owner>mab@chromium.org</owner>
+  <summary>
+    For only browsers in the post-quantum (CECPQ1) ciphersuite experiment,
+    counts the full TLS handshakes where CECPQ1 was, or was not, negotiated on
+    hosts where we expect it to be negotiated.
   </summary>
 </histogram>
 
