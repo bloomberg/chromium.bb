@@ -5,13 +5,16 @@
 <script src="../network-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     var script = document.createElement("script");
     script.src = "resources/timeline-script-parse.php";
     script.async = true;
     script.onload = callback;
     document.body.appendChild(script);
+    return promise;
 }
 
 function test()

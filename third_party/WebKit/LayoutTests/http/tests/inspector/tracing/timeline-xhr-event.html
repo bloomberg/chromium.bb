@@ -5,13 +5,16 @@
 <script src="../network-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "network/resources/resource.php", true);
     xhr.onload = callback;  // This is necessary for XHRLoad event.
     xhr.onreadystatechange = function () { };  // This is necessary for XHRReadyStateChange event.
     xhr.send(null);
+    return promise;
 }
 
 function test()

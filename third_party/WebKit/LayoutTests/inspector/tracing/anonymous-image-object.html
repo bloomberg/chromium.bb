@@ -9,8 +9,10 @@ div.marker::before {
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function doActions(callback)
+function doActions()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     document.getElementById("marker").classList.add("marker");
     var img = document.createElement("img");
     img.src = "resources/test.bmp";
@@ -19,6 +21,7 @@ function doActions(callback)
     {
         testRunner.layoutAndPaintAsyncThen(callback);
     }
+    return promise;
 }
 
 function test()

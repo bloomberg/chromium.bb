@@ -4,22 +4,16 @@
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function display(callback)
+function display()
 {
-    requestAnimationFrame(function() {
-        document.body.style.backgroundColor = "blue";
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.body.style.backgroundColor = "blue";
+    return waitForFrame();
 }
 
-function updateSubframeAndDisplay(callback)
+function updateSubframeAndDisplay()
 {
-    requestAnimationFrame(function() {
-        frames[0].document.body.children[0].style.backgroundColor = "green";
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    frames[0].document.body.children[0].style.backgroundColor = "green";
+    return waitForFrame();
 }
 
 function test()

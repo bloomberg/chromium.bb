@@ -3,8 +3,10 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function display(callback)
+function display()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     if (window.testRunner)
         testRunner.setCanOpenWindows(true);
     var popup = window.open("data:text/html,<b>Hello, world</b>");
@@ -12,6 +14,7 @@ function display(callback)
     {
         requestAnimationFrame(testRunner.capturePixelsAsyncThen.bind(testRunner, callback));
     }
+    return promise;
 }
 
 function test()
@@ -21,7 +24,7 @@ function test()
 
     function pageReloaded()
     {
-        InspectorTest.invokePageFunctionAsync("display", displayDone);
+        InspectorTest.callFunctionInPageAsync("display").then(displayDone);
     }
 
     function displayDone()

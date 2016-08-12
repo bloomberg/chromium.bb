@@ -4,33 +4,26 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/tracing-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
-    var rafId1 = requestAnimationFrame(function()
-    {
-        evaluateInFrontend("InspectorTest.testFunctionRequestAnimationFrame(" + rafId1 + ", " + rafId2 + ")");
-        callback();
-    });
-
-    var rafId2 = requestAnimationFrame(function() { });
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
+    var rafId2;
+    var rafId1 = requestAnimationFrame(() => callback({ rafId1: rafId1, rafId2: rafId2 }));
+    rafId2 = requestAnimationFrame(function() { });
     cancelAnimationFrame(rafId2);
+    return promise;
 }
 
 function test()
 {
     InspectorTest.invokeAsyncWithTracing("performActions", finish);
 
-    var firedRaf;
-    var canceledRaf;
-    InspectorTest.testFunctionRequestAnimationFrame = function(rafId1, rafId2)
+    function finish(devtoolsEvents, data)
     {
-        firedRaf = rafId1;
-        canceledRaf = rafId2;
-        InspectorTest.log("SUCCESS: testFunctionRequestAnimationFrame");
-    }
+        var firedRaf = data.rafId1;
+        var canceledRaf = data.rafId2;
 
-    function finish(devtoolsEvents)
-    {
         function hasRafId(id, e) { return e.args.data.id === id}
 
         var raf1 = InspectorTest.findEvent("RequestAnimationFrame", "I", hasRafId.bind(this, firedRaf));

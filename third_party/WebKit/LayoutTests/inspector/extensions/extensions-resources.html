@@ -5,12 +5,15 @@
 <script src="../../http/tests/inspector/extensions-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script type="text/javascript">
-function loadFrame(callback)
+function loadFrame()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     var iframe = document.createElement("iframe");
     iframe.src = "resources/subframe.html";
     iframe.addEventListener("load", callback);
     document.body.appendChild(iframe);
+    return promise;
 }
 
 function logMessage()

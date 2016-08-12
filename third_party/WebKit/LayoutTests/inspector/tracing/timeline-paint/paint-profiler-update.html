@@ -3,8 +3,10 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function performActions(callback)
+function performActions()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     var square = document.getElementById("square");
     step1();
 
@@ -19,6 +21,7 @@ function performActions(callback)
         square.style.backgroundColor = "black";
         testRunner.layoutAndPaintAsyncThen(callback);
     }
+    return promise;
 }
 
 function test()
@@ -36,7 +39,7 @@ function test()
         for (var event of events) {
             if (event.name === WebInspector.TimelineModel.RecordType.Paint) {
                 paintEvents.push(event);
-                if (!event.picture) 
+                if (!event.picture)
                     InspectorTest.addResult("Event without picture at " + paintEvents.length);
             }
         }

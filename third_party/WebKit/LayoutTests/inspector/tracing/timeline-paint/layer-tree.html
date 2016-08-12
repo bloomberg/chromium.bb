@@ -6,7 +6,7 @@
 <script src="../../tracing-test.js"></script>
 
 <script>
-function doActions(callback)
+function doActions()
 {
     var div = document.createElement("div");
     div.id = "b4";
@@ -16,7 +16,7 @@ function doActions(callback)
     var style = document.createElement("style");
     style.textContent = ".layer { transform: translateZ(10px); opacity: 0.8; }";
     document.head.appendChild(style);
-    generateFrames(3, callback);
+    return generateFrames(3);
 }
 
 function test()

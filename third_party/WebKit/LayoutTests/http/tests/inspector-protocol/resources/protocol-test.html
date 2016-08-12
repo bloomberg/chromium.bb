@@ -285,7 +285,7 @@ InspectorTest.evaluateInPage = function(string, callback)
 
 InspectorTest.evaluateInPageAsync = function(expression)
 {
-    return InspectorTest.sendCommandPromise("Runtime.evaluate", { "expression": expression, awaitPromise: true }).then((message) => message.result.result.value);
+    return InspectorTest.sendCommandPromise("Runtime.evaluate", { "expression": expression, awaitPromise: true, returnByValue: true }).then((message) => message.result.result.value);
 }
 
 InspectorTest.completeTestIfError = function(messageObject)

@@ -4,8 +4,10 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function display(callback)
+function display()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     requestAnimationFrame(function() {
         var testElements = document.body.getElementsByClassName("testElement");
         for (var i = 0; i < testElements.length; i++) {
@@ -15,6 +17,7 @@ function display(callback)
         if (window.testRunner)
             testRunner.layoutAndPaintAsyncThen(callback);
     });
+    return promise;
 }
 
 function test()
@@ -34,8 +37,8 @@ function test()
         WebInspector.TimelineUIUtils._generateCauses(event, target, null, contentHelper);
         var invalidationsTree = contentHelper.element.getElementsByClassName("invalidations-tree")[0];
         var invalidations = invalidationsTree.shadowRoot.textContent;
-        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:12");
-        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:13");
+        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:14");
+        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:15");
         InspectorTest.completeTest();
     });
 

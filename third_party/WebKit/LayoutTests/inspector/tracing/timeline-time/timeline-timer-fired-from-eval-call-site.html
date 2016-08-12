@@ -4,10 +4,10 @@
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
-    window.callWhenDone = callback;
-    var content = "" + 
+    var promise = new Promise((fulfill) => window.callWhenDone = fulfill);
+    var content = "" +
         "var fn2 = function() {" +
         "    console.markTimeline(\"Script evaluated\");" +
         "    window.callWhenDone();" +
@@ -23,6 +23,7 @@ function performActions(callback)
     scriptElement.appendChild(contentNode);
     document.body.appendChild(scriptElement);
     document.body.removeChild(scriptElement);
+    return promise;
 }
 
 function test()

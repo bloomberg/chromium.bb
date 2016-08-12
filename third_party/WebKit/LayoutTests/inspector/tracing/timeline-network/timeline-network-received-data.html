@@ -4,30 +4,18 @@
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
-    function onImageLoad()
-    {
-        window._imageLoaded = true;
-        if (window._scriptEvaluated)
-            callback();
-    }
-
-    function scriptEvaluated()
-    {
-        window._scriptEvaluated = true;
-        if (window._imageLoaded)
-            callback();
-    }
-
     var image = new Image();
-    image.onload = onImageLoad;
+    var imagePromise = new Promise((fulfill) => image.onload = fulfill);
     image.src = "../resources/anImage.png";
+
+    var scriptPromise = new Promise((fulfill) => window.timelineNetworkResourceEvaluated = fulfill);
     var script = document.createElement("script");
     script.src = "timeline-network-resource.js";
     document.body.appendChild(script);
 
-    window.timelineNetworkResourceEvaluated = scriptEvaluated;
+    return Promise.all([imagePromise, scriptPromise]);
 }
 
 function test()

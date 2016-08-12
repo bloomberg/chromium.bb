@@ -5,7 +5,7 @@ PASS
 PASS
 first style recalc[
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:10}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:9}
         changedAttribute : undefined
         changedClass : "red"
         changedId : undefined
@@ -19,7 +19,7 @@ first style recalc[
 ]
 second style recalc[
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:12}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:11}
         changedAttribute : undefined
         changedClass : "snow"
         changedId : undefined
@@ -31,7 +31,7 @@ second style recalc[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:12}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:11}
         changedAttribute : undefined
         changedClass : "red"
         changedId : undefined
@@ -45,7 +45,7 @@ second style recalc[
 ]
 first paint[
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:10}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:9}
         changedAttribute : undefined
         changedClass : "red"
         changedId : undefined
@@ -57,7 +57,7 @@ first paint[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:12}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:11}
         changedAttribute : undefined
         changedClass : "snow"
         changedId : undefined
@@ -69,7 +69,7 @@ first paint[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:12}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.html:11}
         changedAttribute : undefined
         changedClass : "red"
         changedId : undefined

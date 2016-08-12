@@ -4,48 +4,38 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function changeStylesAndDisplay(callback)
+function changeStylesAndDisplay()
 {
-    requestAnimationFrame(function() {
-        document.getElementById("testElementOne").style.color = "red";
-        document.getElementById("testElementTwo").style.color = "blue";
-        var forceLayout = document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.getElementById("testElementOne").style.color = "red";
+    document.getElementById("testElementTwo").style.color = "blue";
+    var forceLayout = document.body.offsetTop;
+    return waitForFrame();
 }
 
-function changeMultipleStylesAndDisplay(callback)
+function changeMultipleStylesAndDisplay()
 {
-    requestAnimationFrame(function() {
-        var elementOne = document.getElementById("testElementOne");
-        var elementTwo = document.getElementById("testElementTwo");
-        var elementThree = document.getElementById("testElementThree");
+    var elementOne = document.getElementById("testElementOne");
+    var elementTwo = document.getElementById("testElementTwo");
+    var elementThree = document.getElementById("testElementThree");
 
-        elementOne.style.backgroundColor = "orangered";
-        var forceStyleRecalc1 = document.body.offsetTop;
-        elementOne.style.color = "mediumvioletred";
-        elementTwo.style.color = "deepskyblue";
-        var forceStyleRecalc2 = document.body.offsetTop;
-        elementOne.style.color = "tomato";
-        elementTwo.style.color = "mediumslateblue";
-        elementThree.style.color = "mediumspringgreen";
-        var forceStyleRecalc3 = document.body.offsetTop;
-
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    elementOne.style.backgroundColor = "orangered";
+    var forceStyleRecalc1 = document.body.offsetTop;
+    elementOne.style.color = "mediumvioletred";
+    elementTwo.style.color = "deepskyblue";
+    var forceStyleRecalc2 = document.body.offsetTop;
+    elementOne.style.color = "tomato";
+    elementTwo.style.color = "mediumslateblue";
+    elementThree.style.color = "mediumspringgreen";
+    var forceStyleRecalc3 = document.body.offsetTop;
+    return waitForFrame();
 }
 
-function changeSubframeStylesAndDisplay(callback)
+function changeSubframeStylesAndDisplay()
 {
-    requestAnimationFrame(function() {
-        frames[0].document.body.style.backgroundColor = "papayawhip";
-        frames[0].document.body.children[0].style.width = "200px";
-        var forceLayout = frames[0].document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    frames[0].document.body.style.backgroundColor = "papayawhip";
+    frames[0].document.body.children[0].style.width = "200px";
+    var forceLayout = frames[0].document.body.offsetTop;
+    return waitForFrame();
 }
 
 function test()

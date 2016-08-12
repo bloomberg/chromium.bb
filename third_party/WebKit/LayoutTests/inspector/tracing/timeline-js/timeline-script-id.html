@@ -6,11 +6,14 @@
 
 function test()
 {
-    function performActions(callback)
+    function performActions()
     {
+        var callback;
+        var promise = new Promise((fulfill) => callback = fulfill);
         var timerOne = setTimeout("1 + 1", 10);
         var timerTwo = setInterval(intervalTimerWork, 20);
         var iteration = 0;
+        return promise;
 
         function intervalTimerWork()
         {

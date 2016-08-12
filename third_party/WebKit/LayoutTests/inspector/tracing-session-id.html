@@ -6,7 +6,7 @@
 <script>
 function test()
 {
-    InspectorTest.invokeWithTracing("(function(callback) { callback(); })", processTracingEvents);
+    InspectorTest.evaluateWithTimeline("(function() {})", processTracingEvents);
 
     function processTracingEvents()
     {

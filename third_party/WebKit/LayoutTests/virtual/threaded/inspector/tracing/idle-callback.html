@@ -3,8 +3,10 @@
 <script src="../../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function performActions(callback)
+function performActions()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     var requestId = window.requestIdleCallback(idleCallback);
     window.cancelIdleCallback(requestId);
     window.requestIdleCallback(idleCallback);
@@ -18,6 +20,7 @@ function performActions(callback)
         if (callback)
             callback();
     }
+    return promise;
 }
 
 function test()

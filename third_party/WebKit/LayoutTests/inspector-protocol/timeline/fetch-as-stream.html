@@ -11,12 +11,11 @@ div#test {
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
 <script type="text/javascript" src="../../http/tests/inspector-protocol/tracing-test.js"></script>
 <script>
-function performActions(callback)
+function performActions()
 {
     var element = document.getElementById("test");
     element.style.display = "block";
     var unused = element.clientWidth;
-    callback();
 }
 
 function test()
@@ -25,7 +24,7 @@ function test()
 
     function onStart()
     {
-        InspectorTest.invokePageFunctionAsync("performActions", evalDone);
+        InspectorTest.evaluateInPage("performActions()", evalDone);
     }
 
     function evalDone()

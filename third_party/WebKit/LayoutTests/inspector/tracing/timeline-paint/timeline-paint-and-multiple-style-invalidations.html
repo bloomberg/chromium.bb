@@ -4,16 +4,13 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function multipleStyleRecalcsAndDisplay(callback)
+function multipleStyleRecalcsAndDisplay()
 {
-    requestAnimationFrame(function() {
-        document.getElementById("testElementOne").className = "red";
-        var forceStyleRecalc1 = document.body.offsetTop;
-        document.getElementById("testElementOne").className = "snow";
-        var forceStyleRecalc2 = document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.getElementById("testElementOne").className = "red";
+    var forceStyleRecalc1 = document.body.offsetTop;
+    document.getElementById("testElementOne").className = "snow";
+    var forceStyleRecalc2 = document.body.offsetTop;
+    return waitForFrame();
 }
 
 

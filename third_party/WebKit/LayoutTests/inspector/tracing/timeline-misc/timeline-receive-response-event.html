@@ -4,8 +4,10 @@
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     var image = new Image();
     image.onload = bar;
     image.src = "../resources/anImage.png";
@@ -16,6 +18,7 @@ function performActions(callback)
         image.onload = function(event) { callback(); }  // do not pass event argument to the callback.
         image.src = "../resources/anotherImage.png";
     }
+    return promise;
 }
 
 function test()

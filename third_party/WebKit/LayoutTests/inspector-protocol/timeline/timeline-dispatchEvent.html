@@ -4,7 +4,7 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/tracing-test.js"></script>
 <script>
 
-function performAction(callback)
+function performAction()
 {
     var div = document.querySelector("#my-div");
     div.addEventListener("click", function(e) {  }, false);
@@ -12,7 +12,7 @@ function performAction(callback)
 
     var iframe = document.createElement("iframe");
     div.appendChild(iframe);
-    callback();
+    return Promise.resolve();
 }
 
 function test()

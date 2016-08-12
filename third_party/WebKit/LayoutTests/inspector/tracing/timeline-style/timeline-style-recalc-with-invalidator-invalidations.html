@@ -4,56 +4,47 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function changeStylesAndDisplay(callback)
+function changeStylesAndDisplay()
 {
-    requestAnimationFrame(function() {
-        document.getElementById("testElementOne").className = "red";
-        document.getElementById("testElementTwo").className = "red";
-        var forceStyleRecalc = document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.getElementById("testElementOne").className = "red";
+    document.getElementById("testElementTwo").className = "red";
+    var forceStyleRecalc = document.body.offsetTop;
+    return waitForFrame();
 }
 
-function changeMultipleStylesAndDisplay(callback)
+function changeMultipleStylesAndDisplay()
 {
-    requestAnimationFrame(function() {
-        var elementOne = document.getElementById("testElementOne");
-        var elementTwo = document.getElementById("testElementTwo");
-        var elementThree = document.getElementById("testElementThree");
-        elementOne.className = "green";
-        var forceStyleRecalc1 = document.body.offsetTop;
-        elementOne.className = "blue";
-        elementTwo.className = "blue";
-        var forceStyleRecalc2 = document.body.offsetTop;
-        elementOne.className = "snow";
-        elementTwo.className = "snow";
-        elementThree.className = "snow";
-        var forceStyleRecalc3 = document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    var elementOne = document.getElementById("testElementOne");
+    var elementTwo = document.getElementById("testElementTwo");
+    var elementThree = document.getElementById("testElementThree");
+    elementOne.className = "green";
+    var forceStyleRecalc1 = document.body.offsetTop;
+    elementOne.className = "blue";
+    elementTwo.className = "blue";
+    var forceStyleRecalc2 = document.body.offsetTop;
+    elementOne.className = "snow";
+    elementTwo.className = "snow";
+    elementThree.className = "snow";
+    var forceStyleRecalc3 = document.body.offsetTop;
+    return waitForFrame();
 }
 
-function changeMultipleSubframeStylesAndDisplay(callback)
+function changeMultipleSubframeStylesAndDisplay()
 {
-    requestAnimationFrame(function() {
-        var innerDocument = frames[0].document;
-        var elementOne = innerDocument.getElementById("testElementOne");
-        var elementTwo = innerDocument.getElementById("testElementTwo");
-        var elementThree = innerDocument.getElementById("testElementThree");
-        elementOne.className = "green";
-        var forceStyleRecalc1 = innerDocument.body.offsetTop;
-        elementOne.className = "blue";
-        elementTwo.className = "blue";
-        var forceStyleRecalc2 = innerDocument.body.offsetTop;
-        elementOne.className = "snow";
-        elementTwo.className = "snow";
-        elementThree.className = "snow";
-        var forceStyleRecalc3 = innerDocument.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    var innerDocument = frames[0].document;
+    var elementOne = innerDocument.getElementById("testElementOne");
+    var elementTwo = innerDocument.getElementById("testElementTwo");
+    var elementThree = innerDocument.getElementById("testElementThree");
+    elementOne.className = "green";
+    var forceStyleRecalc1 = innerDocument.body.offsetTop;
+    elementOne.className = "blue";
+    elementTwo.className = "blue";
+    var forceStyleRecalc2 = innerDocument.body.offsetTop;
+    elementOne.className = "snow";
+    elementTwo.className = "snow";
+    elementThree.className = "snow";
+    var forceStyleRecalc3 = innerDocument.body.offsetTop;
+    return waitForFrame();
 }
 
 function test()

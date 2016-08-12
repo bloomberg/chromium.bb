@@ -15,9 +15,9 @@ function test()
     InspectorTest.runTestSuite([
         function testTimerInstall(next)
         {
-            function setTimeoutFunction(callback)
+            function setTimeoutFunction()
             {
-                setTimeout(callback, 0);
+                return new Promise((fulfill) => setTimeout(fulfill, 0));
             }
 
             var source = setTimeoutFunction.toString();
@@ -35,7 +35,7 @@ function test()
                 WebInspector.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Timer InstalledsetTimeoutFunction @ setTimeoutFunction.js:");
+                checkStringContains(causes, "Timer InstalledPromise @ setTimeoutFunction.js:");
                 next();
             }
         },
@@ -44,7 +44,7 @@ function test()
         {
             function requestAnimationFrameFunction(callback)
             {
-                requestAnimationFrame(callback);
+                return new Promise((fulfill) => requestAnimationFrame(fulfill));
             }
 
             var source = requestAnimationFrameFunction.toString();
@@ -62,7 +62,7 @@ function test()
                 WebInspector.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
-                checkStringContains(causes, "Animation Frame RequestedrequestAnimationFrameFunction @ requestAnimationFrameFunction.js:");
+                checkStringContains(causes, "Animation Frame RequestedPromise @ requestAnimationFrameFunction.js:");
                 next();
             }
         },

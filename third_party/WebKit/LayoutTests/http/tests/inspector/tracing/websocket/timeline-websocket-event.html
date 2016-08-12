@@ -4,10 +4,10 @@
 <script src="../../timeline-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
     var ws = new WebSocket("ws://127.0.0.1:8880/simple");
-    ws.onclose = callback;
+    return new Promise((fulfill) => ws.onclose = fulfill);
 }
 
 function test()

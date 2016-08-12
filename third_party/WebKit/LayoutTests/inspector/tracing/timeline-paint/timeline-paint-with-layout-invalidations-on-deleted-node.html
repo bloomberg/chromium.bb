@@ -4,29 +4,23 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function display(callback)
+function display()
 {
-    requestAnimationFrame(function() {
-        document.body.style.backgroundColor = "blue";
-        var element = document.getElementById("testElement");
-        element.style.width = "100px";
-        var forceLayout = document.body.offsetTop;
-        element.parentElement.removeChild(element);
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.body.style.backgroundColor = "blue";
+    var element = document.getElementById("testElement");
+    element.style.width = "100px";
+    var forceLayout = document.body.offsetTop;
+    element.parentElement.removeChild(element);
+    return waitForFrame();
 }
 
-function updateSubframeAndDisplay(callback)
+function updateSubframeAndDisplay()
 {
-    requestAnimationFrame(function() {
-        var element = frames[0].document.body.children[0];
-        element.style.width = "200px";
-        var forceLayout = frames[0].document.body.offsetTop;
-        element.parentElement.removeChild(element);
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    var element = frames[0].document.body.children[0];
+    element.style.width = "200px";
+    var forceLayout = frames[0].document.body.offsetTop;
+    element.parentElement.removeChild(element);
+    return waitForFrame();
 }
 
 function test()
@@ -41,7 +35,6 @@ function test()
             InspectorTest.invokeAsyncWithTimeline("display", function() {
                 var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
                 InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "paint invalidations");
-
                 next();
             });
         },

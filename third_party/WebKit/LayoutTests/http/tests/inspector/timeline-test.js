@@ -93,7 +93,7 @@ InspectorTest.invokeWithTracing = function(functionName, callback, additionalCat
 
     function tracingStarted()
     {
-        InspectorTest.invokePageFunctionAsync(functionName, onPageActionsDone);
+        InspectorTest.callFunctionInPageAsync(functionName).then(onPageActionsDone);
     }
 
     function onPageActionsDone()
@@ -173,7 +173,7 @@ InspectorTest.invokeAsyncWithTimeline = function(functionName, doneCallback)
     InspectorTest.startTimeline(step1);
     function step1()
     {
-        InspectorTest.invokePageFunctionAsync(functionName, step2);
+        InspectorTest.callFunctionInPageAsync(functionName).then(step2);
     }
 
     function step2()
@@ -461,19 +461,27 @@ InspectorTest.loadTimeline = function(timelineData)
 
 };
 
-function generateFrames(count, callback)
+function generateFrames(count)
 {
-    makeFrame();
-    function makeFrame()
+    var promise = Promise.resolve();
+    for (let i = count; i > 0; --i)
+        promise = promise.then(changeBackgroundAndWaitForFrame.bind(null, i));
+    return promise;
+
+    function changeBackgroundAndWaitForFrame(i)
     {
-        document.body.style.backgroundColor = count & 1 ? "rgb(200, 200, 200)" : "rgb(240, 240, 240)";
-        if (!--count) {
-            callback();
-            return;
-        }
-        if (window.testRunner)
-            testRunner.capturePixelsAsyncThen(requestAnimationFrame.bind(window, makeFrame));
-        else
-            window.requestAnimationFrame(makeFrame);
+        document.body.style.backgroundColor = i & 1 ? "rgb(200, 200, 200)" : "rgb(240, 240, 240)";
+        return waitForFrame();
     }
+}
+
+function waitForFrame()
+{
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
+    if (window.testRunner)
+        testRunner.capturePixelsAsyncThen(() => window.requestAnimationFrame(callback));
+    else
+        window.requestAnimationFrame(callback);
+    return promise;
 }

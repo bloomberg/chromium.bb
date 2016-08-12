@@ -12,14 +12,12 @@
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function doActions(callback)
+function doActions()
 {
     var layer = document.createElement("div");
     layer.classList.add("layer");
     document.getElementById("parent-layer").appendChild(layer);
-
-    if (window.testRunner)
-        testRunner.layoutAndPaintAsyncThen(callback);
+    return new Promise((fulfill) => testRunner.layoutAndPaintAsyncThen(fulfill));
 }
 
 function test()

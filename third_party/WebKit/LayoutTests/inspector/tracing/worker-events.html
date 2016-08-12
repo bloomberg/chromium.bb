@@ -25,15 +25,11 @@ function startWorkerAndRunTest()
     }
 }
 
-function startSecondWorker(onActionComplete)
+function startSecondWorker()
 {
     worker2 = new Worker("resources/worker.js");
     worker2.postMessage("");
-    worker2.onmessage = function(event)
-    {
-        onActionComplete();
-        worker2.onmessage = null;
-    }
+    return new Promise((fulfill) => worker2.onmessage = fulfill);
 }
 
 function test()

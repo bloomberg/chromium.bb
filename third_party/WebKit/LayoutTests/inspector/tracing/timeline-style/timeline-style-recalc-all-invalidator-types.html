@@ -4,72 +4,54 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function changeClassNameAndDisplay(callback)
+function changeClassNameAndDisplay()
 {
-    requestAnimationFrame(function() {
-        document.getElementById("testElementOne").className = "red";
-        document.getElementById("testElementTwo").className = "red";
-        var forceStyleRecalc = document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.getElementById("testElementOne").className = "red";
+    document.getElementById("testElementTwo").className = "red";
+    var forceStyleRecalc = document.body.offsetTop;
+    return waitForFrame();
 }
 
-function changeIdWithoutStyleChangeAndDisplay(callback)
+function changeIdWithoutStyleChangeAndDisplay()
 {
-    requestAnimationFrame(function() {
-        document.getElementById("testElementOne").id = "testElementNoMatchingStyles1";
-        document.getElementById("testElementTwo").id = "testElementNoMatchingStyles2";
-        var forceStyleRecalc = document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.getElementById("testElementOne").id = "testElementNoMatchingStyles1";
+    document.getElementById("testElementTwo").id = "testElementNoMatchingStyles2";
+    var forceStyleRecalc = document.body.offsetTop;
+    return waitForFrame();
 }
 
-function changeIdAndDisplay(callback)
+function changeIdAndDisplay()
 {
-    requestAnimationFrame(function() {
-        document.getElementById("testElementNoMatchingStyles1").id = "testElementFour";
-        document.getElementById("testElementNoMatchingStyles2").id = "testElementFive";
-        var forceStyleRecalc = document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.getElementById("testElementNoMatchingStyles1").id = "testElementFour";
+    document.getElementById("testElementNoMatchingStyles2").id = "testElementFive";
+    var forceStyleRecalc = document.body.offsetTop;
+    return waitForFrame();
 }
 
-function changeStyleAttributeAndDisplay(callback)
+function changeStyleAttributeAndDisplay()
 {
-    requestAnimationFrame(function() {
-        document.getElementById("testElementFour").setAttribute("style", "color: purple");
-        document.getElementById("testElementFive").setAttribute("style", "color: pink");
-        var forceStyleRecalc = document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.getElementById("testElementFour").setAttribute("style", "color: purple");
+    document.getElementById("testElementFive").setAttribute("style", "color: pink");
+    var forceStyleRecalc = document.body.offsetTop;
+    return waitForFrame();
 }
 
-function changeAttributeAndDisplay(callback)
+function changeAttributeAndDisplay()
 {
-    requestAnimationFrame(function() {
-        document.getElementById("testElementFour").setAttribute("dir", "rtl");
-        document.getElementById("testElementFive").setAttribute("dir", "rtl");
-        var forceStyleRecalc = document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.getElementById("testElementFour").setAttribute("dir", "rtl");
+    document.getElementById("testElementFive").setAttribute("dir", "rtl");
+    var forceStyleRecalc = document.body.offsetTop;
+    return waitForFrame();
 }
 
-function changePseudoAndDisplay(callback)
+function changePseudoAndDisplay()
 {
-    requestAnimationFrame(function() {
-        var element1 = document.getElementById("testElementFour");
-        var element2 = document.getElementById("testElementFive");
-        eventSender.mouseMoveTo(element2.offsetLeft + 2, element2.offsetTop + 2);
-        requestAnimationFrame(function() {
-            var forceStyleRecalc = document.body.offsetTop;
-            if (window.testRunner)
-                testRunner.layoutAndPaintAsyncThen(callback);
-        });
+    var element1 = document.getElementById("testElementFour");
+    var element2 = document.getElementById("testElementFive");
+    eventSender.mouseMoveTo(element2.offsetLeft + 2, element2.offsetTop + 2);
+    return waitForFrame().then(function() {
+        var forceStyleRecalc = document.body.offsetTop;
+        return waitForFrame();
     });
 }
 

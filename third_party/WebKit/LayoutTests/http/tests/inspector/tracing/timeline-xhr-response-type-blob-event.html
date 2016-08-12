@@ -5,8 +5,10 @@
 <script src="../network-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     var xhr = new XMLHttpRequest();
     xhr.responseType = "blob";
     xhr.open("GET", "network/resources/resource.php", true);
@@ -19,6 +21,7 @@ function performActions(callback)
             callback();
     }
     xhr.send(null);
+    return promise;
 }
 
 function test()

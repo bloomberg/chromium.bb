@@ -4,12 +4,13 @@
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function produceGarbageForGCEvents(callback)
+function produceGarbageForGCEvents()
 {
     if (window.testRunner) {
         window.gc();
-        testRunner.layoutAndPaintAsyncThen(callback);
+        return new Promise((fulfill) => testRunner.layoutAndPaintAsyncThen(fulfill));
     }
+    return Promise.reject();
 }
 
 function test()

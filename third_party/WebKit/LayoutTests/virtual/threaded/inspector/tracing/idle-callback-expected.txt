@@ -14,21 +14,6 @@ RequestIdleCallback Properties:
     startTime : <number>
     type : "RequestIdleCallback"
 }
-Text details for RequestIdleCallback: idle-callback.html:8
-RequestIdleCallback Properties:
-{
-    data : {
-        frame : <string>
-        id : <number>
-        stackTrace : <object>
-        timeout : 0
-    }
-    endTime : <number>
-    frameId : <string>
-    stackTrace : <object>
-    startTime : <number>
-    type : "RequestIdleCallback"
-}
 Text details for RequestIdleCallback: idle-callback.html:10
 RequestIdleCallback Properties:
 {
@@ -44,7 +29,22 @@ RequestIdleCallback Properties:
     startTime : <number>
     type : "RequestIdleCallback"
 }
-Text details for RequestIdleCallback: idle-callback.html:13
+Text details for RequestIdleCallback: idle-callback.html:12
+RequestIdleCallback Properties:
+{
+    data : {
+        frame : <string>
+        id : <number>
+        stackTrace : <object>
+        timeout : 0
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    type : "RequestIdleCallback"
+}
+Text details for RequestIdleCallback: idle-callback.html:15
 CancelIdleCallback Properties:
 {
     data : {
@@ -58,7 +58,7 @@ CancelIdleCallback Properties:
     startTime : <number>
     type : "CancelIdleCallback"
 }
-Text details for CancelIdleCallback: idle-callback.html:9
+Text details for CancelIdleCallback: idle-callback.html:11
 FireIdleCallback Properties:
 {
     data : {
@@ -72,7 +72,7 @@ FireIdleCallback Properties:
     startTime : <number>
     type : "FireIdleCallback"
 }
-Text details for FireIdleCallback: idle-callback.html:10
+Text details for FireIdleCallback: idle-callback.html:12
 FireIdleCallback Properties:
 {
     data : {
@@ -86,6 +86,6 @@ FireIdleCallback Properties:
     startTime : <number>
     type : "FireIdleCallback"
 }
-Text details for FireIdleCallback: idle-callback.html:13
+Text details for FireIdleCallback: idle-callback.html:15
 FireIdleCallback has a warning
 

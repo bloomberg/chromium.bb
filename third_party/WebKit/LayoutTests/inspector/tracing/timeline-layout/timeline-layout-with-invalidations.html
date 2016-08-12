@@ -4,28 +4,22 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function display(callback)
+function display()
 {
-    requestAnimationFrame(function() {
-        document.getElementById("testElement").style.width = "100px";
-        var forceLayout1 = document.body.offsetTop;
-        document.getElementById("testElement").style.width = "110px";
-        var forceLayout2 = document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    document.getElementById("testElement").style.width = "100px";
+    var forceLayout1 = document.body.offsetTop;
+    document.getElementById("testElement").style.width = "110px";
+    var forceLayout2 = document.body.offsetTop;
+    return waitForFrame();
 }
 
-function updateSubframeAndDisplay(callback)
+function updateSubframeAndDisplay()
 {
-    requestAnimationFrame(function() {
-        frames[0].document.body.children[0].style.width = "10px";
-        var forceLayout1 = frames[0].document.body.offsetTop;
-        frames[0].document.body.children[0].style.width = "20px";
-        var forceLayout2 = frames[0].document.body.offsetTop;
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(callback);
-    });
+    frames[0].document.body.children[0].style.width = "10px";
+    var forceLayout1 = frames[0].document.body.offsetTop;
+    frames[0].document.body.children[0].style.width = "20px";
+    var forceLayout2 = frames[0].document.body.offsetTop;
+    return waitForFrame();
 }
 
 function test()

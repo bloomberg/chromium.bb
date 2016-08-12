@@ -9,6 +9,11 @@
 </style>
 <script>
 
+function requestAnimationFramePromise()
+{
+    return new Promise(fulfill => requestAnimationFrame(fulfill));
+}
+
 function buildShadowDOM()
 {
     var host = document.querySelector("body");
@@ -42,7 +47,7 @@ function test()
             {
                 var section = InspectorTest.firstMatchedStyleSection();
                 section._highlight();
-                InspectorTest.waitForOverlayRepaint(onHighlighted);
+                InspectorTest.callFunctionInPageAsync("requestAnimationFramePromise").then(onHighlighted)
             }
 
             function onHighlighted()
@@ -64,7 +69,7 @@ function test()
             {
                 var section = InspectorTest.firstMatchedStyleSection();
                 section._highlight();
-                InspectorTest.waitForOverlayRepaint(onHighlighted);
+                InspectorTest.callFunctionInPageAsync("requestAnimationFramePromise").then(onHighlighted)
             }
 
             function onHighlighted()

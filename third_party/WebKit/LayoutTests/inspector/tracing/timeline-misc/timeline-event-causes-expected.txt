@@ -2,10 +2,10 @@ Test that causes are correctly generated for various types of events.
 
 
 Running: testTimerInstall
-PASS - record contained Timer InstalledsetTimeoutFunction @ setTimeoutFunction.js:
+PASS - record contained Timer InstalledPromise @ setTimeoutFunction.js:
 
 Running: testRequestAnimationFrame
-PASS - record contained Animation Frame RequestedrequestAnimationFrameFunction @ requestAnimationFrameFunction.js:
+PASS - record contained Animation Frame RequestedPromise @ requestAnimationFrameFunction.js:
 
 Running: testStyleRecalc
 PASS - record contained First InvalidatedstyleRecalcFunction @ styleRecalcFunction.js:

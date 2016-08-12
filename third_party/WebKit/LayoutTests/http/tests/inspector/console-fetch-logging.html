@@ -13,12 +13,15 @@ function requestHelper(method, url, callback)
     {
         setTimeout(callback, 0);
     }
-    makeFetch(url, {method: method}, delayCallback);
+    makeFetch(url, {method: method}).then(delayCallback);
 }
 
-function makeRequests(callback)
+function makeRequests()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     step1();
+    return promise;
 
     function step1()
     {
@@ -53,7 +56,7 @@ function test()
     {
         function callback()
         {
-            InspectorTest.invokePageFunctionAsync("makeRequests", step2);
+            InspectorTest.callFunctionInPageAsync("makeRequests").then(step2);
         }
         InspectorTest.NetworkAgent.setMonitoringXHREnabled(true, callback);
     }
@@ -62,7 +65,7 @@ function test()
     {
         function callback()
         {
-            InspectorTest.invokePageFunctionAsync("makeRequests", step3);
+            InspectorTest.callFunctionInPageAsync("makeRequests").then(step3);
         }
         InspectorTest.NetworkAgent.setMonitoringXHREnabled(false, callback);
     }

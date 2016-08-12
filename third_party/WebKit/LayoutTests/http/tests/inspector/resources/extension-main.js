@@ -16,7 +16,7 @@ function dumpObject(object, nondeterministicProps, prefix, firstLinePrefix)
     for (var property in object)
         propertyNames.push(property);
     propertyNames.sort();
-    
+
     for (var i = 0; i < propertyNames.length; ++i) {
         var prop = propertyNames[i];
         var prefixWithName = prefix + "    " + prop + " : ";
@@ -52,7 +52,7 @@ function evaluateOnFrontend(expression, callback)
 
 function invokePageFunctionAsync(functionName, callback)
 {
-    evaluateOnFrontend("InspectorTest.invokePageFunctionAsync('" + functionName + "', reply)", callback);
+    evaluateOnFrontend("InspectorTest.callFunctionInPageAsync('" + functionName + "').then(() => reply())", callback);
 }
 
 function output(message)

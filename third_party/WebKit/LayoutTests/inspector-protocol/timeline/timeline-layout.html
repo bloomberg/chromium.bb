@@ -10,12 +10,12 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/tracing-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
     var div = document.querySelector("#myDiv");
     div.classList.add("my-class");
     div.offsetWidth;
-    callback();
+    return Promise.resolve();
 }
 
 function test()

@@ -1,6 +1,5 @@
 DIV
 Recording started
-SUCCESS: testFunctionRequestAnimationFrame
 Tracing complete
 RequestAnimationFrame has frame: true
 RequestAnimationFrame frames match: true

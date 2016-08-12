@@ -6,12 +6,13 @@
 
 var scriptUrl = "timeline-network-resource.js";
 
-function performActions(callback) 
+function performActions()
 {
-    window.timelineNetworkResourceEvaluated = callback;
+    var promise = new Promise((fulfill) => window.timelineNetworkResourceEvaluated = fulfill);
     var script = document.createElement("script");
     script.src = scriptUrl;
     document.body.appendChild(script);
+    return promise;
 }
 
 function test()

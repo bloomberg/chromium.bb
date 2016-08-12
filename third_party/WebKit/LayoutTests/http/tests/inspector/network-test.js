@@ -43,9 +43,9 @@ function makeXHRForJSONArguments(jsonArgs)
     makeXHR(args.method, args.url, args.async, args.user, args.password, args.headers || [], args.withCredentials, args.payload, args.type, xhrLoadedCallback);
 }
 
-function makeFetch(url, requestInitializer, callback)
+function makeFetch(url, requestInitializer)
 {
-    fetch(url, requestInitializer).then(callback).catch(callback);
+    return fetch(url, requestInitializer).catch(e => e);
 }
 
 var initialize_NetworkTest = function() {
@@ -117,7 +117,7 @@ InspectorTest.makeXHR = function(method, url, async, user, password, headers, wi
 
 InspectorTest.makeFetch = function(url, requestInitializer, callback)
 {
-    InspectorTest.invokePageFunctionAsync("makeFetch", url, requestInitializer, callback);
+    InspectorTest.callFunctionInPageAsync("makeFetch", [url, requestInitializer]).then(callback);
 }
 
 InspectorTest.HARPropertyFormatters = {

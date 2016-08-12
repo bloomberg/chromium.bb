@@ -4,8 +4,10 @@
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     var timerOne = setTimeout("1 + 1", 10);
     var timerTwo = setInterval(intervalTimerWork, 20);
     var iteration = 0;
@@ -17,6 +19,7 @@ function performActions(callback)
         clearInterval(timerTwo);
         callback();
     }
+    return promise;
 }
 
 function test()

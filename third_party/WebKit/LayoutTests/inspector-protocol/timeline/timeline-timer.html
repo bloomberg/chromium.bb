@@ -4,8 +4,10 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/tracing-test.js"></script>
 <script>
 
-function performActions(callback)
+function performActions()
 {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
     var timerId = setTimeout(function()
     {
         evaluateInFrontend("InspectorTest.testFunctionTimerFired(" + timerId + ", " + timerId2 + ")");
@@ -14,7 +16,7 @@ function performActions(callback)
 
     var timerId2 = setTimeout(function() { }, 0);
     clearTimeout(timerId2);
-    return timerId;
+    return promise;
 }
 
 function test()

@@ -110,56 +110,6 @@ InspectorTest.evaluateFunctionInOverlay = function(func, callback)
     }
 }
 
-InspectorTest.waitForOverlayRepaint = function(callback)
-{
-    InspectorTest.invokePageFunctionAsync("requestAnimationFrame", callback);
-}
-
-var lastEvalId = 0;
-var pendingEvalRequests = {};
-
-/**
- * @param {string} functionName
- * @param {...} varArgs
- * @param {function()} callback
- */
-InspectorTest.invokePageFunctionAsync = function(functionName, varArgs)
-{
-    var id = ++lastEvalId;
-    var args = Array.prototype.slice.call(arguments, 1);
-    var callback = args.pop();
-    pendingEvalRequests[id] = InspectorTest.safeWrap(callback);
-    var asyncEvalWrapper = function(callId, functionName, argsString)
-    {
-        function evalCallback(result)
-        {
-            testRunner.evaluateInWebInspector(evalCallbackCallId, "InspectorTest.didInvokePageFunctionAsync(" + callId + ", " + JSON.stringify(result) + ");");
-        }
-        var argsArray = argsString.replace(/^\[(.*)\]$/, "$1");
-        if (argsArray.length)
-            argsArray += ",";
-        try {
-            eval(functionName + "(" + argsArray + evalCallback + ")");
-        } catch(e) {
-            InspectorTest.addResult("Error: " + e);
-            evalCallback(String(e));
-        }
-    }
-    var escapedJSONArgs = JSON.stringify(JSON.stringify(args));
-    InspectorTest.evaluateInPage("(" + asyncEvalWrapper.toString() + ")(" + id + ", unescape('" + escape(functionName) + "')," + escapedJSONArgs + ")");
-}
-
-InspectorTest.didInvokePageFunctionAsync = function(callId, value)
-{
-    var callback = pendingEvalRequests[callId];
-    if (!callback) {
-        InspectorTest.addResult("Missing callback for async eval " + callId + ", perhaps callback invoked twice?");
-        return;
-    }
-    delete pendingEvalRequests[callId];
-    callback(value);
-}
-
 InspectorTest.check = function(passCondition, failureText)
 {
     if (!passCondition)
