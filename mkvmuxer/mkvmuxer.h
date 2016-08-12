@@ -1304,7 +1304,7 @@ class Segment {
     kBeforeClusters = 0x1  // Position Cues before Clusters
   };
 
-  const static uint32_t kDefaultDocTypeVersion = 2;
+  const static uint32_t kDefaultDocTypeVersion = 4;
   const static uint64_t kDefaultMaxClusterDuration = 30000000000ULL;
 
   Segment();

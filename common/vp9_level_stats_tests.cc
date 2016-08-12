@@ -57,7 +57,7 @@ class Vp9LevelStatsTests : public ::testing::Test {
   }
 
   void CreateAndLoadSegment(const std::string& filename) {
-    CreateAndLoadSegment(filename, 2);
+    CreateAndLoadSegment(filename, 4);
   }
 
   void ProcessTheFrames() {
