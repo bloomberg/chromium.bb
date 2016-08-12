@@ -27,7 +27,7 @@ NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
 NSString* const kHeuristicsForPasswordGeneration =
     @"HeuristicsForPasswordGeneration";
 NSString* const kEnableReadingList = @"EnableReadingList";
-NSString* const kUpdatePasswordUIEnabled = @"UpdatePasswordUIEnabled";
+NSString* const kUpdatePasswordUIDisabled = @"UpdatePasswordUIDisabled";
 NSString* const kEnableQRCodeReader = @"EnableQRCodeReader";
 NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 }  // namespace
@@ -140,8 +140,8 @@ bool IsPhysicalWebEnabled() {
 }
 
 bool IsUpdatePasswordUIEnabled() {
-  return [[NSUserDefaults standardUserDefaults]
-      boolForKey:kUpdatePasswordUIEnabled];
+  return ![[NSUserDefaults standardUserDefaults]
+      boolForKey:kUpdatePasswordUIDisabled];
 }
 
 bool IsQRCodeReaderEnabled() {
