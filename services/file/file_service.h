@@ -2,34 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_USER_USER_SHELL_CLIENT_H_
-#define SERVICES_USER_USER_SHELL_CLIENT_H_
+#ifndef SERVICES_FILE_FILE_SERVICE_H_
+#define SERVICES_FILE_FILE_SERVICE_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "components/filesystem/lock_table.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/file/public/interfaces/file_system.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/user/public/interfaces/user_service.mojom.h"
 
-namespace user_service {
+namespace file {
 
-std::unique_ptr<shell::Service> CreateUserService(
-    scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
+std::unique_ptr<shell::Service> CreateFileService(
+    scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner,
     const base::Closure& quit_closure);
 
-class UserShellClient
+class FileService
     : public shell::Service,
-      public shell::InterfaceFactory<mojom::UserService>,
+      public shell::InterfaceFactory<mojom::FileSystem>,
       public shell::InterfaceFactory<leveldb::mojom::LevelDBService> {
  public:
-  UserShellClient(
-      scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
+  FileService(
+      scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
       scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner);
-  ~UserShellClient() override;
+  ~FileService() override;
 
  private:
   // |Service| override:
@@ -37,9 +37,9 @@ class UserShellClient
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry) override;
 
-  // |InterfaceFactory<mojom::UserService>| implementation:
+  // |InterfaceFactory<mojom::FileSystem>| implementation:
   void Create(const shell::Identity& remote_identity,
-              mojom::UserServiceRequest request) override;
+              mojom::FileSystemRequest request) override;
 
   // |InterfaceFactory<LevelDBService>| implementation:
   void Create(const shell::Identity& remote_identity,
@@ -47,20 +47,20 @@ class UserShellClient
 
   void OnLevelDBServiceError();
 
-  scoped_refptr<base::SingleThreadTaskRunner> user_service_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_service_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner_;
 
   // We create these two objects so we can delete them on the correct task
   // runners.
-  class UserServiceObjects;
-  std::unique_ptr<UserServiceObjects> user_objects_;
+  class FileSystemObjects;
+  std::unique_ptr<FileSystemObjects> file_system_objects_;
 
   class LevelDBServiceObjects;
   std::unique_ptr<LevelDBServiceObjects> leveldb_objects_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserShellClient);
+  DISALLOW_COPY_AND_ASSIGN(FileService);
 };
 
-}  // namespace user_service
+}  // namespace file
 
-#endif  // SERVICES_USER_USER_SHELL_CLIENT_H_
+#endif  // SERVICES_FILE_FILE_SERVICE_H_

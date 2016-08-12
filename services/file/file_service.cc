@@ -2,46 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/user/user_shell_client.h"
+#include "services/file/file_service.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "components/filesystem/lock_table.h"
 #include "components/leveldb/leveldb_service_impl.h"
+#include "services/file/file_system.h"
+#include "services/file/user_id_map.h"
 #include "services/shell/public/cpp/connection.h"
-#include "services/user/user_id_map.h"
-#include "services/user/user_service.h"
 
-namespace user_service {
+namespace file {
 
-class UserShellClient::UserServiceObjects
-    : public base::SupportsWeakPtr<UserServiceObjects> {
+class FileService::FileSystemObjects
+    : public base::SupportsWeakPtr<FileSystemObjects> {
  public:
   // Created on the main thread.
-  UserServiceObjects(base::FilePath user_dir) : user_dir_(user_dir) {}
+  FileSystemObjects(base::FilePath user_dir) : user_dir_(user_dir) {}
 
-  // Destroyed on the |user_service_runner_|.
-  ~UserServiceObjects() {}
+  // Destroyed on the |file_service_runner_|.
+  ~FileSystemObjects() {}
 
-  // Called on the |user_service_runner_|.
-  void OnUserServiceRequest(const shell::Identity& remote_identity,
-                            mojom::UserServiceRequest request) {
+  // Called on the |file_service_runner_|.
+  void OnFileSystemRequest(const shell::Identity& remote_identity,
+                           mojom::FileSystemRequest request) {
     if (!lock_table_)
       lock_table_ = new filesystem::LockTable;
-    user_service_bindings_.AddBinding(new UserService(user_dir_, lock_table_),
-                                      std::move(request));
+    file_system_bindings_.AddBinding(new FileSystem(user_dir_, lock_table_),
+                                     std::move(request));
   }
 
  private:
-  mojo::BindingSet<mojom::UserService> user_service_bindings_;
+  mojo::BindingSet<mojom::FileSystem> file_system_bindings_;
   scoped_refptr<filesystem::LockTable> lock_table_;
   base::FilePath user_dir_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserServiceObjects);
+  DISALLOW_COPY_AND_ASSIGN(FileSystemObjects);
 };
 
-class UserShellClient::LevelDBServiceObjects
+class FileService::LevelDBServiceObjects
     : public base::SupportsWeakPtr<LevelDBServiceObjects> {
  public:
   // Created on the main thread.
@@ -69,54 +69,54 @@ class UserShellClient::LevelDBServiceObjects
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceObjects);
 };
 
-std::unique_ptr<shell::Service> CreateUserService(
-    scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
+std::unique_ptr<shell::Service> CreateFileService(
+    scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner,
     const base::Closure& quit_closure) {
-  return base::WrapUnique(new UserShellClient(
-      std::move(user_service_runner), std::move(leveldb_service_runner)));
+  return base::WrapUnique(new FileService(
+      std::move(file_service_runner), std::move(leveldb_service_runner)));
 }
 
-UserShellClient::UserShellClient(
-    scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
+FileService::FileService(
+    scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner)
-    : user_service_runner_(std::move(user_service_runner)),
+    : file_service_runner_(std::move(file_service_runner)),
       leveldb_service_runner_(std::move(leveldb_service_runner)) {}
 
-UserShellClient::~UserShellClient() {
-  user_service_runner_->DeleteSoon(FROM_HERE, user_objects_.release());
+FileService::~FileService() {
+  file_service_runner_->DeleteSoon(FROM_HERE, file_system_objects_.release());
   leveldb_service_runner_->DeleteSoon(FROM_HERE, leveldb_objects_.release());
 }
 
-void UserShellClient::OnStart(const shell::Identity& identity) {
-  user_objects_.reset(new UserShellClient::UserServiceObjects(
+void FileService::OnStart(const shell::Identity& identity) {
+  file_system_objects_.reset(new FileService::FileSystemObjects(
       GetUserDirForUserId(identity.user_id())));
   leveldb_objects_.reset(
-      new UserShellClient::LevelDBServiceObjects(leveldb_service_runner_));
+      new FileService::LevelDBServiceObjects(leveldb_service_runner_));
 }
 
-bool UserShellClient::OnConnect(const shell::Identity& remote_identity,
+bool FileService::OnConnect(const shell::Identity& remote_identity,
                                 shell::InterfaceRegistry* registry) {
   registry->AddInterface<leveldb::mojom::LevelDBService>(this);
-  registry->AddInterface<mojom::UserService>(this);
+  registry->AddInterface<mojom::FileSystem>(this);
   return true;
 }
 
-void UserShellClient::Create(const shell::Identity& remote_identity,
-                             mojom::UserServiceRequest request) {
-  user_service_runner_->PostTask(
+void FileService::Create(const shell::Identity& remote_identity,
+                             mojom::FileSystemRequest request) {
+  file_service_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UserShellClient::UserServiceObjects::OnUserServiceRequest,
-                 user_objects_->AsWeakPtr(), remote_identity,
+      base::Bind(&FileService::FileSystemObjects::OnFileSystemRequest,
+                 file_system_objects_->AsWeakPtr(), remote_identity,
                  base::Passed(&request)));
 }
 
-void UserShellClient::Create(const shell::Identity& remote_identity,
+void FileService::Create(const shell::Identity& remote_identity,
                              leveldb::mojom::LevelDBServiceRequest request) {
   leveldb_service_runner_->PostTask(
       FROM_HERE,
       base::Bind(
-          &UserShellClient::LevelDBServiceObjects::OnLevelDBServiceRequest,
+          &FileService::LevelDBServiceObjects::OnLevelDBServiceRequest,
           leveldb_objects_->AsWeakPtr(), remote_identity,
           base::Passed(&request)));
 }
