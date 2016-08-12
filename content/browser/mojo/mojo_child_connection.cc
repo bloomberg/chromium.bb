@@ -23,7 +23,7 @@ namespace {
 void CallBinderOnTaskRunner(
     const shell::InterfaceRegistry::Binder& binder,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const mojo::String& interface_name,
+    const std::string& interface_name,
     mojo::ScopedMessagePipeHandle request_handle) {
   task_runner->PostTask(
       FROM_HERE,
@@ -64,7 +64,7 @@ class MojoChildConnection::IOThreadContext
   }
 
   void GetRemoteInterfaceOnIOThread(
-      const mojo::String& interface_name,
+      const std::string& interface_name,
       mojo::ScopedMessagePipeHandle request_handle) {
     if (connection_) {
       connection_->GetRemoteInterfaces()->GetInterface(

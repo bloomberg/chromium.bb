@@ -149,10 +149,11 @@ class TaskViewerContents : public views::WidgetDelegateView,
   }
 
   // Overridden from shell::mojom::ServiceManagerListener:
-  void OnInit(mojo::Array<ServiceInfoPtr> instances) override {
+  void OnInit(std::vector<ServiceInfoPtr> instances) override {
     // This callback should only be called with an empty model.
     DCHECK(instances_.empty());
-    mojo::Array<mojo::String> names;
+    std::vector<std::string> names;
+    names.reserve(instances.size());
     for (size_t i = 0; i < instances.size(); ++i) {
       const shell::Identity& identity = instances[i]->identity;
       InsertInstance(identity, instances[i]->pid);
@@ -167,7 +168,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
     DCHECK(!ContainsIdentity(identity));
     InsertInstance(identity, instance->pid);
     observer_->OnItemsAdded(static_cast<int>(instances_.size()), 1);
-    mojo::Array<mojo::String> names;
+    std::vector<std::string> names;
     names.push_back(identity.name());
     catalog_->GetEntries(std::move(names),
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
@@ -209,7 +210,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
         base::WrapUnique(new InstanceInfo(identity, pid)));
   }
 
-  void OnGotCatalogEntries(mojo::Array<catalog::mojom::EntryPtr> entries) {
+  void OnGotCatalogEntries(std::vector<catalog::mojom::EntryPtr> entries) {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       for (auto& entry : entries) {
         if (entry->name == (*it)->identity.name()) {

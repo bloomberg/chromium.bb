@@ -681,7 +681,8 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
 
 void ServiceManager::AddListener(mojom::ServiceManagerListenerPtr listener) {
   // TODO(beng): filter instances provided by those visible to this service.
-  mojo::Array<mojom::ServiceInfoPtr> instances;
+  std::vector<mojom::ServiceInfoPtr> instances;
+  instances.reserve(identity_to_instance_.size());
   for (auto& instance : identity_to_instance_)
     instances.push_back(instance.second->CreateServiceInfo());
   listener->OnInit(std::move(instances));

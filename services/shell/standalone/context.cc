@@ -69,7 +69,7 @@ class TracingInterfaceProvider : public mojom::InterfaceProvider {
   ~TracingInterfaceProvider() override {}
 
   // mojom::InterfaceProvider:
-  void GetInterface(const mojo::String& interface_name,
+  void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle client_handle) override {
     if (tracer_ && interface_name == tracing::mojom::Provider::Name_) {
       tracer_->ConnectToProvider(

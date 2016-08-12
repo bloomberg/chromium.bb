@@ -29,7 +29,7 @@ void QuitLoop(base::RunLoop* loop) {
 
 void ReceiveString(std::string* string,
                    base::RunLoop* loop,
-                   mojo::String response) {
+                   const std::string& response) {
   *string = response;
   loop->Quit();
 }
@@ -195,7 +195,7 @@ class ConnectTestApp : public Service,
   void OnGotTitle(
       const ConnectToAllowedAppInBlockedPackageCallback& callback,
       base::RunLoop* run_loop,
-      mojo::String title) {
+      const std::string& title) {
     callback.Run(title);
     run_loop->Quit();
   }

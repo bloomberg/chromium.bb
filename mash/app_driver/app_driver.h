@@ -27,7 +27,7 @@ class AppDriver : public shell::Service,
   ~AppDriver() override;
 
  private:
-  void OnAvailableCatalogEntries(mojo::Array<catalog::mojom::EntryPtr> entries);
+  void OnAvailableCatalogEntries(std::vector<catalog::mojom::EntryPtr> entries);
 
   // shell::Service:
   void OnStart(const shell::Identity& identity) override;

@@ -128,7 +128,7 @@ class ShellTest : public test::ServiceTest,
   }
 
   // mojom::ServiceManagerListener:
-  void OnInit(mojo::Array<mojom::ServiceInfoPtr> instances) override {
+  void OnInit(std::vector<mojom::ServiceInfoPtr> instances) override {
     for (size_t i = 0; i < instances.size(); ++i)
       initial_instances_.push_back(InstanceInfo(instances[i]->identity));
 

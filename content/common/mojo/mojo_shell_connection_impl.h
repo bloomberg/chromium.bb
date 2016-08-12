@@ -56,9 +56,9 @@ class MojoShellConnectionImpl : public MojoShellConnection {
   void OnContextInitialized(const shell::Identity& identity);
   void OnConnectionLost();
   void CreateService(shell::mojom::ServiceRequest request,
-                     const mojo::String& name);
+                     const std::string& name);
   void GetInterface(shell::mojom::InterfaceProvider* provider,
-                    const mojo::String& interface_name,
+                    const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle request_handle);
 
   shell::Identity identity_;

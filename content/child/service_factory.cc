@@ -17,7 +17,7 @@ ServiceFactory::ServiceFactory() {}
 ServiceFactory::~ServiceFactory() {}
 
 void ServiceFactory::CreateService(shell::mojom::ServiceRequest request,
-                                   const mojo::String& name) {
+                                   const std::string& name) {
   // Only register services on first run.
   if (!has_registered_services_) {
     DCHECK(services_.empty());

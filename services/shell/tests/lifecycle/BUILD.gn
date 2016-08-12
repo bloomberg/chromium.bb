@@ -36,8 +36,6 @@ mojom("interfaces") {
   sources = [
     "lifecycle_unittest.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 service_manifest("manifest") {

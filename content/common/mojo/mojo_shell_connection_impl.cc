@@ -44,7 +44,7 @@ class MojoShellConnectionImpl::IOThreadContext
  public:
   using InitializeCallback = base::Callback<void(const shell::Identity&)>;
   using ServiceFactoryCallback =
-      base::Callback<void(shell::mojom::ServiceRequest, const mojo::String&)>;
+      base::Callback<void(shell::mojom::ServiceRequest, const std::string&)>;
 
   IOThreadContext(shell::mojom::ServiceRequest service_request,
                   scoped_refptr<base::SequencedTaskRunner> io_task_runner,
@@ -198,7 +198,7 @@ class MojoShellConnectionImpl::IOThreadContext
   // shell::mojom::ServiceFactory implementation
 
   void CreateService(shell::mojom::ServiceRequest request,
-                     const mojo::String& name) override {
+                     const std::string& name) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     callback_task_runner_->PostTask(
         FROM_HERE,
@@ -208,7 +208,7 @@ class MojoShellConnectionImpl::IOThreadContext
   static void CallBinderOnTaskRunner(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const shell::InterfaceRegistry::Binder& binder,
-      const mojo::String& interface_name,
+      const std::string& interface_name,
       mojo::ScopedMessagePipeHandle request_handle) {
     task_runner->PostTask(FROM_HERE, base::Bind(binder, interface_name,
                                                 base::Passed(&request_handle)));
@@ -391,7 +391,7 @@ void MojoShellConnectionImpl::AddServiceRequestHandler(
 
 void MojoShellConnectionImpl::CreateService(
     shell::mojom::ServiceRequest request,
-    const mojo::String& name) {
+    const std::string& name) {
   auto it = request_handlers_.find(name);
   if (it != request_handlers_.end())
     it->second.Run(std::move(request));
@@ -411,7 +411,7 @@ void MojoShellConnectionImpl::OnConnectionLost() {
 
 void MojoShellConnectionImpl::GetInterface(
     shell::mojom::InterfaceProvider* provider,
-    const mojo::String& interface_name,
+    const std::string& interface_name,
     mojo::ScopedMessagePipeHandle request_handle) {
   provider->GetInterface(interface_name, std::move(request_handle));
 }

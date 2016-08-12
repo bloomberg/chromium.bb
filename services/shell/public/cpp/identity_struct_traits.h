@@ -22,7 +22,7 @@ struct StructTraits<shell::mojom::Identity, shell::Identity> {
     return identity.instance();
   }
   static bool Read(shell::mojom::IdentityDataView data, shell::Identity* out) {
-    mojo::String name, user_id, instance;
+    std::string name, user_id, instance;
     if (!data.ReadName(&name))
       return false;
 

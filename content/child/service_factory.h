@@ -31,7 +31,7 @@ class ServiceFactory : public shell::mojom::ServiceFactory {
 
   // shell::mojom::ServiceFactory:
   void CreateService(shell::mojom::ServiceRequest request,
-                     const mojo::String& name) override;
+                     const std::string& name) override;
 
  private:
   // Called if CreateService fails to find a registered service.

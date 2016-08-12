@@ -23,7 +23,7 @@ MediaInterfaceProvider::~MediaInterfaceProvider() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void MediaInterfaceProvider::GetInterface(const mojo::String& interface_name,
+void MediaInterfaceProvider::GetInterface(const std::string& interface_name,
                                           mojo::ScopedMessagePipeHandle pipe) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());

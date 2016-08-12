@@ -78,7 +78,7 @@ void InterfaceRegistry::SetConnectionLostClosure(
 }
 
 // mojom::InterfaceProvider:
-void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
+void InterfaceRegistry::GetInterface(const std::string& interface_name,
                                      mojo::ScopedMessagePipeHandle handle) {
   if (is_paused_) {
     pending_interface_requests_.emplace(interface_name, std::move(handle));

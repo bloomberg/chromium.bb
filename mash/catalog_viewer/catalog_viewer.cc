@@ -49,8 +49,8 @@ class CatalogViewerContents : public views::WidgetDelegateView,
 
     // We don't want to show an empty UI so we just block until we have all the
     // data. GetEntries is a sync call.
-    mojo::Array<catalog::mojom::EntryPtr> entries;
-    bool got = catalog_->GetEntries(nullptr, &entries);
+    std::vector<catalog::mojom::EntryPtr> entries;
+    bool got = catalog_->GetEntries(base::nullopt, &entries);
     if (got) {
       for (auto& entry : entries)
         entries_.push_back(Entry(entry->display_name, entry->name));

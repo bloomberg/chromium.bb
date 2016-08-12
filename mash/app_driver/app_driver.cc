@@ -62,7 +62,7 @@ AppDriver::AppDriver() : binding_(this), weak_factory_(this) {}
 AppDriver::~AppDriver() {}
 
 void AppDriver::OnAvailableCatalogEntries(
-    mojo::Array<catalog::mojom::EntryPtr> entries) {
+    std::vector<catalog::mojom::EntryPtr> entries) {
   if (entries.empty()) {
     LOG(ERROR) << "Unable to install accelerators for launching chrome.";
     return;

@@ -66,7 +66,7 @@ class DefaultService : public shell::Service,
 
   // ServiceFactory:
   void CreateService(shell::mojom::ServiceRequest request,
-                     const mojo::String& mojo_name) override {
+                     const std::string& mojo_name) override {
     if (service_) {
       LOG(ERROR) << "request to create additional service " << mojo_name;
       return;

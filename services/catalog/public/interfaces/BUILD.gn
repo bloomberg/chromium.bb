@@ -8,6 +8,4 @@ mojom("interfaces") {
   sources = [
     "catalog.mojom",
   ]
-
-  use_new_wrapper_types = false
 }

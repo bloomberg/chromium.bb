@@ -126,9 +126,9 @@ class QuickLaunchUI : public views::WidgetDelegateView,
                    base::Unretained(this)));
   }
 
-  void OnGotCatalogEntries(mojo::Array<catalog::mojom::EntryPtr> entries) {
+  void OnGotCatalogEntries(std::vector<catalog::mojom::EntryPtr> entries) {
     for (const auto& entry : entries)
-      app_names_.insert(base::UTF8ToUTF16(entry->name.get()));
+      app_names_.insert(base::UTF8ToUTF16(entry->name));
   }
 
   void Launch(const std::string& name, bool new_window) {

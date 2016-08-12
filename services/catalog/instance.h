@@ -37,20 +37,20 @@ class Instance : public shell::mojom::Resolver,
 
  private:
   // shell::mojom::Resolver:
-  void ResolveMojoName(const mojo::String& mojo_name,
+  void ResolveMojoName(const std::string& mojo_name,
                        const ResolveMojoNameCallback& callback) override;
 
   // mojom::Catalog:
-  void GetEntries(mojo::Array<mojo::String> names,
+  void GetEntries(const base::Optional<std::vector<std::string>>& names,
                   const GetEntriesCallback& callback) override;
   void GetEntriesProvidingClass(
-      const mojo::String& clazz,
+      const std::string& clazz,
       const GetEntriesProvidingClassCallback& callback) override;
   void GetEntriesConsumingMIMEType(
-      const mojo::String& mime_type,
+      const std::string& mime_type,
       const GetEntriesConsumingMIMETypeCallback& callback) override;
   void GetEntriesSupportingScheme(
-      const mojo::String& scheme,
+      const std::string& scheme,
       const GetEntriesSupportingSchemeCallback& callback) override;
 
   // Populate/serialize the cache from/to the supplied store.

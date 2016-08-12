@@ -114,7 +114,7 @@ class Package
 
   // shell::mojom::ServiceFactory:
   void CreateService(shell::mojom::ServiceRequest request,
-                         const mojo::String& name) override {
+                     const std::string& name) override {
     ++shell_connection_refcount_;
     apps_.push_back(
         new PackagedApp(std::move(request),

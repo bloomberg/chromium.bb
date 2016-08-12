@@ -47,7 +47,7 @@ class InterfaceBinder;
 //
 class InterfaceRegistry : public mojom::InterfaceProvider {
  public:
-  using Binder = base::Callback<void(const mojo::String&,
+  using Binder = base::Callback<void(const std::string&,
                                      mojo::ScopedMessagePipeHandle)>;
 
   class TestApi {
@@ -138,7 +138,7 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
       std::map<std::string, std::unique_ptr<InterfaceBinder>>;
 
   // mojom::InterfaceProvider:
-  void GetInterface(const mojo::String& interface_name,
+  void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle handle) override;
 
   // Returns true if the binder was set, false if it was not set (e.g. by
@@ -164,7 +164,7 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
 
   // Pending interface requests which can accumulate if GetInterface() is called
   // while binding is paused.
-  std::queue<std::pair<mojo::String, mojo::ScopedMessagePipeHandle>>
+  std::queue<std::pair<std::string, mojo::ScopedMessagePipeHandle>>
       pending_interface_requests_;
 
   base::WeakPtrFactory<InterfaceRegistry> weak_factory_;

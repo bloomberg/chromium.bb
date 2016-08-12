@@ -29,7 +29,7 @@ class CONTENT_EXPORT MediaInterfaceProvider
   ~MediaInterfaceProvider() final;
 
   // InterfaceProvider implementation.
-  void GetInterface(const mojo::String& interface_name,
+  void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle pipe) final;
 
  private:

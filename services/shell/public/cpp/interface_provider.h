@@ -18,7 +18,7 @@ namespace shell {
 // Connection.
 class InterfaceProvider {
  public:
-  using ForwardCallback = base::Callback<void(const mojo::String&,
+  using ForwardCallback = base::Callback<void(const std::string&,
                                               mojo::ScopedMessagePipeHandle)>;
   class TestApi {
    public:
