@@ -158,7 +158,7 @@ function test()
         {
             InspectorTest.RuntimeAgent.evaluate("({ a : 1, b : 2 })", step1);
 
-            function step1(error, result, wasThrown)
+            function step1(error, result)
             {
                 function sum()
                 {
@@ -167,7 +167,7 @@ function test()
                 InspectorTest.RuntimeAgent.callFunctionOn(result.objectId, sum.toString(), step2);
             }
 
-            function step2(error, result, wasThrown)
+            function step2(error, result)
             {
                 InspectorTest.assertEquals(3, result.value);
                 next();

@@ -10,15 +10,15 @@ function test()
     function step2(response)
     {
         failIfError(response);
-        InspectorTest.log("first \"let a = 1;\" result: wasThrown = " + response.result.wasThrown);
+        InspectorTest.log("first \"let a = 1;\" result: wasThrown = " + !!response.result.exceptionDetails);
         InspectorTest.sendCommand("Runtime.evaluate", { expression: "let a = 239;" }, step3);
     }
 
     function step3(response)
     {
         failIfError(response);
-        InspectorTest.log("second \"let a = 1;\" result: wasThrown = " + response.result.wasThrown);
-        if (response.result.wasThrown)
+        InspectorTest.log("second \"let a = 1;\" result: wasThrown = " + !!response.result.exceptionDetails);
+        if (response.result.exceptionDetails)
             InspectorTest.log("exception message: " + response.result.exceptionDetails.text);
         InspectorTest.sendCommand("Runtime.evaluate", { expression: "a" }, step4);
     }

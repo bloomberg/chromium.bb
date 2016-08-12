@@ -5,7 +5,6 @@ Tests checks that console.memory property can be set in strict mode (crbug.com/4
         result : {
             type : undefined
         }
-        wasThrown : false
     }
 }
 

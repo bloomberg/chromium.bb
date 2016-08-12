@@ -81,9 +81,9 @@ function test()
             return;
         }
 
-        function didEvaluate(result, wasThrown)
+        function didEvaluate(result, exceptionDetails)
         {
-            InspectorTest.assertTrue(!wasThrown, "FAIL: was thrown. Expression: " + expression);
+            InspectorTest.assertTrue(!exceptionDetails, "FAIL: was thrown. Expression: " + expression);
             WebInspector.panels.sources._saveToTempVariable(result);
             InspectorTest.waitUntilNthMessageReceived(2, evaluateNext);
         }

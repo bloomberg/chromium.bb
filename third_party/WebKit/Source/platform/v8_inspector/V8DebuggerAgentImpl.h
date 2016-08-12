@@ -106,7 +106,6 @@ public:
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
         std::unique_ptr<protocol::Runtime::RemoteObject>* result,
-        Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void setVariableValue(ErrorString*,
         int scopeNumber,

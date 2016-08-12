@@ -6,7 +6,6 @@ Tests that CommandLineAPI is presented only while evaluation.
         type : number
         value : 15
     }
-    wasThrown : false
 }
 {
     result : {
@@ -14,7 +13,6 @@ Tests that CommandLineAPI is presented only while evaluation.
         type : number
         value : 0
     }
-    wasThrown : false
 }
 setPropertyForMethod()
 {
@@ -23,7 +21,6 @@ setPropertyForMethod()
         type : number
         value : 14
     }
-    wasThrown : false
 }
 {
     result : {
@@ -31,7 +28,6 @@ setPropertyForMethod()
         type : number
         value : 0
     }
-    wasThrown : false
 }
 {
     result : {
@@ -39,7 +35,6 @@ setPropertyForMethod()
         type : number
         value : 42
     }
-    wasThrown : false
 }
 defineValuePropertyForMethod()
 {
@@ -48,7 +43,6 @@ defineValuePropertyForMethod()
         type : number
         value : 14
     }
-    wasThrown : false
 }
 {
     result : {
@@ -56,7 +50,6 @@ defineValuePropertyForMethod()
         type : number
         value : 0
     }
-    wasThrown : false
 }
 {
     result : {
@@ -64,7 +57,6 @@ defineValuePropertyForMethod()
         type : number
         value : 42
     }
-    wasThrown : false
 }
 definePropertiesForMethod()
 {
@@ -73,7 +65,6 @@ definePropertiesForMethod()
         type : number
         value : 14
     }
-    wasThrown : false
 }
 {
     result : {
@@ -81,7 +72,6 @@ definePropertiesForMethod()
         type : number
         value : 0
     }
-    wasThrown : false
 }
 {
     result : {
@@ -89,7 +79,6 @@ definePropertiesForMethod()
         type : number
         value : 42
     }
-    wasThrown : false
 }
 defineAccessorPropertyForMethod()
 {
@@ -98,7 +87,6 @@ defineAccessorPropertyForMethod()
         type : number
         value : 14
     }
-    wasThrown : false
 }
 {
     result : {
@@ -106,7 +94,6 @@ defineAccessorPropertyForMethod()
         type : number
         value : 0
     }
-    wasThrown : false
 }
 {
     result : {
@@ -114,7 +101,6 @@ defineAccessorPropertyForMethod()
         type : number
         value : 42
     }
-    wasThrown : false
 }
 redefineGetOwnPropertyDescriptors()
 {
@@ -123,7 +109,6 @@ redefineGetOwnPropertyDescriptors()
         type : number
         value : 14
     }
-    wasThrown : false
 }
 {
     result : {
@@ -131,7 +116,6 @@ redefineGetOwnPropertyDescriptors()
         type : number
         value : 0
     }
-    wasThrown : false
 }
 {
     result : {
@@ -139,6 +123,5 @@ redefineGetOwnPropertyDescriptors()
         type : number
         value : 42
     }
-    wasThrown : false
 }
 

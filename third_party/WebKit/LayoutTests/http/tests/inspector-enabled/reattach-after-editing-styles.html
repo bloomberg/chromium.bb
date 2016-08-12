@@ -34,7 +34,7 @@ function test()
 {
     InspectorTest.RuntimeAgent.evaluate("window.didReopen", dispatch);
 
-    function dispatch(error, result, wasThrown)
+    function dispatch(error, result, exceptionDetails)
     {
         if (result.type !== "number") {
             InspectorTest.addResult("Opening front-end for the first time");

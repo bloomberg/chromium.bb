@@ -99,7 +99,7 @@ private:
         ProtocolPromiseHandler<Callback>* handler = static_cast<ProtocolPromiseHandler<Callback>*>(info.Data().As<v8::External>()->Value());
         DCHECK(handler);
         v8::Local<v8::Value> value = info.Length() > 0 ? info[0] : v8::Local<v8::Value>::Cast(v8::Undefined(info.GetIsolate()));
-        handler->m_callback->sendSuccess(handler->wrapObject(value), Maybe<bool>(), Maybe<protocol::Runtime::ExceptionDetails>());
+        handler->m_callback->sendSuccess(handler->wrapObject(value), Maybe<protocol::Runtime::ExceptionDetails>());
     }
 
     static void catchCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -119,7 +119,7 @@ private:
                 .setStackTrace(stack->buildInspectorObjectImpl())
                 .build();
         }
-        handler->m_callback->sendSuccess(handler->wrapObject(value), true, std::move(exceptionDetails));
+        handler->m_callback->sendSuccess(handler->wrapObject(value), std::move(exceptionDetails));
     }
 
     ProtocolPromiseHandler(V8InspectorImpl* inspector, int contextGroupId, int executionContextId, const String16& objectGroup, bool returnByValue, bool generatePreview, std::unique_ptr<Callback> callback)
@@ -176,7 +176,6 @@ template<typename Callback>
 bool wrapEvaluateResultAsync(InjectedScript* injectedScript, v8::MaybeLocal<v8::Value> maybeResultValue, const v8::TryCatch& tryCatch, const String16& objectGroup, bool returnByValue, bool generatePreview, Callback* callback)
 {
     std::unique_ptr<RemoteObject> result;
-    Maybe<bool> wasThrown;
     Maybe<protocol::Runtime::ExceptionDetails> exceptionDetails;
 
     ErrorString errorString;
@@ -187,10 +186,9 @@ bool wrapEvaluateResultAsync(InjectedScript* injectedScript, v8::MaybeLocal<v8::
         returnByValue,
         generatePreview,
         &result,
-        &wasThrown,
         &exceptionDetails);
     if (errorString.isEmpty()) {
-        callback->sendSuccess(std::move(result), wasThrown, exceptionDetails);
+        callback->sendSuccess(std::move(result), exceptionDetails);
         return true;
     }
     callback->sendFailure(errorString);

@@ -24,7 +24,7 @@ function test()
         InspectorTest.assertEquals(snippetId, WebInspector.scriptSnippetModel._snippetIdForSourceURL(evaluationSourceURL), "Snippet can not be identified by its evaluation sourceURL.");
 
 
-        function dumpResult(target, result, wasThrown)
+        function dumpResult(target, result)
         {
             InspectorTest.addResult("Snippet execution result: " + result.description);
             callback();
@@ -230,7 +230,7 @@ function test()
                 InspectorTest.addSniffer(WebInspector.ScriptSnippetModel.prototype, "_printRunScriptResult", snippetFinished);
                 WebInspector.scriptSnippetModel.evaluateScriptSnippet(WebInspector.context.flavor(WebInspector.ExecutionContext), uiSourceCode);
 
-                function snippetFinished(result, wasThrown)
+                function snippetFinished(result)
                 {
                     var script = snippetScriptMapping._scriptForUISourceCode.get(uiSourceCode);
                     InspectorTest.addResult("Snippet execution result: " + result.description);

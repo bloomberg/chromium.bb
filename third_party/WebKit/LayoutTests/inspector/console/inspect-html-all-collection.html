@@ -6,9 +6,9 @@
 function test()
 {
     InspectorTest.RuntimeAgent.evaluate("document.all", "console", false, didGetHTMLAllCollection.bind(this));
-    function didGetHTMLAllCollection(error, result, wasThrown)
+    function didGetHTMLAllCollection(error, result, exceptionDetails)
     {
-        if (error || wasThrown) {
+        if (error || exceptionDetails) {
             InspectorTest.addResult("FAILED: " + error);
             InspectorTest.completeTest();
             return;

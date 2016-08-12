@@ -12,7 +12,7 @@ function test()
         {
             InspectorTest.RuntimeAgent.evaluate("({ a : 1, b : 2 })", step1);
 
-            function step1(error, result, wasThrown)
+            function step1(error, result, exceptionDetails)
             {
 
                 function sum()
@@ -24,7 +24,7 @@ function test()
                 InspectorTest.RuntimeAgent.callFunctionOn(obj1.objectId, sum.toString(), step2);
             }
 
-            function step2(error, result, wasThrown)
+            function step2(error, result, exceptionDetails)
             {
                 InspectorTest.addResult(result.value);
                 next();
@@ -35,7 +35,7 @@ function test()
         {
             InspectorTest.RuntimeAgent.evaluate("({ c : 1, d : 2 })", step1);
 
-            function step1(error, result, wasThrown)
+            function step1(error, result, exceptionDetails)
             {
                 function format(aobj1, aobj2, val, undef)
                 {
@@ -46,7 +46,7 @@ function test()
                 InspectorTest.RuntimeAgent.callFunctionOn(obj1.objectId, format.toString(), [obj1, obj2, {value:4}, {}], step2);
             }
 
-            function step2(error, result, wasThrown)
+            function step2(error, result, exceptionDetails)
             {
                 InspectorTest.addResult(result.value);
                 next();

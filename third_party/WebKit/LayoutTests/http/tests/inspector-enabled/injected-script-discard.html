@@ -27,7 +27,7 @@ function test()
 {
     InspectorTest.RuntimeAgent.evaluate("window.objectId", dispatch);
 
-    function dispatch(error, result, wasThrown)
+    function dispatch(error, result, exceptionDetails)
     {
         if (result.type !== "string") {
             InspectorTest.evaluateInPage("console.log('Opening front-end for the first time')");
@@ -42,7 +42,7 @@ function test()
     {
         InspectorTest.RuntimeAgent.evaluate("({ handle : \"handle\" })", storeIdInTargetWindow);
 
-        function storeIdInTargetWindow(error, result, wasThrown)
+        function storeIdInTargetWindow(error, result, exceptionDetails)
         {
             checkHandleInInjectedScript(result.objectId, reopenInspector);
 

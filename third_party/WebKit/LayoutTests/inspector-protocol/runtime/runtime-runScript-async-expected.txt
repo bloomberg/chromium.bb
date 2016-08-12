@@ -47,7 +47,6 @@ Running test: testSyntaxErrorInEvalInScript
         subtype : error
         type : object
     }
-    wasThrown : true
 }
 
 Running test: testRunNotCompiledScript
@@ -86,7 +85,6 @@ Running test: testRunScriptWithPreview
         }
         type : object
     }
-    wasThrown : false
 }
 
 Running test: testRunScriptReturnByValue
@@ -97,7 +95,6 @@ Running test: testRunScriptReturnByValue
             a : 1
         }
     }
-    wasThrown : false
 }
 
 Running test: testAwaitNotPromise
@@ -134,6 +131,5 @@ Running test: testAwaitRejectedPromise
             a : 1
         }
     }
-    wasThrown : true
 }
 

@@ -41,10 +41,10 @@ var test = function()
                 InspectorTest.RuntimeAgent.runScript(scriptId, contextId, "console", false, runCallback.bind(this));
             }
 
-            function runCallback(error, result, wasThrown, exceptionDetails)
+            function runCallback(error, result, exceptionDetails)
             {
                 InspectorTest.assertTrue(!error);
-                InspectorTest.assertTrue(!wasThrown);
+                InspectorTest.assertTrue(!exceptionDetails);
                 InspectorTest.addResult("Script result: " + result.value);
                 next();
             }
@@ -65,10 +65,10 @@ var test = function()
                 InspectorTest.RuntimeAgent.runScript(scriptId, contextId, "console", false, runCallback.bind(this));
             }
 
-            function runCallback(error, result, wasThrown, exceptionDetails)
+            function runCallback(error, result, exceptionDetails)
             {
                 InspectorTest.assertTrue(!error);
-                InspectorTest.assertTrue(wasThrown);
+                InspectorTest.assertTrue(!!exceptionDetails);
                 printExceptionDetails(exceptionDetails);
                 next();
             }

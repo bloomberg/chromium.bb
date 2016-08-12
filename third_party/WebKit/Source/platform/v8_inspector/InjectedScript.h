@@ -85,7 +85,6 @@ public:
         bool returnByValue,
         bool generatePreview,
         std::unique_ptr<protocol::Runtime::RemoteObject>* result,
-        Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*);
     v8::Local<v8::Value> lastEvaluationResult() const;
 

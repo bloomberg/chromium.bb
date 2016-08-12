@@ -57,7 +57,7 @@ function test()
 
     function didEvaluate(messageObject)
     {
-        if (messageObject.result.wasThrown)
+        if (!!messageObject.result.exceptionDetails)
             InspectorTest.log("FAIL: unexpected exception: " + JSON.stringify(messageObject, null, 2));
         if (messageObject.result.result.value !== null)
             InspectorTest.log("FAIL: unexpected value: " + JSON.stringify(messageObject, null, 2));

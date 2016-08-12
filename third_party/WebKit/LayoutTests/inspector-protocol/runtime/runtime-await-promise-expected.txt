@@ -30,7 +30,6 @@ Running test: testRejectedPromise
             a : 1
         }
     }
-    wasThrown : true
 }
 
 Running test: testRejectedPromiseWithStack
@@ -69,7 +68,6 @@ Running test: testRejectedPromiseWithStack
         type : number
         value : 239
     }
-    wasThrown : true
 }
 
 Running test: testPendingPromise

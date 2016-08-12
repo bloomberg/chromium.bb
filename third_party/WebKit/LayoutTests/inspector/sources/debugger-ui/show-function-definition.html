@@ -20,9 +20,9 @@ function test()
             InspectorTest.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
             WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate("jumpToMe", "", false, true, false, false, false, didGetFunction);
 
-            function didGetFunction(funcObject, wasThrown)
+            function didGetFunction(funcObject, exceptionDetails)
             {
-                var error = !funcObject || wasThrown;
+                var error = !funcObject || !!exceptionDetails;
                 InspectorTest.assertTrue(!error);
                 panel._showFunctionDefinition(funcObject);
             }

@@ -652,9 +652,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, EvaluateInBlankPage) {
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetString("expression", "window");
   SendCommand("Runtime.evaluate", std::move(params), true);
-  bool wasThrown = true;
-  EXPECT_TRUE(result_->GetBoolean("wasThrown", &wasThrown));
-  EXPECT_FALSE(wasThrown);
+  EXPECT_FALSE(result_->HasKey("exceptionDetails"));
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
@@ -667,9 +665,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetString("expression", "window");
   SendCommand("Runtime.evaluate", std::move(params), true);
-  bool wasThrown = true;
-  EXPECT_TRUE(result_->GetBoolean("wasThrown", &wasThrown));
-  EXPECT_FALSE(wasThrown);
+  EXPECT_FALSE(result_->HasKey("exceptionDetails"));
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, JavaScriptDialogNotifications) {

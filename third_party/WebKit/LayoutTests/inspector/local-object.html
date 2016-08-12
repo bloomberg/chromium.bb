@@ -26,14 +26,14 @@ function test()
         return "Done";
     }
 
-    function compareAndSwapCallback(result, wasThrown)
+    function compareAndSwapCallback(result)
     {
         InspectorTest.addResult("compareAndSwap(1, 28, 42) result: " + result.description);
     }
 
-    function exceptionCallback(result, wasThrown)
+    function exceptionCallback(result, exceptionDetails)
     {
-        InspectorTest.addResult("compareAndSwap(1, 28, 42) throws exception: " + wasThrown);
+        InspectorTest.addResult("compareAndSwap(1, 28, 42) throws exception: " + !!exceptionDetails);
     }
 
     function guessWhat()
@@ -41,7 +41,7 @@ function test()
         return 42;
     }
 
-    function guessWhatCallback(result, wasThrown)
+    function guessWhatCallback(result)
     {
         InspectorTest.addResult("guessWhat() result: " + result.description);
     }

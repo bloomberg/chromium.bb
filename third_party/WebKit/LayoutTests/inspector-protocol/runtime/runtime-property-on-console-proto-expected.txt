@@ -7,7 +7,6 @@ Tests that property defined on console.__proto__ doesn't observable on other Obj
             type : number
             value : 0
         }
-        wasThrown : false
     }
 }
 

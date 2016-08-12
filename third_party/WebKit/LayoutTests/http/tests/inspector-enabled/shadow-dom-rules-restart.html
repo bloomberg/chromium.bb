@@ -31,7 +31,7 @@ function test()
 {
     InspectorTest.RuntimeAgent.evaluate("window.didReopen", dispatch);
 
-    function dispatch(error, result, wasThrown)
+    function dispatch(error, result, exceptionDetails)
     {
         if (result.type !== "number") {
             InspectorTest.evaluateInPage("console.log('Opening front-end for the first time')");
@@ -50,7 +50,7 @@ function test()
     function runTests(callback)
     {
         InspectorTest.selectNodeAndWaitForStyles("inner", step2);
-        
+
         function step2()
         {
             InspectorTest.dumpSelectedElementStyles(true);

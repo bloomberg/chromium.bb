@@ -7,7 +7,6 @@ Tests that default execution context is selected correctly.
             type : number
             value : 42
         }
-        wasThrown : false
     }
 }
 

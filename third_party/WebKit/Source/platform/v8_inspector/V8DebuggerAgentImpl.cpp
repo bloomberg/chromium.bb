@@ -718,7 +718,6 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
     std::unique_ptr<RemoteObject>* result,
-    Maybe<bool>* wasThrown,
     Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     if (!assertPaused(errorString))
@@ -748,7 +747,6 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
         returnByValue.fromMaybe(false),
         generatePreview.fromMaybe(false),
         result,
-        wasThrown,
         exceptionDetails);
 }
 

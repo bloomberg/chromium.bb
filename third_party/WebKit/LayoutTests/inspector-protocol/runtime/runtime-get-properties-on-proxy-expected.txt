@@ -5,6 +5,5 @@ Check that while Runtime.getProperties call on proxy object no user defined trap
         type : number
         value : 0
     }
-    wasThrown : false
 }
 

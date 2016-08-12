@@ -318,7 +318,7 @@ std::unique_ptr<protocol::Runtime::ExceptionDetails> InjectedScript::createExcep
     return exceptionDetailsObject;
 }
 
-void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal<v8::Value> maybeResultValue, const v8::TryCatch& tryCatch, const String16& objectGroup, bool returnByValue, bool generatePreview, std::unique_ptr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal<v8::Value> maybeResultValue, const v8::TryCatch& tryCatch, const String16& objectGroup, bool returnByValue, bool generatePreview, std::unique_ptr<protocol::Runtime::RemoteObject>* result, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::Local<v8::Value> resultValue;
     if (!tryCatch.HasCaught()) {
@@ -330,18 +330,13 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
         if (objectGroup == "console")
             m_lastEvaluationResult.Reset(m_context->isolate(), resultValue);
         *result = std::move(remoteObject);
-        if (wasThrown)
-            *wasThrown = false;
     } else {
         v8::Local<v8::Value> exception = tryCatch.Exception();
         std::unique_ptr<RemoteObject> remoteObject = wrapObject(errorString, exception, objectGroup, false, generatePreview && !exception->IsNativeError());
         if (!remoteObject)
             return;
         *result = std::move(remoteObject);
-        if (exceptionDetails)
-            *exceptionDetails = createExceptionDetails(tryCatch.Message());
-        if (wasThrown)
-            *wasThrown = true;
+        *exceptionDetails = createExceptionDetails(tryCatch.Message());
     }
 }
 

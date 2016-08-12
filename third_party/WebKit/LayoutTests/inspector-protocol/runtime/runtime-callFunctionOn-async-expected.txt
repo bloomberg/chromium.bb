@@ -7,7 +7,6 @@ Running test: testArguments
         type : string
         value : undefined|NaN|[object Object]|[object Window]
     }
-    wasThrown : false
 }
 
 Running test: testSyntaxErrorInFunction
@@ -25,7 +24,6 @@ Running test: testSyntaxErrorInFunction
         subtype : error
         type : object
     }
-    wasThrown : true
 }
 
 Running test: testExceptionInFunctionExpression
@@ -43,7 +41,6 @@ Running test: testExceptionInFunctionExpression
         subtype : error
         type : object
     }
-    wasThrown : true
 }
 
 Running test: testFunctionReturnNotPromise
@@ -102,6 +99,5 @@ Running test: testFunctionReturnRejectedPromise
             a : 3
         }
     }
-    wasThrown : true
 }
 

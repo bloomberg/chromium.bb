@@ -7,7 +7,7 @@
 function test()
 {
     InspectorTest.evaluateInPage("document", didReceiveDocumentObject);
-    function didReceiveDocumentObject(remoteObject, wasThrown)
+    function didReceiveDocumentObject(remoteObject)
     {
         InspectorTest.addResult("didReceiveDocumentObject");
         InspectorTest.DOMAgent.requestNode(remoteObject.objectId, didRequestNode);

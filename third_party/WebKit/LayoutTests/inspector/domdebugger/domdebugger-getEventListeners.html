@@ -31,19 +31,19 @@ function test()
         {
             InspectorTest.RuntimeAgent.evaluate("window", "get-event-listeners-test", step1);
 
-            function step1(error, result, wasThrown)
+            function step1(error, result, exceptionDetails)
             {
                 windowObject = InspectorTest.runtimeModel.createRemoteObject(result);
                 InspectorTest.RuntimeAgent.evaluate("document.getElementById(\"with-handlers\")", "get-event-listeners-test", step2);
             }
 
-            function step2(error, result, wasThrown)
+            function step2(error, result, exceptionDetails)
             {
                 divWithHandlers = InspectorTest.runtimeModel.createRemoteObject(result);
                 InspectorTest.RuntimeAgent.evaluate("document.getElementById(\"without-handlers\")", "get-event-listeners-test", step3);
             }
 
-            function step3(error, result, wasThrown)
+            function step3(error, result, exceptionDetails)
             {
                 divWithoutHandlers = InspectorTest.runtimeModel.createRemoteObject(result);
                 next();

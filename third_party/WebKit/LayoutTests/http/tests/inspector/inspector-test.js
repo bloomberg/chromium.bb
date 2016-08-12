@@ -43,10 +43,10 @@ InspectorTest.evaluateInPage = function(code, callback)
 {
     callback = InspectorTest.safeWrap(callback);
 
-    function mycallback(error, result, wasThrown)
+    function mycallback(error, result, exceptionDetails)
     {
         if (!error)
-            callback(InspectorTest.runtimeModel.createRemoteObject(result), wasThrown);
+            callback(InspectorTest.runtimeModel.createRemoteObject(result), exceptionDetails);
     }
     InspectorTest.RuntimeAgent.evaluate(code, "console", false, mycallback);
 }
@@ -71,9 +71,9 @@ InspectorTest.evaluateInPageAsync = function(code)
         /* awaitPromise */ true,
         mycallback);
 
-    function mycallback(error, result, wasThrown, exceptionDetails)
+    function mycallback(error, result, exceptionDetails)
     {
-        if (!error && !wasThrown) {
+        if (!error && !exceptionDetails) {
             callback(InspectorTest.runtimeModel.createRemoteObject(result));
         } else {
             if (error)
