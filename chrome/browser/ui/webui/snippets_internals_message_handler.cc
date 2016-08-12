@@ -191,10 +191,15 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
 
   SendBoolean("flag-snippets", base::FeatureList::IsEnabled(
                                    ntp_snippets::kContentSuggestionsFeature));
-
-  SendBoolean("flag-offline-page-suggestions",
+  SendBoolean("flag-recent-offline-tab-suggestions",
               base::FeatureList::IsEnabled(
-                  ntp_snippets::kOfflinePageSuggestionsFeature));
+                  ntp_snippets::kRecentOfflineTabSuggestionsFeature));
+  SendBoolean(
+      "flag-download-suggestions",
+      base::FeatureList::IsEnabled(ntp_snippets::kDownloadSuggestionsFeature));
+  SendBoolean(
+      "flag-bookmark-suggestions",
+      base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature));
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.setHostRestricted",

@@ -12,8 +12,11 @@ const base::Feature kArticleSuggestionsFeature{
 const base::Feature kBookmarkSuggestionsFeature{
     "NTPBookmarkSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kOfflinePageSuggestionsFeature{
+const base::Feature kRecentOfflineTabSuggestionsFeature{
     "NTPOfflinePageSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDownloadSuggestionsFeature{
+    "NTPDownloadSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsFeature{
     "NTPSnippets", base::FEATURE_ENABLED_BY_DEFAULT};

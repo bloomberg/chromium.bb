@@ -15138,11 +15138,17 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_DESCRIPTION" desc="Description for the flag to enable snippets on the New Tab page." translateable="false">
         If enabled, the New Tab page will show a list of content snippets
       </message>
-      <message name="IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_NAME" desc="Name for the flag to enable offline page suggestions on the New Tab page." translateable="false">
-        Show offline pages on the New Tab page
+      <message name="IDS_FLAGS_ENABLE_NTP_RECENT_OFFLINE_TAB_SUGGESTIONS_NAME" desc="Name for the flag to enable suggestions for recently viewed tabs, which were captured offline, on the New Tab page." translateable="false">
+        Show recent offline tabs on the New Tab page
       </message>
-      <message name="IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable offline page suggestions on the New Tab page." translateable="false">
+      <message name="IDS_FLAGS_ENABLE_NTP_RECENT_OFFLINE_TAB_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable suggestions for recently viewed tabs on the New Tab page." translateable="false">
         If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain pages that were captured offline during browsing (see #offlining-recent-pages)
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_DOWNLOAD_SUGGESTIONS_NAME" desc="Name for the flag to enable downloads suggestions on the New Tab page." translateable="false">
+        Show downloads on the New Tab page
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_DOWNLOAD_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable downloads suggestions on the New Tab page." translateable="false">
+        If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain pages that the user downloaded for later use.
       </message>
       <message name="IDS_FLAGS_ENABLE_NTP_BOOKMARK_SUGGESTIONS_NAME" desc="Name for the flag to enable bookmark suggestions on the New Tab page." translateable="false">
         Show recently visited bookmarks on the New Tab page

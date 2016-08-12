@@ -207,7 +207,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProviders) {
               Eq(ContentSuggestionsService::State::ENABLED));
   Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
   Category offline_pages_category =
-      FromKnownCategory(KnownCategories::OFFLINE_PAGES);
+      FromKnownCategory(KnownCategories::BOOKMARKS);
   ASSERT_THAT(providers(), IsEmpty());
   EXPECT_THAT(service()->GetCategories(), IsEmpty());
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
@@ -240,7 +240,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProviders) {
 TEST_F(ContentSuggestionsServiceDisabledTest, ShouldDoNothingWhenDisabled) {
   Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
   Category offline_pages_category =
-      FromKnownCategory(KnownCategories::OFFLINE_PAGES);
+      FromKnownCategory(KnownCategories::BOOKMARKS);
   EXPECT_THAT(service()->state(),
               Eq(ContentSuggestionsService::State::DISABLED));
   EXPECT_THAT(providers(), IsEmpty());
@@ -256,7 +256,7 @@ TEST_F(ContentSuggestionsServiceDisabledTest, ShouldDoNothingWhenDisabled) {
 TEST_F(ContentSuggestionsServiceTest, ShouldRedirectFetchSuggestionImage) {
   Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
   Category offline_pages_category =
-      FromKnownCategory(KnownCategories::OFFLINE_PAGES);
+      FromKnownCategory(KnownCategories::BOOKMARKS);
   MockProvider* provider1 = MakeProvider(articles_category);
   MockProvider* provider2 = MakeProvider(offline_pages_category);
 
@@ -289,7 +289,7 @@ TEST_F(ContentSuggestionsServiceTest,
 TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDismissSuggestion) {
   Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
   Category offline_pages_category =
-      FromKnownCategory(KnownCategories::OFFLINE_PAGES);
+      FromKnownCategory(KnownCategories::BOOKMARKS);
   MockProvider* provider1 = MakeProvider(articles_category);
   MockProvider* provider2 = MakeProvider(offline_pages_category);
 
@@ -304,7 +304,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDismissSuggestion) {
 TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
   Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
   Category offline_pages_category =
-      FromKnownCategory(KnownCategories::OFFLINE_PAGES);
+      FromKnownCategory(KnownCategories::BOOKMARKS);
 
   // Create and register providers
   MockProvider* provider1 = MakeProvider(articles_category);
@@ -343,7 +343,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
   ExpectThatSuggestionsAre(offline_pages_category, {13, 14});
   Mock::VerifyAndClearExpectations(&observer);
 
-  // provider2 reports OFFLINE_PAGES as unavailable
+  // provider2 reports BOOKMARKS as unavailable
   EXPECT_CALL(observer, OnCategoryStatusChanged(
                             offline_pages_category,
                             CategoryStatus::CATEGORY_EXPLICITLY_DISABLED))

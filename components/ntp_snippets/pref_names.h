@@ -18,7 +18,8 @@ extern const char kSnippetFetcherQuotaCount[];
 // requests.
 extern const char kSnippetFetcherQuotaDay[];
 
-extern const char kDismissedOfflinePageSuggestions[];
+extern const char kDismissedRecentOfflineTabSuggestions[];
+extern const char kDismissedDownloadSuggestions[];
 
 }  // namespace prefs
 }  // namespace ntp_snippets

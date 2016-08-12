@@ -150,6 +150,9 @@ public class NewTabPageView extends FrameLayout
         /** Opens the recent tabs page in the current tab. */
         void navigateToRecentTabs();
 
+        /** Opens the Download Manager UI in the current tab. */
+        void navigateToDownloadManager();
+
         /**
          * Opens a URL in the current tab and records related metrics.
          * @param url the URL to open

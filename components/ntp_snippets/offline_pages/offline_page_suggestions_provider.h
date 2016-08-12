@@ -35,6 +35,9 @@ class OfflinePageSuggestionsProvider
       public offline_pages::OfflinePageModel::Observer {
  public:
   OfflinePageSuggestionsProvider(
+      bool recent_tabs_enabled,
+      bool downloads_enabled,
+      bool download_manager_ui_enabled,
       ContentSuggestionsProvider::Observer* observer,
       CategoryFactory* category_factory,
       offline_pages::OfflinePageModel* offline_page_model,
@@ -69,28 +72,47 @@ class OfflinePageSuggestionsProvider
   void OnOfflinePagesLoaded(
       const offline_pages::MultipleOfflinePageItemResult& result);
 
-  // Updates the |category_status_| and notifies the |observer_|, if necessary.
-  void NotifyStatusChanged(CategoryStatus new_status);
+  // Updates the |category_status_| of the |category| and notifies the
+  // |observer_|, if necessary.
+  void NotifyStatusChanged(Category category, CategoryStatus new_status);
 
-  // Converts an OfflinePageItem to a ContentSuggestion.
+  // Converts an OfflinePageItem to a ContentSuggestion for the |category|.
   ContentSuggestion ConvertOfflinePage(
+      Category category,
       const offline_pages::OfflinePageItem& offline_page) const;
 
-  // Reads |dismissed_ids_| from the prefs.
-  void ReadDismissedIDsFromPrefs();
+  // Gets the |kMaxSuggestionsCount| most recently visited OfflinePageItems from
+  // the list, orders them by last visit date and converts them to
+  // ContentSuggestions for the |category|.
+  std::vector<ContentSuggestion> GetMostRecentlyVisited(
+      Category category,
+      std::vector<const offline_pages::OfflinePageItem*> offline_page_items)
+      const;
 
-  // Writes |dismissed_ids_| to the prefs.
-  void StoreDismissedIDsToPrefs();
+  // Reads dismissed IDs from the pref with name |pref_name|.
+  std::set<std::string> ReadDismissedIDsFromPrefs(
+      const std::string& pref_name) const;
 
-  CategoryStatus category_status_;
+  // Writes |dismissed_ids| to the pref with name |pref_name|.
+  void StoreDismissedIDsToPrefs(const std::string& pref_name,
+                                const std::set<std::string>& dismissed_ids);
+
+  CategoryStatus recent_tabs_status_;
+  CategoryStatus downloads_status_;
 
   offline_pages::OfflinePageModel* offline_page_model_;
 
-  const Category provided_category_;
+  const Category recent_tabs_category_;
+  const Category downloads_category_;
 
   PrefService* pref_service_;
 
-  std::set<std::string> dismissed_ids_;
+  std::set<std::string> dismissed_recent_tab_ids_;
+  std::set<std::string> dismissed_download_ids_;
+
+  // Whether the Download Manager UI is enabled, in which case the More button
+  // for the Downloads section can redirect there.
+  const bool download_manager_ui_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageSuggestionsProvider);
 };

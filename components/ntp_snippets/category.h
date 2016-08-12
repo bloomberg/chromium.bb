@@ -19,8 +19,11 @@ class CategoryFactory;
 // On Android builds, a Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
 enum class KnownCategories {
-  // Pages downloaded for offline consumption.
-  OFFLINE_PAGES,
+  // Pages recently downloaded during normal navigation.
+  RECENT_TABS,
+
+  // Pages downloaded by the user for offline consumption.
+  DOWNLOADS,
 
   // Recently used bookmarks.
   BOOKMARKS,

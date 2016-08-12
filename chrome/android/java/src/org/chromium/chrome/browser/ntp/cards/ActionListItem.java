@@ -41,9 +41,8 @@ class ActionListItem implements NewTabPageListItem {
                     int category = mActionListItem.mCategory;
                     if (category == KnownCategories.BOOKMARKS) {
                         manager.navigateToBookmarks();
-                    } else if (category == KnownCategories.OFFLINE_PAGES) {
-                        // TODO(pke): Implement.
-                        // org.chromium.chrome.browser.download.DownloadUtils.showDownloadManager
+                    } else if (category == KnownCategories.DOWNLOADS) {
+                        manager.navigateToDownloadManager();
                     } else {
                         // TODO(pke): This should redirect to the C++ backend. Once it does,
                         // change the condition in the SuggestionsSection constructor.

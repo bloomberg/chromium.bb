@@ -126,15 +126,22 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
 #if defined(OS_ANDROID)
   // Create the OfflinePageSuggestionsProvider.
-  if (base::FeatureList::IsEnabled(
-      ntp_snippets::kOfflinePageSuggestionsFeature)) {
+  bool recent_tabs_enabled = base::FeatureList::IsEnabled(
+      ntp_snippets::kRecentOfflineTabSuggestionsFeature);
+  bool downloads_enabled =
+      base::FeatureList::IsEnabled(ntp_snippets::kDownloadSuggestionsFeature);
+  bool download_manager_ui_enabled =
+      base::FeatureList::IsEnabled(chrome::android::kDownloadsUiFeature);
+  if (recent_tabs_enabled || downloads_enabled) {
     OfflinePageModel* offline_page_model =
         OfflinePageModelFactory::GetForBrowserContext(profile);
 
     std::unique_ptr<OfflinePageSuggestionsProvider>
         offline_page_suggestions_provider =
             base::MakeUnique<OfflinePageSuggestionsProvider>(
-                service, service->category_factory(), offline_page_model,
+                recent_tabs_enabled, downloads_enabled,
+                download_manager_ui_enabled, service,
+                service->category_factory(), offline_page_model,
                 profile->GetPrefs());
     service->RegisterProvider(std::move(offline_page_suggestions_provider));
   }

@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
@@ -370,6 +371,14 @@ public class NewTabPage
             if (mIsDestroyed) return;
             RecordUserAction.record("MobileNTPSwitchToOpenTabs");
             mTab.loadUrl(new LoadUrlParams(UrlConstants.RECENT_TABS_URL));
+        }
+
+        @Override
+        public void navigateToDownloadManager() {
+            if (mIsDestroyed) return;
+            assert ChromeFeatureList.isEnabled("DownloadsUi");
+            // TODO(pke): RecordUserAction.record("MobileNTPSwitchToDownloadManager");
+            DownloadUtils.showDownloadManager(mActivity, mTab);
         }
 
         @Override

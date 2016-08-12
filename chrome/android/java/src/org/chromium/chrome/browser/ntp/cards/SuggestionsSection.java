@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
@@ -32,7 +33,14 @@ public class SuggestionsSection implements ItemGroup {
         mHeader = new SnippetHeaderListItem(mInfo.getTitle());
         // TODO(pke): Replace the condition with "info.hasMoreButton()" once all other categories
         // are supported by the C++ backend, too.
-        mMoreButton = (category == KnownCategories.BOOKMARKS) ? new ActionListItem(category) : null;
+        // Right now, we hard-code all the sections that are handled in ActionListItem.
+        boolean showMoreButton = false;
+        if (category == KnownCategories.BOOKMARKS) {
+            showMoreButton = true;
+        } else if (category == KnownCategories.DOWNLOADS) {
+            showMoreButton = ChromeFeatureList.isEnabled("DownloadsUi");
+        }
+        mMoreButton = showMoreButton ? new ActionListItem(category) : null;
         setSuggestions(suggestions, status, adapter);
     }
 
