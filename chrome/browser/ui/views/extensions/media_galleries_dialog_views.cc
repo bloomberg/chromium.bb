@@ -21,6 +21,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
@@ -305,22 +306,28 @@ void MediaGalleriesDialogViews::ShowContextMenuForView(
 void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
                                                 ui::MenuSourceType source_type,
                                                 MediaGalleryPrefId id) {
-  context_menu_runner_.reset(new views::MenuRunner(
+  menu_model_adapter_.reset(new views::MenuModelAdapter(
       controller_->GetContextMenu(id),
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
+      base::Bind(&MediaGalleriesDialogViews::OnMenuClosed,
+                 base::Unretained(this))));
 
-  if (context_menu_runner_->RunMenuAt(GetWidget(),
-                                      NULL,
-                                      gfx::Rect(point.x(), point.y(), 0, 0),
-                                      views::MENU_ANCHOR_TOPLEFT,
-                                      source_type) ==
-      views::MenuRunner::MENU_DELETED) {
-    return;
-  }
+  context_menu_runner_.reset(new views::MenuRunner(
+      menu_model_adapter_->CreateMenu(), views::MenuRunner::HAS_MNEMONICS |
+                                             views::MenuRunner::CONTEXT_MENU |
+                                             views::MenuRunner::ASYNC));
+
+  context_menu_runner_->RunMenuAt(GetWidget(), NULL,
+                                  gfx::Rect(point.x(), point.y(), 0, 0),
+                                  views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 bool MediaGalleriesDialogViews::ControllerHasWebContents() const {
   return controller_->WebContents() != NULL;
+}
+
+void MediaGalleriesDialogViews::OnMenuClosed() {
+  menu_model_adapter_.reset();
+  context_menu_runner_.reset();
 }
 
 // MediaGalleriesDialogViewsController -----------------------------------------
