@@ -34,6 +34,9 @@
 
 .clear-browser-data-counter {
   color: #999;
+}
+
+input[type=checkbox] ~ span {
   line-height: 1.4em;
 }
 
