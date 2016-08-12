@@ -236,25 +236,18 @@ class FindRequestManagerTest : public ContentBrowserTest,
   // cross-process.
   void LoadMultiFramePage(int height, bool cross_process) {
     LoadAndWait("/find_in_page_multi_frame.html");
-
-    FrameTreeNode* root =
-        static_cast<WebContentsImpl*>(shell()->web_contents())->
-        GetFrameTree()->root();
-
+    FrameTreeNode* root = contents()->GetFrameTree()->root();
     LoadMultiFramePageChildFrames(height, cross_process, root);
   }
 
   // Reloads the child frame cross-process.
   void MakeChildFrameCrossProcess() {
-    FrameTreeNode* root =
-        static_cast<WebContentsImpl*>(shell()->web_contents())->
-        GetFrameTree()->root();
+    FrameTreeNode* root = contents()->GetFrameTree()->root();
+    FrameTreeNode* child = root->child_at(0);
+    GURL url(embedded_test_server()->GetURL(
+        "b.com", child->current_url().path()));
 
     TestNavigationObserver observer(shell()->web_contents());
-
-    FrameTreeNode* child = root->child_at(0);
-    GURL url(embedded_test_server()->GetURL("b.com",
-                                            child->current_url().path()));
     NavigateFrameToURL(child, url);
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
@@ -268,8 +261,8 @@ class FindRequestManagerTest : public ContentBrowserTest,
                      options);
   }
 
-  WebContents* contents() const {
-    return shell()->web_contents();
+  WebContentsImpl* contents() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
   }
 
   TestWebContentsDelegate* delegate() const {
@@ -439,9 +432,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(RemoveFrame)) {
   EXPECT_EQ(17, results.active_match_ordinal);
 
   // Remove a frame.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-      GetFrameTree()->root();
+  FrameTreeNode* root = contents()->GetFrameTree()->root();
   root->RemoveChild(root->child_at(0));
 
   // The number of matches and active match ordinal should update automatically
@@ -466,6 +457,35 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(HiddenFrame)) {
   EXPECT_EQ(last_request_id(), results.request_id);
   EXPECT_EQ(1, results.number_of_matches);
   EXPECT_EQ(1, results.active_match_ordinal);
+}
+
+// Tests that new matches can be found in dynamically added text.
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
+  LoadAndWait("/find_in_dynamic_page.html");
+
+  blink::WebFindOptions options;
+  Find("result", options);
+  options.findNext = true;
+  Find("result", options);
+  Find("result", options);
+  delegate()->WaitForFinalReply();
+
+  FindResults results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(3, results.number_of_matches);
+  EXPECT_EQ(3, results.active_match_ordinal);
+
+  // Dynamically add new text to the page. This text contains 5 new matches for
+  // "result".
+  ASSERT_TRUE(ExecuteScript(contents()->GetMainFrame(), "addNewText()"));
+
+  Find("result", options);
+  delegate()->WaitForFinalReply();
+
+  results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(8, results.number_of_matches);
+  EXPECT_EQ(4, results.active_match_ordinal);
 }
 
 #if defined(OS_ANDROID)
