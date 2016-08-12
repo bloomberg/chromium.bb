@@ -45,12 +45,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
@@ -933,33 +931,21 @@ public class WebsiteSettingsPopup implements OnClickListener {
             assert false : "Invalid source passed";
         }
 
-        OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(tab.getProfile());
-        if (offlinePageBridge == null) {
-            new WebsiteSettingsPopup(
-                    activity, tab.getProfile(), tab.getWebContents(), null, null, contentPublisher);
-            return;
+        String offlinePageOriginalUrl = null;
+        String offlinePageCreationDate = null;
+
+        OfflinePageItem offlinePage = tab.getOfflinePage();
+        if (offlinePage != null) {
+            // Get formatted creation date of the offline page.
+            Date creationDate = new Date(offlinePage.getCreationTimeMs());
+            DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
+            offlinePageCreationDate = df.format(creationDate);
+            offlinePageOriginalUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(
+                    offlinePage.getUrl());
         }
 
-        Callback<OfflinePageItem> callback = new Callback<OfflinePageItem>() {
-            @Override
-            public void onResult(OfflinePageItem item) {
-                String offlinePageOriginalUrl = null;
-                String offlinePageCreationDate = null;
-
-                if (item != null) {
-                    // Get formatted creation date and original URL of the offline copy.
-                    Date creationDate = new Date(item.getCreationTimeMs());
-                    DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
-                    offlinePageCreationDate = df.format(creationDate);
-                    offlinePageOriginalUrl =
-                            OfflinePageUtils.stripSchemeFromOnlineUrl(item.getUrl());
-                }
-                new WebsiteSettingsPopup(activity, tab.getProfile(), tab.getWebContents(),
-                        offlinePageOriginalUrl, offlinePageCreationDate, contentPublisher);
-            }
-        };
-
-        offlinePageBridge.getPageByOfflineUrl(tab.getWebContents().getVisibleUrl(), callback);
+        new WebsiteSettingsPopup(activity, tab.getProfile(), tab.getWebContents(),
+                offlinePageOriginalUrl, offlinePageCreationDate, contentPublisher);
     }
 
     private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);

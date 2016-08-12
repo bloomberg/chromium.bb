@@ -39,9 +39,12 @@ public class OfflinePageUtils {
     /** Background task tag to differentiate from other task types */
     public static final String TASK_TAG = "OfflinePageUtils";
 
-    private static final int SNACKBAR_DURATION = 6 * 1000; // 6 second
+    private static final int DEFAULT_SNACKBAR_DURATION_MS = 6 * 1000; // 6 second
 
     private static final long STORAGE_ALMOST_FULL_THRESHOLD_BYTES = 10L * (1 << 20); // 10M
+
+    // Used instead of the constant so tests can override the value.
+    private static int sSnackbarDurationMs = DEFAULT_SNACKBAR_DURATION_MS;
 
     private static OfflinePageUtils sInstance;
 
@@ -179,7 +182,7 @@ public class OfflinePageUtils {
                 Snackbar.make(context.getString(R.string.offline_pages_viewing_offline_page),
                         snackbarController, Snackbar.TYPE_ACTION, Snackbar.UMA_OFFLINE_PAGE_RELOAD)
                         .setSingleLine(false).setAction(context.getString(R.string.reload), tabId);
-        snackbar.setDuration(SNACKBAR_DURATION);
+        snackbar.setDuration(sSnackbarDurationMs);
         snackbarManager.showSnackbar(snackbar);
     }
 
@@ -288,5 +291,10 @@ public class OfflinePageUtils {
     @VisibleForTesting
     static void setInstanceForTesting(OfflinePageUtils instance) {
         sInstance = instance;
+    }
+
+    @VisibleForTesting
+    public static void setSnackbarDurationForTesting(int durationMs) {
+        sSnackbarDurationMs = durationMs;
     }
 }

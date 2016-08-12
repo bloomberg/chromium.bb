@@ -230,7 +230,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   jboolean IsOfflinePage(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 
-  base::android::ScopedJavaLocalRef<jstring> GetOfflinePageOriginalUrl(
+  base::android::ScopedJavaLocalRef<jobject> GetOfflinePage(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 

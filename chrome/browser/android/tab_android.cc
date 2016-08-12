@@ -14,6 +14,7 @@
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
+#include "chrome/browser/android/offline_pages/offline_page_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
@@ -792,24 +793,21 @@ jboolean TabAndroid::HasOfflineCopy(JNIEnv* env,
 
 jboolean TabAndroid::IsOfflinePage(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
-  GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
-      web_contents()->GetURL());
-  return offline_pages::OfflinePageUtils::IsOfflinePage(GetProfile(), url);
+  return offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(
+      web_contents()) != nullptr;
 }
 
-ScopedJavaLocalRef<jstring> TabAndroid::GetOfflinePageOriginalUrl(
+ScopedJavaLocalRef<jobject> TabAndroid::GetOfflinePage(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
-      web_contents()->GetURL());
-  GURL original_url =
-      offline_pages::OfflinePageUtils::MaybeGetOnlineURLForOfflineURL(
-          GetProfile(), url);
-  if (!original_url.is_valid())
-    return ScopedJavaLocalRef<jstring>();
+  const offline_pages::OfflinePageItem* offline_page =
+      offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(
+          web_contents());
+  if (!offline_page)
+    return ScopedJavaLocalRef<jobject>();
 
-  return ScopedJavaLocalRef<jstring>(
-      ConvertUTF8ToJavaString(env, original_url.spec()));
+  return offline_pages::android::OfflinePageBridge::ConvertToJavaOfflinePage(
+      env, *offline_page);
 }
 
 bool TabAndroid::HasPrerenderedUrl(JNIEnv* env,

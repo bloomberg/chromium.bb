@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.TabState.WebContentsState;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.banners.AppBannerManager;
-import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
@@ -70,6 +69,7 @@ import org.chromium.chrome.browser.navigation.NavigationHandler;
 import org.chromium.chrome.browser.navigation.TabWebContentsNavigationHandler;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
+import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
@@ -2897,11 +2897,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return Url of the original page, if tab currently displays offline copy of it,
-     * <code>null</code> otherwise.
+     * @return The offline page if tab currently displays it, null otherwise.
      */
-    public String getOfflinePageOriginalUrl() {
-        return isFrozen() ? null : nativeGetOfflinePageOriginalUrl(mNativeTabAndroid);
+    public OfflinePageItem getOfflinePage() {
+        return isFrozen() ? null : nativeGetOfflinePage(mNativeTabAndroid);
     }
 
     /**
@@ -2910,8 +2909,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     @CalledByNative
     public void showOfflinePages() {
-        // The offline pages filter view will be loaded by default when offline.
-        BookmarkUtils.showBookmarkManager(getActivity());
+        // TODO(jianli): This is not currently used. Figure out what to do here.
+        // http://crbug.com/636574
     }
 
     /**
@@ -2919,11 +2918,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * the original page. Otherwise return the original url from DOMDistiller.
      */
     public String getOriginalUrl() {
-        if (isOfflinePage()) {
-            return getOfflinePageOriginalUrl();
-        } else {
-            return DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(getUrl());
-        }
+        OfflinePageItem offlinePage = getOfflinePage();
+        if (offlinePage != null) return offlinePage.getUrl();
+        return DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(getUrl());
     }
 
     /**
@@ -3285,7 +3282,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
     private native boolean nativeHasOfflineCopy(long nativeTabAndroid);
     private native boolean nativeIsOfflinePage(long nativeTabAndroid);
-    private native String nativeGetOfflinePageOriginalUrl(long nativeTabAndroid);
+    private native OfflinePageItem nativeGetOfflinePage(long nativeTabAndroid);
     private native void nativeSetInterceptNavigationDelegate(long nativeTabAndroid,
             InterceptNavigationDelegate delegate);
     private native void nativeAttachToTabContentManager(long nativeTabAndroid,

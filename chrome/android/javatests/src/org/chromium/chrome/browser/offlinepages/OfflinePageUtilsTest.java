@@ -9,7 +9,6 @@ import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.Callback;
-import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -34,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 /** Unit tests for {@link OfflinePageUtils}. */
 @CommandLineFlags.Add("enable-features=OfflineBookmarks")
 public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-    private static final String TAG = "OfflinePageUtilsTest";
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
     private static final int TIMEOUT_MS = 5000;
     private static final ClientId BOOKMARK_ID =
@@ -54,8 +52,8 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                // Ensure we start in an offline state.
-                NetworkChangeNotifier.forceConnectivityState(false);
+                // Ensure we start in an online state.
+                NetworkChangeNotifier.forceConnectivityState(true);
 
                 Profile profile = Profile.getLastUsedProfile();
                 mOfflinePageBridge = OfflinePageBridge.getForProfile(profile);
@@ -121,13 +119,11 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
 
         @Override
         public void onAction(Object actionData) {
-            Log.d(TAG, "onAction for snackbar");
             mTabId = (int) actionData;
         }
 
         @Override
         public void onDismissNoAction(Object actionData) {
-            Log.d(TAG, "onDismissNoAction for snackbar");
             if (actionData == null) return;
             mTabId = (int) actionData;
             mDismissed = true;
@@ -150,32 +146,32 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
     @SmallTest
     public void testShowOfflineSnackbarIfNecessary() throws Exception {
         // Arrange - build a mock controller for sensing.
-        Log.d(TAG, "Starting test");
+        OfflinePageUtils.setSnackbarDurationForTesting(1000);
         final MockSnackbarController mockSnackbarController = new MockSnackbarController();
-        Log.d(TAG, "mockSnackbarController " + mockSnackbarController);
 
         // Save an offline page.
         String testUrl = mTestServer.getURL(TEST_PAGE);
         loadUrl(testUrl);
         savePage(SavePageResult.SUCCESS, testUrl);
 
-        // Load an offline page into the current tab.  Note that this will create a
-        // SnackbarController when the page loads, but we use our own for the test. The one created
-        // here will also get the notification, but that won't interfere with our test.
-        List<OfflinePageItem> allPages = getAllPages();
-        OfflinePageItem offlinePage = allPages.get(0);
-        String offlinePageUrl = offlinePage.getOfflineUrl();
-        loadUrl(offlinePageUrl);
-        Log.d(TAG, "Calling showOfflineSnackbarIfNecessary from test");
+        // With network disconnected, loading an online URL will result in loading an offline page.
+        // Note that this will create a SnackbarController when the page loads, but we use our own
+        // for the test. The one created here will also get the notification, but that won't
+        // interfere with our test.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                NetworkChangeNotifier.forceConnectivityState(false);
+            }
+        });
+        loadUrl(testUrl);
 
         int tabId = getActivity().getActivityTab().getId();
 
         // Act.  This needs to be called from the UI thread.
-        Log.d(TAG, "before connecting NCN online state " + NetworkChangeNotifier.isOnline());
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, "Showing offline snackbar from UI thread");
                 OfflinePageTabObserver.init(getActivity().getBaseContext(),
                         getActivity().getSnackbarManager(), mockSnackbarController);
                 OfflinePageUtils.showOfflineSnackbarIfNecessary(getActivity().getActivityTab());
@@ -193,8 +189,6 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         mockSnackbarController.waitForSnackbarControllerToFinish();
 
         // Assert snackbar was shown.
-        Log.d(TAG, "last tab id = " + mockSnackbarController.getLastTabId());
-        Log.d(TAG, "dismissed = " + mockSnackbarController.getDismissed());
         assertEquals(tabId, mockSnackbarController.getLastTabId());
         assertTrue(mockSnackbarController.getDismissed());
     }

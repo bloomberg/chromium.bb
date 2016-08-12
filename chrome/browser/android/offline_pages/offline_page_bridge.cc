@@ -184,6 +184,13 @@ static ScopedJavaLocalRef<jobject> GetOfflinePageBridgeForProfile(
   return ScopedJavaLocalRef<jobject>(bridge->java_ref());
 }
 
+// static
+ScopedJavaLocalRef<jobject> OfflinePageBridge::ConvertToJavaOfflinePage(
+    JNIEnv* env,
+    const OfflinePageItem& offline_page) {
+  return ToJavaOfflinePageItem(env, offline_page);
+}
+
 OfflinePageBridge::OfflinePageBridge(JNIEnv* env,
                                      content::BrowserContext* browser_context,
                                      OfflinePageModel* offline_page_model)

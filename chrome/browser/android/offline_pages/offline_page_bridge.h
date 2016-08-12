@@ -9,6 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -28,6 +29,10 @@ namespace android {
 class OfflinePageBridge : public OfflinePageModel::Observer,
                           public base::SupportsUserData::Data {
  public:
+  static base::android::ScopedJavaLocalRef<jobject> ConvertToJavaOfflinePage(
+      JNIEnv* env,
+      const OfflinePageItem& offline_page);
+
   OfflinePageBridge(JNIEnv* env,
                     content::BrowserContext* browser_context,
                     OfflinePageModel* offline_page_model);
