@@ -16,8 +16,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/budget_service/background_budget_service.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/component_updater/recovery_component_installer.h"
-#include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
+#include "chrome/browser/component_updater/component_updater_prefs.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -329,8 +328,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ChromeMetricsServiceClient::RegisterPrefs(registry);
   ChromeTracingDelegate::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
-  component_updater::RegisterPrefsForRecoveryComponent(registry);
-  component_updater::SupervisedUserWhitelistInstaller::RegisterPrefs(registry);
+  component_updater::RegisterPrefs(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   geolocation::RegisterPrefs(registry);

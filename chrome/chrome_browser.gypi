@@ -154,6 +154,8 @@
       'browser/component_updater/component_patcher_operation_out_of_process.cc',
       'browser/component_updater/component_patcher_operation_out_of_process.h',
       'browser/component_updater/component_updater_resource_throttle.cc',
+      'browser/component_updater/component_updater_prefs.cc',
+      'browser/component_updater/component_updater_prefs.h',
       'browser/component_updater/component_updater_resource_throttle.h',
       'browser/component_updater/ev_whitelist_component_installer.cc',
       'browser/component_updater/ev_whitelist_component_installer.h',
