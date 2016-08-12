@@ -19,7 +19,8 @@ SSLPolicyBackend::SSLPolicyBackend(NavigationControllerImpl* controller)
 
 void SSLPolicyBackend::HostRanInsecureContent(const std::string& host, int id) {
   if (ssl_host_state_delegate_)
-    ssl_host_state_delegate_->HostRanInsecureContent(host, id);
+    ssl_host_state_delegate_->HostRanInsecureContent(
+        host, id, SSLHostStateDelegate::MIXED_CONTENT);
   SSLManager::NotifySSLInternalStateChanged(controller_->GetBrowserContext());
 }
 
@@ -28,7 +29,8 @@ bool SSLPolicyBackend::DidHostRunInsecureContent(const std::string& host,
   if (!ssl_host_state_delegate_)
     return false;
 
-  return ssl_host_state_delegate_->DidHostRunInsecureContent(host, pid);
+  return ssl_host_state_delegate_->DidHostRunInsecureContent(
+      host, pid, SSLHostStateDelegate::MIXED_CONTENT);
 }
 
 void SSLPolicyBackend::RevokeUserAllowExceptions(const std::string& host) {

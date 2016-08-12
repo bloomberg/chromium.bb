@@ -55,13 +55,17 @@ AwSSLHostStateDelegate::AwSSLHostStateDelegate() {
 AwSSLHostStateDelegate::~AwSSLHostStateDelegate() {
 }
 
-void AwSSLHostStateDelegate::HostRanInsecureContent(const std::string& host,
-                                                    int pid) {
+void AwSSLHostStateDelegate::HostRanInsecureContent(
+    const std::string& host,
+    int pid,
+    InsecureContentType content_type) {
   // Intentional no-op for Android WebView.
 }
 
-bool AwSSLHostStateDelegate::DidHostRunInsecureContent(const std::string& host,
-                                                       int pid) const {
+bool AwSSLHostStateDelegate::DidHostRunInsecureContent(
+    const std::string& host,
+    int pid,
+    InsecureContentType content_type) const {
   // Intentional no-op for Android WebView.
   return false;
 }

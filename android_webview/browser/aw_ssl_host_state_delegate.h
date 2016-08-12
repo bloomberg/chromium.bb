@@ -64,11 +64,15 @@ class AwSSLHostStateDelegate : public content::SSLHostStateDelegate {
       bool* expired_previous_decision) override;
 
   // Records that a host has run insecure content.
-  void HostRanInsecureContent(const std::string& host, int pid) override;
+  void HostRanInsecureContent(const std::string& host,
+                              int pid,
+                              InsecureContentType content_type) override;
 
   // Returns whether the specified host ran insecure content.
-  bool DidHostRunInsecureContent(const std::string& host,
-                                 int pid) const override;
+  bool DidHostRunInsecureContent(
+      const std::string& host,
+      int pid,
+      InsecureContentType content_type) const override;
 
   // Revokes all SSL certificate error allow exceptions made by the user for
   // |host|.

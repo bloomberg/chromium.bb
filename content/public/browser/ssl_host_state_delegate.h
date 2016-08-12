@@ -31,6 +31,20 @@ class SSLHostStateDelegate {
     ALLOWED
   };
 
+  // The types of nonsecure subresources that this class keeps track of.
+  //
+  // TODO(estark): Currently, MIXED_CONTENT is used for all insecure
+  // content, as SSLManager/SSLPolicy do not separate signals for mixed
+  // content from signals for subresources with cert errors. Fixing this
+  // is in progress as part of https://crbug.com/634171.
+  enum InsecureContentType {
+    // A  MIXED subresource was loaded over HTTP on an HTTPS page.
+    MIXED_CONTENT,
+    // A CERT_ERRORS subresource was loaded over HTTPS with certificate
+    // errors on an HTTPS page.
+    CERT_ERRORS_CONTENT,
+  };
+
   // Records that |cert| is permitted to be used for |host| in the future, for
   // a specified |error| type.
   virtual void AllowCert(const std::string&,
@@ -48,12 +62,17 @@ class SSLHostStateDelegate {
                                    net::CertStatus error,
                                    bool* expired_previous_decision) = 0;
 
-  // Records that a host has run insecure content.
-  virtual void HostRanInsecureContent(const std::string& host, int pid) = 0;
+  // Records that a host has run insecure content of the given |content_type|.
+  virtual void HostRanInsecureContent(const std::string& host,
+                                      int pid,
+                                      InsecureContentType content_type) = 0;
 
-  // Returns whether the specified host ran insecure content.
-  virtual bool DidHostRunInsecureContent(const std::string& host,
-                                         int pid) const = 0;
+  // Returns whether the specified host ran insecure content of the given
+  // |content_type|.
+  virtual bool DidHostRunInsecureContent(
+      const std::string& host,
+      int pid,
+      InsecureContentType content_type) const = 0;
 
   // Revokes all SSL certificate error allow exceptions made by the user for
   // |host|.

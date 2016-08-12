@@ -25,10 +25,14 @@ class MockSSLHostStateDelegate : public SSLHostStateDelegate {
                            net::CertStatus error,
                            bool* expired_previous_decision) override;
 
-  void HostRanInsecureContent(const std::string& host, int pid) override;
+  void HostRanInsecureContent(const std::string& host,
+                              int pid,
+                              InsecureContentType content_type) override;
 
-  bool DidHostRunInsecureContent(const std::string& host,
-                                 int pid) const override;
+  bool DidHostRunInsecureContent(
+      const std::string& host,
+      int pid,
+      InsecureContentType content_type) const override;
 
   void RevokeUserAllowExceptions(const std::string& host) override;
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SSL_CHROME_SSL_HOST_STATE_DELEGATE_H_
 
 #include <memory>
+#include <set>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -37,9 +38,13 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
                            const net::X509Certificate& cert,
                            net::CertStatus error,
                            bool* expired_previous_decision) override;
-  void HostRanInsecureContent(const std::string& host, int pid) override;
-  bool DidHostRunInsecureContent(const std::string& host,
-                                 int pid) const override;
+  void HostRanInsecureContent(const std::string& host,
+                              int pid,
+                              InsecureContentType content_type) override;
+  bool DidHostRunInsecureContent(
+      const std::string& host,
+      int pid,
+      InsecureContentType content_type) const override;
 
   // Revokes all SSL certificate error allow exceptions made by the user for
   // |host| in the given Profile.
@@ -110,10 +115,14 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // contains insecure content in that renderer process.
   typedef std::pair<std::string, int> BrokenHostEntry;
 
-  // Hosts which have been contaminated with insecure content in the
+  // Hosts which have been contaminated with insecure mixed content in the
   // specified process.  Note that insecure content can travel between
   // same-origin frames in one processs but cannot jump between processes.
-  std::set<BrokenHostEntry> ran_insecure_content_hosts_;
+  std::set<BrokenHostEntry> ran_mixed_content_hosts_;
+
+  // Hosts which have been contaminated with content with certificate errors in
+  // the specific process.
+  std::set<BrokenHostEntry> ran_content_with_cert_errors_hosts_;
 
   // This is a GUID to mark this unique session. Whenever a certificate decision
   // expiration is set, the GUID is saved as well so Chrome can tell if it was
