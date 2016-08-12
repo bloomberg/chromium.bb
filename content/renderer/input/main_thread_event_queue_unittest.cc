@@ -61,6 +61,12 @@ class MainThreadEventQueueTest : public testing::Test,
     additional_acked_events_.push_back(touch_event_id);
   }
 
+  void HandleEvent(WebInputEvent& event, InputEventAckState ack_result) {
+    queue_->HandleEvent(WebInputEventTraits::Clone(event), ui::LatencyInfo(),
+                        DISPATCH_TYPE_BLOCKING,
+                        ack_result);
+  }
+
   WebInputEventQueue<EventWithDispatchType>& event_queue() {
     return queue_->events_;
   }
@@ -82,14 +88,10 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
 
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
-  queue_->HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->HandleEvent(&kEvents[1], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->HandleEvent(&kEvents[2], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->HandleEvent(&kEvents[3], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+
+  for (WebMouseWheelEvent& event : kEvents)
+    HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
   main_task_runner_->RunUntilIdle();
@@ -132,14 +134,9 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   kEvents[2].MovePoint(0, 30, 30);
   kEvents[3].PressPoint(10, 10);
   kEvents[3].MovePoint(0, 35, 35);
-  queue_->HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->HandleEvent(&kEvents[1], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->HandleEvent(&kEvents[2], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->HandleEvent(&kEvents[3], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+
+  for (SyntheticWebTouchEvent& event : kEvents)
+    HandleEvent(event, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
 
   EXPECT_EQ(3u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
@@ -185,14 +182,11 @@ TEST_F(MainThreadEventQueueTest, BlockingTouch) {
   kEvents[3].PressPoint(10, 10);
   kEvents[3].MovePoint(0, 35, 35);
   // Ensure that coalescing takes place.
-  queue_->HandleEvent(&kEvents[0], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->HandleEvent(&kEvents[1], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  queue_->HandleEvent(&kEvents[2], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  queue_->HandleEvent(&kEvents[3], ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[2], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  HandleEvent(kEvents[3], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
   main_task_runner_->RunUntilIdle();
@@ -215,18 +209,12 @@ TEST_F(MainThreadEventQueueTest, InterleavedEvents) {
 
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
-  queue_->HandleEvent(&kWheelEvents[0], ui::LatencyInfo(),
-                      DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->HandleEvent(&kTouchEvents[0], ui::LatencyInfo(),
-                      DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->HandleEvent(&kWheelEvents[1], ui::LatencyInfo(),
-                      DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->HandleEvent(&kTouchEvents[1], ui::LatencyInfo(),
-                      DISPATCH_TYPE_BLOCKING,
-                      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+
+  HandleEvent(kWheelEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kTouchEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kWheelEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(kTouchEvents[1], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+
   EXPECT_EQ(2u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
   main_task_runner_->RunUntilIdle();

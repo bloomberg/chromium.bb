@@ -181,7 +181,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   InputMsg_HandleInputEvent::Param params;
   if (!InputMsg_HandleInputEvent::Read(&message, &params))
     return;
-  const WebInputEvent* event = std::get<0>(params);
+  ScopedWebInputEvent event = WebInputEventTraits::Clone(*std::get<0>(params));
   ui::LatencyInfo latency_info = std::get<1>(params);
   InputEventDispatchType dispatch_type = std::get<2>(params);
   DCHECK(event);
@@ -197,23 +197,29 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
       auto_reset_current_overscroll_params(
           &current_overscroll_params_, send_ack ? &overscroll_params : NULL);
 
-  InputEventAckState ack_state = handler_.Run(routing_id, event, &latency_info);
+  InputEventAckState ack_state =
+      handler_.Run(routing_id, event.get(), &latency_info);
+
+  uint32_t unique_touch_event_id =
+      WebInputEventTraits::GetUniqueTouchEventId(*event);
+  WebInputEvent::Type type = event->type;
 
   if (ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||
       ack_state == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
     DCHECK(!overscroll_params);
     RouteQueueMap::iterator iter = route_queues_.find(routing_id);
-    if (iter != route_queues_.end())
-      send_ack &= iter->second->HandleEvent(event, latency_info, dispatch_type,
-                                            ack_state);
+    if (iter != route_queues_.end()) {
+      send_ack &= iter->second->HandleEvent(std::move(event), latency_info,
+                                            dispatch_type, ack_state);
+    }
   }
+  event.reset();
 
   if (!send_ack)
     return;
 
-  InputEventAck ack(event->type, ack_state, latency_info,
-                    std::move(overscroll_params),
-                    WebInputEventTraits::GetUniqueTouchEventId(*event));
+  InputEventAck ack(type, ack_state, latency_info, std::move(overscroll_params),
+                    unique_touch_event_id);
   SendMessage(std::unique_ptr<IPC::Message>(
       new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));
 }

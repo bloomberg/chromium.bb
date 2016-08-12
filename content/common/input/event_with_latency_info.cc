@@ -254,9 +254,10 @@ void Coalesce(const blink::WebInputEvent& event_to_coalesce,
 }  // namespace internal
 
 ScopedWebInputEventWithLatencyInfo::ScopedWebInputEventWithLatencyInfo(
-    const WebInputEvent& event,
+    ScopedWebInputEvent event,
     const ui::LatencyInfo& latency_info)
-    : event_(WebInputEventTraits::Clone(event)), latency_(latency_info) {}
+    : event_(std::move(event)), latency_(latency_info) {
+}
 
 ScopedWebInputEventWithLatencyInfo::~ScopedWebInputEventWithLatencyInfo() {}
 

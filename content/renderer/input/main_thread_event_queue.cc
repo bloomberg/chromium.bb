@@ -9,10 +9,10 @@
 namespace content {
 
 EventWithDispatchType::EventWithDispatchType(
-    const blink::WebInputEvent& event,
+    ScopedWebInputEvent event,
     const ui::LatencyInfo& latency,
     InputEventDispatchType dispatch_type)
-    : ScopedWebInputEventWithLatencyInfo(event, latency),
+    : ScopedWebInputEventWithLatencyInfo(std::move(event), latency),
       dispatch_type_(dispatch_type) {}
 
 EventWithDispatchType::~EventWithDispatchType() {}
@@ -46,7 +46,7 @@ MainThreadEventQueue::MainThreadEventQueue(
 MainThreadEventQueue::~MainThreadEventQueue() {}
 
 bool MainThreadEventQueue::HandleEvent(
-    const blink::WebInputEvent* event,
+    ScopedWebInputEvent event,
     const ui::LatencyInfo& latency,
     InputEventDispatchType original_dispatch_type,
     InputEventAckState ack_result) {
@@ -64,28 +64,28 @@ bool MainThreadEventQueue::HandleEvent(
   bool is_wheel = event->type == blink::WebInputEvent::MouseWheel;
   bool is_touch = blink::WebInputEvent::isTouchEventType(event->type);
 
-  std::unique_ptr<EventWithDispatchType> cloned_event(
-      new EventWithDispatchType(*event, latency, dispatch_type));
-
   if (is_touch) {
-    blink::WebTouchEvent& touch_event =
-        static_cast<blink::WebTouchEvent&>(cloned_event->event());
-    touch_event.dispatchedDuringFling = is_flinging_;
+    blink::WebTouchEvent* touch_event =
+        static_cast<blink::WebTouchEvent*>(event.get());
+    touch_event->dispatchedDuringFling = is_flinging_;
     // Adjust the |dispatchType| on the event since the compositor
     // determined all event listeners are passive.
     if (non_blocking) {
-      touch_event.dispatchType =
+      touch_event->dispatchType =
           blink::WebInputEvent::ListenersNonBlockingPassive;
     }
   }
   if (is_wheel && non_blocking) {
     // Adjust the |dispatchType| on the event since the compositor
     // determined all event listeners are passive.
-    static_cast<blink::WebMouseWheelEvent&>(cloned_event->event())
-        .dispatchType = blink::WebInputEvent::ListenersNonBlockingPassive;
+    static_cast<blink::WebMouseWheelEvent*>(event.get())
+        ->dispatchType = blink::WebInputEvent::ListenersNonBlockingPassive;
   }
 
-  QueueEvent(std::move(cloned_event));
+  std::unique_ptr<EventWithDispatchType> event_with_dispatch_type(
+      new EventWithDispatchType(std::move(event), latency, dispatch_type));
+
+  QueueEvent(std::move(event_with_dispatch_type));
 
   // send an ack when we are non-blocking.
   return non_blocking;

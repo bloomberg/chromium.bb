@@ -37,7 +37,7 @@ void CONTENT_EXPORT Coalesce(const blink::WebGestureEvent& event_to_coalesce,
 
 class ScopedWebInputEventWithLatencyInfo {
  public:
-  ScopedWebInputEventWithLatencyInfo(const blink::WebInputEvent&,
+  ScopedWebInputEventWithLatencyInfo(ScopedWebInputEvent,
                                      const ui::LatencyInfo&);
 
   ~ScopedWebInputEventWithLatencyInfo();
