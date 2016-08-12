@@ -72,8 +72,6 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'ChromeDriverTest.testConsoleLogSources',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1447
     'ChromeDriverTest.testPendingConsoleLog',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1450
-    'PerfTest.testColdExecuteScript',
 ]
 
 _OS_SPECIFIC_FILTER = {}
