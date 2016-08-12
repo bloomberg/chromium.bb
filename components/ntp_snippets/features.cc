@@ -16,6 +16,6 @@ const base::Feature kOfflinePageSuggestionsFeature{
     "NTPOfflinePageSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsFeature{
-    "NTPSnippets", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NTPSnippets", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace ntp_snippets
