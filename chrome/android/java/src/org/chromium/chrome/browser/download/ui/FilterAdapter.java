@@ -53,8 +53,8 @@ class FilterAdapter extends BaseAdapter
                     R.layout.download_manager_ui_drawer_filter, null);
         }
 
-        int iconId = DownloadFilter.getDrawableForFilter(position);
-        labelView.setText(DownloadFilter.getStringIdForFilter(position));
+        int iconId = DownloadFilter.FILTER_LIST[position][0];
+        labelView.setText(DownloadFilter.FILTER_LIST[position][1]);
 
         Drawable iconDrawable = null;
         if (position == mSelectedIndex) {
