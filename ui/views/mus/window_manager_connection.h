@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
@@ -33,6 +32,7 @@ namespace views {
 class ClipboardMus;
 class NativeWidget;
 class PointerWatcher;
+class PointerWatcherEventRouter;
 class ScreenMus;
 class SurfaceContextFactory;
 namespace internal {
@@ -61,6 +61,9 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   static WindowManagerConnection* Get();
   static bool Exists();
 
+  PointerWatcherEventRouter* pointer_watcher_event_router() {
+    return pointer_watcher_event_router_.get();
+  }
   shell::Connector* connector() { return connector_; }
   ui::GpuService* gpu_service() { return gpu_service_.get(); }
 
@@ -72,19 +75,11 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
       const Widget::InitParams& init_params,
       internal::NativeWidgetDelegate* delegate);
 
-  void AddPointerWatcher(PointerWatcher* watcher, bool want_moves);
-  void RemovePointerWatcher(PointerWatcher* watcher);
-
   const std::set<ui::Window*>& GetRoots() const;
 
  private:
-  friend class WindowManagerConnectionTest;
-
   WindowManagerConnection(shell::Connector* connector,
                           const shell::Identity& identity);
-
-  // Returns true if there is one or more watchers for this client.
-  bool HasPointerWatcher();
 
   // ui::WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override;
@@ -104,10 +99,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   std::unique_ptr<ScreenMus> screen_;
   std::unique_ptr<ui::WindowTreeClient> client_;
   std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<PointerWatcherEventRouter> pointer_watcher_event_router_;
   std::unique_ptr<SurfaceContextFactory> compositor_context_factory_;
-  // Must be empty on destruction.
-  base::ObserverList<PointerWatcher, true> pointer_watchers_;
-  bool pointer_watcher_want_moves_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnection);
 };

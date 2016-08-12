@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 
@@ -39,24 +40,28 @@ class TestPointerWatcher : public PointerWatcher {
 
 }  // namespace
 
-class WindowManagerConnectionTest : public testing::Test {
+class PointerWatcherEventRouterTest : public testing::Test {
  public:
-  WindowManagerConnectionTest() {}
-  ~WindowManagerConnectionTest() override {}
+  PointerWatcherEventRouterTest() {}
+  ~PointerWatcherEventRouterTest() override {}
 
   void OnPointerEventObserved(const ui::PointerEvent& event) {
-    WindowManagerConnection::Get()->OnPointerEventObserved(event, nullptr);
+    WindowManagerConnection::Get()
+        ->pointer_watcher_event_router()
+        ->OnPointerEventObserved(event, nullptr);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WindowManagerConnectionTest);
+  DISALLOW_COPY_AND_ASSIGN(PointerWatcherEventRouterTest);
 };
 
-TEST_F(WindowManagerConnectionTest, PointerWatcherNoMove) {
+TEST_F(PointerWatcherEventRouterTest, PointerWatcherNoMove) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   ScopedViewsTestHelper helper;
-  WindowManagerConnection* connection = WindowManagerConnection::Get();
-  ASSERT_TRUE(connection);
+  ASSERT_TRUE(WindowManagerConnection::Get());
+  PointerWatcherEventRouter* pointer_watcher_event_router =
+      WindowManagerConnection::Get()->pointer_watcher_event_router();
+  ASSERT_TRUE(pointer_watcher_event_router);
 
   ui::PointerEvent pointer_event_down(
       ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 1,
@@ -69,7 +74,7 @@ TEST_F(WindowManagerConnectionTest, PointerWatcherNoMove) {
 
   // PointerWatchers receive pointer down events.
   TestPointerWatcher watcher1;
-  connection->AddPointerWatcher(&watcher1, false);
+  pointer_watcher_event_router->AddPointerWatcher(&watcher1, false);
   OnPointerEventObserved(pointer_event_down);
   EXPECT_EQ(ui::ET_POINTER_DOWN, watcher1.last_event_observed()->type());
   watcher1.Reset();
@@ -81,7 +86,7 @@ TEST_F(WindowManagerConnectionTest, PointerWatcherNoMove) {
 
   // Two PointerWatchers can both receive a single observed event.
   TestPointerWatcher watcher2;
-  connection->AddPointerWatcher(&watcher2, false);
+  pointer_watcher_event_router->AddPointerWatcher(&watcher2, false);
   OnPointerEventObserved(pointer_event_down);
   EXPECT_EQ(ui::ET_POINTER_DOWN, watcher1.last_event_observed()->type());
   EXPECT_EQ(ui::ET_POINTER_DOWN, watcher2.last_event_observed()->type());
@@ -89,7 +94,7 @@ TEST_F(WindowManagerConnectionTest, PointerWatcherNoMove) {
   watcher2.Reset();
 
   // Removing the first PointerWatcher stops sending events to it.
-  connection->RemovePointerWatcher(&watcher1);
+  pointer_watcher_event_router->RemovePointerWatcher(&watcher1);
   OnPointerEventObserved(pointer_event_down);
   EXPECT_FALSE(watcher1.last_event_observed());
   EXPECT_EQ(ui::ET_POINTER_DOWN, watcher2.last_event_observed()->type());
@@ -97,17 +102,19 @@ TEST_F(WindowManagerConnectionTest, PointerWatcherNoMove) {
   watcher2.Reset();
 
   // Removing the last PointerWatcher stops sending events to it.
-  connection->RemovePointerWatcher(&watcher2);
+  pointer_watcher_event_router->RemovePointerWatcher(&watcher2);
   OnPointerEventObserved(pointer_event_down);
   EXPECT_FALSE(watcher1.last_event_observed());
   EXPECT_FALSE(watcher2.last_event_observed());
 }
 
-TEST_F(WindowManagerConnectionTest, PointerWatcherMove) {
+TEST_F(PointerWatcherEventRouterTest, PointerWatcherMove) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   ScopedViewsTestHelper helper;
-  WindowManagerConnection* connection = WindowManagerConnection::Get();
-  ASSERT_TRUE(connection);
+  ASSERT_TRUE(WindowManagerConnection::Get());
+  PointerWatcherEventRouter* pointer_watcher_event_router =
+      WindowManagerConnection::Get()->pointer_watcher_event_router();
+  ASSERT_TRUE(pointer_watcher_event_router);
 
   ui::PointerEvent pointer_event_down(
       ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 1,
@@ -120,7 +127,7 @@ TEST_F(WindowManagerConnectionTest, PointerWatcherMove) {
 
   // PointerWatchers receive pointer down events.
   TestPointerWatcher watcher1;
-  connection->AddPointerWatcher(&watcher1, true);
+  pointer_watcher_event_router->AddPointerWatcher(&watcher1, true);
   OnPointerEventObserved(pointer_event_down);
   EXPECT_EQ(ui::ET_POINTER_DOWN, watcher1.last_event_observed()->type());
   watcher1.Reset();
@@ -132,7 +139,7 @@ TEST_F(WindowManagerConnectionTest, PointerWatcherMove) {
 
   // Two PointerWatchers can both receive a single observed event.
   TestPointerWatcher watcher2;
-  connection->AddPointerWatcher(&watcher2, true);
+  pointer_watcher_event_router->AddPointerWatcher(&watcher2, true);
   OnPointerEventObserved(pointer_event_move);
   EXPECT_EQ(ui::ET_POINTER_MOVED, watcher1.last_event_observed()->type());
   EXPECT_EQ(ui::ET_POINTER_MOVED, watcher2.last_event_observed()->type());
@@ -140,7 +147,7 @@ TEST_F(WindowManagerConnectionTest, PointerWatcherMove) {
   watcher2.Reset();
 
   // Removing the first PointerWatcher stops sending events to it.
-  connection->RemovePointerWatcher(&watcher1);
+  pointer_watcher_event_router->RemovePointerWatcher(&watcher1);
   OnPointerEventObserved(pointer_event_move);
   EXPECT_FALSE(watcher1.last_event_observed());
   EXPECT_EQ(ui::ET_POINTER_MOVED, watcher2.last_event_observed()->type());
@@ -148,7 +155,7 @@ TEST_F(WindowManagerConnectionTest, PointerWatcherMove) {
   watcher2.Reset();
 
   // Removing the last PointerWatcher stops sending events to it.
-  connection->RemovePointerWatcher(&watcher2);
+  pointer_watcher_event_router->RemovePointerWatcher(&watcher2);
   OnPointerEventObserved(pointer_event_move);
   EXPECT_FALSE(watcher1.last_event_observed());
   EXPECT_FALSE(watcher2.last_event_observed());

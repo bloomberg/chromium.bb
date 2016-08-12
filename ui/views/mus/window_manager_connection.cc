@@ -22,6 +22,7 @@
 #include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/os_exchange_data_provider_mus.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/mus/surface_context_factory.h"
 #include "ui/views/pointer_watcher.h"
@@ -99,34 +100,6 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
                              ui::mojom::SurfaceType::DEFAULT);
 }
 
-void WindowManagerConnection::AddPointerWatcher(PointerWatcher* watcher,
-                                                bool want_moves) {
-  // Pointer watchers cannot be added multiple times.
-  DCHECK(!pointer_watchers_.HasObserver(watcher));
-  // TODO(jamescook): Support adding pointer watchers with different
-  // |want_moves| values by tracking whether the set as a whole wants moves.
-  // This will involve sending observed move events to a subset of the
-  // watchers. (crbug.com/627146)
-  DCHECK(!HasPointerWatcher() || want_moves == pointer_watcher_want_moves_);
-  pointer_watcher_want_moves_ = want_moves;
-
-  bool had_watcher = HasPointerWatcher();
-  pointer_watchers_.AddObserver(watcher);
-  if (!had_watcher) {
-    // First PointerWatcher added, start the watcher on the window server.
-    client_->StartPointerWatcher(want_moves);
-  }
-}
-
-void WindowManagerConnection::RemovePointerWatcher(PointerWatcher* watcher) {
-  pointer_watchers_.RemoveObserver(watcher);
-  if (!HasPointerWatcher()) {
-    // Last PointerWatcher removed, stop the watcher on the window server.
-    client_->StopPointerWatcher();
-    pointer_watcher_want_moves_ = false;
-  }
-}
-
 const std::set<ui::Window*>& WindowManagerConnection::GetRoots() const {
   return client_->GetRoots();
 }
@@ -134,9 +107,7 @@ const std::set<ui::Window*>& WindowManagerConnection::GetRoots() const {
 WindowManagerConnection::WindowManagerConnection(
     shell::Connector* connector,
     const shell::Identity& identity)
-    : connector_(connector),
-      identity_(identity),
-      pointer_watcher_want_moves_(false) {
+    : connector_(connector), identity_(identity) {
   lazy_tls_ptr.Pointer()->Set(this);
 
   gpu_service_ = ui::GpuService::Initialize(connector);
@@ -146,6 +117,9 @@ WindowManagerConnection::WindowManagerConnection(
       compositor_context_factory_.get());
   client_.reset(new ui::WindowTreeClient(this, nullptr, nullptr));
   client_->ConnectViaWindowTreeFactory(connector_);
+
+  pointer_watcher_event_router_.reset(
+      new PointerWatcherEventRouter(client_.get()));
 
   screen_.reset(new ScreenMus(this));
   screen_->Init(connector);
@@ -162,14 +136,6 @@ WindowManagerConnection::WindowManagerConnection(
       std::map<std::string, std::vector<uint8_t>>()));
 }
 
-bool WindowManagerConnection::HasPointerWatcher() {
-  // Check to see if we really have any observers left. This doesn't use
-  // base::ObserverList<>::might_have_observers() because that returns true
-  // during iteration over the list even when the last observer is removed.
-  base::ObserverList<PointerWatcher>::Iterator iterator(&pointer_watchers_);
-  return !!iterator.GetNext();
-}
-
 void WindowManagerConnection::OnEmbed(ui::Window* root) {}
 
 void WindowManagerConnection::OnDidDestroyClient(ui::WindowTreeClient* client) {
@@ -183,19 +149,7 @@ void WindowManagerConnection::OnDidDestroyClient(ui::WindowTreeClient* client) {
 void WindowManagerConnection::OnPointerEventObserved(
     const ui::PointerEvent& event,
     ui::Window* target) {
-  Widget* target_widget = nullptr;
-  if (target) {
-    ui::Window* root = target->GetRoot();
-    target_widget = NativeWidgetMus::GetWidgetForWindow(root);
-  }
-
-  // The mojo input events type converter uses the event root_location field
-  // to store screen coordinates. Screen coordinates really should be returned
-  // separately. See http://crbug.com/608547
-  gfx::Point location_in_screen = event.AsLocatedEvent()->root_location();
-  FOR_EACH_OBSERVER(
-      PointerWatcher, pointer_watchers_,
-      OnPointerEventObserved(event, location_in_screen, target_widget));
+  pointer_watcher_event_router_->OnPointerEventObserved(event, target);
 }
 
 void WindowManagerConnection::OnWindowManagerFrameValuesChanged() {

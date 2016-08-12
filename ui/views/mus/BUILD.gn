@@ -30,6 +30,8 @@ component("mus") {
     "native_widget_mus.h",
     "os_exchange_data_provider_mus.cc",
     "os_exchange_data_provider_mus.h",
+    "pointer_watcher_event_router.cc",
+    "pointer_watcher_event_router.h",
     "screen_mus.cc",
     "screen_mus.h",
     "screen_mus_delegate.h",
@@ -153,9 +155,9 @@ test("views_mus_unittests") {
   sources = [
     "display_list_unittest.cc",
     "native_widget_mus_unittest.cc",
+    "pointer_watcher_event_router_unittest.cc",
     "run_all_unittests_mus.cc",
     "screen_mus_unittest.cc",
-    "window_manager_connection_unittest.cc",
   ]
 
   sources += rebase_path(gypi.views_unittests_sources, ".", "//ui/views")

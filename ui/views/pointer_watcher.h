@@ -35,6 +35,10 @@ class VIEWS_EXPORT PointerWatcher {
                                       const gfx::Point& location_in_screen,
                                       Widget* target) = 0;
 
+  // PointerWatcher is informed of capture changes as it's common to create a
+  // MouseEvent of type ui::ET_MOUSE_CAPTURE_CHANGED on capture change.
+  virtual void OnMouseCaptureChanged() {}
+
  protected:
   virtual ~PointerWatcher() {}
 

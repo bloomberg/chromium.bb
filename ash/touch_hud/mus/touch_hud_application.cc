@@ -13,6 +13,7 @@
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/native_widget_mus.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/widget.h"
@@ -31,10 +32,12 @@ class TouchHudUI : public views::WidgetDelegateView,
              views::Widget* widget)
       : window_manager_connection_(window_manager_connection),
         touch_hud_renderer_(new TouchHudRenderer(widget)) {
-    window_manager_connection_->AddPointerWatcher(this, true /* want_moves */);
+    window_manager_connection_->pointer_watcher_event_router()
+        ->AddPointerWatcher(this, false /* want_moves */);
   }
   ~TouchHudUI() override {
-    window_manager_connection_->RemovePointerWatcher(this);
+    window_manager_connection_->pointer_watcher_event_router()
+        ->RemovePointerWatcher(this);
   }
 
  private:

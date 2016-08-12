@@ -34,9 +34,16 @@ void PointerWatcherDelegateAura::RemovePointerWatcher(
 }
 
 void PointerWatcherDelegateAura::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED) {
+    FOR_EACH_OBSERVER(views::PointerWatcher, pointer_watchers_,
+                      OnMouseCaptureChanged());
+    return;
+  }
   // For compatibility with the mus version, don't send moves.
   if (event->type() != ui::ET_MOUSE_PRESSED &&
       event->type() != ui::ET_MOUSE_RELEASED)
+    return;
+  if (!ui::PointerEvent::CanConvertFrom(*event))
     return;
   ui::PointerEvent mouse_pointer_event(*event);
   FOR_EACH_OBSERVER(
