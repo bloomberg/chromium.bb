@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/gfx/transform.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace aura {
@@ -17,20 +16,12 @@ class Window;
 }
 
 namespace ui {
-class Layer;
 class LayerTreeOwner;
 }
 
 // This is only for animations specific to Ash. For window animations shared
 // with desktop Chrome, see ui/views/corewm/window_animations.h.
 namespace ash {
-
-// Direction for ash-specific window animations used in workspaces and
-// lock/unlock animations.
-enum LayerScaleAnimationDirection {
-  LAYER_SCALE_ANIMATION_ABOVE,
-  LAYER_SCALE_ANIMATION_BELOW,
-};
 
 // Amount of time for the cross fade animation.
 extern const int kCrossFadeDurationMS;
@@ -53,11 +44,6 @@ ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(aura::Window* window,
 ASH_EXPORT std::vector<ui::LayerAnimationSequence*>
 CreateBrightnessGrayscaleAnimationSequence(float target_value,
                                            base::TimeDelta duration);
-
-// Applies scale related to the specified AshWindowScaleType.
-ASH_EXPORT void SetTransformForScaleAnimation(
-    ui::Layer* layer,
-    LayerScaleAnimationDirection type);
 
 // Returns the approximate bounds to which |window| will be animated when it
 // is minimized. The bounds are approximate because the minimize animation

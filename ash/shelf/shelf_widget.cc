@@ -22,7 +22,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/wm/status_area_layout_manager.h"
-#include "ash/wm/workspace_controller.h"
 #include "base/memory/ptr_util.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -286,8 +285,7 @@ void ShelfWidget::DelegateView::UpdateShelfAssetBackground(int alpha) {
 
 ShelfWidget::ShelfWidget(WmWindow* shelf_container,
                          WmWindow* status_container,
-                         WmShelfAura* wm_shelf_aura,
-                         WorkspaceController* workspace_controller)
+                         WmShelfAura* wm_shelf_aura)
     : wm_shelf_aura_(wm_shelf_aura),
       delegate_view_(new DelegateView(this)),
       background_animator_(SHELF_BACKGROUND_DEFAULT, wm_shelf_aura_),
@@ -313,8 +311,6 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container,
   shelf_layout_manager_ = new ShelfLayoutManager(this);
   shelf_layout_manager_->AddObserver(this);
   shelf_container->SetLayoutManager(base::WrapUnique(shelf_layout_manager_));
-  shelf_layout_manager_->set_workspace_controller(workspace_controller);
-  workspace_controller->SetShelf(shelf_layout_manager_);
   background_animator_.PaintBackground(
       shelf_layout_manager_->GetShelfBackgroundType(),
       BACKGROUND_CHANGE_IMMEDIATE);

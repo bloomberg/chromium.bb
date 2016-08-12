@@ -27,7 +27,6 @@
 #include "ash/common/wm_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
-#include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -148,7 +147,6 @@ class ShelfLayoutManager::RootWindowControllerObserverImpl
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
     : updating_bounds_(false),
       shelf_widget_(shelf_widget),
-      workspace_controller_(NULL),
       window_overlaps_shelf_(false),
       mouse_over_shelf_when_auto_hide_timer_started_(false),
       gesture_drag_status_(GESTURE_DRAG_NONE),
@@ -178,7 +176,6 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 
 void ShelfLayoutManager::PrepareForShutdown() {
   in_shutdown_ = true;
-  set_workspace_controller(nullptr);
   // Stop observing changes to avoid updating a partially destructed shelf.
   WmShell::Get()->RemoveActivationObserver(this);
 }
@@ -236,9 +233,10 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
 }
 
 void ShelfLayoutManager::UpdateVisibilityState() {
-  // Bail out early when there is no |workspace_controller_|, which happens
-  // during shutdown after PrepareForShutdown. Also bail before a shelf exists.
-  if (!workspace_controller_ || !shelf_widget_->shelf())
+  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  WmRootWindowController* controller = shelf_window->GetRootWindowController();
+  // Bail out early before the shelf is initialized or after it is destroyed.
+  if (!controller || !shelf_widget_->shelf() || in_shutdown_)
     return;
 
   if (state_.is_screen_locked || state_.is_adding_user_screen) {
@@ -249,7 +247,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
     wm::WorkspaceWindowState window_state(
-        workspace_controller_->GetWindowState());
+        controller->GetWorkspaceWindowState());
     switch (window_state) {
       case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN: {
         if (IsShelfHiddenForFullscreen()) {
@@ -479,15 +477,14 @@ ShelfLayoutManager::TargetBounds::TargetBounds()
 ShelfLayoutManager::TargetBounds::~TargetBounds() {}
 
 void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
-  if (!shelf_widget_->GetNativeView())
-    return;
-
   State state;
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
-  state.window_state = workspace_controller_
-                           ? workspace_controller_->GetWindowState()
-                           : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
+
+  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
+  WmRootWindowController* controller = shelf_window->GetRootWindowController();
+  state.window_state = controller ? controller->GetWorkspaceWindowState()
+                                  : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
   // Preserve the log in screen states.
   state.is_adding_user_screen = state_.is_adding_user_screen;
   state.is_screen_locked = state_.is_screen_locked;

@@ -37,12 +37,14 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/interpolated_transform.h"
+#include "ui/gfx/transform.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
+
 const int kLayerAnimationsForMinimizeDurationMS = 200;
 
 // Durations for the cross-fade animation, in milliseconds.
@@ -58,10 +60,6 @@ const float kWindowAnimation_ShowBrightnessGrayscale = 0.f;
 
 const float kWindowAnimation_HideOpacity = 0.f;
 const float kWindowAnimation_ShowOpacity = 1.f;
-
-// Scales for AshWindow above/below current workspace.
-const float kLayerScaleAboveSize = 1.1f;
-const float kLayerScaleBelowSize = .9f;
 
 int64_t Round64(float f) {
   return static_cast<int64_t>(f + 0.5f);
@@ -432,19 +430,6 @@ CreateBrightnessGrayscaleAnimationSequence(float target_value,
   animations.push_back(grayscale_sequence.release());
 
   return animations;
-}
-
-// Returns scale related to the specified AshWindowScaleType.
-void SetTransformForScaleAnimation(ui::Layer* layer,
-                                   LayerScaleAnimationDirection type) {
-  const float scale = type == LAYER_SCALE_ANIMATION_ABOVE
-                          ? kLayerScaleAboveSize
-                          : kLayerScaleBelowSize;
-  gfx::Transform transform;
-  transform.Translate(-layer->bounds().width() * (scale - 1.0f) / 2,
-                      -layer->bounds().height() * (scale - 1.0f) / 2);
-  transform.Scale(scale, scale);
-  layer->SetTransform(transform);
 }
 
 gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {

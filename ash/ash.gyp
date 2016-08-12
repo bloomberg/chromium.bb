@@ -492,6 +492,8 @@
       'common/wm/wm_toplevel_window_event_handler.h',
       'common/wm/wm_types.cc',
       'common/wm/wm_types.h',
+      'common/wm/wm_window_animations.cc',
+      'common/wm/wm_window_animations.h',
       'common/wm/workspace/magnetism_matcher.cc',
       'common/wm/workspace/magnetism_matcher.h',
       'common/wm/workspace/multi_window_resize_controller.cc',

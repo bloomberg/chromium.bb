@@ -611,8 +611,8 @@ void RootWindowController::CloseChildWindows() {
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
-  // Clear the shelf first, so it doesn't update itself with wrong display info.
-  workspace_controller_->SetShelf(nullptr);
+  // Clear the workspace controller, so it doesn't incorrectly update the shelf.
+  workspace_controller_.reset();
   ReparentAllWindows(GetRootWindow(), dst);
 }
 
@@ -790,10 +790,6 @@ void RootWindowController::InitLayoutManagers() {
 
   aura::Window* root_window = GetRootWindow();
 
-  aura::Window* default_container =
-      GetContainer(kShellWindowId_DefaultContainer);
-  // Workspace manager has its own layout managers.
-
   aura::Window* modal_container =
       root_window->GetChildById(kShellWindowId_SystemModalContainer);
   DCHECK(modal_container);
@@ -811,6 +807,8 @@ void RootWindowController::InitLayoutManagers() {
   lock_modal_container->SetLayoutManager(
       new SystemModalContainerLayoutManager(lock_modal_container));
 
+  WmWindow* default_container =
+      WmWindowAura::Get(GetContainer(kShellWindowId_DefaultContainer));
   workspace_controller_.reset(new WorkspaceController(default_container));
 
   WmWindow* always_on_top_container =
@@ -825,8 +823,7 @@ void RootWindowController::InitLayoutManagers() {
   WmWindow* wm_shelf_container = WmWindowAura::Get(shelf_container);
   WmWindow* wm_status_container = WmWindowAura::Get(status_container);
   shelf_widget_.reset(new ShelfWidget(wm_shelf_container, wm_status_container,
-                                      wm_shelf_aura_.get(),
-                                      workspace_controller()));
+                                      wm_shelf_aura_.get()));
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
   shelf_container->SetEventTargeter(base::MakeUnique<ShelfWindowTargeter>(

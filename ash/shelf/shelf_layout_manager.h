@@ -35,7 +35,6 @@ class PanelLayoutManagerTest;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTest;
 class ShelfWidget;
-class WorkspaceController;
 
 // ShelfLayoutManager is the layout manager responsible for the shelf and
 // status widgets. The shelf is given the total available width and told the
@@ -55,10 +54,6 @@ class ASH_EXPORT ShelfLayoutManager
  public:
   explicit ShelfLayoutManager(ShelfWidget* shelf_widget);
   ~ShelfLayoutManager() override;
-
-  void set_workspace_controller(WorkspaceController* controller) {
-    workspace_controller_ = controller;
-  }
 
   bool updating_bounds() const { return updating_bounds_; }
 
@@ -316,8 +311,6 @@ class ASH_EXPORT ShelfLayoutManager
   State state_;
 
   ShelfWidget* shelf_widget_;
-
-  WorkspaceController* workspace_controller_;
 
   // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
   bool window_overlaps_shelf_;

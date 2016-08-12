@@ -355,12 +355,14 @@ void WmWindowAura::SetLayoutManager(
     std::unique_ptr<WmLayoutManager> layout_manager) {
   // |window_| takes ownership of AuraLayoutManagerAdapter.
   window_->SetLayoutManager(
-      new AuraLayoutManagerAdapter(std::move(layout_manager)));
+      layout_manager ? new AuraLayoutManagerAdapter(std::move(layout_manager))
+                     : nullptr);
 }
 
 WmLayoutManager* WmWindowAura::GetLayoutManager() {
-  return static_cast<AuraLayoutManagerAdapter*>(window_->layout_manager())
-      ->wm_layout_manager();
+  AuraLayoutManagerAdapter* adapter =
+      static_cast<AuraLayoutManagerAdapter*>(window_->layout_manager());
+  return adapter ? adapter->wm_layout_manager() : nullptr;
 }
 
 void WmWindowAura::SetVisibilityAnimationType(int type) {

@@ -11,12 +11,8 @@
 #include "ash/common/wm/workspace/workspace_types.h"
 #include "base/macros.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
-class ShelfLayoutManager;
+class WmWindow;
 class WorkspaceControllerTestHelper;
 class WorkspaceEventHandler;
 class WorkspaceLayoutManager;
@@ -26,13 +22,11 @@ class WorkspaceLayoutManagerBackdropDelegate;
 // various workspace pieces.
 class ASH_EXPORT WorkspaceController {
  public:
-  explicit WorkspaceController(aura::Window* viewport);
+  explicit WorkspaceController(WmWindow* viewport);
   virtual ~WorkspaceController();
 
   // Returns the current window state.
   wm::WorkspaceWindowState GetWindowState() const;
-
-  void SetShelf(ShelfLayoutManager* shelf);
 
   // Starts the animation that occurs on first login.
   void DoInitialAnimation();
@@ -47,9 +41,7 @@ class ASH_EXPORT WorkspaceController {
  private:
   friend class WorkspaceControllerTestHelper;
 
-  aura::Window* viewport_;
-
-  ShelfLayoutManager* shelf_;
+  WmWindow* viewport_;
   std::unique_ptr<WorkspaceEventHandler> event_handler_;
 
   // Owned by |viewport_|.

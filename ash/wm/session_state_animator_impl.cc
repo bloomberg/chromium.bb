@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/wm_window_animations.h"
 #include "ash/shell.h"
-#include "ash/wm/window_animations.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer_animation_observer.h"

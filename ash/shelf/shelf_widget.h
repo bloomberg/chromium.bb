@@ -23,7 +23,6 @@ class ShelfLayoutManager;
 class StatusAreaWidget;
 class WmShelfAura;
 class WmWindow;
-class WorkspaceController;
 
 class ASH_EXPORT ShelfWidget : public views::Widget,
                                public views::WidgetObserver,
@@ -32,8 +31,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
  public:
   ShelfWidget(WmWindow* shelf_container,
               WmWindow* status_container,
-              WmShelfAura* wm_shelf_aura,
-              WorkspaceController* workspace_controller);
+              WmShelfAura* wm_shelf_aura);
   ~ShelfWidget() override;
 
   // Returns if shelf alignment option is enabled, and the user is able to

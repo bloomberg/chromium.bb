@@ -76,6 +76,8 @@ WmShell* WmRootWindowControllerAura::GetShell() {
 }
 
 wm::WorkspaceWindowState WmRootWindowControllerAura::GetWorkspaceWindowState() {
+  if (!root_window_controller_->workspace_controller())
+    return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
   return root_window_controller_->workspace_controller()->GetWindowState();
 }
 

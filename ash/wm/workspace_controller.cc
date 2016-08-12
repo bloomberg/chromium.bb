@@ -6,17 +6,16 @@
 
 #include <utility>
 
-#include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/dock/docked_window_layout_manager.h"
+#include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_window_animations.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shell.h"
-#include "ash/wm/window_animations.h"
-#include "ash/wm/window_state_aura.h"
-#include "ash/wm/window_util.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -35,96 +34,79 @@ namespace {
 // animation (when logging in).
 const int kInitialPauseTimeMS = 750;
 
-// Returns true if there are visible docked windows in the same screen as the
-// |shelf|.
-bool IsDockedAreaVisible(const ShelfLayoutManager* shelf) {
-  return shelf->dock_bounds().width() > 0;
-}
+// The duration of the animation that occurs on first login.
+const int kInitialAnimationDurationMS = 200;
 
 }  // namespace
 
-WorkspaceController::WorkspaceController(aura::Window* viewport)
+WorkspaceController::WorkspaceController(WmWindow* viewport)
     : viewport_(viewport),
-      shelf_(NULL),
       event_handler_(new WorkspaceEventHandler),
-      layout_manager_(new WorkspaceLayoutManager(WmWindowAura::Get(viewport))) {
-  SetWindowVisibilityAnimationTransition(viewport_, ::wm::ANIMATE_NONE);
-
-  WmWindowAura::Get(viewport_)->SetLayoutManager(
-      base::WrapUnique(layout_manager_));
-  viewport_->AddPreTargetHandler(event_handler_.get());
+      layout_manager_(new WorkspaceLayoutManager(viewport)) {
+  viewport_->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
+  viewport_->SetLayoutManager(base::WrapUnique(layout_manager_));
+  viewport_->AddLimitedPreTargetHandler(event_handler_.get());
 }
 
 WorkspaceController::~WorkspaceController() {
-  viewport_->SetLayoutManager(NULL);
-  viewport_->RemovePreTargetHandler(event_handler_.get());
+  viewport_->SetLayoutManager(nullptr);
+  viewport_->RemoveLimitedPreTargetHandler(event_handler_.get());
 }
 
 wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
-  if (!shelf_)
+  if (!viewport_->GetRootWindowController()->HasShelf())
     return wm::WORKSPACE_WINDOW_STATE_DEFAULT;
-  const aura::Window* topmost_fullscreen_window =
-      GetRootWindowController(viewport_->GetRootWindow())
-          ->GetWindowForFullscreenMode();
-  if (topmost_fullscreen_window &&
-      !wm::GetWindowState(topmost_fullscreen_window)->ignored_by_shelf()) {
+
+  const WmWindow* fullscreen = wm::GetWindowForFullscreenMode(viewport_);
+  if (fullscreen && !fullscreen->GetWindowState()->ignored_by_shelf())
     return wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
-  }
 
   // These are the container ids of containers which may contain windows that
   // may overlap the launcher shelf and affect its transparency.
   const int kWindowContainerIds[] = {
       kShellWindowId_DefaultContainer, kShellWindowId_DockedContainer,
   };
-  const gfx::Rect shelf_bounds(shelf_->GetIdealBounds());
+  const gfx::Rect shelf_bounds(
+      viewport_->GetRootWindowController()->GetShelf()->GetIdealBounds());
   bool window_overlaps_launcher = false;
-  for (size_t idx = 0; idx < arraysize(kWindowContainerIds); idx++) {
-    const aura::Window* container = Shell::GetContainer(
-        viewport_->GetRootWindow(), kWindowContainerIds[idx]);
-    const aura::Window::Windows& windows(container->children());
-    for (aura::Window::Windows::const_iterator i = windows.begin();
-         i != windows.end(); ++i) {
-      wm::WindowState* window_state = wm::GetWindowState(*i);
-      if (window_state->ignored_by_shelf())
+  for (size_t i = 0; i < arraysize(kWindowContainerIds); i++) {
+    WmWindow* container = viewport_->GetRootWindow()->GetChildByShellWindowId(
+        kWindowContainerIds[i]);
+    for (WmWindow* window : container->GetChildren()) {
+      wm::WindowState* window_state = window->GetWindowState();
+      if (window_state->ignored_by_shelf() ||
+          !window->GetLayer()->GetTargetVisibility()) {
         continue;
-      ui::Layer* layer = (*i)->layer();
-      if (!layer->GetTargetVisibility())
-        continue;
-      if (window_state->IsMaximized()) {
+      }
+      if (window_state->IsMaximized())
         return wm::WORKSPACE_WINDOW_STATE_MAXIMIZED;
-      }
-      if (!window_overlaps_launcher &&
-          ((*i)->bounds().Intersects(shelf_bounds))) {
-        window_overlaps_launcher = true;
-      }
+      window_overlaps_launcher |= window->GetBounds().Intersects(shelf_bounds);
     }
   }
 
-  return (window_overlaps_launcher || IsDockedAreaVisible(shelf_))
+  // Check if there are visible docked windows in the same display.
+  DockedWindowLayoutManager* dock = DockedWindowLayoutManager::Get(viewport_);
+  const bool docked_area_visible = dock && !dock->docked_bounds().IsEmpty();
+  return (window_overlaps_launcher || docked_area_visible)
              ? wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF
              : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
-}
-
-void WorkspaceController::SetShelf(ShelfLayoutManager* shelf) {
-  shelf_ = shelf;
 }
 
 void WorkspaceController::DoInitialAnimation() {
   viewport_->Show();
 
-  viewport_->layer()->SetOpacity(0.0f);
-  SetTransformForScaleAnimation(viewport_->layer(),
-                                LAYER_SCALE_ANIMATION_ABOVE);
+  ui::Layer* layer = viewport_->GetLayer();
+  layer->SetOpacity(0.0f);
+  SetTransformForScaleAnimation(layer, LAYER_SCALE_ANIMATION_ABOVE);
 
   // In order for pause to work we need to stop animations.
-  viewport_->layer()->GetAnimator()->StopAnimating();
+  layer->GetAnimator()->StopAnimating();
 
   {
-    ui::ScopedLayerAnimationSettings settings(
-        viewport_->layer()->GetAnimator());
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
 
     settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
-    viewport_->layer()->GetAnimator()->SchedulePauseForProperties(
+    layer->GetAnimator()->SchedulePauseForProperties(
         base::TimeDelta::FromMilliseconds(kInitialPauseTimeMS),
         ui::LayerAnimationElement::TRANSFORM |
             ui::LayerAnimationElement::OPACITY |
@@ -132,9 +114,9 @@ void WorkspaceController::DoInitialAnimation() {
             ui::LayerAnimationElement::VISIBILITY);
     settings.SetTweenType(gfx::Tween::EASE_OUT);
     settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
-    viewport_->layer()->SetTransform(gfx::Transform());
-    viewport_->layer()->SetOpacity(1.0f);
+        base::TimeDelta::FromMilliseconds(kInitialAnimationDurationMS));
+    layer->SetTransform(gfx::Transform());
+    layer->SetOpacity(1.0f);
   }
 }
 
