@@ -45736,6 +45736,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PushMessaging.ReceivedMessageInBackground" enum="Boolean">
+  <owner>dgn@chromium.org</owner>
+  <summary>
+    Whenever a Service Worker receives a push message, this records whether
+    Chrome is completely running in the background. A successful report means
+    that the message was received when Chrome was in complete background mode,
+    without UI, while a failure means it was in some other state: in background
+    with some apps running, showing browser windows, etc.
+  </summary>
+</histogram>
+
 <histogram name="PushMessaging.RegistrationStatus"
     enum="PushRegistrationStatus">
   <owner>johnme@google.com</owner>

@@ -137,3 +137,42 @@ TEST_F(KeepAliveRegistryTest, RestartOptionTest) {
   EXPECT_EQ(0, on_restart_allowed_call_count_);
   EXPECT_EQ(0, on_restart_forbidden_call_count_);
 }
+
+TEST_F(KeepAliveRegistryTest, WouldRestartWithoutTest) {
+  // WouldRestartWithout() should have the same results as IsRestartAllowed()
+  // when called with an empty vector.
+  std::vector<KeepAliveOrigin> empty_vector;
+
+  // Init and sanity checks.
+  ScopedKeepAlive kar(KeepAliveOrigin::BACKGROUND_MODE_MANAGER,
+                      KeepAliveRestartOption::ENABLED);
+  ASSERT_TRUE(registry_->IsRestartAllowed());
+  EXPECT_EQ(registry_->IsRestartAllowed(),
+            registry_->WouldRestartWithout(empty_vector));
+  ScopedKeepAlive ka1(KeepAliveOrigin::CHROME_APP_DELEGATE,
+                      KeepAliveRestartOption::DISABLED);
+  ASSERT_FALSE(registry_->IsRestartAllowed());
+
+  // Basic case: exclude one KeepAlive.
+  EXPECT_TRUE(
+      registry_->WouldRestartWithout({KeepAliveOrigin::CHROME_APP_DELEGATE}));
+  EXPECT_FALSE(registry_->WouldRestartWithout(
+      {KeepAliveOrigin::BACKGROUND_MODE_MANAGER}));
+
+  // Check it works properly with multiple KeepAlives of the same type
+  ScopedKeepAlive ka2(KeepAliveOrigin::CHROME_APP_DELEGATE,
+                      KeepAliveRestartOption::DISABLED);
+  EXPECT_TRUE(
+      registry_->WouldRestartWithout({KeepAliveOrigin::CHROME_APP_DELEGATE}));
+
+  // Check it works properly with different KeepAlive types
+  ScopedKeepAlive ka3(KeepAliveOrigin::PANEL, KeepAliveRestartOption::DISABLED);
+  EXPECT_FALSE(
+      registry_->WouldRestartWithout({KeepAliveOrigin::CHROME_APP_DELEGATE}));
+  EXPECT_FALSE(registry_->WouldRestartWithout(
+      {KeepAliveOrigin::BACKGROUND_MODE_MANAGER}));
+  EXPECT_TRUE(registry_->WouldRestartWithout(
+      {KeepAliveOrigin::CHROME_APP_DELEGATE, KeepAliveOrigin::PANEL}));
+  EXPECT_EQ(registry_->IsRestartAllowed(),
+            registry_->WouldRestartWithout(empty_vector));
+}

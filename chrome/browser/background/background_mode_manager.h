@@ -93,6 +93,9 @@ class BackgroundModeManager
   // Returns true if background mode is active.
   virtual bool IsBackgroundModeActive();
 
+  // Returns true if we are in pure background mode, without windows.
+  bool IsBackgroundWithoutWindows() const;
+
   // Suspends background mode until either ResumeBackgroundMode is called or
   // Chrome is restarted. This has the same effect as ending background mode
   // for the current browser session.

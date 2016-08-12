@@ -204,6 +204,10 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
   in_flight_message_deliveries_.insert(app_id);
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
+  UMA_HISTOGRAM_BOOLEAN("PushMessaging.ReceivedMessageInBackground",
+                        g_browser_process->background_mode_manager()
+                            ->IsBackgroundWithoutWindows());
+
   if (!in_flight_keep_alive_) {
     in_flight_keep_alive_.reset(
         new ScopedKeepAlive(KeepAliveOrigin::IN_FLIGHT_PUSH_MESSAGE,

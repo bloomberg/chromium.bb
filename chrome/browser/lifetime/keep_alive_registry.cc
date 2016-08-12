@@ -37,6 +37,36 @@ void KeepAliveRegistry::RemoveObserver(KeepAliveStateObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool KeepAliveRegistry::WouldRestartWithout(
+    const std::vector<KeepAliveOrigin>& origins) const {
+  int registered_count = 0;
+  int restart_allowed_count = 0;
+
+  for (auto origin : origins) {
+    auto counts_it = registered_keep_alives_.find(origin);
+    if (counts_it != registered_keep_alives_.end()) {
+      registered_count += counts_it->second;
+
+      counts_it = restart_allowed_keep_alives_.find(origin);
+      if (counts_it != restart_allowed_keep_alives_.end())
+        restart_allowed_count += counts_it->second;
+    } else {
+      // |registered_keep_alives_| is supposed to be a superset of
+      // |restart_allowed_keep_alives_|
+      DCHECK(restart_allowed_keep_alives_.find(origin) ==
+             restart_allowed_keep_alives_.end());
+    }
+  }
+
+  registered_count = registered_count_ - registered_count;
+  restart_allowed_count = restart_allowed_count_ - restart_allowed_count;
+
+  DCHECK_GE(registered_count, 0);
+  DCHECK_GE(restart_allowed_count, 0);
+
+  return registered_count == restart_allowed_count;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
@@ -58,8 +88,10 @@ void KeepAliveRegistry::Register(KeepAliveOrigin origin,
   ++registered_keep_alives_[origin];
   ++registered_count_;
 
-  if (restart == KeepAliveRestartOption::ENABLED)
+  if (restart == KeepAliveRestartOption::ENABLED) {
+    ++restart_allowed_keep_alives_[origin];
     ++restart_allowed_count_;
+  }
 
   bool new_keeping_alive = IsKeepingAlive();
   bool new_restart_allowed = IsRestartAllowed();
@@ -80,14 +112,12 @@ void KeepAliveRegistry::Unregister(KeepAliveOrigin origin,
 
   --registered_count_;
   DCHECK_GE(registered_count_, 0);
+  DecrementCount(origin, &registered_keep_alives_);
 
-  int new_count = --registered_keep_alives_[origin];
-  DCHECK_GE(registered_keep_alives_[origin], 0);
-  if (new_count == 0)
-    registered_keep_alives_.erase(origin);
-
-  if (restart == KeepAliveRestartOption::ENABLED)
+  if (restart == KeepAliveRestartOption::ENABLED) {
     --restart_allowed_count_;
+    DecrementCount(origin, &restart_allowed_keep_alives_);
+  }
 
   bool new_keeping_alive = IsKeepingAlive();
   bool new_restart_allowed = IsRestartAllowed();
@@ -115,6 +145,14 @@ void KeepAliveRegistry::OnRestartAllowedChanged(bool new_restart_allowed) {
            << new_restart_allowed;
   FOR_EACH_OBSERVER(KeepAliveStateObserver, observers_,
                     OnKeepAliveRestartStateChanged(new_restart_allowed));
+}
+
+void KeepAliveRegistry::DecrementCount(KeepAliveOrigin origin,
+                                       OriginMap* keep_alive_map) {
+  int new_count = --keep_alive_map->at(origin);
+  DCHECK_GE(keep_alive_map->at(origin), 0);
+  if (new_count == 0)
+    keep_alive_map->erase(origin);
 }
 
 std::ostream& operator<<(std::ostream& out, const KeepAliveRegistry& registry) {

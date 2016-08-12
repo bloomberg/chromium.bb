@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_LIFETIME_KEEP_ALIVE_REGISTRY_H_
 #define CHROME_BROWSER_LIFETIME_KEEP_ALIVE_REGISTRY_H_
 
-#include <map>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -36,12 +36,26 @@ class KeepAliveRegistry {
   void AddObserver(KeepAliveStateObserver* observer);
   void RemoveObserver(KeepAliveStateObserver* observer);
 
+  // Returns whether restart would be allowed if all the keep alives for the
+  // provided |origins| were not registered.
+  bool WouldRestartWithout(const std::vector<KeepAliveOrigin>& origins) const;
+
  private:
   friend struct base::DefaultSingletonTraits<KeepAliveRegistry>;
   // Friend to be able to use Register/Unregister
   friend class ScopedKeepAlive;
   friend std::ostream& operator<<(std::ostream& out,
                                   const KeepAliveRegistry& registry);
+
+  // TODO(dgn): Remove this when std::hash supports enums directly (c++14)
+  // http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2148
+  struct EnumClassHash {
+    std::size_t operator()(KeepAliveOrigin origin) const {
+      return static_cast<int>(origin);
+    }
+  };
+
+  using OriginMap = std::unordered_map<KeepAliveOrigin, int, EnumClassHash>;
 
   KeepAliveRegistry();
   ~KeepAliveRegistry();
@@ -54,9 +68,17 @@ class KeepAliveRegistry {
   void OnKeepAliveStateChanged(bool new_keeping_alive);
   void OnRestartAllowedChanged(bool new_restart_allowed);
 
+  // Unregisters one occurrence of the provided |origin| from |keep_alive_map|
+  void DecrementCount(KeepAliveOrigin origin, OriginMap* keep_alive_map);
+
   // Tracks the registered KeepAlives, storing the origin and the number of
   // registered KeepAlives for each.
-  std::map<KeepAliveOrigin, int> registered_keep_alives_;
+  OriginMap registered_keep_alives_;
+
+  // Tracks the registered KeepAlives that had KeepAliveRestartOption::ENABLED
+  // set, storing the origin and the number of restart allowed KeepAlives for
+  // each origin.
+  OriginMap restart_allowed_keep_alives_;
 
   // Total number of registered KeepAlives
   int registered_count_;
