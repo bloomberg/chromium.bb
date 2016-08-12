@@ -247,7 +247,7 @@ shm_pool_resize(struct wl_client *client, struct wl_resource *resource,
 		shm_pool_finish_resize(pool);
 }
 
-struct wl_shm_pool_interface shm_pool_interface = {
+static const struct wl_shm_pool_interface shm_pool_interface = {
 	shm_pool_create_buffer,
 	shm_pool_destroy,
 	shm_pool_resize
