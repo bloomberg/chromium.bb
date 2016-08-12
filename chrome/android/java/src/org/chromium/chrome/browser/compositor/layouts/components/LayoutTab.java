@@ -228,7 +228,8 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
         boolean needsUpdate = false;
 
         // If the toolbar color changed, animate between the old and new colors.
-        if (mToolbarBackgroundColor != toolbarBackgroundColor && isVisible()) {
+        if (mToolbarBackgroundColor != toolbarBackgroundColor && isVisible()
+                && mInitFromHostCalled) {
             ChromeAnimation.Animation<ChromeAnimation.Animatable<?>>  themeColorAnimation =
                     createAnimation(this, Property.TOOLBAR_COLOR, 0.0f, 1.0f,
                     ToolbarPhone.THEME_COLOR_TRANSITION_DURATION, 0, false,
