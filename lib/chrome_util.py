@@ -189,20 +189,18 @@ class Copier(object):
       mode = self.exe_mode if path.exe else self.default_mode
     os.chmod(dest, mode)
 
-  def Copy(self, src_base, dest_base, path, strict=False, sloppy=False):
+  def Copy(self, src_base, dest_base, path, sloppy=False):
     """Copy artifact(s) from source directory to destination.
 
     Args:
       src_base: The directory to apply the src glob pattern match in.
       dest_base: The directory to copy matched files to.  |Path.dest|.
       path: A Path instance that specifies what is to be copied.
-      strict: If set, enforce that all optional files are copied.
       sloppy: If set, ignore when mandatory artifacts are missing.
 
     Returns:
       A list of the artifacts copied.
     """
-    assert not (strict and sloppy), 'strict and sloppy are not compatible.'
     copied_paths = []
     src = os.path.join(src_base, path.src)
     if not src.endswith('/') and os.path.isdir(src):
@@ -210,17 +208,16 @@ class Copier(object):
                               'Aborting copy...' % (src,))
     paths = glob.glob(src)
     if not paths:
-      if ((strict and not path.optional) or
-          (not strict and not (path.optional or path.cond) and not sloppy)):
+      if path.optional:
+        logging.debug('%s does not exist and is optional.  Skipping.', src)
+      elif sloppy:
+        logging.warning('%s does not exist and is required.  Skipping anyway.',
+                        src)
+      else:
         msg = ('%s does not exist and is required.\n'
                'You can bypass this error with --sloppy.\n'
                'Aborting copy...' % src)
         raise MissingPathError(msg)
-      elif path.optional or (not strict and path.cond):
-        logging.debug('%s does not exist and is optional.  Skipping.', src)
-      else:
-        logging.warning('%s does not exist and is required.  Skipping anyway.',
-                        src)
     elif len(paths) > 1 and path.dest and not path.dest.endswith('/'):
       raise MultipleMatchError(
           'Glob pattern %r has multiple matches, but dest %s '
@@ -273,8 +270,7 @@ class Path(object):
            directory or contains directories, the content of the directory will
            not be stripped.
       cond: A condition (see Conditions class) to test for in deciding whether
-            to process this artifact. If supplied, the artifact will be treated
-            as optional unless --strict is supplied.
+            to process this artifact.
       dest: Name to give to the target file/directory.  Defaults to keeping the
             same name as the source.
       mode: The mode to set for the matched files, and the contents of matched
@@ -294,6 +290,8 @@ class Path(object):
 
   def ShouldProcess(self, gyp_defines, staging_flags):
     """Tests whether this artifact should be copied."""
+    if not gyp_defines and not staging_flags:
+      return True
     if self.cond and isinstance(self.cond, list):
       for c in self.cond:
         if not c(gyp_defines, staging_flags):
@@ -362,13 +360,7 @@ _COPY_PATHS_CHROME = (
     Path('chrome-wrapper'),
     Path('chrome_100_percent.pak'),
     Path('chrome_200_percent.pak', cond=C.StagingFlagSet(_HIGHDPI_FLAG)),
-    Path('chrome_material_100_percent.pak', optional=True),
-    Path('chrome_material_200_percent.pak',
-         optional=True,
-         cond=C.StagingFlagSet(_HIGHDPI_FLAG)),
     Path('keyboard_resources.pak'),
-    # Set as optional for backwards compatibility.
-    Path('libexif.so', exe=True, optional=True),
     # Widevine binaries are already pre-stripped.  In addition, they don't
     # play well with the binutils stripping tools, so skip stripping.
     Path('libwidevinecdmadapter.so',
@@ -435,23 +427,19 @@ def GetCopyPaths(deployment_type='chrome'):
     raise RuntimeError('Invalid deployment type "%s"' % deployment_type)
   return paths
 
-def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
-                            sloppy=False, gyp_defines=None, staging_flags=None,
+def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, sloppy=False,
+                            gyp_defines=None, staging_flags=None,
                             strip_flags=None, copy_paths=_COPY_PATHS_CHROME):
   """Populates a staging directory with necessary build artifacts.
 
-  If |strict| is set, then we decide what to stage based on the |gyp_defines|
-  and |staging_flags| passed in.  Otherwise, we stage everything that we know
-  about, that we can find.
+  If |gyp_defines| or |staging_flags| are set, then we decide what to stage
+  based on the flag values. Otherwise, we stage everything that we know
+  about that we can find.
 
   Args:
     staging_dir: Path to an empty staging directory.
     build_dir: Path to location of Chrome build artifacts.
     strip_bin: Path to executable used for stripping binaries.
-    strict: If set, decide what to stage based on the |gyp_defines| and
-            |staging_flags| passed in, and enforce that all optional files
-            are copied.  Otherwise, we stage optional files if they are
-            there, but we don't complain if they're not.
     sloppy: Ignore when mandatory artifacts are missing.
     gyp_defines: A dictionary (i.e., one returned by ProcessGypDefines)
       containing GYP_DEFINES Chrome was built with.
@@ -470,9 +458,8 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
   copier = Copier(strip_bin=strip_bin, strip_flags=strip_flags)
   copied_paths = []
   for p in copy_paths:
-    if not strict or p.ShouldProcess(gyp_defines, staging_flags):
-      copied_paths += copier.Copy(build_dir, staging_dir, p, strict=strict,
-                                  sloppy=sloppy)
+    if p.ShouldProcess(gyp_defines, staging_flags):
+      copied_paths += copier.Copy(build_dir, staging_dir, p, sloppy=sloppy)
 
   if not copied_paths:
     raise MissingPathError('Couldn\'t find anything to copy!\n'

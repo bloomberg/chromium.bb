@@ -406,10 +406,11 @@ def _CreateParser():
   group.add_argument('--staging-flags', default=None, type=ValidateGypDefines,
                      help=('Extra flags to control staging.  Valid flags are - '
                            '%s' % ', '.join(chrome_util.STAGING_FLAGS)))
+  # TODO(stevenjb): Remove --strict entirely once removed from the ebuild.
   group.add_argument('--strict', action='store_true', default=False,
-                     help='Stage artifacts based on the GYP_DEFINES '
-                          'environment variable and --staging-flags, if set. '
-                          'Enforce that all optional artifacts are deployed.')
+                     help='Deprecated. Default behavior is "strict". Use '
+                          '--sloppy to omit warnings for missing optional '
+                          'files.')
   group.add_argument('--strip-flags', default=None,
                      help="Flags to call the 'strip' binutil tool with.  "
                           "Overrides the default arguments.")
@@ -467,13 +468,10 @@ def _ParseCommandLine(argv):
     parser.error('Cannot specify both --gs-path and --local-pkg-path')
   if not (options.staging_only or options.to):
     parser.error('Need to specify --to')
-  if (options.strict or options.staging_flags) and not options.build_dir:
-    parser.error('--strict and --staging-flags require --build-dir to be '
-                 'set.')
-  if options.staging_flags and not options.strict:
-    parser.error('--staging-flags requires --strict to be set.')
-  if options.sloppy and options.strict:
-    parser.error('Cannot specify both --strict and --sloppy.')
+  if options.staging_flags and not options.build_dir:
+    parser.error('--staging-flags require --build-dir to be set.')
+  if options.strict:
+    logging.warning('--strict is deprecated.')
 
   if options.mount or options.mount_dir:
     if not options.target_dir:
@@ -504,10 +502,6 @@ def _PostParseCheck(options):
       options.gyp_defines = chrome_util.ProcessGypDefines(gyp_env)
       logging.debug('GYP_DEFINES taken from environment: %s',
                     options.gyp_defines)
-
-  if options.strict and not options.gyp_defines:
-    cros_build_lib.Die('When --strict is set, the GYP_DEFINES environment '
-                       'variable must be set.')
 
   if not options.staging_flags:
     use_env = os.getenv('USE')
@@ -584,7 +578,7 @@ def _PrepareStagingDir(options, tempdir, staging_dir, copy_paths=None,
       strip_flags = (None if options.strip_flags is None else
                      shlex.split(options.strip_flags))
       chrome_util.StageChromeFromBuildDir(
-          staging_dir, options.build_dir, strip_bin, strict=options.strict,
+          staging_dir, options.build_dir, strip_bin,
           sloppy=options.sloppy, gyp_defines=options.gyp_defines,
           staging_flags=options.staging_flags,
           strip_flags=strip_flags, copy_paths=copy_paths)

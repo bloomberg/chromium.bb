@@ -64,17 +64,6 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
       self.assertRaises2(SystemExit, _ParseCommandLine, argv,
                          check_attrs={'code': 2})
 
-  def testStagingFlagsNoStrict(self):
-    """Errors out when --staging-flags is set without --strict."""
-    argv = ['--staging-only', '--build-dir=/path/to/nowhere',
-            '--board=%s' % self.BOARD, '--staging-flags=highdpi']
-    self.assertParseError(argv)
-
-  def testStrictNoBuildDir(self):
-    """Errors out when --strict is set without --build-dir."""
-    argv = ['--staging-only', '--strict', '--gs-path', _GS_PATH]
-    self.assertParseError(argv)
-
   def testNoBoardBuildDir(self):
     argv = ['--staging-only', '--build-dir=/path/to/nowhere']
     self.assertParseError(argv)
@@ -280,15 +269,6 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
     osutils.Touch(os.path.join(self.build_dir, 'chrome'), makedirs=True)
     deploy_chrome._PrepareStagingDir(options, self.tempdir, self.staging_dir,
                                      chrome_util._COPY_PATHS_CHROME)
-
-  def testEmptyDeployStrict(self):
-    """Strict staging fails when there are no files."""
-    options = _ParseCommandLine(
-        self.common_flags + ['--gyp-defines', 'chromeos=1', '--strict'])
-
-    self.assertRaises(
-        chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
-        options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS_CHROME)
 
 
 class DeployTestBuildDir(cros_test_lib.MockTempDirTestCase):
