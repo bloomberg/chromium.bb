@@ -783,14 +783,6 @@ void TabAndroid::OnLoFiResponseReceived(bool is_preview) {
                                   is_preview);
 }
 
-jboolean TabAndroid::HasOfflineCopy(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj) {
-  GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
-      web_contents()->GetURL());
-  return offline_pages::OfflinePageUtils::HasOfflinePageForOnlineURL(
-      GetProfile(), url);
-}
-
 jboolean TabAndroid::IsOfflinePage(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
   return offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(

@@ -240,15 +240,4 @@ TEST_F(OfflinePageUtilsTest, IsOfflinePage) {
   EXPECT_FALSE(OfflinePageUtils::IsOfflinePage(profile(), kTestPage4Url));
 }
 
-TEST_F(OfflinePageUtilsTest, HasOfflinePageForOnlineURL) {
-  EXPECT_TRUE(
-      OfflinePageUtils::HasOfflinePageForOnlineURL(profile(), kTestPage1Url));
-  EXPECT_TRUE(
-      OfflinePageUtils::HasOfflinePageForOnlineURL(profile(), kTestPage2Url));
-  EXPECT_FALSE(
-      OfflinePageUtils::HasOfflinePageForOnlineURL(profile(), kTestPage3Url));
-  EXPECT_FALSE(
-      OfflinePageUtils::HasOfflinePageForOnlineURL(profile(), kTestPage4Url));
-}
-
 }  // namespace offline_pages
