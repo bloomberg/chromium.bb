@@ -201,8 +201,7 @@ public:
     // These expand shorthand properties into multiple properties.
     bool setProperty(CSSPropertyID unresolvedProperty, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
     bool setProperty(const AtomicString& customPropertyName, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
-    // TODO(sashab): Make this take a const CSSValue&
-    void setProperty(CSSPropertyID, const CSSValue*, bool important = false);
+    void setProperty(CSSPropertyID, const CSSValue&, bool important = false);
 
     // These do not. FIXME: This is too messy, we can do better.
     bool setProperty(CSSPropertyID, CSSValueID identifier, bool important = false);

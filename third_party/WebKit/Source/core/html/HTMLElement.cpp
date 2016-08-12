@@ -996,7 +996,7 @@ void HTMLElement::addHTMLColorToStyle(MutableStylePropertySet* style, CSSPropert
     if (!parseColorWithLegacyRules(attributeValue, parsedColor))
         return;
 
-    style->setProperty(propertyID, CSSColorValue::create(parsedColor.rgb()));
+    style->setProperty(propertyID, *CSSColorValue::create(parsedColor.rgb()));
 }
 
 bool HTMLElement::isInteractiveContent() const

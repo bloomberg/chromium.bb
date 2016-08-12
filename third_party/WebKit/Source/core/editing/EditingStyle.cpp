@@ -1140,16 +1140,16 @@ EditingStyle* EditingStyle::wrappingStyleForSerialization(ContainerNode* context
     return wrappingStyle;
 }
 
-static CSSValueList* mergeTextDecorationValues(const CSSValueList& mergedValue, const CSSValueList& valueToMerge)
+static const CSSValueList& mergeTextDecorationValues(const CSSValueList& mergedValue, const CSSValueList& valueToMerge)
 {
     DEFINE_STATIC_LOCAL(CSSPrimitiveValue, underline, (CSSPrimitiveValue::createIdentifier(CSSValueUnderline)));
     DEFINE_STATIC_LOCAL(CSSPrimitiveValue, lineThrough, (CSSPrimitiveValue::createIdentifier(CSSValueLineThrough)));
-    CSSValueList* result = mergedValue.copy();
+    CSSValueList& result = *mergedValue.copy();
     if (valueToMerge.hasValue(underline) && !mergedValue.hasValue(underline))
-        result->append(underline);
+        result.append(underline);
 
     if (valueToMerge.hasValue(lineThrough) && !mergedValue.hasValue(lineThrough))
-        result->append(lineThrough);
+        result.append(lineThrough);
 
     return result;
 }
@@ -1172,7 +1172,7 @@ void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverride
         // text decorations never override values
         if ((property.id() == textDecorationPropertyForEditing() || property.id() == CSSPropertyWebkitTextDecorationsInEffect) && property.value().isValueList() && value) {
             if (value->isValueList()) {
-                CSSValueList* result = mergeTextDecorationValues(*toCSSValueList(value), toCSSValueList(property.value()));
+                const CSSValueList& result = mergeTextDecorationValues(*toCSSValueList(value), toCSSValueList(property.value()));
                 m_mutableStyle->setProperty(property.id(), result, property.isImportant());
                 continue;
             }
@@ -1307,10 +1307,10 @@ void EditingStyle::addAbsolutePositioningFromElement(const Element& element)
     }
 
     m_mutableStyle->setProperty(CSSPropertyPosition, CSSValueAbsolute);
-    m_mutableStyle->setProperty(CSSPropertyLeft, CSSPrimitiveValue::create(x, CSSPrimitiveValue::UnitType::Pixels));
-    m_mutableStyle->setProperty(CSSPropertyTop, CSSPrimitiveValue::create(y, CSSPrimitiveValue::UnitType::Pixels));
-    m_mutableStyle->setProperty(CSSPropertyWidth, CSSPrimitiveValue::create(width, CSSPrimitiveValue::UnitType::Pixels));
-    m_mutableStyle->setProperty(CSSPropertyHeight, CSSPrimitiveValue::create(height, CSSPrimitiveValue::UnitType::Pixels));
+    m_mutableStyle->setProperty(CSSPropertyLeft, *CSSPrimitiveValue::create(x, CSSPrimitiveValue::UnitType::Pixels));
+    m_mutableStyle->setProperty(CSSPropertyTop, *CSSPrimitiveValue::create(y, CSSPrimitiveValue::UnitType::Pixels));
+    m_mutableStyle->setProperty(CSSPropertyWidth, *CSSPrimitiveValue::create(width, CSSPrimitiveValue::UnitType::Pixels));
+    m_mutableStyle->setProperty(CSSPropertyHeight, *CSSPrimitiveValue::create(height, CSSPrimitiveValue::UnitType::Pixels));
 }
 
 void EditingStyle::forceInline()

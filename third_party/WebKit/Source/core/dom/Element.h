@@ -290,6 +290,7 @@ public:
 
     void setInlineStyleProperty(CSSPropertyID, CSSValueID identifier, bool important = false);
     void setInlineStyleProperty(CSSPropertyID, double value, CSSPrimitiveValue::UnitType, bool important = false);
+    // TODO(sashab): Make this take a const CSSValue&.
     void setInlineStyleProperty(CSSPropertyID, const CSSValue*, bool important = false);
     bool setInlineStyleProperty(CSSPropertyID, const String& value, bool important = false);
 
@@ -601,6 +602,7 @@ protected:
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, CSSValueID identifier);
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, double value, CSSPrimitiveValue::UnitType);
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, const String& value);
+    // TODO(sashab): Make this take a const CSSValue&.
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, const CSSValue*);
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;

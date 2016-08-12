@@ -445,7 +445,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style, Editin
             currentFontSize = computedFontSize(node);
         }
         if (currentFontSize != desiredFontSize) {
-            inlineStyle->setProperty(CSSPropertyFontSize, CSSPrimitiveValue::create(desiredFontSize, CSSPrimitiveValue::UnitType::Pixels), false);
+            inlineStyle->setProperty(CSSPropertyFontSize, *CSSPrimitiveValue::create(desiredFontSize, CSSPrimitiveValue::UnitType::Pixels), false);
             setNodeAttribute(element, styleAttr, AtomicString(inlineStyle->asText()));
         }
         if (inlineStyle->isEmpty()) {

@@ -76,7 +76,7 @@ void HTMLHRElement::collectStyleForPresentationAttribute(const QualifiedName& na
         if (!hasAttribute(colorAttr)) {
             addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle, CSSValueSolid);
 
-            CSSColorValue* darkGrayValue = CSSColorValue::create(Color::darkGray);
+            const CSSColorValue& darkGrayValue = *CSSColorValue::create(Color::darkGray);
             style->setProperty(CSSPropertyBorderColor, darkGrayValue);
             style->setProperty(CSSPropertyBackgroundColor, darkGrayValue);
         }

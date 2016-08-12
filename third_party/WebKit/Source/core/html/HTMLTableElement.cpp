@@ -457,24 +457,24 @@ StylePropertySet* HTMLTableElement::createSharedCellStyle()
         style->setProperty(CSSPropertyBorderRightWidth, CSSValueThin);
         style->setProperty(CSSPropertyBorderLeftStyle, CSSValueSolid);
         style->setProperty(CSSPropertyBorderRightStyle, CSSValueSolid);
-        style->setProperty(CSSPropertyBorderColor, CSSInheritedValue::create());
+        style->setProperty(CSSPropertyBorderColor, *CSSInheritedValue::create());
         break;
     case SolidBordersRowsOnly:
         style->setProperty(CSSPropertyBorderTopWidth, CSSValueThin);
         style->setProperty(CSSPropertyBorderBottomWidth, CSSValueThin);
         style->setProperty(CSSPropertyBorderTopStyle, CSSValueSolid);
         style->setProperty(CSSPropertyBorderBottomStyle, CSSValueSolid);
-        style->setProperty(CSSPropertyBorderColor, CSSInheritedValue::create());
+        style->setProperty(CSSPropertyBorderColor, *CSSInheritedValue::create());
         break;
     case SolidBorders:
-        style->setProperty(CSSPropertyBorderWidth, CSSPrimitiveValue::create(1, CSSPrimitiveValue::UnitType::Pixels));
-        style->setProperty(CSSPropertyBorderStyle, CSSPrimitiveValue::createIdentifier(CSSValueSolid));
-        style->setProperty(CSSPropertyBorderColor, CSSInheritedValue::create());
+        style->setProperty(CSSPropertyBorderWidth, *CSSPrimitiveValue::create(1, CSSPrimitiveValue::UnitType::Pixels));
+        style->setProperty(CSSPropertyBorderStyle, *CSSPrimitiveValue::createIdentifier(CSSValueSolid));
+        style->setProperty(CSSPropertyBorderColor, *CSSInheritedValue::create());
         break;
     case InsetBorders:
-        style->setProperty(CSSPropertyBorderWidth, CSSPrimitiveValue::create(1, CSSPrimitiveValue::UnitType::Pixels));
-        style->setProperty(CSSPropertyBorderStyle, CSSPrimitiveValue::createIdentifier(CSSValueInset));
-        style->setProperty(CSSPropertyBorderColor, CSSInheritedValue::create());
+        style->setProperty(CSSPropertyBorderWidth, *CSSPrimitiveValue::create(1, CSSPrimitiveValue::UnitType::Pixels));
+        style->setProperty(CSSPropertyBorderStyle, *CSSPrimitiveValue::createIdentifier(CSSValueInset));
+        style->setProperty(CSSPropertyBorderColor, *CSSInheritedValue::create());
         break;
     case NoBorders:
         // If 'rules=none' then allow any borders set at cell level to take effect.
@@ -482,7 +482,7 @@ StylePropertySet* HTMLTableElement::createSharedCellStyle()
     }
 
     if (m_padding)
-        style->setProperty(CSSPropertyPadding, CSSPrimitiveValue::create(m_padding, CSSPrimitiveValue::UnitType::Pixels));
+        style->setProperty(CSSPropertyPadding, *CSSPrimitiveValue::create(m_padding, CSSPrimitiveValue::UnitType::Pixels));
 
     return style;
 }

@@ -3637,7 +3637,7 @@ void Element::setInlineStyleProperty(CSSPropertyID propertyID, double value, CSS
 void Element::setInlineStyleProperty(CSSPropertyID propertyID, const CSSValue* value, bool important)
 {
     DCHECK(isStyledElement());
-    ensureMutableInlineStyle().setProperty(propertyID, value, important);
+    ensureMutableInlineStyle().setProperty(propertyID, *value, important);
     inlineStyleChanged();
 }
 
@@ -3682,13 +3682,13 @@ void Element::updatePresentationAttributeStyle()
 void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, CSSValueID identifier)
 {
     DCHECK(isStyledElement());
-    style->setProperty(propertyID, CSSPrimitiveValue::createIdentifier(identifier));
+    style->setProperty(propertyID, *CSSPrimitiveValue::createIdentifier(identifier));
 }
 
 void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, double value, CSSPrimitiveValue::UnitType unit)
 {
     DCHECK(isStyledElement());
-    style->setProperty(propertyID, CSSPrimitiveValue::create(value, unit));
+    style->setProperty(propertyID, *CSSPrimitiveValue::create(value, unit));
 }
 
 void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, const String& value)
@@ -3700,7 +3700,7 @@ void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* s
 void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, const CSSValue* value)
 {
     DCHECK(isStyledElement());
-    style->setProperty(propertyID, value);
+    style->setProperty(propertyID, *value);
 }
 
 bool Element::supportsStyleSharing() const

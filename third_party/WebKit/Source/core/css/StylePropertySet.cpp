@@ -309,18 +309,18 @@ bool MutableStylePropertySet::setProperty(const AtomicString& customPropertyName
     return CSSParser::parseValueForCustomProperty(this, customPropertyName, value, important, contextStyleSheet);
 }
 
-void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, const CSSValue* value, bool important)
+void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, const CSSValue& value, bool important)
 {
     StylePropertyShorthand shorthand = shorthandForProperty(propertyID);
     if (!shorthand.length()) {
-        setProperty(CSSProperty(propertyID, *value, important));
+        setProperty(CSSProperty(propertyID, value, important));
         return;
     }
 
     removePropertiesInSet(shorthand.properties(), shorthand.length());
 
     for (unsigned i = 0; i < shorthand.length(); ++i)
-        m_propertyVector.append(CSSProperty(shorthand.properties()[i], *value, important));
+        m_propertyVector.append(CSSProperty(shorthand.properties()[i], value, important));
 }
 
 bool MutableStylePropertySet::setProperty(const CSSProperty& property, CSSProperty* slot)

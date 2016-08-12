@@ -33,7 +33,7 @@ void StringKeyframe::setCSSPropertyValue(CSSPropertyID property, const CSSValue&
 {
     ASSERT(property != CSSPropertyInvalid);
     ASSERT(CSSAnimations::isAnimatableProperty(property));
-    m_cssPropertyMap->setProperty(property, &value, false);
+    m_cssPropertyMap->setProperty(property, value, false);
 }
 
 void StringKeyframe::setPresentationAttributeValue(CSSPropertyID property, const String& value, Element* element, StyleSheetContents* styleSheetContents)
