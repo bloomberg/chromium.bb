@@ -58,36 +58,33 @@
             <template is="dom-if" if="[[isPolicyControlled_(item.source)]]">
               <iron-icon icon="cr:domain"></iron-icon>
             </template>
-            <template is="dom-if" if="[[shouldShowMenu_(item.source)]]">
-              <paper-menu-button>
-                <paper-icon-button icon="cr:more-vert"
-                    class="dropdown-trigger">
-                </paper-icon-button>
-                <paper-menu id="actionMenu" class="dropdown-content"
-                    on-iron-activate="onActionMenuIronActivate_"
-                    attr-for-selected="menu-value">
-                  <paper-item
-                      hidden="[[!showAllowAction_]]"
-                      menu-value$="[[PermissionValues.ALLOW]]">
-                    $i18n{siteSettingsActionAllow}
-                  </paper-item>
-                  <paper-item
-                      hidden="[[!showBlockAction_]]"
-                      menu-value$="[[PermissionValues.BLOCK]]">
-                    $i18n{siteSettingsActionBlock}
-                  </paper-item>
-                  <paper-item
-                      hidden="[[!showSessionOnlyAction_]]"
-                      menu-value$="[[PermissionValues.SESSION_ONLY]]">
-                    $i18n{siteSettingsActionSessionOnly}
-                  </paper-item>
-                  <paper-item
-                      menu-value$="[[PermissionValues.DEFAULT]]">
-                    $i18n{siteSettingsActionReset}
-                  </paper-item>
-                </paper-menu>
-              </paper-menu-button>
-            </template>
+            <paper-menu-button hidden="[[!shouldShowMenu_(item.source)]]">
+              <paper-icon-button icon="cr:more-vert" class="dropdown-trigger">
+              </paper-icon-button>
+              <paper-menu id="actionMenu" class="dropdown-content"
+                  on-iron-activate="onActionMenuIronActivate_"
+                  attr-for-selected="menu-value">
+                <paper-item
+                    hidden="[[!showAllowAction_]]"
+                    menu-value$="[[PermissionValues.ALLOW]]">
+                  $i18n{siteSettingsActionAllow}
+                </paper-item>
+                <paper-item
+                    hidden="[[!showBlockAction_]]"
+                    menu-value$="[[PermissionValues.BLOCK]]">
+                  $i18n{siteSettingsActionBlock}
+                </paper-item>
+                <paper-item
+                    hidden="[[!showSessionOnlyAction_]]"
+                    menu-value$="[[PermissionValues.SESSION_ONLY]]">
+                  $i18n{siteSettingsActionSessionOnly}
+                </paper-item>
+                <paper-item
+                    menu-value$="[[PermissionValues.DEFAULT]]">
+                  $i18n{siteSettingsActionReset}
+                </paper-item>
+              </paper-menu>
+            </paper-menu-button>
           </div>
         </template>
 

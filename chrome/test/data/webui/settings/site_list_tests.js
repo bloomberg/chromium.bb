@@ -268,15 +268,22 @@ cr.define('site_list', function() {
       });
 
       /**
+       * Fetch the non-hidden menu items from the list.
+       * @param {!HTMLElement} parentElement
+       */
+      function getMenuItems(listContainer) {
+        return listContainer.children[0].querySelectorAll(
+            'paper-menu-button paper-item:not([hidden])');
+      }
+
+      /**
        * Asserts the menu looks as expected.
        * @param {Array<string>} items The items expected to show in the menu.
        * @param {!HTMLElement} parentElement The parent node to start looking
        *     in.
        */
       function assertMenu(items, parentElement) {
-        var listItem = parentElement.$.listContainer.children[0];
-        var menuItems = listItem.querySelectorAll(
-            'paper-menu-button paper-item:not([hidden])');
+        var menuItems = getMenuItems(parentElement.$.listContainer);
         assertEquals(items.length, menuItems.length);
         for (var i = 0; i < items.length; i++)
           assertEquals(items[i], menuItems[i].textContent.trim());
@@ -640,6 +647,20 @@ cr.define('site_list', function() {
             function(contentType) {
               // No further checks needed. If this fails, it will hang the test.
             });
+      });
+
+      test('Select menu item', function() {
+        // Test for error: "Cannot read property 'origin' of undefined".
+        setupCategory(settings.ContentSettingsTypes.GEOLOCATION,
+            settings.PermissionValues.ALLOW, prefs);
+        return browserProxy.whenCalled('getExceptionList').then(function(
+            contentType) {
+          Polymer.dom.flush();
+          var menuItems = getMenuItems(testElement.$.listContainer);
+          assertTrue(!!menuItems);
+          MockInteractions.tap(menuItems[0]);
+          return browserProxy.whenCalled('setCategoryPermissionForOrigin');
+        });
       });
     });
   }
