@@ -83,12 +83,11 @@ void CallLibraryEarlyInitialization(base::NativeLibrary app_library) {
       reinterpret_cast<LibraryEarlyInitFunction>(
           base::GetFunctionPointerFromNativeLibrary(app_library,
                                                     "InitializeBase"));
-  if (init_function) {
-    // Get the ICU data that we prewarmed in the runner and then pass it to
-    // the copy of icu in the mojo binary that we're running.
-    const uint8_t* icu_data = base::i18n::GetRawIcuMemory();
-    init_function(icu_data);
-  }
+  CHECK(init_function);
+  // Get the ICU data that we prewarmed in the runner and then pass it to
+  // the copy of icu in the mojo binary that we're running.
+  const uint8_t* icu_data = base::i18n::GetRawIcuMemory();
+  init_function(icu_data);
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
   // TODO(erg): All chromium binaries load base. We might want to make a

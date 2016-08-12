@@ -15,6 +15,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
+#include "build/build_config.h"
 #include "mojo/public/c/system/types.h"
 
 #if !defined(OS_ANDROID)
@@ -22,7 +23,7 @@
 #endif
 
 extern "C" {
-#if defined(WIN32)
+#if defined(OS_WIN)
 __declspec(dllexport) void __cdecl
 #else
 void __attribute__((visibility("default")))
