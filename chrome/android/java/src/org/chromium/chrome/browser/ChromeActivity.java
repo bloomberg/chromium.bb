@@ -1531,6 +1531,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         } else if (id == R.id.bookmark_this_page_id) {
             addOrEditBookmark(currentTab);
             RecordUserAction.record("MobileMenuAddToBookmarks");
+        } else if (id == R.id.offline_page_id) {
+            // TODO(dfalcantara): Hook up offline page downloading.
         } else if (id == R.id.reload_menu_id) {
             if (currentTab.isLoading()) {
                 currentTab.stopLoading();
