@@ -261,7 +261,7 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
     if (relative_path == base::FilePath(kManifestFilename))
       continue;
 
-    if (ContainsKey(browser_images, relative_path))
+    if (base::ContainsKey(browser_images, relative_path))
       continue;
 
     base::FilePath full_path = extension_root.Append(relative_path);

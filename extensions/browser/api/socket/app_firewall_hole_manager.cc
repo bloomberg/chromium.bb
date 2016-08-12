@@ -110,7 +110,7 @@ AppFirewallHoleManager::AppFirewallHoleManager(BrowserContext* context)
 }
 
 AppFirewallHoleManager::~AppFirewallHoleManager() {
-  STLDeleteValues(&tracked_holes_);
+  base::STLDeleteValues(&tracked_holes_);
 }
 
 AppFirewallHoleManager* AppFirewallHoleManager::Get(BrowserContext* context) {

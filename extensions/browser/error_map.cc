@@ -133,7 +133,7 @@ bool ErrorMap::ExtensionEntry::DeleteErrors(const Filter& filter) {
 }
 
 void ErrorMap::ExtensionEntry::DeleteAllErrors() {
-  STLDeleteContainerPointers(list_.begin(), list_.end());
+  base::STLDeleteContainerPointers(list_.begin(), list_.end());
   list_.clear();
 }
 

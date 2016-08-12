@@ -154,7 +154,7 @@ void WiFiDisplayAudioEncoderLPCM::OnData(
       int sample_count = fifo_bus_->channels() * fifo_bus_->frames();
       data.resize(sample_count * sizeof(uint16_t));
       uint16_t* encoded_samples =
-          reinterpret_cast<uint16_t*>(string_as_array(&data));
+          reinterpret_cast<uint16_t*>(base::string_as_array(&data));
       fifo_bus_->ToInterleaved(fifo_bus_->frames(), kOutputBytesPerSample,
                                encoded_samples);
       for (int i = 0; i < sample_count; ++i)

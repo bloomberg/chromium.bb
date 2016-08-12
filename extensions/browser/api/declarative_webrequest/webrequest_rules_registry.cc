@@ -130,7 +130,7 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
     if (!rule->tags().empty() && !ignore_tags[extension_id].empty()) {
       bool ignore_rule = false;
       for (const std::string& tag : rule->tags())
-        ignore_rule |= ContainsKey(ignore_tags[extension_id], tag);
+        ignore_rule |= base::ContainsKey(ignore_tags[extension_id], tag);
       if (ignore_rule)
         continue;
     }
@@ -381,7 +381,7 @@ void WebRequestRulesRegistry::AddTriggeredRules(
   for (url_matcher::URLMatcherConditionSet::ID url_match : url_matches) {
     RuleTriggers::const_iterator rule_trigger = rule_triggers_.find(url_match);
     CHECK(rule_trigger != rule_triggers_.end());
-    if (!ContainsKey(*result, rule_trigger->second) &&
+    if (!base::ContainsKey(*result, rule_trigger->second) &&
         rule_trigger->second->conditions().IsFulfilled(url_match, request_data))
       result->insert(rule_trigger->second);
   }

@@ -548,8 +548,8 @@ TEST_F(SimpleFeatureTest, ParseWhitelist) {
   std::unique_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
   EXPECT_EQ(2u, feature->whitelist().size());
-  EXPECT_TRUE(STLCount(feature->whitelist(), "foo"));
-  EXPECT_TRUE(STLCount(feature->whitelist(), "bar"));
+  EXPECT_TRUE(base::STLCount(feature->whitelist(), "foo"));
+  EXPECT_TRUE(base::STLCount(feature->whitelist(), "bar"));
 }
 
 TEST_F(SimpleFeatureTest, ParsePackageTypes) {
@@ -565,15 +565,17 @@ TEST_F(SimpleFeatureTest, ParsePackageTypes) {
   std::unique_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
   EXPECT_EQ(6u, feature->extension_types().size());
-  EXPECT_TRUE(STLCount(feature->extension_types(), Manifest::TYPE_EXTENSION));
-  EXPECT_TRUE(STLCount(feature->extension_types(), Manifest::TYPE_THEME));
   EXPECT_TRUE(
-      STLCount(feature->extension_types(), Manifest::TYPE_LEGACY_PACKAGED_APP));
-  EXPECT_TRUE(STLCount(feature->extension_types(), Manifest::TYPE_HOSTED_APP));
+      base::STLCount(feature->extension_types(), Manifest::TYPE_EXTENSION));
+  EXPECT_TRUE(base::STLCount(feature->extension_types(), Manifest::TYPE_THEME));
+  EXPECT_TRUE(base::STLCount(feature->extension_types(),
+                             Manifest::TYPE_LEGACY_PACKAGED_APP));
   EXPECT_TRUE(
-      STLCount(feature->extension_types(), Manifest::TYPE_PLATFORM_APP));
+      base::STLCount(feature->extension_types(), Manifest::TYPE_HOSTED_APP));
   EXPECT_TRUE(
-      STLCount(feature->extension_types(), Manifest::TYPE_SHARED_MODULE));
+      base::STLCount(feature->extension_types(), Manifest::TYPE_PLATFORM_APP));
+  EXPECT_TRUE(
+      base::STLCount(feature->extension_types(), Manifest::TYPE_SHARED_MODULE));
 
   value->SetString("extension_types", "all");
   std::unique_ptr<SimpleFeature> feature2(new SimpleFeature());
@@ -596,12 +598,14 @@ TEST_F(SimpleFeatureTest, ParseContexts) {
   feature->Parse(value.get());
   EXPECT_EQ(7u, feature->contexts().size());
   EXPECT_TRUE(
-      STLCount(feature->contexts(), Feature::BLESSED_EXTENSION_CONTEXT));
+      base::STLCount(feature->contexts(), Feature::BLESSED_EXTENSION_CONTEXT));
+  EXPECT_TRUE(base::STLCount(feature->contexts(),
+                             Feature::UNBLESSED_EXTENSION_CONTEXT));
   EXPECT_TRUE(
-      STLCount(feature->contexts(), Feature::UNBLESSED_EXTENSION_CONTEXT));
-  EXPECT_TRUE(STLCount(feature->contexts(), Feature::CONTENT_SCRIPT_CONTEXT));
-  EXPECT_TRUE(STLCount(feature->contexts(), Feature::WEB_PAGE_CONTEXT));
-  EXPECT_TRUE(STLCount(feature->contexts(), Feature::BLESSED_WEB_PAGE_CONTEXT));
+      base::STLCount(feature->contexts(), Feature::CONTENT_SCRIPT_CONTEXT));
+  EXPECT_TRUE(base::STLCount(feature->contexts(), Feature::WEB_PAGE_CONTEXT));
+  EXPECT_TRUE(
+      base::STLCount(feature->contexts(), Feature::BLESSED_WEB_PAGE_CONTEXT));
 
   value->SetString("contexts", "all");
   std::unique_ptr<SimpleFeature> feature2(new SimpleFeature());
@@ -675,10 +679,10 @@ TEST_F(SimpleFeatureTest, Inheritance) {
   EXPECT_EQ(1u, feature.whitelist().size());
   EXPECT_EQ(1u, feature.extension_types().size());
   EXPECT_EQ(1u, feature.contexts().size());
-  EXPECT_EQ(1, STLCount(feature.whitelist(), "foo"));
+  EXPECT_EQ(1, base::STLCount(feature.whitelist(), "foo"));
   EXPECT_EQ(SimpleFeature::COMPONENT_LOCATION, feature.location());
   EXPECT_EQ(1u, feature.platforms().size());
-  EXPECT_EQ(1, STLCount(feature.platforms(), Feature::CHROMEOS_PLATFORM));
+  EXPECT_EQ(1, base::STLCount(feature.platforms(), Feature::CHROMEOS_PLATFORM));
   EXPECT_EQ(1, feature.min_manifest_version());
   EXPECT_EQ(2, feature.max_manifest_version());
 
@@ -699,10 +703,11 @@ TEST_F(SimpleFeatureTest, Inheritance) {
   EXPECT_EQ(1u, feature.whitelist().size());
   EXPECT_EQ(1u, feature.extension_types().size());
   EXPECT_EQ(1u, feature.contexts().size());
-  EXPECT_EQ(1, STLCount(feature.whitelist(), "bar"));
-  EXPECT_EQ(1, STLCount(feature.extension_types(), Manifest::TYPE_EXTENSION));
-  EXPECT_EQ(1,
-            STLCount(feature.contexts(), Feature::UNBLESSED_EXTENSION_CONTEXT));
+  EXPECT_EQ(1, base::STLCount(feature.whitelist(), "bar"));
+  EXPECT_EQ(
+      1, base::STLCount(feature.extension_types(), Manifest::TYPE_EXTENSION));
+  EXPECT_EQ(1, base::STLCount(feature.contexts(),
+                              Feature::UNBLESSED_EXTENSION_CONTEXT));
   EXPECT_EQ(2, feature.min_manifest_version());
   EXPECT_EQ(3, feature.max_manifest_version());
 }

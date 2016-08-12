@@ -1121,7 +1121,7 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
         base::UserMetricsAction("WebView.WebRequest.AddListener"));
   }
 
-  if (ContainsKey(listeners_[browser_context][event_name], listener)) {
+  if (base::ContainsKey(listeners_[browser_context][event_name], listener)) {
     // This is likely an abuse of the API by a malicious extension.
     return false;
   }
@@ -1643,7 +1643,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
         listeners_[browser_context][event_name];
 
     for (const auto& listener : listeners) {
-      if (!ContainsKey(listener.blocked_requests, request_id))
+      if (!base::ContainsKey(listener.blocked_requests, request_id))
         continue;
       std::string delegate_info =
           l10n_util::GetStringFUTF8(IDS_LOAD_STATE_PARAMETER_EXTENSION,

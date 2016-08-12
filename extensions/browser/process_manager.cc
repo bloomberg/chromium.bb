@@ -619,7 +619,7 @@ void ProcessManager::CancelSuspend(const Extension* extension) {
 }
 
 void ProcessManager::CloseBackgroundHosts() {
-  STLDeleteElements(&background_hosts_);
+  base::STLDeleteElements(&background_hosts_);
 }
 
 void ProcessManager::SetKeepaliveImpulseCallbackForTesting(

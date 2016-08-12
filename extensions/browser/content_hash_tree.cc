@@ -42,7 +42,7 @@ std::string ComputeTreeHashRoot(const std::vector<std::string>& leaf_hashes,
       }
       parent_nodes.push_back(std::string(crypto::kSHA256Length, 0));
       std::string* output = &(parent_nodes.back());
-      hash->Finish(string_as_array(output), output->size());
+      hash->Finish(base::string_as_array(output), output->size());
     }
     current_nodes.swap(parent_nodes);
     parent_nodes.clear();

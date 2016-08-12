@@ -399,7 +399,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   Manifest::Type type_to_check = (type == Manifest::TYPE_USER_SCRIPT) ?
       Manifest::TYPE_EXTENSION : type;
   if (!extension_types_.empty() &&
-      !ContainsValue(extension_types_, type_to_check)) {
+      !base::ContainsValue(extension_types_, type_to_check)) {
     return CreateAvailability(INVALID_TYPE, type);
   }
 
@@ -421,7 +421,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (!MatchesManifestLocation(location))
     return CreateAvailability(INVALID_LOCATION, type);
 
-  if (!platforms_.empty() && !ContainsValue(platforms_, platform))
+  if (!platforms_.empty() && !base::ContainsValue(platforms_, platform))
     return CreateAvailability(INVALID_PLATFORM, type);
 
   if (min_manifest_version_ != 0 && manifest_version < min_manifest_version_)
@@ -465,7 +465,7 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
   // extension API calls, since there's no guarantee that the extension is
   // "active" in current renderer process when the API permission check is
   // done.
-  if (!contexts_.empty() && !ContainsValue(contexts_, context))
+  if (!contexts_.empty() && !base::ContainsValue(contexts_, context))
     return CreateAvailability(INVALID_CONTEXT, context);
 
   // TODO(kalman): Consider checking |matches_| regardless of context type.
@@ -622,8 +622,8 @@ bool SimpleFeature::IsIdInList(const std::string& extension_id,
   if (!IsValidExtensionId(extension_id))
     return false;
 
-  return (ContainsValue(list, extension_id) ||
-          ContainsValue(list, HashedIdInHex(extension_id)));
+  return (base::ContainsValue(list, extension_id) ||
+          base::ContainsValue(list, HashedIdInHex(extension_id)));
 }
 
 bool SimpleFeature::MatchesManifestLocation(

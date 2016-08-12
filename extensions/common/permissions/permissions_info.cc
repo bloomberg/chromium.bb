@@ -72,20 +72,20 @@ PermissionsInfo::PermissionsInfo()
 }
 
 PermissionsInfo::~PermissionsInfo() {
-  STLDeleteContainerPairSecondPointers(id_map_.begin(), id_map_.end());
+  base::STLDeleteContainerPairSecondPointers(id_map_.begin(), id_map_.end());
 }
 
 void PermissionsInfo::RegisterAlias(
     const char* name,
     const char* alias) {
-  DCHECK(ContainsKey(name_map_, name));
-  DCHECK(!ContainsKey(name_map_, alias));
+  DCHECK(base::ContainsKey(name_map_, name));
+  DCHECK(!base::ContainsKey(name_map_, alias));
   name_map_[alias] = name_map_[name];
 }
 
 void PermissionsInfo::RegisterPermission(APIPermissionInfo* permission) {
-  DCHECK(!ContainsKey(id_map_, permission->id()));
-  DCHECK(!ContainsKey(name_map_, permission->name()));
+  DCHECK(!base::ContainsKey(id_map_, permission->id()));
+  DCHECK(!base::ContainsKey(name_map_, permission->name()));
 
   id_map_[permission->id()] = permission;
   name_map_[permission->name()] = permission;

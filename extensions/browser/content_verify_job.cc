@@ -146,7 +146,7 @@ bool ContentVerifyJob::FinishBlock() {
   if (current_hash_byte_count_ <= 0)
     return true;
   std::string final(crypto::kSHA256Length, 0);
-  current_hash_->Finish(string_as_array(&final), final.size());
+  current_hash_->Finish(base::string_as_array(& final), final.size());
   current_hash_.reset();
   current_hash_byte_count_ = 0;
 
@@ -178,7 +178,7 @@ void ContentVerifyJob::OnHashesReady(bool success) {
   if (!queue_.empty()) {
     std::string tmp;
     queue_.swap(tmp);
-    BytesRead(tmp.size(), string_as_array(&tmp));
+    BytesRead(tmp.size(), base::string_as_array(&tmp));
   }
   if (done_reading_) {
     ScopedElapsedTimer timer(&time_spent_);

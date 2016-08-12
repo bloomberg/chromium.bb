@@ -91,7 +91,7 @@ QuotaService::ScopedDisablePurgeForTesting::~ScopedDisablePurgeForTesting() {
 void QuotaService::PurgeFunctionHeuristicsMap(FunctionHeuristicsMap* map) {
   FunctionHeuristicsMap::iterator heuristics = map->begin();
   while (heuristics != map->end()) {
-    STLDeleteElements(&heuristics->second);
+    base::STLDeleteElements(&heuristics->second);
     map->erase(heuristics++);
   }
 }

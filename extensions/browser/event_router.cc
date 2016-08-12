@@ -503,7 +503,7 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
       if (listener->process()) {
         EventDispatchIdentifier dispatch_id(listener->GetBrowserContext(),
                                             listener->extension_id());
-        if (!ContainsKey(already_dispatched, dispatch_id)) {
+        if (!base::ContainsKey(already_dispatched, dispatch_id)) {
           DispatchEventToProcess(listener->extension_id(),
                                  listener->listener_url(), listener->process(),
                                  event, listener->filter(),

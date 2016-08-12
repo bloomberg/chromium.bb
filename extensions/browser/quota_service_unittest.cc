@@ -37,7 +37,7 @@ const TimeTicks k1MinuteAfterStart = kStartTime + TimeDelta::FromMinutes(1);
 class Mapper : public QuotaLimitHeuristic::BucketMapper {
  public:
   Mapper() {}
-  ~Mapper() override { STLDeleteValues(&buckets_); }
+  ~Mapper() override { base::STLDeleteValues(&buckets_); }
   void GetBucketsForArgs(const base::ListValue* args,
                          BucketList* buckets) override {
     for (size_t i = 0; i < args->GetSize(); i++) {

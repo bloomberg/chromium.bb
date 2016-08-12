@@ -44,7 +44,7 @@ bool ExtensionSet::Contains(const std::string& extension_id) const {
 }
 
 bool ExtensionSet::Insert(const scoped_refptr<const Extension>& extension) {
-  bool was_present = ContainsKey(extensions_, extension->id());
+  bool was_present = base::ContainsKey(extensions_, extension->id());
   extensions_[extension->id()] = extension;
   if (!was_present && !modification_callback_.is_null())
     modification_callback_.Run(GetIDs());
