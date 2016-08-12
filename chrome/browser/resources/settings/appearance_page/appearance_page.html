@@ -25,7 +25,7 @@
       }
     </style>
     <settings-animated-pages id="pages" section="appearance">
-      <neon-animatable id="main">
+      <neon-animatable route-path="default">
 <if expr="chromeos">
         <div class="settings-box first two-line" id="wallpaperButton"
             on-tap="openWallpaperManager_" actionable
@@ -124,7 +124,7 @@
           </settings-dropdown-menu>
         </div>
       </neon-animatable>
-      <template is="dom-if" name="appearance-fonts">
+      <template is="dom-if" route-path$="/fonts">
         <settings-subpage
             associated-control="[[$$('#customize-fonts-subpage-trigger')]]"
             page-title="$i18n{customizeFonts}">

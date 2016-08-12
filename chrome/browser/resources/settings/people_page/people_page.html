@@ -73,7 +73,7 @@
       }
     </style>
     <settings-animated-pages id="pages" section="people">
-      <neon-animatable id="main">
+      <neon-animatable route-path="default">
         <div id="picture-subpage-trigger" class="settings-box first two-line">
           <img id="profile-icon" src="[[profileIconUrl_]]"
               on-tap="onPictureTap_" actionable>
@@ -239,7 +239,7 @@
           </div>
         </template>
       </neon-animatable>
-      <template is="dom-if" name="sync"
+      <template is="dom-if" route-path="/syncSetup"
           no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus)]]">
         <settings-subpage
             associated-control="[[$$('#customize-sync')]]"
@@ -250,7 +250,7 @@
       </template>
 <if expr="chromeos">
       <template is="dom-if" if="[[quickUnlockEnabled_]]">
-        <template is="dom-if" name="lockScreen">
+        <template is="dom-if" route-path="/lockScreen" no-search>
           <settings-subpage page-title="$i18n{lockScreenTitle}">
             <settings-lock-screen
               prefs="{{prefs}}">
@@ -258,14 +258,14 @@
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" name="users">
+      <template is="dom-if" route-path="/accounts">
         <settings-subpage
             associated-control="[[$$('#manage-other-people-subpage-trigger')]]"
             page-title="$i18n{usersPageTitle}">
           <settings-users-page prefs="{{prefs}}"></settings-users-page>
         </settings-subpage>
       </template>
-      <template is="dom-if" name="changePicture">
+      <template is="dom-if" route-path="/changePicture">
         <settings-subpage
           associated-control="[[$$('#picture-subpage-trigger')]]"
           page-title="$i18n{changePictureTitle}">
@@ -274,7 +274,7 @@
       </template>
 </if>
 <if expr="not chromeos">
-      <template is="dom-if" name="manageProfile">
+      <template is="dom-if" route-path="/manageProfile">
         <settings-subpage
             associated-control="[[$$('#picture-subpage-trigger')]]"
             page-title="$i18n{editPerson}">

@@ -68,11 +68,11 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
 
     teardown(function(done) {
       // Close the section if we're in a sub-page.
-      if (settings.getCurrentRoute().subpage.length == 0) {
-        done();
-      } else {
+      if (settings.getCurrentRoute().isSubpage()) {
         settings.navigateTo(settings.Route.ADVANCED);
         setTimeout(done);
+      } else {
+        done();
       }
     });
 

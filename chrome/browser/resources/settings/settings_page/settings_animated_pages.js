@@ -66,12 +66,12 @@ Polymer({
 
   /** @protected */
   currentRouteChanged: function(newRoute, oldRoute) {
-    if (newRoute.section == this.section && newRoute.subpage.length > 0) {
+    if (newRoute.section == this.section && newRoute.isSubpage()) {
       this.switchToSubpage_(newRoute, oldRoute);
     } else {
       this.$.animatedPages.exitAnimation = 'fade-out-animation';
       this.$.animatedPages.entryAnimation = 'fade-in-animation';
-      this.$.animatedPages.selected = 'main';
+      this.$.animatedPages.selected = 'default';
     }
   },
 
@@ -92,8 +92,7 @@ Polymer({
     this.ensureSubpageInstance_();
 
     if (oldRoute) {
-      var oldRouteIsSubpage = oldRoute.subpage.length > 0;
-      if (oldRouteIsSubpage && oldRoute.contains(newRoute)) {
+      if (oldRoute.isSubpage() && oldRoute.contains(newRoute)) {
         // Slide left for a descendant subpage.
         this.$.animatedPages.exitAnimation = 'slide-left-animation';
         this.$.animatedPages.entryAnimation = 'slide-from-right-animation';
@@ -106,7 +105,7 @@ Polymer({
         this.$.animatedPages.exitAnimation = 'fade-out-animation';
         this.$.animatedPages.entryAnimation = 'fade-in-animation';
 
-        if (!oldRouteIsSubpage) {
+        if (!oldRoute.isSubpage()) {
           // Set the height the expand animation should start at before
           // beginning the transition to the new subpage.
           // TODO(michaelpg): Remove MainPageBehavior's dependency on this
@@ -119,7 +118,7 @@ Polymer({
       }
     }
 
-    this.$.animatedPages.selected = newRoute.subpage.slice(-1)[0];
+    this.$.animatedPages.selected = newRoute.path;
   },
 
   /**
@@ -127,9 +126,9 @@ Polymer({
    * @private
    */
   ensureSubpageInstance_: function() {
-    var id = settings.getCurrentRoute().subpage.slice(-1)[0];
+    var routePath = settings.getCurrentRoute().path;
     var template = Polymer.dom(this).querySelector(
-        'template[name="' + id + '"]');
+        'template[route-path="' + routePath + '"]');
 
     // Nothing to do if the subpage isn't wrapped in a <template> or the
     // template is already stamped.
@@ -139,8 +138,8 @@ Polymer({
     // Set the subpage's id for use by neon-animated-pages.
     var subpage = /** @type {{_content: DocumentFragment}} */(template)._content
         .querySelector('settings-subpage');
-    if (!subpage.id)
-      subpage.id = id;
+    subpage.setAttribute('route-path', routePath);
+
     // Carry over the 'no-search' attribute from the template to the stamped
     // instance, such that the stamped instance will also be ignored by the
     // searching algorithm.

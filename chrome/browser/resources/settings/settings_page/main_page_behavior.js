@@ -39,12 +39,12 @@ var MainPageBehaviorImpl = {
 
   /**
    * @param {!settings.Route} newRoute
-   * @param {!settings.Route} oldRoute
+   * @param {settings.Route} oldRoute
    */
   currentRouteChanged: function(newRoute, oldRoute) {
     // Allow the page to load before expanding the section. TODO(michaelpg):
     // Time this better when refactoring settings-animated-pages.
-    if (!oldRoute && newRoute.subpage.length)
+    if (!oldRoute && newRoute.isSubpage())
       setTimeout(this.tryTransitionToSection_.bind(this));
     else
       this.tryTransitionToSection_();
@@ -75,7 +75,7 @@ var MainPageBehaviorImpl = {
         this.$$('settings-section.expanded'));
     if (expandedSection) {
       // If the section shouldn't be expanded, collapse it.
-      if (!currentRoute.subpage.length || expandedSection != currentSection) {
+      if (!currentRoute.isSubpage() || expandedSection != currentSection) {
         promise = this.collapseSection_(expandedSection);
         // Scroll to the collapsed section. TODO(michaelpg): This can look weird
         // because the collapse we just scheduled calculated its end target
@@ -86,7 +86,7 @@ var MainPageBehaviorImpl = {
       }
     } else if (currentSection) {
       // Expand the section into a subpage or scroll to it on the main page.
-      if (currentRoute.subpage.length)
+      if (currentRoute.isSubpage())
         promise = this.expandSection_(currentSection);
       else
         this.scrollToSection_();
@@ -113,7 +113,7 @@ var MainPageBehaviorImpl = {
       // Cancel the animation to go back to the main page if the animating
       // section shouldn't be expanded.
       if (animatingSection.section != currentRoute.section ||
-          !currentRoute.subpage.length) {
+          !currentRoute.isSubpage()) {
         this.currentAnimation_.cancel();
       }
       // Otherwise, let the expand animation continue.
@@ -121,7 +121,7 @@ var MainPageBehaviorImpl = {
     }
 
     assert(animatingSection.classList.contains('collapsing'));
-    if (!currentRoute.subpage.length)
+    if (!currentRoute.isSubpage())
       return;
 
     // If the collapsing section actually matches the current route's section,

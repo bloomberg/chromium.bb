@@ -20,7 +20,7 @@
   <template>
     <style include="settings-shared"></style>
     <settings-animated-pages id="pages" section="device">
-      <neon-animatable id="main">
+      <neon-animatable id="main" route-path="default">
         <div id="pointersRow" class="settings-box first"
             on-tap="onPointersTap_" actionable>
           <iron-icon icon="[[getPointersIcon_(hasMouse_, hasTouchpad_)]]">
@@ -47,7 +47,7 @@
           <div class="middle">$i18n{displayTitle}</div>
         </div>
       </neon-animatable>
-      <template is="dom-if" name="pointers">
+      <template is="dom-if" route-path="/pointer-overlay">
         <settings-subpage
             associated-control="[[$$('#pointersRow')]]"
             page-title="[[getPointersTitle_(hasMouse_, hasTouchpad_)]]">
@@ -56,7 +56,7 @@
           </settings-pointers>
         </settings-subpage>
       </template>
-      <template is="dom-if" name="keyboard">
+      <template is="dom-if" route-path="/keyboard-overlay">
         <settings-subpage
             associated-control="[[$$('#keyboardRow')]]"
             page-title="$i18n{keyboardTitle}">
@@ -64,7 +64,7 @@
         </settings-subpage>
       </template>
       <template is="dom-if" if=[[noteAllowed_]]>
-        <template is="dom-if" name="note">
+        <template is="dom-if" route-path="/note">
           <settings-subpage
               associated-control="[[$$('#noteRow')]]"
               page-title="$i18n{noteTitle}">
@@ -72,7 +72,7 @@
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" name="display">
+      <template is="dom-if" route-path="/display">
         <settings-subpage
             associated-control="[[$$('#displayRow')]]"
             page-title="$i18n{displayTitle}">

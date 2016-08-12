@@ -165,15 +165,14 @@ cr.define('device_page_tests', function() {
     });
 
     /** @return {!Promise<!HTMLElement>} */
-    function showAndGetDeviceSubpage(subpage) {
+    function showAndGetDeviceSubpage(subpage, expectedRoute) {
       return new Promise(function(resolve, reject) {
         var row = assert(devicePage.$$('#main #' + subpage + 'Row'));
         devicePage.$.pages.addEventListener('neon-animation-finish', resolve);
         MockInteractions.tap(row);
       }).then(function() {
-        assertEquals('device', settings.getCurrentRoute().section);
-        assertEquals(subpage, settings.getCurrentRoute().subpage[0]);
-        var page = devicePage.$$('#' + subpage + ' settings-' + subpage);
+        assertEquals(expectedRoute, settings.getCurrentRoute());
+        var page = devicePage.$$('settings-' + subpage);
         return assert(page);
       });
     };
@@ -213,21 +212,21 @@ cr.define('device_page_tests', function() {
       var pointersPage;
 
       setup(function() {
-        return showAndGetDeviceSubpage('pointers').then(function(page) {
-          pointersPage = page;
-        });
+        return showAndGetDeviceSubpage(
+            'pointers', settings.Route.POINTERS).then(function(page) {
+              pointersPage = page;
+            });
       });
 
       test('subpage responds to pointer attach/detach', function() {
-        assertEquals('pointers', settings.getCurrentRoute().subpage[0]);
-        assertTrue(settings.getCurrentRoute() == settings.Route.POINTERS);
+        assertEquals(settings.Route.POINTERS, settings.getCurrentRoute());
         assertLT(0, pointersPage.$.mouse.offsetHeight);
         assertLT(0, pointersPage.$.touchpad.offsetHeight);
         assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);
         assertLT(0, pointersPage.$$('#touchpad h2').offsetHeight);
 
         cr.webUIListenerCallback('has-touchpad-changed', false);
-        assertEquals('pointers', settings.getCurrentRoute().subpage[0]);
+        assertEquals(settings.Route.POINTERS, settings.getCurrentRoute());
         assertLT(0, pointersPage.$.mouse.offsetHeight);
         assertEquals(0, pointersPage.$.touchpad.offsetHeight);
         assertEquals(0, pointersPage.$$('#mouse h2').offsetHeight);
@@ -239,12 +238,12 @@ cr.define('device_page_tests', function() {
 
           cr.webUIListenerCallback('has-mouse-changed', false);
         }).then(function() {
-          assertEquals(0, settings.getCurrentRoute().subpage.length);
+          assertEquals(settings.Route.DEVICE, settings.getCurrentRoute());
           assertEquals(0, devicePage.$$('#main #pointersRow').offsetHeight);
 
           cr.webUIListenerCallback('has-touchpad-changed', true);
           assertLT(0, devicePage.$$('#main #pointersRow').offsetHeight);
-          return showAndGetDeviceSubpage('pointers');
+          return showAndGetDeviceSubpage('pointers', settings.Route.POINTERS);
         }).then(function(page) {
           assertEquals(0, pointersPage.$.mouse.offsetHeight);
           assertLT(0, pointersPage.$.touchpad.offsetHeight);
@@ -252,7 +251,7 @@ cr.define('device_page_tests', function() {
           assertEquals(0, pointersPage.$$('#touchpad h2').offsetHeight);
 
           cr.webUIListenerCallback('has-mouse-changed', true);
-          assertEquals('pointers', settings.getCurrentRoute().subpage[0]);
+          assertEquals(settings.Route.POINTERS, settings.getCurrentRoute());
           assertLT(0, pointersPage.$.mouse.offsetHeight);
           assertLT(0, pointersPage.$.touchpad.offsetHeight);
           assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);
@@ -326,7 +325,8 @@ cr.define('device_page_tests', function() {
 
     test(assert(TestNames.Keyboard), function() {
       // Open the keyboard subpage.
-      return showAndGetDeviceSubpage('keyboard').then(function(keyboardPage) {
+      return showAndGetDeviceSubpage(
+          'keyboard', settings.Route.KEYBOARD).then(function(keyboardPage) {
         // Initially, the optional keys are hidden.
         expectFalse(!!keyboardPage.$$('#capsLockKey'));
         expectFalse(!!keyboardPage.$$('#diamondKey'));
@@ -420,7 +420,8 @@ cr.define('device_page_tests', function() {
       var displayPage;
       return Promise.all([
         // Get the display sub-page.
-        showAndGetDeviceSubpage('display').then(function(page) {
+        showAndGetDeviceSubpage(
+            'display', settings.Route.DISPLAY).then(function(page) {
           displayPage = page;
         }),
         // Wait for the initial call to getInfo.

@@ -17,7 +17,7 @@
 <if expr="chromeos">
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="a11y">
-      <neon-animatable id="main">
+      <neon-animatable route-path="default">
         <div class="settings-box first">
           <div class="start">
             $i18n{optionsInMenuLabel}
@@ -33,7 +33,7 @@
           </paper-button>
         </div>
       </neon-animatable>
-      <template is="dom-if" name="manage-a11y">
+      <template is="dom-if" route-path="/manageAccessibility">
         <settings-subpage
             associated-control="[[$$('#subpage-trigger')]]"
             page-title="$i18n{manageAccessibilityFeatures}">

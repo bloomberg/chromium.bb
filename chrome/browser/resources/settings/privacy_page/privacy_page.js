@@ -56,7 +56,7 @@ Polymer({
   /** @protected */
   currentRouteChanged: function() {
     this.showClearBrowsingDataDialog_ =
-        settings.getCurrentRoute().dialog == 'clear-browsing-data';
+        settings.getCurrentRoute() == settings.Route.CLEAR_BROWSER_DATA;
   },
 
   /** @private */

@@ -137,7 +137,7 @@ Polymer({
 
   /** @protected */
   currentRouteChanged: function(newRoute) {
-    this.inSubpage_ = newRoute.subpage.length > 0;
+    this.inSubpage_ = newRoute.isSubpage();
     this.style.height = this.inSubpage_ ? '100%' : '';
 
     if (settings.Route.ABOUT.contains(newRoute)) {
@@ -176,7 +176,7 @@ Polymer({
    */
   overscrollHeight_: function() {
     var route = settings.getCurrentRoute();
-    if (route.subpage.length != 0 || this.showPages_.about)
+    if (route.isSubpage() || this.showPages_.about)
       return 0;
 
     var query = 'settings-section[section="' + route.section + '"]';

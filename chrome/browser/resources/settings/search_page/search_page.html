@@ -15,7 +15,7 @@
     <style include="settings-shared">
     </style>
     <settings-animated-pages id="pages" section="search">
-      <neon-animatable id="main">
+      <neon-animatable route-path="default">
         <div class="settings-box first">
           <p class="start">$i18n{searchExplanation}</p>
           <paper-dropdown-menu vertical-align="auto" no-label-float>
@@ -37,7 +37,7 @@
           </paper-button>
         </div>
       </neon-animatable>
-      <template is="dom-if" name="search-engines">
+      <template is="dom-if" route-path="/searchEngines">
         <settings-subpage
             associated-control="[[$$('#subpage-trigger')]]"
             page-title="$i18n{searchEnginesManage}">

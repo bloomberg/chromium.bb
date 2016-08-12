@@ -68,7 +68,7 @@
     <div>
       <settings-section page-title="$i18n{aboutPageTitle}" section="about">
         <settings-animated-pages id="pages" section="about">
-          <neon-animatable id="main">
+          <neon-animatable route-path="default">
             <div class="settings-box">
               <img id="product-logo"
                   srcset="chrome://theme/current-channel-logo@1x 1x,
@@ -170,7 +170,7 @@
 </if>
           </neon-animatable>
 <if expr="chromeos">
-          <template is="dom-if" name="detailed-build-info">
+          <template is="dom-if" route-path="/help/details">
             <settings-subpage page-title="$i18n{aboutDetailedBuildInfo}">
               <settings-detailed-build-info></settings-detailed-build-info>
             </settings-subpage>

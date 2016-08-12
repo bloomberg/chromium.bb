@@ -92,15 +92,15 @@ SettingsPageBrowserTest.prototype = {
 
     // The section's main child should be stamped and visible.
     var main = stampedChildren.filter(function(element) {
-      return element.id == 'main';
+      return element.getAttribute('route-path') == 'default';
     });
-    assertEquals(main.length, 1, '#main not found for section ' +
+    assertEquals(main.length, 1, 'default card not found for section ' +
         section.section);
     assertGT(main[0].offsetHeight, 0);
 
     // Any other stamped subpages should not be visible.
     var subpages = stampedChildren.filter(function(element) {
-      return element.id != 'main';
+      return element.getAttribute('route-path') != 'default';
     });
     for (var subpage of subpages) {
       assertEquals(subpage.offsetHeight, 0, 'Expected subpage #' + subpage.id +
