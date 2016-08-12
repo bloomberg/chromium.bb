@@ -98,7 +98,7 @@
    of every .c file. This should have no impact in any practical sense.
 
    Another side effect of this design is that getenv() will be called once per
-   every .o file when running in non-instrumented mode; an since getenv() tends
+   every .o file when running in non-instrumented mode; and since getenv() tends
    to be optimized in funny ways, we need to be very careful to save every
    oddball register it may touch.
 
@@ -181,7 +181,9 @@ static const u8* main_payload_32 =
   "  xorl %ecx, %edi\n"
   "  shrl $1, %ecx\n"
   "  movl %ecx, __afl_prev_loc\n"
-#endif /* !COVERAGE_ONLY */
+#else
+  "  movl %ecx, %edi\n"
+#endif /* ^!COVERAGE_ONLY */
   "\n"
 #ifdef SKIP_COUNTS
   "  orb  $1, (%edx, %edi, 1)\n"

@@ -56,10 +56,6 @@ config("afl-tool") {
     "-Wno-sign-compare",
     "-Wno-pointer-sign",
 
-    # TODO: Patch afl so the version is defined in source code and not the
-    # Makefile.
-    "-DVERSION=\"2.14b\"",
-
     # afl_docs copies docs/ to this location.
     "-DDOC_PATH=\"$root_build_dir/afl/docs/\"",
 

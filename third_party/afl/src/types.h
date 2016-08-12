@@ -44,7 +44,7 @@ typedef uint32_t u32;
 typedef unsigned long long u64;
 #else
 typedef uint64_t u64;
-#endif /* ^sizeof(...) */
+#endif /* ^__x86_64__ */
 
 typedef int8_t   s8;
 typedef int16_t  s16;
@@ -75,5 +75,8 @@ typedef int64_t  s64;
 
 #define MEM_BARRIER() \
   asm volatile("" ::: "memory")
+
+#define likely(_x)   __builtin_expect(!!(_x), 1)
+#define unlikely(_x)  __builtin_expect(!!(_x), 0)
 
 #endif /* ! _HAVE_TYPES_H */

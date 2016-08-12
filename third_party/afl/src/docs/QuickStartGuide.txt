@@ -14,7 +14,8 @@ how to hit the ground running:
    checksum verification code, too.
 
    The program must crash properly when a fault is encountered. Watch out for
-   custom SIGSEGV or SIGABRT handlers and background processes.
+   custom SIGSEGV or SIGABRT handlers and background processes. For tips on
+   detecting non-crashing flaws, see section 11 in docs/README.
 
 3) Compile the program / library to be fuzzed using afl-gcc. A common way to
    do this would be:
@@ -26,7 +27,7 @@ how to hit the ground running:
 
 4) Get a small but valid input file that makes sense to the program. When
    fuzzing verbose syntax (SQL, HTTP, etc), create a dictionary as described in
-   testcases/README.testcases, too.
+   dictionaries/README.dictionaries, too.
 
 5) If the program reads from stdin, run 'afl-fuzz' like so:
 
