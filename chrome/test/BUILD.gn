@@ -2216,9 +2216,12 @@ test("unit_tests") {
     ]
   }
   if (is_win) {
-    # The PDB gets too large for incremental linking.
-    configs -= [ "//build/config/win:default_incremental_linking" ]
-    configs += [ "//build/config/win:no_incremental_linking" ]
+    if (!is_component_build) {
+      # The PDB gets too large for incremental linking.
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs +=
+          [ "//build/config/win:default_large_module_incremental_linking" ]
+    }
 
     sources +=
         rebase_path(chrome_tests_unit_gypi_values.chrome_unit_tests_win_sources,
