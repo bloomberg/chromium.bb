@@ -163,7 +163,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 };
 
 SimpleQuicFramer::SimpleQuicFramer()
-    : framer_(QuicSupportedVersions(),
+    : framer_(AllSupportedVersions(),
               QuicTime::Zero(),
               Perspective::IS_SERVER) {}
 

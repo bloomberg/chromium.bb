@@ -350,6 +350,13 @@ TEST_F(QuicMultipathSentPacketManagerTest, GetConsecutiveTlpCount) {
   EXPECT_EQ(3u, multipath_manager_.GetConsecutiveTlpCount());
 }
 
+TEST_F(QuicMultipathSentPacketManagerTest, OnApplicationLimited) {
+  EXPECT_CALL(*manager_0_, OnApplicationLimited()).Times(1);
+  EXPECT_CALL(*manager_1_, OnApplicationLimited()).Times(1);
+  EXPECT_CALL(*manager_2_, OnApplicationLimited()).Times(0);
+  multipath_manager_.OnApplicationLimited();
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

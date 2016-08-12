@@ -381,6 +381,14 @@ QuicTagVector QuicUtils::ParseQuicConnectionOptions(
   return options;
 }
 
+string QuicUtils::ListTags(QuicTagValueMap tag_map) {
+  string result;
+  for (auto entry : tag_map) {
+    result.append(TagToString(entry.first) + " ");
+  }
+  return result;
+}
+
 string QuicUtils::PeerAddressChangeTypeToString(PeerAddressChangeType type) {
   switch (type) {
     RETURN_STRING_LITERAL(NO_CHANGE);

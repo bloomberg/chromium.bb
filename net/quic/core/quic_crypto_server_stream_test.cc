@@ -197,7 +197,7 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   DelayedVerifyStrikeRegisterClient* strike_register_client_;
 
   // Which QUIC versions the client and server support.
-  QuicVersionVector supported_versions_ = QuicSupportedVersions();
+  QuicVersionVector supported_versions_ = AllSupportedVersions();
 };
 
 INSTANTIATE_TEST_CASE_P(Tests, QuicCryptoServerStreamTest, testing::Bool());

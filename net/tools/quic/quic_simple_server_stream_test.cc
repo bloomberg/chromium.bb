@@ -244,7 +244,7 @@ class QuicSimpleServerStreamTest
 
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicSimpleServerStreamTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSimpleServerStreamTest, TestFraming) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))

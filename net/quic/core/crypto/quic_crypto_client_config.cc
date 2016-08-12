@@ -417,6 +417,8 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     QuicCryptoNegotiatedParameters* out_params,
     CryptoHandshakeMessage* out) const {
   out->set_tag(kCHLO);
+  // TODO(rch): Remove this when we remove:
+  // FLAGS_quic_use_chlo_packet_size
   out->set_minimum_size(kClientHelloMinimumSize);
 
   // Server name indication. We only send SNI if it's a valid domain name, as

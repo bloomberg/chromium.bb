@@ -125,7 +125,7 @@ class QuicSpdyStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicSpdyStreamTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSpdyStreamTest, ProcessHeaders) {
   Initialize(kShouldProcessData);

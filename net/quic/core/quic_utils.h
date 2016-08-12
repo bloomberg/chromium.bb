@@ -94,6 +94,9 @@ class NET_EXPORT_PRIVATE QuicUtils {
   static QuicTagVector ParseQuicConnectionOptions(
       const std::string& connection_options);
 
+  // ListTags prints all of the tags in |tag_map| using TagToString.
+  static std::string ListTags(QuicTagValueMap tag_map);
+
   // Returns PeerAddressChangeType as a std::string.
   static std::string PeerAddressChangeTypeToString(PeerAddressChangeType type);
 

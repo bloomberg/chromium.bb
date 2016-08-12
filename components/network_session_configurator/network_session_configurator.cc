@@ -352,7 +352,7 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 namespace network_session_configurator {
 
 net::QuicVersion ParseQuicVersion(const std::string& quic_version) {
-  net::QuicVersionVector supported_versions = net::QuicSupportedVersions();
+  net::QuicVersionVector supported_versions = net::AllSupportedVersions();
   for (size_t i = 0; i < supported_versions.size(); ++i) {
     net::QuicVersion version = supported_versions[i];
     if (net::QuicVersionToString(version) == quic_version) {

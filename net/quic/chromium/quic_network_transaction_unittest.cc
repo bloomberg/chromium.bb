@@ -115,7 +115,7 @@ struct PoolingTestParams {
 
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
-  QuicVersionVector all_supported_versions = QuicSupportedVersions();
+  QuicVersionVector all_supported_versions = AllSupportedVersions();
   for (const QuicVersion version : all_supported_versions) {
     params.push_back(PoolingTestParams{version, SAME_AS_FIRST});
     params.push_back(PoolingTestParams{version, SAME_AS_SECOND});
@@ -675,7 +675,7 @@ class QuicNetworkTransactionTest
 
 INSTANTIATE_TEST_CASE_P(Version,
                         QuicNetworkTransactionTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   params_.origins_to_force_quic_on.insert(
@@ -1068,7 +1068,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotGetAltSvcForDifferentOrigin) {
   SendRequestAndExpectHttpResponse("hello world");
 }
 
-TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceQuicSupportedVersion) {
+TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceAllSupportedVersion) {
   std::string altsvc_header = base::StringPrintf(
       "Alt-Svc: quic=\":443\"; v=\"%u\"\r\n\r\n", GetParam());
   MockRead http_reads[] = {

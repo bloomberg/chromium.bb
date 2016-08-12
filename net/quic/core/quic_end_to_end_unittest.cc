@@ -187,7 +187,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_config_options_.token_binding_enabled = true;
     QuicServer* server =
         new QuicServer(CryptoTestUtils::ProofSourceForTesting(), server_config_,
-                       server_config_options_, QuicSupportedVersions());
+                       server_config_options_, AllSupportedVersions());
     server_thread_.reset(new ServerThread(server, server_address_,
                                           strike_register_no_startup_period_));
     server_thread_->Initialize();

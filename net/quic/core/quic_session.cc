@@ -40,7 +40,7 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       num_draining_incoming_streams_(0),
       num_locally_closed_incoming_streams_highest_offset_(0),
       error_(QUIC_NO_ERROR),
-      flow_controller_(connection_.get(),
+      flow_controller_(connection_,
                        0,
                        perspective(),
                        kMinimumFlowControlSendWindow,
@@ -185,7 +185,7 @@ void QuicSession::OnCanWrite() {
   }
 
   QuicConnection::ScopedPacketBundler ack_bundler(
-      connection_.get(), QuicConnection::SEND_ACK_IF_QUEUED);
+      connection_, QuicConnection::SEND_ACK_IF_QUEUED);
   for (size_t i = 0; i < num_writes; ++i) {
     if (!(write_blocked_streams_.HasWriteBlockedCryptoOrHeadersStream() ||
           write_blocked_streams_.HasWriteBlockedDataStreams())) {

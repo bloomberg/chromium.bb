@@ -171,12 +171,16 @@ bool ContainsQuicTag(const QuicTagVector& tag_vector, QuicTag tag) {
          tag_vector.end();
 }
 
-QuicVersionVector QuicSupportedVersions() {
+QuicVersionVector AllSupportedVersions() {
   QuicVersionVector supported_versions;
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
     supported_versions.push_back(kSupportedQuicVersions[i]);
   }
   return supported_versions;
+}
+
+QuicVersionVector CurrentSupportedVersions() {
+  return FilterSupportedVersions(AllSupportedVersions());
 }
 
 QuicVersionVector FilterSupportedVersions(QuicVersionVector versions) {
@@ -188,7 +192,7 @@ QuicVersionVector FilterSupportedVersions(QuicVersionVector versions) {
         filtered_versions.push_back(version);
       }
     } else if (version == QUIC_VERSION_36) {
-      if (FLAGS_quic_enable_version_35 && FLAGS_quic_enable_version_36) {
+      if (FLAGS_quic_enable_version_35 && FLAGS_quic_enable_version_36_v2) {
         filtered_versions.push_back(version);
       }
     } else {
@@ -196,6 +200,17 @@ QuicVersionVector FilterSupportedVersions(QuicVersionVector versions) {
     }
   }
   return filtered_versions;
+}
+
+QuicVersionVector VersionOfIndex(const QuicVersionVector& versions, int index) {
+  QuicVersionVector version;
+  int version_count = versions.size();
+  if (index >= 0 && index < version_count) {
+    version.push_back(versions[index]);
+  } else {
+    version.push_back(QUIC_VERSION_UNSUPPORTED);
+  }
+  return version;
 }
 
 QuicTag QuicVersionToQuicTag(const QuicVersion version) {
@@ -727,7 +742,7 @@ QuicGoAwayFrame::QuicGoAwayFrame(QuicErrorCode error_code,
 QuicData::QuicData(const char* buffer, size_t length)
     : buffer_(buffer), length_(length), owns_buffer_(false) {}
 
-QuicData::QuicData(char* buffer, size_t length, bool owns_buffer)
+QuicData::QuicData(const char* buffer, size_t length, bool owns_buffer)
     : buffer_(buffer), length_(length), owns_buffer_(owns_buffer) {}
 
 QuicData::~QuicData() {
@@ -764,7 +779,7 @@ QuicPacket::QuicPacket(char* buffer,
 QuicEncryptedPacket::QuicEncryptedPacket(const char* buffer, size_t length)
     : QuicData(buffer, length) {}
 
-QuicEncryptedPacket::QuicEncryptedPacket(char* buffer,
+QuicEncryptedPacket::QuicEncryptedPacket(const char* buffer,
                                          size_t length,
                                          bool owns_buffer)
     : QuicData(buffer, length, owns_buffer) {}
@@ -783,19 +798,33 @@ ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {
 QuicReceivedPacket::QuicReceivedPacket(const char* buffer,
                                        size_t length,
                                        QuicTime receipt_time)
-    : QuicEncryptedPacket(buffer, length), receipt_time_(receipt_time) {}
+    : QuicEncryptedPacket(buffer, length),
+      receipt_time_(receipt_time),
+      ttl_(0) {}
 
-QuicReceivedPacket::QuicReceivedPacket(char* buffer,
+QuicReceivedPacket::QuicReceivedPacket(const char* buffer,
                                        size_t length,
                                        QuicTime receipt_time,
                                        bool owns_buffer)
     : QuicEncryptedPacket(buffer, length, owns_buffer),
-      receipt_time_(receipt_time) {}
+      receipt_time_(receipt_time),
+      ttl_(0) {}
+
+QuicReceivedPacket::QuicReceivedPacket(const char* buffer,
+                                       size_t length,
+                                       QuicTime receipt_time,
+                                       bool owns_buffer,
+                                       int ttl,
+                                       bool ttl_valid)
+    : QuicEncryptedPacket(buffer, length, owns_buffer),
+      receipt_time_(receipt_time),
+      ttl_(ttl_valid ? ttl : -1) {}
 
 QuicReceivedPacket* QuicReceivedPacket::Clone() const {
   char* buffer = new char[this->length()];
   memcpy(buffer, this->data(), this->length());
-  return new QuicReceivedPacket(buffer, this->length(), receipt_time(), true);
+  return new QuicReceivedPacket(buffer, this->length(), receipt_time(), true,
+                                ttl(), ttl() >= 0);
 }
 
 ostream& operator<<(ostream& os, const QuicReceivedPacket& s) {
@@ -819,18 +848,18 @@ StringPiece QuicPacket::Plaintext(QuicVersion version) const {
                      length() - start_of_encrypted_data);
 }
 
-QuicVersionManager::QuicVersionManager(QuicVersionVector supported_versions) {
-  enable_quic_version_35_ = FLAGS_quic_enable_version_35;
-  enable_quic_version_36_ = FLAGS_quic_enable_version_36;
-  allowed_supported_versions_ = supported_versions;
-  filtered_supported_versions_ = FilterSupportedVersions(supported_versions);
-}
+QuicVersionManager::QuicVersionManager(QuicVersionVector supported_versions)
+    : enable_quic_version_35_(FLAGS_quic_enable_version_35),
+      enable_quic_version_36_(FLAGS_quic_enable_version_36_v2),
+      allowed_supported_versions_(supported_versions),
+      filtered_supported_versions_(
+          FilterSupportedVersions(supported_versions)) {}
 
 const QuicVersionVector& QuicVersionManager::GetSupportedVersions() {
   if (enable_quic_version_35_ != FLAGS_quic_enable_version_35 ||
-      enable_quic_version_36_ != FLAGS_quic_enable_version_36) {
+      enable_quic_version_36_ != FLAGS_quic_enable_version_36_v2) {
     enable_quic_version_35_ = FLAGS_quic_enable_version_35;
-    enable_quic_version_36_ = FLAGS_quic_enable_version_36;
+    enable_quic_version_36_ = FLAGS_quic_enable_version_36_v2;
     filtered_supported_versions_ =
         FilterSupportedVersions(allowed_supported_versions_);
   }

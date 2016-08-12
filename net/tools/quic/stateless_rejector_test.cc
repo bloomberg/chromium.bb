@@ -42,7 +42,7 @@ vector<TestParams> GetTestParams() {
   vector<TestParams> params;
   for (FlagsMode flags :
        {ENABLED, STATELESS_DISABLED, CHEAP_DISABLED, BOTH_DISABLED}) {
-    for (QuicVersion version : QuicSupportedVersions()) {
+    for (QuicVersion version : AllSupportedVersions()) {
       TestParams param;
       param.version = version;
       param.flags = flags;
@@ -63,11 +63,12 @@ class StatelessRejectorTest : public ::testing::TestWithParam<TestParams> {
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
         rejector_(GetParam().version,
-                  QuicSupportedVersions(),
+                  AllSupportedVersions(),
                   &config_,
                   &compressed_certs_cache_,
                   &clock_,
                   QuicRandom::GetInstance(),
+                  kDefaultMaxPacketSize,
                   IPEndPoint(net::test::Loopback4(), 12345),
                   IPEndPoint(net::test::Loopback4(), 443)) {
     FLAGS_enable_quic_stateless_reject_support =

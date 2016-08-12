@@ -86,7 +86,7 @@ class TestServerSession : public QuicServerSessionBase {
                               crypto_config,
                               compressed_certs_cache) {}
 
-  ~TestServerSession() override{};
+  ~TestServerSession() override { delete connection(); };
 
  protected:
   QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override {
@@ -184,7 +184,7 @@ MATCHER_P(EqualsProto, network_params, "") {
 
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicServerSessionBaseTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicServerSessionBaseTest, ServerPushDisabledByDefault) {
   // Without the client explicitly sending kSPSH, server push will be disabled

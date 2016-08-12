@@ -348,13 +348,13 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
        QuicVersionFromCommandLine) {
   command_line_.AppendSwitch("enable-quic");
   std::string version =
-      net::QuicVersionToString(net::QuicSupportedVersions().back());
+      net::QuicVersionToString(net::AllSupportedVersions().back());
   command_line_.AppendSwitchASCII("quic-version", version);
 
   ConfigureParamsFromFieldTrialsAndCommandLine();
 
   net::QuicVersionVector supported_versions;
-  supported_versions.push_back(net::QuicSupportedVersions().back());
+  supported_versions.push_back(net::AllSupportedVersions().back());
   EXPECT_EQ(supported_versions, params_.quic_supported_versions);
 }
 

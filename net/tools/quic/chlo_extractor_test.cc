@@ -48,7 +48,7 @@ class ChloExtractorTest : public ::testing::Test {
     header_.public_header.connection_id_length = PACKET_8BYTE_CONNECTION_ID;
     header_.public_header.version_flag = true;
     header_.public_header.versions =
-        SupportedVersions(QuicSupportedVersions().front());
+        SupportedVersions(AllSupportedVersions().front());
     header_.public_header.reset_flag = false;
     header_.public_header.packet_number_length = PACKET_6BYTE_PACKET_NUMBER;
     header_.packet_number = 1;
@@ -88,7 +88,7 @@ TEST_F(ChloExtractorTest, FindsValidChlo) {
   string client_hello_str(
       client_hello.GetSerialized().AsStringPiece().as_string());
   // Construct a CHLO with each supported version
-  for (QuicVersion version : QuicSupportedVersions()) {
+  for (QuicVersion version : AllSupportedVersions()) {
     QuicVersionVector versions(SupportedVersions(version));
     header_.public_header.versions = versions;
     MakePacket(
@@ -111,7 +111,7 @@ TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongStream) {
   MakePacket(
       new QuicStreamFrame(kCryptoStreamId + 1, false, 0, client_hello_str));
   EXPECT_FALSE(
-      ChloExtractor::Extract(*packet_, QuicSupportedVersions(), &delegate_));
+      ChloExtractor::Extract(*packet_, AllSupportedVersions(), &delegate_));
 }
 
 TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongOffset) {
@@ -122,13 +122,13 @@ TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongOffset) {
       client_hello.GetSerialized().AsStringPiece().as_string());
   MakePacket(new QuicStreamFrame(kCryptoStreamId, false, 1, client_hello_str));
   EXPECT_FALSE(
-      ChloExtractor::Extract(*packet_, QuicSupportedVersions(), &delegate_));
+      ChloExtractor::Extract(*packet_, AllSupportedVersions(), &delegate_));
 }
 
 TEST_F(ChloExtractorTest, DoesNotFindInvalidChlo) {
   MakePacket(new QuicStreamFrame(kCryptoStreamId, false, 0, "foo"));
   EXPECT_FALSE(
-      ChloExtractor::Extract(*packet_, QuicSupportedVersions(), &delegate_));
+      ChloExtractor::Extract(*packet_, AllSupportedVersions(), &delegate_));
 }
 
 }  // namespace

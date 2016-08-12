@@ -199,14 +199,14 @@ TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromFieldTrialParams) {
 TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["quic_version"] =
-      net::QuicVersionToString(net::QuicSupportedVersions().back());
+      net::QuicVersionToString(net::AllSupportedVersions().back());
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
   net::QuicVersionVector supported_versions;
-  supported_versions.push_back(net::QuicSupportedVersions().back());
+  supported_versions.push_back(net::AllSupportedVersions().back());
   EXPECT_EQ(supported_versions, params_.quic_supported_versions);
 }
 

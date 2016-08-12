@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   string hex = net::QuicUtils::HexDecode(ArgToString(args[1]));
-  net::QuicVersionVector versions = net::QuicSupportedVersions();
+  net::QuicVersionVector versions = net::AllSupportedVersions();
   // Fake a time since we're not actually generating acks.
   net::QuicTime start(net::QuicTime::Zero());
   net::QuicFramer framer(versions, start, perspective);

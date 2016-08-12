@@ -74,7 +74,7 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   ReliableQuicStreamTest()
       : initial_flow_control_window_bytes_(kMaxPacketSize),
         zero_(QuicTime::Delta::Zero()),
-        supported_versions_(QuicSupportedVersions()) {
+        supported_versions_(AllSupportedVersions()) {
     headers_[":host"] = "www.google.com";
     headers_[":path"] = "/index.hml";
     headers_[":scheme"] = "https";

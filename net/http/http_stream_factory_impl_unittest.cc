@@ -1629,7 +1629,7 @@ class HttpStreamFactoryBidirectionalQuicTest
 
 INSTANTIATE_TEST_CASE_P(Version,
                         HttpStreamFactoryBidirectionalQuicTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {

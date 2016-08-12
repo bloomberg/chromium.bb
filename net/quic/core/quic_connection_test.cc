@@ -662,7 +662,7 @@ struct TestParams {
 // Constructs various test permutations.
 vector<TestParams> GetTestParams() {
   vector<TestParams> params;
-  QuicVersionVector all_supported_versions = QuicSupportedVersions();
+  QuicVersionVector all_supported_versions = AllSupportedVersions();
   for (size_t i = 0; i < all_supported_versions.size(); ++i) {
     for (AckResponse ack_response :
          {AckResponse::kDefer, AckResponse::kImmediate}) {
@@ -712,7 +712,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     FLAGS_quic_always_log_bugs_for_tests = true;
     connection_.set_visitor(&visitor_);
     connection_.SetSendAlgorithm(kDefaultPathId, send_algorithm_);
-    connection_.SetLossAlgorithm(kDefaultPathId, loss_algorithm_);
+    connection_.SetLossAlgorithm(kDefaultPathId, loss_algorithm_.get());
     framer_.set_received_entropy_calculator(&entropy_calculator_);
     peer_framer_.set_received_entropy_calculator(&peer_entropy_calculator_);
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
@@ -734,6 +734,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         .WillRepeatedly(Return(QuicBandwidth::Zero()));
     EXPECT_CALL(*send_algorithm_, InSlowStart()).Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, InRecovery()).Times(AnyNumber());
+    EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(AnyNumber());
     EXPECT_CALL(visitor_, WillingAndAbleToWrite()).Times(AnyNumber());
     EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
     EXPECT_CALL(visitor_, OnCanWrite()).Times(AnyNumber());
@@ -1068,7 +1069,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
   MockEntropyCalculator peer_entropy_calculator_;
 
   MockSendAlgorithm* send_algorithm_;
-  MockLossAlgorithm* loss_algorithm_;
+  std::unique_ptr<MockLossAlgorithm> loss_algorithm_;
   MockClock clock_;
   MockRandom random_generator_;
   SimpleBufferAllocator buffer_allocator_;
@@ -1155,13 +1156,8 @@ TEST_P(QuicConnectionTest, ClientAddressChangeAndPacketReordered) {
 
   // Decrease packet number to simulate out-of-order packets.
   QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 4);
-  if (FLAGS_quic_do_not_migrate_on_old_packet) {
-    // This is an old packet, do not migrate.
-    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
-  } else {
-    // A connection migration is observed.
-    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE));
-  }
+  // This is an old packet, do not migrate.
+  EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kPeerAddress);
 }
@@ -1949,7 +1945,13 @@ TEST_P(QuicConnectionTest, OnCanWrite) {
                           &connection_, &TestConnection::SendStreamData3)),
                       IgnoreResult(InvokeWithoutArgs(
                           &connection_, &TestConnection::SendStreamData5))));
-  EXPECT_CALL(visitor_, WillingAndAbleToWrite()).WillOnce(Return(true));
+  {
+    InSequence seq;
+    EXPECT_CALL(visitor_, WillingAndAbleToWrite()).WillOnce(Return(true));
+    EXPECT_CALL(visitor_, WillingAndAbleToWrite())
+        .WillRepeatedly(Return(false));
+  }
+
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
 
@@ -4272,7 +4274,7 @@ TEST_P(QuicConnectionTest, EntropyCalculationForTruncatedAck) {
 }
 
 TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
-  connection_.SetSupportedVersions(QuicSupportedVersions());
+  connection_.SetSupportedVersions(AllSupportedVersions());
   set_perspective(Perspective::IS_SERVER);
   peer_framer_.set_version_for_tests(QUIC_VERSION_UNSUPPORTED);
 
@@ -4308,7 +4310,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
 }
 
 TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
-  connection_.SetSupportedVersions(QuicSupportedVersions());
+  connection_.SetSupportedVersions(AllSupportedVersions());
   set_perspective(Perspective::IS_SERVER);
   peer_framer_.set_version_for_tests(QUIC_VERSION_UNSUPPORTED);
 
@@ -4350,7 +4352,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
 
 TEST_P(QuicConnectionTest,
        ServerSendsVersionNegotiationPacketSocketBlockedDataBuffered) {
-  connection_.SetSupportedVersions(QuicSupportedVersions());
+  connection_.SetSupportedVersions(AllSupportedVersions());
   set_perspective(Perspective::IS_SERVER);
   peer_framer_.set_version_for_tests(QUIC_VERSION_UNSUPPORTED);
 
@@ -4385,7 +4387,7 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   // Send a version negotiation packet.
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       framer_.BuildVersionNegotiationPacket(connection_id_,
-                                            QuicSupportedVersions()));
+                                            AllSupportedVersions()));
   std::unique_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*encrypted, QuicTime::Zero()));
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *received);
@@ -4421,7 +4423,7 @@ TEST_P(QuicConnectionTest, BadVersionNegotiation) {
                                  ConnectionCloseSource::FROM_SELF));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       framer_.BuildVersionNegotiationPacket(connection_id_,
-                                            QuicSupportedVersions()));
+                                            AllSupportedVersions()));
   std::unique_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*encrypted, QuicTime::Zero()));
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *received);
@@ -4504,7 +4506,7 @@ TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
 }
 
 TEST_P(QuicConnectionTest, SelectMutualVersion) {
-  connection_.SetSupportedVersions(QuicSupportedVersions());
+  connection_.SetSupportedVersions(AllSupportedVersions());
   // Set the connection to speak the lowest quic version.
   connection_.set_version(QuicVersionMin());
   EXPECT_EQ(QuicVersionMin(), connection_.version());
@@ -4988,6 +4990,52 @@ TEST_P(QuicConnectionTest, AlwaysGetPacketTooLarge) {
                                            ConnectionCloseSource::FROM_SELF))
       .Times(1);
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, nullptr);
+}
+
+// Verify that if connection has no outstanding data, it notifies the send
+// algorithm after the write.
+TEST_P(QuicConnectionTest, SendDataAndBecomeApplicationLimited) {
+  FLAGS_quic_enable_app_limited_check = true;
+
+  EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(1);
+  {
+    InSequence seq;
+    EXPECT_CALL(visitor_, WillingAndAbleToWrite()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+        .WillOnce(Return(true));
+    EXPECT_CALL(visitor_, WillingAndAbleToWrite())
+        .WillRepeatedly(Return(false));
+  }
+
+  connection_.SendStreamData3();
+}
+
+// Verify that the connection does not become app-limited if there is
+// outstanding data to send after the write.
+TEST_P(QuicConnectionTest, NotBecomeApplicationLimitedIfMoreDataAvailable) {
+  FLAGS_quic_enable_app_limited_check = true;
+
+  EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(0);
+  {
+    InSequence seq;
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+        .WillOnce(Return(true));
+    EXPECT_CALL(visitor_, WillingAndAbleToWrite()).WillRepeatedly(Return(true));
+  }
+
+  connection_.SendStreamData3();
+}
+
+// Verify that the connection does not become app-limited after blocked write
+// even if there is outstanding data to send after the write.
+TEST_P(QuicConnectionTest, NotBecomeApplicationLimitedDueToWriteBlock) {
+  FLAGS_quic_enable_app_limited_check = true;
+
+  EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(0);
+  EXPECT_CALL(visitor_, WillingAndAbleToWrite()).WillRepeatedly(Return(true));
+  BlockOnNextWrite();
+
+  connection_.SendStreamData3();
 }
 
 }  // namespace

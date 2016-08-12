@@ -625,7 +625,7 @@ class BidirectionalStreamQuicImplTest
 
 INSTANTIATE_TEST_CASE_P(Version,
                         BidirectionalStreamQuicImplTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);

@@ -75,6 +75,7 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   client_config.SetInitialSessionFlowControlWindowToSend(
       2 * kInitialSessionFlowControlWindowForTest);
   client_config.SetSocketReceiveBufferToSend(kDefaultSocketReceiveBuffer);
+  client_config.SetForceHolBlocking();
   QuicTagVector copt;
   copt.push_back(kTBBR);
   client_config.SetConnectionOptionsToSend(copt);
@@ -100,6 +101,7 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
             config_.IdleConnectionStateLifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection, config_.MaxStreamsPerConnection());
   EXPECT_EQ(10 * kNumMicrosPerMilli, config_.ReceivedInitialRoundTripTimeUs());
+  EXPECT_TRUE(config_.ForceHolBlocking(Perspective::IS_SERVER));
   EXPECT_TRUE(config_.HasReceivedConnectionOptions());
   EXPECT_EQ(2u, config_.ReceivedConnectionOptions().size());
   EXPECT_EQ(config_.ReceivedConnectionOptions()[0], kIW50);

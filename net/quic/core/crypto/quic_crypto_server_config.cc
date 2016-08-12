@@ -567,6 +567,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     QuicCompressedCertsCache* compressed_certs_cache,
     QuicCryptoNegotiatedParameters* params,
     QuicCryptoProof* crypto_proof,
+    QuicByteCount total_framing_overhead,
+    QuicByteCount chlo_packet_size,
     CryptoHandshakeMessage* out,
     DiversificationNonce* out_diversification_nonce,
     string* error_details) const {
@@ -641,7 +643,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     BuildRejection(version, *primary_config, client_hello, info,
                    validate_chlo_result.cached_network_params,
                    use_stateless_rejects, server_designated_connection_id, rand,
-                   compressed_certs_cache, params, *crypto_proof, out);
+                   compressed_certs_cache, params, *crypto_proof,
+                   total_framing_overhead, chlo_packet_size, out);
     return QUIC_NO_ERROR;
   }
 
@@ -1442,6 +1445,8 @@ void QuicCryptoServerConfig::BuildRejection(
     QuicCompressedCertsCache* compressed_certs_cache,
     QuicCryptoNegotiatedParameters* params,
     const QuicCryptoProof& crypto_proof,
+    QuicByteCount total_framing_overhead,
+    QuicByteCount chlo_packet_size,
     CryptoHandshakeMessage* out) const {
   if (FLAGS_enable_quic_stateless_reject_support && use_stateless_rejects) {
     DVLOG(1) << "QUIC Crypto server config returning stateless reject "
@@ -1486,6 +1491,7 @@ void QuicCryptoServerConfig::BuildRejection(
                     params->client_common_set_hashes,
                     params->client_cached_cert_hashes, config.common_cert_sets);
 
+  DCHECK_GT(chlo_packet_size, client_hello.size());
   // kREJOverheadBytes is a very rough estimate of how much of a REJ
   // message is taken up by things other than the certificates.
   // STK: 56 bytes
@@ -1497,8 +1503,14 @@ void QuicCryptoServerConfig::BuildRejection(
   // max_unverified_size is the number of bytes that the certificate chain,
   // signature, and (optionally) signed certificate timestamp can consume before
   // we will demand a valid source-address token.
-  const size_t max_unverified_size =
+  const size_t old_max_unverified_size =
       client_hello.size() * chlo_multiplier_ - kREJOverheadBytes;
+  const size_t new_max_unverified_size =
+      chlo_multiplier_ * (chlo_packet_size - total_framing_overhead) -
+      kREJOverheadBytes;
+  const size_t max_unverified_size = FLAGS_quic_use_chlo_packet_size
+                                         ? new_max_unverified_size
+                                         : old_max_unverified_size;
   static_assert(kClientHelloMinimumSize * kMultiplier >= kREJOverheadBytes,
                 "overhead calculation may underflow");
   bool should_return_sct =

@@ -228,7 +228,7 @@ class QuicChromiumClientStreamTest
 
 INSTANTIATE_TEST_CASE_P(Version,
                         QuicChromiumClientStreamTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicChromiumClientStreamTest, OnFinRead) {
   InitializeHeaders();

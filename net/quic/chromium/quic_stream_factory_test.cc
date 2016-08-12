@@ -113,7 +113,7 @@ struct TestParams {
 
 vector<TestParams> GetTestParams() {
   vector<TestParams> params;
-  QuicVersionVector all_supported_versions = QuicSupportedVersions();
+  QuicVersionVector all_supported_versions = AllSupportedVersions();
   for (const QuicVersion version : all_supported_versions) {
     params.push_back(TestParams{version, false});
     params.push_back(TestParams{version, true});
@@ -152,7 +152,7 @@ struct PoolingTestParams {
 
 vector<PoolingTestParams> GetPoolingTestParams() {
   vector<PoolingTestParams> params;
-  QuicVersionVector all_supported_versions = QuicSupportedVersions();
+  QuicVersionVector all_supported_versions = AllSupportedVersions();
   for (const QuicVersion version : all_supported_versions) {
     params.push_back(PoolingTestParams{version, false, SAME_AS_FIRST});
     params.push_back(PoolingTestParams{version, false, SAME_AS_SECOND});

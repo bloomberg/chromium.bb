@@ -574,7 +574,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
 INSTANTIATE_TEST_CASE_P(Version,
                         QuicHttpStreamTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicHttpStreamTest, RenewStreamForAuth) {
   Initialize();

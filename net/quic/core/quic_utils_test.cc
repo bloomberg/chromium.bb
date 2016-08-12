@@ -35,6 +35,13 @@ TEST(QuicUtilsTest, TagToString) {
             QuicUtils::TagToString(MakeQuicTag('C', 'H', 'L', '\x1f')));
 }
 
+TEST(QuicUtilsTest, ListTags) {
+  QuicTagValueMap map;
+  map.insert(std::make_pair(kSCFG, "asd"));
+  map.insert(std::make_pair(kCHLO, "dsa"));
+  EXPECT_EQ("SCFG CHLO ", QuicUtils::ListTags(map));
+}
+
 TEST(QuicUtilsTest, ParseQuicConnectionOptions) {
   QuicTagVector empty_options = QuicUtils::ParseQuicConnectionOptions("");
   EXPECT_EQ(0ul, empty_options.size());

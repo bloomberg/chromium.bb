@@ -152,7 +152,7 @@ class QuicChromiumClientSessionTest
 
 INSTANTIATE_TEST_CASE_P(Tests,
                         QuicChromiumClientSessionTest,
-                        ::testing::ValuesIn(QuicSupportedVersions()));
+                        ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
   Initialize();
