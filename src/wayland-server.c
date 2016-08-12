@@ -95,6 +95,7 @@ struct wl_display {
 	struct wl_list global_list;
 	struct wl_list socket_list;
 	struct wl_list client_list;
+	struct wl_list protocol_loggers;
 
 	struct wl_signal destroy_signal;
 	struct wl_signal create_client_signal;
@@ -123,7 +124,41 @@ struct wl_resource {
 	wl_dispatcher_func_t dispatcher;
 };
 
+struct wl_protocol_logger {
+	struct wl_list link;
+	wl_protocol_logger_func_t func;
+	void *user_data;
+};
+
 static int debug_server = 0;
+
+static void
+log_closure(struct wl_resource *resource,
+	    struct wl_closure *closure, int send)
+{
+	struct wl_object *object = &resource->object;
+	struct wl_display *display = resource->client->display;
+	struct wl_protocol_logger *protocol_logger;
+	struct wl_protocol_logger_message message;
+
+	if (debug_server)
+		wl_closure_print(closure, object, send);
+
+	if (!wl_list_empty(&display->protocol_loggers)) {
+		message.resource = resource;
+		message.message_opcode = closure->opcode;
+		message.message = closure->message;
+		message.arguments_count = closure->count;
+		message.arguments = closure->args;
+		wl_list_for_each(protocol_logger,
+				 &display->protocol_loggers, link) {
+			protocol_logger->func(protocol_logger->user_data,
+					      send ? WL_PROTOCOL_LOGGER_EVENT :
+						     WL_PROTOCOL_LOGGER_REQUEST,
+					      &message);
+		}
+	}
+}
 
 WL_EXPORT void
 wl_resource_post_event_array(struct wl_resource *resource, uint32_t opcode,
@@ -143,8 +178,7 @@ wl_resource_post_event_array(struct wl_resource *resource, uint32_t opcode,
 	if (wl_closure_send(closure, resource->client->connection))
 		resource->client->error = 1;
 
-	if (debug_server)
-		wl_closure_print(closure, object, true);
+	log_closure(resource, closure, true);
 
 	wl_closure_destroy(closure);
 }
@@ -183,8 +217,7 @@ wl_resource_queue_event_array(struct wl_resource *resource, uint32_t opcode,
 	if (wl_closure_queue(closure, resource->client->connection))
 		resource->client->error = 1;
 
-	if (debug_server)
-		wl_closure_print(closure, object, true);
+	log_closure(resource, closure, true);
 
 	wl_closure_destroy(closure);
 }
@@ -331,8 +364,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			break;
 		}
 
-		if (debug_server)
-			wl_closure_print(closure, object, false);
+		log_closure(resource, closure, false);
 
 		if ((resource_flags & WL_MAP_ENTRY_LEGACY) ||
 		    resource->dispatcher == NULL) {
@@ -885,6 +917,7 @@ wl_display_create(void)
 	wl_list_init(&display->socket_list);
 	wl_list_init(&display->client_list);
 	wl_list_init(&display->registry_resource_list);
+	wl_list_init(&display->protocol_loggers);
 
 	wl_signal_init(&display->destroy_signal);
 	wl_signal_init(&display->create_client_signal);
@@ -960,6 +993,8 @@ wl_display_destroy(struct wl_display *display)
 		free(global);
 
 	wl_array_release(&display->additional_shm_formats);
+
+	wl_list_remove(&display->protocol_loggers);
 
 	free(display);
 }
@@ -1479,6 +1514,61 @@ WL_EXPORT void
 wl_log_set_handler_server(wl_log_func_t handler)
 {
 	wl_log_handler = handler;
+}
+
+/** Adds a new protocol logger.
+ *
+ * When a new protocol message arrives or is sent from the server
+ * all the protocol logger functions will be called, carrying the
+ * \a user_data pointer, the type of the message (request or
+ * event) and the actual message.
+ * The lifetime of the messages passed to the logger function ends
+ * when they return so the messages cannot be stored and accessed
+ * later.
+ *
+ * \a errno is set on error.
+ *
+ * \param func The function to call to log a new protocol message
+ * \param user_data The user data pointer to pass to \a func
+ *
+ * \return The protol logger object on success, NULL on failure.
+ *
+ * \sa wl_protocol_logger_destroy
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT struct wl_protocol_logger *
+wl_display_add_protocol_logger(struct wl_display *display,
+			       wl_protocol_logger_func_t func, void *user_data)
+{
+	struct wl_protocol_logger *logger;
+
+	logger = malloc(sizeof *logger);
+	if (!logger)
+		return NULL;
+
+	logger->func = func;
+	logger->user_data = user_data;
+	wl_list_insert(&display->protocol_loggers, &logger->link);
+
+	return logger;
+}
+
+/** Destroys a protocol logger.
+ *
+ * This function destroys a protocol logger and removes it from the display
+ * it was added to with \a wl_display_add_protocol_logger.
+ * The \a logger object becomes invalid after calling this function.
+ *
+ * \sa wl_display_add_protocol_logger
+ *
+ * \memberof wl_protocol_logger
+ */
+WL_EXPORT void
+wl_protocol_logger_destroy(struct wl_protocol_logger *logger)
+{
+	wl_list_remove(&logger->link);
+	free(logger);
 }
 
 /** Add support for a wl_shm pixel format
