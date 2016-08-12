@@ -16,5 +16,8 @@ const char kSnippetFetcherQuotaDay[] =
 const char kSnippetFetcherQuotaCount[] =
     "ntp.request_throttler.suggestion_fetcher.count";
 
+const char kDismissedOfflinePageSuggestions[] =
+    "ntp_suggestions.offline_pages.recent_tabs.dismissed_ids";
+
 }  // namespace prefs
 }  // namespace ntp_snippets

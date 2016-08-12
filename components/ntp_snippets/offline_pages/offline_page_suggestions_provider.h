@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_OFFLINE_PAGES_OFFLINE_PAGE_SUGGESTIONS_PROVIDER_H_
 #define COMPONENTS_NTP_SNIPPETS_OFFLINE_PAGES_OFFLINE_PAGE_SUGGESTIONS_PROVIDER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,9 @@
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_types.h"
+
+class PrefRegistrySimple;
+class PrefService;
 
 namespace gfx {
 class Image;
@@ -33,8 +37,11 @@ class OfflinePageSuggestionsProvider
   OfflinePageSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
       CategoryFactory* category_factory,
-      offline_pages::OfflinePageModel* offline_page_model);
+      offline_pages::OfflinePageModel* offline_page_model,
+      PrefService* pref_service);
   ~OfflinePageSuggestionsProvider() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   // ContentSuggestionsProvider implementation.
@@ -65,11 +72,25 @@ class OfflinePageSuggestionsProvider
   // Updates the |category_status_| and notifies the |observer_|, if necessary.
   void NotifyStatusChanged(CategoryStatus new_status);
 
+  // Converts an OfflinePageItem to a ContentSuggestion.
+  ContentSuggestion ConvertOfflinePage(
+      const offline_pages::OfflinePageItem& offline_page) const;
+
+  // Reads |dismissed_ids_| from the prefs.
+  void ReadDismissedIDsFromPrefs();
+
+  // Writes |dismissed_ids_| to the prefs.
+  void StoreDismissedIDsToPrefs();
+
   CategoryStatus category_status_;
 
   offline_pages::OfflinePageModel* offline_page_model_;
 
   const Category provided_category_;
+
+  PrefService* pref_service_;
+
+  std::set<std::string> dismissed_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageSuggestionsProvider);
 };

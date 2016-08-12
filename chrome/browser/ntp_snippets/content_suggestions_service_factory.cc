@@ -134,7 +134,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     std::unique_ptr<OfflinePageSuggestionsProvider>
         offline_page_suggestions_provider =
             base::MakeUnique<OfflinePageSuggestionsProvider>(
-                service, service->category_factory(), offline_page_model);
+                service, service->category_factory(), offline_page_model,
+                profile->GetPrefs());
     service->RegisterProvider(std::move(offline_page_suggestions_provider));
   }
 #endif  // OS_ANDROID

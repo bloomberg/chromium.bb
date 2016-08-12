@@ -123,11 +123,12 @@ class ContentSuggestionsProvider {
   // application-wide, because this provider is the only one that provides
   // suggestions for that category.
   std::string MakeUniqueID(Category category,
-                           const std::string& within_category_id);
+                           const std::string& within_category_id) const;
 
   // Reverse functions for MakeUniqueID()
-  Category GetCategoryFromUniqueID(const std::string& unique_id);
-  std::string GetWithinCategoryIDFromUniqueID(const std::string& unique_id);
+  Category GetCategoryFromUniqueID(const std::string& unique_id) const;
+  std::string GetWithinCategoryIDFromUniqueID(
+      const std::string& unique_id) const;
 
   Observer* observer() const { return observer_; }
   CategoryFactory* category_factory() const { return category_factory_; }

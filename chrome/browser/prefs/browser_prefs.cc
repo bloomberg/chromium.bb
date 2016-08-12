@@ -207,6 +207,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/notifications/notification_platform_bridge_android.h"
+#include "components/ntp_snippets/offline_pages/offline_page_suggestions_provider.h"
 #endif
 
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
@@ -562,6 +563,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_ANDROID)
   NotificationPlatformBridgeAndroid::RegisterProfilePrefs(registry);
+  ntp_snippets::OfflinePageSuggestionsProvider::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_CHROMEOS)

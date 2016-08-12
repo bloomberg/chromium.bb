@@ -26,13 +26,13 @@ ContentSuggestionsProvider::~ContentSuggestionsProvider() {}
 
 std::string ContentSuggestionsProvider::MakeUniqueID(
     Category category,
-    const std::string& within_category_id) {
+    const std::string& within_category_id) const {
   return base::StringPrintf(kCombinedIDFormat, category.id(),
                             within_category_id.c_str());
 }
 
 Category ContentSuggestionsProvider::GetCategoryFromUniqueID(
-    const std::string& unique_id) {
+    const std::string& unique_id) const {
   size_t colon_index = unique_id.find(kSeparator);
   DCHECK_NE(std::string::npos, colon_index) << "Not a valid unique_id: "
                                             << unique_id;
@@ -43,7 +43,7 @@ Category ContentSuggestionsProvider::GetCategoryFromUniqueID(
 }
 
 std::string ContentSuggestionsProvider::GetWithinCategoryIDFromUniqueID(
-    const std::string& unique_id) {
+    const std::string& unique_id) const {
   size_t colon_index = unique_id.find(kSeparator);
   DCHECK_NE(std::string::npos, colon_index) << "Not a valid unique_id: "
                                             << unique_id;
