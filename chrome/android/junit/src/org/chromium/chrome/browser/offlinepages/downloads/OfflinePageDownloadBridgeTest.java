@@ -129,6 +129,25 @@ public class OfflinePageDownloadBridgeTest {
 
     @Test
     @Feature({"OfflinePages"})
+    public void testDeleteItemByGuid() {
+        OfflinePageDownloadItem item = createDownloadItem1();
+        doNothing().when(mBridge).nativeDeleteItemByGuid(anyLong(), eq(item.getGuid()));
+        mBridge.deleteItem(item.getGuid());
+        verify(mBridge, times(1)).nativeDeleteItemByGuid(eq(0L), eq(item.getGuid()));
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
+    public void testOpenItemByGuid() {
+        OfflinePageDownloadItem item = createDownloadItem1();
+        // Empty URL skips actual intent.
+        doReturn("").when(mBridge).nativeGetOfflineUrlByGuid(anyLong(), eq(item.getGuid()));
+        mBridge.openItem(item.getGuid(), null);
+        verify(mBridge, times(1)).nativeGetOfflineUrlByGuid(eq(0L), eq(item.getGuid()));
+    }
+
+    @Test
+    @Feature({"OfflinePages"})
     public void testCreateDownloadItemAndAddToList() {
         List<OfflinePageDownloadItem> list = new ArrayList<>();
         OfflinePageDownloadItem item1 = createDownloadItem1();

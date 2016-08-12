@@ -14,6 +14,7 @@
 #include "components/offline_pages/offline_page_model.h"
 #include "jni/OfflinePageDownloadBridge_jni.h"
 #include "net/base/filename_util.h"
+#include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -27,16 +28,16 @@ namespace android {
 
 namespace {
 
-void ToJavaOfflinePageDownloadItemList(JNIEnv* env,
-                                       jobject j_result_obj,
-                                       const DownloadUIItemsMap& items_map) {
-  for (const auto& guid_item_pair : items_map) {
-    const DownloadUIItem& item = *(guid_item_pair.second.get());
+void ToJavaOfflinePageDownloadItemList(
+    JNIEnv* env,
+    jobject j_result_obj,
+    const std::vector<const DownloadUIItem*>& items) {
+  for (const auto item : items) {
     Java_OfflinePageDownloadBridge_createDownloadItemAndAddToList(
-        env, j_result_obj, ConvertUTF8ToJavaString(env, item.guid).obj(),
-        ConvertUTF8ToJavaString(env, item.url.spec()).obj(),
-        ConvertUTF8ToJavaString(env, item.target_path.value()).obj(),
-        item.start_time.ToJavaTime(), item.total_bytes);
+        env, j_result_obj, ConvertUTF8ToJavaString(env, item->guid).obj(),
+        ConvertUTF8ToJavaString(env, item->url.spec()).obj(),
+        ConvertUTF8ToJavaString(env, item->target_path.value()).obj(),
+        item->start_time.ToJavaTime(), item->total_bytes);
   }
 }
 
@@ -80,17 +81,37 @@ void OfflinePageDownloadBridge::GetAllItems(
     const JavaParamRef<jobject>& j_result_obj) {
   DCHECK(j_result_obj);
 
-  const DownloadUIItemsMap& items_map = download_ui_adapter_->GetAllItems();
-  ToJavaOfflinePageDownloadItemList(env, j_result_obj, items_map);
+  std::vector<const DownloadUIItem*> items =
+      download_ui_adapter_->GetAllItems();
+  ToJavaOfflinePageDownloadItemList(env, j_result_obj, items);
 }
 
 ScopedJavaLocalRef<jobject> OfflinePageDownloadBridge::GetItemByGuid(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& j_guid) {
+    const JavaParamRef<jstring>& j_guid) {
   std::string guid = ConvertJavaStringToUTF8(env, j_guid);
   const DownloadUIItem* item = download_ui_adapter_->GetItem(guid);
   return ToJavaOfflinePageDownloadItem(env, *item);
+}
+
+void OfflinePageDownloadBridge::DeleteItemByGuid(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_guid) {
+  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+  download_ui_adapter_->DeleteItem(guid);
+}
+
+ScopedJavaLocalRef<jstring> OfflinePageDownloadBridge::GetOfflineUrlByGuid(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_guid) {
+  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+  GURL url = download_ui_adapter_->GetOfflineUrlByGuid(guid);
+  if (!url.is_valid())
+    return ScopedJavaLocalRef<jstring>();
+  return ConvertUTF8ToJavaString(env, url.spec());
 }
 
 void OfflinePageDownloadBridge::ItemsLoaded() {

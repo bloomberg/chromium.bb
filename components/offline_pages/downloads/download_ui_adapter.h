@@ -8,19 +8,16 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
 #include "components/offline_pages/downloads/download_ui_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_types.h"
+#include "url/gurl.h"
 
 namespace offline_pages {
-
-// Key is DownloadUIItem.guid.
-typedef
-    std::map<std::string, std::unique_ptr<DownloadUIItem>> DownloadUIItemsMap;
-
 // C++ side of the UI Adapter. Mimics DownloadManager/Item/History (since we
 // share UI with Downloads).
 // An instance of this class is owned by OfflinePageModel and is shared between
@@ -66,9 +63,16 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  const DownloadUIItemsMap& GetAllItems() const;
-  // May return nullptr.
+  // Returns all UI items. The list contains references to items in the cache
+  // and has to be used synchronously.
+  std::vector<const DownloadUIItem*> GetAllItems() const;
+  // May return nullptr if item with specified guid does not exist.
   const DownloadUIItem* GetItem(const std::string& guid) const;
+
+  // Commands from UI. Start async operations, result is observable
+  // via Observer or directly by the user (as in 'open').
+  void DeleteItem(const std::string& guid);
+  GURL GetOfflineUrlByGuid(const std::string& guid) const;
 
   // OfflinePageModel::Observer
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
@@ -77,6 +81,21 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
                           const ClientId& client_id) override;
 
  private:
+  struct ItemInfo {
+    explicit ItemInfo(const OfflinePageItem& page);
+    ~ItemInfo();
+
+    std::unique_ptr<DownloadUIItem> ui_item;
+    // Additional cached data, not exposed to UI through DownloadUIItem.
+    int64_t offline_id;
+    GURL offline_url;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ItemInfo);
+  };
+
+  typedef std::map<std::string, std::unique_ptr<ItemInfo>> DownloadUIItems;
+
   void LoadCache();
   void ClearCache();
 
@@ -84,15 +103,17 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   void OnOfflinePagesLoaded(const MultipleOfflinePageItemResult& pages);
   void NotifyItemsLoaded(Observer* observer);
   void OnOfflinePagesChanged(const MultipleOfflinePageItemResult& pages);
-  bool IsVisibleInUI(const OfflinePageItem& page);
+  void OnDeletePagesDone(DeletePageResult result);
+
+  bool IsVisibleInUI(const ClientId& page);
 
   // Always valid, this class is a member of the model.
   OfflinePageModel* model_;
 
   bool is_loaded_;
 
-  // The cache of UI items.
-  DownloadUIItemsMap items_;
+  // The cache of UI items. The key is DownloadUIItem.guid.
+  DownloadUIItems items_;
 
   // The observers.
   base::ObserverList<Observer> observers_;

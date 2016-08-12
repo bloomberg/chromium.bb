@@ -4,10 +4,16 @@
 
 package org.chromium.chrome.browser.offlinepages.downloads;
 
+import android.app.Activity;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,9 +103,55 @@ public class OfflinePageDownloadBridge {
      * Gets a download item related to the provided GUID.
      * @param guid a GUID of the item to get.
      * @return download item related to the offline page identified by GUID.
-     * */
+     */
     public OfflinePageDownloadItem getItem(String guid) {
         return nativeGetItemByGuid(mNativeOfflinePageDownloadBridge, guid);
+    }
+
+    /**
+     * Schedules deletion of the offline page identified by the GUID.
+     * If the item is still in the process of download, the download is canceled.
+     * Actual cancel and/or deletion happens asynchronously, Observer is notified when it's done.
+     * @param guid a GUID of the item to delete.
+     */
+    public void deleteItem(String guid) {
+        nativeDeleteItemByGuid(mNativeOfflinePageDownloadBridge, guid);
+    }
+
+    /**
+     * 'Opens' the offline page identified by the GUID.
+     * This is done by creating a new tab and navigating it to the saved local snapshot.
+     * No automatic redirection is happening based on the connection status.
+     * If the item with specified GUID is not found or can't be opened, nothing happens.
+     * @param guid a GUID of the item to open.
+     * @param activity Activity requesting to open the item (offline page).
+     */
+    public void openItem(String guid, Activity activity) {
+        String url = nativeGetOfflineUrlByGuid(mNativeOfflinePageDownloadBridge, guid);
+        if (url == null) return;
+
+        LoadUrlParams params = new LoadUrlParams(url);
+        // TODO(dimich): W/o forcing offline, the page gets redirected to online
+        // URL if device is connected. Figure out how to force the offline by
+        // observing the request header.
+        // Map<String, String> headers = new HashMap<String, String>();
+        // headers.put("x-chrome-force-offline", "true");
+        // params.setExtraHeaders(headers);
+        final TabDelegate tabDelegate = new TabDelegate(false);
+        tabDelegate.createNewTab(params, TabLaunchType.FROM_LINK, null);
+    }
+
+    /**
+     * Starts download of the page currently open in the specified Tab.
+     * If tab's contents are not yet loaded completely, we'll wait for it
+     * to load enough for snapshot to be reasonable. If the Chrome is made
+     * background and killed, the background request remains that will
+     * eventually load the page in background and obtain its offline
+     * snapshot.
+     * @param tab a tab contents of which will be saved locally.
+     */
+    public void startDownload(Tab tab) {
+        // TODO(dimich): Next patch.
     }
 
     /**
@@ -163,4 +215,6 @@ public class OfflinePageDownloadBridge {
             long nativeOfflinePageDownloadBridge, List<OfflinePageDownloadItem> items);
     native OfflinePageDownloadItem nativeGetItemByGuid(
             long nativeOfflinePageDownloadBridge, String guid);
+    native void nativeDeleteItemByGuid(long nativeOfflinePageDownloadBridge, String guid);
+    native String nativeGetOfflineUrlByGuid(long nativeOfflinePageDownloadBridge, String guid);
 }

@@ -44,6 +44,15 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_guid);
 
+  void DeleteItemByGuid(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        const base::android::JavaParamRef<jstring>& j_guid);
+
+  base::android::ScopedJavaLocalRef<jstring> GetOfflineUrlByGuid(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_guid);
+
   // DownloadUIAdapter::Observer implementation.
   void ItemsLoaded() override;
   void ItemAdded(const DownloadUIItem& item) override;
