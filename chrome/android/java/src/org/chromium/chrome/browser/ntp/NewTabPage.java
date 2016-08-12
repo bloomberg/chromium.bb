@@ -377,7 +377,7 @@ public class NewTabPage
         public void navigateToDownloadManager() {
             if (mIsDestroyed) return;
             assert ChromeFeatureList.isEnabled("DownloadsUi");
-            // TODO(pke): RecordUserAction.record("MobileNTPSwitchToDownloadManager");
+            RecordUserAction.record("MobileNTPSwitchToDownloadManager");
             DownloadUtils.showDownloadManager(mActivity, mTab);
         }
 

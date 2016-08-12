@@ -9279,6 +9279,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileNTPSwitchToDownloadManager">
+  <owner>bauerb@chromium.org</owner>
+  <description>
+    Android: User clicked on the &quot;More&quot; card at the end of the section
+    of Downloads suggestions on the NTP to open the Download Manager UI.
+  </description>
+</action>
+
 <action name="MobileNTPSwitchToIncognito">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
