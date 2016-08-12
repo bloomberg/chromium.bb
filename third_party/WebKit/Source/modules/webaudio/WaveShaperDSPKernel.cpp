@@ -74,7 +74,7 @@ void WaveShaperDSPKernel::processCurve(const float* source, float* destination, 
     ASSERT(destination);
     ASSERT(getWaveShaperProcessor());
 
-    DOMFloat32Array* curve = getWaveShaperProcessor()->curve();
+    Vector<float>* curve = getWaveShaperProcessor()->curve();
     if (!curve) {
         // Act as "straight wire" pass-through if no curve is set.
         memcpy(destination, source, sizeof(float) * framesToProcess);
@@ -82,7 +82,7 @@ void WaveShaperDSPKernel::processCurve(const float* source, float* destination, 
     }
 
     float* curveData = curve->data();
-    int curveLength = curve->length();
+    int curveLength = curve->size();
 
     ASSERT(curveData);
 

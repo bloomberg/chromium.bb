@@ -76,7 +76,16 @@ void WaveShaperNode::setCurve(DOMFloat32Array* curve, ExceptionState& exceptionS
 
 DOMFloat32Array* WaveShaperNode::curve()
 {
-    return getWaveShaperProcessor()->curve();
+    Vector<float>* curve = getWaveShaperProcessor()->curve();
+    if (!curve)
+        return nullptr;
+
+    unsigned size = curve->size();
+    RefPtr<WTF::Float32Array> newCurve = WTF::Float32Array::create(size);
+
+    memcpy(newCurve->data(), curve->data(), sizeof(float) * size);
+
+    return DOMFloat32Array::create(newCurve.release());
 }
 
 void WaveShaperNode::setOversample(const String& type)

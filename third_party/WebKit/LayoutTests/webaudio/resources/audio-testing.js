@@ -604,9 +604,11 @@ var Should = (function () {
     // Result:
     // "PASS Zero is equal to 0."
     ShouldModel.prototype.beEqualTo = function (value) {
-        var type = typeof value;
-        this._assert(type === 'number' || type === 'string',
-            'value should be number or string for', value);
+        if (value != null) {
+            var type = typeof value;
+            this._assert(type === 'number' || type === 'string' || type === 'boolean',
+                         'value should be number, string, or boolean for', value);
+        }
 
         this._checkNaN(value, 'EXPECTED');
 
@@ -1137,6 +1139,22 @@ var Should = (function () {
             this._testPassed('rejected correctly (with ' + err + ')');
         }.bind(this));
     };
+
+    // A summary message
+    //
+    // Example:
+    // Should("Summary1", true).summarize("passed1", "failed1");
+    // Should("Summary2", false).summarize("passed2", "failed2");
+    // Result:
+    // "PASS Summary1: passed1."
+    // "FAIL Summary2: failed2."
+    ShouldModel.prototype.summarize = function (pass, fail) {
+        if (this.target)
+            this._testPassed(pass);
+        else
+            this._testFailed(fail);
+        return this._success;
+    }
 
     // Should() method.
     //
