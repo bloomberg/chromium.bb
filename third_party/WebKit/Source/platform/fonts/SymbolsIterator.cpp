@@ -84,16 +84,20 @@ bool SymbolsIterator::consume(unsigned *symbolsLimit, FontFallbackPriority* font
 
         // Except at the beginning, ZWJ just carries over the emoji or neutral
         // text type, VS15 & VS16 we just carry over as well, since we already
-        // resolved those through lookahead.  Also, the text presentation emoji
-        // are upgraded to emoji presentation when combined through ZWJ in the
-        // case of example U+1F441 U+200D U+1F5E8, eye + ZWJ + left speech
+        // resolved those through lookahead. Also, don't downgrade to text
+        // presentation for emoji that are part of a ZWJ sequence, example
+        // U+1F441 U+200D U+1F5E8, eye (text presentation) + ZWJ + left speech
         // bubble, see below.
         if ((!(m_nextChar == zeroWidthJoinerCharacter
             && m_previousFontFallbackPriority == FontFallbackPriority::EmojiEmoji)
             && m_nextChar != variationSelector15Character
             && m_nextChar != variationSelector16Character
             && !Character::isRegionalIndicator(m_nextChar)
-            && !(m_nextChar == leftSpeechBubbleCharacter
+            && !((m_nextChar == leftSpeechBubbleCharacter
+            || m_nextChar == rainbowCharacter
+            || m_nextChar == maleSignCharacter
+            || m_nextChar == femaleSignCharacter
+            || m_nextChar == staffOfAesculapiusCharacter)
             && m_previousFontFallbackPriority == FontFallbackPriority::EmojiEmoji))
             || m_currentFontFallbackPriority == FontFallbackPriority::Invalid) {
             m_currentFontFallbackPriority = fontFallbackPriorityForCharacter(m_nextChar);
@@ -134,7 +138,8 @@ bool SymbolsIterator::consume(unsigned *symbolsLimit, FontFallbackPriority* font
 
             // Upgrade text presentation emoji to emoji presentation when followed by ZWJ,
             // Example U+1F441 U+200D U+1F5E8, eye + ZWJ + left speech bubble.
-            if (m_nextChar == eyeCharacter && peekChar == zeroWidthJoinerCharacter) {
+            if ((m_nextChar == eyeCharacter || m_nextChar == wavingWhiteFlagCharacter)
+                && peekChar == zeroWidthJoinerCharacter) {
                 m_currentFontFallbackPriority = FontFallbackPriority::EmojiEmoji;
             }
         }

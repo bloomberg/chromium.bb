@@ -109,11 +109,18 @@ TEST_F(SymbolsIteratorTest, IgnoreVS16InText)
     CHECK_RUNS({ { "abcdef\xEF\xB8\x8Fghji", FontFallbackPriority::Text } });
 }
 
+TEST_F(SymbolsIteratorTest, AllHexValuesText)
+{
+    // Helps with detecting incorrect emoji pattern definitions which are
+    // missing a \U000... prefix for example.
+    CHECK_RUNS({ { "abcdef0123456789ABCDEF", FontFallbackPriority::Text } });
+}
+
 TEST_F(SymbolsIteratorTest, NumbersAndHashNormalAndEmoji)
 {
-    CHECK_RUNS({ { "0123456789#", FontFallbackPriority::Text },
-        { "0⃣1⃣2⃣3⃣4⃣5⃣6⃣7⃣8⃣9⃣#⃣", FontFallbackPriority::EmojiEmoji },
-        { "0123456789#", FontFallbackPriority::Text } });
+    CHECK_RUNS({ { "0123456789#*", FontFallbackPriority::Text },
+        { "0⃣1⃣2⃣3⃣4⃣5⃣6⃣7⃣8⃣9⃣*⃣", FontFallbackPriority::EmojiEmoji },
+        { "0123456789#*", FontFallbackPriority::Text } });
 }
 
 
@@ -154,6 +161,28 @@ TEST_F(SymbolsIteratorTest, AllEmojiZWSSequences)
         "‍👩👪👨‍👩‍👦👨‍👩‍👧👨‍👩‍👧‍👦👨‍👩‍👦‍👦👨‍👩‍👧‍👧👨‍👨‍👦👨‍👨‍👧👨‍👨‍👧‍👦👨‍👨‍👦‍👦👨‍👨‍👧‍👧"
         "👩‍👩‍👦👩‍👩‍👧👩‍👩‍👧‍👦👩‍👩‍👦‍👦👩‍👩‍👧‍👧👁‍🗨",
         FontFallbackPriority::EmojiEmoji } });
+}
+
+TEST_F(SymbolsIteratorTest, ModifierPlusGender)
+{
+    CHECK_RUNS({ { "⛹🏻‍♂", FontFallbackPriority::EmojiEmoji } });
+}
+
+TEST_F(SymbolsIteratorTest, TextMemberZwjSequence)
+{
+    CHECK_RUNS({ { "👨‍⚕", FontFallbackPriority::EmojiEmoji } });
+}
+
+TEST_F(SymbolsIteratorTest, FacepalmCartwheelShrugModifierFemale)
+{
+    CHECK_RUNS({ { "🤦‍♀🤸‍♀🤷‍♀🤷🏾‍♀", FontFallbackPriority::EmojiEmoji } });
+}
+
+TEST_F(SymbolsIteratorTest, AesculapiusMaleFemalEmoji)
+{
+    // Emoji Data 4 has upgraded those three characters to Emoji.
+    CHECK_RUNS({ { "a", FontFallbackPriority::Text },
+        { "⚕♀♂", FontFallbackPriority::EmojiText } });
 }
 
 TEST_F(SymbolsIteratorTest, EyeSpeechBubble)

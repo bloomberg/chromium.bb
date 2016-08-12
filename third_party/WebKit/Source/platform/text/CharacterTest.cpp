@@ -75,6 +75,31 @@ TEST(CharacterTest, TestCharacterRangeCodePath)
     TestSpecificUCharRange(0xFE20, 0xFE2F);
 }
 
+testing::AssertionResult isCJKIdeographOrSymbolWithMessage(UChar32 codepoint)
+{
+    const size_t formatBufferSize = 10;
+    char formattedAsHex[formatBufferSize];
+    snprintf(formattedAsHex, formatBufferSize,
+        "0x%x", codepoint);
+
+    if (Character::isCJKIdeographOrSymbol(codepoint)) {
+        return testing::AssertionSuccess() << "Codepoint "
+        << formattedAsHex << " is a CJKIdeographOrSymbol.";
+    }
+
+    return testing::AssertionFailure() << "Codepoint "
+        << formattedAsHex << " is not a CJKIdeographOrSymbol.";
+}
+
+TEST(CharacterTest, HammerEmojiVsCJKIdeographOrSymbol)
+{
+    for (UChar32 testChar = 0; testChar < kMaxCodepoint; testChar++) {
+        if (Character::isEmojiEmojiDefault(testChar)) {
+            EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(testChar));
+        }
+    }
+}
+
 TEST(CharacterTest, TestCharacterRangeCodePathSurrogate1)
 {
     /* To be surrogate ... */
@@ -192,156 +217,156 @@ TEST(CharacterTest, TestIsCJKIdeograph)
 
 static void TestSpecificUChar32RangeIdeographSymbol(UChar32 rangeStart, UChar32 rangeEnd)
 {
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(rangeStart - 1));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(rangeStart));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol((UChar32)((uint64_t)rangeStart + (uint64_t)rangeEnd) / 2));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(rangeEnd));
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(rangeEnd + 1));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(rangeStart - 1));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(rangeStart));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage((UChar32)((uint64_t)rangeStart + (uint64_t)rangeEnd) / 2));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(rangeEnd));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(rangeEnd + 1));
 }
 
 TEST(CharacterTest, TestIsCJKIdeographOrSymbol)
 {
     // CJK Compatibility Ideographs Supplement.
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2C7));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2CA));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2CB));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2D9));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2C7));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2CA));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2CB));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2D9));
 
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2020));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2021));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2030));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x203B));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x203C));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2042));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2047));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2048));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2049));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2051));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x20DD));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x20DE));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2100));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2103));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2105));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2109));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x210A));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2113));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2116));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2121));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x212B));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x213B));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2150));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2151));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2152));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2020));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2021));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2030));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x203B));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x203C));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2042));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2047));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2048));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2049));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2051));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x20DD));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x20DE));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2100));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2103));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2105));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2109));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x210A));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2113));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2116));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2121));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x212B));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x213B));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2150));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2151));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2152));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2156, 0x215A);
     TestSpecificUChar32RangeIdeographSymbol(0x2160, 0x216B);
     TestSpecificUChar32RangeIdeographSymbol(0x2170, 0x217B);
 
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x217F));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2189));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2307));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2312));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x217F));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2189));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2307));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2312));
 
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0x23BD));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x23BE));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x23C4));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x23CC));
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0x23CD));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x23CE));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2423));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(0x23BD));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x23BE));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x23C4));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x23CC));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(0x23CD));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x23CE));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2423));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2460, 0x2492);
     TestSpecificUChar32RangeIdeographSymbol(0x249C, 0x24FF);
 
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25A0));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25A1));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25A2));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25AA));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25AB));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25B1));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25B2));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25B3));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25B6));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25B7));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25BC));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25BD));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25C0));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25C1));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25C6));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25C7));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25C9));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25CB));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25CC));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25A0));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25A1));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25A2));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25AA));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25AB));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25B1));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25B2));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25B3));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25B6));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25B7));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25BC));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25BD));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25C0));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25C1));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25C6));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25C7));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25C9));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25CB));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25CC));
 
     TestSpecificUChar32RangeIdeographSymbol(0x25CE, 0x25D3);
     TestSpecificUChar32RangeIdeographSymbol(0x25E2, 0x25E6);
 
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25EF));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x25EF));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2600, 0x2603);
 
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2605));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2606));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x260E));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2616));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2617));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2640));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2642));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2605));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2606));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x260E));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2616));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2617));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2640));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2642));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2660, 0x266F);
     TestSpecificUChar32RangeIdeographSymbol(0x2672, 0x267D);
 
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x26A0));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x26BD));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x26BE));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2713));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x271A));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x273F));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2740));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2756));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x26A0));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x26BD));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x26BE));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2713));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x271A));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x273F));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2740));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2756));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2763, 0x2764);
     TestSpecificUChar32RangeIdeographSymbol(0x2776, 0x277F);
 
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2B1A));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x2B1A));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2FF0, 0x302D);
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x3031));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x312F));
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0x3130));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x3031));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x312F));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(0x3130));
 
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0x318F));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x3190));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x319F));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x31BF));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(0x318F));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x3190));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x319F));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x31BF));
 
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0x31FF));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x3200));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x3300));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x33FF));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(0x31FF));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x3200));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x3300));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x33FF));
 
     TestSpecificUChar32RangeIdeographSymbol(0xF860, 0xF862);
     TestSpecificUChar32RangeIdeographSymbol(0xFE30, 0xFE6F);
 
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0xFE10));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0xFE11));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0xFE12));
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0xFE19));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0xFE10));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0xFE11));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0xFE12));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0xFE19));
 
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0xFF0D));
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0xFF1B));
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0xFF1C));
-    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0xFF1E));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(0xFF0D));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(0xFF1B));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(0xFF1C));
+    EXPECT_FALSE(isCJKIdeographOrSymbolWithMessage(0xFF1E));
 
     TestSpecificUChar32RangeIdeographSymbol(0xFF00, 0xFFEF);
 
-    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x1F100));
+    EXPECT_TRUE(isCJKIdeographOrSymbolWithMessage(0x1F100));
 
     TestSpecificUChar32RangeIdeographSymbol(0x1F110, 0x1F129);
     TestSpecificUChar32RangeIdeographSymbol(0x1F130, 0x1F149);
     TestSpecificUChar32RangeIdeographSymbol(0x1F150, 0x1F169);
     TestSpecificUChar32RangeIdeographSymbol(0x1F170, 0x1F189);
-    TestSpecificUChar32RangeIdeographSymbol(0x1F200, 0x1F6FF);
+    TestSpecificUChar32RangeIdeographSymbol(0x1F1E6, 0x1F6FF);
 }
 
 TEST(CharacterTest, TestEmojiTextDefault)
@@ -390,6 +415,19 @@ TEST(CharacterTest, TestEmojiModifierBase)
     EXPECT_TRUE(Character::isEmojiModifierBase(0x1F918));
     EXPECT_FALSE(Character::isEmojiModifierBase('A'));
     EXPECT_FALSE(Character::isEmojiModifierBase(0x1F47D));
+}
+
+TEST(CharacterTest, TestEmoji40Data)
+{
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x1F32F));
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x1F57A));
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x1F919));
+    EXPECT_TRUE(Character::isEmojiEmojiDefault(0x1F926));
+    EXPECT_TRUE(Character::isEmojiModifierBase(0x1F574));
+    EXPECT_TRUE(Character::isEmojiModifierBase(0x1F6CC));
+    EXPECT_TRUE(Character::isEmojiModifierBase(0x1F919));
+    EXPECT_TRUE(Character::isEmojiModifierBase(0x1F926));
+    EXPECT_TRUE(Character::isEmojiModifierBase(0x1F933));
 }
 
 TEST(CharacterTest, LineBreakAndQuoteNotEmoji)
