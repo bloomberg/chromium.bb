@@ -55,10 +55,6 @@ const char kEmbeddedSearchFieldTrialName[] = "EmbeddedSearch";
 // be ignored and Instant Extended will not be enabled by default.
 const char kDisablingSuffix[] = "DISABLED";
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-const char kEnableQueryExtractionFlagName[] = "query_extraction";
-#endif
-
 #if defined(OS_ANDROID)
 const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 
@@ -163,7 +159,8 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
 }
 
 std::string InstantExtendedEnabledParam(bool for_search) {
-  if (for_search && !IsQueryExtractionEnabled())
+  // TODO(treib): Remove |for_search| and update callers that set it to true.
+  if (for_search)
     return std::string();
   return std::string(google_util::kInstantExtendedAPIParam) + "=" +
          base::Uint64ToString(EmbeddedSearchPageVersion()) + "&";
@@ -172,25 +169,6 @@ std::string InstantExtendedEnabledParam(bool for_search) {
 std::string ForceInstantResultsParam(bool for_prerender) {
   return (for_prerender || !IsInstantExtendedAPIEnabled()) ? "ion=1&"
                                                            : std::string();
-}
-
-bool IsQueryExtractionEnabled() {
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  return false;
-#else
-  if (!IsInstantExtendedAPIEnabled())
-    return false;
-
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableQueryExtraction))
-    return true;
-
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) &&
-         GetBoolValueForFlagWithDefault(kEnableQueryExtractionFlagName, false,
-                                        flags);
-#endif  // defined(OS_IOS) || defined(OS_ANDROID)
 }
 
 bool ShouldPrefetchSearchResults() {
@@ -233,13 +211,6 @@ bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
   return template_url->HasSearchTermsReplacementKey(url) &&
          (url.SchemeIsCryptographic() ||
           google_util::StartsWithCommandLineGoogleBaseURL(url));
-}
-
-void EnableQueryExtractionForTesting() {
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  cl->AppendSwitch(switches::kEnableQueryExtraction);
-#endif
 }
 
 }  // namespace search

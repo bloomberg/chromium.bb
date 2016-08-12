@@ -354,8 +354,6 @@ source_set("browser") {
     "reading_list/url_downloader.h",
     "root_coordinator.h",
     "root_coordinator.mm",
-    "search/search_util.h",
-    "search/search_util.mm",
     "search_engines/search_engines_util.cc",
     "search_engines/search_engines_util.h",
     "search_engines/template_url_service_client_impl.cc",

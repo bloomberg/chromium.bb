@@ -1036,6 +1036,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   // policy. Also checks that default search can be completely disabled.
   const base::string16 kKeyword(base::ASCIIToUTF16("testsearch"));
   const std::string kSearchURL("http://search.example/search?q={searchTerms}");
+  const std::string kInstantURL("http://does/not/exist");
   const std::string kAlternateURL0(
       "http://search.example/search#q={searchTerms}");
   const std::string kAlternateURL1("http://search.example/#q={searchTerms}");
@@ -1052,6 +1053,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   ASSERT_TRUE(default_search);
   EXPECT_NE(kKeyword, default_search->keyword());
   EXPECT_NE(kSearchURL, default_search->url());
+  EXPECT_NE(kInstantURL, default_search->instant_url());
   EXPECT_FALSE(
     default_search->alternate_urls().size() == 2 &&
     default_search->alternate_urls()[0] == kAlternateURL0 &&
@@ -1073,6 +1075,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                base::WrapUnique(new base::StringValue(kSearchURL)), nullptr);
+  policies.Set(key::kDefaultSearchProviderInstantURL, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::WrapUnique(new base::StringValue(kInstantURL)), nullptr);
   std::unique_ptr<base::ListValue> alternate_urls(new base::ListValue);
   alternate_urls->AppendString(kAlternateURL0);
   alternate_urls->AppendString(kAlternateURL1);
@@ -1099,6 +1104,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   ASSERT_TRUE(default_search);
   EXPECT_EQ(kKeyword, default_search->keyword());
   EXPECT_EQ(kSearchURL, default_search->url());
+  EXPECT_EQ(kInstantURL, default_search->instant_url());
   EXPECT_EQ(2U, default_search->alternate_urls().size());
   EXPECT_EQ(kAlternateURL0, default_search->alternate_urls()[0]);
   EXPECT_EQ(kAlternateURL1, default_search->alternate_urls()[1]);
@@ -1205,124 +1211,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
 
     CheckSafeSearch(google == 1 || legacy_enabled);
   }
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
-  MakeRequestFail make_request_fail("search.example");
-
-  search::EnableQueryExtractionForTesting();
-
-  // Verifies that a default search is made using the provider configured via
-  // policy. Also checks that default search can be completely disabled.
-  const base::string16 kKeyword(base::ASCIIToUTF16("testsearch"));
-  const std::string kSearchURL("https://www.google.com/search?q={searchTerms}");
-  const std::string kInstantURL("http://does/not/exist");
-  const std::string kAlternateURL0(
-      "https://www.google.com/search#q={searchTerms}");
-  const std::string kAlternateURL1("https://www.google.com/#q={searchTerms}");
-  const std::string kSearchTermsReplacementKey(
-      "{google:instantExtendedEnabledKey}");
-
-  TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
-      browser()->profile());
-  search_test_utils::WaitForTemplateURLServiceToLoad(service);
-  TemplateURL* default_search = service->GetDefaultSearchProvider();
-  ASSERT_TRUE(default_search);
-  EXPECT_NE(kKeyword, default_search->keyword());
-  EXPECT_NE(kSearchURL, default_search->url());
-  EXPECT_NE(kInstantURL, default_search->instant_url());
-  EXPECT_FALSE(
-    default_search->alternate_urls().size() == 2 &&
-    default_search->alternate_urls()[0] == kAlternateURL0 &&
-    default_search->alternate_urls()[1] == kAlternateURL1);
-
-  // Override the default search provider using policies.
-  PolicyMap policies;
-  policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(true)), nullptr);
-  policies.Set(key::kDefaultSearchProviderKeyword, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::StringValue(kKeyword)), nullptr);
-  policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::StringValue(kSearchURL)), nullptr);
-  policies.Set(key::kDefaultSearchProviderInstantURL, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::StringValue(kInstantURL)), nullptr);
-  std::unique_ptr<base::ListValue> alternate_urls(new base::ListValue);
-  alternate_urls->AppendString(kAlternateURL0);
-  alternate_urls->AppendString(kAlternateURL1);
-  policies.Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::move(alternate_urls), nullptr);
-  policies.Set(
-      key::kDefaultSearchProviderSearchTermsReplacementKey,
-      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::StringValue(kSearchTermsReplacementKey)),
-      nullptr);
-  UpdateProviderPolicy(policies);
-  default_search = service->GetDefaultSearchProvider();
-  ASSERT_TRUE(default_search);
-  EXPECT_EQ(kKeyword, default_search->keyword());
-  EXPECT_EQ(kSearchURL, default_search->url());
-  EXPECT_EQ(kInstantURL, default_search->instant_url());
-  EXPECT_EQ(2U, default_search->alternate_urls().size());
-  EXPECT_EQ(kAlternateURL0, default_search->alternate_urls()[0]);
-  EXPECT_EQ(kAlternateURL1, default_search->alternate_urls()[1]);
-
-  // Query terms replacement requires that the renderer process be a recognized
-  // Instant renderer. Fake it.
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser()->profile());
-  instant_service->AddInstantProcess(browser()->tab_strip_model()->
-      GetActiveWebContents()->GetRenderProcessHost()->GetID());
-
-  // Verify that searching from the omnibox does search term replacement with
-  // first URL pattern.
-  chrome::FocusLocationBar(browser());
-  LocationBar* location_bar = browser()->window()->GetLocationBar();
-  OmniboxView* omnibox_view = location_bar->GetOmniboxView();
-  ui_test_utils::SendToOmniboxAndSubmit(location_bar,
-      "https://www.google.com/?espv=1#q=foobar");
-  EXPECT_TRUE(
-      browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(base::ASCIIToUTF16("foobar"), omnibox_view->GetText());
-
-  // Verify that not using espv=1 does not do search term replacement.
-  chrome::FocusLocationBar(browser());
-  ui_test_utils::SendToOmniboxAndSubmit(location_bar,
-      "https://www.google.com/?q=foobar");
-  EXPECT_FALSE(
-      browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(base::ASCIIToUTF16("https://www.google.com/?q=foobar"),
-            omnibox_view->GetText());
-
-  // Verify that searching from the omnibox does search term replacement with
-  // second URL pattern.
-  chrome::FocusLocationBar(browser());
-  ui_test_utils::SendToOmniboxAndSubmit(location_bar,
-      "https://www.google.com/search?espv=1#q=banana");
-  EXPECT_TRUE(
-      browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(base::ASCIIToUTF16("banana"), omnibox_view->GetText());
-
-  // Verify that searching from the omnibox does search term replacement with
-  // standard search URL pattern.
-  chrome::FocusLocationBar(browser());
-  ui_test_utils::SendToOmniboxAndSubmit(location_bar,
-      "https://www.google.com/search?q=tractor+parts&espv=1");
-  EXPECT_TRUE(
-      browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(base::ASCIIToUTF16("tractor parts"), omnibox_view->GetText());
-
-  // Verify that searching from the omnibox prioritizes hash over query.
-  chrome::FocusLocationBar(browser());
-  ui_test_utils::SendToOmniboxAndSubmit(location_bar,
-      "https://www.google.com/search?q=tractor+parts&espv=1#q=foobar");
-  EXPECT_TRUE(
-      browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(base::ASCIIToUTF16("foobar"), omnibox_view->GetText());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {

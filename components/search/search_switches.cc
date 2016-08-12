@@ -18,11 +18,4 @@ const char kPrefetchSearchResults[] = "prefetch-search-results";
 
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-
-// Enables query in the omnibox.
-const char kEnableQueryExtraction[] = "enable-query-extraction";
-
-#endif
-
 }  // namespace switches

@@ -347,15 +347,6 @@ TEST_F(InstantSearchPrerendererTest, PrerenderingAllowed) {
                                    AutocompleteMatchType::URL_WHAT_YOU_TYPED);
   EXPECT_FALSE(AutocompleteMatch::IsSearchType(url_type_match.type));
   EXPECT_FALSE(prerenderer->IsAllowed(url_type_match, active_tab));
-
-  // Search results page supports Instant search. InstantSearchPrerenderer is
-  // used only when the underlying page doesn't support Instant.
-  NavigateAndCommitActiveTab(GURL("https://www.google.com/alt#quux=foo&strk"));
-  active_tab = GetActiveWebContents();
-  EXPECT_FALSE(
-      search::ExtractSearchTermsFromURL(profile(), active_tab->GetURL())
-          .empty());
-  EXPECT_FALSE(prerenderer->IsAllowed(search_type_match, active_tab));
 }
 
 TEST_F(InstantSearchPrerendererTest, UsePrerenderPage) {
@@ -481,13 +472,6 @@ TEST_F(ReuseInstantSearchBasePageTest,
 
 #if !defined(OS_ANDROID)
 class TestUsePrerenderPage : public InstantSearchPrerendererTest {
- protected:
-  void SetUp() override {
-    // Disable query extraction flag in field trials.
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch", "Group1 strk:20 query_extraction:0"));
-    InstantUnitTestBase::SetUpWithoutQueryExtraction();
-  }
 };
 
 TEST_F(TestUsePrerenderPage, ExtractSearchTermsAndUsePrerenderPage) {

@@ -72,10 +72,6 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
   }
 
  protected:
-  void SetUpInProcessBrowserTestFixture() override {
-    search::EnableQueryExtractionForTesting();
-  }
-
   content::WebContents* active_tab() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }

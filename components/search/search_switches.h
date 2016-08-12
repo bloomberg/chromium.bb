@@ -14,10 +14,6 @@ extern const char kEnableEmbeddedSearchAPI[];
 extern const char kPrefetchSearchResults[];
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-extern const char kEnableQueryExtraction[];
-#endif
-
 }  // namespace switches
 
 #endif  // COMPONENTS_SEARCH_SEARCH_SWITCHES_H_

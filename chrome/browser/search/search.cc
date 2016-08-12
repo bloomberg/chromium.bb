@@ -154,18 +154,6 @@ GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
   return GURL(ref.ReplaceSearchTerms(search_terms_args, search_terms_data));
 }
 
-bool MatchesAnySearchURL(const GURL& url,
-                         TemplateURL* template_url,
-                         const SearchTermsData& search_terms_data) {
-  for (const TemplateURLRef& ref : template_url->url_refs()) {
-    GURL search_url =
-        TemplateURLRefToGURL(ref, search_terms_data, false, false);
-    if (search_url.is_valid() && MatchesOriginAndPath(url, search_url))
-      return true;
-  }
-  return false;
-}
-
 // Returns true if |url| can be used as an Instant URL for |profile|.
 bool IsInstantURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
@@ -192,41 +180,13 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
   if (!instant_url.is_valid())
     return false;
 
-  if (MatchesOriginAndPath(url, instant_url))
-    return true;
-
-  return IsQueryExtractionEnabled() &&
-      MatchesAnySearchURL(url, template_url, search_terms_data);
+  return MatchesOriginAndPath(url, instant_url);
 }
 
 base::string16 GetSearchTermsImpl(const content::WebContents* contents,
                                   const content::NavigationEntry* entry) {
-  if (!contents || !IsQueryExtractionEnabled())
-    return base::string16();
-
-  // For security reasons, don't extract search terms if the page is not being
-  // rendered in the privileged Instant renderer process. This is to protect
-  // against a malicious page somehow scripting the search results page and
-  // faking search terms in the URL. Random pages can't get into the Instant
-  // renderer and scripting doesn't work cross-process, so if the page is in
-  // the Instant process, we know it isn't being exploited.
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  if (IsInstantExtendedAPIEnabled() &&
-      !IsRenderedInInstantProcess(contents, profile) &&
-      ((entry == contents->GetController().GetLastCommittedEntry()) ||
-       !ShouldAssignURLToInstantRenderer(entry->GetURL(), profile)))
-    return base::string16();
-
-  // Check to see if search terms have already been extracted.
-  base::string16 search_terms = GetSearchTermsFromNavigationEntry(entry);
-  if (!search_terms.empty())
-    return search_terms;
-
-  if (!IsQueryExtractionAllowedForURL(profile, entry->GetVirtualURL()))
-    return base::string16();
-
-  // Otherwise, extract from the URL.
-  return ExtractSearchTermsFromURL(profile, entry->GetVirtualURL());
+  // TODO(treib): Remove this and update callers accordingly. crbug.com/627747
+  return base::string16();
 }
 
 bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {

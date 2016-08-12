@@ -483,8 +483,6 @@
         'browser/reading_list/reading_list_model_storage_defaults.mm',
         'browser/root_coordinator.h',
         'browser/root_coordinator.mm',
-        'browser/search/search_util.h',
-        'browser/search/search_util.mm',
         'browser/search_engines/search_engines_util.cc',
         'browser/search_engines/search_engines_util.h',
         'browser/search_engines/template_url_service_client_impl.cc',

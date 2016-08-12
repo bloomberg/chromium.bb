@@ -166,63 +166,17 @@ TEST_F(InstantExtendedEnabledParamTest, QueryExtractionDisabled) {
                                                      "Group1 espv:12"));
   // Make sure InstantExtendedEnabledParam() returns an empty string for search
   // requests.
-  EXPECT_FALSE(IsQueryExtractionEnabled());
   EXPECT_EQ("", InstantExtendedEnabledParam(true));
   EXPECT_EQ("espv=12&", InstantExtendedEnabledParam(false));
 }
 
-TEST_F(InstantExtendedEnabledParamTest, QueryExtractionEnabled) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:10 query_extraction:1"));
-  EXPECT_TRUE(IsQueryExtractionEnabled());
-  // Make sure InstantExtendedEnabledParam() returns a non-empty param string
-  // for search requests.
-  EXPECT_EQ("espv=10&", InstantExtendedEnabledParam(true));
-  EXPECT_EQ("espv=10&", InstantExtendedEnabledParam(false));
-}
-
 TEST_F(InstantExtendedEnabledParamTest, UseDefaultEmbeddedSearchPageVersion) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:-1 query_extraction:1"));
-  EXPECT_TRUE(IsQueryExtractionEnabled());
-  EXPECT_EQ("espv=2&", InstantExtendedEnabledParam(true));
+      "EmbeddedSearch", "Group1 espv:-1"));
+  EXPECT_EQ("", InstantExtendedEnabledParam(true));
   EXPECT_EQ("espv=2&", InstantExtendedEnabledParam(false));
 }
 
-typedef EmbeddedSearchFieldTrialTest IsQueryExtractionEnabledTest;
-
-TEST_F(IsQueryExtractionEnabledTest, NotSet) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
-                                                     "Group1 espv:2"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsQueryExtractionEnabled());
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-}
-
-TEST_F(IsQueryExtractionEnabledTest, EnabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 query_extraction:1"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_TRUE(IsQueryExtractionEnabled());
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-}
-
-TEST_F(IsQueryExtractionEnabledTest, DisabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 query_extraction:0"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_FALSE(IsQueryExtractionEnabled());
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-}
-
-TEST_F(IsQueryExtractionEnabledTest, EnabledViaCommandLine) {
-  EnableQueryExtractionForTesting();
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 query_extraction:0"));
-  EXPECT_TRUE(IsInstantExtendedAPIEnabled());
-  EXPECT_TRUE(IsQueryExtractionEnabled());
-  EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
-}
 #endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
 
 }  // namespace search

@@ -9,7 +9,6 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/history_url_provider.h"
-#include "components/search/search.h"
 #include "url/gurl.h"
 
 AutocompleteMatch VerbatimMatchForURL(
@@ -20,15 +19,12 @@ AutocompleteMatch VerbatimMatchForURL(
     int verbatim_relevance) {
   DCHECK(!input.text().empty());
   AutocompleteMatch match;
-  // If query-in-the-omnibox is not enabled (and thus the verbatim match for
-  // a URL is guaranteed to be a URL) and the caller already knows where the
-  // verbatim match should go and has provided a HistoryURLProvider to aid in
-  // its construction, construct the match directly, don't call Classify() on
-  // the input.  Classify() runs all providers' synchronous passes.  Some
-  // providers such as HistoryQuick can have a slow synchronous pass on some
-  // inputs.
-  if (history_url_provider && destination_url.is_valid() &&
-      !search::IsQueryExtractionEnabled()) {
+  // If the caller already knows where the verbatim match should go and has
+  // provided a HistoryURLProvider to aid in its construction, construct the
+  // match directly, don't call Classify() on the input.  Classify() runs all
+  // providers' synchronous passes.  Some providers such as HistoryQuick can
+  // have a slow synchronous pass on some inputs.
+  if (history_url_provider && destination_url.is_valid()) {
     match = history_url_provider->SuggestExactInput(
         input,
         destination_url,

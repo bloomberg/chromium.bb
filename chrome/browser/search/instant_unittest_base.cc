@@ -33,20 +33,20 @@ InstantUnitTestBase::~InstantUnitTestBase() {
 }
 
 void InstantUnitTestBase::SetUp() {
-  search::EnableQueryExtractionForTesting();
-  SetUpHelper();
+  BrowserWithTestWindowTest::SetUp();
+
+  template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile());
+  search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
+
+  UIThreadSearchTermsData::SetGoogleBaseURL("https://www.google.com/");
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  instant_service_ = InstantServiceFactory::GetForProfile(profile());
 }
 
 void InstantUnitTestBase::TearDown() {
   UIThreadSearchTermsData::SetGoogleBaseURL("");
   BrowserWithTestWindowTest::TearDown();
 }
-
-#if !defined(OS_ANDROID)
-void InstantUnitTestBase::SetUpWithoutQueryExtraction() {
-  SetUpHelper();
-}
-#endif
 
 void InstantUnitTestBase::SetUserSelectedDefaultSearchProvider(
     const std::string& base_url) {
@@ -87,15 +87,4 @@ TestingProfile* InstantUnitTestBase::CreateProfile() {
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile, &TemplateURLServiceFactory::BuildInstanceFor);
   return profile;
-}
-
-void InstantUnitTestBase::SetUpHelper() {
-  BrowserWithTestWindowTest::SetUp();
-
-  template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile());
-  search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
-
-  UIThreadSearchTermsData::SetGoogleBaseURL("https://www.google.com/");
-  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
-  instant_service_ = InstantServiceFactory::GetForProfile(profile());
 }

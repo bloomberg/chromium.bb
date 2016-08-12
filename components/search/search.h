@@ -77,9 +77,6 @@ std::string InstantExtendedEnabledParam(bool for_search);
 // the returned string to be non-empty.
 std::string ForceInstantResultsParam(bool for_prerender);
 
-// Returns whether query extraction is enabled.
-bool IsQueryExtractionEnabled();
-
 // Returns true if 'prefetch_results' flag is set to true in field trials to
 // prefetch high-confidence search suggestions.
 bool ShouldPrefetchSearchResults();
@@ -92,13 +89,6 @@ bool ShouldReuseInstantSearchBasePage();
 // the user specified using --google-base-url. (This allows testers to use
 // --google-base-url to point at non-HTTPS servers, which eases testing.)
 bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url);
-
-// -----------------------------------------------------
-// The following APIs are exposed for use in tests only.
-// -----------------------------------------------------
-
-// Forces query in the omnibox to be on for tests.
-void EnableQueryExtractionForTesting();
 
 }  // namespace search
 
