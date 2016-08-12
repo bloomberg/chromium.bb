@@ -14,7 +14,7 @@ root = common.create_self_signed_root_certificate('Root')
 
 # Intermediate with a very weak key size (512-bit RSA).
 intermediate = common.create_intermediate_certificate('Intermediate', root)
-intermediate.generate_rsa_key(512)
+intermediate.set_key(common.generate_rsa_key(512))
 
 # Target certificate.
 target = common.create_end_entity_certificate('Target', intermediate)
