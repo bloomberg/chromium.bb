@@ -14,6 +14,11 @@ namespace blink {
 enum class WebOriginTrialTokenStatus;
 }
 
+namespace net {
+class HttpResponseHeaders;
+class URLRequest;
+}
+
 namespace content {
 
 namespace TrialTokenValidator {
@@ -25,6 +30,14 @@ CONTENT_EXPORT blink::WebOriginTrialTokenStatus ValidateToken(
     const std::string& token,
     const url::Origin& origin,
     std::string* feature_name);
+
+CONTENT_EXPORT bool RequestEnablesFeature(const net::URLRequest* request,
+                                          base::StringPiece feature_name);
+
+CONTENT_EXPORT bool RequestEnablesFeature(
+    const GURL& request_url,
+    const net::HttpResponseHeaders* response_headers,
+    base::StringPiece feature_name);
 
 }  // namespace TrialTokenValidator
 

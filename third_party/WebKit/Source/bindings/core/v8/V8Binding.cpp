@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8EventTarget.h"
+#include "bindings/core/v8/V8HTMLLinkElement.h"
 #include "bindings/core/v8/V8NodeFilter.h"
 #include "bindings/core/v8/V8NodeFilterCondition.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
@@ -809,8 +810,16 @@ void installOriginTrialsCore(ScriptState* scriptState)
     // configuration of origin trial enabled attibutes and interfaces in IDL
     // files. (crbug.com/615060)
 
-    // Initialization code for origin trials for core bindings, if necessary,
-    // should go here.
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
+    OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext, OriginTrialContext::DontCreateIfNotExists);
+    if (!originTrialContext)
+        return;
+
+    if (!originTrialContext->featureBindingsInstalled("LinkServiceWorker") && (RuntimeEnabledFeatures::linkServiceWorkerEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
+        if (executionContext->isDocument()) {
+            V8HTMLLinkElement::installLinkServiceWorker(scriptState);
+        }
+    }
 }
 
 namespace {
@@ -836,6 +845,14 @@ void installOriginTrials(ScriptState* scriptState)
 
     if (!originTrialContext->featureBindingsInstalled("WebBluetooth") && (RuntimeEnabledFeatures::webBluetoothEnabled() || originTrialContext->isFeatureEnabled("WebBluetooth"))) {
         originTrialContext->setFeatureBindingsInstalled("WebBluetooth");
+    }
+
+    if (!originTrialContext->featureBindingsInstalled("LinkServiceWorker") && (RuntimeEnabledFeatures::linkServiceWorkerEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
+        originTrialContext->setFeatureBindingsInstalled("LinkServiceWorker");
+    }
+
+    if (!originTrialContext->featureBindingsInstalled("ForeignFetch") && (RuntimeEnabledFeatures::foreignFetchEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
+        originTrialContext->setFeatureBindingsInstalled("ForeignFetch");
     }
 }
 

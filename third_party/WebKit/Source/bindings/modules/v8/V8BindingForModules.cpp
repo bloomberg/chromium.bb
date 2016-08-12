@@ -568,6 +568,12 @@ void installOriginTrialsForModules(ScriptState* scriptState)
             V8NavigatorPartial::installWebBluetooth(scriptState);
         }
     }
+
+    if (!originTrialContext->featureBindingsInstalled("ForeignFetch") && (RuntimeEnabledFeatures::foreignFetchEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
+        if (executionContext->isServiceWorkerGlobalScope()) {
+            V8ServiceWorkerGlobalScope::installForeignFetch(scriptState, global);
+        }
+    }
 }
 
 void registerInstallOriginTrialsForModules()

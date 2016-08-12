@@ -42,6 +42,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/origin_trial_policy.h"
 #include "content/public/common/url_constants.h"
 #include "crypto/sha2.h"
 #include "net/url_request/url_request_context.h"
@@ -445,8 +446,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   request_interceptors.push_back(
       ServiceWorkerRequestHandler::CreateInterceptor(
           browser_context_->GetResourceContext()).release());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
+  if (ForeignFetchRequestHandler::IsForeignFetchEnabled()) {
     request_interceptors.push_back(
         ForeignFetchRequestHandler::CreateInterceptor(
             browser_context_->GetResourceContext())

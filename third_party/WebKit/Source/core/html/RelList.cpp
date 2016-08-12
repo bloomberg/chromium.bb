@@ -5,6 +5,7 @@
 #include "core/html/RelList.h"
 
 #include "core/dom/Document.h"
+#include "core/origin_trials/OriginTrials.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/HashMap.h"
 
@@ -57,8 +58,6 @@ static HashSet<AtomicString>& supportedTokens()
             "apple-touch-icon",
             "apple-touch-icon-precomposed",
         };
-        if (RuntimeEnabledFeatures::linkServiceWorkerEnabled())
-            tokens.add("serviceworker");
     }
 
     return tokens;
@@ -66,7 +65,9 @@ static HashSet<AtomicString>& supportedTokens()
 
 bool RelList::validateTokenValue(const AtomicString& tokenValue, ExceptionState&) const
 {
-    return supportedTokens().contains(tokenValue);
+    if (supportedTokens().contains(tokenValue))
+        return true;
+    return OriginTrials::linkServiceWorkerEnabled(m_element->getExecutionContext()) && tokenValue == "serviceworker";
 }
 
 DEFINE_TRACE(RelList)

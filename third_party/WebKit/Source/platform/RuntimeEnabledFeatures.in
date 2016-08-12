@@ -93,7 +93,7 @@ ExperimentalV8Extras status=experimental
 FastMobileScrolling
 FileAPIBlobClose status=experimental
 FileSystem status=stable
-ForeignFetch status=experimental
+ForeignFetch status=experimental, origin_trial_feature_name=ForeignFetch
 FullscreenUnprefixed status=test
 FrameTimingSupport status=experimental
 GeometryInterfaces status=test
@@ -112,7 +112,7 @@ IntersectionObserver status=stable
 LangAttributeAwareFormControlUI
 LayoutNG
 LinkPreload status=stable
-LinkServiceWorker status=experimental
+LinkServiceWorker status=experimental, origin_trial_feature_name=ForeignFetch
 FractionalScrollOffsets
 MediaCapture
 MediaCaptureFromCanvas status=stable

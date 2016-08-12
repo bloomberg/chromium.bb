@@ -55,5 +55,5 @@ interface HTMLLinkElement : HTMLElement {
 
     // Service workers
     // http://mkruisselbrink.github.io/ServiceWorker/spec/service_worker/#link-element-interface-section
-    [Reflect, RuntimeEnabled=LinkServiceWorker] attribute USVString scope;
+    [Reflect, OriginTrialEnabled=LinkServiceWorker] attribute USVString scope;
 };

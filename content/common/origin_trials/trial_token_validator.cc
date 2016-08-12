@@ -4,10 +4,15 @@
 
 #include "content/common/origin_trials/trial_token_validator.h"
 
+#include "base/feature_list.h"
 #include "base/time/time.h"
 #include "content/common/origin_trials/trial_token.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_trial_policy.h"
+#include "content/public/common/origin_util.h"
+#include "net/http/http_response_headers.h"
+#include "net/url_request/url_request.h"
 #include "third_party/WebKit/public/platform/WebOriginTrialTokenStatus.h"
 
 namespace content {
@@ -43,6 +48,39 @@ blink::WebOriginTrialTokenStatus TrialTokenValidator::ValidateToken(
 
   *feature_name = trial_token->feature_name();
   return blink::WebOriginTrialTokenStatus::Success;
+}
+
+bool TrialTokenValidator::RequestEnablesFeature(
+    const net::URLRequest* request,
+    base::StringPiece feature_name) {
+  // TODO(mek): Possibly cache the features that are availble for request in
+  // UserData associated with the request.
+  return RequestEnablesFeature(request->url(), request->response_headers(),
+                               feature_name);
+}
+
+bool TrialTokenValidator::RequestEnablesFeature(
+    const GURL& request_url,
+    const net::HttpResponseHeaders* response_headers,
+    base::StringPiece feature_name) {
+  if (!base::FeatureList::IsEnabled(features::kOriginTrials))
+    return false;
+
+  if (!IsOriginSecure(request_url))
+    return false;
+
+  url::Origin origin(request_url);
+  size_t iter = 0;
+  std::string token;
+  while (response_headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {
+    std::string token_feature;
+    // TODO(mek): Log the validation errors to histograms?
+    if (ValidateToken(token, origin, &token_feature) ==
+        blink::WebOriginTrialTokenStatus::Success)
+      if (token_feature == feature_name)
+        return true;
+  }
+  return false;
 }
 
 }  // namespace content

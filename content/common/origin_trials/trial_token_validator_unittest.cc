@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_trial_policy.h"
+#include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebOriginTrialTokenStatus.h"
 #include "url/gurl.h"
@@ -87,6 +88,16 @@ const char kExpiredToken[] =
 
 const char kUnparsableToken[] = "abcde";
 
+// Well-formed token, for an insecure origin.
+// Generate this token with the command (in tools/origin_trials):
+// generate_token.py http://valid.example.com Frobulate
+// --expire-timestamp=2000000000
+const char kInsecureOriginToken[] =
+    "AjfC47H1q8/Ho5ALFkjkwf9CBK6oUUeRTlFc50Dj+eZEyGGKFIY2WTxMBfy8cLc3"
+    "E0nmFroDA3OmABmO5jMCFgkAAABXeyJvcmlnaW4iOiAiaHR0cDovL3ZhbGlkLmV4"
+    "YW1wbGUuY29tOjgwIiwgImZlYXR1cmUiOiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6"
+    "IDIwMDAwMDAwMDB9";
+
 class TestOriginTrialPolicy : public OriginTrialPolicy {
  public:
   base::StringPiece GetPublicKey() const override {
@@ -133,7 +144,8 @@ class TrialTokenValidatorTest : public testing::Test {
   TrialTokenValidatorTest()
       : appropriate_origin_(GURL(kAppropriateOrigin)),
         inappropriate_origin_(GURL(kInappropriateOrigin)),
-        insecure_origin_(GURL(kInsecureOrigin)) {
+        insecure_origin_(GURL(kInsecureOrigin)),
+        response_headers_(new net::HttpResponseHeaders("")) {
     SetPublicKey(kTestPublicKey);
     SetContentClient(&test_content_client_);
   }
@@ -151,6 +163,8 @@ class TrialTokenValidatorTest : public testing::Test {
   const url::Origin appropriate_origin_;
   const url::Origin inappropriate_origin_;
   const url::Origin insecure_origin_;
+
+  scoped_refptr<net::HttpResponseHeaders> response_headers_;
 
  private:
   TestContentClient test_content_client_;
@@ -216,6 +230,54 @@ TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledFeatures) {
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::FeatureDisabled,
             TrialTokenValidator::ValidateToken(kSampleToken,
                                                appropriate_origin_, &feature));
+}
+
+TEST_F(TrialTokenValidatorTest, ValidateRequestInsecure) {
+  response_headers_->AddHeader(std::string("Origin-Trial: ") +
+                               kInsecureOriginToken);
+  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+      GURL(kInsecureOrigin), response_headers_.get(), kAppropriateFeatureName));
+}
+
+TEST_F(TrialTokenValidatorTest, ValidateRequestValidToken) {
+  response_headers_->AddHeader(std::string("Origin-Trial: ") + kSampleToken);
+  EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
+      GURL(kAppropriateOrigin), response_headers_.get(),
+      kAppropriateFeatureName));
+}
+
+TEST_F(TrialTokenValidatorTest, ValidateRequestNoTokens) {
+  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+      GURL(kAppropriateOrigin), response_headers_.get(),
+      kAppropriateFeatureName));
+}
+
+TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaders) {
+  response_headers_->AddHeader(std::string("Origin-Trial: ") + kSampleToken);
+  response_headers_->AddHeader(std::string("Origin-Trial: ") + kExpiredToken);
+  EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
+      GURL(kAppropriateOrigin), response_headers_.get(),
+      kAppropriateFeatureName));
+  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+      GURL(kAppropriateOrigin), response_headers_.get(),
+      kInappropriateFeatureName));
+  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+      GURL(kInappropriateOrigin), response_headers_.get(),
+      kAppropriateFeatureName));
+}
+
+TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaderValues) {
+  response_headers_->AddHeader(std::string("Origin-Trial: ") + kExpiredToken +
+                               ", " + kSampleToken);
+  EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
+      GURL(kAppropriateOrigin), response_headers_.get(),
+      kAppropriateFeatureName));
+  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+      GURL(kAppropriateOrigin), response_headers_.get(),
+      kInappropriateFeatureName));
+  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+      GURL(kInappropriateOrigin), response_headers_.get(),
+      kAppropriateFeatureName));
 }
 
 }  // namespace content

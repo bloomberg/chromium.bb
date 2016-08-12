@@ -12,6 +12,7 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/common/origin_trials/trial_token_validator.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -39,8 +40,9 @@ void HandleServiceWorkerLink(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    // TODO(mek): Integrate with experimental framework.
+          switches::kEnableExperimentalWebPlatformFeatures) &&
+      !TrialTokenValidator::RequestEnablesFeature(request, "ForeignFetch")) {
+    // TODO(mek): Log attempt to use without having correct token?
     return;
   }
 

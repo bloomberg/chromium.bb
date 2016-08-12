@@ -4,9 +4,7 @@
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#dictdef-installevent-foreignfetchoptions
 
-[
-    RuntimeEnabled=ForeignFetch
-] dictionary ForeignFetchOptions {
+dictionary ForeignFetchOptions {
      required sequence<USVString> scopes;
      required sequence<USVString> origins;
 };

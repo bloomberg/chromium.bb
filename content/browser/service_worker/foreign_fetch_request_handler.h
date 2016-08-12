@@ -46,6 +46,12 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
     : public base::SupportsUserData::Data,
       public ServiceWorkerURLRequestJob::Delegate {
  public:
+  // Returns true if Foreign Fetch is enabled. Foreign Fetch is considered to be
+  // enabled if an OriginTrialPolicy exists, and that policy doesn't disable the
+  // feature. When the policy does disable the feature, that can be overridden
+  // with the experimental web platform features command line flag.
+  static bool IsForeignFetchEnabled();
+
   // Attaches a newly created handler if the given |request| needs to
   // be handled by a foreign fetch handling ServiceWorker.
   static void InitializeHandler(

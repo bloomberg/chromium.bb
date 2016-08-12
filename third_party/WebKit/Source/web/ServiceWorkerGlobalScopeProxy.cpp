@@ -37,6 +37,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/origin_trials/OriginTrials.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/background_sync/SyncEvent.h"
@@ -154,6 +155,16 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int responseID, int event
 
 void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest& webRequest)
 {
+    if (!OriginTrials::foreignFetchEnabled(workerGlobalScope())) {
+        // If origin trial tokens have expired, or are otherwise no longer valid
+        // no events should be dispatched.
+        // TODO(mek): Ideally the browser wouldn't even start the service worker
+        // if its tokens have expired.
+        ServiceWorkerGlobalScopeClient::from(workerGlobalScope())->respondToFetchEvent(responseID);
+        ServiceWorkerGlobalScopeClient::from(workerGlobalScope())->didHandleFetchEvent(eventFinishID, WebServiceWorkerEventResultCompleted);
+        return;
+    }
+
     ScriptState::Scope scope(workerGlobalScope()->scriptController()->getScriptState());
     RefPtr<SecurityOrigin> origin = SecurityOrigin::create(webRequest.referrerUrl());
     WaitUntilObserver* waitUntilObserver = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Fetch, eventFinishID);
@@ -177,7 +188,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Install, eventID);
     Event* event;
-    if (RuntimeEnabledFeatures::foreignFetchEnabled())
+    if (OriginTrials::foreignFetchEnabled(workerGlobalScope()))
         event = InstallEvent::create(EventTypeNames::install, ExtendableEventInit(), observer);
     else
         event = ExtendableEvent::create(EventTypeNames::install, ExtendableEventInit(), observer);

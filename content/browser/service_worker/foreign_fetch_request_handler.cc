@@ -6,12 +6,16 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/common/origin_trial_policy.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -45,6 +49,17 @@ class ForeignFetchRequestInterceptor : public net::URLRequestInterceptor {
 
 }  // namespace
 
+bool ForeignFetchRequestHandler::IsForeignFetchEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    return true;
+  }
+  OriginTrialPolicy* origin_trial_policy =
+      GetContentClient()->GetOriginTrialPolicy();
+  return origin_trial_policy &&
+         !origin_trial_policy->IsFeatureDisabled("ForeignFetch");
+}
+
 void ForeignFetchRequestHandler::InitializeHandler(
     net::URLRequest* request,
     ServiceWorkerContextWrapper* context_wrapper,
@@ -60,6 +75,9 @@ void ForeignFetchRequestHandler::InitializeHandler(
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBodyImpl> body,
     bool initiated_in_secure_context) {
+  if (!IsForeignFetchEnabled())
+    return;
+
   if (!context_wrapper)
     return;
 

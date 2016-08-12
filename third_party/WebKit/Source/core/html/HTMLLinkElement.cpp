@@ -50,6 +50,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/NetworkHintsInterface.h"
+#include "core/origin_trials/OriginTrials.h"
 #include "core/style/StyleInheritedData.h"
 #include "platform/ContentType.h"
 #include "platform/Histogram.h"
@@ -153,7 +154,7 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
             m_link = LinkImport::create(this);
         } else if (m_relAttribute.isManifest()) {
             m_link = LinkManifest::create(this);
-        } else if (RuntimeEnabledFeatures::linkServiceWorkerEnabled() && m_relAttribute.isServiceWorker()) {
+        } else if (m_relAttribute.isServiceWorker() && OriginTrials::linkServiceWorkerEnabled(getExecutionContext())) {
             if (document().frame())
                 m_link = document().frame()->loader().client()->createServiceWorkerLinkResource(this);
         } else {
