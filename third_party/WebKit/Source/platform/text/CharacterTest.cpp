@@ -4,7 +4,6 @@
 
 #include "platform/text/Character.h"
 
-#include "platform/Logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/CharacterNames.h"
 

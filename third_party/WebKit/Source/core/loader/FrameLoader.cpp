@@ -83,7 +83,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/xml/parser/XMLDocumentParser.h"
-#include "platform/Logging.h"
 #include "platform/PluginScriptForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"

@@ -32,7 +32,6 @@
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"

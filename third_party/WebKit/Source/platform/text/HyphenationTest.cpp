@@ -5,7 +5,6 @@
 #include "platform/text/Hyphenation.h"
 
 #include "platform/LayoutLocale.h"
-#include "platform/Logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

@@ -4,7 +4,6 @@
 
 #include "platform/fonts/SymbolsIterator.h"
 
-#include "platform/Logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <string>
 

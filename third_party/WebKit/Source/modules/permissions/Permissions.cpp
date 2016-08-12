@@ -17,7 +17,6 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/permissions/PermissionDescriptor.h"
 #include "modules/permissions/PermissionStatus.h"
-#include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"

@@ -31,7 +31,6 @@
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "platform/weborigin/SecurityOrigin.h"
 

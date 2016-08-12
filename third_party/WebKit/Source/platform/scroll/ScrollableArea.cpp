@@ -32,7 +32,6 @@
 #include "platform/scroll/ScrollableArea.h"
 
 #include "platform/HostWindow.h"
-#include "platform/Logging.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/LayoutRect.h"

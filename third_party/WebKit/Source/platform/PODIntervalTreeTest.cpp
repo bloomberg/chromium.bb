@@ -27,7 +27,6 @@
 
 #include "platform/PODIntervalTree.h"
 
-#include "platform/Logging.h"
 #include "platform/testing/TreeTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Vector.h"

@@ -27,7 +27,6 @@
 
 #include "platform/scroll/ScrollAnimator.h"
 
-#include "platform/Logging.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/scroll/ScrollAnimatorBase.h"

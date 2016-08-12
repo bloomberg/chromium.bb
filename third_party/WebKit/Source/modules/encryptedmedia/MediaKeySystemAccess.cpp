@@ -13,7 +13,6 @@
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
-#include "platform/Logging.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebEncryptedMediaTypes.h"

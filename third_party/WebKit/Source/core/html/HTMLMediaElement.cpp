@@ -72,7 +72,6 @@
 #include "platform/ContentType.h"
 #include "platform/Histogram.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"

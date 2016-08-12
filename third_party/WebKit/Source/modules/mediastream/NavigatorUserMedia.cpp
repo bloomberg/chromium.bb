@@ -9,7 +9,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/mediastream/MediaDevices.h"
-#include "platform/Logging.h"
 
 namespace blink {
 

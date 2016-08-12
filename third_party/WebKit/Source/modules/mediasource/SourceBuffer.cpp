@@ -51,7 +51,6 @@
 #include "core/streams/Stream.h"
 #include "modules/mediasource/MediaSource.h"
 #include "modules/mediasource/SourceBufferTrackBaseSupplement.h"
-#include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/WebSourceBuffer.h"

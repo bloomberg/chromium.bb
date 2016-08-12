@@ -41,7 +41,6 @@
 #include "core/html/HTMLMediaElement.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "platform/ContentType.h"
-#include "platform/Logging.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"

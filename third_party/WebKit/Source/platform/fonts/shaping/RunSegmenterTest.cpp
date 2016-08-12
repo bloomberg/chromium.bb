@@ -4,7 +4,6 @@
 
 #include "platform/fonts/shaping/RunSegmenter.h"
 
-#include "platform/Logging.h"
 #include "platform/fonts/OrientationIterator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Assertions.h"

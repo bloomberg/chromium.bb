@@ -37,7 +37,6 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/TransformRecorder.h"
-#include "platform/Logging.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/CullRect.h"

@@ -28,7 +28,6 @@
 
 #include "platform/audio/FFTFrame.h"
 #include "platform/audio/VectorMath.h"
-#include "platform/Logging.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
 #include <complex>

@@ -60,7 +60,6 @@
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "platform/Logging.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
 #include "platform/text/TextBreakIterator.h"

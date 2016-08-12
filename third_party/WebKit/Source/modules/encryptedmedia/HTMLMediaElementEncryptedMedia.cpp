@@ -18,7 +18,6 @@
 #include "modules/encryptedmedia/MediaEncryptedEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "platform/ContentDecryptionModuleResult.h"
-#include "platform/Logging.h"
 #include "wtf/Functional.h"
 
 #define EME_LOG_LEVEL 3

@@ -32,7 +32,6 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/inspector/InstanceCounters.h"
 #include "platform/Histogram.h"
-#include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"

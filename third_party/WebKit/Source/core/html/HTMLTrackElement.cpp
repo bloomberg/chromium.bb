@@ -32,7 +32,6 @@
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/LoadableTextTrack.h"
-#include "platform/Logging.h"
 
 #define TRACK_LOG_LEVEL 3
 

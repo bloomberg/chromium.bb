@@ -34,7 +34,6 @@
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/SimpleContentDecryptionModuleResultPromise.h"
-#include "platform/Logging.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "wtf/RefPtr.h"

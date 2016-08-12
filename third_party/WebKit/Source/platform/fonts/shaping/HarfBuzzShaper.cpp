@@ -31,7 +31,6 @@
 
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 
-#include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontFallbackIterator.h"

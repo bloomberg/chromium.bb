@@ -39,7 +39,6 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/vtt/VTTParser.h"
 #include "core/html/track/vtt/VTTScanner.h"
-#include "platform/Logging.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 

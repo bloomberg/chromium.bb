@@ -8,7 +8,6 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/page/Page.h"
-#include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/IntRect.h"
 

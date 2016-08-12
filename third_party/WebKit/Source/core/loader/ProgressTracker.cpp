@@ -34,7 +34,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "platform/Logging.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"

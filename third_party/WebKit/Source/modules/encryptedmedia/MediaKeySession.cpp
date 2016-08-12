@@ -41,7 +41,6 @@
 #include "modules/encryptedmedia/SimpleContentDecryptionModuleResultPromise.h"
 #include "platform/ContentDecryptionModuleResult.h"
 #include "platform/ContentType.h"
-#include "platform/Logging.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebContentDecryptionModuleException.h"

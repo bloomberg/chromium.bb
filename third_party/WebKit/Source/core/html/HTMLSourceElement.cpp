@@ -34,7 +34,6 @@
 #include "core/events/EventSender.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPictureElement.h"
-#include "platform/Logging.h"
 
 #define SOURCE_LOG_LEVEL 3
 

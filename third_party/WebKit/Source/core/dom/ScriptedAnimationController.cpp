@@ -34,7 +34,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
-#include "platform/Logging.h"
 
 namespace blink {
 

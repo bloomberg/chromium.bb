@@ -4,7 +4,6 @@
 
 #include "platform/fonts/FontFallbackIterator.h"
 
-#include "platform/Logging.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackList.h"

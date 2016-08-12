@@ -17,7 +17,6 @@
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "platform/EncryptedMediaRequest.h"
 #include "platform/Histogram.h"
-#include "platform/Logging.h"
 #include "platform/network/ParsedContentType.h"
 #include "public/platform/WebEncryptedMediaClient.h"
 #include "public/platform/WebEncryptedMediaRequest.h"

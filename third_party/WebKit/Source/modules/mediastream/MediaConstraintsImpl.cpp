@@ -37,7 +37,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/mediastream/MediaTrackConstraints.h"
-#include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"

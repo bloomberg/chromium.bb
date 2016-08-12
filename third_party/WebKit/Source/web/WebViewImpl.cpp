@@ -102,7 +102,6 @@
 #include "platform/Cursor.h"
 #include "platform/Histogram.h"
 #include "platform/KeyboardCodes.h"
-#include "platform/Logging.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformMouseEvent.h"

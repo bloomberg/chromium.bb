@@ -40,7 +40,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {

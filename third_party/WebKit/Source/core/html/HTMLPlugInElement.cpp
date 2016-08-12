@@ -46,7 +46,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginView.h"
 #include "platform/Histogram.h"
-#include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"
