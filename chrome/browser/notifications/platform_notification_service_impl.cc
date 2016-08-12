@@ -281,6 +281,12 @@ void PlatformNotificationServiceImpl::DisplayNotification(
     base::Closure* cancel_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Posted tasks can request notifications to be added, which would cause a
+  // crash (see |ScopedKeepAlive|). We just do nothing here, the user would not
+  // see the notification anyway, since we are shutting down.
+  if (g_browser_process->IsShuttingDown())
+    return;
+
   Profile* profile = Profile::FromBrowserContext(browser_context);
   DCHECK(profile);
   DCHECK_EQ(0u, notification_data.actions.size());
@@ -319,6 +325,12 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
     const content::PlatformNotificationData& notification_data,
     const content::NotificationResources& notification_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Posted tasks can request notifications to be added, which would cause a
+  // crash (see |ScopedKeepAlive|). We just do nothing here, the user would not
+  // see the notification anyway, since we are shutting down.
+  if (g_browser_process->IsShuttingDown())
+    return;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   DCHECK(profile);
