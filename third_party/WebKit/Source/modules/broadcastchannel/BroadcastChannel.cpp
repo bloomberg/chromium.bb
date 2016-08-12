@@ -121,6 +121,8 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* executionContext, const Str
     , m_name(name)
     , m_binding(this)
 {
+    ThreadState::current()->registerPreFinalizer(this);
+
     mojom::blink::BroadcastChannelProviderPtr& provider = getThreadSpecificProvider();
 
     // Local BroadcastChannelClient for messages send from the browser to this channel.
