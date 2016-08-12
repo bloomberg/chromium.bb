@@ -398,6 +398,7 @@ vs-chromium-project.txt
 /third_party/netty-tcnative/src
 /third_party/netty4/src
 /third_party/nss
+/third_party/objenesis/lib/*.jar
 /third_party/omaha/src/omaha
 /third_party/openmax_dl/
 /third_party/openh264/src
