@@ -63,8 +63,8 @@ TEST(ScopedNSObjectTestARC, ScopedNSObject) {
       EXPECT_EQ(p1.get(), p3.get());
     }
     EXPECT_EQ(2, GetRetainCount(p1));
-    p3 = p1;
     @autoreleasepool {
+      p3 = p1;
       EXPECT_EQ(p1.get(), p3.get());
     }
     EXPECT_EQ(2, GetRetainCount(p1));

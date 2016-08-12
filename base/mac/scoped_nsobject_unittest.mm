@@ -32,7 +32,10 @@ TEST(ScopedNSObjectTest, ScopedNSObject) {
     base::scoped_nsobject<NSObject> p3 = p1;
     ASSERT_EQ(p1.get(), p3.get());
     ASSERT_EQ(2u, [p1 retainCount]);
-    p3 = p1;
+    {
+      base::mac::ScopedNSAutoreleasePool pool;
+      p3 = p1;
+    }
     ASSERT_EQ(p1.get(), p3.get());
     ASSERT_EQ(2u, [p1 retainCount]);
   }
