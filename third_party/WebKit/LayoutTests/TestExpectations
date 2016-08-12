@@ -402,11 +402,6 @@ crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/548226 [ Win ] fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 crbug.com/548226 [ Win ] fast/events/pointerevents/multi-pointer-preventdefault.html [ Failure Pass ]
 
-crbug.com/636060 [ Mac Win ] fast/text/ellipsis-ltr-text-in-ltr-flow-underline-composition.html [ NeedsRebaseline ]
-crbug.com/636060 [ Mac Win ] fast/text/ellipsis-ltr-text-in-rtl-flow-underline-composition.html [ NeedsRebaseline ]
-crbug.com/636060 [ Mac Win ] fast/text/ellipsis-rtl-text-in-ltr-flow-underline-composition.html [ NeedsRebaseline ]
-crbug.com/636060 [ Mac Win ] fast/text/ellipsis-rtl-text-in-rtl-flow-underline-composition.html [ NeedsRebaseline ]
-
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/remove-cache.html [ Failure Pass ]
