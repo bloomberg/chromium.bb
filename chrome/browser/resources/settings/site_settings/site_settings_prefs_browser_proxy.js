@@ -40,6 +40,12 @@ var SiteSettingsPref;
  */
 var MediaPickerEntry;
 
+/**
+ * @typedef {{protocol: string,
+ *            spec: string}}
+ */
+ var ProtocolHandlerEntry;
+
 cr.define('settings', function() {
   /** @interface */
   function SiteSettingsPrefsBrowserProxy() {}

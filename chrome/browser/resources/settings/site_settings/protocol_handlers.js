@@ -8,6 +8,10 @@
  * protocol handlers category under Site Settings.
  */
 
+/**
+ * All possible actions in the menu.
+ * @enum {string}
+ */
 var MenuActions = {
   SET_DEFAULT: 'SetDefault',
   REMOVE: 'Remove',
@@ -69,7 +73,7 @@ Polymer({
 
   /**
    * Obtains the description for the main toggle.
-   * @param {number} categoryEnabled Whether the main toggle is enabled.
+   * @param {boolean} categoryEnabled Whether the main toggle is enabled.
    * @return {string} The description to use.
    * @private
    */
@@ -128,6 +132,8 @@ Polymer({
 
   /**
    * A handler when an action is selected in the action menu.
+   * @param {!{model: !{item: ProtocolHandlerEntry},
+   *           detail: !{selected: string}}} event
    * @private
    */
   onActionMenuIronActivate_: function(event) {
