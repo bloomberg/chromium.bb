@@ -4,9 +4,11 @@
 
 #include "ash/mus/bridge/wm_shelf_mus.h"
 
+#include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/mus/bridge/wm_window_mus.h"
-#include "ash/mus/shelf_layout_manager.h"
 #include "services/ui/public/cpp/window.h"
+#include "ui/views/widget/widget.h"
 
 // TODO(sky): fully implement this http://crbug.com/612631 .
 #undef NOTIMPLEMENTED
@@ -15,25 +17,27 @@
 namespace ash {
 namespace mus {
 
-WmShelfMus::WmShelfMus(ShelfLayoutManager* shelf_layout_manager)
-    : shelf_layout_manager_(shelf_layout_manager) {}
+WmShelfMus::WmShelfMus(WmRootWindowController* root_window_controller) {
+  DCHECK(root_window_controller);
+  // Create a placeholder shelf widget, because the status area code assumes it
+  // can access one.
+  // TODO(jamescook): Create a real shelf widget. http://crbug.com/615155
+  shelf_widget_ = new views::Widget;
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  root_window_controller->ConfigureWidgetInitParamsForContainer(
+      shelf_widget_, kShellWindowId_ShelfContainer, &params);
+  shelf_widget_->Init(params);
+}
 
 WmShelfMus::~WmShelfMus() {}
 
 WmWindow* WmShelfMus::GetWindow() {
-  return WmWindowMus::Get(shelf_layout_manager_->GetShelfWindow());
+  return WmWindowMus::Get(shelf_widget_);
 }
 
 ShelfAlignment WmShelfMus::GetAlignment() const {
-  switch (shelf_layout_manager_->alignment()) {
-    case mash::shelf::mojom::Alignment::BOTTOM:
-      return SHELF_ALIGNMENT_BOTTOM;
-    case mash::shelf::mojom::Alignment::LEFT:
-      return SHELF_ALIGNMENT_LEFT;
-    case mash::shelf::mojom::Alignment::RIGHT:
-      return SHELF_ALIGNMENT_RIGHT;
-  }
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return SHELF_ALIGNMENT_BOTTOM;
 }
 
@@ -89,7 +93,7 @@ void WmShelfMus::UpdateVisibilityState() {
 
 ShelfVisibilityState WmShelfMus::GetVisibilityState() const {
   NOTIMPLEMENTED();
-  return shelf_layout_manager_->GetShelfWindow() ? SHELF_VISIBLE : SHELF_HIDDEN;
+  return SHELF_VISIBLE;
 }
 
 gfx::Rect WmShelfMus::GetUserWorkAreaBounds() const {

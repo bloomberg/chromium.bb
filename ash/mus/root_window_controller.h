@@ -49,8 +49,6 @@ class RootWindowController : public ShelfLayoutManagerDelegate {
 
   ui::Window* root() { return root_; }
 
-  int window_count() { return window_count_; }
-
   ui::Window* NewTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties);
 
@@ -84,6 +82,9 @@ class RootWindowController : public ShelfLayoutManagerDelegate {
 
   // Creates the necessary set of layout managers in the shell windows.
   void CreateLayoutManagers();
+
+  // Creates the status area widget that contains the system tray menu.
+  void CreateStatusArea();
 
   WindowManager* window_manager_;
   ui::Window* root_;

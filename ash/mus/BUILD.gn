@@ -61,8 +61,6 @@ source_set("lib") {
     "shelf_layout_manager_delegate.h",
     "shell_delegate_mus.cc",
     "shell_delegate_mus.h",
-    "status_layout_manager.cc",
-    "status_layout_manager.h",
     "window_manager.cc",
     "window_manager.h",
     "window_manager_application.cc",

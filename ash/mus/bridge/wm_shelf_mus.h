@@ -5,23 +5,23 @@
 #ifndef ASH_MUS_BRIDGE_WM_SHELF_MUS_H_
 #define ASH_MUS_BRIDGE_WM_SHELF_MUS_H_
 
-#include <stdint.h>
-
-#include <vector>
-
 #include "ash/common/shelf/wm_shelf.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
-namespace ash {
-namespace mus {
+namespace views {
+class Widget;
+}
 
-class ShelfLayoutManager;
+namespace ash {
+class WmRootWindowController;
+
+namespace mus {
 
 // WmShelf implementation for mus.
 class WmShelfMus : public WmShelf {
  public:
-  explicit WmShelfMus(ShelfLayoutManager* shelf_layout_manager);
+  WmShelfMus(WmRootWindowController* root_window_controller);
   ~WmShelfMus() override;
 
   // WmShelf:
@@ -53,7 +53,8 @@ class WmShelfMus : public WmShelf {
  private:
   base::ObserverList<WmShelfObserver> observers_;
 
-  ShelfLayoutManager* shelf_layout_manager_;
+  // Owned by native widget.
+  views::Widget* shelf_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShelfMus);
 };

@@ -368,7 +368,7 @@ void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
 
 bool WmShellMus::IsTouchDown() {
   // TODO: implement me, http://crbug.com/634967.
-  NOTIMPLEMENTED();
+  // NOTIMPLEMENTED is too spammy here.
   return false;
 }
 
