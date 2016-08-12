@@ -78,7 +78,7 @@ class FileSystem(object):
     def exists(self, path):
         return os.path.exists(path)
 
-    def files_under(self, path, dirs_to_skip=[], file_filter=None):
+    def files_under(self, path, dirs_to_skip=None, file_filter=None):
         """Return the list of all files under the given path in topdown order.
 
         Args:
@@ -89,7 +89,9 @@ class FileSystem(object):
                 each file found. The file is included in the result if the
                 callback returns True.
         """
-        def filter_all(fs, dirpath, basename):
+        dirs_to_skip = dirs_to_skip or []
+
+        def filter_all(*_):
             return True
 
         file_filter = file_filter or filter_all
@@ -160,9 +162,8 @@ class FileSystem(object):
             def __enter__(self):
                 return self._directory_path
 
-            def __exit__(self, type, value, traceback):
+            def __exit__(self, *_):
                 # Only self-delete if necessary.
-
                 # FIXME: Should we delete non-empty directories?
                 if os.path.exists(self._directory_path):
                     os.rmdir(self._directory_path)
@@ -189,20 +190,20 @@ class FileSystem(object):
     def open_binary_tempfile(self, suffix):
         """Create, open, and return a binary temp file. Returns a tuple of the file and the name."""
         temp_fd, temp_name = tempfile.mkstemp(suffix)
-        f = os.fdopen(temp_fd, 'wb')
-        return f, temp_name
+        fh = os.fdopen(temp_fd, 'wb')
+        return fh, temp_name
 
     def open_binary_file_for_reading(self, path):
         return codecs.open(path, 'rb')
 
     def read_binary_file(self, path):
         """Return the contents of the file at the given path as a byte string."""
-        with file(path, 'rb') as f:
-            return f.read()
+        with file(path, 'rb') as fh:
+            return fh.read()
 
     def write_binary_file(self, path, contents):
-        with file(path, 'wb') as f:
-            f.write(contents)
+        with file(path, 'wb') as fh:
+            fh.write(contents)
 
     def open_text_file_for_reading(self, path):
         # Note: There appears to be an issue with the returned file objects

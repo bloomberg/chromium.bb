@@ -118,7 +118,7 @@ class PlatformInfo(object):
                 packed = fcntl.ioctl(sys.stderr.fileno(), termios.TIOCGWINSZ, '\0' * 8)
                 _, columns, _, _ = struct.unpack('HHHH', packed)
                 return columns
-        except:
+        except Exception:  # pylint: disable=broad-except
             return sys.maxsize
 
     def linux_distribution(self):

@@ -37,7 +37,6 @@ and concurrency.futures.ProcessPoolExecutor, with the following differences:
 
 If you don't need these features, use multiprocessing.Pool or concurrency.futures
 instead.
-
 """
 
 import cPickle
@@ -311,8 +310,8 @@ class _Worker(multiprocessing.Process):
 
         # The unix multiprocessing implementation clones any log handlers into the child process,
         # so we remove them to avoid duplicate logging.
-        for h in self._logger.handlers:
-            self._logger.removeHandler(h)
+        for handler in self._logger.handlers:
+            self._logger.removeHandler(handler)
 
         self._log_handler = _WorkerLogHandler(self)
         self._logger.addHandler(self._log_handler)

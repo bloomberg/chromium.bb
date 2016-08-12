@@ -4,7 +4,6 @@
 
 """Utility functions to communicate with Rietveld."""
 
-import collections
 import json
 import logging
 import urllib2

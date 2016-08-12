@@ -37,7 +37,6 @@ import subprocess
 import sys
 import time
 
-from webkitpy.common.system.outputtee import Tee
 from webkitpy.common.system.filesystem import FileSystem
 
 
@@ -168,6 +167,7 @@ class Executive(object):
         # we import it here instead. See https://bugs.webkit.org/show_bug.cgi?id=91682
         import ctypes
 
+        # pylint: disable=invalid-name
         class PROCESSENTRY32(ctypes.Structure):
             _fields_ = [("dwSize", ctypes.c_ulong),
                         ("cntUsage", ctypes.c_ulong),
@@ -187,7 +187,7 @@ class Executive(object):
         TH32CS_SNAPPROCESS = 0x00000002  # win32 magic number
         hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
         pe32 = PROCESSENTRY32()
-        pe32.dwSize = ctypes.sizeof(PROCESSENTRY32)
+        pe32.dwSize = ctypes.sizeof(PROCESSENTRY32)  # pylint: disable=attribute-defined-outside-init
         result = False
         if not Process32First(hProcessSnap, ctypes.byref(pe32)):
             _log.debug("Failed getting first process.")
@@ -311,24 +311,24 @@ class Executive(object):
     def ignore_error(error):
         pass
 
-    def _compute_stdin(self, input):
+    def _compute_stdin(self, input_obj):
         """Returns (stdin, string_to_communicate)"""
         # FIXME: We should be returning /dev/null for stdin
         # or closing stdin after process creation to prevent
         # child processes from getting input from the user.
-        if not input:
+        if not input_obj:
             return (None, None)
-        if hasattr(input, "read"):  # Check if the input is a file.
-            return (input, None)  # Assume the file is in the right encoding.
+        if hasattr(input_obj, "read"):  # Check if the input_obj is a file.
+            return (input_obj, None)  # Assume the file is in the right encoding.
 
         # Popen in Python 2.5 and before does not automatically encode unicode objects.
         # http://bugs.python.org/issue5290
         # See https://bugs.webkit.org/show_bug.cgi?id=37528
         # for an example of a regression caused by passing a unicode string directly.
         # FIXME: We may need to encode differently on different platforms.
-        if isinstance(input, unicode):
-            input = input.encode(self._child_process_encoding())
-        return (self.PIPE, input)
+        if isinstance(input_obj, unicode):
+            input_obj = input_obj.encode(self._child_process_encoding())
+        return (self.PIPE, input_obj)
 
     def command_for_printing(self, args):
         """Returns a print-ready string representing command args.
@@ -347,7 +347,7 @@ class Executive(object):
                     args,
                     cwd=None,
                     env=None,
-                    input=None,
+                    input_func=None,
                     error_handler=None,
                     return_exit_code=False,
                     return_stderr=True,
@@ -356,7 +356,7 @@ class Executive(object):
         assert isinstance(args, list) or isinstance(args, tuple)
         start_time = time.time()
 
-        stdin, string_to_communicate = self._compute_stdin(input)
+        stdin, string_to_communicate = self._compute_stdin(input_func)
         stderr = self.STDOUT if return_stderr else None
 
         process = self.popen(args,

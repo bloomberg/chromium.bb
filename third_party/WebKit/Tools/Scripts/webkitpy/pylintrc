@@ -66,6 +66,7 @@ load-plugins=
 # e.g. too-many-arguments, too-many-branches.
 disable=
   design,
+  duplicate-code,
   missing-docstring,
   locally-disabled,
   star-args,
@@ -73,6 +74,7 @@ disable=
   fixme,
   global-statement,
   no-self-use,
+  locally-enabled,
 
 
 [REPORTS]
@@ -202,7 +204,7 @@ variable-rgx=[a-z_][a-z0-9_]{1,30}$
 inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 
 # Good variable names which should always be accepted, separated by a comma.
-good-names=i,j,k,ex,Run,_,_log
+good-names=i,j,k,e,ex,Run,_,_log
 
 # Bad variable names which should always be refused, separated by a comma.
 bad-names=foo,bar,baz,toto,tutu,tata

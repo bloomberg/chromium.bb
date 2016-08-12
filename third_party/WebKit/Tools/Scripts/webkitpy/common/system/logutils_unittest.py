@@ -26,13 +26,11 @@ import logging
 import os
 import unittest
 
-from webkitpy.common.system.logtesting import LogTesting
 from webkitpy.common.system.logtesting import TestLogStream
 from webkitpy.common.system import logutils
 
 
 class GetLoggerTest(unittest.TestCase):
-
     """Tests get_logger()."""
 
     def test_get_logger_in_webkitpy(self):
@@ -56,7 +54,6 @@ class GetLoggerTest(unittest.TestCase):
 
 
 class ConfigureLoggingTestBase(unittest.TestCase):
-
     """Base class for configure_logging() unit tests."""
 
     def _logging_level(self):
@@ -87,7 +84,6 @@ class ConfigureLoggingTestBase(unittest.TestCase):
 
         This method ensures that the logging configuration set up
         for a unit test does not affect logging in other unit tests.
-
         """
         logger = self._log
         for handler in self._handlers:
@@ -99,7 +95,6 @@ class ConfigureLoggingTestBase(unittest.TestCase):
 
 
 class ConfigureLoggingTest(ConfigureLoggingTestBase):
-
     """Tests configure_logging() with the default logging level."""
 
     def _logging_level(self):
@@ -124,8 +119,7 @@ class ConfigureLoggingTest(ConfigureLoggingTestBase):
     def test_two_messages(self):
         self._log.info("message1")
         self._log.info("message2")
-        self._assert_log_messages(["message1\n",
-                                   "message2\n"])
+        self._assert_log_messages(["message1\n", "message2\n"])
 
 
 class ConfigureLoggingVerboseTest(ConfigureLoggingTestBase):
@@ -143,7 +137,6 @@ class ConfigureLoggingVerboseTest(ConfigureLoggingTestBase):
 
 
 class ConfigureLoggingCustomLevelTest(ConfigureLoggingTestBase):
-
     """Tests configure_logging() with a custom logging level."""
 
     _level = 36

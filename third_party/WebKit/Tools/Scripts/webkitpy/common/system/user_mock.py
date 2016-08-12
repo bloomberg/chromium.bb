@@ -34,11 +34,11 @@ _log = logging.getLogger(__name__)
 class MockUser(object):
 
     @classmethod
-    def prompt(cls, message, repeat=1, raw_input=raw_input):
+    def prompt(cls, message, repeat=1, raw_input_func=raw_input):  # pylint: disable=unused-argument
         return "Mock user response"
 
     @classmethod
-    def prompt_with_list(cls, list_title, list_items, can_choose_multiple=False, raw_input=raw_input):
+    def prompt_with_list(cls, list_title, list_items, can_choose_multiple=False, raw_input_func=raw_input):
         pass
 
     def __init__(self):

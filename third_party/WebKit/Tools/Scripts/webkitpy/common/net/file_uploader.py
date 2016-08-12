@@ -50,12 +50,12 @@ def _encode_multipart_form_data(fields, files):
     Source:
       http://code.google.com/p/rietveld/source/browse/trunk/upload.py
     """
-    BOUNDARY = '-M-A-G-I-C---B-O-U-N-D-A-R-Y-'
+    boundary = '-M-A-G-I-C---B-O-U-N-D-A-R-Y-'
     CRLF = '\r\n'
     lines = []
 
     for key, value in fields:
-        lines.append('--' + BOUNDARY)
+        lines.append('--' + boundary)
         lines.append('Content-Disposition: form-data; name="%s"' % key)
         lines.append('')
         if isinstance(value, unicode):
@@ -63,7 +63,7 @@ def _encode_multipart_form_data(fields, files):
         lines.append(value)
 
     for key, filename, value in files:
-        lines.append('--' + BOUNDARY)
+        lines.append('--' + boundary)
         lines.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
         lines.append('Content-Type: %s' % get_mime_type(filename))
         lines.append('')
@@ -71,10 +71,10 @@ def _encode_multipart_form_data(fields, files):
             value = value.encode('utf-8')
         lines.append(value)
 
-    lines.append('--' + BOUNDARY + '--')
+    lines.append('--' + boundary + '--')
     lines.append('')
     body = CRLF.join(lines)
-    content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
+    content_type = 'multipart/form-data; boundary=%s' % boundary
     return content_type, body
 
 
