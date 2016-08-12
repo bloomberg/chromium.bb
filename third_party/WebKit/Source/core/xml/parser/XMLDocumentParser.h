@@ -188,6 +188,7 @@ private:
     Member<ScriptResource> m_pendingScript;
     Member<Element> m_scriptElement;
     TextPosition m_scriptStartPosition;
+    double m_parserBlockingPendingScriptLoadStartTime;
 
     bool m_parsingFragment;
     AtomicString m_defaultNamespaceURI;

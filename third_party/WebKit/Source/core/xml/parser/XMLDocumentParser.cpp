@@ -36,6 +36,7 @@
 #include "core/dom/Comment.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/dom/DocumentParserTiming.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ScriptLoader.h"
@@ -399,6 +400,7 @@ void XMLDocumentParser::detach()
     if (m_pendingScript) {
         m_pendingScript->removeClient(this);
         m_pendingScript = nullptr;
+        m_parserBlockingPendingScriptLoadStartTime = 0.0;
     }
     clearCurrentNodeStack();
     ScriptableDocumentParser::detach();
@@ -462,6 +464,8 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource)
     ScriptSourceCode sourceCode(m_pendingScript.get());
     bool errorOccurred = m_pendingScript->errorOccurred();
     bool wasCanceled = m_pendingScript->wasCanceled();
+    double scriptParserBlockingTime = m_parserBlockingPendingScriptLoadStartTime;
+    m_parserBlockingPendingScriptLoadStartTime = 0.0;
 
     m_pendingScript->removeClient(this);
     m_pendingScript = nullptr;
@@ -475,6 +479,10 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource)
     if (errorOccurred) {
         scriptLoader->dispatchErrorEvent();
     } else if (!wasCanceled) {
+        if (scriptParserBlockingTime > 0.0) {
+            DocumentParserTiming::from(*document()).recordParserBlockedOnScriptLoadDuration(monotonicallyIncreasingTime() - scriptParserBlockingTime, scriptLoader->wasCreatedDuringDocumentWrite());
+        }
+
         if (!scriptLoader->executeScript(sourceCode))
             scriptLoader->dispatchErrorEvent();
         else
@@ -777,6 +785,7 @@ XMLDocumentParser::XMLDocumentParser(Document& document, FrameView* frameView)
     , m_finishCalled(false)
     , m_xmlErrors(&document)
     , m_scriptStartPosition(TextPosition::belowRangePosition())
+    , m_parserBlockingPendingScriptLoadStartTime(0.0)
     , m_parsingFragment(false)
 {
     // This is XML being used as a document resource.
@@ -1093,6 +1102,8 @@ void XMLDocumentParser::endElementNs()
             }
         } else if (scriptLoader->willBeParserExecuted()) {
             m_pendingScript = scriptLoader->resource();
+            DCHECK_EQ(m_parserBlockingPendingScriptLoadStartTime, 0.0);
+            m_parserBlockingPendingScriptLoadStartTime = monotonicallyIncreasingTime();
             m_scriptElement = element;
             m_pendingScript->addClient(this);
             // m_pendingScript will be 0 if script was already loaded and
