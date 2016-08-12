@@ -19,10 +19,18 @@ class NGLengthUtilsTest : public ::testing::Test {
  protected:
   void SetUp() override { style_ = ComputedStyle::create(); }
 
+  static NGConstraintSpace constructConstraintSpace(int inline_size,
+                                                    int block_size) {
+    NGLogicalSize container_size;
+    container_size.inlineSize = LayoutUnit(inline_size);
+    container_size.blockSize = LayoutUnit(block_size);
+    return NGConstraintSpace(container_size);
+  }
+
   LayoutUnit resolveInlineLength(
       const Length& length,
       LengthResolveType type = LengthResolveType::ContentSize) {
-    NGConstraintSpace constraintSpace(LayoutUnit(200), LayoutUnit(300));
+    NGConstraintSpace constraintSpace = constructConstraintSpace(200, 300);
     return ::blink::resolveInlineLength(constraintSpace, length, type);
   }
 
@@ -30,20 +38,20 @@ class NGLengthUtilsTest : public ::testing::Test {
       const Length& length,
       LengthResolveType type = LengthResolveType::ContentSize,
       LayoutUnit contentSize = LayoutUnit()) {
-    NGConstraintSpace constraintSpace(LayoutUnit(200), LayoutUnit(300));
+    NGConstraintSpace constraintSpace = constructConstraintSpace(200, 300);
     return ::blink::resolveBlockLength(constraintSpace, length, contentSize,
                                        type);
   }
 
   LayoutUnit computeInlineSizeForFragment(
-      const NGConstraintSpace& constraintSpace =
-          NGConstraintSpace(LayoutUnit(200), LayoutUnit(300))) {
+      const NGConstraintSpace constraintSpace = constructConstraintSpace(200,
+                                                                         300)) {
     return ::blink::computeInlineSizeForFragment(constraintSpace, *style_);
   }
 
   LayoutUnit computeBlockSizeForFragment(
-      const NGConstraintSpace& constraintSpace =
-          NGConstraintSpace(LayoutUnit(200), LayoutUnit(300)),
+      const NGConstraintSpace constraintSpace = constructConstraintSpace(200,
+                                                                         300),
       LayoutUnit contentSize = LayoutUnit()) {
     return ::blink::computeBlockSizeForFragment(constraintSpace, *style_,
                                                 contentSize);
@@ -96,7 +104,7 @@ TEST_F(NGLengthUtilsTest, testComputeInlineSizeForFragment) {
       PixelsAndPercent(100, -10), ValueRangeNonNegative)));
   EXPECT_EQ(LayoutUnit(80), computeInlineSizeForFragment());
 
-  NGConstraintSpace constraintSpace(LayoutUnit(120), LayoutUnit(120));
+  NGConstraintSpace constraintSpace = constructConstraintSpace(120, 120);
   constraintSpace.setFixedSize(true, true);
   style_->setLogicalWidth(Length(150, Fixed));
   EXPECT_EQ(LayoutUnit(120), computeInlineSizeForFragment(constraintSpace));
@@ -124,9 +132,8 @@ TEST_F(NGLengthUtilsTest, testComputeBlockSizeForFragment) {
 
   style_->setLogicalHeight(Length(Auto));
   EXPECT_EQ(LayoutUnit(120),
-            computeBlockSizeForFragment(
-                NGConstraintSpace(LayoutUnit(200), LayoutUnit(300)),
-                LayoutUnit(120)));
+            computeBlockSizeForFragment(constructConstraintSpace(200, 300),
+                                        LayoutUnit(120)));
 
   style_->setLogicalHeight(Length(FillAvailable));
   EXPECT_EQ(LayoutUnit(300), computeBlockSizeForFragment());
@@ -135,7 +142,7 @@ TEST_F(NGLengthUtilsTest, testComputeBlockSizeForFragment) {
       PixelsAndPercent(100, -10), ValueRangeNonNegative)));
   EXPECT_EQ(LayoutUnit(70), computeBlockSizeForFragment());
 
-  NGConstraintSpace constraintSpace(LayoutUnit(200), LayoutUnit(200));
+  NGConstraintSpace constraintSpace = constructConstraintSpace(200, 200);
   constraintSpace.setFixedSize(true, true);
   style_->setLogicalHeight(Length(150, Fixed));
   EXPECT_EQ(LayoutUnit(200), computeBlockSizeForFragment(constraintSpace));

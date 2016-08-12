@@ -5,6 +5,8 @@
 #ifndef NGUnits_h
 #define NGUnits_h
 
+#include "platform/LayoutUnit.h"
+
 namespace blink {
 
 class LayoutUnit;

@@ -6,7 +6,7 @@
 #define NGConstraintSpace_h
 
 #include "core/CoreExport.h"
-#include "platform/LayoutUnit.h"
+#include "core/layout/ng/ng_units.h"
 #include "wtf/DoublyLinkedList.h"
 
 namespace blink {
@@ -58,9 +58,8 @@ class NGExclusion {
 
 class CORE_EXPORT NGConstraintSpace {
  public:
-  NGConstraintSpace(LayoutUnit inlineContainerSize,
-                    LayoutUnit blockContainerSize);
-  ~NGConstraintSpace() {}
+  NGConstraintSpace(NGLogicalSize container_size);
+  virtual ~NGConstraintSpace() {}
 
   // Constructs Layout NG constraint space from legacy layout object.
   static NGConstraintSpace fromLayoutObject(const LayoutBox&);
@@ -70,15 +69,18 @@ class CORE_EXPORT NGConstraintSpace {
   void setFixedSize(bool inlineFixed, bool blockFixed);
   void setFragmentationType(NGFragmentationType);
 
-  // Size of the container in each direction. Used for the following
-  // three cases:
+  // Size of the container. Used for the following three cases:
   // 1) Percentage resolution.
   // 2) Resolving absolute positions of children.
   // 3) Defining the threashold that triggers the presence of a scrollbar. Only
   //    applies if the corresponding scrollbarTrigger flag has been set for the
   //    direction.
-  LayoutUnit inlineContainerSize() const { return m_inlineContainerSize; }
-  LayoutUnit blockContainerSize() const { return m_blockContainerSize; }
+  NGLogicalSize ContainerSize() const { return container_size_; }
+
+  // Returns the effective size of the constraint space. Defaults to
+  // ContainerSize() for the root constraint space but derived constraint spaces
+  // overrides it to return the size of the layout opportunity.
+  virtual NGLogicalSize Size() const { return ContainerSize(); }
 
   // Whether exceeding the containerSize triggers the presence of a scrollbar
   // for the indicated direction.
@@ -112,8 +114,7 @@ class CORE_EXPORT NGConstraintSpace {
   void subtract(const NGFragment);
 
  private:
-  LayoutUnit m_inlineContainerSize;
-  LayoutUnit m_blockContainerSize;
+  NGLogicalSize container_size_;
 
   unsigned m_fixedInlineSize : 1;
   unsigned m_fixedBlockSize : 1;

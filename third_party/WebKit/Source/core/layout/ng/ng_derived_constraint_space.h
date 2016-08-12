@@ -17,8 +17,8 @@ class CORE_EXPORT NGDerivedConstraintSpace final : public NGConstraintSpace {
  public:
   ~NGDerivedConstraintSpace();
 
-  LayoutUnit offset() const { return offset_; }
-  LayoutUnit size() const { return size_; }
+  NGLogicalOffset Offset() const { return offset_; }
+  NGLogicalSize Size() const override { return size_; }
 
  private:
   NGDerivedConstraintSpace(const NGConstraintSpace* original,

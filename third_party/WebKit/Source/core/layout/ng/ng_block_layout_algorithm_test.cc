@@ -15,9 +15,7 @@ namespace {
 
 class NGBlockLayoutAlgorithmTest : public ::testing::Test {
  protected:
-  void SetUp() override {
-    style_ = ComputedStyle::create();
-  }
+  void SetUp() override { style_ = ComputedStyle::create(); }
 
   RefPtr<ComputedStyle> style_;
 };
@@ -26,7 +24,10 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
   style_->setWidth(Length(30, Fixed));
   style_->setHeight(Length(40, Fixed));
 
-  NGConstraintSpace space(LayoutUnit(100), LayoutUnit(-1));
+  NGLogicalSize container_size;
+  container_size.inlineSize = LayoutUnit(100);
+  container_size.blockSize = LayoutUnit(-1);
+  NGConstraintSpace space(container_size);
 
   NGBlockLayoutAlgorithm algorithm(style_, NGBoxIterator(NGBox()));
   NGFragment* frag = algorithm.layout(space);

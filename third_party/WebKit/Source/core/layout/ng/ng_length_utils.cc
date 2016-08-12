@@ -24,7 +24,7 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
   if (type == LengthResolveType::MinSize && length.isAuto())
     return LayoutUnit();
 
-  return valueForLength(length, constraintSpace.inlineContainerSize());
+  return valueForLength(length, constraintSpace.ContainerSize().inlineSize);
 }
 
 LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
@@ -42,14 +42,14 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
   if (length.isMinContent() || length.isMaxContent() || length.isFitContent())
     return contentSize;
 
-  return valueForLength(length, constraintSpace.blockContainerSize());
+  return valueForLength(length, constraintSpace.ContainerSize().blockSize);
 }
 
 LayoutUnit computeInlineSizeForFragment(
     const NGConstraintSpace& constraintSpace,
     const ComputedStyle& style) {
   if (constraintSpace.fixedInlineSize())
-    return constraintSpace.inlineContainerSize();
+    return constraintSpace.ContainerSize().inlineSize;
 
   LayoutUnit extent = resolveInlineLength(constraintSpace, style.logicalWidth(),
                                           LengthResolveType::ContentSize);
@@ -76,7 +76,7 @@ LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
                                        const ComputedStyle& style,
                                        LayoutUnit contentSize) {
   if (constraintSpace.fixedBlockSize())
-    return constraintSpace.blockContainerSize();
+    return constraintSpace.ContainerSize().blockSize;
 
   LayoutUnit extent =
       resolveBlockLength(constraintSpace, style.logicalHeight(), contentSize,

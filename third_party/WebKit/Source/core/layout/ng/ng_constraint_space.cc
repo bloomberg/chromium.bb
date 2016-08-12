@@ -9,10 +9,8 @@
 
 namespace blink {
 
-NGConstraintSpace::NGConstraintSpace(LayoutUnit inlineContainerSize,
-                                     LayoutUnit blockContainerSize) {
-  m_inlineContainerSize = inlineContainerSize;
-  m_blockContainerSize = blockContainerSize;
+NGConstraintSpace::NGConstraintSpace(NGLogicalSize container_size) {
+  container_size_ = container_size;
   m_inlineTriggersScrollbar = 0;
   m_blockTriggersScrollbar = 0;
   m_fixedInlineSize = 0;
@@ -36,7 +34,10 @@ NGConstraintSpace NGConstraintSpace::fromLayoutObject(const LayoutBox& child) {
     containerLogicalWidth = child.overrideLogicalContentHeight();
     fixedBlock = true;
   }
-  NGConstraintSpace space(containerLogicalWidth, containerLogicalHeight);
+  NGLogicalSize size;
+  size.inlineSize = containerLogicalWidth;
+  size.blockSize = containerLogicalHeight;
+  NGConstraintSpace space(size);
   space.setOverflowTriggersScrollbar(
       child.styleRef().overflowInlineDirection() == OverflowAuto,
       child.styleRef().overflowBlockDirection() == OverflowAuto);
