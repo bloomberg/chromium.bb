@@ -83,6 +83,8 @@ void LayoutSVGRect::updateShapeFromElement()
     m_strokeBoundingBox = m_fillBoundingBox;
     if (style()->svgStyle().hasStroke())
         m_strokeBoundingBox.inflate(strokeWidth() / 2);
+    if (element())
+        element()->setNeedsResizeObserverUpdate();
 }
 
 bool LayoutSVGRect::shapeDependentStrokeContains(const FloatPoint& point)

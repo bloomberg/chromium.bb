@@ -773,6 +773,7 @@ private:
     void updateViewportIntersectionIfNeeded();
     void notifyRenderThrottlingObservers();
     void updateThrottlingStatus();
+    void notifyResizeObservers();
 
     // PaintInvalidationCapableScrollableArea
     LayoutScrollbarPart* resizer() const override { return nullptr; }

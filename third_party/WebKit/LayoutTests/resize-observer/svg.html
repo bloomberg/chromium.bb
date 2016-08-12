@@ -1,0 +1,297 @@
+<!doctype html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="./resources/resizeTestHelper.js"></script>
+<p>ResizeObserver svg tests</p>
+<svg height="430" width="500">
+  <circle cx="10" cy="10" r="5" style="fill:orange;stroke:black;stroke-width:1" />
+  <ellipse cx="10" cy="30" rx="5" ry="5" style="fill:orange;stroke:black;stroke-width:1"/>
+  <foreignObject cy="50" width="100" height="20">
+    <body>
+      <p>Here is a paragraph that requires word wrap</p>
+    </body>
+  </foreignObject>
+  <image xlink:href="" x="0" y="100" height="30" width="100" />
+  <line x1="0" y1="50" x2="20" y2="70" stroke="black" stroke-width="2"/>
+  <path d="M 0 100 L 100 100 L 50 150 z"
+        style="fill:orange;stroke:black;stroke-width:1" />
+  <polygon points="0,200 100,200 50,250" style="fill:orange;stroke:black;stroke-width:1" />
+  <polyline points="0,300 100,300 50,350" style="fill:orange;stroke:black;stroke-width:1"/>
+  <rect x="0" y="380" width="10" height="10" style="fill:orange; stroke:black; stroke-width:1" />
+  <text x="0" y="400" font-size="20">svg text tag</text>
+</svg>
+<script>
+'use strict';
+
+var helper = new ResizeTestHelper();
+setup({allow_uncaught_exception: true});
+
+function test0() {
+  let target = document.querySelector('circle');
+  helper.createTest(
+    "observe svg:circle",
+    setup => {
+      helper.observer.observe(target);
+    },
+    entries => {
+      helper.nextTestRaf();
+    }
+  );
+  helper.createTest(
+    "observe svg:circle, part 2",
+    setup => {
+      target.setAttribute('r', 10);
+    },
+    entries => {
+      assert_equals(entries.length, 1);
+      assert_equals(entries[0].contentRect.width, 20);
+      assert_equals(entries[0].contentRect.height, 20);
+      helper.observer.disconnect();
+      test1();
+    }
+  );
+  helper.nextTestRaf();
+}
+
+function test1() {
+  let target = document.querySelector('ellipse');
+  helper.createTest(
+    "observe svg:ellipse",
+    setup => {
+      helper.observer.observe(target);
+    },
+    entries => {
+      helper.nextTestRaf();
+    }
+  );
+  helper.createTest(
+    "observe svg:ellipse, part 2",
+    setup => {
+      target.setAttribute('rx', 10);
+    },
+    entries => {
+      assert_equals(entries.length, 1);
+      assert_equals(entries[0].contentRect.width, 20);
+      assert_equals(entries[0].contentRect.height, 10);
+      helper.observer.disconnect();
+      test2();
+    }
+  );
+  helper.nextTestRaf();
+}
+
+function test2() {
+  let target = document.querySelector('foreignObject');
+  helper.createTest(
+    "observe svg:foreignObject",
+    setup => {
+      helper.observer.observe(target);
+    },
+    entries => {
+      helper.nextTestRaf();
+    }
+  );
+  helper.createTest(
+    "observe svg:foreignObject, part 2",
+    setup => {
+      target.setAttribute('width', 200);
+    },
+    entries => {
+      assert_equals(entries.length, 1);
+      assert_equals(entries[0].contentRect.width, 200);
+      assert_equals(entries[0].contentRect.height, 20);
+      helper.observer.disconnect();
+      test3();
+    }
+  );
+  helper.nextTestRaf();
+}
+
+function test3() {
+  let target = document.querySelector('image');
+  helper.createTest(
+    "observe svg:image",
+    setup => {
+      helper.observer.observe(target);
+    },
+    entries => {
+      helper.nextTestRaf();
+    }
+  );
+  helper.createTest(
+    "observe svg:image, part 2",
+    setup => {
+      target.setAttribute('height', 40);
+    },
+    entries => {
+      assert_equals(entries.length, 1);
+      assert_equals(entries[0].contentRect.width, 100);
+      assert_equals(entries[0].contentRect.height, 40);
+      helper.observer.disconnect();
+      test4();
+    }
+  );
+  helper.nextTestRaf();
+}
+
+function test4() {
+  let target = document.querySelector('line');
+  helper.createTest(
+    "observe svg:line",
+    setup => {
+      helper.observer.observe(target);
+    },
+    entries => {
+      helper.nextTestRaf();
+    }
+  );
+  helper.createTest(
+    "observe svg:line, part 2",
+    setup => {
+      target.setAttribute('y2', 80);
+    },
+    entries => {
+      assert_equals(entries.length, 1);
+      assert_equals(entries[0].contentRect.width, 20);
+      assert_equals(entries[0].contentRect.height, 30);
+      helper.observer.disconnect();
+      test5();
+    }
+  );
+  helper.nextTestRaf();
+}
+
+function test5() {
+  let target = document.querySelector('path');
+  helper.createTest(
+    "observe svg:path",
+    setup => {
+      helper.observer.observe(target);
+    },
+    entries => {
+      helper.nextTestRaf();
+    }
+  );
+  helper.createTest(
+    "observe svg:path, part 2",
+    setup => {
+      target.setAttribute('d', "M 0 100 L 100 100 L 50 160 z");
+    },
+    entries => {
+      assert_equals(entries.length, 1);
+      assert_equals(entries[0].contentRect.width, 100);
+      assert_equals(entries[0].contentRect.height, 60);
+      helper.observer.disconnect();
+      test6();
+    }
+  );
+  helper.nextTestRaf();
+}
+
+function test6() {
+  let target = document.querySelector('polygon');
+  helper.createTest(
+    "observe svg:polygon",
+    setup => {
+      helper.observer.observe(target);
+    },
+    entries => {
+      helper.nextTestRaf();
+    }
+  );
+  helper.createTest(
+    "observe svg:polygon, part 2",
+    setup => {
+      target.setAttribute('points', "0,200 100,200 50,260");
+    },
+    entries => {
+      assert_equals(entries.length, 1);
+      assert_equals(entries[0].contentRect.width, 100);
+      assert_equals(entries[0].contentRect.height, 60);
+      helper.observer.disconnect();
+      test7();
+    }
+  );
+  helper.nextTestRaf();
+}
+
+function test7() {
+  let target = document.querySelector('polyline');
+  helper.createTest(
+    "observe svg:polyline",
+    setup => {
+      helper.observer.observe(target);
+    },
+    entries => {
+      helper.nextTestRaf();
+    }
+  );
+  helper.createTest(
+    "observe svg:polyline, part 2",
+    setup => {
+      target.setAttribute('points', "0,300 100,300 50,360");
+    },
+    entries => {
+      assert_equals(entries.length, 1);
+      assert_equals(entries[0].contentRect.width, 100);
+      assert_equals(entries[0].contentRect.height, 60);
+      helper.observer.disconnect();
+      test8();
+    }
+  );
+  helper.nextTestRaf();
+}
+
+function test8() {
+  let target = document.querySelector('rect');
+  helper.createTest(
+    "observe svg:rect",
+    setup => {
+      helper.observer.observe(target);
+    },
+    entries => {
+      helper.nextTestRaf();
+    }
+  );
+  helper.createTest(
+    "observe svg:rect, part 2",
+    setup => {
+      target.setAttribute('width', "20");
+    },
+    entries => {
+      assert_equals(entries.length, 1);
+      assert_equals(entries[0].contentRect.width, 20);
+      assert_equals(entries[0].contentRect.height, 10);
+      helper.observer.disconnect();
+      test9();
+    }
+  );
+  helper.nextTestRaf();
+}
+
+function test9() {
+  let target = document.querySelector('text');
+  helper.createTest(
+    "observe svg:text",
+    setup => {
+      helper.observer.observe(target);
+    },
+    entries => {
+      helper.nextTestRaf();
+    }
+  );
+  helper.createTest(
+    "observe svg:text, part 2",
+    setup => {
+      target.setAttribute('font-size', "25");
+    },
+    entries => {
+      assert_equals(entries.length, 1);
+      helper.observer.disconnect();
+    }
+  );
+  helper.nextTestRaf();
+}
+test0();
+
+</script>

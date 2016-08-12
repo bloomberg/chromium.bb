@@ -80,6 +80,8 @@ void LayoutSVGShape::updateShapeFromElement()
 
     m_fillBoundingBox = calculateObjectBoundingBox();
     m_strokeBoundingBox = calculateStrokeBoundingBox();
+    if (element())
+        element()->setNeedsResizeObserverUpdate();
 }
 
 FloatRect LayoutSVGShape::hitTestStrokeBoundingBox() const

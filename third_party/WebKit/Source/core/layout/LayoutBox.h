@@ -1073,13 +1073,7 @@ private:
 
     bool isBox() const = delete; // This will catch anyone doing an unnecessary check.
 
-    void frameRectChanged()
-    {
-        // The frame rect may change because of layout of other objects.
-        // Should check this object for paint invalidation.
-        if (!needsLayout())
-            setMayNeedPaintInvalidation();
-    }
+    void frameRectChanged();
 
     virtual bool isInSelfHitTestingPhase(HitTestAction hitTestAction) const { return hitTestAction == HitTestForeground; }
 

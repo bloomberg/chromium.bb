@@ -592,6 +592,7 @@ public:
 
     HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>* resizeObserverData() const;
     HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>& ensureResizeObserverData();
+    void setNeedsResizeObserverUpdate();
 
 protected:
     Element(const QualifiedName& tagName, Document*, ConstructionType);
