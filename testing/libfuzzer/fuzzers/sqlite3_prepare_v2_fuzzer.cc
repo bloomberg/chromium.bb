@@ -42,7 +42,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
 
   sqlite3* db;
-  if (SQLITE_OK != sqlite3_open(":memory:", &db))
+  int return_code = sqlite3_open_v2(
+      "db.db",
+      &db,
+      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_MEMORY, 0);
+
+
+  if (SQLITE_OK != return_code)
     return 0;
 
   // Use first byte as random selector for other parameters.
