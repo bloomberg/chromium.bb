@@ -198,6 +198,10 @@ class BackgroundColorHoverButton : public views::LabelButton {
         views::Border::CreateEmptyBorder(0, button_margin, 0, button_margin));
     SetFocusForPlatform();
     set_request_focus_on_press(true);
+
+    if (switches::IsMaterialDesignUserMenu()) {
+      label()->SetHandlesTooltips(false);
+    }
   }
 
   BackgroundColorHoverButton(views::ButtonListener* listener,

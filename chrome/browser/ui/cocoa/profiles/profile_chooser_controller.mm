@@ -2328,7 +2328,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     NSFontAttributeName : [profileButton font]
   }];
 
-  if (std::ceil(textSize.width) > availableWidth)
+  if (!switches::IsMaterialDesignUserMenu() &&
+      std::ceil(textSize.width) > availableWidth)
     [profileButton setToolTip:[profileButton title]];
 
   return profileButton.autorelease();
