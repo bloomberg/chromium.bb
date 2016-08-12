@@ -204,7 +204,8 @@ Polymer({
    * @private
    */
   ensureInDefaultSearchPage_: function() {
-    settings.navigateTo(settings.Route.BASIC);
+    if (settings.getCurrentRoute() != settings.Route.BASIC)
+      settings.navigateTo(settings.Route.BASIC);
   },
 
   /**

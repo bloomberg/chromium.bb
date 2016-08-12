@@ -315,10 +315,6 @@ cr.define('settings', function() {
    */
   var navigateTo = function(route, opt_dynamicParameters) {
     var params = opt_dynamicParameters || new URLSearchParams();
-    if (assert(route) == currentRoute_ &&
-        params.toString() == currentQueryParameters_.toString()) {
-      return;
-    }
 
     var url = route.path;
     if (opt_dynamicParameters) {
