@@ -10,7 +10,6 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/texture_mailbox_deleter.h"
-#include "cc/test/begin_frame_args_test.h"
 
 static constexpr uint32_t kCompositorClientId = 1;
 

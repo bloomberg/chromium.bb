@@ -14,6 +14,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/feature/compositor/blimp_context_provider.h"
+#include "blimp/client/feature/compositor/blimp_delegating_output_surface.h"
 #include "blimp/client/feature/compositor/blimp_output_surface.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
@@ -255,12 +256,30 @@ void BlimpCompositor::HandlePendingOutputSurfaceRequest() {
   if (!host_->visible() || window_ == gfx::kNullAcceleratedWidget)
     return;
 
-  scoped_refptr<BlimpContextProvider> context_provider =
+  scoped_refptr<BlimpContextProvider> display_context_provider =
       BlimpContextProvider::Create(window_,
                                    client_->GetGpuMemoryBufferManager());
+  scoped_refptr<BlimpContextProvider> compositor_context_provider =
+      BlimpContextProvider::Create(gfx::kNullAcceleratedWidget,
+                                   client_->GetGpuMemoryBufferManager());
+  scoped_refptr<BlimpContextProvider> worker_context_provider = nullptr;
+  // TODO(khushalsagar): Make a worker context and bind it to the current
+  // thread:
+  // Worker context is bound to the main thread in RenderThreadImpl. One day
+  // that will change and then this will have to be removed.
+  // worker_context_provider->BindToCurrentThread();
 
-  host_->SetOutputSurface(
-      base::WrapUnique(new BlimpOutputSurface(context_provider)));
+  auto display_output_surface =
+      base::MakeUnique<BlimpOutputSurface>(std::move(display_context_provider));
+  auto delegating_output_surface =
+      base::MakeUnique<BlimpDelegatingOutputSurface>(
+          std::move(compositor_context_provider),
+          std::move(worker_context_provider), std::move(display_output_surface),
+          client_->GetGpuMemoryBufferManager(),
+          host_->settings().renderer_settings,
+          client_->GetCompositorTaskRunner().get());
+
+  host_->SetOutputSurface(std::move(delegating_output_surface));
   output_surface_request_pending_ = false;
 }
 

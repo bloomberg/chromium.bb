@@ -42,10 +42,10 @@ BlimpContextProvider::BlimpContextProvider(
   attribs_for_gles2.lose_context_when_out_of_memory = true;
 
   context_.reset(gpu::GLInProcessContext::Create(
-      nullptr /* service */, nullptr /* surface */, false /* is_offscreen */,
-      widget, nullptr /* share_context */, attribs_for_gles2,
-      gpu::SharedMemoryLimits(), gpu_memory_buffer_manager,
-      nullptr /* memory_limits */));
+      nullptr /* service */, nullptr /* surface */,
+      widget == gfx::kNullAcceleratedWidget /* is_offscreen */, widget,
+      nullptr /* share_context */, attribs_for_gles2, gpu::SharedMemoryLimits(),
+      gpu_memory_buffer_manager, nullptr /* memory_limits */));
   context_->GetImplementation()->SetLostContextCallback(
       base::Bind(&BlimpContextProvider::OnLostContext, base::Unretained(this)));
 }
