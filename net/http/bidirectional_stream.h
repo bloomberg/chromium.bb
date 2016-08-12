@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/http_stream_factory.h"
 #include "net/log/net_log.h"
@@ -213,6 +214,8 @@ class NET_EXPORT BidirectionalStream
   // Helper method to notify delegate if there is an error.
   void NotifyFailed(int error);
 
+  void UpdateHistograms();
+
   // BidirectionalStreamRequestInfo used when requesting the stream.
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info_;
   const BoundNetLog net_log_;
@@ -242,6 +245,12 @@ class NET_EXPORT BidirectionalStream
   std::vector<scoped_refptr<IOBuffer>> write_buffer_list_;
   // List of buffer length.
   std::vector<int> write_buffer_len_list_;
+
+  base::TimeTicks start_time_;
+  base::TimeTicks read_start_time_;
+  base::TimeTicks read_end_time_;
+  base::TimeTicks send_start_time_;
+  base::TimeTicks send_end_time_;
 
   base::WeakPtrFactory<BidirectionalStream> weak_factory_;
 

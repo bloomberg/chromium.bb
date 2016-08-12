@@ -26771,6 +26771,47 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.BidirectionalStream.ReceivedBytes" units="bytes">
+  <owner>xunjieli@chromium.org</owner>
+  <summary>Number of bytes received over this stream.</summary>
+</histogram>
+
+<histogram name="Net.BidirectionalStream.SentBytes" units="bytes">
+  <owner>xunjieli@chromium.org</owner>
+  <summary>Number of bytes sent over this stream.</summary>
+</histogram>
+
+<histogram name="Net.BidirectionalStream.TimeToReadEnd" units="ms">
+  <owner>xunjieli@chromium.org</owner>
+  <summary>
+    How long it takes from starting the request to reading the end of the
+    response.
+  </summary>
+</histogram>
+
+<histogram name="Net.BidirectionalStream.TimeToReadStart" units="ms">
+  <owner>xunjieli@chromium.org</owner>
+  <summary>
+    How long it takes from starting the request to reading the start of the
+    response.
+  </summary>
+</histogram>
+
+<histogram name="Net.BidirectionalStream.TimeToSendEnd" units="ms">
+  <owner>xunjieli@chromium.org</owner>
+  <summary>
+    How long it takes from starting the request to when the last byte is sent.
+  </summary>
+</histogram>
+
+<histogram name="Net.BidirectionalStream.TimeToSendStart" units="ms">
+  <owner>xunjieli@chromium.org</owner>
+  <summary>
+    How long it takes from starting the request to when we can start sending
+    data.
+  </summary>
+</histogram>
+
 <histogram name="Net.CacheState.AllBytes">
   <owner>ellyjones@chromium.org</owner>
   <owner>rdsmith@chromium.org</owner>
@@ -98885,6 +98926,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   </suffix>
   <affected-histogram name="Navigation.TimeToCommit"/>
   <affected-histogram name="Navigation.TimeToURLJobStart"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Net.BidirectionalStreamExperiment" separator="."
+    ordering="prefix">
+  <owner>xunjieli@chromium.org</owner>
+  <suffix name="QUIC" label="Bidirectional streams that use QUIC protocol"/>
+  <suffix name="HTTP2" label="Bidirectional stream that use HTTP2 protocol"/>
+  <affected-histogram name="Net.BidirectionalStream.ReceivedBytes"/>
+  <affected-histogram name="Net.BidirectionalStream.SentBytes"/>
+  <affected-histogram name="Net.BidirectionalStream.TimeToReadEnd"/>
+  <affected-histogram name="Net.BidirectionalStream.TimeToReadStart"/>
+  <affected-histogram name="Net.BidirectionalStream.TimeToSendEnd"/>
+  <affected-histogram name="Net.BidirectionalStream.TimeToSendStart"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Net.QuicClientHelloRejectReasons.QuicIsSecureOrNot"
