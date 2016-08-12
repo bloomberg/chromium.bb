@@ -178,3 +178,69 @@ out-linux/Debug/blimp_engine_app \
   --enable-logging=stderr \
   --vmodule="blimp*=1"
 ```
+
+## Running client engine integration with script
+
+When building the target `blimp` on a Linux host, a script is created which
+automates running the Blimp client and starting the engine. Setting up the
+environment like this is much quicker than executing each of the steps
+separately. It is used for development purpose as well as running tests under
+integration environment.
+
+### Generate the script
+
+The script is wrapped as an command `client_engine_integration` and ends up in
+`out-linux/Debug/bin/` which is generated with building engine. Command should be with
+the positional argument `{start,run,load,stop}`.
+
+### Running the script
+
+One can use the script to set up engine and connect it with client, then start client.
+
+#### Option A
+
+1.  `{start}` Start engine & forwarder:
+
+    ```bash
+    out-linux/Debug/bin/client_engine_integration start
+    ```
+
+    Engine runs until when you run the script with `{stop}` as the positional argument.
+
+2.  After engine starting successfully, run `{load}` client which installs apk in
+    device and runs blimp.
+
+    ```bash
+    out-linux/Debug/bin/client_engine_integration load -p/--apk-path /path/to/apk
+    ```
+
+    You are now ready to run tests or do development.
+
+    Instead of `{load}`, if want to manually install/launch the client can also do
+    e.g. the incremental install:
+
+    ```bash
+    ninja -C out-android/Debug blimp && \
+        out-android/Debug/bin/install_blimp_apk_incremental
+    ```
+
+3.  `{stop}` Stops the engine & the forwarder:
+
+    ```bash
+    out-linux/Debug/bin/client_engine_integration stop
+    ```
+
+#### Option B
+
+1.  `{run}` Start and keep running engine & forwarder.
+    Script keeps running and auto-checking engine process. Is responsible for
+    killing engine if keyboard interrupts or client gets killed.
+
+    ```bash
+    out-linux/Debug/bin/client_engine_integration run
+    ```
+
+2.  Same as step 2 in Option A.
+
+3.  Engine should be auto-killed by keyboard stopping the `{run}` script or the client
+    gets wiped out. `{stop}` works as well.
