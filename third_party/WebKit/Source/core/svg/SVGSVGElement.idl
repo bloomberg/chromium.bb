@@ -28,7 +28,7 @@ interface SVGSVGElement : SVGGraphicsElement {
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength width;
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength height;
     // TODO(foolip): viewport should be a DOMRectReadOnly.
-    [Measure] readonly attribute SVGRect viewport;
+    [DeprecateAs=V8SVGSVGElement_Viewport_AttributeGetter] readonly attribute SVGRect viewport;
     // TODO(foolip): useCurrentView and currentView have been removed:
     // https://github.com/w3c/svgwg/commit/4c26fd36937a65192024208d85c144a21071b057
     [DeprecateAs=V8SVGSVGElement_UseCurrentView_AttributeGetter] readonly attribute boolean useCurrentView;
