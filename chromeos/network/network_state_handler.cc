@@ -75,8 +75,8 @@ NetworkStateHandler::~NetworkStateHandler() {
   // destry the class.
   if (!did_shutdown_)
     Shutdown();
-  STLDeleteContainerPointers(network_list_.begin(), network_list_.end());
-  STLDeleteContainerPointers(device_list_.begin(), device_list_.end());
+  base::STLDeleteContainerPointers(network_list_.begin(), network_list_.end());
+  base::STLDeleteContainerPointers(device_list_.begin(), device_list_.end());
 }
 
 void NetworkStateHandler::Shutdown() {
@@ -464,7 +464,7 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   for (ManagedStateList::iterator iter = managed_list->begin();
        iter != managed_list->end(); ++iter) {
     ManagedState* managed = *iter;
-    DCHECK(!ContainsKey(managed_map, managed->path()));
+    DCHECK(!base::ContainsKey(managed_map, managed->path()));
     managed_map[managed->path()] = managed;
   }
   // Clear the list (pointers are temporarily owned by managed_map).
@@ -494,7 +494,8 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
     list_entries.insert(path);
   }
   // Delete any remaining entries in managed_map.
-  STLDeleteContainerPairSecondPointers(managed_map.begin(), managed_map.end());
+  base::STLDeleteContainerPairSecondPointers(managed_map.begin(),
+                                             managed_map.end());
 }
 
 void NetworkStateHandler::ProfileListChanged() {

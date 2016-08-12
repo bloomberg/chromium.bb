@@ -51,7 +51,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   ~DiskMountManagerImpl() override {
-    STLDeleteContainerPairSecondPointers(disks_.begin(), disks_.end());
+    base::STLDeleteContainerPairSecondPointers(disks_.begin(), disks_.end());
   }
 
   // DiskMountManager override.

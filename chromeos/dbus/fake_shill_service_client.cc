@@ -55,8 +55,8 @@ FakeShillServiceClient::FakeShillServiceClient() : weak_ptr_factory_(this) {
 }
 
 FakeShillServiceClient::~FakeShillServiceClient() {
-  STLDeleteContainerPairSecondPointers(
-      observer_list_.begin(), observer_list_.end());
+  base::STLDeleteContainerPairSecondPointers(observer_list_.begin(),
+                                             observer_list_.end());
 }
 
 
@@ -604,7 +604,7 @@ void FakeShillServiceClient::ContinueConnect(const std::string& service_path) {
     return;
   }
 
-  if (ContainsKey(connect_behavior_, service_path)) {
+  if (base::ContainsKey(connect_behavior_, service_path)) {
     const base::Closure& custom_connect_behavior =
         connect_behavior_[service_path];
     VLOG(1) << "Running custom connect behavior for " << service_path;

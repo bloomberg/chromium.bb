@@ -92,7 +92,7 @@ void DBusObjectMap::UpdateObjects(const ObjectPathVector& object_paths) {
     // won't access it after the iterator becomes invalidated.
     const dbus::ObjectPath &object_path = iter->first;
     ++iter;
-    if (!ContainsKey(object_path_set, object_path))
+    if (!base::ContainsKey(object_path_set, object_path))
       RemoveObject(object_path);
   }
 }
@@ -194,7 +194,7 @@ bool ObjectProxyTree::CreateObjectMap(const dbus::ObjectPath& object_path,
                                       const std::string& service_name,
                                       DBusObjectMap::Delegate* delegate,
                                       dbus::Bus* bus) {
-  if (ContainsKey(paths_to_object_maps_, object_path)) {
+  if (base::ContainsKey(paths_to_object_maps_, object_path)) {
     LOG(ERROR) << "Mapping already exists for object path: "
                << object_path.value();
     return false;

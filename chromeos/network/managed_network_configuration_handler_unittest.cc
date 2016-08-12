@@ -132,7 +132,7 @@ class ShillProfileTestClient {
       entry_paths->AppendString(it.key());
     }
 
-    ASSERT_TRUE(ContainsKey(profile_to_user_, profile_path.value()));
+    ASSERT_TRUE(base::ContainsKey(profile_to_user_, profile_path.value()));
     const std::string& userhash = profile_to_user_[profile_path.value()];
     result->SetStringWithoutPathExpansion(shill::kUserHashProperty, userhash);
 

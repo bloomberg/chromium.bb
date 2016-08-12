@@ -335,7 +335,7 @@ void NetworkConfigurationHandler::RemoveConfiguration(
     const network_handler::ErrorCallback& error_callback) {
   // Service.Remove is not reliable. Instead, request the profile entries
   // for the service and remove each entry.
-  if (ContainsKey(profile_entry_deleters_, service_path)) {
+  if (base::ContainsKey(profile_entry_deleters_, service_path)) {
     InvokeErrorCallback(service_path, error_callback,
                         "RemoveConfigurationInProgress");
     return;
@@ -378,8 +378,8 @@ NetworkConfigurationHandler::NetworkConfigurationHandler()
 }
 
 NetworkConfigurationHandler::~NetworkConfigurationHandler() {
-  STLDeleteContainerPairSecondPointers(profile_entry_deleters_.begin(),
-                                       profile_entry_deleters_.end());
+  base::STLDeleteContainerPairSecondPointers(profile_entry_deleters_.begin(),
+                                             profile_entry_deleters_.end());
 }
 
 void NetworkConfigurationHandler::Init(

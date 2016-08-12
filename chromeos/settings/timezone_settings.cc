@@ -335,7 +335,7 @@ class TimezoneSettingsStubImpl : public TimezoneSettingsBaseImpl {
 };
 
 TimezoneSettingsBaseImpl::~TimezoneSettingsBaseImpl() {
-  STLDeleteElements(&timezones_);
+  base::STLDeleteElements(&timezones_);
 }
 
 const icu::TimeZone& TimezoneSettingsBaseImpl::GetTimezone() {

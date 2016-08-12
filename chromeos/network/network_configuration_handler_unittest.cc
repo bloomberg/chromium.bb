@@ -99,8 +99,8 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
  public:
   TestNetworkConfigurationObserver() {}
   ~TestNetworkConfigurationObserver() override {
-    STLDeleteContainerPairSecondPointers(configurations_.begin(),
-                                         configurations_.end());
+    base::STLDeleteContainerPairSecondPointers(configurations_.begin(),
+                                               configurations_.end());
   }
 
   // NetworkConfigurationObserver

@@ -387,7 +387,7 @@ void ClientCertResolver::NetworkListChanged() {
   for (NetworkStateHandler::NetworkStateList::const_iterator it =
            networks.begin(); it != networks.end(); ++it) {
     const std::string& service_path = (*it)->path();
-    if (ContainsKey(old_resolved_networks, service_path)) {
+    if (base::ContainsKey(old_resolved_networks, service_path)) {
       resolved_networks_.insert(service_path);
       continue;
     }

@@ -40,7 +40,7 @@ class KnownTimeZoneTest : public testing::Test {
     }
   }
 
-  void TearDown() override { STLDeleteElements(&timezones_); }
+  void TearDown() override { base::STLDeleteElements(&timezones_); }
 
  protected:
   std::vector<TimeZone*> timezones_;

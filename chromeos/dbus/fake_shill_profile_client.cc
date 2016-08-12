@@ -41,7 +41,7 @@ FakeShillProfileClient::FakeShillProfileClient() {
 }
 
 FakeShillProfileClient::~FakeShillProfileClient() {
-  STLDeleteValues(&profiles_);
+  base::STLDeleteValues(&profiles_);
 }
 
 void FakeShillProfileClient::Init(dbus::Bus* bus) {
@@ -240,7 +240,7 @@ bool FakeShillProfileClient::GetService(const std::string& service_path,
 }
 
 void FakeShillProfileClient::ClearProfiles() {
-  STLDeleteValues(&profiles_);
+  base::STLDeleteValues(&profiles_);
 }
 
 FakeShillProfileClient::ProfileProperties* FakeShillProfileClient::GetProfile(

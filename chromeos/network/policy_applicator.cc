@@ -60,7 +60,7 @@ PolicyApplicator::PolicyApplicator(
 }
 
 PolicyApplicator::~PolicyApplicator() {
-  STLDeleteValues(&all_policies_);
+  base::STLDeleteValues(&all_policies_);
   VLOG(1) << "Destroying PolicyApplicator for " << profile_.userhash;
 }
 

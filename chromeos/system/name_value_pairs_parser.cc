@@ -48,7 +48,7 @@ NameValuePairsParser::NameValuePairsParser(NameValueMap* map)
 
 void NameValuePairsParser::AddNameValuePair(const std::string& key,
                                             const std::string& value) {
-  if (!ContainsKey(*map_, key)) {
+  if (!base::ContainsKey(*map_, key)) {
     (*map_)[key] = value;
     VLOG(1) << "name: " << key << ", value: " << value;
   } else {

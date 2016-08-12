@@ -67,7 +67,7 @@ MockDiskMountManager::MockDiskMountManager() {
 }
 
 MockDiskMountManager::~MockDiskMountManager() {
-  STLDeleteContainerPairSecondPointers(disks_.begin(), disks_.end());
+  base::STLDeleteContainerPairSecondPointers(disks_.begin(), disks_.end());
   disks_.clear();
 }
 

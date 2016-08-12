@@ -98,7 +98,7 @@ struct ManagedNetworkConfigurationHandlerImpl::Policies {
 };
 
 ManagedNetworkConfigurationHandlerImpl::Policies::~Policies() {
-  STLDeleteValues(&per_network_config);
+  base::STLDeleteValues(&per_network_config);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::AddObserver(
@@ -415,7 +415,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
   DCHECK(onc_source != ::onc::ONC_SOURCE_DEVICE_POLICY ||
          userhash.empty());
   Policies* policies = NULL;
-  if (ContainsKey(policies_by_user_, userhash)) {
+  if (base::ContainsKey(policies_by_user_, userhash)) {
     policies = policies_by_user_[userhash].get();
   } else {
     policies = new Policies;
@@ -466,7 +466,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
       modified_policies.insert(guid);
   }
 
-  STLDeleteValues(&old_per_network_config);
+  base::STLDeleteValues(&old_per_network_config);
   ApplyOrQueuePolicies(userhash, &modified_policies);
   FOR_EACH_OBSERVER(NetworkPolicyObserver, observers_,
                     PoliciesChanged(userhash));
@@ -491,7 +491,7 @@ bool ManagedNetworkConfigurationHandlerImpl::ApplyOrQueuePolicies(
     return false;
   }
 
-  if (ContainsKey(policy_applicators_, userhash)) {
+  if (base::ContainsKey(policy_applicators_, userhash)) {
     // A previous policy application is still running. Queue the modified
     // policies.
     // Note, even if |modified_policies| is empty, this means that a policy
@@ -602,7 +602,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
       FROM_HERE, policy_applicators_[userhash].release());
   policy_applicators_.erase(userhash);
 
-  if (ContainsKey(queued_modified_policies_, userhash)) {
+  if (base::ContainsKey(queued_modified_policies_, userhash)) {
     std::set<std::string> modified_policies;
     queued_modified_policies_[userhash].swap(modified_policies);
     // Remove |userhash| from the queue.

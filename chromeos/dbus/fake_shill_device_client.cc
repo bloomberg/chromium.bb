@@ -66,8 +66,8 @@ FakeShillDeviceClient::FakeShillDeviceClient()
       weak_ptr_factory_(this) {}
 
 FakeShillDeviceClient::~FakeShillDeviceClient() {
-  STLDeleteContainerPairSecondPointers(
-      observer_list_.begin(), observer_list_.end());
+  base::STLDeleteContainerPairSecondPointers(observer_list_.begin(),
+                                             observer_list_.end());
 }
 
 // ShillDeviceClient overrides.

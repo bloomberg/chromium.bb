@@ -112,10 +112,10 @@ ShillPropertyHandler::ShillPropertyHandler(Listener* listener)
 
 ShillPropertyHandler::~ShillPropertyHandler() {
   // Delete network service observers.
-  STLDeleteContainerPairSecondPointers(observed_networks_.begin(),
-                                       observed_networks_.end());
-  STLDeleteContainerPairSecondPointers(observed_devices_.begin(),
-                                       observed_devices_.end());
+  base::STLDeleteContainerPairSecondPointers(observed_networks_.begin(),
+                                             observed_networks_.end());
+  base::STLDeleteContainerPairSecondPointers(observed_devices_.begin(),
+                                             observed_devices_.end());
   CHECK(shill_manager_ == DBusThreadManager::Get()->GetShillManagerClient());
   shill_manager_->RemovePropertyChangedObserver(this);
 }
