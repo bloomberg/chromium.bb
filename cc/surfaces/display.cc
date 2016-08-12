@@ -421,4 +421,9 @@ const SurfaceId& Display::CurrentSurfaceId() {
   return current_surface_id_;
 }
 
+void Display::ForceImmediateDrawAndSwapIfPossible() {
+  if (scheduler_)
+    scheduler_->ForceImmediateSwapIfPossible();
+}
+
 }  // namespace cc

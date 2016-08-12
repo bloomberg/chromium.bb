@@ -133,9 +133,14 @@ class CONTENT_EXPORT CompositorImpl
       scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
       scoped_refptr<cc::ContextProvider> context_provider);
 
+  bool HavePendingReadbacks();
+
   // root_layer_ is the persistent internal root layer, while subroot_layer_
   // is the one attached by the compositor client.
   scoped_refptr<cc::Layer> subroot_layer_;
+
+  // Subtree for hidden layers with CopyOutputRequests on them.
+  scoped_refptr<cc::Layer> readback_layer_tree_;
 
   // Destruction order matters here:
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;

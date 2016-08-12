@@ -404,6 +404,9 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
   DCHECK(root_window);
   DCHECK(root_window->GetLayer() == nullptr);
   root_window->SetLayer(cc::Layer::Create());
+  readback_layer_tree_ = cc::Layer::Create();
+  readback_layer_tree_->SetHideLayerAndSubtree(true);
+  root_window->GetLayer()->AddChild(readback_layer_tree_);
   root_window->AttachCompositor(this);
   CreateLayerTreeHost();
   resource_manager_.Init(host_.get());
@@ -514,6 +517,13 @@ void CompositorImpl::SetVisible(bool visible) {
   TRACE_EVENT1("cc", "CompositorImpl::SetVisible", "visible", visible);
   if (!visible) {
     DCHECK(host_->visible());
+
+    // Make a best effort to try to complete pending readbacks.
+    // TODO(crbug.com/637035): Consider doing this in a better way,
+    // ideally with the guarantee of readbacks completing.
+    if (display_.get() && HavePendingReadbacks())
+      display_->ForceImmediateDrawAndSwapIfPossible();
+
     host_->SetVisible(false);
     if (!host_->output_surface_lost())
       host_->ReleaseOutputSurface();
@@ -751,7 +761,7 @@ void CompositorImpl::DidCommit() {
 }
 
 void CompositorImpl::AttachLayerForReadback(scoped_refptr<cc::Layer> layer) {
-  root_window_->GetLayer()->AddChild(layer);
+  readback_layer_tree_->AddChild(layer);
 }
 
 void CompositorImpl::RequestCopyOfOutputOnRootLayer(
@@ -783,6 +793,10 @@ void CompositorImpl::SetNeedsAnimate() {
 
   TRACE_EVENT0("compositor", "Compositor::SetNeedsAnimate");
   host_->SetNeedsAnimate();
+}
+
+bool CompositorImpl::HavePendingReadbacks() {
+  return !readback_layer_tree_->children().empty();
 }
 
 }  // namespace content

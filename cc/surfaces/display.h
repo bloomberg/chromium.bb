@@ -117,6 +117,8 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
 
+  void ForceImmediateDrawAndSwapIfPossible();
+
  private:
   void InitializeRenderer();
   void UpdateRootSurfaceResourcesLocked();
