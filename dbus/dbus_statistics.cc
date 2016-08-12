@@ -69,7 +69,7 @@ class DBusStatistics {
 
   ~DBusStatistics() {
     DCHECK_EQ(origin_thread_id_, base::PlatformThread::CurrentId());
-    STLDeleteContainerPointers(stats_.begin(), stats_.end());
+    base::STLDeleteContainerPointers(stats_.begin(), stats_.end());
   }
 
   // Enum to specify which field in Stat to increment in AddStat
