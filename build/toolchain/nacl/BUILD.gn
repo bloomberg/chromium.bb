@@ -23,42 +23,41 @@ revisions = exec_script("//native_client/build/get_toolchain_revision.py",
 nacl_x86_glibc_rev = revisions[0]
 nacl_arm_glibc_rev = revisions[1]
 
-# TODO(mcgrathr): Uncomment this when
-# https://code.google.com/p/chromium/issues/detail?id=395883 is fixed.
-#pnacl_newlib_rev = revisions[2]
+pnacl_newlib_rev = revisions[2]
+
+if (host_os == "win") {
+  toolsuffix = ".exe"
+} else {
+  toolsuffix = ""
+}
+
+# The PNaCl toolchain tools are all wrapper scripts rather than binary
+# executables.  On POSIX systems, nobody cares what kind of executable
+# file you are.  But on Windows, scripts (.bat files) cannot be run
+# directly and need the Windows shell (cmd.exe) specified explicily.
+if (host_os == "win") {
+  # NOTE!  The //build/toolchain/gcc_*_wrapper.py scripts recognize
+  # this exact prefix string, so they must be updated if this string
+  # is changed in any way.
+  scriptprefix = "cmd /c call "
+  scriptsuffix = ".bat"
+} else {
+  scriptprefix = ""
+  scriptsuffix = ""
+}
+
+# When the compilers are run via goma or ccache rather than directly by
+# GN/Ninja, the goma/ccache wrapper handles .bat files but gets confused
+# by being given the scriptprefix.
+if (host_os == "win" && !use_goma && cc_wrapper == "") {
+  compiler_scriptprefix = scriptprefix
+} else {
+  compiler_scriptprefix = ""
+}
 
 template("pnacl_toolchain") {
   assert(defined(invoker.executable_extension),
          "Must define executable_extension")
-
-  # TODO(mcgrathr): See above.
-  pnacl_newlib_rev = revisions[2]
-
-  # The PNaCl toolchain tools are all wrapper scripts rather than binary
-  # executables.  On POSIX systems, nobody cares what kind of executable
-  # file you are.  But on Windows, scripts (.bat files) cannot be run
-  # directly and need the Windows shell (cmd.exe) specified explicily.
-  # TODO(mcgrathr): Hoist this to top level when
-  # https://code.google.com/p/chromium/issues/detail?id=395883 is fixed.
-  if (host_os == "win") {
-    # NOTE!  The //build/toolchain/gcc_*_wrapper.py scripts recognize
-    # this exact prefix string, so they must be updated if this string
-    # is changed in any way.
-    scriptprefix = "cmd /c call "
-    scriptsuffix = ".bat"
-  } else {
-    scriptprefix = ""
-    scriptsuffix = ""
-  }
-
-  # When the compilers are run via goma or ccache rather than directly by
-  # GN/Ninja, the goma/ccache wrapper handles .bat files but gets confused
-  # by being given the scriptprefix.
-  if (host_os == "win" && !use_goma && cc_wrapper == "") {
-    compiler_scriptprefix = scriptprefix
-  } else {
-    compiler_scriptprefix = ""
-  }
 
   nacl_toolchain(target_name) {
     toolchain_package = "pnacl_newlib"
@@ -122,14 +121,6 @@ template("nacl_glibc_toolchain") {
                                invoker.toolchain_tuple + "-",
                            root_build_dir)
 
-  # TODO(mcgrathr): Hoist this to top level when
-  # https://code.google.com/p/chromium/issues/detail?id=395883 is fixed.
-  if (host_os == "win") {
-    toolsuffix = ".exe"
-  } else {
-    toolsuffix = ""
-  }
-
   nacl_toolchain("glibc_" + toolchain_cpu) {
     cc = toolprefix + "gcc" + toolsuffix
     cxx = toolprefix + "g++" + toolsuffix
@@ -175,22 +166,11 @@ template("nacl_clang_toolchain") {
   toolchain_cpu = target_name
   assert(defined(invoker.toolchain_tuple), "Must define toolchain_tuple")
 
-  # TODO(mcgrathr): See above.
-  pnacl_newlib_rev = revisions[2]
-
   toolchain_package = "pnacl_newlib"
   toolchain_revision = pnacl_newlib_rev
   toolprefix = rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/" +
                                invoker.toolchain_tuple + "-",
                            root_build_dir)
-
-  # TODO(mcgrathr): Hoist this to top level when
-  # https://code.google.com/p/chromium/issues/detail?id=395883 is fixed.
-  if (host_os == "win") {
-    toolsuffix = ".exe"
-  } else {
-    toolsuffix = ""
-  }
 
   nacl_toolchain("clang_newlib_" + toolchain_cpu) {
     cc = toolprefix + "clang" + toolsuffix
@@ -212,22 +192,11 @@ template("nacl_irt_toolchain") {
   toolchain_cpu = target_name
   assert(defined(invoker.toolchain_tuple), "Must define toolchain_tuple")
 
-  # TODO(mcgrathr): See above.
-  pnacl_newlib_rev = revisions[2]
-
   toolchain_package = "pnacl_newlib"
   toolchain_revision = pnacl_newlib_rev
   toolprefix = rebase_path("${nacl_toolchain_dir}/${toolchain_package}/bin/" +
                                invoker.toolchain_tuple + "-",
                            root_build_dir)
-
-  # TODO(mcgrathr): Hoist this to top level when
-  # https://code.google.com/p/chromium/issues/detail?id=395883 is fixed.
-  if (host_os == "win") {
-    toolsuffix = ".exe"
-  } else {
-    toolsuffix = ""
-  }
 
   link_irt = rebase_path("//native_client/build/link_irt.py", root_build_dir)
 

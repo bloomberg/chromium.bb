@@ -58,9 +58,6 @@ tool_versions =
                             root_build_dir),
                 "trim scope")
 
-# Work around for unused variable warning in template https://crbug.com/395883.
-assert(tool_versions != "")
-
 # Shared toolchain definition. Invocations should set current_os to set the
 # build args in this definition.
 template("mac_toolchain") {
