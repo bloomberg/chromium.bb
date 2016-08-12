@@ -7,7 +7,7 @@ package org.chromium.chrome.browser;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.view.View;
-import android.view.ViewGroup.MarginLayoutParams;
+import android.widget.FrameLayout.LayoutParams;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -37,8 +37,8 @@ public abstract class BasicNativePage implements NativePage {
 
         Resources res = mActivity.getResources();
 
-        MarginLayoutParams layoutParams = new MarginLayoutParams(
-                MarginLayoutParams.MATCH_PARENT, MarginLayoutParams.MATCH_PARENT);
+        LayoutParams layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT);
         layoutParams.setMargins(0,
                 res.getDimensionPixelSize(R.dimen.tab_strip_height)
                 + res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow),

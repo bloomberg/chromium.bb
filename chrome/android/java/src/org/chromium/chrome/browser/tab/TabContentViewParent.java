@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tab;
 import android.content.Context;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.CoordinatorLayout.Behavior;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -43,9 +44,16 @@ public class TabContentViewParent extends FrameLayout {
             }
 
             removeCurrentContent();
+            LayoutParams lp = (LayoutParams) viewToShow.getLayoutParams();
+            if (lp == null) {
+                lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+            }
+            // Weirdly enough, if gravity is not top, top_margin is not respected by FrameLayout.
+            // Yet for many native pages on tablet, top_margin is necessary to not overlap the tab
+            // switcher.
+            lp.gravity = Gravity.TOP;
             UiUtils.removeViewFromParent(viewToShow);
-            addView(viewToShow, CONTENT_INDEX, new FrameLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+            addView(viewToShow, CONTENT_INDEX, lp);
             viewToShow.requestFocus();
         }
     };
