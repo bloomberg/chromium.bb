@@ -1526,6 +1526,8 @@ weston_surface_set_role(struct weston_surface *surface,
 			const char *role_name,
 			struct wl_resource *error_resource,
 			uint32_t error_code);
+const char *
+weston_surface_get_role(struct weston_surface *surface);
 
 void
 weston_surface_set_label_func(struct weston_surface *surface,

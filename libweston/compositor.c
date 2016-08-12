@@ -3344,6 +3344,12 @@ weston_surface_set_role(struct weston_surface *surface,
 	return -1;
 }
 
+WL_EXPORT const char *
+weston_surface_get_role(struct weston_surface *surface)
+{
+	return surface->role_name;
+}
+
 WL_EXPORT void
 weston_surface_set_label_func(struct weston_surface *surface,
 			      int (*desc)(struct weston_surface *,
