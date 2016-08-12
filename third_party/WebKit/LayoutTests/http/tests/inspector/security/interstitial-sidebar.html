@@ -1,0 +1,37 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../security-test.js"></script>
+<script>
+function test()
+{
+
+    var request1 = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "https://foo.test/", "https://foo.test", 0, 0, null);
+    request1.setSecurityState(SecurityAgent.SecurityState.Secure);
+    InspectorTest.dispatchRequestFinished(request1);
+
+    var request2 = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "https://bar.test/foo.jpg", "https://bar.test", 0, 0, null);
+    request2.setSecurityState(SecurityAgent.SecurityState.Secure);
+    InspectorTest.dispatchRequestFinished(request2);
+
+    InspectorTest.addResult("Before interstitial is shown:");
+    InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._sidebarTree.element);
+
+    // Test that the sidebar is hidden when an interstitial is shown. https://crbug.com/559150
+    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.InterstitialShown);
+    InspectorTest.addResult("After interstitial is shown:");
+    InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._sidebarTree.element);
+
+    // Test that the sidebar is shown again when the interstitial is hidden. https://crbug.com/559150
+    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.InterstitialHidden);
+    InspectorTest.addResult("After interstitial is hidden:");
+    InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._sidebarTree.element);
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that the sidebar origin list disappears and appers when an interstitial is shown or hidden.</p>
+</body>
+</html>
