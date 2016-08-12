@@ -2232,22 +2232,22 @@ def GetConfig():
       site_config.Add(
           'peppy-next-toolchain-llvm', llvm,
           boards=['peppy'],
-          useflags=append_useflags(['llvm-next clang']),
+          useflags=append_useflags(['llvm-next', 'clang']),
       ),
       site_config.Add(
           'daisy-next-toolchain-llvm', _llvm_grouped,
           boards=['daisy'],
-          useflags=append_useflags(['llvm-next clang']),
+          useflags=append_useflags(['llvm-next', 'clang']),
       ),
       site_config.Add(
           'x86-alex-next-toolchain-llvm', _llvm_grouped,
           boards=['x86-alex'],
-          useflags=append_useflags(['llvm-next clang']),
+          useflags=append_useflags(['llvm-next', 'clang']),
       ),
       site_config.Add(
           'oak-next-toolchain-llvm', _llvm_grouped,
           boards=['oak'],
-          useflags=append_useflags(['llvm-next clang']),
+          useflags=append_useflags(['llvm-next', 'clang']),
       ),
   )
 

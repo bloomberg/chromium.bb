@@ -6519,7 +6519,8 @@
         "useflags": [
             "-cros-debug",
             "chrome_internal",
-            "llvm-next clang"
+            "clang",
+            "llvm-next"
         ]
     },
     "daisy-no-vmtest-pre-cq": {
@@ -13339,7 +13340,8 @@
                 "useflags": [
                     "-cros-debug",
                     "chrome_internal",
-                    "llvm-next clang"
+                    "clang",
+                    "llvm-next"
                 ]
             },
             {
@@ -13355,7 +13357,8 @@
                 "useflags": [
                     "-cros-debug",
                     "chrome_internal",
-                    "llvm-next clang"
+                    "clang",
+                    "llvm-next"
                 ]
             },
             {
@@ -13371,7 +13374,8 @@
                 "useflags": [
                     "-cros-debug",
                     "chrome_internal",
-                    "llvm-next clang"
+                    "clang",
+                    "llvm-next"
                 ]
             },
             {
@@ -13387,14 +13391,16 @@
                 "useflags": [
                     "-cros-debug",
                     "chrome_internal",
-                    "llvm-next clang"
+                    "clang",
+                    "llvm-next"
                 ]
             }
         ],
         "useflags": [
             "-cros-debug",
             "chrome_internal",
-            "llvm-next clang"
+            "clang",
+            "llvm-next"
         ]
     },
     "llvm-toolchain-group": {
@@ -16164,7 +16170,8 @@
         "useflags": [
             "-cros-debug",
             "chrome_internal",
-            "llvm-next clang"
+            "clang",
+            "llvm-next"
         ]
     },
     "oak-no-vmtest-pre-cq": {
@@ -17806,7 +17813,8 @@
         "useflags": [
             "-cros-debug",
             "chrome_internal",
-            "llvm-next clang"
+            "clang",
+            "llvm-next"
         ]
     },
     "peppy-no-vmtest-pre-cq": {
@@ -26507,7 +26515,8 @@
         "useflags": [
             "-cros-debug",
             "chrome_internal",
-            "llvm-next clang"
+            "clang",
+            "llvm-next"
         ]
     },
     "x86-alex-no-vmtest-pre-cq": {
