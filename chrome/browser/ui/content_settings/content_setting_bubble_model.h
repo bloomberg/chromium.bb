@@ -112,7 +112,8 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     BubbleContent();
     ~BubbleContent();
 
-    std::string title;
+    base::string16 title;
+    base::string16 message;
     ListItems list_items;
     RadioGroup radio_group;
     bool radio_group_enabled;
@@ -188,7 +189,10 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   Profile* profile() const { return profile_; }
   Delegate* delegate() const { return delegate_; }
 
-  void set_title(const std::string& title) { bubble_content_.title = title; }
+  void set_title(const base::string16& title) { bubble_content_.title = title; }
+  void set_message(const base::string16& message) {
+    bubble_content_.message = message;
+  }
   void add_list_item(const ListItem& item) {
     bubble_content_.list_items.push_back(item);
   }
@@ -316,6 +320,8 @@ class ContentSettingSubresourceFilterBubbleModel
       override;
 
  private:
+  void SetMessage();
+
   // ContentSettingBubbleModel:
   void SetTitle() override;
   void SetManageLink() override;

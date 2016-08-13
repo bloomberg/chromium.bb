@@ -203,12 +203,21 @@ void ContentSettingBubbleContents::Init() {
   bool bubble_content_empty = true;
 
   if (!bubble_content.title.empty()) {
-    views::Label* title_label = new views::Label(base::UTF8ToUTF16(
-        bubble_content.title));
+    views::Label* title_label = new views::Label(bubble_content.title);
     title_label->SetMultiLine(true);
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->StartRow(0, kSingleColumnSetId);
     layout->AddView(title_label);
+    bubble_content_empty = false;
+  }
+
+  if (!bubble_content.message.empty()) {
+    views::Label* message_label = new views::Label(bubble_content.message);
+    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+    message_label->SetMultiLine(true);
+    message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    layout->StartRow(0, kSingleColumnSetId);
+    layout->AddView(message_label);
     bubble_content_empty = false;
   }
 

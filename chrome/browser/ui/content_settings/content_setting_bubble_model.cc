@@ -159,7 +159,7 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
   int title_id =
       GetIdForContentType(title_ids, num_title_ids, content_type());
   if (title_id)
-    set_title(l10n_util::GetStringUTF8(title_id));
+    set_title(l10n_util::GetStringUTF16(title_id));
 }
 
 void ContentSettingSimpleBubbleModel::SetManageLink() {
@@ -654,7 +654,7 @@ void ContentSettingMediaStreamBubbleModel::SetTitle() {
   } else if (CameraAccessed()) {
     title_id = IDS_CAMERA_ACCESSED;
   }
-  set_title(l10n_util::GetStringUTF8(title_id));
+  set_title(l10n_util::GetStringUTF16(title_id));
 }
 
 void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
@@ -1047,12 +1047,12 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
 
   // Note that we ignore the |title| parameter.
   if (previous_handler_.IsEmpty()) {
-    set_title(l10n_util::GetStringFUTF8(
+    set_title(l10n_util::GetStringFUTF16(
         IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
         base::UTF8ToUTF16(pending_handler_.url().host()),
         protocol));
   } else {
-    set_title(l10n_util::GetStringFUTF8(
+    set_title(l10n_util::GetStringFUTF16(
         IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE,
         base::UTF8ToUTF16(pending_handler_.url().host()),
         protocol,
@@ -1171,6 +1171,7 @@ ContentSettingSubresourceFilterBubbleModel::
                                                Profile* profile)
     : ContentSettingBubbleModel(delegate, web_contents, profile) {
   SetTitle();
+  SetMessage();
   SetManageLink();
 }
 
@@ -1178,16 +1179,19 @@ ContentSettingSubresourceFilterBubbleModel::
     ~ContentSettingSubresourceFilterBubbleModel() {}
 
 void ContentSettingSubresourceFilterBubbleModel::SetTitle() {
-  // TODO(melandory): For this bubble we need to introduce ability to have a
-  // caption (something which appears above title and has bigger font).
-  set_title(l10n_util::GetStringUTF8(
-      IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION));
+  set_title(
+      l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE));
 }
 
 void ContentSettingSubresourceFilterBubbleModel::SetManageLink() {
   // TODO(melandory): introduce the button instead of link.
   set_manage_link(
       l10n_util::GetStringUTF8(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD));
+}
+
+void ContentSettingSubresourceFilterBubbleModel::SetMessage() {
+  set_message(l10n_util::GetStringUTF16(
+      IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION));
 }
 
 void ContentSettingSubresourceFilterBubbleModel::OnManageLinkClicked() {

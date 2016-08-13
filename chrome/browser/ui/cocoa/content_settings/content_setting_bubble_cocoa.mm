@@ -314,7 +314,7 @@ const ContentTypeToNibPath kNibPaths[] = {
   if (!titleLabel_)
     return;
 
-  NSString* label = base::SysUTF8ToNSString(
+  NSString* label = base::SysUTF16ToNSString(
       contentSettingBubbleModel_->bubble_content().title);
   [titleLabel_ setStringValue:label];
 
