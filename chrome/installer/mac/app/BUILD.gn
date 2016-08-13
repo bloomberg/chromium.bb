@@ -43,20 +43,6 @@ mac_xib_bundle_data("mac_installer_xibs") {
   ]
 }
 
-executable("mac_installer") {
-  sources = [
-    "main.m",
-  ]
-  deps = [
-    ":mac_installer_base",
-  ]
-
-  libs = [
-    "AppKit.framework",
-    "CoreFoundation.framework",
-  ]
-}
-
 test("mac_installer_unittests") {
   sources = [
     "testing/OmahaXMLRequest_test.mm",
