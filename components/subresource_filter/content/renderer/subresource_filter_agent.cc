@@ -33,10 +33,15 @@ SubresourceFilterAgent::~SubresourceFilterAgent() = default;
 
 std::vector<GURL> SubresourceFilterAgent::GetAncestorDocumentURLs() {
   std::vector<GURL> urls;
-  for (blink::WebFrame* frame = render_frame()->GetWebFrame(); frame;
-       frame = frame->parent()) {
+  // As a temporary workaround for --isolate-extensions, ignore the ancestor
+  // hierarchy after crossing an extension/non-extension boundary. This,
+  // however, will not be a satisfactory solution for OOPIF in general.
+  // See: https://crbug.com/637415.
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  do {
     urls.push_back(frame->document().url());
-  }
+    frame = frame->parent();
+  } while (frame && frame->isWebLocalFrame());
   return urls;
 }
 
