@@ -108,13 +108,13 @@ void ThreadDebugger::asyncTaskFinished(void* task)
     m_v8Inspector->asyncTaskFinished(task);
 }
 
-unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation> location)
+unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const String& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation> location)
 {
-    const String16 defaultMessage = "Uncaught (in promise)";
-    String16 message = errorMessage;
+    const String defaultMessage = "Uncaught (in promise)";
+    String message = errorMessage;
     if (message.isEmpty())
         message = defaultMessage;
-    else if (message.startWith("Uncaught "))
+    else if (message.startsWith("Uncaught "))
         message = message.substring(0, 8) + " (in promise)" + message.substring(8);
 
     reportConsoleMessage(toExecutionContext(context), JSMessageSource, ErrorMessageLevel, message, location.get());
@@ -123,7 +123,7 @@ unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const S
 
 void ThreadDebugger::promiseRejectionRevoked(v8::Local<v8::Context> context, unsigned promiseRejectionId)
 {
-    const String16 message = "Handler added to rejected promise";
+    const String message = "Handler added to rejected promise";
     v8Inspector()->exceptionRevoked(context, promiseRejectionId, message);
 }
 

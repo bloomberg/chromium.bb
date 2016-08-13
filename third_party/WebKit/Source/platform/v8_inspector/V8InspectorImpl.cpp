@@ -105,7 +105,7 @@ v8::MaybeLocal<v8::Value> V8InspectorImpl::callFunction(v8::Local<v8::Function> 
 
 v8::MaybeLocal<v8::Value> V8InspectorImpl::compileAndRunInternalScript(v8::Local<v8::Context> context, v8::Local<v8::String> source)
 {
-    v8::Local<v8::Script> script = compileScript(context, source, String(), true);
+    v8::Local<v8::Script> script = compileScript(context, source, String16(), true);
     if (script.IsEmpty())
         return v8::MaybeLocal<v8::Value>();
     v8::MicrotasksScope microtasksScope(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);

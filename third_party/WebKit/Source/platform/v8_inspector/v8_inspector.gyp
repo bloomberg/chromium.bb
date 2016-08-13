@@ -178,6 +178,7 @@
         '../inspector_protocol/Parser.cpp',
         '../inspector_protocol/Parser.h',
         '../inspector_protocol/FrontendChannel.h',
+        '../inspector_protocol/String16.cpp',
         '../inspector_protocol/String16.h',
         '../inspector_protocol/String16STL.cpp',
         '../inspector_protocol/String16STL.h',

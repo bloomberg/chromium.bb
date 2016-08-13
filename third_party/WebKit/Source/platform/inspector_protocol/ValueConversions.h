@@ -83,8 +83,8 @@ struct ValueConversions<double> {
 };
 
 template<>
-struct ValueConversions<String> {
-    static String parse(protocol::Value* value, ErrorSupport* errors)
+struct ValueConversions<InspectorProtocolConvenienceStringType> {
+    static InspectorProtocolConvenienceStringType parse(protocol::Value* value, ErrorSupport* errors)
     {
         String16 result;
         bool success = value ? value->asString(&result) : false;
@@ -93,7 +93,7 @@ struct ValueConversions<String> {
         return result;
     }
 
-    static std::unique_ptr<protocol::Value> serialize(const String& value)
+    static std::unique_ptr<protocol::Value> serialize(const InspectorProtocolConvenienceStringType& value)
     {
         return StringValue::create(value);
     }

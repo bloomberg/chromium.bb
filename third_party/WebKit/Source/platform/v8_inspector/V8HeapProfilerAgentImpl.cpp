@@ -237,7 +237,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
 void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String16& heapSnapshotObjectId, const protocol::Maybe<String16>& objectGroup, std::unique_ptr<protocol::Runtime::RemoteObject>* result)
 {
     bool ok;
-    int id = heapSnapshotObjectId.toInt(&ok);
+    int id = heapSnapshotObjectId.toInteger(&ok);
     if (!ok) {
         *error = "Invalid heap snapshot object id";
         return;
@@ -263,7 +263,7 @@ void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const 
 void V8HeapProfilerAgentImpl::addInspectedHeapObject(ErrorString* errorString, const String16& inspectedHeapObjectId)
 {
     bool ok;
-    int id = inspectedHeapObjectId.toInt(&ok);
+    int id = inspectedHeapObjectId.toInteger(&ok);
     if (!ok) {
         *errorString = "Invalid heap snapshot object id";
         return;

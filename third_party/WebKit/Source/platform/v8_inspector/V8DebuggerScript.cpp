@@ -10,12 +10,13 @@
 
 namespace blink {
 
-static const LChar hexDigits[17] = "0123456789ABCDEF";
+static const char hexDigits[17] = "0123456789ABCDEF";
 
 static void appendUnsignedAsHex(unsigned number, String16Builder* destination)
 {
     for (size_t i = 0; i < 8; ++i) {
-        destination->append(hexDigits[number & 0xF]);
+        UChar c = hexDigits[number & 0xF];
+        destination->append(c);
         number >>= 4;
     }
 }
@@ -36,18 +37,18 @@ static String16 calculateHash(const String16& str)
 
     size_t current = 0;
     const uint32_t* data = nullptr;
+    size_t sizeInBytes = sizeof(UChar) * str.length();
     data = reinterpret_cast<const uint32_t*>(str.characters16());
-    size_t charactersSizeInBytes = str.charactersSizeInBytes();
-    for (size_t i = 0; i < charactersSizeInBytes / 4; i += 4) {
+    for (size_t i = 0; i < sizeInBytes / 4; i += 4) {
         uint32_t v = data[i];
         uint64_t xi = v * randomOdd[current] & 0x7FFFFFFF;
         hashes[current] = (hashes[current] + zi[current] * xi) % prime[current];
         zi[current] = (zi[current] * random[current]) % prime[current];
         current = current == hashesSize - 1 ? 0 : current + 1;
     }
-    if (charactersSizeInBytes % 4) {
+    if (sizeInBytes % 4) {
         uint32_t v = 0;
-        for (size_t i = charactersSizeInBytes - charactersSizeInBytes % 4; i < charactersSizeInBytes; ++i) {
+        for (size_t i = sizeInBytes - sizeInBytes % 4; i < sizeInBytes; ++i) {
             v <<= 8;
             v |= reinterpret_cast<const uint8_t*>(data)[i];
         }

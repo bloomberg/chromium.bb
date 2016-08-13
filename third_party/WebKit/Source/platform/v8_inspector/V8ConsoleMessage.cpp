@@ -84,7 +84,7 @@ private:
         if (value->IsSymbolObject())
             return append(v8::Local<v8::SymbolObject>::Cast(value)->ValueOf());
         if (value->IsNumberObject()) {
-            m_builder.appendNumber(v8::Local<v8::NumberObject>::Cast(value)->ValueOf());
+            m_builder.append(String16::fromDoublePrecision6(v8::Local<v8::NumberObject>::Cast(value)->ValueOf()));
             return true;
         }
         if (value->IsBooleanObject()) {

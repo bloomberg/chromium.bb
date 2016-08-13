@@ -15,7 +15,7 @@ namespace {
 
 String16 findMagicComment(const String16& content, const String16& name, bool multiline)
 {
-    DCHECK(name.find("=") == kNotFound);
+    DCHECK(name.find("=") == String16::kNotFound);
     unsigned length = content.length();
     unsigned nameLength = name.length();
 
@@ -24,7 +24,7 @@ String16 findMagicComment(const String16& content, const String16& name, bool mu
     size_t closingCommentPos = 0;
     while (true) {
         pos = content.reverseFind(name, pos);
-        if (pos == kNotFound)
+        if (pos == String16::kNotFound)
             return String16();
 
         // Check for a /\/[\/*][@#][ \t]/ regexp (length of 4) before found name.
@@ -45,7 +45,7 @@ String16 findMagicComment(const String16& content, const String16& name, bool mu
             continue;
         if (multiline) {
             closingCommentPos = content.find("*/", equalSignPos + 1);
-            if (closingCommentPos == kNotFound)
+            if (closingCommentPos == String16::kNotFound)
                 return String16();
         }
 
@@ -60,13 +60,13 @@ String16 findMagicComment(const String16& content, const String16& name, bool mu
         : content.substring(urlPos);
 
     size_t newLine = match.find("\n");
-    if (newLine != kNotFound)
+    if (newLine != String16::kNotFound)
         match = match.substring(0, newLine);
     match = match.stripWhiteSpace();
 
-    String16 disallowedChars("\"' \t");
     for (unsigned i = 0; i < match.length(); ++i) {
-        if (disallowedChars.find(match[i]) != kNotFound)
+        UChar c = match[i];
+        if (c == '"' || c == '\'' || c == ' ' || c == '\t')
             return "";
     }
 
@@ -76,11 +76,14 @@ String16 findMagicComment(const String16& content, const String16& name, bool mu
 String16 createSearchRegexSource(const String16& text)
 {
     String16Builder result;
-    String16 specials("[](){}+-*.,?\\^$|");
 
     for (unsigned i = 0; i < text.length(); i++) {
-        if (specials.find(text[i]) != kNotFound)
+        UChar c = text[i];
+        if (c == '[' || c == ']' || c == '(' || c == ')' || c == '{' || c == '}'
+            || c == '+' || c == '-' || c == '*' || c == '.' || c == ',' || c == '?'
+            || c == '\\' || c == '^' || c == '$' || c == '|') {
             result.append('\\');
+        }
         result.append(text[i]);
     }
 
@@ -91,10 +94,11 @@ std::unique_ptr<std::vector<unsigned>> lineEndings(const String16& text)
 {
     std::unique_ptr<std::vector<unsigned>> result(new std::vector<unsigned>());
 
+    const String16 lineEndString = "\n";
     unsigned start = 0;
     while (start < text.length()) {
-        size_t lineEnd = text.find('\n', start);
-        if (lineEnd == kNotFound)
+        size_t lineEnd = text.find(lineEndString, start);
+        if (lineEnd == String16::kNotFound)
             break;
 
         result->push_back(static_cast<unsigned>(lineEnd));
@@ -117,7 +121,7 @@ std::vector<std::pair<int, String16>> scriptRegexpMatchesByLines(const V8Regex& 
     for (unsigned lineNumber = 0; lineNumber < size; ++lineNumber) {
         unsigned lineEnd = endings->at(lineNumber);
         String16 line = text.substring(start, lineEnd - start);
-        if (line.endsWith('\r'))
+        if (line.length() && line[line.length() - 1] == '\r')
             line = line.substring(0, line.length() - 1);
 
         int matchLength;

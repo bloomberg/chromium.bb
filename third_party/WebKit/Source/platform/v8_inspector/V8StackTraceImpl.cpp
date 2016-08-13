@@ -256,9 +256,9 @@ String16 V8StackTraceImpl::toString() const
         stackTrace.append(" (");
         stackTrace.append(frame.sourceURL());
         stackTrace.append(':');
-        stackTrace.appendNumber(frame.lineNumber());
+        stackTrace.append(String16::fromInteger(frame.lineNumber()));
         stackTrace.append(':');
-        stackTrace.appendNumber(frame.columnNumber());
+        stackTrace.append(String16::fromInteger(frame.columnNumber()));
         stackTrace.append(')');
     }
     return stackTrace.toString();

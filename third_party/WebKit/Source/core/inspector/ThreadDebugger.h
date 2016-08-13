@@ -43,7 +43,7 @@ public:
     void allAsyncTasksCanceled();
     void asyncTaskStarted(void* task);
     void asyncTaskFinished(void* task);
-    unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation>);
+    unsigned promiseRejected(v8::Local<v8::Context>, const String& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation>);
     void promiseRejectionRevoked(v8::Local<v8::Context>, unsigned promiseRejectionId);
 
 protected:

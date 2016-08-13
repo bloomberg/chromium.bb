@@ -13,8 +13,6 @@
 namespace blink {
 namespace protocol {
 
-class String16;
-
 template<typename T>
 class Maybe {
 public:
@@ -70,10 +68,10 @@ public:
 };
 
 template<>
-class Maybe<String> : public MaybeBase<String> {
+class Maybe<InspectorProtocolConvenienceStringType> : public MaybeBase<InspectorProtocolConvenienceStringType> {
 public:
     Maybe() { }
-    Maybe(const String& value) : MaybeBase(value) { }
+    Maybe(const InspectorProtocolConvenienceStringType& value) : MaybeBase(value) { }
     using MaybeBase::operator=;
 };
 

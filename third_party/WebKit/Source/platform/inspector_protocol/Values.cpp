@@ -35,13 +35,14 @@ inline bool escapeChar(UChar c, String16Builder* dst)
     return true;
 }
 
-const LChar hexDigits[17] = "0123456789ABCDEF";
+const char hexDigits[17] = "0123456789ABCDEF";
 
 void appendUnsignedAsHex(UChar number, String16Builder* dst)
 {
     dst->append("\\u");
     for (size_t i = 0; i < 4; ++i) {
-        dst->append(hexDigits[(number & 0xF000) >> 12]);
+        UChar c = hexDigits[(number & 0xF000) >> 12];
+        dst->append(c);
         number <<= 4;
     }
 }

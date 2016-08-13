@@ -154,7 +154,7 @@ void UberDispatcher::dispatch(const String16& message)
         return;
 
     size_t dotIndex = method.find(".");
-    if (dotIndex == kNotFound) {
+    if (dotIndex == String16::kNotFound) {
         reportProtocolError(m_frontendChannel, callId, DispatcherBase::MethodNotFound, "'" + method + "' wasn't found", nullptr);
         return;
     }

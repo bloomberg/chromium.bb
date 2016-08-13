@@ -200,7 +200,7 @@ bool skipComment(const UChar* start, const UChar* end, const UChar** commentEnd)
 void skipWhitespaceAndComments(const UChar* start, const UChar* end, const UChar** whitespaceEnd)
 {
     while (start < end) {
-        if (isSpaceOrNewline(*start)) {
+        if (String16::isSpaceOrNewLine(*start)) {
             ++start;
         } else if (*start == '/') {
             const UChar* commentEnd;

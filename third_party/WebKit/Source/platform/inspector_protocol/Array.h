@@ -126,7 +126,7 @@ private:
     std::vector<T> m_vector;
 };
 
-template<> class Array<String> : public ArrayBase<String> {};
+template<> class Array<InspectorProtocolConvenienceStringType> : public ArrayBase<InspectorProtocolConvenienceStringType> {};
 template<> class Array<String16> : public ArrayBase<String16> {};
 template<> class Array<int> : public ArrayBase<int> {};
 template<> class Array<double> : public ArrayBase<double> {};
