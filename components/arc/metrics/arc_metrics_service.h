@@ -70,7 +70,7 @@ class ArcMetricsService
   base::ThreadChecker thread_checker_;
   base::RepeatingTimer timer_;
 
-  OomKillsMonitor oom_kills_monitor_;
+  OomKillsMonitor::Handle oom_kills_monitor_handle_;
 
   base::TimeTicks arc_start_time_;
 

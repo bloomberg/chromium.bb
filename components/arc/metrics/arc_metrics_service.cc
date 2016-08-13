@@ -28,10 +28,10 @@ ArcMetricsService::ArcMetricsService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service),
       binding_(this),
       process_observer_(this),
+      oom_kills_monitor_handle_(OomKillsMonitor::StartMonitoring()),
       weak_ptr_factory_(this) {
   arc_bridge_service()->metrics()->AddObserver(this);
   arc_bridge_service()->process()->AddObserver(&process_observer_);
-  oom_kills_monitor_.Start();
 }
 
 ArcMetricsService::~ArcMetricsService() {

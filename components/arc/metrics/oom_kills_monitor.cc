@@ -11,10 +11,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/debug/leak_annotations.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/safe_strerror.h"
 #include "base/sequenced_task_runner.h"
@@ -32,25 +34,6 @@ using base::StringPiece;
 
 using base::SequencedWorkerPool;
 using base::TimeDelta;
-
-OomKillsMonitor::OomKillsMonitor()
-    : worker_pool_(
-          new SequencedWorkerPool(1, "oom_kills_monitor")) {}
-
-OomKillsMonitor::~OomKillsMonitor() {
-  Stop();
-}
-
-void OomKillsMonitor::Start() {
-  auto task_runner = worker_pool_->GetTaskRunnerWithShutdownBehavior(
-      SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  task_runner->PostTask(
-      FROM_HERE, base::Bind(&OomKillsMonitor::Run, worker_pool_));
-}
-
-void OomKillsMonitor::Stop() {
-  worker_pool_->Shutdown();
-}
 
 namespace {
 
@@ -154,9 +137,48 @@ void LogLowMemoryKill(const StringPiece& line) {
 
 }  // namespace
 
+OomKillsMonitor::Handle::Handle(OomKillsMonitor* outer) : outer_(outer) {
+  DCHECK(outer_);
+}
+
+OomKillsMonitor::Handle::~Handle() {
+  outer_->is_shutting_down_.Set();
+}
+
+OomKillsMonitor::OomKillsMonitor() {
+  base::SimpleThread::Options non_joinable_options;
+  non_joinable_options.joinable = false;
+  non_joinable_worker_thread_ = base::MakeUnique<base::DelegateSimpleThread>(
+      this, "oom_kills_monitor", non_joinable_options);
+  non_joinable_worker_thread_->Start();
+}
+
+OomKillsMonitor::~OomKillsMonitor() {
+  // The instance has to be leaked on shutdown as it is referred to by a
+  // non-joinable thread but ~OomKillsMonitor() can't be explicitly deleted as
+  // it overrides ~SimpleThread(), it should nevertheless never be invoked.
+  NOTREACHED();
+}
+
 // static
-void OomKillsMonitor::Run(
-    scoped_refptr<base::SequencedWorkerPool> worker_pool) {
+OomKillsMonitor::Handle OomKillsMonitor::StartMonitoring() {
+#if DCHECK_IS_ON()
+  static volatile bool monitoring_active = false;
+  DCHECK(!monitoring_active);
+  monitoring_active = true;
+#endif
+
+  // Instantiate the OomKillsMonitor and its underlying thread. The
+  // OomKillsMonitor itself has to be leaked on shutdown per having a
+  // non-joinable thread associated to its state. The OomKillsMonitor::Handle
+  // will notify the OomKillsMonitor when it is destroyed so that the underlying
+  // thread can at a minimum not do extra work during shutdown.
+  OomKillsMonitor* instance = new OomKillsMonitor;
+  ANNOTATE_LEAKING_OBJECT_PTR(instance);
+  return Handle(instance);
+}
+
+void OomKillsMonitor::Run() {
   base::ScopedFILE kmsg_handle(
       base::OpenFile(base::FilePath("/dev/kmsg"), "r"));
   if (!kmsg_handle) {
@@ -171,7 +193,7 @@ void OomKillsMonitor::Run(
   char buf[kMaxBufSize];
 
   while (fgets(buf, kMaxBufSize, kmsg_handle.get())) {
-    if (worker_pool->IsShutdownInProgress()) {
+    if (is_shutting_down_.IsSet()) {
       DVLOG(1) << "Chrome is shutting down, exit now.";
       break;
     }
