@@ -1524,23 +1524,26 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar oldC, UChar newC)
     return newImpl.release();
 }
 
-PassRefPtr<StringImpl> StringImpl::replace(unsigned position, unsigned lengthToReplace, StringImpl* str)
+// TODO(esprehn): Passing a null replacement is the same as empty string for
+// this method but all others treat null as a no-op. We should choose one
+// behavior.
+PassRefPtr<StringImpl> StringImpl::replace(unsigned position, unsigned lengthToReplace, const StringView& string)
 {
     position = min(position, length());
     lengthToReplace = min(lengthToReplace, length() - position);
-    unsigned lengthToInsert = str ? str->length() : 0;
+    unsigned lengthToInsert = string.length();
     if (!lengthToReplace && !lengthToInsert)
         return this;
 
     RELEASE_ASSERT((length() - lengthToReplace) < (numeric_limits<unsigned>::max() - lengthToInsert));
 
-    if (is8Bit() && (!str || str->is8Bit())) {
+    if (is8Bit() && (string.isNull() || string.is8Bit())) {
         LChar* data;
         RefPtr<StringImpl> newImpl =
         createUninitialized(length() - lengthToReplace + lengthToInsert, data);
         memcpy(data, characters8(), position * sizeof(LChar));
-        if (str)
-            memcpy(data + position, str->characters8(), lengthToInsert * sizeof(LChar));
+        if (!string.isNull())
+            memcpy(data + position, string.characters8(), lengthToInsert * sizeof(LChar));
         memcpy(data + position + lengthToInsert, characters8() + position + lengthToReplace,
             (length() - position - lengthToReplace) * sizeof(LChar));
         return newImpl.release();
@@ -1553,12 +1556,12 @@ PassRefPtr<StringImpl> StringImpl::replace(unsigned position, unsigned lengthToR
             data[i] = characters8()[i];
     else
         memcpy(data, characters16(), position * sizeof(UChar));
-    if (str) {
-        if (str->is8Bit())
+    if (!string.isNull()) {
+        if (string.is8Bit())
             for (unsigned i = 0; i < lengthToInsert; ++i)
-                data[i + position] = str->characters8()[i];
+                data[i + position] = string.characters8()[i];
         else
-            memcpy(data + position, str->characters16(), lengthToInsert * sizeof(UChar));
+            memcpy(data + position, string.characters16(), lengthToInsert * sizeof(UChar));
     }
     if (is8Bit()) {
         for (unsigned i = 0; i < length() - position - lengthToReplace; ++i)
@@ -1570,15 +1573,13 @@ PassRefPtr<StringImpl> StringImpl::replace(unsigned position, unsigned lengthToR
     return newImpl.release();
 }
 
-PassRefPtr<StringImpl> StringImpl::replace(UChar pattern, StringImpl* replacement)
+PassRefPtr<StringImpl> StringImpl::replace(UChar pattern, const StringView& replacement)
 {
-    if (!replacement)
+    if (replacement.isNull())
         return this;
-
-    if (replacement->is8Bit())
-        return replace(pattern, replacement->characters8(), replacement->length());
-
-    return replace(pattern, replacement->characters16(), replacement->length());
+    if (replacement.is8Bit())
+        return replace(pattern, replacement.characters8(), replacement.length());
+    return replace(pattern, replacement.characters16(), replacement.length());
 }
 
 PassRefPtr<StringImpl> StringImpl::replace(UChar pattern, const LChar* replacement, unsigned repStrLength)
@@ -1734,16 +1735,16 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern, const UChar* replaceme
     return newImpl.release();
 }
 
-PassRefPtr<StringImpl> StringImpl::replace(StringImpl* pattern, StringImpl* replacement)
+PassRefPtr<StringImpl> StringImpl::replace(const StringView& pattern, const StringView& replacement)
 {
-    if (!pattern || !replacement)
+    if (pattern.isNull() || replacement.isNull())
         return this;
 
-    unsigned patternLength = pattern->length();
+    unsigned patternLength = pattern.length();
     if (!patternLength)
         return this;
 
-    unsigned repStrLength = replacement->length();
+    unsigned repStrLength = replacement.length();
     size_t srcSegmentStart = 0;
     unsigned matchCount = 0;
 
@@ -1771,7 +1772,7 @@ PassRefPtr<StringImpl> StringImpl::replace(StringImpl* pattern, StringImpl* repl
     srcSegmentStart = 0;
     unsigned dstOffset = 0;
     bool srcIs8Bit = is8Bit();
-    bool replacementIs8Bit = replacement->is8Bit();
+    bool replacementIs8Bit = replacement.is8Bit();
 
     // There are 4 cases:
     // 1. This and replacement are both 8 bit.
@@ -1786,7 +1787,7 @@ PassRefPtr<StringImpl> StringImpl::replace(StringImpl* pattern, StringImpl* repl
             srcSegmentLength = srcSegmentEnd - srcSegmentStart;
             memcpy(data + dstOffset, characters8() + srcSegmentStart, srcSegmentLength * sizeof(LChar));
             dstOffset += srcSegmentLength;
-            memcpy(data + dstOffset, replacement->characters8(), repStrLength * sizeof(LChar));
+            memcpy(data + dstOffset, replacement.characters8(), repStrLength * sizeof(LChar));
             dstOffset += repStrLength;
             srcSegmentStart = srcSegmentEnd + patternLength;
         }
@@ -1815,10 +1816,10 @@ PassRefPtr<StringImpl> StringImpl::replace(StringImpl* pattern, StringImpl* repl
         if (replacementIs8Bit) {
             // Cases 2 & 3.
             for (unsigned i = 0; i < repStrLength; ++i)
-                data[i + dstOffset] = replacement->characters8()[i];
+                data[i + dstOffset] = replacement.characters8()[i];
         } else {
             // Case 4
-            memcpy(data + dstOffset, replacement->characters16(), repStrLength * sizeof(UChar));
+            memcpy(data + dstOffset, replacement.characters16(), repStrLength * sizeof(UChar));
         }
         dstOffset += repStrLength;
         srcSegmentStart = srcSegmentEnd + patternLength;

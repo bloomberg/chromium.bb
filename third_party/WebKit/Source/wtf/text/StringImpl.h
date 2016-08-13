@@ -393,13 +393,12 @@ public:
     bool endsWithIgnoringCase(const StringView&) const;
     bool endsWithIgnoringASCIICase(const StringView&) const;
 
-    PassRefPtr<StringImpl> replace(UChar, UChar);
-    PassRefPtr<StringImpl> replace(UChar, StringImpl*);
-    ALWAYS_INLINE PassRefPtr<StringImpl> replace(UChar pattern, const char* replacement, unsigned replacementLength) { return replace(pattern, reinterpret_cast<const LChar*>(replacement), replacementLength); }
-    PassRefPtr<StringImpl> replace(UChar, const LChar*, unsigned replacementLength);
-    PassRefPtr<StringImpl> replace(UChar, const UChar*, unsigned replacementLength);
-    PassRefPtr<StringImpl> replace(StringImpl*, StringImpl*);
-    PassRefPtr<StringImpl> replace(unsigned index, unsigned len, StringImpl*);
+    // Replace parts of the string.
+    PassRefPtr<StringImpl> replace(UChar pattern, UChar replacement);
+    PassRefPtr<StringImpl> replace(UChar pattern, const StringView& replacement);
+    PassRefPtr<StringImpl> replace(const StringView& pattern, const StringView& replacement);
+    PassRefPtr<StringImpl> replace(unsigned index, unsigned lengthToReplace, const StringView& replacement);
+
     PassRefPtr<StringImpl> upconvertedString();
 
 #if OS(MACOSX)
@@ -420,6 +419,9 @@ private:
         RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(CharType)));
         return sizeof(StringImpl) + length * sizeof(CharType);
     }
+
+    PassRefPtr<StringImpl> replace(UChar pattern, const LChar* replacement, unsigned replacementLength);
+    PassRefPtr<StringImpl> replace(UChar pattern, const UChar* replacement, unsigned replacementLength);
 
     template <class UCharPredicate> PassRefPtr<StringImpl> stripMatchedCharacters(UCharPredicate);
     template <typename CharType, class UCharPredicate> PassRefPtr<StringImpl> simplifyMatchedCharactersToSpace(UCharPredicate, StripBehavior);

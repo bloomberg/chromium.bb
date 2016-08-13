@@ -219,36 +219,30 @@ public:
     void append(UChar);
     void insert(const StringView&, unsigned pos);
 
-    String& replace(UChar a, UChar b)
+    // TODO(esprehn): replace strangely both modifies this String *and* return a
+    // value. It should only do one of those.
+    String& replace(UChar pattern, UChar replacement)
     {
         if (m_impl)
-            m_impl = m_impl->replace(a, b);
+            m_impl = m_impl->replace(pattern, replacement);
         return *this;
     }
-    String& replace(UChar a, const String& b)
+    String& replace(UChar pattern, const StringView& replacement)
     {
         if (m_impl)
-            m_impl = m_impl->replace(a, b.impl());
+            m_impl = m_impl->replace(pattern, replacement);
         return *this;
     }
-    String& replace(const String& a, const String& b)
+    String& replace(const StringView& pattern, const StringView& replacement)
     {
         if (m_impl)
-            m_impl = m_impl->replace(a.impl(), b.impl());
+            m_impl = m_impl->replace(pattern, replacement);
         return *this;
     }
-    String& replace(unsigned index, unsigned len, const String& b)
+    String& replace(unsigned index, unsigned lengthToReplace, const StringView& replacement)
     {
         if (m_impl)
-            m_impl = m_impl->replace(index, len, b.impl());
-        return *this;
-    }
-
-    ALWAYS_INLINE String& replace(UChar a, const char* characters)
-    {
-        ASSERT(characters);
-        if (m_impl)
-            m_impl = m_impl->replace(a, characters, strlen(characters));
+            m_impl = m_impl->replace(index, lengthToReplace, replacement);
         return *this;
     }
 
