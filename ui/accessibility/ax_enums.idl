@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(nektar): Migrate entire file to Mojoq.
 // These should be kept in sync with third_party/WebKit/public/web/WebAXEnums.h
 // until the Chromium and Blink trees are merged.
 [camel_case_enum_to_string=true] namespace ui {
@@ -419,13 +420,18 @@
     word_ends
   };
 
-  [cpp_enum_prefix_override="ax_marker_type"] enum AXMarkerType {
+  enum AXMarkerType {
+    // Assignments are ignored by the parser, but are kept here for clarity.
     spelling = 1,
     grammar = 2,
-    text_match = 4
+    spelling_grammar = 3,
+    text_match = 4,
+    spelling_text_match = 5,
+    grammar_text_match = 6,
+    spelling_grammar_text_match = 7
   };
 
-  [cpp_enum_prefix_override="ax_text_direction"] enum AXTextDirection {
+  enum AXTextDirection {
     ltr,
     rtl,
     ttb,
@@ -434,8 +440,8 @@
 
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.accessibility
-  // TODO(nektar): Fix compiler to create bit fields.
   [cpp_enum_prefix_override="ax"] enum AXTextStyle {
+    // Assignments are ignored by the parser, but are kept here for clarity.
     text_style_bold = 1,
     text_style_italic = 2,
     text_style_bold_italic = 3,
@@ -443,10 +449,17 @@
     text_style_bold_underline = 5,
     text_style_italic_underline = 6,
     text_style_bold_italic_underline = 7,
-    text_style_line_through = 8
+    text_style_line_through = 8,
+    text_style_bold_line_through = 9,
+    text_style_italic_line_through = 10,
+    text_style_bold_italic_line_through = 11,
+    text_style_underline_line_through = 12,
+    text_style_bold_underline_line_through = 13,
+    text_style_italic_underline_line_through = 14,
+    text_style_bold_italic_underline_line_through = 15
   };
 
-  [cpp_enum_prefix_override="ax_aria_current_state"] enum AXAriaCurrentState {
+  enum AXAriaCurrentState {
     false,
     true,
     page,
@@ -456,7 +469,7 @@
     time
   };
 
-  [cpp_enum_prefix_override="ax_invalid_state"] enum AXInvalidState {
+  enum AXInvalidState {
     false,
     true,
     spelling,
@@ -464,14 +477,14 @@
     other
   };
 
-  [cpp_enum_prefix_override="ax_sort_direction"] enum AXSortDirection {
+  enum AXSortDirection {
     unsorted,
     ascending,
     descending,
     other
   };
 
-  [cpp_enum_prefix_override="ax_name_from"] enum AXNameFrom {
+  enum AXNameFrom {
     uninitialized,
     attribute,
     contents,
@@ -480,8 +493,8 @@
     value
   };
 
-  [cpp_enum_prefix_override="ax_description_from"] enum AXDescriptionFrom {
-    uninitialized = 0,
+  enum AXDescriptionFrom {
+    uninitialized,
     attribute,
     contents,
     placeholder,
@@ -510,8 +523,8 @@
   };
 
   enum AXTextAffinity {
-    downstream = 0,
-    upstream = 1
+    downstream,
+    upstream
   };
 
   // Compares two nodes in an accessibility tree in pre-order traversal.
