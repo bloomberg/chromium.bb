@@ -32050,6 +32050,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLSignatureAlgorithm" enum="SSLSignatureAlgorithm">
+  <owner>davidben@chromium.org</owner>
   <summary>
     For each SSL connection with a full handshake using a DHE- or ECDHE-based
     key exchange, the signature algorithm used to authenticate the peer. In TLS
