@@ -796,6 +796,9 @@ public:
     virtual bool hasControlClip() const { return false; }
     virtual LayoutRect controlClipRect(const LayoutPoint&) const { return LayoutRect(); }
 
+    // Returns the combination of overflow clip, contain: paint clip and CSS clip for this object, in local space.
+    LayoutRect clippingRect() const;
+
     virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) const;
     virtual void paintMask(const PaintInfo&, const LayoutPoint&) const;
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;

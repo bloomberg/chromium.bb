@@ -581,14 +581,8 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 
 static IntRect clipBox(LayoutBox* layoutObject)
 {
-    LayoutRect result = LayoutRect(LayoutRect::infiniteIntRect());
-    if (layoutObject->hasOverflowClip() || layoutObject->style()->containsPaint())
-        result = layoutObject->overflowClipRect(LayoutPoint());
-
-    if (layoutObject->hasClip())
-        result.intersect(layoutObject->clipRect(LayoutPoint()));
-
-    return pixelSnappedIntRect(result);
+    // TODO(chrishtr): pixel snapping is most likely incorrect here.
+    return pixelSnappedIntRect(layoutObject->clippingRect());
 }
 
 static LayoutPoint computeOffsetFromCompositedAncestor(const PaintLayer* layer, const PaintLayer* compositedAncestor)

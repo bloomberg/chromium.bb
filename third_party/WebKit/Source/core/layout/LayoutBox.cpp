@@ -1011,19 +1011,35 @@ IntSize LayoutBox::scrolledContentOffset() const
     return result;
 }
 
+
+LayoutRect LayoutBox::clippingRect() const
+{
+    LayoutRect result = LayoutRect(LayoutRect::infiniteIntRect());
+    if (hasOverflowClip() || style()->containsPaint())
+        result = overflowClipRect(LayoutPoint());
+
+    if (hasClip())
+        result.intersect(clipRect(LayoutPoint()));
+
+    return result;
+}
+
 bool LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect, ApplyOverflowClipFlag applyOverflowClip, VisualRectFlags visualRectFlags) const
 {
-    if (!hasOverflowClip())
+    if (!hasClipRelatedProperty())
         return true;
 
-    if (applyOverflowClip == ApplyNonScrollOverflowClip && scrollsOverflow()) {
+    if (applyOverflowClip == ApplyNonScrollOverflowClip && scrollsOverflow())
         return true;
+
+    if (hasOverflowClip()) {
+        LayoutSize offset = LayoutSize(-scrolledContentOffset());
+        rect.move(offset);
     }
 
-    LayoutSize offset = LayoutSize(-scrolledContentOffset());
-    rect.move(offset);
-
-    LayoutRect clipRect = overflowClipRect(LayoutPoint());
+    // This won't work fully correctly for fixed-position elements, who should receive CSS clip but for whom the current object
+    // is not in the containing block chain.
+    LayoutRect clipRect = clippingRect();
 
     bool doesIntersect;
     if (visualRectFlags & EdgeInclusive) {
@@ -1032,6 +1048,7 @@ bool LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect, ApplyOverfl
         rect.intersect(clipRect);
         doesIntersect = !rect.isEmpty();
     }
+
     return doesIntersect;
 }
 

@@ -311,7 +311,7 @@ void PaintInvalidationState::updateForNormalChildren()
         m_paintOffset -= toLayoutBox(m_currentObject).locationOffset();
     }
 
-    if (!m_currentObject.hasOverflowClip())
+    if (!m_currentObject.hasClipRelatedProperty())
         return;
 
     const LayoutBox& box = toLayoutBox(m_currentObject);
@@ -321,8 +321,11 @@ void PaintInvalidationState::updateForNormalChildren()
     if (box == m_paintInvalidationContainer && box.scrollsOverflow()) {
         DCHECK(!m_clipped); // The box establishes paint invalidation container, so no m_clipped inherited.
     } else {
-        addClipRectRelativeToPaintOffset(box.overflowClipRect(LayoutPoint()));
-        m_paintOffset -= box.scrolledContentOffset();
+        // This won't work fully correctly for fixed-position elements, who should receive CSS clip but for whom the current object
+        // is not in the containing block chain.
+        addClipRectRelativeToPaintOffset(box.clippingRect());
+        if (box.hasOverflowClip())
+            m_paintOffset -= box.scrolledContentOffset();
     }
 
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.

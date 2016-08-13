@@ -578,4 +578,40 @@ TEST_F(VisualRectMappingTest, ContainerOfAbsoluteAbovePaintInvalidationContainer
     checkPaintInvalidationStateRectMapping(rect, absoluteOverflowRect, *absolute, layoutView(), *stackingContext);
 }
 
+TEST_F(VisualRectMappingTest, CSSClip)
+{
+    setBodyInnerHTML(
+        "<div id='container' style='position: absolute; top: 0px; left: 0px; clip: rect(0px, 200px, 200px, 0px)'>"
+        "    <div id='target' style='width: 400px; height: 400px'></div>"
+        "    </div>"
+        "</div>");
+
+    LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
+
+    LayoutRect targetOverflowRect = target->localOverflowRectForPaintInvalidation();
+    EXPECT_EQ(LayoutRect(0, 0, 400, 400), targetOverflowRect);
+    LayoutRect rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+    EXPECT_EQ(LayoutRect(0, 0, 200, 200), rect);
+    checkPaintInvalidationStateRectMapping(rect, targetOverflowRect, *target, layoutView(), layoutView());
+}
+
+TEST_F(VisualRectMappingTest, ContainPaint)
+{
+    setBodyInnerHTML(
+        "<div id='container' style='position: absolute; top: 0px; left: 0px; width: 200px; height: 200px; contain: paint'>"
+        "    <div id='target' style='width: 400px; height: 400px'></div>"
+        "    </div>"
+        "</div>");
+
+    LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
+
+    LayoutRect targetOverflowRect = target->localOverflowRectForPaintInvalidation();
+    EXPECT_EQ(LayoutRect(0, 0, 400, 400), targetOverflowRect);
+    LayoutRect rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+    EXPECT_EQ(LayoutRect(0, 0, 200, 200), rect);
+    checkPaintInvalidationStateRectMapping(rect, targetOverflowRect, *target, layoutView(), layoutView());
+}
+
 } // namespace blink

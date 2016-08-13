@@ -2414,7 +2414,7 @@ bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) 
 
     // We can't consult child layers if we clip, since they might cover
     // parts of the rect that are clipped out.
-    if (layoutObject()->hasOverflowClip() || layoutObject()->style()->containsPaint())
+    if (layoutObject()->hasClipRelatedProperty())
         return false;
 
     return childBackgroundIsKnownToBeOpaqueInRect(localRect);

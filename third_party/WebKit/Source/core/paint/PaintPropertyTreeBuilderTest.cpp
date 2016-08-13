@@ -898,9 +898,8 @@ TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant)
     EXPECT_EQ(frameView->contentClip(), clipProperties->cssClip()->parent());
     EXPECT_EQ(frameView->scrollTranslation(), clipProperties->cssClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(FloatRect(absoluteClipRect)), clipProperties->cssClip()->clipRect());
-    // TODO(chrishtr): GeomeryMapper rports 40x60 size (i.e. including clip), whereas the old code reports 100x100 (unclipped).
-    // Fix.
-    // CHECK_EXACT_VISUAL_RECT(clip, frameView->layoutView());
+// TODO(chrishtr): the old visual rect code is not able to apply CSS clip to fixed-position elements.
+//    CHECK_EXACT_VISUAL_RECT(clip, frameView->layoutView());
 
     LayoutObject* fixed = document().getElementById("fixed")->layoutObject();
     const ObjectPaintProperties* fixedProperties = fixed->objectPaintProperties();
@@ -909,6 +908,52 @@ TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant)
     EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->propertyTreeState.transform->matrix());
     EXPECT_EQ(LayoutPoint(), fixedProperties->localBorderBoxProperties()->paintOffset);
     CHECK_EXACT_VISUAL_RECT(fixed, frameView->layoutView());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant)
+{
+    // This test verifies that clip tree hierarchy being generated correctly for the hard case
+    // such that a fixed position element getting clipped by an absolute position CSS clip.
+    setBodyInnerHTML(
+        "<style>"
+        "  #clip {"
+        "    position: absolute;"
+        "    left: 123px;"
+        "    top: 456px;"
+        "    clip: rect(10px, 80px, 70px, 40px);"
+        "    width: 100px;"
+        "    height: 100px;"
+        "  }"
+        "  #abs {"
+        "    position: absolute;"
+        "    left: 654px;"
+        "    top: 321px;"
+        "    width: 10px;"
+        "    heght: 20px"
+        "  }"
+        "</style>"
+        "<div id='clip'><div id='absolute'></div></div>"
+    );
+    LayoutRect localClipRect(40, 10, 40, 60);
+    LayoutRect absoluteClipRect = localClipRect;
+    absoluteClipRect.move(123, 456);
+
+    FrameView* frameView = document().view();
+
+    LayoutObject* clip = document().getElementById("clip")->layoutObject();
+    const ObjectPaintProperties* clipProperties = clip->objectPaintProperties();
+    EXPECT_EQ(frameView->contentClip(), clipProperties->cssClip()->parent());
+    EXPECT_EQ(frameView->scrollTranslation(), clipProperties->cssClip()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(FloatRect(absoluteClipRect)), clipProperties->cssClip()->clipRect());
+// TODO(chrishtr): the old visual rect code is not able to apply CSS clip to fixed-position elements.
+//    CHECK_VISUAL_RECT(clip, frameView->layoutView());
+
+    LayoutObject* absolute = document().getElementById("absolute")->layoutObject();
+    const ObjectPaintProperties* absPosProperties = absolute->objectPaintProperties();
+    EXPECT_EQ(clipProperties->cssClip(), absPosProperties->localBorderBoxProperties()->propertyTreeState.clip);
+    EXPECT_EQ(frameView->preTranslation(), absPosProperties->localBorderBoxProperties()->propertyTreeState.transform->parent());
+    EXPECT_EQ(LayoutPoint(123, 456), absPosProperties->localBorderBoxProperties()->paintOffset);
+    CHECK_EXACT_VISUAL_RECT(absolute, frameView->layoutView());
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared)
