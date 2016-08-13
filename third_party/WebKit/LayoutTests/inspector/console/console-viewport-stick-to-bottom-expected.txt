@@ -603,11 +603,28 @@ Running: verifyViewportIsTallEnough
 Viewport contains 13 messages
 
 Running: testScrollViewportToBottom
-Last visible message: 149
+Is at bottom: true, should stick: true
 
 Running: testConsoleSticksToBottom
-Last visible message: 299
+Is at bottom: true, should stick: true
 
-Running: testManualScrollDoesNotStickToBottom
-Scroll preserved: true
+Running: testSmoothScrollDoesNotStickToBottom
+Is at bottom: false, should stick: false
+
+Running: testEscShouldNotJumpToBottom
+Is at bottom: false, should stick: false
+
+Running: testTypingShouldJumpToBottom
+Is at bottom: true, should stick: true
+
+Running: testViewportMutationsShouldPreserveStickToBottom
+Is at bottom: true, should stick: true
+Is at bottom: false, should stick: false
+
+Running: testMuteUpdatesWhileScrolling
+New messages were muted: true
+Refresh was scheduled after dirty state
+
+Running: testShouldNotJumpToBottomWhenPromptFillsEntireViewport
+Is at bottom: false, should stick: true
 

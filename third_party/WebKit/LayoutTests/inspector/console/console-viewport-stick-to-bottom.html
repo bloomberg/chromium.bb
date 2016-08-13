@@ -17,7 +17,8 @@ function populateConsoleWithMessages(count)
 
 function test()
 {
-    InspectorTest.fixConsoleViewportDimensions(600, 200);
+    var viewportHeight = 200;
+    InspectorTest.fixConsoleViewportDimensions(600, viewportHeight);
     var consoleView = WebInspector.ConsoleView.instance();
     var viewport = consoleView._viewport;
     const minimumViewportMessagesCount = 10;
@@ -45,9 +46,7 @@ function test()
         function testScrollViewportToBottom(next)
         {
             consoleView._immediatelyScrollToBottom();
-            viewport.refresh();
-            InspectorTest.addResult("Last visible message: " + viewport.lastVisibleIndex());
-            next();
+            dumpAndContinue(next);
         },
 
         function testConsoleSticksToBottom(next)
@@ -56,26 +55,113 @@ function test()
 
             function onMessagesDumped()
             {
-                viewport.invalidate();
-                // Force refresh which has been scheduled via invalidate() method.
-                viewport.refresh();
-                InspectorTest.addResult("Last visible message: " + viewport.lastVisibleIndex());
+                dumpAndContinue(next);
+            }
+        },
+
+        function testSmoothScrollDoesNotStickToBottom(next)
+        {
+            InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_updateViewportStickinessForTest", onUpdateTimeout);
+            sendPageUp();
+
+            function onUpdateTimeout()
+            {
+                dumpAndContinue(next);
+            }
+        },
+
+        function testEscShouldNotJumpToBottom(next)
+        {
+            var keyEvent = InspectorTest.createKeyEvent("Escape");
+            viewport._contentElement.dispatchEvent(keyEvent);
+            dumpAndContinue(next);
+        },
+
+        function testTypingShouldJumpToBottom(next)
+        {
+            var keyEvent = InspectorTest.createKeyEvent("a");
+            viewport._contentElement.dispatchEvent(keyEvent);
+            consoleView._prompt._proxyElement.dispatchEvent(new Event('input'));
+
+            dumpAndContinue(next);
+        },
+
+        function testViewportMutationsShouldPreserveStickToBottom(next)
+        {
+            viewport._contentElement.children[1].innerText = "More than 2 lines: foo\n\nbar";
+            dumpAndContinue(onMessagesDumped);
+
+            function onMessagesDumped()
+            {
+                viewport.setStickToBottom(false);
+                viewport._contentElement.children[1].innerText = "More than 3 lines: foo\n\n\nbar";
+                dumpAndContinue(next);
+            }
+        },
+
+        function testMuteUpdatesWhileScrolling(next)
+        {
+            consoleView._updateStickToBottomOnMouseDown();
+            viewport.element.scrollTop -= 10;
+
+            InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_scheduleViewportRefreshForTest", onMessageAdded);
+            InspectorTest.evaluateInConsole("1 + 1");
+
+            /**
+             * @param {boolean} muted
+             */
+            function onMessageAdded(muted)
+            {
+                InspectorTest.addResult("New messages were muted: " + muted);
+                InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_scheduleViewportRefreshForTest", onMouseUpScheduledRefresh);
+                InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_updateViewportStickinessForTest", onUpdateStickiness);
+                consoleView._updateStickToBottomOnMouseUp();
+            }
+
+            /**
+             * @param {boolean} muted
+             */
+            function onMouseUpScheduledRefresh(muted)
+            {
+                InspectorTest.addResult("Refresh was scheduled after dirty state");
+            }
+
+            function onUpdateStickiness()
+            {
                 next();
             }
         },
 
-        function testManualScrollDoesNotStickToBottom(next)
+        function testShouldNotJumpToBottomWhenPromptFillsEntireViewport(next)
         {
-            const manualScrollValue = 3;
-            var initialScrollTop = viewport.element.scrollTop;
-            viewport.element.scrollTop = initialScrollTop - manualScrollValue;
-            viewport.refresh();
-            var newScrollTop = viewport.element.scrollTop;
-            var isScrollPreserved = initialScrollTop - newScrollTop === manualScrollValue;
-            InspectorTest.addResult("Scroll preserved: " + isScrollPreserved);
-            next();
-        },
+            var text = "Foo";
+            for (var i = 0; i < viewportHeight; i++)
+                text += "\n";
+            consoleView._promptElement.textContent = text;
+            WebInspector.ConsoleView.clearConsole();
+            viewport.element.scrollTop -= 10;
+
+            var keyEvent = InspectorTest.createKeyEvent("a");
+            viewport._contentElement.dispatchEvent(keyEvent);
+            consoleView._prompt._proxyElement.dispatchEvent(new Event('input'));
+
+            dumpAndContinue(next);
+        }
     ];
+
+    function sendPageUp()
+    {
+        var keyEvent = InspectorTest.createKeyEvent("PageUp");
+        consoleView._prompt._proxyElement.dispatchEvent(keyEvent);
+        viewport.element.scrollTop -= 10;
+    }
+
+    function dumpAndContinue(callback)
+    {
+        viewport.refresh();
+        InspectorTest.addResult("Is at bottom: " + viewport.element.isScrolledToBottom() + ", should stick: " + viewport.stickToBottom());
+        callback();
+    }
 
     function logMessagesToConsole(count, callback)
     {
