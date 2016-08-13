@@ -89,9 +89,9 @@ LayoutRect LayoutSVGInline::absoluteClippedOverflowRect() const
     return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, *view());
 }
 
-void LayoutSVGInline::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags) const
+void LayoutSVGInline::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags flags) const
 {
-    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState);
+    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, flags);
 }
 
 const LayoutObject* LayoutSVGInline::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const

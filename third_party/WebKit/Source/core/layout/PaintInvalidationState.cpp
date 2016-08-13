@@ -82,7 +82,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
     , m_canCheckFastPathSlowPathEquality(parentState.m_canCheckFastPathSlowPathEquality)
 #endif
 {
-    ASSERT(&m_paintingLayer == currentObject.paintingLayer());
+    DCHECK(&m_paintingLayer == currentObject.paintingLayer());
 
     if (currentObject == parentState.m_currentObject) {
         // Sometimes we create a new PaintInvalidationState from parentState on the same object
@@ -94,7 +94,9 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
         return;
     }
 
-    ASSERT(parentState.m_didUpdateForChildren);
+#if ENABLE(ASSERT)
+    DCHECK(parentState.m_didUpdateForChildren);
+#endif
 
     if (currentObject.isPaintInvalidationContainer()) {
         m_paintInvalidationContainer = toLayoutBoxModelObject(&currentObject);
@@ -135,7 +137,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
             // Don't early return here, because the SVGRoot object needs to execute the later code
             // as a normal LayoutBox.
         } else {
-            ASSERT(currentObject != m_paintInvalidationContainer);
+            DCHECK(currentObject != m_paintInvalidationContainer);
             m_svgTransform *= currentObject.localToSVGParentTransform();
             return;
         }
@@ -184,7 +186,7 @@ void PaintInvalidationState::updateForCurrentObject(const PaintInvalidationState
         return;
 
     if (m_currentObject.isLayoutView()) {
-        ASSERT(&parentState.m_currentObject == toLayoutView(m_currentObject).frame()->ownerLayoutObject());
+        DCHECK(&parentState.m_currentObject == toLayoutView(m_currentObject).frame()->ownerLayoutObject());
         m_paintOffset += toLayoutBox(parentState.m_currentObject).contentBoxOffset();
         // a LayoutView paints with a defined size but a pixel-rounded offset.
         m_paintOffset = LayoutSize(roundedIntSize(m_paintOffset));
@@ -245,7 +247,7 @@ void PaintInvalidationState::updateForCurrentObject(const PaintInvalidationState
 void PaintInvalidationState::updateForChildren(PaintInvalidationReason reason)
 {
 #if ENABLE(ASSERT)
-    ASSERT(!m_didUpdateForChildren);
+    DCHECK(!m_didUpdateForChildren);
     m_didUpdateForChildren = true;
 #endif
 
@@ -317,7 +319,7 @@ void PaintInvalidationState::updateForNormalChildren()
     // Do not clip or scroll for the paint invalidation container, if it scrolls overflow, because it will always use composited
     // scrolling in this case.
     if (box == m_paintInvalidationContainer && box.scrollsOverflow()) {
-        ASSERT(!m_clipped); // The box establishes paint invalidation container, so no m_clipped inherited.
+        DCHECK(!m_clipped); // The box establishes paint invalidation container, so no m_clipped inherited.
     } else {
         addClipRectRelativeToPaintOffset(box.overflowClipRect(LayoutPoint()));
         m_paintOffset -= box.scrolledContentOffset();
@@ -342,7 +344,9 @@ static FloatPoint slowLocalToAncestorPoint(const LayoutObject& object, const Lay
 
 LayoutPoint PaintInvalidationState::computePositionFromPaintInvalidationBacking() const
 {
-    ASSERT(!m_didUpdateForChildren);
+#if ENABLE(ASSERT)
+    DCHECK(!m_didUpdateForChildren);
+#endif
 
     FloatPoint point;
     if (m_paintInvalidationContainer != &m_currentObject) {
@@ -351,8 +355,7 @@ LayoutPoint PaintInvalidationState::computePositionFromPaintInvalidationBacking(
                 point = m_svgTransform.mapPoint(point);
             point += FloatPoint(m_paintOffset);
 #ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
-            // TODO(wangxianzhu): We can't enable this ASSERT for now because of crbug.com/597745.
-            // ASSERT(point == slowLocalOriginToAncestorPoint(m_currentObject, m_paintInvalidationContainer, FloatPoint());
+            DCHECK(point == slowLocalOriginToAncestorPoint(m_currentObject, m_paintInvalidationContainer, FloatPoint());
 #endif
         } else {
             point = slowLocalToAncestorPoint(m_currentObject, *m_paintInvalidationContainer, FloatPoint());
@@ -367,7 +370,9 @@ LayoutPoint PaintInvalidationState::computePositionFromPaintInvalidationBacking(
 
 LayoutRect PaintInvalidationState::computePaintInvalidationRectInBacking() const
 {
-    ASSERT(!m_didUpdateForChildren);
+#if ENABLE(ASSERT)
+    DCHECK(!m_didUpdateForChildren);
+#endif
 
     if (m_currentObject.isSVG() && !m_currentObject.isSVGRoot())
         return computePaintInvalidationRectInBackingForSVG();
@@ -418,7 +423,9 @@ static void slowMapToVisualRectInAncestorSpace(const LayoutObject& object, const
 
 void PaintInvalidationState::mapLocalRectToPaintInvalidationContainer(LayoutRect& rect) const
 {
-    ASSERT(!m_didUpdateForChildren);
+#if ENABLE(ASSERT)
+    DCHECK(!m_didUpdateForChildren);
+#endif
 
     if (m_cachedOffsetsEnabled) {
 #ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
@@ -458,7 +465,7 @@ void PaintInvalidationState::addClipRectRelativeToPaintOffset(const LayoutRect& 
 
 PaintLayer& PaintInvalidationState::paintingLayer() const
 {
-    ASSERT(&m_paintingLayer == m_currentObject.paintingLayer());
+    DCHECK(&m_paintingLayer == m_currentObject.paintingLayer());
     return m_paintingLayer;
 }
 
