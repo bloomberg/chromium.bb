@@ -24,6 +24,7 @@ import zlib
 
 import devil_chromium
 from devil.utils import cmd_helper
+import method_count
 from pylib import constants
 from pylib.constants import host_paths
 
@@ -36,6 +37,7 @@ with host_paths.SysPath(_GRIT_PATH, 1):
 
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
   import perf_tests_results_helper # pylint: disable=import-error
+
 
 # Python had a bug in zipinfo parsing that triggers on ChromeModern.apk
 # https://bugs.python.org/issue14315
@@ -354,29 +356,52 @@ def _GetResourceIdNameMap():
   return id_name_map
 
 
-def PrintStaticInitializersCount(so_with_symbols_path, chartjson=None):
-  """Emits the performance result for static initializers found in the provided
-     shared library. Additionally, files for which static initializers were
-     found are printed on the standard output.
+def _PrintStaticInitializersCountFromApk(apk_filename, chartjson=None):
+  print 'Finding static initializers (can take a minute)'
+  with zipfile.ZipFile(apk_filename) as z:
+    namelist = z.namelist()
+  out_dir = constants.GetOutDirectory()
+  si_count = 0
+  for subpath in namelist:
+    if subpath.endswith('.so'):
+      unstripped_path = os.path.join(out_dir, 'lib.unstripped',
+                                     os.path.basename(subpath))
+      if os.path.exists(unstripped_path):
+        si_count += _PrintStaticInitializersCount(unstripped_path)
+      else:
+        raise Exception('Unstripped .so not found. Looked here: %s',
+                        unstripped_path)
+  ReportPerfResult(chartjson, 'StaticInitializersCount', 'count', si_count,
+                   'count')
+
+
+def _PrintStaticInitializersCount(so_with_symbols_path):
+  """Counts the number of static initializers in the given shared library.
+     Additionally, files for which static initializers were found are printed
+     on the standard output.
 
      Args:
        so_with_symbols_path: Path to the unstripped libchrome.so file.
+
+     Returns:
+       The number of static initializers found.
   """
   # GetStaticInitializers uses get-static-initializers.py to get a list of all
   # static initializers. This does not work on all archs (particularly arm).
   # TODO(rnephew): Get rid of warning when crbug.com/585588 is fixed.
   si_count = CountStaticInitializers(so_with_symbols_path)
   static_initializers = GetStaticInitializers(so_with_symbols_path)
-  if si_count != len(static_initializers):
+  static_initializers_count = len(static_initializers) - 1  # Minus summary.
+  if si_count != static_initializers_count:
     print ('There are %d files with static initializers, but '
            'dump-static-initializers found %d:' %
-           (si_count, len(static_initializers)))
+           (si_count, static_initializers_count))
   else:
-    print 'Found %d files with static initializers:' % si_count
+    print '%s - Found %d files with static initializers:' % (
+        os.path.basename(so_with_symbols_path), si_count)
   print '\n'.join(static_initializers)
 
-  ReportPerfResult(chartjson, 'StaticInitializersCount', 'count',
-                   si_count, 'count')
+  return si_count
 
 def _FormatBytes(byts):
   """Pretty-print a number of bytes."""
@@ -398,6 +423,19 @@ def _CalculateCompressedSize(file_path):
       total_size += len(compressor.compress(chunk))
   total_size += len(compressor.flush())
   return total_size
+
+
+def _PrintDexAnalysis(apk_filename, chartjson=None):
+  sizes = method_count.ExtractSizesFromZip(apk_filename)
+
+  graph_title = os.path.basename(apk_filename) + '_Dex'
+  dex_metrics = method_count.CONTRIBUTORS_TO_DEX_CACHE
+  for key, label in dex_metrics.iteritems():
+    ReportPerfResult(chartjson, graph_title, label, sizes[key], 'entries')
+
+  graph_title = '%sCache' % graph_title
+  ReportPerfResult(chartjson, graph_title, 'DexCache', sizes['dex_cache_size'],
+                   'bytes')
 
 
 def main(argv):
@@ -444,8 +482,9 @@ Pass any number of files to graph their sizes. Any files with the extension
   devil_chromium.Initialize()
 
   if options.so_with_symbols_path:
-    PrintStaticInitializersCount(
-        options.so_with_symbols_path, chartjson=chartjson)
+    si_count = _PrintStaticInitializersCount(options.so_with_symbols_path)
+    ReportPerfResult(chartjson, 'StaticInitializersCount', 'count', si_count,
+                     'count')
 
   PrintResourceSizes(files, chartjson=chartjson)
 
@@ -453,6 +492,9 @@ Pass any number of files to graph their sizes. Any files with the extension
     if f.endswith('.apk'):
       PrintApkAnalysis(f, chartjson=chartjson)
       PrintPakAnalysis(f, options.min_pak_resource_size)
+      _PrintDexAnalysis(f, chartjson=chartjson)
+      if not options.so_with_symbols_path:
+        _PrintStaticInitializersCountFromApk(f, chartjson=chartjson)
 
   if chartjson:
     results_path = os.path.join(options.output_dir, 'results-chart.json')
