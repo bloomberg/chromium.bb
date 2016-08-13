@@ -124,9 +124,10 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
   timing.navigation_start = base::Time::FromDoubleT(start);
   if (perf.responseStart() > 0.0)
     timing.response_start = ClampDelta(perf.responseStart(), start);
-  if (perf.domContentLoadedEventStart() > 0.0)
+  if (perf.domContentLoadedEventStart() > 0.0) {
     timing.dom_content_loaded_event_start =
         ClampDelta(perf.domContentLoadedEventStart(), start);
+  }
   if (perf.loadEventStart() > 0.0)
     timing.load_event_start = ClampDelta(perf.loadEventStart(), start);
   if (perf.firstLayout() > 0.0)
@@ -137,9 +138,14 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
     timing.first_text_paint = ClampDelta(perf.firstTextPaint(), start);
   if (perf.firstImagePaint() > 0.0)
     timing.first_image_paint = ClampDelta(perf.firstImagePaint(), start);
-  if (perf.firstContentfulPaint() > 0.0)
+  if (perf.firstContentfulPaint() > 0.0) {
     timing.first_contentful_paint =
         ClampDelta(perf.firstContentfulPaint(), start);
+  }
+  if (perf.firstMeaningfulPaint() > 0.0) {
+    timing.first_meaningful_paint =
+        ClampDelta(perf.firstMeaningfulPaint(), start);
+  }
   if (perf.parseStart() > 0.0)
     timing.parse_start = ClampDelta(perf.parseStart(), start);
   if (perf.parseStop() > 0.0)

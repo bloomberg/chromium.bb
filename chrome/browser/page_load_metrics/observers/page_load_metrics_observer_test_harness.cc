@@ -53,6 +53,9 @@ PageLoadMetricsObserverTestHarness::~PageLoadMetricsObserverTestHarness() {}
 // static
 void PageLoadMetricsObserverTestHarness::PopulateRequiredTimingFields(
     PageLoadTiming* inout_timing) {
+  if (inout_timing->first_meaningful_paint && !inout_timing->first_paint) {
+    inout_timing->first_paint = inout_timing->first_meaningful_paint;
+  }
   if (inout_timing->first_contentful_paint && !inout_timing->first_paint) {
     inout_timing->first_paint = inout_timing->first_contentful_paint;
   }

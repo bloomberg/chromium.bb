@@ -548,3 +548,52 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
       internal::kHistogramLoadTypeParseStartNewNavigation,
       timing.parse_start.value().InMilliseconds(), 1);
 }
+
+TEST_F(CorePageLoadMetricsObserverTest, FirstMeaningfulPaint) {
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_start = base::TimeDelta::FromMilliseconds(5);
+  timing.first_meaningful_paint = base::TimeDelta::FromMilliseconds(10);
+  PopulateRequiredTimingFields(&timing);
+
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing);
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFirstMeaningfulPaint, 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramParseStartToFirstMeaningfulPaint, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramFirstMeaningfulPaintStatus,
+      internal::FIRST_MEANINGFUL_PAINT_RECORDED, 1);
+}
+
+TEST_F(CorePageLoadMetricsObserverTest, FirstMeaningfulPaintAfterInteraction) {
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_start = base::TimeDelta::FromMilliseconds(5);
+  timing.first_paint = base::TimeDelta::FromMilliseconds(10);
+  PopulateRequiredTimingFields(&timing);
+
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing);
+
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  SimulateInputEvent(mouse_event);
+
+  timing.first_meaningful_paint = base::TimeDelta::FromMilliseconds(1000);
+  PopulateRequiredTimingFields(&timing);
+  SimulateTimingUpdate(timing);
+
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFirstMeaningfulPaint, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramParseStartToFirstMeaningfulPaint, 0);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramFirstMeaningfulPaintStatus,
+      internal::FIRST_MEANINGFUL_PAINT_USER_INTERACTION_BEFORE_FMP, 1);
+}

@@ -190,6 +190,11 @@ double WebPerformance::firstContentfulPaint() const
     return millisecondsToSeconds(m_private->timing()->firstContentfulPaint());
 }
 
+double WebPerformance::firstMeaningfulPaint() const
+{
+    return millisecondsToSeconds(m_private->timing()->firstMeaningfulPaint());
+}
+
 double WebPerformance::parseStart() const
 {
     return millisecondsToSeconds(m_private->timing()->parseStart());

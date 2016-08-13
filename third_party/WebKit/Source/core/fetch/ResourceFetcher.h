@@ -91,6 +91,7 @@ public:
     void clearContext();
 
     int requestCount() const;
+    bool hasPendingRequest() const;
 
     enum ClearPreloadsPolicy { ClearAllPreloads, ClearSpeculativeMarkupPreloads };
 

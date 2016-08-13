@@ -92,6 +92,9 @@ public:
     // The time of the first 'contentful' paint. A contentful paint is a paint
     // that includes content of some kind (for example, text or image content).
     unsigned long long firstContentfulPaint() const;
+    // The time of the first 'meaningful' paint, A meaningful paint is a paint
+    // where the page's primary content is visible.
+    unsigned long long firstMeaningfulPaint() const;
 
     unsigned long long parseStart() const;
     unsigned long long parseStop() const;

@@ -155,9 +155,7 @@ public:
     void updateElementIdAndCompositorMutableProperties();
 
     // GraphicsLayerClient interface
-    void notifyFirstPaint() override;
-    void notifyFirstTextPaint() override;
-    void notifyFirstImagePaint() override;
+    void notifyPaint(bool isFirstPaint, bool textPainted, bool imagePainted) override;
 
     IntRect computeInterestRect(const GraphicsLayer*, const IntRect& previousInterestRect) const override;
     LayoutSize subpixelAccumulation() const final;

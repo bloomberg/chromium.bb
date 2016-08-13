@@ -62,9 +62,7 @@ class PLATFORM_EXPORT GraphicsLayerClient {
 public:
     virtual ~GraphicsLayerClient() {}
 
-    virtual void notifyFirstPaint() { }
-    virtual void notifyFirstTextPaint() { }
-    virtual void notifyFirstImagePaint() { }
+    virtual void notifyPaint(bool isFirstPaint, bool textPainted, bool imagePainted) { }
 
     virtual IntRect computeInterestRect(const GraphicsLayer*, const IntRect& previousInterestRect) const = 0;
     virtual LayoutSize subpixelAccumulation() const { return LayoutSize(); }

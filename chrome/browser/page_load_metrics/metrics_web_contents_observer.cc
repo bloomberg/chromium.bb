@@ -176,6 +176,13 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
     return false;
   }
 
+  if (!EventsInOrder(timing.first_paint, timing.first_meaningful_paint)) {
+    NOTREACHED() << "Invalid first_paint " << timing.first_paint
+                 << " for first_meaningful_paint "
+                 << timing.first_meaningful_paint;
+    return false;
+  }
+
   return true;
 }
 
@@ -235,6 +242,8 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
     observer->OnFirstImagePaint(new_timing, extra_info);
   if (new_timing.first_contentful_paint && !last_timing.first_contentful_paint)
     observer->OnFirstContentfulPaint(new_timing, extra_info);
+  if (new_timing.first_meaningful_paint && !last_timing.first_meaningful_paint)
+    observer->OnFirstMeaningfulPaint(new_timing, extra_info);
   if (new_timing.parse_start && !last_timing.parse_start)
     observer->OnParseStart(new_timing, extra_info);
   if (new_timing.parse_stop && !last_timing.parse_stop)

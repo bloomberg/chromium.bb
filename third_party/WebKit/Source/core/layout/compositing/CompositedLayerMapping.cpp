@@ -2537,22 +2537,10 @@ void CompositedLayerMapping::verifyNotPainting()
 }
 #endif
 
-void CompositedLayerMapping::notifyFirstPaint()
+void CompositedLayerMapping::notifyPaint(bool isFirstPaint, bool textPainted, bool imagePainted)
 {
     if (PaintTiming* timing = m_owningLayer.paintTiming())
-        timing->markFirstPaint();
-}
-
-void CompositedLayerMapping::notifyFirstTextPaint()
-{
-    if (PaintTiming* timing = m_owningLayer.paintTiming())
-        timing->markFirstTextPaint();
-}
-
-void CompositedLayerMapping::notifyFirstImagePaint()
-{
-    if (PaintTiming* timing = m_owningLayer.paintTiming())
-        timing->markFirstImagePaint();
+        timing->notifyPaint(isFirstPaint, textPainted, imagePainted);
 }
 
 IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const

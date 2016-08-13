@@ -184,6 +184,8 @@ class PageLoadMetricsObserver {
                                  const PageLoadExtraInfo& extra_info) {}
   virtual void OnFirstContentfulPaint(const PageLoadTiming& timing,
                                       const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstMeaningfulPaint(const PageLoadTiming& timing,
+                                      const PageLoadExtraInfo& extra_info) {}
   virtual void OnParseStart(const PageLoadTiming& timing,
                             const PageLoadExtraInfo& extra_info) {}
   virtual void OnParseStop(const PageLoadTiming& timing,

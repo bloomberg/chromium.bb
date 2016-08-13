@@ -238,6 +238,8 @@ LayoutObject::LayoutObject(Node* node)
     if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
         m_previousPositionFromPaintInvalidationBacking = uninitializedPaintOffset();
     InstanceCounters::incrementCounter(InstanceCounters::LayoutObjectCounter);
+    if (m_node)
+        frameView()->incrementLayoutObjectCount();
 }
 
 LayoutObject::~LayoutObject()

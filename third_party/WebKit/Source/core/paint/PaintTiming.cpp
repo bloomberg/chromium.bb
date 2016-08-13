@@ -65,14 +65,35 @@ void PaintTiming::markFirstImagePaint()
     notifyPaintTimingChanged();
 }
 
+void PaintTiming::setFirstMeaningfulPaint(double stamp)
+{
+    DCHECK_EQ(m_firstMeaningfulPaint, 0.0);
+    m_firstMeaningfulPaint = stamp;
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "firstMeaningfulPaint", m_firstMeaningfulPaint, "frame", frame());
+    notifyPaintTimingChanged();
+}
+
+void PaintTiming::notifyPaint(bool isFirstPaint, bool textPainted, bool imagePainted)
+{
+    if (isFirstPaint)
+        markFirstPaint();
+    if (textPainted)
+        markFirstTextPaint();
+    if (imagePainted)
+        markFirstImagePaint();
+    m_fmpDetector->notifyPaint();
+}
+
 DEFINE_TRACE(PaintTiming)
 {
     visitor->trace(m_document);
+    visitor->trace(m_fmpDetector);
     Supplement<Document>::trace(visitor);
 }
 
 PaintTiming::PaintTiming(Document& document)
     : m_document(document)
+    , m_fmpDetector(new FirstMeaningfulPaintDetector(this))
 {
 }
 

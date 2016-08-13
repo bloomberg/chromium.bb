@@ -38249,6 +38249,50 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintStatus"
+    enum="FirstMeaningfulPaintStatus">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Records whether the First Meaningful Paint metric was reported for the page
+    load, or why it wasn't if not. See http://bit.ly/ttfmp-doc for the
+    definition of First Meaningful Paint.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintToNetworkStable"
+    units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Measures the time between when the first meaningful paint
+    (http://bit.ly/ttfmp-doc) was computed to have happened, and when we
+    actually logged the metric.
+
+    This metric is useful in helping us tweak when FirstMeaningfulPaintDetector
+    should stop observing layout operations.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"
+    units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the first
+    meaningful paint (http://bit.ly/ttfmp-doc), for main frame documents.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint"
+    units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Measures the time from when the HTML parser started, to the first meaningful
+    paint (http://bit.ly/ttfmp-doc), for main frame documents.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Experimental.ParseDuration.CachePercent.0-50"
     units="ms">
   <owner>csharrison@chromium.org</owner>
@@ -79433,6 +79477,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="18" label=".mov"/>
   <int value="19" label=".mpg"/>
   <int value="20" label=".log"/>
+</enum>
+
+<enum name="FirstMeaningfulPaintStatus" type="int">
+  <int value="0" label="Recorded successfully"/>
+  <int value="1" label="The page was backgrounded"/>
+  <int value="2" label="User left the page before network stable"/>
+  <int value="3" label="Not recorded because of user interaction"/>
 </enum>
 
 <enum name="FlashNavigateUsageType" type="int">

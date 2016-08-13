@@ -377,3 +377,51 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramAbortClientRedirectBeforeCommit, 1);
 }
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       FirstMeaningfulPaintRecorded) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+
+  // Wait until the renderer finishes observing layouts.
+  const int kNetworkIdleTime = 2000;
+  const int kMargin = 500;
+  const std::string javascript = base::StringPrintf(
+      "setTimeout(() => window.domAutomationController.send(true), %d)",
+      kNetworkIdleTime + kMargin);
+  bool result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      javascript, &result));
+  EXPECT_TRUE(result);
+
+  NavigateToUntrackedUrl();
+  histogram_tester_.ExpectUniqueSample(
+      internal::kHistogramFirstMeaningfulPaintStatus,
+      internal::FIRST_MEANINGFUL_PAINT_RECORDED, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramFirstMeaningfulPaint, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramParseStartToFirstMeaningfulPaint, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       FirstMeaningfulPaintNotRecorded) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+
+  // Navigate away before a FMP is reported.
+  NavigateToUntrackedUrl();
+
+  histogram_tester_.ExpectUniqueSample(
+      internal::kHistogramFirstMeaningfulPaintStatus,
+      internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_NETWORK_STABLE, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramFirstMeaningfulPaint, 0);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramParseStartToFirstMeaningfulPaint, 0);
+}

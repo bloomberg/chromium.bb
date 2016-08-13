@@ -6,6 +6,7 @@
 #define PaintTiming_h
 
 #include "core/dom/Document.h"
+#include "core/paint/FirstMeaningfulPaintDetector.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
@@ -16,7 +17,7 @@ class LocalFrame;
 
 // PaintTiming is responsible for tracking paint-related timings for a given
 // document.
-class PaintTiming final : public GarbageCollectedFinalized<PaintTiming>, public Supplement<Document> {
+class CORE_EXPORT PaintTiming final : public GarbageCollectedFinalized<PaintTiming>, public Supplement<Document> {
     WTF_MAKE_NONCOPYABLE(PaintTiming);
     USING_GARBAGE_COLLECTED_MIXIN(PaintTiming);
 public:
@@ -39,6 +40,9 @@ public:
     void markFirstTextPaint();
     void markFirstImagePaint();
 
+    void setFirstMeaningfulPaint(double stamp);
+    void notifyPaint(bool isFirstPaint, bool textPainted, bool imagePainted);
+
     // The getters below return monotonically-increasing seconds, or zero if the
     // given paint event has not yet occurred. See the comments for
     // monotonicallyIncreasingTime in wtf/CurrentTime.h for additional details.
@@ -57,6 +61,13 @@ public:
 
     // firstImagePaint returns the first time that image content was painted.
     double firstImagePaint() const { return m_firstImagePaint; }
+
+    // firstMeaningfulPaint returns the first time that page's primary content
+    // was painted.
+    double firstMeaningfulPaint() const { return m_firstMeaningfulPaint; }
+
+    Document* document() { return m_document.get(); }
+    FirstMeaningfulPaintDetector& firstMeaningfulPaintDetector() { return *m_fmpDetector; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -81,8 +92,10 @@ private:
     double m_firstTextPaint = 0.0;
     double m_firstImagePaint = 0.0;
     double m_firstContentfulPaint = 0.0;
+    double m_firstMeaningfulPaint = 0.0;
 
     Member<Document> m_document;
+    Member<FirstMeaningfulPaintDetector> m_fmpDetector;
 };
 
 } // namespace blink

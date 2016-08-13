@@ -90,6 +90,7 @@ public:
     BLINK_EXPORT double firstTextPaint() const;
     BLINK_EXPORT double firstImagePaint() const;
     BLINK_EXPORT double firstContentfulPaint() const;
+    BLINK_EXPORT double firstMeaningfulPaint() const;
     BLINK_EXPORT double parseStart() const;
     BLINK_EXPORT double parseStop() const;
     BLINK_EXPORT double parseBlockedOnScriptLoadDuration() const;

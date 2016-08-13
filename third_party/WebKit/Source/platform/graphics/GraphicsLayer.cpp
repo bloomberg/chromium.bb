@@ -128,8 +128,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_hasScrollParent(false)
     , m_hasClipParent(false)
     , m_painted(false)
-    , m_textPainted(false)
-    , m_imagePainted(false)
     , m_isTrackingPaintInvalidations(client && client->isTrackingPaintInvalidations())
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
     , m_parent(0)
@@ -382,25 +380,19 @@ bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsCont
 
 void GraphicsLayer::notifyFirstPaintToClient()
 {
+    bool isFirstPaint = false;
     if (!m_painted) {
         DisplayItemList& itemList = m_paintController->newDisplayItemList();
         for (DisplayItem& item : itemList) {
             DisplayItem::Type type = item.getType();
             if (DisplayItem::isDrawingType(type) && type != DisplayItem::DocumentBackground && static_cast<const DrawingDisplayItem&>(item).picture()) {
                 m_painted = true;
-                m_client->notifyFirstPaint();
+                isFirstPaint = true;
                 break;
             }
         }
     }
-    if (!m_textPainted && m_paintController->textPainted()) {
-        m_textPainted = true;
-        m_client->notifyFirstTextPaint();
-    }
-    if (!m_imagePainted && m_paintController->imagePainted()) {
-        m_imagePainted = true;
-        m_client->notifyFirstImagePaint();
-    }
+    m_client->notifyPaint(isFirstPaint, m_paintController->textPainted(), m_paintController->imagePainted());
 }
 
 void GraphicsLayer::updateChildList()

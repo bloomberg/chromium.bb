@@ -59,6 +59,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
+#include "core/paint/FirstMeaningfulPaintDetector.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
@@ -435,6 +436,8 @@ void FrameFetchContext::didLoadResource(Resource* resource)
 {
     if (resource->isLoadEventBlockingResourceType())
         frame()->loader().checkCompleted();
+    if (m_document)
+        FirstMeaningfulPaintDetector::from(*m_document).checkNetworkStable();
 }
 
 void FrameFetchContext::addResourceTiming(const ResourceTimingInfo& info)

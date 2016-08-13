@@ -52,6 +52,8 @@ struct PageLoadTiming {
   base::Optional<base::TimeDelta> first_image_paint;
   // Time when the first contentful thing (image, text, etc.) is painted.
   base::Optional<base::TimeDelta> first_contentful_paint;
+  // (Experimental) Time when the page's primary content is painted.
+  base::Optional<base::TimeDelta> first_meaningful_paint;
 
   // Time that the document's parser started and stopped parsing main resource
   // content.

@@ -230,6 +230,7 @@ void FrameView::reset()
     m_visuallyNonEmptyCharacterCount = 0;
     m_visuallyNonEmptyPixelCount = 0;
     m_isVisuallyNonEmpty = false;
+    m_layoutObjectCounter.reset();
     clearFragmentAnchor();
     m_viewportConstrainedObjects.reset();
     m_layoutSubtreeRootList.clear();
@@ -869,8 +870,9 @@ void FrameView::performLayout(bool inSubtreeLayout)
 {
     ASSERT(inSubtreeLayout || m_layoutSubtreeRootList.isEmpty());
 
+    int contentsHeightBeforeLayout = layoutViewItem().documentRect().height();
     TRACE_EVENT_BEGIN1(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout",
-        "contentsHeightBeforeLayout", layoutViewItem().documentRect().height());
+        "contentsHeightBeforeLayout", contentsHeightBeforeLayout);
     prepareLayoutAnalyzer();
 
     ScriptForbiddenScope forbidScript;
@@ -912,6 +914,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
 
     TRACE_EVENT_END1(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout",
         "counters", analyzerCounters());
+    FirstMeaningfulPaintDetector::from(*m_frame->document()).markNextPaintAsMeaningfulIfNeeded(m_layoutObjectCounter, contentsHeightBeforeLayout, layoutViewItem().documentRect().height(), visibleHeight());
 }
 
 void FrameView::scheduleOrPerformPostLayoutTasks()

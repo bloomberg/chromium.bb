@@ -20,8 +20,10 @@ extern const char kHistogramFirstTextPaint[];
 extern const char kHistogramDomContentLoaded[];
 extern const char kHistogramLoad[];
 extern const char kHistogramFirstContentfulPaint[];
+extern const char kHistogramFirstMeaningfulPaint[];
 extern const char kHistogramParseDuration[];
 extern const char kHistogramParseBlockedOnScriptLoad[];
+extern const char kHistogramParseStartToFirstMeaningfulPaint[];
 
 extern const char kBackgroundHistogramCommit[];
 extern const char kBackgroundHistogramFirstLayout[];
@@ -42,6 +44,15 @@ extern const char kHistogramBackgroundBeforePaint[];
 extern const char kHistogramFailedProvisionalLoad[];
 
 extern const char kRapporMetricsNameCoarseTiming[];
+extern const char kHistogramFirstMeaningfulPaintStatus[];
+
+enum FirstMeaningfulPaintStatus {
+  FIRST_MEANINGFUL_PAINT_RECORDED,
+  FIRST_MEANINGFUL_PAINT_BACKGROUNDED,
+  FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_NETWORK_STABLE,
+  FIRST_MEANINGFUL_PAINT_USER_INTERACTION_BEFORE_FMP,
+  FIRST_MEANINGFUL_PAINT_LAST_ENTRY
+};
 
 }  // namespace internal
 
@@ -77,6 +88,9 @@ class CorePageLoadMetricsObserver
   void OnFirstContentfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnFirstMeaningfulPaint(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnParseStart(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
@@ -88,6 +102,7 @@ class CorePageLoadMetricsObserver
   void OnFailedProvisionalLoad(
       const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnUserInput(const blink::WebInputEvent& event) override;
 
  private:
   void RecordTimingHistograms(const page_load_metrics::PageLoadTiming& timing,
@@ -98,6 +113,9 @@ class CorePageLoadMetricsObserver
   ui::PageTransition transition_;
   bool initiated_by_user_gesture_;
   bool was_no_store_main_resource_;
+  bool had_first_paint_;
+  base::TimeTicks navigation_start_;
+  base::TimeTicks first_user_interaction_after_first_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(CorePageLoadMetricsObserver);
 };

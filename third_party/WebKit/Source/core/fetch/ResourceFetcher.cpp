@@ -864,6 +864,11 @@ int ResourceFetcher::requestCount() const
     return m_loaders.size();
 }
 
+bool ResourceFetcher::hasPendingRequest() const
+{
+    return m_loaders.size() > 0 && m_nonBlockingLoaders.size() > 0;
+}
+
 void ResourceFetcher::preloadStarted(Resource* resource)
 {
     if (m_preloads && m_preloads->contains(resource))

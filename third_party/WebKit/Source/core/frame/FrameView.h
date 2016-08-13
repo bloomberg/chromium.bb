@@ -32,6 +32,7 @@
 #include "core/frame/RootFrameViewport.h"
 #include "core/layout/ScrollAnchor.h"
 #include "core/layout/api/LayoutViewItem.h"
+#include "core/paint/FirstMeaningfulPaintDetector.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -262,6 +263,7 @@ public:
 
     bool invalidateViewportConstrainedObjects();
 
+    void incrementLayoutObjectCount() { m_layoutObjectCounter.increment(); }
     void incrementVisuallyNonEmptyCharacterCount(unsigned);
     void incrementVisuallyNonEmptyPixelCount(const IntSize&);
     bool isVisuallyNonEmpty() const { return m_isVisuallyNonEmpty; }
@@ -826,6 +828,7 @@ private:
     unsigned m_visuallyNonEmptyCharacterCount;
     uint64_t m_visuallyNonEmptyPixelCount;
     bool m_isVisuallyNonEmpty;
+    FirstMeaningfulPaintDetector::LayoutObjectCounter m_layoutObjectCounter;
 
     Member<Node> m_fragmentAnchor;
 

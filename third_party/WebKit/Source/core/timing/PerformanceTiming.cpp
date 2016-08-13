@@ -361,6 +361,15 @@ unsigned long long PerformanceTiming::firstContentfulPaint() const
     return monotonicTimeToIntegerMilliseconds(timing->firstContentfulPaint());
 }
 
+unsigned long long PerformanceTiming::firstMeaningfulPaint() const
+{
+    const PaintTiming* timing = paintTiming();
+    if (!timing)
+        return 0;
+
+    return monotonicTimeToIntegerMilliseconds(timing->firstMeaningfulPaint());
+}
+
 unsigned long long PerformanceTiming::parseStart() const
 {
     const DocumentParserTiming* timing = documentParserTiming();

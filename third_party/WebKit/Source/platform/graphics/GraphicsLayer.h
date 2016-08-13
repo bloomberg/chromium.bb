@@ -333,8 +333,6 @@ private:
     bool m_hasClipParent : 1;
 
     bool m_painted : 1;
-    bool m_textPainted : 1;
-    bool m_imagePainted : 1;
 
     bool m_isTrackingPaintInvalidations : 1;
 
