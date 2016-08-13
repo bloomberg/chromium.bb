@@ -62,6 +62,8 @@
             # Protocol definition
             'browser_protocol.json',
             '../../platform/v8_inspector/js_protocol.json',
+            # Config
+            'inspector_protocol_config.json'
           ],
           'outputs': [
             '<(blink_core_output_dir)/inspector/protocol/Accessibility.cpp',
@@ -122,13 +124,8 @@
           'action': [
             'python',
             '../../platform/inspector_protocol/CodeGenerator.py',
-            '--protocol', 'browser_protocol.json',
-            '--include', '../../platform/v8_inspector/js_protocol.json',
-            '--include_package', 'platform/v8_inspector/public/protocol',
-            '--string_type', 'String',
-            '--export_macro', 'CORE_EXPORT',
-            '--output_dir', '<(blink_core_output_dir)/inspector/protocol',
-            '--output_package', 'core/inspector/protocol',
+            '--output_base', '<(blink_core_output_dir)',
+            '--config', 'inspector_protocol_config.json',
           ],
           'message': 'Generating Inspector protocol backend sources from json definitions',
         },

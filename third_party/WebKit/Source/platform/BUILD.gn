@@ -203,6 +203,7 @@ action("inspector_protocol_sources") {
   ]
   inputs = [
     "v8_inspector/js_protocol.json",
+    "v8_inspector/inspector_protocol_config.json",
   ]
   outputs = [
     "$blink_platform_output_dir/v8_inspector/protocol/Console.cpp",
@@ -220,22 +221,10 @@ action("inspector_protocol_sources") {
   ]
 
   args = [
-    "--protocol",
-    rebase_path("v8_inspector/js_protocol.json", root_build_dir),
-    "--string_type",
-    "String16",
-    "--export_macro",
-    "PLATFORM_EXPORT",
-    "--output_dir",
-    rebase_path(blink_platform_output_dir + "/v8_inspector/protocol",
-                root_build_dir),
-    "--output_package",
-    "platform/v8_inspector/protocol",
-    "--exported_dir",
-    rebase_path(blink_platform_output_dir + "/v8_inspector/public/protocol",
-                root_build_dir),
-    "--exported_package",
-    "platform/v8_inspector/public/protocol",
+    "--output_base",
+    rebase_path(blink_platform_output_dir, root_build_dir),
+    "--config",
+    rebase_path("v8_inspector/inspector_protocol_config.json", root_build_dir),
   ]
 }
 

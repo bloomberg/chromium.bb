@@ -83,6 +83,8 @@
             '../inspector_protocol/Imported_h.template',
             # Protocol definitions
             'js_protocol.json',
+            # Config
+            'inspector_protocol_config.json',
           ],
           'outputs': [
             '<(blink_platform_output_dir)/v8_inspector/protocol/Console.cpp',
@@ -101,13 +103,8 @@
           'action': [
             'python',
             '../inspector_protocol/CodeGenerator.py',
-            '--protocol', 'js_protocol.json',
-            '--string_type', 'String16',
-            '--export_macro', 'PLATFORM_EXPORT',
-            '--output_dir', '<(blink_platform_output_dir)/v8_inspector/protocol',
-            '--output_package', 'platform/v8_inspector/protocol',
-            '--exported_dir', '<(blink_platform_output_dir)/v8_inspector/public/protocol',
-            '--exported_package', 'platform/v8_inspector/public/protocol',
+            '--output_base', '<(blink_platform_output_dir)',
+            '--config', 'v8_inspector/inspector_protocol_config.json',
           ],
           'message': 'Generating protocol backend sources from json definitions.',
         },

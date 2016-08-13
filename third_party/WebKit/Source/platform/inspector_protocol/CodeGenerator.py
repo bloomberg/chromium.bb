@@ -48,45 +48,19 @@ if os.path.isdir(deps_dir):
 import jinja2
 
 cmdline_parser = optparse.OptionParser()
-cmdline_parser.add_option("--protocol")
-cmdline_parser.add_option("--include")
-cmdline_parser.add_option("--include_package")
-cmdline_parser.add_option("--string_type")
-cmdline_parser.add_option("--export_macro")
-cmdline_parser.add_option("--output_dir")
-cmdline_parser.add_option("--output_package")
-cmdline_parser.add_option("--exported_dir")
-cmdline_parser.add_option("--exported_package")
+cmdline_parser.add_option("--output_base")
+cmdline_parser.add_option("--config")
+
 
 try:
     arg_options, arg_values = cmdline_parser.parse_args()
-    protocol_file = arg_options.protocol
-    if not protocol_file:
-        raise Exception("Protocol directory must be specified")
-    include_file = arg_options.include
-    include_package = arg_options.include_package
-    if include_file and not include_package:
-        raise Exception("Include package must be specified when using include file")
-    if include_package and not include_file:
-        raise Exception("Include file must be specified when using include package")
-    output_dirname = arg_options.output_dir
-    if not output_dirname:
-        raise Exception("Output directory must be specified")
-    output_package = arg_options.output_package
-    if not output_package:
-        raise Exception("Output package must be specified")
-    exported_dirname = arg_options.exported_dir
-    if not exported_dirname:
-        exported_dirname = os.path.join(output_dirname, "exported")
-    exported_package = arg_options.exported_package
-    if not exported_package:
-        exported_package = os.path.join(output_package, "exported")
-    string_type = arg_options.string_type
-    if not string_type:
-        raise Exception("String type must be specified")
-    export_macro = arg_options.export_macro
-    if not export_macro:
-        raise Exception("Export macro must be specified")
+    output_base = arg_options.output_base
+    if not output_base:
+        raise Exception("Base output directory must be specified")
+    config_file = arg_options.config
+    if not config_file:
+        raise Exception("Config file name must be specified")
+    config_dir = os.path.dirname(config_file)
 except Exception:
     # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
     exc = sys.exc_info()[1]
@@ -94,9 +68,56 @@ except Exception:
     exit(1)
 
 
-input_file = open(protocol_file, "r")
-json_string = input_file.read()
-parsed_json = json.loads(json_string)
+try:
+    config_json_string = open(config_file, "r").read()
+    config = json.loads(config_json_string)
+
+    protocol_file = config["protocol"]["path"]
+    if not protocol_file:
+        raise Exception("Config is missing protocol.path")
+    protocol_file = os.path.join(config_dir, protocol_file)
+    output_dirname = config["protocol"]["output"]
+    if not output_dirname:
+        raise Exception("Config is missing protocol.output")
+    output_dirname = os.path.join(output_base, output_dirname)
+    output_package = config["protocol"]["package"]
+    if not output_package:
+        raise Exception("Config is missing protocol.package")
+
+    importing = False
+    if "import" in config:
+        importing = True
+        imported_file = config["import"]["path"]
+        if not imported_file:
+            raise Exception("Config is missing import.path")
+        imported_file = os.path.join(config_dir, imported_file)
+        imported_package = config["import"]["package"]
+        if not imported_package:
+            raise Exception("Config is missing import.package")
+
+    exporting = False
+    if "export" in config:
+        exporting = True
+        exported_dirname = config["export"]["output"]
+        if not exported_dirname:
+            raise Exception("Config is missing export.output")
+        exported_dirname = os.path.join(output_base, exported_dirname)
+        exported_package = config["export"]["package"]
+        if not exported_package:
+            raise Exception("Config is missing export.package")
+
+    string_type = config["string"]["class_name"]
+    if not string_type:
+        raise Exception("Config is missing string.class_name")
+
+    export_macro = config["export_macro"]
+    if not export_macro:
+        raise Exception("Config is missing export_macro")
+except Exception:
+    # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
+    exc = sys.exc_info()[1]
+    sys.stderr.write("Failed to parse config file: %s\n\n" % exc)
+    exit(1)
 
 
 # Make gyp / make generatos happy, otherwise make rebuilds world.
@@ -107,16 +128,19 @@ def up_to_date():
         os.path.getmtime(os.path.join(templates_dir, "TypeBuilder_cpp.template")),
         os.path.getmtime(os.path.join(templates_dir, "Exported_h.template")),
         os.path.getmtime(os.path.join(templates_dir, "Imported_h.template")),
+        os.path.getmtime(config_file),
         os.path.getmtime(protocol_file))
+    if importing:
+        template_ts = max(template_ts, os.path.getmtime(imported_file))
 
-    for domain in parsed_json["domains"]:
+    for domain in json_api["domains"]:
         name = domain["domain"]
         paths = []
         if name in generate_domains:
             paths = [os.path.join(output_dirname, name + ".h"), os.path.join(output_dirname, name + ".cpp")]
             if domain["has_exports"]:
                 paths.append(os.path.join(exported_dirname, name + ".h"))
-        if name in include_domains and domain["has_exports"]:
+        if name in imported_domains and domain["has_exports"]:
             paths = [os.path.join(output_dirname, name + '.h')]
         for path in paths:
             if not os.path.exists(path):
@@ -193,11 +217,16 @@ def calculate_exports():
 
     json_api["has_exports"] = False
     for domain_json in json_api["domains"]:
+        domain_name = domain_json["domain"]
         domain_json["has_exports"] = calculate_exports_in_json(domain_json)
-        json_api["has_exports"] = json_api["has_exports"] or domain_json["has_exports"]
+        if domain_json["has_exports"] and domain_name in generate_domains:
+            if not exporting:
+                sys.stderr.write("Domain %s is exported, but config is missing export entry\n\n" % domain_name)
+                exit(1)
+            json_api["has_exports"] = True
 
 
-def create_include_type_definition(domain_name, type):
+def create_imported_type_definition(domain_name, type):
     # pylint: disable=W0622
     return {
         "return_type": "std::unique_ptr<protocol::%s::API::%s>" % (domain_name, type["id"]),
@@ -335,8 +364,8 @@ def create_type_definitions():
             continue
         for type in domain["types"]:
             type_name = domain["domain"] + "." + type["id"]
-            if type["type"] == "object" and domain["domain"] in include_domains:
-                type_definitions[type_name] = create_include_type_definition(domain["domain"], type)
+            if type["type"] == "object" and domain["domain"] in imported_domains:
+                type_definitions[type_name] = create_imported_type_definition(domain["domain"], type)
             elif type["type"] == "object":
                 type_definitions[type_name] = create_user_type_definition(domain["domain"], type)
             elif type["type"] == "array":
@@ -375,6 +404,12 @@ def has_disable(commands):
     return False
 
 
+def generate_with_context(template_context, template, file_name):
+    out_file = output_file(file_name)
+    out_file.write(template.render(template_context))
+    out_file.close()
+
+
 def generate(domain_object, template, file_name):
     template_context = {
         "domain": domain_object,
@@ -383,31 +418,29 @@ def generate(domain_object, template, file_name):
         "type_definition": type_definition,
         "has_disable": has_disable,
         "export_macro": export_macro,
-        "output_package": output_package,
-        "exported_package": exported_package,
-        "include_package": include_package
+        "output_package": output_package
     }
-    out_file = output_file(file_name)
-    out_file.write(template.render(template_context))
-    out_file.close()
+    if exporting:
+        template_context["exported_package"] = exported_package
+    if importing:
+        template_context["imported_package"] = imported_package
+    generate_with_context(template_context, template, file_name)
 
 
-generate_domains = []
-include_domains = []
-json_api = {}
-json_api["domains"] = parsed_json["domains"]
-
-for domain in parsed_json["domains"]:
-    generate_domains.append(domain["domain"])
-
-if include_file:
-    input_file = open(include_file, "r")
+def read_protocol_file(file_name, all_domains):
+    input_file = open(file_name, "r")
     json_string = input_file.read()
     parsed_json = json.loads(json_string)
+    domains = []
     for domain in parsed_json["domains"]:
-        include_domains.append(domain["domain"])
-    json_api["domains"] += parsed_json["domains"]
+        domains.append(domain["domain"])
+    all_domains["domains"] += parsed_json["domains"]
+    return domains
 
+
+json_api = {"domains": []}
+generate_domains = read_protocol_file(protocol_file, json_api)
+imported_domains = read_protocol_file(imported_file, json_api) if importing else []
 patch_full_qualified_refs()
 calculate_exports()
 create_type_definitions()
@@ -428,9 +461,9 @@ imported_template = jinja_env.get_template("/Imported_h.template")
 for domain in json_api["domains"]:
     class_name = domain["domain"]
     if domain["domain"] in generate_domains:
-        generate(domain, h_template, output_dirname + "/" + class_name + ".h")
-        generate(domain, cpp_template, output_dirname + "/" + class_name + ".cpp")
+        generate(domain, h_template, os.path.join(output_dirname, class_name + ".h"))
+        generate(domain, cpp_template, os.path.join(output_dirname, class_name + ".cpp"))
         if domain["has_exports"]:
-            generate(domain, exported_template, exported_dirname + "/" + class_name + ".h")
-    if domain["domain"] in include_domains and domain["has_exports"]:
-        generate(domain, imported_template, output_dirname + "/" + class_name + ".h")
+            generate(domain, exported_template, os.path.join(exported_dirname, class_name + ".h"))
+    if domain["domain"] in imported_domains and domain["has_exports"]:
+        generate(domain, imported_template, os.path.join(output_dirname, class_name + ".h"))

@@ -1,0 +1,18 @@
+{
+    "protocol": {
+        "path": "js_protocol.json",
+        "package": "platform/v8_inspector/protocol",
+        "output": "v8_inspector/protocol"
+    },
+
+    "export": {
+        "package": "platform/v8_inspector/public/protocol",
+        "output": "v8_inspector/public/protocol"
+    },
+
+    "string": {
+        "class_name": "String16"
+    },
+
+    "export_macro": "PLATFORM_EXPORT"
+}

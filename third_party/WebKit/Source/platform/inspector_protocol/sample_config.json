@@ -1,0 +1,23 @@
+{
+    "protocol": {
+        "path": "protocol/sample_protocol.json",
+        "package": "include/generated/files/like/this",
+        "output": "place/generated/files/here"
+    },
+
+    "import": {
+        "path": "../relative/path/imported_protocol.json",
+        "package": "include/imported/files/like/this"
+    },
+
+    "export": {
+        "package": "include/exported/files/like/this",
+        "output": "place/exported/files/here"
+    },
+
+    "string": {
+        "class_name": "String16"
+    },
+
+    "export_macro": "PLATFORM_EXPORT"
+}

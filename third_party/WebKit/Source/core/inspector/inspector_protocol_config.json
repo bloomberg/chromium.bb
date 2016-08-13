@@ -1,0 +1,18 @@
+{
+    "protocol": {
+        "path": "browser_protocol.json",
+        "package": "core/inspector/protocol",
+        "output": "inspector/protocol"
+    },
+
+    "import": {
+        "path": "../../platform/v8_inspector/js_protocol.json",
+        "package": "platform/v8_inspector/public/protocol"
+    },
+
+    "string": {
+        "class_name": "WTF::String"
+    },
+
+    "export_macro": "CORE_EXPORT"
+}

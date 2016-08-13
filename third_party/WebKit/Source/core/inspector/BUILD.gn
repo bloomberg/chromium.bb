@@ -44,6 +44,7 @@ action("protocol_sources") {
   inputs = [
     "browser_protocol.json",
     "../../platform/v8_inspector/js_protocol.json",
+    "inspector_protocol_config.json",
   ]
   outputs = [
     "$blink_core_output_dir/inspector/protocol/Accessibility.cpp",
@@ -103,20 +104,10 @@ action("protocol_sources") {
   ]
 
   args = [
-    "--protocol",
-    rebase_path("browser_protocol.json", root_build_dir),
-    "--include",
-    rebase_path("../../platform/v8_inspector/js_protocol.json", root_build_dir),
-    "--include_package",
-    "platform/v8_inspector/public/protocol",
-    "--string_type",
-    "String",
-    "--export_macro",
-    "CORE_EXPORT",
-    "--output_dir",
-    rebase_path(blink_core_output_dir + "/inspector/protocol", root_build_dir),
-    "--output_package",
-    "core/inspector/protocol",
+    "--output_base",
+    rebase_path(blink_core_output_dir, root_build_dir),
+    "--config",
+    rebase_path("inspector_protocol_config.json", root_build_dir),
   ]
 }
 
