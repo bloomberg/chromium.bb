@@ -537,16 +537,19 @@ WebURLRequest CreateURLRequestForNavigation(
   if (is_view_source_mode_enabled)
     request.setCachePolicy(WebCachePolicy::ReturnCacheDataElseLoad);
 
+  request.setHTTPMethod(WebString::fromUTF8(common_params.method));
   if (common_params.referrer.url.is_valid()) {
     WebString web_referrer = WebSecurityPolicy::generateReferrerHeader(
         common_params.referrer.policy,
         common_params.url,
         WebString::fromUTF8(common_params.referrer.url.spec()));
-    if (!web_referrer.isEmpty())
+    if (!web_referrer.isEmpty()) {
       request.setHTTPReferrer(web_referrer, common_params.referrer.policy);
+      request.addHTTPOriginIfNeeded(
+          WebString::fromUTF8(common_params.referrer.url.GetOrigin().spec()));
+    }
   }
 
-  request.setHTTPMethod(WebString::fromUTF8(common_params.method));
   request.setLoFiState(
       static_cast<WebURLRequest::LoFiState>(common_params.lofi_state));
 

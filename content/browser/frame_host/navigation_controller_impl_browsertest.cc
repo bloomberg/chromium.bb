@@ -43,6 +43,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 
 namespace {
 
@@ -66,6 +67,7 @@ class NavigationControllerBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
+    content::SetupCrossSiteRedirector(embedded_test_server());
   }
 };
 
@@ -5817,6 +5819,49 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       web_contents, "domAutomationController.send(document.origin)", &origin));
   EXPECT_EQ(start_url.GetOrigin().spec(), origin + "/");
+}
+
+// Test that verifies that Referer and Origin http headers are correctly sent
+// to the final destination of a cross-site POST with a few redirects thrown in.
+// This test is somewhat related to https://crbug.com/635400.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       RefererAndOriginHeadersAfterRedirects) {
+  // Navigate to the page with form that posts via 307 redirection to
+  // |redirect_target_url| (cross-site from |form_url|).  Using 307 (rather than
+  // 302) redirection is important to preserve the HTTP method and POST body.
+  GURL form_url(embedded_test_server()->GetURL(
+      "a.com", "/form_that_posts_cross_site.html"));
+  GURL redirect_target_url(embedded_test_server()->GetURL("x.com", "/echoall"));
+  EXPECT_TRUE(NavigateToURL(shell(), form_url));
+
+  // Submit the form.  The page submitting the form is at 0, and will
+  // go through 307 redirects from 1 -> 2 and 2 -> 3:
+  // 0. http://a.com:.../form_that_posts_cross_site.html
+  // 1. http://a.com:.../cross-site-307/i.com/cross-site-307/x.com/echoall
+  // 2. http://i.com:.../cross-site-307/x.com/echoall
+  // 3. http://x.com:.../echoall/
+  TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(
+      ExecuteScript(shell(), "document.getElementById('text-form').submit();"));
+  form_post_observer.Wait();
+
+  // Verify that we arrived at the expected, redirected location.
+  EXPECT_EQ(redirect_target_url,
+            shell()->web_contents()->GetLastCommittedURL());
+
+  // Get the http request headers.
+  std::string headers;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell(),
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[1].innerText);",
+      &headers));
+
+  // Verify the Origin and Referer headers.
+  EXPECT_THAT(headers, ::testing::HasSubstr("Origin: null"));
+  EXPECT_THAT(headers,
+              ::testing::ContainsRegex(
+                  "Referer: http://a.com:.*/form_that_posts_cross_site.html"));
 }
 
 }  // namespace content
