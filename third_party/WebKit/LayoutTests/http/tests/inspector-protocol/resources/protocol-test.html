@@ -83,6 +83,17 @@ InspectorTest.sendCommandPromise = function(method, params)
     return promise;
 }
 
+InspectorTest.waitForEventPromise = function(eventName)
+{
+    return new Promise(fulfill => InspectorTest.eventHandler[eventName] = fullfillAndClearListener.bind(null, fulfill));
+
+    function fullfillAndClearListener(fulfill, result)
+    {
+        fulfill(result);
+        delete InspectorTest.eventHandler[eventName];
+    }
+}
+
 InspectorTest.domUndo = function(callback)
 {
     InspectorTest.sendCommandOrDie("DOM.undo", {}, callback);

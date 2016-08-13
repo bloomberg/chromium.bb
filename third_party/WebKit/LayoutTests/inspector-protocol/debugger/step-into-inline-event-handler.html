@@ -1,0 +1,54 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function testFunction()
+{
+    var e = document.getElementById("div");
+    debugger;
+    e.click();
+}
+
+function shouldNotBeThisFunction()
+{
+    return 239;
+}
+
+function test()
+{
+    InspectorTest.waitForEventPromise("Debugger.paused").then(makeStepping);
+
+    InspectorTest.sendCommandPromise("Debugger.enable", {})
+        .then((result) => InspectorTest.sendCommandPromise("Runtime.evaluate", { expression: "testFunction()" }))
+        .then(() => InspectorTest.completeTest());
+
+    function makeStepping()
+    {
+        sendCommandAndWaitForPause("Debugger.stepInto")
+            .then(() => sendCommandAndWaitForPause("Debugger.stepInto"))
+            .then((result) => dumpTopCallFrame(result))
+            .then(() => InspectorTest.sendCommandPromise("Debugger.resume"));
+    }
+
+    function sendCommandAndWaitForPause(command)
+    {
+        InspectorTest.sendCommand(command, {});
+        return InspectorTest.waitForEventPromise("Debugger.paused");
+    }
+
+    function dumpTopCallFrame(result)
+    {
+        var frame = result.params.callFrames[0];
+        InspectorTest.log("functionName (should be empty): " + (frame.functionName.length ? frame.functionName : "empty"));
+    }
+}
+</script>
+</head>
+<div id="div" onclick="shouldNotBeThisFunction()">
+</div>
+<body onLoad="runTest();">
+Tests that Debugger.stepInto doesn't ignore inline event listeners.
+</body>
+</html>
+

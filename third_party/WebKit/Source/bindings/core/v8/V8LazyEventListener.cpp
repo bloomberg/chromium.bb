@@ -167,8 +167,6 @@ void V8LazyEventListener::compileScript(ScriptState* scriptState, ExecutionConte
         v8String(isolate(), m_sourceURL),
         v8::Integer::New(isolate(), m_position.m_line.zeroBasedInt()),
         v8::Integer::New(isolate(), m_position.m_column.zeroBasedInt()),
-        v8::True(isolate()),
-        v8::Local<v8::Integer>(),
         v8::True(isolate()));
     v8::ScriptCompiler::Source source(v8String(isolate(), m_code), origin);
 
