@@ -168,6 +168,18 @@
             "group_name": "Enabled"
         }
     ],
+    "ParseHTMLOnMainThread": [
+        {
+            "enable_features": [
+                "ParseHTMLOnMainThread"
+            ],
+            "group_name": "Enabled",
+            "params": {
+                "parseHTMLOnMainThreadCoalesceChunks": "false",
+                "parseHTMLOnMainThreadSyncTokenize": "false"
+            }
+        }
+    ],
     "PassiveDocumentEventListeners": [
         {
             "enable_features": [

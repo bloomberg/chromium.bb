@@ -263,5 +263,15 @@
     "prefix": "asyncawait",
     "base": "inspector/sources/debugger-async/async-await",
     "args": ["--js-flags=--harmony-async-await"]
+  },
+  {
+    "prefix": "parsehtmlonmainthread_sync",
+    "base": "fast/parser",
+    "args": ["--blink-settings=parseHTMLOnMainThreadSyncTokenize=true"]
+  },
+  {
+    "prefix": "parsehtmlonmainthread_coalesce",
+    "base": "fast/parser",
+    "args": ["--disable-blink-features=ParseHTMLOnMainThread", "--blink-settings=parseHTMLOnMainThreadCoalesceChunks=true"]
   }
 ]

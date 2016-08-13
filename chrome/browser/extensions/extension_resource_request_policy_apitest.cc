@@ -12,6 +12,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -235,9 +236,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                        LinkToWebAccessibleResources) {
   std::string result;
   ASSERT_TRUE(embedded_test_server()->Start());
-  ASSERT_TRUE(LoadExtension(test_data_dir_
-      .AppendASCII("extension_resource_request_policy")
-      .AppendASCII("web_accessible")));
+  const extensions::Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("extension_resource_request_policy")
+          .AppendASCII("web_accessible"));
+  ASSERT_TRUE(extension);
 
   GURL accessible_linked_resource(embedded_test_server()->GetURL(
       "/extensions/api_test/extension_resource_request_policy/"
@@ -261,27 +263,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       &result));
   EXPECT_EQ("about:blank", result);
 
+
+  // Redirects can sometimes occur before the load event, so use a
+  // UrlLoadObserver instead of blocking waiting for two load events.
+  GURL accessible_url = extension->GetResourceURL("/test.png");
+  ui_test_utils::UrlLoadObserver accessible_observer(
+      accessible_url, content::NotificationService::AllSources());
   GURL accessible_client_redirect_resource(embedded_test_server()->GetURL(
       "/extensions/api_test/extension_resource_request_policy/"
       "web_accessible/accessible_redirect_resource.html"));
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
-      accessible_client_redirect_resource, 2);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send(document.URL)",
-      &result));
-  EXPECT_NE("about:blank", result);
+  ui_test_utils::NavigateToURL(browser(), accessible_client_redirect_resource);
+  accessible_observer.Wait();
+  EXPECT_EQ(accessible_url, browser()
+                                ->tab_strip_model()
+                                ->GetActiveWebContents()
+                                ->GetLastCommittedURL());
 
+  ui_test_utils::UrlLoadObserver nonaccessible_observer(
+      GURL("about:blank"), content::NotificationService::AllSources());
   GURL nonaccessible_client_redirect_resource(embedded_test_server()->GetURL(
       "/extensions/api_test/extension_resource_request_policy/"
       "web_accessible/nonaccessible_redirect_resource.html"));
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
-      nonaccessible_client_redirect_resource, 2);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send(document.URL)",
-      &result));
-  EXPECT_EQ("about:blank", result);
+  ui_test_utils::NavigateToURL(browser(),
+                               nonaccessible_client_redirect_resource);
+  nonaccessible_observer.Wait();
+  EXPECT_EQ(GURL("about:blank"), browser()
+                                     ->tab_strip_model()
+                                     ->GetActiveWebContents()
+                                     ->GetLastCommittedURL());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
