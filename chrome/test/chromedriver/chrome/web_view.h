@@ -190,6 +190,12 @@ class WebView {
                                          int yoffset) = 0;
 
   virtual Status SynthesizePinchGesture(int x, int y, double scale_factor) = 0;
+
+  virtual Status GetScreenOrientation(std::string* orientation) = 0;
+
+  virtual Status SetScreenOrientation(std::string orientation) = 0;
+
+  virtual Status DeleteScreenOrientation() = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_

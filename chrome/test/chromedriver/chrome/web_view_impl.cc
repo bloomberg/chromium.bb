@@ -635,6 +635,37 @@ Status WebViewImpl::SynthesizePinchGesture(int x, int y, double scale_factor) {
   return client_->SendCommand("Input.synthesizePinchGesture", params);
 }
 
+Status WebViewImpl::GetScreenOrientation(std::string* orientation) {
+  base::DictionaryValue empty_params;
+  std::unique_ptr<base::DictionaryValue> result;
+  Status status =
+    client_->SendCommandAndGetResult("Emulation.getScreenOrientation",
+                                      empty_params,
+                                      &result);
+  if (status.IsError() || !result->GetString("orientation", orientation))
+    return status;
+  return Status(kOk);
+}
+
+Status WebViewImpl::SetScreenOrientation(std::string orientation) {
+  base::DictionaryValue params;
+  params.SetString("screenOrientation", orientation);
+  Status status =
+    client_->SendCommand("Emulation.lockScreenOrientation", params);
+  if (status.IsError())
+    return status;
+  return Status(kOk);
+}
+
+Status WebViewImpl::DeleteScreenOrientation() {
+  base::DictionaryValue params;
+  Status status =
+    client_->SendCommand("Emulation.unlockScreenOrientation", params);
+  if (status.IsError())
+    return status;
+  return Status(kOk);
+}
+
 Status WebViewImpl::CallAsyncFunctionInternal(
     const std::string& frame,
     const std::string& function,
@@ -872,5 +903,7 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
   *found_node = true;
   return Status(kOk);
 }
+
+
 
 }  // namespace internal

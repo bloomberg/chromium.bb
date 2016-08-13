@@ -74,6 +74,7 @@ struct Session {
   std::unique_ptr<Geoposition> overridden_geoposition;
   std::unique_ptr<DeviceMetrics> overridden_device_metrics;
   std::unique_ptr<NetworkConditions> overridden_network_conditions;
+  std::string orientation_type;
   // Logs that populate from DevTools events.
   ScopedVector<WebDriverLog> devtools_logs;
   std::unique_ptr<WebDriverLog> driver_log;

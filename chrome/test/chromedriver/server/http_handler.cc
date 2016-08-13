@@ -479,13 +479,18 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kGet,
           "session/:sessionId/orientation",
-          WrapToCommand("GetOrientation",
-                        base::Bind(&ExecuteUnimplementedCommand))),
+          WrapToCommand("GetScreenOrientation",
+                        base::Bind(&ExecuteGetScreenOrientation))),
       CommandMapping(
           kPost,
           "session/:sessionId/orientation",
-          WrapToCommand("SetOrientation",
-                        base::Bind(&ExecuteUnimplementedCommand))),
+          WrapToCommand("SetScreenOrientation",
+                        base::Bind(&ExecuteSetScreenOrientation))),
+      CommandMapping(
+          kDelete,
+          "session/:sessionId/orientation",
+          WrapToCommand("DeleteScreenOrientation",
+                        base::Bind(&ExecuteDeleteScreenOrientation))),
       CommandMapping(kPost,
                      "session/:sessionId/click",
                      WrapToCommand("Click", base::Bind(&ExecuteMouseClick))),
@@ -571,7 +576,6 @@ HttpHandler::HttpHandler(
           "Logs",
           WrapToCommand("Logs", base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(kGet, "status", base::Bind(&ExecuteGetStatus)),
-
       // Custom Chrome commands:
       // Allow quit all to be called with GET or POST.
       CommandMapping(

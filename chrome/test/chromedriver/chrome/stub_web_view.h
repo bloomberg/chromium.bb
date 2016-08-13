@@ -80,6 +80,9 @@ class StubWebView : public WebView {
                                  int xoffset,
                                  int yoffset) override;
   Status SynthesizePinchGesture(int x, int y, double scale_factor) override;
+  Status GetScreenOrientation(std::string* orientation) override;
+  Status SetScreenOrientation(std::string orientation) override;
+  Status DeleteScreenOrientation() override;
 
  private:
   std::string id_;

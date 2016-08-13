@@ -826,9 +826,56 @@ Status ExecuteSetAutoReporting(Session* session,
   return Status(kOk);
 }
 
-
 Status ExecuteUnimplementedCommand(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value) {
   return Status(kUnknownCommand);
+}
+
+Status ExecuteGetScreenOrientation(Session* session,
+                                   const base::DictionaryValue& params,
+                                   std::unique_ptr<base::Value>* value) {
+  WebView* web_view = nullptr;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  std::string screen_orientation;
+  status = web_view->GetScreenOrientation(&screen_orientation);
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue orientation_value;
+  orientation_value.SetString("orientation", screen_orientation);
+  value->reset(orientation_value.DeepCopy());
+  return Status(kOk);
+}
+
+Status ExecuteSetScreenOrientation(Session* session,
+                                   const base::DictionaryValue& params,
+                                   std::unique_ptr<base::Value>* value) {
+  WebView* web_view = nullptr;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  std::string screen_orientation;
+  params.GetString("parameters.orientation", &screen_orientation);
+  status = web_view->SetScreenOrientation(screen_orientation);
+  if (status.IsError())
+    return status;
+  return Status(kOk);
+}
+
+Status ExecuteDeleteScreenOrientation(Session* session,
+                                      const base::DictionaryValue& params,
+                                      std::unique_ptr<base::Value>* value) {
+  WebView* web_view = nullptr;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+  status = web_view->DeleteScreenOrientation();
+  if (status.IsError())
+    return status;
+  return Status(kOk);
 }
