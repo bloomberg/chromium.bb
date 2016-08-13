@@ -131,8 +131,8 @@ function PDFViewer(browserApi) {
 
   this.delayedScriptingMessages_ = [];
 
-  this.isPrintPreview_ = this.originalUrl_.indexOf(
-                             'chrome://print') == 0;
+  this.isPrintPreview_ = this.originalUrl_.indexOf('chrome://print') == 0;
+
   // Parse open pdf parameters.
   this.paramsParser_ =
       new OpenPDFParamsParser(this.getNamedDestination_.bind(this));
@@ -188,8 +188,7 @@ function PDFViewer(browserApi) {
   window.addEventListener('message', this.handleScriptingMessage.bind(this),
                           false);
 
-  this.plugin_.setAttribute('src',
-                            this.originalUrl_);
+  this.plugin_.setAttribute('src', this.originalUrl_);
   this.plugin_.setAttribute('stream-url',
                             this.browserApi_.getStreamInfo().streamUrl);
   var headers = '';
@@ -230,8 +229,7 @@ function PDFViewer(browserApi) {
     this.plugin_.addEventListener('mouseup',
         this.toolbar_.hideDropdowns.bind(this.toolbar_));
 
-    this.toolbar_.docTitle =
-        getFilenameFromURL(this.originalUrl_);
+    this.toolbar_.docTitle = getFilenameFromURL(this.originalUrl_);
   }
 
   document.body.addEventListener('change-page', function(e) {
@@ -261,8 +259,7 @@ function PDFViewer(browserApi) {
   document.addEventListener('mouseout', this.handleMouseEvent_.bind(this));
 
   var isInTab = this.browserApi_.getStreamInfo().tabId != -1;
-  var isSourceFileUrl =
-      this.originalUrl_.indexOf('file://') == 0;
+  var isSourceFileUrl = this.originalUrl_.indexOf('file://') == 0;
   this.navigator_ = new Navigator(this.originalUrl_,
                                   this.viewport_, this.paramsParser_,
                                   onNavigateInCurrentTab.bind(undefined,
@@ -654,8 +651,7 @@ PDFViewer.prototype = {
         if (message.data.title) {
           document.title = message.data.title;
         } else {
-          document.title =
-              getFilenameFromURL(this.originalUrl_);
+          document.title = getFilenameFromURL(this.originalUrl_);
         }
         this.bookmarks_ = message.data.bookmarks;
         if (this.toolbar_) {
@@ -667,8 +663,7 @@ PDFViewer.prototype = {
         this.viewportScroller_.setEnableScrolling(message.data.isSelecting);
         break;
       case 'getNamedDestinationReply':
-        this.paramsParser_.onNamedDestinationReceived(
-            message.data.pageNumber);
+        this.paramsParser_.onNamedDestinationReceived(message.data.pageNumber);
         break;
       case 'formFocusChange':
         this.isFormFieldFocused_ = message.data.focused;

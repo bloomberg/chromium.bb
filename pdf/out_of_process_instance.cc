@@ -321,10 +321,9 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   if (!document_url_var.is_string())
     return false;
   std::string document_url = document_url_var.AsString();
-  std::string extension_url = std::string(kChromeExtension);
-  std::string print_preview_url = std::string(kChromePrint);
-  if (!base::StringPiece(document_url).starts_with(kChromeExtension) &&
-      !base::StringPiece(document_url).starts_with(kChromePrint)) {
+  base::StringPiece document_url_piece(document_url);
+  if (!document_url_piece.starts_with(kChromeExtension) &&
+      !document_url_piece.starts_with(kChromePrint)) {
     return false;
   }
 
