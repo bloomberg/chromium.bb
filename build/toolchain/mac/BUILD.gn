@@ -403,7 +403,7 @@ template("mac_toolchain") {
       command = "rm -f {{output}} && " +
                 "TOOL_VERSION=${tool_versions.compile_xcassets} " +
                 "python $_tool -p $_sdk_name -t $_min_deployment_target " +
-                "-o {{output}} {{inputs}}"
+                "-T {{bundle_product_type}} -o {{output}} {{inputs}}"
 
       description = "COMPILE_XCASSETS {{output}}"
       pool = ":bundle_pool($default_toolchain)"

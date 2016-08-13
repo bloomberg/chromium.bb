@@ -8,13 +8,26 @@ import subprocess
 import sys
 
 
-def CompileXCAssets(output, platform, min_deployment_target, inputs):
+def CompileXCAssets(
+    output, platform, product_type, min_deployment_target, inputs):
+  """Compile the .xcassets bundles to an asset catalog using actool.
+
+  Args:
+    output: absolute path to the containing bundle
+    platform: the targetted platform
+    product_type: the bundle type
+    min_deployment_target: minimum deployment target
+    inputs: list of absolute paths to .xcassets bundles
+  """
   command = [
       'xcrun', 'actool', '--output-format=human-readable-text',
       '--compress-pngs', '--notices', '--warnings', '--errors',
       '--platform', platform, '--minimum-deployment-target',
       min_deployment_target,
   ]
+
+  if product_type != '':
+    command.extend(['--product-type', product_type])
 
   if platform == 'macosx':
     command.extend(['--target-device', 'mac'])
@@ -67,6 +80,9 @@ def Main():
       '--output', '-o', required=True,
       help='path to the compiled assets catalog')
   parser.add_argument(
+      '--product-type', '-T',
+      help='type of the containing bundle')
+  parser.add_argument(
       'inputs', nargs='+',
       help='path to input assets catalog sources')
   args = parser.parse_args()
@@ -80,6 +96,7 @@ def Main():
   CompileXCAssets(
       args.output,
       args.platform,
+      args.product_type,
       args.minimum_deployment_target,
       args.inputs)
 
