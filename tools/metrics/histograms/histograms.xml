@@ -4191,6 +4191,92 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.Web.Android.onCharacteristicRead.Status"
+    enum="AndroidGATTStatusResult">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>onCharacteristicRead 'status' values.</summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.Android.onCharacteristicWrite.Status"
+    enum="AndroidGATTStatusResult">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>onCharacteristicWrite 'status' values..</summary>
+</histogram>
+
+<histogram
+    name="Bluetooth.Web.Android.onConnectionStateChange.Status.Connected"
+    enum="AndroidGATTStatusResult">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    onConnectionStateChange 'status' values received in the connected state.
+  </summary>
+</histogram>
+
+<histogram
+    name="Bluetooth.Web.Android.onConnectionStateChange.Status.Disconnected"
+    enum="AndroidGATTStatusResult">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    onConnectionStateChange 'status' values received in the disconnected state.
+  </summary>
+</histogram>
+
+<histogram
+    name="Bluetooth.Web.Android.onConnectionStateChange.Status.InvalidState"
+    enum="AndroidGATTStatusResult">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    onConnectionStateChange 'status' values received in an unhandled 'state'.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.Android.onDescriptorRead.Status"
+    enum="AndroidGATTStatusResult">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>onDescriptorRead 'status' values.</summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.Android.onDescriptorWrite.Status"
+    enum="AndroidGATTStatusResult">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>onDescriptorWrite 'status' values..</summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.Android.onServicesDiscovered.Status.Connected"
+    enum="AndroidGATTStatusResult">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    onServicesDiscovered 'status' values received in the connected state.
+  </summary>
+</histogram>
+
+<histogram
+    name="Bluetooth.Web.Android.onServicesDiscovered.Status.Disconnected"
+    enum="AndroidGATTStatusResult">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    onServicesDiscovered 'status' values received in the disconnected state.
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.Web.Blacklist.ParsedNonEmptyString"
     enum="BooleanSuccess">
   <owner>jyasskin@chromium.org</owner>
@@ -67370,8 +67456,76 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="64"
       label="0x40 Coarse Clock Adjustment Rejected but Will Try to Adjust
              Using Clock Dragging"/>
+  <int value="133" label="Application Error 0x85, Bluedroid GATT_ERROR"/>
+  <int value="135" label="Application Error 0x87, Bluedroid GATT_PENDING"/>
   <int value="256" label="0x100 Bluedroid L2CAP connection cancelled"/>
   <int value="257" label="0x101 Android GATT Failure"/>
+</enum>
+
+<enum name="AndroidGATTStatusResult" type="int">
+  <summary>
+    This list includes errors from the Bluetooth Specification Version 4.2 Vol
+    3, Part F, Section 3.4.1.1 and Core Specification Supplement Part B. Also
+    Android's BluetoothGatt (0x101 GATT_FAILURE) and an error from Bluedroid's
+    gatt_api.h (0x100 L2CAP connection cancelled).
+  </summary>
+  <int value="0" label="GATT_SUCCESS"/>
+  <int value="1" label="Invalid Handle"/>
+  <int value="2" label="Read Not Permitted"/>
+  <int value="3" label="Write Not Permitted"/>
+  <int value="4" label="Invalid PDU"/>
+  <int value="5" label="Insufficient Authentication"/>
+  <int value="6" label="Request Not Supported"/>
+  <int value="7" label="Invalid Offset"/>
+  <int value="8" label="Insufficient Authorization"/>
+  <int value="9" label="Prepare Queue Full"/>
+  <int value="10" label="Attribute Not Found"/>
+  <int value="11" label="Attribute Not Long"/>
+  <int value="12" label="Insufficient Encryption Key Size"/>
+  <int value="13" label="Invalid Attribute Value Length"/>
+  <int value="14" label="Unlikely Error"/>
+  <int value="15" label="Insufficient Encryption"/>
+  <int value="16" label="Unsupported Group Type"/>
+  <int value="17" label="Insufficient Resources"/>
+  <int value="128" label="Application Error 0x80, 128"/>
+  <int value="129" label="Application Error 0x81, 129"/>
+  <int value="130" label="Application Error 0x82, 130"/>
+  <int value="131" label="Application Error 0x83, 131"/>
+  <int value="132" label="Application Error 0x84, 132"/>
+  <int value="133" label="Application Error 0x85, Bluedroid GATT_ERROR"/>
+  <int value="134" label="Application Error 0x86, 134"/>
+  <int value="135" label="Application Error 0x87, Bluedroid GATT_PENDING"/>
+  <int value="136" label="Application Error 0x88, 136"/>
+  <int value="137" label="Application Error 0x89, 137"/>
+  <int value="138" label="Application Error 0x8A, 138"/>
+  <int value="139" label="Application Error 0x8B, 139"/>
+  <int value="140" label="Application Error 0x8C, 140"/>
+  <int value="141" label="Application Error 0x8D, 141"/>
+  <int value="142" label="Application Error 0x8E, 142"/>
+  <int value="143" label="Application Error 0x8F, 143"/>
+  <int value="144" label="Application Error 0x90, 144"/>
+  <int value="145" label="Application Error 0x91, 145"/>
+  <int value="146" label="Application Error 0x92, 146"/>
+  <int value="147" label="Application Error 0x93, 147"/>
+  <int value="148" label="Application Error 0x94, 148"/>
+  <int value="149" label="Application Error 0x95, 149"/>
+  <int value="150" label="Application Error 0x96, 150"/>
+  <int value="151" label="Application Error 0x97, 151"/>
+  <int value="152" label="Application Error 0x98, 152"/>
+  <int value="153" label="Application Error 0x99, 153"/>
+  <int value="154" label="Application Error 0x9A, 154"/>
+  <int value="155" label="Application Error 0x9B, 155"/>
+  <int value="156" label="Application Error 0x9C, 156"/>
+  <int value="157" label="Application Error 0x9D, 157"/>
+  <int value="158" label="Application Error 0x9E, 158"/>
+  <int value="159" label="Application Error 0x9F, 159"/>
+  <int value="253"
+      label="Client Characteristic Configuration Descriptor Improperly
+             Configured (CSS)"/>
+  <int value="254" label="Procedure Already in Progress (CSS)"/>
+  <int value="255" label="Out of Range (CSS)"/>
+  <int value="256" label="0x100 Bluedroid L2CAP connection cancelled"/>
+  <int value="257" label="GATT_FAILURE"/>
 </enum>
 
 <enum name="AndroidKernelVersion" type="int">
