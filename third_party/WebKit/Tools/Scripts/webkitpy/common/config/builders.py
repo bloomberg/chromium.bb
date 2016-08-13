@@ -115,5 +115,9 @@ BUILDERS = {
         "specifiers": ['Win10', 'Release'],
         "is_try_builder": True,
     },
-    # TODO(qyearsley): Add android_blink_rel.
+    "android_blink_rel": {
+        "port_name": "android",
+        "specifiers": ['Android', 'Release'],
+        "is_try_builder": True,
+    },
 }
