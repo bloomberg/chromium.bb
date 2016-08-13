@@ -66,7 +66,8 @@ void QueueMessageSwapPromise::DidSwap(cc::CompositorFrameMetadata* metadata) {
   PromiseCompleted();
 }
 
-void QueueMessageSwapPromise::DidNotSwap(DidNotSwapReason reason) {
+cc::SwapPromise::DidNotSwapAction QueueMessageSwapPromise::DidNotSwap(
+    DidNotSwapReason reason) {
 #if DCHECK_IS_ON()
   DCHECK(!completed_);
 #endif
@@ -76,6 +77,7 @@ void QueueMessageSwapPromise::DidNotSwap(DidNotSwapReason reason) {
     message_sender_->Send(msg.release());
   }
   PromiseCompleted();
+  return DidNotSwapAction::BREAK_PROMISE;
 }
 
 void QueueMessageSwapPromise::PromiseCompleted() {

@@ -203,9 +203,10 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
   void DidSwap(cc::CompositorFrameMetadata*) override {
     output_surface_from_commit_->RequestCopyOfOutput(std::move(copy_request_));
   }
-  void DidNotSwap(DidNotSwapReason r) override {
+  DidNotSwapAction DidNotSwap(DidNotSwapReason r) override {
     // The compositor should always swap in layout test mode.
     NOTREACHED() << "did not swap for reason " << r;
+    return DidNotSwapAction::BREAK_PROMISE;
   }
   int64_t TraceId() const override { return 0; }
 

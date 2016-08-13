@@ -632,7 +632,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnSetPageScale(float page_scale_factor);
   void OnZoom(PageZoom zoom);
-  void OnForceRedraw(int request_id);
+  void OnForceRedraw(const ui::LatencyInfo& latency_info);
   void OnSelectWordAroundCaret();
 #if defined(OS_ANDROID)
   void OnUndoScrollFocusedEditableNodeIntoRect();

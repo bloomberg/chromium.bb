@@ -821,11 +821,11 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetSurfaceClientId,
 
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 
-// Sent by the browser to ask the renderer to redraw.
-// If |request_id| is not zero, it is added to the forced frame's latency info
-// as ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT.
+// Sent by the browser to ask the renderer to redraw. Robust to events that can
+// happen in renderer (abortion of the commit or draw, loss of output surface
+// etc.).
 IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
-                    int /* request_id */)
+                    ui::LatencyInfo /* latency_info */)
 
 // Let renderer know begin frame messages won't be sent even if requested.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetBeginFramePaused, bool /* paused */)

@@ -631,6 +631,36 @@ GetV8CacheStrategiesForCacheStorage() {
   }
 }
 
+// This class represents promise which is robust to (will not be broken by)
+// |DidNotSwapReason::SWAP_FAILS| events.
+class AlwaysDrawSwapPromise : public cc::SwapPromise {
+ public:
+  explicit AlwaysDrawSwapPromise(const ui::LatencyInfo& latency_info)
+      : latency_info_(latency_info) {}
+
+  ~AlwaysDrawSwapPromise() override = default;
+
+  void DidActivate() override {}
+
+  void DidSwap(cc::CompositorFrameMetadata* metadata) override {
+    DCHECK(!latency_info_.terminated());
+    metadata->latency_info.push_back(latency_info_);
+  }
+
+  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
+    return reason == DidNotSwapReason::SWAP_FAILS
+               ? DidNotSwapAction::KEEP_ACTIVE
+               : DidNotSwapAction::BREAK_PROMISE;
+  }
+
+  void OnCommit() override {}
+
+  int64_t TraceId() const override { return latency_info_.trace_id(); }
+
+ private:
+  ui::LatencyInfo latency_info_;
+};
+
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
@@ -1466,17 +1496,10 @@ void RenderViewImpl::ApplyWebPreferencesInternal(
   ApplyWebPreferences(prefs, web_view);
 }
 
-void RenderViewImpl::OnForceRedraw(int id) {
-  ui::LatencyInfo latency_info;
-  if (id) {
-    latency_info.AddLatencyNumber(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                                  0,
-                                  id);
-  }
-  std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
+void RenderViewImpl::OnForceRedraw(const ui::LatencyInfo& latency_info) {
   if (RenderWidgetCompositor* rwc = compositor()) {
-    latency_info_swap_promise_monitor =
-        rwc->CreateLatencyInfoSwapPromiseMonitor(&latency_info);
+    rwc->QueueSwapPromise(
+        base::MakeUnique<AlwaysDrawSwapPromise>(latency_info));
   }
   ScheduleCompositeWithForcedRedraw();
 }
