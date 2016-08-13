@@ -18,6 +18,9 @@ class ASH_EXPORT TrayPopupHeaderButton : public views::ToggleImageButton {
   static const char kViewClassName[];
 
   TrayPopupHeaderButton(views::ButtonListener* listener,
+                        int icon_resource_id,
+                        int accessible_name_id);
+  TrayPopupHeaderButton(views::ButtonListener* listener,
                         int enabled_resource_id,
                         int disabled_resource_id,
                         int enabled_resource_id_hover,

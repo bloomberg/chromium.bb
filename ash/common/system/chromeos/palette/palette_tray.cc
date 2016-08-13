@@ -4,13 +4,10 @@
 
 #include "ash/common/system/chromeos/palette/palette_tray.h"
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/system/chromeos/palette/palette_tool.h"
 #include "ash/common/system/chromeos/palette/palette_tool_manager.h"
 #include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -21,8 +18,6 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "base/command_line.h"
-#include "base/sys_info.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -60,46 +55,63 @@ views::Separator* CreateSeparator(views::Separator::Orientation orientation) {
   return separator;
 }
 
-// Creates the title-bar view.
-views::View* CreateTitleView() {
-  auto& rb = ui::ResourceBundle::GetSharedInstance();
+class TitleView : public views::View, public views::ButtonListener {
+ public:
+  explicit TitleView(PaletteTray* palette_tray) : palette_tray_(palette_tray) {
+    auto& rb = ui::ResourceBundle::GetSharedInstance();
 
-  auto* root = new views::View();
-  auto* box_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-  root->SetLayoutManager(box_layout);
-  root->SetBorder(views::Border::CreateEmptyBorder(
-      0, ash::kTrayPopupPaddingHorizontal, 0, 0));
+    auto* box_layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    SetLayoutManager(box_layout);
+    SetBorder(views::Border::CreateEmptyBorder(
+        0, ash::kTrayPopupPaddingHorizontal, 0, 0));
 
-  views::Label* text_label =
-      new views::Label(l10n_util::GetStringUTF16(IDS_ASH_PALETTE_TITLE));
-  text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  text_label->SetFontList(rb.GetFontList(ui::ResourceBundle::BoldFont));
-  root->AddChildView(text_label);
-  box_layout->SetFlexForView(text_label, 1);
+    views::Label* text_label =
+        new views::Label(l10n_util::GetStringUTF16(IDS_ASH_PALETTE_TITLE));
+    text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    text_label->SetFontList(rb.GetFontList(ui::ResourceBundle::BoldFont));
+    AddChildView(text_label);
+    box_layout->SetFlexForView(text_label, 1);
 
-  // TODO(jdufault): Use proper icons.
-  ash::TrayPopupHeaderButton* help_button = new ash::TrayPopupHeaderButton(
-      nullptr, IDR_AURA_UBER_TRAY_SHUTDOWN, IDR_AURA_UBER_TRAY_SHUTDOWN,
-      IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER, IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
-      IDS_ASH_STATUS_TRAY_SHUTDOWN);
-  help_button->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SHUTDOWN));
-  root->AddChildView(help_button);
+    help_button_ = new ash::TrayPopupHeaderButton(this, IDR_AURA_UBER_TRAY_HELP,
+                                                  IDS_ASH_STATUS_TRAY_HELP);
+    help_button_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SHUTDOWN));
+    AddChildView(help_button_);
 
-  root->AddChildView(CreateSeparator(views::Separator::VERTICAL));
+    AddChildView(CreateSeparator(views::Separator::VERTICAL));
 
-  // TODO(jdufault): Use proper icons.
-  ash::TrayPopupHeaderButton* settings_button = new ash::TrayPopupHeaderButton(
-      nullptr, IDR_AURA_UBER_TRAY_SHUTDOWN, IDR_AURA_UBER_TRAY_SHUTDOWN,
-      IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER, IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
-      IDS_ASH_STATUS_TRAY_SHUTDOWN);
-  settings_button->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SHUTDOWN));
-  root->AddChildView(settings_button);
+    settings_button_ = new ash::TrayPopupHeaderButton(
+        this, IDR_AURA_UBER_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS);
+    settings_button_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SETTINGS));
+    AddChildView(settings_button_);
+  }
 
-  return root;
-}
+  ~TitleView() override {}
+
+ private:
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    if (sender == settings_button_) {
+      WmShell::Get()->system_tray_delegate()->ShowPaletteSettings();
+      palette_tray_->HidePalette();
+    } else if (sender == help_button_) {
+      WmShell::Get()->system_tray_delegate()->ShowPaletteHelp();
+      palette_tray_->HidePalette();
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  // Unowned pointers to button views so we can determine which button was
+  // clicked.
+  ash::TrayPopupHeaderButton* settings_button_;
+  ash::TrayPopupHeaderButton* help_button_;
+  PaletteTray* palette_tray_;
+
+  DISALLOW_COPY_AND_ASSIGN(TitleView);
+};
 
 }  // namespace
 
@@ -158,7 +170,7 @@ bool PaletteTray::OpenBubble() {
   bubble_view->set_margins(gfx::Insets(bubble_view->margins().top(), 0, 0, 0));
 
   // Add child views.
-  bubble_view->AddChildView(CreateTitleView());
+  bubble_view->AddChildView(new TitleView(this));
   bubble_view->AddChildView(CreateSeparator(views::Separator::HORIZONTAL));
   AddToolsToView(bubble_view);
 

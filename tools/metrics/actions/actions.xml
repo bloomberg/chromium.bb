@@ -13450,6 +13450,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ShowPaletteOptions">
+  <owner>jdufault@chromium.org</owner>
+  <description>Triggered when the palette options are opened.</description>
+</action>
+
 <action name="ShowRecentlyViewed">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

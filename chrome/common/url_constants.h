@@ -370,6 +370,8 @@ extern const char kChromeHelpViaWebUIURL[];
 extern const char kChromeAccessibilityHelpURL[];
 // Accessibility settings link for Chrome.
 extern const char kChromeAccessibilitySettingsURL[];
+// Palette help link for Chrome.
+extern const char kChromePaletteHelpURL[];
 #endif
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)

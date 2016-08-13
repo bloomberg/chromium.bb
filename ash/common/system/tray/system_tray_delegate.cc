@@ -113,6 +113,10 @@ void SystemTrayDelegate::ShowAccessibilityHelp() {}
 
 void SystemTrayDelegate::ShowAccessibilitySettings() {}
 
+void SystemTrayDelegate::ShowPaletteHelp() {}
+
+void SystemTrayDelegate::ShowPaletteSettings() {}
+
 void SystemTrayDelegate::ShowPublicAccountInfo() {}
 
 void SystemTrayDelegate::ShowEnterpriseInfo() {}

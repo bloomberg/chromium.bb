@@ -136,6 +136,7 @@ const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
 const char kDisplaySettingsSubPageName[] = "display";
 const char kDisplayOverscanSettingsSubPageName[] = "displayOverscan";
+const char kPaletteSettingsSubPageName[] = "note-overlay";
 
 void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
@@ -518,6 +519,18 @@ void SystemTrayDelegateChromeOS::ShowAccessibilitySettings() {
                          l10n_util::GetStringUTF8(
                              IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
   ShowSettingsSubPageForActiveUser(sub_page);
+}
+
+void SystemTrayDelegateChromeOS::ShowPaletteHelp() {
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetActiveUserProfile());
+  chrome::ShowSingletonTab(displayer.browser(),
+                           GURL(chrome::kChromePaletteHelpURL));
+}
+
+void SystemTrayDelegateChromeOS::ShowPaletteSettings() {
+  content::RecordAction(base::UserMetricsAction("ShowPaletteOptions"));
+  ShowSettingsSubPageForActiveUser(kPaletteSettingsSubPageName);
 }
 
 void SystemTrayDelegateChromeOS::ShowPublicAccountInfo() {

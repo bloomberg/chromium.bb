@@ -107,6 +107,8 @@ class SystemTrayDelegateChromeOS
   void ShowHelp() override;
   void ShowAccessibilityHelp() override;
   void ShowAccessibilitySettings() override;
+  void ShowPaletteHelp() override;
+  void ShowPaletteSettings() override;
   void ShowPublicAccountInfo() override;
   void ShowSupervisedUserInfo() override;
   void ShowEnterpriseInfo() override;

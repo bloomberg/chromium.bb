@@ -429,6 +429,8 @@ const char kChromeAccessibilityHelpURL[] =
     "https://support.google.com/chromebook/?p=accessibility_menu";
 const char kChromeAccessibilitySettingsURL[] =
     "/chromevox/background/options.html";
+const char kChromePaletteHelpURL[] =
+    "https://support.google.com/chromebook?p=stylus_help";
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)

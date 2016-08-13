@@ -50,6 +50,9 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   void SetShelfAlignment(ShelfAlignment alignment) override;
   void AnchorUpdated() override;
 
+  // PaletteToolManager::Delegate:
+  void HidePalette() override;
+
  private:
   // views::TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
@@ -66,7 +69,6 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
   // PaletteToolManager::Delegate:
-  void HidePalette() override;
   void OnActiveToolChanged() override;
   WmWindow* GetWindow() override;
 

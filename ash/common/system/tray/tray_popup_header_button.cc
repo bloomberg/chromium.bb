@@ -17,22 +17,12 @@ const char TrayPopupHeaderButton::kViewClassName[] =
     "tray/TrayPopupHeaderButton";
 
 TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
-                                             int enabled_resource_id,
-                                             int disabled_resource_id,
-                                             int enabled_resource_id_hover,
-                                             int disabled_resource_id_hover,
+                                             int icon_resource_id,
                                              int accessible_name_id)
     : views::ToggleImageButton(listener) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   SetImage(views::Button::STATE_NORMAL,
-           bundle.GetImageNamed(enabled_resource_id).ToImageSkia());
-  SetToggledImage(views::Button::STATE_NORMAL,
-                  bundle.GetImageNamed(disabled_resource_id).ToImageSkia());
-  SetImage(views::Button::STATE_HOVERED,
-           bundle.GetImageNamed(enabled_resource_id_hover).ToImageSkia());
-  SetToggledImage(
-      views::Button::STATE_HOVERED,
-      bundle.GetImageNamed(disabled_resource_id_hover).ToImageSkia());
+           bundle.GetImageNamed(icon_resource_id).ToImageSkia());
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
   SetAccessibleName(bundle.GetLocalizedString(accessible_name_id));
@@ -40,6 +30,23 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
 
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, gfx::Insets(1, 2, 2, 3)));
+}
+
+TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
+                                             int enabled_resource_id,
+                                             int disabled_resource_id,
+                                             int enabled_resource_id_hover,
+                                             int disabled_resource_id_hover,
+                                             int accessible_name_id)
+    : TrayPopupHeaderButton(listener, enabled_resource_id, accessible_name_id) {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  SetToggledImage(views::Button::STATE_NORMAL,
+                  bundle.GetImageNamed(disabled_resource_id).ToImageSkia());
+  SetImage(views::Button::STATE_HOVERED,
+           bundle.GetImageNamed(enabled_resource_id_hover).ToImageSkia());
+  SetToggledImage(
+      views::Button::STATE_HOVERED,
+      bundle.GetImageNamed(disabled_resource_id_hover).ToImageSkia());
 }
 
 TrayPopupHeaderButton::~TrayPopupHeaderButton() {}

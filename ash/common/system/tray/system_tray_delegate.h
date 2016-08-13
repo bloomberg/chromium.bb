@@ -189,6 +189,12 @@ class ASH_EXPORT SystemTrayDelegate {
   // Show the settings related to accessilibity.
   virtual void ShowAccessibilitySettings();
 
+  // Shows the help center article for palette.
+  virtual void ShowPaletteHelp();
+
+  // Shows the settings related to the palette.
+  virtual void ShowPaletteSettings();
+
   // Shows more information about public account mode.
   virtual void ShowPublicAccountInfo();
 
