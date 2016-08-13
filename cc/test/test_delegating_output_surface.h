@@ -29,6 +29,7 @@ class TestDelegatingOutputSurfaceClient {
   virtual void DisplayDidDrawAndSwap() = 0;
 };
 
+// Delegating output surface that owns and forwards frames to a Display.
 class TestDelegatingOutputSurface : public OutputSurface,
                                     public SurfaceFactoryClient,
                                     public DisplayClient {
@@ -78,8 +79,8 @@ class TestDelegatingOutputSurface : public OutputSurface,
  private:
   void DidDrawCallback(bool synchronous);
 
-  // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
-  // is owned/destroyed on the compositor thread.
+  // TODO(danakj): These don't need to be stored in unique_ptrs when
+  // OutputSurface is owned/destroyed on the compositor thread.
   std::unique_ptr<SurfaceManager> surface_manager_;
   std::unique_ptr<SurfaceIdAllocator> surface_id_allocator_;
   SurfaceId delegated_surface_id_;

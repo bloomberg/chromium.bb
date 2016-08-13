@@ -18,6 +18,7 @@
 namespace blimp {
 namespace client {
 
+// Delegating output surface that owns and forwards frames to a Display.
 class BlimpDelegatingOutputSurface : public cc::OutputSurface,
                                      public cc::SurfaceFactoryClient,
                                      public cc::DisplayClient {
@@ -51,8 +52,8 @@ class BlimpDelegatingOutputSurface : public cc::OutputSurface,
   void DisplayDidDrawAndSwap() override;
 
  private:
-  // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
-  // is owned/destroyed on the compositor thread.
+  // TODO(danakj): These don't need to be stored in unique_ptrs when
+  // OutputSurface is owned/destroyed on the compositor thread.
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   cc::SurfaceId delegated_surface_id_;
