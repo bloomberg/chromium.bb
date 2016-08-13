@@ -195,6 +195,11 @@ class ASH_EXPORT PanelLayoutManager
   // restored when the shelf becomes visible again.
   std::unique_ptr<WmWindowTracker> restore_windows_on_shelf_visible_;
 
+  // TODO(sky): used for tracking down http://crbug.com/636113, remove once
+  // resolved.
+  // Set to true when one or more callout widgets is deleted.
+  bool is_deleting_callout_widgets_ = false;
+
   // The last active panel. Used to maintain stacking order even if no panels
   // are currently focused.
   WmWindow* last_active_panel_;
