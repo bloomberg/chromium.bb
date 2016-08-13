@@ -52,6 +52,7 @@ class TaskGraphRunner;
 
 namespace gfx {
 class Rect;
+class ScrollOffset;
 class Size;
 }
 
@@ -267,6 +268,11 @@ class COMPOSITOR_EXPORT Compositor
 
   // Gets the visibility of the underlying compositor.
   bool IsVisible();
+
+  // Gets or sets the scroll offset for the given layer in step with the
+  // cc::InputHandler. Returns true if the layer is active on the impl side.
+  bool GetScrollOffsetForLayer(int layer_id, gfx::ScrollOffset* offset) const;
+  bool ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset);
 
   // The "authoritative" vsync interval, if provided, will override interval
   // reported from 3D context. This is typically the value reported by a more

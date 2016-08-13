@@ -627,6 +627,27 @@ ScrollElasticityHelper* LayerTreeHostImpl::CreateScrollElasticityHelper() {
   return scroll_elasticity_helper_.get();
 }
 
+bool LayerTreeHostImpl::GetScrollOffsetForLayer(int layer_id,
+                                                gfx::ScrollOffset* offset) {
+  LayerImpl* layer = active_tree()->FindActiveTreeLayerById(layer_id);
+  if (!layer)
+    return false;
+
+  *offset = layer->CurrentScrollOffset();
+  return true;
+}
+
+bool LayerTreeHostImpl::ScrollLayerTo(int layer_id,
+                                      const gfx::ScrollOffset& offset) {
+  LayerImpl* layer = active_tree()->FindActiveTreeLayerById(layer_id);
+  if (!layer)
+    return false;
+
+  layer->ScrollBy(
+      ScrollOffsetToVector2dF(offset - layer->CurrentScrollOffset()));
+  return true;
+}
+
 void LayerTreeHostImpl::QueueSwapPromiseForMainThreadScrollUpdate(
     std::unique_ptr<SwapPromise> swap_promise) {
   swap_promises_for_main_thread_scroll_update_.push_back(

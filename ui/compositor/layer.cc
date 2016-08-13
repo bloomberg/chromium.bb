@@ -756,6 +756,34 @@ void Layer::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
   delegate_->OnDelegatedFrameDamage(damage_rect_in_dip);
 }
 
+void Layer::SetScrollable(Layer* parent_clip_layer,
+                          const base::Closure& on_scroll) {
+  cc_layer_->SetScrollClipLayerId(parent_clip_layer->cc_layer_->id());
+  cc_layer_->set_did_scroll_callback(on_scroll);
+  cc_layer_->SetUserScrollable(true, true);
+}
+
+gfx::ScrollOffset Layer::CurrentScrollOffset() const {
+  const Compositor* compositor = GetCompositor();
+  gfx::ScrollOffset offset;
+  if (compositor &&
+      compositor->GetScrollOffsetForLayer(cc_layer_->id(), &offset))
+    return offset;
+  return cc_layer_->scroll_offset();
+}
+
+void Layer::SetScrollOffset(const gfx::ScrollOffset& offset) {
+  Compositor* compositor = GetCompositor();
+  bool scrolled_on_impl_side =
+      compositor && compositor->ScrollLayerTo(cc_layer_->id(), offset);
+
+  if (!scrolled_on_impl_side)
+    cc_layer_->SetScrollOffset(offset);
+
+  DCHECK_EQ(offset.x(), CurrentScrollOffset().x());
+  DCHECK_EQ(offset.y(), CurrentScrollOffset().y());
+}
+
 void Layer::RequestCopyOfOutput(
     std::unique_ptr<cc::CopyOutputRequest> request) {
   cc_layer_->RequestCopyOfOutput(std::move(request));

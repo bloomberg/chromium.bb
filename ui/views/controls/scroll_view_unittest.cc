@@ -5,6 +5,9 @@
 #include "ui/views/controls/scroll_view.h"
 
 #include "base/macros.h"
+#include "base/run_loop.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
@@ -46,7 +49,14 @@ class ScrollViewTestApi {
     return GetBaseScrollBar(orientation)->thumb_;
   }
 
+  gfx::Point IntegralViewOffset() {
+    return gfx::Point() - gfx::ScrollOffsetToFlooredVector2d(CurrentOffset());
+  }
+
+  gfx::ScrollOffset CurrentOffset() { return scroll_view_->CurrentOffset(); }
+
   View* corner_view() { return scroll_view_->corner_view_; }
+  View* contents_viewport() { return scroll_view_->contents_viewport_; }
 
  private:
   ScrollView* scroll_view_;
@@ -72,6 +82,8 @@ class CustomView : public View {
     PreferredSizeChanged();
   }
 
+  const gfx::Point last_location() const { return last_location_; }
+
   gfx::Size GetPreferredSize() const override { return preferred_size_; }
 
   void Layout() override {
@@ -85,8 +97,14 @@ class CustomView : public View {
     SetBounds(x(), y(), width, height);
   }
 
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    last_location_ = event.location();
+    return true;
+  }
+
  private:
   gfx::Size preferred_size_;
+  gfx::Point last_location_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomView);
 };
@@ -115,7 +133,8 @@ ui::MouseEvent TestLeftMouseAt(const gfx::Point& location, ui::EventType type) {
 using test::ScrollViewTestApi;
 
 // Test harness that includes a Widget to help test ui::Event handling.
-class WidgetScrollViewTest : public test::WidgetTest {
+class WidgetScrollViewTest : public test::WidgetTest,
+                             public ui::CompositorObserver {
  public:
   static const int kDefaultHeight = 100;
   static const int kDefaultWidth = 100;
@@ -127,33 +146,81 @@ class WidgetScrollViewTest : public test::WidgetTest {
 #endif
   }
 
-  // Adds a ScrollView with a contents view of the given |size| and does layout.
-  ScrollView* AddScrollViewWithContentSize(const gfx::Size& contents_size) {
+  // Adds a ScrollView with the given |contents_view| and does layout.
+  ScrollView* AddScrollViewWithContents(View* contents,
+                                        bool commit_layers = true) {
     const gfx::Rect default_bounds(50, 50, kDefaultWidth, kDefaultHeight);
     widget_ = CreateTopLevelFramelessPlatformWidget();
 
     ScrollView* scroll_view = new ScrollView();
-    View* contents = new View;
     scroll_view->SetContents(contents);
-    contents->SetSize(contents_size);
 
     widget_->SetBounds(default_bounds);
     widget_->Show();
 
     widget_->SetContentsView(scroll_view);
     scroll_view->Layout();
+
+    widget_->GetCompositor()->AddObserver(this);
+
+    // Ensure the Compositor has committed layer changes before attempting to
+    // use them for impl-side scrolling. Note that simply RunUntilIdle() works
+    // when tests are run in isolation, but compositor scheduling can interact
+    // between test runs in the general case.
+    if (commit_layers)
+      WaitForCommit();
     return scroll_view;
+  }
+
+  // Adds a ScrollView with a contents view of the given |size| and does layout.
+  ScrollView* AddScrollViewWithContentSize(const gfx::Size& contents_size,
+                                           bool commit_layers = true) {
+    View* contents = new View;
+    contents->SetSize(contents_size);
+    return AddScrollViewWithContents(contents, commit_layers);
+  }
+
+  // Wait for a commit to be observed on the compositor.
+  void WaitForCommit() {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, quit_closure_, TestTimeouts::action_timeout());
+    run_loop.Run();
+    EXPECT_TRUE(quit_closure_.is_null()) << "Timed out waiting for a commit.";
+  }
+
+  void TestClickAt(const gfx::Point& location) {
+    ui::MouseEvent press(TestLeftMouseAt(location, ui::ET_MOUSE_PRESSED));
+    ui::MouseEvent release(TestLeftMouseAt(location, ui::ET_MOUSE_RELEASED));
+    widget_->OnMouseEvent(&press);
+    widget_->OnMouseEvent(&release);
   }
 
   // testing::Test:
   void TearDown() override {
+    widget_->GetCompositor()->RemoveObserver(this);
     if (widget_)
       widget_->CloseNow();
     WidgetTest::TearDown();
   }
 
  private:
+  // ui::CompositorObserver:
+  void OnCompositingDidCommit(ui::Compositor* compositor) override {
+    quit_closure_.Run();
+    quit_closure_.Reset();
+  }
+  void OnCompositingStarted(ui::Compositor* compositor,
+                            base::TimeTicks start_time) override {}
+  void OnCompositingEnded(ui::Compositor* compositor) override {}
+  void OnCompositingAborted(ui::Compositor* compositor) override {}
+  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
+
   Widget* widget_ = nullptr;
+
+  base::Closure quit_closure_;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<ui::test::ScopedPreferredScrollerStyle> scroller_style_;
@@ -304,10 +371,25 @@ TEST(ScrollViewTest, Header) {
   EXPECT_EQ("0,0 100x0", header->parent()->bounds().ToString());
   EXPECT_EQ("0,0 100x100", contents->parent()->bounds().ToString());
 
+  // With layered scrolling, ScrollView::Layout() will impose a size on the
+  // contents that fills the viewport. Since the test view doesn't have its own
+  // Layout, reset it in this case so that adding a header doesn't shift the
+  // contents down and require scrollbars.
+  if (contents->layer()) {
+    EXPECT_EQ("0,0 100x100", contents->bounds().ToString());
+    contents->SetBoundsRect(gfx::Rect());
+  }
+  EXPECT_EQ("0,0 0x0", contents->bounds().ToString());
+
   // Get the header a height of 20.
   header->SetPreferredSize(gfx::Size(10, 20));
   EXPECT_EQ("0,0 100x20", header->parent()->bounds().ToString());
   EXPECT_EQ("0,20 100x80", contents->parent()->bounds().ToString());
+  if (contents->layer()) {
+    EXPECT_EQ("0,0 100x80", contents->bounds().ToString());
+    contents->SetBoundsRect(gfx::Rect());
+  }
+  EXPECT_EQ("0,0 0x0", contents->bounds().ToString());
 
   // Remove the header.
   scroll_view.SetHeader(NULL);
@@ -385,6 +467,7 @@ TEST(ScrollViewTest, ScrollBarsWithHeader) {
 // Verifies the header scrolls horizontally with the content.
 TEST(ScrollViewTest, HeaderScrollsWithContent) {
   ScrollView scroll_view;
+  ScrollViewTestApi test_api(&scroll_view);
   CustomView* contents = new CustomView;
   scroll_view.SetContents(contents);
   contents->SetPreferredSize(gfx::Size(500, 500));
@@ -394,44 +477,53 @@ TEST(ScrollViewTest, HeaderScrollsWithContent) {
   header->SetPreferredSize(gfx::Size(500, 20));
 
   scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
-  EXPECT_EQ("0,0", contents->bounds().origin().ToString());
+  EXPECT_EQ("0,0", test_api.IntegralViewOffset().ToString());
   EXPECT_EQ("0,0", header->bounds().origin().ToString());
 
   // Scroll the horizontal scrollbar.
   ASSERT_TRUE(scroll_view.horizontal_scroll_bar());
   scroll_view.ScrollToPosition(
       const_cast<ScrollBar*>(scroll_view.horizontal_scroll_bar()), 1);
-  EXPECT_EQ("-1,0", contents->bounds().origin().ToString());
+  EXPECT_EQ("-1,0", test_api.IntegralViewOffset().ToString());
   EXPECT_EQ("-1,0", header->bounds().origin().ToString());
 
   // Scrolling the vertical scrollbar shouldn't effect the header.
   ASSERT_TRUE(scroll_view.vertical_scroll_bar());
   scroll_view.ScrollToPosition(
       const_cast<ScrollBar*>(scroll_view.vertical_scroll_bar()), 1);
-  EXPECT_EQ("-1,-1", contents->bounds().origin().ToString());
+  EXPECT_EQ("-1,-1", test_api.IntegralViewOffset().ToString());
   EXPECT_EQ("-1,0", header->bounds().origin().ToString());
 }
 
 // Verifies ScrollRectToVisible() on the child works.
 TEST(ScrollViewTest, ScrollRectToVisible) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedPreferredScrollerStyle scroller_style_override(false);
+#endif
   ScrollView scroll_view;
+  ScrollViewTestApi test_api(&scroll_view);
   CustomView* contents = new CustomView;
   scroll_view.SetContents(contents);
   contents->SetPreferredSize(gfx::Size(500, 1000));
 
   scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
   scroll_view.Layout();
-  EXPECT_EQ("0,0", contents->bounds().origin().ToString());
+  EXPECT_EQ("0,0", test_api.IntegralViewOffset().ToString());
 
   // Scroll to y=405 height=10, this should make the y position of the content
   // at (405 + 10) - viewport_height (scroll region bottom aligned).
   contents->ScrollRectToVisible(gfx::Rect(0, 405, 10, 10));
-  const int viewport_height = contents->parent()->height();
-  EXPECT_EQ(-(415 - viewport_height), contents->y());
+  const int viewport_height = test_api.contents_viewport()->height();
+
+  // Expect there to be a horizontal scrollbar, making the viewport shorter.
+  EXPECT_LT(viewport_height, 100);
+
+  gfx::ScrollOffset offset = test_api.CurrentOffset();
+  EXPECT_EQ(415 - viewport_height, offset.y());
 
   // Scroll to the current y-location and 10x10; should do nothing.
-  contents->ScrollRectToVisible(gfx::Rect(0, -contents->y(), 10, 10));
-  EXPECT_EQ(-(415 - viewport_height), contents->y());
+  contents->ScrollRectToVisible(gfx::Rect(0, offset.y(), 10, 10));
+  EXPECT_EQ(415 - viewport_height, test_api.CurrentOffset().y());
 }
 
 // Verifies ClipHeightTo() uses the height of the content when it is between the
@@ -457,23 +549,29 @@ TEST(ScrollViewTest, ClipHeightToNormalContentHeight) {
 }
 
 // Verifies ClipHeightTo() uses the minimum height when the content is shorter
-// thamn the minimum height value.
+// than the minimum height value.
 TEST(ScrollViewTest, ClipHeightToShortContentHeight) {
   ScrollView scroll_view;
 
   scroll_view.ClipHeightTo(kMinHeight, kMaxHeight);
 
   const int kShortContentHeight = 10;
-  scroll_view.SetContents(
-      new views::StaticSizedView(gfx::Size(kWidth, kShortContentHeight)));
+  View* contents =
+      new views::StaticSizedView(gfx::Size(kWidth, kShortContentHeight));
+  scroll_view.SetContents(contents);
 
   EXPECT_EQ(gfx::Size(kWidth, kMinHeight), scroll_view.GetPreferredSize());
 
   scroll_view.SizeToPreferredSize();
   scroll_view.Layout();
 
-  EXPECT_EQ(gfx::Size(kWidth, kShortContentHeight),
-            scroll_view.contents()->size());
+  // Layered scrolling requires the contents to fill the viewport.
+  if (contents->layer()) {
+    EXPECT_EQ(gfx::Size(kWidth, kMinHeight), scroll_view.contents()->size());
+  } else {
+    EXPECT_EQ(gfx::Size(kWidth, kShortContentHeight),
+              scroll_view.contents()->size());
+  }
   EXPECT_EQ(gfx::Size(kWidth, kMinHeight), scroll_view.size());
 }
 
@@ -628,6 +726,39 @@ TEST(ScrollViewTest, CocoaOverlayScrollBars) {
 }
 #endif
 
+// Test that increasing the size of the viewport "below" scrolled content causes
+// the content to scroll up so that it still fills the viewport.
+TEST(ScrollViewTest, ConstrainScrollToBounds) {
+  ScrollView scroll_view;
+  ScrollViewTestApi test_api(&scroll_view);
+
+  View* contents = new View;
+  contents->SetBoundsRect(gfx::Rect(0, 0, 300, 300));
+  scroll_view.SetContents(contents);
+  scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  scroll_view.Layout();
+
+  EXPECT_EQ(gfx::ScrollOffset(), test_api.CurrentOffset());
+
+  // Scroll as far as it goes and query location to discount scroll bars.
+  contents->ScrollRectToVisible(gfx::Rect(300, 300, 1, 1));
+  const gfx::ScrollOffset fully_scrolled = test_api.CurrentOffset();
+  EXPECT_NE(gfx::ScrollOffset(), fully_scrolled);
+
+  // Making the viewport 55 pixels taller should scroll up the same amount.
+  scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 155));
+  scroll_view.Layout();
+  EXPECT_EQ(fully_scrolled.y() - 55, test_api.CurrentOffset().y());
+  EXPECT_EQ(fully_scrolled.x(), test_api.CurrentOffset().x());
+
+  // And 77 pixels wider should scroll left. Also make it short again: the y-
+  // offset from the last change should remain.
+  scroll_view.SetBoundsRect(gfx::Rect(0, 0, 177, 100));
+  scroll_view.Layout();
+  EXPECT_EQ(fully_scrolled.y() - 55, test_api.CurrentOffset().y());
+  EXPECT_EQ(fully_scrolled.x() - 77, test_api.CurrentOffset().x());
+}
+
 // Test scrolling behavior when clicking on the scroll track.
 TEST_F(WidgetScrollViewTest, ScrollTrackScrolling) {
   // Set up with a vertical scroller.
@@ -659,6 +790,97 @@ TEST_F(WidgetScrollViewTest, ScrollTrackScrolling) {
   scroll_bar->OnMouseEvent(&release);
   EXPECT_FALSE(timer.IsRunning());
   EXPECT_EQ(kDefaultHeight, scroll_view->GetVisibleRect().y());
+}
+
+// Test that LocatedEvents are transformed correctly when scrolling.
+TEST_F(WidgetScrollViewTest, EventLocation) {
+  // Set up with both scrollers.
+  CustomView* contents = new CustomView;
+  contents->SetPreferredSize(gfx::Size(kDefaultHeight * 5, kDefaultHeight * 5));
+  AddScrollViewWithContents(contents);
+
+  const gfx::Point location_in_widget(10, 10);
+
+  // Click without scrolling.
+  TestClickAt(location_in_widget);
+  EXPECT_EQ(location_in_widget, contents->last_location());
+
+  // Scroll down a page.
+  contents->ScrollRectToVisible(
+      gfx::Rect(0, kDefaultHeight, 1, kDefaultHeight));
+  TestClickAt(location_in_widget);
+  EXPECT_EQ(gfx::Point(10, 10 + kDefaultHeight), contents->last_location());
+
+  // Scroll right a page (and back up).
+  contents->ScrollRectToVisible(gfx::Rect(kDefaultWidth, 0, kDefaultWidth, 1));
+  TestClickAt(location_in_widget);
+  EXPECT_EQ(gfx::Point(10 + kDefaultWidth, 10), contents->last_location());
+
+  // Scroll both directions.
+  contents->ScrollRectToVisible(
+      gfx::Rect(kDefaultWidth, kDefaultHeight, kDefaultWidth, kDefaultHeight));
+  TestClickAt(location_in_widget);
+  EXPECT_EQ(gfx::Point(10 + kDefaultWidth, 10 + kDefaultHeight),
+            contents->last_location());
+}
+
+// Test that views scroll offsets are in sync with the layer scroll offsets.
+TEST_F(WidgetScrollViewTest, ScrollOffsetUsingLayers) {
+  // Set up with a vertical scroller, but don't commit the layer changes yet.
+  ScrollView* scroll_view =
+      AddScrollViewWithContentSize(gfx::Size(10, kDefaultHeight * 5), false);
+  ScrollViewTestApi test_api(scroll_view);
+
+  EXPECT_EQ(gfx::ScrollOffset(0, 0), test_api.CurrentOffset());
+
+  // UI code may request a scroll before layer changes are committed.
+  gfx::Rect offset(0, kDefaultHeight * 2, 1, kDefaultHeight);
+  scroll_view->contents()->ScrollRectToVisible(offset);
+  EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), test_api.CurrentOffset());
+
+  // The following only makes sense when layered scrolling is enabled.
+  View* container = scroll_view->contents();
+#if defined(OS_MACOSX)
+  // Sanity check: Mac should always scroll with layers.
+  EXPECT_TRUE(container->layer());
+#endif
+  if (!container->layer())
+    return;
+
+  // Container and viewport should have layers.
+  EXPECT_TRUE(container->layer());
+  EXPECT_TRUE(test_api.contents_viewport()->layer());
+
+  // In a Widget, so there should be a compositor.
+  ui::Compositor* compositor = container->layer()->GetCompositor();
+  EXPECT_TRUE(compositor);
+
+  // But setting on the impl side should fail since the layer isn't committed.
+  int layer_id = container->layer()->cc_layer_for_testing()->id();
+  EXPECT_FALSE(compositor->ScrollLayerTo(layer_id, gfx::ScrollOffset(0, 0)));
+  EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), test_api.CurrentOffset());
+
+  WaitForCommit();
+  EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), test_api.CurrentOffset());
+
+  // Upon commit, the impl side should report the same value too.
+  gfx::ScrollOffset impl_offset;
+  EXPECT_TRUE(compositor->GetScrollOffsetForLayer(layer_id, &impl_offset));
+  EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), impl_offset);
+
+  // Now impl-side scrolling should work, and also update the ScrollView.
+  offset.set_y(kDefaultHeight * 3);
+  EXPECT_TRUE(
+      compositor->ScrollLayerTo(layer_id, gfx::ScrollOffset(0, offset.y())));
+  EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), test_api.CurrentOffset());
+
+  // Scroll via ScrollView API. Should be reflected on the impl side.
+  offset.set_y(kDefaultHeight * 4);
+  scroll_view->contents()->ScrollRectToVisible(offset);
+  EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), test_api.CurrentOffset());
+
+  EXPECT_TRUE(compositor->GetScrollOffsetForLayer(layer_id, &impl_offset));
+  EXPECT_EQ(gfx::ScrollOffset(0, offset.y()), impl_offset);
 }
 
 }  // namespace views

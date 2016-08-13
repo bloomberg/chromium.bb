@@ -447,7 +447,13 @@ void View::OnEnabledChanged() {
 // Transformations -------------------------------------------------------------
 
 gfx::Transform View::GetTransform() const {
-  return layer() ? layer()->transform() : gfx::Transform();
+  if (!layer())
+    return gfx::Transform();
+
+  gfx::Transform transform = layer()->transform();
+  gfx::ScrollOffset scroll_offset = layer()->CurrentScrollOffset();
+  transform.Translate(-scroll_offset.x(), -scroll_offset.y());
+  return transform;
 }
 
 void View::SetTransform(const gfx::Transform& transform) {

@@ -51,6 +51,9 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   const views::ScrollView* scroll_view() const { return scroll_view_; }
 
  private:
+  // views::View:
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+
   // views::DialogDelegateView:
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;

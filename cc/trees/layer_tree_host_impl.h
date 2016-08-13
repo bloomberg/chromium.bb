@@ -202,6 +202,9 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;
   ScrollElasticityHelper* CreateScrollElasticityHelper() override;
+  bool GetScrollOffsetForLayer(int layer_id,
+                               gfx::ScrollOffset* offset) override;
+  bool ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) override;
 
   // TopControlsManagerClient implementation.
   float TopControlsHeight() const override;

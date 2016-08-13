@@ -198,6 +198,12 @@ class CC_EXPORT InputHandler {
 
   virtual ScrollElasticityHelper* CreateScrollElasticityHelper() = 0;
 
+  // Called by the single-threaded UI Compositor to get or set the scroll offset
+  // on the impl side. Retruns false if |layer_id| isn't in the active tree.
+  virtual bool GetScrollOffsetForLayer(int layer_id,
+                                       gfx::ScrollOffset* offset) = 0;
+  virtual bool ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) = 0;
+
  protected:
   InputHandler() {}
   virtual ~InputHandler() {}

@@ -245,15 +245,6 @@ void SingleThreadProxy::DoCommit() {
             "461509 SingleThreadProxy::DoCommit7"));
     layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_impl_.get());
 
-#if DCHECK_IS_ON()
-    // In the single-threaded case, the scale and scroll deltas should never be
-    // touched on the impl layer tree.
-    std::unique_ptr<ScrollAndScaleSet> scroll_info =
-        layer_tree_host_impl_->ProcessScrollDeltas();
-    DCHECK(scroll_info->scrolls.empty());
-    DCHECK_EQ(1.f, scroll_info->page_scale_delta);
-#endif
-
     if (scheduler_on_impl_thread_)
       scheduler_on_impl_thread_->DidCommit();
 
@@ -794,6 +785,14 @@ void SingleThreadProxy::BeginMainFrame(const BeginFrameArgs& begin_frame_args) {
 
 void SingleThreadProxy::DoBeginMainFrame(
     const BeginFrameArgs& begin_frame_args) {
+  // In the single-threaded case, the scale deltas should never be touched on
+  // the impl layer tree. However, impl-side scroll deltas may be manipulated
+  // directly via the InputHandler on the UI thread.
+  std::unique_ptr<ScrollAndScaleSet> scroll_info =
+      layer_tree_host_impl_->ProcessScrollDeltas();
+  DCHECK_EQ(1.f, scroll_info->page_scale_delta);
+  layer_tree_host_->ApplyScrollAndScale(scroll_info.get());
+
   layer_tree_host_->WillBeginMainFrame();
   layer_tree_host_->BeginMainFrame(begin_frame_args);
   layer_tree_host_->AnimateLayers(begin_frame_args.frame_time);
