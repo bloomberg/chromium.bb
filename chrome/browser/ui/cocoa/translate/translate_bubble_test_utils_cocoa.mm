@@ -36,7 +36,7 @@ void PressTranslate(Browser* browser) {
   NSWindow* native_window = browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
       [BrowserWindowController browserWindowControllerForWindow:native_window];
-  [[controller translateBubbleController] handleTranslateButtonPressed];
+  [[controller translateBubbleController] handleTranslateButtonPressed:nil];
 }
 
 }  // namespace test_utils

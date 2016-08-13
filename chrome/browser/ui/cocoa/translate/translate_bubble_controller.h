@@ -25,7 +25,8 @@ class WebContents;
 // pops up when clicking the Translate icon on Omnibox. This bubble
 // allows us to translate a foreign page into user-selected language,
 // revert this, and configure the translate setting.
-@interface TranslateBubbleController : BaseBubbleController {
+@interface TranslateBubbleController
+    : BaseBubbleController<NSTextViewDelegate> {
  @private
   content::WebContents* webContents_;
   std::unique_ptr<TranslateBubbleModel> model_;
@@ -40,12 +41,19 @@ class WebContents;
   // The 'Cancel' button on the advanced (option) panel.
   NSButton* advancedCancelButton_;
 
+  // The 'Always translate' checkbox on the before panel.
+  // This is nil when the current WebContents is in an incognito window.
+  NSButton* beforeAlwaysTranslateCheckbox_;
+
   // The 'Always translate' checkbox on the advanced (option) panel.
   // This is nil when the current WebContents is in an incognito window.
-  NSButton* alwaysTranslateCheckbox_;
+  NSButton* advancedAlwaysTranslateCheckbox_;
 
   // The 'Try again' button on the error panel.
   NSButton* tryAgainButton_;
+
+  // The '[x]' close button on the upper right side of the before panel.
+  NSButton* closeButton_;
 
   // The combobox model which is used to deny translation at the view before
   // translate.
@@ -59,6 +67,9 @@ class WebContents;
 
   // Whether the translation is actually executed once at least.
   BOOL translateExecuted_;
+
+  // The state of the 'Always ...' checkboxes.
+  BOOL shouldAlwaysTranslate_;
 }
 
 @property(readonly, nonatomic) const content::WebContents* webContents;
@@ -75,6 +86,6 @@ class WebContents;
 // The methods on this category are used internally by the controller and are
 // only exposed for testing purposes. DO NOT USE OTHERWISE.
 @interface TranslateBubbleController (ExposedForTesting)
-- (void)handleTranslateButtonPressed;
-- (void)handleDenialPopUpButtonNopeSelected;
+- (IBAction)handleCloseButtonPressed:(id)sender;
+- (IBAction)handleTranslateButtonPressed:(id)sender;
 @end

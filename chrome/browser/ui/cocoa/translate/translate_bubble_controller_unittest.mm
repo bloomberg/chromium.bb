@@ -116,9 +116,9 @@ TEST_F(TranslateBubbleControllerTest, SwitchToErrorView) {
   SwitchToErrorView();
 
   NSView* errorView = [bubble() errorView];
-  // We should have 3 subview inside the error view:
-  // A NSTextField and two NSButton.
-  EXPECT_EQ(3UL, [[errorView subviews] count]);
+  // We should have 4 subview inside the error view:
+  // A NSTextField, a NSImageView and two NSButton.
+  EXPECT_EQ(4UL, [[errorView subviews] count]);
 
   // one of the subview should be "Try again" button.
   EXPECT_TRUE([[errorView subviews] containsObject:[bubble() tryAgainButton]]);
@@ -126,6 +126,40 @@ TEST_F(TranslateBubbleControllerTest, SwitchToErrorView) {
             model->GetViewState());
   EXPECT_TRUE(bubble());
   CloseBubble();
+}
+
+TEST_F(TranslateBubbleControllerTest, SwitchViews) {
+  // A basic test which just switch between views to make sure no crash.
+  EXPECT_FALSE(bubble());
+
+  ShowBubble();
+  EXPECT_TRUE(bubble());
+
+  // Switch to during translating view.
+  [bubble()
+      switchView:(TranslateBubbleModel::ViewState::VIEW_STATE_TRANSLATING)];
+
+  EXPECT_TRUE(bubble());
+
+  // Switch to after translating view.
+  [bubble()
+      switchView:(TranslateBubbleModel::ViewState::VIEW_STATE_AFTER_TRANSLATE)];
+
+  EXPECT_TRUE(bubble());
+
+  // Switch to advanced view.
+  [bubble() switchView:(TranslateBubbleModel::ViewState::VIEW_STATE_ADVANCED)];
+
+  EXPECT_TRUE(bubble());
+
+  // Switch to before translating view.
+  [bubble() switchView:
+                (TranslateBubbleModel::ViewState::VIEW_STATE_BEFORE_TRANSLATE)];
+
+  EXPECT_TRUE(bubble());
+
+  CloseBubble();
+  EXPECT_FALSE(bubble());
 }
 
 TEST_F(TranslateBubbleControllerTest, CloseRegistersDecline) {
@@ -142,11 +176,12 @@ TEST_F(TranslateBubbleControllerTest, CloseRegistersDecline) {
     histogram_tester.ExpectTotalCount(kDeclineTranslate, 0);
   }
 
-  // A close while pressing e.g. 'Nope', registers as decline.
+  // A close while pressing e.g. 'x', registers as decline.
   {
     base::HistogramTester histogram_tester;
     ShowBubble();
-    [bubble() handleDenialPopUpButtonNopeSelected];
+    [bubble() handleCloseButtonPressed:nil];
+
     CloseBubble();
     histogram_tester.ExpectTotalCount(kDeclineTranslateDismissUI, 0);
     histogram_tester.ExpectTotalCount(kDeclineTranslate, 1);
