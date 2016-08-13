@@ -166,6 +166,7 @@ bool isEmptyTableCell(const Node*);
 bool isTableStructureNode(const Node*);
 bool isHTMLListElement(Node*);
 bool isListItem(const Node*);
+bool isPresentationalHTMLElement(const Node*);
 bool isNodeRendered(const Node&);
 bool isNodeVisiblyContainedWithin(Node&, const Range&);
 bool isRenderedAsNonInlineTableImageOrHR(const Node*);

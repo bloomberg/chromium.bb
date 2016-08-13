@@ -169,16 +169,6 @@ bool propertyMissingOrEqualToNone(StylePropertySet* style, CSSPropertyID propert
     return toCSSPrimitiveValue(value)->getValueID() == CSSValueNone;
 }
 
-static bool isPresentationalHTMLElement(const Node* node)
-{
-    if (!node->isHTMLElement())
-        return false;
-
-    const HTMLElement& element = toHTMLElement(*node);
-    return element.hasTagName(uTag) || element.hasTagName(sTag) || element.hasTagName(strikeTag)
-        || element.hasTagName(iTag) || element.hasTagName(emTag) || element.hasTagName(bTag) || element.hasTagName(strongTag);
-}
-
 template<typename Strategy>
 static HTMLElement* highestAncestorToWrapMarkup(const PositionTemplate<Strategy>& startPosition, const PositionTemplate<Strategy>& endPosition, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
 {

@@ -1136,6 +1136,16 @@ bool isListItem(const Node* n)
     return n && n->layoutObject() && n->layoutObject()->isListItem();
 }
 
+bool isPresentationalHTMLElement(const Node* node)
+{
+    if (!node->isHTMLElement())
+        return false;
+
+    const HTMLElement& element = toHTMLElement(*node);
+    return element.hasTagName(uTag) || element.hasTagName(sTag) || element.hasTagName(strikeTag)
+        || element.hasTagName(iTag) || element.hasTagName(emTag) || element.hasTagName(bTag) || element.hasTagName(strongTag);
+}
+
 Element* associatedElementOf(const Position& position)
 {
     Node* node = position.anchorNode();
