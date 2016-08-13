@@ -14,6 +14,8 @@ PaintInvalidationReason BlockFlowPaintInvalidator::invalidatePaintIfNeeded()
 {
     PaintInvalidationReason reason = BoxPaintInvalidator(m_blockFlow, m_context).invalidatePaintIfNeeded();
 
+    // TODO(wangxianzhu): Refactor the following into invalidateDisplayItemClients().
+
     if (reason == PaintInvalidationNone || reason == PaintInvalidationDelayedFull)
         return reason;
 
@@ -24,6 +26,16 @@ PaintInvalidationReason BlockFlowPaintInvalidator::invalidatePaintIfNeeded()
         // we just invalidate it unconditionally which is typically cheaper.
         m_blockFlow.invalidateDisplayItemClient(*line, reason);
     }
+
+    if (m_blockFlow.multiColumnFlowThread()) {
+        // Invalidate child LayoutMultiColumnSets which may need to repaint column rules after
+        // m_blockFlow's column rule style and/or layout changed.
+        for (LayoutObject* child = m_blockFlow.firstChild(); child; child = child->nextSibling()) {
+            if (child->isLayoutMultiColumnSet() && !child->shouldDoFullPaintInvalidation())
+                m_blockFlow.invalidateDisplayItemClient(*child, reason);
+        }
+    }
+
     return reason;
 }
 
