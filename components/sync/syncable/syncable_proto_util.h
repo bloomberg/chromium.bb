@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/syncable_id.h"
 
 namespace sync_pb {
@@ -22,7 +21,7 @@ syncable::Id SyncableIdFromProto(const std::string& proto_string);
 
 // Converts from a syncable::Id to a formatted std::string.  This is useful for
 // populating the fields of a protobuf which will be sent to the server.
-SYNC_EXPORT std::string SyncableIdToProto(const syncable::Id& syncable_id);
+std::string SyncableIdToProto(const syncable::Id& syncable_id);
 
 // Helper function to determine if this SyncEntity's properties indicate that it
 // is a folder.

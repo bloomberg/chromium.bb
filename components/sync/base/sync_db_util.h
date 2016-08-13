@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "components/sync/base/sync_export.h"
 
 namespace base {
 class FilePath;
@@ -20,7 +19,7 @@ namespace syncer {
 // Check integrity of sync DB under |sync_dir|. Invoke |callback| with last
 // modified time if integrity check passes, with NULL time otherwise. This
 // is called on either sync thread or IO thread.
-SYNC_EXPORT void CheckSyncDbLastModifiedTime(
+void CheckSyncDbLastModifiedTime(
     const base::FilePath& sync_dir,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
     base::Callback<void(base::Time)> callback);

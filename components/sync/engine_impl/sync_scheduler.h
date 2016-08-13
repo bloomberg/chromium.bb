@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "components/sync/base/invalidation_interface.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/engine_impl/nudge_source.h"
 #include "components/sync/sessions_impl/sync_session.h"
 
@@ -25,7 +24,7 @@ namespace syncer {
 
 struct ServerConnectionEvent;
 
-struct SYNC_EXPORT ConfigurationParams {
+struct ConfigurationParams {
   ConfigurationParams();
   ConfigurationParams(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
@@ -48,7 +47,7 @@ struct SYNC_EXPORT ConfigurationParams {
   base::Closure retry_task;
 };
 
-struct SYNC_EXPORT ClearParams {
+struct ClearParams {
   explicit ClearParams(const base::Closure& report_success_task);
   ClearParams(const ClearParams& other);
   ~ClearParams();
@@ -57,7 +56,7 @@ struct SYNC_EXPORT ClearParams {
   base::Closure report_success_task;
 };
 
-class SYNC_EXPORT SyncScheduler : public sessions::SyncSession::Delegate {
+class SyncScheduler : public sessions::SyncSession::Delegate {
  public:
   enum Mode {
     // In this mode, the thread only performs configuration tasks.  This is

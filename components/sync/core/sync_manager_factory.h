@@ -9,14 +9,13 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
 class SyncManager;
 
 // Helper class to allow dependency injection of the SyncManager in tests.
-class SYNC_EXPORT SyncManagerFactory {
+class SyncManagerFactory {
  public:
   SyncManagerFactory();
   virtual ~SyncManagerFactory();

@@ -26,8 +26,8 @@ class URLRequestContextGetter;
 namespace syncer {
 
 // An implementation of AttachmentUploader.
-class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
-                                           public base::NonThreadSafe {
+class AttachmentUploaderImpl : public AttachmentUploader,
+                               public base::NonThreadSafe {
  public:
   // |sync_service_url| is the URL of the sync service.
   //

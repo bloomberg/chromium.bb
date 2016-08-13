@@ -7,12 +7,11 @@
 
 #include "base/callback.h"
 #include "components/sync/api/attachments/attachment.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
 // AttachmentUploader is responsible for uploading attachments to the server.
-class SYNC_EXPORT AttachmentUploader {
+class AttachmentUploader {
  public:
   // The result of an UploadAttachment operation.
   enum UploadResult {

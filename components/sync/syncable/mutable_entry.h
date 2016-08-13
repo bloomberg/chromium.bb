@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/metahandle_set.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
@@ -27,7 +26,7 @@ class WriteTransaction;
 
 // A mutable meta entry.  Changes get committed to the database when the
 // WriteTransaction is destroyed.
-class SYNC_EXPORT MutableEntry : public ModelNeutralMutableEntry {
+class MutableEntry : public ModelNeutralMutableEntry {
   void Init(WriteTransaction* trans,
             ModelType model_type,
             const Id& parent_id,

@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SYNC_BASE_SYNCER_ERROR_H_
 #define COMPONENTS_SYNC_BASE_SYNCER_ERROR_H_
 
-#include "components/sync/base/sync_export.h"
-
 namespace syncer {
 
 // This enum describes all the possible results of a sync cycle.
@@ -42,7 +40,7 @@ enum SyncerError {
   SYNCER_OK
 };
 
-SYNC_EXPORT const char* GetSyncerErrorString(SyncerError);
+const char* GetSyncerErrorString(SyncerError);
 
 // Helper to check that |error| is set to something (not UNSET) and is not
 // SYNCER_OK.

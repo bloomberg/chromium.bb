@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -22,7 +21,7 @@ namespace syncer {
 //
 // Unlike the events for the request message, the response events are generic
 // and do not vary for each type of GetUpdate cycle.
-class SYNC_EXPORT GetUpdatesResponseEvent : public ProtocolEvent {
+class GetUpdatesResponseEvent : public ProtocolEvent {
  public:
   GetUpdatesResponseEvent(base::Time timestamp,
                           const sync_pb::ClientToServerResponse& response,

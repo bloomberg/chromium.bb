@@ -18,7 +18,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "components/sync/base/cancelation_observer.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/http_post_provider_factory.h"
 #include "components/sync/core/http_post_provider_interface.h"
 #include "components/sync/core/network_time_update_callback.h"
@@ -46,9 +45,9 @@ class CancelationSignal;
 // This is a one-time use bridge. Create one for each request you want to make.
 // It is RefCountedThreadSafe because it can PostTask to the io loop, and thus
 // needs to stick around across context switches, etc.
-class SYNC_EXPORT HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
-                               public HttpPostProviderInterface,
-                               public net::URLFetcherDelegate {
+class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
+                   public HttpPostProviderInterface,
+                   public net::URLFetcherDelegate {
  public:
   HttpBridge(const std::string& user_agent,
              const scoped_refptr<net::URLRequestContextGetter>& context,
@@ -187,8 +186,8 @@ class SYNC_EXPORT HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   DISALLOW_COPY_AND_ASSIGN(HttpBridge);
 };
 
-class SYNC_EXPORT HttpBridgeFactory : public HttpPostProviderFactory,
-                                      public CancelationObserver {
+class HttpBridgeFactory : public HttpPostProviderFactory,
+                          public CancelationObserver {
  public:
   HttpBridgeFactory(
       const scoped_refptr<net::URLRequestContextGetter>&

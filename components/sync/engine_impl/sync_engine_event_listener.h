@@ -7,7 +7,6 @@
 
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -15,7 +14,7 @@ struct SyncProtocolError;
 struct SyncCycleEvent;
 class ProtocolEvent;
 
-class SYNC_EXPORT SyncEngineEventListener {
+class SyncEngineEventListener {
  public:
   SyncEngineEventListener();
 

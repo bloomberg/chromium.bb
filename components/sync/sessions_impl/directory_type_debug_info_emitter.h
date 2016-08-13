@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/sessions/commit_counters.h"
 #include "components/sync/sessions/update_counters.h"
 #include "components/sync/syncable/directory.h"
@@ -34,7 +33,7 @@ class TypeDebugInfoObserver;
 // is delegated to the UpdateHandler and CommitContributors.  For the Stats
 // counters, the emitter will use its type_ and directory_ members to fetch all
 // the required information on demand.
-class SYNC_EXPORT DirectoryTypeDebugInfoEmitter {
+class DirectoryTypeDebugInfoEmitter {
  public:
   // Standard constructor for non-tests.
   //

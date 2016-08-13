@@ -9,7 +9,6 @@
 
 #include "components/sync/api/sync_error.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -20,7 +19,7 @@ namespace syncer {
 // by the local SyncableService, all values correspond to the local state before
 // and after merging, and the delta's applied to that state. Sync's change
 // processor will create a separate merge result.
-class SYNC_EXPORT SyncMergeResult {
+class SyncMergeResult {
  public:
   // Initialize an empty merge result for model type |type|.
   explicit SyncMergeResult(ModelType type);

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -22,7 +21,7 @@ class SyncSession;
 // An instance of this class corresponds to a single operation and is
 // responsible for building a request, sending it, and interpreting the
 // response.
-class SYNC_EXPORT ClearServerData {
+class ClearServerData {
  public:
   explicit ClearServerData(const std::string& account_name);
   ~ClearServerData();

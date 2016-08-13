@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/sync/api/attachments/attachment_id.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/base_transaction.h"
 
 namespace tracked_objects {
@@ -30,7 +29,7 @@ struct UserShare;
 
 // Sync API's ReadTransaction is a read-only BaseTransaction.  It wraps
 // a syncable::ReadTransaction.
-class SYNC_EXPORT ReadTransaction : public BaseTransaction {
+class ReadTransaction : public BaseTransaction {
  public:
   // Start a new read-only transaction on the specified repository.
   ReadTransaction(const tracked_objects::Location& from_here, UserShare* share);

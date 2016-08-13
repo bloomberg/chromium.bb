@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/sessions_impl/data_type_tracker.h"
 
@@ -28,7 +27,7 @@ class ObjectIdInvalidationMap;
 
 namespace sessions {
 
-class SYNC_EXPORT NudgeTracker {
+class NudgeTracker {
  public:
   static size_t kDefaultMaxPayloadsPerType;
 

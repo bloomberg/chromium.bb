@@ -12,14 +12,13 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/sync/base/proto_value_ptr.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
 
 struct EntityData;
 
-struct SYNC_EXPORT EntityDataTraits {
+struct EntityDataTraits {
   static void SwapValue(EntityData* dest, EntityData* src);
   static bool HasValue(const EntityData& value);
   static const EntityData& DefaultValue();
@@ -33,7 +32,7 @@ typedef std::map<std::string, EntityDataPtr> EntityDataMap;
 // local data created on the ModelTypeService side or remote data created
 // on ModelTypeWorker.
 // EntityData is supposed to be wrapped and passed by reference.
-struct SYNC_EXPORT EntityData {
+struct EntityData {
  public:
   EntityData();
   ~EntityData();

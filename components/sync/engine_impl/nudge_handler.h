@@ -7,11 +7,10 @@
 
 #include "base/compiler_specific.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
-class SYNC_EXPORT NudgeHandler {
+class NudgeHandler {
  public:
   NudgeHandler();
   virtual ~NudgeHandler();

@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/user_share.h"
 
 namespace syncer {
@@ -28,7 +27,7 @@ class Directory;
 //
 // Note, these transactions are not atomic. Individual operations can
 // fail. There is no built-in rollback or undo mechanism.
-class SYNC_EXPORT BaseTransaction {
+class BaseTransaction {
  public:
   // Provide access to the underlying syncable objects from BaseNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const = 0;

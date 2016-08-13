@@ -14,7 +14,7 @@ struct StatusCounters;
 struct UpdateCounters;
 
 // Interface for classes that observe per-type sync debug counters.
-class SYNC_EXPORT TypeDebugInfoObserver {
+class TypeDebugInfoObserver {
  public:
   TypeDebugInfoObserver();
   virtual ~TypeDebugInfoObserver();

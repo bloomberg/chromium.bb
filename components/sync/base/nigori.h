@@ -10,8 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "components/sync/base/sync_export.h"
-
 namespace crypto {
 class SymmetricKey;
 }  // namespace crypto
@@ -27,7 +25,7 @@ namespace syncer {
 // and retrieve the secret.
 //
 // https://www.cl.cam.ac.uk/~drt24/nigori/nigori-overview.pdf
-class SYNC_EXPORT Nigori {
+class Nigori {
  public:
   enum Type {
     Password = 1,

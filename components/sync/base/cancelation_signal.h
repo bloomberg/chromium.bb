@@ -6,7 +6,6 @@
 #define COMPONENTS_SYNC_BASE_CANCELATION_SIGNAL_H_
 
 #include "base/synchronization/lock.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -31,7 +30,7 @@ class CancelationObserver;
 //
 // This class supports only one handler, though it could easily support multiple
 // observers if we found a use case for such a feature.
-class SYNC_EXPORT CancelationSignal {
+class CancelationSignal {
  public:
   CancelationSignal();
   ~CancelationSignal();

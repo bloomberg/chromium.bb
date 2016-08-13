@@ -15,7 +15,7 @@ struct ActivationContext;
 // An interface into the core parts of sync for USS model types. Handles
 // creating the connection between the ModelTypeWorker (CommitQueue) on the sync
 // side and the (Shared)ModelTypeProcessor on the model type side.
-class SYNC_EXPORT ModelTypeConnector {
+class ModelTypeConnector {
  public:
   ModelTypeConnector();
   virtual ~ModelTypeConnector();

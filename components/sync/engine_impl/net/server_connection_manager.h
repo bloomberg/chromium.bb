@@ -19,7 +19,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_checker.h"
 #include "components/sync/base/cancelation_observer.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/syncable_id.h"
 
 namespace sync_pb {
@@ -41,7 +40,7 @@ static const int32_t kUnsetPayloadLength = -1;
 // HttpResponse gathers the relevant output properties of an HTTP request.
 // Depending on the value of the server_status code, response_code, and
 // content_length may not be valid.
-struct SYNC_EXPORT HttpResponse {
+struct HttpResponse {
   enum ServerConnectionCode {
     // For uninitialized state.
     NONE,
@@ -98,7 +97,7 @@ struct ServerConnectionEvent {
       : connection_code(code) {}
 };
 
-class SYNC_EXPORT ServerConnectionEventListener {
+class ServerConnectionEventListener {
  public:
   virtual void OnServerConnectionEvent(const ServerConnectionEvent& event) = 0;
 
@@ -109,7 +108,7 @@ class SYNC_EXPORT ServerConnectionEventListener {
 // Use this class to interact with the sync server.
 // The ServerConnectionManager currently supports POSTing protocol buffers.
 //
-class SYNC_EXPORT ServerConnectionManager : public CancelationObserver {
+class ServerConnectionManager : public CancelationObserver {
  public:
   // buffer_in - will be POSTed
   // buffer_out - string will be overwritten with response

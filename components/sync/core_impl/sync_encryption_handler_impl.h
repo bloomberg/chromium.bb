@@ -16,7 +16,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/sync/base/cryptographer.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/sync_encryption_handler.h"
 #include "components/sync/syncable/nigori_handler.h"
 
@@ -43,8 +42,8 @@ class WriteTransaction;
 // sync methods.
 // All methods are non-thread-safe and should only be called from the sync
 // thread unless explicitly noted otherwise.
-class SYNC_EXPORT SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
-                                              public syncable::NigoriHandler {
+class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
+                                  public syncable::NigoriHandler {
  public:
   SyncEncryptionHandlerImpl(
       UserShare* user_share,

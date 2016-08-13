@@ -8,7 +8,6 @@
 #include <string>
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 namespace google {
 namespace protobuf {
@@ -29,7 +28,7 @@ class BaseTransaction;
 // Sync internal interface for dealing with nigori node and querying
 // the current set of encrypted types. Not thread safe, so a sync transaction
 // must be held by a caller whenever invoking methods.
-class SYNC_EXPORT NigoriHandler {
+class NigoriHandler {
  public:
   NigoriHandler();
   virtual ~NigoriHandler();

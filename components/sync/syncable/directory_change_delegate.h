@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/write_transaction_info.h"
 
 namespace syncer {
@@ -26,7 +25,7 @@ namespace syncable {
 //    (HandleTransactionCompleteChangeEvent).
 //
 // Note that these methods may be called on *any* thread.
-class SYNC_EXPORT DirectoryChangeDelegate {
+class DirectoryChangeDelegate {
  public:
   // Returns the handles of changed entries in |entry_changed|.
   virtual void HandleCalculateChangesChangeEventFromSyncApi(

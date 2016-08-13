@@ -22,7 +22,7 @@ class GetUpdatesProcessor;
 // GetUpdate type (normal, configuration, poll).  The GetUpdatesProcessor is
 // given an appropriate GetUpdatesDelegate to handle type specific functionality
 // on construction.
-class SYNC_EXPORT GetUpdatesDelegate {
+class GetUpdatesDelegate {
  public:
   GetUpdatesDelegate();
   virtual ~GetUpdatesDelegate() = 0;
@@ -42,7 +42,7 @@ class SYNC_EXPORT GetUpdatesDelegate {
 };
 
 // Functionality specific to the normal GetUpdate request.
-class SYNC_EXPORT NormalGetUpdatesDelegate : public GetUpdatesDelegate {
+class NormalGetUpdatesDelegate : public GetUpdatesDelegate {
  public:
   explicit NormalGetUpdatesDelegate(
       const sessions::NudgeTracker& nudge_tracker);
@@ -68,7 +68,7 @@ class SYNC_EXPORT NormalGetUpdatesDelegate : public GetUpdatesDelegate {
 };
 
 // Functionality specific to the configure GetUpdate request.
-class SYNC_EXPORT ConfigureGetUpdatesDelegate : public GetUpdatesDelegate {
+class ConfigureGetUpdatesDelegate : public GetUpdatesDelegate {
  public:
   ConfigureGetUpdatesDelegate(
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
@@ -100,7 +100,7 @@ class SYNC_EXPORT ConfigureGetUpdatesDelegate : public GetUpdatesDelegate {
 };
 
 // Functionality specific to the poll GetUpdate request.
-class SYNC_EXPORT PollGetUpdatesDelegate : public GetUpdatesDelegate {
+class PollGetUpdatesDelegate : public GetUpdatesDelegate {
  public:
   PollGetUpdatesDelegate();
   ~PollGetUpdatesDelegate() override;

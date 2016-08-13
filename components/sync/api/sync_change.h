@@ -11,7 +11,6 @@
 
 #include "base/location.h"
 #include "components/sync/api/sync_data.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -20,7 +19,7 @@ namespace syncer {
 // is encapsulated within the SyncChange, which, once created, is immutable.
 // Note: it is safe and cheap to pass these by value or make copies, as they do
 // not create deep copies of their internal data.
-class SYNC_EXPORT SyncChange {
+class SyncChange {
  public:
   enum SyncChangeType {
     ACTION_INVALID,
@@ -70,7 +69,7 @@ class SYNC_EXPORT SyncChange {
 };
 
 // gmock printer helper.
-SYNC_EXPORT void PrintTo(const SyncChange& sync_change, std::ostream* os);
+void PrintTo(const SyncChange& sync_change, std::ostream* os);
 
 }  // namespace syncer
 

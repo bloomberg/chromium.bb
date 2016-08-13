@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/threading/thread_collision_warner.h"
 #include "components/sync/api/model_type_store.h"
-#include "components/sync/base/sync_export.h"
 
 namespace leveldb {
 class DB;
@@ -26,7 +25,7 @@ namespace syncer_v2 {
 // ModelTypeStoreBackend handles operations with leveldb. It is oblivious of the
 // fact that it is called from separate thread (with the exception of ctor),
 // meaning it shouldn't deal with callbacks and task_runners.
-class SYNC_EXPORT ModelTypeStoreBackend
+class ModelTypeStoreBackend
     : public base::RefCountedThreadSafe<ModelTypeStoreBackend> {
  public:
   typedef std::unordered_map<std::string, ModelTypeStoreBackend*> BackendMap;

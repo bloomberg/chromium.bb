@@ -9,7 +9,6 @@
 
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -51,13 +50,13 @@ enum BootstrapTokenType {
 // and keeps the nigori node up to date.
 // Implementations of this class must be assumed to be non-thread-safe. All
 // methods must be invoked on the sync thread.
-class SYNC_EXPORT SyncEncryptionHandler {
+class SyncEncryptionHandler {
  public:
   class NigoriState;
 
   // All Observer methods are done synchronously from within a transaction and
   // on the sync thread.
-  class SYNC_EXPORT Observer {
+  class Observer {
    public:
     Observer();
 
@@ -132,7 +131,7 @@ class SYNC_EXPORT SyncEncryptionHandler {
     virtual ~Observer();
   };
 
-  class SYNC_EXPORT NigoriState {
+  class NigoriState {
    public:
     NigoriState() {}
     sync_pb::NigoriSpecifics nigori_specifics;

@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/sync/base/cryptographer.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/time.h"
 #include "components/sync/core/sync_manager.h"
 #include "components/sync/core/user_share.h"
@@ -55,7 +54,7 @@ class SyncSessionContext;
 //
 // Unless stated otherwise, all methods of SyncManager should be called on the
 // same thread.
-class SYNC_EXPORT SyncManagerImpl
+class SyncManagerImpl
     : public SyncManager,
       public net::NetworkChangeNotifier::IPAddressObserver,
       public net::NetworkChangeNotifier::ConnectionTypeObserver,

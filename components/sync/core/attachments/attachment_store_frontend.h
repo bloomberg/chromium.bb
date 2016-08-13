@@ -29,7 +29,7 @@ class AttachmentStoreBackend;
 // model thread.
 // Method signatures of AttachmentStoreFrontend match exactly methods of
 // AttachmentStoreBackend.
-class SYNC_EXPORT AttachmentStoreFrontend
+class AttachmentStoreFrontend
     : public base::RefCounted<AttachmentStoreFrontend>,
       public base::NonThreadSafe {
  public:

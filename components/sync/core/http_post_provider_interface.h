@@ -7,15 +7,13 @@
 
 #include <string>
 
-#include "components/sync/base/sync_export.h"
-
 namespace syncer {
 
 // An interface the embedding application (e.g. Chromium) implements to provide
 // required HTTP POST functionality to the syncer backend. This interface is
 // designed for one-time use. You create one, use it, and create another if you
 // want to make a subsequent POST.
-class SYNC_EXPORT HttpPostProviderInterface {
+class HttpPostProviderInterface {
  public:
   // Add additional headers to the request.
   virtual void SetExtraRequestHeaders(const char* headers) = 0;

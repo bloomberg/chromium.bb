@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/directory_backing_store.h"
 
 namespace syncer {
@@ -23,7 +22,7 @@ namespace syncable {
 // When an InMemoryDirectoryBackingStore is destroyed, all data stored in this
 // database is lost.  If these limitations are a problem for you, consider using
 // TestDirectoryBackingStore.
-class SYNC_EXPORT InMemoryDirectoryBackingStore : public DirectoryBackingStore {
+class InMemoryDirectoryBackingStore : public DirectoryBackingStore {
  public:
   explicit InMemoryDirectoryBackingStore(const std::string& dir_name);
   DirOpenResult Load(Directory::MetahandlesMap* handles_map,

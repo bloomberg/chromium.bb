@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "components/sync/base/nigori.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/encryption.pb.h"
 
 namespace sync_pb {
@@ -24,7 +23,7 @@ namespace syncer {
 
 class Encryptor;
 
-SYNC_EXPORT extern const char kNigoriTag[];
+extern const char kNigoriTag[];
 
 // The parameters used to initialize a Nigori instance.
 struct KeyParams {
@@ -47,7 +46,7 @@ struct KeyParams {
 // CanDecrypt should be used to verify whether the Cryptographer can decrypt
 // that node. If it cannot, then the application of that update should be
 // delayed until after it can be decrypted.
-class SYNC_EXPORT Cryptographer {
+class Cryptographer {
  public:
   // Does not take ownership of |encryptor|.
   explicit Cryptographer(Encryptor* encryptor);

@@ -10,7 +10,6 @@
 
 #include "components/sync/api/entity_data.h"
 #include "components/sync/api/sync_error_factory.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/activation_context.h"
 
 namespace syncer {
@@ -25,7 +24,7 @@ class MetadataChangeList;
 
 // Interface used by the ModelTypeService to inform sync of local
 // changes.
-class SYNC_EXPORT ModelTypeChangeProcessor : public syncer::SyncErrorFactory {
+class ModelTypeChangeProcessor : public syncer::SyncErrorFactory {
  public:
   typedef base::Callback<void(syncer::SyncError,
                               std::unique_ptr<ActivationContext>)>

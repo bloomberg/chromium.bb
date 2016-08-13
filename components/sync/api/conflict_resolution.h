@@ -15,7 +15,7 @@ namespace syncer_v2 {
 // 1) Use the local client data and update the server.
 // 2) Use the remote server data and update the client.
 // 3) Use newly created data and update both.
-class SYNC_EXPORT ConflictResolution {
+class ConflictResolution {
  public:
   // This enum is used in histograms.xml and entries shouldn't be renumbered or
   // removed. New entries must be added at the end, before TYPE_SIZE.

@@ -13,14 +13,13 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
 
 // An event representing a commit request message sent to the server.
-class SYNC_EXPORT CommitRequestEvent : public ProtocolEvent {
+class CommitRequestEvent : public ProtocolEvent {
  public:
   CommitRequestEvent(base::Time timestamp,
                      size_t num_items,

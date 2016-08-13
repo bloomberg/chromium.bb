@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -28,7 +27,7 @@ typedef std::vector<BookmarkDeleteJournal> BookmarkDeleteJournalList;
 
 // Static APIs for passing delete journals between syncer::syncable namspace
 // and syncer namespace.
-class SYNC_EXPORT DeleteJournal {
+class DeleteJournal {
  public:
   // Return info about deleted bookmark entries stored in the delete journal
   // of |trans|'s directory.

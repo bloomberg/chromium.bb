@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -37,7 +36,7 @@ class Directory;
 // This class handles the bookkeeping related to the commit of these items,
 // including processing the commit response message and setting and unsetting
 // the SYNCING bits.
-class SYNC_EXPORT DirectoryCommitContribution : public CommitContribution {
+class DirectoryCommitContribution : public CommitContribution {
  public:
   // This destructor will DCHECK if UnsetSyncingBits() has not been called yet.
   ~DirectoryCommitContribution() override;

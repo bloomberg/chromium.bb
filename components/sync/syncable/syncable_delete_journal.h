@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/metahandle_set.h"
 #include "components/sync/syncable/syncable-inl.h"
 
@@ -29,7 +28,7 @@ typedef std::set<const EntryKernel*, LessField<IdField, ID>> JournalIndex;
 // DeleteJournal is thread-safe and can be accessed on any thread. Has to hold
 // a valid transaction object when calling methods of DeleteJournal, thus each
 // method requires a non-null |trans| parameter.
-class SYNC_EXPORT DeleteJournal {
+class DeleteJournal {
  public:
   // Initialize |delete_journals_| using |intitial_journal|, whose content is
   // destroyed during initialization.

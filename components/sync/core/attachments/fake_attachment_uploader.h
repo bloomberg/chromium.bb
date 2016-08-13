@@ -12,8 +12,8 @@
 namespace syncer {
 
 // A fake implementation of AttachmentUploader.
-class SYNC_EXPORT FakeAttachmentUploader : public AttachmentUploader,
-                                           public base::NonThreadSafe {
+class FakeAttachmentUploader : public AttachmentUploader,
+                               public base::NonThreadSafe {
  public:
   FakeAttachmentUploader();
   ~FakeAttachmentUploader() override;

@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/memory/ref_counted.h"
-#include "components/sync/base/sync_export.h"
 
 namespace base {
 class RefCountedMemory;
@@ -22,8 +21,7 @@ namespace syncer {
 // Ideally this function should be static function in Attachment class, but
 // include_rules from sync/api/DEPS don't allow direct dependency on
 // third_party.
-SYNC_EXPORT uint32_t
-ComputeCrc32c(const scoped_refptr<base::RefCountedMemory>& data);
+uint32_t ComputeCrc32c(const scoped_refptr<base::RefCountedMemory>& data);
 
 }  // namespace syncer
 

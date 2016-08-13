@@ -15,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/base_node.h"
 
 namespace sync_pb {
@@ -39,7 +38,7 @@ class MutableEntry;
 
 // WriteNode extends BaseNode to add mutation, and wraps
 // syncable::MutableEntry. A WriteTransaction is needed to create a WriteNode.
-class SYNC_EXPORT WriteNode : public BaseNode {
+class WriteNode : public BaseNode {
  public:
   enum InitUniqueByCreationResult {
     INIT_SUCCESS,

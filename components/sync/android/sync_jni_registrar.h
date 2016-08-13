@@ -7,11 +7,10 @@
 
 #include <jni.h>
 
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
-SYNC_EXPORT bool RegisterSyncJni(JNIEnv* env);
+bool RegisterSyncJni(JNIEnv* env);
 
 }  // namespace syncer
 

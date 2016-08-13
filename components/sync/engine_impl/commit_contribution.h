@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/sessions_impl/status_controller.h"
@@ -22,7 +21,7 @@ class StatusController;
 // have been selected from a CommitContributor and prepared for commit.
 //
 // This class handles the bookkeeping related to the commit of these items.
-class SYNC_EXPORT CommitContribution {
+class CommitContribution {
  public:
   CommitContribution();
   virtual ~CommitContribution() = 0;

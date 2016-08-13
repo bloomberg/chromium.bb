@@ -24,14 +24,13 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/sessions/model_neutral_state.h"
 
 namespace syncer {
 namespace sessions {
 
-class SYNC_EXPORT StatusController {
+class StatusController {
  public:
   StatusController();
   ~StatusController();

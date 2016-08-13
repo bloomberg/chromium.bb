@@ -9,13 +9,12 @@
 #include <string>
 
 #include "base/values.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
 // A class to maintain counts related to the update requests and responses for
 // a particular sync type.
-struct SYNC_EXPORT UpdateCounters {
+struct UpdateCounters {
   UpdateCounters();
   ~UpdateCounters();
 

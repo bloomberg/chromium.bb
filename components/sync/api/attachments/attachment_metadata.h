@@ -10,14 +10,13 @@
 #include <vector>
 
 #include "components/sync/api/attachments/attachment_id.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
 // This class represents immutable Attachment metadata.
 //
 // It is OK to copy and return AttachmentMetadata by value.
-class SYNC_EXPORT AttachmentMetadata {
+class AttachmentMetadata {
  public:
   AttachmentMetadata(const AttachmentId& id, size_t size);
   ~AttachmentMetadata();

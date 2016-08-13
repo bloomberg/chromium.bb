@@ -12,7 +12,6 @@
 #include <string>
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 // TODO(akalin,mmontgomery): Move the non-exported functions in this file to a
 // private header.
@@ -27,7 +26,7 @@ namespace syncer {
 // DataTypeProgressMarkers.
 typedef std::map<ModelType, std::string> ProgressMarkerMap;
 
-SYNC_EXPORT std::unique_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
+std::unique_ptr<base::DictionaryValue> ProgressMarkerMapToValue(
     const ProgressMarkerMap& marker_map);
 
 }  // namespace syncer

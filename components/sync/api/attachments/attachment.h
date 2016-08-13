@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "components/sync/api/attachments/attachment_id.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -24,7 +23,7 @@ namespace syncer {
 // the data they wrap is immutable.
 //
 // It is cheap to copy Attachments. Feel free to store and return by value.
-class SYNC_EXPORT Attachment {
+class Attachment {
  public:
   Attachment(const Attachment& other);
   ~Attachment();

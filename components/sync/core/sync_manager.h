@@ -19,7 +19,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/core/change_record.h"
 #include "components/sync/core/configure_reason.h"
@@ -64,7 +63,7 @@ class SyncSessionSnapshot;
 }  // namespace sessions
 
 // Contains everything needed to talk to and identify a user account.
-struct SYNC_EXPORT SyncCredentials {
+struct SyncCredentials {
   SyncCredentials();
   SyncCredentials(const SyncCredentials& other);
   ~SyncCredentials();
@@ -90,12 +89,12 @@ struct SYNC_EXPORT SyncCredentials {
 //
 // Unless stated otherwise, all methods of SyncManager should be called on the
 // same thread.
-class SYNC_EXPORT SyncManager {
+class SyncManager {
  public:
   // An interface the embedding application implements to be notified
   // on change events.  Note that these methods may be called on *any*
   // thread.
-  class SYNC_EXPORT ChangeDelegate {
+  class ChangeDelegate {
    public:
     // Notify the delegate that changes have been applied to the sync model.
     //
@@ -147,7 +146,7 @@ class SYNC_EXPORT SyncManager {
   // Like ChangeDelegate, except called only on the sync thread and
   // not while a transaction is held.  For objects that want to know
   // when changes happen, but don't need to process them.
-  class SYNC_EXPORT ChangeObserver {
+  class ChangeObserver {
    public:
     // Ids referred to in |changes| may or may not be in the write
     // transaction specified by |write_transaction_id|.  If they're
@@ -179,7 +178,7 @@ class SYNC_EXPORT SyncManager {
   // notifications from the SyncManager.  Register an observer via
   // SyncManager::AddObserver.  All methods are called only on the
   // sync thread.
-  class SYNC_EXPORT Observer {
+  class Observer {
    public:
     // A round-trip sync-cycle took place and the syncer has resolved any
     // conflicts that may have arisen.
@@ -216,7 +215,7 @@ class SYNC_EXPORT SyncManager {
   };
 
   // Arguments for initializing SyncManager.
-  struct SYNC_EXPORT InitArgs {
+  struct InitArgs {
     InitArgs();
     ~InitArgs();
 

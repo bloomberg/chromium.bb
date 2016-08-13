@@ -8,7 +8,6 @@
 
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -77,7 +76,7 @@ enum ClientAction {
   UNKNOWN_ACTION
 };
 
-struct SYNC_EXPORT SyncProtocolError {
+struct SyncProtocolError {
   SyncProtocolErrorType error_type;
   std::string error_description;
   std::string url;
@@ -89,7 +88,7 @@ struct SYNC_EXPORT SyncProtocolError {
   base::DictionaryValue* ToValue() const;
 };
 
-SYNC_EXPORT const char* GetSyncErrorTypeString(SyncProtocolErrorType type);
-SYNC_EXPORT const char* GetClientActionString(ClientAction action);
+const char* GetSyncErrorTypeString(SyncProtocolErrorType type);
+const char* GetClientActionString(ClientAction action);
 }  // namespace syncer
 #endif  // COMPONENTS_SYNC_PROTOCOL_SYNC_PROTOCOL_ERROR_H_

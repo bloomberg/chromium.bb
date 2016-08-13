@@ -10,7 +10,6 @@
 
 #include "components/sync/api/metadata_change_list.h"
 #include "components/sync/api/model_type_store.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
@@ -20,7 +19,7 @@ namespace syncer_v2 {
 // A MetadataChangeList implementation that is meant to be used in combination
 // with a ModelTypeStore. It accumulates changes in member fields, and then when
 // requested transfers them to the store/write batch.
-class SYNC_EXPORT SimpleMetadataChangeList : public MetadataChangeList {
+class SimpleMetadataChangeList : public MetadataChangeList {
  public:
   enum ChangeType { UPDATE, CLEAR };
 

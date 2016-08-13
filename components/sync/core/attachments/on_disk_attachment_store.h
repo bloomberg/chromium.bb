@@ -15,7 +15,6 @@
 #include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/api/attachments/attachment_store.h"
 #include "components/sync/api/attachments/attachment_store_backend.h"
-#include "components/sync/base/sync_export.h"
 
 namespace attachment_store_pb {
 class RecordMetadata;
@@ -33,8 +32,8 @@ namespace syncer {
 
 // On-disk implementation of AttachmentStore. Stores attachments in leveldb
 // database in |path| directory.
-class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBackend,
-                                          public base::NonThreadSafe {
+class OnDiskAttachmentStore : public AttachmentStoreBackend,
+                              public base::NonThreadSafe {
  public:
   // Constructs attachment store.
   OnDiskAttachmentStore(

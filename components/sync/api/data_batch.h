@@ -11,14 +11,13 @@
 #include <utility>
 
 #include "components/sync/api/entity_data.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer_v2 {
 
 typedef std::pair<std::string, std::unique_ptr<EntityData>> KeyAndData;
 
 // Interface used by the processor to read data requested from the service.
-class SYNC_EXPORT DataBatch {
+class DataBatch {
  public:
   DataBatch() {}
   virtual ~DataBatch() {}

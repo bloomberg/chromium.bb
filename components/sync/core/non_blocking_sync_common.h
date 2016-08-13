@@ -12,14 +12,13 @@
 
 #include "base/time/time.h"
 #include "components/sync/api/entity_data.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
 
 static const int64_t kUncommittedVersion = -1;
 
-struct SYNC_EXPORT CommitRequestData {
+struct CommitRequestData {
   CommitRequestData();
   CommitRequestData(const CommitRequestData& other);
   ~CommitRequestData();
@@ -34,7 +33,7 @@ struct SYNC_EXPORT CommitRequestData {
   std::string specifics_hash;
 };
 
-struct SYNC_EXPORT CommitResponseData {
+struct CommitResponseData {
   CommitResponseData();
   CommitResponseData(const CommitResponseData& other);
   ~CommitResponseData();
@@ -46,7 +45,7 @@ struct SYNC_EXPORT CommitResponseData {
   std::string specifics_hash;
 };
 
-struct SYNC_EXPORT UpdateResponseData {
+struct UpdateResponseData {
   UpdateResponseData();
   UpdateResponseData(const UpdateResponseData& other);
   ~UpdateResponseData();

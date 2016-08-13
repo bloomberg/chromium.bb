@@ -16,7 +16,6 @@
 #include "base/synchronization/lock.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/engine_impl/conflict_resolver.h"
 #include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/sessions_impl/sync_session.h"
@@ -36,7 +35,7 @@ class GetUpdatesProcessor;
 // A Syncer instance expects to run on a dedicated thread.  Calls to SyncShare()
 // may take an unbounded amount of time because it may block on network I/O, on
 // lock contention, or on tasks posted to other threads.
-class SYNC_EXPORT Syncer {
+class Syncer {
  public:
   typedef std::vector<int64_t> UnsyncedMetaHandles;
 

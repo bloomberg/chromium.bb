@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/directory.h"
 
 using std::vector;
@@ -31,10 +30,10 @@ class BaseTransaction;
 //
 // This function also enforces some position ordering constraints that are no
 // longer necessary.  We should relax those constraints.  See crbug.com/287938.
-SYNC_EXPORT void GetCommitIdsForType(syncable::BaseTransaction* trans,
-                                     ModelType type,
-                                     size_t max_entries,
-                                     std::vector<int64_t>* out);
+void GetCommitIdsForType(syncable::BaseTransaction* trans,
+                         ModelType type,
+                         size_t max_entries,
+                         std::vector<int64_t>* out);
 
 }  // namespace syncer
 

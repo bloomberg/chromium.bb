@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 
@@ -18,7 +17,7 @@ namespace syncer_v2 {
 typedef std::map<std::string, sync_pb::EntityMetadata> EntityMetadataMap;
 
 // Container used to pass sync metadata from services to their processor.
-class SYNC_EXPORT MetadataBatch {
+class MetadataBatch {
  public:
   MetadataBatch();
   virtual ~MetadataBatch();

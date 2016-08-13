@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/sync/api/sync_change_processor.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/base_transaction.h"
 
 namespace tracked_objects {
@@ -32,7 +31,7 @@ class WriteTransaction;
 //
 // NOTE: Only a single model type can be mutated for a given
 // WriteTransaction.
-class SYNC_EXPORT WriteTransaction : public BaseTransaction {
+class WriteTransaction : public BaseTransaction {
  public:
   // Start a new read/write transaction.
   WriteTransaction(const tracked_objects::Location& from_here,

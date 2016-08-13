@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "components/sync/api/attachments/attachment.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "url/gurl.h"
 
@@ -60,7 +59,7 @@ static const int64_t kInvalidId = 0;
 // transaction is necessary to create a BaseNode or any of its children.
 // Unlike syncable::Entry, a sync API BaseNode is identified primarily by its
 // int64_t metahandle, which we call an ID here.
-class SYNC_EXPORT BaseNode {
+class BaseNode {
  public:
   // Enumerates the possible outcomes of trying to initialize a sync node.
   enum InitByLookupResult {

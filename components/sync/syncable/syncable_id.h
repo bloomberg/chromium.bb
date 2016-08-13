@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/containers/hash_tables.h"
-#include "components/sync/base/sync_export.h"
 
 namespace base {
 class StringValue;
@@ -27,7 +26,7 @@ namespace syncable {
 struct EntryKernel;
 class Id;
 
-SYNC_EXPORT std::ostream& operator<<(std::ostream& out, const Id& id);
+std::ostream& operator<<(std::ostream& out, const Id& id);
 
 // For historical reasons, 3 concepts got everloaded into the Id:
 // 1. A unique, opaque identifier for the object.
@@ -39,7 +38,7 @@ SYNC_EXPORT std::ostream& operator<<(std::ostream& out, const Id& id);
 // 1. c<client only opaque id> for client items that have not been committed.
 // 2. r for the root item.
 // 3. s<server provided opaque id> for items that the server knows about.
-class SYNC_EXPORT Id {
+class Id {
  public:
   inline Id() {}
   inline Id(const Id& that) { Copy(that); }
@@ -91,7 +90,7 @@ class SYNC_EXPORT Id {
   friend std::unique_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
                                                   int* total_created_entries);
   friend void BindFields(const EntryKernel& entry, sql::Statement* statement);
-  SYNC_EXPORT friend std::ostream& operator<<(std::ostream& out, const Id& id);
+  friend std::ostream& operator<<(std::ostream& out, const Id& id);
   friend class SyncableIdTest;
 
   std::string s_;

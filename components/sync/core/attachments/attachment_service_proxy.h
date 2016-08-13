@@ -11,7 +11,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner.h"
 #include "components/sync/api/attachments/attachment.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/attachments/attachment_service.h"
 
 namespace syncer {
@@ -31,7 +30,7 @@ namespace syncer {
 // correct thread (wrapped_task_runner).
 //
 // This class is thread-safe and is designed to be passed by const-ref.
-class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
+class AttachmentServiceProxy : public AttachmentService {
  public:
   // Default copy and assignment are welcome.
 
@@ -69,8 +68,8 @@ class SYNC_EXPORT AttachmentServiceProxy : public AttachmentService {
   //
   // Calls to objects of this class become no-ops once its wrapped object is
   // destroyed.
-  class SYNC_EXPORT Core : public AttachmentService,
-                           public base::RefCountedThreadSafe<Core> {
+  class Core : public AttachmentService,
+               public base::RefCountedThreadSafe<Core> {
    public:
     // Construct an AttachmentServiceProxyCore that forwards calls to |wrapped|.
     explicit Core(const base::WeakPtr<syncer::AttachmentService>& wrapped);

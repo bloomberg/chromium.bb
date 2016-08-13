@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "components/sync/base/sync_export.h"
 
 namespace base {
 class TaskRunner;
@@ -18,11 +17,11 @@ class TaskRunner;
 namespace syncer {
 
 // Invokes |done_callback| with the session name, a UTF-8 string.
-SYNC_EXPORT void GetSessionName(
+void GetSessionName(
     const scoped_refptr<base::TaskRunner>& task_runner,
     const base::Callback<void(const std::string&)>& done_callback);
 
-SYNC_EXPORT std::string GetSessionNameSynchronouslyForTesting();
+std::string GetSessionNameSynchronouslyForTesting();
 
 }  // namespace syncer
 

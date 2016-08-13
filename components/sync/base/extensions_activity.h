@@ -12,18 +12,17 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
 // A storage to record usage of extensions APIs to send to sync
 // servers, with the ability to purge data once sync servers have
 // acknowledged it (successful commit response).
-class SYNC_EXPORT ExtensionsActivity
+class ExtensionsActivity
     : public base::RefCountedThreadSafe<ExtensionsActivity> {
  public:
   // A data record of activity performed by extension |extension_id|.
-  struct SYNC_EXPORT Record {
+  struct Record {
     Record();
     ~Record();
 

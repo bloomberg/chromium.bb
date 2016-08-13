@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -23,7 +22,7 @@ class NudgeTracker;
 }  // namespace sessions
 
 // An event representing a 'normal mode' GetUpdate request to the server.
-class SYNC_EXPORT NormalGetUpdatesRequestEvent : public ProtocolEvent {
+class NormalGetUpdatesRequestEvent : public ProtocolEvent {
  public:
   NormalGetUpdatesRequestEvent(base::Time timestamp,
                                const sessions::NudgeTracker& nudge_tracker,

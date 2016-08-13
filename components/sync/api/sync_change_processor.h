@@ -11,7 +11,6 @@
 #include "components/sync/api/sync_data.h"
 #include "components/sync/api/sync_error.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 namespace tracked_objects {
 class Location;
@@ -24,7 +23,7 @@ class SyncChange;
 typedef std::vector<SyncChange> SyncChangeList;
 
 // An interface for services that handle receiving SyncChanges.
-class SYNC_EXPORT SyncChangeProcessor {
+class SyncChangeProcessor {
  public:
   // Whether a context change should force a datatype refresh or not.
   enum ContextRefreshStatus { NO_REFRESH, REFRESH_NEEDED };

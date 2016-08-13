@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/entry.h"
 
 namespace syncer {
@@ -31,7 +30,7 @@ enum CreateNewTypeRoot { CREATE_NEW_TYPE_ROOT };
 // to be communicated to the model (and the model's thread).  It is not possible
 // to change an entry's SPECIFICS or UNIQUE_POSITION fields with this kind of
 // entry.
-class SYNC_EXPORT ModelNeutralMutableEntry : public Entry {
+class ModelNeutralMutableEntry : public Entry {
  public:
   ModelNeutralMutableEntry(BaseWriteTransaction* trans,
                            CreateNewUpdateItem,

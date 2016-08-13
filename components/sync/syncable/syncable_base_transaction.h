@@ -9,7 +9,6 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/syncable_id.h"
 
 namespace syncer {
@@ -34,7 +33,7 @@ enum WriterTag {
 // Make sure to update this if you update WriterTag.
 std::string WriterTagToString(WriterTag writer_tag);
 
-class SYNC_EXPORT BaseTransaction {
+class BaseTransaction {
  public:
   static Id root_id();
 

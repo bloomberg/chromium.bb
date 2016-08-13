@@ -9,11 +9,10 @@
 #include <vector>
 
 #include "components/sync/api/entity_data.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer_v2 {
 
-class SYNC_EXPORT EntityChange {
+class EntityChange {
  public:
   enum ChangeType { ACTION_ADD, ACTION_UPDATE, ACTION_DELETE };
 

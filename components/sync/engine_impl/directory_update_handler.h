@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine_impl/process_updates_util.h"
 #include "components/sync/engine_impl/update_handler.h"
@@ -41,7 +40,7 @@ class ModelSafeWorker;
 // Each instance of this class represents a particular type in the
 // syncable::Directory.  It can store and retreive that type's progress markers.
 // It can also process a set of received SyncEntities and store their data.
-class SYNC_EXPORT DirectoryUpdateHandler : public UpdateHandler {
+class DirectoryUpdateHandler : public UpdateHandler {
  public:
   DirectoryUpdateHandler(syncable::Directory* dir,
                          ModelType type,

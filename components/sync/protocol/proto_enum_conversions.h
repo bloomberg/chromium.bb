@@ -7,7 +7,6 @@
 
 // Keep this file in sync with the .proto files in this directory.
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/client_debug_info.pb.h"
@@ -22,48 +21,45 @@ namespace syncer {
 // The returned strings (which don't have to be freed) are in ASCII.
 // The result of passing in an invalid enum value is undefined.
 
-SYNC_EXPORT const char* GetAppListItemTypeString(
+const char* GetAppListItemTypeString(
     sync_pb::AppListSpecifics::AppListItemType item_type);
 
-SYNC_EXPORT const char* GetBrowserTypeString(
+const char* GetBrowserTypeString(
     sync_pb::SessionWindow::BrowserType browser_type);
 
-SYNC_EXPORT const char* GetPageTransitionString(
+const char* GetPageTransitionString(
     sync_pb::SyncEnums::PageTransition page_transition);
 
-SYNC_EXPORT const char* GetPageTransitionRedirectTypeString(
+const char* GetPageTransitionRedirectTypeString(
     sync_pb::SyncEnums::PageTransitionRedirectType redirect_type);
 
-SYNC_EXPORT const char* GetWifiCredentialSecurityClassString(
+const char* GetWifiCredentialSecurityClassString(
     sync_pb::WifiCredentialSpecifics::SecurityClass security_class);
 
-SYNC_EXPORT const char* GetUpdatesSourceString(
+const char* GetUpdatesSourceString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source);
 
-SYNC_EXPORT const char* GetUpdatesOriginString(
-    sync_pb::SyncEnums::GetUpdatesOrigin origin);
+const char* GetUpdatesOriginString(sync_pb::SyncEnums::GetUpdatesOrigin origin);
 
-SYNC_EXPORT const char* GetResponseTypeString(
+const char* GetResponseTypeString(
     sync_pb::CommitResponse::ResponseType response_type);
 
-SYNC_EXPORT const char* GetErrorTypeString(
-    sync_pb::SyncEnums::ErrorType error_type);
+const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type);
 
-SYNC_EXPORT const char* GetActionString(sync_pb::SyncEnums::Action action);
+const char* GetActionString(sync_pb::SyncEnums::Action action);
 
-SYNC_EXPORT const char* GetLaunchTypeString(
-    sync_pb::AppSpecifics::LaunchType launch_type);
+const char* GetLaunchTypeString(sync_pb::AppSpecifics::LaunchType launch_type);
 
-SYNC_EXPORT const char* GetWalletInfoTypeString(
+const char* GetWalletInfoTypeString(
     sync_pb::AutofillWalletSpecifics::WalletInfoType wallet_info_type);
 
-SYNC_EXPORT const char* GetWalletMetadataTypeString(
+const char* GetWalletMetadataTypeString(
     sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type);
 
-SYNC_EXPORT const char* GetWalletCardStatusString(
+const char* GetWalletCardStatusString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status);
 
-SYNC_EXPORT const char* GetWalletCardTypeString(
+const char* GetWalletCardTypeString(
     sync_pb::WalletMaskedCreditCard::WalletCardType wallet_card_type);
 
 const char* GetDeviceTypeString(sync_pb::SyncEnums::DeviceType device_type);

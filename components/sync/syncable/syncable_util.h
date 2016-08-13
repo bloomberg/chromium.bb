@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 namespace tracked_objects {
 class Location;
@@ -25,30 +24,27 @@ class BaseWriteTransaction;
 class ModelNeutralMutableEntry;
 class Id;
 
-SYNC_EXPORT void ChangeEntryIDAndUpdateChildren(BaseWriteTransaction* trans,
-                                                ModelNeutralMutableEntry* entry,
-                                                const Id& new_id);
+void ChangeEntryIDAndUpdateChildren(BaseWriteTransaction* trans,
+                                    ModelNeutralMutableEntry* entry,
+                                    const Id& new_id);
 
-SYNC_EXPORT bool IsLegalNewParent(BaseTransaction* trans,
-                                  const Id& id,
-                                  const Id& parentid);
+bool IsLegalNewParent(BaseTransaction* trans, const Id& id, const Id& parentid);
 
 bool SyncAssert(bool condition,
                 const tracked_objects::Location& location,
                 const char* msg,
                 BaseTransaction* trans);
 
-SYNC_EXPORT int GetUnsyncedEntries(BaseTransaction* trans,
-                                   std::vector<int64_t>* handles);
+int GetUnsyncedEntries(BaseTransaction* trans, std::vector<int64_t>* handles);
 
 // Generates a fixed-length tag for the given string under the given model_type.
-SYNC_EXPORT std::string GenerateSyncableHash(ModelType model_type,
-                                             const std::string& client_tag);
+std::string GenerateSyncableHash(ModelType model_type,
+                                 const std::string& client_tag);
 
 // A helper for generating the bookmark type's tag.  This is required in more
 // than one place, so we define the algorithm here to make sure the
 // implementation is consistent.
-SYNC_EXPORT std::string GenerateSyncableBookmarkHash(
+std::string GenerateSyncableBookmarkHash(
     const std::string& originator_cache_guid,
     const std::string& originator_client_item_id);
 

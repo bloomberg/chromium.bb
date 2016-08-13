@@ -17,7 +17,6 @@
 
 #include "base/logging.h"
 #include "components/sync/base/enum_set.h"
-#include "components/sync/base/sync_export.h"
 
 namespace base {
 class ListValue;
@@ -176,47 +175,46 @@ inline ModelType ModelTypeFromInt(int i) {
 }
 
 // Used by tests outside of sync/.
-SYNC_EXPORT void AddDefaultFieldValue(ModelType datatype,
-                                      sync_pb::EntitySpecifics* specifics);
+void AddDefaultFieldValue(ModelType datatype,
+                          sync_pb::EntitySpecifics* specifics);
 
 // Extract the model type of a SyncEntity protocol buffer.  ModelType is a
 // local concept: the enum is not in the protocol.  The SyncEntity's ModelType
 // is inferred from the presence of particular datatype field in the
 // entity specifics.
-SYNC_EXPORT ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
+ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
 
 // Extract the model type from an EntitySpecifics field.  Note that there
 // are some ModelTypes (like TOP_LEVEL_FOLDER) that can't be inferred this way;
 // prefer using GetModelType where possible.
-SYNC_EXPORT ModelType
-GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
+ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
 
 // Protocol types are those types that have actual protocol buffer
 // representations. This distinguishes them from Proxy types, which have no
 // protocol representation and are never sent to the server.
-SYNC_EXPORT ModelTypeSet ProtocolTypes();
+ModelTypeSet ProtocolTypes();
 
 // These are the normal user-controlled types. This is to distinguish from
 // ControlTypes which are always enabled.  Note that some of these share a
 // preference flag, so not all of them are individually user-selectable.
-SYNC_EXPORT ModelTypeSet UserTypes();
+ModelTypeSet UserTypes();
 
 // These are the user-selectable data types.
-SYNC_EXPORT ModelTypeSet UserSelectableTypes();
-SYNC_EXPORT bool IsUserSelectableType(ModelType model_type);
-SYNC_EXPORT ModelTypeNameMap GetUserSelectableTypeNameMap();
+ModelTypeSet UserSelectableTypes();
+bool IsUserSelectableType(ModelType model_type);
+ModelTypeNameMap GetUserSelectableTypeNameMap();
 
 // This is the subset of UserTypes() that can be encrypted.
-SYNC_EXPORT ModelTypeSet EncryptableUserTypes();
+ModelTypeSet EncryptableUserTypes();
 
 // This is the subset of UserTypes() that have priority over other types.  These
 // types are synced before other user types and are never encrypted.
-SYNC_EXPORT ModelTypeSet PriorityUserTypes();
+ModelTypeSet PriorityUserTypes();
 
 // Proxy types are placeholder types for handling implicitly enabling real
 // types. They do not exist at the server, and are simply used for
 // UI/Configuration logic.
-SYNC_EXPORT ModelTypeSet ProxyTypes();
+ModelTypeSet ProxyTypes();
 
 // Returns a list of all control types.
 //
@@ -228,20 +226,20 @@ SYNC_EXPORT ModelTypeSet ProxyTypes();
 // - Their contents are not encrypted automatically.
 // - They support custom update application and conflict resolution logic.
 // - All change processing occurs on the sync thread (GROUP_PASSIVE).
-SYNC_EXPORT ModelTypeSet ControlTypes();
+ModelTypeSet ControlTypes();
 
 // Returns true if this is a control type.
 //
 // See comment above for more information on what makes these types special.
-SYNC_EXPORT bool IsControlType(ModelType model_type);
+bool IsControlType(ModelType model_type);
 
 // Core types are those data types used by sync's core functionality (i.e. not
 // user data types). These types are always enabled, and include ControlTypes().
 //
 // The set of all core types.
-SYNC_EXPORT ModelTypeSet CoreTypes();
+ModelTypeSet CoreTypes();
 // Those core types that have high priority (includes ControlTypes()).
-SYNC_EXPORT ModelTypeSet PriorityCoreTypes();
+ModelTypeSet PriorityCoreTypes();
 
 // Determine a model type from the field number of its associated
 // EntitySpecifics field.  Returns UNSPECIFIED if the field number is
@@ -263,11 +261,11 @@ SYNC_EXPORT ModelTypeSet PriorityCoreTypes();
 //     }
 //     model_types.Put(model_type);
 //   }
-SYNC_EXPORT ModelType GetModelTypeFromSpecificsFieldNumber(int field_number);
+ModelType GetModelTypeFromSpecificsFieldNumber(int field_number);
 
 // Return the field number of the EntitySpecifics field associated with
 // a model type.
-SYNC_EXPORT int GetSpecificsFieldNumberFromModelType(ModelType model_type);
+int GetSpecificsFieldNumberFromModelType(ModelType model_type);
 
 FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in);
 
@@ -275,88 +273,83 @@ FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in);
 
 // Returns a pointer to a string with application lifetime that represents
 // the name of |model_type|.
-SYNC_EXPORT const char* ModelTypeToString(ModelType model_type);
+const char* ModelTypeToString(ModelType model_type);
 
 // Some histograms take an integer parameter that represents a model type.
 // The mapping from ModelType to integer is defined here.  It should match
 // the mapping from integer to labels defined in histograms.xml.
-SYNC_EXPORT int ModelTypeToHistogramInt(ModelType model_type);
+int ModelTypeToHistogramInt(ModelType model_type);
 
 // Handles all model types, and not just real ones.
 //
 // Caller takes ownership of returned value.
-SYNC_EXPORT base::StringValue* ModelTypeToValue(ModelType model_type);
+base::StringValue* ModelTypeToValue(ModelType model_type);
 
 // Converts a Value into a ModelType - complement to ModelTypeToValue().
-SYNC_EXPORT ModelType ModelTypeFromValue(const base::Value& value);
+ModelType ModelTypeFromValue(const base::Value& value);
 
 // Returns the ModelType corresponding to the name |model_type_string|.
-SYNC_EXPORT ModelType ModelTypeFromString(const std::string& model_type_string);
+ModelType ModelTypeFromString(const std::string& model_type_string);
 
 // Returns the comma-separated string representation of |model_types|.
-SYNC_EXPORT std::string ModelTypeSetToString(ModelTypeSet model_types);
+std::string ModelTypeSetToString(ModelTypeSet model_types);
 
 // Necessary for compatibility with EXPECT_EQ and the like.
-SYNC_EXPORT std::ostream& operator<<(std::ostream& out,
-                                     ModelTypeSet model_type_set);
+std::ostream& operator<<(std::ostream& out, ModelTypeSet model_type_set);
 
 // Returns the set of comma-separated model types from |model_type_string|.
-SYNC_EXPORT ModelTypeSet
-ModelTypeSetFromString(const std::string& model_type_string);
+ModelTypeSet ModelTypeSetFromString(const std::string& model_type_string);
 
-SYNC_EXPORT std::unique_ptr<base::ListValue> ModelTypeSetToValue(
-    ModelTypeSet model_types);
+std::unique_ptr<base::ListValue> ModelTypeSetToValue(ModelTypeSet model_types);
 
-SYNC_EXPORT ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
+ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
 
 // Returns a string corresponding to the syncable tag for this datatype.
-SYNC_EXPORT std::string ModelTypeToRootTag(ModelType type);
+std::string ModelTypeToRootTag(ModelType type);
 
 // Returns root_tag for |model_type| in ModelTypeInfo.
 // Difference with ModelTypeToRootTag(), this just simply return toor_tag in
 // ModelTypeInfo.
-SYNC_EXPORT const char* GetModelTypeRootTag(ModelType model_type);
+const char* GetModelTypeRootTag(ModelType model_type);
 
 // Convert a real model type to a notification type (used for
 // subscribing to server-issued notifications).  Returns true iff
 // |model_type| was a real model type and |notification_type| was
 // filled in.
-SYNC_EXPORT bool RealModelTypeToNotificationType(
-    ModelType model_type,
-    std::string* notification_type);
+bool RealModelTypeToNotificationType(ModelType model_type,
+                                     std::string* notification_type);
 
 // Converts a notification type to a real model type.  Returns true
 // iff |notification_type| was the notification type of a real model
 // type and |model_type| was filled in.
-SYNC_EXPORT bool NotificationTypeToRealModelType(
-    const std::string& notification_type,
-    ModelType* model_type);
+bool NotificationTypeToRealModelType(const std::string& notification_type,
+                                     ModelType* model_type);
 
 // Returns true if |model_type| is a real datatype
-SYNC_EXPORT bool IsRealDataType(ModelType model_type);
+bool IsRealDataType(ModelType model_type);
 
 // Returns true if |model_type| is a proxy type
-SYNC_EXPORT bool IsProxyType(ModelType model_type);
+bool IsProxyType(ModelType model_type);
 
 // Returns true if |model_type| is an act-once type. Act once types drop
 // entities after applying them. Drops are deletes that are not synced to other
 // clients.
 // TODO(haitaol): Make entries of act-once data types immutable.
-SYNC_EXPORT bool IsActOnceDataType(ModelType model_type);
+bool IsActOnceDataType(ModelType model_type);
 
 // Returns true if |model_type| requires its root folder to be explicitly
 // created on the server during initial sync.
-SYNC_EXPORT bool IsTypeWithServerGeneratedRoot(ModelType model_type);
+bool IsTypeWithServerGeneratedRoot(ModelType model_type);
 
 // Returns true if root folder for |model_type| is created on the client when
 // that type is initially synced.
-SYNC_EXPORT bool IsTypeWithClientGeneratedRoot(ModelType model_type);
+bool IsTypeWithClientGeneratedRoot(ModelType model_type);
 
 // Returns true if |model_type| supports parent-child hierarchy or entries.
-SYNC_EXPORT bool TypeSupportsHierarchy(ModelType model_type);
+bool TypeSupportsHierarchy(ModelType model_type);
 
 // Returns true if |model_type| supports ordering of sibling entries.
-SYNC_EXPORT bool TypeSupportsOrdering(ModelType model_type);
+bool TypeSupportsOrdering(ModelType model_type);
 
 }  // namespace syncer
 

@@ -10,7 +10,6 @@
 
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/sync_encryption_handler.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 
@@ -22,7 +21,7 @@ namespace syncer {
 // it to track and report on the sync engine's internal state, and the functions
 // in sync_ui_util.cc which convert the contents of this struct into a
 // DictionaryValue used to populate the about:sync summary tab.
-struct SYNC_EXPORT SyncStatus {
+struct SyncStatus {
   SyncStatus();
   SyncStatus(const SyncStatus& other);
   ~SyncStatus();

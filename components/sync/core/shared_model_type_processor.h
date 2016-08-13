@@ -19,7 +19,6 @@
 #include "components/sync/api/model_type_service.h"
 #include "components/sync/api/sync_error.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/data_type_error_handler.h"
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/core/non_blocking_sync_common.h"
@@ -33,9 +32,9 @@ class ProcessorEntityTracker;
 
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
-class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
-                                             public ModelTypeChangeProcessor,
-                                             base::NonThreadSafe {
+class SharedModelTypeProcessor : public ModelTypeProcessor,
+                                 public ModelTypeChangeProcessor,
+                                 base::NonThreadSafe {
  public:
   SharedModelTypeProcessor(syncer::ModelType type, ModelTypeService* service);
   ~SharedModelTypeProcessor() override;

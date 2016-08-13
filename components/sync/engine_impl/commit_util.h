@@ -11,7 +11,6 @@
 
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace sync_pb {
@@ -31,21 +30,20 @@ class BaseWriteTransaction;
 namespace commit_util {
 
 // Adds bookmark extensions activity report to |message|.
-SYNC_EXPORT void AddExtensionsActivityToMessage(
+void AddExtensionsActivityToMessage(
     ExtensionsActivity* activity,
     ExtensionsActivity::Records* extensions_activity_buffer,
     sync_pb::CommitMessage* message);
 
 // Fills the config_params field of |message|.
-SYNC_EXPORT void AddClientConfigParamsToMessage(
-    ModelTypeSet enabled_types,
-    bool cookie_jar_mismatch,
-    sync_pb::CommitMessage* message);
+void AddClientConfigParamsToMessage(ModelTypeSet enabled_types,
+                                    bool cookie_jar_mismatch,
+                                    sync_pb::CommitMessage* message);
 
 // Takes a snapshot of |meta_entry| and puts it into a protobuf suitable for use
 // in a commit request message.
-SYNC_EXPORT void BuildCommitItem(const syncable::Entry& meta_entry,
-                                 sync_pb::SyncEntity* sync_entry);
+void BuildCommitItem(const syncable::Entry& meta_entry,
+                     sync_pb::SyncEntity* sync_entry);
 
 // Process a single commit response.  Updates the entry's SERVER fields using
 // |pb_commit_response| and |pb_committed_entry|.
@@ -53,7 +51,6 @@ SYNC_EXPORT void BuildCommitItem(const syncable::Entry& meta_entry,
 // The |deleted_folders| parameter is a set of IDs that represent deleted
 // folders.  This function will add its entry's ID to this set if it finds
 // itself processing a folder deletion.
-SYNC_EXPORT
 sync_pb::CommitResponse::ResponseType ProcessSingleCommitResponse(
     syncable::BaseWriteTransaction* trans,
     const sync_pb::CommitResponse_EntryResponse& server_entry,

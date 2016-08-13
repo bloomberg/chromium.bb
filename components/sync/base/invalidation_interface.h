@@ -9,13 +9,11 @@
 
 #include <string>
 
-#include "components/sync/base/sync_export.h"
-
 namespace syncer {
 
 // An interface that wraps sync's interactions with the component that provides
 // it with invalidations.
-class SYNC_EXPORT InvalidationInterface {
+class InvalidationInterface {
  public:
   // Orders invalidations based on version number and IsUnknownVersion().
   static bool LessThanByVersion(const InvalidationInterface& a,

@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/protocol/data_type_state.pb.h"
@@ -17,7 +16,7 @@ namespace syncer_v2 {
 
 // The state passed from ModelTypeProcessor to Sync thread during DataType
 // activation.
-struct SYNC_EXPORT ActivationContext {
+struct ActivationContext {
   ActivationContext();
   ~ActivationContext();
 

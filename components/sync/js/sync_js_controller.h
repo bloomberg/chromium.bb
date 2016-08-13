@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/js/js_controller.h"
 #include "components/sync/js/js_event_handler.h"
@@ -23,10 +22,9 @@ class JsBackend;
 
 // A class that mediates between the sync JsEventHandlers and the sync
 // JsBackend.
-class SYNC_EXPORT SyncJsController
-    : public JsController,
-      public JsEventHandler,
-      public base::SupportsWeakPtr<SyncJsController> {
+class SyncJsController : public JsController,
+                         public JsEventHandler,
+                         public base::SupportsWeakPtr<SyncJsController> {
  public:
   SyncJsController();
 

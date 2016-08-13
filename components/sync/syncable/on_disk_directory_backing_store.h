@@ -9,7 +9,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/directory_backing_store.h"
 
 namespace syncer {
@@ -17,7 +16,7 @@ namespace syncable {
 
 // This is the concrete class that provides a useful implementation of
 // DirectoryBackingStore.
-class SYNC_EXPORT OnDiskDirectoryBackingStore : public DirectoryBackingStore {
+class OnDiskDirectoryBackingStore : public DirectoryBackingStore {
  public:
   OnDiskDirectoryBackingStore(const std::string& dir_name,
                               const base::FilePath& backing_file_path);

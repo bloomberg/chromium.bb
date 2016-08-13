@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_IMPL_DEBUG_INFO_GETTER_H_
 #define COMPONENTS_SYNC_SESSIONS_IMPL_DEBUG_INFO_GETTER_H_
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -13,7 +12,7 @@ namespace sessions {
 
 // This is the interface that needs to be implemented by the event listener
 // to communicate the debug info data to the syncer.
-class SYNC_EXPORT DebugInfoGetter {
+class DebugInfoGetter {
  public:
   // Gets the client debug info. Be sure to clear the info to ensure the data
   // isn't sent multiple times.

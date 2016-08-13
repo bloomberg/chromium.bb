@@ -15,7 +15,6 @@
 #include "components/sync/api/entity_data.h"
 #include "components/sync/api/model_type_change_processor.h"
 #include "components/sync/api/sync_error.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/activation_context.h"
 
 namespace syncer {
@@ -30,7 +29,7 @@ class MetadataChangeList;
 // Interface implemented by model types to receive updates from sync via the
 // SharedModelTypeProcessor. Provides a way for sync to update the data and
 // metadata for entities, as well as the model type state.
-class SYNC_EXPORT ModelTypeService {
+class ModelTypeService {
  public:
   typedef base::Callback<void(syncer::SyncError, std::unique_ptr<DataBatch>)>
       DataCallback;

@@ -11,7 +11,6 @@
 #include "components/sync/api/attachments/attachment.h"
 #include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/api/attachments/attachment_store.h"
-#include "components/sync/base/sync_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -29,7 +28,7 @@ namespace syncer {
 // All callbacks and result codes are used directly from AttachmentStore.
 // AttachmentStoreFrontend only passes callbacks and results without modifying
 // them, there is no need to declare separate set.
-class SYNC_EXPORT AttachmentStoreBackend {
+class AttachmentStoreBackend {
  public:
   explicit AttachmentStoreBackend(
       const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner);

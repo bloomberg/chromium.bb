@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/sync_manager.h"
 
 namespace syncer {
@@ -21,7 +20,7 @@ class Directory;
 // user and their data (share).
 // This encompasses all pieces required to build transaction objects on the
 // syncable share.
-struct SYNC_EXPORT UserShare {
+struct UserShare {
   UserShare();
   ~UserShare();
 

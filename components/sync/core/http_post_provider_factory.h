@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "components/sync/base/sync_export.h"
 
 namespace net {
 class URLFetcher;
@@ -24,7 +23,7 @@ class HttpPostProviderInterface;
 // implementations and dependencies.
 // A factory instance itself should be owned by whomever uses it to create
 // HttpPostProviders.
-class SYNC_EXPORT HttpPostProviderFactory {
+class HttpPostProviderFactory {
  public:
   virtual ~HttpPostProviderFactory() {}
 

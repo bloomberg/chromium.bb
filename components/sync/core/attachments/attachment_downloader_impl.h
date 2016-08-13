@@ -104,8 +104,8 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
   // Return true if a crc32c was found and useable for checking data integrity.
   // "Usable" means headers are present, there is "x-goog-hash" header with
   // "crc32c" hash in it, this hash is correctly base64 encoded 32 bit integer.
-  SYNC_EXPORT static bool ExtractCrc32c(const net::HttpResponseHeaders* headers,
-                                        uint32_t* crc32c);
+  static bool ExtractCrc32c(const net::HttpResponseHeaders* headers,
+                            uint32_t* crc32c);
 
   GURL sync_service_url_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

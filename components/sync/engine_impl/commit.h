@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine_impl/commit_contribution.h"
@@ -39,7 +38,7 @@ class Syncer;
 // been acceptable to let this class be a dumb container object, it turns out
 // that there was no other convenient place to put the Init() and
 // PostAndProcessCommitResponse() functions.  So they ended up here.
-class SYNC_EXPORT Commit {
+class Commit {
  public:
   typedef std::map<ModelType, std::unique_ptr<CommitContribution>>
       ContributionMap;

@@ -6,15 +6,7 @@ import("//build/config/features.gni")
 import("//components/sync/protocol/protocol_sources.gni")
 import("//testing/test.gni")
 
-component("sync") {
-  public_deps = [
-    ":sync_core",
-    "//components/sync/protocol",
-  ]
-}
-
-# GYP version: components/sync.gyp:sync_core
-source_set("sync_core") {
+static_library("sync") {
   sources = [
     "api/attachments/attachment.cc",
     "api/attachments/attachment.h",
@@ -99,7 +91,6 @@ source_set("sync_core") {
     "base/proto_value_ptr.h",
     "base/stop_source.h",
     "base/sync_db_util.h",
-    "base/sync_export.h",
     "base/sync_string_conversions.cc",
     "base/sync_string_conversions.h",
     "base/syncer_error.cc",
@@ -430,13 +421,13 @@ source_set("sync_core") {
 
   public_deps = [
     "//components/sync/core_impl/attachments/proto",
+    "//components/sync/protocol",
     "//net",
   ]
   deps = [
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
-    "//components/sync/protocol",
     "//crypto",
     "//google_apis",
     "//sql",
@@ -467,7 +458,6 @@ source_set("sync_core") {
     ]
   }
 
-  defines = [ "SYNC_IMPLEMENTATION" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
@@ -727,7 +717,6 @@ source_set("unit_tests") {
     ":test_support_sync_core_impl",
     "//base",
     "//components/sync",
-    "//components/sync/protocol",
     "//google_apis",
     "//google_apis:test_support",
     "//net",
@@ -901,10 +890,9 @@ if (is_android) {
     ]
     deps = [
       ":fake_server_jni",
-      ":sync_core",
+      ":sync",
       ":test_support_sync_fake_server",
       "//base",
-      "//components/sync/protocol:protocol",
       "//testing/gtest",
       "//url:url",
     ]

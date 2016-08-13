@@ -8,12 +8,11 @@
 #include <stdint.h>
 
 #include "base/time/time.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
 // Container for datatype association results.
-struct SYNC_EXPORT DataTypeAssociationStats {
+struct DataTypeAssociationStats {
   DataTypeAssociationStats();
   DataTypeAssociationStats(const DataTypeAssociationStats& other);
   ~DataTypeAssociationStats();

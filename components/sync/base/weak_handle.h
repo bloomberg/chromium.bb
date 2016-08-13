@@ -59,7 +59,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "components/sync/base/sync_export.h"
 
 namespace tracked_objects {
 class Location;
@@ -76,7 +75,7 @@ namespace internal {
 
 // Base class for WeakHandleCore<T> to avoid template bloat.  Handles
 // the interaction with the owner thread and its message loop.
-class SYNC_EXPORT WeakHandleCoreBase {
+class WeakHandleCoreBase {
  public:
   // Assumes the current thread is the owner thread.
   WeakHandleCoreBase();

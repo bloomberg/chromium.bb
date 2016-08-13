@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/core/data_type_debug_info_listener.h"
 #include "components/sync/core/sync_encryption_handler.h"
@@ -33,11 +32,10 @@ const unsigned int kMaxEntries = MODEL_TYPE_COUNT + 10;
 // Listens to events and records them in a queue. And passes the events to
 // syncer when requested.
 // This class is not thread safe and should only be accessed on the sync thread.
-class SYNC_EXPORT DebugInfoEventListener
-    : public SyncManager::Observer,
-      public SyncEncryptionHandler::Observer,
-      public sessions::DebugInfoGetter,
-      public DataTypeDebugInfoListener {
+class DebugInfoEventListener : public SyncManager::Observer,
+                               public SyncEncryptionHandler::Observer,
+                               public sessions::DebugInfoGetter,
+                               public DataTypeDebugInfoListener {
  public:
   DebugInfoEventListener();
   ~DebugInfoEventListener() override;

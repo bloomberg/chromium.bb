@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -16,7 +15,7 @@ struct ModelNeutralState;
 }
 
 // A component used to get time delays associated with exponential backoff.
-class SYNC_EXPORT BackoffDelayProvider {
+class BackoffDelayProvider {
  public:
   // Factory function to create a standard BackoffDelayProvider.
   static BackoffDelayProvider* FromDefaults();

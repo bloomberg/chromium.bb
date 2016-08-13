@@ -14,7 +14,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/model_type_connector.h"
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/core/sync_encryption_handler.h"
@@ -46,8 +45,8 @@ typedef std::map<ModelType, DirectoryTypeDebugInfoEmitter*>
     DirectoryTypeDebugInfoEmitterMap;
 
 // Keeps track of the sets of active update handlers and commit contributors.
-class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::ModelTypeConnector,
-                                      public SyncEncryptionHandler::Observer {
+class ModelTypeRegistry : public syncer_v2::ModelTypeConnector,
+                          public SyncEncryptionHandler::Observer {
  public:
   // Constructs a ModelTypeRegistry that supports directory types.
   ModelTypeRegistry(const std::vector<scoped_refptr<ModelSafeWorker>>& workers,

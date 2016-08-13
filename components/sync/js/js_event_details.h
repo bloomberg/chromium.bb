@@ -11,13 +11,12 @@
 
 #include "base/values.h"
 #include "components/sync/base/immutable.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
 // A thin wrapper around Immutable<DictionaryValue>.  Used for passing
 // around event details to different threads.
-class SYNC_EXPORT JsEventDetails {
+class JsEventDetails {
  public:
   // Uses an empty dictionary.
   JsEventDetails();

@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "components/sync/base/sync_export.h"
-
 namespace sync_pb {
 class DataTypeState;
 class EntityMetadata;
@@ -24,7 +22,7 @@ namespace syncer_v2 {
 // updated / deleted metadata records and provide a mechanism to enumerate
 // them. If there are multiple UpdateMetadata / ClearMetadata calls made for the
 // same metadata record the last one is supposed to win.
-class SYNC_EXPORT MetadataChangeList {
+class MetadataChangeList {
  public:
   MetadataChangeList() {}
   virtual ~MetadataChangeList() {}

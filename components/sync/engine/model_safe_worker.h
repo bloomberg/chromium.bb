@@ -17,7 +17,6 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 
 namespace base {
@@ -49,7 +48,7 @@ enum ModelSafeGroup {
                        // SyncBackendRegistrar involvement.
 };
 
-SYNC_EXPORT std::string ModelSafeGroupToString(ModelSafeGroup group);
+std::string ModelSafeGroupToString(ModelSafeGroup group);
 
 // WorkerLoopDestructionObserver is notified when the thread where it works
 // is going to be destroyed.
@@ -68,9 +67,8 @@ class WorkerLoopDestructionObserver {
 // a thread and does actual work on that thread. On the destruction of that
 // thread, the affiliated worker is effectively disabled to do more
 // work and will notify its observer.
-class SYNC_EXPORT ModelSafeWorker
-    : public base::RefCountedThreadSafe<ModelSafeWorker>,
-      public base::MessageLoop::DestructionObserver {
+class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker>,
+                        public base::MessageLoop::DestructionObserver {
  public:
   // Subclass should implement to observe destruction of the loop where
   // it actually does work. Called on UI thread immediately after worker is
@@ -151,17 +149,16 @@ class SYNC_EXPORT ModelSafeWorker
 typedef std::map<ModelType, ModelSafeGroup> ModelSafeRoutingInfo;
 
 // Caller takes ownership of return value.
-SYNC_EXPORT std::unique_ptr<base::DictionaryValue> ModelSafeRoutingInfoToValue(
+std::unique_ptr<base::DictionaryValue> ModelSafeRoutingInfoToValue(
     const ModelSafeRoutingInfo& routing_info);
 
-SYNC_EXPORT std::string ModelSafeRoutingInfoToString(
+std::string ModelSafeRoutingInfoToString(
     const ModelSafeRoutingInfo& routing_info);
 
-SYNC_EXPORT ModelTypeSet
-GetRoutingInfoTypes(const ModelSafeRoutingInfo& routing_info);
+ModelTypeSet GetRoutingInfoTypes(const ModelSafeRoutingInfo& routing_info);
 
-SYNC_EXPORT ModelSafeGroup
-GetGroupForModelType(const ModelType type, const ModelSafeRoutingInfo& routes);
+ModelSafeGroup GetGroupForModelType(const ModelType type,
+                                    const ModelSafeRoutingInfo& routes);
 
 }  // namespace syncer
 

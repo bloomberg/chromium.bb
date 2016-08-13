@@ -10,7 +10,6 @@
 #include <string>
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 namespace tracked_objects {
 class Location;
@@ -21,7 +20,7 @@ namespace syncer {
 // Sync errors are used for debug purposes and handled internally and/or
 // exposed through Chrome's "about:sync" internal page.
 // This class is copy-friendly and thread-safe.
-class SYNC_EXPORT SyncError {
+class SyncError {
  public:
   // Error types are used to distinguish general datatype errors (which result
   // in the datatype being disabled) from actionable sync errors (which might
@@ -122,7 +121,7 @@ class SYNC_EXPORT SyncError {
 };
 
 // gmock printer helper.
-SYNC_EXPORT void PrintTo(const SyncError& sync_error, std::ostream* os);
+void PrintTo(const SyncError& sync_error, std::ostream* os);
 
 }  // namespace syncer
 

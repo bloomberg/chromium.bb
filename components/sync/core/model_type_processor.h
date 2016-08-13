@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 
@@ -15,7 +14,7 @@ namespace syncer_v2 {
 class CommitQueue;
 
 // Interface used by sync backend to issue requests to a synced data type.
-class SYNC_EXPORT ModelTypeProcessor {
+class ModelTypeProcessor {
  public:
   ModelTypeProcessor();
   virtual ~ModelTypeProcessor();

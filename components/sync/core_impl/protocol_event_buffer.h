@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -20,7 +19,7 @@ class ProtocolEvent;
 // A container for ProtocolEvents.
 //
 // Stores at most kBufferSize events, then starts dropping the oldest events.
-class SYNC_EXPORT ProtocolEventBuffer {
+class ProtocolEventBuffer {
  public:
   static const size_t kBufferSize;
 

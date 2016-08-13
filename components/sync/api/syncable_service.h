@@ -17,7 +17,6 @@
 #include "components/sync/api/sync_error.h"
 #include "components/sync/api/sync_merge_result.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -27,9 +26,8 @@ class SyncErrorFactory;
 // TODO(zea): remove SupportsWeakPtr in favor of having all SyncableService
 // implementers provide a way of getting a weak pointer to themselves.
 // See crbug.com/100114.
-class SYNC_EXPORT SyncableService
-    : public SyncChangeProcessor,
-      public base::SupportsWeakPtr<SyncableService> {
+class SyncableService : public SyncChangeProcessor,
+                        public base::SupportsWeakPtr<SyncableService> {
  public:
   // A StartSyncFlare is useful when your SyncableService has a need for sync
   // to start ASAP, typically because a local change event has occurred but

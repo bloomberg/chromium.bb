@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/syncable_id.h"
 
 namespace syncer {
@@ -22,7 +21,7 @@ struct EntryKernel;
 class ParentChildIndex;
 
 // A node ordering function.
-struct SYNC_EXPORT ChildComparator {
+struct ChildComparator {
   bool operator()(const EntryKernel* a, const EntryKernel* b) const;
 };
 
@@ -32,7 +31,7 @@ typedef std::shared_ptr<OrderedChildSet> OrderedChildSetRef;
 
 // Container that tracks parent-child relationships.
 // Provides fast lookup of all items under a given parent.
-class SYNC_EXPORT ParentChildIndex {
+class ParentChildIndex {
  public:
   ParentChildIndex();
   ~ParentChildIndex();

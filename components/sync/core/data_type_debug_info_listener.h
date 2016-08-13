@@ -12,7 +12,7 @@
 
 namespace syncer {
 
-struct SYNC_EXPORT DataTypeConfigurationStats {
+struct DataTypeConfigurationStats {
   DataTypeConfigurationStats();
   DataTypeConfigurationStats(const DataTypeConfigurationStats& other);
   ~DataTypeConfigurationStats();

@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/model_type_connector.h"
 
 namespace syncer_v2 {
@@ -18,7 +17,7 @@ namespace syncer_v2 {
 // Proxies all ModelTypeConnector calls to another thread. Typically used by
 // the SyncBackend to call from the UI thread to the real ModelTypeConnector on
 // the sync thread.
-class SYNC_EXPORT ModelTypeConnectorProxy : public ModelTypeConnector {
+class ModelTypeConnectorProxy : public ModelTypeConnector {
  public:
   ModelTypeConnectorProxy(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,

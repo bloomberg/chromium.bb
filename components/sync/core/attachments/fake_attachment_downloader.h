@@ -13,8 +13,8 @@ namespace syncer {
 
 // FakeAttachmentDownloader is for tests. For every request it posts a success
 // callback with empty attachment.
-class SYNC_EXPORT FakeAttachmentDownloader : public AttachmentDownloader,
-                                             public base::NonThreadSafe {
+class FakeAttachmentDownloader : public AttachmentDownloader,
+                                 public base::NonThreadSafe {
  public:
   FakeAttachmentDownloader();
   ~FakeAttachmentDownloader() override;

@@ -9,11 +9,10 @@
 
 #include "base/location.h"
 #include "components/sync/api/sync_error.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
-class SYNC_EXPORT SyncErrorFactory {
+class SyncErrorFactory {
  public:
   SyncErrorFactory();
   virtual ~SyncErrorFactory();

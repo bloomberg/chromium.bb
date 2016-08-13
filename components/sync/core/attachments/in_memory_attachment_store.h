@@ -15,7 +15,6 @@
 #include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/api/attachments/attachment_store.h"
 #include "components/sync/api/attachments/attachment_store_backend.h"
-#include "components/sync/base/sync_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -26,8 +25,8 @@ namespace syncer {
 // An in-memory implementation of AttachmentStore used for testing.
 // InMemoryAttachmentStore is not threadsafe, it lives on backend thread and
 // posts callbacks with results on |callback_task_runner|.
-class SYNC_EXPORT InMemoryAttachmentStore : public AttachmentStoreBackend,
-                                            public base::NonThreadSafe {
+class InMemoryAttachmentStore : public AttachmentStoreBackend,
+                                public base::NonThreadSafe {
  public:
   InMemoryAttachmentStore(
       const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner);

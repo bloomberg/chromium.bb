@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/core/sync_manager.h"
 #include "components/sync/protocol/sync_protocol_error.h"
@@ -24,7 +23,7 @@ class JsEventDetails;
 class JsEventHandler;
 
 // Routes SyncManager events to a JsEventHandler.
-class SYNC_EXPORT JsSyncManagerObserver : public SyncManager::Observer {
+class JsSyncManagerObserver : public SyncManager::Observer {
  public:
   JsSyncManagerObserver();
   ~JsSyncManagerObserver() override;

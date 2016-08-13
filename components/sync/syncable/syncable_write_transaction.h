@@ -10,17 +10,16 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/entry_kernel.h"
 #include "components/sync/syncable/syncable_base_write_transaction.h"
 
 namespace syncer {
 namespace syncable {
 
-SYNC_EXPORT extern const int64_t kInvalidTransactionVersion;
+extern const int64_t kInvalidTransactionVersion;
 
 // Locks db in constructor, unlocks in destructor.
-class SYNC_EXPORT WriteTransaction : public BaseWriteTransaction {
+class WriteTransaction : public BaseWriteTransaction {
  public:
   WriteTransaction(const tracked_objects::Location& from_here,
                    WriterTag writer,

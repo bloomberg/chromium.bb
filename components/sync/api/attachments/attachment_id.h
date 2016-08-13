@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "components/sync/base/immutable.h"
-#include "components/sync/base/sync_export.h"
 
 namespace sync_pb {
 class AttachmentIdProto;
@@ -25,7 +24,7 @@ namespace syncer {
 //
 // Two attachments with equal (operator==) AttachmentIds are considered
 // equivalent.
-class SYNC_EXPORT AttachmentId {
+class AttachmentId {
  public:
   AttachmentId(const AttachmentId& other);
   ~AttachmentId();
@@ -60,7 +59,7 @@ class SYNC_EXPORT AttachmentId {
  private:
   // Necessary since we forward-declare sync_pb::AttachmentIdProto; see comments
   // in immutable.h.
-  struct SYNC_EXPORT ImmutableAttachmentIdProtoTraits {
+  struct ImmutableAttachmentIdProtoTraits {
     typedef sync_pb::AttachmentIdProto* Wrapper;
     static void InitializeWrapper(Wrapper* wrapper);
     static void DestroyWrapper(Wrapper* wrapper);

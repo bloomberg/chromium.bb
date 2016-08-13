@@ -5,14 +5,13 @@
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_SYNC_CYCLE_EVENT_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_SYNC_CYCLE_EVENT_H_
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/sessions/sync_session_snapshot.h"
 
 namespace syncer {
 
 struct SyncProtocolError;
 
-struct SYNC_EXPORT SyncCycleEvent {
+struct SyncCycleEvent {
   enum EventCause {
     ////////////////////////////////////////////////////////////////
     // Sent on entry of Syncer state machine

@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SYNC_CORE_SHUTDOWN_REASON_H_
 #define COMPONENTS_SYNC_CORE_SHUTDOWN_REASON_H_
 
-#include "components/sync/base/sync_export.h"
-
 namespace syncer {
 
 // Reason for shutting down sync engine.

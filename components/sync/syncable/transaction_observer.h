@@ -6,13 +6,12 @@
 #define COMPONENTS_SYNC_SYNCABLE_TRANSACTION_OBSERVER_H_
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/write_transaction_info.h"
 
 namespace syncer {
 namespace syncable {
 
-class SYNC_EXPORT TransactionObserver {
+class TransactionObserver {
  public:
   virtual void OnTransactionWrite(
       const ImmutableWriteTransactionInfo& write_transaction_info,

@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 
 namespace sync_pb {
@@ -28,7 +27,7 @@ class ModelSafeWorker;
 
 // This class represents an entity that can request, receive, and apply updates
 // from the sync server.
-class SYNC_EXPORT UpdateHandler {
+class UpdateHandler {
  public:
   UpdateHandler();
   virtual ~UpdateHandler() = 0;

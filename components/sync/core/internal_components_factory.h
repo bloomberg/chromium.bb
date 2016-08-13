@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
@@ -36,7 +35,7 @@ class Directory;
 class DirectoryBackingStore;
 }
 
-class SYNC_EXPORT InternalComponentsFactory {
+class InternalComponentsFactory {
  public:
   enum EncryptionMethod {
     ENCRYPTION_LEGACY,

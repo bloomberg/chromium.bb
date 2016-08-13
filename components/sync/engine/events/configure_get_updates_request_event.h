@@ -11,14 +11,13 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
 
 // An event representing a configure GetUpdates request to the server.
-class SYNC_EXPORT ConfigureGetUpdatesRequestEvent : public ProtocolEvent {
+class ConfigureGetUpdatesRequestEvent : public ProtocolEvent {
  public:
   ConfigureGetUpdatesRequestEvent(
       base::Time timestamp,

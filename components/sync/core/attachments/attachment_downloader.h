@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "components/sync/api/attachments/attachment.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
 
 namespace net {
@@ -21,7 +20,7 @@ class URLRequestContextGetter;
 namespace syncer {
 
 // AttachmentDownloader is responsible for downloading attachments from server.
-class SYNC_EXPORT AttachmentDownloader {
+class AttachmentDownloader {
  public:
   // The result of a DownloadAttachment operation.
   enum DownloadResult {

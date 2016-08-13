@@ -19,7 +19,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
@@ -38,8 +37,7 @@ namespace sessions {
 struct ModelNeutralState;
 }
 
-class SYNC_EXPORT SyncSchedulerImpl : public SyncScheduler,
-                                      public base::NonThreadSafe {
+class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
  public:
   // |name| is a display string to identify the syncer thread.  Takes
   // |ownership of |syncer| and |delay_provider|.
@@ -121,7 +119,7 @@ class SYNC_EXPORT SyncSchedulerImpl : public SyncScheduler,
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, FailedRetry);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, ReceiveNewRetryDelay);
 
-  struct SYNC_EXPORT WaitInterval {
+  struct WaitInterval {
     enum Mode {
       // Uninitialized state, should not be set in practice.
       UNKNOWN = -1,

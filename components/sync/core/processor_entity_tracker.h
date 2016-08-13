@@ -12,7 +12,6 @@
 
 #include "base/time/time.h"
 #include "components/sync/api/entity_data.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 
 namespace syncer_v2 {
@@ -24,7 +23,7 @@ struct UpdateResponseData;
 // entity with its type. It can be considered a helper class internal to the
 // processor. It manages the metadata for its entity and caches entity data
 // upon a local change until commit confirmation is received.
-class SYNC_EXPORT ProcessorEntityTracker {
+class ProcessorEntityTracker {
  public:
   // Construct an instance representing a new locally-created item.
   static std::unique_ptr<ProcessorEntityTracker> CreateNew(

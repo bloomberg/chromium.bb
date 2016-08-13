@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 
 namespace syncer {
@@ -16,7 +15,7 @@ class ReadTransaction;
 namespace syncable {
 
 // Locks db in constructor, unlocks in destructor.
-class SYNC_EXPORT ReadTransaction : public BaseTransaction {
+class ReadTransaction : public BaseTransaction {
  public:
   ReadTransaction(const tracked_objects::Location& from_here,
                   Directory* directory);

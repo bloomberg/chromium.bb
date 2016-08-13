@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/network_resources.h"
 #include "components/sync/core/network_time_update_callback.h"
 
@@ -20,7 +19,7 @@ namespace syncer {
 class CancelationSignal;
 class HttpPostProviderFactory;
 
-class SYNC_EXPORT HttpBridgeNetworkResources : public NetworkResources {
+class HttpBridgeNetworkResources : public NetworkResources {
  public:
   ~HttpBridgeNetworkResources() override;
 

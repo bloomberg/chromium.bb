@@ -22,7 +22,7 @@
 namespace syncer {
 
 // Implementation of AttachmentService.
-class SYNC_EXPORT AttachmentServiceImpl
+class AttachmentServiceImpl
     : public AttachmentService,
       public net::NetworkChangeNotifier::NetworkChangeObserver,
       public base::NonThreadSafe {

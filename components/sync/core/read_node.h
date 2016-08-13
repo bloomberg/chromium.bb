@@ -13,14 +13,13 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/base_node.h"
 
 namespace syncer {
 
 // ReadNode wraps a syncable::Entry to provide the functionality of a
 // read-only BaseNode.
-class SYNC_EXPORT ReadNode : public BaseNode {
+class ReadNode : public BaseNode {
  public:
   // Create an unpopulated ReadNode on the given transaction.  Call some flavor
   // of Init to populate the ReadNode with a database entry.

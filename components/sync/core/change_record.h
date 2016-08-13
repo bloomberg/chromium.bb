@@ -12,7 +12,6 @@
 
 #include "base/memory/linked_ptr.h"
 #include "components/sync/base/immutable.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -24,7 +23,7 @@ namespace syncer {
 
 // TODO(zea): One day get passwords playing nicely with the rest of encryption
 // and get rid of this.
-class SYNC_EXPORT ExtraPasswordChangeRecordData {
+class ExtraPasswordChangeRecordData {
  public:
   ExtraPasswordChangeRecordData();
   explicit ExtraPasswordChangeRecordData(
@@ -43,7 +42,7 @@ class SYNC_EXPORT ExtraPasswordChangeRecordData {
 // operation.  This gives the sync id of the node that changed, and the type
 // of change.  To get the actual property values after an ADD or UPDATE, the
 // client should get the node with InitByIdLookup(), using the provided id.
-struct SYNC_EXPORT ChangeRecord {
+struct ChangeRecord {
   enum Action {
     ACTION_ADD,
     ACTION_DELETE,

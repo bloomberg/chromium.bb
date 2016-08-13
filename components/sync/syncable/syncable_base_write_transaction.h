@@ -6,7 +6,6 @@
 #define COMPONENTS_SYNC_SYNCABLE_SYNCABLE_BASE_WRITE_TRANSACTION_H_
 
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 
 namespace syncer {
@@ -14,7 +13,7 @@ namespace syncable {
 
 // A base class shared by both ModelNeutralWriteTransaction and
 // WriteTransaction.
-class SYNC_EXPORT BaseWriteTransaction : public BaseTransaction {
+class BaseWriteTransaction : public BaseTransaction {
  public:
   virtual void TrackChangesTo(const EntryKernel* entry) = 0;
 

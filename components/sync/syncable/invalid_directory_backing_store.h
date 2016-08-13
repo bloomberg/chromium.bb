@@ -6,14 +6,13 @@
 #define COMPONENTS_SYNC_SYNCABLE_INVALID_DIRECTORY_BACKING_STORE_H_
 
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/directory_backing_store.h"
 
 namespace syncer {
 namespace syncable {
 
 // A class used to test scenarios where loading a directory fails.
-class SYNC_EXPORT InvalidDirectoryBackingStore : public DirectoryBackingStore {
+class InvalidDirectoryBackingStore : public DirectoryBackingStore {
  public:
   InvalidDirectoryBackingStore();
   ~InvalidDirectoryBackingStore() override;

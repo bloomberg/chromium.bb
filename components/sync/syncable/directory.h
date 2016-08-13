@@ -21,7 +21,6 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/sync/api/attachments/attachment_id.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/syncable/dir_open_result.h"
 #include "components/sync/syncable/entry.h"
@@ -59,7 +58,7 @@ enum InvariantCheckLevel {
 // This class is tightly coupled to several other classes via Directory::Kernel.
 // Although Directory's kernel_ is exposed via public accessor it should be
 // treated as pseudo-private.
-class SYNC_EXPORT Directory {
+class Directory {
  public:
   typedef std::vector<int64_t> Metahandles;
 
@@ -82,7 +81,7 @@ class SYNC_EXPORT Directory {
 
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
-  struct SYNC_EXPORT PersistedKernelInfo {
+  struct PersistedKernelInfo {
     PersistedKernelInfo();
     ~PersistedKernelInfo();
 
@@ -126,7 +125,7 @@ class SYNC_EXPORT Directory {
   // When the Directory is told to SaveChanges, a SaveChangesSnapshot is
   // constructed and forms a consistent snapshot of what needs to be sent to
   // the backing store.
-  struct SYNC_EXPORT SaveChangesSnapshot {
+  struct SaveChangesSnapshot {
     SaveChangesSnapshot();
     ~SaveChangesSnapshot();
 

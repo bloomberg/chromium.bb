@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/progress_marker_map.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/sessions/model_neutral_state.h"
 
 namespace base {
@@ -28,7 +27,7 @@ namespace sessions {
 // TODO(zea): if copying this all over the place starts getting expensive,
 // consider passing around immutable references instead of values.
 // Default copy and assign welcome.
-class SYNC_EXPORT SyncSessionSnapshot {
+class SyncSessionSnapshot {
  public:
   SyncSessionSnapshot();
   SyncSessionSnapshot(

@@ -15,7 +15,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/core/sync_encryption_handler.h"
 #include "components/sync/engine_impl/commit_contributor.h"
@@ -54,10 +53,10 @@ class WorkerEntityTracker;
 // example, if the sync server sends down an update for a sync entity that is
 // currently pending for commit, this object will detect this condition and
 // cancel the pending commit.
-class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
-                                    public syncer::CommitContributor,
-                                    public CommitQueue,
-                                    public base::NonThreadSafe {
+class ModelTypeWorker : public syncer::UpdateHandler,
+                        public syncer::CommitContributor,
+                        public CommitQueue,
+                        public base::NonThreadSafe {
  public:
   ModelTypeWorker(syncer::ModelType type,
                   const sync_pb::DataTypeState& initial_state,

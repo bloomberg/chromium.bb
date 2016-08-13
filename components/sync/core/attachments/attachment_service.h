@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/api/attachments/attachment.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -24,7 +23,7 @@ class SyncData;
 //
 // Destroying this object does not necessarily cancel outstanding async
 // operations. If you need cancel like semantics, use WeakPtr in the callbacks.
-class SYNC_EXPORT AttachmentService {
+class AttachmentService {
  public:
   // The result of a GetOrDownloadAttachments operation.
   enum GetOrDownloadResult {

@@ -6,7 +6,6 @@
 #define COMPONENTS_SYNC_SYNCABLE_SCOPED_PARENT_CHILD_INDEX_UPDATER_H_
 
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 namespace syncable {

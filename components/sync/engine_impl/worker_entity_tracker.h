@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
@@ -32,7 +31,7 @@ struct UpdateResponseData;
 //
 // This object may contain state associated with a pending commit, pending
 // update, or both.
-class SYNC_EXPORT WorkerEntityTracker {
+class WorkerEntityTracker {
  public:
   // Initializes the entity tracker's main fields. Does not initialize state
   // related to a pending commit.

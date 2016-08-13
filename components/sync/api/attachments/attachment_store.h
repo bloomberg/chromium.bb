@@ -13,7 +13,6 @@
 #include "components/sync/api/attachments/attachment.h"
 #include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/api/attachments/attachment_metadata.h"
-#include "components/sync/base/sync_export.h"
 
 namespace base {
 class FilePath;
@@ -34,7 +33,7 @@ class AttachmentStoreFrontend;
 // implementations.
 // Destroying this object does not necessarily cancel outstanding async
 // operations. If you need cancel like semantics, use WeakPtr in the callbacks.
-class SYNC_EXPORT AttachmentStore {
+class AttachmentStore {
  public:
   // TODO(maniscalco): Consider udpating Read and Write methods to support
   // resumable transfers (bug 353292).
@@ -171,7 +170,7 @@ class SYNC_EXPORT AttachmentStore {
 // AttachmentService writes attachment on behalf of model type after download
 // and takes reference on attachment for the duration of upload.
 // Model type implementation shouldn't use this interface.
-class SYNC_EXPORT AttachmentStoreForSync : public AttachmentStore {
+class AttachmentStoreForSync : public AttachmentStore {
  public:
   ~AttachmentStoreForSync();
 

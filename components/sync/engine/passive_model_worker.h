@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/model_safe_worker.h"
 
@@ -16,7 +15,7 @@ namespace syncer {
 // Implementation of ModelSafeWorker for passive types.  All work is
 // done on the same thread DoWorkAndWaitUntilDone (i.e., the sync
 // thread).
-class SYNC_EXPORT PassiveModelWorker : public ModelSafeWorker {
+class PassiveModelWorker : public ModelSafeWorker {
  public:
   explicit PassiveModelWorker(WorkerLoopDestructionObserver* observer);
 

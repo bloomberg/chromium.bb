@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/core/sync_manager.h"
 #include "components/sync/syncable/transaction_observer.h"
@@ -29,10 +28,9 @@ class JsEventHandler;
 
 // Observes all change- and transaction-related events and routes a
 // summarized version to a JsEventHandler.
-class SYNC_EXPORT JsMutationEventObserver
-    : public SyncManager::ChangeObserver,
-      public syncable::TransactionObserver,
-      public base::NonThreadSafe {
+class JsMutationEventObserver : public SyncManager::ChangeObserver,
+                                public syncable::TransactionObserver,
+                                public base::NonThreadSafe {
  public:
   JsMutationEventObserver();
 

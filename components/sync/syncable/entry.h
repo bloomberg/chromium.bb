@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/entry_kernel.h"
 
 namespace syncer {
@@ -46,7 +45,7 @@ enum GetTypeRoot { GET_TYPE_ROOT };
 
 enum GetByHandle { GET_BY_HANDLE };
 
-class SYNC_EXPORT Entry {
+class Entry {
  public:
   // After constructing, you must check good() to test whether the Get
   // succeeded.

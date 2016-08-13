@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/sessions_impl/sync_session.h"
 
@@ -39,14 +38,13 @@ class Entry;
 }
 
 // Returns the types to migrate from the data in |response|.
-SYNC_EXPORT ModelTypeSet
-GetTypesToMigrate(const sync_pb::ClientToServerResponse& response);
+ModelTypeSet GetTypesToMigrate(const sync_pb::ClientToServerResponse& response);
 
 // Builds a SyncProtocolError from the data in |error|.
-SYNC_EXPORT SyncProtocolError ConvertErrorPBToSyncProtocolError(
+SyncProtocolError ConvertErrorPBToSyncProtocolError(
     const sync_pb::ClientToServerResponse_Error& error);
 
-class SYNC_EXPORT SyncerProtoUtil {
+class SyncerProtoUtil {
  public:
   // Posts the given message and fills the buffer with the returned value.
   // Returns true on success.  Also handles store birthday verification: will

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/network_time_update_callback.h"
 
 namespace net {
@@ -19,7 +18,7 @@ namespace syncer {
 class CancelationSignal;
 class HttpPostProviderFactory;
 
-class SYNC_EXPORT NetworkResources {
+class NetworkResources {
  public:
   virtual ~NetworkResources() {}
 

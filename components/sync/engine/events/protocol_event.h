@@ -10,7 +10,6 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/sync/base/sync_export.h"
 
 namespace syncer {
 
@@ -28,7 +27,7 @@ namespace syncer {
 // its own custom serialization routines.  For example, the "configure"
 // GetUpdates request will include information about its "origin" in its debug
 // info.
-class SYNC_EXPORT ProtocolEvent {
+class ProtocolEvent {
  public:
   ProtocolEvent();
   virtual ~ProtocolEvent();

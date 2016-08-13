@@ -10,8 +10,6 @@
 
 #include <string>
 
-#include "components/sync/base/sync_export.h"
-
 namespace sync_pb {
 class UniquePosition;
 }
@@ -40,7 +38,7 @@ namespace syncer {
 //
 // This class currently has several bookmarks-related assumptions built in,
 // though it could be adapted to be more generally useful.
-class SYNC_EXPORT UniquePosition {
+class UniquePosition {
  public:
   static const size_t kSuffixLength;
   static const size_t kCompressBytesThreshold;

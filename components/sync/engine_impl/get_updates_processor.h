@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/sessions_impl/model_type_registry.h"
@@ -42,7 +41,7 @@ class GetUpdatesDelegate;
 // Most methods allow the caller to specify a subset of types on which the
 // operation is to be applied.  It is a logic error if the supplied set of types
 // contains a type which was not previously registered with the manager.
-class SYNC_EXPORT GetUpdatesProcessor {
+class GetUpdatesProcessor {
  public:
   explicit GetUpdatesProcessor(UpdateHandlerMap* update_handler_map,
                                const GetUpdatesDelegate& delegate);

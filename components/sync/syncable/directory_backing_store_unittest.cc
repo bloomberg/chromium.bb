@@ -20,7 +20,6 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/sync/base/node_ordinal.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -56,8 +55,8 @@ std::unique_ptr<EntryKernel> CreateEntry(int id, const std::string& id_suffix) {
 
 }  // namespace
 
-SYNC_EXPORT extern const int32_t kCurrentPageSizeKB;
-SYNC_EXPORT extern const int32_t kCurrentDBVersion;
+extern const int32_t kCurrentPageSizeKB;
+extern const int32_t kCurrentDBVersion;
 
 class MigrationTest : public testing::TestWithParam<int> {
  public:

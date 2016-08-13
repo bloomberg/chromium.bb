@@ -17,7 +17,6 @@
 #include "components/sync/base/immutable.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/proto_value_ptr.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/protocol/attachments.pb.h"
@@ -193,7 +192,7 @@ enum BitTemp {
 
 enum { BIT_TEMPS_COUNT = BIT_TEMPS_END - BIT_TEMPS_BEGIN };
 
-struct SYNC_EXPORT EntryKernel {
+struct EntryKernel {
  private:
   typedef syncer::ProtoValuePtr<sync_pb::EntitySpecifics> EntitySpecificsPtr;
   typedef syncer::ProtoValuePtr<sync_pb::AttachmentMetadata>

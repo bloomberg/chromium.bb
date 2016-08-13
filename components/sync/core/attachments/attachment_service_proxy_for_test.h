@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/attachments/attachment_service_proxy.h"
 
 namespace syncer {
@@ -19,8 +18,7 @@ namespace syncer {
 // Constructs and owns an AttachmentService suitable for use in tests.
 // NOTE: This class does not require the current thread to have a MessageLoop,
 // however all methods will effectively become no-op stubs in that case.
-class SYNC_EXPORT AttachmentServiceProxyForTest
-    : public AttachmentServiceProxy {
+class AttachmentServiceProxyForTest : public AttachmentServiceProxy {
  public:
   static AttachmentServiceProxy Create();
   ~AttachmentServiceProxyForTest() override;

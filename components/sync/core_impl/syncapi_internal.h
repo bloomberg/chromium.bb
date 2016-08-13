@@ -10,8 +10,6 @@
 
 #include <string>
 
-#include "components/sync/base/sync_export.h"
-
 namespace sync_pb {
 class AttachmentMetadata;
 class EntitySpecifics;
@@ -26,10 +24,8 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
     Cryptographer* crypto);
 
-SYNC_EXPORT void SyncAPINameToServerName(const std::string& syncer_name,
-                                         std::string* out);
-SYNC_EXPORT void ServerNameToSyncAPIName(const std::string& server_name,
-                                         std::string* out);
+void SyncAPINameToServerName(const std::string& syncer_name, std::string* out);
+void ServerNameToSyncAPIName(const std::string& server_name, std::string* out);
 
 bool IsNameServerIllegalAfterTrimming(const std::string& name);
 

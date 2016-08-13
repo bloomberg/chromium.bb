@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -46,7 +45,7 @@ namespace syncer_v2 {
 // Destroying store object doesn't necessarily cancel asynchronous operations
 // issued previously. You should be prepared to handle callbacks from those
 // operations.
-class SYNC_EXPORT ModelTypeStore {
+class ModelTypeStore {
  public:
   // Result of store operations.
   enum class Result {
@@ -64,7 +63,7 @@ class SYNC_EXPORT ModelTypeStore {
   };
 
   // WriteBatch object is used in all modification operations.
-  class SYNC_EXPORT WriteBatch {
+  class WriteBatch {
    public:
     virtual ~WriteBatch();
 

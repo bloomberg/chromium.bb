@@ -23,7 +23,7 @@ namespace syncer_v2 {
 // them until Next() is invoked, when it gives up ownerhsip. Because a vector
 // is used internally, this impl is unaware when duplcate storage_keys are used,
 // and it is the caller's job to avoid this.
-class SYNC_EXPORT DataBatchImpl : public DataBatch {
+class DataBatchImpl : public DataBatch {
  public:
   DataBatchImpl();
   ~DataBatchImpl() override;

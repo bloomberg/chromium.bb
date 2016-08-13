@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/syncable/dir_open_result.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/metahandle_set.h"
@@ -28,8 +27,8 @@ class EntitySpecifics;
 namespace syncer {
 namespace syncable {
 
-SYNC_EXPORT extern const int32_t kCurrentDBVersion;
-SYNC_EXPORT extern const int32_t kCurrentPageSizeKB;
+extern const int32_t kCurrentDBVersion;
+extern const int32_t kCurrentPageSizeKB;
 
 struct ColumnSpec;
 
@@ -48,7 +47,7 @@ struct ColumnSpec;
 // This class is abstract so that we can extend it in interesting ways for use
 // in tests.  The concrete class used in non-test scenarios is
 // OnDiskDirectoryBackingStore.
-class SYNC_EXPORT DirectoryBackingStore : public base::NonThreadSafe {
+class DirectoryBackingStore : public base::NonThreadSafe {
  public:
   explicit DirectoryBackingStore(const std::string& dir_name);
   virtual ~DirectoryBackingStore();

@@ -12,13 +12,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/core/internal_components_factory.h"
 
 namespace syncer {
 
-class SYNC_EXPORT InternalComponentsFactoryImpl
-    : public InternalComponentsFactory {
+class InternalComponentsFactoryImpl : public InternalComponentsFactory {
  public:
   explicit InternalComponentsFactoryImpl(const Switches& switches);
   ~InternalComponentsFactoryImpl() override;

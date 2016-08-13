@@ -10,7 +10,7 @@
 namespace syncer_v2 {
 
 // Interface used by a synced data type to issue requests to the sync backend.
-class SYNC_EXPORT CommitQueue {
+class CommitQueue {
  public:
   CommitQueue();
   virtual ~CommitQueue();

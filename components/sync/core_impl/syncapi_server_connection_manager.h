@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 
 namespace syncer {
@@ -48,8 +47,7 @@ class SyncAPIBridgedConnection : public ServerConnectionManager::Connection {
 // A ServerConnectionManager subclass used by the syncapi layer. We use a
 // subclass so that we can override MakePost() to generate a POST object using
 // an instance of the HttpPostProviderFactory class.
-class SYNC_EXPORT SyncAPIServerConnectionManager
-    : public ServerConnectionManager {
+class SyncAPIServerConnectionManager : public ServerConnectionManager {
  public:
   // Takes ownership of factory.
   SyncAPIServerConnectionManager(const std::string& server,

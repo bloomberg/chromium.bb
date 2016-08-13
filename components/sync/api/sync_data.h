@@ -18,7 +18,6 @@
 #include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/base/immutable.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/core/attachments/attachment_service_proxy.h"
 
@@ -35,7 +34,7 @@ class SyncDataRemote;
 
 // A light-weight container for immutable sync data. Pass-by-value and storage
 // in STL containers are supported and encouraged if helpful.
-class SYNC_EXPORT SyncData {
+class SyncData {
  public:
   // Creates an empty and invalid SyncData.
   SyncData();
@@ -111,7 +110,7 @@ class SYNC_EXPORT SyncData {
 
   // Necessary since we forward-declare sync_pb::SyncEntity; see
   // comments in immutable.h.
-  struct SYNC_EXPORT ImmutableSyncEntityTraits {
+  struct ImmutableSyncEntityTraits {
     typedef sync_pb::SyncEntity* Wrapper;
 
     static void InitializeWrapper(Wrapper* wrapper);
@@ -151,7 +150,7 @@ class SYNC_EXPORT SyncData {
 };
 
 // A SyncData going to the syncer.
-class SYNC_EXPORT SyncDataLocal : public SyncData {
+class SyncDataLocal : public SyncData {
  public:
   // Construct a SyncDataLocal from a SyncData.
   //
@@ -165,7 +164,7 @@ class SYNC_EXPORT SyncDataLocal : public SyncData {
 };
 
 // A SyncData that comes from the syncer.
-class SYNC_EXPORT SyncDataRemote : public SyncData {
+class SyncDataRemote : public SyncData {
  public:
   // Construct a SyncDataRemote from a SyncData.
   //
@@ -198,7 +197,7 @@ class SYNC_EXPORT SyncDataRemote : public SyncData {
 };
 
 // gmock printer helper.
-void SYNC_EXPORT PrintTo(const SyncData& sync_data, std::ostream* os);
+void PrintTo(const SyncData& sync_data, std::ostream* os);
 
 typedef std::vector<SyncData> SyncDataList;
 

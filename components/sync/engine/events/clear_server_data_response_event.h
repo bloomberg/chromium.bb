@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -19,7 +18,7 @@
 namespace syncer {
 
 // An event representing a ClearServerData response event from the server.
-class SYNC_EXPORT ClearServerDataResponseEvent : public ProtocolEvent {
+class ClearServerDataResponseEvent : public ProtocolEvent {
  public:
   ClearServerDataResponseEvent(base::Time timestamp,
                                SyncerError result,

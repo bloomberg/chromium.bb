@@ -9,8 +9,6 @@
 
 #include <string>
 
-#include "components/sync/base/sync_export.h"
-
 namespace syncer {
 
 class JsEventHandler;
@@ -20,7 +18,7 @@ class WeakHandle;
 // An interface for objects that JsEventHandlers directly interact
 // with.  JsEventHandlers can add themselves to receive events and
 // also send messages which will eventually reach the backend.
-class SYNC_EXPORT JsController {
+class JsController {
  public:
   // Adds an event handler which will start receiving JS events (not
   // immediately, so this can be called in the handler's constructor).

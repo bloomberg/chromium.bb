@@ -6,7 +6,6 @@
 #define COMPONENTS_SYNC_SESSIONS_MODEL_NEUTRAL_STATE_H_
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_export.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -17,7 +16,7 @@ namespace sessions {
 // components of the global grouping can internally implement finer grained
 // scope control, but the top level entity is still a singleton with respect to
 // model types.
-struct SYNC_EXPORT ModelNeutralState {
+struct ModelNeutralState {
   ModelNeutralState();
   ModelNeutralState(const ModelNeutralState& other);
   ~ModelNeutralState();
@@ -58,7 +57,7 @@ struct SYNC_EXPORT ModelNeutralState {
   bool items_committed;
 };
 
-SYNC_EXPORT bool HasSyncerError(const ModelNeutralState& state);
+bool HasSyncerError(const ModelNeutralState& state);
 
 }  // namespace sessions
 }  // namespace syncer

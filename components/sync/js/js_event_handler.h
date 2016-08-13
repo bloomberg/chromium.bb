@@ -9,15 +9,13 @@
 
 #include <string>
 
-#include "components/sync/base/sync_export.h"
-
 namespace syncer {
 
 class JsEventDetails;
 
 // An interface for objects that handle Javascript events (e.g.,
 // WebUIs).
-class SYNC_EXPORT JsEventHandler {
+class JsEventHandler {
  public:
   virtual void HandleJsEvent(const std::string& name,
                              const JsEventDetails& details) = 0;
