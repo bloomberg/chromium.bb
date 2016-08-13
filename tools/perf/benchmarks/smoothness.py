@@ -67,6 +67,10 @@ class SmoothnessToughFiltersCases(_Smoothness):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
+    # http://crbug.com/616520
+    if (cls.IsSvelte(possible_browser) and
+        possible_browser.browser_type == 'reference'):
+      return True
     # http://crbug.com/624032
     if possible_browser.platform.GetDeviceTypeName() == 'Nexus 6':
       return True
