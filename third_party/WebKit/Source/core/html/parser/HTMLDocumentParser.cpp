@@ -573,7 +573,9 @@ void HTMLDocumentParser::forcePlaintextForTextDocument()
         if (!m_haveBackgroundParser)
             startBackgroundParser();
 
-        postTaskToLookaheadParser(Asynchronous, &BackgroundHTMLParser::forcePlaintextForTextDocument, m_backgroundParser);
+        // This task should be synchronous, because otherwise synchronous
+        // tokenizing can happen before plaintext is forced.
+        postTaskToLookaheadParser(Synchronous, &BackgroundHTMLParser::forcePlaintextForTextDocument, m_backgroundParser);
     } else
         m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
 }
