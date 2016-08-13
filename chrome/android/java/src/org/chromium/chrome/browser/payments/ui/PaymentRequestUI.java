@@ -527,14 +527,12 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             }
         };
 
-        if (shouldCloseImmediately || !mIsProcessingPayClicked) {
+        if (shouldCloseImmediately) {
             // The shouldCloseImmediately boolean is true when the merchant calls
             // instrumentResponse.complete("success") or instrumentResponse.complete("")
             // in JavaScript.
             dismissRunnable.run();
         } else {
-            mIsProcessingPayClicked = false;
-
             // Animate the bottom sheet going away.
             new DisappearingAnimator(false);
 
@@ -768,6 +766,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public void showProcessingMessage() {
         assert mIsProcessingPayClicked;
+        mIsProcessingPayClicked = false;
         changeSpinnerVisibility(true);
         mDialog.show();
     }
