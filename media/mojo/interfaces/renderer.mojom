@@ -69,4 +69,8 @@ interface RendererClient {
   // Called when the remote renderering service is waiting on the decryption
   // key.
   OnWaitingForDecryptionKey();
+
+  // Executed the first time the metadata is updated, and whenever the duration
+  // changes.
+  OnDurationChange(int64 duration_usec);
 };

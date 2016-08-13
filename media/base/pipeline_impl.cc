@@ -113,6 +113,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnWaitingForDecryptionKey() final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
+  void OnDurationChange(base::TimeDelta duration) final;
 
   // TextRenderer tasks and notifications.
   void OnTextRendererEnded();
@@ -656,6 +657,11 @@ void PipelineImpl::RendererWrapper::OnVideoOpacityChange(bool opaque) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&PipelineImpl::OnVideoOpacityChange, weak_pipeline_, opaque));
+}
+
+void PipelineImpl::RendererWrapper::OnDurationChange(base::TimeDelta duration) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  SetDuration(duration);
 }
 
 void PipelineImpl::RendererWrapper::OnTextRendererEnded() {

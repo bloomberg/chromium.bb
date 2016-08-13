@@ -274,6 +274,11 @@ void MojoRenderer::OnVideoNaturalSizeChange(const gfx::Size& size) {
   client_->OnVideoNaturalSizeChange(size);
 }
 
+void MojoRenderer::OnDurationChange(int64_t duration_usec) {
+  DVLOG(2) << __FUNCTION__ << ": duration" << duration_usec;
+  client_->OnDurationChange(base::TimeDelta::FromMicroseconds(duration_usec));
+}
+
 void MojoRenderer::OnVideoOpacityChange(bool opaque) {
   DVLOG(2) << __FUNCTION__ << ": " << opaque;
   DCHECK(task_runner_->BelongsToCurrentThread());

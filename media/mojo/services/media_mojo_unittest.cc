@@ -52,6 +52,7 @@ class MockRendererClient : public mojom::RendererClient {
   MOCK_METHOD1(OnStatisticsUpdate,
                void(const media::PipelineStatistics& stats));
   MOCK_METHOD0(OnWaitingForDecryptionKey, void());
+  MOCK_METHOD1(OnDurationChange, void(int64_t time_usec));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRendererClient);

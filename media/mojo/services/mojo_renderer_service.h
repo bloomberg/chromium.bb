@@ -72,6 +72,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   void OnWaitingForDecryptionKey() final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
+  void OnDurationChange(base::TimeDelta duration) final;
 
   // Called when the DemuxerStreamProviderShim is ready to go (has a config,
   // pipe handle, etc) and can be handed off to a renderer for use.

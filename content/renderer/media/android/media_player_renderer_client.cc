@@ -150,4 +150,8 @@ void MediaPlayerRendererClient::OnVideoOpacityChange(bool opaque) {
   client_->OnVideoOpacityChange(opaque);
 }
 
+void MediaPlayerRendererClient::OnDurationChange(base::TimeDelta duration) {
+  client_->OnDurationChange(duration);
+}
+
 }  // namespace content

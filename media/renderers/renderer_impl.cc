@@ -58,6 +58,13 @@ class RendererImpl::RendererClientInternal : public RendererClient {
     DCHECK(type_ == DemuxerStream::VIDEO);
     renderer_->OnVideoOpacityChange(opaque);
   }
+  void OnDurationChange(base::TimeDelta duration) override {
+    // RendererClients should only be notified of duration changes in certain
+    // scenarios, none of which should arise for RendererClientInternal.
+    // Duration changes should be sent to the pipeline by the DemuxerStream, via
+    // the DemuxerHost interface.
+    NOTREACHED();
+  }
 
  private:
   DemuxerStream::Type type_;

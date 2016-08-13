@@ -66,6 +66,7 @@ class CONTENT_EXPORT MediaPlayerRendererClient : public media::Renderer,
   void OnWaitingForDecryptionKey() override;
   void OnVideoNaturalSizeChange(const gfx::Size& size) override;
   void OnVideoOpacityChange(bool opaque) override;
+  void OnDurationChange(base::TimeDelta duration) override;
 
   // Called on |compositor_task_runner_| whenever |stream_texture_wrapper_| has
   // a new frame.

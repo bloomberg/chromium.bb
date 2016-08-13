@@ -153,8 +153,7 @@ void MediaPlayerRenderer::OnMediaMetadataChanged(int player_id,
 
   if (duration_ != duration) {
     duration_ = duration;
-    // TODO(tguilbert): Add OnDurationChange to the RendererClient interface.
-    // See crbug.com/635991.
+    renderer_client_->OnDurationChange(duration);
   }
 }
 

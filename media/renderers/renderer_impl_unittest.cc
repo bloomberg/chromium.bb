@@ -51,6 +51,7 @@ class RendererImplTest : public ::testing::Test {
     MOCK_METHOD1(OnInitialize, void(PipelineStatus));
     MOCK_METHOD0(OnFlushed, void());
     MOCK_METHOD1(OnCdmAttached, void(bool));
+    MOCK_METHOD1(OnDurationChange, void(base::TimeDelta duration));
 
    private:
     DISALLOW_COPY_AND_ASSIGN(CallbackHelper);
