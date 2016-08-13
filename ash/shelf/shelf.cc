@@ -32,22 +32,16 @@
 
 namespace ash {
 
-const char Shelf::kNativeViewName[] = "ShelfView";
-
-Shelf::Shelf(ShelfModel* shelf_model,
-             WmShelf* wm_shelf,
+Shelf::Shelf(WmShelf* wm_shelf,
+             ShelfView* shelf_view,
              ShelfWidget* shelf_widget)
     : wm_shelf_(wm_shelf),
       shelf_widget_(shelf_widget),
-      shelf_view_(new ShelfView(shelf_model,
-                                WmShell::Get()->shelf_delegate(),
-                                wm_shelf,
-                                shelf_widget)),
+      shelf_view_(shelf_view),
       shelf_locking_manager_(wm_shelf) {
   DCHECK(wm_shelf_);
-  shelf_view_->Init();
-  shelf_widget_->GetContentsView()->AddChildView(shelf_view_);
-  shelf_widget_->GetNativeView()->SetName(kNativeViewName);
+  DCHECK(shelf_view_);
+  DCHECK(shelf_widget_);
 }
 
 Shelf::~Shelf() {
@@ -129,15 +123,15 @@ void Shelf::ActivateShelfItem(int index) {
                      ui::VKEY_UNKNOWN,  // The actual key gets ignored.
                      ui::EF_NONE);
 
-  const ShelfItem& item = shelf_view_->model()->items()[index];
-  ShelfItemDelegate* item_delegate =
-      shelf_view_->model()->GetShelfItemDelegate(item.id);
+  ShelfModel* shelf_model = WmShell::Get()->shelf_model();
+  const ShelfItem& item = shelf_model->items()[index];
+  ShelfItemDelegate* item_delegate = shelf_model->GetShelfItemDelegate(item.id);
   item_delegate->ItemSelected(event);
 }
 
 void Shelf::CycleWindowLinear(CycleDirection direction) {
   int item_index =
-      GetNextActivatedItemIndex(*(shelf_view_->model()), direction);
+      GetNextActivatedItemIndex(*WmShell::Get()->shelf_model(), direction);
   if (item_index >= 0)
     ActivateShelfItem(item_index);
 }
@@ -158,10 +152,6 @@ bool Shelf::IsShowingOverflowBubble() const {
   return shelf_view_->IsShowingOverflowBubble();
 }
 
-void Shelf::SetVisible(bool visible) const {
-  shelf_view_->SetVisible(visible);
-}
-
 bool Shelf::IsVisible() const {
   return shelf_view_->visible();
 }
@@ -175,7 +165,7 @@ AppListButton* Shelf::GetAppListButton() const {
 }
 
 void Shelf::LaunchAppIndexAt(int item_index) {
-  ShelfModel* shelf_model = shelf_view_->model();
+  ShelfModel* shelf_model = WmShell::Get()->shelf_model();
   const ShelfItems& items = shelf_model->items();
   int item_count = shelf_model->item_count();
   int indexes_left = item_index >= 0 ? item_index : item_count;

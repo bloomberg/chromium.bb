@@ -35,7 +35,6 @@ class AppListButton;
 class FocusCycler;
 class ShelfDelegate;
 class ShelfIconObserver;
-class ShelfModel;
 class ShelfView;
 class WmShelf;
 
@@ -43,15 +42,12 @@ namespace test {
 class ShelfTestAPI;
 }
 
-// Controller for shelf state. All access to state (visibility, auto-hide, etc.)
-// should occur via this class.
+// Controller for shelf state.
+// DEPRECATED: WmShelf is replacing this class as part of the mus/mash refactor.
+// Use WmShelf for access to state (visibility, auto-hide, etc.).
 class ASH_EXPORT Shelf {
  public:
-  static const char kNativeViewName[];
-
-  Shelf(ShelfModel* model,
-        WmShelf* wm_shelf,
-        ShelfWidget* widget);
+  Shelf(WmShelf* wm_shelf, ShelfView* shelf_view, ShelfWidget* widget);
   ~Shelf();
 
   // Return the shelf for the primary display. NULL if no user is logged in yet.
@@ -64,10 +60,12 @@ class ASH_EXPORT Shelf {
   // user is logged in yet.
   static Shelf* ForWindow(const WmWindow* window);
 
+  // DEPRECATED. Use WmShelf::GetAlignment() and SetAlignment().
   void SetAlignment(ShelfAlignment alignment);
   ShelfAlignment alignment() const { return alignment_; }
 
   // Sets the ShelfAutoHideBehavior. See enum description for details.
+  // DEPRECATED. Use WmShelf::GetAutoHideBehavior() and SetAutoHideBehavior().
   void SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior);
   ShelfAutoHideBehavior auto_hide_behavior() const {
     return auto_hide_behavior_;
@@ -101,7 +99,7 @@ class ASH_EXPORT Shelf {
   // TODO(jamescook): Migrate this to ShelfWidget.
   bool IsShowingOverflowBubble() const;
 
-  void SetVisible(bool visible) const;
+  // TODO(jamescook): Migrate to ShelfWidget::IsShelfVisible().
   bool IsVisible() const;
 
   void SchedulePaint();

@@ -20,6 +20,7 @@ namespace ash {
 class FocusCycler;
 class Shelf;
 class ShelfLayoutManager;
+class ShelfView;
 class StatusAreaWidget;
 class WmShelfAura;
 class WmWindow;
@@ -39,6 +40,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   static bool ShelfAlignmentAllowed();
 
   void OnShelfAlignmentChanged();
+
+  // DEPRECATED: Prefer WmShelf::GetAlignment().
   ShelfAlignment GetAlignment() const;
 
   // Sets the shelf's background type.
@@ -55,11 +58,14 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void SetDimsShelf(bool dimming);
   bool GetDimsShelf() const;
 
+  // TODO(jamescook): Eliminate these.
+  Shelf* shelf() { return shelf_; }
+  void set_shelf(Shelf* shelf) { shelf_ = shelf; }
+
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
-  Shelf* shelf() const { return shelf_.get(); }
   StatusAreaWidget* status_area_widget() const { return status_area_widget_; }
 
-  void CreateShelf();
+  ShelfView* CreateShelfView();
   void PostCreateShelf();
 
   // Set visibility of the shelf.
@@ -108,12 +114,15 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Owned by the shelf container's aura::Window.
   ShelfLayoutManager* shelf_layout_manager_;
-  std::unique_ptr<Shelf> shelf_;
+  // Owned by the root window controller.
+  Shelf* shelf_;
   StatusAreaWidget* status_area_widget_;
 
   // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.
   DelegateView* delegate_view_;
+  // View containing the shelf items. Owned by the views hierarchy.
+  ShelfView* shelf_view_;
   ShelfBackgroundAnimator background_animator_;
   bool activating_as_fallback_;
 

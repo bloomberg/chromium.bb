@@ -16,6 +16,7 @@
 #include "ash/common/login_status.h"
 #include "ash/common/root_window_controller_common.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
@@ -460,16 +461,24 @@ const aura::Window* RootWindowController::GetContainer(int container_id) const {
 }
 
 void RootWindowController::ShowShelf() {
-  if (!shelf_widget_->shelf())
+  if (!shelf_)
     return;
-  shelf_widget_->shelf()->SetVisible(true);
+  shelf_widget_->SetShelfVisibility(true);
   shelf_widget_->status_area_widget()->Show();
 }
 
 void RootWindowController::CreateShelf() {
-  if (shelf_widget_->shelf())
+  if (shelf_)
     return;
-  shelf_widget_->CreateShelf();
+  ShelfView* shelf_view = shelf_widget_->CreateShelfView();
+
+  shelf_.reset(
+      new Shelf(wm_shelf_aura_.get(), shelf_view, shelf_widget_.get()));
+  shelf_widget_->set_shelf(shelf_.get());
+  // Must be initialized before the delegate is notified because the delegate
+  // may try to access the WmShelf.
+  wm_shelf_aura_->SetShelf(shelf_.get());
+  WmShell::Get()->shelf_delegate()->OnShelfCreated(shelf_.get());
 
   if (panel_layout_manager_)
     panel_layout_manager_->SetShelf(wm_shelf_aura_.get());
@@ -488,8 +497,7 @@ void RootWindowController::CreateShelf() {
 }
 
 Shelf* RootWindowController::GetShelf() const {
-  // TODO(jamescook): Shelf should be owned by this class, not by ShelfWidget.
-  return shelf_widget_->shelf();
+  return shelf_.get();
 }
 
 void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
@@ -608,6 +616,7 @@ void RootWindowController::CloseChildWindows() {
   }
 
   shelf_widget_.reset();
+  shelf_.reset();
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {

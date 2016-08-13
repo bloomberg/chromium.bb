@@ -11,6 +11,7 @@
 #include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
+#include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_dimmer_view.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -19,7 +20,6 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "base/memory/ptr_util.h"
@@ -51,7 +51,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
                                   public views::AccessiblePaneView,
                                   public ShelfBackgroundAnimatorObserver {
  public:
-  explicit DelegateView(ShelfWidget* shelf);
+  DelegateView(WmShelf* wm_shelf, ShelfWidget* shelf);
   ~DelegateView() override;
 
   void set_focus_cycler(FocusCycler* focus_cycler) {
@@ -102,6 +102,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   }
 
  private:
+  WmShelf* wm_shelf_;
   ShelfWidget* shelf_widget_;
   FocusCycler* focus_cycler_;
   int asset_background_alpha_;
@@ -123,14 +124,18 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
 
-ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
-    : shelf_widget_(shelf_widget),
+ShelfWidget::DelegateView::DelegateView(WmShelf* wm_shelf,
+                                        ShelfWidget* shelf_widget)
+    : wm_shelf_(wm_shelf),
+      shelf_widget_(shelf_widget),
       focus_cycler_(nullptr),
       asset_background_alpha_(0),
       opaque_background_(ui::LAYER_SOLID_COLOR),
       opaque_foreground_(ui::LAYER_SOLID_COLOR),
       dimmer_view_(nullptr),
       disable_dimming_animations_for_test_(false) {
+  DCHECK(wm_shelf_);
+  DCHECK(shelf_widget_);
   SetLayoutManager(new views::FillLayout());
   set_allow_deactivate_on_esc(true);
   opaque_background_.SetColor(SK_ColorBLACK);
@@ -182,10 +187,10 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia shelf_background =
       *rb->GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
-  const bool horizontal = IsHorizontalAlignment(shelf_widget_->GetAlignment());
+  const bool horizontal = wm_shelf_->IsHorizontalAlignment();
   if (!horizontal) {
     shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(
-        shelf_background, shelf_widget_->GetAlignment() == SHELF_ALIGNMENT_LEFT
+        shelf_background, wm_shelf_->GetAlignment() == SHELF_ALIGNMENT_LEFT
                               ? SkBitmapOperations::ROTATION_90_CW
                               : SkBitmapOperations::ROTATION_270_CW);
   }
@@ -287,7 +292,9 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container,
                          WmWindow* status_container,
                          WmShelfAura* wm_shelf_aura)
     : wm_shelf_aura_(wm_shelf_aura),
-      delegate_view_(new DelegateView(this)),
+      shelf_(nullptr),
+      delegate_view_(new DelegateView(wm_shelf_aura, this)),
+      shelf_view_(nullptr),
       background_animator_(SHELF_BACKGROUND_DEFAULT, wm_shelf_aura_),
       activating_as_fallback_(false) {
   background_animator_.AddObserver(this);
@@ -295,6 +302,7 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container,
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.name = "ShelfWidget";
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.delegate = delegate_view_;
@@ -398,8 +406,8 @@ bool ShelfWidget::ShelfAlignmentAllowed() {
 }
 
 ShelfAlignment ShelfWidget::GetAlignment() const {
-  // TODO(msw): This should not be called before |shelf_| is created.
-  return shelf_ ? shelf_->alignment() : SHELF_ALIGNMENT_BOTTOM_LOCKED;
+  WmShelf* wm_shelf = static_cast<WmShelf*>(wm_shelf_aura_);
+  return wm_shelf->GetAlignment();
 }
 
 void ShelfWidget::OnShelfAlignmentChanged() {
@@ -411,8 +419,8 @@ void ShelfWidget::SetDimsShelf(bool dimming) {
   delegate_view_->SetDimmed(dimming);
   // Repaint all children, allowing updates to reflect dimmed state eg:
   // status area background, app list button and overflow button.
-  if (shelf_)
-    shelf_->SchedulePaint();
+  if (shelf_view_)
+    shelf_view_->SchedulePaintForAllButtons();
   status_area_widget_->SchedulePaint();
 }
 
@@ -420,23 +428,25 @@ bool ShelfWidget::GetDimsShelf() const {
   return delegate_view_->GetDimmed();
 }
 
-void ShelfWidget::CreateShelf() {
+ShelfView* ShelfWidget::CreateShelfView() {
   DCHECK(!shelf_);
+  DCHECK(!shelf_view_);
 
-  shelf_.reset(new Shelf(WmShell::Get()->shelf_model(), wm_shelf_aura_, this));
-  // Must be initialized before the delegate is notified because the delegate
-  // may try to access the WmShelf.
-  wm_shelf_aura_->SetShelf(shelf_.get());
-  WmShell::Get()->shelf_delegate()->OnShelfCreated(shelf_.get());
+  shelf_view_ =
+      new ShelfView(WmShell::Get()->shelf_model(),
+                    WmShell::Get()->shelf_delegate(), wm_shelf_aura_, this);
+  shelf_view_->Init();
+  GetContentsView()->AddChildView(shelf_view_);
+  return shelf_view_;
+}
 
+void ShelfWidget::PostCreateShelf() {
   SetFocusCycler(WmShell::Get()->focus_cycler());
 
   // Ensure the newly created |shelf_| gets current values.
   background_animator_.Initialize(this);
-}
 
-void ShelfWidget::PostCreateShelf() {
-  shelf_->SetVisible(
+  shelf_view_->SetVisible(
       WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
   shelf_layout_manager_->UpdateAutoHideState();
@@ -444,12 +454,12 @@ void ShelfWidget::PostCreateShelf() {
 }
 
 bool ShelfWidget::IsShelfVisible() const {
-  return shelf_.get() && shelf_->IsVisible();
+  return shelf_view_ && shelf_view_->visible();
 }
 
 void ShelfWidget::SetShelfVisibility(bool visible) {
-  if (shelf_)
-    shelf_->SetVisible(visible);
+  if (shelf_view_)
+    shelf_view_->SetVisible(visible);
 }
 
 void ShelfWidget::SetFocusCycler(FocusCycler* focus_cycler) {
@@ -513,8 +523,8 @@ void ShelfWidget::DisableDimmingAnimationsForTest() {
 }
 
 void ShelfWidget::UpdateShelfItemBackground(int alpha) {
-  if (shelf_)
-    shelf_->UpdateShelfItemBackground(alpha);
+  if (shelf_view_)
+    shelf_view_->UpdateShelfItemBackground(alpha);
 }
 
 void ShelfWidget::WillDeleteShelfLayoutManager() {

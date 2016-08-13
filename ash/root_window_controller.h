@@ -280,6 +280,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // to it during construction of the shelf widget and status tray.
   std::unique_ptr<WmShelfAura> wm_shelf_aura_;
 
+  // Legacy shelf controller. Only present after shelf is created (post-login).
+  std::unique_ptr<Shelf> shelf_;
+
   // The shelf widget for this root window.
   std::unique_ptr<ShelfWidget> shelf_widget_;
 
