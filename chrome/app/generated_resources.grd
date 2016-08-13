@@ -6549,6 +6549,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TRANSLATE_2016Q2_UI_DESCRIPTION" desc="Description for the flag to enable the Translate 2016Q2 UI.">
         Improved triggering logic and look for Translate Bubble UI
       </message>
+      <message name="IDS_FLAGS_TRANSLATE_LANGUAGE_BY_ULP_NAME" desc="Name of the flag to enable the Translate Language by ULP.">
+        Translate Language by ULP
+      </message>
+      <message name="IDS_FLAGS_TRANSLATE_LANGUAGE_BY_ULP_DESCRIPTION" desc="Description for the flag to enable the Translate Language by ULP.">
+        Improved translate target language and triggering logic by considering information from User Language Profile (ULP).
+      </message>
       <message name="IDS_FLAGS_VIEWS_RECT_BASED_TARGETING_NAME" desc="Name of about:flags option for rect-based targeting in views">
         Rect-based targeting in views
       </message>
