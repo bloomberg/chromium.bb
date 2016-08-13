@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.offlinepages.downloads;
 
-import android.app.Activity;
-
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -124,9 +122,8 @@ public class OfflinePageDownloadBridge {
      * No automatic redirection is happening based on the connection status.
      * If the item with specified GUID is not found or can't be opened, nothing happens.
      * @param guid a GUID of the item to open.
-     * @param activity Activity requesting to open the item (offline page).
      */
-    public void openItem(String guid, Activity activity) {
+    public void openItem(String guid) {
         String url = nativeGetOfflineUrlByGuid(mNativeOfflinePageDownloadBridge, guid);
         if (url == null) return;
 

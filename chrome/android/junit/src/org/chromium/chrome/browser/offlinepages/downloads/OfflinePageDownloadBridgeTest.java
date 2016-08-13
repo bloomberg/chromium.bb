@@ -142,7 +142,7 @@ public class OfflinePageDownloadBridgeTest {
         OfflinePageDownloadItem item = createDownloadItem1();
         // Empty URL skips actual intent.
         doReturn("").when(mBridge).nativeGetOfflineUrlByGuid(anyLong(), eq(item.getGuid()));
-        mBridge.openItem(item.getGuid(), null);
+        mBridge.openItem(item.getGuid());
         verify(mBridge, times(1)).nativeGetOfflineUrlByGuid(eq(0L), eq(item.getGuid()));
     }
 

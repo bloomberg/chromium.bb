@@ -18,7 +18,9 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.ui.widget.Toast;
 
@@ -263,12 +265,17 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         public void open() {
-            // TODO(dfalcantara): Figure out what to do here.
+            getBridge().openItem(getId());
         }
 
         @Override
         public void delete() {
-            // TODO(dfalcantara): Figure out what to do here.
+            getBridge().deleteItem(getId());
+        }
+
+        private OfflinePageDownloadBridge getBridge() {
+            return new OfflinePageDownloadBridge(
+                    Profile.getLastUsedProfile().getOriginalProfile());
         }
     }
 }
