@@ -2149,7 +2149,7 @@ std::string FragmentShaderYUVVideo::GetShaderString(TexCoordPrecision precision,
       }
 
       vec3 yuv2rgb(vec3 yuv) {
-        yuv = yuv * resource_multiplier - vec3(resource_offset);
+        yuv = (yuv - vec3(resource_offset)) * resource_multiplier;
         return LUT(lut_texture, yuv, 32.0).xyz;
       }
     });
