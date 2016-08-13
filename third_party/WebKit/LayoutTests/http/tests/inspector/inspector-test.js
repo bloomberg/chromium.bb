@@ -104,7 +104,7 @@ InspectorTest.evaluateFunctionInOverlay = function(func, callback)
     var mainContext = InspectorTest.runtimeModel.executionContexts()[0];
     mainContext.evaluate(expression, "", false, false, true, false, false, wrapCallback);
 
-    function wrapCallback(val, err, result)
+    function wrapCallback(result, exceptionDetails)
     {
         callback(result.value)
     }
