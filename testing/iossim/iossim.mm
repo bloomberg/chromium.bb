@@ -89,6 +89,14 @@ void LogError(NSString* format, ...) {
   [_task waitUntilExit];
 }
 
+- (void)launch {
+  [_task launch];
+}
+
+- (void)waitUntilExit {
+  [_task waitUntilExit];
+}
+
 @end
 
 // Return array of available iOS runtime dictionaries.  Unavailable (old Xcode
@@ -127,9 +135,16 @@ NSDictionary* GetSimulatorList() {
       initWithArguments:@[ @"simctl", @"list", @"-j" ]] autorelease];
   NSPipe* out = [NSPipe pipe];
   [task setStandardOutput:out];
-  [task run];
 
+  // In the rest of the this file we read from the pipe after -waitUntilExit
+  // (We normally wrap -launch and -waitUntilExit in one -run method).  However,
+  // on some swarming slaves this led to a hang on simctl's pipe.  Since the
+  // output of simctl is so instant, reading it before exit seems to work, and
+  // seems to avoid the hang.
+  [task launch];
   NSData* data = [[out fileHandleForReading] readDataToEndOfFile];
+  [task waitUntilExit];
+
   NSError* error = nil;
   return [NSJSONSerialization JSONObjectWithData:data
                                          options:kNilOptions
