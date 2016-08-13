@@ -40,7 +40,7 @@
 namespace testing {
 namespace internal {
 
-inline bool operator==(const M128A& lhs, const M128A& rhs) {
+inline bool operator==(const M128A &lhs, const M128A &rhs) {
   return (lhs.Low == rhs.Low && lhs.High == rhs.High);
 }
 
@@ -58,7 +58,7 @@ class RegisterStateCheck {
   ~RegisterStateCheck() { EXPECT_TRUE(Check()); }
 
  private:
-  static bool StoreRegisters(CONTEXT* const context) {
+  static bool StoreRegisters(CONTEXT *const context) {
     const HANDLE this_thread = GetCurrentThread();
     EXPECT_TRUE(this_thread != NULL);
     context->ContextFlags = CONTEXT_FLOATING_POINT;
@@ -73,8 +73,8 @@ class RegisterStateCheck {
     CONTEXT post_context;
     if (!StoreRegisters(&post_context)) return false;
 
-    const M128A* xmm_pre = &pre_context_.Xmm6;
-    const M128A* xmm_post = &post_context.Xmm6;
+    const M128A *xmm_pre = &pre_context_.Xmm6;
+    const M128A *xmm_post = &post_context.Xmm6;
     for (int i = 6; i <= 15; ++i) {
       EXPECT_EQ(*xmm_pre, *xmm_post) << "xmm" << i << " has been modified!";
       ++xmm_pre;

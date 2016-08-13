@@ -33,20 +33,20 @@ class CodecFactory {
 
   virtual ~CodecFactory() {}
 
-  virtual Decoder* CreateDecoder(aom_codec_dec_cfg_t cfg,
+  virtual Decoder *CreateDecoder(aom_codec_dec_cfg_t cfg,
                                  unsigned long deadline) const = 0;
 
-  virtual Decoder* CreateDecoder(aom_codec_dec_cfg_t cfg,
+  virtual Decoder *CreateDecoder(aom_codec_dec_cfg_t cfg,
                                  const aom_codec_flags_t flags,
                                  unsigned long deadline)  // NOLINT(runtime/int)
       const = 0;
 
-  virtual Encoder* CreateEncoder(aom_codec_enc_cfg_t cfg,
+  virtual Encoder *CreateEncoder(aom_codec_enc_cfg_t cfg,
                                  unsigned long deadline,
                                  const unsigned long init_flags,
-                                 TwopassStatsStore* stats) const = 0;
+                                 TwopassStatsStore *stats) const = 0;
 
-  virtual aom_codec_err_t DefaultEncoderConfig(aom_codec_enc_cfg_t* cfg,
+  virtual aom_codec_err_t DefaultEncoderConfig(aom_codec_enc_cfg_t *cfg,
                                                int usage) const = 0;
 };
 
@@ -57,17 +57,17 @@ class CodecFactory {
 template <class T1>
 class CodecTestWithParam
     : public ::testing::TestWithParam<
-          std::tr1::tuple<const libaom_test::CodecFactory*, T1> > {};
+          std::tr1::tuple<const libaom_test::CodecFactory *, T1> > {};
 
 template <class T1, class T2>
 class CodecTestWith2Params
     : public ::testing::TestWithParam<
-          std::tr1::tuple<const libaom_test::CodecFactory*, T1, T2> > {};
+          std::tr1::tuple<const libaom_test::CodecFactory *, T1, T2> > {};
 
 template <class T1, class T2, class T3>
 class CodecTestWith3Params
     : public ::testing::TestWithParam<
-          std::tr1::tuple<const libaom_test::CodecFactory*, T1, T2, T3> > {};
+          std::tr1::tuple<const libaom_test::CodecFactory *, T1, T2, T3> > {};
 
 /*
  * AV1 Codec Definitions
@@ -83,7 +83,7 @@ class AV1Decoder : public Decoder {
       : Decoder(cfg, flag, deadline) {}
 
  protected:
-  virtual aom_codec_iface_t* CodecInterface() const {
+  virtual aom_codec_iface_t *CodecInterface() const {
 #if CONFIG_AV1_DECODER
     return &aom_codec_av1_dx_algo;
 #else
@@ -95,11 +95,11 @@ class AV1Decoder : public Decoder {
 class AV1Encoder : public Encoder {
  public:
   AV1Encoder(aom_codec_enc_cfg_t cfg, unsigned long deadline,
-             const unsigned long init_flags, TwopassStatsStore* stats)
+             const unsigned long init_flags, TwopassStatsStore *stats)
       : Encoder(cfg, deadline, init_flags, stats) {}
 
  protected:
-  virtual aom_codec_iface_t* CodecInterface() const {
+  virtual aom_codec_iface_t *CodecInterface() const {
 #if CONFIG_AV1_ENCODER
     return &aom_codec_av1_cx_algo;
 #else
@@ -112,12 +112,12 @@ class AV1CodecFactory : public CodecFactory {
  public:
   AV1CodecFactory() : CodecFactory() {}
 
-  virtual Decoder* CreateDecoder(aom_codec_dec_cfg_t cfg,
+  virtual Decoder *CreateDecoder(aom_codec_dec_cfg_t cfg,
                                  unsigned long deadline) const {
     return CreateDecoder(cfg, 0, deadline);
   }
 
-  virtual Decoder* CreateDecoder(aom_codec_dec_cfg_t cfg,
+  virtual Decoder *CreateDecoder(aom_codec_dec_cfg_t cfg,
                                  const aom_codec_flags_t flags,
                                  unsigned long deadline) const {  // NOLINT
 #if CONFIG_AV1_DECODER
@@ -127,10 +127,10 @@ class AV1CodecFactory : public CodecFactory {
 #endif
   }
 
-  virtual Encoder* CreateEncoder(aom_codec_enc_cfg_t cfg,
+  virtual Encoder *CreateEncoder(aom_codec_enc_cfg_t cfg,
                                  unsigned long deadline,
                                  const unsigned long init_flags,
-                                 TwopassStatsStore* stats) const {
+                                 TwopassStatsStore *stats) const {
 #if CONFIG_AV1_ENCODER
     return new AV1Encoder(cfg, deadline, init_flags, stats);
 #else
@@ -138,7 +138,7 @@ class AV1CodecFactory : public CodecFactory {
 #endif
   }
 
-  virtual aom_codec_err_t DefaultEncoderConfig(aom_codec_enc_cfg_t* cfg,
+  virtual aom_codec_err_t DefaultEncoderConfig(aom_codec_enc_cfg_t *cfg,
                                                int usage) const {
 #if CONFIG_AV1_ENCODER
     return aom_codec_enc_config_default(&aom_codec_av1_cx_algo, cfg, usage);
@@ -150,12 +150,12 @@ class AV1CodecFactory : public CodecFactory {
 
 const libaom_test::AV1CodecFactory kAV1;
 
-#define AV1_INSTANTIATE_TEST_CASE(test, ...)                               \
-  INSTANTIATE_TEST_CASE_P(                                                 \
-      AV1, test,                                                           \
-      ::testing::Combine(                                                  \
-          ::testing::Values(static_cast<const libaom_test::CodecFactory*>( \
-              &libaom_test::kAV1)),                                        \
+#define AV1_INSTANTIATE_TEST_CASE(test, ...)                                \
+  INSTANTIATE_TEST_CASE_P(                                                  \
+      AV1, test,                                                            \
+      ::testing::Combine(                                                   \
+          ::testing::Values(static_cast<const libaom_test::CodecFactory *>( \
+              &libaom_test::kAV1)),                                         \
           __VA_ARGS__))
 #else
 #define AV1_INSTANTIATE_TEST_CASE(test, ...)

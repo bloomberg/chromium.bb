@@ -15,8 +15,8 @@
 #include "av1/common/seg_common.h"
 
 #if CONFIG_AOM_QM
-static void make_qmatrices(qm_val_t* wmatrix[NUM_QM_LEVELS][2][2][TX_SIZES],
-                           qm_val_t* iwmatrix[NUM_QM_LEVELS][2][2][TX_SIZES]);
+static void make_qmatrices(qm_val_t *wmatrix[NUM_QM_LEVELS][2][2][TX_SIZES],
+                           qm_val_t *iwmatrix[NUM_QM_LEVELS][2][2][TX_SIZES]);
 #endif
 
 static const int16_t dc_qlookup[QINDEX_RANGE] = {
@@ -200,7 +200,7 @@ int16_t av1_ac_quant(int qindex, int delta, aom_bit_depth_t bit_depth) {
 #endif
 }
 
-int av1_get_qindex(const struct segmentation* seg, int segment_id,
+int av1_get_qindex(const struct segmentation *seg, int segment_id,
                    int base_qindex) {
   if (segfeature_active(seg, segment_id, SEG_LVL_ALT_Q)) {
     const int data = get_segdata(seg, segment_id, SEG_LVL_ALT_Q);
@@ -213,11 +213,11 @@ int av1_get_qindex(const struct segmentation* seg, int segment_id,
 }
 
 #if CONFIG_AOM_QM
-qm_val_t* aom_iqmatrix(AV1_COMMON* cm, int qmlevel, int is_chroma,
+qm_val_t *aom_iqmatrix(AV1_COMMON *cm, int qmlevel, int is_chroma,
                        int log2sizem2, int is_intra) {
   return &cm->giqmatrix[qmlevel][!!is_chroma][!!is_intra][log2sizem2][0];
 }
-qm_val_t* aom_qmatrix(AV1_COMMON* cm, int qmlevel, int is_chroma,
+qm_val_t *aom_qmatrix(AV1_COMMON *cm, int qmlevel, int is_chroma,
                       int log2sizem2, int is_intra) {
   return &cm->gqmatrix[qmlevel][!!is_chroma][!!is_intra][log2sizem2][0];
 }
@@ -227,7 +227,7 @@ static uint16_t
 static uint16_t
     wt_matrix_ref[NUM_QM_LEVELS][2][2][4 * 4 + 8 * 8 + 16 * 16 + 32 * 32];
 
-void aom_qm_init(AV1_COMMON* cm) {
+void aom_qm_init(AV1_COMMON *cm) {
   int q, c, f, t, size;
   int current;
   for (q = 0; q < NUM_QM_LEVELS; ++q) {

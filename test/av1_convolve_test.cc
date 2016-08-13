@@ -49,9 +49,9 @@ TEST(AV1ConvolveTest, av1_convolve8) {
                dst, dst_stride, w, h, &interp_filter, subpel_x_q4, x_step_q4,
                subpel_y_q4, y_step_q4, avg);
 
-  const int16_t* x_filter =
+  const int16_t *x_filter =
       get_interp_filter_subpel_kernel(filter_params, subpel_x_q4);
-  const int16_t* y_filter =
+  const int16_t *y_filter =
       get_interp_filter_subpel_kernel(filter_params, subpel_y_q4);
 
   aom_convolve8_c(src + src_stride * filter_center + filter_center, src_stride,
@@ -87,9 +87,9 @@ TEST(AV1ConvolveTest, av1_convolve) {
                    dst, dst_stride, w, h, &interp_filter, subpel_x_q4,
                    x_step_q4, subpel_y_q4, y_step_q4, avg);
 
-      const int16_t* x_filter =
+      const int16_t *x_filter =
           get_interp_filter_subpel_kernel(filter_params, subpel_x_q4);
-      const int16_t* y_filter =
+      const int16_t *y_filter =
           get_interp_filter_subpel_kernel(filter_params, subpel_y_q4);
 
       int temp[12];
@@ -194,9 +194,9 @@ TEST(AV1ConvolveTest, av1_highbd_convolve) {
           src_stride, CONVERT_TO_BYTEPTR(dst), dst_stride, w, h, &interp_filter,
           subpel_x_q4, x_step_q4, subpel_y_q4, y_step_q4, avg, bd);
 
-      const int16_t* x_filter =
+      const int16_t *x_filter =
           get_interp_filter_subpel_kernel(filter_params, subpel_x_q4);
-      const int16_t* y_filter =
+      const int16_t *y_filter =
           get_interp_filter_subpel_kernel(filter_params, subpel_y_q4);
 
       int temp[12];
