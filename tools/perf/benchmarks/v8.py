@@ -239,8 +239,7 @@ class _V8MemoryAndCodeSizeBenchmark(perf_benchmark.PerfBenchmark):
     return not cls._IGNORED_V8_STATS_RE.search(value.name)
 
 
-@benchmark.Disabled('reference',
-                    'mac')        # crbug.com/630854
+@benchmark.Enabled('android')
 class V8MobileCodeSizeIgnition(_V8MemoryAndCodeSizeBenchmark):
   """Measures V8 heap and code size with ignition enabled on mobile web pages.
 
@@ -256,8 +255,7 @@ class V8MobileCodeSizeIgnition(_V8MemoryAndCodeSizeBenchmark):
     return 'top_10_mobile_memory_ignition'
 
 
-@benchmark.Disabled('reference',
-                    'mac')        # crbug.com/630854
+@benchmark.Enabled('android')
 class V8MobileCodeSize(_V8MemoryAndCodeSizeBenchmark):
   """Measures V8 heap and code size on mobile web pages.
 
