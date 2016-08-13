@@ -240,8 +240,10 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
   params.main_task_runner =
       compositor_deps_->GetCompositorMainThreadTaskRunner();
-  params.external_begin_frame_source =
-      delegate_->CreateExternalBeginFrameSource();
+  if (settings.use_external_begin_frame_source) {
+    params.external_begin_frame_source =
+        delegate_->CreateExternalBeginFrameSource();
+  }
   params.animation_host = cc::AnimationHost::CreateMainInstance();
 
   if (cmd->HasSwitch(switches::kUseRemoteCompositing)) {
@@ -487,6 +489,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     settings.create_low_res_tiling = true;
   if (cmd.HasSwitch(switches::kDisableLowResTiling))
     settings.create_low_res_tiling = false;
+  if (!cmd.HasSwitch(cc::switches::kDisableBeginFrameScheduling))
+    settings.use_external_begin_frame_source = true;
 
   if (cmd.HasSwitch(switches::kEnableRGBA4444Textures) &&
       !cmd.HasSwitch(switches::kDisableRGBA4444Textures)) {
@@ -507,6 +511,10 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   settings.use_cached_picture_raster =
       !cmd.HasSwitch(cc::switches::kDisableCachedPictureRaster);
+
+  if (cmd.HasSwitch(switches::kUseRemoteCompositing) ||
+      cmd.HasSwitch(switches::kIsRunningInMash))
+    settings.use_external_begin_frame_source = false;
 
   return settings;
 }
