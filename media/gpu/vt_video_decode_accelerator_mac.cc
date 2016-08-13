@@ -866,13 +866,16 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
 
 void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
-  DCHECK(picture_info_map_.count(picture_id));
-  PictureInfo* picture_info = picture_info_map_.find(picture_id)->second.get();
-  picture_info->cv_image.reset();
-  picture_info->gl_image->Destroy(false);
-  picture_info->gl_image = nullptr;
 
-  if (assigned_picture_ids_.count(picture_id) != 0) {
+  auto it = picture_info_map_.find(picture_id);
+  if (it != picture_info_map_.end()) {
+    PictureInfo* picture_info = it->second.get();
+    picture_info->cv_image.reset();
+    picture_info->gl_image->Destroy(false);
+    picture_info->gl_image = nullptr;
+  }
+
+  if (assigned_picture_ids_.count(picture_id)) {
     available_picture_ids_.push_back(picture_id);
     ProcessWorkQueues();
   } else {
@@ -1024,8 +1027,9 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     return false;
 
   int32_t picture_id = available_picture_ids_.back();
-  DCHECK(picture_info_map_.count(picture_id));
-  PictureInfo* picture_info = picture_info_map_.find(picture_id)->second.get();
+  auto it = picture_info_map_.find(picture_id);
+  DCHECK(it != picture_info_map_.end());
+  PictureInfo* picture_info = it->second.get();
   DCHECK(!picture_info->cv_image);
   DCHECK(!picture_info->gl_image);
 
