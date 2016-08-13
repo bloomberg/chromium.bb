@@ -44,13 +44,6 @@ typedef const struct __CFString * CFStringRef;
 namespace WTF {
 
 struct AlreadyHashed;
-struct CStringTranslator;
-template<typename CharacterType> struct HashAndCharactersTranslator;
-struct HashAndUTF8CharactersTranslator;
-struct LCharBufferTranslator;
-struct CharBufferFromLiteralDataTranslator;
-struct SubstringTranslator;
-struct UCharBufferTranslator;
 template<typename> class RetainPtr;
 
 enum TextCaseSensitivity { TextCaseSensitive, TextCaseASCIIInsensitive, TextCaseInsensitive };
@@ -109,14 +102,6 @@ void removeStringForStats(StringImpl*);
 // https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
 class WTF_EXPORT StringImpl {
     WTF_MAKE_NONCOPYABLE(StringImpl);
-    friend struct WTF::CStringTranslator;
-    template<typename CharacterType> friend struct WTF::HashAndCharactersTranslator;
-    friend struct WTF::HashAndUTF8CharactersTranslator;
-    friend struct WTF::CharBufferFromLiteralDataTranslator;
-    friend struct WTF::LCharBufferTranslator;
-    friend struct WTF::SubstringTranslator;
-    friend struct WTF::UCharBufferTranslator;
-
 private:
     // StringImpls are allocated out of the WTF buffer partition.
     void* operator new(size_t);
@@ -239,38 +224,29 @@ public:
 
     bool isStatic() const { return m_isStatic; }
 
-private:
     // The high bits of 'hash' are always empty, but we prefer to store our
     // flags in the low bits because it makes them slightly more efficient to
     // access.  So, we shift left and right when setting and getting our hash
     // code.
     void setHash(unsigned hash) const
     {
-        ASSERT(!hasHash());
+        DCHECK(!hasHash());
         // Multiple clients assume that StringHasher is the canonical string
         // hash function.
-        ASSERT(hash == (is8Bit() ? StringHasher::computeHashAndMaskTop8Bits(characters8(), m_length) : StringHasher::computeHashAndMaskTop8Bits(characters16(), m_length)));
+        DCHECK(hash == (is8Bit() ? StringHasher::computeHashAndMaskTop8Bits(characters8(), m_length) : StringHasher::computeHashAndMaskTop8Bits(characters16(), m_length)));
         m_hash = hash;
-        ASSERT(hash); // Verify that 0 is a valid sentinel hash value.
+        DCHECK(hash); // Verify that 0 is a valid sentinel hash value.
     }
 
-    unsigned rawHash() const
-    {
-        return m_hash;
-    }
-
-    void destroyIfNotStatic();
-
-public:
     bool hasHash() const
     {
-        return rawHash() != 0;
+        return m_hash != 0;
     }
 
     unsigned existingHash() const
     {
-        ASSERT(hasHash());
-        return rawHash();
+        DCHECK(hasHash());
+        return m_hash;
     }
 
     unsigned hash() const
@@ -426,6 +402,8 @@ private:
     template <class UCharPredicate> PassRefPtr<StringImpl> stripMatchedCharacters(UCharPredicate);
     template <typename CharType, class UCharPredicate> PassRefPtr<StringImpl> simplifyMatchedCharactersToSpace(UCharPredicate, StripBehavior);
     NEVER_INLINE unsigned hashSlowCase() const;
+
+    void destroyIfNotStatic();
 
 #ifdef STRING_STATS
     static StringStats m_stringStats;
