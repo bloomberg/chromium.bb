@@ -30,6 +30,12 @@ void ArcAppListPrefsFactory::SetFactoryForSyncTest() {
   is_sync_test_ = true;
 }
 
+void ArcAppListPrefsFactory::RecreateServiceInstanceForTesting(
+    content::BrowserContext* context) {
+  Disassociate(context);
+  BuildServiceInstanceFor(context);
+}
+
 ArcAppListPrefsFactory::ArcAppListPrefsFactory()
     : BrowserContextKeyedServiceFactory(
           "ArcAppListPrefs",

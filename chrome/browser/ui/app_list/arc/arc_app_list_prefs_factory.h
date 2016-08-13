@@ -24,6 +24,7 @@ class ArcAppListPrefsFactory : public BrowserContextKeyedServiceFactory {
   static ArcAppListPrefsFactory* GetInstance();
 
   static void SetFactoryForSyncTest();
+  void RecreateServiceInstanceForTesting(content::BrowserContext* context);
 
  private:
   friend struct base::DefaultSingletonTraits<ArcAppListPrefsFactory>;

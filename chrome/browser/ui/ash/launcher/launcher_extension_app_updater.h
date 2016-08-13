@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -17,7 +18,8 @@ class ExtensionSet;
 class LauncherExtensionAppUpdater
     : public LauncherAppUpdater,
       public extensions::ExtensionRegistryObserver,
-      public arc::ArcAuthService::Observer {
+      public arc::ArcAuthService::Observer,
+      public ArcAppListPrefs::Observer {
  public:
   LauncherExtensionAppUpdater(Delegate* delegate,
                               content::BrowserContext* browser_context);
@@ -38,6 +40,11 @@ class LauncherExtensionAppUpdater
   // arc::ArcAuthService::Observer:
   void OnOptInChanged(arc::ArcAuthService::State state) override;
 
+  // ArcAppListPrefs::Observer
+  void OnPackageInstalled(
+      const arc::mojom::ArcPackageInfo& package_info) override;
+  void OnPackageRemoved(const std::string& package_name) override;
+
  private:
   void StartObservingExtensionRegistry();
   void StopObservingExtensionRegistry();
@@ -45,6 +52,7 @@ class LauncherExtensionAppUpdater
   void UpdateHostedApps();
   void UpdateHostedApps(const extensions::ExtensionSet& extensions);
   void UpdateHostedApp(const std::string& app_id);
+  void UpdateEquivalentHostedApp(const std::string& arc_package_name);
 
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
 

@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 
+#include "base/lazy_instance.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -19,7 +21,166 @@
 #include "ui/gfx/image/image_skia_operations.h"
 
 namespace extensions {
+
+namespace {
+
+// The badge map between |arc_package_name| and |extension_id|. Note the mapping
+// from |extension_id| to |arc_package_name| is unique, but the mapping from
+// |arc_package_name| to |extension_id| is not.
+const struct {
+  const char* arc_package_name;
+  const char* extension_id;
+} kDualBadgeMap[] = {
+    // Google Keep
+    {"com.google.android.keep", "hmjkmjkepdijhoojdojkdfohbdgmmhki"},
+    {"com.google.android.keep", "dondgdlndnpianbklfnehgdhkickdjck"},
+    // GMail
+    {"com.google.android.gm", extension_misc::kGmailAppId},
+    {"com.google.android.gm", "bjdhhokmhgelphffoafoejjmlfblpdha"},
+    // Google Drive
+    {"com.google.android.apps.docs", extension_misc::kDriveHostedAppId},
+    {"com.google.android.apps.docs", "mdhnphfgagkpdhndljccoackjjhghlif"},
+    // Google Maps
+    {"com.google.android.apps.maps", "lneaknkopdijkpnocmklfnjbeapigfbh"},
+    // Calculator
+    {"com.google.android.calculator", "joodangkbfjnajiiifokapkpmhfnpleo"},
+    // Chrome Remote Desktop
+    {"com.google.chromeremotedesktop", "gbchcmhmhahfdphkhkmpfmihenigjmpp"},
+    {"com.google.chromeremotedesktop", "cdjikkcakjcdjemakobkmijmikhkegcj"},
+    // Google Calender
+    {"com.google.android.calendar", "ejjicmeblgpmajnghnpcppodonldlgfn"},
+    {"com.google.android.calendar", "fpgfohogebplgnamlafljlcidjedbdeb"},
+    // Google Docs
+    {"com.google.android.apps.docs.editors.docs",
+     extension_misc::kGoogleDocAppId},
+    {"com.google.android.apps.docs.editors.docs",
+     "npnjdccdffhdndcbeappiamcehbhjibf"},
+    // Google Slides
+    {"com.google.android.apps.docs.editors.slides",
+     extension_misc::kGoogleSlidesAppId},
+    {"com.google.android.apps.docs.editors.slides",
+     "hdmobeajeoanbanmdlabnbnlopepchip"},
+    // Google Sheets
+    {"com.google.android.apps.docs.editors.sheets",
+     extension_misc::kGoogleSheetsAppId},
+    {"com.google.android.apps.docs.editors.sheets",
+     "nifkmgcdokhkjghdlgflonppnefddien"},
+    // YouTube
+    {"com.google.android.youtube", extension_misc::kYoutubeAppId},
+    {"com.google.android.youtube", "pbdihpaifchmclcmkfdgffnnpfbobefh"},
+    // Google Play Books
+    {"com.google.android.apps.books", "mmimngoggfoobjdlefbcabngfnmieonb"},
+    // Google+
+    {"com.google.android.apps.plus", "dlppkpafhbajpcmmoheippocdidnckmm"},
+    {"com.google.android.apps.plus", "fgjnkhlabjcaajddbaenilcmpcidahll"},
+    // Google Play Movies & TV
+    {"com.google.android.videos", "gdijeikdkaembjbdobgfkoidjkpbmlkd"},
+    {"com.google.android.videos", "amfoiggnkefambnaaphodjdmdooiinna"},
+    // Google Play Music
+    {"com.google.android.music", extension_misc::kGooglePlayMusicAppId},
+    {"com.google.android.music", "onbhgdmifjebcabplolilidlpgeknifi"},
+    // Google Now
+    {"com.google.android.launcher", "mnfadmojomeniojkkikjpgjaegolkbpb"},
+    // Google Photos
+    {"com.google.android.apps.photos", "hcglmfcclpfgljeaiahehebeoaiicbko"},
+    {"com.google.android.apps.photos", "efjnaogkjbogokcnohkmnjdojkikgobo"},
+    {"com.google.android.apps.photos", "ifpkhncdnjfipfjlhfidljjffdgklanh"},
+    // Google Classroom
+    {"com.google.android.apps.classroom", "mfhehppjhmmnlfbbopchdfldgimhfhfk"},
+    // Google Hangouts
+    {"com.google.android.talk", "knipolnnllmklapflnccelgolnpehhpl"},
+    {"com.google.android.talk", "cgmlfbhkckbedohgdepgbkflommbfkep"},
+    {"com.google.android.talk", "gldgpnmcpaogjlojhhpebkbbanacoglc"},
+    // Google Play Music
+    {"com.google.android.music", "fahmaaghhglfmonjliepjlchgpgfmobi"},
+    // Google News
+    {"com.google.android.apps.genie.geniewidget",
+     "dllkocilcinkggkchnjgegijklcililc"},
+};
+
+// This class maintains the maps between the extension id and its equivalent
+// Arc package name.
+class AppDualBadgeMap {
+ public:
+  using ArcAppToExtensionsMap =
+      std::unordered_map<std::string, std::vector<std::string>>;
+  using ExtensionToArcAppMap = std::unordered_map<std::string, std::string>;
+
+  AppDualBadgeMap() {
+    for (size_t i = 0; i < arraysize(kDualBadgeMap); ++i) {
+      arc_app_to_extensions_map_[kDualBadgeMap[i].arc_package_name].push_back(
+          kDualBadgeMap[i].extension_id);
+      extension_to_arc_app_map_[kDualBadgeMap[i].extension_id] =
+          kDualBadgeMap[i].arc_package_name;
+    }
+  }
+
+  std::vector<std::string> GetExtensionIdsForArcPackageName(
+      std::string arc_package_name) {
+    const auto iter = arc_app_to_extensions_map_.find(arc_package_name);
+    if (iter == arc_app_to_extensions_map_.end())
+      return std::vector<std::string>();
+    return iter->second;
+  }
+
+  std::string GetArcPackageNameFromExtensionId(std::string extension_id) {
+    const auto iter = extension_to_arc_app_map_.find(extension_id);
+    if (iter == extension_to_arc_app_map_.end())
+      return std::string();
+    return iter->second;
+  }
+
+ private:
+  ArcAppToExtensionsMap arc_app_to_extensions_map_;
+  ExtensionToArcAppMap extension_to_arc_app_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppDualBadgeMap);
+};
+
+base::LazyInstance<AppDualBadgeMap> g_dual_badge_map =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 namespace util {
+
+std::string GetEquivalentInstalledArcApp(content::BrowserContext* context,
+                                         const std::string& extension_id) {
+  const std::string arc_package_name =
+      g_dual_badge_map.Get().GetArcPackageNameFromExtensionId(extension_id);
+  if (arc_package_name.empty())
+    return std::string();
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
+  if (prefs) {
+    std::unique_ptr<ArcAppListPrefs::PackageInfo> arc_info =
+        prefs->GetPackage(arc_package_name);
+    if (arc_info.get() && !arc_info->package_name.empty())
+      return arc_package_name;
+  }
+  return std::string();
+}
+
+const std::vector<std::string> GetEquivalentInstalledExtensions(
+    content::BrowserContext* context,
+    const std::string& arc_package_name) {
+  const ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  if (!registry)
+    return std::vector<std::string>();
+
+  std::vector<std::string> extension_ids =
+      g_dual_badge_map.Get().GetExtensionIdsForArcPackageName(arc_package_name);
+  if (extension_ids.empty())
+    return std::vector<std::string>();
+
+  extension_ids.erase(
+      std::remove_if(extension_ids.begin(), extension_ids.end(),
+                     [registry](std::string extension_id) {
+                       return !registry->GetInstalledExtension(extension_id);
+                     }),
+      extension_ids.end());
+  return extension_ids;
+}
 
 void MaybeApplyChromeBadge(content::BrowserContext* context,
                            const std::string& extension_id,
@@ -41,20 +202,13 @@ void MaybeApplyChromeBadge(content::BrowserContext* context,
     return;
   }
 
-  // No badge on Chrome browser or the Play store app.
-  if (extension_id == extension_misc::kChromeAppId ||
-      extension_id == ArcSupportHost::kHostAppId) {
-    return;
-  }
-
   const ExtensionRegistry* registry = ExtensionRegistry::Get(context);
-  if (!registry)
+  if (!registry || !registry->GetInstalledExtension(extension_id))
     return;
 
-  const Extension* extension = registry->GetInstalledExtension(extension_id);
-  // Only badge Chrome apps that can open in a tab. Platform apps can only be
-  // opened in a window.
-  if (!extension || extension->is_platform_app())
+  std::string arc_package_name =
+      GetEquivalentInstalledArcApp(context, extension_id);
+  if (arc_package_name.empty())
     return;
 
   const gfx::ImageSkia* badge_image =
