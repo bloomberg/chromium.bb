@@ -59,8 +59,6 @@ class PepperPluginInstance {
 
   virtual content::RenderFrame* GetRenderFrame() = 0;
 
-  virtual content::RenderView* GetRenderView() = 0;
-
   virtual blink::WebPluginContainer* GetContainer() = 0;
 
   virtual v8::Isolate* GetIsolate() const = 0;

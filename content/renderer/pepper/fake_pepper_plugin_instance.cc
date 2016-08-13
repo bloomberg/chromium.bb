@@ -15,10 +15,6 @@ content::RenderFrame* FakePepperPluginInstance::GetRenderFrame() {
   return nullptr;
 }
 
-content::RenderView* FakePepperPluginInstance::GetRenderView() {
-  return nullptr;
-}
-
 blink::WebPluginContainer* FakePepperPluginInstance::GetContainer() {
   return nullptr;
 }

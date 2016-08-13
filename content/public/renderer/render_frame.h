@@ -105,7 +105,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Returns the associated WebFrame.
   virtual blink::WebLocalFrame* GetWebFrame() = 0;
 
-   // Gets WebKit related preferences associated with this frame.
+  // Gets WebKit related preferences associated with this frame.
   virtual WebPreferences& GetWebkitPreferences() = 0;
 
   // Shows a context menu with the given information. The given client will
@@ -188,6 +188,11 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Whitelists a |content_origin| so its content will never be throttled in
   // this RenderFrame. Whitelist is cleared by top level navigation.
   virtual void WhitelistContentOrigin(const url::Origin& content_origin) = 0;
+
+  // Used by plugins that load data in this RenderFrame to update the loading
+  // notifications.
+  virtual void DidStartLoading() = 0;
+  virtual void DidStopLoading() = 0;
 #endif
 
   // Returns true if this frame is a FTP directory listing.

@@ -26,7 +26,7 @@ class SkBitmap;
 
 namespace content {
 class PepperPluginInstance;
-class RenderView;
+class RenderFrame;
 class RendererPpapiHost;
 }
 
@@ -108,7 +108,7 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
 
   void CreatePdfAccessibilityTreeIfNeeded();
 
-  content::RenderView* GetRenderView();
+  content::RenderFrame* GetRenderFrame();
 
   std::unique_ptr<PdfAccessibilityTree> pdf_accessibility_tree_;
 

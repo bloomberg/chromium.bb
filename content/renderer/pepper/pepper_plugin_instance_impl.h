@@ -83,7 +83,7 @@ struct WebCompositionUnderline;
 struct WebCursorInfo;
 struct WebURLError;
 struct WebPrintParams;
-}
+}  // namespace blink
 
 namespace cc {
 class TextureLayer;
@@ -387,7 +387,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // PluginInstance implementation
   RenderFrame* GetRenderFrame() override;
-  RenderView* GetRenderView() override;
   blink::WebPluginContainer* GetContainer() override;
   v8::Isolate* GetIsolate() const override;
   ppapi::VarTracker* GetVarTracker() override;

@@ -28,7 +28,7 @@ class WebURLRequest;
 class WebView;
 struct WebContextMenuData;
 struct WebRect;
-}
+}  // namespace blink
 
 namespace gfx {
 class Point;
@@ -102,11 +102,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // contents) should be sent to the browser immediately. This is normally
   // false, but set to true by some tests.
   virtual bool GetContentStateImmediately() const = 0;
-
-  // Used by plugins that load data in this RenderView to update the loading
-  // notifications.
-  virtual void DidStartLoading() = 0;
-  virtual void DidStopLoading() = 0;
 
   // Notifies the renderer that a paint is to be generated for the size
   // passed in.

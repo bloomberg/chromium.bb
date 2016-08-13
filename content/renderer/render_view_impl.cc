@@ -2217,14 +2217,6 @@ bool RenderViewImpl::GetContentStateImmediately() const {
   return send_content_state_immediately_;
 }
 
-void RenderViewImpl::DidStartLoading() {
-  main_render_frame_->didStartLoading(true);
-}
-
-void RenderViewImpl::DidStopLoading() {
-  main_render_frame_->didStopLoading();
-}
-
 void RenderViewImpl::OnSetPageScale(float page_scale_factor) {
   if (!webview())
     return;
@@ -2312,7 +2304,6 @@ void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
       !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
     // WebUIExtensionData deletes itself when we're destroyed.
     new WebUIExtensionData(this);
-
   }
 
   enabled_bindings_ |= enabled_bindings_flags;

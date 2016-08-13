@@ -413,8 +413,6 @@ class CONTENT_EXPORT RenderViewImpl
   bool ShouldDisplayScrollbars(int width, int height) const override;
   int GetEnabledBindings() const override;
   bool GetContentStateImmediately() const override;
-  void DidStartLoading() override;
-  void DidStopLoading() override;
   void Repaint(const gfx::Size& size) override;
   void SetEditCommandForNextKeyEvent(const std::string& name,
                                      const std::string& value) override;

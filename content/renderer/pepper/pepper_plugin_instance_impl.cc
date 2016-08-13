@@ -3036,10 +3036,6 @@ RenderFrame* PepperPluginInstanceImpl::GetRenderFrame() {
   return render_frame_;
 }
 
-RenderView* PepperPluginInstanceImpl::GetRenderView() {
-  return render_frame_ ? render_frame_->render_view() : NULL;
-}
-
 blink::WebPluginContainer* PepperPluginInstanceImpl::GetContainer() {
   return container_;
 }

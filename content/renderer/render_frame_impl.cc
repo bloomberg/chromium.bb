@@ -2431,6 +2431,14 @@ void RenderFrameImpl::WhitelistContentOrigin(
     const url::Origin& content_origin) {
   return plugin_power_saver_helper_->WhitelistContentOrigin(content_origin);
 }
+
+void RenderFrameImpl::DidStartLoading() {
+  didStartLoading(true);
+}
+
+void RenderFrameImpl::DidStopLoading() {
+  didStopLoading();
+}
 #endif  // defined(ENABLE_PLUGINS)
 
 bool RenderFrameImpl::IsFTPDirectoryListing() {
@@ -5188,7 +5196,7 @@ void RenderFrameImpl::OnFind(int request_id,
       if (!plugin->startFind(search_text, options.matchCase, request_id)) {
         // Send "no results".
         SendFindReply(request_id, 0 /* match_count */, 0 /* ordinal */,
-                      gfx::Rect(), true /* final_status_update */ );
+                      gfx::Rect(), true /* final_status_update */);
       }
     }
     return;
