@@ -110,6 +110,9 @@ source_set("common_sources") {
     "//url/ipc:url_ipc",
   ]
   deps = [
+    # This looks needless as we have //content/common in public_deps, but it's
+    # needed because of allow_circular_includes_from.
+    "//content/common:mojo_bindings_cpp_sources",
     "//ipc",
     "//media",
     "//mojo/common",
@@ -130,7 +133,10 @@ source_set("common_sources") {
   ]
 
   # //content/common needs to include public headers.
-  allow_circular_includes_from = [ "//content/common" ]
+  allow_circular_includes_from = [
+    "//content/common",
+    "//content/common:mojo_bindings_cpp_sources",
+  ]
 
   if (!enable_plugins) {
     sources -= [

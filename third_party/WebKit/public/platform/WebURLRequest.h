@@ -153,6 +153,11 @@ public:
         All
     };
 
+    enum class LoadingIPCType {
+        ChromeIPC,
+        Mojo,
+    };
+
     class ExtraData {
     public:
         virtual ~ExtraData() { }
@@ -305,6 +310,8 @@ public:
 
     // https://mikewest.github.io/cors-rfc1918/#external-request
     BLINK_PLATFORM_EXPORT bool isExternalRequest() const;
+
+    BLINK_PLATFORM_EXPORT LoadingIPCType getLoadingIPCType() const;
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT ResourceRequest& toMutableResourceRequest();

@@ -30,6 +30,7 @@
 
 #include "public/platform/WebURLRequest.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebHTTPBody.h"
@@ -459,6 +460,13 @@ void WebURLRequest::setUiStartTime(double time)
 bool WebURLRequest::isExternalRequest() const
 {
     return m_resourceRequest->isExternalRequest();
+}
+
+WebURLRequest::LoadingIPCType WebURLRequest::getLoadingIPCType() const
+{
+    if (RuntimeEnabledFeatures::loadingWithMojoEnabled())
+        return WebURLRequest::LoadingIPCType::Mojo;
+    return WebURLRequest::LoadingIPCType::ChromeIPC;
 }
 
 WebURLRequest::InputToLoadPerfMetricReportPolicy WebURLRequest::inputPerfMetricReportPolicy() const

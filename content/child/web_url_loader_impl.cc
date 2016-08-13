@@ -35,6 +35,7 @@
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/ssl_status_serialization.h"
+#include "content/common/url_loader.mojom.h"
 #include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -300,7 +301,9 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
  public:
   using ReceivedData = RequestPeer::ReceivedData;
 
-  Context(WebURLLoaderImpl* loader, ResourceDispatcher* resource_dispatcher);
+  Context(WebURLLoaderImpl* loader,
+          ResourceDispatcher* resource_dispatcher,
+          mojom::URLLoaderFactory* factory);
 
   WebURLLoaderClient* client() const { return client_; }
   void set_client(WebURLLoaderClient* client) { client_ = client; }
@@ -350,6 +353,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
   DeferState defers_loading_;
   int request_id_;
+
+  mojom::URLLoaderFactory* url_loader_factory_;
 };
 
 // A thin wrapper class for Context to ensure its lifetime while it is
@@ -382,14 +387,16 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
 // WebURLLoaderImpl::Context --------------------------------------------------
 
 WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader,
-                                   ResourceDispatcher* resource_dispatcher)
+                                   ResourceDispatcher* resource_dispatcher,
+                                   mojom::URLLoaderFactory* url_loader_factory)
     : loader_(loader),
       client_(NULL),
       resource_dispatcher_(resource_dispatcher),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       referrer_policy_(blink::WebReferrerPolicyDefault),
       defers_loading_(NOT_DEFERRING),
-      request_id_(-1) {}
+      request_id_(-1),
+      url_loader_factory_(url_loader_factory) {}
 
 void WebURLLoaderImpl::Context::Cancel() {
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Cancel", this,
@@ -542,7 +549,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (sync_load_response) {
     DCHECK(defers_loading_ == NOT_DEFERRING);
     resource_dispatcher_->StartSync(
-        request_info, request_body.get(), sync_load_response);
+        request_info, request_body.get(), sync_load_response,
+        request.getLoadingIPCType(), url_loader_factory_);
     return;
   }
 
@@ -550,7 +558,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
                          TRACE_EVENT_FLAG_FLOW_OUT);
   request_id_ = resource_dispatcher_->StartAsync(
       request_info, request_body.get(),
-      base::WrapUnique(new WebURLLoaderImpl::RequestPeerImpl(this)));
+      base::WrapUnique(new WebURLLoaderImpl::RequestPeerImpl(this)),
+      request.getLoadingIPCType(), url_loader_factory_);
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);
@@ -921,8 +930,9 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
 
 // WebURLLoaderImpl -----------------------------------------------------------
 
-WebURLLoaderImpl::WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher)
-    : context_(new Context(this, resource_dispatcher)) {}
+WebURLLoaderImpl::WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
+                                   mojom::URLLoaderFactory* url_loader_factory)
+    : context_(new Context(this, resource_dispatcher, url_loader_factory)) {}
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
   cancel();

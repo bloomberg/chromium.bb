@@ -194,6 +194,8 @@
       'child/sync_load_response.h',
       'child/thread_safe_sender.cc',
       'child/thread_safe_sender.h',
+      'child/url_response_body_consumer.cc',
+      'child/url_response_body_consumer.h',
       'child/v8_value_converter_impl.cc',
       'child/v8_value_converter_impl.h',
       'child/web_data_consumer_handle_impl.cc',

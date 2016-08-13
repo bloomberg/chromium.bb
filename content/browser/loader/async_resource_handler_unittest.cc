@@ -144,6 +144,7 @@ class AsyncResourceHandlerTest : public ::testing::Test,
 
   void TearDown() override {
     // Prevent memory leaks.
+    filter_ = nullptr;
     rdh_.Shutdown();
     base::RunLoop().RunUntilIdle();
   }

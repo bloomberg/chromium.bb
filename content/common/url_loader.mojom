@@ -1,0 +1,39 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+[Native]
+struct URLRequest;
+
+[Native]
+struct URLResponseHead;
+
+[Native]
+struct URLLoaderStatus;
+
+interface URLLoader {
+  // If the associated request has |auto_follow_redirects| set to false,
+  // then upon receiving an URLResponse with a non-NULL |redirect_url| field,
+  // |FollowRedirect| may be called to load the URL indicated by the redirect.
+  FollowRedirect();
+
+  // Cancels the request. The service will cancel loading, but there may be some
+  // time lag and it is possible that the client gets some notification after
+  // calling this method for a while.
+  Cancel();
+};
+
+interface URLLoaderClient {
+  // Called when the response head is received.
+  OnReceiveResponse(URLResponseHead head);
+
+  // Called when the loader starts loading response body.
+  OnStartLoadingResponseBody(handle<data_pipe_consumer> body);
+
+  // Called when the loading completes. No notification will be dispatched for
+  // this client after this message arrives.
+  OnComplete(URLLoaderStatus completion_status);
+};
+

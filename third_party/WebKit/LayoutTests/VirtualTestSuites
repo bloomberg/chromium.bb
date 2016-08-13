@@ -273,5 +273,10 @@
     "prefix": "parsehtmlonmainthread_coalesce",
     "base": "fast/parser",
     "args": ["--disable-blink-features=ParseHTMLOnMainThread", "--blink-settings=parseHTMLOnMainThreadCoalesceChunks=true"]
+  },
+  {
+    "prefix": "mojo-loading",
+    "base": "webexposed",
+    "args": ["--enable-blink-features=LoadingWithMojo"]
   }
 ]

@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/common/url_loader_factory.mojom.h"
 #include "content/public/common/resource_response.h"
 #include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
@@ -38,7 +39,8 @@ class CONTENT_EXPORT WebURLLoaderImpl
  public:
 
   // Takes ownership of |web_task_runner|.
-  WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher);
+  WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
+                   mojom::URLLoaderFactory* url_loader_factory);
   ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(const GURL& url,

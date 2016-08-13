@@ -331,8 +331,9 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
                  TestRequestPeer::Context* peer_context) {
     std::unique_ptr<TestRequestPeer> peer(
         new TestRequestPeer(dispatcher(), peer_context));
-    int request_id =
-        dispatcher()->StartAsync(request_info, request_body, std::move(peer));
+    int request_id = dispatcher()->StartAsync(
+        request_info, request_body, std::move(peer),
+        blink::WebURLRequest::LoadingIPCType::ChromeIPC, nullptr);
     peer_context->request_id = request_id;
     return request_id;
   }

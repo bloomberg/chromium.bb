@@ -77,6 +77,7 @@
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_scheduler_filter.h"
+#include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/capture/image_capture_impl.h"
 #include "content/browser/media/media_internals.h"
@@ -726,6 +727,7 @@ void RenderProcessHostImpl::CheckAllWorkersTerminated() {
 }
 
 RenderProcessHostImpl::~RenderProcessHostImpl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #ifndef NDEBUG
   DCHECK(is_self_deleted_)
       << "RenderProcessHostImpl is destroyed by something other than itself";
@@ -969,16 +971,16 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context =
       ChromeBlobStorageContext::GetFor(browser_context);
 
-  ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
+  resource_message_filter_ = new ResourceMessageFilter(
       GetID(), PROCESS_TYPE_RENDERER,
-      storage_partition_impl_->GetAppCacheService(),
-      blob_storage_context.get(),
+      storage_partition_impl_->GetAppCacheService(), blob_storage_context.get(),
       storage_partition_impl_->GetFileSystemContext(),
       storage_partition_impl_->GetServiceWorkerContext(),
       storage_partition_impl_->GetHostZoomLevelContext(),
       get_contexts_callback);
 
-  AddFilter(resource_message_filter);
+  AddFilter(resource_message_filter_.get());
+
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
   // The AudioInputRendererHost and AudioRendererHost needs to be available for
@@ -1171,6 +1173,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(base::Bind(&DeviceMotionHost::Create));
   registry->AddInterface(base::Bind(&DeviceOrientationHost::Create));
   registry->AddInterface(base::Bind(&DeviceOrientationAbsoluteHost::Create));
+  registry->AddInterface(
+      base::Bind(&URLLoaderFactoryImpl::Create, resource_message_filter_));
 
   // This is to support usage of WebSockets in cases in which there is no
   // associated RenderFrame (e.g., Shared Workers).
@@ -1923,6 +1927,7 @@ bool RenderProcessHostImpl::IgnoreInputEvents() const {
 }
 
 void RenderProcessHostImpl::Cleanup() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Keep the one renderer thread around forever in single process mode.
   if (run_renderer_in_process())
     return;

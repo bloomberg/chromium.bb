@@ -68,14 +68,19 @@ class TestResourceDispatcher : public ResourceDispatcher {
 
   void StartSync(const RequestInfo& request_info,
                  ResourceRequestBodyImpl* request_body,
-                 SyncLoadResponse* response) override {
+                 SyncLoadResponse* response,
+                 blink::WebURLRequest::LoadingIPCType ipc_type,
+                 mojom::URLLoaderFactory* url_loader_factory) override {
     *response = sync_load_response_;
   }
 
   int StartAsync(const RequestInfo& request_info,
                  ResourceRequestBodyImpl* request_body,
-                 std::unique_ptr<RequestPeer> peer) override {
+                 std::unique_ptr<RequestPeer> peer,
+                 blink::WebURLRequest::LoadingIPCType ipc_type,
+                 mojom::URLLoaderFactory* url_loader_factory) override {
     EXPECT_FALSE(peer_);
+    EXPECT_EQ(blink::WebURLRequest::LoadingIPCType::ChromeIPC, ipc_type);
     peer_ = std::move(peer);
     url_ = request_info.url;
     stream_url_ = request_info.resource_body_stream_url;
@@ -117,7 +122,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
 class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
  public:
   TestWebURLLoaderClient(ResourceDispatcher* dispatcher)
-      : loader_(new WebURLLoaderImpl(dispatcher)),
+      : loader_(new WebURLLoaderImpl(dispatcher, nullptr)),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),
         delete_on_receive_data_(false),

@@ -31,11 +31,13 @@
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/content_export.h"
+#include "content/common/url_loader.mojom.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/request_priority.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request.h"
@@ -73,6 +75,10 @@ struct DownloadSaveInfo;
 struct NavigationRequestInfo;
 struct Referrer;
 struct ResourceRequest;
+
+namespace mojom {
+class URLLoader;
+}  // namespace mojom
 
 class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
@@ -285,6 +291,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                               const NavigationRequestInfo& info,
                               NavigationURLLoaderImplCore* loader);
 
+  int num_in_flight_requests_for_testing() const {
+    return num_in_flight_requests_;
+  }
+
   // Turns on stale-while-revalidate support, regardless of command-line flags
   // or experiment status. For unit tests only.
   void EnableStaleWhileRevalidateForTesting();
@@ -294,6 +304,15 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void SetLoaderDelegate(LoaderDelegate* loader_delegate);
 
   void OnRenderFrameDeleted(const GlobalFrameRoutingId& global_routing_id);
+
+  // Called when loading a request with mojo.
+  void OnRequestResourceWithMojo(
+      int routing_id,
+      int request_id,
+      const ResourceRequest& request,
+      mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
+      mojom::URLLoaderClientPtr url_loader_client,
+      ResourceMessageFilter* filter);
 
  private:
   friend class ResourceDispatcherHostTest;
@@ -456,6 +475,14 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void OnRequestResource(int routing_id,
                          int request_id,
                          const ResourceRequest& request_data);
+
+  void OnRequestResourceInternal(
+      int routing_id,
+      int request_id,
+      const ResourceRequest& request_data,
+      mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
+      mojom::URLLoaderClientPtr url_loader_client);
+
   void OnSyncLoad(int request_id,
                   const ResourceRequest& request_data,
                   IPC::Message* sync_result);
@@ -473,7 +500,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void BeginRequest(int request_id,
                     const ResourceRequest& request_data,
                     IPC::Message* sync_result,  // only valid for sync
-                    int route_id);              // only valid for async
+                    int route_id,               // only valid for async
+                    mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
+                    mojom::URLLoaderClientPtr url_loader_client);
 
   // There are requests which need decisions to be made like the following:
   // Whether the presence of certain HTTP headers like the Origin header are
@@ -490,6 +519,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       IPC::Message* sync_result,  // only valid for sync
       int route_id,
       const net::HttpRequestHeaders& headers,
+      mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
+      mojom::URLLoaderClientPtr url_loader_client,
       bool continue_request,
       int error_code);
 
@@ -502,7 +533,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int route_id,
       int process_type,
       int child_id,
-      ResourceContext* resource_context);
+      ResourceContext* resource_context,
+      mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
+      mojom::URLLoaderClientPtr url_loader_client);
 
   // Wraps |handler| in the standard resource handlers for normal resource
   // loading and navigation requests. This adds MimeTypeResourceHandler and

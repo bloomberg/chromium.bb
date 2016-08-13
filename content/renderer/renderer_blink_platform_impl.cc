@@ -307,11 +307,14 @@ void RendererBlinkPlatformImpl::Shutdown() {
 //------------------------------------------------------------------------------
 
 blink::WebURLLoader* RendererBlinkPlatformImpl::createURLLoader() {
+  if (!url_loader_factory_)
+    interfaceProvider()->getInterface(mojo::GetProxy(&url_loader_factory_));
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
   return new content::WebURLLoaderImpl(
-      child_thread ? child_thread->resource_dispatcher() : NULL);
+      child_thread ? child_thread->resource_dispatcher() : NULL,
+      url_loader_factory_.get());
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::currentThread() {

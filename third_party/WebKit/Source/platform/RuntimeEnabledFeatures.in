@@ -114,6 +114,7 @@ LayoutNG
 LinkPreload status=stable
 LinkServiceWorker status=experimental, origin_trial_feature_name=ForeignFetch
 FractionalScrollOffsets
+LoadingWithMojo
 MediaCapture
 MediaCaptureFromCanvas status=stable
 MediaCaptureFromVideo status=experimental

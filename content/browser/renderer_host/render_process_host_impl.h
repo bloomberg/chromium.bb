@@ -70,6 +70,7 @@ class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewFrameSubscriber;
+class ResourceMessageFilter;
 class StoragePartition;
 class StoragePartitionImpl;
 
@@ -528,6 +529,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // ignore this problem.
   base::WaitableEvent never_signaled_;
 #endif
+
+  scoped_refptr<ResourceMessageFilter> resource_message_filter_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

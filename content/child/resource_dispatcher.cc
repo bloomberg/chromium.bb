@@ -28,6 +28,7 @@
 #include "content/child/shared_memory_received_data_factory.h"
 #include "content/child/site_isolation_stats_gatherer.h"
 #include "content/child/sync_load_response.h"
+#include "content/child/url_response_body_consumer.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_messages.h"
@@ -39,6 +40,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -72,6 +74,48 @@ int MakeRequestID() {
   static int next_request_id = 0;
   return next_request_id++;
 }
+
+class URLLoaderClientImpl final : public mojom::URLLoaderClient {
+ public:
+  URLLoaderClientImpl(int request_id,
+                      ResourceDispatcher* resource_dispatcher,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : binding_(this),
+        request_id_(request_id),
+        resource_dispatcher_(resource_dispatcher),
+        task_runner_(std::move(task_runner)) {}
+  ~URLLoaderClientImpl() override {
+    if (body_consumer_)
+      body_consumer_->Cancel();
+  }
+
+  void OnReceiveResponse(const ResourceResponseHead& response_head) override {
+    resource_dispatcher_->OnMessageReceived(
+        ResourceMsg_ReceivedResponse(request_id_, response_head));
+  }
+
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override {
+    DCHECK(!body_consumer_);
+    body_consumer_ = new URLResponseBodyConsumer(
+        request_id_, resource_dispatcher_, std::move(body), task_runner_.get());
+  }
+
+  void OnComplete(const ResourceRequestCompletionStatus& status) override {
+    body_consumer_->OnComplete(status);
+  }
+
+  mojom::URLLoaderClientPtr CreateInterfacePtrAndBind() {
+    return binding_.CreateInterfacePtrAndBind();
+  }
+
+ private:
+  mojo::Binding<mojom::URLLoaderClient> binding_;
+  scoped_refptr<URLResponseBodyConsumer> body_consumer_;
+  const int request_id_;
+  ResourceDispatcher* const resource_dispatcher_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+};
 
 }  // namespace
 
@@ -545,11 +589,16 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
   }
 }
 
-void ResourceDispatcher::StartSync(const RequestInfo& request_info,
-                                   ResourceRequestBodyImpl* request_body,
-                                   SyncLoadResponse* response) {
+void ResourceDispatcher::StartSync(
+    const RequestInfo& request_info,
+    ResourceRequestBodyImpl* request_body,
+    SyncLoadResponse* response,
+    blink::WebURLRequest::LoadingIPCType ipc_type,
+    mojom::URLLoaderFactory* url_loader_factory) {
   std::unique_ptr<ResourceRequest> request =
       CreateRequest(request_info, request_body, NULL);
+  // TODO(yhirano): Use url_loader_factory otherwise.
+  DCHECK_EQ(blink::WebURLRequest::LoadingIPCType::ChromeIPC, ipc_type);
 
   SyncLoadResult result;
   IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
@@ -578,9 +627,12 @@ void ResourceDispatcher::StartSync(const RequestInfo& request_info,
   response->encoded_body_length = result.encoded_body_length;
 }
 
-int ResourceDispatcher::StartAsync(const RequestInfo& request_info,
-                                   ResourceRequestBodyImpl* request_body,
-                                   std::unique_ptr<RequestPeer> peer) {
+int ResourceDispatcher::StartAsync(
+    const RequestInfo& request_info,
+    ResourceRequestBodyImpl* request_body,
+    std::unique_ptr<RequestPeer> peer,
+    blink::WebURLRequest::LoadingIPCType ipc_type,
+    mojom::URLLoaderFactory* url_loader_factory) {
   GURL frame_origin;
   std::unique_ptr<ResourceRequest> request =
       CreateRequest(request_info, request_body, &frame_origin);
@@ -596,8 +648,19 @@ int ResourceDispatcher::StartAsync(const RequestInfo& request_info,
         request_id, request_info.loading_task_runner);
   }
 
-  message_sender_->Send(new ResourceHostMsg_RequestResource(
-      request_info.routing_id, request_id, *request));
+  if (ipc_type == blink::WebURLRequest::LoadingIPCType::Mojo) {
+    std::unique_ptr<URLLoaderClientImpl> client(
+        new URLLoaderClientImpl(request_id, this, main_thread_task_runner_));
+    mojom::URLLoaderPtr url_loader;
+    url_loader_factory->CreateLoaderAndStart(
+        GetProxy(&url_loader), request_id, *request,
+        client->CreateInterfacePtrAndBind());
+    pending_requests_[request_id]->url_loader = std::move(url_loader);
+    pending_requests_[request_id]->url_loader_client = std::move(client);
+  } else {
+    message_sender_->Send(new ResourceHostMsg_RequestResource(
+        request_info.routing_id, request_id, *request));
+  }
 
   return request_id;
 }
