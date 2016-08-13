@@ -84,8 +84,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest,
 // Flaky on Linux. See http://crbug.com/131094
 // Child crashes fail the process on ASan (see crbug.com/411251,
 // crbug.com/368525).
-// Flaky failing DCHECK on Windows, see crbug.com/635770
-#if defined(OS_LINUX) || defined(ADDRESS_SANITIZER) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(ADDRESS_SANITIZER)
 #define MAYBE_CrashRenderers DISABLED_CrashRenderers
 #else
 #define MAYBE_CrashRenderers CrashRenderers
@@ -120,3 +119,4 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   // is set to true, but this preference isn't set until the browser
   // exits... it's not clear to me how to test that.
 }
+
