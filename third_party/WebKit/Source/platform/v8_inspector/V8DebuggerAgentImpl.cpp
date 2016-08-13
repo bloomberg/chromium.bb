@@ -988,7 +988,6 @@ void V8DebuggerAgentImpl::didParseSource(std::unique_ptr<V8DebuggerScript> scrip
     std::unique_ptr<protocol::DictionaryValue> executionContextAuxData;
     if (!script->executionContextAuxData().isEmpty())
         executionContextAuxData = protocol::DictionaryValue::cast(parseJSON(script->executionContextAuxData()));
-    bool isInternalScript = script->isInternalScript();
     bool isLiveEdit = script->isLiveEdit();
     bool hasSourceURL = script->hasSourceURL();
     String16 scriptId = script->scriptId();
@@ -996,13 +995,12 @@ void V8DebuggerAgentImpl::didParseSource(std::unique_ptr<V8DebuggerScript> scrip
 
     const Maybe<String16>& sourceMapURLParam = script->sourceMappingURL();
     const Maybe<protocol::DictionaryValue>& executionContextAuxDataParam(std::move(executionContextAuxData));
-    const bool* isInternalScriptParam = isInternalScript ? &isInternalScript : nullptr;
     const bool* isLiveEditParam = isLiveEdit ? &isLiveEdit : nullptr;
     const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : nullptr;
     if (success)
-        m_frontend.scriptParsed(scriptId, scriptURL, script->startLine(), script->startColumn(), script->endLine(), script->endColumn(), script->executionContextId(), script->hash(), executionContextAuxDataParam, isInternalScriptParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam);
+        m_frontend.scriptParsed(scriptId, scriptURL, script->startLine(), script->startColumn(), script->endLine(), script->endColumn(), script->executionContextId(), script->hash(), executionContextAuxDataParam, isLiveEditParam, sourceMapURLParam, hasSourceURLParam);
     else
-        m_frontend.scriptFailedToParse(scriptId, scriptURL, script->startLine(), script->startColumn(), script->endLine(), script->endColumn(), script->executionContextId(), script->hash(), executionContextAuxDataParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
+        m_frontend.scriptFailedToParse(scriptId, scriptURL, script->startLine(), script->startColumn(), script->endLine(), script->endColumn(), script->executionContextId(), script->hash(), executionContextAuxDataParam, sourceMapURLParam, hasSourceURLParam);
 
     m_scripts[scriptId] = std::move(script);
 
@@ -1036,13 +1034,6 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
 {
     JavaScriptCallFrames callFrames = m_debugger->currentCallFrames(1);
     JavaScriptCallFrame* topCallFrame = !callFrames.empty() ? callFrames.begin()->get() : nullptr;
-
-    // Skip pause in internal scripts (e.g. InjectedScriptSource.js).
-    if (topCallFrame) {
-        ScriptsMap::iterator it = m_scripts.find(String16::fromInteger(topCallFrame->sourceID()));
-        if (it != m_scripts.end() && it->second->isInternalScript())
-            return RequestStepFrame;
-    }
 
     V8DebuggerAgentImpl::SkipPauseRequest result;
     if (m_skipAllPauses)

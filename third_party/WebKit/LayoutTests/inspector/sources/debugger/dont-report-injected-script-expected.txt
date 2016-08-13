@@ -1,0 +1,6 @@
+CONSOLE MESSAGE: line 1: 42
+Tests that injected script isn't reported to frontend.
+
+foo.js
+239.js
+

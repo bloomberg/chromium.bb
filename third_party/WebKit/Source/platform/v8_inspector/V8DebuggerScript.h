@@ -55,7 +55,6 @@ public:
     int endColumn() const { return m_endColumn; }
     int executionContextId() const { return m_executionContextId; }
     const String16& executionContextAuxData() const { return m_executionContextAuxData; }
-    bool isInternalScript() const { return m_isInternalScript; }
     bool isLiveEdit() const { return m_isLiveEdit; }
 
     void setSourceURL(const String16&);
@@ -75,7 +74,6 @@ private:
     int m_endColumn;
     int m_executionContextId;
     String16 m_executionContextAuxData;
-    bool m_isInternalScript;
     bool m_isLiveEdit;
 };
 

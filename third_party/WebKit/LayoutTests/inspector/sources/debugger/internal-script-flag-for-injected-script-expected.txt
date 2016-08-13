@@ -1,6 +1,0 @@
-CONSOLE MESSAGE: line 1: 42
-Tests that injected script has isInternalScript flag.
-
-:Internal script
-foo.js:Not internal script
-

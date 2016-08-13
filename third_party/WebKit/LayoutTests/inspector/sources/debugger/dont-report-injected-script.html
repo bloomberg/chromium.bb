@@ -18,7 +18,7 @@ function test()
     function step2(event)
     {
         var script = event.data;
-        InspectorTest.addResult(script.sourceURL + ":" + (script._isInternalScript ? "Internal script" : "Not internal script"));
+        InspectorTest.addResult(script.sourceURL);
         --expectedScriptParsed;
         if (!expectedScriptParsed)
             InspectorTest.completeTest();
@@ -28,7 +28,7 @@ function test()
 </head>
 <body onload="runTest()">
 <p>
-Tests that injected script has isInternalScript flag.
+Tests that injected script isn't reported to frontend.
 </p>
 </body>
 </html>
