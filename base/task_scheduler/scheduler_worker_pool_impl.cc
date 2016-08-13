@@ -213,11 +213,14 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   bool CanDetach(SchedulerWorker* worker) override;
 
   void RegisterSingleThreadTaskRunner() {
-    subtle::Barrier_AtomicIncrement(&num_single_threaded_runners_, 1);
+    // No barrier as barriers only affect sequential consistency which is
+    // irrelevant in a single variable use case (they don't force an immediate
+    // flush anymore than atomics do by default).
+    subtle::NoBarrier_AtomicIncrement(&num_single_threaded_runners_, 1);
   }
 
   void UnregisterSingleThreadTaskRunner() {
-    subtle::Barrier_AtomicIncrement(&num_single_threaded_runners_, -1);
+    subtle::NoBarrier_AtomicIncrement(&num_single_threaded_runners_, -1);
   }
 
  private:
@@ -540,14 +543,14 @@ TimeDelta SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
 bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::CanDetach(
     SchedulerWorker* worker) {
   // It's not an issue if |num_single_threaded_runners_| is incremented after
-  // this because the newly created TaskRunner (from which no task has run yet)
-  // will simply run all its tasks on the next physical thread created by the
-  // worker.
+  // this because the newly created SingleThreadTaskRunner (from which no task
+  // has run yet) will simply run all its tasks on the next physical thread
+  // created by the worker.
   const bool can_detach =
       !idle_start_time_.is_null() &&
       (TimeTicks::Now() - idle_start_time_) > outer_->suggested_reclaim_time_ &&
       worker != outer_->PeekAtIdleWorkersStack() &&
-      !subtle::Acquire_Load(&num_single_threaded_runners_) &&
+      !subtle::NoBarrier_Load(&num_single_threaded_runners_) &&
       outer_->CanWorkerDetachForTesting();
   return can_detach;
 }

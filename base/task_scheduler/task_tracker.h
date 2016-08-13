@@ -46,7 +46,9 @@ class BASE_EXPORT TaskTracker {
   void RunNextTaskInSequence(const Sequence* sequence);
 
   // Returns true once shutdown has started (Shutdown() has been called but
-  // might not have returned).
+  // might not have returned). Note: sequential consistency with the thread
+  // calling Shutdown() (or SetHasShutdownStartedForTesting()) isn't guaranteed
+  // by this call.
   bool HasShutdownStarted() const;
 
   // Returns true if shutdown has completed (Shutdown() has returned).
