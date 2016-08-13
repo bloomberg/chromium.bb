@@ -597,10 +597,8 @@ ThreadActivityTracker* GlobalActivityTracker::CreateTrackerForCurrentThread() {
 void GlobalActivityTracker::ReleaseTrackerForCurrentThreadForTesting() {
   ThreadActivityTracker* tracker =
       reinterpret_cast<ThreadActivityTracker*>(this_thread_tracker_.Get());
-  if (tracker) {
-    this_thread_tracker_.Free();
+  if (tracker)
     delete tracker;
-  }
 }
 
 GlobalActivityTracker::GlobalActivityTracker(
