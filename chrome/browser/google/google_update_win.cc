@@ -584,6 +584,10 @@ void UpdateCheckDriver::BeginUpdateCheck() {
 
   DCHECK(FAILED(hresult));
   // Return results immediately since the driver is not polling Google Update.
+  // Release the reference on the COM objects so that they are torn down in the
+  // blocking pool before bouncing back to the caller's task runner.
+  app_bundle_cookie_.Revoke();
+  google_update_cookie_.Revoke();
   OnUpgradeError(error_code, hresult, -1, base::string16());
   result_runner_->DeleteSoon(FROM_HERE, this);
 }
@@ -985,9 +989,6 @@ void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
     html_error_message_ = l10n_util::GetStringFUTF16(
         IDS_ABOUT_BOX_GOOGLE_UPDATE_ERROR, error_string, html_error_msg);
   }
-
-  app_bundle_cookie_.Revoke();
-  google_update_cookie_.Revoke();
 }
 
 }  // namespace
