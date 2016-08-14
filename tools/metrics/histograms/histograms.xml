@@ -30585,6 +30585,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.MinRTT" units="ms">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The minimum RTT observed during the life of a QUIC connection.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.MtuProbesSent">
   <owner>rch@chromium.org</owner>
   <summary>
@@ -30780,6 +30787,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The largest packet which the client received from the server during the
     session.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.SmoothedRTT" units="ms">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The final smoothed RTT observed during the life of a QUIC connection.
   </summary>
 </histogram>
 
