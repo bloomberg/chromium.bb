@@ -40,7 +40,9 @@ using std::vector;
 
 ArcProcessService::ArcProcessService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service),
-      worker_pool_(new SequencedWorkerPool(1, "arc_process_manager")),
+      worker_pool_(new SequencedWorkerPool(1,
+                                           "arc_process_manager",
+                                           base::TaskPriority::USER_VISIBLE)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc_bridge_service()->process()->AddObserver(this);
