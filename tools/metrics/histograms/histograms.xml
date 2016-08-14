@@ -30294,6 +30294,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.CertVerifierJob.CompleteTime"
+    units="Milliseconds">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Time spent verifying a certificate when racing cert veriifcation with host
+    resolution.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.ClientSideMtu" units="bytes">
   <owner>rch@chromium.org</owner>
   <summary>

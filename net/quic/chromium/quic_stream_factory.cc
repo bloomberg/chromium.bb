@@ -229,6 +229,7 @@ class QuicStreamFactory::CertVerifierJob {
         verify_callback_(nullptr),
         verify_context_(base::WrapUnique(
             new ProofVerifyContextChromium(cert_verify_flags, net_log))),
+        start_time_(base::TimeTicks::Now()),
         net_log_(net_log),
         weak_factory_(this) {}
 
@@ -256,6 +257,8 @@ class QuicStreamFactory::CertVerifierJob {
   }
 
   void OnComplete() {
+    UMA_HISTOGRAM_TIMES("Net.QuicSession.CertVerifierJob.CompleteTime",
+                        base::TimeTicks::Now() - start_time_);
     if (!callback_.is_null())
       callback_.Run(OK);
   }
@@ -268,6 +271,7 @@ class QuicStreamFactory::CertVerifierJob {
   std::unique_ptr<ProofVerifyContext> verify_context_;
   std::unique_ptr<ProofVerifyDetails> verify_details_;
   std::string verify_error_details_;
+  base::TimeTicks start_time_;
   const BoundNetLog net_log_;
   CompletionCallback callback_;
   base::WeakPtrFactory<CertVerifierJob> weak_factory_;
