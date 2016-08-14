@@ -56,9 +56,31 @@ class WorkerLoaderProxy;
 struct CrossThreadResourceRequestData;
 struct CrossThreadResourceTimingInfoData;
 
-// TODO(yhirano): Draw a diagram to illustrate the class relationship.
-// TODO(yhirano): Rename inner classes so that readers can see in which thread
-// they are living easily.
+// A WorkerThreadableLoader is a ThreadableLoader implementation intended to
+// be used in a WebWorker thread. Because Blink's ResourceFetcher and
+// ResourceLoader work only in the main thread, a WorkerThreadableLoader holds
+// a ThreadableLoader in the main thread and delegates tasks asynchronously
+// to the loader.
+//
+// CTP: CrossThreadPersistent
+// CTWP: CrossThreadWeakPersistent
+//
+// ----------------------------------------------------------------
+//                 +------------------------+
+//       raw ptr   | ThreadableLoaderClient |
+//      +--------> | worker thread          |
+//      |          +------------------------+
+//      |
+// +----+------------------+    CTP  +------------------------+
+// + WorkerThreadableLoader|<--------+ MainThreadLoaderHolder |
+// | worker thread         +-------->| main thread            |
+// +-----------------------+   CTWP  +----------------------+-+
+//                                                          |
+//                                 +------------------+     | Member
+//                                 | ThreadableLoader | <---+
+//                                 |      main thread |
+//                                 +------------------+
+//
 class WorkerThreadableLoader final : public ThreadableLoader {
 public:
     static void loadResourceSynchronously(WorkerGlobalScope&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
@@ -101,8 +123,8 @@ private:
     // ThreadableLoaderClient for a DocumentThreadableLoader and forward
     // notifications to the associated WorkerThreadableLoader living in the
     // worker thread.
-    class Peer final : public GarbageCollectedFinalized<Peer>, public ThreadableLoaderClient, public WorkerThreadLifecycleObserver {
-        USING_GARBAGE_COLLECTED_MIXIN(Peer);
+    class MainThreadLoaderHolder final : public GarbageCollectedFinalized<MainThreadLoaderHolder>, public ThreadableLoaderClient, public WorkerThreadLifecycleObserver {
+        USING_GARBAGE_COLLECTED_MIXIN(MainThreadLoaderHolder);
     public:
         static void createAndStart(
             WorkerThreadableLoader*,
@@ -113,7 +135,7 @@ private:
             const ResourceLoaderOptions&,
             PassRefPtr<WaitableEventWithTasks>,
             ExecutionContext*);
-        ~Peer() override;
+        ~MainThreadLoaderHolder() override;
 
         void overrideTimeout(unsigned long timeoutMillisecond);
         void cancel();
@@ -134,7 +156,7 @@ private:
         DECLARE_TRACE();
 
     private:
-        Peer(TaskForwarder*, WorkerThreadLifecycleContext*);
+        MainThreadLoaderHolder(TaskForwarder*, WorkerThreadLifecycleContext*);
         void start(Document&, std::unique_ptr<CrossThreadResourceRequestData>, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
         Member<TaskForwarder> m_forwarder;
@@ -145,7 +167,7 @@ private:
     };
 
     WorkerThreadableLoader(WorkerGlobalScope&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, BlockingBehavior);
-    void didStart(Peer*);
+    void didStart(MainThreadLoaderHolder*);
 
     void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
     void didReceiveResponse(unsigned long identifier, std::unique_ptr<CrossThreadResourceResponseData>, std::unique_ptr<WebDataConsumerHandle>);
@@ -166,8 +188,8 @@ private:
     ResourceLoaderOptions m_resourceLoaderOptions;
     BlockingBehavior m_blockingBehavior;
 
-    // |*m_peer| lives in the main thread.
-    CrossThreadPersistent<Peer> m_peer;
+    // |*m_mainThreadLoaderHolder| lives in the main thread.
+    CrossThreadPersistent<MainThreadLoaderHolder> m_mainThreadLoaderHolder;
 };
 
 } // namespace blink
