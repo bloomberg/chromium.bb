@@ -1808,13 +1808,17 @@ int SSLClientSocketImpl::VerifyCT() {
   ct_verify_result_.ct_policies_applied = true;
   ct_verify_result_.ev_policy_compliance =
       ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
+
+  SCTList verified_scts =
+      ct::SCTsMatchingStatus(ct_verify_result_.scts, ct::SCT_STATUS_OK);
+
   if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
     scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
         SSLConfigService::GetEVCertsWhitelist();
     ct::EVPolicyCompliance ev_policy_compliance =
         policy_enforcer_->DoesConformToCTEVPolicy(
             server_cert_verify_result_.verified_cert.get(), ev_whitelist.get(),
-            ct_verify_result_.verified_scts, net_log_);
+            verified_scts, net_log_);
     ct_verify_result_.ev_policy_compliance = ev_policy_compliance;
     if (ev_policy_compliance !=
             ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY &&
@@ -1829,8 +1833,8 @@ int SSLClientSocketImpl::VerifyCT() {
   }
   ct_verify_result_.cert_policy_compliance =
       policy_enforcer_->DoesConformToCertPolicy(
-          server_cert_verify_result_.verified_cert.get(),
-          ct_verify_result_.verified_scts, net_log_);
+          server_cert_verify_result_.verified_cert.get(), verified_scts,
+          net_log_);
 
   if (ct_verify_result_.cert_policy_compliance !=
           ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS &&

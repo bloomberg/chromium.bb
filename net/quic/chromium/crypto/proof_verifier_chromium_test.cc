@@ -205,7 +205,8 @@ class ProofVerifierChromiumTest : public ::testing::Test {
           ct_verify_result,
           ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION));
     } else {
-      EXPECT_EQ(1U, ct_verify_result.unknown_logs_scts.size());
+      EXPECT_EQ(1U, ct_verify_result.scts.size());
+      EXPECT_EQ(ct::SCT_STATUS_LOG_UNKNOWN, ct_verify_result.scts[0].status);
     }
   }
 
