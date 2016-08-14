@@ -13,7 +13,7 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
-#include "components/sync_driver/sync_util.h"
+#include "components/sync/driver/sync_util.h"
 #include "url/gurl.h"
 
 namespace gcm {

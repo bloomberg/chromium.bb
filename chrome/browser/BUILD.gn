@@ -167,7 +167,6 @@ split_static_library("browser") {
     "//components/supervised_user_error_page",
     "//components/sync",
     "//components/sync_bookmarks",
-    "//components/sync_driver",
     "//components/sync_sessions",
     "//components/tracing:startup_tracing",
     "//components/translate/core/browser",

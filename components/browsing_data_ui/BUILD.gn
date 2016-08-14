@@ -11,7 +11,7 @@ static_library("browsing_data_ui") {
   deps = [
     "//base",
     "//components/history/core/browser",
-    "//components/sync_driver:sync_driver",
+    "//components/sync",
     "//components/version_info",
   ]
 }
@@ -27,8 +27,8 @@ source_set("unit_tests") {
     "//base",
     "//components/history/core/test:test",
     "//components/signin/core/browser:test_support",
+    "//components/sync:test_support_sync_driver",
     "//components/sync/protocol:protocol",
-    "//components/sync_driver:test_support",
     "//components/version_info:version_info",
     "//net",
     "//testing/gtest",

@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/sync_driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/non_ui_data_type_controller.h"
 
 namespace autofill {
 class AutofillWebDataService;

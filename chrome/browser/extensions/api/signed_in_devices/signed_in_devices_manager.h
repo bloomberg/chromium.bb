@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
-#include "components/sync_driver/device_info_tracker.h"
+#include "components/sync/driver/device_info_tracker.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry_observer.h"

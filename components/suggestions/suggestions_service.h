@@ -20,7 +20,7 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
-#include "components/sync_driver/sync_service_observer.h"
+#include "components/sync/driver/sync_service_observer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 

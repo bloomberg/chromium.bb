@@ -111,7 +111,7 @@ split_static_library("ui") {
     "//components/ssl_errors",
     "//components/startup_metric_utils/browser:lib",
     "//components/strings",
-    "//components/sync_driver",
+    "//components/sync",
     "//components/sync_sessions",
     "//components/toolbar",
     "//components/translate/core/browser",

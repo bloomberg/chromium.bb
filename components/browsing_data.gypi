@@ -13,7 +13,7 @@
         'components.gyp:autofill_core_browser',
         'components.gyp:history_core_browser',
         'components.gyp:password_manager_core_browser',
-        'components.gyp:sync_driver',
+        'sync.gyp:sync',
         'components.gyp:webdata_common',
         'prefs/prefs.gyp:prefs',
       ],

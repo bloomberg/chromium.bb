@@ -15,7 +15,7 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync_driver/fake_sync_service.h"
+#include "components/sync/driver/fake_sync_service.h"
 #include "components/version_info/version_info.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_test_util.h"

@@ -15,7 +15,7 @@
         'bookmarks_browser',
         'favicon_core',
         'history_core_browser',
-        'sync_driver',
+        'sync.gyp:sync',
         'undo_component',
       ],
       'include_dirs': [

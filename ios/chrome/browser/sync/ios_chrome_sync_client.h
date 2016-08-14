@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/sync_driver/sync_client.h"
+#include "components/sync/driver/sync_client.h"
 
 namespace autofill {
 class AutofillWebDataService;

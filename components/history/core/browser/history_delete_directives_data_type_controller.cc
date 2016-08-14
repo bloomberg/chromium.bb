@@ -4,8 +4,8 @@
 
 #include "components/history/core/browser/history_delete_directives_data_type_controller.h"
 
-#include "components/sync_driver/sync_client.h"
-#include "components/sync_driver/sync_service.h"
+#include "components/sync/driver/sync_client.h"
+#include "components/sync/driver/sync_service.h"
 
 namespace browser_sync {
 

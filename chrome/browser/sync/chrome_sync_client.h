@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/sync/glue/extensions_activity_monitor.h"
-#include "components/sync_driver/sync_client.h"
+#include "components/sync/driver/sync_client.h"
 
 class Profile;
 

@@ -106,7 +106,7 @@ test("ios_chrome_unittests") {
     "//components/signin/core/browser:test_support",
     "//components/signin/ios/browser:test_support",
     "//components/ssl_config:ssl_config",
-    "//components/sync_driver:test_support",
+    "//components/sync:test_support_sync_driver",
     "//components/syncable_prefs:test_support",
     "//components/update_client",
     "//components/version_info",

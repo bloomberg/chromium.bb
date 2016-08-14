@@ -3330,7 +3330,6 @@
         '../components/components.gyp:subresource_filter_core_browser',
         '../components/components.gyp:supervised_user_error_page',
         '../components/components.gyp:sync_bookmarks',
-        '../components/components.gyp:sync_driver',
         '../components/components.gyp:sync_sessions',
         '../components/components.gyp:translate_core_browser',
         '../components/components.gyp:translate_core_common',

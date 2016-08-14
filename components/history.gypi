@@ -29,7 +29,6 @@
         'prefs/prefs.gyp:prefs',
         'query_parser',
         'signin_core_browser',
-        'sync_driver',
         'url_formatter/url_formatter.gyp:url_formatter',
         'version_info',
       ],

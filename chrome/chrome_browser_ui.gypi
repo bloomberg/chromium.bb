@@ -2895,7 +2895,6 @@
         '../components/components.gyp:onc_component',
         '../components/components.gyp:password_manager_core_browser',
         '../components/components.gyp:policy',
-        '../components/components.gyp:sync_driver',
         '../components/components.gyp:toolbar',
         '../components/components.gyp:update_client',
         '../components/components.gyp:version_ui',

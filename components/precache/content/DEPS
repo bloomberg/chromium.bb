@@ -1,6 +1,6 @@
 include_rules = [
   "+components/keyed_service",
-  "+components/sync_driver",
+  "+components/sync/driver",
   "+components/variations",
   "+content/public/browser",
   "+net/base",

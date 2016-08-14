@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync_driver/sync_api_component_factory.h"
+#include "components/sync/driver/sync_api_component_factory.h"
 #include "components/version_info/version_info.h"
 #include "url/gurl.h"
 

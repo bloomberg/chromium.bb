@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/sync_internals_message_handler.h"
 #include "chrome/common/url_constants.h"
-#include "components/sync_driver/about_sync_util.h"
+#include "components/sync/driver/about_sync_util.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/components_resources.h"

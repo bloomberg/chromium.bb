@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync_driver/sync_error_controller.h"
+#include "components/sync/driver/sync_error_controller.h"
 
 class Profile;
 

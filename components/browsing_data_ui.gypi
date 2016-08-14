@@ -11,7 +11,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         'history_core_browser',
-        'sync_driver',
+        'sync.gyp:sync',
         'version_info',
       ],
       'include_dirs': [

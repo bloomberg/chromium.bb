@@ -6,9 +6,9 @@
 #define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_DELETE_DIRECTIVES_DATA_TYPE_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "components/sync_driver/local_device_info_provider.h"
-#include "components/sync_driver/sync_service_observer.h"
-#include "components/sync_driver/ui_data_type_controller.h"
+#include "components/sync/driver/local_device_info_provider.h"
+#include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/driver/ui_data_type_controller.h"
 
 namespace browser_sync {
 

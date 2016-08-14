@@ -28,8 +28,8 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/sync_driver/sync_service_observer.h"
-#include "components/sync_driver/sync_type_preference_provider.h"
+#include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/driver/sync_type_preference_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(ENABLE_EXTENSIONS)

@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync_driver/sync_error_controller.h"
+#include "components/sync/driver/sync_error_controller.h"
 
 class GlobalErrorService;
 class LoginUIService;

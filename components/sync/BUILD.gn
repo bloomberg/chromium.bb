@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//components/sync/protocol/protocol_sources.gni")
 import("//testing/test.gni")
@@ -218,6 +219,119 @@ static_library("sync") {
     "core_impl/syncapi_internal.h",
     "core_impl/syncapi_server_connection_manager.cc",
     "core_impl/syncapi_server_connection_manager.h",
+    "driver/about_sync_util.cc",
+    "driver/about_sync_util.h",
+    "driver/backend_data_type_configurer.cc",
+    "driver/backend_data_type_configurer.h",
+    "driver/backend_migrator.cc",
+    "driver/backend_migrator.h",
+    "driver/change_processor.cc",
+    "driver/change_processor.h",
+    "driver/data_type_controller.cc",
+    "driver/data_type_controller.h",
+    "driver/data_type_encryption_handler.cc",
+    "driver/data_type_encryption_handler.h",
+    "driver/data_type_manager.cc",
+    "driver/data_type_manager.h",
+    "driver/data_type_manager_impl.cc",
+    "driver/data_type_manager_impl.h",
+    "driver/data_type_manager_observer.h",
+    "driver/data_type_status_table.cc",
+    "driver/data_type_status_table.h",
+    "driver/device_count_metrics_provider.cc",
+    "driver/device_count_metrics_provider.h",
+    "driver/device_info.cc",
+    "driver/device_info.h",
+    "driver/device_info_data_type_controller.cc",
+    "driver/device_info_data_type_controller.h",
+    "driver/device_info_service.cc",
+    "driver/device_info_service.h",
+    "driver/device_info_sync_service.cc",
+    "driver/device_info_sync_service.h",
+    "driver/device_info_tracker.h",
+    "driver/device_info_util.cc",
+    "driver/device_info_util.h",
+    "driver/directory_data_type_controller.cc",
+    "driver/directory_data_type_controller.h",
+    "driver/frontend_data_type_controller.cc",
+    "driver/frontend_data_type_controller.h",
+    "driver/generic_change_processor.cc",
+    "driver/generic_change_processor.h",
+    "driver/generic_change_processor_factory.cc",
+    "driver/generic_change_processor_factory.h",
+    "driver/glue/browser_thread_model_worker.cc",
+    "driver/glue/browser_thread_model_worker.h",
+    "driver/glue/chrome_report_unrecoverable_error.cc",
+    "driver/glue/chrome_report_unrecoverable_error.h",
+    "driver/glue/sync_backend_host.cc",
+    "driver/glue/sync_backend_host.h",
+    "driver/glue/sync_backend_host_core.cc",
+    "driver/glue/sync_backend_host_core.h",
+    "driver/glue/sync_backend_host_impl.cc",
+    "driver/glue/sync_backend_host_impl.h",
+    "driver/glue/sync_backend_registrar.cc",
+    "driver/glue/sync_backend_registrar.h",
+    "driver/glue/ui_model_worker.cc",
+    "driver/glue/ui_model_worker.h",
+    "driver/invalidation_adapter.cc",
+    "driver/invalidation_adapter.h",
+    "driver/invalidation_helper.cc",
+    "driver/invalidation_helper.h",
+    "driver/local_device_info_provider.h",
+    "driver/local_device_info_provider_impl.cc",
+    "driver/local_device_info_provider_impl.h",
+    "driver/model_association_manager.cc",
+    "driver/model_association_manager.h",
+    "driver/model_associator.h",
+    "driver/non_blocking_data_type_controller.cc",
+    "driver/non_blocking_data_type_controller.h",
+    "driver/non_ui_data_type_controller.cc",
+    "driver/non_ui_data_type_controller.h",
+    "driver/non_ui_model_type_controller.cc",
+    "driver/non_ui_model_type_controller.h",
+    "driver/pref_names.cc",
+    "driver/pref_names.h",
+    "driver/protocol_event_observer.cc",
+    "driver/protocol_event_observer.h",
+    "driver/proxy_data_type_controller.cc",
+    "driver/proxy_data_type_controller.h",
+    "driver/shared_change_processor.cc",
+    "driver/shared_change_processor.h",
+    "driver/shared_change_processor_ref.cc",
+    "driver/shared_change_processor_ref.h",
+    "driver/signin_manager_wrapper.cc",
+    "driver/signin_manager_wrapper.h",
+    "driver/startup_controller.cc",
+    "driver/startup_controller.h",
+    "driver/sync_api_component_factory.h",
+    "driver/sync_client.cc",
+    "driver/sync_client.h",
+    "driver/sync_driver_switches.cc",
+    "driver/sync_driver_switches.h",
+    "driver/sync_error_controller.cc",
+    "driver/sync_error_controller.h",
+    "driver/sync_frontend.cc",
+    "driver/sync_frontend.h",
+    "driver/sync_prefs.cc",
+    "driver/sync_prefs.h",
+    "driver/sync_service.cc",
+    "driver/sync_service.h",
+    "driver/sync_service_observer.cc",
+    "driver/sync_service_observer.h",
+    "driver/sync_service_utils.cc",
+    "driver/sync_service_utils.h",
+    "driver/sync_stopped_reporter.cc",
+    "driver/sync_stopped_reporter.h",
+    "driver/sync_type_preference_provider.h",
+    "driver/sync_util.cc",
+    "driver/sync_util.h",
+    "driver/system_encryptor.cc",
+    "driver/system_encryptor.h",
+    "driver/ui_data_type_controller.cc",
+    "driver/ui_data_type_controller.h",
+    "driver/ui_model_type_controller.cc",
+    "driver/ui_model_type_controller.h",
+    "driver/user_selectable_sync_type.h",
     "engine/events/clear_server_data_request_event.cc",
     "engine/events/clear_server_data_request_event.h",
     "engine/events/clear_server_data_response_event.cc",
@@ -422,15 +536,24 @@ static_library("sync") {
   public_deps = [
     "//components/sync/core_impl/attachments/proto",
     "//components/sync/protocol",
-    "//net",
   ]
   deps = [
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//components/data_use_measurement/core",
+    "//components/invalidation/public",
+    "//components/metrics",
+    "//components/os_crypt",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/signin/core/browser",
+    "//components/version_info",
     "//crypto",
     "//google_apis",
+    "//net",
     "//sql",
+    "//third_party/cacheinvalidation",
     "//third_party/leveldatabase",
     "//third_party/zlib",
     "//url",
@@ -455,6 +578,17 @@ static_library("sync") {
     libs = [
       "CoreFoundation.framework",
       "SystemConfiguration.framework",  # Required by get_session_name_mac.mm.
+    ]
+  }
+
+  if (enable_configuration_policy) {
+    sources += [
+      "driver/sync_policy_handler.cc",
+      "driver/sync_policy_handler.h",
+    ]
+    deps += [
+      "//components/policy",
+      "//components/policy:policy_component",
     ]
   }
 
@@ -613,6 +747,52 @@ test("sync_unit_tests") {
   ]
 }
 
+static_library("test_support_sync_driver") {
+  testonly = true
+  sources = [
+    "driver/change_processor_mock.cc",
+    "driver/change_processor_mock.h",
+    "driver/data_type_controller_mock.cc",
+    "driver/data_type_controller_mock.h",
+    "driver/data_type_manager_mock.cc",
+    "driver/data_type_manager_mock.h",
+    "driver/fake_data_type_controller.cc",
+    "driver/fake_data_type_controller.h",
+    "driver/fake_generic_change_processor.cc",
+    "driver/fake_generic_change_processor.h",
+    "driver/fake_sync_client.cc",
+    "driver/fake_sync_client.h",
+    "driver/fake_sync_service.cc",
+    "driver/fake_sync_service.h",
+    "driver/frontend_data_type_controller_mock.cc",
+    "driver/frontend_data_type_controller_mock.h",
+    "driver/glue/sync_backend_host_mock.cc",
+    "driver/glue/sync_backend_host_mock.h",
+    "driver/local_device_info_provider_mock.cc",
+    "driver/local_device_info_provider_mock.h",
+    "driver/model_associator_mock.cc",
+    "driver/model_associator_mock.h",
+    "driver/non_ui_data_type_controller_mock.cc",
+    "driver/non_ui_data_type_controller_mock.h",
+    "driver/sync_api_component_factory_mock.cc",
+    "driver/sync_api_component_factory_mock.h",
+  ]
+
+  public_deps = [
+    "//components/sync",
+  ]
+
+  deps = [
+    ":test_support_sync_core_impl",
+    "//base",
+    "//components/syncable_prefs:test_support",
+    "//components/version_info",
+    "//google_apis",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -667,6 +847,33 @@ source_set("unit_tests") {
     "core_impl/sync_encryption_handler_impl_unittest.cc",
     "core_impl/sync_manager_impl_unittest.cc",
     "core_impl/syncapi_server_connection_manager_unittest.cc",
+    "driver/about_sync_util_unittest.cc",
+    "driver/backend_migrator_unittest.cc",
+    "driver/data_type_manager_impl_unittest.cc",
+    "driver/device_count_metrics_provider_unittest.cc",
+    "driver/device_info_data_type_controller_unittest.cc",
+    "driver/device_info_service_unittest.cc",
+    "driver/device_info_sync_service_unittest.cc",
+    "driver/device_info_util_unittest.cc",
+    "driver/frontend_data_type_controller_unittest.cc",
+    "driver/generic_change_processor_unittest.cc",
+    "driver/glue/browser_thread_model_worker_unittest.cc",
+    "driver/glue/sync_backend_host_impl_unittest.cc",
+    "driver/glue/sync_backend_registrar_unittest.cc",
+    "driver/glue/ui_model_worker_unittest.cc",
+    "driver/local_device_info_provider_unittest.cc",
+    "driver/model_association_manager_unittest.cc",
+    "driver/non_blocking_data_type_controller_unittest.cc",
+    "driver/non_ui_data_type_controller_unittest.cc",
+    "driver/non_ui_model_type_controller_unittest.cc",
+    "driver/shared_change_processor_unittest.cc",
+    "driver/startup_controller_unittest.cc",
+    "driver/sync_prefs_unittest.cc",
+    "driver/sync_stopped_reporter_unittest.cc",
+    "driver/sync_util_unittest.cc",
+    "driver/system_encryptor_unittest.cc",
+    "driver/ui_data_type_controller_unittest.cc",
+    "driver/ui_model_type_controller_unittest.cc",
     "engine/model_safe_worker_unittest.cc",
     "engine_impl/apply_control_data_updates_unittest.cc",
     "engine_impl/backoff_delay_provider_unittest.cc",
@@ -715,8 +922,18 @@ source_set("unit_tests") {
     ":test_support_sync_api",
     ":test_support_sync_core",
     ":test_support_sync_core_impl",
+    ":test_support_sync_driver",
     "//base",
+    "//base/test:test_support",
+    "//components/invalidation/impl",
+    "//components/os_crypt:test_support",
+    "//components/pref_registry:test_support",
+    "//components/prefs:test_support",
+    "//components/signin/core/browser:test_support",
     "//components/sync",
+    "//components/syncable_prefs",
+    "//components/syncable_prefs:test_support",
+    "//components/version_info",
     "//google_apis",
     "//google_apis:test_support",
     "//net",
@@ -727,6 +944,7 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/leveldatabase",
     "//third_party/protobuf:protobuf_lite",
+    "//url",
   ]
 
   if (is_chromeos) {
@@ -736,6 +954,14 @@ source_set("unit_tests") {
 
   if (is_ios) {
     sources -= [ "core/http_bridge_unittest.cc" ]
+  }
+
+  if (enable_configuration_policy) {
+    sources += [ "driver/sync_policy_handler_unittest.cc" ]
+    deps += [
+      "//components/policy",
+      "//components/policy:policy_component",
+    ]
   }
 
   defines = [ "SYNC_TEST" ]

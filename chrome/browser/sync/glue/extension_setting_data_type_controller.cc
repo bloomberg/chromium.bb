@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/sync/api/syncable_service.h"
-#include "components/sync_driver/generic_change_processor.h"
+#include "components/sync/driver/generic_change_processor.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 

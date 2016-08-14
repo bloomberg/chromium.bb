@@ -2,7 +2,7 @@ include_rules = [
   "+components/autofill/core/browser",
   "+components/keyed_service/core",
   "+components/pref_registry",
-  "+components/sync_driver",
+  "+components/sync/driver",
   "+components/url_formatter",
   "+components/variations",
   "+components/webdata/common",

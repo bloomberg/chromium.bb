@@ -28,7 +28,6 @@
         'prefs/prefs.gyp:prefs',
         'rappor',
         'search_engines/prepopulated_engines.gyp:prepopulated_engines',
-        'sync_driver',
         'url_formatter/url_formatter.gyp:url_formatter',
         'webdata_common',
       ],

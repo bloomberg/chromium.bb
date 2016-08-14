@@ -15,8 +15,8 @@
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync_driver/glue/sync_backend_host_mock.h"
-#include "components/sync_driver/sync_prefs.h"
+#include "components/sync/driver/glue/sync_backend_host_mock.h"
+#include "components/sync/driver/sync_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

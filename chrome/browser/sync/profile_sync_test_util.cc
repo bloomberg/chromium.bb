@@ -17,9 +17,9 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/browser_sync/browser/profile_sync_test_util.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/sync_driver/signin_manager_wrapper.h"
-#include "components/sync_driver/startup_controller.h"
-#include "components/sync_driver/sync_api_component_factory_mock.h"
+#include "components/sync/driver/signin_manager_wrapper.h"
+#include "components/sync/driver/startup_controller.h"
+#include "components/sync/driver/sync_api_component_factory_mock.h"
 
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     Profile* profile) {

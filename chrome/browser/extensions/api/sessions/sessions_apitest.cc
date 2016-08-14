@@ -31,8 +31,8 @@
 #include "components/sync/api/fake_sync_change_processor.h"
 #include "components/sync/api/sync_error_factory_mock.h"
 #include "components/sync/core/attachments/attachment_service_proxy_for_test.h"
-#include "components/sync_driver/local_device_info_provider_mock.h"
-#include "components/sync_driver/sync_api_component_factory_mock.h"
+#include "components/sync/driver/local_device_info_provider_mock.h"
+#include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "extensions/browser/api_test_utils.h"
 

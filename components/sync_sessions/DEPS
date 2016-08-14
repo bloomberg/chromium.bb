@@ -5,7 +5,6 @@ include_rules = [
   "+components/prefs",
   "+components/sessions",
   "+components/sync",
-  "+components/sync_driver",
   "+components/variations",
   "+ui/base/page_transition_types.h",
   "+ui/gfx",

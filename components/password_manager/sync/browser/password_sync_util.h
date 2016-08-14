@@ -9,7 +9,7 @@
 
 #include "components/autofill/core/common/password_form.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/sync_driver/sync_service.h"
+#include "components/sync/driver/sync_service.h"
 
 namespace password_manager {
 namespace sync_util {

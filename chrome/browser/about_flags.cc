@@ -56,7 +56,7 @@
 #include "components/signin/core/common/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
 #include "components/ssl_config/ssl_config_switches.h"
-#include "components/sync_driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"

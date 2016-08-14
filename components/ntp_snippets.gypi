@@ -27,7 +27,7 @@
         'prefs/prefs.gyp:prefs',
         'signin_core_browser',
         'suggestions',
-        'sync_driver',
+        'sync.gyp:sync',
         'variations',
         'variations_net',
       ],

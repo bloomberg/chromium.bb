@@ -25,7 +25,7 @@
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync_driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/grit/ios_strings.h"

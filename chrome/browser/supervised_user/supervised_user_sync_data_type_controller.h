@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SYNC_DATA_TYPE_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "components/sync_driver/data_type_controller.h"
-#include "components/sync_driver/ui_data_type_controller.h"
+#include "components/sync/driver/data_type_controller.h"
+#include "components/sync/driver/ui_data_type_controller.h"
 
 namespace sync_driver {
 class SyncClient;

@@ -20,9 +20,9 @@
         'components.gyp:image_fetcher',
         'components.gyp:keyed_service_core',
         'components.gyp:pref_registry',
-        'components.gyp:sync_driver',
         'components.gyp:variations',
         'components.gyp:variations_net',
+        'sync.gyp:sync',
       ],
       'sources': [
         'suggestions/blacklist_store.cc',

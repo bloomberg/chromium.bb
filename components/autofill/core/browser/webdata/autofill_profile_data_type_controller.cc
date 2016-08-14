@@ -10,7 +10,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync/api/sync_error.h"
 #include "components/sync/api/syncable_service.h"
-#include "components/sync_driver/sync_client.h"
+#include "components/sync/driver/sync_client.h"
 
 using autofill::AutofillWebDataService;
 

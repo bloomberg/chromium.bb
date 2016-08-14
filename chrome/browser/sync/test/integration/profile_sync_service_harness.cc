@@ -30,7 +30,7 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/progress_marker_map.h"
 #include "components/sync/base/sync_string_conversions.h"
-#include "components/sync_driver/about_sync_util.h"
+#include "components/sync/driver/about_sync_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 using syncer::sessions::SyncSessionSnapshot;

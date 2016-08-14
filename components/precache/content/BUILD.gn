@@ -17,7 +17,7 @@ static_library("content") {
     "//components/precache/core",
     "//components/precache/core:proto",
     "//components/prefs",
-    "//components/sync_driver",
+    "//components/sync",
     "//components/variations",
     "//content/public/browser",
     "//net",

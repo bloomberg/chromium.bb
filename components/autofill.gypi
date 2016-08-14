@@ -95,7 +95,6 @@
         'rappor',
         'signin_core_browser',
         'signin_core_common',
-        'sync_driver',
         'variations_net',
         'webdata_common',
       ],

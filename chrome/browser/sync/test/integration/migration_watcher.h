@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync_driver/backend_migrator.h"
+#include "components/sync/driver/backend_migrator.h"
 
 class ProfileSyncServiceHarness;
 class MigrationWaiter;

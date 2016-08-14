@@ -11,8 +11,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/api/sync_error.h"
 #include "components/sync/api/syncable_service.h"
-#include "components/sync_driver/sync_client.h"
-#include "components/sync_driver/sync_service.h"
+#include "components/sync/driver/sync_client.h"
+#include "components/sync/driver/sync_service.h"
 
 namespace browser_sync {
 

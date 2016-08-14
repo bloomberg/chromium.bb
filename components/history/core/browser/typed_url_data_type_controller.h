@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/sync_driver/non_ui_data_type_controller.h"
-#include "components/sync_driver/sync_api_component_factory.h"
+#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/sync_api_component_factory.h"
 
 namespace history {
 class HistoryBackend;

@@ -10,7 +10,7 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync_driver/sync_client.h"
+#include "components/sync/driver/sync_client.h"
 
 namespace browser_sync {
 

@@ -7,7 +7,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/prefs",
   "+components/signin/core/browser",
-  "+components/sync_driver",
+  "+components/sync/driver",
   "+components/variations",
   "+google_apis",
   "+net",

@@ -16,7 +16,6 @@ source_set("common") {
     "//base",
     "//components/invalidation/impl",
     "//components/sync",
-    "//components/sync_driver",
   ]
 }
 
@@ -32,7 +31,6 @@ test("sync_listen_notifications") {
     "//base",
     "//components/invalidation/impl",
     "//components/sync:test_support_sync_core",
-    "//components/sync_driver",
     "//jingle:notifier",
     "//net:test_support",
   ]
@@ -50,7 +48,6 @@ test("sync_client") {
     "//base",
     "//components/invalidation/impl",
     "//components/sync:test_support_sync_core",
-    "//components/sync_driver",
     "//jingle:notifier",
     "//net:test_support",
   ]

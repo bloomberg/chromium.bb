@@ -23,7 +23,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/core/data_type_error_handler.h"
-#include "components/sync_driver/model_associator.h"
+#include "components/sync/driver/model_associator.h"
 
 class GURL;
 

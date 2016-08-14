@@ -14,7 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync_driver/about_sync_util.h"
+#include "components/sync/driver/about_sync_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"

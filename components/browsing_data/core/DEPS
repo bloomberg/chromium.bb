@@ -3,6 +3,6 @@ include_rules = [
   "+components/history/core/browser",
   "+components/password_manager/core/browser",
   "+components/prefs",
-  "+components/sync_driver",
+  "+components/sync/driver",
   "+components/webdata/common",
 ]

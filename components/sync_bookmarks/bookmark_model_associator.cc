@@ -30,10 +30,10 @@
 #include "components/sync/core/write_node.h"
 #include "components/sync/core/write_transaction.h"
 #include "components/sync/core_impl/syncapi_internal.h"
+#include "components/sync/driver/sync_client.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
-#include "components/sync_driver/sync_client.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/undo/bookmark_undo_utils.h"
 

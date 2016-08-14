@@ -18,7 +18,6 @@
         'bookmarks_browser',
         'history_core_browser',
         'prefs/prefs.gyp:prefs',
-        'sync_driver',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.

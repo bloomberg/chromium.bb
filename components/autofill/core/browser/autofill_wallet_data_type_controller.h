@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/sync_driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/non_ui_data_type_controller.h"
 
 namespace autofill {
 class AutofillWebDataService;

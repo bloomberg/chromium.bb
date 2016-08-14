@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
 
 #include "base/logging.h"
-#include "components/sync_driver/sync_service.h"
+#include "components/sync/driver/sync_service.h"
 
 SyncObserverBridge::SyncObserverBridge(id<SyncObserverModelBridge> delegate,
                                        sync_driver::SyncService* sync_service)

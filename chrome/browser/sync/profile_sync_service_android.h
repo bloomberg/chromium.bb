@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_ANDROID_H_
 
 #include <jni.h>
+
 #include <map>
 
 #include "base/android/jni_weak_ref.h"
@@ -14,8 +15,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/invalidation/public/invalidation_util.h"
-#include "components/sync_driver/sync_prefs.h"
-#include "components/sync_driver/sync_service_observer.h"
+#include "components/sync/driver/sync_prefs.h"
+#include "components/sync/driver/sync_service_observer.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 

@@ -12,7 +12,7 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "components/sync_driver/fake_sync_service.h"
+#include "components/sync/driver/fake_sync_service.h"
 
 namespace ntp_snippets {
 namespace test {

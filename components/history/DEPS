@@ -5,7 +5,6 @@ include_rules = [
   "+components/prefs",
   "+components/signin/core",
   "+components/sync",
-  "+components/sync_driver",
   "+google_apis/gaia",
   "+net",
   "+sql",

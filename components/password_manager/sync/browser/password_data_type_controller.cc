@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/sync_driver/sync_client.h"
-#include "components/sync_driver/sync_service.h"
+#include "components/sync/driver/sync_client.h"
+#include "components/sync/driver/sync_service.h"
 
 namespace browser_sync {
 

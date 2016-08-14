@@ -92,7 +92,6 @@
     'suggestions.gypi',
     'supervised_user_error_page.gypi',
     'sync_bookmarks.gypi',
-    'sync_driver.gypi',
     'sync_sessions.gypi',
     'syncable_prefs.gypi',
     'toolbar.gypi',

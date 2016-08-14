@@ -19,7 +19,7 @@
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/unfinished_work.pb.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync_driver/sync_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/variations/metrics_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"

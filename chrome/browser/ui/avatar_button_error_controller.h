@@ -7,7 +7,7 @@
 
 #include "chrome/browser/ui/avatar_button_error_controller_delegate.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/sync_driver/sync_error_controller.h"
+#include "components/sync/driver/sync_error_controller.h"
 
 class Profile;
 

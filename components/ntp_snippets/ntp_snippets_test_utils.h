@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "components/sync_driver/fake_sync_service.h"
+#include "components/sync/driver/fake_sync_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class AccountTrackerService;

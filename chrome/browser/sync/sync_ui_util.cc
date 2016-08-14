@@ -45,7 +45,7 @@
 #include "components/user_manager/user_manager.h"
 #else
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/sync_driver/sync_error_controller.h"
+#include "components/sync/driver/sync_error_controller.h"
 #endif  // defined(OS_CHROMEOS)
 
 typedef GoogleServiceAuthError AuthError;

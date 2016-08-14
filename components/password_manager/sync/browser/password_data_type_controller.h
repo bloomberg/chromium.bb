@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/sync_driver/non_ui_data_type_controller.h"
-#include "components/sync_driver/sync_service_observer.h"
+#include "components/sync/driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/sync_service_observer.h"
 
 namespace password_manager {
 class PasswordStore;

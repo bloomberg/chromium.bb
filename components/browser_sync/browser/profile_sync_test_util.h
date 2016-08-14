@@ -19,8 +19,8 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
-#include "components/sync_driver/fake_sync_client.h"
-#include "components/sync_driver/sync_api_component_factory_mock.h"
+#include "components/sync/driver/fake_sync_client.h"
+#include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync_sessions/fake_sync_sessions_client.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 

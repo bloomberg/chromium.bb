@@ -38,7 +38,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/sync_driver/sync_prefs.h"
+#include "components/sync/driver/sync_prefs.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"

@@ -17,9 +17,9 @@
 #include "components/sync/core/test/sync_manager_factory_for_profile_sync_test.h"
 #include "components/sync/core/test/test_internal_components_factory.h"
 #include "components/sync/core/test/test_user_share.h"
+#include "components/sync/driver/glue/sync_backend_host_core.h"
+#include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync_driver/glue/sync_backend_host_core.h"
-#include "components/sync_driver/sync_api_component_factory_mock.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 using syncer::ModelType;

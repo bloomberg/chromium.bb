@@ -25,9 +25,9 @@
 #include "components/sync/core/read_node.h"
 #include "components/sync/core/write_node.h"
 #include "components/sync/core/write_transaction.h"
+#include "components/sync/driver/sync_client.h"
 #include "components/sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
 #include "components/sync/syncable/syncable_write_transaction.h"
-#include "components/sync_driver/sync_client.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/undo/bookmark_undo_utils.h"
 #include "ui/gfx/favicon_size.h"

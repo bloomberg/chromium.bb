@@ -27,7 +27,7 @@
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/ntp_snippets_status_service.h"
 #include "components/suggestions/suggestions_service.h"
-#include "components/sync_driver/sync_service_observer.h"
+#include "components/sync/driver/sync_service_observer.h"
 
 class PrefRegistrySimple;
 class PrefService;

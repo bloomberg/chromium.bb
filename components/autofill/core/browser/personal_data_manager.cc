@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <list>
 #include <map>
@@ -39,7 +40,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "components/sync_driver/sync_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"

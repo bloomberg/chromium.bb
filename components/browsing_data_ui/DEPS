@@ -5,7 +5,7 @@ include_rules = [
   "+components/signin",
   "+components/sync/base",
   "+components/sync/core",
-  "+components/sync_driver",
+  "+components/sync/driver",
   "+components/version_info",
   "+net",
 ]

@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/sync_driver/non_ui_data_type_controller.h"
+#include "components/sync/driver/non_ui_data_type_controller.h"
 
 namespace autofill {
 class AutofillWebDataService;

@@ -30,16 +30,12 @@
         'signin_core_browser',
         'syncable_prefs',
         'sync_bookmarks',
-        'sync_driver',
         'sync_sessions',
         'variations',
         'version_info',
       ],
       'include_dirs': [
         '..',
-      ],
-      'export_dependent_settings': [
-        'sync_driver',
       ],
       'sources': [
         # Note: file list duplicated in GN build.
@@ -76,6 +72,7 @@
         '../base/base.gyp:test_support_base',
         '../google_apis/google_apis.gyp:google_apis',
         '../components/sync.gyp:sync',
+        '../components/sync.gyp:test_support_sync_driver',
         '../testing/gmock.gyp:gmock',
         'bookmarks_browser',
         'browser_sync_browser',
@@ -85,8 +82,6 @@
         'pref_registry',
         'signin_core_browser',
         'signin_core_browser_test_support',
-        'sync_driver',
-        'sync_driver_test_support',
         'sync_sessions_test_support',
         'syncable_prefs_test_support',
       ],

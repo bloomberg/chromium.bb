@@ -15,8 +15,8 @@
 #include "components/sync/api/sync_change_processor.h"
 #include "components/sync/api/sync_data.h"
 #include "components/sync/api/sync_merge_result.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync_driver/sync_service.h"
 
 namespace arc {
 

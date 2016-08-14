@@ -29,11 +29,10 @@
         'gcm_driver_common',
         'gcm_driver_crypto',
         'os_crypt',
-        'sync_driver',
         '../base/base.gyp:base',
         '../google_apis/gcm/gcm.gyp:gcm',
         '../net/net.gyp:net',
-        '../components/sync.gyp:sync_proto',
+        '../components/sync.gyp:sync',
         '../url/url.gyp:url_lib',
       ],
       'include_dirs': [

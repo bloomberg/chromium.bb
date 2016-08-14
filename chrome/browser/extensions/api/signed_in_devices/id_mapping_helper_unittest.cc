@@ -10,7 +10,7 @@
 #include "base/guid.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
-#include "components/sync_driver/device_info.h"
+#include "components/sync/driver/device_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

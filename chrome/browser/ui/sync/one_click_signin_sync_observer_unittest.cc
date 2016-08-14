@@ -21,7 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser/test_profile_sync_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/sync_driver/startup_controller.h"
+#include "components/sync/driver/startup_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"

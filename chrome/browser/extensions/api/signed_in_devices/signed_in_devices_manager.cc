@@ -19,7 +19,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/signed_in_devices.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/sync_driver/device_info.h"
+#include "components/sync/driver/device_info.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"

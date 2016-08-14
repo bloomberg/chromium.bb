@@ -9,7 +9,7 @@
 #include "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "components/sync_driver/sync_service_observer.h"
+#include "components/sync/driver/sync_service_observer.h"
 
 namespace sync_driver {
 class SyncService;

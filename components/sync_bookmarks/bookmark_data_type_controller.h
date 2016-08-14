@@ -12,7 +12,7 @@
 #include "base/scoped_observer.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/history/core/browser/history_service_observer.h"
-#include "components/sync_driver/frontend_data_type_controller.h"
+#include "components/sync/driver/frontend_data_type_controller.h"
 
 namespace browser_sync {
 
