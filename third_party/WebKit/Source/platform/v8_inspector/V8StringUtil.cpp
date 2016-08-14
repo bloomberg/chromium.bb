@@ -4,7 +4,6 @@
 
 #include "platform/v8_inspector/V8StringUtil.h"
 
-#include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8Regex.h"

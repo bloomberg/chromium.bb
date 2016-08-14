@@ -37,7 +37,6 @@
 #include "core/inspector/protocol/DOM.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/FloatQuad.h"
-#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

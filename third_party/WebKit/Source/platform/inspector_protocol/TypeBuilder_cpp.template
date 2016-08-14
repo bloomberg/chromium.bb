@@ -6,9 +6,6 @@
 
 #include "{{output_package}}/{{domain.domain}}.h"
 
-#include "platform/inspector_protocol/DispatcherBase.h"
-#include "platform/inspector_protocol/Parser.h"
-
 namespace blink {
 namespace protocol {
 namespace {{domain.domain}} {

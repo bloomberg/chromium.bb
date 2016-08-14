@@ -29,7 +29,7 @@
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/inspector/protocol/CSS.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/Values.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

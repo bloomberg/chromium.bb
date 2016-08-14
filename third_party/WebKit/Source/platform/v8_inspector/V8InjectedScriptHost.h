@@ -5,6 +5,7 @@
 #ifndef V8InjectedScriptHost_h
 #define V8InjectedScriptHost_h
 
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include <v8.h>
 
 namespace blink {

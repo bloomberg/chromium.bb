@@ -7,22 +7,8 @@
 #ifndef protocol_{{domain.domain}}_h
 #define protocol_{{domain.domain}}_h
 
-{% if export_macro == "PLATFORM_EXPORT" %}
-#include "platform/inspector_protocol/Platform.h"
-{% else %}
-#include "core/CoreExport.h"
-{% endif %}
-#include "platform/inspector_protocol/Array.h"
-#include "platform/inspector_protocol/BackendCallback.h"
-#include "platform/inspector_protocol/DispatcherBase.h"
-#include "platform/inspector_protocol/ErrorSupport.h"
-#include "platform/inspector_protocol/FrontendChannel.h"
-#include "platform/inspector_protocol/Maybe.h"
-#include "platform/inspector_protocol/Object.h"
-#include "platform/inspector_protocol/Platform.h"
-#include "platform/inspector_protocol/String16.h"
-#include "platform/inspector_protocol/Values.h"
-#include "platform/inspector_protocol/ValueConversions.h"
+#include "{{export_macro_include}}"
+#include "{{lib_package}}/InspectorProtocol.h"
 // For each imported domain we generate a ValueConversions struct instead of a full domain definition
 // and include Domain::API version from there.
 {% for name in domain.dependencies %}

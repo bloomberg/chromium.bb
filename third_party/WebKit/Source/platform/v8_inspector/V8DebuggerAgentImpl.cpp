@@ -4,9 +4,6 @@
 
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 
-#include "platform/inspector_protocol/Parser.h"
-#include "platform/inspector_protocol/String16.h"
-#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"

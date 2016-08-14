@@ -33,7 +33,6 @@
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "core/inspector/protocol/CSS.h"
-#include "platform/inspector_protocol/Values.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

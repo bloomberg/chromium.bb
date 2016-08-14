@@ -50,7 +50,6 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"
-#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"

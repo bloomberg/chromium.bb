@@ -5,8 +5,7 @@
 #ifndef V8ProfilerAgentImpl_h
 #define V8ProfilerAgentImpl_h
 
-#include "platform/inspector_protocol/Allocator.h"
-#include "platform/inspector_protocol/String16.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/protocol/Profiler.h"
 
 #include <vector>

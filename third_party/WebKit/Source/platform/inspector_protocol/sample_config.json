@@ -19,5 +19,16 @@
         "class_name": "String16"
     },
 
-    "export_macro": "PLATFORM_EXPORT"
+    "lib": {
+        "output": "place/generated/lib/files/here",
+        "string16_impl_header_path": "sting16/implementation.h",
+        "platform_impl_header_path": "platform/implementation.h"
+    },
+
+    "lib_package": "include/lib/files/like/this",
+
+    "class_export": {
+        "macro": "LIB_EXPORT",
+        "header_path": "lib/export.h"
+    }
 }

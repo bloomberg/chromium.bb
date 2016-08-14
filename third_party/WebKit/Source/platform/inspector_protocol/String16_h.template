@@ -5,8 +5,9 @@
 #ifndef String16_h
 #define String16_h
 
-#include "platform/inspector_protocol/Collections.h"
-#include "platform/inspector_protocol/Platform.h"
+//#include "Collections.h"
+//#include "Platform.h"
+#include "{{export_macro_include}}"
 
 #include <vector>
 
@@ -14,16 +15,16 @@ namespace blink {
 namespace protocol {
 
 namespace internal {
-PLATFORM_EXPORT void intToStr(int, char*, size_t);
-PLATFORM_EXPORT void doubleToStr(double, char*, size_t);
-PLATFORM_EXPORT void doubleToStr3(double, char*, size_t);
-PLATFORM_EXPORT void doubleToStr6(double, char*, size_t);
-PLATFORM_EXPORT double strToDouble(const char*, bool*);
-PLATFORM_EXPORT int strToInt(const char*, bool*);
+{{export_macro}} void intToStr(int, char*, size_t);
+{{export_macro}} void doubleToStr(double, char*, size_t);
+{{export_macro}} void doubleToStr3(double, char*, size_t);
+{{export_macro}} void doubleToStr6(double, char*, size_t);
+{{export_macro}} double strToDouble(const char*, bool*);
+{{export_macro}} int strToInt(const char*, bool*);
 } // namespace internal
 
 template <typename T, typename C>
-class PLATFORM_EXPORT String16Base {
+class {{export_macro}} String16Base {
 public:
     static bool isASCII(C c)
     {
@@ -151,16 +152,12 @@ public:
 } // namespace protocol
 } // namespace blink
 
-#if V8_INSPECTOR_USE_STL
-#include "platform/inspector_protocol/String16STL.h"
-#else
-#include "platform/inspector_protocol/String16WTF.h"
-#endif // V8_INSPECTOR_USE_STL
+#include "{{string16_impl_h_include}}"
 
 namespace blink {
 namespace protocol {
 
-class PLATFORM_EXPORT String16Builder {
+class {{export_macro}} String16Builder {
 public:
     String16Builder();
     void append(const String16&);

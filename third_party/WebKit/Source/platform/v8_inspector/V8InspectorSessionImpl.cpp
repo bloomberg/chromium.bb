@@ -4,7 +4,6 @@
 
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 
-#include "platform/inspector_protocol/Parser.h"
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"

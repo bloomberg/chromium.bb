@@ -18,7 +18,6 @@
 #include "core/inspector/InspectorHighlight.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "platform/inspector_protocol/Values.h"
 
 namespace blink {
 

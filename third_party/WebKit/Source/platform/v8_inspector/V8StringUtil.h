@@ -5,8 +5,7 @@
 #ifndef V8StringUtil_h
 #define V8StringUtil_h
 
-#include "platform/inspector_protocol/String16.h"
-#include "platform/inspector_protocol/Values.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/protocol/Debugger.h"
 #include <v8.h>
 

@@ -14,5 +14,10 @@
         "class_name": "WTF::String"
     },
 
-    "export_macro": "CORE_EXPORT"
+    "lib_package": "platform/inspector_protocol",
+
+    "class_export": {
+        "macro": "CORE_EXPORT",
+        "header_path": "core/CoreExport.h"
+    }
 }

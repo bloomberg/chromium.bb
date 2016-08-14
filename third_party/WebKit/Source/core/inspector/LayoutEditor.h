@@ -11,7 +11,7 @@
 #include "core/css/CSSRuleList.h"
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/Values.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 

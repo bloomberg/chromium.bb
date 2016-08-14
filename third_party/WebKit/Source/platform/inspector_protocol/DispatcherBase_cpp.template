@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/inspector_protocol/DispatcherBase.h"
-
-#include "platform/inspector_protocol/FrontendChannel.h"
-#include "platform/inspector_protocol/Parser.h"
-
 namespace blink {
 namespace protocol {
 

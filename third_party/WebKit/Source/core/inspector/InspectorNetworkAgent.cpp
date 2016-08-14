@@ -60,7 +60,6 @@
 #include "core/page/Page.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/blob/BlobData.h"
-#include "platform/inspector_protocol/Values.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadTiming.h"

@@ -16,8 +16,8 @@
 
     "lib": {
         "output": "inspector_protocol",
-        "string16_impl_header_path": "platform/v8_inspector/String16WTF.h",
-        "platform_impl_header_path": "platform/v8_inspector/PlatformWTF.h"
+        "string16_impl_header_path": "platform/v8_inspector/String16STL.h",
+        "platform_impl_header_path": "platform/v8_inspector/PlatformSTL.h"
     },
 
     "lib_package": "platform/inspector_protocol",

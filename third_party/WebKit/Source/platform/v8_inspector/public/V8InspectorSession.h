@@ -5,8 +5,7 @@
 #ifndef V8InspectorSession_h
 #define V8InspectorSession_h
 
-#include "platform/inspector_protocol/Array.h"
-#include "platform/inspector_protocol/Platform.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/public/protocol/Debugger.h"
 #include "platform/v8_inspector/public/protocol/Runtime.h"
 

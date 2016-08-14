@@ -5,7 +5,7 @@
 #ifndef V8Console_h
 #define V8Console_h
 
-#include "platform/inspector_protocol/Allocator.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include <v8.h>
 
 namespace blink {

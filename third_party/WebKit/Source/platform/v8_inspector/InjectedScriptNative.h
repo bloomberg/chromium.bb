@@ -5,9 +5,7 @@
 #ifndef InjectedScriptNative_h
 #define InjectedScriptNative_h
 
-#include "platform/inspector_protocol/Collections.h"
-#include "platform/inspector_protocol/Platform.h"
-#include "platform/inspector_protocol/String16.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include <v8.h>
 
 #include <vector>

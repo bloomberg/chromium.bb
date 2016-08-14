@@ -30,9 +30,6 @@
 
 #include "platform/v8_inspector/InjectedScript.h"
 
-#include "platform/inspector_protocol/Parser.h"
-#include "platform/inspector_protocol/String16.h"
-#include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/InjectedScriptSource.h"
 #include "platform/v8_inspector/InspectedContext.h"

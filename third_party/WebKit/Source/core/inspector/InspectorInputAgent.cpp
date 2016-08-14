@@ -42,7 +42,6 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/inspector_protocol/Values.h"
 #include "wtf/CurrentTime.h"
 
 namespace {

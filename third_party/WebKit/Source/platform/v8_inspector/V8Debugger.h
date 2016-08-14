@@ -5,9 +5,7 @@
 #ifndef V8Debugger_h
 #define V8Debugger_h
 
-#include "platform/inspector_protocol/Allocator.h"
-#include "platform/inspector_protocol/Maybe.h"
-#include "platform/inspector_protocol/Platform.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/V8DebuggerScript.h"
 #include "platform/v8_inspector/protocol/Runtime.h"

@@ -5,8 +5,6 @@
 #include "modules/cachestorage/InspectorCacheStorageAgent.h"
 
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/DispatcherBase.h"
-#include "platform/inspector_protocol/Values.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"

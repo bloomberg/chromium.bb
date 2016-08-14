@@ -5,9 +5,7 @@
 #ifndef RemoteObjectId_h
 #define RemoteObjectId_h
 
-#include "platform/inspector_protocol/ErrorSupport.h"
-#include "platform/inspector_protocol/Platform.h"
-#include "platform/inspector_protocol/String16.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 
 namespace blink {
 

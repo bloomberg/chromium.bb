@@ -4,7 +4,6 @@
 
 #include "platform/v8_inspector/V8InternalValueType.h"
 
-#include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 
 namespace blink {

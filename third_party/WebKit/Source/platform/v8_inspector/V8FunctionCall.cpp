@@ -30,7 +30,6 @@
 
 #include "platform/v8_inspector/V8FunctionCall.h"
 
-#include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"

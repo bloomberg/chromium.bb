@@ -4,10 +4,6 @@
 
 #include "platform/v8_inspector/RemoteObjectId.h"
 
-#include "platform/inspector_protocol/Parser.h"
-#include "platform/inspector_protocol/Platform.h"
-#include "platform/inspector_protocol/Values.h"
-
 namespace blink {
 
 RemoteObjectIdBase::RemoteObjectIdBase() : m_injectedScriptId(0) { }

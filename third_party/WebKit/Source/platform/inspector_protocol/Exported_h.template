@@ -7,12 +7,8 @@
 #ifndef protocol_{{domain.domain}}_api_h
 #define protocol_{{domain.domain}}_api_h
 
-{% if export_macro == "PLATFORM_EXPORT" %}
-#include "platform/inspector_protocol/Platform.h"
-{% else %}
-#include "core/CoreExport.h"
-{% endif %}
-#include "platform/inspector_protocol/String16.h"
+#include "{{export_macro_include}}"
+#include "{{lib_package}}/InspectorProtocol.h"
 
 namespace blink {
 namespace protocol {

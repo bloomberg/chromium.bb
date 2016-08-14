@@ -5,8 +5,7 @@
 #ifndef V8StackTraceImpl_h
 #define V8StackTraceImpl_h
 
-#include "platform/inspector_protocol/Allocator.h"
-#include "platform/inspector_protocol/Platform.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
 #include "platform/v8_inspector/public/V8StackTrace.h"
 

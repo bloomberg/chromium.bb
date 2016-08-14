@@ -158,7 +158,7 @@ public:
 
     static T* hashTableDeletedValue() { return reinterpret_cast<T*>(-1); }
 
-    explicit unique_ptr(PtrType ptr) : m_ptr(ptr) {}
+    explicit unique_ptr(PtrType ptr) : m_ptr(ptr) {}  // NOLINT
 
 private:
     PtrType internalRelease() const
@@ -202,12 +202,12 @@ template <typename T> inline typename unique_ptr<T>::ValueType& unique_ptr<T>::o
     return m_ptr[i];
 }
 
-template <typename T> inline unique_ptr<T>::unique_ptr(const unique_ptr<T>& o)
+template <typename T> inline unique_ptr<T>::unique_ptr(const unique_ptr<T>& o)  // NOLINT
     : m_ptr(o.internalRelease())
 {
 }
 
-template <typename T> inline unique_ptr<T>::unique_ptr(unique_ptr<T>&& o)
+template <typename T> inline unique_ptr<T>::unique_ptr(unique_ptr<T>&& o)  // NOLINT
     : m_ptr(o.internalRelease())
 {
 }

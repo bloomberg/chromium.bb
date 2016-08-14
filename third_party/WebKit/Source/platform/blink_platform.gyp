@@ -207,6 +207,7 @@
       '<(blink_platform_output_dir)/RuntimeEnabledFeatures.h',
 
       # Additional .cpp files from the protocol_sources list.
+      '<(blink_platform_output_dir)/inspector_protocol/InspectorProtocol.cpp',
       '<(blink_platform_output_dir)/v8_inspector/protocol/Console.cpp',
       '<(blink_platform_output_dir)/v8_inspector/protocol/Debugger.cpp',
       '<(blink_platform_output_dir)/v8_inspector/protocol/HeapProfiler.cpp',

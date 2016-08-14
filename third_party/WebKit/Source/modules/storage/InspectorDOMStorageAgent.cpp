@@ -40,7 +40,6 @@
 #include "modules/storage/Storage.h"
 #include "modules/storage/StorageNamespace.h"
 #include "modules/storage/StorageNamespaceController.h"
-#include "platform/inspector_protocol/Values.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {

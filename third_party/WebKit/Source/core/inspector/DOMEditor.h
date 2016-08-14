@@ -32,7 +32,7 @@
 #define DOMEditor_h
 
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/ErrorSupport.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

@@ -137,7 +137,6 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"

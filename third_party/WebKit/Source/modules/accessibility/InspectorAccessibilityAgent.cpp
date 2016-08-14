@@ -14,7 +14,6 @@
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/InspectorTypeBuilderHelper.h"
-#include "platform/inspector_protocol/Values.h"
 #include <memory>
 
 namespace blink {

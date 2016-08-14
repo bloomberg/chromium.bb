@@ -51,7 +51,6 @@
 #include "platform/graphics/PictureSnapshot.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/image-encoders/PNGImageEncoder.h"
-#include "platform/inspector_protocol/Parser.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"

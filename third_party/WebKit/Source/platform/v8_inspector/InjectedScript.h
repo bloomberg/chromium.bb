@@ -31,8 +31,7 @@
 #ifndef InjectedScript_h
 #define InjectedScript_h
 
-#include "platform/inspector_protocol/Allocator.h"
-#include "platform/inspector_protocol/Platform.h"
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/V8Console.h"

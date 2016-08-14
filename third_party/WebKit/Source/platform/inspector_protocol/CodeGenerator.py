@@ -106,13 +106,34 @@ try:
         if not exported_package:
             raise Exception("Config is missing export.package")
 
+    lib = False
+    if "lib" in config:
+        lib = True
+        lib_dirname = config["lib"]["output"]
+        if not lib_dirname:
+            raise Exception("Config is missing lib.output")
+        lib_dirname = os.path.join(output_base, lib_dirname)
+        lib_string16_include = config["lib"]["string16_impl_header_path"]
+        if not lib_string16_include:
+            raise Exception("Config is missing lib.string16_impl_header_path")
+        lib_platform_include = config["lib"]["platform_impl_header_path"]
+        if not lib_platform_include:
+            raise Exception("Config is missing lib.platform_impl_header_path")
+
     string_type = config["string"]["class_name"]
     if not string_type:
         raise Exception("Config is missing string.class_name")
 
-    export_macro = config["export_macro"]
+    export_macro = config["class_export"]["macro"]
     if not export_macro:
-        raise Exception("Config is missing export_macro")
+        raise Exception("Config is missing class_export.macro")
+    export_macro_include = config["class_export"]["header_path"]
+    if not export_macro_include:
+        raise Exception("Config is missing class_export.header_path")
+
+    lib_package = config["lib_package"]
+    if not lib_package:
+        raise Exception("Config is missing lib_package")
 except Exception:
     # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
     exc = sys.exc_info()[1]
@@ -404,12 +425,6 @@ def has_disable(commands):
     return False
 
 
-def generate_with_context(template_context, template, file_name):
-    out_file = output_file(file_name)
-    out_file.write(template.render(template_context))
-    out_file.close()
-
-
 def generate(domain_object, template, file_name):
     template_context = {
         "domain": domain_object,
@@ -418,13 +433,17 @@ def generate(domain_object, template, file_name):
         "type_definition": type_definition,
         "has_disable": has_disable,
         "export_macro": export_macro,
-        "output_package": output_package
+        "export_macro_include": export_macro_include,
+        "output_package": output_package,
+        "lib_package": lib_package
     }
     if exporting:
         template_context["exported_package"] = exported_package
     if importing:
         template_context["imported_package"] = imported_package
-    generate_with_context(template_context, template, file_name)
+    out_file = output_file(file_name)
+    out_file.write(template.render(template_context))
+    out_file.close()
 
 
 def read_protocol_file(file_name, all_domains):
@@ -436,6 +455,63 @@ def read_protocol_file(file_name, all_domains):
         domains.append(domain["domain"])
     all_domains["domains"] += parsed_json["domains"]
     return domains
+
+
+def generate_lib():
+    template_context = {
+        "string16_impl_h_include": lib_string16_include,
+        "platform_impl_h_include": lib_platform_include,
+        "lib_package": lib_package,
+        "export_macro": export_macro,
+        "export_macro_include": export_macro_include
+    }
+
+    def generate_file(file_name, template_files):
+        out_file = output_file(file_name)
+        for template_file in template_files:
+            template = jinja_env.get_template("/" + template_file)
+            out_file.write(template.render(template_context))
+            out_file.write("\n\n")
+        out_file.close()
+
+    # Note these should be sorted in the right order.
+    # TODO(dgozman): sort them programmatically based on commented includes.
+    lib_h_templates = [
+        "Allocator_h.template",
+        "Platform_h.template",
+        "Collections_h.template",
+        "String16_h.template",
+
+        "ErrorSupport_h.template",
+        "Values_h.template",
+        "Object_h.template",
+        "ValueConversions_h.template",
+        "Maybe_h.template",
+        "Array_h.template",
+
+        "FrontendChannel_h.template",
+        "BackendCallback_h.template",
+        "DispatcherBase_h.template",
+
+        "Parser_h.template",
+    ]
+
+    lib_cpp_templates = [
+        "InspectorProtocol_cpp.template",
+
+        "String16_cpp.template",
+
+        "ErrorSupport_cpp.template",
+        "Values_cpp.template",
+        "Object_cpp.template",
+
+        "DispatcherBase_cpp.template",
+
+        "Parser_cpp.template",
+    ]
+
+    generate_file(os.path.join(lib_dirname, "InspectorProtocol.h"), lib_h_templates)
+    generate_file(os.path.join(lib_dirname, "InspectorProtocol.cpp"), lib_cpp_templates)
 
 
 json_api = {"domains": []}
@@ -467,3 +543,6 @@ for domain in json_api["domains"]:
             generate(domain, exported_template, os.path.join(exported_dirname, class_name + ".h"))
     if domain["domain"] in imported_domains and domain["has_exports"]:
         generate(domain, imported_template, os.path.join(output_dirname, class_name + ".h"))
+
+if lib:
+    generate_lib()

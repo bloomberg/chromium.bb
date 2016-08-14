@@ -4,7 +4,6 @@
 
 #include "platform/v8_inspector/V8InjectedScriptHost.h"
 
-#include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8Debugger.h"

@@ -4,8 +4,6 @@
 
 #include "platform/v8_inspector/InjectedScriptNative.h"
 
-#include "platform/inspector_protocol/Values.h"
-
 namespace blink {
 
 InjectedScriptNative::InjectedScriptNative(v8::Isolate* isolate)

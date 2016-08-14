@@ -46,7 +46,6 @@
 #include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
-#include "platform/inspector_protocol/Values.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
