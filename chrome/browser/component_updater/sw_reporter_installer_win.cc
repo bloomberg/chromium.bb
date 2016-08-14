@@ -130,9 +130,12 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
       const base::FilePath& install_dir,
       std::unique_ptr<base::DictionaryValue> manifest) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    safe_browsing::RunSwReporter(install_dir.Append(kSwReporterExeName),
-                                 version, base::ThreadTaskRunnerHandle::Get(),
-                                 base::WorkerPool::GetTaskRunner(true));
+    content::BrowserThread::PostAfterStartupTask(
+        FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+        base::Bind(&safe_browsing::RunSwReporter,
+                   install_dir.Append(kSwReporterExeName), version,
+                   base::ThreadTaskRunnerHandle::Get(),
+                   base::WorkerPool::GetTaskRunner(true)));
   }
 
   base::FilePath GetRelativeInstallDir() const override {
