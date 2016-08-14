@@ -30,6 +30,10 @@
 
 namespace ash {
 
+namespace {
+
+bool g_disable_initial_delay = false;
+
 // Returns the window immediately below |window| in the current container.
 WmWindow* GetWindowBelow(WmWindow* window) {
   WmWindow* parent = window->GetParent();
@@ -60,6 +64,8 @@ class LayerFillBackgroundPainter : public views::Background {
 
   DISALLOW_COPY_AND_ASSIGN(LayerFillBackgroundPainter);
 };
+
+}  // namespace
 
 // This class restores and moves a window to the front of the stacking order for
 // the duration of the class's scope.
@@ -302,16 +308,28 @@ class WindowCycleView : public views::WidgetDelegateView {
     target_window_ = target;
     if (GetWidget()) {
       Layout();
-      DCHECK(Contains(GetFocusManager()->GetFocusedView()));
-      window_view_map_[target_window_]->RequestFocus();
+      if (target_window_) {
+        // In the window destruction case, we may have already removed the
+        // focused view and hence not be the focused window. We should still
+        // always be active, though.
+        DCHECK_EQ(ash::WmShell::Get()->GetActiveWindow()->GetInternalWidget(),
+                  GetWidget());
+        window_view_map_[target_window_]->RequestFocus();
+      }
     }
   }
 
   void HandleWindowDestruction(WmWindow* destroying_window,
                                WmWindow* new_target) {
     auto view_iter = window_view_map_.find(destroying_window);
-    view_iter->second->parent()->RemoveChildView(view_iter->second);
+    views::View* parent = view_iter->second->parent();
+    DCHECK_EQ(mirror_container_, parent);
+    parent->RemoveChildView(view_iter->second);
     window_view_map_.erase(view_iter);
+    // With one of its children now gone, we must re-layout |mirror_container_|.
+    // This must happen before SetTargetWindow() to make sure our own Layout()
+    // works correctly when it's calculating highlight bounds.
+    parent->Layout();
     SetTargetWindow(new_target);
   }
 
@@ -415,19 +433,26 @@ void ScopedShowWindow::OnWindowTreeChanging(WmWindow* window,
 
 WindowCycleList::WindowCycleList(const WindowList& windows)
     : windows_(windows), current_index_(0), cycle_view_(nullptr) {
-  WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
+  if (!ShouldShowUi())
+    WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
 
   for (WmWindow* window : windows_)
     window->AddObserver(this);
 
   if (ShouldShowUi()) {
-    show_ui_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(150),
-                         this, &WindowCycleList::InitWindowCycleView);
+    if (g_disable_initial_delay) {
+      InitWindowCycleView();
+    } else {
+      show_ui_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(150),
+                           this, &WindowCycleList::InitWindowCycleView);
+    }
   }
 }
 
 WindowCycleList::~WindowCycleList() {
-  WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(false);
+  if (!ShouldShowUi())
+    WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(false);
+
   for (WmWindow* window : windows_)
     window->RemoveObserver(this);
 
@@ -475,6 +500,11 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   }
 }
 
+// static
+void WindowCycleList::DisableInitialDelayForTesting() {
+  g_disable_initial_delay = true;
+}
+
 void WindowCycleList::OnWindowDestroying(WmWindow* window) {
   window->RemoveObserver(this);
 
@@ -501,9 +531,7 @@ void WindowCycleList::OnWindowDestroying(WmWindow* window) {
 }
 
 bool WindowCycleList::ShouldShowUi() {
-  return windows_.size() > 1 &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshEnableWindowCycleUi);
+  return windows_.size() > 1;
 }
 
 void WindowCycleList::InitWindowCycleView() {

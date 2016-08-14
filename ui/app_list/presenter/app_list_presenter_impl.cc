@@ -80,12 +80,14 @@ void AppListPresenterImpl::Dismiss() {
 
   is_visible_ = false;
 
-  // Our widget is currently active. When the animation completes we'll hide
-  // the widget, changing activation. If a menu is shown before the animation
-  // completes then the activation change triggers the menu to close. By
-  // deactivating now we ensure there is no activation change when the
-  // animation completes and any menus stay open.
-  view_->GetWidget()->Deactivate();
+  // The dismissal may have occurred in response to the app list losing
+  // activation. Otherwise, our widget is currently active. When the animation
+  // completes we'll hide the widget, changing activation. If a menu is shown
+  // before the animation completes then the activation change triggers the menu
+  // to close. By deactivating now we ensure there is no activation change when
+  // the animation completes and any menus stay open.
+  if (view_->GetWidget()->IsActive())
+    view_->GetWidget()->Deactivate();
 
   presenter_delegate_->OnDismissed();
   ScheduleAnimation();
