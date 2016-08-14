@@ -234,13 +234,52 @@ void ArcAuthService::OnBridgeStopped(ArcBridgeService::StopReason reason) {
     // user noticing.
     OnSignInFailedInternal(ProvisioningResult::ARC_STOPPED);
   }
-  if (!clear_required_)
+
+  if (clear_required_) {
+    // This should be always true, but just in case as this is looked at
+    // inside RemoveArcData() at first.
+    DCHECK(arc_bridge_service()->stopped());
+    RemoveArcData();
+  } else {
+    // To support special "Stop and enable ARC" procedure for enterprise,
+    // here call OnArcDataRemoved(true) as if the data removal is successfully
+    // done.
+    // TODO(hidehiko): Restructure the code.
+    OnArcDataRemoved(true);
+  }
+}
+
+void ArcAuthService::RemoveArcData() {
+  if (!arc_bridge_service()->stopped()) {
+    // Just set a flag. On bridge stopped, this will be re-called,
+    // then session manager should remove the data.
+    clear_required_ = true;
     return;
+  }
   clear_required_ = false;
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->RemoveArcData(
       cryptohome::Identification(
           multi_user_util::GetAccountIdFromProfile(profile_)),
-      chromeos::SessionManagerClient::ArcCallback());
+      base::Bind(&ArcAuthService::OnArcDataRemoved,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcAuthService::OnArcDataRemoved(bool success) {
+  LOG_IF(ERROR, !success) << "Required ARC user data wipe failed.";
+
+  // Here check if |reenable_arc_| is marked or not.
+  // The only case this happens should be in the special case for enterprise
+  // "on managed lost" case. In that case, OnBridgeStopped() should trigger
+  // the RemoveArcData(), then this.
+  // TODO(hidehiko): Restructure the code.
+  if (!reenable_arc_)
+    return;
+
+  // Restart ARC anyway. Let the enterprise reporting instance decide whether
+  // the ARC user data wipe is still required or not.
+  reenable_arc_ = false;
+  VLOG(1) << "Reenable ARC";
+  EnableArc();
 }
 
 std::string ArcAuthService::GetAndResetAuthCode() {
@@ -352,7 +391,7 @@ void ArcAuthService::OnSignInFailedInternal(ProvisioningResult result) {
       result == ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT ||
       result == ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR ||
       result == ProvisioningResult::UNKNOWN_ERROR)
-    clear_required_ = true;
+    RemoveArcData();
 
   // We'll delay shutting down the bridge in this case to allow people to send
   // feedback.
@@ -421,6 +460,7 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
     OnOptInPreferenceChanged();
   } else {
+    RemoveArcData();
     UpdateEnabledStateUMA(false);
     PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
     OnIsSyncingChanged();
@@ -527,6 +567,7 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 
   if (!arc_enabled) {
     StopArc();
+    RemoveArcData();
     return;
   }
 
@@ -595,6 +636,15 @@ void ArcAuthService::SetUIPage(UIPage page, const base::string16& status) {
   ui_page_status_ = status;
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnOptInUIShowPage(ui_page_, ui_page_status_));
+}
+
+// This is the special method to support enterprise mojo API.
+// TODO(hidehiko): Remove this.
+void ArcAuthService::StopAndEnableArc() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!arc_bridge_service()->stopped());
+  reenable_arc_ = true;
+  StopArc();
 }
 
 void ArcAuthService::StartArc() {

@@ -38,22 +38,9 @@ void ArcEnterpriseReportingService::ReportManagementState(
 
   if (state == mojom::ManagementState::MANAGED_DO_LOST) {
     DCHECK(arc::ArcServiceManager::Get());
-    ArcServiceManager::Get()->arc_user_data_service()->RequireUserDataWiped(
-        base::Bind(&ArcEnterpriseReportingService::RestartArc,
-                   weak_ptr_factory_.GetWeakPtr()));
-    ArcAuthService::Get()->StopArc();
+    ArcAuthService::Get()->RemoveArcData();
+    ArcAuthService::Get()->StopAndEnableArc();
   }
-}
-
-void ArcEnterpriseReportingService::RestartArc(bool result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!result)
-    LOG(ERROR) << "Required ARC user data wipe failed.";
-
-  // Restart ARC anyway. Let the enterprise reporting instance decide whether
-  // the ARC user data wipe is still required or not.
-  VLOG(1) << "Restart ARC";
-  ArcAuthService::Get()->EnableArc();
 }
 
 }  // namespace arc

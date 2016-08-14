@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
@@ -48,6 +49,10 @@ chromeos::FakeChromeUserManager* ArcAppTest::GetUserManager() {
 }
 
 void ArcAppTest::SetUp(Profile* profile) {
+  if (!chromeos::DBusThreadManager::IsInitialized()) {
+    chromeos::DBusThreadManager::Initialize();
+    dbus_thread_manager_initialized_ = true;
+  }
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kEnableArc);
   DCHECK(!profile_);
@@ -134,6 +139,13 @@ void ArcAppTest::SetUp(Profile* profile) {
 
 void ArcAppTest::TearDown() {
   auth_service_.reset();
+  if (dbus_thread_manager_initialized_) {
+    // DBusThreadManager may be initialized from other testing utility,
+    // such as ash::test::AshTestHelper::SetUp(), so Shutdown() only when
+    // it is initialized in ArcAppTest::SetUp().
+    chromeos::DBusThreadManager::Shutdown();
+    dbus_thread_manager_initialized_ = false;
+  }
 }
 
 void ArcAppTest::StopArcInstance() {

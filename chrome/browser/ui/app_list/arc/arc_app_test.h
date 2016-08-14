@@ -94,6 +94,8 @@ class ArcAppTest {
   std::vector<arc::mojom::ArcPackageInfo> fake_packages_;
   std::vector<arc::mojom::ShortcutInfo> fake_shortcuts_;
 
+  bool dbus_thread_manager_initialized_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ArcAppTest);
 };
 

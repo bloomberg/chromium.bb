@@ -25,6 +25,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/user_names.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
@@ -57,6 +58,8 @@ class ArcAuthServiceTest : public testing::Test {
   ~ArcAuthServiceTest() override = default;
 
   void SetUp() override {
+    chromeos::DBusThreadManager::Initialize();
+
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kEnableArc);
     ArcAuthService::DisableUIForTesting();
@@ -83,7 +86,10 @@ class ArcAuthServiceTest : public testing::Test {
     chromeos::WallpaperManager::Initialize();
   }
 
-  void TearDown() override { chromeos::WallpaperManager::Shutdown(); }
+  void TearDown() override {
+    chromeos::WallpaperManager::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
+  }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
     return static_cast<chromeos::FakeChromeUserManager*>(

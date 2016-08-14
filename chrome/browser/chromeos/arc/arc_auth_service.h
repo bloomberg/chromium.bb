@@ -181,6 +181,15 @@ class ArcAuthService : public ArcService,
   // Stops ARC without changing ArcEnabled preference.
   void StopArc();
 
+  // StopArc(), then EnableArc(). Between them data clear may happens.
+  // This is a special method to support enterprise device lost case.
+  // This can be called only when ARC is running.
+  void StopAndEnableArc();
+
+  // Removes the data if ARC is stopped. Otherwise, queue to remove the data
+  // on ARC is stopped.
+  void RemoveArcData();
+
   // Returns current page that has to be shown in OptIn UI.
   UIPage ui_page() const { return ui_page_; }
 
@@ -201,6 +210,7 @@ class ArcAuthService : public ArcService,
   void StartAndroidManagementClient();
   void CheckAndroidManagement(bool background_mode);
   void StartArcIfSignedIn();
+  void OnArcDataRemoved(bool success);
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
@@ -219,6 +229,7 @@ class ArcAuthService : public ArcService,
   UIPage ui_page_ = UIPage::NO_PAGE;
   base::string16 ui_page_status_;
   bool clear_required_ = false;
+  bool reenable_arc_ = false;
   bool waiting_for_reply_ = false;
 
   std::unique_ptr<ArcAuthContext> context_;
