@@ -1426,7 +1426,8 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
 bool DXVAVideoDecodeAccelerator::SetDecoderMediaTypes() {
   RETURN_ON_FAILURE(SetDecoderInputMediaType(),
                     "Failed to set decoder input media type", false);
-  return SetDecoderOutputMediaType(MFVideoFormat_NV12);
+  return SetDecoderOutputMediaType(MFVideoFormat_NV12) ||
+         SetDecoderOutputMediaType(MFVideoFormat_P010);
 }
 
 bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
@@ -1561,7 +1562,8 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
     // A stream change needs further ProcessInput calls to get back decoder
     // output which is why we need to set the state to stopped.
     if (hr == MF_E_TRANSFORM_STREAM_CHANGE) {
-      if (!SetDecoderOutputMediaType(MFVideoFormat_NV12)) {
+      if (!SetDecoderOutputMediaType(MFVideoFormat_NV12) &&
+          !SetDecoderOutputMediaType(MFVideoFormat_P010)) {
         // Decoder didn't let us set NV12 output format. Not sure as to why
         // this can happen. Give up in disgust.
         NOTREACHED() << "Failed to set decoder output media type to NV12";
