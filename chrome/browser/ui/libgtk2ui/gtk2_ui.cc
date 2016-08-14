@@ -439,6 +439,11 @@ double GetDPI() {
   if (dpi < 0) {
     const double kDefaultDPI = 96;
 
+    if (display::Display::HasForceDeviceScaleFactor()) {
+      dpi = display::Display::GetForcedDeviceScaleFactor() * kDefaultDPI;
+      return dpi;
+    }
+
     GtkSettings* gtk_settings = gtk_settings_get_default();
     CHECK(gtk_settings);
     gint gtk_dpi = -1;
