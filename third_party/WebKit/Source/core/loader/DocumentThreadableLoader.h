@@ -55,6 +55,7 @@ class SecurityOrigin;
 class ThreadableLoaderClient;
 
 class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, private RawResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(DocumentThreadableLoader);
     public:
         static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         static DocumentThreadableLoader* create(Document&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);

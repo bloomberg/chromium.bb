@@ -238,6 +238,7 @@ TEST_F(ResourceFetcherTest, VaryImage)
 }
 
 class RequestSameResourceOnComplete : public GarbageCollectedFinalized<RequestSameResourceOnComplete>, public RawResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(RequestSameResourceOnComplete);
 public:
     explicit RequestSameResourceOnComplete(Resource* resource)
         : m_resource(resource)
@@ -261,6 +262,7 @@ public:
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_resource);
+        RawResourceClient::trace(visitor);
     }
 
     String debugName() const override { return "RequestSameResourceOnComplete"; }
@@ -363,6 +365,7 @@ TEST_F(ResourceFetcherTest, DontReuseMediaDataUrl)
 }
 
 class ServeRequestsOnCompleteClient final : public GarbageCollectedFinalized<ServeRequestsOnCompleteClient>, public RawResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(ServeRequestsOnCompleteClient);
 public:
     void notifyFinished(Resource*) override
     {
@@ -379,7 +382,10 @@ public:
     void dataDownloaded(Resource*, int) override { ASSERT_TRUE(false); }
     void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override { ASSERT_TRUE(false); }
 
-    DEFINE_INLINE_TRACE() {}
+    DEFINE_INLINE_TRACE()
+    {
+        RawResourceClient::trace(visitor);
+    }
 
     String debugName() const override { return "ServeRequestsOnCompleteClient"; }
 };

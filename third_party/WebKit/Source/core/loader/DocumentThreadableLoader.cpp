@@ -974,6 +974,7 @@ DEFINE_TRACE(DocumentThreadableLoader)
     visitor->trace(m_resource);
     visitor->trace(m_document);
     ThreadableLoader::trace(visitor);
+    RawResourceClient::trace(visitor);
 }
 
 } // namespace blink

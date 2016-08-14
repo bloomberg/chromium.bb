@@ -102,12 +102,8 @@ inline RawResource* toRawResource(Resource* resource)
     return static_cast<RawResource*>(resource);
 }
 
-class CORE_EXPORT RawResourceClient : public ResourceClient {
+class CORE_EXPORT RawResourceClient : public GarbageCollectedMixin, public ResourceClient {
 public:
-    RawResourceClient()
-        : m_weakFactory(this) { }
-    WeakPtr<RawResourceClient> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
-    ~RawResourceClient() override {}
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == RawResourceType; }
     ResourceClientType getResourceClientType() const final { return RawResourceType; }
 
@@ -120,8 +116,7 @@ public:
     virtual void dataDownloaded(Resource*, int) { }
     virtual void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) { }
 
-private:
-    WeakPtrFactory<RawResourceClient> m_weakFactory;
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
 } // namespace blink

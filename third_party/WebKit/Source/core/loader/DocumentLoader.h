@@ -64,6 +64,7 @@ class WebDocumentSubresourceFilter;
 struct ViewportDescriptionWrapper;
 
 class CORE_EXPORT DocumentLoader : public GarbageCollectedFinalized<DocumentLoader>, private RawResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(DocumentLoader);
 public:
     static DocumentLoader* create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
     {

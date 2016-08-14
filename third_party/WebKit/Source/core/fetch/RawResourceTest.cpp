@@ -58,6 +58,7 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
 }
 
 class DummyClient final : public GarbageCollectedFinalized<DummyClient>, public RawResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(DummyClient);
 public:
     DummyClient() : m_called(false), m_numberOfRedirectsReceived(0) {}
     ~DummyClient() override {}
@@ -82,7 +83,10 @@ public:
     bool called() { return m_called; }
     int numberOfRedirectsReceived() const { return m_numberOfRedirectsReceived; }
     const Vector<char>& data() { return m_data; }
-    DEFINE_INLINE_TRACE() {}
+    DEFINE_INLINE_TRACE()
+    {
+        RawResourceClient::trace(visitor);
+    }
 
 private:
     bool m_called;
@@ -92,6 +96,7 @@ private:
 
 // This client adds another client when notified.
 class AddingClient final : public GarbageCollectedFinalized<AddingClient>, public RawResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(AddingClient);
 public:
     AddingClient(DummyClient* client, Resource* resource)
         : m_dummyClient(client)
@@ -119,6 +124,7 @@ public:
     {
         visitor->trace(m_dummyClient);
         visitor->trace(m_resource);
+        RawResourceClient::trace(visitor);
     }
 
 private:
@@ -349,6 +355,7 @@ TEST(RawResourceTest, AddClientDuringCallback)
 
 // This client removes another client when notified.
 class RemovingClient : public GarbageCollectedFinalized<RemovingClient>, public RawResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(RemovingClient);
 public:
     RemovingClient(DummyClient* client)
         : m_dummyClient(client) {}
@@ -365,6 +372,7 @@ public:
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_dummyClient);
+        RawResourceClient::trace(visitor);
     }
 
 private:

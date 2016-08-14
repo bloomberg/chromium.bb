@@ -43,6 +43,7 @@ public:
     {
         visitor->trace(m_loader);
         StyleSheetResourceClient::trace(visitor);
+        RawResourceClient::trace(visitor);
     }
 
 private:

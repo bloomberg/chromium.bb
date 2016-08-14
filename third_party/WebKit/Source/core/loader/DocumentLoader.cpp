@@ -144,6 +144,7 @@ DEFINE_TRACE(DocumentLoader)
     visitor->trace(m_documentLoadTiming);
     visitor->trace(m_applicationCacheHost);
     visitor->trace(m_contentSecurityPolicy);
+    RawResourceClient::trace(visitor);
 }
 
 unsigned long DocumentLoader::mainResourceIdentifier() const

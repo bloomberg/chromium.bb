@@ -104,21 +104,20 @@ void RawResource::didAddClient(ResourceClient* c)
         return;
     ASSERT(RawResourceClient::isExpectedType(c));
     RawResourceClient* client = static_cast<RawResourceClient*>(c);
-    WeakPtr<RawResourceClient> clientWeak = client->createWeakPtr();
     for (const auto& redirect : redirectChain()) {
         ResourceRequest request(redirect.m_request);
         client->redirectReceived(this, request, redirect.m_redirectResponse);
-        if (!clientWeak || !hasClient(c))
+        if (!hasClient(c))
             return;
     }
 
     if (!response().isNull())
         client->responseReceived(this, response(), nullptr);
-    if (!clientWeak || !hasClient(c))
+    if (!hasClient(c))
         return;
     if (data())
         client->dataReceived(this, data()->data(), data()->size());
-    if (!clientWeak || !hasClient(c))
+    if (!hasClient(c))
         return;
     Resource::didAddClient(client);
 }
