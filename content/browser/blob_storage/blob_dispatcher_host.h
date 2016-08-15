@@ -32,6 +32,7 @@ class BlobDataBuilder;
 struct BlobItemBytesRequest;
 struct BlobItemBytesResponse;
 class BlobStorageContext;
+class FileSystemContext;
 }
 
 namespace content {
@@ -45,7 +46,10 @@ class ChromeBlobStorageContext;
 // is one per child process.
 class CONTENT_EXPORT BlobDispatcherHost : public BrowserMessageFilter {
  public:
-  explicit BlobDispatcherHost(ChromeBlobStorageContext* blob_storage_context);
+  BlobDispatcherHost(
+      int process_id,
+      scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
+      scoped_refptr<storage::FileSystemContext> file_system_context);
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -131,6 +135,9 @@ class CONTENT_EXPORT BlobDispatcherHost : public BrowserMessageFilter {
 
   // Unregisters all blobs and urls that were registered in this host.
   void ClearHostFromBlobStorageContext();
+
+  const int process_id_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   // Collection of blob ids and a count of how many usages
   // of that id are attributable to this consumer.

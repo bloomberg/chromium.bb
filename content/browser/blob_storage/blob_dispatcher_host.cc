@@ -10,10 +10,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "ipc/ipc_platform_file.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_transport_result.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
 #include "storage/common/blob_storage/blob_item_bytes_response.h"
 #include "storage/common/data_element.h"
@@ -22,7 +26,9 @@
 using storage::BlobStorageContext;
 using storage::BlobStorageRegistry;
 using storage::BlobTransportResult;
+using storage::DataElement;
 using storage::IPCBlobCreationCancelCode;
+using storage::FileSystemURL;
 
 namespace content {
 namespace {
@@ -37,9 +43,13 @@ enum RefcountOperation {
 } // namespace
 
 BlobDispatcherHost::BlobDispatcherHost(
-    ChromeBlobStorageContext* blob_storage_context)
+    int process_id,
+    scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
+    scoped_refptr<storage::FileSystemContext> file_system_context)
     : BrowserMessageFilter(BlobMsgStart),
-      blob_storage_context_(blob_storage_context) {}
+      process_id_(process_id),
+      file_system_context_(std::move(file_system_context)),
+      blob_storage_context_(std::move(blob_storage_context)) {}
 
 BlobDispatcherHost::~BlobDispatcherHost() {
   ClearHostFromBlobStorageContext();
@@ -136,6 +146,33 @@ void BlobDispatcherHost::OnStartBuildingBlob(
     SendIPCResponse(uuid, BlobTransportResult::BAD_IPC);
     return;
   }
+
+  ChildProcessSecurityPolicyImpl* security_policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  for (const DataElement& item : descriptions) {
+    if (item.type() == storage::DataElement::TYPE_FILE_FILESYSTEM) {
+      FileSystemURL filesystem_url(
+          file_system_context_->CrackURL(item.filesystem_url()));
+      if (!FileSystemURLIsValid(file_system_context_.get(), filesystem_url) ||
+          !security_policy->CanReadFileSystemFile(process_id_,
+                                                  filesystem_url)) {
+        async_builder_.CancelBuildingBlob(
+            uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED, context);
+        Send(new BlobStorageMsg_CancelBuildingBlob(
+            uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED));
+        return;
+      }
+    }
+    if (item.type() == storage::DataElement::TYPE_FILE &&
+        !security_policy->CanReadFile(process_id_, item.path())) {
+      async_builder_.CancelBuildingBlob(
+          uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED, context);
+      Send(new BlobStorageMsg_CancelBuildingBlob(
+          uuid, IPCBlobCreationCancelCode::FILE_WRITE_FAILED));
+      return;
+    }
+  }
+
   // |this| owns async_builder_ so using base::Unretained(this) is safe.
   BlobTransportResult result = async_builder_.StartBuildingBlob(
       uuid, descriptions, context->memory_available(), context,
