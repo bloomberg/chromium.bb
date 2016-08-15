@@ -577,20 +577,20 @@ weston_desktop_xdg_toplevel_set_size(struct weston_desktop_surface *dsurface,
 
 static void
 weston_desktop_xdg_toplevel_committed(struct weston_desktop_xdg_toplevel *toplevel,
-				      bool new_buffer, int32_t sx, int32_t sy)
+				      int32_t sx, int32_t sy)
 {
 	struct weston_surface *wsurface =
 		weston_desktop_surface_get_surface(toplevel->base.desktop_surface);
 	bool reconfigure = false;
 
-	if (!new_buffer && !toplevel->added) {
+	if (!wsurface->buffer_ref.buffer && !toplevel->added) {
 		weston_desktop_api_surface_added(toplevel->base.desktop,
 					         toplevel->base.desktop_surface);
 		weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
 		toplevel->added = true;
 		return;
 	}
-	if (!new_buffer)
+	if (!wsurface->buffer_ref.buffer)
 		return;
 
 	if (toplevel->next_state.maximized || toplevel->next_state.fullscreen)
@@ -1004,8 +1004,10 @@ weston_desktop_xdg_surface_committed(struct weston_desktop_surface *dsurface,
 				     int32_t sx, int32_t sy)
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
+	struct weston_surface *wsurface =
+		weston_desktop_surface_get_surface (dsurface);
 
-	if (new_buffer && !surface->configured) {
+	if (wsurface->buffer_ref.buffer && !surface->configured) {
 		wl_resource_post_error(surface->resource,
 				       ZXDG_SURFACE_V6_ERROR_UNCONFIGURED_BUFFER,
 				       "xdg_surface has never been configured");
@@ -1025,7 +1027,7 @@ weston_desktop_xdg_surface_committed(struct weston_desktop_surface *dsurface,
 				       "xdg_surface must have a role");
 		break;
 	case WESTON_DESKTOP_XDG_SURFACE_ROLE_TOPLEVEL:
-		weston_desktop_xdg_toplevel_committed((struct weston_desktop_xdg_toplevel *) surface, new_buffer, sx, sy);
+		weston_desktop_xdg_toplevel_committed((struct weston_desktop_xdg_toplevel *) surface, sx, sy);
 		break;
 	case WESTON_DESKTOP_XDG_SURFACE_ROLE_POPUP:
 		weston_desktop_xdg_popup_committed((struct weston_desktop_xdg_popup *) surface);
