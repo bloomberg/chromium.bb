@@ -28,8 +28,8 @@ typedef WebTest PageScriptUtilTest;
 TEST_F(PageScriptUtilTest, WKWebViewEarlyPageScript) {
   base::scoped_nsobject<WKWebView> web_view(
       CreateWKWebView(CGRectZero, GetBrowserState()));
-  EvaluateJavaScript(web_view, GetEarlyPageScript());
-  EXPECT_NSEQ(@"object", EvaluateJavaScript(web_view, @"typeof __gCrWeb"));
+  ExecuteJavaScript(web_view, GetEarlyPageScript());
+  EXPECT_NSEQ(@"object", ExecuteJavaScript(web_view, @"typeof __gCrWeb"));
 }
 
 // Tests that embedder's WKWebView script is included into early script.
@@ -37,8 +37,8 @@ TEST_F(PageScriptUtilTest, WKEmbedderScript) {
   GetWebClient()->SetEarlyPageScript(@"__gCrEmbedder = {};");
   base::scoped_nsobject<WKWebView> web_view(
       CreateWKWebView(CGRectZero, GetBrowserState()));
-  EvaluateJavaScript(web_view, GetEarlyPageScript());
-  EXPECT_NSEQ(@"object", EvaluateJavaScript(web_view, @"typeof __gCrEmbedder"));
+  ExecuteJavaScript(web_view, GetEarlyPageScript());
+  EXPECT_NSEQ(@"object", ExecuteJavaScript(web_view, @"typeof __gCrEmbedder"));
 }
 
 }  // namespace
