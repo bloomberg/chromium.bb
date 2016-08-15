@@ -302,7 +302,7 @@ void V8Debugger::clearStepping()
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
-bool V8Debugger::setScriptSource(const String16& sourceID, v8::Local<v8::String> newSource, bool dryRun, ErrorString* error, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged)
+bool V8Debugger::setScriptSource(const String16& sourceID, v8::Local<v8::String> newSource, bool preview, ErrorString* error, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged)
 {
     class EnableLiveEditScope {
     public:
@@ -327,7 +327,7 @@ bool V8Debugger::setScriptSource(const String16& sourceID, v8::Local<v8::String>
     if (!isPaused())
         contextScope = wrapUnique(new v8::Context::Scope(debuggerContext()));
 
-    v8::Local<v8::Value> argv[] = { toV8String(m_isolate, sourceID), newSource, v8Boolean(dryRun, m_isolate) };
+    v8::Local<v8::Value> argv[] = { toV8String(m_isolate, sourceID), newSource, v8Boolean(preview, m_isolate) };
 
     v8::Local<v8::Value> v8result;
     {
@@ -353,7 +353,7 @@ bool V8Debugger::setScriptSource(const String16& sourceID, v8::Local<v8::String>
         {
             *stackChanged = resultTuple->Get(1)->BooleanValue();
             // Call stack may have changed after if the edited function was on the stack.
-            if (!dryRun && isPaused()) {
+            if (!preview && isPaused()) {
                 JavaScriptCallFrames frames = currentCallFrames();
                 newCallFrames->swap(frames);
             }

@@ -232,9 +232,9 @@ void V8DebuggerAgentImpl::setBreakpointsActive(ErrorString* errorString, bool ac
     m_debugger->setBreakpointsActivated(active);
 }
 
-void V8DebuggerAgentImpl::setSkipAllPauses(ErrorString*, bool skip)
+void V8DebuggerAgentImpl::setSkipAllPauses(ErrorString*, bool skipped)
 {
-    m_skipAllPauses = skip;
+    m_skipAllPauses = skipped;
     m_state->setBoolean(DebuggerAgentState::skipAllPauses, m_skipAllPauses);
 }
 
@@ -517,7 +517,7 @@ void V8DebuggerAgentImpl::searchInContent(ErrorString* error, const String16& sc
 void V8DebuggerAgentImpl::setScriptSource(ErrorString* errorString,
     const String16& scriptId,
     const String16& newContent,
-    const Maybe<bool>& dryRun,
+    const Maybe<bool>& preview,
     Maybe<protocol::Array<protocol::Debugger::CallFrame>>* newCallFrames,
     Maybe<bool>* stackChanged,
     Maybe<StackTrace>* asyncStackTrace,
@@ -528,7 +528,7 @@ void V8DebuggerAgentImpl::setScriptSource(ErrorString* errorString,
 
     v8::HandleScope handles(m_isolate);
     v8::Local<v8::String> newSource = toV8String(m_isolate, newContent);
-    if (!m_debugger->setScriptSource(scriptId, newSource, dryRun.fromMaybe(false), errorString, optOutCompileError, &m_pausedCallFrames, stackChanged))
+    if (!m_debugger->setScriptSource(scriptId, newSource, preview.fromMaybe(false), errorString, optOutCompileError, &m_pausedCallFrames, stackChanged))
         return;
 
     ScriptsMap::iterator it = m_scripts.find(scriptId);
@@ -711,7 +711,7 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     const String16& expression,
     const Maybe<String16>& objectGroup,
     const Maybe<bool>& includeCommandLineAPI,
-    const Maybe<bool>& silent,
+    const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
     std::unique_ptr<RemoteObject>* result,
@@ -729,7 +729,7 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
 
     if (includeCommandLineAPI.fromMaybe(false) && !scope.installCommandLineAPI())
         return;
-    if (silent.fromMaybe(false))
+    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         scope.ignoreExceptionsAndMuteConsole();
 
     v8::MaybeLocal<v8::Value> maybeResultValue = m_pausedCallFrames[scope.frameOrdinal()]->evaluate(toV8String(m_isolate, expression));

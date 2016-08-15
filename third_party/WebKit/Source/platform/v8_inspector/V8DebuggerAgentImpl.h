@@ -54,7 +54,7 @@ public:
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
     void setBreakpointsActive(ErrorString*, bool active) override;
-    void setSkipAllPauses(ErrorString*, bool skip) override;
+    void setSkipAllPauses(ErrorString*, bool skipped) override;
     void setBreakpointByUrl(ErrorString*,
         int lineNumber,
         const Maybe<String16>& optionalURL,
@@ -80,7 +80,7 @@ public:
     void setScriptSource(ErrorString*,
         const String16& inScriptId,
         const String16& inScriptSource,
-        const Maybe<bool>& dryRun,
+        const Maybe<bool>& inPreview,
         Maybe<protocol::Array<protocol::Debugger::CallFrame>>* optOutCallFrames,
         Maybe<bool>* optOutStackChanged,
         Maybe<protocol::Runtime::StackTrace>* optOutAsyncStackTrace,
@@ -101,7 +101,7 @@ public:
         const String16& expression,
         const Maybe<String16>& objectGroup,
         const Maybe<bool>& includeCommandLineAPI,
-        const Maybe<bool>& silent,
+        const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
         std::unique_ptr<protocol::Runtime::RemoteObject>* result,
