@@ -123,7 +123,7 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     [line lineToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
                                   NSMaxY(decoration_frame))];
 
-    bool in_dark_mode = [[control_view window] inIncognitoModeWithSystemTheme];
+    bool in_dark_mode = [[control_view window] hasDarkTheme];
     [GetDividerColor(in_dark_mode) set];
     [line stroke];
 
