@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/common/ash_constants.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
@@ -24,6 +25,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -96,19 +99,23 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
                                         kTrayPopupPaddingHorizontal, 0,
                                         kTrayPopupPaddingBetweenItems));
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* icon =
       new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
-  gfx::Image image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_AURA_UBER_TRAY_BRIGHTNESS);
-  icon->SetImage(image.ToImageSkia());
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    icon->SetImage(gfx::CreateVectorIcon(
+        gfx::VectorIconId::SYSTEM_MENU_BRIGHTNESS, kMenuIconColor));
+  } else {
+    icon->SetImage(
+        rb.GetImageNamed(IDR_AURA_UBER_TRAY_BRIGHTNESS).ToImageSkia());
+  }
   AddChildView(icon);
 
   slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
   slider_->set_focus_border_color(kFocusBorderColor);
   slider_->SetValue(static_cast<float>(initial_percent / 100.0));
   slider_->SetAccessibleName(
-      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_BRIGHTNESS));
+      rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BRIGHTNESS));
   AddChildView(slider_);
 
   if (is_default_view_) {

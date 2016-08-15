@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
@@ -28,6 +29,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -69,8 +72,13 @@ class IMEDefaultView : public TrayItemMore {
  public:
   explicit IMEDefaultView(SystemTrayItem* owner, const base::string16& label)
       : TrayItemMore(owner, true) {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    SetImage(*bundle.GetImageNamed(IDR_AURA_UBER_TRAY_IME).ToImageSkia());
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::SYSTEM_MENU_KEYBOARD,
+                                     kMenuIconColor));
+    } else {
+      ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+      SetImage(*bundle.GetImageNamed(IDR_AURA_UBER_TRAY_IME).ToImageSkia());
+    }
     UpdateLabel(label);
   }
 
