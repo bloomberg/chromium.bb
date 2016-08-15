@@ -57,8 +57,8 @@ const uint8_t *aom_dk_reader_find_end(struct aom_dk_reader *r);
 
 static INLINE ptrdiff_t aom_dk_reader_tell(const struct aom_dk_reader *r) {
   const size_t bits_read = (r->buffer - r->buffer_start) * CHAR_BIT;
-  const int count = (r->count < LOTS_OF_BITS) ? r->count
-                                              : r->count - LOTS_OF_BITS;
+  const int count =
+      (r->count < LOTS_OF_BITS) ? r->count : r->count - LOTS_OF_BITS;
   return bits_read + BD_VALUE_SIZE - (count + CHAR_BIT);
 }
 
