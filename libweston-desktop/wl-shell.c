@@ -89,7 +89,7 @@ weston_desktop_wl_shell_surface_maybe_ungrab(struct weston_desktop_wl_shell_surf
 
 static void
 weston_desktop_wl_shell_surface_committed(struct weston_desktop_surface *dsurface,
-					  void *user_data, bool new_buffer,
+					  void *user_data,
 					  int32_t sx, int32_t sy)
 {
 	struct weston_desktop_wl_shell_surface *surface = user_data;

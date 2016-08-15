@@ -96,7 +96,7 @@ struct weston_desktop_surface_implementation {
 	void (*set_size)(struct weston_desktop_surface *surface,
 			 void *user_data, int32_t width, int32_t height);
 	void (*committed)(struct weston_desktop_surface *surface, void *user_data,
-		          bool new_buffer, int32_t sx, int32_t sy);
+		          int32_t sx, int32_t sy);
 	void (*update_position)(struct weston_desktop_surface *surface,
 				void *user_data);
 	void (*ping)(struct weston_desktop_surface *surface, uint32_t serial,

@@ -188,7 +188,7 @@ weston_desktop_xdg_surface_set_size(struct weston_desktop_surface *dsurface,
 
 static void
 weston_desktop_xdg_surface_committed(struct weston_desktop_surface *dsurface,
-				     void *user_data, bool new_buffer,
+				     void *user_data,
 				     int32_t sx, int32_t sy)
 {
 	struct weston_desktop_xdg_surface *surface = user_data;

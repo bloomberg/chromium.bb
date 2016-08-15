@@ -51,7 +51,7 @@ struct weston_desktop_surface {
 	void *user_data;
 	struct weston_surface *surface;
 	struct wl_list view_list;
-	bool has_new_buffer;
+	struct weston_position buffer_move;
 	struct wl_listener surface_commit_listener;
 	struct wl_listener surface_destroy_listener;
 	struct wl_listener client_destroy_listener;
@@ -103,34 +103,6 @@ weston_desktop_surface_update_view_position(struct weston_desktop_surface *surfa
 
 static void
 weston_desktop_view_propagate_layer(struct weston_desktop_view *view);
-
-static void
-weston_desktop_surface_committed_common(struct weston_desktop_surface *surface,
-					bool new_buffer, int32_t sx, int32_t sy)
-{
-	if (surface->implementation->committed != NULL)
-		surface->implementation->committed(surface,
-						   surface->implementation_data,
-						   new_buffer, sx, sy);
-
-	if (surface->parent != NULL) {
-		struct weston_desktop_view *view;
-
-		wl_list_for_each(view, &surface->view_list, link) {
-			weston_view_set_transform_parent(view->view,
-							 view->parent->view);
-			weston_desktop_view_propagate_layer(view->parent);
-		}
-		weston_desktop_surface_update_view_position(surface);
-	}
-
-	if (!wl_list_empty(&surface->children_list)) {
-		struct weston_desktop_surface *child;
-
-		wl_list_for_each(child, &surface->children_list, children_link)
-			weston_desktop_surface_update_view_position(child);
-	}
-}
 
 static void
 weston_desktop_view_destroy(struct weston_desktop_view *view)
@@ -197,10 +169,32 @@ weston_desktop_surface_surface_committed(struct wl_listener *listener,
 	struct weston_desktop_surface *surface =
 		wl_container_of(listener, surface, surface_commit_listener);
 
-	if (surface->has_new_buffer)
-		surface->has_new_buffer = false;
-	else
-		weston_desktop_surface_committed_common(surface, false, 0, 0);
+	if (surface->implementation->committed != NULL)
+		surface->implementation->committed(surface,
+						   surface->implementation_data,
+						   surface->buffer_move.x,
+						   surface->buffer_move.y);
+
+	if (surface->parent != NULL) {
+		struct weston_desktop_view *view;
+
+		wl_list_for_each(view, &surface->view_list, link) {
+			weston_view_set_transform_parent(view->view,
+							 view->parent->view);
+			weston_desktop_view_propagate_layer(view->parent);
+		}
+		weston_desktop_surface_update_view_position(surface);
+	}
+
+	if (!wl_list_empty(&surface->children_list)) {
+		struct weston_desktop_surface *child;
+
+		wl_list_for_each(child, &surface->children_list, children_link)
+			weston_desktop_surface_update_view_position(child);
+	}
+
+	surface->buffer_move.x = 0;
+	surface->buffer_move.y = 0;
 }
 
 static void
@@ -229,8 +223,8 @@ weston_desktop_surface_committed(struct weston_surface *wsurface,
 {
 	struct weston_desktop_surface *surface = wsurface->committed_private;
 
-	weston_desktop_surface_committed_common(surface, true, sx, sy);
-	surface->has_new_buffer = true;
+	surface->buffer_move.x = sx;
+	surface->buffer_move.y = sy;
 }
 
 static void

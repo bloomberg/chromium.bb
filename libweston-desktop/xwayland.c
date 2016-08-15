@@ -112,7 +112,7 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 
 static void
 weston_desktop_xwayland_surface_committed(struct weston_desktop_surface *dsurface,
-					  void *user_data, bool new_buffer,
+					  void *user_data,
 					  int32_t sx, int32_t sy)
 {
 	struct weston_desktop_xwayland_surface *surface = user_data;
