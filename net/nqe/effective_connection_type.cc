@@ -14,7 +14,6 @@ const char kEffectiveConnectionTypeSlow2G[] = "Slow2G";
 const char kEffectiveConnectionType2G[] = "2G";
 const char kEffectiveConnectionType3G[] = "3G";
 const char kEffectiveConnectionType4G[] = "4G";
-const char kEffectiveConnectionTypeBroadband[] = "Broadband";
 
 }  // namespace
 
@@ -34,8 +33,6 @@ const char* GetNameForEffectiveConnectionType(EffectiveConnectionType type) {
       return kEffectiveConnectionType3G;
     case EFFECTIVE_CONNECTION_TYPE_4G:
       return kEffectiveConnectionType4G;
-    case EFFECTIVE_CONNECTION_TYPE_BROADBAND:
-      return kEffectiveConnectionTypeBroadband;
     default:
       NOTREACHED();
       break;
@@ -68,10 +65,6 @@ bool GetEffectiveConnectionTypeForName(
   }
   if (connection_type_name == kEffectiveConnectionType4G) {
     *effective_connection_type = EFFECTIVE_CONNECTION_TYPE_4G;
-    return true;
-  }
-  if (connection_type_name == kEffectiveConnectionTypeBroadband) {
-    *effective_connection_type = EFFECTIVE_CONNECTION_TYPE_BROADBAND;
     return true;
   }
   *effective_connection_type = EFFECTIVE_CONNECTION_TYPE_UNKNOWN;

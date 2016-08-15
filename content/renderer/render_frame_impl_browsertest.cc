@@ -247,7 +247,7 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     blink::WebEffectiveConnectionType type;
   } tests[] = {{blink::WebEffectiveConnectionType::TypeUnknown},
                {blink::WebEffectiveConnectionType::Type2G},
-               {blink::WebEffectiveConnectionType::TypeBroadband}};
+               {blink::WebEffectiveConnectionType::Type4G}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     SetEffectionConnectionType(GetMainRenderFrame(), tests[i].type);

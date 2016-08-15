@@ -22,8 +22,6 @@ STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_3G,
                    blink::WebEffectiveConnectionType::Type3G);
 STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_4G,
                    blink::WebEffectiveConnectionType::Type4G);
-STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_BROADBAND,
-                   blink::WebEffectiveConnectionType::TypeBroadband);
 
 blink::WebEffectiveConnectionType
 EffectiveConnectionTypeToWebEffectiveConnectionType(

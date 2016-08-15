@@ -39,8 +39,7 @@ enum class WebEffectiveConnectionType {
     TypeSlow2G,
     Type2G,
     Type3G,
-    Type4G,
-    TypeBroadband
+    Type4G
 };
 
 } // namespace blink

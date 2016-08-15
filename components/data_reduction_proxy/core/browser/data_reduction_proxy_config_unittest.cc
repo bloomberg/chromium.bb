@@ -973,7 +973,7 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   // Network quality improved. However, network should still be marked as slow
   // because of hysteresis.
   test_network_quality_estimator.SetEffectiveConnectionType(
-      net::EFFECTIVE_CONNECTION_TYPE_BROADBAND);
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
