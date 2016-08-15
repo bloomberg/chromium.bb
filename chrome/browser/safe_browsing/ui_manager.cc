@@ -69,8 +69,6 @@ namespace safe_browsing {
 SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
     : is_subresource(false),
       threat_type(SB_THREAT_TYPE_SAFE),
-      render_process_host_id(-1),
-      render_frame_id(MSG_ROUTING_NONE),
       threat_source(safe_browsing::ThreatSource::UNKNOWN) {}
 
 SafeBrowsingUIManager::UnsafeResource::UnsafeResource(
@@ -95,20 +93,28 @@ bool SafeBrowsingUIManager::UnsafeResource::IsMainPageLoadBlocked() const {
 
 content::NavigationEntry*
 SafeBrowsingUIManager::UnsafeResource::GetNavigationEntryForResource() const {
-  WebContents* contents = tab_util::GetWebContentsByFrameID(
-      render_process_host_id, render_frame_id);
-  if (!contents)
+  content::WebContents* web_contents = web_contents_getter.Run();
+  if (!web_contents)
     return nullptr;
   // If a safebrowsing hit occurs during main frame navigation, the navigation
   // will not be committed, and the pending navigation entry refers to the hit.
   if (IsMainPageLoadBlocked())
-    return contents->GetController().GetPendingEntry();
+    return web_contents->GetController().GetPendingEntry();
   // If a safebrowsing hit occurs on a subresource load, or on a main frame
   // after the navigation is committed, the last committed navigation entry
   // refers to the page with the hit. Note that there may concurrently be an
   // unrelated pending navigation to another site, so GetActiveEntry() would be
   // wrong.
-  return contents->GetController().GetLastCommittedEntry();
+  return web_contents->GetController().GetLastCommittedEntry();
+}
+
+// static
+base::Callback<content::WebContents*(void)>
+SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
+    int render_process_host_id,
+    int render_frame_id) {
+  return base::Bind(&tab_util::GetWebContentsByFrameID, render_process_host_id,
+                    render_frame_id);
 }
 
 // SafeBrowsingUIManager -------------------------------------------------------
@@ -172,8 +178,7 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
 
   // The tab might have been closed. If it was closed, just act as if "Don't
   // Proceed" had been chosen.
-  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
-      resource.render_process_host_id, resource.render_frame_id);
+  WebContents* web_contents = resource.web_contents_getter.Run();
   if (!web_contents) {
     std::vector<UnsafeResource> resources;
     resources.push_back(resource);
@@ -353,9 +358,8 @@ void SafeBrowsingUIManager::SendSerializedThreatDetails(
 // domain to an existing WhitelistUrlSet, or create a new WhitelistUrlSet.
 void SafeBrowsingUIManager::AddToWhitelist(const UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
-      resource.render_process_host_id, resource.render_frame_id);
 
+  WebContents* web_contents = resource.web_contents_getter.Run();
   WhitelistUrlSet* site_list =
       static_cast<WhitelistUrlSet*>(web_contents->GetUserData(kWhitelistKey));
   if (!site_list) {
@@ -380,8 +384,6 @@ void SafeBrowsingUIManager::AddToWhitelist(const UnsafeResource& resource) {
 // top-level domain.
 bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
-      resource.render_process_host_id, resource.render_frame_id);
 
   GURL maybe_whitelisted_url;
   if (resource.is_subresource) {
@@ -393,8 +395,8 @@ bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
     maybe_whitelisted_url = resource.url;
   }
 
-  WhitelistUrlSet* site_list =
-      static_cast<WhitelistUrlSet*>(web_contents->GetUserData(kWhitelistKey));
+  WhitelistUrlSet* site_list = static_cast<WhitelistUrlSet*>(
+      resource.web_contents_getter.Run()->GetUserData(kWhitelistKey));
   if (!site_list)
     return false;
   return site_list->Contains(maybe_whitelisted_url);

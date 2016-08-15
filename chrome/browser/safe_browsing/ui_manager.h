@@ -30,6 +30,7 @@ class Thread;
 
 namespace content {
 class NavigationEntry;
+class WebContents;
 }  // namespace content
 
 namespace net {
@@ -74,6 +75,11 @@ class SafeBrowsingUIManager
     //   navigations), though a pending navigation is okay.
     content::NavigationEntry* GetNavigationEntryForResource() const;
 
+    // Helper to build a getter for WebContents* from render frame id.
+    static base::Callback<content::WebContents*(void)> GetWebContentsGetter(
+        int render_process_host_id,
+        int render_frame_id);
+
     GURL url;
     GURL original_url;
     std::vector<GURL> redirect_urls;
@@ -83,8 +89,7 @@ class SafeBrowsingUIManager
     ThreatMetadata threat_metadata;
     UrlCheckCallback callback;  // This is called back on |callback_thread|.
     scoped_refptr<base::SingleThreadTaskRunner> callback_thread;
-    int render_process_host_id;
-    int render_frame_id;
+    base::Callback<content::WebContents*(void)> web_contents_getter;
     safe_browsing::ThreatSource threat_source;
   };
 

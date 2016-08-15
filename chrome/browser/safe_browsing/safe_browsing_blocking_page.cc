@@ -27,7 +27,6 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -496,8 +495,7 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
     SafeBrowsingUIManager* ui_manager,
     const UnsafeResource& unsafe_resource) {
   DVLOG(1) << __func__ << " " << unsafe_resource.url.spec();
-  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
-      unsafe_resource.render_process_host_id, unsafe_resource.render_frame_id);
+  WebContents* web_contents = unsafe_resource.web_contents_getter.Run();
 
   InterstitialPage* interstitial =
       InterstitialPage::GetInterstitialPage(web_contents);

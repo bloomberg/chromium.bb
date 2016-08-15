@@ -98,8 +98,7 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
   unsafe_resource.callback_thread =
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO);
-  unsafe_resource.render_process_host_id = info->GetChildID();
-  unsafe_resource.render_frame_id = info->GetRenderFrameID();
+  unsafe_resource.web_contents_getter = info->GetWebContentsGetterForRequest();
   unsafe_resource.threat_source = safe_browsing::ThreatSource::DATA_SAVER;
 
   *defer = true;
@@ -122,19 +121,14 @@ void DataReductionProxyResourceThrottle::StartDisplayingBlockingPage(
     const SafeBrowsingUIManager::UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      resource.render_process_host_id, resource.render_frame_id);
-  if (rfh) {
-    content::WebContents* web_contents =
-        content::WebContents::FromRenderFrameHost(rfh);
+  content::WebContents* web_contents = resource.web_contents_getter.Run();
+  if (web_contents) {
     prerender::PrerenderContents* prerender_contents =
         prerender::PrerenderContents::FromWebContents(web_contents);
     if (prerender_contents) {
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(resource.callback, false));
+      content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                       base::Bind(resource.callback, false));
       return;
     }
   }

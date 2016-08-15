@@ -1021,8 +1021,10 @@ class SafeBrowsingBlockingPageIDNTest
     resource.url = request_url;
     resource.is_subresource = is_subresource;
     resource.threat_type = testing::get<1>(GetParam());
-    resource.render_process_host_id = contents->GetRenderProcessHost()->GetID();
-    resource.render_frame_id = contents->GetMainFrame()->GetRoutingID();
+    resource.web_contents_getter =
+        SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
+            contents->GetRenderProcessHost()->GetID(),
+            contents->GetMainFrame()->GetRoutingID());
     resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
 
     return SafeBrowsingBlockingPage::CreateBlockingPage(

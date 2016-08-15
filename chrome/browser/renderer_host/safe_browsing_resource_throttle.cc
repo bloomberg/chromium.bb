@@ -262,15 +262,13 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
       &SafeBrowsingResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
   resource.callback_thread = content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::IO);
-  resource.render_process_host_id = info->GetChildID();
-  resource.render_frame_id = info->GetRenderFrameID();
+  resource.web_contents_getter = info->GetWebContentsGetterForRequest();
   resource.threat_source = database_manager_->GetThreatSource();
 
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
+      content::BrowserThread::UI, FROM_HERE,
       base::Bind(&SafeBrowsingResourceThrottle::StartDisplayingBlockingPage,
                  AsWeakPtr(), ui_manager_, resource));
 }
@@ -279,11 +277,8 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
     const base::WeakPtr<SafeBrowsingResourceThrottle>& throttle,
     scoped_refptr<SafeBrowsingUIManager> ui_manager,
     const SafeBrowsingUIManager::UnsafeResource& resource) {
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      resource.render_process_host_id, resource.render_frame_id);
-  if (rfh) {
-    content::WebContents* web_contents =
-        content::WebContents::FromRenderFrameHost(rfh);
+  content::WebContents* web_contents = resource.web_contents_getter.Run();
+  if (web_contents) {
     prerender::PrerenderContents* prerender_contents =
         prerender::PrerenderContents::FromWebContents(web_contents);
 

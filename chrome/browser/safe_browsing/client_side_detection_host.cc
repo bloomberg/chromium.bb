@@ -417,10 +417,7 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
     return;
 
   // Check that this notification is really for us.
-  content::RenderFrameHost* hit_rfh = content::RenderFrameHost::FromID(
-      resource.render_process_host_id, resource.render_frame_id);
-  if (!hit_rfh ||
-      web_contents() != content::WebContents::FromRenderFrameHost(hit_rfh))
+  if (web_contents() != resource.web_contents_getter.Run())
     return;
 
   NavigationEntry *entry = resource.GetNavigationEntryForResource();
@@ -563,9 +560,10 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       resource.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL;
       resource.threat_source =
           safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION;
-      resource.render_process_host_id =
-          web_contents()->GetRenderProcessHost()->GetID();
-      resource.render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
+      resource.web_contents_getter = safe_browsing::SafeBrowsingUIManager::
+          UnsafeResource::GetWebContentsGetter(
+              web_contents()->GetRenderProcessHost()->GetID(),
+              web_contents()->GetMainFrame()->GetRoutingID());
       if (!ui_manager_->IsWhitelisted(resource)) {
         // We need to stop any pending navigations, otherwise the interstital
         // might not get created properly.
@@ -598,9 +596,10 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
       resource.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
       resource.threat_source =
           safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION;
-      resource.render_process_host_id =
-          web_contents()->GetRenderProcessHost()->GetID();
-      resource.render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
+      resource.web_contents_getter = safe_browsing::SafeBrowsingUIManager::
+          UnsafeResource::GetWebContentsGetter(
+              web_contents()->GetRenderProcessHost()->GetID(),
+              web_contents()->GetMainFrame()->GetRoutingID());
 
       if (!ui_manager_->IsWhitelisted(resource)) {
         // We need to stop any pending navigations, otherwise the interstital

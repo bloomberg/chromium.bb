@@ -350,10 +350,8 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
               csd_host_->unsafe_resource_->is_subresource);
     EXPECT_EQ(resource.threat_type, csd_host_->unsafe_resource_->threat_type);
     EXPECT_TRUE(csd_host_->unsafe_resource_->callback.is_null());
-    EXPECT_EQ(resource.render_process_host_id,
-              csd_host_->unsafe_resource_->render_process_host_id);
-    EXPECT_EQ(resource.render_frame_id,
-              csd_host_->unsafe_resource_->render_frame_id);
+    EXPECT_EQ(resource.web_contents_getter.Run(),
+              csd_host_->unsafe_resource_->web_contents_getter.Run());
   }
 
   void SetUnsafeSubResourceForCurrent(bool expect_unsafe_resource) {
@@ -365,9 +363,10 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     resource.callback = base::Bind(&EmptyUrlCheckCallback);
     resource.callback_thread =
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-    resource.render_process_host_id = web_contents()->GetRenderProcessHost()->
-        GetID();
-    resource.render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
+    resource.web_contents_getter =
+        SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
+            web_contents()->GetRenderProcessHost()->GetID(),
+            web_contents()->GetMainFrame()->GetRoutingID());
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
     ASSERT_EQ(expect_unsafe_resource, csd_host_->DidShowSBInterstitial());
@@ -396,8 +395,10 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     resource.callback = base::Bind(&EmptyUrlCheckCallback);
     resource.callback_thread =
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-    resource.render_process_host_id = pending_rvh()->GetProcess()->GetID();
-    resource.render_frame_id = pending_main_rfh()->GetRoutingID();
+    resource.web_contents_getter =
+        SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
+            pending_rvh()->GetProcess()->GetID(),
+            pending_main_rfh()->GetRoutingID());
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
 
@@ -561,10 +562,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
   EXPECT_FALSE(resource.is_subresource);
   EXPECT_EQ(SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL, resource.threat_type);
   EXPECT_EQ(ThreatSource::CLIENT_SIDE_DETECTION, resource.threat_source);
-  EXPECT_EQ(web_contents()->GetRenderProcessHost()->GetID(),
-            resource.render_process_host_id);
-  EXPECT_EQ(web_contents()->GetMainFrame()->GetRoutingID(),
-            resource.render_frame_id);
+  EXPECT_EQ(web_contents(), resource.web_contents_getter.Run());
 
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(
@@ -650,10 +648,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   EXPECT_FALSE(resource.is_subresource);
   EXPECT_EQ(SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL, resource.threat_type);
   EXPECT_EQ(ThreatSource::CLIENT_SIDE_DETECTION, resource.threat_source);
-  EXPECT_EQ(web_contents()->GetRenderProcessHost()->GetID(),
-            resource.render_process_host_id);
-  EXPECT_EQ(web_contents()->GetMainFrame()->GetRoutingID(),
-            resource.render_frame_id);
+  EXPECT_EQ(web_contents(), resource.web_contents_getter.Run());
 
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(
@@ -866,10 +861,7 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_TRUE(resource.is_subresource);
   EXPECT_EQ(SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL, resource.threat_type);
   EXPECT_EQ(ThreatSource::CLIENT_SIDE_DETECTION, resource.threat_source);
-  EXPECT_EQ(web_contents()->GetRenderProcessHost()->GetID(),
-            resource.render_process_host_id);
-  EXPECT_EQ(web_contents()->GetMainFrame()->GetRoutingID(),
-            resource.render_frame_id);
+  EXPECT_EQ(web_contents(), resource.web_contents_getter.Run());
 
   // Make sure the client object will be deleted.
   BrowserThread::PostTask(

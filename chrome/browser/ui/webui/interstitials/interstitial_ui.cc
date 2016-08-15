@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/common/url_constants.h"
@@ -243,9 +244,10 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   resource.is_subresource = request_url != main_frame_url;
   resource.is_subframe = false;
   resource.threat_type = threat_type;
-  resource.render_process_host_id =
-      web_contents->GetRenderProcessHost()->GetID();
-  resource.render_frame_id = web_contents->GetMainFrame()->GetRoutingID();
+  resource.web_contents_getter =
+      safe_browsing::SafeBrowsingUIManager::UnsafeResource::
+          GetWebContentsGetter(web_contents->GetRenderProcessHost()->GetID(),
+                               web_contents->GetMainFrame()->GetRoutingID());
   resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
 
   // Normally safebrowsing interstitial types which block the main page load
