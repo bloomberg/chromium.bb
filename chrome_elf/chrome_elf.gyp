@@ -40,16 +40,20 @@
         'chrome_elf.def',
         'chrome_elf_main.cc',
         'chrome_elf_main.h',
+        '../chrome/app/chrome_crash_reporter_client_win.cc',
+        '../chrome/app/chrome_crash_reporter_client_win.h',
         '<(SHARED_INTERMEDIATE_DIR)/chrome_elf/chrome_elf_version.rc',
       ],
       'dependencies': [
         '../chrome/chrome.gyp:install_static_util',
         'blacklist',
-        'chrome_elf_crash',
         'chrome_elf_hook_util',
         'chrome_elf_resources',
         'chrome_elf_security',
         'nt_registry/nt_registry.gyp:chrome_elf_nt_registry',
+        '../chrome/chrome.gyp:install_static_util',
+        '../components/components.gyp:crash_component',
+        '../components/components.gyp:crash_core_common',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
@@ -85,41 +89,14 @@
       ],
     },
     {
-      'target_name': 'chrome_elf_crash',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        '../chrome/app/chrome_crash_reporter_client_win.cc',
-        '../chrome/app/chrome_crash_reporter_client_win.h',
-        '../chrome/common/chrome_result_codes.h',
-        'crash/crash_helper.cc',
-        'crash/crash_helper.h',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base', # This needs to go.
-        '../base/base.gyp:base_static', # pe_image
-        '../chrome/chrome.gyp:install_static_util',
-        '../components/components.gyp:crash_component',
-        '../components/components.gyp:crash_core_common', #crash_keys
-        'chrome_elf_hook_util',
-      ],
-    },
-    {
       'target_name': 'chrome_elf_hook_util',
       'type': 'static_library',
       'include_dirs': [
         '..',
       ],
       'sources': [
-        '../base/macros.h',
-        'hook_util/hook_util.cc',
-        'hook_util/hook_util.h',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base_static', # pe_image
-        '../sandbox/sandbox.gyp:sandbox',
+        'hook_util/thunk_getter.cc',
+        'hook_util/thunk_getter.h',
       ],
     },
     {
@@ -166,7 +143,6 @@
         'blacklist_test_dll_2',
         'blacklist_test_dll_3',
         'blacklist_test_main_dll',
-        'chrome_elf_crash',
         'chrome_elf_hook_util',
         'chrome_elf_security',
         'nt_registry/nt_registry.gyp:chrome_elf_nt_registry',

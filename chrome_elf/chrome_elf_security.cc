@@ -11,8 +11,6 @@
 #include "chrome_elf/chrome_elf_constants.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
 
-namespace elf_security {
-
 void EarlyBrowserSecurity() {
   typedef decltype(SetProcessMitigationPolicy)* SetProcessMitigationPolicyFunc;
 
@@ -49,4 +47,3 @@ void EarlyBrowserSecurity() {
   }
   return;
 }
-}  // namespace elf_security

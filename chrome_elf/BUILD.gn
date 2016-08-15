@@ -33,6 +33,9 @@ windows_manifest("chrome_elf_manifest") {
 # in the world.
 shared_library("chrome_elf") {
   sources = [
+    "//chrome/app/chrome_crash_reporter_client_win.cc",
+    "//chrome/app/chrome_crash_reporter_client_win.h",
+    "//chrome/common/chrome_result_codes.h",
     "chrome_elf.def",
     "chrome_elf_main.cc",
     "chrome_elf_main.h",
@@ -41,24 +44,31 @@ shared_library("chrome_elf") {
     ":blacklist",
     ":chrome_elf_manifest",
     ":chrome_elf_resources",
+    ":chrome_elf_security",
     ":constants",
-    ":crash",
     ":hook_util",
-    ":security",
+    "//base",
     "//build/config/sanitizers:deps",
     "//chrome/install_static:install_static_util",
     "//chrome_elf/nt_registry:nt_registry",
+    "//components/crash/content/app",
+    "//components/crash/core/common",
+    "//content/public/common:result_codes",
+    "//third_party/crashpad/crashpad/client:client",
   ]
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]
-
-  # Delay loads in this list will prevent user32.dll
-  # from loading too early.
   ldflags = [
-    "/DELAYLOAD:advapi32.dll",
+    "/NODEFAULTLIB:user32.lib",
     "/DELAYLOAD:dbghelp.dll",
+    "/DELAYLOAD:ole32.dll",
+    "/DELAYLOAD:psapi.dll",
     "/DELAYLOAD:rpcrt4.dll",
+    "/DELAYLOAD:shell32.dll",
+    "/DELAYLOAD:user32.dll",
+    "/DELAYLOAD:winhttp.dll",
     "/DELAYLOAD:winmm.dll",
+    "/DELAYLOAD:ws2_32.dll",
   ]
   if (current_cpu == "x86") {
     # Don"t set an x64 base address (to avoid breaking HE-ASLR).
@@ -70,7 +80,7 @@ shared_library("chrome_elf") {
 ## source sets
 ##------------------------------------------------------------------------------
 
-source_set("security") {
+source_set("chrome_elf_security") {
   sources = [
     "chrome_elf_security.cc",
     "chrome_elf_security.h",
@@ -119,48 +129,30 @@ static_library("blacklist") {
     "blacklist/blacklist.h",
     "blacklist/blacklist_interceptions.cc",
     "blacklist/blacklist_interceptions.h",
+    "blacklist/crashpad_helper.cc",
+    "blacklist/crashpad_helper.h",
   ]
   public_deps = [
     "//sandbox",
   ]
   deps = [
     ":constants",
-    ":crash",
     ":hook_util",
-    "//base:base_static",  # pe_image
     "//chrome/install_static:install_static_util",
     "//chrome_elf/nt_registry:nt_registry",
-  ]
-}
 
-static_library("crash") {
-  sources = [
-    "../chrome/app/chrome_crash_reporter_client_win.cc",
-    "../chrome/app/chrome_crash_reporter_client_win.h",
-    "../chrome/common/chrome_result_codes.h",
-    "crash/crash_helper.cc",
-    "crash/crash_helper.h",
-  ]
-  deps = [
-    ":hook_util",
-    "//base:base",  # This needs to go.  DEP of app, crash_keys, client.
-    "//base:base_static",  # pe_image
-    "//chrome/install_static:install_static_util",
-    "//components/crash/content/app:app",
-    "//components/crash/core/common",  # crash_keys
-    "//content/public/common:result_codes",
-    "//third_party/crashpad/crashpad/client:client",  # DumpWithoutCrash
+    # Still uses base/win/pe_image.h
+    "//base",
+    "//third_party/crashpad/crashpad/client:client",
   ]
 }
 
 static_library("hook_util") {
   sources = [
-    "../base/macros.h",
-    "hook_util/hook_util.cc",
-    "hook_util/hook_util.h",
+    "hook_util/thunk_getter.cc",
+    "hook_util/thunk_getter.h",
   ]
   deps = [
-    "//base:base_static",  # pe_image
     "//sandbox",
   ]
 }
@@ -175,18 +167,15 @@ test("chrome_elf_unittests") {
     "blacklist/test/blacklist_test.cc",
     "chrome_elf_util_unittest.cc",
     "elf_imports_unittest.cc",
-    "hook_util/test/hook_util_test.cc",
     "run_all_unittests.cc",
   ]
   include_dirs = [ "$target_gen_dir" ]
   deps = [
     ":blacklist",
     ":blacklist_test_main_dll",
+    ":chrome_elf_security",
     ":constants",
-    ":crash",
     ":hook_util",
-    ":hook_util_test_dll",
-    ":security",
     "//base",
     "//base/test:test_support",
     "//chrome",
@@ -210,15 +199,17 @@ test("chrome_elf_unittests") {
     ":blacklist_test_dll_3",
     ":chrome_elf",
   ]
-
-  # Don't want the test-specific dependencies to affect ChromeElfLoadSanityTest.
-  # In particular, a few system DLLs cause user32 to be loaded, which is bad.
   ldflags = [
-    "/DELAYLOAD:advapi32.dll",
+    "/DELAYLOAD:dbghelp.dll",
     "/DELAYLOAD:ole32.dll",
+    "/DELAYLOAD:psapi.dll",
+    "/DELAYLOAD:rpcrt4.dll",
     "/DELAYLOAD:shell32.dll",
+    "/DELAYLOAD:shlwapi.dll",
     "/DELAYLOAD:user32.dll",
+    "/DELAYLOAD:winhttp.dll",
     "/DELAYLOAD:winmm.dll",
+    "/DELAYLOAD:ws2_32.dll",
   ]
 }
 
@@ -233,6 +224,18 @@ shared_library("blacklist_test_main_dll") {
     "//build/config/sanitizers:deps",
     "//chrome/install_static:install_static_util",
     "//chrome_elf/nt_registry:nt_registry",
+  ]
+  ldflags = [
+    "/NODEFAULTLIB:user32.lib",
+    "/DELAYLOAD:dbghelp.dll",
+    "/DELAYLOAD:ole32.dll",
+    "/DELAYLOAD:psapi.dll",
+    "/DELAYLOAD:rpcrt4.dll",
+    "/DELAYLOAD:shell32.dll",
+    "/DELAYLOAD:user32.dll",
+    "/DELAYLOAD:winhttp.dll",
+    "/DELAYLOAD:winmm.dll",
+    "/DELAYLOAD:ws2_32.dll",
   ]
 }
 
@@ -264,16 +267,6 @@ loadable_module("blacklist_test_dll_2") {
 loadable_module("blacklist_test_dll_3") {
   sources = [
     "blacklist/test/blacklist_test_dll_3.cc",
-  ]
-  deps = [
-    "//build/config/sanitizers:deps",
-  ]
-}
-
-shared_library("hook_util_test_dll") {
-  sources = [
-    "hook_util/test/hook_util_test_dll.cc",
-    "hook_util/test/hook_util_test_dll.h",
   ]
   deps = [
     "//build/config/sanitizers:deps",
