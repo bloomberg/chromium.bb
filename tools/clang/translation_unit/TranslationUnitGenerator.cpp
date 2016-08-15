@@ -31,6 +31,7 @@
 #include "clang/Tooling/Refactoring.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/Path.h"
 
 using clang::HeaderSearchOptions;
 using clang::tooling::CommonOptionsParser;
