@@ -52,19 +52,18 @@ void PointerWatcherDelegateAura::OnMouseEvent(ui::MouseEvent* event) {
     return;
   }
 
-  // For compatibility with the mus version, don't send moves.
+  // For compatibility with the mus version, don't send drags.
   if (event->type() != ui::ET_MOUSE_PRESSED &&
-      event->type() != ui::ET_MOUSE_RELEASED)
+      event->type() != ui::ET_MOUSE_RELEASED &&
+      event->type() != ui::ET_MOUSE_MOVED)
     return;
 
-  if (!ui::PointerEvent::CanConvertFrom(*event))
-    return;
-
+  DCHECK(ui::PointerEvent::CanConvertFrom(*event));
   NotifyWatchers(ui::PointerEvent(*event), *event);
 }
 
 void PointerWatcherDelegateAura::OnTouchEvent(ui::TouchEvent* event) {
-  // For compatibility with the mus version, don't send moves.
+  // For compatibility with the mus version, don't send drags.
   if (event->type() != ui::ET_TOUCH_PRESSED &&
       event->type() != ui::ET_TOUCH_RELEASED)
     return;
@@ -96,8 +95,7 @@ void PointerWatcherDelegateAura::NotifyWatchers(
   FOR_EACH_OBSERVER(
       views::PointerWatcher, move_watchers_,
       OnPointerEventObserved(event, screen_location, target_widget));
-  if (event.type() != ui::ET_MOUSE_MOVED &&
-      event.type() != ui::ET_TOUCH_MOVED) {
+  if (event.type() != ui::ET_POINTER_MOVED) {
     FOR_EACH_OBSERVER(
         views::PointerWatcher, non_move_watchers_,
         OnPointerEventObserved(event, screen_location, target_widget));
