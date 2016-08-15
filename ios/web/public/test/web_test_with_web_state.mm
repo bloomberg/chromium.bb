@@ -4,7 +4,10 @@
 
 #import "ios/web/public/test/web_test_with_web_state.h"
 
+#import <WebKit/WebKit.h>
+
 #include "base/base64.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/ios/wait_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/navigation/crw_session_controller.h"
@@ -149,11 +152,16 @@ void WebTestWithWebState::WaitForCondition(ConditionBlock condition) {
 id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
   __block base::scoped_nsprotocol<id> executionResult;
   __block bool executionCompleted = false;
-  [GetWebController(web_state()) executeJavaScript:script
-                                 completionHandler:^(id result, NSError*) {
-                                   executionResult.reset([result copy]);
-                                   executionCompleted = true;
-                                 }];
+  [GetWebController(web_state())
+      executeJavaScript:script
+      completionHandler:^(id result, NSError* error) {
+        if (error && error.code != WKErrorJavaScriptResultTypeIsUnsupported) {
+          NOTREACHED() << " error: " << error.code
+                       << " for script: " << base::SysNSStringToUTF8(script);
+        }
+        executionResult.reset([result copy]);
+        executionCompleted = true;
+      }];
   base::test::ios::WaitUntilCondition(^{
     return executionCompleted;
   });

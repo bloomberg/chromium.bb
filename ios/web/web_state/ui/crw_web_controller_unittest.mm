@@ -893,7 +893,7 @@ class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
   id OpenWindowByDOM() {
     NSString* const kOpenWindowScript =
         @"var w = window.open('javascript:void(0);', target='_blank');"
-         "w.toString();";
+         "w ? w.toString() : null;";
     id windowJSObject = ExecuteJavaScript(kOpenWindowScript);
     WaitForBackgroundTasks();
     return windowJSObject;
@@ -908,7 +908,7 @@ class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
 TEST_F(CRWWebControllerWindowOpenTest, NoDelegate) {
   [web_controller() setDelegate:nil];
 
-  EXPECT_FALSE(OpenWindowByDOM());
+  EXPECT_NSEQ([NSNull null], OpenWindowByDOM());
 
   EXPECT_FALSE([delegate_ blockedPopupInfo]);
 }
@@ -942,7 +942,7 @@ TEST_F(CRWWebControllerWindowOpenTest, AllowPopup) {
       }];
 
   ASSERT_FALSE([web_controller() userIsInteracting]);
-  EXPECT_FALSE(OpenWindowByDOM());
+  EXPECT_NSEQ([NSNull null], OpenWindowByDOM());
   base::test::ios::WaitUntilCondition(^bool() {
     return [delegate_ blockedPopupInfo];
   });
@@ -973,7 +973,7 @@ TEST_F(CRWWebControllerWindowOpenTest, DontBlockPopup) {
 // Tests that window.open executed w/o user gesture does not open a new window.
 TEST_F(CRWWebControllerWindowOpenTest, BlockPopup) {
   ASSERT_FALSE([web_controller() userIsInteracting]);
-  EXPECT_FALSE(OpenWindowByDOM());
+  EXPECT_NSEQ([NSNull null], OpenWindowByDOM());
   base::test::ios::WaitUntilCondition(^bool() {
     return [delegate_ blockedPopupInfo];
   });
