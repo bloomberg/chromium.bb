@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.historyreport;
 
-import android.text.TextUtils;
-
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -66,7 +64,6 @@ public class HistoryReportJniBridge implements SearchJniBridge {
         }
         Log.d(TAG, "query %d %d", lastSeqNo, limit);
         DeltaFileEntry[] result = nativeQuery(mNativeHistoryReportJniBridge, lastSeqNo, limit);
-        Log.d(TAG, "query result: %s", TextUtils.join("\n", result));
         return result;
     }
 
@@ -100,7 +97,6 @@ public class HistoryReportJniBridge implements SearchJniBridge {
         for (int i = 0; i < reports.length; ++i) {
             reportIds[i] = reports[i].reportId;
         }
-        Log.d(TAG, "removeUsageReports %s", TextUtils.join(",", reportIds));
         nativeRemoveUsageReports(mNativeHistoryReportJniBridge, reportIds);
     }
 
