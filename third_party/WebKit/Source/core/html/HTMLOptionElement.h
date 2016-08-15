@@ -117,6 +117,7 @@ private:
     // Represents 'dirtiness'.
     // https://html.spec.whatwg.org/multipage/forms.html#concept-option-dirtiness
     bool m_isDirty = false;
+    // TODO(bugsnash): Use Node's ComputedStyle instead
     RefPtr<ComputedStyle> m_style;
 };
 
