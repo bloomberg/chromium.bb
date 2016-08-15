@@ -69,14 +69,18 @@ class SnackbarView {
      * Behavior that intercepts touch event from the CompositorViewHoder.
      */
     private final Behavior<View> mBehavior = new Behavior<View>() {
+
+        private boolean mShouldIntercept;
+
         @Override
         public boolean onInterceptTouchEvent(CoordinatorLayout parent, View child, MotionEvent ev) {
-            return isInBounds(ev, child);
+            mShouldIntercept = isInBounds(ev, child);
+            return mShouldIntercept;
         }
 
         @Override
         public boolean onTouchEvent(CoordinatorLayout parent, View child, MotionEvent ev) {
-            if (!isInBounds(ev, child)) return false;
+            if (!isInBounds(ev, child) || !mShouldIntercept) return false;
             ev.offsetLocation(-child.getX(), -child.getY());
             child.dispatchTouchEvent(ev);
             return true;
