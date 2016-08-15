@@ -1904,7 +1904,7 @@ TEST_F(ShelfLayoutManagerTest,
 
 // Tests that during shutdown, that window activation changes are properly
 // handled, and do not crash (crbug.com/458768)
-TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
+TEST_F(ShelfLayoutManagerTest, DISABLED_ShutdownHandlesWindowActivation) {
   GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   aura::Window* window1 = CreateTestWindowInShellWithId(0);
