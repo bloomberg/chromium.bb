@@ -7854,4 +7854,72 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
+// Test that session history length and offset are replicated to all renderer
+// processes in a FrameTree.  This allows each renderer to see correct values
+// for history.length, and to check the offset validity properly for
+// navigations initiated via history.go(). See https:/crbug.com/501116.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SessionHistoryReplication) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a,a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child1 = root->child_at(0);
+  FrameTreeNode* child2 = root->child_at(1);
+  GURL child_first_url(child1->current_url());
+  EXPECT_EQ(child1->current_url(), child2->current_url());
+
+  // Helper to retrieve the history length from a given frame.
+  auto history_length = [](FrameTreeNode* ftn) {
+    int history_length = -1;
+    EXPECT_TRUE(ExecuteScriptAndExtractInt(
+        ftn->current_frame_host(),
+        "window.domAutomationController.send(history.length);",
+        &history_length));
+    return history_length;
+  };
+
+  // All frames should see a history length of 1 to start with.
+  EXPECT_EQ(1, history_length(root));
+  EXPECT_EQ(1, history_length(child1));
+  EXPECT_EQ(1, history_length(child2));
+
+  // Navigate first child cross-site.  This increases history length to 2.
+  NavigateFrameToURL(child1,
+                     embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_EQ(2, history_length(root));
+  EXPECT_EQ(2, history_length(child1));
+  EXPECT_EQ(2, history_length(child2));
+
+  // Navigate second child same-site.
+  GURL child2_last_url(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  NavigateFrameToURL(child2, child2_last_url);
+  EXPECT_EQ(3, history_length(root));
+  EXPECT_EQ(3, history_length(child1));
+  EXPECT_EQ(3, history_length(child2));
+
+  // Navigate first child same-site to another b.com URL.
+  GURL child1_last_url(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  NavigateFrameToURL(child1, child1_last_url);
+  EXPECT_EQ(4, history_length(root));
+  EXPECT_EQ(4, history_length(child1));
+  EXPECT_EQ(4, history_length(child2));
+
+  // Go back three entries using the history API from the main frame. This
+  // checks that both history length and offset are not stale in a.com, as
+  // otherwise this navigation might be dropped by Blink.
+  EXPECT_TRUE(ExecuteScript(root, "history.go(-3);"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(child_first_url, child1->current_url());
+  EXPECT_EQ(child_first_url, child2->current_url());
+
+  // Now go forward three entries from the child1 frame and check that the
+  // history length and offset are not stale in b.com.
+  EXPECT_TRUE(ExecuteScript(child1, "history.go(3);"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(child1_last_url, child1->current_url());
+  EXPECT_EQ(child2_last_url, child2->current_url());
+}
+
 }  // namespace content

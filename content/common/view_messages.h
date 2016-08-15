@@ -533,13 +533,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_UpdateVSyncParameters,
                     base::TimeTicks /* timebase */,
                     base::TimeDelta /* interval */)
 
-// Sent when the history is altered outside of navigation. The history list was
-// reset to |history_length| length, and the offset was reset to be
-// |history_offset|.
-IPC_MESSAGE_ROUTED2(ViewMsg_SetHistoryOffsetAndLength,
-                    int /* history_offset */,
-                    int /* history_length */)
-
 // Tells the renderer to create a new view.
 // This message is slightly different, the view it takes (via
 // ViewMsg_New_Params) is the view to create, the message itself is sent as a

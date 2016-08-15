@@ -36,6 +36,13 @@ IPC_MESSAGE_ROUTED0(PageMsg_WasHidden)
 // Informs the renderer that the page is no longer hidden.
 IPC_MESSAGE_ROUTED0(PageMsg_WasShown)
 
+// Sent when the history for this page is altered from another process. The
+// history list should be reset to |history_length| length, and the offset
+// should be reset to |history_offset|.
+IPC_MESSAGE_ROUTED2(PageMsg_SetHistoryOffsetAndLength,
+                    int /* history_offset */,
+                    int /* history_length */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

@@ -866,7 +866,7 @@ int WebContentsImpl::SendToAllFrames(IPC::Message* message) {
 }
 
 void WebContentsImpl::SendPageMessage(IPC::Message* msg) {
-  frame_tree_.root()->render_manager()->SendPageMessage(msg);
+  frame_tree_.root()->render_manager()->SendPageMessage(msg, nullptr);
 }
 
 RenderViewHostImpl* WebContentsImpl::GetRenderViewHost() const {
@@ -2578,15 +2578,15 @@ void WebContentsImpl::DetachInterstitialPage() {
 
 void WebContentsImpl::SetHistoryOffsetAndLength(int history_offset,
                                                 int history_length) {
-  SetHistoryOffsetAndLengthForView(
-      GetRenderViewHost(), history_offset, history_length);
+  SendPageMessage(new PageMsg_SetHistoryOffsetAndLength(
+      MSG_ROUTING_NONE, history_offset, history_length));
 }
 
 void WebContentsImpl::SetHistoryOffsetAndLengthForView(
     RenderViewHost* render_view_host,
     int history_offset,
     int history_length) {
-  render_view_host->Send(new ViewMsg_SetHistoryOffsetAndLength(
+  render_view_host->Send(new PageMsg_SetHistoryOffsetAndLength(
       render_view_host->GetRoutingID(), history_offset, history_length));
 }
 

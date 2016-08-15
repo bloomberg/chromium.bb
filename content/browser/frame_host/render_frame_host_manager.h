@@ -494,8 +494,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   int GetProxyCount();
 
   // Sends an IPC message to every process in the FrameTree. This should only be
-  // called in the top-level RenderFrameHostManager.
-  void SendPageMessage(IPC::Message* msg);
+  // called in the top-level RenderFrameHostManager.  |instance_to_skip|, if
+  // not null, specifies the SiteInstance to which the message should not be
+  // sent.
+  void SendPageMessage(IPC::Message* msg, SiteInstance* instance_to_skip);
 
   // Returns a const reference to the map of proxy hosts. The keys are
   // SiteInstance IDs, the values are RenderFrameProxyHosts.

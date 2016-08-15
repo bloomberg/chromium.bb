@@ -722,7 +722,8 @@ class CONTENT_EXPORT WebContentsImpl
   void CopyMaxPageIDsFrom(WebContents* web_contents) override;
 
   // Sets the history for this WebContentsImpl to |history_length| entries, with
-  // an offset of |history_offset|.
+  // an offset of |history_offset|.  This notifies all renderers involved in
+  // rendering the current page about the new offset and length.
   void SetHistoryOffsetAndLength(int history_offset,
                                  int history_length) override;
 

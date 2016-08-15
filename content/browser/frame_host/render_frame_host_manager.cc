@@ -2588,7 +2588,8 @@ int RenderFrameHostManager::GetOpenerRoutingID(SiteInstance* instance) {
       ->GetRoutingIdForSiteInstance(instance);
 }
 
-void RenderFrameHostManager::SendPageMessage(IPC::Message* msg) {
+void RenderFrameHostManager::SendPageMessage(IPC::Message* msg,
+                                             SiteInstance* instance_to_skip) {
   DCHECK(IPC_MESSAGE_CLASS(*msg) == PageMsgStart);
 
   // We should always deliver page messages through the main frame.
@@ -2599,7 +2600,13 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg) {
     return;
   }
 
-  auto send_msg = [](IPC::Sender* sender, int routing_id, IPC::Message* msg) {
+  auto send_msg = [instance_to_skip](IPC::Sender* sender,
+                                     int routing_id,
+                                     IPC::Message* msg,
+                                     SiteInstance* sender_instance) {
+    if (sender_instance == instance_to_skip)
+      return;
+
     IPC::Message* copy = new IPC::Message(*msg);
     copy->set_routing_id(routing_id);
     sender->Send(copy);
@@ -2610,20 +2617,29 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg) {
   RenderFrameProxyHost* outer_delegate_proxy =
       ForInnerDelegate() ? GetProxyToOuterDelegate() : nullptr;
   for (const auto& pair : proxy_hosts_) {
-    if (outer_delegate_proxy != pair.second.get())
-      send_msg(pair.second.get(), pair.second->GetRoutingID(), msg);
+    if (outer_delegate_proxy != pair.second.get()) {
+      send_msg(pair.second.get(), pair.second->GetRoutingID(), msg,
+               pair.second->GetSiteInstance());
+    }
   }
 
   if (speculative_render_frame_host_) {
     send_msg(speculative_render_frame_host_.get(),
-             speculative_render_frame_host_->GetRoutingID(), msg);
+             speculative_render_frame_host_->GetRoutingID(), msg,
+             speculative_render_frame_host_->GetSiteInstance());
   } else if (pending_render_frame_host_) {
     send_msg(pending_render_frame_host_.get(),
-             pending_render_frame_host_->GetRoutingID(), msg);
+             pending_render_frame_host_->GetRoutingID(), msg,
+             pending_render_frame_host_->GetSiteInstance());
   }
 
-  msg->set_routing_id(render_frame_host_->GetRoutingID());
-  render_frame_host_->Send(msg);
+  if (render_frame_host_->GetSiteInstance() != instance_to_skip) {
+    // Send directly instead of using send_msg() so that |msg| doesn't leak.
+    msg->set_routing_id(render_frame_host_->GetRoutingID());
+    render_frame_host_->Send(msg);
+  } else {
+    delete msg;
+  }
 }
 
 bool RenderFrameHostManager::CanSubframeSwapProcess(

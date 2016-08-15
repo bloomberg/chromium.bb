@@ -24,6 +24,7 @@
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
+#include "content/common/page_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -575,9 +576,22 @@ void NavigatorImpl::DidNavigate(
   if (ui::PageTransitionIsMainFrame(params.transition) && delegate_)
     delegate_->SetMainFrameMimeType(params.contents_mime_type);
 
+  int old_entry_count = controller_->GetEntryCount();
   LoadCommittedDetails details;
   bool did_navigate = controller_->RendererDidNavigate(render_frame_host,
                                                        params, &details);
+
+  // If the history length and/or offset changed, update other renderers in the
+  // FrameTree.
+  if (old_entry_count != controller_->GetEntryCount() ||
+      details.previous_entry_index !=
+          controller_->GetLastCommittedEntryIndex()) {
+    frame_tree->root()->render_manager()->SendPageMessage(
+        new PageMsg_SetHistoryOffsetAndLength(
+            MSG_ROUTING_NONE, controller_->GetLastCommittedEntryIndex(),
+            controller_->GetEntryCount()),
+        site_instance);
+  }
 
   // Keep track of each frame's URL in its FrameTreeNode, whether it's for a net
   // error or not.
