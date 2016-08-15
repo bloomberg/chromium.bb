@@ -11,32 +11,32 @@ namespace blink {
 
 NGConstraintSpace::NGConstraintSpace(NGLogicalSize container_size) {
   container_size_ = container_size;
-  m_inlineTriggersScrollbar = 0;
-  m_blockTriggersScrollbar = 0;
-  m_fixedInlineSize = 0;
-  m_fixedBlockSize = 0;
-  m_blockFragmentationType = FragmentNone;
+  inline_triggers_scrollbar_ = 0;
+  block_triggers_scrollbar_ = 0;
+  fixed_inline_size_ = 0;
+  fixed_block_size_ = 0;
+  block_fragmentation_type_ = FragmentNone;
 }
 
 NGConstraintSpace NGConstraintSpace::fromLayoutObject(const LayoutBox& child) {
   bool fixedInline = false, fixedBlock = false;
   // XXX for orthogonal writing mode this is not right
-  LayoutUnit containerLogicalWidth =
+  LayoutUnit container_logical_width =
       std::max(LayoutUnit(), child.containingBlockLogicalWidthForContent());
   // XXX Make sure this height is correct
-  LayoutUnit containerLogicalHeight =
+  LayoutUnit container_logical_height =
       child.containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
   if (child.hasOverrideLogicalContentWidth()) {
-    containerLogicalWidth = child.overrideLogicalContentWidth();
+    container_logical_width = child.overrideLogicalContentWidth();
     fixedInline = true;
   }
   if (child.hasOverrideLogicalContentHeight()) {
-    containerLogicalWidth = child.overrideLogicalContentHeight();
+    container_logical_width = child.overrideLogicalContentHeight();
     fixedBlock = true;
   }
   NGLogicalSize size;
-  size.inlineSize = containerLogicalWidth;
-  size.blockSize = containerLogicalHeight;
+  size.inlineSize = container_logical_width;
+  size.blockSize = container_logical_height;
   NGConstraintSpace space(size);
   space.setOverflowTriggersScrollbar(
       child.styleRef().overflowInlineDirection() == OverflowAuto,
@@ -48,19 +48,19 @@ NGConstraintSpace NGConstraintSpace::fromLayoutObject(const LayoutBox& child) {
 void NGConstraintSpace::addExclusion(const NGExclusion exclusion,
                                      unsigned options) {}
 
-void NGConstraintSpace::setOverflowTriggersScrollbar(bool inlineTriggers,
-                                                     bool blockTriggers) {
-  m_inlineTriggersScrollbar = inlineTriggers;
-  m_blockTriggersScrollbar = blockTriggers;
+void NGConstraintSpace::setOverflowTriggersScrollbar(bool inline_triggers,
+                                                     bool block_triggers) {
+  inline_triggers_scrollbar_ = inline_triggers;
+  block_triggers_scrollbar_ = block_triggers;
 }
 
-void NGConstraintSpace::setFixedSize(bool inlineFixed, bool blockFixed) {
-  m_fixedInlineSize = inlineFixed;
-  m_fixedBlockSize = blockFixed;
+void NGConstraintSpace::setFixedSize(bool inline_fixed, bool block_fixed) {
+  fixed_inline_size_ = inline_fixed;
+  fixed_block_size_ = block_fixed;
 }
 
 void NGConstraintSpace::setFragmentationType(NGFragmentationType type) {
-  m_blockFragmentationType = type;
+  block_fragmentation_type_ = type;
 }
 
 DoublyLinkedList<const NGExclusion> NGConstraintSpace::exclusions(
@@ -71,8 +71,7 @@ DoublyLinkedList<const NGExclusion> NGConstraintSpace::exclusions(
 }
 
 NGLayoutOpportunityIterator NGConstraintSpace::layoutOpportunities(
-    unsigned clear,
-    NGExclusionFlowType avoid) const {
+    unsigned clear, NGExclusionFlowType avoid) const {
   // TODO(eae): Implement.
   NGLayoutOpportunityIterator iterator(this, clear, avoid);
   return iterator;

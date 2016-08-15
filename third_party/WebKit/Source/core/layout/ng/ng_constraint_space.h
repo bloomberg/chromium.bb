@@ -86,20 +86,20 @@ class CORE_EXPORT NGConstraintSpace {
   // for the indicated direction.
   // If exceeded the current layout should be aborted and invoked again with a
   // constraint space modified to reserve space for a scrollbar.
-  bool inlineTriggersScrollbar() const { return m_inlineTriggersScrollbar; }
-  bool blockTriggersScrollbar() const { return m_blockTriggersScrollbar; }
+  bool inlineTriggersScrollbar() const { return inline_triggers_scrollbar_; }
+  bool blockTriggersScrollbar() const { return block_triggers_scrollbar_; }
 
   // Some layout modes “stretch” their children to a fixed size (e.g. flex,
   // grid). These flags represented whether a layout needs to produce a
   // fragment that satisfies a fixed constraint in the inline and block
   // direction respectively.
-  bool fixedInlineSize() const { return m_fixedInlineSize; }
-  bool fixedBlockSize() const { return m_fixedBlockSize; }
+  bool fixedInlineSize() const { return fixed_inline_size_; }
+  bool fixedBlockSize() const { return fixed_block_size_; }
 
   // If specified a layout should produce a Fragment which fragments at the
   // blockSize if possible.
   NGFragmentationType blockFragmentationType() const {
-    return static_cast<NGFragmentationType>(m_blockFragmentationType);
+    return static_cast<NGFragmentationType>(block_fragmentation_type_);
   }
 
   DoublyLinkedList<const NGExclusion> exclusions(unsigned options = 0) const;
@@ -116,29 +116,28 @@ class CORE_EXPORT NGConstraintSpace {
  private:
   NGLogicalSize container_size_;
 
-  unsigned m_fixedInlineSize : 1;
-  unsigned m_fixedBlockSize : 1;
-  unsigned m_inlineTriggersScrollbar : 1;
-  unsigned m_blockTriggersScrollbar : 1;
-  unsigned m_blockFragmentationType : 2;
+  unsigned fixed_inline_size_ : 1;
+  unsigned fixed_block_size_ : 1;
+  unsigned inline_triggers_scrollbar_ : 1;
+  unsigned block_triggers_scrollbar_ : 1;
+  unsigned block_fragmentation_type_ : 2;
 
-  DoublyLinkedList<const NGExclusion> m_exclusions;
+  DoublyLinkedList<const NGExclusion> exclusions_;
 };
 
 class CORE_EXPORT NGLayoutOpportunityIterator final {
  public:
-  NGLayoutOpportunityIterator(const NGConstraintSpace* space,
-                              unsigned clear,
+  NGLayoutOpportunityIterator(const NGConstraintSpace* space, unsigned clear,
                               NGExclusionFlowType avoid)
-      : m_constraintSpace(space), m_clear(clear), m_avoid(avoid) {}
+      : constraint_space_(space), clear_(clear), avoid_(avoid) {}
   ~NGLayoutOpportunityIterator() {}
 
   const NGDerivedConstraintSpace* next();
 
  private:
-  const NGConstraintSpace* m_constraintSpace;
-  unsigned m_clear;
-  NGExclusionFlowType m_avoid;
+  const NGConstraintSpace* constraint_space_;
+  unsigned clear_;
+  NGExclusionFlowType avoid_;
 };
 
 }  // namespace blink
