@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
@@ -31,7 +30,7 @@ class WebUsbChooserServiceAndroid : public device::usb::ChooserService {
   ~WebUsbChooserServiceAndroid() override;
 
   // device::usb::ChooserService:
-  void GetPermission(mojo::Array<device::usb::DeviceFilterPtr> device_filters,
+  void GetPermission(std::vector<device::usb::DeviceFilterPtr> device_filters,
                      const GetPermissionCallback& callback) override;
 
   void Bind(mojo::InterfaceRequest<device::usb::ChooserService> request);

@@ -6,6 +6,7 @@
 #define MOJO_COMMON_COMMON_TYPE_CONVERTERS_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"

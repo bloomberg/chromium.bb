@@ -6,6 +6,7 @@
 #define DEVICE_USB_MOJO_DEVICE_IMPL_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -74,7 +75,7 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
                          uint32_t timeout,
                          const ControlTransferInCallback& callback) override;
   void ControlTransferOut(ControlTransferParamsPtr params,
-                          mojo::Array<uint8_t> data,
+                          const std::vector<uint8_t>& data,
                           uint32_t timeout,
                           const ControlTransferOutCallback& callback) override;
   void GenericTransferIn(uint8_t endpoint_number,
@@ -82,18 +83,18 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
                          uint32_t timeout,
                          const GenericTransferInCallback& callback) override;
   void GenericTransferOut(uint8_t endpoint_number,
-                          mojo::Array<uint8_t> data,
+                          const std::vector<uint8_t>& data,
                           uint32_t timeout,
                           const GenericTransferOutCallback& callback) override;
   void IsochronousTransferIn(
       uint8_t endpoint_number,
-      mojo::Array<uint32_t> packet_lengths,
+      const std::vector<uint32_t>& packet_lengths,
       uint32_t timeout,
       const IsochronousTransferInCallback& callback) override;
   void IsochronousTransferOut(
       uint8_t endpoint_number,
-      mojo::Array<uint8_t> data,
-      mojo::Array<uint32_t> packet_lengths,
+      const std::vector<uint8_t>& data,
+      const std::vector<uint32_t>& packet_lengths,
       uint32_t timeout,
       const IsochronousTransferOutCallback& callback) override;
 

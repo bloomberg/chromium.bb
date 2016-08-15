@@ -56,7 +56,7 @@ public:
 
     device::usb::blink::DeviceManager* deviceManager() const { return m_deviceManager.get(); }
 
-    void onGetDevices(ScriptPromiseResolver*, mojo::WTFArray<device::usb::blink::DeviceInfoPtr>);
+    void onGetDevices(ScriptPromiseResolver*, Vector<device::usb::blink::DeviceInfoPtr>);
     void onGetPermission(ScriptPromiseResolver*, device::usb::blink::DeviceInfoPtr);
 
     // DeviceManagerClient implementation.

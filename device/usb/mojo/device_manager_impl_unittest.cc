@@ -85,7 +85,7 @@ class MockDeviceManagerClient : public DeviceManagerClient {
 
 void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
                           const base::Closure& continuation,
-                          mojo::Array<DeviceInfoPtr> results) {
+                          std::vector<DeviceInfoPtr> results) {
   EXPECT_EQ(expected_guids.size(), results.size());
   std::set<std::string> actual_guids;
   for (size_t i = 0; i < results.size(); ++i)
@@ -121,10 +121,11 @@ TEST_F(USBDeviceManagerImplTest, GetDevices) {
   DeviceManagerPtr device_manager = ConnectToDeviceManager();
 
   EnumerationOptionsPtr options = EnumerationOptions::New();
-  options->filters = mojo::Array<DeviceFilterPtr>::New(1);
-  options->filters[0] = DeviceFilter::New();
-  options->filters[0]->has_vendor_id = true;
-  options->filters[0]->vendor_id = 0x1234;
+  auto filter = DeviceFilter::New();
+  filter->has_vendor_id = true;
+  filter->vendor_id = 0x1234;
+  options->filters.emplace();
+  options->filters->push_back(std::move(filter));
 
   std::set<std::string> guids;
   guids.insert(device0->guid());

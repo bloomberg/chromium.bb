@@ -101,13 +101,13 @@ private:
     void asyncReleaseInterface(size_t interfaceIndex, ScriptPromiseResolver*, bool success);
     void onInterfaceClaimedOrUnclaimed(bool claimed, size_t interfaceIndex);
     void asyncSelectAlternateInterface(size_t interfaceIndex, size_t alternateIndex, ScriptPromiseResolver*, bool success);
-    void asyncControlTransferIn(ScriptPromiseResolver*, device::usb::blink::TransferStatus, mojo::WTFArray<uint8_t>);
+    void asyncControlTransferIn(ScriptPromiseResolver*, device::usb::blink::TransferStatus, const Optional<Vector<uint8_t>>&);
     void asyncControlTransferOut(unsigned, ScriptPromiseResolver*, device::usb::blink::TransferStatus);
     void asyncClearHalt(ScriptPromiseResolver*, bool success);
-    void asyncTransferIn(ScriptPromiseResolver*, device::usb::blink::TransferStatus, mojo::WTFArray<uint8_t>);
+    void asyncTransferIn(ScriptPromiseResolver*, device::usb::blink::TransferStatus, const Optional<Vector<uint8_t>>&);
     void asyncTransferOut(unsigned, ScriptPromiseResolver*, device::usb::blink::TransferStatus);
-    void asyncIsochronousTransferIn(ScriptPromiseResolver*, mojo::WTFArray<uint8_t>, mojo::WTFArray<device::usb::blink::IsochronousPacketPtr>);
-    void asyncIsochronousTransferOut(ScriptPromiseResolver*, mojo::WTFArray<device::usb::blink::IsochronousPacketPtr>);
+    void asyncIsochronousTransferIn(ScriptPromiseResolver*, const Optional<Vector<uint8_t>>&, Vector<device::usb::blink::IsochronousPacketPtr>);
+    void asyncIsochronousTransferOut(ScriptPromiseResolver*, Vector<device::usb::blink::IsochronousPacketPtr>);
     void asyncReset(ScriptPromiseResolver*, bool success);
 
     void onConnectionError();

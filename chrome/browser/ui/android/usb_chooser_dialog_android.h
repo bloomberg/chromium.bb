@@ -16,7 +16,6 @@
 #include "base/strings/string16.h"
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "device/usb/usb_service.h"
-#include "mojo/public/cpp/bindings/array.h"
 
 namespace content {
 class RenderFrameHost;
@@ -33,7 +32,7 @@ class UsbDeviceFilter;
 class UsbChooserDialogAndroid : public device::UsbService::Observer {
  public:
   UsbChooserDialogAndroid(
-      mojo::Array<device::usb::DeviceFilterPtr> device_filters,
+      std::vector<device::usb::DeviceFilterPtr> filters,
       content::RenderFrameHost* render_frame_host,
       const device::usb::ChooserService::GetPermissionCallback& callback);
   ~UsbChooserDialogAndroid() override;

@@ -158,7 +158,7 @@ USBDevice* USB::getOrCreateDevice(usb::DeviceInfoPtr deviceInfo)
     return device;
 }
 
-void USB::onGetDevices(ScriptPromiseResolver* resolver, mojo::WTFArray<usb::DeviceInfoPtr> deviceInfos)
+void USB::onGetDevices(ScriptPromiseResolver* resolver, Vector<usb::DeviceInfoPtr> deviceInfos)
 {
     auto requestEntry = m_deviceManagerRequests.find(resolver);
     if (requestEntry == m_deviceManagerRequests.end())
@@ -166,7 +166,7 @@ void USB::onGetDevices(ScriptPromiseResolver* resolver, mojo::WTFArray<usb::Devi
     m_deviceManagerRequests.remove(requestEntry);
 
     HeapVector<Member<USBDevice>> devices;
-    for (auto& deviceInfo : deviceInfos.PassStorage())
+    for (auto& deviceInfo : deviceInfos)
         devices.append(getOrCreateDevice(std::move(deviceInfo)));
     resolver->resolve(devices);
     m_deviceManagerRequests.remove(resolver);

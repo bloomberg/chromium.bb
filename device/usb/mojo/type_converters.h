@@ -12,7 +12,6 @@
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_device_handle.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 // Type converters to translate between internal device/usb data types and
@@ -82,9 +81,9 @@ struct TypeConverter<device::usb::AlternateInterfaceInfoPtr,
 // settings, whereas InterfaceInfos contain their own sets of alternates with
 // a different structure type.
 template <>
-struct TypeConverter<mojo::Array<device::usb::InterfaceInfoPtr>,
+struct TypeConverter<std::vector<device::usb::InterfaceInfoPtr>,
                      std::vector<device::UsbInterfaceDescriptor>> {
-  static mojo::Array<device::usb::InterfaceInfoPtr> Convert(
+  static std::vector<device::usb::InterfaceInfoPtr> Convert(
       const std::vector<device::UsbInterfaceDescriptor>& interfaces);
 };
 
@@ -105,6 +104,17 @@ struct TypeConverter<device::usb::IsochronousPacketPtr,
                      device::UsbDeviceHandle::IsochronousPacket> {
   static device::usb::IsochronousPacketPtr Convert(
       const device::UsbDeviceHandle::IsochronousPacket& packet);
+};
+
+template <typename A, typename B>
+struct TypeConverter<std::vector<A>, std::vector<B>> {
+  static std::vector<A> Convert(const std::vector<B>& input) {
+    std::vector<A> result;
+    result.reserve(input.size());
+    for (const B& item : input)
+      result.push_back(mojo::ConvertTo<A>(item));
+    return result;
+  };
 };
 
 }  // namespace mojo

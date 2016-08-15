@@ -72,7 +72,7 @@ String convertTransferStatus(const usb::TransferStatus& status)
     }
 }
 
-mojo::WTFArray<uint8_t> convertBufferSource(const ArrayBufferOrArrayBufferView& buffer)
+Vector<uint8_t> convertBufferSource(const ArrayBufferOrArrayBufferView& buffer)
 {
     ASSERT(!buffer.isNull());
     Vector<uint8_t> vector;
@@ -80,7 +80,7 @@ mojo::WTFArray<uint8_t> convertBufferSource(const ArrayBufferOrArrayBufferView& 
         vector.append(static_cast<uint8_t*>(buffer.getAsArrayBuffer()->data()), buffer.getAsArrayBuffer()->byteLength());
     else
         vector.append(static_cast<uint8_t*>(buffer.getAsArrayBufferView()->baseAddress()), buffer.getAsArrayBufferView()->byteLength());
-    return mojo::WTFArray<uint8_t>(std::move(vector));
+    return vector;
 }
 
 } // namespace
@@ -278,7 +278,7 @@ ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBC
         auto parameters = convertControlTransferParameters(setup, resolver);
         if (parameters) {
             m_deviceRequests.add(resolver);
-            m_device->ControlTransferOut(std::move(parameters), mojo::WTFArray<uint8_t>(), 0, convertToBaseCallback(WTF::bind(&USBDevice::asyncControlTransferOut, wrapPersistent(this), 0, wrapPersistent(resolver))));
+            m_device->ControlTransferOut(std::move(parameters), Vector<uint8_t>(), 0, convertToBaseCallback(WTF::bind(&USBDevice::asyncControlTransferOut, wrapPersistent(this), 0, wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -291,10 +291,10 @@ ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBC
     if (ensureDeviceConfigured(resolver)) {
         auto parameters = convertControlTransferParameters(setup, resolver);
         if (parameters) {
-            mojo::WTFArray<uint8_t> buffer = convertBufferSource(data);
+            Vector<uint8_t> buffer = convertBufferSource(data);
             unsigned transferLength = buffer.size();
             m_deviceRequests.add(resolver);
-            m_device->ControlTransferOut(std::move(parameters), std::move(buffer), 0, convertToBaseCallback(WTF::bind(&USBDevice::asyncControlTransferOut, wrapPersistent(this), transferLength, wrapPersistent(resolver))));
+            m_device->ControlTransferOut(std::move(parameters), buffer, 0, convertToBaseCallback(WTF::bind(&USBDevice::asyncControlTransferOut, wrapPersistent(this), transferLength, wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -327,10 +327,10 @@ ScriptPromise USBDevice::transferOut(ScriptState* scriptState, uint8_t endpointN
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(false /* out */, endpointNumber, resolver)) {
-        mojo::WTFArray<uint8_t> buffer = convertBufferSource(data);
+        Vector<uint8_t> buffer = convertBufferSource(data);
         unsigned transferLength = buffer.size();
         m_deviceRequests.add(resolver);
-        m_device->GenericTransferOut(endpointNumber, std::move(buffer), 0, convertToBaseCallback(WTF::bind(&USBDevice::asyncTransferOut, wrapPersistent(this), transferLength, wrapPersistent(resolver))));
+        m_device->GenericTransferOut(endpointNumber, buffer, 0, convertToBaseCallback(WTF::bind(&USBDevice::asyncTransferOut, wrapPersistent(this), transferLength, wrapPersistent(resolver))));
     }
     return promise;
 }
@@ -341,7 +341,7 @@ ScriptPromise USBDevice::isochronousTransferIn(ScriptState* scriptState, uint8_t
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(true /* in */, endpointNumber, resolver)) {
         m_deviceRequests.add(resolver);
-        m_device->IsochronousTransferIn(endpointNumber, mojo::WTFArray<uint32_t>(std::move(packetLengths)), 0, convertToBaseCallback(WTF::bind(&USBDevice::asyncIsochronousTransferIn, wrapPersistent(this), wrapPersistent(resolver))));
+        m_device->IsochronousTransferIn(endpointNumber, packetLengths, 0, convertToBaseCallback(WTF::bind(&USBDevice::asyncIsochronousTransferIn, wrapPersistent(this), wrapPersistent(resolver))));
     }
     return promise;
 }
@@ -352,7 +352,7 @@ ScriptPromise USBDevice::isochronousTransferOut(ScriptState* scriptState, uint8_
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(false /* out */, endpointNumber, resolver)) {
         m_deviceRequests.add(resolver);
-        m_device->IsochronousTransferOut(endpointNumber, convertBufferSource(data), mojo::WTFArray<uint32_t>(std::move(packetLengths)), 0, convertToBaseCallback(WTF::bind(&USBDevice::asyncIsochronousTransferOut, wrapPersistent(this), wrapPersistent(resolver))));
+        m_device->IsochronousTransferOut(endpointNumber, convertBufferSource(data), packetLengths, 0, convertToBaseCallback(WTF::bind(&USBDevice::asyncIsochronousTransferOut, wrapPersistent(this), wrapPersistent(resolver))));
     }
     return promise;
 }
@@ -533,7 +533,7 @@ void USBDevice::setEndpointsForInterface(size_t interfaceIndex, bool set)
     const auto& configuration = *info().configurations[m_configurationIndex];
     const auto& interface = *configuration.interfaces[interfaceIndex];
     const auto& alternate = *interface.alternates[m_selectedAlternates[interfaceIndex]];
-    for (const auto& endpoint : alternate.endpoints.storage()) {
+    for (const auto& endpoint : alternate.endpoints) {
         uint8_t endpointNumber = endpoint->endpoint_number;
         if (endpointNumber == 0 || endpointNumber >= 16)
             continue; // Ignore endpoints with invalid indices.
@@ -661,7 +661,7 @@ void USBDevice::asyncSelectAlternateInterface(size_t interfaceIndex, size_t alte
         resolver->reject(DOMException::create(NetworkError, "Unable to set device interface."));
 }
 
-void USBDevice::asyncControlTransferIn(ScriptPromiseResolver* resolver, usb::TransferStatus status, mojo::WTFArray<uint8_t> data)
+void USBDevice::asyncControlTransferIn(ScriptPromiseResolver* resolver, usb::TransferStatus status, const Optional<Vector<uint8_t>>& data)
 {
     if (!markRequestComplete(resolver))
         return;
@@ -670,7 +670,7 @@ void USBDevice::asyncControlTransferIn(ScriptPromiseResolver* resolver, usb::Tra
     if (error)
         resolver->reject(error);
     else
-        resolver->resolve(USBInTransferResult::create(convertTransferStatus(status), data.PassStorage()));
+        resolver->resolve(USBInTransferResult::create(convertTransferStatus(status), data));
 }
 
 void USBDevice::asyncControlTransferOut(unsigned transferLength, ScriptPromiseResolver* resolver, usb::TransferStatus status)
@@ -696,7 +696,7 @@ void USBDevice::asyncClearHalt(ScriptPromiseResolver* resolver, bool success)
         resolver->reject(DOMException::create(NetworkError, "Unable to clear endpoint."));
 }
 
-void USBDevice::asyncTransferIn(ScriptPromiseResolver* resolver, usb::TransferStatus status, mojo::WTFArray<uint8_t> data)
+void USBDevice::asyncTransferIn(ScriptPromiseResolver* resolver, usb::TransferStatus status, const Optional<Vector<uint8_t>>& data)
 {
     if (!markRequestComplete(resolver))
         return;
@@ -705,7 +705,7 @@ void USBDevice::asyncTransferIn(ScriptPromiseResolver* resolver, usb::TransferSt
     if (error)
         resolver->reject(error);
     else
-        resolver->resolve(USBInTransferResult::create(convertTransferStatus(status), data.PassStorage()));
+        resolver->resolve(USBInTransferResult::create(convertTransferStatus(status), data));
 }
 
 void USBDevice::asyncTransferOut(unsigned transferLength, ScriptPromiseResolver* resolver, usb::TransferStatus status)
@@ -720,35 +720,35 @@ void USBDevice::asyncTransferOut(unsigned transferLength, ScriptPromiseResolver*
         resolver->resolve(USBOutTransferResult::create(convertTransferStatus(status), transferLength));
 }
 
-void USBDevice::asyncIsochronousTransferIn(ScriptPromiseResolver* resolver, mojo::WTFArray<uint8_t> data, mojo::WTFArray<usb::IsochronousPacketPtr> mojoPackets)
+void USBDevice::asyncIsochronousTransferIn(ScriptPromiseResolver* resolver, const Optional<Vector<uint8_t>>& data, Vector<usb::IsochronousPacketPtr> mojoPackets)
 {
     if (!markRequestComplete(resolver))
         return;
 
-    DOMArrayBuffer* buffer = DOMArrayBuffer::create(data.storage().data(), data.storage().size());
+    DOMArrayBuffer* buffer = data ? DOMArrayBuffer::create(data->data(), data->size()) : nullptr;
     HeapVector<Member<USBIsochronousInTransferPacket>> packets;
     packets.reserveCapacity(mojoPackets.size());
     size_t byteOffset = 0;
-    for (const auto& packet : mojoPackets.storage()) {
+    for (const auto& packet : mojoPackets) {
         DOMException* error = convertFatalTransferStatus(packet->status);
         if (error) {
             resolver->reject(error);
             return;
         }
-        packets.append(USBIsochronousInTransferPacket::create(convertTransferStatus(packet->status), DOMDataView::create(buffer, byteOffset, packet->transferred_length)));
+        packets.append(USBIsochronousInTransferPacket::create(convertTransferStatus(packet->status), buffer ? DOMDataView::create(buffer, byteOffset, packet->transferred_length) : nullptr));
         byteOffset += packet->length;
     }
     resolver->resolve(USBIsochronousInTransferResult::create(buffer, packets));
 }
 
-void USBDevice::asyncIsochronousTransferOut(ScriptPromiseResolver* resolver, mojo::WTFArray<usb::IsochronousPacketPtr> mojoPackets)
+void USBDevice::asyncIsochronousTransferOut(ScriptPromiseResolver* resolver, Vector<usb::IsochronousPacketPtr> mojoPackets)
 {
     if (!markRequestComplete(resolver))
         return;
 
     HeapVector<Member<USBIsochronousOutTransferPacket>> packets;
     packets.reserveCapacity(mojoPackets.size());
-    for (const auto& packet : mojoPackets.storage()) {
+    for (const auto& packet : mojoPackets) {
         DOMException* error = convertFatalTransferStatus(packet->status);
         if (error) {
             resolver->reject(error);

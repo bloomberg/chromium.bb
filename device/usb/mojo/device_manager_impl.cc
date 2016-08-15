@@ -18,6 +18,7 @@
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_service.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
@@ -63,7 +64,7 @@ void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
 }
 
 void DeviceManagerImpl::GetDevice(
-    const mojo::String& guid,
+    const std::string& guid,
     mojo::InterfaceRequest<Device> device_request) {
   scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
   if (!device)
@@ -85,10 +86,10 @@ void DeviceManagerImpl::OnGetDevices(
     const GetDevicesCallback& callback,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
   std::vector<UsbDeviceFilter> filters;
-  if (options)
-    filters = options->filters.To<std::vector<UsbDeviceFilter>>();
+  if (options && options->filters)
+    filters = mojo::ConvertTo<std::vector<UsbDeviceFilter>>(*options->filters);
 
-  mojo::Array<DeviceInfoPtr> device_infos;
+  std::vector<DeviceInfoPtr> device_infos;
   for (const auto& device : devices) {
     if (filters.empty() || UsbDeviceFilter::MatchesAny(device, filters)) {
       if (permission_provider_ &&

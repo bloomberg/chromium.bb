@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/usb/usb_device.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/array.h"
 
 namespace mojo {
@@ -158,7 +159,7 @@ TypeConverter<device::usb::AlternateInterfaceInfoPtr,
   info->protocol_code = interface.interface_protocol;
 
   // Filter out control endpoints for the public interface.
-  info->endpoints = mojo::Array<device::usb::EndpointInfoPtr>::New(0);
+  info->endpoints.reserve(interface.endpoints.size());
   for (const auto& endpoint : interface.endpoints) {
     if (endpoint.transfer_type != device::USB_TRANSFER_CONTROL)
       info->endpoints.push_back(device::usb::EndpointInfo::From(endpoint));
@@ -168,11 +169,11 @@ TypeConverter<device::usb::AlternateInterfaceInfoPtr,
 }
 
 // static
-mojo::Array<device::usb::InterfaceInfoPtr>
-TypeConverter<mojo::Array<device::usb::InterfaceInfoPtr>,
+std::vector<device::usb::InterfaceInfoPtr>
+TypeConverter<std::vector<device::usb::InterfaceInfoPtr>,
               std::vector<device::UsbInterfaceDescriptor>>::
     Convert(const std::vector<device::UsbInterfaceDescriptor>& interfaces) {
-  auto infos = mojo::Array<device::usb::InterfaceInfoPtr>::New(0);
+  std::vector<device::usb::InterfaceInfoPtr> infos;
 
   // Aggregate each alternate setting into an InterfaceInfo corresponding to its
   // interface number.
@@ -205,7 +206,8 @@ TypeConverter<device::usb::ConfigurationInfoPtr, device::UsbConfigDescriptor>::
       device::usb::ConfigurationInfo::New();
   info->configuration_value = config.configuration_value;
   info->interfaces =
-      mojo::Array<device::usb::InterfaceInfoPtr>::From(config.interfaces);
+      mojo::ConvertTo<std::vector<device::usb::InterfaceInfoPtr>>(
+          config.interfaces);
   return info;
 }
 
@@ -231,8 +233,9 @@ TypeConverter<device::usb::DeviceInfoPtr, device::UsbDevice>::Convert(
   info->serial_number = base::UTF16ToUTF8(device.serial_number());
   const device::UsbConfigDescriptor* config = device.active_configuration();
   info->active_configuration = config ? config->configuration_value : 0;
-  info->configurations = mojo::Array<device::usb::ConfigurationInfoPtr>::From(
-      device.configurations());
+  info->configurations =
+      mojo::ConvertTo<std::vector<device::usb::ConfigurationInfoPtr>>(
+          device.configurations());
   return info;
 }
 

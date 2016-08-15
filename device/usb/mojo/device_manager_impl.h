@@ -54,7 +54,7 @@ class DeviceManagerImpl : public DeviceManager, public UsbService::Observer {
   // DeviceManager implementation:
   void GetDevices(EnumerationOptionsPtr options,
                   const GetDevicesCallback& callback) override;
-  void GetDevice(const mojo::String& guid,
+  void GetDevice(const std::string& guid,
                  mojo::InterfaceRequest<Device> device_request) override;
   void SetClient(DeviceManagerClientPtr client) override;
 

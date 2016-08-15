@@ -19,14 +19,14 @@ class USBInTransferResult final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static USBInTransferResult* create(const String& status, const Vector<uint8_t>& data)
+    static USBInTransferResult* create(const String& status, const Optional<Vector<uint8_t>>& data)
     {
         return new USBInTransferResult(status, data);
     }
 
-    USBInTransferResult(const String& status, const Vector<uint8_t>& data)
+    USBInTransferResult(const String& status, const Optional<Vector<uint8_t>>& data)
         : m_status(status)
-        , m_data(DOMDataView::create(DOMArrayBuffer::create(data.data(), data.size()), 0, data.size()))
+        , m_data(data ? DOMDataView::create(DOMArrayBuffer::create(data->data(), data->size()), 0, data->size()) : nullptr)
     {
     }
 
