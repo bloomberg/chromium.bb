@@ -16,7 +16,9 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Serves as an interface between Download Home UI and offline page related items that are to be
@@ -150,12 +152,9 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
         if (url == null) return;
 
         LoadUrlParams params = new LoadUrlParams(url);
-        // TODO(dimich): W/o forcing offline, the page gets redirected to online
-        // URL if device is connected. Figure out how to force the offline by
-        // observing the request header.
-        // Map<String, String> headers = new HashMap<String, String>();
-        // headers.put("x-chrome-force-offline", "true");
-        // params.setExtraHeaders(headers);
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("X-chromium-offline", "reason=download");
+        params.setExtraHeaders(headers);
         final TabDelegate tabDelegate = new TabDelegate(false);
         tabDelegate.createNewTab(params, TabLaunchType.FROM_LINK, null);
     }
