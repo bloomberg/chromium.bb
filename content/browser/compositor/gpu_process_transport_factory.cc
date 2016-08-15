@@ -38,7 +38,6 @@
 #include "content/browser/compositor/offscreen_browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
-#include "content/browser/compositor/software_output_device_mus.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -202,8 +201,8 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
 #if defined(USE_AURA)
   if (shell::ShellIsRemote()) {
-    return std::unique_ptr<cc::SoftwareOutputDevice>(
-        new SoftwareOutputDeviceMus(compositor));
+    NOTREACHED();
+    return nullptr;
   }
 #endif
 
