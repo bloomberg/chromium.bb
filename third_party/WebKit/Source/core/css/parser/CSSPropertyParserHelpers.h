@@ -15,6 +15,7 @@
 namespace blink {
 
 class CSSStringValue;
+class CSSURIValue;
 class CSSValuePair;
 
 // When these functions are successful, they will consume all the relevant
@@ -51,7 +52,8 @@ template<CSSValueID... allowedIdents> CSSPrimitiveValue* consumeIdent(CSSParserT
 
 CSSCustomIdentValue* consumeCustomIdent(CSSParserTokenRange&);
 CSSStringValue* consumeString(CSSParserTokenRange&);
-StringView consumeUrl(CSSParserTokenRange&);
+StringView consumeUrlAsStringView(CSSParserTokenRange&);
+CSSURIValue* consumeUrl(CSSParserTokenRange&);
 
 CSSValue* consumeColor(CSSParserTokenRange&, CSSParserMode, bool acceptQuirkyColors = false);
 

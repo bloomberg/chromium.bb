@@ -12,6 +12,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPaintValue.h"
 #include "core/css/CSSStringValue.h"
+#include "core/css/CSSURIValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/frame/UseCounter.h"
 
@@ -322,7 +323,7 @@ CSSStringValue* consumeString(CSSParserTokenRange& range)
     return CSSStringValue::create(range.consumeIncludingWhitespace().value().toString());
 }
 
-StringView consumeUrl(CSSParserTokenRange& range)
+StringView consumeUrlAsStringView(CSSParserTokenRange& range)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == UrlToken) {
@@ -342,6 +343,14 @@ StringView consumeUrl(CSSParserTokenRange& range)
     }
 
     return StringView();
+}
+
+CSSURIValue* consumeUrl(CSSParserTokenRange& range)
+{
+    StringView url = consumeUrlAsStringView(range);
+    if (url.isNull())
+        return nullptr;
+    return CSSURIValue::create(url.toString());
 }
 
 static int clampRGBComponent(const CSSPrimitiveValue& value)
@@ -1022,7 +1031,7 @@ static CSSValue* consumeImageSet(CSSParserTokenRange& range, const CSSParserCont
     CSSParserTokenRange args = consumeFunction(rangeCopy);
     CSSImageSetValue* imageSet = CSSImageSetValue::create();
     do {
-        AtomicString urlValue = consumeUrl(args).toAtomicString();
+        AtomicString urlValue = consumeUrlAsStringView(args).toAtomicString();
         if (urlValue.isNull())
             return nullptr;
 
@@ -1057,7 +1066,7 @@ static bool isGeneratedImage(CSSValueID id)
 
 CSSValue* consumeImage(CSSParserTokenRange& range, CSSParserContext context, ConsumeGeneratedImage generatedImage)
 {
-    AtomicString uri = consumeUrl(range).toAtomicString();
+    AtomicString uri = consumeUrlAsStringView(range).toAtomicString();
     if (!uri.isNull())
         return createCSSImageValueWithReferrer(uri, context);
     if (range.peek().type() == FunctionToken) {

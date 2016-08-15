@@ -1437,11 +1437,8 @@ static CSSValue* consumeFilter(CSSParserTokenRange& range, const CSSParserContex
 
     CSSValueList* list = CSSValueList::createSpaceSeparated();
     do {
-        String url = consumeUrl(range).toString();
-        CSSValue* filterValue = nullptr;
-        if (!url.isNull()) {
-            filterValue = CSSURIValue::create(url);
-        } else {
+        CSSValue* filterValue = consumeUrl(range);
+        if (!filterValue) {
             filterValue = consumeFilterFunction(range, context);
             if (!filterValue)
                 return nullptr;
@@ -1795,8 +1792,8 @@ static CSSValue* consumePaintStroke(CSSParserTokenRange& range, CSSParserMode cs
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
-    String url = consumeUrl(range).toString();
-    if (!url.isNull()) {
+    CSSURIValue* url = consumeUrl(range);
+    if (url) {
         CSSValue* parsedValue = nullptr;
         if (range.peek().id() == CSSValueNone)
             parsedValue = consumeIdent(range);
@@ -1804,11 +1801,11 @@ static CSSValue* consumePaintStroke(CSSParserTokenRange& range, CSSParserMode cs
             parsedValue = consumeColor(range, cssParserMode);
         if (parsedValue) {
             CSSValueList* values = CSSValueList::createSpaceSeparated();
-            values->append(*CSSURIValue::create(url));
+            values->append(*url);
             values->append(*parsedValue);
             return values;
         }
-        return CSSURIValue::create(url);
+        return url;
     }
     return consumeColor(range, cssParserMode);
 }
@@ -1867,11 +1864,7 @@ static CSSValue* consumeNoneOrURI(CSSParserTokenRange& range)
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
-
-    String url = consumeUrl(range).toString();
-    if (url.isNull())
-        return nullptr;
-    return CSSURIValue::create(url);
+    return consumeUrl(range);
 }
 
 static CSSValue* consumeFlexBasis(CSSParserTokenRange& range, CSSParserMode cssParserMode)
@@ -2285,9 +2278,8 @@ static CSSValue* consumeWebkitClipPath(CSSParserTokenRange& range, const CSSPars
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
-    String url = consumeUrl(range).toString();
-    if (!url.isNull())
-        return CSSURIValue::create(url);
+    if (CSSURIValue* url = consumeUrl(range))
+        return url;
     return consumeBasicShape(range, context);
 }
 
@@ -3518,7 +3510,7 @@ static CSSValueList* consumeFontFaceUnicodeRange(CSSParserTokenRange& range)
 
 static CSSValue* consumeFontFaceSrcURI(CSSParserTokenRange& range, const CSSParserContext& context)
 {
-    String url = consumeUrl(range).toString();
+    String url = consumeUrlAsStringView(range).toString();
     if (url.isNull())
         return nullptr;
     CSSFontFaceSrcValue* uriValue(CSSFontFaceSrcValue::create(url, context.completeURL(url), context.shouldCheckContentSecurityPolicy()));
