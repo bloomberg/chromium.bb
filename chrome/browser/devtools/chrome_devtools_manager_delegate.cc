@@ -48,7 +48,7 @@ base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHost* agent_host,
     base::DictionaryValue* command_dict) {
   std::unique_ptr<base::DictionaryValue> result =
-      DevToolsDiscoveryManager::GetInstance()->HandleNewTargetCommand(
+      DevToolsDiscoveryManager::GetInstance()->HandleCreateTargetCommand(
           command_dict);
   if (result)
     return result.release();  // Caller takes ownership.

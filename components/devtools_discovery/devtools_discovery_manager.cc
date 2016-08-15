@@ -63,7 +63,7 @@ DevToolsDiscoveryManager::GetDescriptorsFromProviders() {
 }
 
 std::unique_ptr<base::DictionaryValue>
-DevToolsDiscoveryManager::HandleNewTargetCommand(
+DevToolsDiscoveryManager::HandleCreateTargetCommand(
     base::DictionaryValue* command_dict) {
   int id;
   std::string method;
@@ -82,7 +82,7 @@ DevToolsDiscoveryManager::HandleNewTargetCommand(
     result->SetInteger("id", id);
     std::unique_ptr<base::DictionaryValue> cmd_result(
         new base::DictionaryValue());
-    cmd_result->SetString("pageId", descriptor->GetId());
+    cmd_result->SetString("targetId", descriptor->GetId());
     result->Set("result", std::move(cmd_result));
     return result;
   }

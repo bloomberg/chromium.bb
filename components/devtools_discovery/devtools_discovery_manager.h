@@ -40,8 +40,8 @@ class DevToolsDiscoveryManager {
   DevToolsTargetDescriptor::List GetDescriptors();
   std::unique_ptr<DevToolsTargetDescriptor> CreateNew(const GURL& url);
 
-  // Handles Browser.newPage only.
-  std::unique_ptr<base::DictionaryValue> HandleNewTargetCommand(
+  // Handles Browser.createTarget only.
+  std::unique_ptr<base::DictionaryValue> HandleCreateTargetCommand(
       base::DictionaryValue* command_dict);
 
  private:

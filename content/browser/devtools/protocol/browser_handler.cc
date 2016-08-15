@@ -87,6 +87,7 @@ Response BrowserHandler::GetTargets(TargetInfos* infos) {
             set_type(GetTypeString(agent_host))->
             set_title(agent_host->GetTitle())->
             set_url(agent_host->GetURL().spec());
+    infos->push_back(info);
   }
   return Response::OK();
 }

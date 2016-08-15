@@ -4318,8 +4318,8 @@
                 "description": "Creates a new page.",
                 "parameters": [
                     { "name": "url", "type": "string", "description": "The initial URL the page will be navigated to." },
-                    { "name": "width", "type": "integer", "description": "Window width (headless chrome only).", "optional": true },
-                    { "name": "height", "type": "integer", "description": "Window height (headless chrome only).", "optional": true },
+                    { "name": "width", "type": "integer", "description": "Frame width in DIP (headless chrome only).", "optional": true },
+                    { "name": "height", "type": "integer", "description": "Frame height in DIP (headless chrome only).", "optional": true },
                     { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The browser context to create the page in (headless chrome only).", "optional": true }
                 ],
                 "returns": [
