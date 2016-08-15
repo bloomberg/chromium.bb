@@ -16,6 +16,7 @@
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/offline_pages/client_namespace_constants.h"
+#include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/previews/previews_experiments.h"
 #include "content/public/browser/browser_thread.h"
@@ -101,6 +102,24 @@ void OfflinePageTabHelper::DidStartNavigation(
   GURL navigated_url = navigation_handle->GetURL();
   if (offline_page_ && navigated_url != offline_page_->GetOfflineURL())
     offline_page_ = nullptr;
+
+  // If an offline download file is opened, don't do redirect per network
+  // conditions. Also store a cached copy here such that Tab knows that
+  // the offline page is opened.
+  if (OfflinePageUtils::MightBeOfflineURL(navigated_url)) {
+    OfflinePageModel* offline_page_model =
+        OfflinePageModelFactory::GetForBrowserContext(
+            web_contents()->GetBrowserContext());
+    if (offline_page_model) {
+      const OfflinePageItem* offline_page =
+          offline_page_model->MaybeGetPageByOfflineURL(navigated_url);
+      if (offline_page &&
+          offline_page->client_id.name_space == kDownloadNamespace) {
+        offline_page_ = base::MakeUnique<OfflinePageItem>(*offline_page);
+        return;
+      }
+    }
+  }
 
   // Ignore navigations that are forward or back transitions in the nav stack
   // which are not at the head of the stack.
