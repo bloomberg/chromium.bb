@@ -816,22 +816,11 @@ template("jar_src") {
       "--depfile",
       rebase_path(depfile, root_build_dir),
     ]
-
-    if (defined(invoker.src_jars)) {
-      _rebased_src_jars = rebase_path(invoker.src_jars, root_build_dir)
-      args += [ "--src-jar=${_rebased_src_jars}" ]
-    }
-    deps = [
-      ":effective_connection_type_java",
-    ]
   }
 }
 
 jar_src("jar_cronet_api_source") {
   src_dirs = [ "api/src" ]
-
-  # Include generated Java files which should be a part of the API.
-  src_jars = [ "$root_gen_dir/components/cronet/android/effective_connection_type_java.srcjar" ]
   jar_path = "$_package_dir/cronet_api-src.jar"
 }
 
@@ -883,14 +872,9 @@ action("generate_javadoc") {
     "--lib-java-dir",
     rebase_path("$root_build_dir/lib.java/components/cronet/android",
                 root_build_dir),
-
-    # JavaDoc is generated from Cronet's API source jar.
-    "--input-src-jar",
-    rebase_path("$_package_dir/cronet_api-src.jar", root_build_dir),
   ]
   deps = [
     ":cronet_javadoc_classpath",
-    ":jar_cronet_api_source",
   ]
 }
 
