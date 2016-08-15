@@ -30,8 +30,8 @@ APIPermission* CreateAPIPermission(const APIPermissionInfo* permission) {
 
 }  // namespace
 
-std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
-    const {
+std::vector<std::unique_ptr<APIPermissionInfo>>
+ExtensionsAPIPermissions::GetAllPermissions() const {
   // WARNING: If you are modifying a permission message in this list, be sure to
   // add the corresponding permission message rule to
   // ChromePermissionMessageProvider::GetCoalescedPermissionMessages as well.
@@ -118,9 +118,11 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kWindowShape, "app.window.shape"},
   };
 
-  std::vector<APIPermissionInfo*> permissions;
+  std::vector<std::unique_ptr<APIPermissionInfo>> permissions;
+
   for (size_t i = 0; i < arraysize(permissions_to_register); ++i)
-    permissions.push_back(new APIPermissionInfo(permissions_to_register[i]));
+    permissions.push_back(
+        base::WrapUnique(new APIPermissionInfo(permissions_to_register[i])));
   return permissions;
 }
 

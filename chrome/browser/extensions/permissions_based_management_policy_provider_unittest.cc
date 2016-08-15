@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -42,12 +41,12 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
         pref_names::kExtensionManagement);
   }
 
-  void TearDown() override { base::STLDeleteElements(&perm_list_); }
+  void TearDown() override {}
 
   // Get API permissions name for |id|, we cannot use arbitrary strings since
   // they will be ignored by ExtensionManagementService.
   std::string GetAPIPermissionName(APIPermission::ID id) {
-    for (auto* perm : perm_list_) {
+    for (const auto& perm : perm_list_) {
       if (perm->id() == id)
         return perm->name();
     }
@@ -80,7 +79,7 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
   }
 
  protected:
-  std::vector<APIPermissionInfo*> perm_list_;
+  std::vector<std::unique_ptr<APIPermissionInfo>> perm_list_;
 
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<ExtensionManagement> settings_;

@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_PERMISSIONS_PROVIDER_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_PERMISSIONS_PROVIDER_H_
 
+#include <memory>
 #include <vector>
 
 namespace extensions {
@@ -27,9 +28,9 @@ class PermissionsProvider {
         : name(name), alias(alias) {
     }
   };
-  // Returns all the known permissions. The caller, PermissionsInfo,
-  // takes ownership of the APIPermissionInfos.
-  virtual std::vector<APIPermissionInfo*> GetAllPermissions() const = 0;
+  // Returns all the known permissions.
+  virtual std::vector<std::unique_ptr<APIPermissionInfo>> GetAllPermissions()
+      const = 0;
 
   // Returns all the known permission aliases.
   virtual std::vector<AliasInfo> GetAllAliases() const = 0;

@@ -20,26 +20,24 @@ PermissionsInfo* PermissionsInfo::GetInstance() {
 }
 
 void PermissionsInfo::AddProvider(const PermissionsProvider& provider) {
-  std::vector<APIPermissionInfo*> permissions = provider.GetAllPermissions();
-  std::vector<PermissionsProvider::AliasInfo> aliases =
-      provider.GetAllAliases();
+  auto permissions = provider.GetAllPermissions();
+  auto aliases = provider.GetAllAliases();
 
-  for (size_t i = 0; i < permissions.size(); ++i)
-    RegisterPermission(permissions[i]);
-  for (size_t i = 0; i < aliases.size(); ++i)
-    RegisterAlias(aliases[i].name, aliases[i].alias);
+  for (auto& permission : permissions)
+    RegisterPermission(std::move(permission));
+  for (const auto& alias : aliases)
+    RegisterAlias(alias.name, alias.alias);
 }
 
-const APIPermissionInfo* PermissionsInfo::GetByID(
-    APIPermission::ID id) const {
+const APIPermissionInfo* PermissionsInfo::GetByID(APIPermission::ID id) const {
   IDMap::const_iterator i = id_map_.find(id);
-  return (i == id_map_.end()) ? NULL : i->second;
+  return (i == id_map_.end()) ? nullptr : i->second.get();
 }
 
 const APIPermissionInfo* PermissionsInfo::GetByName(
     const std::string& name) const {
   NameMap::const_iterator i = name_map_.find(name);
-  return (i == name_map_.end()) ? NULL : i->second;
+  return (i == name_map_.end()) ? nullptr : i->second;
 }
 
 APIPermissionSet PermissionsInfo::GetAll() const {
@@ -72,7 +70,6 @@ PermissionsInfo::PermissionsInfo()
 }
 
 PermissionsInfo::~PermissionsInfo() {
-  base::STLDeleteContainerPairSecondPointers(id_map_.begin(), id_map_.end());
 }
 
 void PermissionsInfo::RegisterAlias(
@@ -83,12 +80,13 @@ void PermissionsInfo::RegisterAlias(
   name_map_[alias] = name_map_[name];
 }
 
-void PermissionsInfo::RegisterPermission(APIPermissionInfo* permission) {
+void PermissionsInfo::RegisterPermission(
+    std::unique_ptr<APIPermissionInfo> permission) {
   DCHECK(!base::ContainsKey(id_map_, permission->id()));
   DCHECK(!base::ContainsKey(name_map_, permission->name()));
 
-  id_map_[permission->id()] = permission;
-  name_map_[permission->name()] = permission;
+  name_map_[permission->name()] = permission.get();
+  id_map_[permission->id()] = std::move(permission);
 
   permission_count_++;
 }

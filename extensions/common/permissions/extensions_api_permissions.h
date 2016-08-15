@@ -12,7 +12,8 @@ namespace extensions {
 
 class ExtensionsAPIPermissions : public PermissionsProvider {
  public:
-  std::vector<APIPermissionInfo*> GetAllPermissions() const override;
+  std::vector<std::unique_ptr<APIPermissionInfo>> GetAllPermissions()
+      const override;
   std::vector<PermissionsProvider::AliasInfo> GetAllAliases() const override;
 };
 

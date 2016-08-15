@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -61,12 +62,12 @@ class PermissionsInfo {
   void RegisterAlias(const char* name, const char* alias);
 
   // Registers a permission with the specified attributes and flags.
-  void RegisterPermission(APIPermissionInfo* permission);
+  void RegisterPermission(std::unique_ptr<APIPermissionInfo> permission);
 
-  // Maps permission ids to permissions.
-  typedef std::map<APIPermission::ID, APIPermissionInfo*> IDMap;
+  // Maps permission ids to permissions. Owns the permissions.
+  typedef std::map<APIPermission::ID, std::unique_ptr<APIPermissionInfo>> IDMap;
 
-  // Maps names and aliases to permissions.
+  // Maps names and aliases to permissions. Doesn't own the permissions.
   typedef std::map<std::string, APIPermissionInfo*> NameMap;
 
   IDMap id_map_;
