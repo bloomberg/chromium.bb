@@ -19,7 +19,7 @@
 #include "components/sync/core/model_type_connector.h"
 #include "components/sync/core/shared_model_type_processor.h"
 #include "components/sync/core/test/data_type_error_handler_mock.h"
-#include "components/sync/sessions_impl/model_type_registry.h"
+#include "components/sync/engine_impl/model_type_registry.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
 #include "components/sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"

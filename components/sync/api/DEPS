@@ -1,7 +1,5 @@
 include_rules = [
   "+components/sync/base",
-  "+components/sync/core_impl/base_node.h",
   "+components/sync/core",
   "+components/sync/protocol",
-  "+components/sync/base",
 ]

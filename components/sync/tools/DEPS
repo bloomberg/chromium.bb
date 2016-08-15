@@ -5,8 +5,6 @@ include_rules = [
   "+components/sync/driver",
   "+components/sync/engine",
   "+components/sync/js",
-  # TODO(maxbogue): Move to base.
-  "+components/sync/test/fake_encryptor.h",
   "+google/cacheinvalidation",
   "+jingle/notifier/base",
   "+net",

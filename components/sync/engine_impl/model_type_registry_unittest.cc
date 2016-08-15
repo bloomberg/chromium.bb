@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/sessions_impl/model_type_registry.h"
+#include "components/sync/engine_impl/model_type_registry.h"
 
 #include <utility>
 #include <vector>

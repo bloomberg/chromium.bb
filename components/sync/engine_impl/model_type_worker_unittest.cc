@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/core/non_blocking_sync_common.h"
@@ -23,7 +24,6 @@
 #include "components/sync/test/engine/mock_model_type_processor.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
 #include "components/sync/test/engine/single_type_mock_server.h"
-#include "components/sync/test/fake_encryptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const syncer::ModelType kModelType = syncer::PREFERENCES;

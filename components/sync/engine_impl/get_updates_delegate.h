@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "components/sync/engine/events/protocol_event.h"
+#include "components/sync/engine_impl/model_type_registry.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/model_type_registry.h"
 #include "components/sync/sessions_impl/nudge_tracker.h"
 #include "components/sync/sessions_impl/status_controller.h"
 

@@ -23,7 +23,7 @@
 #include "components/sync/core/shared_model_type_processor.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/fake_sync_client.h"
-#include "components/sync/engine_impl/commit_queue.h"
+#include "components/sync/engine/commit_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_driver_v2 {

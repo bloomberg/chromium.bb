@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_SESSIONS_IMPL_MODEL_TYPE_REGISTRY_H_
-#define COMPONENTS_SYNC_SESSIONS_IMPL_MODEL_TYPE_REGISTRY_H_
+#ifndef COMPONENTS_SYNC_ENGINE_IMPL_MODEL_TYPE_REGISTRY_H_
+#define COMPONENTS_SYNC_ENGINE_IMPL_MODEL_TYPE_REGISTRY_H_
 
 #include <map>
 #include <memory>
@@ -166,4 +166,4 @@ class ModelTypeRegistry : public syncer_v2::ModelTypeConnector,
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_SESSIONS_IMPL_MODEL_TYPE_REGISTRY_H_
+#endif  // COMPONENTS_SYNC_ENGINE_IMPL_MODEL_TYPE_REGISTRY_H_

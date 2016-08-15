@@ -10,13 +10,13 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/test/engine/test_id_factory.h"
-#include "components/sync/test/fake_encryptor.h"
 #include "components/sync/test/null_directory_change_delegate.h"
 #include "components/sync/test/null_transaction_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"

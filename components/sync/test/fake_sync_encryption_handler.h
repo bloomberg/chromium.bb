@@ -10,9 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "components/sync/base/cryptographer.h"
+#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/core/sync_encryption_handler.h"
 #include "components/sync/syncable/nigori_handler.h"
-#include "components/sync/test/fake_encryptor.h"
 
 namespace syncer {
 

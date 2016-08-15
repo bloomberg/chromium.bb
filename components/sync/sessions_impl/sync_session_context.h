@@ -21,9 +21,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/sync/engine_impl/model_type_registry.h"
 #include "components/sync/engine_impl/sync_engine_event_listener.h"
 #include "components/sync/sessions_impl/debug_info_getter.h"
-#include "components/sync/sessions_impl/model_type_registry.h"
 
 namespace syncer {
 

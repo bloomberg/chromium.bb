@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/tracked_objects.h"
 #include "components/sync/base/cryptographer.h"
+#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/core/read_node.h"
 #include "components/sync/core/read_transaction.h"
@@ -26,7 +27,6 @@
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/test/engine/test_id_factory.h"
-#include "components/sync/test/fake_encryptor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

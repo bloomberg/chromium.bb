@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_TEST_FAKE_ENCRYPTOR_H_
-#define COMPONENTS_SYNC_TEST_FAKE_ENCRYPTOR_H_
+#ifndef COMPONENTS_SYNC_BASE_FAKE_ENCRYPTOR_H_
+#define COMPONENTS_SYNC_BASE_FAKE_ENCRYPTOR_H_
 
 #include <string>
 
@@ -27,4 +27,4 @@ class FakeEncryptor : public Encryptor {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_TEST_FAKE_ENCRYPTOR_H_
+#endif  // COMPONENTS_SYNC_BASE_FAKE_ENCRYPTOR_H_

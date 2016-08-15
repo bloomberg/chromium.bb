@@ -4,7 +4,7 @@
 
 #include "components/sync/core/test/fake_model_type_processor.h"
 
-#include "components/sync/engine_impl/commit_queue.h"
+#include "components/sync/engine/commit_queue.h"
 
 namespace syncer_v2 {
 

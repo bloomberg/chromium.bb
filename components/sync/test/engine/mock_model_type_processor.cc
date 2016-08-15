@@ -10,7 +10,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/sha1.h"
-#include "components/sync/engine_impl/commit_queue.h"
+#include "components/sync/engine/commit_queue.h"
 
 namespace syncer_v2 {
 

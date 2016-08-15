@@ -11,8 +11,6 @@ include_rules = [
   "+components/sync/base",
   "+components/sync/core",
   "+components/sync/engine",
-  # TODO(maxbogue): Move commit_queue.h to engine.
-  "+components/sync/engine_impl",
   "+components/sync/protocol",
   "+components/sync/sessions",
   "+components/sync/syncable",

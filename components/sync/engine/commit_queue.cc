@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/engine_impl/commit_queue.h"
+#include "components/sync/engine/commit_queue.h"
 
 namespace syncer_v2 {
 

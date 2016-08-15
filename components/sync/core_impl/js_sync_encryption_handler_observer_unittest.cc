@@ -8,13 +8,13 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "components/sync/base/cryptographer.h"
+#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_string_conversions.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/weak_handle.h"
+#include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_test_util.h"
-#include "components/sync/test/fake_encryptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

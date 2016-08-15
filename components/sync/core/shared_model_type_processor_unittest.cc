@@ -24,7 +24,7 @@
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/core/simple_metadata_change_list.h"
 #include "components/sync/core/test/data_type_error_handler_mock.h"
-#include "components/sync/engine_impl/commit_queue.h"
+#include "components/sync/engine/commit_queue.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/syncable_util.h"

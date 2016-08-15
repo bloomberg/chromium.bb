@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/sessions_impl/model_type_registry.h"
+#include "components/sync/engine_impl/model_type_registry.h"
 
 #include <stddef.h>
 
@@ -15,7 +15,7 @@
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/model_type_processor.h"
-#include "components/sync/engine_impl/commit_queue.h"
+#include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine_impl/directory_commit_contributor.h"
 #include "components/sync/engine_impl/directory_update_handler.h"
 #include "components/sync/engine_impl/model_type_worker.h"

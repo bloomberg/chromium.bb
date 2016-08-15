@@ -17,7 +17,6 @@
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/sync/base/experiments.h"
-#include "components/sync/base/sync_string_conversions.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/base_transaction.h"
 #include "components/sync/core/http_bridge.h"
@@ -33,6 +32,7 @@
 #include "components/sync/driver/sync_frontend.h"
 #include "components/sync/driver/sync_prefs.h"
 #include "components/sync/engine/events/protocol_event.h"
+#include "components/sync/engine/sync_string_conversions.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.

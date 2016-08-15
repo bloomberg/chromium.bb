@@ -1,6 +1,5 @@
 include_rules = [
   "+components/sync/base",
-  "+components/sync/core",
   "+components/sync/test/android", # For sync test tools
   "+jni",
   "+third_party/cacheinvalidation",  # For imports in sync/notifier.

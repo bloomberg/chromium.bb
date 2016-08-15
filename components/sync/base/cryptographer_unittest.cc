@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/strings/string_util.h"
+#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/protocol/password_specifics.pb.h"
-#include "components/sync/test/fake_encryptor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

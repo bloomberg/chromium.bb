@@ -14,7 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/processor_entity_tracker.h"
-#include "components/sync/engine_impl/commit_queue.h"
+#include "components/sync/engine/commit_queue.h"
 #include "components/sync/syncable/syncable_util.h"
 
 namespace syncer_v2 {

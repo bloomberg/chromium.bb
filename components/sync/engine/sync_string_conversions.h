@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_BASE_SYNC_STRING_CONVERSIONS_H_
-#define COMPONENTS_SYNC_BASE_SYNC_STRING_CONVERSIONS_H_
+#ifndef COMPONENTS_SYNC_ENGINE_SYNC_STRING_CONVERSIONS_H_
+#define COMPONENTS_SYNC_ENGINE_SYNC_STRING_CONVERSIONS_H_
 
 #include "components/sync/core/connection_status.h"
 #include "components/sync/core/sync_encryption_handler.h"
@@ -20,4 +20,4 @@ const char* PassphraseTypeToString(PassphraseType type);
 const char* BootstrapTokenTypeToString(BootstrapTokenType type);
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_BASE_SYNC_STRING_CONVERSIONS_H_
+#endif  // COMPONENTS_SYNC_ENGINE_SYNC_STRING_CONVERSIONS_H_
