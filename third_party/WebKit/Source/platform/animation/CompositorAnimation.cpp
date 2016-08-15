@@ -133,7 +133,7 @@ std::unique_ptr<CompositorFloatAnimationCurve> CompositorAnimation::floatCurveFo
     DCHECK_EQ(cc::AnimationCurve::FLOAT, curve->Type());
 
     auto keyframedCurve = base::WrapUnique(static_cast<cc::KeyframedFloatAnimationCurve*>(curve->Clone().release()));
-    return CompositorFloatAnimationCurve::CreateForTesting(std::move(keyframedCurve));
+    return CompositorFloatAnimationCurve::createForTesting(std::move(keyframedCurve));
 }
 
 } // namespace blink

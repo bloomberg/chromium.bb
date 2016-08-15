@@ -4,19 +4,33 @@
 
 #include "platform/animation/CompositorFilterKeyframe.h"
 
+#include "platform/animation/TimingFunction.h"
 #include <memory>
 
 namespace blink {
 
-CompositorFilterKeyframe::CompositorFilterKeyframe(double time, std::unique_ptr<CompositorFilterOperations> value)
-    : m_time(time)
-    , m_value(std::move(value))
+CompositorFilterKeyframe::CompositorFilterKeyframe(double time, const CompositorFilterOperations& value, const TimingFunction& timingFunction)
+    : m_filterKeyframe(cc::FilterKeyframe::Create(base::TimeDelta::FromSecondsD(time), value.asFilterOperations(), timingFunction.cloneToCC()))
 {
 }
 
 CompositorFilterKeyframe::~CompositorFilterKeyframe()
 {
-    m_value.reset();
+}
+
+double CompositorFilterKeyframe::time() const
+{
+    return m_filterKeyframe->Time().InSecondsF();
+}
+
+const cc::TimingFunction* CompositorFilterKeyframe::ccTimingFunction() const
+{
+    return m_filterKeyframe->timing_function();
+}
+
+std::unique_ptr<cc::FilterKeyframe> CompositorFilterKeyframe::cloneToCC() const
+{
+    return m_filterKeyframe->Clone();
 }
 
 } // namespace blink

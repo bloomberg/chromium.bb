@@ -212,6 +212,8 @@ private:
     std::unique_ptr<cc::StepsTimingFunction> m_steps;
 };
 
+PLATFORM_EXPORT PassRefPtr<TimingFunction> createCompositorTimingFunctionFromCC(const cc::TimingFunction*);
+
 PLATFORM_EXPORT bool operator==(const LinearTimingFunction&, const TimingFunction&);
 PLATFORM_EXPORT bool operator==(const CubicBezierTimingFunction&, const TimingFunction&);
 PLATFORM_EXPORT bool operator==(const StepsTimingFunction&, const TimingFunction&);

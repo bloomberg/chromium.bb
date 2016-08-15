@@ -108,7 +108,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
     ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
 
     std::unique_ptr<CompositorFloatAnimationCurve> curve = CompositorFloatAnimationCurve::create();
-    curve->addKeyframe(CompositorFloatKeyframe(0.0, 0.0), *CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE));
+    curve->addKeyframe(CompositorFloatKeyframe(0.0, 0.0, *CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE)));
     std::unique_ptr<CompositorAnimation> floatAnimation(CompositorAnimation::create(*curve, CompositorTargetProperty::OPACITY, 0, 0));
     int animationId = floatAnimation->id();
 

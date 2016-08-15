@@ -121,6 +121,33 @@ std::unique_ptr<cc::TimingFunction> StepsTimingFunction::cloneToCC() const
 }
 
 
+PassRefPtr<TimingFunction> createCompositorTimingFunctionFromCC(const cc::TimingFunction* timingFunction)
+{
+    if (!timingFunction)
+        return LinearTimingFunction::shared();
+
+    switch (timingFunction->GetType()) {
+    case cc::TimingFunction::Type::CUBIC_BEZIER: {
+        auto cubicTimingFunction = static_cast<const cc::CubicBezierTimingFunction*>(timingFunction);
+        if (cubicTimingFunction->ease_type() != cc::CubicBezierTimingFunction::EaseType::CUSTOM)
+            return CubicBezierTimingFunction::preset(cubicTimingFunction->ease_type());
+
+        const auto& bezier = cubicTimingFunction->bezier();
+        return CubicBezierTimingFunction::create(bezier.GetX1(), bezier.GetY1(), bezier.GetX2(), bezier.GetY2());
+    }
+
+    case cc::TimingFunction::Type::STEPS: {
+        auto stepsTimingFunction = static_cast<const cc::StepsTimingFunction*>(timingFunction);
+        return StepsTimingFunction::create(stepsTimingFunction->steps(), stepsTimingFunction->step_position());
+    }
+
+    default:
+        NOTREACHED();
+        return nullptr;
+    }
+}
+
+
 // Equals operators
 bool operator==(const LinearTimingFunction& lhs, const TimingFunction& rhs)
 {

@@ -33,7 +33,7 @@ public:
     }
     ~CompositorFilterAnimationCurve() override;
 
-    void addKeyframe(const CompositorFilterKeyframe&, const TimingFunction&);
+    void addKeyframe(const CompositorFilterKeyframe&);
     void setTimingFunction(const TimingFunction&);
 
     // blink::CompositorAnimationCurve implementation.

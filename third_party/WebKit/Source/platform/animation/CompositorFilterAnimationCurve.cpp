@@ -20,12 +20,9 @@ CompositorFilterAnimationCurve::~CompositorFilterAnimationCurve()
 {
 }
 
-void CompositorFilterAnimationCurve::addKeyframe(const CompositorFilterKeyframe& keyframe, const TimingFunction& timingFunction)
+void CompositorFilterAnimationCurve::addKeyframe(const CompositorFilterKeyframe& keyframe)
 {
-    const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
-    m_curve->AddKeyframe(cc::FilterKeyframe::Create(
-        base::TimeDelta::FromSecondsD(keyframe.time()), filterOperations,
-        timingFunction.cloneToCC()));
+    m_curve->AddKeyframe(keyframe.cloneToCC());
 }
 
 void CompositorFilterAnimationCurve::setTimingFunction(const TimingFunction& timingFunction)

@@ -34,7 +34,7 @@ public:
 
     ~CompositorTransformAnimationCurve() override;
 
-    void addKeyframe(const CompositorTransformKeyframe&, const TimingFunction&);
+    void addKeyframe(const CompositorTransformKeyframe&);
     void setTimingFunction(const TimingFunction&);
 
     // CompositorAnimationCurve implementation.

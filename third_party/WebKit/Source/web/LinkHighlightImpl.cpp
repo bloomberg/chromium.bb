@@ -313,13 +313,13 @@ void LinkHighlightImpl::startHighlightAnimationIfNeeded()
 
     const auto& timingFunction = *CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE);
 
-    curve->addKeyframe(CompositorFloatKeyframe(0, startOpacity), timingFunction);
+    curve->addKeyframe(CompositorFloatKeyframe(0, startOpacity, timingFunction));
     // Make sure we have displayed for at least minPreFadeDuration before starting to fade out.
     float extraDurationRequired = std::max(0.f, minPreFadeDuration - static_cast<float>(monotonicallyIncreasingTime() - m_startTime));
     if (extraDurationRequired)
-        curve->addKeyframe(CompositorFloatKeyframe(extraDurationRequired, startOpacity), timingFunction);
+        curve->addKeyframe(CompositorFloatKeyframe(extraDurationRequired, startOpacity, timingFunction));
     // For layout tests we don't fade out.
-    curve->addKeyframe(CompositorFloatKeyframe(fadeDuration + extraDurationRequired, layoutTestMode() ? startOpacity : 0), timingFunction);
+    curve->addKeyframe(CompositorFloatKeyframe(fadeDuration + extraDurationRequired, layoutTestMode() ? startOpacity : 0, timingFunction));
 
     std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(*curve, CompositorTargetProperty::OPACITY, 0, 0);
 

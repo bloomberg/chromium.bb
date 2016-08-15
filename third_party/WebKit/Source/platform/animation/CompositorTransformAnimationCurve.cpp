@@ -20,12 +20,9 @@ CompositorTransformAnimationCurve::~CompositorTransformAnimationCurve()
 {
 }
 
-void CompositorTransformAnimationCurve::addKeyframe(const CompositorTransformKeyframe& keyframe, const TimingFunction& timingFunction)
+void CompositorTransformAnimationCurve::addKeyframe(const CompositorTransformKeyframe& keyframe)
 {
-    const cc::TransformOperations& transformOperations = keyframe.value().asTransformOperations();
-    m_curve->AddKeyframe(cc::TransformKeyframe::Create(
-        base::TimeDelta::FromSecondsD(keyframe.time()), transformOperations,
-        timingFunction.cloneToCC()));
+    m_curve->AddKeyframe(keyframe.cloneToCC());
 }
 
 void CompositorTransformAnimationCurve::setTimingFunction(const TimingFunction& timingFunction)

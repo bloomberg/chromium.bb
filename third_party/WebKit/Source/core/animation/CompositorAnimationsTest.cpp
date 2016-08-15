@@ -259,6 +259,14 @@ public:
     {
         return convertToCompositorAnimation(effect, 1.0);
     }
+
+    void ExpectKeyframeTimingFunctionCubic(const CompositorFloatKeyframe& keyframe, const CubicBezierTimingFunction::EaseType easeType)
+    {
+        auto keyframeTimingFunction = keyframe.getTimingFunctionForTesting();
+        DCHECK_EQ(keyframeTimingFunction->getType(), TimingFunction::Type::CUBIC_BEZIER);
+        const auto& cubicTimingFunction = toCubicBezierTimingFunction(*keyframeTimingFunction);
+        EXPECT_EQ(cubicTimingFunction.getEaseType(), easeType);
+    }
 };
 
 class LayoutObjectProxy : public LayoutObject {
@@ -649,16 +657,16 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
 
     std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
-    Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
+    CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
 
-    EXPECT_EQ(0, keyframes[0].time);
-    EXPECT_EQ(2.0f, keyframes[0].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(0));
+    EXPECT_EQ(0, keyframes[0]->time());
+    EXPECT_EQ(2.0f, keyframes[0]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[0]->getTimingFunctionForTesting()->getType());
 
-    EXPECT_EQ(1.0, keyframes[1].time);
-    EXPECT_EQ(5.0f, keyframes[1].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(1));
+    EXPECT_EQ(1.0, keyframes[1]->time());
+    EXPECT_EQ(5.0f, keyframes[1]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[1]->getTimingFunctionForTesting()->getType());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
@@ -674,10 +682,10 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
     std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
-    Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
+    CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
 
-    EXPECT_EQ(duration, keyframes[1].time);
+    EXPECT_EQ(duration, keyframes[1]->time());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimationLinear)
@@ -702,24 +710,24 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
-    Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
+    CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(4UL, keyframes.size());
 
-    EXPECT_EQ(0, keyframes[0].time);
-    EXPECT_EQ(2.0f, keyframes[0].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(0));
+    EXPECT_EQ(0, keyframes[0]->time());
+    EXPECT_EQ(2.0f, keyframes[0]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[0]->getTimingFunctionForTesting()->getType());
 
-    EXPECT_EQ(0.25, keyframes[1].time);
-    EXPECT_EQ(-1.0f, keyframes[1].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(1));
+    EXPECT_EQ(0.25, keyframes[1]->time());
+    EXPECT_EQ(-1.0f, keyframes[1]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[1]->getTimingFunctionForTesting()->getType());
 
-    EXPECT_EQ(0.5, keyframes[2].time);
-    EXPECT_EQ(20.0f, keyframes[2].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(2));
+    EXPECT_EQ(0.5, keyframes[2]->time());
+    EXPECT_EQ(20.0f, keyframes[2]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[2]->getTimingFunctionForTesting()->getType());
 
-    EXPECT_EQ(1.0, keyframes[3].time);
-    EXPECT_EQ(5.0f, keyframes[3].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(3));
+    EXPECT_EQ(1.0, keyframes[3]->time());
+    EXPECT_EQ(5.0f, keyframes[3]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[3]->getTimingFunctionForTesting()->getType());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay)
@@ -743,11 +751,11 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
 
     std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
-    Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
+    CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
 
-    EXPECT_EQ(1.75, keyframes[1].time);
-    EXPECT_EQ(5.0f, keyframes[1].value);
+    EXPECT_EQ(1.75, keyframes[1]->time());
+    EXPECT_EQ(5.0f, keyframes[1]->value());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimationChained)
@@ -777,24 +785,24 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
-    Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
+    CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(4UL, keyframes.size());
 
-    EXPECT_EQ(0, keyframes[0].time);
-    EXPECT_EQ(2.0f, keyframes[0].value);
-    EXPECT_EQ(CubicBezierTimingFunction::EaseType::EASE, keyframedFloatCurve->getKeyframeEaseTypeForTesting(0));
+    EXPECT_EQ(0, keyframes[0]->time());
+    EXPECT_EQ(2.0f, keyframes[0]->value());
+    ExpectKeyframeTimingFunctionCubic(*keyframes[0], CubicBezierTimingFunction::EaseType::EASE);
 
-    EXPECT_EQ(0.5, keyframes[1].time);
-    EXPECT_EQ(-1.0f, keyframes[1].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(1));
+    EXPECT_EQ(0.5, keyframes[1]->time());
+    EXPECT_EQ(-1.0f, keyframes[1]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[1]->getTimingFunctionForTesting()->getType());
 
-    EXPECT_EQ(1.0, keyframes[2].time);
-    EXPECT_EQ(20.0f, keyframes[2].value);
-    EXPECT_EQ(CubicBezierTimingFunction::EaseType::CUSTOM, keyframedFloatCurve->getKeyframeEaseTypeForTesting(2));
+    EXPECT_EQ(1.0, keyframes[2]->time());
+    EXPECT_EQ(20.0f, keyframes[2]->value());
+    ExpectKeyframeTimingFunctionCubic(*keyframes[2], CubicBezierTimingFunction::EaseType::CUSTOM);
 
-    EXPECT_EQ(2.0, keyframes[3].time);
-    EXPECT_EQ(5.0f, keyframes[3].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(3));
+    EXPECT_EQ(2.0, keyframes[3]->time());
+    EXPECT_EQ(5.0f, keyframes[3]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[3]->getTimingFunctionForTesting()->getType());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
@@ -825,26 +833,26 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 
     std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
-    Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
+    CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(4UL, keyframes.size());
 
-    EXPECT_TRUE(keyframedFloatCurve->curveHasLinearTimingFunctionForTesting());
+    EXPECT_EQ(keyframedFloatCurve->getTimingFunctionForTesting()->getType(), TimingFunction::Type::LINEAR);
 
-    EXPECT_EQ(0, keyframes[0].time);
-    EXPECT_EQ(2.0f, keyframes[0].value);
-    EXPECT_EQ(CubicBezierTimingFunction::EaseType::EASE_IN, keyframedFloatCurve->getKeyframeEaseTypeForTesting(0));
+    EXPECT_EQ(0, keyframes[0]->time());
+    EXPECT_EQ(2.0f, keyframes[0]->value());
+    ExpectKeyframeTimingFunctionCubic(*keyframes[0], CubicBezierTimingFunction::EaseType::EASE_IN);
 
-    EXPECT_EQ(0.25, keyframes[1].time);
-    EXPECT_EQ(-1.0f, keyframes[1].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(1));
+    EXPECT_EQ(0.25, keyframes[1]->time());
+    EXPECT_EQ(-1.0f, keyframes[1]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[1]->getTimingFunctionForTesting()->getType());
 
-    EXPECT_EQ(0.5, keyframes[2].time);
-    EXPECT_EQ(20.0f, keyframes[2].value);
-    EXPECT_EQ(CubicBezierTimingFunction::EaseType::CUSTOM, keyframedFloatCurve->getKeyframeEaseTypeForTesting(2));
+    EXPECT_EQ(0.5, keyframes[2]->time());
+    EXPECT_EQ(20.0f, keyframes[2]->value());
+    ExpectKeyframeTimingFunctionCubic(*keyframes[2], CubicBezierTimingFunction::EaseType::CUSTOM);
 
-    EXPECT_EQ(1.0, keyframes[3].time);
-    EXPECT_EQ(5.0f, keyframes[3].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(3));
+    EXPECT_EQ(1.0, keyframes[3]->time());
+    EXPECT_EQ(5.0f, keyframes[3]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[3]->getTimingFunctionForTesting()->getType());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegativeStartDelay)
@@ -870,7 +878,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
 
     std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
-    Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
+    CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
 }
 
@@ -895,7 +903,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRa
 
     std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
-    Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
+    CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
 }
 
@@ -943,18 +951,25 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
 
     std::unique_ptr<CompositorFloatAnimationCurve> keyframedFloatCurve = animation->floatCurveForTesting();
 
-    Vector<CompositorFloatKeyframe> keyframes = keyframedFloatCurve->keyframesForTesting();
+    auto curveTimingFunction = keyframedFloatCurve->getTimingFunctionForTesting();
+    EXPECT_EQ(curveTimingFunction->getType(), TimingFunction::Type::CUBIC_BEZIER);
+    const auto& cubicTimingFunction = toCubicBezierTimingFunction(*curveTimingFunction);
+    EXPECT_EQ(cubicTimingFunction.getEaseType(), CubicBezierTimingFunction::EaseType::CUSTOM);
+    EXPECT_EQ(cubicTimingFunction.x1(), 1.0);
+    EXPECT_EQ(cubicTimingFunction.y1(), 2.0);
+    EXPECT_EQ(cubicTimingFunction.x2(), 3.0);
+    EXPECT_EQ(cubicTimingFunction.y2(), 4.0);
+
+    CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
 
-    EXPECT_EQ(CubicBezierTimingFunction::EaseType::CUSTOM, keyframedFloatCurve->getCurveEaseTypeForTesting());
+    EXPECT_EQ(0, keyframes[0]->time());
+    EXPECT_EQ(2.0f, keyframes[0]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[0]->getTimingFunctionForTesting()->getType());
 
-    EXPECT_EQ(0, keyframes[0].time);
-    EXPECT_EQ(2.0f, keyframes[0].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(0));
-
-    EXPECT_EQ(1.0, keyframes[1].time);
-    EXPECT_EQ(5.0f, keyframes[1].value);
-    EXPECT_TRUE(keyframedFloatCurve->keyframeHasLinearTimingFunctionForTesting(1));
+    EXPECT_EQ(1.0, keyframes[1]->time());
+    EXPECT_EQ(5.0f, keyframes[1]->value());
+    EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[1]->getTimingFunctionForTesting()->getType());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, cancelIncompatibleCompositorAnimations)

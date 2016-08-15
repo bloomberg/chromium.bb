@@ -5,25 +5,29 @@
 #ifndef CompositorTransformKeyframe_h
 #define CompositorTransformKeyframe_h
 
+#include "cc/animation/keyframed_animation_curve.h"
 #include "platform/PlatformExport.h"
+#include "platform/animation/CompositorKeyframe.h"
 #include "platform/animation/CompositorTransformOperations.h"
+#include "platform/animation/TimingFunction.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 
-class PLATFORM_EXPORT CompositorTransformKeyframe {
+class PLATFORM_EXPORT CompositorTransformKeyframe : public CompositorKeyframe {
     WTF_MAKE_NONCOPYABLE(CompositorTransformKeyframe);
 public:
-    CompositorTransformKeyframe(double time, std::unique_ptr<CompositorTransformOperations> value);
+    CompositorTransformKeyframe(double time, const CompositorTransformOperations& value, const TimingFunction&);
     ~CompositorTransformKeyframe();
 
-    double time() const;
-    const CompositorTransformOperations& value() const;
+    std::unique_ptr<cc::TransformKeyframe> cloneToCC() const;
+
+    // CompositorKeyframe implementation.
+    double time() const override;
+    const cc::TimingFunction* ccTimingFunction() const override;
 
 private:
-    double m_time;
-    std::unique_ptr<CompositorTransformOperations> m_value;
+    std::unique_ptr<cc::TransformKeyframe> m_transformKeyframe;
 };
 
 } // namespace blink
