@@ -15,8 +15,6 @@
         'blacklist/blacklist.h',
         'blacklist/blacklist_interceptions.cc',
         'blacklist/blacklist_interceptions.h',
-        'blacklist/crashpad_helper.cc',
-        'blacklist/crashpad_helper.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',
@@ -24,7 +22,6 @@
         '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
         '../chrome_elf/chrome_elf.gyp:chrome_elf_hook_util',
         '../chrome_elf/nt_registry/nt_registry.gyp:chrome_elf_nt_registry',
-        '../components/components.gyp:crash_component',
         '../sandbox/sandbox.gyp:sandbox',
       ],
     },
@@ -38,6 +35,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../chrome/chrome.gyp:install_static_util',
+        '../chrome_elf/chrome_elf.gyp:chrome_elf_crash',
         '../chrome_elf/nt_registry/nt_registry.gyp:chrome_elf_nt_registry',
         'blacklist',
       ],

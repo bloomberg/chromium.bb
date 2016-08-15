@@ -111,7 +111,9 @@ TEST_F(ELFImportsTest, ChromeElfLoadSanityTest) {
   // We don't expect user32 to be loaded in chrome_elf_unittests. If this test
   // case fails, then it means that a dependency on user32 has crept into the
   // chrome_elf_unittests executable, which needs to be removed.
-  EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
+  // NOTE: it may be a secondary dependency of another system DLL.  If so,
+  // try adding a "/DELAYLOAD:<blah>.dll" to the build.gn file.
+  ASSERT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
 
   HMODULE chrome_elf_module_handle = ::LoadLibrary(dll.value().c_str());
   EXPECT_TRUE(chrome_elf_module_handle != nullptr);

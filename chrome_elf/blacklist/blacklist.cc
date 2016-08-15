@@ -12,7 +12,7 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome_elf/blacklist/blacklist_interceptions.h"
 #include "chrome_elf/chrome_elf_constants.h"
-#include "chrome_elf/hook_util/thunk_getter.h"
+#include "chrome_elf/hook_util/hook_util.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/internal_types.h"
@@ -291,7 +291,7 @@ bool Initialize(bool force) {
   const bool kRelaxed = false;
 
   // Create a thunk via the appropriate ServiceResolver instance.
-  sandbox::ServiceResolverThunk* thunk = GetThunk(kRelaxed);
+  sandbox::ServiceResolverThunk* thunk = elf_hook::HookSystemService(kRelaxed);
 
   // Don't try blacklisting on unsupported OS versions.
   if (!thunk)
