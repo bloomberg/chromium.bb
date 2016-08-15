@@ -18,6 +18,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "jni/ContextMenuHelper_jni.h"
 #include "jni/ContextMenuParams_jni.h"
+#include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -89,7 +90,7 @@ ContextMenuHelper::CreateJavaContextMenuParams(
   bool image_was_fetched_lo_fi =
       it != params.properties.end() &&
       it->second == data_reduction_proxy::chrome_proxy_lo_fi_directive();
-
+  bool can_save = params.media_flags & blink::WebContextMenuData::MediaCanSave;
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> jmenu_info =
       ContextMenuParamsAndroid::Java_ContextMenuParams_create(
@@ -103,7 +104,8 @@ ContextMenuHelper::CreateJavaContextMenuParams(
           ConvertUTF16ToJavaString(env, params.title_text).obj(),
           image_was_fetched_lo_fi,
           ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()).obj(),
-          params.referrer_policy);
+          params.referrer_policy,
+          can_save);
 
   return jmenu_info;
 }
