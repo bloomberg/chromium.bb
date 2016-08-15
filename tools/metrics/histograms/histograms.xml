@@ -35140,6 +35140,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NetworkTimeTracker.UpdateTimeFetchAttempted">
+  <obsolete>
+    Deprecated 08/2016 because it does not provide additional information beyond
+    NetworkTimeTracker.UpdateTimeFetchFailed and
+    NetworkTimeTracker.UpdateTimeFetchValid.
+  </obsolete>
   <owner>estark@chromium.org</owner>
   <owner>mab@chromium.org</owner>
   <summary>

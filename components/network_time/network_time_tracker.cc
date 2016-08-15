@@ -374,8 +374,6 @@ void NetworkTimeTracker::CheckTime() {
                               net::LOAD_DO_NOT_SEND_COOKIES |
                               net::LOAD_DO_NOT_SEND_AUTH_DATA);
 
-  UMA_HISTOGRAM_BOOLEAN("NetworkTimeTracker.UpdateTimeFetchAttempted", true);
-
   time_fetcher_->Start();
   fetch_started_ = tick_clock_->NowTicks();
 
