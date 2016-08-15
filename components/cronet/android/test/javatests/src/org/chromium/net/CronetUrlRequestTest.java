@@ -1724,6 +1724,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
 
         request.start();
         uploadDataStreamAdapterDestroyed.block();
+        callback.blockForDone();
 
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("", callback.mResponseAsString);
