@@ -268,6 +268,8 @@ static bool ShouldCreateGpuOutputSurface(ui::Compositor* compositor) {
   // Software fallback does not happen on Chrome OS.
   return true;
 #endif
+  if (IsUsingMus())
+    return true;
 
 #if defined(OS_WIN)
   if (::GetProp(compositor->widget(), kForceSoftwareCompositor) &&
@@ -329,10 +331,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   DCHECK(data);
 
   if (num_attempts > kNumRetriesBeforeSoftwareFallback) {
+    bool fatal = IsUsingMus();
 #if defined(OS_CHROMEOS)
-    LOG(FATAL) << "Unable to create a UI graphics context, and cannot use "
-               << "software compositing on ChromeOS.";
+    fatal = true;
 #endif
+    LOG_IF(FATAL, fatal) << "Unable to create a UI graphics context, and "
+                         << "cannot use software compositing on ChromeOS.";
     create_gpu_output_surface = false;
   }
 
