@@ -169,7 +169,12 @@ ModuleSystem::ModuleSystem(ScriptContext* context, const SourceMap* source_map)
   SetPrivate(global, kModuleSystem, v8::External::New(isolate, this));
 
   gin::ModuleRegistry::From(context->v8_context())->AddObserver(this);
-  if (context_->GetRenderFrame()) {
+  // TODO(devlin): We really shouldn't be injecting mojo into every blessed
+  // extension context - it's wasteful. But it's better than injecting into
+  // every frame (previous behavior) so start with this while we investigate
+  // further. See crbug.com/636655.
+  if (context_->GetRenderFrame() &&
+      context_->context_type() == Feature::BLESSED_EXTENSION_CONTEXT) {
     context_->GetRenderFrame()->EnsureMojoBuiltinsAreAvailable(
         context->isolate(), context->v8_context());
   }
