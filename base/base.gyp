@@ -524,6 +524,7 @@
         'security_unittest.cc',
         'sequence_checker_unittest.cc',
         'sequence_token_unittest.cc',
+        'sequenced_task_runner_unittest.cc',
         'sha1_unittest.cc',
         'stl_util_unittest.cc',
         'strings/nullable_string16_unittest.cc',

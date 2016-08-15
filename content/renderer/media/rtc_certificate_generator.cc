@@ -43,6 +43,10 @@ rtc::KeyParams WebRTCKeyParamsToKeyParams(
 // request alive independently of the |RTCCertificateGenerator| that spawned it.
 class RTCCertificateGeneratorRequest
     : public base::RefCountedThreadSafe<RTCCertificateGeneratorRequest> {
+ private:
+  using CertificateCallbackPtr = std::unique_ptr<
+     blink::WebRTCCertificateCallback,
+     base::OnTaskRunnerDeleter>;
  public:
   RTCCertificateGeneratorRequest(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
@@ -59,12 +63,16 @@ class RTCCertificateGeneratorRequest
       std::unique_ptr<blink::WebRTCCertificateCallback> observer) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(observer);
+
+    CertificateCallbackPtr transition(
+        observer.release(),
+        base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
     worker_thread_->PostTask(FROM_HERE, base::Bind(
         &RTCCertificateGeneratorRequest::GenerateCertificateOnWorkerThread,
         this,
         key_params,
         expires_ms,
-        base::Passed(std::move(observer))));
+        base::Passed(&transition)));
   }
 
  private:
@@ -74,7 +82,7 @@ class RTCCertificateGeneratorRequest
   void GenerateCertificateOnWorkerThread(
       const blink::WebRTCKeyParams key_params,
       const rtc::Optional<uint64_t> expires_ms,
-      std::unique_ptr<blink::WebRTCCertificateCallback> observer) {
+      CertificateCallbackPtr observer) {
     DCHECK(worker_thread_->BelongsToCurrentThread());
 
     rtc::scoped_refptr<rtc::RTCCertificate> certificate =
@@ -89,7 +97,7 @@ class RTCCertificateGeneratorRequest
   }
 
   void DoCallbackOnMainThread(
-      std::unique_ptr<blink::WebRTCCertificateCallback> observer,
+      CertificateCallbackPtr observer,
       std::unique_ptr<blink::WebRTCCertificate> certificate) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(observer);
