@@ -357,7 +357,13 @@ TEST_F(SystemTrayTest, SystemTrayNotifications) {
   ASSERT_TRUE(test_item->notification_view() != NULL);
 }
 
-TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
+// Test is flaky on Win7 and Cros (crbug.com/637978).
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#define MAYBE_BubbleCreationTypesTest DISABLED_BubbleCreationTypesTest
+#else
+#define MAYBE_BubbleCreationTypesTest BubbleCreationTypesTest
+#endif
+TEST_F(SystemTrayTest, MAYBE_BubbleCreationTypesTest) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
