@@ -151,9 +151,10 @@ int HostMain(int argc, char** argv) {
   // be initialized first, so that the preference for crash-reporting can be
   // looked up in the config file.
 #if defined(REMOTING_ENABLE_BREAKPAD)
-  if (IsUsageStatsAllowed()) {
-    InitializeCrashReporting();
-  }
+  // TODO(nicholss): Commenting out Breakpad. See crbug.com/637884
+  // if (IsUsageStatsAllowed()) {
+  //   InitializeCrashReporting();
+  // }
 #endif  // defined(REMOTING_ENABLE_BREAKPAD)
 
   // This object instance is required by Chrome code (for example,
