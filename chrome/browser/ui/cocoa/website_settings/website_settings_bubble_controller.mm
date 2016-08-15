@@ -183,16 +183,23 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   return kDefaultWindowWidth;
 }
 
+bool IsInternalURL(const GURL& url) {
+  return url.SchemeIs(content::kChromeUIScheme) ||
+         url.SchemeIs(extensions::kExtensionScheme) ||
+         url.SchemeIs(content::kViewSourceScheme);
+}
+
 - (id)initWithParentWindow:(NSWindow*)parentWindow
     websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
                 webContents:(content::WebContents*)webContents
-                 bubbleType:(BubbleType)bubbleType
+                        url:(const GURL&)url
          isDevToolsDisabled:(BOOL)isDevToolsDisabled {
   DCHECK(parentWindow);
 
   webContents_ = webContents;
   permissionsPresent_ = NO;
   isDevToolsDisabled_ = isDevToolsDisabled;
+  url_ = url;
 
   // Use an arbitrary height; it will be changed in performLayout.
   NSRect contentRect = NSMakeRect(0, 0, [self defaultWindowWidth], 1);
@@ -217,12 +224,11 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
     [[[self window] contentView] setSubviews:
         [NSArray arrayWithObject:contentView_.get()]];
 
-    if (bubbleType == INTERNAL_PAGE)
-      [self initializeContentsForInternalPage:false];
-    else if (bubbleType == EXTENSION_PAGE)
-      [self initializeContentsForInternalPage:true];
-    else
+    if (IsInternalURL(url_)) {
+      [self initializeContentsForInternalPage:url_];
+    } else {
       [self initializeContents];
+    }
 
     bridge_.reset(bridge);
     bridge_->set_bubble_controller(self);
@@ -242,16 +248,26 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 }
 
 // Create the subviews for the bubble for internal Chrome pages.
-- (void)initializeContentsForInternalPage:(BOOL)isExtensionPage {
+- (void)initializeContentsForInternalPage:(const GURL&)url {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  NSPoint controlOrigin = NSMakePoint(
-      kInternalPageFramePadding,
-      kInternalPageFramePadding + info_bubble::kBubbleArrowHeight);
-  NSImage* productLogoImage =
-      rb.GetNativeImageNamed(isExtensionPage ? IDR_PLUGINS_FAVICON
-                                             : IDR_PRODUCT_LOGO_16)
-          .ToNSImage();
+  int text = IDS_PAGE_INFO_INTERNAL_PAGE;
+  int icon = IDR_PRODUCT_LOGO_16;
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    text = IDS_PAGE_INFO_EXTENSION_PAGE;
+    icon = IDR_PLUGINS_FAVICON;
+  } else if (url.SchemeIs(content::kViewSourceScheme)) {
+    text = IDS_PAGE_INFO_VIEW_SOURCE_PAGE;
+    // view-source scheme uses the same icon as chrome:// pages.
+    icon = IDR_PRODUCT_LOGO_16;
+  } else if (!url.SchemeIs(content::kChromeUIScheme)) {
+    NOTREACHED();
+  }
+
+  NSPoint controlOrigin =
+      NSMakePoint(kInternalPageFramePadding,
+                  kInternalPageFramePadding + info_bubble::kBubbleArrowHeight);
+  NSImage* productLogoImage = rb.GetNativeImageNamed(icon).ToNSImage();
   NSImageView* imageView = [self addImageWithSize:[productLogoImage size]
                                            toView:contentView_
                                           atPoint:controlOrigin];
@@ -259,10 +275,7 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
   NSRect imageFrame = [imageView frame];
   controlOrigin.x += NSWidth(imageFrame) + kInternalPageImageSpacing;
-  base::string16 text =
-      l10n_util::GetStringUTF16(isExtensionPage ? IDS_PAGE_INFO_EXTENSION_PAGE
-                                                : IDS_PAGE_INFO_INTERNAL_PAGE);
-  NSTextField* textField = [self addText:text
+  NSTextField* textField = [self addText:l10n_util::GetStringUTF16(text)
                                 withSize:[NSFont smallSystemFontSize]
                                     bold:NO
                                   toView:contentView_
@@ -1134,12 +1147,6 @@ void WebsiteSettingsUIBridge::Show(
   if (g_is_popup_showing)
     return;
 
-  BubbleType bubble_type = WEB_PAGE;
-  if (virtual_url.SchemeIs(content::kChromeUIScheme))
-    bubble_type = INTERNAL_PAGE;
-  else if (virtual_url.SchemeIs(extensions::kExtensionScheme))
-    bubble_type = EXTENSION_PAGE;
-
   // Create the bridge. This will be owned by the bubble controller.
   WebsiteSettingsUIBridge* bridge = new WebsiteSettingsUIBridge(web_contents);
 
@@ -1153,10 +1160,10 @@ void WebsiteSettingsUIBridge::Show(
              initWithParentWindow:parent
           websiteSettingsUIBridge:bridge
                       webContents:web_contents
-                       bubbleType:bubble_type
+                              url:virtual_url
                isDevToolsDisabled:is_devtools_disabled];
 
-  if (bubble_type == WEB_PAGE) {
+  if (!IsInternalURL(virtual_url)) {
     // Initialize the presenter, which holds the model and controls the UI.
     // This is also owned by the bubble controller.
     WebsiteSettings* presenter = new WebsiteSettings(

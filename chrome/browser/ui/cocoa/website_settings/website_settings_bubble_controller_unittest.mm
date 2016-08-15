@@ -131,7 +131,7 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     [controller_ initWithParentWindow:test_window()
               websiteSettingsUIBridge:bridge_
                           webContents:nil
-                           bubbleType:WEB_PAGE
+                                  url:GURL("https://www.google.com")
                    isDevToolsDisabled:NO];
     window_ = [controller_ window];
     [controller_ showWindow:nil];
