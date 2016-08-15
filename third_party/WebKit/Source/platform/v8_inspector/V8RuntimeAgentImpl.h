@@ -65,7 +65,7 @@ public:
         const String16& expression,
         const Maybe<String16>& objectGroup,
         const Maybe<bool>& includeCommandLineAPI,
-        const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+        const Maybe<bool>& silent,
         const Maybe<int>& executionContextId,
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
@@ -81,7 +81,7 @@ public:
         const String16& objectId,
         const String16& expression,
         const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& optionalArguments,
-        const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+        const Maybe<bool>& silent,
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
         const Maybe<bool>& userGesture,
@@ -97,7 +97,7 @@ public:
         Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void releaseObjectGroup(ErrorString*, const String16& objectGroup) override;
-    void run(ErrorString*) override;
+    void runIfWaitingForDebugger(ErrorString*) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) override;
     void discardConsoleEntries(ErrorString*) override;
     void compileScript(ErrorString*,
@@ -111,7 +111,7 @@ public:
         const String16&,
         const Maybe<int>& executionContextId,
         const Maybe<String16>& objectGroup,
-        const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+        const Maybe<bool>& silent,
         const Maybe<bool>& includeCommandLineAPI,
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,

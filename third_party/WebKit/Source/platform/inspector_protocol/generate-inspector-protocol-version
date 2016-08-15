@@ -453,7 +453,9 @@ def main():
     expected_errors = [
         "Debugger.globalObjectCleared: event has been removed",
         "Runtime.executionContextCreated.context parameter->Runtime.ExecutionContextDescription.frameId: required property has been removed",
-        "Debugger.canSetScriptSource: command has been removed"
+        "Debugger.canSetScriptSource: command has been removed",
+        "Console.messageRepeatCountUpdated: event has been removed",
+        "Console.messagesCleared: event has been removed"
     ]
 
     errors = compare_schemas(baseline_domains, domains, False)

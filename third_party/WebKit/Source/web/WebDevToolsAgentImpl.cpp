@@ -268,7 +268,7 @@ private:
         return false;
     }
 
-    void resumeStartup(LocalFrame* frame) override
+    void runIfWaitingForDebugger(LocalFrame* frame) override
     {
         // If we've paused for createWindow, handle it ourselves.
         if (quitForCreateWindow())

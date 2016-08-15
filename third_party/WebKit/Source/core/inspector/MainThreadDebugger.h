@@ -56,7 +56,7 @@ public:
         virtual ~ClientMessageLoop() { }
         virtual void run(LocalFrame*) = 0;
         virtual void quitNow() = 0;
-        virtual void resumeStartup(LocalFrame*) = 0;
+        virtual void runIfWaitingForDebugger(LocalFrame*) = 0;
     };
 
     explicit MainThreadDebugger(v8::Isolate*);
@@ -90,7 +90,7 @@ private:
     void beginEnsureAllContextsInGroup(int contextGroupId) override;
     void endEnsureAllContextsInGroup(int contextGroupId) override;
     bool canExecuteScripts(int contextGroupId) override;
-    void resumeStartup(int contextGroupId) override;
+    void runIfWaitingForDebugger(int contextGroupId) override;
     void consoleAPIMessage(int contextGroupId, V8ConsoleAPIType, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) override;
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
     v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override;
