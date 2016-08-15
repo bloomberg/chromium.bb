@@ -21,6 +21,7 @@
 #include "content/common/content_export.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
+#include "net/dns/host_resolver.h"
 #include "net/socket/tcp_socket.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppb_tcp_socket.h"
@@ -37,7 +38,6 @@ namespace net {
 enum AddressFamily;
 class DrainableIOBuffer;
 class IOBuffer;
-class SingleRequestHostResolver;
 class SSLClientSocket;
 }
 
@@ -220,7 +220,8 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
       firewall_hole_;
 #endif  // defined(OS_CHROMEOS)
 
-  std::unique_ptr<net::SingleRequestHostResolver> resolver_;
+  // Used for DNS request.
+  std::unique_ptr<net::HostResolver::Request> request_;
 
   // Bitwise-or of SocketOption flags. This stores the state about whether
   // each option is set before Connect() is called.

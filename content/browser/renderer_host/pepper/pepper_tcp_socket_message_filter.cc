@@ -27,7 +27,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
-#include "net/dns/single_request_host_resolver.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
@@ -643,16 +642,12 @@ void PepperTCPSocketMessageFilter::DoConnect(
   address_index_ = 0;
   address_list_.clear();
   net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
-  resolver_.reset(
-      new net::SingleRequestHostResolver(resource_context->GetHostResolver()));
-  int net_result = resolver_->Resolve(
-      request_info,
-      net::DEFAULT_PRIORITY,
-      &address_list_,
+  net::HostResolver* resolver = resource_context->GetHostResolver();
+  int net_result = resolver->Resolve(
+      request_info, net::DEFAULT_PRIORITY, &address_list_,
       base::Bind(&PepperTCPSocketMessageFilter::OnResolveCompleted,
-                 base::Unretained(this),
-                 context),
-      net::BoundNetLog());
+                 base::Unretained(this), context),
+      &request_, net::BoundNetLog());
   if (net_result != net::ERR_IO_PENDING)
     OnResolveCompleted(context, net_result);
 }

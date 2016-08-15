@@ -42,8 +42,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/dns/host_resolver.h"
-#include "net/dns/single_request_host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_info.h"

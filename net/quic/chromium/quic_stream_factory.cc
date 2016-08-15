@@ -30,7 +30,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verifier.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/single_request_host_resolver.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/quic/chromium/bidirectional_stream_quic_impl.h"
 #include "net/quic/chromium/crypto/channel_id_chromium.h"
@@ -337,7 +336,8 @@ class QuicStreamFactory::Job {
   IoState io_state_;
 
   QuicStreamFactory* factory_;
-  SingleRequestHostResolver host_resolver_;
+  HostResolver* host_resolver_;
+  std::unique_ptr<HostResolver::Request> request_;
   QuicSessionKey key_;
   int cert_verify_flags_;
   bool was_alternative_service_recently_broken_;
@@ -481,11 +481,11 @@ int QuicStreamFactory::Job::DoResolveHost() {
 
   io_state_ = STATE_RESOLVE_HOST_COMPLETE;
   dns_resolution_start_time_ = base::TimeTicks::Now();
-  return host_resolver_.Resolve(
+  return host_resolver_->Resolve(
       HostResolver::RequestInfo(key_.destination()), DEFAULT_PRIORITY,
       &address_list_,
       base::Bind(&QuicStreamFactory::Job::OnIOComplete, GetWeakPtr()),
-      net_log_);
+      &request_, net_log_);
 }
 
 int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {

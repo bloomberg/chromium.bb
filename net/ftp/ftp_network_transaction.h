@@ -17,7 +17,6 @@
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/single_request_host_resolver.h"
 #include "net/ftp/ftp_ctrl_response_buffer.h"
 #include "net/ftp/ftp_response_info.h"
 #include "net/ftp/ftp_transaction.h"
@@ -207,8 +206,9 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
   FtpResponseInfo response_;
 
   // Cancels the outstanding request on destruction.
-  SingleRequestHostResolver resolver_;
+  HostResolver* resolver_;
   AddressList addresses_;
+  std::unique_ptr<HostResolver::Request> resolve_request_;
 
   // User buffer passed to the Read method for control socket.
   scoped_refptr<IOBuffer> read_ctrl_buf_;

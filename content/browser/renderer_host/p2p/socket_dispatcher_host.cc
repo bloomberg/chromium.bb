@@ -18,7 +18,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/sys_addrinfo.h"
-#include "net/dns/single_request_host_resolver.h"
+#include "net/dns/host_resolver.h"
 #include "net/log/net_log.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/udp/datagram_client_socket.h"
@@ -69,13 +69,11 @@ class P2PSocketDispatcherHost::DnsRequest {
       host_name_ += '.';
 
     net::HostResolver::RequestInfo info(net::HostPortPair(host_name_, 0));
-    int result = resolver_.Resolve(
-        info,
-        net::DEFAULT_PRIORITY,
-        &addresses_,
+    int result = resolver_->Resolve(
+        info, net::DEFAULT_PRIORITY, &addresses_,
         base::Bind(&P2PSocketDispatcherHost::DnsRequest::OnDone,
                    base::Unretained(this)),
-        net::BoundNetLog());
+        &request_, net::BoundNetLog());
     if (result != net::ERR_IO_PENDING)
       OnDone(result);
   }
@@ -104,7 +102,8 @@ class P2PSocketDispatcherHost::DnsRequest {
   net::AddressList addresses_;
 
   std::string host_name_;
-  net::SingleRequestHostResolver resolver_;
+  net::HostResolver* resolver_;
+  std::unique_ptr<net::HostResolver::Request> request_;
 
   DoneCallback done_callback_;
 };

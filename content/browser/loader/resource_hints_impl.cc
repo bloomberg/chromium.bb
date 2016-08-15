@@ -10,7 +10,6 @@
 #include "net/base/address_list.h"
 #include "net/base/load_flags.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/single_request_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_stream_factory.h"
@@ -22,8 +21,18 @@ namespace content {
 
 namespace {
 
+class RequestHolder {
+ public:
+  std::unique_ptr<net::HostResolver::Request>* GetRequest() {
+    return &request_;
+  }
+
+ private:
+  std::unique_ptr<net::HostResolver::Request> request_;
+};
+
 // Note that the lifetime of |request| and |addresses| is managed by the caller.
-void OnResolveComplete(net::SingleRequestHostResolver* request,
+void OnResolveComplete(RequestHolder* request_holder,
                        net::AddressList* addresses,
                        const net::CompletionCallback& callback,
                        int result) {
@@ -81,14 +90,15 @@ int PreresolveUrl(content::ResourceContext* resource_context,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(resource_context);
 
+  RequestHolder* request_holder = new RequestHolder();
   net::AddressList* addresses = new net::AddressList;
-  net::SingleRequestHostResolver* resolver =
-      new net::SingleRequestHostResolver(resource_context->GetHostResolver());
+  net::HostResolver* resolver = resource_context->GetHostResolver();
   net::HostResolver::RequestInfo resolve_info(net::HostPortPair::FromURL(url));
-  return resolver->Resolve(resolve_info, net::IDLE, addresses,
-                           base::Bind(&OnResolveComplete, base::Owned(resolver),
-                                      base::Owned(addresses), callback),
-                           net::BoundNetLog());
+  return resolver->Resolve(
+      resolve_info, net::IDLE, addresses,
+      base::Bind(&OnResolveComplete, base::Owned(request_holder),
+                 base::Owned(addresses), callback),
+      request_holder->GetRequest(), net::BoundNetLog());
 }
 
 }  // namespace content

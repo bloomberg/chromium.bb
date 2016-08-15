@@ -12,7 +12,6 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/single_request_host_resolver.h"
 #include "url/gurl.h"
 
 namespace network_hints {
@@ -41,12 +40,10 @@ class DnsLookupRequest {
     // separating it from real navigations in the observer's callback, and
     // lets the HostResolver know it can be de-prioritized.
     resolve_info.set_is_speculative(true);
-    return resolver_.Resolve(
-        resolve_info,
-        net::DEFAULT_PRIORITY,
-        &addresses_,
+    return resolver_->Resolve(
+        resolve_info, net::DEFAULT_PRIORITY, &addresses_,
         base::Bind(&DnsLookupRequest::OnLookupFinished, base::Owned(this)),
-        net::BoundNetLog());
+        &request_, net::BoundNetLog());
   }
 
  private:
@@ -55,7 +52,8 @@ class DnsLookupRequest {
   }
 
   const std::string hostname_;
-  net::SingleRequestHostResolver resolver_;
+  net::HostResolver* resolver_;
+  std::unique_ptr<net::HostResolver::Request> request_;
   net::AddressList addresses_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsLookupRequest);
