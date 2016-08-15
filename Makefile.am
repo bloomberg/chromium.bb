@@ -61,6 +61,14 @@ CLEANFILES = weston.ini				\
 	internal-screenshot-00.png		\
 	$(BUILT_SOURCES)
 
+# Libtool race fix
+# libweston-desktop depends on libweston, and desktop-shell depends on both.
+# This leads to a libtool race at installation, because libtool re-links
+# everything.
+# If you add more fixes, you may need a workaround to keep automake generated
+# targets. See http://debbugs.gnu.org/cgi/bugreport.cgi?bug=7328
+install-libweston_moduleLTLIBRARIES install-moduleLTLIBRARIES: install-libLTLIBRARIES
+
 lib_LTLIBRARIES = libweston-@LIBWESTON_MAJOR@.la
 libweston_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
 libweston_@LIBWESTON_MAJOR@_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
