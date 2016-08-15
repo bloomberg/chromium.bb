@@ -172,6 +172,7 @@ class SSLConfigServiceManagerPref : public ssl_config::SSLConfigServiceManager {
   // The local_state prefs (should only be accessed from UI thread)
   BooleanPrefMember rev_checking_enabled_;
   BooleanPrefMember rev_checking_required_local_anchors_;
+  BooleanPrefMember sha1_local_anchors_enabled_;
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
   BooleanPrefMember dhe_enabled_;
@@ -210,6 +211,9 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
   rev_checking_required_local_anchors_.Init(
       ssl_config::prefs::kCertRevocationCheckingRequiredLocalAnchors,
       local_state, local_state_callback);
+  sha1_local_anchors_enabled_.Init(
+      ssl_config::prefs::kCertEnableSha1LocalAnchors, local_state,
+      local_state_callback);
   ssl_version_min_.Init(ssl_config::prefs::kSSLVersionMin, local_state,
                         local_state_callback);
   ssl_version_max_.Init(ssl_config::prefs::kSSLVersionMax, local_state,
@@ -237,6 +241,8 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       ssl_config::prefs::kCertRevocationCheckingRequiredLocalAnchors,
       default_config.rev_checking_required_local_anchors);
+  registry->RegisterBooleanPref(ssl_config::prefs::kCertEnableSha1LocalAnchors,
+                                default_config.sha1_local_anchors_enabled);
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMin,
                                std::string());
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMax,
@@ -277,6 +283,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     config->rev_checking_enabled = false;
   config->rev_checking_required_local_anchors =
       rev_checking_required_local_anchors_.GetValue();
+  config->sha1_local_anchors_enabled = sha1_local_anchors_enabled_.GetValue();
   std::string version_min_str = ssl_version_min_.GetValue();
   std::string version_max_str = ssl_version_max_.GetValue();
   config->version_min = net::kDefaultSSLVersionMin;
