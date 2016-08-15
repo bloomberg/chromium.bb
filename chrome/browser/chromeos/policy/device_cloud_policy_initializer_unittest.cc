@@ -37,6 +37,8 @@ class DeviceCloudPolicyInitializerTest
                                          &install_attributes_,
                                          nullptr,
                                          nullptr,
+                                         nullptr,
+                                         nullptr,
                                          nullptr) {
     chrome::RegisterLocalState(local_state_.registry());
     statistics_provider_.SetMachineStatistic("serial_number", "fake-serial");

@@ -61,6 +61,7 @@ AttestationKeyType GetKeyTypeForProfile(
     AttestationCertificateProfile profile) {
   switch (profile) {
     case PROFILE_ENTERPRISE_MACHINE_CERTIFICATE:
+    case PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE:
       return KEY_DEVICE;
     case PROFILE_ENTERPRISE_USER_CERTIFICATE:
     case PROFILE_CONTENT_PROTECTION_CERTIFICATE:
@@ -74,6 +75,7 @@ std::string GetKeyNameForProfile(AttestationCertificateProfile profile,
                                  const std::string& origin) {
   switch (profile) {
     case PROFILE_ENTERPRISE_MACHINE_CERTIFICATE:
+    case PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE:
       return kEnterpriseMachineKey;
     case PROFILE_ENTERPRISE_USER_CERTIFICATE:
       return kEnterpriseUserKey;

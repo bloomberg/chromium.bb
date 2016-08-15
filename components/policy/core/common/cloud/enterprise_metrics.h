@@ -120,7 +120,7 @@ enum MetricPolicy {
 enum MetricEnrollment {
   // User pressed 'Cancel' during the enrollment process.
   kMetricEnrollmentCancelled = 0,
-  // User started enrollment process by submitting valid GAIA credentials.
+  // User started enrollment process by submitting valid credentials.
   kMetricEnrollmentStarted = 1,
   // OAuth token fetch failed: network error.
   kMetricEnrollmentNetworkFailed = 2,
@@ -164,7 +164,7 @@ enum MetricEnrollment {
   kMetricEnrollmentRegisterPolicyDomainMismatch = 23,
   // Enrollment has been triggered, the webui login screen has been shown.
   kMetricEnrollmentTriggered = 24,
-  // The user submitted valid GAIA credentials to start the enrollment process
+  // The user submitted valid credentials to start the enrollment process
   // for the second (or further) time.
   kMetricEnrollmentRestarted = 25,
   // Failed to store DM token and device ID.
@@ -220,6 +220,8 @@ enum MetricEnrollment {
   kMetricEnrollmentAttributeUpdateFailed = 50,
   // Enrollment mode does not match already locked install attributes.
   kMetricEnrollmentLockModeMismatch = 51,
+  // A registration certificate could not be fetched from the PCA.
+  kMetricEnrollmentRegistrationCertificateFetchFailed = 52,
 };
 
 // Events related to policy refresh.

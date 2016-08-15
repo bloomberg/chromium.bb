@@ -24,6 +24,14 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace chromeos {
+class CryptohomeClient;
+}
+
+namespace cryptohome {
+class AsyncMethodCaller;
+}
+
 namespace policy {
 
 class DeviceCloudPolicyManagerChromeOS;
@@ -50,7 +58,9 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       EnterpriseInstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
       DeviceCloudPolicyStoreChromeOS* device_store,
-      DeviceCloudPolicyManagerChromeOS* manager);
+      DeviceCloudPolicyManagerChromeOS* manager,
+      cryptohome::AsyncMethodCaller* async_caller,
+      chromeos::CryptohomeClient* cryptohome_client);
 
   ~DeviceCloudPolicyInitializer() override;
 
@@ -103,6 +113,8 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   ServerBackedStateKeysBroker* state_keys_broker_;
   DeviceCloudPolicyStoreChromeOS* device_store_;
   DeviceCloudPolicyManagerChromeOS* manager_;
+  cryptohome::AsyncMethodCaller* async_method_caller_;
+  chromeos::CryptohomeClient* cryptohome_client_;
   bool is_initialized_;
 
   // Non-NULL if there is an enrollment operation pending.

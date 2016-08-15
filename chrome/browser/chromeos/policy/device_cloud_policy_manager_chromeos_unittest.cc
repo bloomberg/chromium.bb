@@ -179,7 +179,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     initializer_.reset(new DeviceCloudPolicyInitializer(
         &local_state_, &device_management_service_,
         base::ThreadTaskRunnerHandle::Get(), install_attributes_.get(),
-        &state_keys_broker_, store_, manager_.get()));
+        &state_keys_broker_, store_, manager_.get(), nullptr, nullptr));
     initializer_->Init();
   }
 

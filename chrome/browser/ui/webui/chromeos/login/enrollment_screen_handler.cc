@@ -262,6 +262,10 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
     case policy::EnrollmentStatus::STATUS_REGISTRATION_BAD_MODE:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_BAD_MODE, false);
       return;
+    case policy::EnrollmentStatus::STATUS_REGISTRATION_CERTIFICATE_FETCH_FAILED:
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_CERT_FETCH_FAILED,
+                false);
+      return;
     case policy::EnrollmentStatus::STATUS_POLICY_FETCH_FAILED:
       ShowErrorMessage(
           l10n_util::GetStringFUTF8(

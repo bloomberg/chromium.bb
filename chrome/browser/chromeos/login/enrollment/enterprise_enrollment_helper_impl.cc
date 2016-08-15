@@ -406,6 +406,9 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
     case policy::EnrollmentStatus::STATUS_ATTRIBUTE_UPDATE_FAILED:
       UMA(policy::kMetricEnrollmentAttributeUpdateFailed);
       break;
+    case policy::EnrollmentStatus::STATUS_REGISTRATION_CERTIFICATE_FETCH_FAILED:
+      UMA(policy::kMetricEnrollmentRegistrationCertificateFetchFailed);
+      break;
   }
 }
 

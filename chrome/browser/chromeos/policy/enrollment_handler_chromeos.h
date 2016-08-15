@@ -26,6 +26,14 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace chromeos {
+class CryptohomeClient;
+}
+
+namespace cryptohome {
+class AsyncMethodCaller;
+}
+
 namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
@@ -60,6 +68,8 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       DeviceCloudPolicyStoreChromeOS* store,
       EnterpriseInstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
+      cryptohome::AsyncMethodCaller* async_method_caller,
+      chromeos::CryptohomeClient* cryptohome_client,
       std::unique_ptr<CloudPolicyClient> client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const EnrollmentConfig& enrollment_config,
@@ -115,6 +125,11 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
     STEP_FINISHED,            // Enrollment process finished, no further action.
   };
 
+  // Handles the response to the attestation flow requesting a registration
+  // certificate.
+  void HandleRegistrationCertificateResult(
+      bool success,
+      const std::string& pem_certificate_chain);
   // Handles the response to a request for server-backed state keys.
   void HandleStateKeysResult(const std::vector<std::string>& state_keys);
 
@@ -153,6 +168,8 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   DeviceCloudPolicyStoreChromeOS* store_;
   EnterpriseInstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
+  cryptohome::AsyncMethodCaller* async_method_caller_;
+  chromeos::CryptohomeClient* cryptohome_client_;
   std::unique_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;

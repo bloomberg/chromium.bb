@@ -39,6 +39,8 @@ enum AttestationCertificateProfile {
   PROFILE_ENTERPRISE_USER_CERTIFICATE,
   // A profile for certificates intended for protected content providers.
   PROFILE_CONTENT_PROTECTION_CERTIFICATE,
+  // A profile for certificates intended for enterprise registration.
+  PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE
 };
 
 enum PrivacyCAType {

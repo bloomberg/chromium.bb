@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -56,7 +57,9 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     EnterpriseInstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
     DeviceCloudPolicyStoreChromeOS* device_store,
-    DeviceCloudPolicyManagerChromeOS* manager)
+    DeviceCloudPolicyManagerChromeOS* manager,
+    cryptohome::AsyncMethodCaller* async_method_caller,
+    chromeos::CryptohomeClient* cryptohome_client)
     : local_state_(local_state),
       enterprise_service_(enterprise_service),
       background_task_runner_(background_task_runner),
@@ -64,8 +67,9 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
       state_keys_broker_(state_keys_broker),
       device_store_(device_store),
       manager_(manager),
-      is_initialized_(false) {
-}
+      async_method_caller_(async_method_caller),
+      cryptohome_client_(cryptohome_client),
+      is_initialized_(false) {}
 
 DeviceCloudPolicyInitializer::~DeviceCloudPolicyInitializer() {
   DCHECK(!is_initialized_);
@@ -104,6 +108,7 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
   manager_->core()->Disconnect();
   enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
       device_store_, install_attributes_, state_keys_broker_,
+      async_method_caller_, cryptohome_client_,
       CreateClient(device_management_service), background_task_runner_,
       enrollment_config, auth_token, install_attributes_->GetDeviceId(),
       manager_->GetDeviceRequisition(), allowed_device_modes,

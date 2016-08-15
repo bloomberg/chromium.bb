@@ -37,6 +37,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -315,15 +316,13 @@ void BrowserPolicyConnectorChromeOS::SetTimezoneIfPolicyAvailable() {
 }
 
 void BrowserPolicyConnectorChromeOS::RestartDeviceCloudPolicyInitializer() {
-  device_cloud_policy_initializer_.reset(
-      new DeviceCloudPolicyInitializer(
-          local_state_,
-          device_management_service(),
-          GetBackgroundTaskRunner(),
-          install_attributes_.get(),
-          state_keys_broker_.get(),
-          device_cloud_policy_manager_->device_store(),
-          device_cloud_policy_manager_));
+  device_cloud_policy_initializer_.reset(new DeviceCloudPolicyInitializer(
+      local_state_, device_management_service(), GetBackgroundTaskRunner(),
+      install_attributes_.get(), state_keys_broker_.get(),
+      device_cloud_policy_manager_->device_store(),
+      device_cloud_policy_manager_,
+      cryptohome::AsyncMethodCaller::GetInstance(),
+      chromeos::DBusThreadManager::Get()->GetCryptohomeClient()));
   device_cloud_policy_initializer_->Init();
 }
 

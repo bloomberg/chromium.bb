@@ -74099,7 +74099,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     User pressed 'Cancel' during the enrollment process.
   </int>
   <int value="1" label="Started with valid credentials">
-    The user submitted valid GAIA credentials to start the enrollment process.
+    The user submitted valid credentials (GAIA or registration certificate) to
+    start the enrollment process.
   </int>
   <int value="2" label="OAuth fetch: network failed">
     OAuth token fetch failed: network error.
@@ -74177,8 +74178,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Enrollment has been triggered, the webui login screen has been shown.
   </int>
   <int value="25" label="Restarted with valid credentials">
-    The user submitted valid GAIA credentials to start the enrollment process
-    for the second (or further) time.
+    The user submitted valid credentials (GAIA or registration certificate) to
+    start the enrollment process for the second (or further) time.
   </int>
   <int value="26" label="Store token and ID failed">
     Failed to store DM token and device ID.
@@ -74259,6 +74260,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </int>
   <int value="51" label="Lockbox device mode mismatch">
     Enrollment mode does not match already locked install attributes.
+  </int>
+  <int value="52" label="Registration certificate fetch fail">
+    A registration certificate could not be obtained from the PCA.
   </int>
 </enum>
 
