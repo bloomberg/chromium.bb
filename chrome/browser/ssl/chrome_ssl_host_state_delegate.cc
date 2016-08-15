@@ -436,28 +436,29 @@ bool ChromeSSLHostStateDelegate::HasAllowException(
 
 void ChromeSSLHostStateDelegate::HostRanInsecureContent(
     const std::string& host,
-    int pid,
+    int child_id,
     InsecureContentType content_type) {
   switch (content_type) {
     case MIXED_CONTENT:
-      ran_mixed_content_hosts_.insert(BrokenHostEntry(host, pid));
+      ran_mixed_content_hosts_.insert(BrokenHostEntry(host, child_id));
       return;
     case CERT_ERRORS_CONTENT:
-      ran_content_with_cert_errors_hosts_.insert(BrokenHostEntry(host, pid));
+      ran_content_with_cert_errors_hosts_.insert(
+          BrokenHostEntry(host, child_id));
       return;
   }
 }
 
 bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
     const std::string& host,
-    int pid,
+    int child_id,
     InsecureContentType content_type) const {
   switch (content_type) {
     case MIXED_CONTENT:
-      return !!ran_mixed_content_hosts_.count(BrokenHostEntry(host, pid));
+      return !!ran_mixed_content_hosts_.count(BrokenHostEntry(host, child_id));
     case CERT_ERRORS_CONTENT:
       return !!ran_content_with_cert_errors_hosts_.count(
-          BrokenHostEntry(host, pid));
+          BrokenHostEntry(host, child_id));
   }
   NOTREACHED();
   return false;

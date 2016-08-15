@@ -39,11 +39,11 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
                            net::CertStatus error,
                            bool* expired_previous_decision) override;
   void HostRanInsecureContent(const std::string& host,
-                              int pid,
+                              int child_id,
                               InsecureContentType content_type) override;
   bool DidHostRunInsecureContent(
       const std::string& host,
-      int pid,
+      int child_id,
       InsecureContentType content_type) const override;
 
   // Revokes all SSL certificate error allow exceptions made by the user for
@@ -111,7 +111,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   RememberSSLExceptionDecisionsDisposition should_remember_ssl_decisions_;
   Profile* profile_;
 
-  // A BrokenHostEntry is a pair of (host, process_id) that indicates the host
+  // A BrokenHostEntry is a pair of (host, child_id) that indicates the host
   // contains insecure content in that renderer process.
   typedef std::pair<std::string, int> BrokenHostEntry;
 

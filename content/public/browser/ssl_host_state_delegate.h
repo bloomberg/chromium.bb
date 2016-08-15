@@ -64,14 +64,14 @@ class SSLHostStateDelegate {
 
   // Records that a host has run insecure content of the given |content_type|.
   virtual void HostRanInsecureContent(const std::string& host,
-                                      int pid,
+                                      int child_id,
                                       InsecureContentType content_type) = 0;
 
   // Returns whether the specified host ran insecure content of the given
   // |content_type|.
   virtual bool DidHostRunInsecureContent(
       const std::string& host,
-      int pid,
+      int child_id,
       InsecureContentType content_type) const = 0;
 
   // Revokes all SSL certificate error allow exceptions made by the user for
