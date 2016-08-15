@@ -43,7 +43,6 @@ class SaveFileResourceHandler : public ResourceHandler {
                           int render_process_host_id,
                           int render_frame_routing_id,
                           const GURL& url,
-                          SaveFileManager* manager,
                           AuthorizationState authorization_state);
   ~SaveFileResourceHandler() override;
 

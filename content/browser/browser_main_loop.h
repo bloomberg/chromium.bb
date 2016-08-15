@@ -78,6 +78,7 @@ class LoaderDelegateImpl;
 class MediaStreamManager;
 class MojoShellContext;
 class ResourceDispatcherHostImpl;
+class SaveFileManager;
 class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
 class TimeZoneMonitor;
@@ -297,6 +298,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
   std::unique_ptr<TimeZoneMonitor> time_zone_monitor_;
+  scoped_refptr<SaveFileManager> save_file_manager_;
 
   // DO NOT add members here. Add them to the right categories above.
 

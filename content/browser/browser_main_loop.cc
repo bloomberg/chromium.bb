@@ -1080,8 +1080,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
         TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:FileThread");
         // Clean up state that lives on or uses the file_thread_ before
         // it goes away.
-        if (resource_dispatcher_host_)
-          resource_dispatcher_host_.get()->save_file_manager()->Shutdown();
+        save_file_manager_->Shutdown();
         ResetThread_FILE(std::move(file_thread_));
         break;
       }
@@ -1320,6 +1319,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::BrowserThreadsStarted::TimeZoneMonitor");
     time_zone_monitor_ = TimeZoneMonitor::Create();
+  }
+
+  {
+    TRACE_EVENT0("startup",
+      "BrowserMainLoop::BrowserThreadsStarted::SaveFileManager");
+    save_file_manager_ = new SaveFileManager();
   }
 
   // Alert the clipboard class to which threads are allowed to access the

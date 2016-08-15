@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/common/url_constants.h"
@@ -118,6 +119,8 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
     // to create a ResourceDispatcherHostImpl so that our SavePackage objects
     // can initialize correctly.
     rdh_.reset(new ResourceDispatcherHostImpl);
+    // Initialize the SaveFileManager instance which we will use for the tests.
+    save_file_manager_ = new SaveFileManager();
     return RenderViewHostImplTestHarness::CreateBrowserContext();
   }
 
@@ -148,6 +151,7 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
   base::ScopedTempDir temp_dir_;
 
   std::unique_ptr<ResourceDispatcherHostImpl> rdh_;
+  scoped_refptr<SaveFileManager> save_file_manager_;
 };
 
 static const struct {

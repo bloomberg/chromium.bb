@@ -235,8 +235,7 @@ void SavePackage::Cancel(bool user_action) {
 void SavePackage::InternalInit() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  file_manager_ = rdh->save_file_manager();
+  file_manager_ = SaveFileManager::Get();
   DCHECK(file_manager_);
 
   download_manager_ = static_cast<DownloadManagerImpl*>(

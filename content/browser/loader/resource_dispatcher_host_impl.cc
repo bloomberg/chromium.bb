@@ -40,7 +40,6 @@
 #include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_resource_handler.h"
-#include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_file_resource_handler.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_request_info.h"
@@ -437,8 +436,7 @@ ResourceDispatcherHost* ResourceDispatcherHost::Get() {
 }
 
 ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
-    : save_file_manager_(new SaveFileManager()),
-      request_id_(-1),
+    : request_id_(-1),
       is_shutdown_(false),
       num_in_flight_requests_(0),
       max_num_in_flight_requests_(base::SharedMemory::GetHandleLimit()),
@@ -1933,8 +1931,7 @@ void ResourceDispatcherHostImpl::BeginSaveFile(const GURL& url,
 
   std::unique_ptr<SaveFileResourceHandler> handler(new SaveFileResourceHandler(
       request.get(), save_item_id, save_package_id, child_id,
-      render_frame_route_id, url, save_file_manager_.get(),
-      authorization_state));
+      render_frame_route_id, url, authorization_state));
 
   BeginRequestInternal(std::move(request), std::move(handler));
 }

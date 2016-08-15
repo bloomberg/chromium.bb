@@ -162,7 +162,6 @@ specific_include_rules = {
     "+content/browser/blob_storage/chrome_blob_storage_context.h",
     "+content/browser/child_process_security_policy_impl.h",
     "+content/browser/download/download_resource_handler.h",
-    "+content/browser/download/save_file_manager.h",
     "+content/browser/download/save_file_resource_handler.h",
     "+content/browser/download/save_types.h",
     "+content/browser/frame_host/frame_tree.h",

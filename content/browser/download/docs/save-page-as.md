@@ -31,8 +31,9 @@ are described by their code comments or by their code structure).
           `SavePackage` on the UI thread.
         * Shephards data (received from the network OR from DOM) into
           FILE thread - via `SaveFileManager::UpdateSaveProgress`
-    * created and owned by `ResourceDispatchedHostImpl`
+    * created and owned by `BrowserMainLoop`
       (ref-counted today, but it is unnecessary - see https://crbug.com/596953)
+    * The global instance can be retrieved by the Get method.
 
 * SaveFile class
     * tracks saving a single file

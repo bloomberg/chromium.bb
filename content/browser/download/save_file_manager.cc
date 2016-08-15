@@ -24,11 +24,28 @@
 
 namespace content {
 
-SaveFileManager::SaveFileManager() {}
+namespace {
+
+// Pointer to the singleton SaveFileManager instance.
+static SaveFileManager* g_save_file_manager = nullptr;
+
+}  // namespace
+
+SaveFileManager::SaveFileManager() {
+  DCHECK(g_save_file_manager == nullptr);
+  g_save_file_manager = this;
+}
 
 SaveFileManager::~SaveFileManager() {
   // Check for clean shutdown.
   DCHECK(save_file_map_.empty());
+  DCHECK(g_save_file_manager);
+  g_save_file_manager = nullptr;
+}
+
+// static
+SaveFileManager* SaveFileManager::Get() {
+  return g_save_file_manager;
 }
 
 // Called during the browser shutdown process to clean up any state (open files,

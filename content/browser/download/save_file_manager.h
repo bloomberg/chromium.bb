@@ -83,12 +83,16 @@ class SaveFile;
 class SavePackage;
 struct Referrer;
 
-class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
+class CONTENT_EXPORT SaveFileManager
+    : public base::RefCountedThreadSafe<SaveFileManager> {
  public:
+   // Returns the singleton instance of the SaveFileManager.
+  static SaveFileManager* Get();
+
   SaveFileManager();
 
   // Lifetime management.
-  CONTENT_EXPORT void Shutdown();
+  void Shutdown();
 
   // Save the specified URL.  Caller has to guarantee that |save_package| will
   // be alive until the call to RemoveSaveFile.  Called on the UI thread (and in
