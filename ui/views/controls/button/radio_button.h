@@ -33,11 +33,11 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
 
   // Overridden from LabelButton:
   ui::NativeTheme::Part GetThemePart() const override;
-  gfx::ImageSkia GetImage(ButtonState for_state) const override;
 
   // Overridden from Checkbox:
   void SetChecked(bool checked) override;
   void PaintFocusRing(gfx::Canvas* canvas, const SkPaint& paint) override;
+  gfx::VectorIconId GetVectorIconId() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RadioButton);

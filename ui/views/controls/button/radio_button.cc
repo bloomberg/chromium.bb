@@ -67,40 +67,6 @@ RadioButton::RadioButton(const base::string16& label, int group_id)
 RadioButton::~RadioButton() {
 }
 
-void RadioButton::SetChecked(bool checked) {
-  if (checked == RadioButton::checked())
-    return;
-  if (checked) {
-    // We can't just get the root view here because sometimes the radio
-    // button isn't attached to a root view (e.g., if it's part of a tab page
-    // that is currently not active).
-    View* container = parent();
-    while (container && container->parent())
-      container = container->parent();
-    if (container) {
-      Views other;
-      container->GetViewsInGroup(GetGroup(), &other);
-      for (Views::iterator i(other.begin()); i != other.end(); ++i) {
-        if (*i != this) {
-          if (strcmp((*i)->GetClassName(), kViewClassName)) {
-            NOTREACHED() << "radio-button-nt has same group as other non "
-                            "radio-button-nt views.";
-            continue;
-          }
-          RadioButton* peer = static_cast<RadioButton*>(*i);
-          peer->SetChecked(false);
-        }
-      }
-    }
-  }
-  Checkbox::SetChecked(checked);
-}
-
-void RadioButton::PaintFocusRing(gfx::Canvas* canvas, const SkPaint& paint) {
-  canvas->DrawCircle(gfx::PointF(image()->bounds().CenterPoint()),
-                     image()->width() / 2 + .5f, paint);
-}
-
 const char* RadioButton::GetClassName() const {
   return kViewClassName;
 }
@@ -152,16 +118,43 @@ ui::NativeTheme::Part RadioButton::GetThemePart() const {
   return ui::NativeTheme::kRadio;
 }
 
-gfx::ImageSkia RadioButton::GetImage(ButtonState for_state) const {
-  if (!UseMd())
-    return Checkbox::GetImage(for_state);
+void RadioButton::SetChecked(bool checked) {
+  if (checked == RadioButton::checked())
+    return;
+  if (checked) {
+    // We can't just get the root view here because sometimes the radio
+    // button isn't attached to a root view (e.g., if it's part of a tab page
+    // that is currently not active).
+    View* container = parent();
+    while (container && container->parent())
+      container = container->parent();
+    if (container) {
+      Views other;
+      container->GetViewsInGroup(GetGroup(), &other);
+      for (Views::iterator i(other.begin()); i != other.end(); ++i) {
+        if (*i != this) {
+          if (strcmp((*i)->GetClassName(), kViewClassName)) {
+            NOTREACHED() << "radio-button-nt has same group as other non "
+                            "radio-button-nt views.";
+            continue;
+          }
+          RadioButton* peer = static_cast<RadioButton*>(*i);
+          peer->SetChecked(false);
+        }
+      }
+    }
+  }
+  Checkbox::SetChecked(checked);
+}
 
-  return gfx::CreateVectorIcon(
-      checked() ? gfx::VectorIconId::RADIO_BUTTON_ACTIVE
-                : gfx::VectorIconId::RADIO_BUTTON_NORMAL,
-      16, GetNativeTheme()->GetSystemColor(
-              checked() ? ui::NativeTheme::kColorId_FocusedBorderColor
-                        : ui::NativeTheme::kColorId_UnfocusedBorderColor));
+void RadioButton::PaintFocusRing(gfx::Canvas* canvas, const SkPaint& paint) {
+  canvas->DrawCircle(gfx::RectF(image()->bounds()).CenterPoint(),
+                     image()->width() / 2, paint);
+}
+
+gfx::VectorIconId RadioButton::GetVectorIconId() const {
+  return checked() ? gfx::VectorIconId::RADIO_BUTTON_ACTIVE
+                   : gfx::VectorIconId::RADIO_BUTTON_NORMAL;
 }
 
 }  // namespace views

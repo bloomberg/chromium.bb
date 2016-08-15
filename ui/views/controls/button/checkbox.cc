@@ -12,6 +12,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -38,6 +39,7 @@ Checkbox::Checkbox(const base::string16& label)
     set_has_ink_drop_action_on_click(true);
     // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
     set_ink_drop_size(gfx::Size(21, 21));
+    SetFocusPainter(nullptr);
   } else {
     std::unique_ptr<LabelButtonBorder> button_border(new LabelButtonBorder());
     // Inset the trailing side by a couple pixels for the focus border.
@@ -133,10 +135,12 @@ void Checkbox::OnPaint(gfx::Canvas* canvas) {
 
   SkPaint focus_paint;
   focus_paint.setAntiAlias(true);
-  focus_paint.setColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_FocusedBorderColor));
+  focus_paint.setColor(
+      SkColorSetA(GetNativeTheme()->GetSystemColor(
+                      ui::NativeTheme::kColorId_FocusedBorderColor),
+                  0x66));
   focus_paint.setStyle(SkPaint::kStroke_Style);
-  focus_paint.setStrokeWidth(1);
+  focus_paint.setStrokeWidth(2);
   PaintFocusRing(canvas, focus_paint);
 }
 
@@ -174,11 +178,11 @@ SkColor Checkbox::GetInkDropBaseColor() const {
 gfx::ImageSkia Checkbox::GetImage(ButtonState for_state) const {
   if (UseMd()) {
     return gfx::CreateVectorIcon(
-        checked_ ? gfx::VectorIconId::CHECKBOX_ACTIVE
-                 : gfx::VectorIconId::CHECKBOX_NORMAL,
-        16, GetNativeTheme()->GetSystemColor(
-                checked_ ? ui::NativeTheme::kColorId_FocusedBorderColor
-                         : ui::NativeTheme::kColorId_UnfocusedBorderColor));
+        GetVectorIconId(), 16,
+        // When not checked, the icon color matches the button text color.
+        GetNativeTheme()->GetSystemColor(
+            checked_ ? ui::NativeTheme::kColorId_CallToActionColor
+                     : ui::NativeTheme::kColorId_ButtonEnabledColor));
   }
 
   const size_t checked_index = checked_ ? 1 : 0;
@@ -201,8 +205,12 @@ void Checkbox::SetCustomImage(bool checked,
 
 void Checkbox::PaintFocusRing(gfx::Canvas* canvas, const SkPaint& paint) {
   gfx::RectF focus_rect(image()->bounds());
-  focus_rect.Inset(gfx::InsetsF(-.5f));
   canvas->DrawRoundRect(focus_rect, 2.f, paint);
+}
+
+gfx::VectorIconId Checkbox::GetVectorIconId() const {
+  return checked() ? gfx::VectorIconId::CHECKBOX_ACTIVE
+                   : gfx::VectorIconId::CHECKBOX_NORMAL;
 }
 
 void Checkbox::NotifyClick(const ui::Event& event) {

@@ -14,6 +14,10 @@
 
 class SkPaint;
 
+namespace gfx {
+enum class VectorIconId;
+}
+
 namespace views {
 
 class InkDropHover;
@@ -62,6 +66,10 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
 
   // Paints a focus indicator for the view.
   virtual void PaintFocusRing(gfx::Canvas* canvas, const SkPaint& paint);
+
+  // Gets the vector icon id used to draw the icon based on the current state of
+  // |checked_|.
+  virtual gfx::VectorIconId GetVectorIconId() const;
 
  private:
   // Overridden from Button:

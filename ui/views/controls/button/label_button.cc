@@ -485,11 +485,24 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
 
 void LabelButton::ResetColorsFromNativeTheme() {
   const ui::NativeTheme* theme = GetNativeTheme();
+  bool button_style = style() == STYLE_BUTTON;
+  // Button colors are used only for STYLE_BUTTON, otherwise we use label
+  // colors. As it turns out, these are almost always the same color anyway in
+  // pre-MD, although in the MD world labels and buttons get different colors.
+  // TODO(estade): simplify this by removing STYLE_BUTTON.
   SkColor colors[STATE_COUNT] = {
-    theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonEnabledColor),
-    theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonHoverColor),
-    theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonHoverColor),
-    theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonDisabledColor),
+      theme->GetSystemColor(button_style
+                                ? ui::NativeTheme::kColorId_ButtonEnabledColor
+                                : ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(button_style
+                                ? ui::NativeTheme::kColorId_ButtonHoverColor
+                                : ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(button_style
+                                ? ui::NativeTheme::kColorId_ButtonHoverColor
+                                : ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(button_style
+                                ? ui::NativeTheme::kColorId_ButtonDisabledColor
+                                : ui::NativeTheme::kColorId_LabelDisabledColor),
   };
 
   // Use hardcoded colors for inverted color scheme support and STYLE_BUTTON.

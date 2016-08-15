@@ -58,6 +58,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return kMenuHighlightBackgroundColorMd;
       case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
         return kSelectedMenuItemForegroundColorMd;
+
       // Link
       case NativeTheme::kColorId_LinkEnabled:
       case NativeTheme::kColorId_LinkPressed:
@@ -101,6 +102,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       default:
         break;
     }
+  }
+
+  // Second wave of MD colors (colors that only appear in secondary UI).
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    static const SkColor kPrimaryTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
+
+    if (color_id == NativeTheme::kColorId_LabelEnabledColor)
+      return kPrimaryTextColor;
   }
 
   // Pre-MD colors.
