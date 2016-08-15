@@ -1108,10 +1108,6 @@ def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
          '--force',
          # Don't run gclient sync when it sees a DEPS change.
          '--ignore_deps',
-         # TODO(tandrii): remove after http://crbug.com/537417 is resolved.
-         # Temporary enable verbosity to see if Rietveld requests are actually
-         # retried.
-         '-v', '-v',  # = logging.DEBUG level.
   ]
   # Use an oauth key file if specified.
   if email_file and key_file:
