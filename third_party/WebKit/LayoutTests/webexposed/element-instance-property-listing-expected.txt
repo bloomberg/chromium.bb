@@ -113,6 +113,7 @@ namespace http://www.w3.org/1999/xhtml
     property offsetTop
     property offsetWidth
     property onabort
+    property onauxclick
     property onbeforecopy
     property onbeforecut
     property onbeforepaste
@@ -1222,6 +1223,7 @@ namespace http://www.w3.org/2000/svg
     property offsetTop
     property offsetWidth
     property onabort
+    property onauxclick
     property onbeforecopy
     property onbeforecut
     property onbeforepaste

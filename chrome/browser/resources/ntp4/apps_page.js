@@ -390,7 +390,7 @@ cr.define('ntp', function() {
 
     /**
      * Invoked when an app is clicked.
-     * @param {Event} e The click event.
+     * @param {Event} e The click/auxclick event.
      * @private
      */
     onClick_: function(e) {
@@ -433,6 +433,7 @@ cr.define('ntp', function() {
     addLaunchClickTarget_: function(node) {
       node.classList.add('launch-click-target');
       node.addEventListener('click', this.onClick_.bind(this));
+      node.addEventListener('auxclick', this.onClick_.bind(this));
     },
 
     /**

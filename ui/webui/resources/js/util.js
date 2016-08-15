@@ -212,49 +212,51 @@ function queryRequiredElement(selectors, opt_context) {
 
 // Handle click on a link. If the link points to a chrome: or file: url, then
 // call into the browser to do the navigation.
-document.addEventListener('click', function(e) {
-  if (e.defaultPrevented)
-    return;
+['click', 'auxclick'].forEach(function(eventName) {
+  document.addEventListener(eventName, function(e) {
+    if (e.defaultPrevented)
+      return;
 
-  var eventPath = e.path;
-  var anchor = null;
-  if (eventPath) {
-    for (var i = 0; i < eventPath.length; i++) {
-      var element = eventPath[i];
-      if (element.tagName === 'A' && element.href) {
-        anchor = element;
-        break;
+    var eventPath = e.path;
+    var anchor = null;
+    if (eventPath) {
+      for (var i = 0; i < eventPath.length; i++) {
+        var element = eventPath[i];
+        if (element.tagName === 'A' && element.href) {
+          anchor = element;
+          break;
+        }
       }
     }
-  }
 
-  // Fallback if Event.path is not available.
-  var el = e.target;
-  if (!anchor && el.nodeType == Node.ELEMENT_NODE &&
-      el.webkitMatchesSelector('A, A *')) {
-    while (el.tagName != 'A') {
-      el = el.parentElement;
+    // Fallback if Event.path is not available.
+    var el = e.target;
+    if (!anchor && el.nodeType == Node.ELEMENT_NODE &&
+        el.webkitMatchesSelector('A, A *')) {
+      while (el.tagName != 'A') {
+        el = el.parentElement;
+      }
+      anchor = el;
     }
-    anchor = el;
-  }
 
-  if (!anchor)
-    return;
+    if (!anchor)
+      return;
 
-  anchor = /** @type {!HTMLAnchorElement} */(anchor);
-  if ((anchor.protocol == 'file:' || anchor.protocol == 'about:') &&
-      (e.button == 0 || e.button == 1)) {
-    chrome.send('navigateToUrl', [
-      anchor.href,
-      anchor.target,
-      e.button,
-      e.altKey,
-      e.ctrlKey,
-      e.metaKey,
-      e.shiftKey
-    ]);
-    e.preventDefault();
-  }
+    anchor = /** @type {!HTMLAnchorElement} */(anchor);
+    if ((anchor.protocol == 'file:' || anchor.protocol == 'about:') &&
+        (e.button == 0 || e.button == 1)) {
+      chrome.send('navigateToUrl', [
+        anchor.href,
+        anchor.target,
+        e.button,
+        e.altKey,
+        e.ctrlKey,
+        e.metaKey,
+        e.shiftKey
+      ]);
+      e.preventDefault();
+    }
+  });
 });
 
 /**

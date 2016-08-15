@@ -104,6 +104,8 @@ cr.define('ntp', function() {
       var webStoreLink = loadTimeData.getString('webStoreLink');
       var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
       $('chrome-web-store-link').href = url;
+      $('chrome-web-store-link').addEventListener('auxclick',
+          onChromeWebStoreButtonClick);
       $('chrome-web-store-link').addEventListener('click',
           onChromeWebStoreButtonClick);
     }
@@ -155,7 +157,7 @@ cr.define('ntp', function() {
   /**
    * Launches the chrome web store app with the chrome-ntp-launcher
    * source.
-   * @param {Event} e The click event.
+   * @param {Event} e The click/auxclick event.
    */
   function onChromeWebStoreButtonClick(e) {
     chrome.send('recordAppLaunchByURL',

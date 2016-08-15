@@ -1150,7 +1150,9 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
 
     WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mouseup, mev.innerNode(), m_clickCount, mev.event());
 
-    bool contextMenuEvent = mouseEvent.button() == RightButton;
+    // We only prevent click event when the click may cause contextmenu to popup.
+    // However, we always send auxclick.
+    bool contextMenuEvent = !RuntimeEnabledFeatures::auxclickEnabled() && mouseEvent.button() == RightButton;
 #if OS(MACOSX)
     // FIXME: The Mac port achieves the same behavior by checking whether the context menu is currently open in WebPage::mouseEvent(). Consider merging the implementations.
     if (mouseEvent.button() == LeftButton && mouseEvent.getModifiers() & PlatformEvent::CtrlKey)
@@ -1183,7 +1185,10 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
             // correctly. Moreover, clickTargetNode is different from
             // mev.innerNode at drag-release.
             clickEventResult = toWebInputEventResult(clickTargetNode->dispatchMouseEvent(mev.event(),
-                EventTypeNames::click, m_clickCount));
+                !RuntimeEnabledFeatures::auxclickEnabled() || (mev.event().button() == MouseButton::LeftButton)
+                    ? EventTypeNames::click
+                    : EventTypeNames::auxclick,
+                m_clickCount));
         }
     }
 

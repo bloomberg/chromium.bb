@@ -295,7 +295,11 @@ bool EventTarget::addEventListenerInternal(const AtomicString& eventType, EventL
 
 void EventTarget::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
 {
-    if (EventUtil::isPointerEventType(eventType)) {
+    if (eventType == EventTypeNames::auxclick) {
+        if (LocalDOMWindow* executingWindow = this->executingWindow()) {
+            UseCounter::count(executingWindow->document(), UseCounter::AuxclickAddListenerCount);
+        }
+    } else if (EventUtil::isPointerEventType(eventType)) {
         if (LocalDOMWindow* executingWindow = this->executingWindow()) {
             UseCounter::count(executingWindow->document(), UseCounter::PointerEventAddListenerCount);
         }

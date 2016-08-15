@@ -31,6 +31,7 @@ Accelerated2dCanvas status=stable, settable_from_internals=True
 AlwaysUseComplexText status=stable
 AudioOutputDevices status=stable
 AudioVideoTracks status=experimental
+Auxclick status=experimental
 BackgroundSync status=stable
 BackspaceDefaultHandler status=test
 BroadcastChannel status=stable

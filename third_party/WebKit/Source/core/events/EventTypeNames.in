@@ -23,6 +23,7 @@ animationstart
 audioend
 audioprocess
 audiostart
+auxclick
 availablechange
 beforecopy
 beforecut

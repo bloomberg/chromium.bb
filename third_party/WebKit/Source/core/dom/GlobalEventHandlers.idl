@@ -96,6 +96,10 @@
     attribute EventHandler onvolumechange;
     attribute EventHandler onwaiting;
 
+    // auxclick
+    // https://navidz.github.io/auxclick/
+    [RuntimeEnabled=Auxclick] attribute EventHandler onauxclick;
+
     // Pointer Events
     // https://w3c.github.io/pointerevents/#extensions-to-the-globaleventhandlers-interface
     [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerdown;

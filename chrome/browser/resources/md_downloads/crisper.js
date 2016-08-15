@@ -1360,31 +1360,33 @@ function queryRequiredElement(selectors, opt_context) {
 
 // Handle click on a link. If the link points to a chrome: or file: url, then
 // call into the browser to do the navigation.
-document.addEventListener('click', function(e) {
-  if (e.defaultPrevented)
-    return;
+['click', 'auxclick'].forEach(function(eventName) {
+  document.addEventListener(eventName, function(e) {
+    if (e.defaultPrevented)
+      return;
 
-  var el = e.target;
-  if (el.nodeType == Node.ELEMENT_NODE &&
-      el.webkitMatchesSelector('A, A *')) {
-    while (el.tagName != 'A') {
-      el = el.parentElement;
-    }
+    var el = e.target;
+    if (el.nodeType == Node.ELEMENT_NODE &&
+        el.webkitMatchesSelector('A, A *')) {
+      while (el.tagName != 'A') {
+        el = el.parentElement;
+      }
 
-    if ((el.protocol == 'file:' || el.protocol == 'about:') &&
-        (e.button == 0 || e.button == 1)) {
-      chrome.send('navigateToUrl', [
-        el.href,
-        el.target,
-        e.button,
-        e.altKey,
-        e.ctrlKey,
-        e.metaKey,
-        e.shiftKey
-      ]);
-      e.preventDefault();
+      if ((el.protocol == 'file:' || el.protocol == 'about:') &&
+          (e.button == 0 || e.button == 1)) {
+        chrome.send('navigateToUrl', [
+          el.href,
+          el.target,
+          e.button,
+          e.altKey,
+          e.ctrlKey,
+          e.metaKey,
+          e.shiftKey
+        ]);
+        e.preventDefault();
+      }
     }
-  }
+  });
 });
 
 /**

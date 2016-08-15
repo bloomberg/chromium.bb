@@ -292,9 +292,12 @@ Device.prototype.createSessionContents_ = function(maxNumTabs) {
             e.preventDefault();
           };
         };
-        a.addEventListener('click', makeClickHandler(sessionTag,
-                                                     String(win.sessionId),
-                                                     String(tab.sessionId)));
+        ['click', 'auxclick'].forEach(function(eventName) {
+          a.addEventListener(eventName,
+                             makeClickHandler(sessionTag,
+                                              String(win.sessionId),
+                                              String(tab.sessionId)));
+        });
         var wrapper = createElementWithClassName('div', 'device-tab-wrapper');
         wrapper.appendChild(a);
         contents.appendChild(wrapper);
