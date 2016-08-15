@@ -1270,6 +1270,10 @@ crbug.com/629711 [ Linux Debug ] virtual/sharedarraybuffer/fast/workers/shared-w
 
 crbug.com/399507 [ Mac Linux Win10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
 
+# Skia exact gradients change
+crbug.com/637879 virtual/gpu-rasterization/fast/images/color-profile-reflection.html [ NeedsManualRebaseline ]
+crbug.com/637879 virtual/gpu/fast/canvas/fillrect_gradient.html [ NeedsManualRebaseline ]
+
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/subframe-scrollBy.html [ Pass Failure ]
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-element-scroll.html [ Pass Failure ]
 crbug.com/631039 [ Win7 ] virtual/threaded/fast/scroll-behavior/main-frame-element-scrollBy.html [ Pass Failure ]
