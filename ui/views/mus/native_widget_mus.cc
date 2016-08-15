@@ -244,11 +244,16 @@ class ClientSideNonClientFrameView : public NonClientFrameView {
   // NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override {
     gfx::Rect result(GetLocalBounds());
+    if (widget_->IsFullscreen())
+      return result;
     result.Inset(GetDefaultWindowManagerInsets(widget_->IsMaximized()));
     return result;
   }
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override {
+    if (widget_->IsFullscreen())
+      return client_bounds;
+
     const gfx::Insets insets(
         GetDefaultWindowManagerInsets(widget_->IsMaximized()));
     return gfx::Rect(client_bounds.x() - insets.left(),
