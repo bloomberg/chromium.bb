@@ -22,6 +22,7 @@ typedef void* GLeglImageOES;
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -182,6 +183,9 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     const gfx::Rect& pixel_damage_rect) {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
 
+  base::TimeTicks before_flush_time;
+  base::TimeTicks after_flush_before_commit_time;
+
   // If supported, use GLFence to ensure that we haven't gotten more than one
   // frame ahead of GL.
   if (gl::GLFence::IsSupported()) {
@@ -215,6 +219,8 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
       }
     }
 
+    before_flush_time = base::TimeTicks::Now();
+
     // Create a fence for the current frame's work and save the context.
     previous_frame_fence_.reset(gl::GLFence::Create());
     fence_context_obj_.reset(CGLGetCurrentContext(),
@@ -222,8 +228,11 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
 
     // A glFlush is necessary to ensure correct content appears.
     glFlush();
-
     CheckGLErrors("After fence/flush");
+
+    after_flush_before_commit_time = base::TimeTicks::Now();
+    UMA_HISTOGRAM_TIMES("GPU.IOSurface.GLFlushTime",
+                        after_flush_before_commit_time - before_flush_time);
   } else {
     // GLFence isn't supported - issue a glFinish on each frame to ensure
     // there is backpressure from GL.
@@ -232,23 +241,25 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     CheckGLErrors("Before finish");
     glFinish();
     CheckGLErrors("After finish");
+    after_flush_before_commit_time = base::TimeTicks::Now();
   }
-
-  base::TimeTicks finish_time = base::TimeTicks::Now();
 
   bool fullscreen_low_power_layer_valid = false;
   ca_layer_tree_coordinator_->CommitPendingTreesToCA(
       pixel_damage_rect, &fullscreen_low_power_layer_valid);
-  // TODO(ccameron): Plumb the fullscreen low power layer through to the
-  // appropriate window.
+
+  base::TimeTicks after_transaction_time = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES("GPU.IOSurface.CATransactionTime",
+                      after_transaction_time - after_flush_before_commit_time);
 
   // Update the latency info to reflect the swap time.
   for (auto& latency_info : latency_info_) {
     latency_info.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, finish_time, 1);
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0,
+        after_flush_before_commit_time, 1);
     latency_info.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
-        finish_time, 1);
+        after_flush_before_commit_time, 1);
   }
 
   // Send acknowledgement to the browser.
