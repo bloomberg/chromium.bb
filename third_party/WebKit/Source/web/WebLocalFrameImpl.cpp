@@ -1989,7 +1989,6 @@ void WebLocalFrameImpl::requestFind(int identifier, const WebString& searchText,
     }
 
     WebRange currentSelection = selectionRange();
-
     bool result = false;
     bool activeNow = false;
 
@@ -2007,19 +2006,25 @@ void WebLocalFrameImpl::requestFind(int identifier, const WebString& searchText,
 
     // There are three cases in which scoping is needed:
     //
-    // 1) This is an initial find request (|options.findNext| is false). This
+    // (1) This is an initial find request (|options.findNext| is false). This
     // will be the first scoping effort for this find session.
     //
-    // 2) Something has been selected since the last search. This means that we
+    // (2) Something has been selected since the last search. This means that we
     // cannot just increment the current match ordinal; we need to re-generate
     // it.
     //
-    // 3) TextFinder::Find() could not locate the next active find match, so it
-    // needs to be re-scoped.
+    // (3) TextFinder::Find() found what should be the next match (|result| is
+    // true), but was unable to activate it (|activeNow| is false). This means
+    // that the text containing this match was dynamically added since the last
+    // scope of the frame. The frame needs to be re-scoped so that any matches
+    // in the new text can be highlighted and included in the reported number of
+    // matches.
     //
     // If none of these cases are true, then we just report the current match
     // count without scoping.
-    if (options.findNext && currentSelection.isNull() && activeNow) {
+    if (/* (1) */ options.findNext
+        && /* (2) */ currentSelection.isNull()
+        && /* (3) */ !(result && !activeNow)) {
         // Force report of the actual count.
         increaseMatchCount(0, identifier);
         return;
