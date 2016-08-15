@@ -6,9 +6,20 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/IntersectionObserverEntry.h"
+#include "core/frame/LocalFrame.h"
 #include "wtf/Functional.h"
 
 namespace blink {
+
+namespace {
+
+bool isInRemoteFrame(Element* element)
+{
+    Frame* mainFrame = element->document().frame()->tree().top();
+    return !mainFrame || mainFrame->isRemoteFrame();
+}
+
+} // anonymous namespace
 
 ElementVisibilityObserver::ElementVisibilityObserver(Element* element, std::unique_ptr<VisibilityCallback> callback)
     : m_element(element)
@@ -20,6 +31,13 @@ ElementVisibilityObserver::~ElementVisibilityObserver() = default;
 
 void ElementVisibilityObserver::start()
 {
+    // TODO(zqzhang): IntersectionObserver does not work for RemoteFrame.
+    // Remove this early return when it's fixed. See https://crbug.com/615156
+    if (isInRemoteFrame(m_element)) {
+        m_element.release();
+        return;
+    }
+
     DCHECK(!m_intersectionObserver);
     m_intersectionObserver = IntersectionObserver::create(
         Vector<Length>(), Vector<float>({std::numeric_limits<float>::min()}), &m_element->document(),
@@ -30,7 +48,11 @@ void ElementVisibilityObserver::start()
 
 void ElementVisibilityObserver::stop()
 {
-    DCHECK(m_intersectionObserver);
+    // TODO(zqzhang): IntersectionObserver does not work for RemoteFrame,
+    // so |m_intersectionObserver| may be null at this point after start().
+    // Replace this early return with DCHECK when this has been fixed. See https://crbug.com/615156
+    if (!m_intersectionObserver)
+        return;
 
     m_intersectionObserver->disconnect();
     m_intersectionObserver = nullptr;

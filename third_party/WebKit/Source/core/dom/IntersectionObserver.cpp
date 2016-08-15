@@ -164,11 +164,13 @@ IntersectionObserver* IntersectionObserver::create(const IntersectionObserverIni
     return new IntersectionObserver(callback, *root, rootMargin, thresholds);
 }
 
-IntersectionObserver* IntersectionObserver::create(const Vector<Length>& rootMargin, const Vector<float>& thresholds, Document* document, std::unique_ptr<EventCallback> callback)
+IntersectionObserver* IntersectionObserver::create(const Vector<Length>& rootMargin, const Vector<float>& thresholds, Document* document, std::unique_ptr<EventCallback> callback, ExceptionState& exceptionState)
 {
     Node* root = getRootNode(document);
-    if (!root)
+    if (!root) {
+        exceptionState.throwDOMException(HierarchyRequestError, "Unable to get root node in main frame to track.");
         return nullptr;
+    }
 
     IntersectionObserverCallbackImpl* intersectionObserverCallback = new IntersectionObserverCallbackImpl(document, std::move(callback));
     return new IntersectionObserver(*intersectionObserverCallback, *root, rootMargin, thresholds);

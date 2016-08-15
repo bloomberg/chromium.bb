@@ -30,7 +30,7 @@ public:
     using EventCallback = Function<void(const HeapVector<Member<IntersectionObserverEntry>>&), WTF::SameThreadAffinity>;
 
     static IntersectionObserver* create(const IntersectionObserverInit&, IntersectionObserverCallback&, ExceptionState&);
-    static IntersectionObserver* create(const Vector<Length>& rootMargin, const Vector<float>& thresholds, Document*, std::unique_ptr<EventCallback>);
+    static IntersectionObserver* create(const Vector<Length>& rootMargin, const Vector<float>& thresholds, Document*, std::unique_ptr<EventCallback>, ExceptionState& = ASSERT_NO_EXCEPTION);
     static void resumeSuspendedObservers();
 
     // API methods.
