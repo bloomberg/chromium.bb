@@ -43,10 +43,8 @@ class SyncSetupService : public KeyedService {
     kSyncPasswords,
     kSyncOpenTabs,
     kSyncAutofill,
-    kNumberOfSyncableDatatypes,
-    // TODO(skym): This should be moved above kNumberOfSyncableDatatypes after
-    // downstream handling is in place, tracking bug crbug.com/374865.
-    kSyncPreferences
+    kSyncPreferences,
+    kNumberOfSyncableDatatypes
   } SyncableDatatype;
 
   SyncSetupService(sync_driver::SyncService* sync_service, PrefService* prefs);
