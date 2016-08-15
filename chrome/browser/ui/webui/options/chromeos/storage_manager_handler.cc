@@ -151,19 +151,19 @@ void StorageManagerHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "updateStorageInfo",
       base::Bind(&StorageManagerHandler::HandleUpdateStorageInfo,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "openDownloads",
       base::Bind(&StorageManagerHandler::HandleOpenDownloads,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "openArcStorage",
       base::Bind(&StorageManagerHandler::HandleOpenArcStorage,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "clearDriveCache",
       base::Bind(&StorageManagerHandler::HandleClearDriveCache,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void StorageManagerHandler::HandleUpdateStorageInfo(
@@ -422,7 +422,7 @@ void StorageManagerHandler::UpdateArcSize() {
       "options.StorageManager.showArcItem");
   bool success = arc::ArcStorageManager::Get()->GetApplicationsSize(
       base::Bind(&StorageManagerHandler::OnGetArcSize,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
   if (!success)
     updating_arc_size_ = false;
 }
