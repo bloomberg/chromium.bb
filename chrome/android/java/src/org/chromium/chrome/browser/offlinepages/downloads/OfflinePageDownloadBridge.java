@@ -170,7 +170,7 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
      * @param tab a tab contents of which will be saved locally.
      */
     public void startDownload(Tab tab) {
-        // TODO(dimich): Next patch.
+        nativeStartDownload(mNativeOfflinePageDownloadBridge, tab);
     }
 
     /**
@@ -236,4 +236,5 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
             long nativeOfflinePageDownloadBridge, String guid);
     native void nativeDeleteItemByGuid(long nativeOfflinePageDownloadBridge, String guid);
     native String nativeGetOfflineUrlByGuid(long nativeOfflinePageDownloadBridge, String guid);
+    native void nativeStartDownload(long nativeOfflinePageDownloadBridge, Tab tab);
 }

@@ -7,11 +7,17 @@
 #include <vector>
 
 #include "base/android/jni_string.h"
+#include "base/guid.h"
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/downloads/download_ui_item.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/OfflinePageDownloadBridge_jni.h"
 #include "net/base/filename_util.h"
 #include "url/gurl.h"
@@ -57,7 +63,8 @@ OfflinePageDownloadBridge::OfflinePageDownloadBridge(
     const JavaParamRef<jobject>& obj,
     DownloadUIAdapter* download_ui_adapter)
     : weak_java_ref_(env, obj),
-      download_ui_adapter_(download_ui_adapter) {
+      download_ui_adapter_(download_ui_adapter),
+      weak_ptr_factory_(this) {
   DCHECK(download_ui_adapter_);
   download_ui_adapter_->AddObserver(this);
 }
@@ -114,6 +121,38 @@ ScopedJavaLocalRef<jstring> OfflinePageDownloadBridge::GetOfflineUrlByGuid(
   return ConvertUTF8ToJavaString(env, url.spec());
 }
 
+void OfflinePageDownloadBridge::StartDownload(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_tab) {
+  TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
+  if (!tab)
+    return;
+
+  content::WebContents* web_contents = tab->web_contents();
+  if (!web_contents)
+    return;
+
+  offline_pages::OfflinePageModel* offline_page_model =
+      OfflinePageModelFactory::GetForBrowserContext(
+      tab->GetProfile()->GetOriginalProfile());
+  if (!offline_page_model)
+    return;
+
+  GURL url = web_contents->GetLastCommittedURL();
+  auto archiver =
+      base::MakeUnique<offline_pages::OfflinePageMHTMLArchiver>(web_contents);
+
+  offline_pages::ClientId client_id;
+  client_id.name_space = offline_pages::kDownloadNamespace;
+  client_id.id = base::GenerateGUID();
+
+  offline_page_model->SavePage(
+      url, client_id, std::move(archiver),
+      base::Bind(&OfflinePageDownloadBridge::SavePageCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void OfflinePageDownloadBridge::ItemsLoaded() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
@@ -147,6 +186,11 @@ void OfflinePageDownloadBridge::ItemUpdated(const DownloadUIItem& item) {
     return;
   Java_OfflinePageDownloadBridge_downloadItemUpdated(
       env, obj.obj(), ToJavaOfflinePageDownloadItem(env, item).obj());
+}
+
+void OfflinePageDownloadBridge::SavePageCallback(
+    OfflinePageModel::SavePageResult result, int64_t offline_id) {
+  // TODO(dimich): Consider adding UMA here.
 }
 
 static jlong Init(JNIEnv* env,

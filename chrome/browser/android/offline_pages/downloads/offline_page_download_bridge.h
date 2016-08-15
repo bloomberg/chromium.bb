@@ -10,6 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/offline_pages/downloads/download_ui_adapter.h"
 
@@ -33,25 +34,34 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
 
   static bool Register(JNIEnv* env);
 
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Destroy(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
-  void GetAllItems(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj,
-                   const base::android::JavaParamRef<jobject>& j_result_obj);
+  void GetAllItems(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_result_obj);
 
   base::android::ScopedJavaLocalRef<jobject> GetItemByGuid(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_guid);
 
-  void DeleteItemByGuid(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj,
-                        const base::android::JavaParamRef<jstring>& j_guid);
+  void DeleteItemByGuid(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_guid);
 
   base::android::ScopedJavaLocalRef<jstring> GetOfflineUrlByGuid(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_guid);
+
+  void StartDownload(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_tab);
 
   // DownloadUIAdapter::Observer implementation.
   void ItemsLoaded() override;
@@ -60,11 +70,14 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
   void ItemDeleted(const std::string& guid) override;
 
  private:
-  JavaObjectWeakGlobalRef weak_java_ref_;
+  void SavePageCallback(OfflinePageModel::SavePageResult result,
+                        int64_t offline_id);
 
+  JavaObjectWeakGlobalRef weak_java_ref_;
   // Not owned.
   DownloadUIAdapter* download_ui_adapter_;
 
+  base::WeakPtrFactory<OfflinePageDownloadBridge> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(OfflinePageDownloadBridge);
 };
 
