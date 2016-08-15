@@ -31,5 +31,14 @@ Polymer({
       type: Array,
       value: function() { return []; }
     }
-  }
+  },
+
+  /**
+   * @param {string} iconUrl
+   * @return {string} A CSS imageset for multiple scale factors.
+   * @private
+   */
+  getIconImageset_: function(iconUrl) {
+    return cr.icon.getProfileAvatarIcon(iconUrl);
+  },
 });

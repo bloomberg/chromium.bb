@@ -93,8 +93,8 @@ cr.define('settings_people_page', function() {
           Polymer.dom.flush();
           assertEquals(browserProxy.fakeProfileInfo.name,
                        peoplePage.$$('#profile-name').textContent.trim());
-          assertEquals(browserProxy.fakeProfileInfo.iconUrl,
-                       peoplePage.$$('#profile-icon').src);
+          var bg = peoplePage.$$('#profile-icon').style.backgroundImage;
+          assertTrue(bg.includes(browserProxy.fakeProfileInfo.iconUrl));
 
           cr.webUIListenerCallback(
             'profile-info-changed',
@@ -103,8 +103,8 @@ cr.define('settings_people_page', function() {
           Polymer.dom.flush();
           assertEquals('pushedName',
                        peoplePage.$$('#profile-name').textContent.trim());
-          assertEquals('http://pushed-url/',
-                       peoplePage.$$('#profile-icon').src);
+          var newBg = peoplePage.$$('#profile-icon').style.backgroundImage;
+          assertTrue(newBg.includes('http://pushed-url/'));
         });
       });
 

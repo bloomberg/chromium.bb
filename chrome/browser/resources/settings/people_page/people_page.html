@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
@@ -36,10 +37,10 @@
       }
 
       #profile-icon {
+        background-position: center;
+        background-repeat: no-repeat;
         border-radius: 20px;
         height: 40px;
-        object-fit: cover;
-        vertical-align: middle;
         width: 40px;
       }
 
@@ -75,8 +76,9 @@
     <settings-animated-pages id="pages" section="people">
       <neon-animatable route-path="default">
         <div id="picture-subpage-trigger" class="settings-box first two-line">
-          <img id="profile-icon" src="[[profileIconUrl_]]"
-              on-tap="onPictureTap_" actionable>
+          <div id="profile-icon" on-tap="onPictureTap_" actionable
+              style="background-image: [[getIconImageset_(profileIconUrl_)]]">
+          </div>
           <div class="middle">
 <if expr="not chromeos">
             <span id="profile-name" on-tap="onProfileNameTap_" actionable>

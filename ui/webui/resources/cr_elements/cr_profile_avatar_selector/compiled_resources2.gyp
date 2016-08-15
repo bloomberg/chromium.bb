@@ -5,6 +5,9 @@
   'targets': [
     {
       'target_name': 'cr_profile_avatar_selector',
+      'dependencies': [
+        '../../js/compiled_resources2.gyp:icon',
+      ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     }
   ],
