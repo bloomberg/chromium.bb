@@ -367,7 +367,7 @@ public class ExternalNavigationHandler {
         }
 
         if (params.isIncognito()) {
-            IntentHandler.setPendingIncognitoIntent(intent);
+            IntentHandler.setPendingIncognitoUrl(intent);
         }
 
         // Make sure webkit can handle it internally before checking for specialized

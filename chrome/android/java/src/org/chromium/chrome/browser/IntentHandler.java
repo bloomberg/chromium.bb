@@ -160,7 +160,7 @@ public class IntentHandler {
 
     private static Pair<Integer, String> sPendingReferrer;
     private static int sReferrerId;
-    private static int sPendingHashCode;
+    private static String sPendingIncognitoUrl;
 
     private static final String PACKAGE_GSA = "com.google.android.googlequicksearchbox";
     private static final String PACKAGE_GMAIL = "com.google.android.gm";
@@ -642,16 +642,10 @@ public class IntentHandler {
             // "Open new incognito tab" is currently limited to Chrome or first parties.
             if (!isInternal
                     && IntentUtils.safeGetBooleanExtra(
-                               intent, EXTRA_OPEN_NEW_INCOGNITO_TAB, false)) {
-                // We also allow through intents from ExternalNavigationHandler that cannot be
-                // signed if they can be verified.
-                int hashCode = IntentUtils.safeGetIntExtra(intent, EXTRA_DATA_HASH_CODE, 0);
-                if (hashCode == 0
-                        || (intent.getData() != null && intent.getData().hashCode() != hashCode)
-                        || getPendingIncognitoIntentHashCode() != hashCode) {
-                    // Intent doesn't have EXTRA_DATA_HASH_CODE or the data field has been modified.
-                    return true;
-                }
+                            intent, EXTRA_OPEN_NEW_INCOGNITO_TAB, false)
+                    && (getPendingIncognitoUrl() == null
+                            || !getPendingIncognitoUrl().equals(intent.getDataString()))) {
+                return true;
             }
 
             // Now if we have an empty URL and the intent was ACTION_MAIN,
@@ -937,30 +931,30 @@ public class IntentHandler {
     }
 
     /**
-     * Keeps track of pending incognito intent, and verifies the URL hasn't been modified.
+     * Keeps track of pending incognito URL to be loaded and ensures we allow to load it if it
+     * comes back to us. This is a method for dispatching incognito URL intents from Chrome that
+     * may or may not end up in Chrome.
      * @param intent The intent that will be sent.
      */
-    public static void setPendingIncognitoIntent(Intent intent) {
+    public static void setPendingIncognitoUrl(Intent intent) {
         if (intent.getData() != null) {
             intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
-            int hashCode = intent.getData().hashCode();
-            intent.putExtra(IntentHandler.EXTRA_DATA_HASH_CODE, hashCode);
-            sPendingHashCode = hashCode;
+            sPendingIncognitoUrl = intent.getDataString();
         }
     }
 
     /**
-     * Clears the pending incognito intent hash code.
+     * Clears the pending incognito URL.
      */
-    public static void clearPendingIncognitoIntent() {
-        sPendingHashCode = 0;
+    public static void clearPendingIncognitoUrl() {
+        sPendingIncognitoUrl = null;
     }
 
     /**
-     * @return Pending incognito intent hash code.
+     * @return Pending incognito URL that is allowed to be loaded without system token.
      */
-    public static int getPendingIncognitoIntentHashCode() {
-        return sPendingHashCode;
+    public static String getPendingIncognitoUrl() {
+        return sPendingIncognitoUrl;
     }
 
     /**

@@ -307,7 +307,7 @@ public class ChromeApplication extends ContentApplication {
 
         ChildProcessLauncher.onSentToBackground();
         IntentHandler.clearPendingReferrer();
-        IntentHandler.clearPendingIncognitoIntent();
+        IntentHandler.clearPendingIncognitoUrl();
 
         if (FeatureUtilities.isDocumentMode(this)) {
             if (sDocumentTabModelSelector != null) {
