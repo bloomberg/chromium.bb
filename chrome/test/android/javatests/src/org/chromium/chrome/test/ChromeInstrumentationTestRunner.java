@@ -7,28 +7,19 @@ package org.chromium.chrome.test;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-
-import junit.framework.TestCase;
 
 import org.chromium.base.test.BaseChromiumInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
 import org.chromium.base.test.util.DisableIfSkipCheck;
 import org.chromium.base.test.util.RestrictionSkipCheck;
-import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.ChromeDisableIf;
 import org.chromium.chrome.test.util.ChromeRestriction;
-import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.base.DeviceFormFactor;
-
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
 
 /**
  *  An Instrumentation test runner that optionally spawns a test HTTP server.
@@ -49,7 +40,6 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
     @Override
     protected void addTestHooks(BaseTestResult result) {
         super.addTestHooks(result);
-        result.addSkipCheck(new DisableInTabbedModeSkipCheck());
         result.addSkipCheck(new ChromeRestrictionSkipCheck(getTargetContext()));
         result.addSkipCheck(new ChromeDisableIfSkipCheck(getTargetContext()));
 
@@ -83,41 +73,6 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
                     && (!ChromeVersionInfo.isOfficialBuild())) {
                 return true;
             }
-            return false;
-        }
-    }
-
-    /**
-     * Checks for tests that should only run in document mode.
-     */
-    private class DisableInTabbedModeSkipCheck extends SkipCheck {
-
-        /**
-         * If the test is running in tabbed mode, checks for
-         * {@link org.chromium.chrome.test.util.DisableInTabbedMode}.
-         *
-         * @param testCase The test to check.
-         * @return Whether the test is running in tabbed mode and has been marked as disabled in
-         *      tabbed mode.
-         */
-        @Override
-        public boolean shouldSkip(TestCase testCase) {
-            Class<?> testClass = testCase.getClass();
-            try {
-                if (!FeatureUtilities.isDocumentMode(getTargetContext())) {
-                    Method testMethod = testClass.getMethod(testCase.getName());
-                    if (((AnnotatedElement) testMethod)
-                            .isAnnotationPresent(DisableInTabbedMode.class)
-                            || testClass.isAnnotationPresent(DisableInTabbedMode.class)) {
-                        Log.i(TAG, "Test " + testClass.getName() + "#" + testCase.getName()
-                                + " is disabled in non-document mode.");
-                        return true;
-                    }
-                }
-            } catch (NoSuchMethodException e) {
-                Log.e(TAG, "Couldn't find test method: " + e.toString());
-            }
-
             return false;
         }
     }

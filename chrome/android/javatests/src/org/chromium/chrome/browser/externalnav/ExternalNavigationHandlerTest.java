@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.externalnav;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -26,7 +25,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -109,7 +107,6 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mDelegate.setContext(getInstrumentation().getTargetContext());
         CommandLine.init(new String[0]);
         RecordHistogram.disableForTests();
         mDelegate.mQueryIntentOverride = null;
@@ -944,12 +941,6 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     }
 
     private static class TestExternalNavigationDelegate implements ExternalNavigationDelegate {
-        private Context mContext;
-
-        public void setContext(Context context) {
-            mContext = context;
-        }
-
         @Override
         public List<ResolveInfo> queryIntentActivities(Intent intent) {
             List<ResolveInfo> list = new ArrayList<>();
@@ -1013,7 +1004,6 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
             if (infos == null) {
                 return result;
             }
-            int count = 0;
             for (ResolveInfo info : infos) {
                 String packageName = info.activityInfo.packageName;
                 if (packageName.equals("youtube") || packageName.equals("calendar")
@@ -1096,11 +1086,6 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         @Override
         public boolean isChromeAppInForeground() {
             return mIsChromeAppInForeground;
-        }
-
-        @Override
-        public boolean isDocumentMode() {
-            return FeatureUtilities.isDocumentMode(mContext);
         }
 
         @Override
@@ -1212,11 +1197,6 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         public ExternalNavigationTestParams withIsBackgroundTabNavigation(
                 boolean isBackgroundTabNavigation) {
             mIsBackgroundTabNavigation = isBackgroundTabNavigation;
-            return this;
-        }
-
-        public ExternalNavigationTestParams withHasUserGesture(boolean hasUserGesture) {
-            mHasUserGesture = hasUserGesture;
             return this;
         }
 

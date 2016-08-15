@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.appmenu;
 
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -194,17 +193,12 @@ public class AppMenuPropertiesDelegate {
             }
         }
 
-        // Incognito NTP in Document mode should not show "New incognito tab" menu item.
-        boolean incognitoItemVisible = !FeatureUtilities.isDocumentMode(mActivity)
-                || (currentTab == null)
-                || !(TextUtils.equals(currentTab.getUrl(), UrlConstants.NTP_URL) && isIncognito);
-
         // Disable new incognito tab when it is blocked (e.g. by a policy).
         // findItem(...).setEnabled(...)" is not enough here, because of the inflated
         // main_menu.xml contains multiple items with the same id in different groups
         // e.g.: new_incognito_tab_menu_id.
         disableEnableMenuItem(menu, R.id.new_incognito_tab_menu_id,
-                incognitoItemVisible,
+                true,
                 PrefServiceBridge.getInstance().isIncognitoModeEnabled(),
                 PrefServiceBridge.getInstance().isIncognitoModeManaged());
         mActivity.prepareMenu(menu);

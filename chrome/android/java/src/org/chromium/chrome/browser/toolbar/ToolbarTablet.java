@@ -109,8 +109,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
         mBookmarkButton = (TintedImageButton) findViewById(R.id.bookmark_button);
 
         mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
-        mMenuButtonWrapper.setVisibility(
-                shouldShowMenuButton() ? View.VISIBLE : View.GONE);
+        mMenuButtonWrapper.setVisibility(View.VISIBLE);
 
         if (mAccessibilitySwitcherButton.getVisibility() == View.GONE
                 && mMenuButtonWrapper.getVisibility() == View.GONE) {

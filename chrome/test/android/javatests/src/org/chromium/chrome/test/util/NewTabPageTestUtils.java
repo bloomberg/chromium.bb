@@ -10,7 +10,6 @@ import android.os.Build;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -31,10 +30,6 @@ public class NewTabPageTestUtils {
             public boolean isSatisfied() {
                 if (!tab.isIncognito()) {
                     // TODO(tedchoc): Make MostVisitedPage also have a isLoaded() concept.
-                    if (FeatureUtilities.isDocumentMode(
-                            tab.getWindowAndroid().getApplicationContext())) {
-                        return tab.getView().isAttachedToWindow();
-                    }
                     if (!(tab.getNativePage() instanceof NewTabPage)) {
                         return false;
                     }

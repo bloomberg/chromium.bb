@@ -13,7 +13,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
@@ -23,7 +22,6 @@ import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
@@ -613,11 +611,7 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                if (FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())) {
-                    return ChromeApplication.getDocumentTabModelSelector().getTotalTabCount();
-                } else {
-                    return getActivity().getTabModelSelector().getTotalTabCount();
-                }
+                return getActivity().getTabModelSelector().getTotalTabCount();
             }
         });
     }

@@ -545,10 +545,6 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mUrlHasFocus = hasFocus;
     }
 
-    protected boolean shouldShowMenuButton() {
-        return true;
-    }
-
     /**
      * Keeps track of the first time the toolbar is drawn.
      */

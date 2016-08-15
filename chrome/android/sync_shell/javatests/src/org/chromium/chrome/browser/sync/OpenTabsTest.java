@@ -10,10 +10,8 @@ import android.util.Pair;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.protocol.EntitySpecifics;
 import org.chromium.components.sync.protocol.SessionHeader;
@@ -119,9 +117,7 @@ public class OpenTabsTest extends SyncTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                TabModelSelector selector = FeatureUtilities.isDocumentMode(getActivity())
-                        ? ChromeApplication.getDocumentTabModelSelector()
-                        : getActivity().getTabModelSelector();
+                TabModelSelector selector = getActivity().getTabModelSelector();
                 assertTrue(TabModelUtils.closeCurrentTab(selector.getCurrentModel()));
             }
         });
@@ -238,7 +234,7 @@ public class OpenTabsTest extends SyncTestBase {
 
     private void waitForLocalTabsForClient(final String clientName, String... urls)
             throws InterruptedException {
-        final List<String> urlList = new ArrayList<String>(urls.length);
+        final List<String> urlList = new ArrayList<>(urls.length);
         for (String url : urls) urlList.add(url);
         pollInstrumentationThread(Criteria.equals(urlList, new Callable<List<String>>() {
             @Override
@@ -300,15 +296,15 @@ public class OpenTabsTest extends SyncTestBase {
         List<Pair<String, JSONObject>> tabEntities = SyncTestUtil.getLocalData(
                 mContext, OPEN_TABS_TYPE);
         // Output lists.
-        List<String> urls = new ArrayList<String>();
-        List<String> tabEntityIds = new ArrayList<String>();
+        List<String> urls = new ArrayList<>();
+        List<String> tabEntityIds = new ArrayList<>();
         HeaderInfo info = findHeaderInfoForClient(clientName, tabEntities);
         if (info.sessionTag == null) {
             // No client was found. Here we still want to return an empty list of urls.
             return new OpenTabs("", tabEntityIds, urls);
         }
-        Map<String, String> tabIdsToUrls = new HashMap<String, String>();
-        Map<String, String> tabIdsToEntityIds = new HashMap<String, String>();
+        Map<String, String> tabIdsToUrls = new HashMap<>();
+        Map<String, String> tabIdsToEntityIds = new HashMap<>();
         findTabMappings(info.sessionTag, tabEntities, tabIdsToUrls, tabIdsToEntityIds);
         // Convert the tabId list to the url list.
         for (String tabId : info.tabIds) {
@@ -323,7 +319,7 @@ public class OpenTabsTest extends SyncTestBase {
             String clientName, List<Pair<String, JSONObject>> tabEntities) throws JSONException {
         String sessionTag = null;
         String headerId = null;
-        List<String> tabIds = new ArrayList<String>();
+        List<String> tabIds = new ArrayList<>();
         for (Pair<String, JSONObject> tabEntity : tabEntities) {
             JSONObject header = tabEntity.second.optJSONObject("header");
             if (header != null && header.getString("client_name").equals(clientName)) {

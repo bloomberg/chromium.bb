@@ -28,13 +28,10 @@ import org.chromium.base.test.util.PerfTest;
 import org.chromium.base.test.util.parameter.BaseParameter;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.document.DocumentActivity;
-import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
@@ -51,9 +48,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -181,9 +175,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * and the activity's main looper has become idle.
      */
     protected void startActivityCompletely(Intent intent) {
-        final Class<?> activityClazz =
-                FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())
-                ? DocumentActivity.class : ChromeTabbedActivity.class;
+        final Class<?> activityClazz = ChromeTabbedActivity.class;
         Instrumentation.ActivityMonitor monitor = getInstrumentation().addMonitor(
                 activityClazz.getName(), null, false);
         Activity activity = getInstrumentation().startActivitySync(intent);
@@ -442,9 +434,6 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
             throws InterruptedException {
         prepareUrlIntent(intent, url);
 
-        final boolean isDocumentMode =
-                FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext());
-
         startActivityCompletely(intent);
 
         CriteriaHelper.pollUiThread(new Criteria("Tab never selected/initialized.") {
@@ -457,7 +446,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
 
         ChromeTabUtils.waitForTabPageLoaded(tab, (String) null);
 
-        if (!isDocumentMode && tab != null && NewTabPage.isNTPUrl(tab.getUrl())) {
+        if (tab != null && NewTabPage.isNTPUrl(tab.getUrl())) {
             NewTabPageTestUtils.waitForNtpLoaded(tab);
         }
 
@@ -507,61 +496,39 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     protected void newIncognitoTabFromMenu() throws InterruptedException {
         Tab tab = null;
 
-        if (FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())) {
-            final IncognitoDocumentActivity activity = ActivityUtils.waitForActivity(
-                    getInstrumentation(), IncognitoDocumentActivity.class,
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            MenuUtils.invokeCustomMenuActionSync(
-                                    getInstrumentation(), getActivity(),
-                                    R.id.new_incognito_tab_menu_id);
-                        }
-                    });
+        final CallbackHelper createdCallback = new CallbackHelper();
+        final CallbackHelper selectedCallback = new CallbackHelper();
 
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return activity.getActivityTab() != null;
-                }
-            });
-
-            tab = activity.getActivityTab();
-        } else {
-            final CallbackHelper createdCallback = new CallbackHelper();
-            final CallbackHelper selectedCallback = new CallbackHelper();
-
-            TabModel incognitoTabModel = getActivity().getTabModelSelector().getModel(true);
-            TabModelObserver observer = new EmptyTabModelObserver() {
-                @Override
-                public void didAddTab(Tab tab, TabLaunchType type) {
-                    createdCallback.notifyCalled();
-                }
-
-                @Override
-                public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
-                    selectedCallback.notifyCalled();
-                }
-            };
-            incognitoTabModel.addObserver(observer);
-
-            MenuUtils.invokeCustomMenuActionSync(getInstrumentation(), getActivity(),
-                    R.id.new_incognito_tab_menu_id);
-
-            try {
-                createdCallback.waitForCallback(0);
-            } catch (TimeoutException ex) {
-                fail("Never received tab created event");
+        TabModel incognitoTabModel = getActivity().getTabModelSelector().getModel(true);
+        TabModelObserver observer = new EmptyTabModelObserver() {
+            @Override
+            public void didAddTab(Tab tab, TabLaunchType type) {
+                createdCallback.notifyCalled();
             }
-            try {
-                selectedCallback.waitForCallback(0);
-            } catch (TimeoutException ex) {
-                fail("Never received tab selected event");
-            }
-            incognitoTabModel.removeObserver(observer);
 
-            tab = getActivity().getActivityTab();
+            @Override
+            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+                selectedCallback.notifyCalled();
+            }
+        };
+        incognitoTabModel.addObserver(observer);
+
+        MenuUtils.invokeCustomMenuActionSync(getInstrumentation(), getActivity(),
+                R.id.new_incognito_tab_menu_id);
+
+        try {
+            createdCallback.waitForCallback(0);
+        } catch (TimeoutException ex) {
+            fail("Never received tab created event");
         }
+        try {
+            selectedCallback.waitForCallback(0);
+        } catch (TimeoutException ex) {
+            fail("Never received tab selected event");
+        }
+        incognitoTabModel.removeObserver(observer);
+
+        tab = getActivity().getActivityTab();
 
         ChromeTabUtils.waitForTabPageLoaded(tab, (String) null);
         NewTabPageTestUtils.waitForNtpLoaded(tab);
@@ -588,13 +555,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() {
-                TabModelSelector tabModelSelector;
-                if (FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())) {
-                    tabModelSelector = ChromeApplication.getDocumentTabModelSelector();
-                } else {
-                    tabModelSelector = getActivity().getTabModelSelector();
-                }
-                return tabModelSelector.getModel(true).getCount();
+                return getActivity().getTabModelSelector().getModel(true).getCount();
             }
         });
     }

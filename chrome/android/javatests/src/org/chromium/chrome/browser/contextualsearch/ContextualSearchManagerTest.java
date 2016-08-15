@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -1447,8 +1446,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             }
         };
         getActivity().getTabModelSelector().addObserver(observer);
-        // This tab tracking requires document mode be disabled.
-        assertFalse(FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext()));
 
         // -------- TEST ---------
         // Start a slow-resolve search and maximize the Panel.

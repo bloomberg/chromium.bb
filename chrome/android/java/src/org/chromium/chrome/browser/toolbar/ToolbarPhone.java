@@ -115,8 +115,8 @@ public class ToolbarPhone extends ToolbarLayout
     private ObjectAnimator mTabSwitcherModeAnimation;
     private ObjectAnimator mDelayedTabSwitcherModeAnimation;
 
-    private final List<View> mTabSwitcherModeViews = new ArrayList<View>();
-    private final Set<View> mBrowsingModeViews = new HashSet<View>();
+    private final List<View> mTabSwitcherModeViews = new ArrayList<>();
+    private final Set<View> mBrowsingModeViews = new HashSet<>();
     @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mIsInTabSwitcherMode;
 
@@ -336,15 +336,8 @@ public class ToolbarPhone extends ToolbarLayout
 
         setLayoutTransition(null);
 
-        mMenuButtonWrapper.setVisibility(shouldShowMenuButton() ? View.VISIBLE : View.GONE);
-        if (FeatureUtilities.isDocumentMode(getContext())) {
-            ApiCompatibilityUtils.setMarginEnd(
-                    (MarginLayoutParams) mMenuButtonWrapper.getLayoutParams(),
-                    getResources().getDimensionPixelSize(R.dimen.document_toolbar_menu_offset));
-            hideTabSwitchingResources();
-        } else {
-            inflateTabSwitchingResources();
-        }
+        mMenuButtonWrapper.setVisibility(View.VISIBLE);
+        inflateTabSwitchingResources();
 
         setWillNotDraw(false);
     }
@@ -378,17 +371,6 @@ public class ToolbarPhone extends ToolbarLayout
                 mToolbarButtonsContainer.getMeasuredWidth());
     }
 
-    private void hideTabSwitchingResources() {
-        ImageView toggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
-        toggleTabStackButton.setVisibility(View.GONE);
-        // We don't need to hide new tab button since it's invisible by default.
-    }
-
-    private void unhideTabSwitchingResources() {
-        ImageView toggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
-        toggleTabStackButton.setVisibility(View.VISIBLE);
-    }
-
     private void enableTabSwitchingResources() {
         mToggleTabStackButton.setOnClickListener(this);
         mToggleTabStackButton.setOnLongClickListener(this);
@@ -410,15 +392,6 @@ public class ToolbarPhone extends ToolbarLayout
         mNewTabButton.setOnClickListener(this);
     }
 
-    private void removeTabSwitchingResources() {
-        ImageView toggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
-        NewTabButton newTabButton = (NewTabButton) findViewById(R.id.new_tab_button);
-        assert mToolbarButtonsContainer.indexOfChild(toggleTabStackButton) >= 0;
-        mToolbarButtonsContainer.removeView(toggleTabStackButton);
-        assert indexOfChild(newTabButton) >= 0;
-        removeView(newTabButton);
-    }
-
     @Override
     protected boolean onMenuButtonTouchEvent(View v, MotionEvent event) {
         dismissTabSwitcherCallout();
@@ -433,11 +406,7 @@ public class ToolbarPhone extends ToolbarLayout
         super.onNativeLibraryReady();
         getLocationBar().onNativeLibraryReady();
 
-        if (FeatureUtilities.isDocumentMode(getContext())) {
-            removeTabSwitchingResources();
-        } else {  // non-document mode
-            enableTabSwitchingResources();
-        }
+        enableTabSwitchingResources();
 
         mHomeButton.setOnClickListener(this);
 
@@ -549,15 +518,13 @@ public class ToolbarPhone extends ToolbarLayout
             }
         }
 
-        if (!mLocationBar.hasVisibleViewsAfterUrlBarWhenUnfocused()) {
-            // Add spacing between the end of the URL and the edge of the omnibox drawable.
-            // This only applies if there is no end aligned view that should be visible
-            // while the omnibox is unfocused.
-            if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
-                leftViewBounds += mToolbarSidePadding;
-            } else {
-                rightViewBounds -= mToolbarSidePadding;
-            }
+        // Add spacing between the end of the URL and the edge of the omnibox drawable.
+        // This only applies if there is no end aligned view that should be visible
+        // while the omnibox is unfocused.
+        if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
+            leftViewBounds += mToolbarSidePadding;
+        } else {
+            rightViewBounds -= mToolbarSidePadding;
         }
 
         mUnfocusedLocationBarLayoutWidth = rightViewBounds - leftViewBounds;
@@ -953,9 +920,9 @@ public class ToolbarPhone extends ToolbarLayout
         int leftBoundDifference = mNtpSearchBoxBounds.left - mLocationBarBackgroundBounds.left;
         int rightBoundDifference = mNtpSearchBoxBounds.right - mLocationBarBackgroundBounds.right;
         mLocationBarBackgroundNtpOffset.set(
-                (int) Math.round(leftBoundDifference * shrinkage),
+                Math.round(leftBoundDifference * shrinkage),
                 locationBarTranslationY,
-                (int) Math.round(rightBoundDifference * shrinkage),
+                Math.round(rightBoundDifference * shrinkage),
                 locationBarTranslationY);
 
         // The omnibox background bounds are outset by |mLocationBarBackgroundCornerRadius| in the
@@ -1784,7 +1751,7 @@ public class ToolbarPhone extends ToolbarLayout
             mUrlFocusLayoutAnimator = null;
         }
 
-        List<Animator> animators = new ArrayList<Animator>();
+        List<Animator> animators = new ArrayList<>();
         if (hasFocus) {
             populateUrlFocusingAnimatorSet(animators);
         } else {
@@ -1826,15 +1793,6 @@ public class ToolbarPhone extends ToolbarLayout
             }
         });
         mUrlFocusLayoutAnimator.start();
-    }
-
-    @Override
-    protected boolean shouldShowMenuButton() {
-        // Even in Document mode, the toolbar menu button will be shown while on the NTP.  This
-        // allows the menu to translate off the screen on scroll to match the tabbed behavior.
-        if (mVisualState == VisualState.NEW_TAB_NORMAL) return true;
-
-        return !mLocationBar.showMenuButtonInOmnibox() && super.shouldShowMenuButton();
     }
 
     @Override
@@ -2117,12 +2075,10 @@ public class ToolbarPhone extends ToolbarLayout
             }
         }
 
-        if (shouldShowMenuButton()) {
-            mMenuButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
+        mMenuButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
 
-            if (mShowMenuBadge && !mIsInTabSwitcherMode) {
-                setAppMenuUpdateBadgeDrawable(mUseLightToolbarDrawables);
-            }
+        if (mShowMenuBadge && !mIsInTabSwitcherMode) {
+            setAppMenuUpdateBadgeDrawable(mUseLightToolbarDrawables);
         }
         ColorStateList tint = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
         if (isReturnButtonVisible()) mReturnButton.setTint(tint);
@@ -2156,7 +2112,7 @@ public class ToolbarPhone extends ToolbarLayout
             mNewTabButton.setContentDescription(newTabContentDescription);
         }
 
-        getMenuButtonWrapper().setVisibility(shouldShowMenuButton() ? View.VISIBLE : View.GONE);
+        getMenuButtonWrapper().setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -2178,14 +2134,12 @@ public class ToolbarPhone extends ToolbarLayout
         setTabSwitcherAnimationMenuBadgeDrawable();
 
         // Show the badge.
-        if (!mIsInTabSwitcherMode && shouldShowMenuButton()) {
+        if (!mIsInTabSwitcherMode) {
             if (mUseLightToolbarDrawables) {
                 setAppMenuUpdateBadgeDrawable(mUseLightToolbarDrawables);
             }
             setAppMenuUpdateBadgeToVisible(true);
         }
-
-        mLocationBar.showAppMenuUpdateBadge(true);
     }
 
     @Override
@@ -2202,7 +2156,6 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void setTabSwitcherAnimationMenuDrawable() {
-        if (!shouldShowMenuButton()) return;
         mTabSwitcherAnimationMenuDrawable = ApiCompatibilityUtils.getDrawable(getResources(),
                 R.drawable.btn_menu);
         mTabSwitcherAnimationMenuDrawable.mutate();
