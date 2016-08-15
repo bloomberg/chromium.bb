@@ -484,6 +484,10 @@ void DesktopSessionProxy::OnCaptureResult(
 
   --pending_capture_frame_requests_;
 
+  if (!video_capturer_) {
+    return;
+  }
+
   if (result != webrtc::DesktopCapturer::Result::SUCCESS) {
     video_capturer_->OnCaptureResult(result, nullptr);
     return;
