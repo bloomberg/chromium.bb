@@ -37,7 +37,12 @@ unsigned s_deferralCount = 0;
 
 void setDefersLoading(bool isDeferred)
 {
+    // Make a copy of the collection. Undeferring loads can cause script to run,
+    // which would mutate ordinaryPages() in the middle of iteration.
+    HeapVector<Member<Page>> pages;
     for (const auto& page : Page::ordinaryPages())
+        pages.append(page);
+    for (const auto& page : pages)
         page->setDefersLoading(isDeferred);
 }
 
