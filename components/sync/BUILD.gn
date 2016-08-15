@@ -733,20 +733,6 @@ static_library("test_support_sync_api") {
   ]
 }
 
-# TODO(maxbogue): Remove this dummy target once bots are updated.
-test("sync_unit_tests") {
-  testonly = true
-  sources = [
-    "base/immutable_unittest.cc",
-  ]
-  deps = [
-    ":sync",
-    "//base",
-    "//base/test:run_all_unittests",
-    "//testing/gtest",
-  ]
-}
-
 static_library("test_support_sync_driver") {
   testonly = true
   sources = [
