@@ -92,6 +92,14 @@ var GetChildIDAtIndex = requireNative('automationInternal').GetChildIDAtIndex;
 /**
  * @param {number} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
+ * @return {?number} The ids of the children of the node, or undefined
+ *     if the tree or node wasn't found.
+ */
+var GetChildIds = requireNative('automationInternal').GetChildIDs;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
  * @return {?Object} An object mapping html attributes to values.
  */
 var GetHtmlAttributes = requireNative('automationInternal').GetHtmlAttributes;
@@ -296,9 +304,9 @@ AutomationNodeImpl.prototype = {
       return [this.childTree];
 
     var children = [];
-    var count = GetChildCount(this.treeID, this.id);
-    for (var i = 0; i < count; ++i) {
-      var childID = GetChildIDAtIndex(this.treeID, this.id, i);
+    var childIds = GetChildIds(this.treeID, this.id);
+    for (var i = 0; i < childIds.length; ++i) {
+      var childID = childIds[i];
       var child = this.rootImpl.get(childID);
       $Array.push(children, child);
     }

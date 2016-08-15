@@ -524,6 +524,17 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
         location.Offset(cache->location_offset);
         result.Set(RectToV8Object(isolate, location));
       });
+  RouteNodeIDFunction("GetChildIDs", [](v8::Isolate* isolate,
+                                        v8::ReturnValue<v8::Value> result,
+                                        TreeCache* cache, ui::AXNode* node) {
+    const std::vector<ui::AXNode*>& children = node->children();
+    v8::Local<v8::Array> array_result(v8::Array::New(isolate, children.size()));
+    for (size_t i = 0; i < children.size(); ++i) {
+      array_result->Set(static_cast<uint32_t>(i),
+                        v8::Integer::New(isolate, children[i]->id()));
+    }
+    result.Set(array_result);
+  });
 
   // Bindings that take a Tree ID and Node ID and string attribute name
   // and return a property of the node.
