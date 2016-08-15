@@ -1,3 +1,13 @@
+# As of August 11, 2016, obfuscation was tested and passed on the trybots,
+# saving us 660kb on our .dex size and 53kb memory/process. Enable obfuscation
+# as soon as Crash supports ReTrace's deobfuscation of stack traces.
+#
+# To enable obfuscation, remove the -keepnames rule for
+# com.google.android.apps.chrome.** and org.chromium.**, and uncomment the
+# following two lines:
+# -renamesourcefileattribute PG
+# -repackageclasses ""
+
 # Disable obfuscation for the following two packages.
 -keepnames,allowoptimization class com.google.android.apps.chrome.**,org.chromium.** {
   *;
@@ -14,6 +24,13 @@
 -keep class com.google.ipc.invalidation.external.client.** {
   *;
 }
+
+# These classes aren't themselves referenced, but __ProcessService[0,1,2...] are
+# referenced, and we look up these services by appending a number onto the name
+# of the base class. Thus, we need to keep the base class name around so that
+# the child classes can be looked up.
+-keep class org.chromium.content.app.SandboxedProcessService
+-keep class org.chromium.content.app.PrivilegedProcessService
 
 # Keep all Parcelables as they might be marshalled outside Chrome.
 -keepnames class * implements android.os.Parcelable {
