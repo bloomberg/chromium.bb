@@ -24,6 +24,16 @@ import path_util
 import extract_histograms
 
 
+C_FILENAME = re.compile(r"""
+    .*              # Anything
+    \.(cc|cpp|h|mm) # Ending in these extensions
+    $               # End of string
+    """, re.VERBOSE)
+TEST_FILENAME = re.compile(r"""
+    .*   # Anything
+    test # The word test
+    \.   # A literal '.'
+    """, re.VERBOSE)
 CPP_COMMENT = re.compile(r"""
     \s*             # Optional whitespace
     (?:             # Non-capturing group
@@ -185,7 +195,9 @@ def readChromiumHistograms():
   #   'path/to/foo.cc:420:  UMA_HISTOGRAM_COUNTS_100("FooGroup.FooName",'
   #   'path/to/bar.cc:632:  UMA_HISTOGRAM_ENUMERATION('
   locations = RunGit(['gs', 'UMA_HISTOGRAM']).split('\n')
-  filenames = set([location.split(':')[0] for location in locations])
+  all_filenames = set(location.split(':')[0] for location in locations);
+  filenames = [f for f in all_filenames
+               if C_FILENAME.match(f) and not TEST_FILENAME.match(f)]
 
   histograms = set()
   location_map = dict()
