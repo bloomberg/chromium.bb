@@ -56,6 +56,13 @@ const int kTileRoundUp = 64;
 // width and height should be an even multiple of 4 in size.
 const int kTileMinimalAlignment = 4;
 
+// Large contents scale can cause overflow issues. Cap the ideal contents scale
+// by this constant, since scales larger than this are usually not correct or
+// their scale doesn't matter as long as it's large. See
+// Renderer4.IdealContentsScale UMA for distribution of existing contents
+// scales.
+const float kMaxIdealContentsScale = 10000.f;
+
 // Intersect rects which may have right() and bottom() that overflow integer
 // boundaries. This code is similar to gfx::Rect::Intersect with the exception
 // that the types are promoted to int64_t when there is a chance of overflow.
@@ -1247,7 +1254,9 @@ void PictureLayerImpl::UpdateIdealScales() {
                           ? layer_tree_impl()->current_page_scale_factor()
                           : 1.f;
   ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
-  ideal_contents_scale_ = std::max(GetIdealContentsScale(), min_contents_scale);
+  ideal_contents_scale_ =
+      std::min(kMaxIdealContentsScale,
+               std::max(GetIdealContentsScale(), min_contents_scale));
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
   UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.IdealContentsScale",
