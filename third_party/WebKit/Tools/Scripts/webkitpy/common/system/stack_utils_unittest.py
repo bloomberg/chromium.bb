@@ -29,6 +29,7 @@
 import sys
 import unittest
 
+from webkitpy.common.system import outputcapture
 from webkitpy.common.system import stack_utils
 
 
@@ -67,6 +68,6 @@ class StackUtilsTest(unittest.TestCase):
 
         try:
             raise ValueError
-        except ValueError:
+        except:
             stack_utils.log_traceback(logger, sys.exc_info()[2])
         self.assertTrue(msgs)

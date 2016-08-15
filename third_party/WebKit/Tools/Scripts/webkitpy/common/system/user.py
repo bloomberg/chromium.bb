@@ -55,19 +55,19 @@ class User(object):
 
     # FIXME: These are @classmethods because bugzilla.py doesn't have a Tool object (thus no User instance).
     @classmethod
-    def prompt(cls, message, repeat=1, raw_input_func=raw_input):
+    def prompt(cls, message, repeat=1, raw_input=raw_input):
         response = None
         while repeat and not response:
             repeat -= 1
-            response = raw_input_func(message)
+            response = raw_input(message)
         return response
 
     @classmethod
     def prompt_password(cls, message, repeat=1):
-        return cls.prompt(message, repeat=repeat, raw_input_func=getpass.getpass)
+        return cls.prompt(message, repeat=repeat, raw_input=getpass.getpass)
 
     @classmethod
-    def prompt_with_multiple_lists(cls, list_title, subtitles, lists, can_choose_multiple=False, raw_input_func=raw_input):
+    def prompt_with_multiple_lists(cls, list_title, subtitles, lists, can_choose_multiple=False, raw_input=raw_input):
         item_index = 0
         cumulated_list = []
         print list_title
@@ -77,20 +77,20 @@ class User(object):
                 item_index += 1
                 print "%2d. %s" % (item_index, item)
             cumulated_list += lists[i]
-        return cls._wait_on_list_response(cumulated_list, can_choose_multiple, raw_input_func)
+        return cls._wait_on_list_response(cumulated_list, can_choose_multiple, raw_input)
 
     @classmethod
-    def _wait_on_list_response(cls, list_items, can_choose_multiple, raw_input_func):
+    def _wait_on_list_response(cls, list_items, can_choose_multiple, raw_input):
         while True:
             if can_choose_multiple:
                 response = cls.prompt(
-                    "Enter one or more numbers (comma-separated) or ranges (e.g. 3-7), or \"all\": ", raw_input_func=raw_input_func)
+                    "Enter one or more numbers (comma-separated) or ranges (e.g. 3-7), or \"all\": ", raw_input=raw_input)
                 if not response.strip() or response == "all":
                     return list_items
 
                 try:
                     indices = []
-                    for value in re.split(r"\s*,\s*", response):
+                    for value in re.split("\s*,\s*", response):
                         parts = value.split('-')
                         if len(parts) == 2:
                             indices += range(int(parts[0]) - 1, int(parts[1]))
@@ -102,19 +102,19 @@ class User(object):
                 return [list_items[i] for i in indices]
             else:
                 try:
-                    result = int(cls.prompt("Enter a number: ", raw_input_func=raw_input_func)) - 1
+                    result = int(cls.prompt("Enter a number: ", raw_input=raw_input)) - 1
                 except ValueError:
                     continue
                 return list_items[result]
 
     @classmethod
-    def prompt_with_list(cls, list_title, list_items, can_choose_multiple=False, raw_input_func=raw_input):
+    def prompt_with_list(cls, list_title, list_items, can_choose_multiple=False, raw_input=raw_input):
         print list_title
         i = 0
         for item in list_items:
             i += 1
             print "%2d. %s" % (i, item)
-        return cls._wait_on_list_response(list_items, can_choose_multiple, raw_input_func)
+        return cls._wait_on_list_response(list_items, can_choose_multiple, raw_input)
 
     def edit(self, files):
         editor = os.environ.get("EDITOR") or "vi"
@@ -131,11 +131,11 @@ class User(object):
         except IOError:
             pass
 
-    def confirm(self, message=None, default=DEFAULT_YES, raw_input_func=raw_input):
+    def confirm(self, message=None, default=DEFAULT_YES, raw_input=raw_input):
         if not message:
             message = "Continue?"
         choice = {'y': 'Y/n', 'n': 'y/N'}[default]
-        response = raw_input_func("%s [%s]: " % (message, choice))
+        response = raw_input("%s [%s]: " % (message, choice))
         if not response:
             response = default
         return response.lower() == 'y'

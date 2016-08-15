@@ -28,15 +28,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import errno
+import signal
 import subprocess
 import sys
 import unittest
 
 # Since we execute this script directly as part of the unit tests, we need to ensure
 # that Tools/Scripts is in sys.path for the next imports to work correctly.
-SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-if SCRIPT_DIR not in sys.path:
-    sys.path.append(SCRIPT_DIR)
+script_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+if script_dir not in sys.path:
+    sys.path.append(script_dir)
+
 
 from webkitpy.common.system.executive import Executive, ScriptError
 from webkitpy.common.system.filesystem_mock import MockFileSystem
@@ -140,7 +143,7 @@ class ExecutiveTest(unittest.TestCase):
 
         executive = Executive()
 
-        output = executive.run_command(command_line('cat'), input_func=unicode_tor_input)
+        output = executive.run_command(command_line('cat'), input=unicode_tor_input)
         self.assertEqual(output, unicode_tor_output)
 
         output = executive.run_command(command_line('echo', unicode_tor_input))
@@ -150,7 +153,7 @@ class ExecutiveTest(unittest.TestCase):
         self.assertEqual(output, encoded_tor)
 
         # Make sure that str() input also works.
-        output = executive.run_command(command_line('cat'), input_func=encoded_tor, decode_output=False)
+        output = executive.run_command(command_line('cat'), input=encoded_tor, decode_output=False)
         self.assertEqual(output, encoded_tor)
 
     def test_kill_process(self):
@@ -193,9 +196,8 @@ class ExecutiveTest(unittest.TestCase):
 
 def main(platform, stdin, stdout, cmd, args):
     if platform == 'win32' and hasattr(stdout, 'fileno'):
-        # The module msvcrt and os.O_BINARY are not available on non-Windows.
-        import msvcrt  # pylint: disable=import-error
-        msvcrt.setmode(stdout.fileno(), os.O_BINARY)  # pylint: disable=no-member
+        import msvcrt
+        msvcrt.setmode(stdout.fileno(), os.O_BINARY)
     if cmd == '--cat':
         stdout.write(stdin.read())
     elif cmd == '--echo':

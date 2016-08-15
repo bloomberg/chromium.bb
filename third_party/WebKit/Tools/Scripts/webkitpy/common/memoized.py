@@ -32,8 +32,7 @@
 import functools
 
 
-# This class has a lower-case name because it is a decorator.
-class memoized(object):  # pylint: disable=invalid-name
+class memoized(object):
 
     def __init__(self, function):
         self._function = function

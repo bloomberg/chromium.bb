@@ -261,13 +261,13 @@ class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
         unicode_text_string = u'\u016An\u012Dc\u014Dde\u033D'
         try:
             text_path = tempfile.mktemp(prefix='tree_unittest_')
-            out_file = fs.open_text_file_for_writing(text_path)
-            out_file.write(unicode_text_string)
-            out_file.close()
+            file = fs.open_text_file_for_writing(text_path)
+            file.write(unicode_text_string)
+            file.close()
 
-            in_file = fs.open_text_file_for_reading(text_path)
-            read_text = in_file.read()
-            in_file.close()
+            file = fs.open_text_file_for_reading(text_path)
+            read_text = file.read()
+            file.close()
 
             self.assertEqual(read_text, unicode_text_string)
         finally:
@@ -312,7 +312,7 @@ class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
             RealFileSystemTest._remove_failures -= 1
             if RealFileSystemTest._remove_failures >= 0:
                 try:
-                    raise WindowsError  # pylint: disable=undefined-variable
+                    raise WindowsError
                 except NameError:
                     raise FileSystem._WindowsError
 

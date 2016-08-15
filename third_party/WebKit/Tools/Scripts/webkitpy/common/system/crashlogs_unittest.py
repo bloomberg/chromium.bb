@@ -29,7 +29,6 @@ from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 
-# pylint: disable=line-too-long
 def make_mock_crash_report_darwin(process_name, pid):
     return """Process:         {process_name} [{pid}]
 Path:            /Volumes/Data/slave/snowleopard-intel-release-tests/build/WebKitBuild/Release/{process_name}
@@ -67,7 +66,6 @@ Network Service: Ethernet 2, Ethernet, en1
 PCI Card: NVIDIA GeForce GT 120, sppci_displaycontroller, MXM-Slot
 Serial ATA Device: OPTIARC DVD RW AD-5670S
 """.format(process_name=process_name, pid=pid)
-# pylint: enable=line-too-long
 
 
 class CrashLogsTest(unittest.TestCase):
@@ -83,14 +81,12 @@ class CrashLogsTest(unittest.TestCase):
         misformatted_mock_crash_report = 'Junk that should not appear in a crash report' + \
             make_mock_crash_report_darwin('DumpRenderTree', 28526)[200:]
         files = {}
-        # pylint: disable=line-too-long
         files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150718_quadzen.crash'] = older_mock_crash_report
         files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150719_quadzen.crash'] = mock_crash_report
         files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150720_quadzen.crash'] = newer_mock_crash_report
         files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150721_quadzen.crash'] = None
-        files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150722_quadzen.crash'] = other_process_mock_crash_report
-        files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150723_quadzen.crash'] = misformatted_mock_crash_report
-        # pylint: enable=line-too-long
+        files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150722_quadzen.crash'] = other_process_mock_crash_report  # noqa
+        files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150723_quadzen.crash'] = misformatted_mock_crash_report  # noqa
         filesystem = MockFileSystem(files)
         crash_logs = CrashLogs(MockSystemHost(filesystem=filesystem))
         log = crash_logs.find_newest_log("DumpRenderTree")
@@ -104,10 +100,10 @@ class CrashLogsTest(unittest.TestCase):
         log = crash_logs.find_newest_log("DumpRenderTree", newer_than=1.0)
         self.assertIsNone(log)
 
-        def bad_read(_):
+        def bad_read(path):
             raise IOError('IOError: No such file or directory')
 
-        def bad_mtime(_):
+        def bad_mtime(path):
             raise OSError('OSError: No such file or directory')
 
         filesystem.read_text_file = bad_read

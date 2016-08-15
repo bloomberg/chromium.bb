@@ -33,12 +33,12 @@ import sys
 
 
 # Simple class to split output between multiple destinations
-class Tee(object):
+class Tee:
 
     def __init__(self, *files):
         self.files = files
 
     # Callers should pass an already encoded string for writing.
-    def write(self, bytes_to_write):
-        for fh in self.files:
-            fh.write(bytes_to_write)
+    def write(self, bytes):
+        for file in self.files:
+            file.write(bytes)

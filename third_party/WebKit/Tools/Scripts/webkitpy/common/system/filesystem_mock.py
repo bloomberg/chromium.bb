@@ -32,6 +32,8 @@ import hashlib
 import os
 import re
 
+from webkitpy.common.system import path
+
 
 class MockFileSystem(object):
     sep = '/'
@@ -124,10 +126,8 @@ class MockFileSystem(object):
     def exists(self, path):
         return self.isfile(path) or self.isdir(path)
 
-    def files_under(self, path, dirs_to_skip=None, file_filter=None):
-        dirs_to_skip = dirs_to_skip or []
-
-        def filter_all(*_):
+    def files_under(self, path, dirs_to_skip=[], file_filter=None):
+        def filter_all(fs, dirpath, basename):
             return True
 
         file_filter = file_filter or filter_all
@@ -215,21 +215,21 @@ class MockFileSystem(object):
         if not top.endswith(sep):
             top += sep
 
-        directories = []
+        dirs = []
         files = []
         for f in self.files:
             if self.exists(f) and f.startswith(top):
                 remaining = f[len(top):]
                 if sep in remaining:
-                    directory = remaining[:remaining.index(sep)]
-                    if directory not in directories:
-                        directories.append(directory)
+                    dir = remaining[:remaining.index(sep)]
+                    if not dir in dirs:
+                        dirs.append(dir)
                 else:
                     files.append(remaining)
-        file_system_tuples = [(top[:-1], directories, files)]
-        for directory in directories:
-            directory = top + directory
-            tuples_from_subdirs = self.walk(directory)
+        file_system_tuples = [(top[:-1], dirs, files)]
+        for dir in dirs:
+            dir = top + dir
+            tuples_from_subdirs = self.walk(dir)
             file_system_tuples += tuples_from_subdirs
         return file_system_tuples
 
@@ -238,12 +238,12 @@ class MockFileSystem(object):
             return 0
         self._raise_not_found(path)
 
-    def _mktemp(self, suffix='', prefix='tmp', directory=None, **_):
-        if directory is None:
-            directory = self.sep + '__im_tmp'
+    def _mktemp(self, suffix='', prefix='tmp', dir=None, **kwargs):
+        if dir is None:
+            dir = self.sep + '__im_tmp'
         curno = self.current_tmpno
         self.current_tmpno += 1
-        self.last_tmpdir = self.join(directory, '%s_%u_%s' % (prefix, curno, suffix))
+        self.last_tmpdir = self.join(dir, '%s_%u_%s' % (prefix, curno, suffix))
         return self.last_tmpdir
 
     def mkdtemp(self, **kwargs):
@@ -261,7 +261,7 @@ class MockFileSystem(object):
             def __enter__(self):
                 return self._directory_path
 
-            def __exit__(self, *_):
+            def __exit__(self, type, value, traceback):
                 # Only self-delete if necessary.
 
                 # FIXME: Should we delete non-empty directories?
@@ -398,7 +398,7 @@ class MockFileSystem(object):
             if f == path or f.startswith(path + self.sep):
                 self.files[f] = None
 
-        self.dirs = {d for d in self.dirs if not (d == path or d.startswith(path + self.sep))}
+        self.dirs = set(filter(lambda d: not (d == path or d.startswith(path + self.sep)), self.dirs))
 
     def copytree(self, source, destination):
         source = self.normpath(source)
@@ -434,21 +434,21 @@ class WritableBinaryFileObject(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, type, value, traceback):
         self.close()
 
     def close(self):
         self.closed = True
 
-    def write(self, string):
-        self.fs.files[self.path] += string
+    def write(self, str):
+        self.fs.files[self.path] += str
         self.fs.written_files[self.path] = self.fs.files[self.path]
 
 
 class WritableTextFileObject(WritableBinaryFileObject):
 
-    def write(self, string):
-        WritableBinaryFileObject.write(self, string.encode('utf-8'))
+    def write(self, str):
+        WritableBinaryFileObject.write(self, str.encode('utf-8'))
 
 
 class ReadableBinaryFileObject(object):
@@ -463,17 +463,17 @@ class ReadableBinaryFileObject(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, type, value, traceback):
         self.close()
 
     def close(self):
         self.closed = True
 
-    def read(self, num_bytes=None):
-        if not num_bytes:
+    def read(self, bytes=None):
+        if not bytes:
             return self.data[self.offset:]
         start = self.offset
-        self.offset += num_bytes
+        self.offset += bytes
         return self.data[start:self.offset]
 
 
@@ -486,8 +486,8 @@ class ReadableTextFileObject(ReadableBinaryFileObject):
         self.data.close()
         super(ReadableTextFileObject, self).close()
 
-    def read(self, num_bytes=-1):
-        return self.data.read(num_bytes)
+    def read(self, bytes=-1):
+        return self.data.read(bytes)
 
     def readline(self, length=None):
         return self.data.readline(length)

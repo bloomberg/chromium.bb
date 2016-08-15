@@ -31,6 +31,7 @@ import sys
 import unittest
 
 from webkitpy.common.system.executive import Executive
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.system.filesystem_mock import MockFileSystem
@@ -178,8 +179,8 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.0.1234')).os_version, 'vista')
         self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('5.1.1234')).os_version, 'xp')
 
-    def _assert_file_implies_linux_distribution(self, filename, distribution):
-        info = self.make_info(sys_module=fake_sys('linux2'), filesystem_module=MockFileSystem({filename: ''}))
+    def _assert_file_implies_linux_distribution(self, file, distribution):
+        info = self.make_info(sys_module=fake_sys('linux2'), filesystem_module=MockFileSystem({file: ''}))
         self.assertEqual(info.linux_distribution(), distribution)
 
     def test_linux_distro_detection(self):

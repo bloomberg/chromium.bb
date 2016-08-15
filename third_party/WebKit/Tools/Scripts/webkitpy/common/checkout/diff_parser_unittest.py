@@ -27,11 +27,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import cStringIO as StringIO
-
+import diff_parser
 import re
 import unittest
 
-from webkitpy.common.checkout import diff_parser
 from webkitpy.common.checkout.diff_test_data import DIFF_TEST_DATA
 
 
@@ -106,8 +105,7 @@ class DiffParserTest(unittest.TestCase):
         self.assertEqual(diff_parser.get_diff_converter(revision_lines + svn_diff_lines), diff_parser.svn_diff_to_svn_diff)
 
         git_diff_lines = [
-            ("diff --git a/Tools/Scripts/webkitpy/common/checkout/diff_parser.py "
-             "b/Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n"),
+            "diff --git a/Tools/Scripts/webkitpy/common/checkout/diff_parser.py b/Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",
             "index 3c5b45b..0197ead 100644\n",
             "--- a/Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",
             "+++ b/Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",
@@ -117,8 +115,8 @@ class DiffParserTest(unittest.TestCase):
         self.assertEqual(diff_parser.get_diff_converter(comment_lines + git_diff_lines), diff_parser.git_diff_to_svn_diff)
         self.assertEqual(diff_parser.get_diff_converter(revision_lines + git_diff_lines), diff_parser.git_diff_to_svn_diff)
 
-    def test_git_mnemonic_prefix(self):
-        pattern = re.compile(r' ([a|b])/')
+    def test_git_mnemonicprefix(self):
+        p = re.compile(r' ([a|b])/')
 
         prefixes = [
             {'a': 'i', 'b': 'w'},  # git-diff (compares the (i)ndex and the (w)ork tree)
@@ -128,11 +126,9 @@ class DiffParserTest(unittest.TestCase):
             {'a': '1', 'b': '2'},  # git diff --no-index a b (compares two non-git things (1) and (2))
         ]
 
-        def patch(prefix):
-            return pattern.sub(lambda match: " %s/" % prefix[match.group(1)], DIFF_TEST_DATA)
-
         for prefix in prefixes:
-            self.test_diff_parser(diff_parser.DiffParser(patch(prefix).splitlines()))
+            patch = p.sub(lambda x: " %s/" % prefix[x.group(1)], DIFF_TEST_DATA)
+            self.test_diff_parser(diff_parser.DiffParser(patch.splitlines()))
 
     def test_git_diff_to_svn_diff(self):
         output = """\

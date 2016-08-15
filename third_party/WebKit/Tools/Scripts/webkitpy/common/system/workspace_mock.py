@@ -29,11 +29,7 @@
 
 class MockWorkspace(object):
 
-    def __init__(self, *_):
-        self.zip_path = None
-        self.source_path = None
-
-    def find_unused_filename(self, directory, name, extension, **_):
+    def find_unused_filename(self, directory, name, extension, search_limit=10):
         return "%s/%s.%s" % (directory, name, extension)
 
     def create_zip(self, zip_path, source_path):

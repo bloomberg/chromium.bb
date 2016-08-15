@@ -34,13 +34,14 @@ import re
 import sys
 
 from webkitpy.common.system.executive import Executive
+from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.filesystem import FileSystem
 
 _log = logging.getLogger(__name__)
 
 
 # SCM methods are expected to return paths relative to self.checkout_root.
-class SCM(object):
+class SCM:
 
     def __init__(self, cwd, executive=None, filesystem=None):
         self.cwd = cwd
@@ -49,12 +50,11 @@ class SCM(object):
         self.checkout_root = self.find_checkout_root(self.cwd)
 
     # A wrapper used by subclasses to create processes.
-    def _run(self, args, cwd=None, input_func=None, error_handler=None,
-             return_exit_code=False, return_stderr=True, decode_output=True):
+    def _run(self, args, cwd=None, input=None, error_handler=None, return_exit_code=False, return_stderr=True, decode_output=True):
         # FIXME: We should set cwd appropriately.
         return self._executive.run_command(args,
                                            cwd=cwd,
-                                           input_func=input_func,
+                                           input=input,
                                            error_handler=error_handler,
                                            return_exit_code=return_exit_code,
                                            return_stderr=return_stderr,
@@ -80,10 +80,6 @@ class SCM(object):
     @staticmethod
     def _subclass_must_implement():
         raise NotImplementedError("subclasses must implement")
-
-    # Most methods here are abstract methods which don't use their arguments.
-    # FIXME: Merge Git and SCM and remove the abstract base methods.
-    # pylint: disable=unused-argument
 
     @classmethod
     def in_working_directory(cls, path, executive=None):

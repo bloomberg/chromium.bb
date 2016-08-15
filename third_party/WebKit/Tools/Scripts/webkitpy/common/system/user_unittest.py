@@ -36,38 +36,35 @@ class UserTest(unittest.TestCase):
 
     example_user_response = "example user response"
 
-    def setUp(self):
-        self.repeats_remaining = None
-
     def test_prompt_repeat(self):
-        self.repeats_remaining = 2
+        self.repeatsRemaining = 2
 
-        def mock_raw_input(_):
-            self.repeats_remaining -= 1
-            if not self.repeats_remaining:
+        def mock_raw_input(message):
+            self.repeatsRemaining -= 1
+            if not self.repeatsRemaining:
                 return UserTest.example_user_response
             return None
-        self.assertEqual(User.prompt("input", repeat=self.repeats_remaining,
-                                     raw_input_func=mock_raw_input), UserTest.example_user_response)
+        self.assertEqual(User.prompt("input", repeat=self.repeatsRemaining,
+                                     raw_input=mock_raw_input), UserTest.example_user_response)
 
     def test_prompt_when_exceeded_repeats(self):
-        self.repeats_remaining = 2
+        self.repeatsRemaining = 2
 
-        def mock_raw_input(_):
-            self.repeats_remaining -= 1
+        def mock_raw_input(message):
+            self.repeatsRemaining -= 1
             return None
-        self.assertIsNone(User.prompt("input", repeat=self.repeats_remaining, raw_input_func=mock_raw_input))
+        self.assertIsNone(User.prompt("input", repeat=self.repeatsRemaining, raw_input=mock_raw_input))
 
     def test_prompt_with_multiple_lists(self):
         def run_prompt_test(inputs, expected_result, can_choose_multiple=False):
-            def mock_raw_input(_):
+            def mock_raw_input(message):
                 return inputs.pop(0)
             output_capture = OutputCapture()
             actual_result = output_capture.assert_outputs(
                 self,
                 User.prompt_with_multiple_lists,
                 args=["title", ["subtitle1", "subtitle2"], [["foo", "bar"], ["foobar", "barbaz", "foobaz"]]],
-                kwargs={"can_choose_multiple": can_choose_multiple, "raw_input_func": mock_raw_input},
+                kwargs={"can_choose_multiple": can_choose_multiple, "raw_input": mock_raw_input},
                 expected_stdout="title\n\nsubtitle1\n 1. foo\n 2. bar\n\nsubtitle2\n 3. foobar\n 4. barbaz\n 5. foobaz\n")
             self.assertEqual(actual_result, expected_result)
             self.assertEqual(len(inputs), 0)
@@ -90,14 +87,14 @@ class UserTest(unittest.TestCase):
 
     def test_prompt_with_list(self):
         def run_prompt_test(inputs, expected_result, can_choose_multiple=False):
-            def mock_raw_input(_):
+            def mock_raw_input(message):
                 return inputs.pop(0)
             output_capture = OutputCapture()
             actual_result = output_capture.assert_outputs(
                 self,
                 User.prompt_with_list,
                 args=["title", ["foo", "bar"]],
-                kwargs={"can_choose_multiple": can_choose_multiple, "raw_input_func": mock_raw_input},
+                kwargs={"can_choose_multiple": can_choose_multiple, "raw_input": mock_raw_input},
                 expected_stdout="title\n 1. foo\n 2. bar\n")
             self.assertEqual(actual_result, expected_result)
             self.assertEqual(len(inputs), 0)
@@ -131,5 +128,5 @@ class UserTest(unittest.TestCase):
                 return inputs[1]
 
             result = User().confirm(default=inputs[0],
-                                    raw_input_func=mock_raw_input)
+                                    raw_input=mock_raw_input)
             self.assertEqual(expected[1], result)

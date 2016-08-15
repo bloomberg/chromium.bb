@@ -94,7 +94,7 @@ class MockExecutive(object):
     def run_command(self,
                     args,
                     cwd=None,
-                    input_func=None,
+                    input=None,
                     error_handler=None,
                     return_exit_code=False,
                     return_stderr=True,
@@ -110,8 +110,8 @@ class MockExecutive(object):
             if env:
                 env_string = ", env=%s" % env
             input_string = ""
-            if input_func:
-                input_string = ", input=%s" % input_func
+            if input:
+                input_string = ", input=%s" % input
             _log.info("MOCK run_command: %s, cwd=%s%s%s", args, cwd, env_string, input_string)
         output = "MOCK output of child process"
 
@@ -190,7 +190,7 @@ class MockExecutive2(MockExecutive):
     def run_command(self,
                     args,
                     cwd=None,
-                    input_func=None,
+                    input=None,
                     error_handler=None,
                     return_exit_code=False,
                     return_stderr=True,

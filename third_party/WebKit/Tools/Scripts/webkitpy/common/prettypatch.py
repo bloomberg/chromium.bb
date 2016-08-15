@@ -62,4 +62,4 @@ class PrettyPatch(object):
         ]
         # PrettyPatch does not modify the encoding of the diff output
         # so we can't expect it to be utf-8.
-        return self._executive.run_command(args, input_func=diff, decode_output=False)
+        return self._executive.run_command(args, input=diff, decode_output=False)
