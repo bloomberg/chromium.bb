@@ -111,6 +111,8 @@ class WindowPreviewView : public views::View, public WmWindowObserver {
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     window_title_->SetEnabledColor(SK_ColorWHITE);
     window_title_->SetAutoColorReadabilityEnabled(false);
+    // Background is not fully opaque, so subpixel rendering won't look good.
+    window_title_->SetSubpixelRenderingEnabled(false);
     // The base font is 12pt (for English) so this comes out to 14pt.
     const int kLabelSizeDelta = 2;
     window_title_->SetFontList(
@@ -352,7 +354,9 @@ class WindowCycleView : public views::WidgetDelegateView {
     views::View::ConvertRectToTarget(target_view, mirror_container_,
                                      &target_bounds);
     gfx::Rect container_bounds(mirror_container_->GetPreferredSize());
-    int x_offset = width() / 2 - target_bounds.CenterPoint().x();
+    int x_offset =
+        width() / 2 -
+        mirror_container_->GetMirroredXInView(target_bounds.CenterPoint().x());
     x_offset = std::min(x_offset, 0);
     container_bounds.set_x(x_offset);
     mirror_container_->SetBoundsRect(container_bounds);
@@ -361,6 +365,8 @@ class WindowCycleView : public views::WidgetDelegateView {
     views::View::ConvertRectToTarget(mirror_container_, this, &target_bounds);
     const int kHighlightPaddingDip = 5;
     target_bounds.Inset(gfx::InsetsF(-kHighlightPaddingDip));
+    target_bounds.set_x(
+        GetMirroredXWithWidthInView(target_bounds.x(), target_bounds.width()));
     highlight_view_->SetBoundsRect(gfx::ToEnclosingRect(target_bounds));
   }
 
