@@ -1848,8 +1848,8 @@
     ],
 
     'swarming_gn_asan_disable_nacl_clang_tot_full_symbols_static_release': [
-      'swarming', 'gn', 'asan', 'clang_tot', 'full_symbols', 'static',
-      'release',
+      'swarming', 'gn', 'asan', 'disable_nacl', 'clang_tot', 'full_symbols',
+      'static', 'release',
     ],
 
     'swarming_gn_chromeos_msan_release_bot': [
