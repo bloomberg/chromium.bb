@@ -30,9 +30,8 @@
     <iron-collapse opened="{{opened}}">
       <div id="container" class="layout vertical flex">
         <template is="dom-repeat" items="[[networks]]">
-          <cr-network-list-network-item network-state="[[item]]"
-              list-item-type="[[listType]]" on-tap="onTap_"
-              show-buttons="[[showButtons]]">
+          <cr-network-list-network-item network-state="[[item]]" list-item
+              on-tap="onTap_" show-buttons="[[showButtons]]">
           </cr-network-list-network-item>
         </template>
         <template is="dom-repeat" items="[[customItems]]">

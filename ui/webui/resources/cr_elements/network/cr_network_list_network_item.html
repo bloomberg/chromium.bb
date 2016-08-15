@@ -9,34 +9,21 @@
 <dom-module id="cr-network-list-network-item">
   <template>
     <style include="cr-network-list-item-css"></style>
-    <div id="divOuter" selectable$="[[isListItem_(listItemType)]]">
+    <div id="divOuter" selectable$="[[listItem]]">
       <div id="divIcon">
-        <cr-network-icon id="icon" is-list-item="[[isListItem_(listItemType)]]"
+        <cr-network-icon id="icon" is-list-item="[[listItem]]"
             network-state="[[networkState]]">
         </cr-network-icon>
       </div>
       <div id="divText" class="layout horizontal flex">
         <div id="itemName"></div>
         <div id="networkStateText"
-            hidden$="[[!isStateVisible_(networkState, listItemType)]]">
+            hidden$="[[!isStateVisible_(networkState, listItem)]]">
         </div>
       </div>
       <div class="buttons"
-          hidden$="[[!isSettingsButtonVisible_(showButtons, listItemType)]]">
+          hidden$="[[!isSettingsButtonVisible_(showButtons, listItem)]]">
         <paper-icon-button icon="cr:settings" on-tap="fireShowDetails_">
-        </paper-icon-button>
-      </div>
-      <div class="known buttons"
-          hidden$="[[!areKnownButtonsVisible_(showButtons, listItemType)]]">
-        <paper-icon-button icon="[[sharedIcon_(networkState)]]" disabled>
-        </paper-icon-button>
-        <paper-icon-button icon="[[preferredIcon_(networkState)]]"
-            disabled$="[[isPolicyManaged_(networkState)]]"
-            on-tap="fireTogglePreferred_">
-        </paper-icon-button>
-        <paper-icon-button icon="cr:clear"
-            disabled$="[[isPolicyManaged_(networkState)]]"
-            on-tap="fireRemove_">
         </paper-icon-button>
       </div>
     </div>

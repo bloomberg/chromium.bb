@@ -26,17 +26,6 @@ Polymer({
     },
 
     /**
-     * Determines how the list item will be displayed:
-     *  'visible' - displays the network icon (with strength) and name
-     *  'known' - displays the visible info along with a toggle icon for the
-     *      preferred status and a remove button.
-     */
-    listType: {
-      type: String,
-      value: 'visible'
-    },
-
-    /**
      * The list of network state properties for the items to display.
      * See <cr-network-list-network-item/> for details.
      *

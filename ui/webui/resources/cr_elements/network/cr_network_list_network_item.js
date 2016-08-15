@@ -84,16 +84,14 @@ Polymer({
 
     /**
      * Determines how the list item will be displayed:
-     *  'visible' - displays the network icon (with strength) and name
-     *  'known' - displays the visible info along with a toggle icon for the
-     *      preferred status and a remove button.
-     *  'none' - The element is a stand-alone item (e.g. part of a summary)
+     *  True - Displays the network icon (with strength) and name
+     *  False - The element is a stand-alone item (e.g. part of a summary)
      *      and displays the name of the network type plus the network name
      *      and connection state.
      */
-    listItemType: {
-      type: String,
-      value: 'none',
+    listItem: {
+      type: Boolean,
+      value: false,
       observer: 'networkStateChanged_',
     },
 
@@ -122,7 +120,7 @@ Polymer({
     }
 
     var name = getNetworkName(network);
-    if (this.isListItem_(this.listItemType)) {
+    if (this.listItem) {
       this.$.itemName.textContent = name;
       this.$.itemName.classList.toggle('connected', !isDisconnected);
       if (!isDisconnected) {
@@ -153,28 +151,6 @@ Polymer({
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} networkState
-   * @return {string} The icon to use for the shared button indicator.
-   * @private
-   */
-  sharedIcon_: function(networkState) {
-    var source = (networkState && networkState.Source) || '';
-    var isShared =
-        (source == CrOnc.Source.DEVICE || source == CrOnc.Source.DEVICE_POLICY);
-    return isShared ? 'cr:check' : '';
-  },
-
-  /**
-   * @param {?CrOnc.NetworkStateProperties} networkState
-   * @return {string} The icon to use for the preferred button.
-   * @private
-   */
-  preferredIcon_: function(networkState) {
-    var isPreferred = networkState && networkState.Priority > 0;
-    return isPreferred ? 'cr:star' : 'cr:star-border';
-  },
-
-  /**
    * Fires a 'show-details' event with |this.networkState| as the details.
    * @param {Event} event
    * @private
@@ -184,69 +160,15 @@ Polymer({
     event.stopPropagation();
   },
 
-  /**
-   * Fires the 'toggle-preferred' event with |this.networkState| as the details.
-   * @param {Event} event
-   * @private
-   */
-  fireTogglePreferred_: function(event) {
-    this.fire('toggle-preferred', this.networkState);
-    event.stopPropagation();
-  },
-
-  /**
-   * Fires the 'remove' event with |this.networkState| as the details.
-   * @param {Event} event
-   * @private
-   */
-  fireRemove_: function(event) {
-    this.fire('remove', this.networkState);
-    event.stopPropagation();
-  },
-
-  /**
-   * @param {?CrOnc.NetworkStateProperties} networkState
-   * @return {boolean} True if the network is managed by a policy.
-   * @private
-   */
-  isPolicyManaged_: function(networkState) {
-    var source = (networkState && networkState.Source) || '';
-    var isPolicyManaged = source == CrOnc.Source.USER_POLICY ||
-        source == CrOnc.Source.DEVICE_POLICY;
-    return isPolicyManaged;
-  },
-
-  /**
-   * @return {boolean} True if the the list item type is not 'none'.
-   * @private
-   */
-  isListItem_: function(listItemType) {
-    return listItemType != 'none';
-  },
-
-  /**
-   * @param {string} type The type to match against.
-   * @return {boolean} True if the the list item type matches |type|.
-   * @private
-   */
-  isListItemType_: function(listItemType, type) {
-    return listItemType == type;
-  },
-
   /** @private */
-  isStateVisible_(networkState, listItemType) {
-    return !this.isListItem_(listItemType) ||
+  isStateVisible_(networkState, listItem) {
+    return !this.listItem ||
         networkState.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED;
   },
 
   /** @private */
-  isSettingsButtonVisible_: function(showButtons, listItemType) {
-    return showButtons && this.isListItemType_(listItemType, 'visible');
-  },
-
-  /** @private */
-  areKnownButtonsVisible_: function(showButtons, listItemType) {
-    return showButtons && this.isListItemType_(listItemType, 'known');
+  isSettingsButtonVisible_: function(showButtons, listItem) {
+    return showButtons && this.listItem;
   },
 });
 })();
