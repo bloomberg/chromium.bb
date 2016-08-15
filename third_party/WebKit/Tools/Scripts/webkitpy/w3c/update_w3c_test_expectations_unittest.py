@@ -2,15 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
 import unittest
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.net.layouttestresults import LayoutTestResult
 from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
-
-_log = logging.getLogger(__name__)
 
 
 class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder):

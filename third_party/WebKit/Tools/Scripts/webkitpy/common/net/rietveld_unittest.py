@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import json
-import logging
 import unittest
 import urllib2
 
@@ -14,9 +13,6 @@ from webkitpy.common.net.rietveld import changed_files
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.outputcapture import OutputCapture
-
-
-_log = logging.getLogger(__name__)
 
 
 class RietveldTest(unittest.TestCase):
