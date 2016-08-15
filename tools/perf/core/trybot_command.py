@@ -14,6 +14,7 @@ import json
 from core import path_util
 
 from telemetry import benchmark
+from telemetry import decorators
 from telemetry.core import discover
 from telemetry.util import command_line
 from telemetry.util import matching
@@ -229,11 +230,8 @@ class Trybot(command_line.ArgParseCommand):
       benchmark is disabled for sure.
     """
     benchmark_name = benchmark_class.Name()
-    benchmark_disabled_strings = set()
-    if hasattr(benchmark_class, '_disabled_strings'):
-      # pylint: disable=protected-access
-      benchmark_disabled_strings = benchmark_class._disabled_strings
-      # pylint: enable=protected-access
+    benchmark_disabled_strings = decorators.GetDisabledAttributes(
+        benchmark_class)
     if 'all' in benchmark_disabled_strings:
       return True, 'Benchmark %s is disabled on all platform.' % benchmark_name
     if trybot_name == 'all':
@@ -244,11 +242,7 @@ class Trybot(command_line.ArgParseCommand):
           "Benchmark %s is disabled on %s, and trybot's platform is %s." %
           (benchmark_name, ', '.join(benchmark_disabled_strings),
            trybot_platform))
-    benchmark_enabled_strings = None
-    if hasattr(benchmark_class, '_enabled_strings'):
-      # pylint: disable=protected-access
-      benchmark_enabled_strings = benchmark_class._enabled_strings
-      # pylint: enable=protected-access
+    benchmark_enabled_strings = decorators.GetEnabledAttributes(benchmark_class)
     if (benchmark_enabled_strings and
         trybot_platform not in benchmark_enabled_strings and
         'all' not in benchmark_enabled_strings):
