@@ -18,13 +18,6 @@
 -keep public class com.google.android.apps.chrome** extends android.app.Fragment
 -keep public class org.chromium** extends android.app.Fragment
 
-# Keep the client interfaces for cacheinvalidation as they are used as
-# argument types for some of our code that we're keeping and proguard warns
-# otherwise.
--keep class com.google.ipc.invalidation.external.client.** {
-  *;
-}
-
 # These classes aren't themselves referenced, but __ProcessService[0,1,2...] are
 # referenced, and we look up these services by appending a number onto the name
 # of the base class. Thus, we need to keep the base class name around so that
