@@ -300,7 +300,7 @@ class Git(SCM):
 
     def git_commit_detail(self, commit, log_format=None):
         args = ['log', '-1', commit]
-        if log_format:
+        if format:
             args.append('--format=' + log_format)
         return self._run_git(args)
 
