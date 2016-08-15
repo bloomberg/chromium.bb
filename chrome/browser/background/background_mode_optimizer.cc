@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -58,7 +59,8 @@ void BackgroundModeOptimizer::OnBrowserAdded(Browser* browser) {
 ///////////////////////////////////////////////////////////////////////////////
 //  private methods
 
-BackgroundModeOptimizer::BackgroundModeOptimizer() : browser_was_added_(false) {
+BackgroundModeOptimizer::BackgroundModeOptimizer()
+    : creation_time_(base::TimeTicks::Now()), browser_was_added_(false) {
   KeepAliveRegistry::GetInstance()->AddObserver(this);
   BrowserList::AddObserver(this);
 }
@@ -80,6 +82,9 @@ void BackgroundModeOptimizer::TryBrowserRestart() {
   }
 
   DVLOG(1) << "TryBrowserRestart: Restarting.";
+
+  base::TimeDelta uptime = base::TimeTicks::Now() - creation_time_;
+  UMA_HISTOGRAM_LONG_TIMES("BackgroundMode.TimeBeforeOptimizedRestart", uptime);
   DoRestart();
 }
 

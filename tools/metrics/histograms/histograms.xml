@@ -3405,6 +3405,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BackgroundMode.TimeBeforeOptimizedRestart" units="ms">
+  <owner>dgn@chromium.org</owner>
+  <summary>
+    The duration of a session before the browser got restarted in the background
+    by the BackgroundOptimizer to purge the memory.
+  </summary>
+</histogram>
+
 <histogram name="BackgroundSync.Event.BatchSize">
   <owner>iclelland@chromium.org</owner>
   <summary>

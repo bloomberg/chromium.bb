@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/lifetime/keep_alive_state_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 
@@ -44,6 +45,10 @@ class BackgroundModeOptimizer : public KeepAliveStateObserver,
   // Stop the browser and restart it in background mode.
   // Virtual for testing purposes.
   virtual void DoRestart();
+
+  // Used for a histogram that records the duration of a session before
+  // browser got restarted into background mode.
+  base::TimeTicks creation_time_;
 
   bool browser_was_added_;
 
