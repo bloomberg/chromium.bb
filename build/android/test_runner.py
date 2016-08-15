@@ -427,6 +427,9 @@ def AddInstrumentationTestOptions(parser):
                      help='Causes the render tests to not fail when a check'
                           'fails or the golden image is missing but to render'
                           'the view and carry on.')
+  group.add_argument('--store-tombstones', dest='store_tombstones',
+                     action='store_true',
+                     help='Add tombstones in results if crash.')
 
   AddCommonOptions(parser)
   AddDeviceOptions(parser)

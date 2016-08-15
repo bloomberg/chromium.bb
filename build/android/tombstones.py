@@ -159,23 +159,27 @@ def _ResolveTombstones(jobs, tombstones):
   """
   if not tombstones:
     logging.warning('No tombstones to resolve.')
-    return
+    return []
   if len(tombstones) == 1:
     data = [_ResolveTombstone(tombstones[0])]
   else:
     pool = multiprocessing.Pool(processes=jobs)
     data = pool.map(_ResolveTombstone, tombstones)
+  resolved_tombstones = []
   for tombstone in data:
-    for line in tombstone:
-      logging.info(line)
+    resolved_tombstones.extend(tombstone)
+  return resolved_tombstones
 
-
-def _GetTombstonesForDevice(device, args):
+def _GetTombstonesForDevice(device, resolve_all_tombstones,
+                            include_stack_symbols,
+                            wipe_tombstones):
   """Returns a list of tombstones on a given device.
 
   Args:
     device: An instance of DeviceUtils.
-    args: command line arguments
+    resolve_all_tombstone: Whether to resolve every tombstone.
+    include_stack_symbols: Whether to include symbols for stack data.
+    wipe_tombstones: Whether to wipe tombstones.
   """
   ret = []
   all_tombstones = list(_ListTombstones(device))
@@ -187,7 +191,7 @@ def _GetTombstonesForDevice(device, args):
   all_tombstones.sort(cmp=lambda a, b: cmp(b[1], a[1]))
 
   # Only resolve the most recent unless --all-tombstones given.
-  tombstones = all_tombstones if args.all_tombstones else [all_tombstones[0]]
+  tombstones = all_tombstones if resolve_all_tombstones else [all_tombstones[0]]
 
   device_now = _GetDeviceDateTime(device)
   try:
@@ -197,7 +201,7 @@ def _GetTombstonesForDevice(device, args):
                'device_now': device_now,
                'time': tombstone_time,
                'file': tombstone_file,
-               'stack': args.stack,
+               'stack': include_stack_symbols,
                'data': _GetTombstoneData(device, tombstone_file)}]
   except device_errors.CommandFailedError:
     for entry in device.StatDirectory(
@@ -206,12 +210,41 @@ def _GetTombstonesForDevice(device, args):
     raise
 
   # Erase all the tombstones if desired.
-  if args.wipe_tombstones:
+  if wipe_tombstones:
     for tombstone_file, _ in all_tombstones:
       _EraseTombstone(device, tombstone_file)
 
   return ret
 
+def ClearAllTombstones(device):
+  """Clear all tombstones in the device.
+
+  Args:
+    device: An instance of DeviceUtils.
+  """
+  all_tombstones = list(_ListTombstones(device))
+  if not all_tombstones:
+    logging.warning('No tombstones to clear.')
+
+  for tombstone_file, _ in all_tombstones:
+    _EraseTombstone(device, tombstone_file)
+
+def ResolveTombstones(device, resolve_all_tombstones, include_stack_symbols,
+                      wipe_tombstones, jobs=4):
+  """Resolve tombstones in the device.
+
+  Args:
+    device: An instance of DeviceUtils.
+    resolve_all_tombstone: Whether to resolve every tombstone.
+    include_stack_symbols: Whether to include symbols for stack data.
+    wipe_tombstones: Whether to wipe tombstones.
+    jobs: Number of jobs to use when processing multiple crash stacks.
+  """
+  return _ResolveTombstones(jobs,
+                            _GetTombstonesForDevice(device,
+                                                    resolve_all_tombstones,
+                                                    include_stack_symbols,
+                                                    wipe_tombstones))
 
 def main():
   custom_handler = logging.StreamHandler(sys.stdout)
@@ -260,12 +293,12 @@ def main():
   # This must be done serially because strptime can hit a race condition if
   # used for the first time in a multithreaded environment.
   # http://bugs.python.org/issue7980
-  tombstones = []
   for device in devices:
-    tombstones += _GetTombstonesForDevice(device, args)
-
-  _ResolveTombstones(args.jobs, tombstones)
-
+    resolved_tombstones = ResolveTombstones(
+        device, args.all_tombstones,
+        args.stack, args.wipe_tombstones, args.jobs)
+    for line in resolved_tombstones:
+      logging.info(line)
 
 if __name__ == '__main__':
   sys.exit(main())

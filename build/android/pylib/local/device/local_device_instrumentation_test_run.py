@@ -15,7 +15,7 @@ from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
-
+import tombstones
 
 TIMEOUT_ANNOTATIONS = [
   ('Manual', 10 * 60 * 60),
@@ -143,6 +143,8 @@ class LocalDeviceInstrumentationTestRun(
       else:
         for step in steps:
           step()
+      if self._test_instance.store_tombstones:
+        tombstones.ClearAllTombstones(dev)
 
     self._env.parallel_devices.pMap(
         individual_device_set_up,
@@ -329,6 +331,15 @@ class LocalDeviceInstrumentationTestRun(
           self._test_instance.coverage_directory)
       device.RunShellCommand('rm -f %s' % os.path.join(coverage_directory,
           '*'))
+    if self._test_instance.store_tombstones:
+      for result in results:
+        if result.GetType() == base_test_result.ResultType.CRASH:
+          resolved_tombstones = tombstones.ResolveTombstones(
+              device,
+              resolve_all_tombstones=True,
+              include_stack_symbols=False,
+              wipe_tombstones=True)
+          result.SetTombstones('\n'.join(resolved_tombstones))
     return results
 
   #override
