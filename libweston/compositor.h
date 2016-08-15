@@ -100,12 +100,6 @@ struct weston_mode {
 	struct wl_list link;
 };
 
-struct weston_shell_interface {
-	void *shell;			/* either desktop or tablet */
-
-	void (*get_output_work_area)(void *shell, struct weston_output *output, pixman_rectangle32_t *area);
-};
-
 struct weston_animation {
 	void (*frame)(struct weston_animation *animation,
 		      struct weston_output *output, uint32_t msecs);
@@ -758,7 +752,6 @@ struct weston_compositor {
 	struct wl_display *wl_display;
 	struct weston_desktop_xwayland *xwayland;
 	const struct weston_desktop_xwayland_interface *xwayland_interface;
-	struct weston_shell_interface shell_interface;
 
 	/* surface signals */
 	struct wl_signal create_surface_signal;

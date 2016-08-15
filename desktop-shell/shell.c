@@ -51,6 +51,7 @@
 #endif
 
 struct focus_state {
+	struct desktop_shell *shell;
 	struct weston_seat *seat;
 	struct workspace *ws;
 	struct weston_surface *keyboard_focus;
@@ -332,11 +333,10 @@ get_output_panel_size(struct desktop_shell *shell,
 }
 
 static void
-get_output_work_area(void *data,
+get_output_work_area(struct desktop_shell *shell,
 		     struct weston_output *output,
 		     pixman_rectangle32_t *area)
 {
-	struct desktop_shell *shell = data;
 	int32_t panel_width = 0, panel_height = 0;
 
 	area->x = output->x;
@@ -633,7 +633,6 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 	struct focus_state *state = container_of(listener,
 						 struct focus_state,
 						 surface_destroy_listener);
-	struct desktop_shell *shell;
 	struct weston_surface *main_surface;
 	struct weston_view *next;
 	struct weston_view *view;
@@ -658,13 +657,12 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 	if (main_surface != state->keyboard_focus)
 		next = get_default_view(main_surface);
 
-	shell = state->seat->compositor->shell_interface.shell;
 	if (next) {
 		state->keyboard_focus = NULL;
-		activate(shell, next, state->seat,
+		activate(state->shell, next, state->seat,
 			 WESTON_ACTIVATE_FLAG_CONFIGURE);
 	} else {
-		if (shell->focus_animation_type == ANIMATION_DIM_LAYER) {
+		if (state->shell->focus_animation_type == ANIMATION_DIM_LAYER) {
 			if (state->ws->focus_animation)
 				weston_view_animation_destroy(state->ws->focus_animation);
 
@@ -680,7 +678,8 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 }
 
 static struct focus_state *
-focus_state_create(struct weston_seat *seat, struct workspace *ws)
+focus_state_create(struct desktop_shell *shell, struct weston_seat *seat,
+		   struct workspace *ws)
 {
 	struct focus_state *state;
 
@@ -688,6 +687,7 @@ focus_state_create(struct weston_seat *seat, struct workspace *ws)
 	if (state == NULL)
 		return NULL;
 
+	state->shell = shell;
 	state->keyboard_focus = NULL;
 	state->ws = ws;
 	state->seat = seat;
@@ -713,7 +713,7 @@ ensure_focus_state(struct desktop_shell *shell, struct weston_seat *seat)
 			break;
 
 	if (&state->link == &ws->focus_list)
-		state = focus_state_create(seat, ws);
+		state = focus_state_create(shell, seat, ws);
 
 	return state;
 }
@@ -4866,9 +4866,6 @@ module_init(struct weston_compositor *ec,
 	wl_signal_add(&ec->wake_signal, &shell->wake_listener);
 	shell->transform_listener.notify = transform_handler;
 	wl_signal_add(&ec->transform_signal, &shell->transform_listener);
-
-	ec->shell_interface.shell = shell;
-	ec->shell_interface.get_output_work_area = get_output_work_area;
 
 	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
 	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);
