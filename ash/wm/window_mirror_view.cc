@@ -104,9 +104,6 @@ ui::Layer* WindowMirrorView::GetMirrorLayer() {
 }
 
 gfx::Rect WindowMirrorView::GetClientAreaBounds() const {
-  // The target window may not have a widget in unit tests.
-  if (!target_->GetInternalWidget())
-    return gfx::Rect();
   views::View* client_view = target_->GetInternalWidget()->client_view();
   return client_view->ConvertRectToWidget(client_view->GetLocalBounds());
 }

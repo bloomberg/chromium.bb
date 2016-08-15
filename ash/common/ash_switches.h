@@ -38,6 +38,7 @@ ASH_EXPORT extern const char kAshDisableStableOverviewOrder[];
 ASH_EXPORT extern const char kAshEnableStableOverviewOrder[];
 ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshEnableTouchViewTesting[];
+ASH_EXPORT extern const char kAshEnableWindowCycleUi[];
 ASH_EXPORT extern const char kAshHideNotificationsForFactory[];
 ASH_EXPORT extern const char kAshHostWindowBounds[];
 ASH_EXPORT extern const char kAshMaterialDesign[];

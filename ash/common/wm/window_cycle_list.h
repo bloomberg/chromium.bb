@@ -42,9 +42,6 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
 
  private:
   friend class WindowCycleControllerTest;
-
-  static void DisableInitialDelayForTesting();
-
   const WindowList& windows() const { return windows_; }
 
   // WmWindowObserver overrides:
@@ -70,8 +67,6 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
   int current_index_;
 
   // Wrapper for the window brought to the front.
-  // TODO(estade): remove ScopedShowWindow when we know we are happy launching
-  // the |cycle_view_| version.
   std::unique_ptr<ScopedShowWindow> showing_window_;
 
   // The top level View for the window cycle UI. May be null if the UI is not
