@@ -375,6 +375,39 @@ TEST_P(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
             maximized->GetBoundsInScreen().ToString());
 }
 
+TEST_P(WindowStateTest, AllowSetBoundsInMaximized) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  WindowState* window_state = GetWindowState(window.get());
+  EXPECT_FALSE(window_state->IsMaximized());
+  gfx::Rect work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  gfx::Rect original_bounds(50, 50, 200, 200);
+  window->SetBounds(original_bounds);
+  ASSERT_EQ(original_bounds, window->bounds());
+
+  window_state->set_allow_set_bounds_in_maximized(true);
+  window_state->Maximize();
+
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(work_area, window->bounds());
+
+  gfx::Rect new_bounds(10, 10, 300, 300);
+  window->SetBounds(new_bounds);
+  EXPECT_EQ(new_bounds, window->bounds());
+
+  window_state->Restore();
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_EQ(original_bounds, window->bounds());
+
+  window_state->set_allow_set_bounds_in_maximized(false);
+  window_state->Maximize();
+
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(work_area, window->bounds());
+  window->SetBounds(new_bounds);
+  EXPECT_EQ(work_area, window->bounds());
+}
+
 // TODO(skuhne): Add more unit test to verify the correctness for the restore
 // operation.
 

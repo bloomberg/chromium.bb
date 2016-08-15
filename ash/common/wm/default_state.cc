@@ -533,7 +533,8 @@ void DefaultState::SetBounds(WindowState* window_state,
     wm::AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
     window_state->AdjustSnappedBounds(&child_bounds);
     window_state->SetBoundsDirect(child_bounds);
-  } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
+  } else if (!SetMaximizedOrFullscreenBounds(window_state) ||
+             window_state->allow_set_bounds_in_maximized()) {
     window_state->SetBoundsConstrained(event->requested_bounds());
   }
 }

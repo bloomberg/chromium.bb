@@ -533,7 +533,7 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   // Maximizing window hides the shadow.
   widget->Maximize();
-  ASSERT_EQ(work_area, window->bounds());
+  ASSERT_TRUE(widget->IsMaximized());
   EXPECT_FALSE(shadow->layer()->visible());
 
   shell_surface->SetRectangularShadow(work_area);

@@ -932,6 +932,13 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   window->AddObserver(this);
   ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
   window_state->AddObserver(this);
+
+  // Absolete positioned shell surfaces may request the bounds that does not
+  // fill the entire work area / display in maximized / fullscreen state.
+  // Allow such clients to update the bounds in these states.
+  if (!initial_bounds_.IsEmpty())
+    window_state->set_allow_set_bounds_in_maximized(true);
+
   // Notify client of initial state if different than normal.
   if (window_state->GetStateType() != ash::wm::WINDOW_STATE_TYPE_NORMAL &&
       !state_changed_callback_.is_null()) {
@@ -1153,7 +1160,17 @@ void ShellSurface::UpdateWidgetBounds() {
   DCHECK(widget_);
 
   // Return early if the shell is currently managing the bounds of the widget.
-  if (widget_->IsMaximized() || widget_->IsFullscreen() || IsResizing())
+  // 1) When a window is either maximized/fullscreen/pinned, and the bounds
+  // isn't controlled by a client.
+  ash::wm::WindowState* window_state =
+      ash::wm::GetWindowState(widget_->GetNativeWindow());
+  if (window_state->IsMaximizedOrFullscreenOrPinned() &&
+      !window_state->allow_set_bounds_in_maximized()) {
+    return;
+  }
+
+  // 2) When a window is being dragged.
+  if (IsResizing())
     return;
 
   // Return early if there is pending configure requests.

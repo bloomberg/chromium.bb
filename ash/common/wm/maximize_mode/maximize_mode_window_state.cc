@@ -163,7 +163,10 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_SHOW_INACTIVE:
       return;
     case wm::WM_EVENT_SET_BOUNDS:
-      if (current_state_type_ == wm::WINDOW_STATE_TYPE_MAXIMIZED) {
+      if (window_state->allow_set_bounds_in_maximized()) {
+        window_state->SetBoundsConstrained(
+            static_cast<const wm::SetBoundsEvent*>(event)->requested_bounds());
+      } else if (current_state_type_ == wm::WINDOW_STATE_TYPE_MAXIMIZED) {
         // Having a maximized window, it could have been created with an empty
         // size and the caller should get his size upon leaving the maximized
         // mode. As such we set the restore bounds to the requested bounds.
