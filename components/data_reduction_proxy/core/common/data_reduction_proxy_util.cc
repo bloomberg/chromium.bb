@@ -137,6 +137,28 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
 
 namespace protobuf_parser {
 
+PageloadMetrics_EffectiveConnectionType
+ProtoEffectiveConnectionTypeFromEffectiveConnectionType(
+    net::EffectiveConnectionType effective_connection_type) {
+  switch (effective_connection_type) {
+    case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE;
+    case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+    case net::EFFECTIVE_CONNECTION_TYPE_2G:
+      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_2G;
+    case net::EFFECTIVE_CONNECTION_TYPE_3G:
+      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_3G;
+    case net::EFFECTIVE_CONNECTION_TYPE_4G:
+      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_4G;
+    default:
+      NOTREACHED();
+      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  }
+}
+
 net::ProxyServer::Scheme SchemeFromProxyScheme(
     ProxyServer_ProxyScheme proxy_scheme) {
   switch (proxy_scheme) {

@@ -14,6 +14,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/base/load_flags.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -65,6 +66,10 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
             timing.load_event_start.value())
             .release());
   }
+
+  request->set_effective_connection_type(
+      protobuf_parser::ProtoEffectiveConnectionTypeFromEffectiveConnectionType(
+          request_data.effective_connection_type()));
 }
 
 // Adds |current_time| as the metrics sent time to |request_data|, and returns

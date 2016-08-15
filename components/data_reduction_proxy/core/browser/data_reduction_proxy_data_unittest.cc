@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "net/base/request_priority.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,6 +49,11 @@ TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {
   GURL test_url("test-url");
   data->set_original_request_url(test_url);
   EXPECT_EQ(test_url, data->original_request_url());
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            data->effective_connection_type());
+  data->set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+            data->effective_connection_type());
 }
 
 TEST_F(DataReductionProxyDataTest, AddToURLRequest) {
@@ -94,11 +100,14 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
     data->set_lofi_requested(tests[i].lofi_on);
     data->set_session_key(kSessionKey);
     data->set_original_request_url(kTestURL);
+    data->set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
     std::unique_ptr<DataReductionProxyData> copy = data->DeepCopy();
     EXPECT_EQ(tests[i].lofi_on, copy->lofi_requested());
     EXPECT_EQ(tests[i].data_reduction_used, copy->used_data_reduction_proxy());
     EXPECT_EQ(kSessionKey, copy->session_key());
     EXPECT_EQ(kTestURL, copy->original_request_url());
+    EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+              copy->effective_connection_type());
   }
 }
 

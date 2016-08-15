@@ -9,6 +9,8 @@
 #include <string>
 
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
 #include "url/gurl.h"
@@ -88,6 +90,16 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
 }  // namespace util
 
 namespace protobuf_parser {
+
+static_assert(net::EFFECTIVE_CONNECTION_TYPE_LAST == 6,
+              "If net::EFFECTIVE_CONNECTION_TYPE changes, "
+              "PageloadMetrics_EffectiveConnectionType needs to be updated.");
+
+// Returns the PageloadMetrics_EffectiveConnection equivalent of
+// |effective_connection_type|.
+PageloadMetrics_EffectiveConnectionType
+ProtoEffectiveConnectionTypeFromEffectiveConnectionType(
+    net::EffectiveConnectionType effective_connection_type);
 
 // Returns the |net::ProxyServer::Scheme| for a ProxyServer_ProxyScheme.
 net::ProxyServer::Scheme SchemeFromProxyScheme(

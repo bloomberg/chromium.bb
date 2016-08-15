@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
 #include <string>
 #include <utility>
 
@@ -41,6 +42,8 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/nqe/effective_connection_type.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_retry_info.h"
@@ -142,6 +145,28 @@ class TestLoFiUIService : public LoFiUIService {
   bool is_preview_;
 };
 
+// Overrides net::NetworkQualityEstimator for testing.
+class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
+ public:
+  TestNetworkQualityEstimator(
+      const std::map<std::string, std::string>& variation_params,
+      net::EffectiveConnectionType effective_connection_type)
+      : NetworkQualityEstimator(
+            std::unique_ptr<net::ExternalEstimateProvider>(),
+            variation_params),
+        effective_connection_type_(effective_connection_type) {}
+
+  ~TestNetworkQualityEstimator() override {}
+
+  net::EffectiveConnectionType GetEffectiveConnectionType() const override {
+    return effective_connection_type_;
+  }
+
+ private:
+  // Estimate of the quality of the network.
+  net::EffectiveConnectionType effective_connection_type_;
+};
+
 class DataReductionProxyNetworkDelegateTest : public testing::Test {
  public:
   DataReductionProxyNetworkDelegateTest()
@@ -198,8 +223,9 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                                     bool lofi_used) {
     DataReductionProxyData* data = DataReductionProxyData::GetData(request);
     if (!data_reduction_proxy_used) {
-      EXPECT_EQ(nullptr, data);
+      EXPECT_FALSE(data);
     } else {
+      EXPECT_TRUE(data->used_data_reduction_proxy());
       EXPECT_EQ(lofi_used, data->lofi_requested());
     }
   }
@@ -480,23 +506,26 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
   const struct {
     bool lofi_on;
     bool used_data_reduction_proxy;
+    bool main_frame;
   } tests[] = {
-      {
-          // Lo-Fi off.
-          false, true,
-      },
-      {
-          // Data reduction proxy not used.
-          false, false,
-      },
-      {
-          // Data reduction proxy not used, Lo-Fi should not be used.
-          true, false,
-      },
-      {
-          // Lo-Fi on.
-          true, true,
-      },
+      // Lo-Fi off. Main Frame Request.
+      {false, true, true},
+      // Data reduction proxy not used. Main Frame Request.
+      {false, false, true},
+      // Data reduction proxy not used, Lo-Fi should not be used. Main Frame
+      // Request.
+      {true, false, true},
+      // Lo-Fi on. Main Frame Request.
+      {true, true, true},
+      // Lo-Fi off. Not a Main Frame Request.
+      {false, true, false},
+      // Data reduction proxy not used. Not a Main Frame Request.
+      {false, false, false},
+      // Data reduction proxy not used, Lo-Fi should not be used. Not a Main
+      // Frame Request.
+      {true, false, false},
+      // Lo-Fi on. Not a Main Frame Request.
+      {true, true, false},
   };
 
   for (const auto& test : tests) {
@@ -511,8 +540,15 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
     net::HttpRequestHeaders headers;
     net::ProxyRetryInfoMap proxy_retry_info;
 
+    std::map<std::string, std::string> network_quality_estimator_params;
+    TestNetworkQualityEstimator test_network_quality_estimator(
+        network_quality_estimator_params,
+        net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+    context()->set_network_quality_estimator(&test_network_quality_estimator);
+
     std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
         GURL("http://www.google.com/"), net::RequestPriority::IDLE, nullptr);
+    request->SetLoadFlags(test.main_frame ? net::LOAD_MAIN_FRAME : 0);
     lofi_decider()->SetIsUsingLoFiMode(test.lofi_on);
     io_data()->request_options()->SetSecureSession("fake-session");
     network_delegate()->NotifyBeforeSendHeaders(
@@ -523,6 +559,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
       EXPECT_FALSE(data);
     } else {
       EXPECT_TRUE(data);
+      EXPECT_EQ(test.main_frame ? net::EFFECTIVE_CONNECTION_TYPE_OFFLINE
+                                : net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+                data->effective_connection_type());
       EXPECT_TRUE(data->used_data_reduction_proxy());
       EXPECT_EQ(GURL("http://www.google.com/"), data->original_request_url());
       EXPECT_EQ("fake-session", data->session_key());

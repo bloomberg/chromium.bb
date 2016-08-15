@@ -25,6 +25,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
@@ -218,6 +219,12 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     data->set_session_key(
         data_reduction_proxy_request_options_->GetSecureSession());
     data->set_original_request_url(request->original_url());
+    if ((request->load_flags() & net::LOAD_MAIN_FRAME) &&
+        request->context()->network_quality_estimator()) {
+      data->set_effective_connection_type(request->context()
+                                              ->network_quality_estimator()
+                                              ->GetEffectiveConnectionType());
+    }
   }
 
   if (data_reduction_proxy_io_data_ &&

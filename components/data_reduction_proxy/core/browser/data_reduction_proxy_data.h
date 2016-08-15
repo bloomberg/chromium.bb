@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "net/nqe/effective_connection_type.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -50,6 +51,16 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
     original_request_url_ = original_request_url;
   }
 
+  // The EffectiveConnectionType when the request starts. This is set for main
+  // frame requests only.
+  net::EffectiveConnectionType effective_connection_type() const {
+    return effective_connection_type_;
+  }
+  void set_effective_connection_type(
+      const net::EffectiveConnectionType& effective_connection_type) {
+    effective_connection_type_ = effective_connection_type;
+  }
+
   // Returns the Data from the URLRequest's UserData.
   static DataReductionProxyData* GetData(const net::URLRequest& request);
   // Returns the Data for a given URLRequest. If there is currently no
@@ -77,6 +88,10 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
 
   // The URL of the request before redirects.
   GURL original_request_url_;
+
+  // The EffectiveConnectionType when the request or navigation starts. This is
+  // set for main frame requests only.
+  net::EffectiveConnectionType effective_connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyData);
 };

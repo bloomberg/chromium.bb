@@ -20,6 +20,7 @@
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
 #include "net/base/net_errors.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -108,6 +109,8 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
     DataReductionProxyData request_data;
     request_data.set_session_key(kSessionKey);
     request_data.set_original_request_url(GURL(kFakeURL));
+    request_data.set_effective_connection_type(
+        net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
     factory()->set_remove_fetcher_on_delete(true);
     pingback_client()->SendPingback(request_data, timing_);
   }
@@ -162,6 +165,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
 
   EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
   EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
+  EXPECT_EQ(
+      PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+      pageload_metrics.effective_connection_type());
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
   histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 1);
   EXPECT_FALSE(factory()->GetFetcherByID(0));
@@ -219,6 +225,9 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoPingbacksBatchedContent) {
 
     EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
     EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
+    EXPECT_EQ(
+        PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+        pageload_metrics.effective_connection_type());
   }
 
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);

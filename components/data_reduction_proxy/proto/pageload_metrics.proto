@@ -20,6 +20,18 @@ message RecordPageloadMetricsRequest {
 
 // Metrics for a single pageload.
 message PageloadMetrics {
+  // The possible effective connection type values.
+  // See //net/nqe/effective_connection_type.h for the detailed description of
+  // each of the enum values.
+  enum EffectiveConnectionType {
+    EFFECTIVE_CONNECTION_TYPE_UNKNOWN = 0;
+    EFFECTIVE_CONNECTION_TYPE_OFFLINE = 1;
+    EFFECTIVE_CONNECTION_TYPE_SLOW_2G = 2;
+    EFFECTIVE_CONNECTION_TYPE_2G = 3;
+    EFFECTIVE_CONNECTION_TYPE_3G = 4;
+    EFFECTIVE_CONNECTION_TYPE_4G = 5;
+  };
+
   // The session key used to load the page.
   optional string session_key = 1;
   // The time at which the first request of the pageload was made, according to
@@ -48,4 +60,7 @@ message PageloadMetrics {
   // The sum of (compressed) content-length, over resources that were not loaded
   // from browser cache.
   optional int32 compressed_page_size_bytes = 11;
+
+  // The effective connection type at the start of the navigation.
+  optional EffectiveConnectionType effective_connection_type = 12;
 }
