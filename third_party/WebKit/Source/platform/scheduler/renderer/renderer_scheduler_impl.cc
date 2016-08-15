@@ -141,7 +141,6 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       have_reported_blocking_intervention_since_navigation(false),
       has_visible_render_widget_with_touch_handler(false),
       begin_frame_not_expected_soon(false),
-      expensive_task_blocking_allowed(true),
       in_idle_period_for_testing(false),
       use_virtual_time(false),
       rail_mode_observer(nullptr) {}
@@ -851,8 +850,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy.rail_mode = v8::PERFORMANCE_IDLE;
 
   if (expensive_task_policy == ExpensiveTaskPolicy::BLOCK &&
-      (!MainThreadOnly().expensive_task_blocking_allowed ||
-       !MainThreadOnly().have_seen_a_begin_main_frame ||
+      (!MainThreadOnly().have_seen_a_begin_main_frame ||
        MainThreadOnly().navigation_task_expected_count > 0)) {
     expensive_task_policy = ExpensiveTaskPolicy::RUN;
   }
@@ -1159,8 +1157,6 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                    UseCaseToString(MainThreadOnly().current_use_case));
   state->SetString("rail_mode",
                    RAILModeToString(MainThreadOnly().current_policy.rail_mode));
-  state->SetBoolean("expensive_task_blocking_allowed",
-                    MainThreadOnly().expensive_task_blocking_allowed);
   state->SetBoolean("loading_tasks_seem_expensive",
                     MainThreadOnly().loading_tasks_seem_expensive);
   state->SetBoolean("timer_tasks_seem_expensive",
@@ -1350,10 +1346,6 @@ void RendererSchedulerImpl::UnregisterTimeDomain(TimeDomain* time_domain) {
   helper_.UnregisterTimeDomain(time_domain);
 }
 
-void RendererSchedulerImpl::SetExpensiveTaskBlockingAllowed(bool allowed) {
-  MainThreadOnly().expensive_task_blocking_allowed = allowed;
-}
-
 base::TickClock* RendererSchedulerImpl::tick_clock() const {
   return helper_.scheduler_tqm_delegate().get();
 }
@@ -1379,8 +1371,7 @@ void RendererSchedulerImpl::BroadcastIntervention(const std::string& message) {
 void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
     const TaskQueue& queue,
     const base::PendingTask& task) {
-  if (!MainThreadOnly().expensive_task_blocking_allowed ||
-      MainThreadOnly().current_use_case == UseCase::TOUCHSTART ||
+  if (MainThreadOnly().current_use_case == UseCase::TOUCHSTART ||
       MainThreadOnly().longest_jank_free_task_duration <
           base::TimeDelta::FromMilliseconds(kRailsResponseTimeMillis) ||
       MainThreadOnly().timer_queue_suspend_count ||

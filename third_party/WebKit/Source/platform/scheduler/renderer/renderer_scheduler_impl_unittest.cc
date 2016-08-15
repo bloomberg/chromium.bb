@@ -2439,31 +2439,6 @@ TEST_F(RendererSchedulerImplTest,
 }
 
 TEST_F(RendererSchedulerImplTest,
-       ExpensiveTimerTaskNotBlockedIfDisallowed_UseCase_COMPOSITOR_GESTURE) {
-  std::vector<std::string> run_order;
-
-  scheduler_->SetExpensiveTaskBlockingAllowed(false);
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
-  DoMainFrame();
-  SimulateExpensiveTasks(timer_task_runner_);
-  ForceTouchStartToBeExpectedSoon();
-  scheduler_->DidAnimateForInputOnCompositorThread();
-
-  PostTestTasks(&run_order, "T1 D1");
-  RunUntilIdle();
-
-  EXPECT_EQ(UseCase::COMPOSITOR_GESTURE,
-            ForceUpdatePolicyAndGetCurrentUseCase());
-  EXPECT_TRUE(HaveSeenABeginMainframe());
-  EXPECT_FALSE(LoadingTasksSeemExpensive());
-  EXPECT_TRUE(TimerTasksSeemExpensive());
-  EXPECT_TRUE(TouchStartExpectedSoon());
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("T1"), std::string("D1")));
-  EXPECT_EQ(v8::PERFORMANCE_RESPONSE, RAILMode());
-}
-
-TEST_F(RendererSchedulerImplTest,
        ExpensiveTimerTaskBlocked_EvenIfBeginMainFrameNotExpectedSoon) {
   std::vector<std::string> run_order;
 
@@ -2872,7 +2847,6 @@ TEST_F(RendererSchedulerImplTest, BlockedTimerNotification) {
   WebViewSchedulerImplForTest web_view_scheduler(scheduler_.get());
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
-  scheduler_->SetExpensiveTaskBlockingAllowed(true);
   DoMainFrame();
   SimulateExpensiveTasks(timer_task_runner_);
   SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
@@ -2888,35 +2862,12 @@ TEST_F(RendererSchedulerImplTest, BlockedTimerNotification) {
             web_view_scheduler.interventions()[0].find("crbug.com/574343"));
 }
 
-TEST_F(RendererSchedulerImplTest,
-       BlockedTimerNotification_ExpensiveTaskBlockingNotAllowed) {
-  // Make sure we don't report warnings about blocked tasks when expensive task
-  // blocking is not allowed.
-  WebViewSchedulerImplForTest web_view_scheduler(scheduler_.get());
-
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
-  scheduler_->SetExpensiveTaskBlockingAllowed(false);
-  scheduler_->SuspendTimerQueue();
-  DoMainFrame();
-  SimulateExpensiveTasks(timer_task_runner_);
-  SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
-  ForceTouchStartToBeExpectedSoon();
-
-  std::vector<std::string> run_order;
-  PostTestTasks(&run_order, "T1 T2");
-  RunUntilIdle();
-
-  EXPECT_EQ(0u, run_order.size());
-  EXPECT_EQ(0u, web_view_scheduler.interventions().size());
-}
-
 TEST_F(RendererSchedulerImplTest, BlockedTimerNotification_TimersSuspended) {
   // Make sure we don't report warnings about blocked tasks when timers are
   // being blocked for other reasons.
   WebViewSchedulerImplForTest web_view_scheduler(scheduler_.get());
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
-  scheduler_->SetExpensiveTaskBlockingAllowed(true);
   scheduler_->SuspendTimerQueue();
   DoMainFrame();
   SimulateExpensiveTasks(timer_task_runner_);

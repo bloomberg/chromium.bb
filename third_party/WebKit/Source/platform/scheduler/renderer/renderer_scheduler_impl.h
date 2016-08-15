@@ -146,8 +146,6 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   // Tells the scheduler that all TaskQueues should use virtual time.
   void EnableVirtualTime();
 
-  void SetExpensiveTaskBlockingAllowed(bool allowed);
-
   void AddWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
   void RemoveWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
 
@@ -407,7 +405,6 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     bool have_reported_blocking_intervention_since_navigation;
     bool has_visible_render_widget_with_touch_handler;
     bool begin_frame_not_expected_soon;
-    bool expensive_task_blocking_allowed;
     bool in_idle_period_for_testing;
     bool use_virtual_time;
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.

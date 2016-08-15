@@ -5,7 +5,6 @@
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -17,10 +16,6 @@
 
 namespace blink {
 namespace scheduler {
-namespace {
-const base::Feature kExpensiveTaskBlockingPolicyFeature{
-    "SchedulerExpensiveTaskBlocking", base::FEATURE_ENABLED_BY_DEFAULT};
-}
 
 RendererScheduler::RendererScheduler() {}
 
@@ -43,18 +38,6 @@ std::unique_ptr<RendererScheduler> RendererScheduler::Create() {
   std::unique_ptr<RendererSchedulerImpl> scheduler(
       new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
           message_loop, base::WrapUnique(new base::DefaultTickClock()))));
-
-  // Runtime features are not currently available in html_viewer.
-  if (base::FeatureList::GetInstance()) {
-    bool blocking_allowed =
-        base::FeatureList::IsEnabled(kExpensiveTaskBlockingPolicyFeature);
-    // Also check the old style FieldTrial API for perf waterfall compatibility.
-    const std::string group_name = base::FieldTrialList::FindFullName(
-        kExpensiveTaskBlockingPolicyFeature.name);
-    blocking_allowed |= base::StartsWith(group_name, "Enabled",
-                                         base::CompareCase::INSENSITIVE_ASCII);
-    scheduler->SetExpensiveTaskBlockingAllowed(blocking_allowed);
-  }
   return base::WrapUnique<RendererScheduler>(scheduler.release());
 }
 
