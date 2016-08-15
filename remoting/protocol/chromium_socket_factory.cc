@@ -70,12 +70,12 @@ class UdpPacketSocket : public rtc::AsyncPacketSocket {
     PendingPacket(const void* buffer,
                   int buffer_size,
                   const net::IPEndPoint& address,
-                  int packet_id);
+                  const rtc::PacketOptions& options);
 
     scoped_refptr<net::IOBufferWithSize> data;
     net::IPEndPoint address;
     bool retried;
-    int packet_id;
+    rtc::PacketOptions options;
   };
 
   void OnBindCompleted(int error);
@@ -108,11 +108,11 @@ class UdpPacketSocket : public rtc::AsyncPacketSocket {
 UdpPacketSocket::PendingPacket::PendingPacket(const void* buffer,
                                               int buffer_size,
                                               const net::IPEndPoint& address,
-                                              int packet_id)
+                                              const rtc::PacketOptions& options)
     : data(new net::IOBufferWithSize(buffer_size)),
       address(address),
       retried(false),
-      packet_id(packet_id) {
+      options(options) {
   memcpy(data->data(), buffer, buffer_size);
 }
 
@@ -203,11 +203,7 @@ int UdpPacketSocket::SendTo(const void* data, size_t data_size,
     return EWOULDBLOCK;
   }
 
-  PendingPacket packet(data, data_size, endpoint, options.packet_id);
-  cricket::ApplyPacketOptions(
-      reinterpret_cast<uint8_t*>(packet.data->data()), data_size,
-      options.packet_time_params,
-      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
+  PendingPacket packet(data, data_size, endpoint, options);
   send_queue_.push_back(packet);
   send_queue_size_ += data_size;
 
@@ -287,6 +283,10 @@ void UdpPacketSocket::DoSend() {
     return;
 
   PendingPacket& packet = send_queue_.front();
+  cricket::ApplyPacketOptions(
+      reinterpret_cast<uint8_t*>(packet.data->data()), packet.data->size(),
+      packet.options.packet_time_params,
+      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
   int result = socket_->SendTo(
       packet.data.get(),
       packet.data->size(),
@@ -327,7 +327,7 @@ void UdpPacketSocket::OnSendCompleted(int result) {
   // Don't need to worry about partial sends because this is a datagram
   // socket.
   send_queue_size_ -= send_queue_.front().data->size();
-  SignalSentPacket(this, rtc::SentPacket(send_queue_.front().packet_id,
+  SignalSentPacket(this, rtc::SentPacket(send_queue_.front().options.packet_id,
                                          (base::TimeTicks::Now() -
                                           base::TimeTicks::UnixEpoch())
                                              .InMilliseconds()));
