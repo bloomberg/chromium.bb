@@ -719,9 +719,11 @@ void SyncSetupHandler::CloseSyncSetup() {
         }
       }
     }
-
-    GetLoginUIService()->LoginUIClosed(this);
   }
+
+  LoginUIService* service = GetLoginUIService();
+  if (service)
+    service->LoginUIClosed(this);
 
   // Alert the sync service anytime the sync setup dialog is closed. This can
   // happen due to the user clicking the OK or Cancel button, or due to the

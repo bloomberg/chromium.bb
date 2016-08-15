@@ -562,12 +562,13 @@ void PeopleHandler::CloseSyncSetup() {
   // LoginUIService can be nullptr if page is brought up in incognito mode
   // (i.e. if the user is running in guest mode in cros and brings up settings).
   LoginUIService* service = GetLoginUIService();
-  if (service && (service->current_login_ui() == this)) {
+  if (service) {
     // Don't log a cancel event if the sync setup dialog is being
     // automatically closed due to an auth error.
-    if (!sync_service || (!sync_service->IsFirstSetupComplete() &&
-                          sync_service->GetAuthError().state() ==
-                              GoogleServiceAuthError::NONE)) {
+    if ((service->current_login_ui() == this) &&
+        (!sync_service || (!sync_service->IsFirstSetupComplete() &&
+                           sync_service->GetAuthError().state() ==
+                               GoogleServiceAuthError::NONE))) {
       if (configuring_sync_) {
         ProfileSyncService::SyncEvent(
             ProfileSyncService::CANCEL_DURING_CONFIGURE);
@@ -595,7 +596,7 @@ void PeopleHandler::CloseSyncSetup() {
       }
     }
 
-    GetLoginUIService()->LoginUIClosed(this);
+    service->LoginUIClosed(this);
   }
 
   // Alert the sync service anytime the sync setup dialog is closed. This can
