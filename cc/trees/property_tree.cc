@@ -67,10 +67,16 @@ int PropertyTree<T>::Insert(const T& tree_node, int parent_id) {
 
 template <typename T>
 void PropertyTree<T>::clear() {
+  needs_update_ = false;
   nodes_.clear();
   nodes_.push_back(T());
   back()->id = kRootNodeId;
   back()->parent_id = kInvalidNodeId;
+
+#if DCHECK_IS_ON()
+  PropertyTree<T> tree;
+  DCHECK(tree == *this);
+#endif
 }
 
 template <typename T>
@@ -136,10 +142,21 @@ int TransformTree::Insert(const TransformNode& tree_node, int parent_id) {
 void TransformTree::clear() {
   PropertyTree<TransformNode>::clear();
 
+  page_scale_factor_ = 1.f;
+  device_scale_factor_ = 1.f;
+  device_transform_scale_factor_ = 1.f;
   nodes_affected_by_inner_viewport_bounds_delta_.clear();
   nodes_affected_by_outer_viewport_bounds_delta_.clear();
   cached_data_.clear();
   cached_data_.push_back(TransformCachedNodeData());
+
+#if DCHECK_IS_ON()
+  TransformTree tree;
+  // TODO(jaydasika) : Move tests that expect source_to_parent_updates_allowed
+  // to be true on impl thread to main thread and set it to is_main_thread here.
+  tree.source_to_parent_updates_allowed_ = source_to_parent_updates_allowed_;
+  DCHECK(tree == *this);
+#endif
 }
 
 bool TransformTree::ComputeTransform(int source_id,
@@ -793,6 +810,11 @@ EffectTree::~EffectTree() {}
 void EffectTree::clear() {
   PropertyTree<EffectNode>::clear();
   mask_replica_layer_ids_.clear();
+
+#if DCHECK_IS_ON()
+  EffectTree tree;
+  DCHECK(tree == *this);
+#endif
 }
 
 float EffectTree::EffectiveOpacity(const EffectNode* node) const {
@@ -1146,11 +1168,7 @@ bool ScrollTree::operator==(const ScrollTree& other) const {
   }
 
   bool is_currently_scrolling_node_equal =
-      (currently_scrolling_node_id_ == kInvalidNodeId)
-          ? (!other.CurrentlyScrollingNode())
-          : (other.CurrentlyScrollingNode() &&
-             currently_scrolling_node_id_ ==
-                 other.CurrentlyScrollingNode()->id);
+      currently_scrolling_node_id_ == other.currently_scrolling_node_id_;
 
   return PropertyTree::operator==(other) && is_currently_scrolling_node_equal;
 }
@@ -1204,6 +1222,15 @@ void ScrollTree::clear() {
     currently_scrolling_node_id_ = kInvalidNodeId;
     layer_id_to_scroll_offset_map_.clear();
   }
+
+#if DCHECK_IS_ON()
+  ScrollTree tree;
+  if (!property_trees()->is_main_thread) {
+    tree.currently_scrolling_node_id_ = currently_scrolling_node_id_;
+    tree.layer_id_to_scroll_offset_map_ = layer_id_to_scroll_offset_map_;
+  }
+  DCHECK(tree == *this);
+#endif
 }
 
 gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
@@ -1270,6 +1297,12 @@ const ScrollNode* ScrollTree::CurrentlyScrollingNode() const {
   const ScrollNode* scroll_node = Node(currently_scrolling_node_id_);
   return scroll_node;
 }
+
+#if DCHECK_IS_ON()
+int ScrollTree::CurrentlyScrollingNodeId() const {
+  return currently_scrolling_node_id_;
+}
+#endif
 
 void ScrollTree::set_currently_scrolling_node(int scroll_node_id) {
   currently_scrolling_node_id_ = scroll_node_id;
@@ -1651,6 +1684,42 @@ void PropertyTrees::FromProtobuf(const proto::PropertyTrees& proto) {
   scroll_tree.SetPropertyTrees(this);
   for (auto i : proto.always_use_active_tree_opacity_effect_ids())
     always_use_active_tree_opacity_effect_ids.push_back(i);
+}
+
+void PropertyTrees::clear() {
+  transform_tree.clear();
+  clip_tree.clear();
+  effect_tree.clear();
+  scroll_tree.clear();
+  transform_id_to_index_map.clear();
+  effect_id_to_index_map.clear();
+  clip_id_to_index_map.clear();
+  scroll_id_to_index_map.clear();
+  always_use_active_tree_opacity_effect_ids.clear();
+
+  needs_rebuild = true;
+  full_tree_damaged = false;
+  changed = false;
+  non_root_surfaces_enabled = true;
+
+#if DCHECK_IS_ON()
+  PropertyTrees tree;
+  tree.transform_tree = transform_tree;
+  tree.effect_tree = effect_tree;
+  tree.clip_tree = clip_tree;
+  tree.scroll_tree = scroll_tree;
+  // Scroll offset map and currently scrolling node id may not be copied
+  // during operator=.
+  ScrollTree::ScrollOffsetMap& map = tree.scroll_tree.scroll_offset_map();
+  map = scroll_tree.scroll_offset_map();
+  tree.scroll_tree.set_currently_scrolling_node(
+      scroll_tree.CurrentlyScrollingNodeId());
+
+  tree.sequence_number = sequence_number;
+  tree.is_main_thread = is_main_thread;
+  tree.is_active = is_active;
+  DCHECK(tree == *this);
+#endif
 }
 
 void PropertyTrees::SetInnerViewportContainerBoundsDelta(

@@ -1351,21 +1351,12 @@ void BuildPropertyTreesTopLevelInternal(
       true;
   data_for_recursion.device_transform = &device_transform;
 
-  data_for_recursion.property_trees->transform_tree.clear();
-  data_for_recursion.property_trees->clip_tree.clear();
-  data_for_recursion.property_trees->effect_tree.clear();
-  data_for_recursion.property_trees->scroll_tree.clear();
+  data_for_recursion.property_trees->clear();
   data_for_recursion.compound_transform_since_render_target = gfx::Transform();
   data_for_recursion.axis_align_since_render_target = true;
   data_for_recursion.property_trees->transform_tree.set_device_scale_factor(
       device_scale_factor);
   data_for_recursion.safe_opaque_background_color = color;
-  data_for_recursion.property_trees->transform_id_to_index_map.clear();
-  data_for_recursion.property_trees->effect_id_to_index_map.clear();
-  data_for_recursion.property_trees->clip_id_to_index_map.clear();
-  data_for_recursion.property_trees->scroll_id_to_index_map.clear();
-  data_for_recursion.property_trees->always_use_active_tree_opacity_effect_ids
-      .clear();
 
   ClipNode root_clip;
   root_clip.resets_clip = true;

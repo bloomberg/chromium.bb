@@ -393,6 +393,9 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   gfx::Size scroll_clip_layer_bounds(int scroll_node_id) const;
   ScrollNode* CurrentlyScrollingNode();
   const ScrollNode* CurrentlyScrollingNode() const;
+#if DCHECK_IS_ON()
+  int CurrentlyScrollingNodeId() const;
+#endif
   void set_currently_scrolling_node(int scroll_node_id);
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
 
@@ -556,6 +559,8 @@ class CC_EXPORT PropertyTrees final {
   bool is_main_thread;
   bool is_active;
   bool verify_transform_tree_calculations;
+
+  void clear();
 
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
