@@ -369,7 +369,7 @@ bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
   // setting Content-Disposition when sending x-x509-user-cert and expecting
   // the browser to automatically install certificates; this is being
   // deprecated and will be removed upon full <keygen> removal.
-  if (mime_type == "application/x-x509-user-cert") {
+  if (mime_type == "application/x-x509-user-cert" && response_->head.headers) {
     UMA_HISTOGRAM_BOOLEAN(
         "UserCert.ContentDisposition",
         response_->head.headers->HasHeader("Content-Disposition"));
