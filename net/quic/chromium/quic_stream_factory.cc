@@ -1646,11 +1646,16 @@ void QuicStreamFactory::MigrateSession(QuicChromiumClientSession* session,
 
   if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
                                 std::move(new_writer), packet)) {
-    session->CloseSessionOnError(ERR_NETWORK_CHANGED,
-                                 QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
+    // TODO(jokulik): It's not clear how we could end up on this code
+    // path.  We would theoretically hit this failure if we've
+    // performed too many migrations on this session.  However, the
+    // session will be marked as going away after a previous
+    // migration, making subsequent migration impossible.
     HistogramAndLogMigrationFailure(
         bound_net_log, MIGRATION_STATUS_TOO_MANY_CHANGES,
         session->connection_id(), "Too many migrations");
+    session->CloseSessionOnError(ERR_NETWORK_CHANGED,
+                                 QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
     return;
   }
   HistogramMigrationStatus(MIGRATION_STATUS_SUCCESS);
