@@ -298,6 +298,22 @@ static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 }
 
+#if CONFIG_DELTA_Q
+static void write_delta_qindex(int delta_qindex, aom_writer *w) {
+  int sign = delta_qindex < 0;
+  int abs = sign ? -delta_qindex : delta_qindex;
+  if (abs < 3) {
+    aom_write_literal(w, 1, abs + 1);
+  } else {
+    aom_write_literal(w, 0, 3);
+    aom_write_literal(w, abs, 6);
+  }
+  if (abs > 0) {
+    aom_write_bit(w, sign);
+  }
+}
+#endif
+
 static void update_skip_probs(AV1_COMMON *cm, aom_writer *w,
                               FRAME_COUNTS *counts) {
   int k;
@@ -692,8 +708,14 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #if !CONFIG_REF_MV
   const nmv_context *nmvc = &cm->fc->nmvc;
 #endif
+
+#if CONFIG_DELTA_Q
+  MACROBLOCK *const x = &cpi->td.mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
+#else
   const MACROBLOCK *const x = &cpi->td.mb;
   const MACROBLOCKD *const xd = &x->e_mbd;
+#endif
   const struct segmentation *const seg = &cm->seg;
 #if CONFIG_MISC_FIXES
   const struct segmentation_probs *const segp = &cm->fc->seg;
@@ -722,6 +744,19 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
   }
 
   skip = write_skip(cm, xd, segment_id, mi, w);
+
+#if CONFIG_DELTA_Q
+  if (cm->delta_q_present_flag) {
+    int mi_row = (-xd->mb_to_top_edge) >> 6;
+    int mi_col = (-xd->mb_to_left_edge) >> 6;
+    int super_block_upper_left = ((mi_row & 7) == 0) && ((mi_col & 7) == 0);
+    if ((bsize != BLOCK_64X64 || skip == 0) && super_block_upper_left) {
+      int delta_qindex = mbmi->current_q_index - xd->prev_qindex;
+      write_delta_qindex(delta_qindex, w);
+      xd->prev_qindex = mbmi->current_q_index;
+    }
+  }
+#endif
 
   if (!segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME))
     aom_write(w, is_inter, av1_get_intra_inter_prob(cm, xd));
@@ -879,8 +914,14 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
   }
 }
 
+#if CONFIG_DELTA_Q
+static void write_mb_modes_kf(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                              MODE_INFO **mi_8x8, aom_writer *w) {
+  int skip;
+#else
 static void write_mb_modes_kf(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                               MODE_INFO **mi_8x8, aom_writer *w) {
+#endif
   const struct segmentation *const seg = &cm->seg;
 #if CONFIG_MISC_FIXES
   const struct segmentation_probs *const segp = &cm->fc->seg;
@@ -895,7 +936,21 @@ static void write_mb_modes_kf(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   if (seg->update_map) write_segment_id(w, seg, segp, mbmi->segment_id);
 
+#if CONFIG_DELTA_Q
+  skip = write_skip(cm, xd, mbmi->segment_id, mi, w);
+  if (cm->delta_q_present_flag) {
+    int mi_row = (-xd->mb_to_top_edge) >> 6;
+    int mi_col = (-xd->mb_to_left_edge) >> 6;
+    int super_block_upper_left = ((mi_row & 7) == 0) && ((mi_col & 7) == 0);
+    if ((bsize != BLOCK_64X64 || skip == 0) && super_block_upper_left) {
+      int delta_qindex = mbmi->current_q_index - xd->prev_qindex;
+      write_delta_qindex(delta_qindex, w);
+      xd->prev_qindex = mbmi->current_q_index;
+    }
+  }
+#else
   write_skip(cm, xd, mbmi->segment_id, mi, w);
+#endif
 
   if (bsize >= BLOCK_8X8 && cm->tx_mode == TX_MODE_SELECT &&
       !xd->lossless[mbmi->segment_id])
@@ -1108,6 +1163,12 @@ static void write_modes(AV1_COMP *cpi, const TileInfo *const tile,
                         const TOKENEXTRA *const tok_end) {
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   int mi_row, mi_col;
+
+#if CONFIG_DELTA_Q
+  if (cpi->common.delta_q_present_flag) {
+    xd->prev_qindex = cpi->common.base_qindex;
+  }
+#endif
 
   for (mi_row = tile->mi_row_start; mi_row < tile->mi_row_end;
        mi_row += MAX_MIB_SIZE) {
@@ -1946,6 +2007,26 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 #endif  // CONFIG_DERING
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);
+#if CONFIG_DELTA_Q
+  {
+    int i;
+    struct segmentation *const seg = &cm->seg;
+    int segment_quantizer_active = 0;
+    for (i = 0; i < MAX_SEGMENTS; i++) {
+      if (segfeature_active(seg, i, SEG_LVL_ALT_Q)) {
+        segment_quantizer_active = 1;
+      }
+    }
+    if (segment_quantizer_active == 0) {
+      cm->delta_q_present_flag = cpi->oxcf.aq_mode == DELTA_AQ;
+      aom_wb_write_bit(wb, cm->delta_q_present_flag);
+      if (cm->delta_q_present_flag) {
+        xd->prev_qindex = cm->base_qindex;
+      }
+    }
+  }
+#endif
+
 #if CONFIG_MISC_FIXES
   if (!cm->seg.enabled && xd->lossless[0])
     cm->tx_mode = TX_4X4;

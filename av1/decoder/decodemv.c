@@ -459,6 +459,38 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   mbmi->segment_id = read_intra_segment_id(cm, xd, mi_offset, x_mis, y_mis, r);
   mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
+
+#if CONFIG_DELTA_Q
+  if (cm->delta_q_present_flag) {
+    int b_col = mi_col & 7;
+    int b_row = mi_row & 7;
+    int read_delta_q_flag = (b_col == 0 && b_row == 0);
+    if ((bsize != BLOCK_64X64 || mbmi->skip == 0) && read_delta_q_flag) {
+      int sign, abs, tmp, delta_qindex;
+
+      abs = 0;
+      tmp = aom_read_bit(r, ACCT_STR);
+      while (tmp == 0 && abs < 2) {
+        tmp = aom_read_bit(r, ACCT_STR);
+        abs++;
+      }
+      if (tmp == 0) {
+        abs = aom_read_literal(r, 6, ACCT_STR);
+      }
+
+      if (abs) {
+        sign = aom_read_bit(r, ACCT_STR);
+      } else {
+        sign = 1;
+      }
+
+      delta_qindex = sign ? -abs : abs;
+      xd->current_qindex = xd->prev_qindex + delta_qindex;
+      xd->prev_qindex = xd->current_qindex;
+    }
+  }
+#endif
+
   mbmi->tx_size = read_tx_size(cm, xd, 1, r);
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE;
@@ -1111,6 +1143,35 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   mbmi->mv[1].as_int = 0;
   mbmi->segment_id = read_inter_segment_id(cm, xd, mi_row, mi_col, r);
   mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
+#if CONFIG_DELTA_Q
+  if (cm->delta_q_present_flag) {
+    BLOCK_SIZE bsize = mbmi->sb_type;
+    int b_col = mi_col & 7;
+    int b_row = mi_row & 7;
+    int read_delta_q_flag = (b_col == 0 && b_row == 0);
+    if ((bsize != BLOCK_64X64 || mbmi->skip == 0) && read_delta_q_flag) {
+      int sign, abs, tmp, delta_qindex;
+
+      abs = 0;
+      tmp = aom_read_bit(r, ACCT_STR);
+      while (tmp == 0 && abs < 2) {
+        tmp = aom_read_bit(r, ACCT_STR);
+        abs++;
+      }
+      if (tmp == 0) {
+        abs = aom_read_literal(r, 6, ACCT_STR);
+      }
+      if (abs) {
+        sign = aom_read_bit(r, ACCT_STR);
+      } else {
+        sign = 1;
+      }
+      delta_qindex = sign ? -abs : abs;
+      xd->current_qindex = xd->prev_qindex + delta_qindex;
+      xd->prev_qindex = xd->current_qindex;
+    }
+  }
+#endif
   inter_block = read_is_inter_block(cm, xd, mbmi->segment_id, r);
   mbmi->tx_size = read_tx_size(cm, xd, !mbmi->skip || !inter_block, r);
 

@@ -270,6 +270,7 @@ EXPERIMENT_LIST="
     palette
     frame_size
     filter_7bit
+    delta_q
 "
 CONFIG_LIST="
     dependency_tracking
