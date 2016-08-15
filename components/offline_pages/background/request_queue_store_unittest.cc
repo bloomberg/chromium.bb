@@ -67,13 +67,21 @@ class RequestQueueStoreTestBase : public testing::Test {
                        const std::vector<SavePageRequest>& requests);
   // Callback used for add/update request.
   void AddOrUpdateDone(UpdateStatus result);
+  void UpdateMultipleRequestsDone(
+      const RequestQueue::UpdateMultipleRequestResults& results,
+      const std::vector<SavePageRequest>& requests);
   // Callback used for remove requests.
-  void RemoveDone(const RequestQueue::UpdateMultipleRequestResults& results);
+  void RemoveDone(const RequestQueue::UpdateMultipleRequestResults& results,
+                  const std::vector<SavePageRequest>& requests);
   // Callback used for reset.
   void ResetDone(bool result);
 
   LastResult last_result() const { return last_result_; }
   UpdateStatus last_update_status() const { return last_update_status_; }
+  const RequestQueue::UpdateMultipleRequestResults&
+  last_multiple_update_results() const {
+    return last_multiple_update_results_;
+  }
   const RequestQueue::UpdateMultipleRequestResults& last_remove_results()
       const {
     return last_remove_results_;
@@ -88,6 +96,7 @@ class RequestQueueStoreTestBase : public testing::Test {
  private:
   LastResult last_result_;
   UpdateStatus last_update_status_;
+  RequestQueue::UpdateMultipleRequestResults last_multiple_update_results_;
   RequestQueue::UpdateMultipleRequestResults last_remove_results_;
   std::vector<SavePageRequest> last_requests_;
 
@@ -130,9 +139,18 @@ void RequestQueueStoreTestBase::AddOrUpdateDone(UpdateStatus status) {
   last_update_status_ = status;
 }
 
+void RequestQueueStoreTestBase::UpdateMultipleRequestsDone(
+    const RequestQueue::UpdateMultipleRequestResults& results,
+    const std::vector<SavePageRequest>& requests) {
+  last_multiple_update_results_ = results;
+  last_requests_ = requests;
+}
+
 void RequestQueueStoreTestBase::RemoveDone(
-    const RequestQueue::UpdateMultipleRequestResults& results) {
+    const RequestQueue::UpdateMultipleRequestResults& results,
+    const std::vector<SavePageRequest>& requests) {
   last_remove_results_ = results;
+  last_requests_ = requests;
 }
 
 void RequestQueueStoreTestBase::ResetDone(bool result) {
@@ -287,6 +305,7 @@ TYPED_TEST(RequestQueueStoreTest, RemoveRequests) {
             this->last_remove_results().at(0).second);
   ASSERT_EQ(RequestQueue::UpdateRequestResult::SUCCESS,
             this->last_remove_results().at(1).second);
+  ASSERT_EQ(kRequestId, this->last_requests().at(0).request_id());
   this->ClearResults();
 
   store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
@@ -329,13 +348,16 @@ TYPED_TEST(RequestQueueStoreTest, PauseAndResumeRequest) {
   std::vector<int64_t> request_ids{kRequestId};
   store->ChangeRequestsState(
       request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+      base::Bind(&RequestQueueStoreTestBase::UpdateMultipleRequestsDone,
                  base::Unretained(this)));
   ASSERT_EQ(LastResult::kNone, this->last_result());
   this->PumpLoop();
 
   // Verify pause succeeded
-  ASSERT_EQ(UpdateStatus::UPDATED, this->last_update_status());
+  ASSERT_EQ(1ul, this->last_multiple_update_results().size());
+  ASSERT_EQ(RequestQueue::UpdateRequestResult::SUCCESS,
+            this->last_multiple_update_results().at(0).second);
+  ASSERT_EQ(kRequestId, this->last_requests().at(0).request_id());
   this->ClearResults();
 
   // Get the request from the queue to check it out
@@ -353,13 +375,16 @@ TYPED_TEST(RequestQueueStoreTest, PauseAndResumeRequest) {
   // Now resume the same request we paused.
   store->ChangeRequestsState(
       request_ids, SavePageRequest::RequestState::AVAILABLE,
-      base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
+      base::Bind(&RequestQueueStoreTestBase::UpdateMultipleRequestsDone,
                  base::Unretained(this)));
   ASSERT_EQ(LastResult::kNone, this->last_result());
   this->PumpLoop();
 
   // Verify resume succeeded.
-  ASSERT_EQ(UpdateStatus::UPDATED, this->last_update_status());
+  ASSERT_EQ(1ul, this->last_multiple_update_results().size());
+  ASSERT_EQ(RequestQueue::UpdateRequestResult::SUCCESS,
+            this->last_multiple_update_results().at(0).second);
+  ASSERT_EQ(kRequestId, this->last_requests().at(0).request_id());
   this->ClearResults();
 
   // Get the request from the queue to check it out

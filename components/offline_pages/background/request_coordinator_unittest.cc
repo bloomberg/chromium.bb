@@ -126,6 +126,64 @@ class OfflinerFactoryStub : public OfflinerFactory {
   std::unique_ptr<OfflinerStub> offliner_;
 };
 
+class ObserverStub : public RequestCoordinator::Observer {
+ public:
+  ObserverStub()
+      : added_called_(false),
+        succeeded_called_(false),
+        failed_called_(false),
+        changed_called_(false),
+        removed_called_(false),
+        state_(SavePageRequest::RequestState::PRERENDERING) {}
+
+  void Clear() {
+    added_called_ = false;
+    succeeded_called_ = false;
+    failed_called_ = false;
+    changed_called_ = false;
+    removed_called_ = false;
+    state_ = SavePageRequest::RequestState::PRERENDERING;
+  }
+
+  void OnAdded(const SavePageRequest& request) override {
+    added_called_ = true;
+  }
+
+  void OnSucceeded(const SavePageRequest& request) override {
+    succeeded_called_ = true;
+  }
+
+  void OnFailed(const SavePageRequest& request,
+                RequestCoordinator::SavePageStatus status) override {
+    failed_called_ = true;
+  }
+
+  void OnChanged(const SavePageRequest& request) override {
+    changed_called_ = true;
+    state_ = request.request_state();
+  }
+
+  void OnRemoved(const SavePageRequest& request,
+                 RequestCoordinator::SavePageStatus status) override {
+    removed_called_ = true;
+  }
+
+  bool added_called() { return added_called_; }
+  bool succeeded_called() { return succeeded_called_; }
+  bool failed_called() { return failed_called_; }
+  bool changed_called() { return changed_called_; }
+  bool removed_called() { return removed_called_; }
+  SavePageRequest::RequestState state() { return state_; }
+
+ private:
+  bool added_called_;
+  bool succeeded_called_;
+  bool failed_called_;
+  bool changed_called_;
+  bool removed_called_;
+  SavePageRequest::RequestState state_;
+};
+
 class RequestCoordinatorTest
     : public testing::Test {
  public:
@@ -201,6 +259,8 @@ class RequestCoordinatorTest
 
   bool OfflinerWasCanceled() const { return offliner_->cancel_called(); }
 
+  ObserverStub observer() { return observer_; }
+
  private:
   RequestQueue::GetRequestsResult last_get_requests_result_;
   std::vector<SavePageRequest> last_requests_;
@@ -209,6 +269,7 @@ class RequestCoordinatorTest
   std::unique_ptr<RequestCoordinator> coordinator_;
   OfflinerStub* offliner_;
   base::WaitableEvent waiter_;
+  ObserverStub observer_;
 };
 
 RequestCoordinatorTest::RequestCoordinatorTest()
@@ -234,6 +295,7 @@ void RequestCoordinatorTest::SetUp() {
   coordinator_.reset(new RequestCoordinator(
       std::move(policy), std::move(factory), std::move(queue),
       std::move(scheduler_stub)));
+  coordinator_->AddObserver(&observer_);
 }
 
 void RequestCoordinatorTest::PumpLoop() {
@@ -321,6 +383,9 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
                 ->GetTriggerConditionsForUserRequest()
                 .minimum_battery_percentage,
             scheduler_stub->conditions()->minimum_battery_percentage);
+
+  // Check that the observer got the notification that a page is available
+  EXPECT_TRUE(observer().added_called());
 }
 
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
@@ -362,6 +427,8 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // RequestPicker should *not* have tried to start an additional job,
   // because the request queue is empty now.
   EXPECT_EQ(0UL, last_requests().size());
+  // Check that the observer got the notification that we succeeded.
+  EXPECT_TRUE(observer().succeeded_called());
 }
 
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
@@ -416,6 +483,8 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // Now just one request in the queue since failed request removed
   // (for single attempt policy).
   EXPECT_EQ(1UL, last_requests().size());
+  // Check that the observer got the notification that we failed
+  EXPECT_TRUE(observer().failed_called());
 }
 
 TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
@@ -650,6 +719,53 @@ TEST_F(RequestCoordinatorTest, GetAllRequests) {
   EXPECT_EQ(2UL, last_requests().size());
   EXPECT_EQ(kRequestId1, last_requests().at(0).request_id());
   EXPECT_EQ(kRequestId2, last_requests().at(1).request_id());
+}
+
+TEST_F(RequestCoordinatorTest, PauseAndResumeObserver) {
+  // Add a request to the queue.
+  offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
+                                          base::Time::Now(), kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request1, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  PumpLoop();
+
+  // Pause the request.
+  std::vector<int64_t> request_ids;
+  request_ids.push_back(kRequestId1);
+  coordinator()->PauseRequests(request_ids);
+  PumpLoop();
+
+  EXPECT_TRUE(observer().changed_called());
+  EXPECT_EQ(SavePageRequest::RequestState::PAUSED, observer().state());
+
+  // Clear out the observer before the next call.
+  observer().Clear();
+
+  // Resume the request.
+  coordinator()->ResumeRequests(request_ids);
+  PumpLoop();
+
+  EXPECT_TRUE(observer().changed_called());
+  EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE, observer().state());
+}
+
+TEST_F(RequestCoordinatorTest, ObserverdRemoveRequest) {
+  // Add a request to the queue.
+  offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
+                                          base::Time::Now(), kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request1, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  PumpLoop();
+
+  // Remove the request.
+  std::vector<int64_t> request_ids;
+  request_ids.push_back(kRequestId1);
+  coordinator()->RemoveRequests(request_ids);
+  PumpLoop();
+
+  EXPECT_TRUE(observer().removed_called());
 }
 
 }  // namespace offline_pages

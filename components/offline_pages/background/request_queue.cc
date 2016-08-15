@@ -39,6 +39,7 @@ void AddRequestDone(const RequestQueue::AddRequestCallback& callback,
 }
 
 // Completes the update request call.
+// TODO(petewil): Move callers to the UpdateMultipleRequestDone callback
 void UpdateRequestDone(const RequestQueue::UpdateRequestCallback& callback,
                        RequestQueueStore::UpdateStatus status) {
   RequestQueue::UpdateRequestResult result =
@@ -48,12 +49,20 @@ void UpdateRequestDone(const RequestQueue::UpdateRequestCallback& callback,
   callback.Run(result);
 }
 
+// Handles updating multiple requests at the same time.
+void UpdateMultipleRequestsDone(
+    const RequestQueue::UpdateMultipleRequestsCallback& callback,
+    const RequestQueue::UpdateMultipleRequestResults& results,
+    const std::vector<SavePageRequest>& requests) {
+  callback.Run(results, requests);
+}
 
 // Completes the remove request call.
 void RemoveRequestsDone(
     const RequestQueue::RemoveRequestsCallback& callback,
-    const RequestQueue::UpdateMultipleRequestResults& results) {
-  callback.Run(results);
+    const RequestQueue::UpdateMultipleRequestResults& results,
+    const std::vector<SavePageRequest>& requests) {
+  callback.Run(results, requests);
 }
 
 }  // namespace
@@ -133,9 +142,9 @@ void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,
 void RequestQueue::ChangeRequestsState(
     const std::vector<int64_t>& request_ids,
     const SavePageRequest::RequestState new_state,
-    const UpdateRequestCallback& callback) {
+    const UpdateMultipleRequestsCallback& callback) {
   store_->ChangeRequestsState(request_ids, new_state,
-                              base::Bind(UpdateRequestDone, callback));
+                              base::Bind(UpdateMultipleRequestsDone, callback));
 }
 
 void RequestQueue::PurgeRequests(const PurgeRequestsCallback& callback) {}

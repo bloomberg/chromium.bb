@@ -49,8 +49,13 @@ class RequestQueueTest : public testing::Test {
   void GetRequestsDone(GetRequestsResult result,
                        const std::vector<SavePageRequest>& requests);
   // Callback for removing request.
-  void RemoveRequestDone(
-      const RequestQueue::UpdateMultipleRequestResults& results);
+  void RemoveRequestsDone(
+      const RequestQueue::UpdateMultipleRequestResults& results,
+      const std::vector<SavePageRequest>& requests);
+
+  void UpdateMultipleRequestsDone(
+      const RequestQueue::UpdateMultipleRequestResults& results,
+      const std::vector<SavePageRequest>& requests);
 
   void UpdateRequestDone(UpdateRequestResult result);
 
@@ -66,6 +71,11 @@ class RequestQueueTest : public testing::Test {
     return last_remove_results_;
   }
 
+  const RequestQueue::UpdateMultipleRequestResults&
+  last_multiple_update_results() const {
+    return last_multiple_update_results_;
+  }
+
   UpdateRequestResult last_update_result() const { return last_update_result_; }
 
   GetRequestsResult last_get_requests_result() const {
@@ -79,6 +89,7 @@ class RequestQueueTest : public testing::Test {
   AddRequestResult last_add_result_;
   std::unique_ptr<SavePageRequest> last_added_request_;
   RequestQueue::UpdateMultipleRequestResults last_remove_results_;
+  RequestQueue::UpdateMultipleRequestResults last_multiple_update_results_;
   UpdateRequestResult last_update_result_;
 
   GetRequestsResult last_get_requests_result_;
@@ -121,9 +132,18 @@ void RequestQueueTest::GetRequestsDone(
   last_requests_ = requests;
 }
 
-void RequestQueueTest::RemoveRequestDone(
-    const RequestQueue::UpdateMultipleRequestResults& results) {
+void RequestQueueTest::RemoveRequestsDone(
+    const RequestQueue::UpdateMultipleRequestResults& results,
+    const std::vector<SavePageRequest>& requests) {
   last_remove_results_ = results;
+  last_requests_ = requests;
+}
+
+void RequestQueueTest::UpdateMultipleRequestsDone(
+    const RequestQueue::UpdateMultipleRequestResults& results,
+    const std::vector<SavePageRequest>& requests) {
+  last_multiple_update_results_ = results;
+  last_requests_ = requests;
 }
 
 void RequestQueueTest::UpdateRequestDone(UpdateRequestResult result) {
@@ -167,9 +187,9 @@ TEST_F(RequestQueueTest, RemoveRequest) {
 
   std::vector<int64_t> remove_requests;
   remove_requests.push_back(kRequestId);
-  queue()->RemoveRequests(
-      remove_requests,
-      base::Bind(&RequestQueueTest::RemoveRequestDone, base::Unretained(this)));
+  queue()->RemoveRequests(remove_requests,
+                          base::Bind(&RequestQueueTest::RemoveRequestsDone,
+                                     base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(1ul, last_remove_results().size());
   ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_results().at(0).second);
@@ -200,9 +220,9 @@ TEST_F(RequestQueueTest, RemoveSeveralRequests) {
   std::vector<int64_t> remove_requests;
   remove_requests.push_back(kRequestId);
   remove_requests.push_back(kRequestId2);
-  queue()->RemoveRequests(
-      remove_requests,
-      base::Bind(&RequestQueueTest::RemoveRequestDone, base::Unretained(this)));
+  queue()->RemoveRequests(remove_requests,
+                          base::Bind(&RequestQueueTest::RemoveRequestsDone,
+                                     base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(2ul, last_remove_results().size());
   ASSERT_EQ(UpdateRequestResult::SUCCESS, last_remove_results().at(0).second);
@@ -240,9 +260,12 @@ TEST_F(RequestQueueTest, PauseAndResume) {
   // Pause the request.
   queue()->ChangeRequestsState(
       request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&RequestQueueTest::UpdateRequestDone, base::Unretained(this)));
+      base::Bind(&RequestQueueTest::UpdateMultipleRequestsDone,
+                 base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_update_result());
+  ASSERT_EQ(1ul, last_multiple_update_results().size());
+  ASSERT_EQ(UpdateRequestResult::SUCCESS,
+            last_multiple_update_results().at(0).second);
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
@@ -257,9 +280,12 @@ TEST_F(RequestQueueTest, PauseAndResume) {
   // Resume the request.
   queue()->ChangeRequestsState(
       request_ids, SavePageRequest::RequestState::AVAILABLE,
-      base::Bind(&RequestQueueTest::UpdateRequestDone, base::Unretained(this)));
+      base::Bind(&RequestQueueTest::UpdateMultipleRequestsDone,
+                 base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(UpdateRequestResult::SUCCESS, last_update_result());
+  ASSERT_EQ(1ul, last_multiple_update_results().size());
+  ASSERT_EQ(UpdateRequestResult::SUCCESS,
+            last_multiple_update_results().at(0).second);
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
@@ -297,9 +323,9 @@ TEST_F(RequestQueueTest, MultipleRequestsAddGetRemove) {
 
   std::vector<int64_t> remove_requests;
   remove_requests.push_back(request1.request_id());
-  queue()->RemoveRequests(
-      remove_requests,
-      base::Bind(&RequestQueueTest::RemoveRequestDone, base::Unretained(this)));
+  queue()->RemoveRequests(remove_requests,
+                          base::Bind(&RequestQueueTest::RemoveRequestsDone,
+                                     base::Unretained(this)));
   PumpLoop();
   ASSERT_EQ(1ul, last_remove_results().size());
   ASSERT_EQ(kRequestId, last_remove_results().at(0).first);

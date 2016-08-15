@@ -23,16 +23,21 @@ class RequestQueueStore {
     UPDATED,  // Request was updated successfully.
     FAILED,   // Add or update attempt failed.
   };
-  // TODO(petewil): What if no items were updated?  Maybe this should work more
-  // like DeleteCallback, passing pairs of request_id and status.
 
   typedef base::Callback<void(
       bool /* success */,
       const std::vector<SavePageRequest>& /* requests */)>
       GetRequestsCallback;
   typedef base::Callback<void(UpdateStatus)> UpdateCallback;
+  // TODO(petewil) - UpdateMultiple looks exactly like Remove, consider
+  // merging them into a single callback.
   typedef base::Callback<void(
-      const RequestQueue::UpdateMultipleRequestResults&)>
+      const RequestQueue::UpdateMultipleRequestResults& /* statuses*/,
+      const std::vector<SavePageRequest>& /* requests */)>
+      UpdateMultipleRequestsCallback;
+  typedef base::Callback<void(
+      const RequestQueue::UpdateMultipleRequestResults& /* statuses */,
+      const std::vector<SavePageRequest>& /* requests */)>
       RemoveCallback;
   typedef base::Callback<void(bool /* success */)> ResetCallback;
 
@@ -59,7 +64,7 @@ class RequestQueueStore {
   virtual void ChangeRequestsState(
       const std::vector<int64_t>& request_ids,
       const SavePageRequest::RequestState new_state,
-      const UpdateCallback& callback) = 0;
+      const UpdateMultipleRequestsCallback& callback) = 0;
 
   // Resets the store.
   virtual void Reset(const ResetCallback& callback) = 0;

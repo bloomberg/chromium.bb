@@ -38,9 +38,10 @@ class RequestQueueStoreSQL : public RequestQueueStore {
                           const UpdateCallback& callback) override;
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       const RemoveCallback& callback) override;
-  void ChangeRequestsState(const std::vector<int64_t>& request_ids,
-                           const SavePageRequest::RequestState new_state,
-                           const UpdateCallback& callback) override;
+  void ChangeRequestsState(
+      const std::vector<int64_t>& request_ids,
+      const SavePageRequest::RequestState new_state,
+      const UpdateMultipleRequestsCallback& callback) override;
   void Reset(const ResetCallback& callback) override;
 
  private:
@@ -67,7 +68,7 @@ class RequestQueueStoreSQL : public RequestQueueStore {
       scoped_refptr<base::SingleThreadTaskRunner> runner,
       const std::vector<int64_t>& request_ids,
       const SavePageRequest::RequestState new_state,
-      const UpdateCallback& callback);
+      const UpdateMultipleRequestsCallback& callback);
   static void ResetSync(sql::Connection* db,
                         const base::FilePath& db_file_path,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,

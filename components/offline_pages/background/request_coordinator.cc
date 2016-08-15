@@ -77,7 +77,9 @@ bool RequestCoordinator::SavePageLater(
     return false;
   }
 
-  // TODO(petewil): We need a robust scheme for allocating new IDs.
+  // TODO(petewil): Use an int64_t random number for this, pass it to the
+  // offliner, and eventually use it as the offline_id - that way the client
+  // uses offline_id everywhere.
   static int64_t id = 0;
 
   // Build a SavePageRequest.
@@ -88,6 +90,7 @@ bool RequestCoordinator::SavePageLater(
   queue_->AddRequest(request,
                      base::Bind(&RequestCoordinator::AddRequestResultCallback,
                                 weak_ptr_factory_.GetWeakPtr()));
+  NotifyAdded(request);
   return true;
 }
 void RequestCoordinator::GetAllRequests(const GetRequestsCallback& callback) {
@@ -116,7 +119,7 @@ void RequestCoordinator::PauseRequests(
     const std::vector<int64_t>& request_ids) {
   queue_->ChangeRequestsState(
       request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&RequestCoordinator::UpdateMultipleRequestCallback,
+      base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -124,7 +127,7 @@ void RequestCoordinator::ResumeRequests(
     const std::vector<int64_t>& request_ids) {
   queue_->ChangeRequestsState(
       request_ids, SavePageRequest::RequestState::AVAILABLE,
-      base::Bind(&RequestCoordinator::UpdateMultipleRequestCallback,
+      base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
   // TODO: Should we also schedule a task, in case there is not one scheduled?
 }
@@ -132,7 +135,6 @@ void RequestCoordinator::ResumeRequests(
 void RequestCoordinator::AddRequestResultCallback(
     RequestQueue::AddRequestResult result,
     const SavePageRequest& request) {
-
   // Inform the scheduler that we have an outstanding task..
   scheduler_->Schedule(GetTriggerConditionsForUserRequest());
 }
@@ -151,21 +153,18 @@ void RequestCoordinator::UpdateRequestCallback(
 }
 
 // Called in response to updating multiple requests in the request queue.
-void RequestCoordinator::UpdateMultipleRequestCallback(
-    RequestQueue::UpdateRequestResult result) {
-  // If the request succeeded, nothing to do.  If it failed, we can't really do
-  // much, so just log it.
-  if (result != RequestQueue::UpdateRequestResult::SUCCESS) {
-    DVLOG(1) << "Failed to update request attempt details. "
-             << static_cast<int>(result);
-  }
+void RequestCoordinator::UpdateMultipleRequestsCallback(
+    const RequestQueue::UpdateMultipleRequestResults& results,
+    const std::vector<SavePageRequest>& requests) {
+  for (SavePageRequest request : requests)
+    NotifyChanged(request);
 }
 
 void RequestCoordinator::RemoveRequestsCallback(
-    const RequestQueue::UpdateMultipleRequestResults& results) {
-  // TODO(petewil): Today the RemoveRequests API does not come with a callback.
-  // Should we add one?  Perhaps the notifications from the observer will be
-  // sufficient.
+    const RequestQueue::UpdateMultipleRequestResults& results,
+    const std::vector<SavePageRequest>& requests) {
+  for (SavePageRequest request : requests)
+    NotifyRemoved(request);
 }
 
 void RequestCoordinator::StopProcessing() {
@@ -313,20 +312,28 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
                           base::Bind(&RequestCoordinator::UpdateRequestCallback,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      updated_request.client_id()));
+    NotifyFailed(updated_request, SavePageStatus::FOREGROUND_CANCELED);
 
-  } else if (status == Offliner::RequestStatus::SAVED ||
-             request.completed_attempt_count() + 1 >=
-                 policy_->GetMaxCompletedTries()) {
-    // Remove the request from the queue if it either succeeded or exceeded the
-    // max number of retries.  The +1 represents the request that just
-    // completed. Since we call MarkAttemptCompleted within the if branches,
-    // the completed_attempt_count has not yet been updated when we are checking
-    // the if condition.
+  } else if (status == Offliner::RequestStatus::SAVED) {
+    // Remove the request from the queue if it succeeded.
     std::vector<int64_t> remove_requests;
     remove_requests.push_back(request.request_id());
     queue_->RemoveRequests(
         remove_requests, base::Bind(&RequestCoordinator::RemoveRequestsCallback,
                                     weak_ptr_factory_.GetWeakPtr()));
+    NotifySucceeded(request);
+  } else if (request.completed_attempt_count() + 1 >=
+             policy_->GetMaxCompletedTries()) {
+    // Remove from the request queue if we exceeeded max retries. The +1
+    // represents the request that just completed. Since we call
+    // MarkAttemptCompleted within the if branches, the completed_attempt_count
+    // has not yet been updated when we are checking the if condition.
+    std::vector<int64_t> remove_requests;
+    remove_requests.push_back(request.request_id());
+    queue_->RemoveRequests(
+        remove_requests, base::Bind(&RequestCoordinator::RemoveRequestsCallback,
+                                    weak_ptr_factory_.GetWeakPtr()));
+    NotifyFailed(request, SavePageStatus::RETRY_COUNT_EXCEEDED);
   } else {
     // If we failed, but are not over the limit, update the request in the
     // queue.
@@ -336,6 +343,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
                           base::Bind(&RequestCoordinator::UpdateRequestCallback,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      updated_request.client_id()));
+    NotifyChanged(updated_request);
   }
 
   // Determine whether we might try another request in this
@@ -369,6 +377,37 @@ RequestCoordinator::GetTriggerConditionsForUserRequest() {
       policy_->BatteryPercentageRequiredForUserRequestedPage(),
       policy_->UnmeteredNetworkRequiredForUserRequestedPage());
   return trigger_conditions;
+}
+
+void RequestCoordinator::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void RequestCoordinator::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void RequestCoordinator::NotifyAdded(const SavePageRequest& request) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnAdded(request));
+}
+
+void RequestCoordinator::NotifySucceeded(const SavePageRequest& request) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnSucceeded(request));
+}
+
+void RequestCoordinator::NotifyFailed(const SavePageRequest& request,
+                                      SavePageStatus status) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnFailed(request, status));
+}
+
+void RequestCoordinator::NotifyChanged(const SavePageRequest& request) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnChanged(request));
+}
+
+void RequestCoordinator::NotifyRemoved(const SavePageRequest& request) {
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnRemoved(request, SavePageStatus::REMOVED_BY_CLIENT));
 }
 
 void RequestCoordinator::GetOffliner() {

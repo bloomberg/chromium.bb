@@ -59,8 +59,14 @@ class RequestQueue {
   // Callback used by |UdpateRequest|.
   typedef base::Callback<void(UpdateRequestResult)> UpdateRequestCallback;
 
+  // Callback used by |ChangeState| for more than one update at a time.
+  typedef base::Callback<void(const UpdateMultipleRequestResults& results,
+                              const std::vector<SavePageRequest>& requests)>
+      UpdateMultipleRequestsCallback;
+
   // Callback used by |RemoveRequests|.
-  typedef base::Callback<void(const UpdateMultipleRequestResults& results)>
+  typedef base::Callback<void(const UpdateMultipleRequestResults& results,
+                              const std::vector<SavePageRequest>& requests)>
       RemoveRequestsCallback;
 
   explicit RequestQueue(std::unique_ptr<RequestQueueStore> store);
@@ -95,7 +101,7 @@ class RequestQueue {
   // request, and doesn't need to care what updates.
   void ChangeRequestsState(const std::vector<int64_t>& request_ids,
                            const SavePageRequest::RequestState new_state,
-                           const UpdateRequestCallback& callback);
+                           const UpdateMultipleRequestsCallback& callback);
 
   void GetForUpdateDone(
       const RequestQueue::UpdateRequestCallback& update_callback,

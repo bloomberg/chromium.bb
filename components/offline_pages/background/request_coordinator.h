@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,6 +34,34 @@ class Scheduler;
 // Coordinates queueing and processing save page later requests.
 class RequestCoordinator : public KeyedService {
  public:
+  // Status to return for failed notifications.
+  enum class SavePageStatus {
+    SUCCESS,
+    PRERENDER_FAILURE,
+    FOREGROUND_CANCELED,
+    SAVE_FAILED,
+    EXPIRED,
+    RETRY_COUNT_EXCEEDED,
+    REMOVED_BY_CLIENT,
+  };
+
+  // Nested observer class.  To make sure that no events are missed, the client
+  // code should first register for notifications, then |GetAllRequests|, and
+  // ignore all events before the return from |GetAllRequests|, and consume
+  // events after the return callback from |GetAllRequests|.
+  class Observer {
+   public:
+    virtual void OnAdded(const SavePageRequest& request) = 0;
+    virtual void OnSucceeded(const SavePageRequest& request) = 0;
+    virtual void OnFailed(const SavePageRequest& request,
+                          SavePageStatus status) = 0;
+    virtual void OnChanged(const SavePageRequest& request) = 0;
+    virtual void OnRemoved(const SavePageRequest& request,
+                           SavePageStatus status) = 0;
+    // TODO(petewil): Merge OnSucceeded, OnFailed, and OnRemoved into a single
+    // call.
+  };
+
   // Callback to report when the processing of a triggered task is complete.
   typedef base::Callback<void(const SavePageRequest& request)>
       RequestPickedCallback;
@@ -91,6 +120,14 @@ class RequestCoordinator : public KeyedService {
     scheduler_callback_ = callback;
   }
 
+  // Observers implementing the RequestCoordinator::Observer interface can
+  // register here to get notifications of changes to request state.  This
+  // pointer is not owned, and it is the callers responsibility to remove the
+  // observer before the observer is deleted.
+  void AddObserver(RequestCoordinator::Observer* observer);
+
+  void RemoveObserver(RequestCoordinator::Observer* observer);
+
   // Returns the request queue used for requests.  Coordinator keeps ownership.
   RequestQueue* queue() { return queue_.get(); }
 
@@ -131,10 +168,13 @@ class RequestCoordinator : public KeyedService {
   void UpdateRequestCallback(const ClientId& client_id,
                              RequestQueue::UpdateRequestResult result);
 
-  void UpdateMultipleRequestCallback(RequestQueue::UpdateRequestResult result);
+  void UpdateMultipleRequestsCallback(
+      const RequestQueue::UpdateMultipleRequestResults& result,
+      const std::vector<SavePageRequest>& requests);
 
   void RemoveRequestsCallback(
-      const RequestQueue::UpdateMultipleRequestResults& results);
+      const RequestQueue::UpdateMultipleRequestResults& results,
+      const std::vector<SavePageRequest>& requests);
 
   // Callback from the request picker when it has chosen our next request.
   void RequestPicked(const SavePageRequest& request);
@@ -150,6 +190,12 @@ class RequestCoordinator : public KeyedService {
                             Offliner::RequestStatus status);
 
   void TryNextRequest();
+
+  void NotifyAdded(const SavePageRequest& request);
+  void NotifySucceeded(const SavePageRequest& request);
+  void NotifyFailed(const SavePageRequest& request, SavePageStatus status);
+  void NotifyChanged(const SavePageRequest& request);
+  void NotifyRemoved(const SavePageRequest& request);
 
   // Returns the appropriate offliner to use, getting a new one from the factory
   // if needed.
@@ -174,6 +220,8 @@ class RequestCoordinator : public KeyedService {
   // Unowned pointer to the current offliner, if any.
   Offliner* offliner_;
   base::Time operation_start_time_;
+  // The observers.
+  base::ObserverList<Observer> observers_;
   // Last known conditions for network, battery
   std::unique_ptr<DeviceConditions> current_conditions_;
   // RequestCoordinator takes over ownership of the policy

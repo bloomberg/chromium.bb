@@ -58,79 +58,6 @@ bool CreateSchema(sql::Connection* db) {
   return true;
 }
 
-bool DeleteRequestById(sql::Connection* db, int64_t request_id) {
-  const char kSql[] =
-      "DELETE FROM " REQUEST_QUEUE_TABLE_NAME " WHERE request_id=?";
-  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindInt64(0, request_id);
-  return statement.Run();
-}
-
-bool ChangeRequestState(sql::Connection* db,
-                        const int64_t request_id,
-                        const SavePageRequest::RequestState new_state) {
-  const char kSql[] = "UPDATE " REQUEST_QUEUE_TABLE_NAME
-                      " SET state=?"
-                      " WHERE request_id=?";
-  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindInt64(0, static_cast<int64_t>(new_state));
-  statement.BindInt64(1, request_id);
-  return statement.Run();
-}
-
-bool DeleteRequestsByIds(sql::Connection* db,
-                         const std::vector<int64_t>& request_ids,
-                         RequestQueue::UpdateMultipleRequestResults& results) {
-  // If you create a transaction but don't Commit() it is automatically
-  // rolled back by its destructor when it falls out of scope.
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    for (int64_t request_id : request_ids)
-      results.push_back(std::make_pair(
-          request_id, RequestQueue::UpdateRequestResult::STORE_FAILURE));
-    return false;
-  }
-
-  for (auto request_id : request_ids) {
-    RequestQueue::UpdateRequestResult result;
-    if (DeleteRequestById(db, request_id))
-      result = RequestQueue::UpdateRequestResult::SUCCESS;
-    else
-      result = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
-    results.push_back(std::make_pair(request_id, result));
-  }
-
-  if (!transaction.Commit()) {
-    results.clear();
-    for (int64_t request_id : request_ids)
-      results.push_back(std::make_pair(
-          request_id, RequestQueue::UpdateRequestResult::STORE_FAILURE));
-    return false;
-  }
-
-  return true;
-}
-
-RequestQueueStore::UpdateStatus ChangeRequestsState(
-    sql::Connection* db,
-    const std::vector<int64_t>& request_ids,
-    SavePageRequest::RequestState new_state) {
-  // If you create a transaction but don't Commit() it is automatically
-  // rolled back by its destructor when it falls out of scope.
-  sql::Transaction transaction(db);
-  if (!transaction.Begin())
-    return RequestQueueStore::UpdateStatus::FAILED;
-  for (const auto& request_id : request_ids) {
-    if (!ChangeRequestState(db, request_id, new_state))
-      return RequestQueueStore::UpdateStatus::FAILED;
-  }
-
-  if (!transaction.Commit())
-    return RequestQueueStore::UpdateStatus::FAILED;
-
-  return RequestQueueStore::UpdateStatus::UPDATED;
-}
-
 // Create a save page request from a SQL result.  Expects complete rows with
 // all columns present.  Columns are in order they are defined in select query
 // in |RequestQueueStore::RequestSync| method.
@@ -155,13 +82,128 @@ SavePageRequest MakeSavePageRequest(const sql::Statement& statement) {
            << " creation time " << creation_time << " user requested "
            << kUserRequested;
 
-  SavePageRequest request(
-      id, url, client_id, creation_time, activation_time, kUserRequested);
+  SavePageRequest request(id, url, client_id, creation_time, activation_time,
+                          kUserRequested);
   request.set_last_attempt_time(last_attempt_time);
   request.set_started_attempt_count(started_attempt_count);
   request.set_completed_attempt_count(completed_attempt_count);
   request.set_request_state(state);
   return request;
+}
+
+// Get a request for a specific id.
+SavePageRequest GetOneRequest(sql::Connection* db, const int64_t request_id) {
+  const char kSql[] =
+      "SELECT request_id, creation_time, activation_time,"
+      " last_attempt_time, started_attempt_count, completed_attempt_count,"
+      " state, url, client_namespace, client_id"
+      " FROM " REQUEST_QUEUE_TABLE_NAME " WHERE request_id=?";
+
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, request_id);
+
+  statement.Run();
+  return MakeSavePageRequest(statement);
+}
+
+void BuildFailedResultList(const std::vector<int64_t>& request_ids,
+                           RequestQueue::UpdateMultipleRequestResults results) {
+  results.clear();
+  for (int64_t request_id : request_ids)
+    results.push_back(std::make_pair(
+        request_id, RequestQueue::UpdateRequestResult::STORE_FAILURE));
+}
+
+bool DeleteRequestById(sql::Connection* db, int64_t request_id) {
+  const char kSql[] =
+      "DELETE FROM " REQUEST_QUEUE_TABLE_NAME " WHERE request_id=?";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, request_id);
+  return statement.Run();
+}
+
+bool ChangeRequestState(sql::Connection* db,
+                        const int64_t request_id,
+                        const SavePageRequest::RequestState new_state) {
+  const char kSql[] = "UPDATE " REQUEST_QUEUE_TABLE_NAME
+                      " SET state=?"
+                      " WHERE request_id=?";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, static_cast<int64_t>(new_state));
+  statement.BindInt64(1, request_id);
+  return statement.Run();
+}
+
+bool DeleteRequestsByIds(sql::Connection* db,
+                         const std::vector<int64_t>& request_ids,
+                         RequestQueue::UpdateMultipleRequestResults& results,
+                         std::vector<SavePageRequest>& requests) {
+  // If you create a transaction but don't Commit() it is automatically
+  // rolled back by its destructor when it falls out of scope.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin()) {
+    BuildFailedResultList(request_ids, results);
+    return false;
+  }
+
+  // Read the request before we delete it, and if the delete worked, put it on
+  // the queue of requests that got deleted.
+  for (int64_t request_id : request_ids) {
+    SavePageRequest request = GetOneRequest(db, request_id);
+    RequestQueue::UpdateRequestResult result;
+    if (DeleteRequestById(db, request_id)) {
+      result = RequestQueue::UpdateRequestResult::SUCCESS;
+      requests.push_back(request);
+    } else {
+      result = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
+    }
+    results.push_back(std::make_pair(request_id, result));
+    requests.push_back(request);
+  }
+
+  if (!transaction.Commit()) {
+    requests.clear();
+    BuildFailedResultList(request_ids, results);
+    return false;
+  }
+
+  return true;
+}
+
+bool ChangeRequestsState(sql::Connection* db,
+                         const std::vector<int64_t>& request_ids,
+                         SavePageRequest::RequestState new_state,
+                         RequestQueue::UpdateMultipleRequestResults& results,
+                         std::vector<SavePageRequest>& requests) {
+  // If you create a transaction but don't Commit() it is automatically
+  // rolled back by its destructor when it falls out of scope.
+  sql::Transaction transaction(db);
+  if (!transaction.Begin()) {
+    BuildFailedResultList(request_ids, results);
+    return false;
+  }
+
+  // Update a request, then get it, and put the item we got on the output list.
+  for (const auto& request_id : request_ids) {
+    RequestQueue::UpdateRequestResult status;
+    if (!ChangeRequestState(db, request_id, new_state))
+      status = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
+    else
+      status = RequestQueue::UpdateRequestResult::SUCCESS;
+
+    // Make output request_id/status pair, and put a copy of the updated request
+    // on output list.
+    results.push_back(std::make_pair(request_id, status));
+    requests.push_back(GetOneRequest(db, request_id));
+  }
+
+  if (!transaction.Commit()) {
+    requests.clear();
+    BuildFailedResultList(request_ids, results);
+    return false;
+  }
+
+  return true;
 }
 
 RequestQueueStore::UpdateStatus InsertOrReplace(
@@ -276,9 +318,10 @@ void RequestQueueStoreSQL::RemoveRequestsSync(
     const std::vector<int64_t>& request_ids,
     const RemoveCallback& callback) {
   RequestQueue::UpdateMultipleRequestResults results;
+  std::vector<SavePageRequest> requests;
   // TODO(fgorski): add UMA metrics here.
-  DeleteRequestsByIds(db, request_ids, results);
-  runner->PostTask(FROM_HERE, base::Bind(callback, results));
+  DeleteRequestsByIds(db, request_ids, results, requests);
+  runner->PostTask(FROM_HERE, base::Bind(callback, results, requests));
 }
 
 // static
@@ -287,11 +330,13 @@ void RequestQueueStoreSQL::ChangeRequestsStateSync(
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const std::vector<int64_t>& request_ids,
     const SavePageRequest::RequestState new_state,
-    const UpdateCallback& callback) {
+    const UpdateMultipleRequestsCallback& callback) {
+  RequestQueue::UpdateMultipleRequestResults results;
+  std::vector<SavePageRequest> requests;
   // TODO(fgorski): add UMA metrics here.
-  RequestQueueStore::UpdateStatus status =
-      offline_pages::ChangeRequestsState(db, request_ids, new_state);
-  runner->PostTask(FROM_HERE, base::Bind(callback, status));
+  offline_pages::ChangeRequestsState(db, request_ids, new_state, results,
+                                     requests);
+  runner->PostTask(FROM_HERE, base::Bind(callback, results, requests));
 }
 
 // static
@@ -348,11 +393,12 @@ void RequestQueueStoreSQL::RemoveRequests(
     const RemoveCallback& callback) {
   // Set up a failed set of results in case we fail the DB check.
   RequestQueue::UpdateMultipleRequestResults results;
-    for (int64_t request_id : request_ids)
-      results.push_back(std::make_pair(
-          request_id, RequestQueue::UpdateRequestResult::STORE_FAILURE));
+  std::vector<SavePageRequest> requests;
+  for (int64_t request_id : request_ids)
+    results.push_back(std::make_pair(
+        request_id, RequestQueue::UpdateRequestResult::STORE_FAILURE));
 
-  if (!CheckDb(base::Bind(callback, results)))
+  if (!CheckDb(base::Bind(callback, results, requests)))
     return;
 
   background_task_runner_->PostTask(
@@ -364,8 +410,10 @@ void RequestQueueStoreSQL::RemoveRequests(
 void RequestQueueStoreSQL::ChangeRequestsState(
     const std::vector<int64_t>& request_ids,
     const SavePageRequest::RequestState new_state,
-    const UpdateCallback& callback) {
-  if (!CheckDb(base::Bind(callback, UpdateStatus::FAILED)))
+    const UpdateMultipleRequestsCallback& callback) {
+  RequestQueue::UpdateMultipleRequestResults results;
+  std::vector<SavePageRequest> requests;
+  if (!CheckDb(base::Bind(callback, results, requests)))
     return;
 
   background_task_runner_->PostTask(
