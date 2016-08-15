@@ -2150,5 +2150,72 @@ TEST_F(GLRendererPartialSwapTest, NoPartialSwap) {
   RunTest(false);
 }
 
+class GLRendererWithMockContextTest : public ::testing::Test {
+ protected:
+  class MockContextProvider : public TestContextProvider {
+   public:
+    explicit MockContextProvider(std::unique_ptr<TestContextSupport> support)
+        : TestContextProvider(std::move(support),
+                              base::MakeUnique<TestGLES2Interface>(),
+                              TestWebGraphicsContext3D::Create()) {}
+
+    MOCK_METHOD0(DeleteCachedResources, void());
+
+   private:
+    ~MockContextProvider() = default;
+  };
+
+  class MockContextSupport : public TestContextSupport {
+   public:
+    MockContextSupport() {}
+    MOCK_METHOD1(SetAggressivelyFreeResources,
+                 void(bool aggressively_free_resources));
+    MOCK_METHOD2(SetClientVisible, void(int client_id, bool is_visible));
+    MOCK_CONST_METHOD0(AnyClientsVisible, bool());
+  };
+
+  void SetUp() override {
+    auto context_support = base::WrapUnique(new MockContextSupport());
+    context_support_ptr_ = context_support.get();
+    context_provider_ = new MockContextProvider(std::move(context_support));
+    output_surface_ = FakeOutputSurface::Create3d(context_provider_);
+    output_surface_->BindToClient(&output_surface_client_);
+    resource_provider_ =
+        FakeResourceProvider::Create(output_surface_.get(), nullptr);
+    renderer_ = base::WrapUnique(new GLRenderer(
+        &renderer_client_, &tree_settings_, output_surface_.get(),
+        resource_provider_.get(), NULL, 0));
+  }
+
+  FakeRendererClient renderer_client_;
+  RendererSettings tree_settings_;
+  FakeOutputSurfaceClient output_surface_client_;
+  MockContextSupport* context_support_ptr_;
+  scoped_refptr<MockContextProvider> context_provider_;
+  std::unique_ptr<OutputSurface> output_surface_;
+  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<Renderer> renderer_;
+};
+
+TEST_F(GLRendererWithMockContextTest,
+       ContextPurgedWhenRendererBecomesInvisible) {
+  EXPECT_TRUE(renderer_->visible());
+
+  // Ensure our expectations run in order.
+  ::testing::InSequence s;
+
+  EXPECT_CALL(*(context_support_ptr_), SetClientVisible(0, false));
+  EXPECT_CALL(*(context_support_ptr_), AnyClientsVisible())
+      .WillOnce(Return(false));
+  EXPECT_CALL(*(context_provider_.get()), DeleteCachedResources());
+  EXPECT_CALL(*(context_support_ptr_), SetAggressivelyFreeResources(true));
+  renderer_->SetVisible(false);
+
+  // Ensure all expectations have been satisfied after the call to SetVisible.
+  Mock::VerifyAndClearExpectations(context_support_ptr_);
+
+  EXPECT_FALSE(renderer_->visible());
+}
+
 }  // namespace
 }  // namespace cc

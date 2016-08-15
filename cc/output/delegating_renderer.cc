@@ -101,20 +101,4 @@ void DelegatingRenderer::ReclaimResources(
   resource_provider_->ReceiveReturnsFromParent(resources);
 }
 
-void DelegatingRenderer::DidChangeVisibility() {
-  ContextProvider* context_provider = output_surface_->context_provider();
-  if (!visible()) {
-    TRACE_EVENT0("cc", "DelegatingRenderer::SetVisible dropping resources");
-    if (context_provider) {
-      context_provider->DeleteCachedResources();
-      context_provider->ContextGL()->Flush();
-    }
-  }
-  if (context_provider) {
-    // If we are not visible, we ask the context to aggressively free resources.
-    context_provider->ContextSupport()->SetAggressivelyFreeResources(
-        !visible());
-  }
-}
-
 }  // namespace cc

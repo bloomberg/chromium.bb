@@ -438,28 +438,25 @@ class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
       scoped_refptr<ContextProvider> worker_context_provider) override {
     auto mock_worker_context_support_owned =
         base::MakeUnique<MockContextSupport>();
-    auto* mock_worker_context_support = mock_worker_context_support_owned.get();
+    mock_context_support_ptr_ = mock_worker_context_support_owned.get();
 
     auto mock_worker_context_provider = make_scoped_refptr(
         new MockContextProvider(std::move(mock_worker_context_support_owned)));
+    mock_context_provider_ptr_ = mock_worker_context_provider.get();
 
     // Workers are bound on the main thread.
     mock_worker_context_provider->BindToCurrentThread();
 
-    // At init, we expect one call to set visibility to true.
-    testing::Expectation visibility_true =
-        EXPECT_CALL(*mock_worker_context_support,
-                    SetAggressivelyFreeResources(false))
-            .Times(1);
+    // Ensure that our mock calls execute in sequence.
+    ::testing::InSequence s;
 
-    // After running, we should get exactly one call to
-    // DeleteCachedResources, along with SetAggressivelyFreeResources.
-    EXPECT_CALL(*mock_worker_context_provider, DeleteCachedResources())
-        .After(visibility_true);
-    EXPECT_CALL(*mock_worker_context_support,
-                SetAggressivelyFreeResources(true))
-        .After(visibility_true)
-        .WillOnce(testing::Invoke([this](bool is_visible) { EndTest(); }));
+    // At init, visibility is set to true and we will call
+    // SetAggressivelyFreeResources(false).
+    EXPECT_CALL(*mock_context_support_ptr_, SetClientVisible(0, true));
+    EXPECT_CALL(*mock_context_support_ptr_, AnyClientsVisible())
+        .WillOnce(::testing::Return(true));
+    EXPECT_CALL(*mock_context_support_ptr_,
+                SetAggressivelyFreeResources(false));
 
     return LayerTreeHostTest::CreateDelegatingOutputSurface(
         std::move(compositor_context_provider),
@@ -472,7 +469,29 @@ class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
   }
 
   void BeginTest() override {}
-  void AfterTest() override {}
+
+  void BeforeVisibilityChange() {
+    // Ensure that our initialization expectations have completed.
+    Mock::VerifyAndClearExpectations(mock_context_support_ptr_);
+
+    // Ensure that our mock calls execute in sequence.
+    ::testing::InSequence s;
+
+    // While running, visibility is set to false, and we will call
+    // DeleteCachedResources and SetAggressivelyFreeResources(true).
+    EXPECT_CALL(*mock_context_support_ptr_, SetClientVisible(0, false));
+    EXPECT_CALL(*mock_context_support_ptr_, AnyClientsVisible())
+        .WillOnce(::testing::Return(false));
+    EXPECT_CALL(*mock_context_provider_ptr_, DeleteCachedResources());
+    EXPECT_CALL(*mock_context_support_ptr_, SetAggressivelyFreeResources(true))
+        .WillOnce(testing::Invoke([this](bool is_visible) { EndTest(); }));
+  }
+
+  void AfterTest() override {
+    // Ensure all expectations are satisfied.
+    Mock::VerifyAndClearExpectations(mock_context_support_ptr_);
+    Mock::VerifyAndClearExpectations(mock_context_provider_ptr_);
+  }
 
  private:
   class MockContextProvider : public TestContextProvider {
@@ -490,9 +509,15 @@ class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
 
   class MockContextSupport : public TestContextSupport {
    public:
+    MockContextSupport() {}
     MOCK_METHOD1(SetAggressivelyFreeResources,
                  void(bool aggressively_free_resources));
+    MOCK_METHOD2(SetClientVisible, void(int client_id, bool is_visible));
+    MOCK_CONST_METHOD0(AnyClientsVisible, bool());
   };
+
+  MockContextSupport* mock_context_support_ptr_;
+  MockContextProvider* mock_context_provider_ptr_;
 };
 
 // Test if the LTH successfully frees resources on the worker context when
@@ -502,6 +527,7 @@ class LayerTreeHostFreeWorkerContextResourcesOnInvisible
  public:
   void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
                                    bool success) override {
+    BeforeVisibilityChange();
     PostSetVisibleToMainThread(false);
   }
 };
@@ -516,6 +542,7 @@ class LayerTreeHostFreeWorkerContextResourcesOnZeroMemoryLimit
  public:
   void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
                                    bool success) override {
+    BeforeVisibilityChange();
     ManagedMemoryPolicy zero_policy(
         0, gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING, 0);
     host_impl->SetMemoryPolicy(zero_policy);

@@ -277,25 +277,6 @@ unsigned OutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
-void OutputSurface::SetWorkerContextShouldAggressivelyFreeResources(
-    bool aggressively_free_resources) {
-  TRACE_EVENT1("cc",
-               "OutputSurface::SetWorkerContextShouldAggressivelyFreeResources",
-               "aggressively_free_resources", aggressively_free_resources);
-  if (auto* context_provider = worker_context_provider()) {
-    ContextProvider::ScopedContextLock scoped_context(context_provider);
-
-    if (aggressively_free_resources) {
-      context_provider->DeleteCachedResources();
-    }
-
-    if (auto* context_support = context_provider->ContextSupport()) {
-      context_support->SetAggressivelyFreeResources(
-          aggressively_free_resources);
-    }
-  }
-}
-
 bool OutputSurface::SurfaceIsSuspendForRecycle() const {
   return false;
 }

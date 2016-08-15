@@ -37,7 +37,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   void ReclaimResources(const ReturnedResourceArray&) override;
 
  private:
-  void DidChangeVisibility() override;
+  void DidChangeVisibility() override {}
 
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;

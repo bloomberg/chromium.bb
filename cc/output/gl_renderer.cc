@@ -449,10 +449,23 @@ const RendererCapabilitiesImpl& GLRenderer::Capabilities() const {
 }
 
 void GLRenderer::DidChangeVisibility() {
-  EnforceMemoryPolicy();
+  if (!visible()) {
+    TRACE_EVENT0("cc", "GLRenderer::DidChangeVisibility dropping resources");
+    ReleaseRenderPassTextures();
+    DiscardBackbuffer();
+  }
 
-  // If we are not visible, we ask the context to aggressively free resources.
-  context_support_->SetAggressivelyFreeResources(!visible());
+  PrepareGeometry(NO_BINDING);
+
+  // Handle cleanup of resources on the ContextProvider. The compositor
+  // ContextProvider is not shared, so always pass 0 for the client_id.
+  // TODO(crbug.com/487471): Update this when we share compositor
+  // ContextProviders.
+  context_support_->SetClientVisible(0 /* client_id */, visible());
+  bool aggressively_free_resources = !context_support_->AnyClientsVisible();
+  if (aggressively_free_resources)
+    output_surface_->context_provider()->DeleteCachedResources();
+  context_support_->SetAggressivelyFreeResources(aggressively_free_resources);
 }
 
 void GLRenderer::ReleaseRenderPassTextures() { render_pass_textures_.clear(); }
@@ -2976,17 +2989,6 @@ void GLRenderer::DidReceiveTextureInUseResponses(
   color_lut_cache_.Swap();
 }
 
-void GLRenderer::EnforceMemoryPolicy() {
-  if (!visible()) {
-    TRACE_EVENT0("cc", "GLRenderer::EnforceMemoryPolicy dropping resources");
-    ReleaseRenderPassTextures();
-    DiscardBackbuffer();
-    output_surface_->context_provider()->DeleteCachedResources();
-    gl_->Flush();
-  }
-  PrepareGeometry(NO_BINDING);
-}
-
 void GLRenderer::DiscardBackbuffer() {
   if (is_backbuffer_discarded_)
     return;
@@ -3115,8 +3117,6 @@ void GLRenderer::GetFramebufferPixelsAsync(
 
   gl_->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
   context_support_->SignalQuery(query, cancelable_callback);
-
-  EnforceMemoryPolicy();
 }
 
 void GLRenderer::FinishedReadback(unsigned source_buffer,

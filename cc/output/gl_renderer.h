@@ -254,7 +254,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   void DiscardBackbuffer() override;
   void EnsureBackbuffer() override;
-  void EnforceMemoryPolicy();
 
   void ScheduleCALayers(DrawingFrame* frame);
   void ScheduleOverlays(DrawingFrame* frame);

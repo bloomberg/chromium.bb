@@ -84,6 +84,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -154,6 +155,35 @@ void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
     UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorTouchScrollUpdateThread",
                           scroll_on_main_thread);
   }
+}
+
+// Calls SetClientVisible on the provided |context_provider| and handles
+// additional cache cleanup.
+void UpdateVisibilityForContextProvider(int client_id,
+                                        ContextProvider* context_provider,
+                                        bool is_visible) {
+  if (!context_provider)
+    return;
+  gpu::ContextSupport* context_support = context_provider->ContextSupport();
+
+  context_support->SetClientVisible(client_id, is_visible);
+  bool aggressively_free_resources = !context_support->AnyClientsVisible();
+  if (aggressively_free_resources) {
+    context_provider->DeleteCachedResources();
+  }
+  context_support->SetAggressivelyFreeResources(aggressively_free_resources);
+}
+
+// Same as UpdateVisibilityForContextProvider, except that the
+// |context_provider| is locked before being used.
+void LockAndUpdateVisibilityForContextProvider(
+    int client_id,
+    ContextProvider* context_provider,
+    bool is_visible) {
+  if (!context_provider)
+    return;
+  ContextProvider::ScopedContextLock hold(context_provider);
+  UpdateVisibilityForContextProvider(client_id, context_provider, is_visible);
 }
 
 }  // namespace
@@ -1265,15 +1295,19 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
 
   if (global_tile_state_.hard_memory_limit_in_bytes > 0) {
     // If |global_tile_state_.hard_memory_limit_in_bytes| is greater than 0, we
-    // allow the worker context and image decode controller to retain allocated
-    // resources. Notify them here. If the memory policy has become zero, we'll
-    // handle the notification in NotifyAllTileTasksCompleted, after
-    // in-progress work finishes.
+    // are visible. Notify the worker context here. We handle becoming
+    // invisible in NotifyAllTileTasksComplete to avoid interrupting running
+    // work.
     if (output_surface_) {
-      output_surface_->SetWorkerContextShouldAggressivelyFreeResources(
-          false /* aggressively_free_resources */);
+      LockAndUpdateVisibilityForContextProvider(
+          id_, output_surface_->worker_context_provider(),
+          true /* is_visible */);
     }
 
+    // If |global_tile_state_.hard_memory_limit_in_bytes| is greater than 0, we
+    // allow the image decode controller to retain resources. We handle the
+    // equal to 0 case in NotifyAllTileTasksComplete to avoid interrupting
+    // running work.
     if (image_decode_controller_) {
       image_decode_controller_->SetShouldAggressivelyFreeResources(
           false /* aggressively_free_resources */);
@@ -1350,16 +1384,18 @@ void LayerTreeHostImpl::NotifyAllTileTasksCompleted() {
   // The tile tasks started by the most recent call to PrepareTiles have
   // completed. Now is a good time to free resources if necessary.
   if (global_tile_state_.hard_memory_limit_in_bytes == 0) {
-    // Free image decode controller resources before worker context resources.
-    // This ensures that the imaged decode controller has released all Skia refs
-    // at the time Skia's cleanup executes (within worker context's cleanup).
+    // Free image decode controller resources before notifying the worker
+    // context of visibility change. This ensures that the imaged decode
+    // controller has released all Skia refs at the time Skia's cleanup
+    // executes (within worker context's cleanup).
     if (image_decode_controller_) {
       image_decode_controller_->SetShouldAggressivelyFreeResources(
           true /* aggressively_free_resources */);
     }
     if (output_surface_) {
-      output_surface_->SetWorkerContextShouldAggressivelyFreeResources(
-          true /* aggressively_free_resources */);
+      LockAndUpdateVisibilityForContextProvider(
+          id_, output_surface_->worker_context_provider(),
+          false /* is_visible */);
     }
   }
 }
@@ -2064,10 +2100,11 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   if (!visible)
     PrepareTiles();
 
-  if (!renderer_)
-    return;
-
-  renderer_->SetVisible(visible);
+  // Update visibility for the compositor context provider.
+  if (output_surface_) {
+    UpdateVisibilityForContextProvider(id_, output_surface_->context_provider(),
+                                       visible);
+  }
 }
 
 void LayerTreeHostImpl::SetNeedsOneBeginImplFrame() {
