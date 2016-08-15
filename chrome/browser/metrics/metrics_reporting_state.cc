@@ -67,12 +67,24 @@ void SetMetricsReporting(bool to_update_pref,
       metrics::prefs::kMetricsReportingEnabled, updated_pref);
 #endif  // !defined(OS_ANDROID)
 
-  // Uses the current state of whether reporting is enabled to enabled services.
+  // Clear the client id pref when opting out. Note: Mirrors code in
+  // uma_session_stats.cc. TODO(asvitkine): Unify.
+  if (!updated_pref) {
+    // Note: Clearing client id will not affect the running state (e.g. field
+    // trial randomization), as the pref is only read on startup.
+    g_browser_process->local_state()->ClearPref(
+        metrics::prefs::kMetricsClientID);
+    g_browser_process->local_state()->ClearPref(
+        metrics::prefs::kMetricsReportingEnabledTimestamp);
+  }
+
+  // Uses the current state of whether reporting is enabled to enable services.
   g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
 
   // When a user opts in to the metrics reporting service, the previously
   // collected data should be cleared to ensure that nothing is reported before
   // a user opts in and all reported data is accurate.
+  // TODO(asvitkine): This logic should be added to uma_session_stats.cc too.
   if (updated_pref && metrics)
     metrics->ClearSavedStabilityMetrics();
 

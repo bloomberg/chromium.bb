@@ -1271,13 +1271,12 @@ void CollectStatsConsent::TearDownTestCase() {
 
 // Install the registry override and apply the settings to the registry.
 void CollectStatsConsent::SetUp() {
+  // Override both HKLM and HKCU as tests may touch either/both.
+  override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
+  override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+
   const StatsState& stats_state = GetParam();
   const HKEY root_key = stats_state.root_key();
-  base::string16 reg_temp_name(
-      stats_state.system_level() ? L"HKLM_" : L"HKCU_");
-  reg_temp_name += L"CollectStatsConsent";
-  override_manager_.OverrideRegistry(root_key);
-
   if (stats_state.multi_install()) {
     MakeChromeMultiInstall(root_key);
     ApplySetting(stats_state.state_value(), root_key, *binaries_state_key_);
@@ -1333,9 +1332,20 @@ TEST_P(CollectStatsConsent, GetCollectStatsConsentAtLevel) {
 // Test that stats consent can be flipped to the opposite setting, that the new
 // setting takes affect, and that the correct registry location is modified.
 TEST_P(CollectStatsConsent, SetCollectStatsConsentAtLevel) {
+  // When testing revoking consent, verify that backup client info is cleared.
+  // To do so, first add some backup client info.
+  if (GetParam().is_consent_granted()) {
+    metrics::ClientInfo client_info;
+    client_info.client_id = "01234567-89ab-cdef-fedc-ba9876543210";
+    client_info.installation_date = 123;
+    client_info.reporting_enabled_date = 345;
+    GoogleUpdateSettings::StoreMetricsClientInfo(client_info);
+  }
+
   EXPECT_TRUE(GoogleUpdateSettings::SetCollectStatsConsentAtLevel(
                   GetParam().system_level(),
                   !GetParam().is_consent_granted()));
+
   const base::string16* const reg_keys[] = {
     chrome_state_key_,
     chrome_state_medium_key_,
@@ -1359,6 +1369,8 @@ TEST_P(CollectStatsConsent, SetCollectStatsConsentAtLevel) {
     EXPECT_TRUE(GoogleUpdateSettings::GetCollectStatsConsentAtLevel(
                     GetParam().system_level()));
     EXPECT_EQ(1UL, value);
+    // Verify that backup client info has been cleared.
+    EXPECT_FALSE(GoogleUpdateSettings::LoadMetricsClientInfo());
   }
 }
 

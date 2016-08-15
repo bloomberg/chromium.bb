@@ -329,6 +329,11 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
         << google_update::kRegUsageStatsField << " in key " << reg_path
         << "; result: " << result;
   }
+
+  // When opting out, clear registry backup of client id and related values.
+  if (result == ERROR_SUCCESS && !consented)
+    StoreMetricsClientInfo(metrics::ClientInfo());
+
   return (result == ERROR_SUCCESS);
 }
 

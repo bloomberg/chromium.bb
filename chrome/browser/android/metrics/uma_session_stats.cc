@@ -117,6 +117,17 @@ static void UpdateMetricsServiceState(JNIEnv* env,
             may_record));
   }
 
+  // Clear the client id pref when opting out. Note: Mirrors code in
+  // metrics_reporting_state.cc. TODO(asvitkine): Unify.
+  if (!may_record) {
+    // Note: Clearing client id will not affect the running state (e.g. field
+    // trial randomization), as the pref is only read on startup.
+    g_browser_process->local_state()->ClearPref(
+        metrics::prefs::kMetricsClientID);
+    g_browser_process->local_state()->ClearPref(
+        metrics::prefs::kMetricsReportingEnabledTimestamp);
+  }
+
   g_browser_process->GetMetricsServicesManager()->UpdatePermissions(
       may_record, may_upload);
 }

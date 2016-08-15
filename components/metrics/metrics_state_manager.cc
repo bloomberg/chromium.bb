@@ -83,10 +83,15 @@ bool MetricsStateManager::IsMetricsReportingEnabled() {
 }
 
 void MetricsStateManager::ForceClientIdCreation() {
-  if (!client_id_.empty())
-    return;
+  {
+    std::string client_id_from_prefs =
+        local_state_->GetString(prefs::kMetricsClientID);
+    // If client id in prefs matches the cached copy, return early.
+    if (!client_id_from_prefs.empty() && client_id_from_prefs == client_id_)
+      return;
+    client_id_.swap(client_id_from_prefs);
+  }
 
-  client_id_ = local_state_->GetString(prefs::kMetricsClientID);
   if (!client_id_.empty()) {
     // It is technically sufficient to only save a backup of the client id when
     // it is initially generated below, but since the backup was only introduced

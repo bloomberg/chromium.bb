@@ -55,8 +55,8 @@ const char kMetricsResetIds[] = "user_experience_metrics.reset_metrics_ids";
 const char kMetricsReportingEnabled[] =
     "user_experience_metrics.reporting_enabled";
 
-// Date/time when the user opted in to UMA and generated the client id for the
-// very first time (local machine time, stored as a 64-bit time_t value).
+// Date/time when the user opted in to UMA and generated the client id most
+// recently (local machine time, stored as a 64-bit time_t value).
 const char kMetricsReportingEnabledTimestamp[] =
     "user_experience_metrics.client_id_timestamp";
 
