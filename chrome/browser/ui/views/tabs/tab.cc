@@ -116,6 +116,11 @@ const int kImmersiveLoadingStepCount = 32;
 
 const char kTabCloseButtonName[] = "TabCloseButton";
 
+// Desaturate favicon HSL shift values.
+const double kDesaturateHue = -1.0;
+const double kDesaturateSaturation = 0.0;
+const double kDesaturateLightness = 0.6;
+
 // Parameters for PaintTabBackgroundUsingParams().
 struct PaintBackgroundParams {
   PaintBackgroundParams(bool is_active,
@@ -578,6 +583,26 @@ void PaintTabBackgroundUsingParams(gfx::Canvas* fill_canvas,
   }
 }
 
+// Desaturates the favicon. Should only be used for when a tab encounters a
+// network error state.
+void PaintDesaturatedFavIcon(gfx::Canvas* canvas,
+                             gfx::ImageSkia& favicon,
+                             const gfx::Rect& bounds) {
+  color_utils::HSL shift = {kDesaturateHue,
+                            kDesaturateSaturation,
+                            kDesaturateLightness};
+  gfx::ImageSkia desaturated_favicon =
+      gfx::ImageSkiaOperations::CreateHSLShiftedImage(favicon, shift);
+  if (!bounds.IsEmpty()) {
+    canvas->DrawImageInt(desaturated_favicon, 0, 0,
+                         bounds.width(), bounds.height(),
+                         bounds.x(), bounds.y(), bounds.width(),
+                         bounds.height(), false);
+  } else {
+    canvas->DrawImageInt(desaturated_favicon, 0, 0);
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -759,7 +784,8 @@ bool Tab::ThrobberView::CanProcessEventsWithinSubtree() const {
 
 void Tab::ThrobberView::OnPaint(gfx::Canvas* canvas) {
   const TabRendererData::NetworkState state = owner_->data().network_state;
-  if (state == TabRendererData::NETWORK_STATE_NONE)
+  if (state == TabRendererData::NETWORK_STATE_NONE ||
+      state == TabRendererData::NETWORK_STATE_ERROR)
     return;
 
   const ui::ThemeProvider* tp = GetThemeProvider();
@@ -897,7 +923,6 @@ bool Tab::IsSelected() const {
 
 void Tab::SetData(const TabRendererData& data) {
   DCHECK(GetWidget());
-
   if (data_.Equals(data))
     return;
 
@@ -939,9 +964,10 @@ void Tab::SetData(const TabRendererData& data) {
 
 void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
   if (state == data_.network_state &&
-      state == TabRendererData::NETWORK_STATE_NONE) {
-    // If the network state is none and hasn't changed, do nothing. Otherwise we
-    // need to advance the animation frame.
+      (state == TabRendererData::NETWORK_STATE_NONE ||
+       state == TabRendererData::NETWORK_STATE_ERROR)) {
+    // If the network state is none or is an network error and hasn't changed,
+    // do nothing. Otherwise we need to advance the animation frame.
     return;
   }
 
@@ -1594,7 +1620,12 @@ void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
     const float kIndicatorCropRadius = 4.5;
     gfx::Canvas icon_canvas(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
                             canvas->image_scale(), false);
-    icon_canvas.DrawImageInt(favicon_, 0, 0);
+
+    if (data().network_state == TabRendererData::NETWORK_STATE_ERROR)
+      PaintDesaturatedFavIcon(&icon_canvas, favicon_, gfx::Rect());
+    else
+      icon_canvas.DrawImageInt(favicon_, 0, 0);
+
     SkPaint clear_paint;
     clear_paint.setAntiAlias(true);
     clear_paint.setXfermodeMode(SkXfermode::kClear_Mode);
@@ -1631,7 +1662,8 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     return;
 
   // Throbber will do its own painting.
-  if (data().network_state != TabRendererData::NETWORK_STATE_NONE)
+  if (data().network_state != TabRendererData::NETWORK_STATE_NONE &&
+      data().network_state != TabRendererData::NETWORK_STATE_ERROR)
     return;
 
   // Ensure that |favicon_| is created.
@@ -1657,9 +1689,14 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
       !should_display_crashed_favicon_) {
     PaintPinnedTabTitleChangedIndicatorAndIcon(canvas, bounds);
   } else if (!favicon_.isNull()) {
-    canvas->DrawImageInt(favicon_, 0, 0, bounds.width(), bounds.height(),
-                         bounds.x(), bounds.y(), bounds.width(),
-                         bounds.height(), false);
+    // Desaturate favicons of tabs with network errors.
+    if (data().network_state == TabRendererData::NETWORK_STATE_ERROR) {
+      PaintDesaturatedFavIcon(canvas, favicon_, bounds);
+    } else {
+      canvas->DrawImageInt(favicon_, 0, 0, bounds.width(), bounds.height(),
+                           bounds.x(), bounds.y(), bounds.width(),
+                           bounds.height(), false);
+    }
   }
 }
 
@@ -1683,7 +1720,8 @@ void Tab::AdvanceLoadingAnimation() {
     return;
   }
 
-  if (state == TabRendererData::NETWORK_STATE_NONE) {
+  if (state == TabRendererData::NETWORK_STATE_NONE ||
+      state == TabRendererData::NETWORK_STATE_ERROR) {
     throbber_->ResetStartTimes();
     throbber_->SetVisible(false);
     ScheduleIconPaint();
