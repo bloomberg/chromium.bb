@@ -20,10 +20,10 @@ namespace blink {
 class CustomElementDefinition;
 class CustomElementDefinitionBuilder;
 class CustomElementDescriptor;
-class Document;
 class Element;
 class ElementRegistrationOptions;
 class ExceptionState;
+class LocalDOMWindow;
 class ScriptPromiseResolver;
 class ScriptState;
 class ScriptValue;
@@ -35,7 +35,7 @@ class CORE_EXPORT CustomElementsRegistry final
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CustomElementsRegistry);
 public:
-    static CustomElementsRegistry* create(Document*);
+    static CustomElementsRegistry* create(const LocalDOMWindow*);
 
     virtual ~CustomElementsRegistry() = default;
 
@@ -56,6 +56,10 @@ public:
     bool nameIsDefined(const AtomicString& name) const;
     CustomElementDefinition* definitionForName(const AtomicString& name) const;
 
+    // TODO(dominicc): Switch most callers of definitionForName to
+    // definitionFor when implementing type extensions.
+    CustomElementDefinition* definitionFor(const CustomElementDescriptor&) const;
+
     // TODO(dominicc): Consider broadening this API when type extensions are
     // implemented.
     void addCandidate(Element*);
@@ -64,14 +68,15 @@ public:
         const AtomicString& name,
         ExceptionState&);
 
+    void entangle(V0CustomElementRegistrationContext*);
+
     DECLARE_TRACE();
 
 private:
-    friend class CustomElementsRegistryTestBase;
+    friend class CustomElementsRegistryTest;
 
-    CustomElementsRegistry(Document*);
+    CustomElementsRegistry(const LocalDOMWindow*);
 
-    V0CustomElementRegistrationContext* v0();
     bool v0NameIsDefined(const AtomicString& name);
 
     void collectCandidates(
@@ -85,7 +90,10 @@ private:
         HeapHashMap<AtomicString, Member<CustomElementDefinition>>;
     DefinitionMap m_definitions;
 
-    Member<Document> m_document;
+    Member<const LocalDOMWindow> m_owner;
+
+    using V0RegistrySet = HeapHashSet<WeakMember<V0CustomElementRegistrationContext>>;
+    Member<V0RegistrySet> m_v0;
 
     using UpgradeCandidateSet = HeapHashSet<WeakMember<Element>>;
     using UpgradeCandidateMap = HeapHashMap<

@@ -20,6 +20,7 @@
 #include "core/dom/custom/CustomElementUpgradeReaction.h"
 #include "core/dom/custom/CustomElementUpgradeSorter.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -63,16 +64,19 @@ private:
 };
 
 CustomElementsRegistry* CustomElementsRegistry::create(
-    Document* document)
+    const LocalDOMWindow* owner)
 {
-    CustomElementsRegistry* registry = new CustomElementsRegistry(document);
-    if (V0CustomElementRegistrationContext* v0Context = registry->v0())
-        v0Context->setV1(registry);
+    CustomElementsRegistry* registry = new CustomElementsRegistry(owner);
+    Document* document = owner->document();
+    if (V0CustomElementRegistrationContext* v0 =
+        document ? document->registrationContext() : nullptr)
+        registry->entangle(v0);
     return registry;
 }
 
-CustomElementsRegistry::CustomElementsRegistry(Document* document)
-    : m_document(document)
+CustomElementsRegistry::CustomElementsRegistry(const LocalDOMWindow* owner)
+    : m_owner(owner)
+    , m_v0 (new V0RegistrySet())
     , m_upgradeCandidates(new UpgradeCandidateMap())
 {
 }
@@ -80,7 +84,8 @@ CustomElementsRegistry::CustomElementsRegistry(Document* document)
 DEFINE_TRACE(CustomElementsRegistry)
 {
     visitor->trace(m_definitions);
-    visitor->trace(m_document);
+    visitor->trace(m_owner);
+    visitor->trace(m_v0);
     visitor->trace(m_upgradeCandidates);
     visitor->trace(m_whenDefinedPromiseMap);
 }
@@ -189,20 +194,35 @@ ScriptValue CustomElementsRegistry::get(const AtomicString& name)
     return definition->getConstructorForScript();
 }
 
+CustomElementDefinition* CustomElementsRegistry::definitionFor(const CustomElementDescriptor& desc) const
+{
+    CustomElementDefinition* definition = definitionForName(desc.name());
+    if (!definition)
+        return nullptr;
+    // The definition for a customized built-in element, such as
+    // <button is="my-button"> should not be provided for an
+    // autonomous element, such as <my-button>, even though the
+    // name "my-button" matches.
+    return definition->descriptor() == desc ? definition : nullptr;
+}
+
 bool CustomElementsRegistry::nameIsDefined(const AtomicString& name) const
 {
     return m_definitions.contains(name);
 }
 
-V0CustomElementRegistrationContext* CustomElementsRegistry::v0()
+void CustomElementsRegistry::entangle(V0CustomElementRegistrationContext* v0)
 {
-    return m_document->registrationContext();
+    m_v0->add(v0);
+    v0->setV1(this);
 }
 
 bool CustomElementsRegistry::v0NameIsDefined(const AtomicString& name)
 {
-    if (V0CustomElementRegistrationContext* v0Context = v0())
-        return v0Context->nameIsDefined(name);
+    for (const auto& v0 : *m_v0) {
+        if (v0->nameIsDefined(name))
+            return true;
+    }
     return false;
 }
 
@@ -264,7 +284,12 @@ void CustomElementsRegistry::collectCandidates(
     }
 
     m_upgradeCandidates->remove(it);
-    sorter.sorted(elements, m_document.get());
+
+    Document* document = m_owner->document();
+    if (!document)
+        return;
+
+    sorter.sorted(elements, document);
 }
 
 } // namespace blink

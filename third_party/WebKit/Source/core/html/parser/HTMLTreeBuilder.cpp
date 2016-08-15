@@ -267,7 +267,7 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, Document& document,
 #if ENABLE(ASSERT)
     , m_isAttached(true)
 #endif
-    , m_tree(document, parserContentPolicy)
+    , m_tree(parser->reentryPermit(), document, parserContentPolicy)
     , m_insertionMode(InitialMode)
     , m_originalInsertionMode(InitialMode)
     , m_shouldSkipLeadingNewline(false)
@@ -326,8 +326,9 @@ DEFINE_TRACE(HTMLTreeBuilder)
 void HTMLTreeBuilder::detach()
 {
 #if ENABLE(ASSERT)
-    // This call makes little sense in fragment mode, but for consistency
-    // DocumentParser expects detach() to always be called before it's destroyed.
+    // This call makes little sense in fragment mode, but for
+    // consistency DocumentParser expects detach() to always be called
+    // before it's destroyed.
     m_isAttached = false;
 #endif
     // HTMLConstructionSite might be on the callstack when detach() is called

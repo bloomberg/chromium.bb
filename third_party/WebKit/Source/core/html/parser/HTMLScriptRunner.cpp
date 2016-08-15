@@ -133,11 +133,11 @@ static KURL documentURLForScriptExecution(Document* document)
 
 using namespace HTMLNames;
 
-HTMLScriptRunner::HTMLScriptRunner(Document* document, HTMLScriptRunnerHost* host)
-    : m_document(document)
+HTMLScriptRunner::HTMLScriptRunner(HTMLParserReentryPermit* reentryPermit, Document* document, HTMLScriptRunnerHost* host)
+    : m_reentryPermit(reentryPermit)
+    , m_document(document)
     , m_host(host)
     , m_parserBlockingScript(PendingScript::create(nullptr, nullptr))
-    , m_scriptNestingLevel(0)
     , m_hasScriptsWaitingForResources(false)
 {
     ASSERT(m_host);
@@ -164,6 +164,9 @@ void HTMLScriptRunner::detach()
         pendingScript->releaseElementAndClear();
     }
     m_document = nullptr;
+    // m_reentryPermit is not cleared here, because the script runner
+    // may continue to run pending scripts after the parser has
+    // detached.
 }
 
 bool HTMLScriptRunner::isPendingScriptReady(const PendingScript* script)
@@ -208,7 +211,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendi
     // Clear the pending script before possible re-entrancy from executeScript()
     Element* element = pendingScript->releaseElementAndClear();
     if (ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element)) {
-        NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
+        HTMLParserReentryPermit::ScriptNestingLevelIncrementer nestingLevelIncrementer = m_reentryPermit->incrementScriptNestingLevel();
         IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_document);
         if (errorOccurred) {
             TRACE_EVENT_WITH_FLOW1("blink", "HTMLScriptRunner ExecuteScriptFailed", element, TRACE_EVENT_FLAG_FLOW_IN,
@@ -419,7 +422,7 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
             Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
 
         InsertionPointRecord insertionPointRecord(m_host->inputStream());
-        NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
+        HTMLParserReentryPermit::ScriptNestingLevelIncrementer nestingLevelIncrementer = m_reentryPermit->incrementScriptNestingLevel();
 
         scriptLoader->prepareScript(scriptStartPosition);
 
@@ -429,11 +432,11 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
         if (scriptLoader->willExecuteWhenDocumentFinishedParsing()) {
             requestDeferredScript(script);
         } else if (scriptLoader->readyToBeParserExecuted()) {
-            if (m_scriptNestingLevel == 1) {
+            if (m_reentryPermit->scriptNestingLevel() == 1u) {
                 m_parserBlockingScript->setElement(script);
                 m_parserBlockingScript->setStartingPosition(scriptStartPosition);
             } else {
-                ASSERT(m_scriptNestingLevel > 1);
+                DCHECK_GT(m_reentryPermit->scriptNestingLevel(), 1u);
                 m_parserBlockingScript->releaseElementAndClear();
                 ScriptSourceCode sourceCode(script->textContent(), documentURLForScriptExecution(m_document), scriptStartPosition);
                 doExecuteScript(script, sourceCode, scriptStartPosition);

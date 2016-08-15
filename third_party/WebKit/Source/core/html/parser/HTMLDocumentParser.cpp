@@ -92,7 +92,7 @@ static HTMLTokenizer::State tokenizerStateForContextElement(Element* contextElem
 HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, ParserSynchronizationPolicy syncPolicy)
     : HTMLDocumentParser(document, AllowScriptingContent, syncPolicy)
 {
-    m_scriptRunner = HTMLScriptRunner::create(&document, this);
+    m_scriptRunner = HTMLScriptRunner::create(reentryPermit(), &document, this);
     m_treeBuilder = HTMLTreeBuilder::create(this, document, AllowScriptingContent, m_options);
 }
 
@@ -110,6 +110,7 @@ HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* cont
 HTMLDocumentParser::HTMLDocumentParser(Document& document, ParserContentPolicy contentPolicy, ParserSynchronizationPolicy syncPolicy)
     : ScriptableDocumentParser(document, contentPolicy)
     , m_options(&document)
+    , m_reentryPermit(HTMLParserReentryPermit::create())
     , m_token(syncPolicy == ForceSynchronousParsing ? wrapUnique(new HTMLToken) : nullptr)
     , m_tokenizer(syncPolicy == ForceSynchronousParsing ? HTMLTokenizer::create(m_options) : nullptr)
     , m_loadingTaskRunner(TaskRunnerHelper::getLoadingTaskRunner(&document)->clone())
@@ -955,7 +956,7 @@ bool HTMLDocumentParser::isWaitingForScripts() const
     // never be possible to end up with both objects holding a blocking script.
     ASSERT(!(treeBuilderHasBlockingScript && scriptRunnerHasBlockingScript));
     // If either object has a blocking script, the parser should be paused.
-    return treeBuilderHasBlockingScript || scriptRunnerHasBlockingScript;
+    return treeBuilderHasBlockingScript || scriptRunnerHasBlockingScript || m_reentryPermit->parserPauseFlag();
 }
 
 void HTMLDocumentParser::resumeParsingAfterScriptExecution()

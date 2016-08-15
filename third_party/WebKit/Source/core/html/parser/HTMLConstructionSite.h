@@ -31,9 +31,8 @@
 #include "core/dom/ParserContentPolicy.h"
 #include "core/html/parser/HTMLElementStack.h"
 #include "core/html/parser/HTMLFormattingElementList.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -101,15 +100,17 @@ enum FlushMode {
 };
 
 class AtomicHTMLToken;
+class CustomElementDefinition;
 class Document;
 class Element;
 class HTMLFormElement;
+class HTMLParserReentryPermit;
 
 class HTMLConstructionSite final {
     WTF_MAKE_NONCOPYABLE(HTMLConstructionSite);
     DISALLOW_NEW();
 public:
-    HTMLConstructionSite(Document&, ParserContentPolicy);
+    HTMLConstructionSite(HTMLParserReentryPermit*, Document&, ParserContentPolicy);
     ~HTMLConstructionSite();
     DECLARE_TRACE();
 
@@ -243,6 +244,9 @@ private:
     void executeTask(HTMLConstructionSiteTask&);
     void queueTask(const HTMLConstructionSiteTask&);
 
+    CustomElementDefinition* lookUpCustomElementDefinition(Document&, AtomicHTMLToken*);
+
+    HTMLParserReentryPermit* m_reentryPermit;
     Member<Document> m_document;
 
     // This is the root ContainerNode to which the parser attaches all newly

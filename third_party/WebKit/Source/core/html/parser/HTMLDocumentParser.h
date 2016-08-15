@@ -35,6 +35,7 @@
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLParserOptions.h"
+#include "core/html/parser/HTMLParserReentryPermit.h"
 #include "core/html/parser/HTMLPreloadScanner.h"
 #include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/HTMLSourceTracker.h"
@@ -47,6 +48,7 @@
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/Deque.h"
+#include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/TextPosition.h"
 #include <memory>
@@ -94,6 +96,8 @@ public:
 
     void suspendScheduledTasks() final;
     void resumeScheduledTasks() final;
+
+    HTMLParserReentryPermit* reentryPermit() { return m_reentryPermit.get(); }
 
     struct TokenizedChunk {
         USING_FAST_MALLOC(TokenizedChunk);
@@ -204,6 +208,7 @@ private:
 
     HTMLParserOptions m_options;
     HTMLInputStream m_input;
+    RefPtr<HTMLParserReentryPermit> m_reentryPermit;
 
     std::unique_ptr<HTMLToken> m_token;
     std::unique_ptr<HTMLTokenizer> m_tokenizer;

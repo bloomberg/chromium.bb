@@ -25,63 +25,21 @@
 
 namespace blink {
 
-class CustomElementsRegistryTestBase : public ::testing::Test {
+class CustomElementsRegistryTest : public ::testing::Test {
 protected:
-    virtual Document& document() = 0;
-    virtual CustomElementsRegistry& registry() = 0;
-
-    void collectCandidates(
-        const CustomElementDescriptor& desc,
-        HeapVector<Member<Element>>* elements)
+    void SetUp()
     {
-        registry().collectCandidates(desc, elements);
-    }
-};
-
-class CustomElementsRegistryTest : public CustomElementsRegistryTestBase {
-protected:
-    void SetUp() override
-    {
-        CustomElementsRegistryTestBase::SetUp();
-
-        m_document = HTMLDocument::create();
-        m_document->appendChild(CreateElement("html").inDocument(m_document));
-
-        m_registry = CustomElementsRegistry::create(m_document);
-    }
-
-    void TearDown() override
-    {
-        m_document = nullptr;
-        m_registry = nullptr;
-        CustomElementsRegistryTestBase::TearDown();
-    }
-
-    Document& document() override { return *m_document; }
-    CustomElementsRegistry& registry() override { return *m_registry; }
-
-private:
-    Persistent<Document> m_document;
-    Persistent<CustomElementsRegistry> m_registry;
-};
-
-class CustomElementsRegistryFrameTest : public CustomElementsRegistryTestBase {
-protected:
-    void SetUp() override
-    {
-        CustomElementsRegistryTestBase::SetUp();
         m_page.reset(DummyPageHolder::create(IntSize(1, 1)).release());
     }
 
-    void TearDown() override
+    void TearDown()
     {
         m_page = nullptr;
-        CustomElementsRegistryTestBase::TearDown();
     }
 
-    Document& document() override { return m_page->document(); }
+    Document& document() { return m_page->document(); }
 
-    CustomElementsRegistry& registry() override
+    CustomElementsRegistry& registry()
     {
         return *m_page->frame().localDOMWindow()->customElements();
     }
@@ -89,6 +47,13 @@ protected:
     ScriptState* scriptState()
     {
         return ScriptState::forMainWorld(&m_page->frame());
+    }
+
+    void collectCandidates(
+        const CustomElementDescriptor& desc,
+        HeapVector<Member<Element>>* elements)
+    {
+        registry().collectCandidates(desc, elements);
     }
 
     ShadowRoot* attachShadowTo(Element* element)
@@ -361,7 +326,7 @@ public:
     }
 };
 
-TEST_F(CustomElementsRegistryFrameTest, define_upgradesInDocumentElements)
+TEST_F(CustomElementsRegistryTest, define_upgradesInDocumentElements)
 {
     ScriptForbiddenScope doNotRelyOnScript;
 
@@ -408,7 +373,7 @@ TEST_F(CustomElementsRegistryFrameTest, define_upgradesInDocumentElements)
         << "upgrade should not invoke other callbacks";
 }
 
-TEST_F(CustomElementsRegistryFrameTest, attributeChangedCallback)
+TEST_F(CustomElementsRegistryTest, attributeChangedCallback)
 {
     ScriptForbiddenScope doNotRelyOnScript;
 
@@ -445,7 +410,7 @@ TEST_F(CustomElementsRegistryFrameTest, attributeChangedCallback)
         << "upgrade should not invoke other callbacks";
 }
 
-TEST_F(CustomElementsRegistryFrameTest, disconnectedCallback)
+TEST_F(CustomElementsRegistryTest, disconnectedCallback)
 {
     ScriptForbiddenScope doNotRelyOnScript;
 

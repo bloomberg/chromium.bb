@@ -26,6 +26,8 @@
 
 #include "core/html/parser/HTMLConstructionSite.h"
 
+#include "bindings/core/v8/Microtask.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/HTMLElementFactory.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Comment.h"
@@ -33,9 +35,15 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/dom/Text.h"
+#include "core/dom/custom/CEReactionsScope.h"
+#include "core/dom/custom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
+#include "core/dom/custom/CustomElementsRegistry.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -44,6 +52,7 @@
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/parser/HTMLParserReentryPermit.h"
 #include "core/html/parser/HTMLStackItem.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/loader/FrameLoader.h"
@@ -314,8 +323,9 @@ void HTMLConstructionSite::executeQueuedTasks()
     // We might be detached now.
 }
 
-HTMLConstructionSite::HTMLConstructionSite(Document& document, ParserContentPolicy parserContentPolicy)
-    : m_document(&document)
+HTMLConstructionSite::HTMLConstructionSite(HTMLParserReentryPermit* reentryPermit, Document& document, ParserContentPolicy parserContentPolicy)
+    : m_reentryPermit(reentryPermit)
+    , m_document(&document)
     , m_attachmentRoot(document)
     , m_parserContentPolicy(parserContentPolicy)
     , m_isParsingFragment(false)
@@ -747,17 +757,111 @@ inline Document& HTMLConstructionSite::ownerDocumentForCurrentNode()
     return currentNode()->document();
 }
 
+// "look up a custom element definition" for a token
+// https://html.spec.whatwg.org/#look-up-a-custom-element-definition
+CustomElementDefinition* HTMLConstructionSite::lookUpCustomElementDefinition(Document& document, AtomicHTMLToken* token)
+{
+    // "2. If document does not have a browsing context, return null."
+    LocalDOMWindow* window = document.domWindow();
+    if (!window)
+        return nullptr;
+
+    // "3. Let registry be document's browsing context's Window's
+    // CustomElementsRegistry object."
+    CustomElementsRegistry* registry = window->maybeCustomElements();
+    if (!registry)
+        return nullptr;
+
+    const AtomicString& localName = token->name();
+    const Attribute* isAttribute = token->getAttributeItem(HTMLNames::isAttr);
+    const AtomicString& name = isAttribute ? isAttribute->value() : localName;
+    CustomElementDescriptor descriptor(name, localName);
+
+    // 4.-6.
+    return registry->definitionFor(descriptor);
+}
+
+// "create an element for a token"
+// https://html.spec.whatwg.org/#create-an-element-for-the-token
+// TODO(dominicc): When form association is separate from creation,
+// unify this with foreign element creation. Add a namespace parameter
+// and check for HTML namespace to lookupCustomElementDefinition.
 HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token)
 {
+    // "1. Let document be intended parent's node document."
     Document& document = ownerDocumentForCurrentNode();
+
     // Only associate the element with the current form if we're creating the new element
     // in a document with a browsing context (rather than in <template> contents).
+    // TODO(dominicc): Change form to happen after element creation when
+    // implementing customized built-in elements.
     HTMLFormElement* form = document.frame() ? m_form.get() : nullptr;
-    // FIXME: This can't use HTMLConstructionSite::createElement because we
-    // have to pass the current form element.  We should rework form association
-    // to occur after construction to allow better code sharing here.
-    HTMLElement* element = HTMLElementFactory::createHTMLElement(token->name(), document, form, getCreateElementFlags());
-    setAttributes(element, token, m_parserContentPolicy);
+
+    // "2. Let local name be the tag name of the token."
+    // "3. Let is be the value of the "is" attribute in the giev token ..." etc.
+    // "4. Let definition be the result of looking up a custom element ..." etc.
+    CustomElementDefinition* definition = m_isParsingFragment ? nullptr : lookUpCustomElementDefinition(document, token);
+    // "5. If definition is non-null and the parser was not originally created
+    // for the HTML fragment parsing algorithm, then let will execute script
+    // be true."
+    bool willExecuteScript = definition && !m_isParsingFragment;
+
+    HTMLElement* element;
+
+    if (willExecuteScript) {
+        // "6.1 Increment the parser's script nesting level."
+        HTMLParserReentryPermit::ScriptNestingLevelIncrementer incrementScriptNestingLevel = m_reentryPermit->incrementScriptNestingLevel();
+
+        // "6.2 Set the parser pause flag to true."
+        m_reentryPermit->pause();
+
+        // TODO(dominicc): Change this once resolved:
+        // https://github.com/whatwg/html/issues/1630
+        IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWrites(
+            &document);
+
+        // "6.3 If the JavaScript execution context stack is empty,
+        // then perform a microtask checkpoint."
+
+        // TODO(dominicc): This is the way the Blink HTML parser
+        // performs checkpoints, but note the spec is different--it
+        // talks about the JavaScript stack, not the script nesting
+        // level.
+        if (1u == m_reentryPermit->scriptNestingLevel())
+            Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
+
+        // "6.4 Push a new element queue onto the custom element
+        // reactions stack."
+        CEReactionsScope reactions;
+
+        // 7.
+        QualifiedName elementQName(nullAtom, token->name(), HTMLNames::xhtmlNamespaceURI);
+        element = definition->createElementSync(document, elementQName);
+
+        // "8. Append each attribute in the given token to element."
+        // We don't use setAttributes here because the custom element
+        // constructor may have manipulated attributes.
+        for (const auto& attribute : token->attributes())
+            element->setAttribute(attribute.name(), attribute.value());
+
+        // "9. If will execute script is true, then ..." etc. The
+        // CEReactionsScope and ScriptNestingLevelIncrementer
+        // destructors implement steps 9.1-4.
+    } else {
+        // FIXME: This can't use
+        // HTMLConstructionSite::createElement because we have to
+        // pass the current form element. We should rework form
+        // association to occur after construction to allow better
+        // code sharing here.
+        element = HTMLElementFactory::createHTMLElement(token->name(), document, form, getCreateElementFlags());
+
+        // "8. Append each attribute in the given token to element."
+        setAttributes(element, token, m_parserContentPolicy);
+    }
+
+    // TODO(dominicc): Implement steps 10-12 when customized built-in
+    // elements are implemented.
+
     return element;
 }
 

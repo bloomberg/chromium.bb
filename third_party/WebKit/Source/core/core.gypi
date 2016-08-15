@@ -3267,6 +3267,8 @@
             'html/parser/HTMLParserIdioms.cpp',
             'html/parser/HTMLParserOptions.cpp',
             'html/parser/HTMLParserOptions.h',
+            'html/parser/HTMLParserReentryPermit.cpp',
+            'html/parser/HTMLParserReentryPermit.h',
             'html/parser/HTMLParserScheduler.cpp',
             'html/parser/HTMLParserScheduler.h',
             'html/parser/HTMLParserThread.cpp',

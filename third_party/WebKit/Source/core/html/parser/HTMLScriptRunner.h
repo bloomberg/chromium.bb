@@ -29,9 +29,10 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/PendingScript.h"
 #include "core/fetch/ResourceClient.h"
+#include "core/html/parser/HTMLParserReentryPermit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Deque.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
@@ -46,9 +47,9 @@ class HTMLScriptRunner final : public GarbageCollectedFinalized<HTMLScriptRunner
     USING_GARBAGE_COLLECTED_MIXIN(HTMLScriptRunner);
     USING_PRE_FINALIZER(HTMLScriptRunner, detach);
 public:
-    static HTMLScriptRunner* create(Document* document, HTMLScriptRunnerHost* host)
+    static HTMLScriptRunner* create(HTMLParserReentryPermit* reentryPermit, Document* document, HTMLScriptRunnerHost* host)
     {
-        return new HTMLScriptRunner(document, host);
+        return new HTMLScriptRunner(reentryPermit, document, host);
     }
     ~HTMLScriptRunner();
 
@@ -63,7 +64,7 @@ public:
     bool executeScriptsWaitingForParsing();
 
     bool hasParserBlockingScript() const;
-    bool isExecutingScript() const { return !!m_scriptNestingLevel; }
+    bool isExecutingScript() const { return !!m_reentryPermit->scriptNestingLevel(); }
 
     // ResourceClient
     void notifyFinished(Resource*) override;
@@ -72,7 +73,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    HTMLScriptRunner(Document*, HTMLScriptRunnerHost*);
+    HTMLScriptRunner(HTMLParserReentryPermit*, Document*, HTMLScriptRunnerHost*);
 
     void executeParsingBlockingScript();
     void executePendingScriptAndDispatchEvent(PendingScript*, ScriptStreamer::Type);
@@ -88,12 +89,12 @@ private:
 
     void stopWatchingResourceForLoad(Resource*);
 
+    RefPtr<HTMLParserReentryPermit> m_reentryPermit;
     Member<Document> m_document;
     Member<HTMLScriptRunnerHost> m_host;
     Member<PendingScript> m_parserBlockingScript;
     // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
     HeapDeque<Member<PendingScript>> m_scriptsToExecuteAfterParsing;
-    unsigned m_scriptNestingLevel;
 
     // We only want stylesheet loads to trigger script execution if script
     // execution is currently stopped due to stylesheet loads, otherwise we'd
