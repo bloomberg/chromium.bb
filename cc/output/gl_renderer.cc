@@ -3942,7 +3942,22 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
   // |params.dst_rect| now contain values that reflect a potentially increased
   // size quad.
   gfx::RectF updated_dst_rect = params.dst_rect;
-  *new_bounds = updated_dst_rect;
+
+  // Round the size of the IOSurface to a multiple of 64 pixels. This reduces
+  // memory fragmentation. https://crbug.com/146070. This also allows IOSurfaces
+  // to be more easily reused during a resize operation.
+  uint32_t iosurface_multiple = 64;
+  uint32_t iosurface_width = MathUtil::UncheckedRoundUp(
+      static_cast<uint32_t>(updated_dst_rect.width()), iosurface_multiple);
+  uint32_t iosurface_height = MathUtil::UncheckedRoundUp(
+      static_cast<uint32_t>(updated_dst_rect.height()), iosurface_multiple);
+
+  *resource = overlay_resource_pool_->AcquireResource(
+      gfx::Size(iosurface_width, iosurface_height), ResourceFormat::RGBA_8888,
+      output_surface_->device_color_space());
+  *new_bounds =
+      gfx::RectF(updated_dst_rect.x(), updated_dst_rect.y(),
+                 (*resource)->size().width(), (*resource)->size().height());
 
   // Calculate new projection and window matrices for a minimally sized viewport
   // using InitializeViewport(). This requires creating a dummy DrawingFrame.
@@ -3982,9 +3997,6 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
   }
 
   // Establish destination texture.
-  *resource = overlay_resource_pool_->AcquireResource(
-      gfx::Size(updated_dst_rect.width(), updated_dst_rect.height()),
-      ResourceFormat::RGBA_8888, output_surface_->device_color_space());
   ResourceProvider::ScopedWriteLockGL destination(resource_provider_,
                                                   (*resource)->id(), false);
   GLuint temp_fbo;
