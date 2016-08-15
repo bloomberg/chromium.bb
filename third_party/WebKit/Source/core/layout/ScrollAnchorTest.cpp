@@ -561,6 +561,48 @@ TEST_F(ScrollAnchorTest, DescendsIntoContainerWithFloat)
         scrollAnchor(viewport).anchorObject());
 }
 
+// Test then an element and its children are not selected as the anchor when
+// it has the overflow-anchor property set to none.
+TEST_F(ScrollAnchorTest, OptOutElement)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "     body { height: 1000px }"
+        "     .div {"
+        "          height: 100px; width: 100px;"
+        "          border: 1px solid gray; background-color: #afa;"
+        "     }"
+        "     #innerDiv {"
+        "          height: 50px; width: 50px;"
+        "          border: 1px solid gray; background-color: pink;"
+        "     }"
+        "</style>"
+        "<div id='changer'></div>"
+        "<div class='div' id='firstDiv'><div id='innerDiv'></div></div>"
+        "<div class='div' id='secondDiv'></div>");
+
+    ScrollableArea* viewport = layoutViewport();
+    scrollLayoutViewport(DoubleSize(0, 50));
+
+    // No opt-out.
+    setHeight(document().getElementById("changer"), 100);
+    EXPECT_EQ(150, viewport->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("innerDiv")->layoutObject(),
+        scrollAnchor(viewport).anchorObject());
+
+    // Clear anchor and opt-out element.
+    scrollLayoutViewport(DoubleSize(0, 10));
+    document().getElementById("firstDiv")->setAttribute(HTMLNames::styleAttr,
+        AtomicString("overflow-anchor: none"));
+    update();
+
+    // Opted out element and it's children skipped.
+    setHeight(document().getElementById("changer"), 200);
+    EXPECT_EQ(260, viewport->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("secondDiv")->layoutObject(),
+        scrollAnchor(viewport).anchorObject());
+}
+
 TEST_F(ScrollAnchorTest, OptOutBody)
 {
     setBodyInnerHTML(

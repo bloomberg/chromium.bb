@@ -150,6 +150,9 @@ ScrollAnchor::ExamineResult ScrollAnchor::examine(const LayoutObject* candidate)
     if (!candidateMayMoveWithScroller(candidate, m_scroller))
         return ExamineResult(Skip);
 
+    if (candidate->style()->overflowAnchor() == AnchorNone)
+        return ExamineResult(Skip);
+
     LayoutRect candidateRect = relativeBounds(candidate, m_scroller);
     LayoutRect visibleRect = scrollerLayoutBoxItem(m_scroller).overflowClipRect(LayoutPoint());
 
@@ -199,6 +202,11 @@ void ScrollAnchor::save()
         clear();
         return;
     }
+
+    // TODO(ymalik): Just because we have a previously selected anchor doesn't
+    // mean that it's guaranteed to be valid. For e.g. overflow-anchor: none
+    // may have been added after anchor selection. The SANACLAP design poposal
+    // may fix this (see crbug.com/637626).
     if (m_current)
         return;
 
