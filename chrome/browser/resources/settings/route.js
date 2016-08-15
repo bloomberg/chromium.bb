@@ -263,27 +263,37 @@ cr.define('settings', function() {
   };
 
   /**
-   * The current active route. This updated only by settings.navigateTo.
+   * The current active route. This updated is only by settings.navigateTo or
+   * settings.initializeRouteFromUrl.
    * @private {!settings.Route}
    */
   var currentRoute_ = Route.BASIC;
 
   /**
-   * The current query parameters. This updated only by settings.navigateTo.
+   * The current query parameters. This is updated only by settings.navigateTo
+   * or settings.initializeRouteFromUrl.
    * @private {!URLSearchParams}
    */
   var currentQueryParameters_ = new URLSearchParams();
 
-  // Initialize the route and query params from the URL.
-  (function() {
+  /** @private */
+  var initializeRouteFromUrlCalled_ = false;
+
+  /**
+   * Initialize the route and query params from the URL.
+   */
+  var initializeRouteFromUrl = function() {
+    assert(!initializeRouteFromUrlCalled_);
+    initializeRouteFromUrlCalled_ = true;
+
     var route = getRouteForPath(window.location.pathname);
     if (route) {
       currentRoute_ = route;
       currentQueryParameters_ = new URLSearchParams(window.location.search);
     } else {
-      window.history.pushState(undefined, '', Route.BASIC.path);
+      window.history.replaceState(undefined, '', Route.BASIC.path);
     }
-  })();
+  };
 
   /**
    * Helper function to set the current route and notify all observers.
@@ -339,6 +349,7 @@ cr.define('settings', function() {
     Route: Route,
     RouteObserverBehavior: RouteObserverBehavior,
     getRouteForPath: getRouteForPath,
+    initializeRouteFromUrl: initializeRouteFromUrl,
     getCurrentRoute: getCurrentRoute,
     getQueryParameters: getQueryParameters,
     navigateTo: navigateTo,

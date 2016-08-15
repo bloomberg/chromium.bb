@@ -19,6 +19,12 @@ settings.defaultResourceLoaded = true;
 Polymer({
   is: 'cr-settings',
 
+  /** @override */
+  created: function() {
+    settings.initializeRouteFromUrl();
+  },
+
+  /** @override */
   ready: function() {
     this.$.ui.directionDelegate = new settings.DirectionDelegateImpl;
   },
