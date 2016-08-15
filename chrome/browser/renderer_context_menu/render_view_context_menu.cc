@@ -2098,7 +2098,7 @@ bool RenderViewContextMenu::IsRouteMediaEnabled() const {
   if (!media_router::MediaRouterEnabled(browser_context_))
     return false;
 
-  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  Browser* browser = GetBrowser();
   if (!browser)
     return false;
 
@@ -2377,13 +2377,9 @@ void RenderViewContextMenu::ExecRouteMedia() {
   if (!media_router::MediaRouterEnabled(browser_context_))
     return;
 
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(source_web_contents_);
-  DCHECK(browser);
-
   media_router::MediaRouterDialogController* dialog_controller =
       media_router::MediaRouterDialogController::GetOrCreateForWebContents(
-          source_web_contents_);
+          embedder_web_contents_);
   if (!dialog_controller)
     return;
 
