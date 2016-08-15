@@ -41,4 +41,11 @@ test(() => {
   assert_equals(colorFor(host.shadowRoot.querySelector('#shadowChild4')), 'rgb(0, 0, 0)');
 }, '<link rel="alternate stylesheet" title="xxx"> shoule behave as <link rel="alternate stylesheet"> (never enabled because title is ignored) in a connected shadow tree.');
 
+test(() => {
+  assert_equals(host.shadowRoot.styleSheets.length, 4);
+  assert_equals(host.shadowRoot.styleSheets[0].title, null);
+  assert_equals(host.shadowRoot.styleSheets[1].title, null);
+  assert_equals(host.shadowRoot.styleSheets[2].title, null);
+  assert_equals(host.shadowRoot.styleSheets[3].title, null);
+}, 'StyleSheet.title should always be null in shadow trees.');
 </script>

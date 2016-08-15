@@ -60,7 +60,7 @@ HTMLStyleElement* HTMLStyleElement::create(Document& document, bool createdByPar
 
 void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
-    if (name == titleAttr && m_sheet) {
+    if (name == titleAttr && m_sheet && isInDocumentTree()) {
         m_sheet->setTitle(value);
     } else if (name == mediaAttr && isConnected() && document().isActive() && m_sheet) {
         m_sheet->setMediaQueries(MediaQuerySet::create(value));

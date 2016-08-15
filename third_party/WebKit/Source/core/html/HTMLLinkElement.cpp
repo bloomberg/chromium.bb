@@ -473,7 +473,8 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
             clearSheet();
         m_sheet = CSSStyleSheet::create(restoredSheet, m_owner);
         m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
-        m_sheet->setTitle(m_owner->title());
+        if (m_owner->isInDocumentTree())
+            m_sheet->setTitle(m_owner->title());
         setCrossOriginStylesheetStatus(m_sheet.get());
 
         m_loading = false;
@@ -494,7 +495,8 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
     m_sheet = CSSStyleSheet::create(styleSheet, m_owner);
     m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
-    m_sheet->setTitle(m_owner->title());
+    if (m_owner->isInDocumentTree())
+        m_sheet->setTitle(m_owner->title());
     setCrossOriginStylesheetStatus(m_sheet.get());
 
     styleSheet->parseAuthorStyleSheet(cachedStyleSheet, m_owner->document().getSecurityOrigin());
@@ -710,7 +712,7 @@ void LinkStyle::process()
 
 void LinkStyle::setSheetTitle(const String& title)
 {
-    if (m_sheet)
+    if (m_sheet && m_owner->isInDocumentTree())
         m_sheet->setTitle(title);
 }
 

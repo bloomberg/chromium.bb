@@ -100,7 +100,7 @@ void SVGStyleElement::setTitle(const AtomicString& title)
 void SVGStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == SVGNames::titleAttr) {
-        if (m_sheet)
+        if (m_sheet && isInDocumentTree())
             m_sheet->setTitle(value);
 
         return;

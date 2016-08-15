@@ -14,4 +14,5 @@
 
     shouldBeEqualToString("getComputedStyle(root.querySelector('div')).color", "rgb(0, 128, 0)");
     shouldBeEqualToString("getComputedStyle(alternate).color", "rgb(0, 128, 0)");
+    shouldBeNull("host.shadowRoot.styleSheets[0].title");
 </script>
