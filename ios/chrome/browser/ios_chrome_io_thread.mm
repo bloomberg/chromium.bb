@@ -72,7 +72,6 @@
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
-#include "net/url_request/url_request_backoff_manager.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -409,13 +408,6 @@ void IOSChromeIOThread::Init() {
   network_session_configurator::ParseFieldTrials(
       /*is_quic_force_disabled=*/false,
       /*is_quic_force_enabled=*/false, quic_user_agent_id, &params_);
-  const version_info::Channel channel = ::GetChannel();
-  if (channel == version_info::Channel::UNKNOWN ||
-      channel == version_info::Channel::CANARY ||
-      channel == version_info::Channel::DEV) {
-    globals_->url_request_backoff_manager.reset(
-        new net::URLRequestBackoffManager());
-  }
 
   // InitSystemRequestContext turns right around and posts a task back
   // to the IO thread, so we can't let it run until we know the IO
@@ -561,7 +553,6 @@ net::URLRequestContext* IOSChromeIOThread::ConstructSystemRequestContext(
       globals->http_user_agent_settings.get());
   context->set_network_quality_estimator(
       globals->network_quality_estimator.get());
-  context->set_backoff_manager(globals->url_request_backoff_manager.get());
 
   context->set_http_server_properties(globals->http_server_properties.get());
 

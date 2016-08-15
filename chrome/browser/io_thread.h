@@ -85,7 +85,6 @@ class ProxyConfigService;
 class ProxyService;
 class SSLConfigService;
 class TransportSecurityState;
-class URLRequestBackoffManager;
 class URLRequestContext;
 class URLRequestContextGetter;
 class URLRequestJobFactory;
@@ -162,7 +161,6 @@ class IOThread : public content::BrowserThreadDelegate {
         proxy_script_fetcher_ftp_transaction_factory;
     std::unique_ptr<net::URLRequestJobFactory>
         proxy_script_fetcher_url_request_job_factory;
-    std::unique_ptr<net::URLRequestBackoffManager> url_request_backoff_manager;
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
     // TODO(willchan): Remove proxy script fetcher context since it's not
     // necessary now that I got rid of refcounting URLRequestContexts.

@@ -100,7 +100,6 @@
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_backoff_manager.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -617,14 +616,6 @@ void IOThread::Init() {
   TRACE_EVENT_END0("startup",
                    "IOThread::Init:ProxyScriptFetcherRequestContext");
 
-  const version_info::Channel channel = chrome::GetChannel();
-  if (channel == version_info::Channel::UNKNOWN ||
-      channel == version_info::Channel::CANARY ||
-      channel == version_info::Channel::DEV) {
-    globals_->url_request_backoff_manager.reset(
-        new net::URLRequestBackoffManager());
-  }
-
 #if defined(OS_MACOSX)
   // Start observing Keychain events. This needs to be done on the UI thread,
   // as Keychain services requires a CFRunLoop.
@@ -872,7 +863,6 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
       globals->http_user_agent_settings.get());
   context->set_network_quality_estimator(
       globals->network_quality_estimator.get());
-  context->set_backoff_manager(globals->url_request_backoff_manager.get());
 
   context->set_http_server_properties(globals->http_server_properties.get());
 

@@ -41,7 +41,6 @@
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
-#include "net/url_request/url_request_backoff_manager.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
@@ -212,7 +211,6 @@ URLRequestContextBuilder::URLRequestContextBuilder()
 #endif
       http_cache_enabled_(true),
       throttling_enabled_(false),
-      backoff_enabled_(false),
       sdch_enabled_(false),
       cookie_store_set_by_client_(false),
       net_log_(nullptr),
@@ -409,11 +407,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (throttling_enabled_) {
     storage->set_throttler_manager(
         base::WrapUnique(new URLRequestThrottlerManager()));
-  }
-
-  if (backoff_enabled_) {
-    storage->set_backoff_manager(
-        base::WrapUnique(new URLRequestBackoffManager()));
   }
 
   HttpNetworkSession::Params network_session_params;

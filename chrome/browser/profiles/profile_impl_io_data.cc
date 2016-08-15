@@ -477,8 +477,6 @@ void ProfileImplIOData::InitializeInternal(
       io_thread_globals->http_auth_handler_factory.get());
 
   main_context->set_proxy_service(proxy_service());
-  main_context->set_backoff_manager(
-      io_thread_globals->url_request_backoff_manager.get());
 
   net::ChannelIDService* channel_id_service = nullptr;
 
@@ -613,8 +611,6 @@ void ProfileImplIOData::
       std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>(), NULL,
       ftp_factory_.get());
   extensions_context->set_job_factory(extensions_job_factory_.get());
-  extensions_context->set_backoff_manager(
-      io_thread_globals->url_request_backoff_manager.get());
 }
 
 net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(

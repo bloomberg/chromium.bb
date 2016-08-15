@@ -295,10 +295,6 @@ class NET_EXPORT URLRequestContextBuilder {
     throttling_enabled_ = throttling_enabled;
   }
 
-  void set_backoff_enabled(bool backoff_enabled) {
-    backoff_enabled_ = backoff_enabled;
-  }
-
   void set_socket_performance_watcher_factory(
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory) {
     socket_performance_watcher_factory_ = socket_performance_watcher_factory;
@@ -358,7 +354,6 @@ class NET_EXPORT URLRequestContextBuilder {
 #endif
   bool http_cache_enabled_;
   bool throttling_enabled_;
-  bool backoff_enabled_;
   bool sdch_enabled_;
   bool cookie_store_set_by_client_;
 
