@@ -32,6 +32,7 @@ per-file *android*=nyquist@chromium.org
 per-file *android*=rmcilroy@chromium.org
 per-file *android*=torne@chromium.org
 per-file *android*=yfriedman@chromium.org
+per-file BUILD.gn=file://base/android/OWNERS
 
 # For FeatureList API:
 per-file feature_list*=asvitkine@chromium.org
