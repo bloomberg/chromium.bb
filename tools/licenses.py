@@ -245,6 +245,13 @@ SPECIAL_CASES = {
         "License": "Apache 2.0",
         "License File": "NOT_SHIPPED",
     },
+    os.path.join('third_party', 'swiftshader'): {
+        "Name": "SwiftShader",
+        "URL": "https://swiftshader.googlesource.com/SwiftShader",
+        "License": "Apache 2.0 and compatible licenses",
+        "License Android Compatible": "yes",
+        "License File": "/third_party/swiftshader/LICENSE.txt",
+    },
 }
 
 # Special value for 'License File' field used to indicate that the license file

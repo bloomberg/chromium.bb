@@ -20,9 +20,6 @@
       'defines': [
         'GL_INIT_IMPLEMENTATION',
       ],
-      'include_dirs': [
-        '<(DEPTH)/third_party/swiftshader/include',
-      ],
       'sources': [
         'gl_initializer.h',
         'gl_initializer_android.cc',
