@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -695,6 +696,7 @@ void OfflinePageModelImpl::OnCreateArchiveDone(const GURL& requested_url,
                                                ArchiverResult archiver_result,
                                                const GURL& url,
                                                const base::FilePath& file_path,
+                                               const base::string16& title,
                                                int64_t file_size) {
   if (requested_url != url) {
     DVLOG(1) << "Saved URL does not match requested URL.";
@@ -714,6 +716,7 @@ void OfflinePageModelImpl::OnCreateArchiveDone(const GURL& requested_url,
   }
   OfflinePageItem offline_page_item(url, offline_id, client_id, file_path,
                                     file_size, start_time);
+  offline_page_item.title = title;
   store_->AddOrUpdateOfflinePage(
       offline_page_item, base::Bind(&OfflinePageModelImpl::OnAddOfflinePageDone,
                                     weak_ptr_factory_.GetWeakPtr(), archiver,

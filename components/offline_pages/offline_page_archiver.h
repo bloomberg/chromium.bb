@@ -62,7 +62,9 @@ class OfflinePageArchiver {
                               ArchiverResult /* result */,
                               const GURL& /* url */,
                               const base::FilePath& /* file_path */,
-                              int64_t /* file_size */)> CreateArchiveCallback;
+                              const base::string16& /* title */,
+                              int64_t /* file_size */)>
+      CreateArchiveCallback;
 
   virtual ~OfflinePageArchiver() {}
 

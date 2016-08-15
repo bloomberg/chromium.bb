@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,6 +29,7 @@ const base::FilePath::CharType kTestFilePath[] = FILE_PATH_LITERAL(
     "/archive_dir/offline_page.mhtml");
 const int64_t kTestFileSize = 123456LL;
 const int64_t kTestArcihveId = 123456789LL;
+const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
 
 class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
  public:
@@ -76,10 +78,8 @@ void TestMHTMLArchiver::GenerateMHTML(const base::FilePath& archives_dir,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&TestMHTMLArchiver::OnGenerateMHTMLDone,
-                 base::Unretained(this),
-                 url_,
-                 base::FilePath(kTestFilePath),
-                 kTestFileSize));
+                 base::Unretained(this), url_, base::FilePath(kTestFilePath),
+                 kTestTitle, kTestFileSize));
 }
 
 bool TestMHTMLArchiver::HasConnectionSecurityError() {
@@ -122,6 +122,7 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
                            OfflinePageArchiver::ArchiverResult result,
                            const GURL& url,
                            const base::FilePath& file_path,
+                           const base::string16& title,
                            int64_t file_size);
 
   OfflinePageArchiver* last_archiver_;
@@ -160,6 +161,7 @@ void OfflinePageMHTMLArchiverTest::OnCreateArchiveDone(
     OfflinePageArchiver::ArchiverResult result,
     const GURL& url,
     const base::FilePath& file_path,
+    const base::string16& title,
     int64_t file_size) {
   last_url_ = url;
   last_archiver_ = archiver;

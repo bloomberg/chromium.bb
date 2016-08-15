@@ -16,6 +16,7 @@ OfflinePageTestArchiver::OfflinePageTestArchiver(
     Observer* observer,
     const GURL& url,
     ArchiverResult result,
+    const base::string16& result_title,
     int64_t size_to_report,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : observer_(observer),
@@ -24,6 +25,7 @@ OfflinePageTestArchiver::OfflinePageTestArchiver(
       size_to_report_(size_to_report),
       create_archive_called_(false),
       delayed_(false),
+      result_title_(result_title),
       task_runner_(task_runner) {}
 
 OfflinePageTestArchiver::~OfflinePageTestArchiver() {
@@ -52,8 +54,9 @@ void OfflinePageTestArchiver::CompleteCreateArchive() {
     base::File file(archive_path, base::File::FLAG_OPEN_ALWAYS);
   }
   observer_->SetLastPathCreatedByArchiver(archive_path);
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback_, this, result_, url_,
-                                               archive_path, size_to_report_));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(callback_, this, result_, url_, archive_path,
+                            result_title_, size_to_report_));
 }
 
 }  // namespace offline_pages

@@ -23,6 +23,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_archiver.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
@@ -176,6 +177,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                            OfflinePageArchiver::ArchiverResult result,
                            const GURL& url,
                            const base::FilePath& file_path,
+                           const base::string16& title,
                            int64_t file_size);
   void OnAddOfflinePageDone(OfflinePageArchiver* archiver,
                             const SavePageCallback& callback,

@@ -136,13 +136,15 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
   params.use_binary_encoding = true;
 
   web_contents_->GenerateMHTML(
-      params, base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
-                         weak_ptr_factory_.GetWeakPtr(), url, file_path));
+      params,
+      base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
+                 weak_ptr_factory_.GetWeakPtr(), url, file_path, title));
 }
 
 void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
     const GURL& url,
     const base::FilePath& file_path,
+    const base::string16& title,
     int64_t file_size) {
   if (file_size < 0) {
     DeleteFileOnFileThread(
@@ -153,7 +155,7 @@ void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback_, this, ArchiverResult::SUCCESSFULLY_CREATED, url,
-                   file_path, file_size));
+                   file_path, title, file_size));
   }
 }
 
@@ -169,8 +171,8 @@ bool OfflinePageMHTMLArchiver::HasConnectionSecurityError() {
 void OfflinePageMHTMLArchiver::ReportFailure(ArchiverResult result) {
   DCHECK(result != ArchiverResult::SUCCESSFULLY_CREATED);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback_, this, result, GURL(), base::FilePath(), 0));
+      FROM_HERE, base::Bind(callback_, this, result, GURL(), base::FilePath(),
+                            base::string16(), 0));
 }
 
 }  // namespace offline_pages

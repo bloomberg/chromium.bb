@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/strings/string16.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
@@ -201,7 +202,7 @@ std::unique_ptr<OfflinePageTestArchiver> OfflinePageUtilsTest::BuildArchiver(
     const base::FilePath& file_name) {
   std::unique_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
       this, url, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
-      kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
+      base::string16(), kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
   archiver->set_filename(file_name);
   return archiver;
 }

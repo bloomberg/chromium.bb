@@ -47,6 +47,7 @@ const ClientId kTestClientId1(kTestClientNamespace, "1234");
 const ClientId kTestClientId2(kTestClientNamespace, "5678");
 const ClientId kTestClientId3(kTestClientNamespace, "42");
 const int64_t kTestFileSize = 876543LL;
+const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
 
 bool URLSpecContains(std::string contains_value, const GURL& url) {
   std::string spec = url.spec();
@@ -259,8 +260,9 @@ std::unique_ptr<OfflinePageTestArchiver>
 OfflinePageModelImplTest::BuildArchiver(
     const GURL& url,
     OfflinePageArchiver::ArchiverResult result) {
-  return std::unique_ptr<OfflinePageTestArchiver>(new OfflinePageTestArchiver(
-      this, url, result, kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
+  return std::unique_ptr<OfflinePageTestArchiver>(
+      new OfflinePageTestArchiver(this, url, result, kTestTitle, kTestFileSize,
+                                  base::ThreadTaskRunnerHandle::Get()));
 }
 
 std::unique_ptr<OfflinePageMetadataStore>
@@ -444,6 +446,7 @@ TEST_F(OfflinePageModelImplTest, SavePageSuccessful) {
   EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
   EXPECT_EQ(0, offline_pages[0].access_count);
   EXPECT_EQ(0, offline_pages[0].flags);
+  EXPECT_EQ(kTestTitle, offline_pages[0].title);
 }
 
 TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverCancelled) {

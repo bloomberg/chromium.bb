@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string16.h"
 #include "components/offline_pages/offline_page_archiver.h"
 
 class GURL;
@@ -38,6 +39,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
       Observer* observer,
       const GURL& url,
       ArchiverResult result,
+      const base::string16& result_title,
       int64_t size_to_report,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~OfflinePageTestArchiver() override;
@@ -72,6 +74,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   int64_t size_to_report_;
   bool create_archive_called_;
   bool delayed_;
+  base::string16 result_title_;
   CreateArchiveCallback callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

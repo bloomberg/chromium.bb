@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
@@ -122,11 +123,10 @@ std::unique_ptr<OfflinePageArchiver> TestDelegate::CreatePageArchiver(
     content::WebContents* web_contents) {
   const size_t kArchiveSizeToReport = 1234;
   std::unique_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
-    observer_,
-    web_contents->GetLastCommittedURL(),
-    offline_pages::OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
-    kArchiveSizeToReport,
-    base::ThreadTaskRunnerHandle::Get()));
+      observer_, web_contents->GetLastCommittedURL(),
+      offline_pages::OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
+      base::string16(), kArchiveSizeToReport,
+      base::ThreadTaskRunnerHandle::Get()));
   return std::move(archiver);
 }
 

@@ -13,7 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -45,6 +47,7 @@ namespace {
 const GURL kTestPageUrl("http://test.org/page1");
 const ClientId kTestClientId = ClientId(kBookmarkNamespace, "1234");
 const int64_t kTestFileSize = 876543LL;
+const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
 const char kRedirectResultHistogram[] = "OfflinePages.RedirectResult";
 const int kTabId = 42;
 
@@ -212,7 +215,7 @@ OfflinePageTabHelperTest::BuildArchiver(const GURL& url,
                                         const base::FilePath& file_name) {
   std::unique_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
       this, url, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
-      kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
+      kTestTitle, kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
   archiver->set_filename(file_name);
   return archiver;
 }
