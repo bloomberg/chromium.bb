@@ -276,6 +276,9 @@ public class CardViewHolder extends NewTabPageViewHolder {
     protected void dismiss() {
         assert isDismissable();
 
+        // In case the user pressed dismiss on the context menu after swiping to dismiss.
+        if (getAdapterPosition() == RecyclerView.NO_POSITION) return;
+
         // Any changes in the animation here should be reflected also in |updateViewStateForDismiss|
         // and reset in onBindViewHolder.
         AnimatorSet animation = new AnimatorSet();
