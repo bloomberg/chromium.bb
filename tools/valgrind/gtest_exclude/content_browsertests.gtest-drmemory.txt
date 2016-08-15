@@ -1,9 +1,6 @@
 # http://crbug.com/293125
 WebRtcBrowserTest.CanMakeEmptyCallThenAddStreamsAndRenegotiate
 
-# https://crbug.com/376668
-TouchActionBrowserTest.DefaultAuto
-
 # crbug.com/395172
 WebRtcBrowserTest.CanForwardRemoteStream
 WebRtcBrowserTest.CanForwardRemoteStream720p
