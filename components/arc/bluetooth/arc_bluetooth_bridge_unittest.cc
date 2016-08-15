@@ -135,11 +135,17 @@ TEST_F(ArcBluetoothBridgeTest, LEDeviceFound) {
 
   EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress),
             addr->To<std::string>());
-  EXPECT_EQ(1u, adv_data.size());
+  EXPECT_EQ(2u, adv_data.size());
 
   EXPECT_TRUE(adv_data[0]->is_local_name());
   EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyName),
             adv_data[0]->get_local_name().To<std::string>());
+
+  EXPECT_TRUE(adv_data[1]->is_service_uuids());
+  EXPECT_EQ(1u, adv_data[1]->get_service_uuids().size());
+  EXPECT_EQ(device::BluetoothUUID(
+                bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
+            adv_data[1]->get_service_uuids()[0].To<device::BluetoothUUID>());
 }
 
 // Invoke GetGattDB and check correctness of the GattDB sent via arc bridge.

@@ -1542,7 +1542,7 @@ ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
   advertising_data.push_back(std::move(local_name));
 
   // ServiceUuid
-  BluetoothDevice::UUIDList uuid_list = device->GetServiceDataUUIDs();
+  BluetoothDevice::UUIDList uuid_list = device->GetUUIDs();
   if (uuid_list.size() > 0) {
     mojom::BluetoothAdvertisingDataPtr service_uuids =
         mojom::BluetoothAdvertisingData::New();
@@ -1552,7 +1552,7 @@ ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
   }
 
   // Service data
-  for (auto& uuid : uuid_list) {
+  for (auto& uuid : device->GetServiceDataUUIDs()) {
     base::BinaryValue* data = device->GetServiceData(uuid);
     if (data->GetSize() == 0)
       continue;
