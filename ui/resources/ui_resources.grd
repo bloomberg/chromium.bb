@@ -100,6 +100,7 @@
       <structure type="chrome_scaled_image" name="IDR_DISABLE" file="disable.png" />
       <structure type="chrome_scaled_image" name="IDR_DISABLE_H" file="disable_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_DISABLE_P" file="disable_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_ALL_APPS_DROP_DOWN" file="common/all_apps_drop_down.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON" file="common/default_favicon.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_32" file="common/default_favicon_32.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON_64" file="common/default_favicon_64.png" />

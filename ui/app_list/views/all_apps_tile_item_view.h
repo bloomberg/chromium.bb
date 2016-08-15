@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "ui/app_list/folder_image.h"
 #include "ui/app_list/views/tile_item_view.h"
 
 namespace app_list {
@@ -16,25 +15,19 @@ class AppListItemList;
 class ContentsView;
 
 // A tile item for the "All apps" button on the start page.
-class AllAppsTileItemView : public TileItemView, public FolderImageObserver {
+class AllAppsTileItemView : public TileItemView {
  public:
-  AllAppsTileItemView(ContentsView* contents_view, AppListItemList* item_list);
+  explicit AllAppsTileItemView(ContentsView* contents_view);
 
   ~AllAppsTileItemView() override;
-
-  // Generates the folder's icon from the icons of the items in the item list.
-  void UpdateIcon();
 
   // TileItemView overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // FolderImageObserver overrides:
-  void OnFolderImageUpdated() override;
-
  private:
   ContentsView* contents_view_;
 
-  FolderImage folder_image_;
+  DISALLOW_COPY_AND_ASSIGN(AllAppsTileItemView);
 };
 
 }  // namespace app_list

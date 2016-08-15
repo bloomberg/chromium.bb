@@ -163,8 +163,6 @@ StartPageView::StartPageTilesContainer::StartPageTilesContainer(
   }
 
   // Also add a special "all apps" button to the end of the container.
-  all_apps_button_->SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
-  all_apps_button_->UpdateIcon();
   all_apps_button_->SetParentBackgroundColor(kLabelBackgroundColor);
   AddChildView(all_apps_button_);
 }
@@ -249,9 +247,7 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
           view_delegate_->GetModel()->custom_launcher_page_name())),
       tiles_container_(new StartPageTilesContainer(
           app_list_main_view->contents_view(),
-          new AllAppsTileItemView(
-              app_list_main_view_->contents_view(),
-              view_delegate_->GetModel()->top_level_item_list()),
+          new AllAppsTileItemView(app_list_main_view_->contents_view()),
           view_delegate)) {
   // The view containing the start page WebContents and SearchBoxSpacerView.
   InitInstantContainer();
