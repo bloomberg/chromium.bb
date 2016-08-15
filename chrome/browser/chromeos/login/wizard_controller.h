@@ -328,7 +328,8 @@ class WizardController : public BaseScreenDelegate,
   void OnSharkConnected(std::unique_ptr<pairing_chromeos::HostPairingController>
                             pairing_controller);
 
-  // Callback function for AddNetworkRequested().
+  // Callback functions for AddNetworkRequested().
+  void OnSetHostNetworkSuccessful();
   void OnSetHostNetworkFailed();
 
   // Start the enrollment screen using the config from

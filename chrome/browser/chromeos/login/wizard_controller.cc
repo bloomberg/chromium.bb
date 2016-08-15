@@ -1132,6 +1132,9 @@ void WizardController::ConfigureHostRequested(
 }
 
 void WizardController::AddNetworkRequested(const std::string& onc_spec) {
+  remora_controller_->OnNetworkConnectivityChanged(
+      pairing_chromeos::HostPairingController::CONNECTIVITY_CONNECTING);
+
   NetworkScreen* network_screen = NetworkScreen::Get(this);
   const chromeos::NetworkState* network_state = chromeos::NetworkHandler::Get()
                                                     ->network_state_handler()
@@ -1142,7 +1145,7 @@ void WizardController::AddNetworkRequested(const std::string& onc_spec) {
         onc_spec, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
   } else {
     network_screen->CreateAndConnectNetworkFromOnc(
-        onc_spec, base::Bind(&WizardController::InitiateOOBEUpdate,
+        onc_spec, base::Bind(&WizardController::OnSetHostNetworkSuccessful,
                              weak_factory_.GetWeakPtr()),
         base::Bind(&WizardController::OnSetHostNetworkFailed,
                    weak_factory_.GetWeakPtr()));
@@ -1368,6 +1371,12 @@ void WizardController::OnSharkConnected(
       FROM_HERE, shark_connection_listener_.release());
   SetControllerDetectedPref(true);
   ShowHostPairingScreen();
+}
+
+void WizardController::OnSetHostNetworkSuccessful() {
+  remora_controller_->OnNetworkConnectivityChanged(
+      pairing_chromeos::HostPairingController::CONNECTIVITY_CONNECTED);
+  InitiateOOBEUpdate();
 }
 
 void WizardController::OnSetHostNetworkFailed() {
