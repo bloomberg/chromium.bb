@@ -11,6 +11,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 
 @interface SadTabView (ExposedForTesting)
@@ -31,14 +33,28 @@
 
 namespace {
 
+class ContentsDelegate : public content::WebContentsDelegate {
+ public:
+  content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) override {
+    opened_url_ = params.url;
+    return nullptr;
+  }
+
+  const GURL& OpenedURL() { return opened_url_; }
+
+ private:
+  GURL opened_url_;
+};
+
 class SadTabControllerTest : public ChromeRenderViewHostTestHarness {
  public:
-  SadTabControllerTest() : test_window_(nil) {
-    link_clicked_ = false;
-  }
+  SadTabControllerTest() : test_window_(nil) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    web_contents()->SetDelegate(&contents_delegate_);
     // Inherting from ChromeRenderViewHostTestHarness means we can't inherit
     // from from CocoaTest, so do a bootstrap and create test window.
     CocoaTest::BootstrapCocoa();
@@ -74,32 +90,17 @@ class SadTabControllerTest : public ChromeRenderViewHostTestHarness {
     return ([view helpTextView]);
   }
 
-  static bool link_clicked_;
+  ContentsDelegate contents_delegate_;
   CocoaTestHelperWindow* test_window_;
 };
-
-// static
-bool SadTabControllerTest::link_clicked_;
 
 TEST_F(SadTabControllerTest, ClickOnLink) {
   base::scoped_nsobject<SadTabController> controller(CreateController());
   HyperlinkTextView* help = GetHelpTextView(controller);
   EXPECT_TRUE(help);
-  EXPECT_FALSE(link_clicked_);
+  EXPECT_TRUE(contents_delegate_.OpenedURL().is_empty());
   [help clickedOnLink:@(chrome::kCrashReasonURL) atIndex:0];
-  EXPECT_TRUE(link_clicked_);
+  EXPECT_EQ(contents_delegate_.OpenedURL(), GURL(chrome::kCrashReasonURL));
 }
 
 }  // namespace
-
-@implementation NSApplication (SadTabControllerUnitTest)
-// Add handler for the openLearnMoreAboutCrashLink: action to NSApp for testing
-// purposes. Normally this would be sent up the responder tree correctly, but
-// since tests run in the background, key window and main window are never set
-// on NSApplication. Adding it to NSApplication directly removes the need for
-// worrying about what the current window with focus is.
-- (void)openLearnMoreAboutCrashLink:(id)sender {
-  SadTabControllerTest::link_clicked_ = true;
-}
-
-@end

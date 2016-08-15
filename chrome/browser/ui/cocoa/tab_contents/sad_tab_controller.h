@@ -38,11 +38,7 @@ class SadTabCocoa : public SadTab {
 }  // namespace chrome
 
 // A controller class that manages the SadTabView (aka "Aw Snap" or crash page).
-@interface SadTabController : NSViewController {
- @private
-  content::WebContents* webContents_;  // Weak reference.
-  base::scoped_nsobject<SadTabView> sadTabView_;
-}
+@interface SadTabController : NSViewController
 
 // Designated initializer.
 - (id)initWithWebContents:(content::WebContents*)webContents;

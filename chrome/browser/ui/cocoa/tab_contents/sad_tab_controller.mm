@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
+#import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 
-#include "base/mac/bundle_locations.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view_cocoa.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 
 using content::OpenURLParams;
@@ -36,7 +37,13 @@ void SadTabCocoa::Close() {
 
 }  // namespace chrome
 
-@implementation SadTabController
+@interface SadTabController ()<SadTabViewDelegate>
+@end
+
+@implementation SadTabController {
+  content::WebContents* webContents_;
+  SadTabView* sadTabView_;
+}
 
 - (id)initWithWebContents:(content::WebContents*)webContents {
   if ((self = [super init])) {
@@ -56,27 +63,34 @@ void SadTabCocoa::Close() {
 }
 
 - (void)dealloc {
-  [[sadTabView_ reloadButton] setTarget:nil];
+  sadTabView_.delegate = nil;
   [super dealloc];
 }
 
 - (void)loadView {
-  sadTabView_.reset([[SadTabView alloc] init]);
-  [[sadTabView_ reloadButton] setTarget:self];
-  [[sadTabView_ reloadButton] setAction:@selector(reloadPage:)];
-  [self setView:sadTabView_];
+  sadTabView_ = [[SadTabView new] autorelease];
+  sadTabView_.delegate = self;
+
+  [sadTabView_ setTitle:IDS_SAD_TAB_TITLE];
+  [sadTabView_ setMessage:IDS_SAD_TAB_MESSAGE];
+  [sadTabView_ setButtonTitle:IDS_SAD_TAB_RELOAD_LABEL];
+  [sadTabView_ setHelpLinkTitle:IDS_SAD_TAB_LEARN_MORE_LINK
+                            URL:@(chrome::kCrashReasonURL)];
+
+  self.view = sadTabView_;
 }
 
 - (content::WebContents*)webContents {
   return webContents_;
 }
 
-- (IBAction)reloadPage:(id)sender {
+- (void)sadTabViewButtonClicked:(SadTabView*)sadTabView {
   webContents_->GetController().Reload(true);
 }
 
-- (void)openLearnMoreAboutCrashLink:(id)sender {
-  OpenURLParams params(GURL(chrome::kCrashReasonURL), Referrer(), CURRENT_TAB,
+- (void)sadTabView:(SadTabView*)sadTabView
+    helpLinkClickedWithURL:(NSString*)url {
+  OpenURLParams params(GURL(url.UTF8String), Referrer(), CURRENT_TAB,
                        ui::PAGE_TRANSITION_LINK, false);
   webContents_->OpenURL(params);
 }

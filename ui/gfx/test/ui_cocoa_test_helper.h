@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
+#import "base/mac/scoped_nsobject.h"
 #include "testing/platform_test.h"
 
 // Background windows normally will not display things such as focus
