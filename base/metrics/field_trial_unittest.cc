@@ -1124,11 +1124,12 @@ TEST(FieldTrialTestWithoutList, StatesStringFormat) {
 TEST(FieldTrialDeathTest, OneTimeRandomizedTrialWithoutFieldTrialList) {
   // Trying to instantiate a one-time randomized field trial before the
   // FieldTrialList is created should crash.
-  EXPECT_DCHECK_DEATH(
+  EXPECT_DEATH_IF_SUPPORTED(
       FieldTrialList::FactoryGetFieldTrial(
           "OneTimeRandomizedTrialWithoutFieldTrialList", 100, kDefaultGroupName,
           base::FieldTrialList::kNoExpirationYear, 1, 1,
-          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL));
+          base::FieldTrial::ONE_TIME_RANDOMIZED, NULL),
+      "");
 }
 
 }  // namespace base
