@@ -6,7 +6,8 @@
   'variables': {
     'common': [
       'vector_icons/account_box.icon',
-      'vector_icons/account_child_invert.icon',
+      'vector_icons/account_child.icon',
+      'vector_icons/account_child_circle.icon',
       'vector_icons/account_circle.icon',
       'vector_icons/apps.icon',
       'vector_icons/autologin.icon',
@@ -132,6 +133,7 @@
       'vector_icons/submenu_arrow.icon',
       'vector_icons/subresource_filter_active.icon',
       'vector_icons/supervisor_account.icon',
+      'vector_icons/supervisor_account_circle.icon',
       'vector_icons/sync_problem.icon',
       'vector_icons/system_menu_accessibility.1x.icon',
       'vector_icons/system_menu_accessibility.icon',

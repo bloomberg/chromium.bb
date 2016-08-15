@@ -409,8 +409,8 @@ class EditableProfilePhoto : public views::LabelButton {
   }
 
   void PaintChildren(const ui::PaintContext& context) override {
-    // Display any children (the "change photo" overlay) as a circle.
     {
+      // Display any children (the "change photo" overlay) as a circle.
       ui::ClipRecorder clip_recorder(context);
       clip_recorder.ClipPathWithAntiAliasing(circular_mask_);
       View::PaintChildren(context);
@@ -420,21 +420,7 @@ class EditableProfilePhoto : public views::LabelButton {
         context, gfx::Size(GetProfileBadgeSize(), GetProfileBadgeSize()));
     gfx::Canvas* canvas = paint_recorder.canvas();
     if (profile_->IsSupervised()) {
-      gfx::VectorIconId icon_id;
-      size_t icon_size;
-      // TODO(janeliulwq): Replace the following two profile badge icons when
-      // new versions of them are ready, which be inverted as silhouettes. Also,
-      // remove the code below for painting the background for the badges as
-      // they won't be necessary.
-      if (profile_->IsChild()) {
-        icon_id = gfx::VectorIconId::ACCOUNT_CHILD_INVERT;
-        icon_size = switches::IsMaterialDesignUserMenu() ? 21 : 26;
-      } else {
-        icon_id = gfx::VectorIconId::SUPERVISOR_ACCOUNT;
-        icon_size = switches::IsMaterialDesignUserMenu() ? 16 : 20;
-      }
       gfx::Rect bounds(0, 0, GetProfileBadgeSize(), GetProfileBadgeSize());
-
       int badge_offset =
           icon_image_side() + badge_spacing() - GetProfileBadgeSize();
       gfx::Vector2d badge_offset_vector = gfx::Vector2d(
@@ -444,25 +430,40 @@ class EditableProfilePhoto : public views::LabelButton {
                               : 0));
       gfx::Point center_point = bounds.CenterPoint() + badge_offset_vector;
 
+      // Paint the circular background.
       SkPaint paint;
       paint.setAntiAlias(true);
       paint.setColor(GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_BubbleBackground));
       canvas->DrawCircle(center_point, GetProfileBadgeSize() / 2, paint);
 
-      if (!switches::IsMaterialDesignUserMenu()) {
+      gfx::VectorIconId icon_id;
+      size_t icon_size;
+      SkColor icon_color;
+      if (switches::IsMaterialDesignUserMenu()) {
+        icon_id = profile_->IsChild()
+            ? gfx::VectorIconId::ACCOUNT_CHILD_CIRCLE
+            : gfx::VectorIconId::SUPERVISOR_ACCOUNT_CIRCLE;
+        icon_size = 22;
+        icon_color = gfx::kChromeIconGrey;
+      } else {
+        // Paint the light blue circle.
         paint.setColor(SkColorSetRGB(0xaf, 0xd9, 0xfc));
         canvas->DrawCircle(
             center_point, GetProfileBadgeSize() / 2 - kProfileBadgeWhitePadding,
             paint);
+
+        icon_id = profile_->IsChild()
+            ? gfx::VectorIconId::ACCOUNT_CHILD
+            : gfx::VectorIconId::SUPERVISOR_ACCOUNT;
+        icon_size = profile_->IsChild() ? 26 : 20;
+        icon_color = SkColorSetRGB(0, 0x66, 0xff);
       }
 
+      // Paint the badge icon.
       int offset = (GetProfileBadgeSize() - icon_size) / 2;
       canvas->Translate(badge_offset_vector + gfx::Vector2d(offset, offset));
-      const SkColor badge_color = switches::IsMaterialDesignUserMenu()
-                                      ? gfx::kChromeIconGrey
-                                      : SkColorSetRGB(0, 0x66, 0xff);
-      gfx::PaintVectorIcon(canvas, icon_id, icon_size, badge_color);
+      gfx::PaintVectorIcon(canvas, icon_id, icon_size, icon_color);
     }
   }
 
