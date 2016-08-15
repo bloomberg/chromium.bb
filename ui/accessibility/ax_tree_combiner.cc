@@ -185,6 +185,10 @@ void AXTreeCombiner::ProcessTree(const AXTreeUpdate* tree) {
     for (size_t j = 0; j < node.child_ids.size(); ++j)
       node.child_ids[j] = MapId(tree_id, node.child_ids[j]);
 
+    // Reset the offset container ID because we make all bounding boxes
+    // absolute.
+    node.offset_container_id = -1;
+
     // Map other int attributes that refer to node IDs, and remove the
     // AX_ATTR_CHILD_TREE_ID attribute.
     for (size_t j = 0; j < node.int_attributes.size(); ++j) {

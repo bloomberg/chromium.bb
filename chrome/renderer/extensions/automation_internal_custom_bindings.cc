@@ -85,15 +85,15 @@ v8::Local<v8::Object> RectToV8Object(v8::Isolate* isolate,
 
 // Compute the bounding box of a node, fixing nodes with empty bounds by
 // unioning the bounds of their children.
-static gfx::Rect ComputeLocalNodeBounds(TreeCache* cache, ui::AXNode* node) {
-  gfx::Rect bounds = gfx::ToEnclosingRect(node->data().location);
+static gfx::RectF ComputeLocalNodeBounds(TreeCache* cache, ui::AXNode* node) {
+  gfx::RectF bounds = node->data().location;
   if (bounds.width() > 0 && bounds.height() > 0)
     return bounds;
 
   // Compute the bounds of each child.
   for (size_t i = 0; i < node->children().size(); i++) {
     ui::AXNode* child = node->children()[i];
-    gfx::Rect child_bounds = ComputeLocalNodeBounds(cache, child);
+    gfx::RectF child_bounds = ComputeLocalNodeBounds(cache, child);
 
     // Ignore children that don't have valid bounds themselves.
     if (child_bounds.width() == 0 || child_bounds.height() == 0)
@@ -115,35 +115,39 @@ static gfx::Rect ComputeLocalNodeBounds(TreeCache* cache, ui::AXNode* node) {
 // Compute the bounding box of a node in global coordinates, walking up the
 // parent hierarchy to offset by frame offsets and scroll offsets.
 static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache, ui::AXNode* node) {
-  gfx::Rect bounds = ComputeLocalNodeBounds(cache, node);
+  gfx::RectF bounds = ComputeLocalNodeBounds(cache, node);
 
-  ui::AXNode* root = cache->tree.root();
-  while (root) {
-    // Apply scroll offsets.
-    if (root != node) {
-      int sx = 0;
-      int sy = 0;
-      if (root->data().GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
-          root->data().GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
-        bounds.Offset(-sx, -sy);
+  while (node) {
+    if (node->data().transform)
+      node->data().transform->TransformRect(&bounds);
+
+    ui::AXNode* container =
+        cache->tree.GetFromId(node->data().offset_container_id);
+    if (!container) {
+      if (node == cache->tree.root()) {
+        container = cache->owner->GetParent(node, &cache);
+      } else {
+        container = cache->tree.root();
       }
     }
 
-    if (root->data().transform) {
-      gfx::RectF boundsf(bounds);
-      root->data().transform->TransformRect(&boundsf);
-      bounds = gfx::Rect(boundsf.x(), boundsf.y(), boundsf.width(),
-                         boundsf.height());
-    }
-
-    ui::AXNode* parent = cache->owner->GetParent(root, &cache);
-    if (!parent)
+    if (!container || container == node)
       break;
 
-    root = cache->tree.root();
+    gfx::RectF container_bounds = ComputeLocalNodeBounds(cache, container);
+    bounds.Offset(container_bounds.x(), container_bounds.y());
+
+    int scroll_x = 0;
+    int scroll_y = 0;
+    if (container->data().GetIntAttribute(ui::AX_ATTR_SCROLL_X, &scroll_x) &&
+        container->data().GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &scroll_y)) {
+      bounds.Offset(-scroll_x, -scroll_y);
+    }
+
+    node = container;
   }
 
-  return bounds;
+  return gfx::ToEnclosingRect(bounds);
 }
 
 ui::AXNode* FindNodeWithChildTreeId(ui::AXNode* node, int child_tree_id) {

@@ -144,7 +144,7 @@ static AtkObject* browser_accessibility_accessible_at_point(
     return NULL;
 
   gfx::Point point(x, y);
-  if (!obj->GetGlobalBoundsRect().Contains(point))
+  if (!obj->GetScreenBoundsRect().Contains(point))
     return NULL;
 
   BrowserAccessibility* result = obj->BrowserAccessibilityForPoint(point);
@@ -170,7 +170,7 @@ static void browser_accessibility_get_extents(AtkComponent* atk_component,
   if (!obj)
     return;
 
-  gfx::Rect bounds = obj->GetGlobalBoundsRect();
+  gfx::Rect bounds = obj->GetScreenBoundsRect();
   if (x)
     *x = bounds.x();
   if (y)
@@ -300,7 +300,7 @@ void GetImagePositionSize(BrowserAccessibilityAuraLinux* obj,
                           gint* y,
                           gint* width,
                           gint* height) {
-  gfx::Rect img_pos_size = obj->GetGlobalBoundsRect();
+  gfx::Rect img_pos_size = obj->GetScreenBoundsRect();
 
   if (x)
     *x = img_pos_size.x();

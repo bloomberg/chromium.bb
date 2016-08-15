@@ -32,6 +32,8 @@
         'ax_node.h',
         'ax_node_data.cc',
         'ax_node_data.h',
+        'ax_relative_bounds.cc',
+        'ax_relative_bounds.h',
         'ax_serializable_tree.cc',
         'ax_serializable_tree.h',
         'ax_text_utils.cc',

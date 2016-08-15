@@ -440,10 +440,10 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
         base::android::ConvertUTF16ToJavaString(env, element_id).obj());
   }
 
-  gfx::Rect absolute_rect = node->GetLocalBoundsRect();
+  gfx::Rect absolute_rect = node->GetPageBoundsRect();
   gfx::Rect parent_relative_rect = absolute_rect;
   if (node->GetParent()) {
-    gfx::Rect parent_rect = node->GetParent()->GetLocalBoundsRect();
+    gfx::Rect parent_rect = node->GetParent()->GetPageBoundsRect();
     parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
   }
   bool is_root = node->GetParent() == NULL;
@@ -623,7 +623,7 @@ void BrowserAccessibilityManagerAndroid::ScrollToMakeNodeVisible(
     jint id) {
   BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node)
-    ScrollToMakeVisible(*node, gfx::Rect(node->GetLocation().size()));
+    ScrollToMakeVisible(*node, gfx::Rect(node->GetFrameBoundsRect().size()));
 }
 
 void BrowserAccessibilityManagerAndroid::SetTextFieldValue(

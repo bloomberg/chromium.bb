@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/ax_node.h"
+#include "ui/gfx/transform.h"
 
 namespace ui {
 
@@ -18,8 +19,15 @@ void AXNode::SetData(const AXNodeData& src) {
   data_ = src;
 }
 
-void AXNode::SetLocation(const gfx::RectF& new_location) {
-  data_.location = new_location;
+void AXNode::SetLocation(int offset_container_id,
+                         const gfx::RectF& location,
+                         gfx::Transform* transform) {
+  data_.offset_container_id = offset_container_id;
+  data_.location = location;
+  if (transform)
+    data_.transform.reset(new gfx::Transform(*transform));
+  else
+    data_.transform.reset(nullptr);
 }
 
 void AXNode::SetIndexInParent(int index_in_parent) {

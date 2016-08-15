@@ -339,8 +339,8 @@ const ui::AXNodeData& BrowserAccessibility::GetData() const {
     return empty_data;
 }
 
-gfx::Rect BrowserAccessibility::GetLocation() const {
-  return gfx::ToEnclosingRect(GetData().location);
+gfx::RectF BrowserAccessibility::GetLocation() const {
+  return GetData().location;
 }
 
 int32_t BrowserAccessibility::GetRole() const {
@@ -356,14 +356,20 @@ BrowserAccessibility::GetHtmlAttributes() const {
   return GetData().html_attributes;
 }
 
-gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
-  gfx::Rect bounds = GetLocation();
+gfx::Rect BrowserAccessibility::GetFrameBoundsRect() const {
+  gfx::RectF bounds = GetLocation();
   FixEmptyBounds(&bounds);
-  return ElementBoundsToLocalBounds(bounds);
+  return RelativeToAbsoluteBounds(bounds, true);
 }
 
-gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() const {
-  gfx::Rect bounds = GetLocalBoundsRect();
+gfx::Rect BrowserAccessibility::GetPageBoundsRect() const {
+  gfx::RectF bounds = GetLocation();
+  FixEmptyBounds(&bounds);
+  return RelativeToAbsoluteBounds(bounds, false);
+}
+
+gfx::Rect BrowserAccessibility::GetScreenBoundsRect() const {
+  gfx::Rect bounds = GetPageBoundsRect();
 
   // Adjust the bounds by the top left corner of the containing view's bounds
   // in screen coordinates.
@@ -372,7 +378,7 @@ gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() const {
   return bounds;
 }
 
-gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
+gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
     const {
   DCHECK_GE(start, 0);
   DCHECK_GE(len, 0);
@@ -381,7 +387,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
   // holds all the text.
   // TODO(nektar): This is fragile! Replace with code that flattens tree.
   if (IsSimpleTextControl() && InternalChildCount() == 1)
-    return InternalGetChild(0)->GetLocalBoundsForRange(start, len);
+    return InternalGetChild(0)->GetPageBoundsForRange(start, len);
 
   if (GetRole() != ui::AX_ROLE_STATIC_TEXT) {
     gfx::Rect bounds;
@@ -395,9 +401,9 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
       if (start < child_length_in_parent) {
         gfx::Rect child_rect;
         if (child->IsTextOnlyObject()) {
-          child_rect = child->GetLocalBoundsForRange(start, len);
+          child_rect = child->GetPageBoundsForRange(start, len);
         } else {
-          child_rect = child->GetLocalBoundsForRange(
+          child_rect = child->GetPageBoundsForRange(
               0, static_cast<int>(child->GetText().size()));
         }
         bounds.Union(child_rect);
@@ -408,7 +414,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
       else
         start = 0;
     }
-    return ElementBoundsToLocalBounds(bounds);
+    return RelativeToAbsoluteBounds(gfx::RectF(bounds), false);
   }
 
   int end = start + len;
@@ -451,7 +457,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
     int end_pixel_offset =
         local_end > 0 ? character_offsets[local_end - 1] : 0;
 
-    gfx::Rect child_rect = child->GetLocation();
+    gfx::Rect child_rect = gfx::ToEnclosingRect(child->GetLocation());
     auto text_direction = static_cast<ui::AXTextDirection>(
         child->GetIntAttribute(ui::AX_ATTR_TEXT_DIRECTION));
     gfx::Rect child_overlap_rect;
@@ -495,12 +501,12 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
       bounds.Union(child_overlap_rect);
   }
 
-  return ElementBoundsToLocalBounds(bounds);
+  return RelativeToAbsoluteBounds(gfx::RectF(bounds), false);
 }
 
-gfx::Rect BrowserAccessibility::GetGlobalBoundsForRange(int start, int len)
+gfx::Rect BrowserAccessibility::GetScreenBoundsForRange(int start, int len)
     const {
-  gfx::Rect bounds = GetLocalBoundsForRange(start, len);
+  gfx::Rect bounds = GetPageBoundsForRange(start, len);
 
   // Adjust the bounds by the top left corner of the containing view's bounds
   // in screen coordinates.
@@ -731,7 +737,7 @@ BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(
     if (child->GetRole() == ui::AX_ROLE_COLUMN)
       continue;
 
-    if (child->GetGlobalBoundsRect().Contains(point)) {
+    if (child->GetScreenBoundsRect().Contains(point)) {
       BrowserAccessibility* result = child->BrowserAccessibilityForPoint(point);
       if (result == child && !child_result)
         child_result = result;
@@ -1146,7 +1152,7 @@ base::string16 BrowserAccessibility::GetInnerText() const {
   return text;
 }
 
-void BrowserAccessibility::FixEmptyBounds(gfx::Rect* bounds) const
+void BrowserAccessibility::FixEmptyBounds(gfx::RectF* bounds) const
 {
   if (bounds->width() > 0 && bounds->height() > 0)
     return;
@@ -1155,7 +1161,7 @@ void BrowserAccessibility::FixEmptyBounds(gfx::Rect* bounds) const
     // Compute the bounds of each child - this calls FixEmptyBounds
     // recursively if necessary.
     BrowserAccessibility* child = InternalGetChild(i);
-    gfx::Rect child_bounds = child->GetLocalBoundsRect();
+    gfx::Rect child_bounds = child->GetPageBoundsRect();
 
     // Ignore children that don't have valid bounds themselves.
     if (child_bounds.width() == 0 || child_bounds.height() == 0)
@@ -1163,63 +1169,53 @@ void BrowserAccessibility::FixEmptyBounds(gfx::Rect* bounds) const
 
     // For the first valid child, just set the bounds to that child's bounds.
     if (bounds->width() == 0 || bounds->height() == 0) {
-      *bounds = child_bounds;
+      *bounds = gfx::RectF(child_bounds);
       continue;
     }
 
     // Union each additional child's bounds.
-    bounds->Union(child_bounds);
+    bounds->Union(gfx::RectF(child_bounds));
   }
 }
 
-gfx::Rect BrowserAccessibility::ElementBoundsToLocalBounds(gfx::Rect bounds)
-    const {
-  BrowserAccessibilityManager* manager = this->manager();
-  BrowserAccessibility* root = manager->GetRoot();
-  while (manager && root) {
-    // Apply scroll offsets.
-    if (root != this && (root->GetParent() ||
-                         manager->UseRootScrollOffsetsWhenComputingBounds())) {
+gfx::Rect BrowserAccessibility::RelativeToAbsoluteBounds(
+    gfx::RectF bounds,
+    bool frame_only) const {
+  const BrowserAccessibility* node = this;
+  while (node) {
+    if (node->GetData().transform)
+      node->GetData().transform->TransformRect(&bounds);
+
+    const BrowserAccessibility* container =
+        node->manager()->GetFromID(node->GetData().offset_container_id);
+    if (!container) {
+      if (node == node->manager()->GetRoot() && !frame_only) {
+        container = node->GetParent();
+      } else {
+        container = node->manager()->GetRoot();
+      }
+    }
+
+    if (!container || container == node)
+      break;
+
+    gfx::RectF container_bounds = container->GetLocation();
+    bounds.Offset(container_bounds.x(), container_bounds.y());
+
+    if (container->manager()->UseRootScrollOffsetsWhenComputingBounds() ||
+        container->GetParent()) {
       int sx = 0;
       int sy = 0;
-      if (root->GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
-          root->GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
+      if (container->GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
+          container->GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
         bounds.Offset(-sx, -sy);
       }
     }
 
-    // If the parent accessibility tree is in a different site instance,
-    // ask the delegate to transform our coordinates into the root
-    // coordinate space and then we're done.
-    if (manager->delegate() &&
-        root->GetParent() &&
-        root->GetParent()->manager()->delegate()) {
-      BrowserAccessibilityManager* parent_manager =
-          root->GetParent()->manager();
-      if (manager->delegate()->AccessibilityGetSiteInstance() !=
-          parent_manager->delegate()->AccessibilityGetSiteInstance()) {
-        return manager->delegate()->AccessibilityTransformToRootCoordSpace(
-            bounds);
-      }
-    }
-
-    // Otherwise, apply the transform from this frame into the coordinate
-    // space of its parent frame.
-    if (root->GetData().transform) {
-      gfx::RectF boundsf(bounds);
-      root->GetData().transform->TransformRect(&boundsf);
-      bounds = gfx::Rect(boundsf.x(), boundsf.y(),
-                         boundsf.width(), boundsf.height());
-    }
-
-    if (!root->GetParent())
-      break;
-
-    manager = root->GetParent()->manager();
-    root = manager->GetRoot();
+    node = container;
   }
 
-  return bounds;
+  return gfx::ToEnclosingRect(bounds);
 }
 
 }  // namespace content

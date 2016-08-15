@@ -113,7 +113,14 @@ struct AX_EXPORT AXNodeData {
   base::StringPairs html_attributes;
   std::vector<int32_t> child_ids;
 
-  // The object's location relative to its window or frame.
+  // TODO(dmazzoni): replace the following three members with a single
+  // instance of AXRelativeBounds.
+
+  // The id of an ancestor node in the same AXTree that this object's
+  // bounding box is relative to, or -1 if there's no offset container.
+  int offset_container_id;
+
+  // The relative bounding box of this node.
   gfx::RectF location;
 
   // An additional transform to apply to position this object and its subtree.

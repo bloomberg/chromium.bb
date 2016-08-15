@@ -19,6 +19,7 @@
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -30,6 +31,7 @@
 using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebElement;
+using blink::WebFloatRect;
 using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebPoint;
@@ -337,8 +339,13 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     // For each node in the update, set the location in our map from
     // ids to locations.
     for (size_t i = 0; i < event_msg.update.nodes.size(); ++i) {
-      locations_[event_msg.update.nodes[i].id] =
-          event_msg.update.nodes[i].location;
+      ui::AXNodeData& src = event_msg.update.nodes[i];
+      ui::AXRelativeBounds& dst = locations_[event_msg.update.nodes[i].id];
+      dst.offset_container_id = src.offset_container_id;
+      dst.bounds = src.location;
+      dst.transform.reset(nullptr);
+      if (src.transform)
+        dst.transform.reset(new gfx::Transform(*src.transform));
     }
 
     DVLOG(0) << "Accessibility event: " << ui::ToString(event.event_type)
@@ -362,7 +369,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     return;
 
   // Do a breadth-first explore of the whole blink AX tree.
-  base::hash_map<int, gfx::RectF> new_locations;
+  base::hash_map<int, ui::AXRelativeBounds> new_locations;
   std::queue<WebAXObject> objs_to_explore;
   objs_to_explore.push(root);
   while (objs_to_explore.size()) {
@@ -372,12 +379,22 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     // See if we had a previous location. If not, this whole subtree must
     // be new, so don't continue to explore this branch.
     int id = obj.axID();
-    base::hash_map<int, gfx::RectF>::iterator iter = locations_.find(id);
+    auto iter = locations_.find(id);
     if (iter == locations_.end())
       continue;
 
     // If the location has changed, append it to the IPC message.
-    gfx::RectF new_location = gfx::RectF(obj.boundingBoxRect());
+    WebAXObject offset_container;
+    WebFloatRect bounds_in_container;
+    SkMatrix44 container_transform;
+    obj.getRelativeBounds(
+        offset_container, bounds_in_container, container_transform);
+    ui::AXRelativeBounds new_location;
+    new_location.offset_container_id = offset_container.axID();
+    new_location.bounds = bounds_in_container;
+    if (!container_transform.isIdentity())
+      new_location.transform = base::WrapUnique(
+          new gfx::Transform(container_transform));
     if (iter != locations_.end() && iter->second != new_location) {
       AccessibilityHostMsg_LocationChangeParams message;
       message.id = id;

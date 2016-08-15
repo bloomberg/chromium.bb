@@ -19,6 +19,7 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/web_frame_utils.h"
+#include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -40,6 +41,7 @@ using base::UTF16ToUTF8;
 using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebElement;
+using blink::WebFloatRect;
 using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebNode;
@@ -265,8 +267,18 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                                       AXContentNodeData* dst) const {
   dst->role = AXRoleFromBlink(src.role());
   dst->state = AXStateFromBlink(src);
-  dst->location = gfx::RectF(src.boundingBoxRect());
   dst->id = src.axID();
+
+  WebAXObject offset_container;
+  WebFloatRect bounds_in_container;
+  SkMatrix44 container_transform;
+  src.getRelativeBounds(
+      offset_container, bounds_in_container, container_transform);
+  dst->location = bounds_in_container;
+  if (!container_transform.isIdentity())
+    dst->transform = base::WrapUnique(new gfx::Transform(container_transform));
+  if (!offset_container.isDetached())
+    dst->offset_container_id = offset_container.axID();
 
   blink::WebAXNameFrom nameFrom;
   blink::WebVector<blink::WebAXObject> nameObjects;
@@ -581,11 +593,8 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                            src.minValueForRange());
   }
 
-  if (dst->role == ui::AX_ROLE_ROOT_WEB_AREA) {
+  if (dst->role == ui::AX_ROLE_ROOT_WEB_AREA)
     dst->AddStringAttribute(ui::AX_ATTR_HTML_TAG, "#document");
-    dst->transform.reset(
-        new gfx::Transform(src.transformFromLocalParentFrame()));
-  }
 
   if (dst->role == ui::AX_ROLE_TABLE) {
     int column_count = src.columnCount();

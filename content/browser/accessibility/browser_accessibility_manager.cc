@@ -413,7 +413,9 @@ void BrowserAccessibilityManager::OnLocationChanges(
     if (!obj)
       continue;
     ui::AXNode* node = obj->node();
-    node->SetLocation(params[i].new_location);
+    node->SetLocation(params[i].new_location.offset_container_id,
+                      params[i].new_location.bounds,
+                      params[i].new_location.transform.get());
   }
   SendLocationChangeEvents(params);
 }
@@ -887,7 +889,7 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
 }
 
 // static
-gfx::Rect BrowserAccessibilityManager::GetLocalBoundsForRange(
+gfx::Rect BrowserAccessibilityManager::GetPageBoundsForRange(
     const BrowserAccessibility& start_object,
     int start_offset,
     const BrowserAccessibility& end_object,
@@ -904,7 +906,7 @@ gfx::Rect BrowserAccessibilityManager::GetLocalBoundsForRange(
       return gfx::Rect();
     }
 
-    return start_object.GetLocalBoundsForRange(
+    return start_object.GetPageBoundsForRange(
         start_offset, end_offset - start_offset);
   }
 
@@ -934,10 +936,10 @@ gfx::Rect BrowserAccessibilityManager::GetLocalBoundsForRange(
         start_char_index = start_offset;
       if (current == last)
         end_char_index = end_offset;
-      result.Union(current->GetLocalBoundsForRange(
+      result.Union(current->GetPageBoundsForRange(
           start_char_index, end_char_index - start_char_index));
     } else {
-      result.Union(current->GetLocalBoundsRect());
+      result.Union(current->GetPageBoundsRect());
     }
 
     if (current == last)

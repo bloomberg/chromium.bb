@@ -81,19 +81,18 @@ BackgroundTest.prototype = {
 
   disappearingObjectDoc: function() {/*!
     <p>start</p>
-    <article>
+    <div role="group">
       <p>Before1</p>
       <p>Before2</p>
       <p>Before3</p>
-    </article>
-    <article>
+    </div>
+    <div role="group">
       <p id="disappearing">Disappearing</p>
-    </article>
-    <article>
+    </div>
+    <div role="group">
       <p>After1</p>
       <p>After2</p>
       <p>After3</p>
-    </article>
     </div>
     <div id="live" aria-live="polite"></div>
     <div id="delete" role="button">Delete</div>

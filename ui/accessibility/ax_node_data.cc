@@ -60,7 +60,8 @@ typename std::vector<std::pair<FirstType, SecondType>>::const_iterator
 AXNodeData::AXNodeData()
     : id(-1),
       role(AX_ROLE_UNKNOWN),
-      state(0xFFFFFFFF) {
+      state(0xFFFFFFFF),
+      offset_container_id(-1) {
 }
 
 AXNodeData::~AXNodeData() {
@@ -78,6 +79,7 @@ AXNodeData::AXNodeData(const AXNodeData& other) {
   html_attributes = other.html_attributes;
   child_ids = other.child_ids;
   location = other.location;
+  offset_container_id = other.offset_container_id;
   if (other.transform)
     transform.reset(new gfx::Transform(*other.transform));
 }
@@ -94,8 +96,11 @@ AXNodeData& AXNodeData::operator=(AXNodeData other) {
   html_attributes = other.html_attributes;
   child_ids = other.child_ids;
   location = other.location;
+  offset_container_id = other.offset_container_id;
   if (other.transform)
     transform.reset(new gfx::Transform(*other.transform));
+  else
+    transform.reset(nullptr);
   return *this;
 }
 
@@ -342,6 +347,9 @@ std::string AXNodeData::ToString() const {
                    IntToString(location.y()) + ")-(" +
                    IntToString(location.width()) + ", " +
                    IntToString(location.height()) + ")";
+
+  if (offset_container_id != -1)
+    result += " offset_container_id=" + IntToString(offset_container_id);
 
   if (transform && !transform->IsIdentity())
     result += " transform=" + transform->ToString();

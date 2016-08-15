@@ -1172,7 +1172,7 @@ bool InitializeAccessibilityTreeSearch(
 - (NSPoint)origin {
   if (![self instanceActive])
     return NSMakePoint(0, 0);
-  gfx::Rect bounds = browserAccessibility_->GetLocalBoundsRect();
+  gfx::Rect bounds = browserAccessibility_->GetPageBoundsRect();
   return NSMakePoint(bounds.x(), bounds.y());
 }
 
@@ -1610,7 +1610,7 @@ bool InitializeAccessibilityTreeSearch(
 - (NSValue*)size {
   if (![self instanceActive])
     return nil;
-  gfx::Rect bounds = browserAccessibility_->GetLocalBoundsRect();
+  gfx::Rect bounds = browserAccessibility_->GetPageBoundsRect();
   return  [NSValue valueWithSize:NSMakeSize(bounds.width(), bounds.height())];
 }
 
@@ -2248,7 +2248,7 @@ bool InitializeAccessibilityTreeSearch(
     if ([self internalRole] != ui::AX_ROLE_STATIC_TEXT)
       return nil;
     NSRange range = [(NSValue*)parameter rangeValue];
-    gfx::Rect rect = browserAccessibility_->GetGlobalBoundsForRange(
+    gfx::Rect rect = browserAccessibility_->GetScreenBoundsForRange(
         range.location, range.length);
     NSPoint origin = NSMakePoint(rect.x(), rect.y());
     NSSize size = NSMakeSize(rect.width(), rect.height());
@@ -2312,7 +2312,7 @@ bool InitializeAccessibilityTreeSearch(
     DCHECK_GE(startOffset, 0);
     DCHECK_GE(endOffset, 0);
 
-    gfx::Rect rect = BrowserAccessibilityManager::GetLocalBoundsForRange(
+    gfx::Rect rect = BrowserAccessibilityManager::GetPageBoundsForRange(
         *startObject, startOffset, *endObject, endOffset);
     NSPoint origin = NSMakePoint(rect.x(), rect.y());
     NSSize size = NSMakeSize(rect.width(), rect.height());

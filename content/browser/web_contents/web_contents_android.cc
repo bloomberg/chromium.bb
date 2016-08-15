@@ -109,7 +109,7 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(
     text_style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
   }
 
-  const gfx::Rect& absolute_rect = node->GetLocalBoundsRect();
+  const gfx::Rect& absolute_rect = node->GetPageBoundsRect();
   gfx::Rect parent_relative_rect = absolute_rect;
   bool is_root = node->GetParent() == nullptr;
   if (!is_root) {

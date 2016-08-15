@@ -49,7 +49,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   dict->SetInteger("boundsWidth", bounds.width());
   dict->SetInteger("boundsHeight", bounds.height());
 
-  gfx::Rect page_bounds = node.GetLocalBoundsRect();
+  gfx::Rect page_bounds = node.GetPageBoundsRect();
   dict->SetInteger("pageBoundsX", page_bounds.x());
   dict->SetInteger("pageBoundsY", page_bounds.y());
   dict->SetInteger("pageBoundsWidth", page_bounds.width());

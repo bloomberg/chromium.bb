@@ -261,7 +261,7 @@ STDMETHODIMP BrowserAccessibilityWin::accHitTest(LONG x_left,
     return E_INVALIDARG;
 
   gfx::Point point(x_left, y_top);
-  if (!GetGlobalBoundsRect().Contains(point)) {
+  if (!GetScreenBoundsRect().Contains(point)) {
     // Return S_FALSE and VT_EMPTY when outside the object's boundaries.
     child->vt = VT_EMPTY;
     return S_FALSE;
@@ -294,7 +294,7 @@ STDMETHODIMP BrowserAccessibilityWin::accLocation(LONG* x_left,
   if (!target)
     return E_INVALIDARG;
 
-  gfx::Rect bounds = target->GetGlobalBoundsRect();
+  gfx::Rect bounds = target->GetScreenBoundsRect();
   *x_left = bounds.x();
   *y_top  = bounds.y();
   *width  = bounds.width();
@@ -827,7 +827,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollTo(IA2ScrollType scroll_type) {
   if (!instance_active())
     return E_FAIL;
 
-  gfx::Rect r = GetLocation();
+  gfx::Rect r = GetFrameBoundsRect();
   switch(scroll_type) {
     case IA2_SCROLL_TYPE_TOP_LEFT:
       manager()->ScrollToMakeVisible(*this, gfx::Rect(r.x(), r.y(), 0, 0));
@@ -875,7 +875,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToPoint(
     scroll_to -= manager()->GetViewBounds().OffsetFromOrigin();
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
     if (GetParent())
-      scroll_to += GetParent()->GetLocation().OffsetFromOrigin();
+      scroll_to += GetParent()->GetFrameBoundsRect().OffsetFromOrigin();
   } else {
     return E_INVALIDARG;
   }
@@ -1043,21 +1043,15 @@ STDMETHODIMP BrowserAccessibilityWin::get_imagePosition(
     return E_INVALIDARG;
 
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
-    HWND parent_hwnd =
-        manager()->ToBrowserAccessibilityManagerWin()->GetParentHWND();
-    if (!parent_hwnd)
-      return E_FAIL;
-    POINT top_left = {0, 0};
-    ::ClientToScreen(parent_hwnd, &top_left);
-    *x = GetLocation().x() + top_left.x;
-    *y = GetLocation().y() + top_left.y;
+    gfx::Rect bounds = GetScreenBoundsRect();
+    *x = bounds.x();
+    *y = bounds.y();
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
-    *x = GetLocation().x();
-    *y = GetLocation().y();
-    if (GetParent()) {
-      *x -= GetParent()->GetLocation().x();
-      *y -= GetParent()->GetLocation().y();
-    }
+    gfx::Rect bounds = GetPageBoundsRect();
+    gfx::Rect parent_bounds =
+        GetParent() ? GetParent()->GetPageBoundsRect() : gfx::Rect();
+    *x = bounds.x() - parent_bounds.x();
+    *y = bounds.y() - parent_bounds.y();
   } else {
     return E_INVALIDARG;
   }
@@ -1072,8 +1066,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_imageSize(LONG* height, LONG* width) {
   if (!height || !width)
     return E_INVALIDARG;
 
-  *height = GetLocation().height();
-  *width = GetLocation().width();
+  *height = GetPageBoundsRect().height();
+  *width = GetPageBoundsRect().width();
   return S_OK;
 }
 
@@ -2014,10 +2008,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_characterExtents(
 
   gfx::Rect character_bounds;
   if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
-    character_bounds = GetGlobalBoundsForRange(offset, 1);
+    character_bounds = GetScreenBoundsForRange(offset, 1);
   } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
-    character_bounds = GetLocalBoundsForRange(offset, 1);
-    character_bounds -= GetLocation().OffsetFromOrigin();
+    character_bounds = GetPageBoundsForRange(offset, 1);
+    if (GetParent())
+      character_bounds -= GetParent()->GetPageBoundsRect().OffsetFromOrigin();
   } else {
     return E_INVALIDARG;
   }
@@ -3098,7 +3093,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_unclippedSubstringBounds(
     return E_INVALIDARG;
   }
 
-  gfx::Rect bounds = GetGlobalBoundsForRange(
+  gfx::Rect bounds = GetScreenBoundsForRange(
       start_index, end_index - start_index);
   *out_x = bounds.x();
   *out_y = bounds.y();
@@ -3119,7 +3114,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToSubstring(
     return E_INVALIDARG;
   }
 
-  manager()->ScrollToMakeVisible(*this, GetLocalBoundsForRange(
+  manager()->ScrollToMakeVisible(*this, GetPageBoundsForRange(
       start_index, end_index - start_index));
   manager()->ToBrowserAccessibilityManagerWin()->TrackScrollingObject(this);
 

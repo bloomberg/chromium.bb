@@ -343,7 +343,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       const BrowserAccessibility& end_object,
       int end_offset);
 
-  static gfx::Rect GetLocalBoundsForRange(
+  static gfx::Rect GetPageBoundsForRange(
       const BrowserAccessibility& start_object,
       int start_offset,
       const BrowserAccessibility& end_object,
