@@ -13,6 +13,7 @@ LIBDRM_FILES := \
 	util_math.h
 
 LIBDRM_H_FILES := \
+	libsync.h \
 	xf86drm.h \
 	xf86drmMode.h
 
