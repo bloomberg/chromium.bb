@@ -5,7 +5,6 @@
 #include "net/cert/cert_verify_proc_ios.h"
 
 #include <CommonCrypto/CommonDigest.h>
-#include <Security/Security.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -172,6 +171,10 @@ void GetCertChainInfo(CFArrayRef cert_chain, CertVerifyResult* verify_result) {
       X509Certificate::CreateFromHandle(verified_cert, verified_chain);
 }
 
+}  // namespace
+
+CertVerifyProcIOS::CertVerifyProcIOS() {}
+
 // The iOS APIs don't expose an API-stable set of reasons for certificate
 // validation failures. However, internally, the reason is tracked, and it's
 // converted to user-facing localized strings.
@@ -184,9 +187,11 @@ void GetCertChainInfo(CFArrayRef cert_chain, CertVerifyResult* verify_result) {
 //
 // TODO(rsleevi): https://crbug.com/601915 - Use a less brittle solution when
 // possible.
-CertStatus GetFailureFromTrustProperties(CFArrayRef properties) {
+// static
+CertStatus CertVerifyProcIOS::GetCertFailureStatusFromTrust(SecTrustRef trust) {
   CertStatus reason = 0;
 
+  base::ScopedCFTypeRef<CFArrayRef> properties(SecTrustCopyProperties(trust));
   if (!properties)
     return CERT_STATUS_INVALID;
 
@@ -207,6 +212,11 @@ CertStatus GetFailureFromTrustProperties(CFArrayRef properties) {
       CFSTR("One or more certificates is using a weak key size.");
   ScopedCFTypeRef<CFStringRef> weak_error(CFBundleCopyLocalizedString(
       bundle, weak_string, weak_string, CFSTR("SecCertificate")));
+  CFStringRef hostname_mismatch_string = CFSTR("Hostname mismatch.");
+  ScopedCFTypeRef<CFStringRef> hostname_mismatch_error(
+      CFBundleCopyLocalizedString(bundle, hostname_mismatch_string,
+                                  hostname_mismatch_string,
+                                  CFSTR("SecCertificate")));
 
   for (CFIndex i = 0; i < properties_length; ++i) {
     CFDictionaryRef dict = reinterpret_cast<CFDictionaryRef>(
@@ -220,6 +230,8 @@ CertStatus GetFailureFromTrustProperties(CFArrayRef properties) {
       reason |= CERT_STATUS_AUTHORITY_INVALID;
     } else if (CFEqual(error, weak_error)) {
       reason |= CERT_STATUS_WEAK_KEY;
+    } else if (CFEqual(error, hostname_mismatch_error)) {
+      reason |= CERT_STATUS_COMMON_NAME_INVALID;
     } else {
       reason |= CERT_STATUS_INVALID;
     }
@@ -228,12 +240,6 @@ CertStatus GetFailureFromTrustProperties(CFArrayRef properties) {
   return reason;
 }
 
-}  // namespace
-
-CertVerifyProcIOS::CertVerifyProcIOS() {}
-
-CertVerifyProcIOS::~CertVerifyProcIOS() {}
-
 bool CertVerifyProcIOS::SupportsAdditionalTrustAnchors() const {
   return false;
 }
@@ -241,6 +247,8 @@ bool CertVerifyProcIOS::SupportsAdditionalTrustAnchors() const {
 bool CertVerifyProcIOS::SupportsOCSPStapling() const {
   return false;
 }
+
+CertVerifyProcIOS::~CertVerifyProcIOS() = default;
 
 int CertVerifyProcIOS::VerifyInternal(
     X509Certificate* cert,
@@ -278,8 +286,7 @@ int CertVerifyProcIOS::VerifyInternal(
       verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
       break;
     default:
-      ScopedCFTypeRef<CFArrayRef> properties(SecTrustCopyProperties(trust_ref));
-      verify_result->cert_status |= GetFailureFromTrustProperties(properties);
+      verify_result->cert_status |= GetCertFailureStatusFromTrust(trust_ref);
   }
 
   GetCertChainInfo(final_chain, verify_result);

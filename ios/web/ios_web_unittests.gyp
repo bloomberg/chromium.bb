@@ -35,7 +35,6 @@
         'navigation/nscoder_util_unittest.mm',
         'net/cert_host_pair_unittest.cc',
         'net/cert_policy_unittest.cc',
-        'net/cert_verifier_block_adapter_unittest.cc',
         'net/clients/crw_js_injection_network_client_unittest.mm',
         'net/crw_cert_verification_controller_unittest.mm',
         'net/crw_ssl_status_updater_unittest.mm',

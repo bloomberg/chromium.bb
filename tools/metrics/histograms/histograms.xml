@@ -63833,6 +63833,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Web.CertVerifyAgreement" enum="WebCertVerifyAgreement">
   <owner>eugenebut@chromium.com</owner>
+  <obsolete>
+    Deprecated 08/2016 because CertVerifier is not used for web view cert
+    verification.
+  </obsolete>
   <summary>
     [iOS] Reports certificate verification mismatch between SecTrust API and
     CertVerifier. SecTrust API is used for making load/no-load decision and

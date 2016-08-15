@@ -7,6 +7,8 @@
 
 #include "net/cert/cert_verify_proc.h"
 
+#include <Security/Security.h>
+
 namespace net {
 
 // Performs certificate path construction and validation using iOS's
@@ -14,6 +16,10 @@ namespace net {
 class CertVerifyProcIOS : public CertVerifyProc {
  public:
   CertVerifyProcIOS();
+
+  // Returns error CertStatus from the given |trust| object. Returns
+  // CERT_STATUS_INVALID if the trust is null.
+  static CertStatus GetCertFailureStatusFromTrust(SecTrustRef trust);
 
   bool SupportsAdditionalTrustAnchors() const override;
   bool SupportsOCSPStapling() const override;

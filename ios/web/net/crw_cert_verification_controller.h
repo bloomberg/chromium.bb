@@ -89,10 +89,6 @@ typedef void (^StatusQueryHandler)(web::SecurityStyle, net::CertStatus);
           forHost:(NSString*)host
            status:(net::CertStatus)status;
 
-// Invalidates CRWCertVerificationController. Must always be called before
-// object's deallocation.
-- (void)shutDown;
-
 @end
 
 #endif  // IOS_WEB_NET_CRW_CERT_VERIFICATION_CONTROLLER_H_

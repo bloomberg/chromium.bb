@@ -101,8 +101,6 @@
         'net/cert_policy.cc',
         'net/cert_store_impl.cc',
         'net/cert_store_impl.h',
-        'net/cert_verifier_block_adapter.cc',
-        'net/cert_verifier_block_adapter.h',
         'net/certificate_policy_cache.cc',
         'net/clients/crw_js_injection_network_client.h',
         'net/clients/crw_js_injection_network_client.mm',

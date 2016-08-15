@@ -1280,7 +1280,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 // Caller must reset the delegate before calling.
 - (void)close {
   _SSLStatusUpdater.reset();
-  [_certVerificationController shutDown];
 
   self.nativeProvider = nil;
   self.swipeRecognizerProvider = nil;
