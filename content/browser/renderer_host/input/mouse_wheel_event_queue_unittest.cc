@@ -30,11 +30,6 @@ const float kWheelScrollX = 10;
 const float kWheelScrollY = 12;
 const float kWheelScrollGlobalX = 50;
 const float kWheelScrollGlobalY = 72;
-const int64_t kScrollEndTimeoutMs = 100;
-
-base::TimeDelta DefaultScrollEndTimeoutDelay() {
-  return base::TimeDelta::FromMilliseconds(kScrollEndTimeoutMs);
-}
 
 #define EXPECT_GESTURE_SCROLL_BEGIN_IMPL(event)              \
   EXPECT_EQ(WebInputEvent::GestureScrollBegin, event->type); \
@@ -140,13 +135,15 @@ base::TimeDelta DefaultScrollEndTimeoutDelay() {
 
 }  // namespace
 
-class MouseWheelEventQueueTest : public testing::Test,
+class MouseWheelEventQueueTest : public testing::TestWithParam<bool>,
                                  public MouseWheelEventQueueClient {
  public:
   MouseWheelEventQueueTest()
       : acked_event_count_(0),
         last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {
-    queue_.reset(new MouseWheelEventQueue(this, kScrollEndTimeoutMs));
+    scroll_latching_enabled_ = GetParam();
+    queue_.reset(new MouseWheelEventQueue(this, scroll_latching_enabled_));
+    scroll_end_timeout_ms_ = scroll_latching_enabled_ ? 100 : 0;
   }
 
   ~MouseWheelEventQueueTest() override {}
@@ -175,6 +172,12 @@ class MouseWheelEventQueueTest : public testing::Test,
     last_acked_event_ = event.event;
     last_acked_event_state_ = ack_result;
   }
+
+  base::TimeDelta DefaultScrollEndTimeoutDelay() {
+    return base::TimeDelta::FromMilliseconds(scroll_end_timeout_ms_);
+  }
+
+  bool scroll_latching_enabled() { return scroll_latching_enabled_; }
 
  protected:
   size_t queued_event_count() const { return queue_->queued_size(); }
@@ -396,10 +399,12 @@ class MouseWheelEventQueueTest : public testing::Test,
   InputEventAckState last_acked_event_state_;
   base::MessageLoopForUI message_loop_;
   WebMouseWheelEvent last_acked_event_;
+  int64_t scroll_end_timeout_ms_;
+  bool scroll_latching_enabled_;
 };
 
 // Tests that mouse wheel events are queued properly.
-TEST_F(MouseWheelEventQueueTest, Basic) {
+TEST_P(MouseWheelEventQueueTest, Basic) {
   SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
                  kWheelScrollGlobalY, 1, 1, 0, false);
   EXPECT_EQ(0U, queued_event_count());
@@ -430,24 +435,24 @@ TEST_F(MouseWheelEventQueueTest, Basic) {
   EXPECT_EQ(WebInputEvent::MouseWheel, acked_event().type);
 }
 
-TEST_F(MouseWheelEventQueueTest, GestureSending) {
+TEST_P(MouseWheelEventQueueTest, GestureSending) {
   GestureSendingTest(false);
 }
 
-TEST_F(MouseWheelEventQueueTest, GestureSendingPrecisePixels) {
+TEST_P(MouseWheelEventQueueTest, GestureSendingPrecisePixels) {
   GestureSendingTest(false);
 }
 
-TEST_F(MouseWheelEventQueueTest, GestureSendingWithPhaseInformation) {
+TEST_P(MouseWheelEventQueueTest, GestureSendingWithPhaseInformation) {
   PhaseGestureSendingTest(false);
 }
 
-TEST_F(MouseWheelEventQueueTest,
+TEST_P(MouseWheelEventQueueTest,
        GestureSendingWithPhaseInformationPrecisePixels) {
   PhaseGestureSendingTest(true);
 }
 
-TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
+TEST_P(MouseWheelEventQueueTest, GestureSendingInterrupted) {
   const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::Pixels;
 
   SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
@@ -509,7 +514,7 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
   EXPECT_EQ(2U, GetAndResetSentEventCount());
 }
 
-TEST_F(MouseWheelEventQueueTest, GestureRailScrolling) {
+TEST_P(MouseWheelEventQueueTest, GestureRailScrolling) {
   const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::Pixels;
 
   SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
@@ -557,5 +562,70 @@ TEST_F(MouseWheelEventQueueTest, GestureRailScrolling) {
   EXPECT_EQ(1U, sent_gesture_event(1)->data.scrollUpdate.deltaY);
   EXPECT_EQ(2U, GetAndResetSentEventCount());
 }
+
+TEST_P(MouseWheelEventQueueTest, WheelScrollLatching) {
+  const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::Pixels;
+  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                 kWheelScrollGlobalY, 1, 1, 0, false,
+                 WebInputEvent::RailsModeVertical);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_TRUE(event_in_flight());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+  // Receive an ACK for the mouse wheel event.
+  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_FALSE(event_in_flight());
+  EXPECT_EQ(WebInputEvent::MouseWheel, acked_event().type);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(2U, all_sent_events().size());
+  EXPECT_GESTURE_SCROLL_BEGIN(sent_gesture_event(0));
+  EXPECT_GESTURE_SCROLL_UPDATE(sent_gesture_event(1));
+  EXPECT_EQ(0U, sent_gesture_event(1)->data.scrollUpdate.deltaX);
+  EXPECT_EQ(1U, sent_gesture_event(1)->data.scrollUpdate.deltaY);
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
+
+  RunTasksAndWait(base::TimeDelta::FromMilliseconds(1));
+  if (!scroll_latching_enabled_) {
+    EXPECT_GESTURE_SCROLL_END(sent_gesture_event(0));
+    EXPECT_EQ(1U, GetAndResetSentEventCount());
+  } else {
+    EXPECT_EQ(0U, GetAndResetSentEventCount());
+  }
+  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                 kWheelScrollGlobalY, 1, 1, 0, false,
+                 WebInputEvent::RailsModeVertical);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_TRUE(event_in_flight());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+  // Receive an ACK for the mouse wheel event.
+  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_FALSE(event_in_flight());
+  EXPECT_EQ(WebInputEvent::MouseWheel, acked_event().type);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  int updateEventIndex = -1;
+  if (!scroll_latching_enabled_) {
+    EXPECT_EQ(2U, all_sent_events().size());
+    EXPECT_GESTURE_SCROLL_BEGIN(sent_gesture_event(0));
+    updateEventIndex = 1;
+  } else {
+    // Scroll latching: no new scroll begin expected.
+    EXPECT_EQ(1U, all_sent_events().size());
+    updateEventIndex = 0;
+  }
+  EXPECT_GE(updateEventIndex, 0);
+  EXPECT_GESTURE_SCROLL_UPDATE(sent_gesture_event(updateEventIndex));
+  EXPECT_EQ(0U, sent_gesture_event(updateEventIndex)->data.scrollUpdate.deltaX);
+  EXPECT_EQ(1U, sent_gesture_event(updateEventIndex)->data.scrollUpdate.deltaY);
+  EXPECT_EQ(static_cast<size_t>(updateEventIndex + 1),
+            GetAndResetSentEventCount());
+}
+
+INSTANTIATE_TEST_CASE_P(MouseWheelEventQueueTests,
+                        MouseWheelEventQueueTest,
+                        testing::Bool());
 
 }  // namespace content

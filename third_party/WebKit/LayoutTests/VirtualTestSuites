@@ -265,6 +265,11 @@
     "args": ["--js-flags=--harmony-async-await"]
   },
   {
+    "prefix": "wheelscrolllatching",
+    "base": "fast/events/wheel",
+    "args": ["--enable-features=TouchpadAndWheelScrollLatching"]
+  },
+  {
     "prefix": "parsehtmlonmainthread_sync",
     "base": "fast/parser",
     "args": ["--blink-settings=parseHTMLOnMainThreadSyncTokenize=true"]

@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_sender.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -83,7 +84,9 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       flush_requested_(false),
       active_renderer_fling_count_(0),
       touch_scroll_started_sent_(false),
-      wheel_event_queue_(this, kDefaultWheelScrollTransactionMs),
+      wheel_event_queue_(this,
+                         base::FeatureList::IsEnabled(
+                             features::kTouchpadAndWheelScrollLatching)),
       touch_event_queue_(this, config.touch_config),
       gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f) {

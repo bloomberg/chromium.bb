@@ -34,13 +34,15 @@ class QueuedWebMouseWheelEvent : public MouseWheelEventWithLatencyInfo {
 };
 
 MouseWheelEventQueue::MouseWheelEventQueue(MouseWheelEventQueueClient* client,
-                                           int64_t scroll_transaction_ms)
+                                           bool enable_scroll_latching)
     : client_(client),
       needs_scroll_begin_(true),
       needs_scroll_end_(false),
-      scroll_transaction_ms_(scroll_transaction_ms),
+      enable_scroll_latching_(enable_scroll_latching),
       scrolling_device_(blink::WebGestureDeviceUninitialized) {
   DCHECK(client);
+  scroll_transaction_ms_ =
+      enable_scroll_latching_ ? kDefaultWheelScrollLatchingTransactionMs : 0;
 }
 
 MouseWheelEventQueue::~MouseWheelEventQueue() {

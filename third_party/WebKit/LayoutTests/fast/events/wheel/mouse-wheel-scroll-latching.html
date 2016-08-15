@@ -1,0 +1,74 @@
+<!DOCTYPE HTML>
+<script src="../../../resources/js-test.js"></script>
+<style>
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  body {
+    margin: 0px;
+    height: 1000px;
+    width: 1000px;
+  }
+  #parent {
+    background-color: #FF7F7F;
+    height: 600px;
+    width: 600px;
+    overflow: scroll;
+  }
+  #content1 {
+    height: 700px;
+    width: 700px;
+  }
+  #child {
+    background-color: #84BE6A;
+    height: 500px;
+    width: 500px;
+    overflow: scroll;
+  }
+  #content2 {
+    height: 600px;
+    width: 600px;
+  }
+</style>
+
+<div id="parent">
+	<div id="content1">
+		<div id="child">
+			<div id="content2">
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+
+window.jsTestIsAsync = true;
+
+var parent = document.getElementById('parent');
+var child = document.getElementById('child');
+
+function runTest() {
+  if (!window.chrome || !chrome.gpuBenchmarking) {
+    debug("This test requires window.chrome and chrome.gpuBenchmarking.");
+    finishJSTest();
+  }
+  var rect = child.getBoundingClientRect();
+  chrome.gpuBenchmarking.smoothScrollBy(150, scrollValueCheck,
+                                        (rect.left + rect.right) / 2,
+                                        (rect.top + rect.bottom) / 2,
+                                        2, "down", 4000);
+}
+
+function scrollValueCheck() {
+  debug("The child div scrolls till the end.");
+  shouldBecomeEqual("child.scrollTop", "100",
+                    function () {
+                      shouldBeZero("parent.scrollTop");
+                      finishJSTest();
+                    });
+}
+
+window.onload = runTest();
+
+</script>

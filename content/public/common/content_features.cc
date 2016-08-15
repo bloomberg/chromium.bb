@@ -127,6 +127,10 @@ const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate2",
 const base::Feature kTokenBinding{"token-binding",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables touchpad and wheel scroll latching.
+const base::Feature kTouchpadAndWheelScrollLatching{
+    "TouchpadAndWheelScrollLatching", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Weak MemoryCache (https://crbug.com/603462).
 const base::Feature kWeakMemoryCache{"WeakMemoryCache",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
