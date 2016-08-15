@@ -56,6 +56,6 @@
         t3.insertBefore(document.createElement("div"), t3.firstChild);
         assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2);
         backgroundIsGreen(second);
-    }, "Prepending an element sibling should not affect :nth-last-child of succeeding siblings.");
+    }, "Prepending an element sibling causing :nth-child class invalidation.");
 
 </script>
