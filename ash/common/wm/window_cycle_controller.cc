@@ -6,10 +6,12 @@
 
 #include "ash/common/metrics/task_switch_source.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_cycle_event_filter.h"
 #include "ash/common/wm/window_cycle_list.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "base/metrics/histogram.h"
 
 namespace ash {
@@ -52,6 +54,19 @@ void WindowCycleController::HandleCycleWindow(Direction direction) {
 void WindowCycleController::StartCycling() {
   MruWindowTracker::WindowList window_list =
       WmShell::Get()->mru_window_tracker()->BuildMruWindowList();
+  // Exclude the AppList window, which will hide as soon as cycling starts
+  // anyway. It doesn't make sense to count it as a "switchable" window, yet
+  // a lot of code relies on the MRU list returning the app window. If we
+  // don't manually remove it, the window cycling UI won't crash or misbehave,
+  // but there will be a flicker as the target window changes.
+  window_list.erase(std::remove_if(window_list.begin(), window_list.end(),
+                                   [](WmWindow* window) {
+                                     return window->GetRootWindow()
+                                         ->GetChildByShellWindowId(
+                                             kShellWindowId_AppListContainer)
+                                         ->Contains(window);
+                                   }),
+                    window_list.end());
 
   active_window_before_window_cycle_ = GetActiveWindow(window_list);
 

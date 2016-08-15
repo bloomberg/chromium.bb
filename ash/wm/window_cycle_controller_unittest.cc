@@ -78,6 +78,8 @@ class WindowCycleControllerTest : public test::AshTestBase {
     test::AshTestBase::SetUp();
     ASSERT_TRUE(test::TestShelfDelegate::instance());
 
+    WindowCycleList::DisableInitialDelayForTesting();
+
     shelf_view_test_.reset(new test::ShelfViewTestAPI(
         test::ShelfTestAPI(Shelf::ForPrimaryDisplay()).shelf_view()));
     shelf_view_test_->SetAnimationDuration(1);
@@ -173,15 +175,12 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   // all the windows and wrap around.
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_TRUE(controller->IsCycling());
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
 
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_TRUE(controller->IsCycling());
-  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
 
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_TRUE(controller->IsCycling());
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
   controller->StopCycling();
   EXPECT_FALSE(controller->IsCycling());
@@ -192,29 +191,29 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   wm::ActivateWindow(window1.get());
   wm::ActivateWindow(window0.get());
 
-  // Likewise we can cycle backwards through all the windows.
+  // Likewise we can cycle backwards through the windows.
   controller->HandleCycleWindow(WindowCycleController::BACKWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
   controller->HandleCycleWindow(WindowCycleController::BACKWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-  controller->HandleCycleWindow(WindowCycleController::BACKWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->StopCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+
+  // Reset our stacking order.
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window0.get());
 
   // When the screen is locked, cycling window does not take effect.
   WmShell::Get()->GetSessionStateDelegate()->LockScreen();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
-  controller->HandleCycleWindow(WindowCycleController::BACKWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+  EXPECT_FALSE(controller->IsCycling());
 
+  // Unlock, it works again.
   WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  controller->StopCycling();
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
 
   // When a modal window is active, cycling window does not take effect.
@@ -227,11 +226,13 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   EXPECT_TRUE(wm::IsActiveWindow(modal_window.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_TRUE(wm::IsActiveWindow(modal_window.get()));
+  EXPECT_FALSE(controller->IsCycling());
   EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
   controller->HandleCycleWindow(WindowCycleController::BACKWARD);
   EXPECT_TRUE(wm::IsActiveWindow(modal_window.get()));
+  EXPECT_FALSE(controller->IsCycling());
   EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
@@ -250,10 +251,13 @@ TEST_F(WindowCycleControllerTest, MaximizedWindow) {
   // Rotate focus, this should move focus to window0.
   WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  controller->StopCycling();
   EXPECT_TRUE(wm::GetWindowState(window0.get())->IsActive());
+  EXPECT_FALSE(window1_state->IsActive());
 
   // One more time.
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  controller->StopCycling();
   EXPECT_TRUE(window1_state->IsActive());
 }
 
@@ -272,11 +276,14 @@ TEST_F(WindowCycleControllerTest, Minimized) {
   // Rotate focus, this should move focus to window1 and unminimize it.
   WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  controller->StopCycling();
+  EXPECT_FALSE(window0_state->IsActive());
   EXPECT_FALSE(window1_state->IsMinimized());
   EXPECT_TRUE(window1_state->IsActive());
 
   // One more time back to w0.
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  controller->StopCycling();
   EXPECT_TRUE(window0_state->IsActive());
 }
 
@@ -304,21 +311,6 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopWindow) {
   EXPECT_EQ(window1.get(), GetWindows(controller)[2]);
 
   controller->StopCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
-
-  controller->StopCycling();
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
 TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
@@ -347,24 +339,6 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
   EXPECT_EQ(window1.get(), GetWindows(controller)[3]);
 
   controller->StopCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
-
-  controller->StopCycling();
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
 TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
@@ -417,24 +391,6 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
   EXPECT_EQ(window0.get(), GetWindows(controller)[3]);
 
   controller->StopCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
-
-  controller->StopCycling();
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
 }
 
 TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
@@ -458,23 +414,19 @@ TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
   EXPECT_EQ(window2.get(), GetWindows(controller)[1]);
   EXPECT_EQ(window1.get(), GetWindows(controller)[2]);
 
+  // Cycling through then stopping the cycling will activate a window.
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   controller->StopCycling();
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
 
+  // Cycling alone (without StopCycling()) doesn't activate.
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
+
+  // Showing the Alt+Tab UI does however deactivate the erstwhile active window.
+  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
 
   controller->StopCycling();
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
 // Tests that beginning window selection hides the app list.
@@ -487,10 +439,16 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
   EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
+
+  // Make sure that dismissing the app list this way doesn't pass activation
+  // to a different window.
+  EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
+
+  controller->StopCycling();
 }
 
-// Tests that cycling through windows shows and minimizes windows as they
-// are passed.
+// Tests that cycling through windows doesn't change their minimized state.
 TEST_F(WindowCycleControllerTest, CyclePreservesMinimization) {
   WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
 
@@ -503,7 +461,7 @@ TEST_F(WindowCycleControllerTest, CyclePreservesMinimization) {
 
   // On window 2.
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_FALSE(IsWindowMinimized(window1.get()));
+  EXPECT_TRUE(IsWindowMinimized(window1.get()));
 
   // Back on window 1.
   controller->HandleCycleWindow(WindowCycleController::FORWARD);

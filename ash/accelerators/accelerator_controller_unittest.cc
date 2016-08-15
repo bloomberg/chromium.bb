@@ -1124,9 +1124,15 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   EXPECT_TRUE(test_api.is_animating_lock());
 #endif
 
+  auto press_and_release_alt_tab = [&generator]() {
+    generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+    // Release the alt key to trigger the window activation.
+    generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
+  };
+
   // A fullscreen window can consume ALT-TAB (preferred).
   ASSERT_EQ(w1, wm::GetActiveWindow());
-  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  press_and_release_alt_tab();
   ASSERT_EQ(w1, wm::GetActiveWindow());
   ASSERT_NE(w2, wm::GetActiveWindow());
 
@@ -1141,7 +1147,7 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   ASSERT_FALSE(w1_state->IsFullscreen());
 
   EXPECT_EQ(w1, wm::GetActiveWindow());
-  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  press_and_release_alt_tab();
   ASSERT_NE(w1, wm::GetActiveWindow());
   ASSERT_EQ(w2, wm::GetActiveWindow());
 }
