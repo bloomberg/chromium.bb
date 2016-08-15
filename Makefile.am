@@ -126,6 +126,8 @@ nodist_libweston_desktop_@LIBWESTON_MAJOR@_la_SOURCES =		\
 	protocol/xdg-shell-unstable-v5-protocol.c		\
 	protocol/xdg-shell-unstable-v5-server-protocol.h
 
+BUILT_SOURCES += $(nodist_libweston_desktop_@LIBWESTON_MAJOR@_la_SOURCES)
+
 libweston-desktop-@LIBWESTON_MAJOR@.la libweston-desktop/libweston_desktop_@LIBWESTON_MAJOR@_la-xdg-shell-v5.lo: protocol/xdg-shell-unstable-v5-server-protocol.h
 
 if SYSTEMD_NOTIFY_SUPPORT
@@ -906,9 +908,7 @@ desktop_shell_la_SOURCES =				\
 	shared/helpers.h
 nodist_desktop_shell_la_SOURCES =			\
 	protocol/weston-desktop-shell-protocol.c	\
-	protocol/weston-desktop-shell-server-protocol.h	\
-	protocol/xdg-shell-unstable-v5-protocol.c	\
-	protocol/xdg-shell-unstable-v5-server-protocol.h
+	protocol/weston-desktop-shell-server-protocol.h
 
 BUILT_SOURCES += $(nodist_desktop_shell_la_SOURCES)
 endif
