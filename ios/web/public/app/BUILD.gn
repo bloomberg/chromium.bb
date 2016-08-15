@@ -7,6 +7,7 @@ source_set("app") {
     "web_main.h",
     "web_main_delegate.h",
     "web_main_parts.h",
+    "web_main_runner.h",
   ]
 
   public_deps = [

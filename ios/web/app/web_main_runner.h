@@ -1,29 +1,13 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef IOS_WEB_APP_WEB_MAIN_RUNNER_H_
 #define IOS_WEB_APP_WEB_MAIN_RUNNER_H_
 
-#include "ios/web/public/app/web_main.h"
+#include "ios/web/public/app/web_main_runner.h"
 
-namespace web {
-
-// This class is responsible for web initialization and shutdown.
-class WebMainRunner {
- public:
-  virtual ~WebMainRunner() {}
-
-  // Create a new WebMainRunner object.
-  static WebMainRunner* Create();
-
-  // Initialize all necessary web state.
-  virtual int Initialize(const WebMainParams& params) = 0;
-
-  // Shut down the web state.
-  virtual void ShutDown() = 0;
-};
-
-}  // namespace web
+// TODO(crbug.com/616247): Remove this file once all clients switched to use
+// public header.
 
 #endif  // IOS_WEB_APP_WEB_MAIN_RUNNER_H_

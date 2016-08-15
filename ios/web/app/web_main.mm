@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/app/web_main_runner.h"
 #include "ios/web/public/app/web_main.h"
+#include "ios/web/public/app/web_main_runner.h"
 
 namespace web {
 
