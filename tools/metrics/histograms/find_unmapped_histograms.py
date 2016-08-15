@@ -75,13 +75,37 @@ MACRO_STRING_CONCATENATION_REGEX = re.compile(r"""
     $                             # End of string
     """, re.VERBOSE)
 HISTOGRAM_REGEX = re.compile(r"""
-    UMA_HISTOGRAM  # Match the shared prefix for standard UMA histogram macros
-    \w*            # Match the rest of the macro name, e.g. '_ENUMERATION'
+    (\w*           # Capture the whole macro name
+    UMA_HISTOGRAM_ # Match the shared prefix for standard UMA histogram macros
+    (\w*))         # Match the rest of the macro name, e.g. '_ENUMERATION'
     \(             # Match the opening parenthesis for the macro
     \s*            # Match any whitespace -- especially, any newlines
     ([^,)]*)       # Capture the first parameter to the macro
     [,)]           # Match the comma/paren that delineates the first parameter
     """, re.VERBOSE)
+STANDARD_HISTOGRAM_SUFFIXES = frozenset(['TIMES', 'MEDIUM_TIMES', 'LONG_TIMES',
+                                         'LONG_TIMES_100', 'CUSTOM_TIMES',
+                                         'COUNTS', 'COUNTS_100', 'COUNTS_1000',
+                                         'COUNTS_10000', 'CUSTOM_COUNTS',
+                                         'MEMORY_KB', 'MEMORY_MB',
+                                         'MEMORY_LARGE_MB', 'PERCENTAGE',
+                                         'BOOLEAN', 'ENUMERATION',
+                                         'CUSTOM_ENUMERATION', 'SPARSE_SLOWLY'])
+OTHER_STANDARD_HISTOGRAMS = frozenset(['SCOPED_UMA_HISTOGRAM_TIMER',
+                                       'SCOPED_UMA_HISTOGRAM_LONG_TIMER'])
+# The following suffixes are not defined in //base/metrics but the first
+# argument to the macro is the full name of the histogram as a literal string.
+STANDARD_LIKE_SUFFIXES = frozenset(['SCROLL_LATENCY_SHORT',
+                                    'SCROLL_LATENCY_LONG',
+                                    'TOUCH_TO_SCROLL_LATENCY',
+                                    'LARGE_MEMORY_MB', 'MEGABYTES_LINEAR',
+                                    'LINEAR', 'ALLOCATED_MEGABYTES',
+                                    'CUSTOM_TIMES_MICROS',
+                                    'TIME_IN_MINUTES_MONTH_RANGE',
+                                    'TIMES_16H', 'MINUTES', 'MBYTES',
+                                    'ASPECT_RATIO', 'LOCATION_RESPONSE_TIMES',
+                                    'LOCK_TIMES', 'OOM_KILL_TIME_INTERVAL'])
+OTHER_STANDARD_LIKE_HISTOGRAMS = frozenset(['SCOPED_BLINK_UMA_HISTOGRAM_TIMER'])
 
 
 def RunGit(command):
@@ -201,14 +225,28 @@ def readChromiumHistograms():
 
   histograms = set()
   location_map = dict()
+  unknown_macros = set()
+  all_suffixes = STANDARD_HISTOGRAM_SUFFIXES | STANDARD_LIKE_SUFFIXES
+  all_others = OTHER_STANDARD_HISTOGRAMS | OTHER_STANDARD_LIKE_HISTOGRAMS
   for filename in filenames:
     contents = ''
     with open(filename, 'r') as f:
       contents = f.read()
 
     for match in HISTOGRAM_REGEX.finditer(contents):
-      histogram = collapseAdjacentCStrings(match.group(1))
-      histogram = removeComments(histogram)
+      line_number = contents[:match.start()].count('\n') + 1
+      if (match.group(2) not in all_suffixes and
+          match.group(1) not in all_others):
+        full_macro_name = match.group(1)
+        if (full_macro_name not in unknown_macros):
+          logging.warning('%s:%d: Unknown macro name: <%s>' %
+                          (filename, line_number, match.group(1)))
+          unknown_macros.add(full_macro_name)
+
+        continue
+
+      histogram = removeComments(match.group(3))
+      histogram = collapseAdjacentCStrings(histogram)
 
       # Must begin and end with a quotation mark.
       if not histogram or histogram[0] != '"' or histogram[-1] != '"':
@@ -223,7 +261,6 @@ def readChromiumHistograms():
 
       if histogram_stripped not in histograms:
         histograms.add(histogram_stripped)
-        line_number = contents[:match.start()].count('\n') + 1
         location_map[histogram_stripped] = '%s:%d' % (filename, line_number)
 
   return histograms, location_map
