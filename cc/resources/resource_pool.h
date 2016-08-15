@@ -44,6 +44,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
 
   ~ResourcePool() override;
 
+  // Tries to reuse a resource. If none are available, makes a new one.
   Resource* AcquireResource(const gfx::Size& size,
                             ResourceFormat format,
                             const gfx::ColorSpace& color_space);
@@ -99,6 +100,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   bool ResourceUsageTooHigh();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ResourcePoolTest, ReuseResource);
   class PoolResource : public ScopedResource {
    public:
     static std::unique_ptr<PoolResource> Create(
@@ -127,6 +129,16 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
     base::TimeTicks last_usage_;
     gfx::Rect invalidated_rect_;
   };
+
+  // Tries to reuse a resource. Returns |nullptr| if none are available.
+  Resource* ReuseResource(const gfx::Size& size,
+                          ResourceFormat format,
+                          const gfx::ColorSpace& color_space);
+
+  // Creates a new resource without trying to reuse an old one.
+  Resource* CreateResource(const gfx::Size& size,
+                           ResourceFormat format,
+                           const gfx::ColorSpace& color_space);
 
   void DidFinishUsingResource(std::unique_ptr<PoolResource> resource);
   void DeleteResource(std::unique_ptr<PoolResource> resource);

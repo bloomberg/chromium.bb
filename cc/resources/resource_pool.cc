@@ -94,9 +94,9 @@ ResourcePool::~ResourcePool() {
   DCHECK_EQ(0u, total_resource_count_);
 }
 
-Resource* ResourcePool::AcquireResource(const gfx::Size& size,
-                                        ResourceFormat format,
-                                        const gfx::ColorSpace& color_space) {
+Resource* ResourcePool::ReuseResource(const gfx::Size& size,
+                                      ResourceFormat format,
+                                      const gfx::ColorSpace& color_space) {
   // Finding resources in |unused_resources_| from MRU to LRU direction, touches
   // LRU resources only if needed, which increases possibility of expiring more
   // LRU resources within kResourceExpirationDelayMs.
@@ -119,7 +119,12 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
         resource->size(), resource->format());
     return resource;
   }
+  return nullptr;
+}
 
+Resource* ResourcePool::CreateResource(const gfx::Size& size,
+                                       ResourceFormat format,
+                                       const gfx::ColorSpace& color_space) {
   std::unique_ptr<PoolResource> pool_resource =
       PoolResource::Create(resource_provider_);
 
@@ -148,6 +153,16 @@ Resource* ResourcePool::AcquireResource(const gfx::Size& size,
       resource->size(), resource->format());
 
   return resource;
+}
+
+Resource* ResourcePool::AcquireResource(const gfx::Size& size,
+                                        ResourceFormat format,
+                                        const gfx::ColorSpace& color_space) {
+  Resource* reused_resource = ReuseResource(size, format, color_space);
+  if (reused_resource)
+    return reused_resource;
+
+  return CreateResource(size, format, color_space);
 }
 
 // Iterate over all three resource lists (unused, in-use, and busy), updating

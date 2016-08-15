@@ -17,7 +17,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
-namespace {
 
 class ResourcePoolTest : public testing::Test {
  public:
@@ -310,5 +309,29 @@ TEST_F(ResourcePoolTest, UpdateContentIdAndInvalidatedRect) {
   resource_pool_->ReleaseResource(reacquired_resource);
 }
 
-}  // namespace
+TEST_F(ResourcePoolTest, ReuseResource) {
+  ResourceFormat format = RGBA_8888;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+
+  // Create unused resources with sizes close to 100, 100.
+  resource_pool_->ReleaseResource(
+      resource_pool_->CreateResource(gfx::Size(99, 100), format, color_space));
+  resource_pool_->ReleaseResource(
+      resource_pool_->CreateResource(gfx::Size(99, 99), format, color_space));
+  resource_pool_->ReleaseResource(
+      resource_pool_->CreateResource(gfx::Size(100, 99), format, color_space));
+  resource_pool_->ReleaseResource(
+      resource_pool_->CreateResource(gfx::Size(101, 101), format, color_space));
+  resource_pool_->CheckBusyResources();
+
+  gfx::Size size(100, 100);
+  Resource* resource = resource_pool_->ReuseResource(size, format, color_space);
+  EXPECT_EQ(nullptr, resource);
+  size = gfx::Size(100, 99);
+  resource = resource_pool_->ReuseResource(size, format, color_space);
+  EXPECT_NE(nullptr, resource);
+  ASSERT_EQ(nullptr, resource_pool_->ReuseResource(size, format, color_space));
+  resource_pool_->ReleaseResource(resource);
+}
+
 }  // namespace cc
