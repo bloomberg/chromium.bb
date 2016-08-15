@@ -25,7 +25,6 @@ MojoRendererService::MojoRendererService(
     : binding_(this, std::move(request)),
       mojo_cdm_service_context_(mojo_cdm_service_context),
       state_(STATE_UNINITIALIZED),
-      last_media_time_usec_(0),
       renderer_(std::move(renderer)),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
@@ -73,10 +72,9 @@ void MojoRendererService::Flush(const FlushCallback& callback) {
       base::Bind(&MojoRendererService::OnFlushCompleted, weak_this_, callback));
 }
 
-void MojoRendererService::StartPlayingFrom(int64_t time_delta_usec) {
-  DVLOG(2) << __FUNCTION__ << ": " << time_delta_usec;
-  renderer_->StartPlayingFrom(
-      base::TimeDelta::FromMicroseconds(time_delta_usec));
+void MojoRendererService::StartPlayingFrom(base::TimeDelta time_delta) {
+  DVLOG(2) << __FUNCTION__ << ": " << time_delta;
+  renderer_->StartPlayingFrom(time_delta);
   SchedulePeriodicMediaTimeUpdates();
 }
 
@@ -149,7 +147,7 @@ void MojoRendererService::OnVideoNaturalSizeChange(const gfx::Size& size) {
 }
 
 void MojoRendererService::OnDurationChange(base::TimeDelta duration) {
-  client_->OnDurationChange(duration.InMicroseconds());
+  client_->OnDurationChange(duration);
 }
 
 void MojoRendererService::OnVideoOpacityChange(bool opaque) {
@@ -184,12 +182,12 @@ void MojoRendererService::OnRendererInitializeDone(
 }
 
 void MojoRendererService::UpdateMediaTime(bool force) {
-  const int64_t media_time = renderer_->GetMediaTime().InMicroseconds();
-  if (!force && media_time == last_media_time_usec_)
+  base::TimeDelta media_time = renderer_->GetMediaTime();
+  if (!force && media_time == last_media_time_)
     return;
 
   client_->OnTimeUpdate(media_time, media_time);
-  last_media_time_usec_ = media_time;
+  last_media_time_ = media_time;
 }
 
 void MojoRendererService::CancelPeriodicMediaTimeUpdates() {

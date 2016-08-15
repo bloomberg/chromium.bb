@@ -182,7 +182,7 @@ void MojoRenderer::StartPlayingFrom(base::TimeDelta time) {
     time_ = time;
   }
 
-  remote_renderer_->StartPlayingFrom(time.InMicroseconds());
+  remote_renderer_->StartPlayingFrom(time);
 }
 
 void MojoRenderer::SetPlaybackRate(double playback_rate) {
@@ -233,12 +233,13 @@ bool MojoRenderer::HasVideo() {
   return !!demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
 }
 
-void MojoRenderer::OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) {
-  DVLOG(3) << __FUNCTION__ << ": " << time_usec << ", " << max_time_usec;
+void MojoRenderer::OnTimeUpdate(base::TimeDelta time,
+                                base::TimeDelta max_time) {
+  DVLOG(3) << __FUNCTION__ << ": " << time << ", " << max_time;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
-  time_ = base::TimeDelta::FromMicroseconds(time_usec);
+  time_ = time;
 }
 
 void MojoRenderer::OnBufferingStateChange(mojom::BufferingState state) {
@@ -274,9 +275,9 @@ void MojoRenderer::OnVideoNaturalSizeChange(const gfx::Size& size) {
   client_->OnVideoNaturalSizeChange(size);
 }
 
-void MojoRenderer::OnDurationChange(int64_t duration_usec) {
-  DVLOG(2) << __FUNCTION__ << ": duration" << duration_usec;
-  client_->OnDurationChange(base::TimeDelta::FromMicroseconds(duration_usec));
+void MojoRenderer::OnDurationChange(base::TimeDelta duration) {
+  DVLOG(2) << __FUNCTION__ << ": duration" << duration;
+  client_->OnDurationChange(duration);
 }
 
 void MojoRenderer::OnVideoOpacityChange(bool opaque) {

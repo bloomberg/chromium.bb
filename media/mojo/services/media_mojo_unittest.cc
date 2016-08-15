@@ -43,7 +43,8 @@ class MockRendererClient : public mojom::RendererClient {
   ~MockRendererClient() override {}
 
   // mojom::RendererClient implementation.
-  MOCK_METHOD2(OnTimeUpdate, void(int64_t time_usec, int64_t max_time_usec));
+  MOCK_METHOD2(OnTimeUpdate,
+               void(base::TimeDelta time, base::TimeDelta max_time));
   MOCK_METHOD1(OnBufferingStateChange, void(mojom::BufferingState state));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD0(OnError, void());
@@ -52,7 +53,7 @@ class MockRendererClient : public mojom::RendererClient {
   MOCK_METHOD1(OnStatisticsUpdate,
                void(const media::PipelineStatistics& stats));
   MOCK_METHOD0(OnWaitingForDecryptionKey, void());
-  MOCK_METHOD1(OnDurationChange, void(int64_t time_usec));
+  MOCK_METHOD1(OnDurationChange, void(base::TimeDelta duration));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRendererClient);

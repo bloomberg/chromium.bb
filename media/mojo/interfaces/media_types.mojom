@@ -5,6 +5,7 @@
 module media.mojom;
 
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "mojo/common/common_custom_types.mojom";
 
 // See media/base/buffering_state.h for descriptions.
 // Kept in sync with media::BufferingState via static_asserts.
@@ -215,7 +216,7 @@ struct AudioDecoderConfig {
   ChannelLayout channel_layout;
   int32 samples_per_second;
   array<uint8>? extra_data;
-  int64 seek_preroll_usec;
+  mojo.common.mojom.TimeDelta seek_preroll;
   int32 codec_delay;
   EncryptionScheme encryption_scheme;
 };
@@ -251,8 +252,8 @@ struct DecryptConfig {
 
 // This defines a mojo transport format for media::DecoderBuffer.
 struct DecoderBuffer {
-  int64 timestamp_usec;
-  int64 duration_usec;
+  mojo.common.mojom.TimeDelta timestamp;
+  mojo.common.mojom.TimeDelta duration;
 
   // The number of bytes present in this buffer.  The data is not serialized
   // along with this structure and must be read from a separate DataPipe.
@@ -269,11 +270,11 @@ struct DecoderBuffer {
   DecryptConfig? decrypt_config;
 
   // These fields indicate the amount of data to discard after decoding.
-  int64 front_discard_usec;
-  int64 back_discard_usec;
+  mojo.common.mojom.TimeDelta front_discard;
+  mojo.common.mojom.TimeDelta back_discard;
 
-  // Indicates this buffer is part of a splice around |splice_timestamp_usec|.
-  int64 splice_timestamp_usec;
+  // Indicates this buffer is part of a splice around |splice_timestamp|.
+  mojo.common.mojom.TimeDelta splice_timestamp;
 };
 
 // This defines a mojo transport format for media::AudioBuffer.
@@ -297,7 +298,7 @@ struct AudioBuffer {
   bool end_of_stream;
 
   // Timestamp in microseconds of the first frame.
-  int64 timestamp_usec;
+  mojo.common.mojom.TimeDelta timestamp;
 
   // Channel data. Will be null for EOS buffers.
   array<uint8>? data;
@@ -321,7 +322,7 @@ struct VideoFrame {
   bool end_of_stream;
 
   // Timestamp in microseconds of the associated frame.
-  int64 timestamp_usec;
+  mojo.common.mojom.TimeDelta timestamp;
 
   // Reference to the shared memory containing the frame's data.
   handle<shared_buffer> frame_data;

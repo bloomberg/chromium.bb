@@ -59,7 +59,7 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
  private:
   // mojom::RendererClient implementation, dispatched on the
   // |task_runner_|.
-  void OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) override;
+  void OnTimeUpdate(base::TimeDelta time, base::TimeDelta max_time) override;
   void OnBufferingStateChange(mojom::BufferingState state) override;
   void OnEnded() override;
   void OnError() override;
@@ -67,7 +67,7 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   void OnVideoOpacityChange(bool opaque) override;
   void OnWaitingForDecryptionKey() override;
   void OnStatisticsUpdate(const PipelineStatistics& stats) override;
-  void OnDurationChange(int64_t duration_usec) override;
+  void OnDurationChange(base::TimeDelta duration) override;
 
   // Binds |remote_renderer_| to the mojo message pipe. Can be called multiple
   // times. If an error occurs during connection, OnConnectionError will be

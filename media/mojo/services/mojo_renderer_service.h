@@ -50,7 +50,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
                   const base::Optional<GURL>& url,
                   const InitializeCallback& callback) final;
   void Flush(const FlushCallback& callback) final;
-  void StartPlayingFrom(int64_t time_delta_usec) final;
+  void StartPlayingFrom(base::TimeDelta time_delta) final;
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
   void SetCdm(int32_t cdm_id, const SetCdmCallback& callback) final;
@@ -106,7 +106,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   std::unique_ptr<DemuxerStreamProvider> stream_provider_;
 
   base::RepeatingTimer time_update_timer_;
-  int64_t last_media_time_usec_;
+  base::TimeDelta last_media_time_;
 
   mojom::RendererClientPtr client_;
 

@@ -6,6 +6,7 @@ module media.mojom;
 
 import "media/mojo/interfaces/demuxer_stream.mojom";
 import "media/mojo/interfaces/media_types.mojom";
+import "mojo/common/common_custom_types.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojo/url.mojom";
 
@@ -22,8 +23,8 @@ interface Renderer {
   // before the callback is executed.
   Flush() => ();
 
-  // Starts rendering from |time_usec|.
-  StartPlayingFrom(int64 time_usec);
+  // Starts rendering from |time|.
+  StartPlayingFrom(mojo.common.mojom.TimeDelta time);
 
   // Updates the current playback rate. The default playback rate should be 1.
   SetPlaybackRate(double playback_rate);
@@ -37,13 +38,14 @@ interface Renderer {
 };
 
 interface RendererClient {
-  // Called to report media time advancement by |time_usec|.
-  // |time_usec| and |max_time_usec| can be used to interpolate time between
+  // Called to report media time advancement by |time|.
+  // |time| and |max_time| can be used to interpolate time between
   // calls to OnTimeUpdate().
-  // |max_time_usec| is typically the media timestamp of the last audio frame
+  // |max_time| is typically the media timestamp of the last audio frame
   //     buffered by the audio hardware.
-  // |max_time_usec| must be greater or equal to |time_usec|.
-  OnTimeUpdate(int64 time_usec, int64 max_time_usec);
+  // |max_time| must be greater or equal to |time|.
+  OnTimeUpdate(mojo.common.mojom.TimeDelta time,
+               mojo.common.mojom.TimeDelta max_time);
 
   // Called to report buffering state changes, see media_types.mojom.
   OnBufferingStateChange(BufferingState state);
@@ -72,5 +74,5 @@ interface RendererClient {
 
   // Executed the first time the metadata is updated, and whenever the duration
   // changes.
-  OnDurationChange(int64 duration_usec);
+  OnDurationChange(mojo.common.mojom.TimeDelta duration);
 };

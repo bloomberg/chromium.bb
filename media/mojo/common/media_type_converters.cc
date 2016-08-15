@@ -434,16 +434,13 @@ TypeConverter<media::mojom::DecoderBufferPtr,
   if (input->end_of_stream())
     return mojo_buffer;
 
-  mojo_buffer->timestamp_usec = input->timestamp().InMicroseconds();
-  mojo_buffer->duration_usec = input->duration().InMicroseconds();
+  mojo_buffer->timestamp = input->timestamp();
+  mojo_buffer->duration = input->duration();
   mojo_buffer->is_key_frame = input->is_key_frame();
   mojo_buffer->data_size = base::checked_cast<uint32_t>(input->data_size());
-  mojo_buffer->front_discard_usec =
-      input->discard_padding().first.InMicroseconds();
-  mojo_buffer->back_discard_usec =
-      input->discard_padding().second.InMicroseconds();
-  mojo_buffer->splice_timestamp_usec =
-      input->splice_timestamp().InMicroseconds();
+  mojo_buffer->front_discard = input->discard_padding().first;
+  mojo_buffer->back_discard = input->discard_padding().second;
+  mojo_buffer->splice_timestamp = input->splice_timestamp();
 
   // Note: The side data is always small, so this copy is okay.
   std::vector<uint8_t> side_data(input->side_data(),
@@ -478,9 +475,8 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
                              input->side_data.size());
   }
 
-  buffer->set_timestamp(
-      base::TimeDelta::FromMicroseconds(input->timestamp_usec));
-  buffer->set_duration(base::TimeDelta::FromMicroseconds(input->duration_usec));
+  buffer->set_timestamp(input->timestamp);
+  buffer->set_duration(input->duration);
 
   if (input->is_key_frame)
     buffer->set_is_key_frame(true);
@@ -490,12 +486,10 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
         input->decrypt_config.To<std::unique_ptr<media::DecryptConfig>>());
   }
 
-  media::DecoderBuffer::DiscardPadding discard_padding(
-      base::TimeDelta::FromMicroseconds(input->front_discard_usec),
-      base::TimeDelta::FromMicroseconds(input->back_discard_usec));
+  media::DecoderBuffer::DiscardPadding discard_padding(input->front_discard,
+                                                       input->back_discard);
   buffer->set_discard_padding(discard_padding);
-  buffer->set_splice_timestamp(
-      base::TimeDelta::FromMicroseconds(input->splice_timestamp_usec));
+  buffer->set_splice_timestamp(input->splice_timestamp);
 
   // TODO(dalecurtis): We intentionally do not deserialize the data section of
   // the DecoderBuffer here; this must instead be done by clients via their
@@ -519,7 +513,7 @@ TypeConverter<media::mojom::AudioDecoderConfigPtr, media::AudioDecoderConfig>::
   if (!input.extra_data().empty()) {
     config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
   }
-  config->seek_preroll_usec = input.seek_preroll().InMicroseconds();
+  config->seek_preroll = input.seek_preroll();
   config->codec_delay = input.codec_delay();
   config->encryption_scheme =
       media::mojom::EncryptionScheme::From(input.encryption_scheme());
@@ -536,8 +530,7 @@ TypeConverter<media::AudioDecoderConfig, media::mojom::AudioDecoderConfigPtr>::
                     static_cast<media::ChannelLayout>(input->channel_layout),
                     input->samples_per_second, input->extra_data.storage(),
                     input->encryption_scheme.To<media::EncryptionScheme>(),
-                    base::TimeDelta::FromMicroseconds(input->seek_preroll_usec),
-                    input->codec_delay);
+                    input->seek_preroll, input->codec_delay);
   return config;
 }
 
@@ -638,7 +631,7 @@ TypeConverter<media::mojom::AudioBufferPtr, scoped_refptr<media::AudioBuffer>>::
   buffer->sample_rate = input->sample_rate();
   buffer->frame_count = input->frame_count();
   buffer->end_of_stream = input->end_of_stream();
-  buffer->timestamp_usec = input->timestamp().InMicroseconds();
+  buffer->timestamp = input->timestamp();
 
   if (!input->end_of_stream()) {
     std::vector<uint8_t> input_data(input->data_.get(),
@@ -669,8 +662,7 @@ TypeConverter<scoped_refptr<media::AudioBuffer>, media::mojom::AudioBufferPtr>::
       static_cast<media::SampleFormat>(input->sample_format),
       static_cast<media::ChannelLayout>(input->channel_layout),
       input->channel_count, input->sample_rate, input->frame_count,
-      &channel_ptrs[0],
-      base::TimeDelta::FromMicroseconds(input->timestamp_usec));
+      &channel_ptrs[0], input->timestamp);
 }
 
 // static
@@ -697,7 +689,7 @@ TypeConverter<media::mojom::VideoFramePtr, scoped_refptr<media::VideoFrame>>::
   frame->coded_size = input->coded_size();
   frame->visible_rect = input->visible_rect();
   frame->natural_size = input->natural_size();
-  frame->timestamp_usec = input->timestamp().InMicroseconds();
+  frame->timestamp = input->timestamp();
   frame->frame_data = std::move(duplicated_handle);
   frame->frame_data_size = input_frame->MappedSize();
   frame->y_stride = input_frame->stride(media::VideoFrame::kYPlane);
@@ -723,8 +715,7 @@ TypeConverter<scoped_refptr<media::VideoFrame>, media::mojom::VideoFramePtr>::
       base::saturated_cast<size_t>(input->y_offset),
       base::saturated_cast<size_t>(input->u_offset),
       base::saturated_cast<size_t>(input->v_offset), input->y_stride,
-      input->u_stride, input->v_stride,
-      base::TimeDelta::FromMicroseconds(input->timestamp_usec));
+      input->u_stride, input->v_stride, input->timestamp);
 }
 
 }  // namespace mojo
