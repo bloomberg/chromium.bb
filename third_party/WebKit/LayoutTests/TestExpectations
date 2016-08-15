@@ -135,7 +135,7 @@ crbug.com/632548 [ Win ] compositing/overflow/text-match-highlight.html [ Pass F
 
 crbug.com/636222 [ Mac10.10 ] fast/repaint/fixed-and-absolute-position-scrolled.html [ Failure ]
 
-crbug.com/636271 [ Mac10.10 ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
+crbug.com/636271 [ Mac ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Linux ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Win ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
 
