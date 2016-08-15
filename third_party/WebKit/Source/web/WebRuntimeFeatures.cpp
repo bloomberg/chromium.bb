@@ -210,6 +210,11 @@ void WebRuntimeFeatures::enablePassiveDocumentEventListeners(bool enable)
     RuntimeEnabledFeatures::setPassiveDocumentEventListenersEnabled(enable);
 }
 
+void WebRuntimeFeatures::enablePassiveEventListenersDueToFling(bool enable)
+{
+    RuntimeEnabledFeatures::setPassiveEventListenersDueToFlingEnabled(enable);
+}
+
 void WebRuntimeFeatures::enablePaymentRequest(bool enable)
 {
     RuntimeEnabledFeatures::setPaymentRequestEnabled(enable);

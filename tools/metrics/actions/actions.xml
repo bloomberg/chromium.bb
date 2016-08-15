@@ -324,6 +324,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AboutFlags_passive-event-listeners-due-to-fling">
+  <owner>dtapuska@chromium.org</owner>
+  <description>
+    User enabled the PassiveEventListenersDueToFling via chrome://flags.
+  </description>
+</action>
+
 <action name="AboutFlags_passive-listener-default">
   <owner>dtapuska@chromium.org</owner>
   <description>

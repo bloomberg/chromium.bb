@@ -153,6 +153,7 @@ OverlayScrollbars
 PagePopup status=stable
 PaintOptimizations status=stable
 PassiveDocumentEventListeners status=experimental
+PassiveEventListenersDueToFling status=experimental
 PassPaintVisualRectToCompositor
 PathOpsSVGClipping status=stable
 PaymentRequest status=experimental

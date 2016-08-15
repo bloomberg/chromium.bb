@@ -92,6 +92,7 @@ public:
     BLINK_EXPORT static void enablePagePopup(bool);
     BLINK_EXPORT static void enableParseHTMLOnMainThread(bool);
     BLINK_EXPORT static void enablePassiveDocumentEventListeners(bool);
+    BLINK_EXPORT static void enablePassiveEventListenersDueToFling(bool);
     BLINK_EXPORT static void enablePaymentRequest(bool);
     BLINK_EXPORT static void enablePermissionsAPI(bool);
     BLINK_EXPORT static void enablePointerEvent(bool);

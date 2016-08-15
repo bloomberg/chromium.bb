@@ -84046,6 +84046,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1966730288" label="disable-threaded-compositing"/>
   <int value="1969604362" label="enable-pinch-virtual-viewport"/>
   <int value="1980011075" label="debug-packed-apps"/>
+  <int value="1992466116" label="enable-passive-event-listeners-due-to-fling"/>
   <int value="1993258379" label="enable-icon-ntp"/>
   <int value="2000091128" label="enable-touch-hover"/>
   <int value="2004483175" label="multi-instance-merge-tabs"/>
