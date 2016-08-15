@@ -59,6 +59,32 @@ TEST(SharedBufferTest, getAsBytes)
     EXPECT_EQ(0, memcmp(expectedConcatenation, data.get(), strlen(expectedConcatenation)));
 }
 
+TEST(SharedBufferTest, getPartAsBytes)
+{
+    char testData0[] = "Hello";
+    char testData1[] = "World";
+    char testData2[] = "Goodbye";
+
+    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(testData0, strlen(testData0));
+    sharedBuffer->append(testData1, strlen(testData1));
+    sharedBuffer->append(testData2, strlen(testData2));
+
+    struct TestData {
+        size_t position;
+        size_t size;
+        const char* expected;
+    } testData[] = {
+        {0, 17, "HelloWorldGoodbye"},
+        {0, 7, "HelloWo"},
+        {4, 7, "oWorldG"},
+    };
+    for (TestData& test : testData) {
+        std::unique_ptr<char[]> data = wrapArrayUnique(new char[test.size]);
+        ASSERT_TRUE(sharedBuffer->getPartAsBytes(data.get(), test.position, test.size));
+        EXPECT_EQ(0, memcmp(test.expected, data.get(), test.size));
+    }
+}
+
 TEST(SharedBufferTest, getAsBytesLargeSegments)
 {
     Vector<char> vector0(0x4000);

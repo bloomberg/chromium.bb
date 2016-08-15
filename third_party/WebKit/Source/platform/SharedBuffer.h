@@ -125,7 +125,20 @@ public:
     bool getAsBytes(void* dest, STRICTLY_TYPED_ARG(byteLength)) const
     {
         STRICT_ARG_TYPE(size_t);
-        return getAsBytesInternal(dest, byteLength);
+        if (byteLength != size())
+            return false;
+
+        return getAsBytesInternal(dest, 0, byteLength);
+    }
+
+    // Copies "byteLength" bytes from "position"-th bytes (0 origin) of the content
+    // data into "dest" as a flat buffer,
+    // Returns true on success, otherwise the content of "dest" is not guaranteed.
+    HAS_STRICTLY_TYPED_ARG
+    bool getPartAsBytes(void* dest, STRICTLY_TYPED_ARG(position), STRICTLY_TYPED_ARG(byteLength)) const
+    {
+        STRICT_ARG_TYPE(size_t);
+        return getAsBytesInternal(dest, position, byteLength);
     }
 
     // Creates an SkData and copies this SharedBuffer's contents to that
@@ -155,7 +168,7 @@ private:
     void mergeSegmentsIntoBuffer() const;
 
     void appendInternal(const char* data, size_t);
-    bool getAsBytesInternal(void* dest, size_t) const;
+    bool getAsBytesInternal(void* dest, size_t, size_t) const;
     size_t getSomeDataInternal(const char*& data, size_t position) const;
 
     size_t m_size;

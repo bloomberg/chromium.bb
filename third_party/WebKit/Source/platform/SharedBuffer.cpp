@@ -240,25 +240,27 @@ size_t SharedBuffer::getSomeDataInternal(const char*& someData, size_t position)
     return 0;
 }
 
-bool SharedBuffer::getAsBytesInternal(void* dest, size_t byteLength) const
+bool SharedBuffer::getAsBytesInternal(void* dest, size_t loadPosition, size_t byteLength) const
 {
-    if (!dest || byteLength != size())
+    if (!dest)
         return false;
 
-    const char* segment = 0;
-    size_t position = 0;
-    while (size_t segmentSize = getSomeDataInternal(segment, position)) {
-        memcpy(static_cast<char*>(dest) + position, segment, segmentSize);
-        position += segmentSize;
+    const char* segment = nullptr;
+    size_t writePosition = 0;
+    while (byteLength > 0) {
+        size_t loadSize = getSomeDataInternal(segment, loadPosition);
+        if (loadSize == 0)
+            break;
+
+        if (byteLength < loadSize)
+            loadSize = byteLength;
+        memcpy(static_cast<char*>(dest) + writePosition, segment, loadSize);
+        loadPosition += loadSize;
+        writePosition += loadSize;
+        byteLength -= loadSize;
     }
 
-    if (position != byteLength) {
-        ASSERT_NOT_REACHED();
-        // Don't return the incomplete data.
-        return false;
-    }
-
-    return true;
+    return byteLength == 0;
 }
 
 sk_sp<SkData> SharedBuffer::getAsSkData() const
