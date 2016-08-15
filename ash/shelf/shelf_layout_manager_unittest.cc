@@ -1902,9 +1902,17 @@ TEST_F(ShelfLayoutManagerTest,
   EXPECT_EQ(initial_bounds, reshow_target_bounds);
 }
 
+// Flaky crash on Windows (crbug.com/637873).
+#if defined(OS_WIN)
+#define MAYBE_ShutdownHandlesWindowActivation \
+  DISABLED_ShutdownHandlesWindowActivation
+#else
+#define MAYBE_ShutdownHandlesWindowActivation ShutdownHandlesWindowActivation
+#endif
+
 // Tests that during shutdown, that window activation changes are properly
 // handled, and do not crash (crbug.com/458768)
-TEST_F(ShelfLayoutManagerTest, DISABLED_ShutdownHandlesWindowActivation) {
+TEST_F(ShelfLayoutManagerTest, MAYBE_ShutdownHandlesWindowActivation) {
   GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   aura::Window* window1 = CreateTestWindowInShellWithId(0);
