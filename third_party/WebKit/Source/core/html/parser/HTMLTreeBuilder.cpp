@@ -620,7 +620,12 @@ void HTMLTreeBuilder::processStartTagForInBody(AtomicHTMLToken* token)
         m_tree.openElements()->bodyElement()->remove(ASSERT_NO_EXCEPTION);
         m_tree.openElements()->popUntil(m_tree.openElements()->bodyElement());
         m_tree.openElements()->popHTMLBodyElement();
-        ASSERT(m_tree.openElements()->top() == m_tree.openElements()->htmlElement());
+
+        // Note: in the fragment case the root is a DocumentFragment instead of
+        // a proper html element which is a quirk in Blink's implementation.
+        DCHECK(!isParsingTemplateContents());
+        DCHECK(!isParsingFragment() || toDocumentFragment(m_tree.openElements()->topNode()));
+        DCHECK(isParsingFragment() || m_tree.openElements()->top() == m_tree.openElements()->htmlElement());
         m_tree.insertHTMLElement(token);
         setInsertionMode(InFramesetMode);
         return;
