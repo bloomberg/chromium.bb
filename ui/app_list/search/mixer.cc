@@ -18,9 +18,6 @@ namespace app_list {
 
 namespace {
 
-// Maximum number of results to show.
-const size_t kMinResults = 6;
-
 void UpdateResult(const SearchResult& source, SearchResult* target) {
   target->set_display_type(source.display_type());
   target->set_title(source.title());
@@ -138,11 +135,12 @@ void Mixer::AddProviderToGroup(size_t group_id, SearchProvider* provider) {
 }
 
 void Mixer::MixAndPublish(bool is_voice_query,
-                          const KnownResults& known_results) {
+                          const KnownResults& known_results,
+                          size_t num_max_results) {
   FetchResults(is_voice_query, known_results);
 
   SortedResults results;
-  results.reserve(kMinResults);
+  results.reserve(num_max_results);
 
   // Add results from each group. Limit to the maximum number of results in each
   // group.
@@ -159,7 +157,7 @@ void Mixer::MixAndPublish(bool is_voice_query,
   RemoveDuplicates(&results);
   std::sort(results.begin(), results.end());
 
-  if (results.size() < kMinResults) {
+  if (results.size() < num_max_results) {
     size_t original_size = results.size();
     // We didn't get enough results. Insert all the results again, and this
     // time, do not limit the maximum number of results from each group. (This

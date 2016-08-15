@@ -244,30 +244,29 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
   extensions::ExtensionPrefs* prefs =
       extensions::ExtensionPrefs::Get(profile_.get());
 
-  // The order of unlaunched recommendations should be based on the app list
-  // order and be sorted below launched items.
-  prefs->SetLastLaunchTime(kHostedAppId,
-                           kTestCurrentTime - base::TimeDelta::FromSeconds(5));
+  // The order of unlaunched recommendations should be based on the install time
+  // order.
+  prefs->SetLastLaunchTime(kHostedAppId, base::Time::Now());
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(0));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(0));
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
 
-  // Switching the app list order should change the query result.
+  // Switching the app list order should not change the query result.
   model()->SetItemPosition(
       model()->FindItem(kPackagedApp2Id),
       model()->FindItem(kPackagedApp1Id)->position().CreateBefore());
-  EXPECT_EQ("Hosted App,Packaged App 2,Packaged App 1", RunQuery(""));
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
 
-  // Moving an app into a folder deprioritizes it.
+  // Moving an app into a folder should not deprioritize it.
   model()->AddItem(std::unique_ptr<AppListFolderItem>(
       new AppListFolderItem(kFolderId, AppListFolderItem::FOLDER_TYPE_NORMAL)));
-  model()->MoveItemToFolder(model()->FindItem(kPackagedApp2Id), kFolderId);
+  model()->MoveItemToFolder(model()->FindItem(kPackagedApp1Id), kFolderId);
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
 
   // The position of the folder shouldn't matter.
   model()->SetItemPosition(
       model()->FindItem(kFolderId),
-      model()->FindItem(kPackagedApp1Id)->position().CreateBefore());
+      model()->FindItem(kPackagedApp2Id)->position().CreateBefore());
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
 }
 

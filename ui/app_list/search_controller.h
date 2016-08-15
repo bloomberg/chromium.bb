@@ -56,12 +56,15 @@ class APP_LIST_EXPORT SearchController {
 
   SearchBoxModel* search_box_;
 
-  bool dispatching_query_;
+  bool dispatching_query_ = false;
+
+  // If true, the search results are shown on the launcher start page.
+  bool query_for_recommendation_ = false;
   Providers providers_;
   std::unique_ptr<Mixer> mixer_;
   History* history_;  // KeyedService, not owned.
 
-  bool is_voice_query_;
+  bool is_voice_query_ = false;
 
   base::OneShotTimer stop_timer_;
 

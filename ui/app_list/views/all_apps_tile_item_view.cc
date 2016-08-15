@@ -18,11 +18,15 @@ AllAppsTileItemView::AllAppsTileItemView(ContentsView* contents_view)
     : contents_view_(contents_view) {
   SetTitle(l10n_util::GetStringUTF16(IDS_APP_LIST_ALL_APPS));
   SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SetIcon(*rb.GetImageNamed(IDR_ALL_APPS_DROP_DOWN).ToImageSkia());
+  UpdateIcon();
 }
 
 AllAppsTileItemView::~AllAppsTileItemView() {
+}
+
+void AllAppsTileItemView::UpdateIcon() {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SetIcon(*rb.GetImageNamed(IDR_ALL_APPS_DROP_DOWN).ToImageSkia());
 }
 
 void AllAppsTileItemView::ButtonPressed(views::Button* sender,

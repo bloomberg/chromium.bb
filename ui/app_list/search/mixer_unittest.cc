@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/history_types.h"
 #include "ui/app_list/search_provider.h"
@@ -146,7 +147,7 @@ class MixerTest : public testing::Test {
       providers_[i]->Stop();
     }
 
-    mixer_->MixAndPublish(is_voice_query_, known_results_);
+    mixer_->MixAndPublish(is_voice_query_, known_results_, kMaxSearchResults);
   }
 
   std::string GetResults() const {

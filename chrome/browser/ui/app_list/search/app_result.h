@@ -25,8 +25,9 @@ class AppResult : public SearchResult,
  public:
   ~AppResult() override;
 
-  void UpdateFromLastLaunched(const base::Time& current_time,
-                              const base::Time& last_launched);
+  void UpdateFromLastLaunchedOrInstalledTime(const base::Time& current_time,
+                                             const base::Time& old_time);
+
  protected:
   AppResult(Profile* profile,
             const std::string& app_id,

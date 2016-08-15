@@ -45,7 +45,9 @@ class APP_LIST_EXPORT Mixer {
   void AddProviderToGroup(size_t group_id, SearchProvider* provider);
 
   // Collects the results, sorts and publishes them.
-  void MixAndPublish(bool is_voice_query, const KnownResults& known_results);
+  void MixAndPublish(bool is_voice_query,
+                     const KnownResults& known_results,
+                     size_t num_max_results);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(test::MixerTest, Publish);

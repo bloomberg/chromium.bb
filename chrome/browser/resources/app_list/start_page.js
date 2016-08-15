@@ -6,6 +6,12 @@
  * @fileoverview App launcher start page implementation.
  */
 
+/**
+ * The maximum height of the Google Doodle. Note this value should be consistent
+ * with kWebViewHeight in start_page_view.cc.
+ */
+var doodleMaxHeight = 224;
+
 cr.define('appList.startPage', function() {
   'use strict';
 
@@ -72,6 +78,8 @@ cr.define('appList.startPage', function() {
 
     var doodleImage = document.createElement('img');
     doodleImage.id = 'doodle_image';
+    if (doodleData.transparent_large_image.height > doodleMaxHeight)
+      doodleImage.setAttribute('height', doodleMaxHeight);
     if (doodleData.alt_text) {
       doodleImage.alt = doodleData.alt_text;
       doodleImage.title = doodleData.alt_text;

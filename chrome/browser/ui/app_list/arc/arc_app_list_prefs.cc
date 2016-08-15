@@ -43,6 +43,7 @@ const char kLaunchable[] = "launchable";
 const char kShouldSync[] = "should_sync";
 const char kSystem[] = "system";
 const char kOrientationLock[] = "orientation_lock";
+const char kInstallTime[] = "install_time";
 
 constexpr int kSetNotificationsEnabledMinVersion = 6;
 
@@ -489,7 +490,7 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
 
   return base::MakeUnique<AppInfo>(
       name, package_name, activity, intent_uri, icon_resource_id,
-      last_launch_time, sticky, notifications_enabled,
+      last_launch_time, GetInstallTime(app_id), sticky, notifications_enabled,
       ready_apps_.count(app_id) > 0,
       launchable && arc::ShouldShowInLauncher(app_id), shortcut, launchable,
       orientation_lock);
@@ -644,6 +645,14 @@ void ArcAppListPrefs::AddAppAndShortcut(
   app_dict->SetBoolean(kLaunchable, launchable);
   app_dict->SetInteger(kOrientationLock, static_cast<int>(orientation_lock));
 
+  // Note the install time is the first time the Chrome OS sees the app, not the
+  // actual install time in Android side.
+  if (GetInstallTime(app_id).is_null()) {
+    std::string install_time_str =
+        base::Int64ToString(base::Time::Now().ToInternalValue());
+    app_dict->SetString(kInstallTime, install_time_str);
+  }
+
   // From now, app is available.
   const bool was_disabled = ready_apps_.count(app_id) == 0;
   if (was_disabled)
@@ -656,7 +665,8 @@ void ArcAppListPrefs::AddAppAndShortcut(
     }
   } else {
     AppInfo app_info(name, package_name, activity, intent_uri, icon_resource_id,
-                     base::Time(), sticky, notifications_enabled, true,
+                     base::Time(), GetInstallTime(app_id), sticky,
+                     notifications_enabled, true,
                      launchable && arc::ShouldShowInLauncher(app_id), shortcut,
                      launchable, orientation_lock);
     FOR_EACH_OBSERVER(Observer,
@@ -956,6 +966,22 @@ std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs() const {
   return packages;
 }
 
+base::Time ArcAppListPrefs::GetInstallTime(const std::string& app_id) const {
+  const base::DictionaryValue* app = nullptr;
+  const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
+  if (!apps || !apps->GetDictionaryWithoutPathExpansion(app_id, &app))
+    return base::Time();
+
+  std::string install_time_str;
+  if (!app->GetString(kInstallTime, &install_time_str))
+    return base::Time();
+
+  int64_t install_time_i64;
+  if (!base::StringToInt64(install_time_str, &install_time_i64))
+    return base::Time();
+  return base::Time::FromInternalValue(install_time_i64);
+}
+
 void ArcAppListPrefs::InstallIcon(const std::string& app_id,
                                   ui::ScaleFactor scale_factor,
                                   const std::vector<uint8_t>& content_png) {
@@ -985,6 +1011,7 @@ ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
                                   const std::string& intent_uri,
                                   const std::string& icon_resource_id,
                                   const base::Time& last_launch_time,
+                                  const base::Time& install_time,
                                   bool sticky,
                                   bool notifications_enabled,
                                   bool ready,
@@ -998,6 +1025,7 @@ ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
       intent_uri(intent_uri),
       icon_resource_id(icon_resource_id),
       last_launch_time(last_launch_time),
+      install_time(install_time),
       sticky(sticky),
       notifications_enabled(notifications_enabled),
       ready(ready),

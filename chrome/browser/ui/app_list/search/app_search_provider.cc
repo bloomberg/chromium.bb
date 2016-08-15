@@ -51,23 +51,27 @@ class AppSearchProvider::App {
   App(AppSearchProvider::DataSource* data_source,
       const std::string& id,
       const std::string& name,
-      const base::Time& last_launch_time)
+      const base::Time& last_launch_time,
+      const base::Time& install_time)
       : data_source_(data_source),
         id_(id),
         indexed_name_(base::UTF8ToUTF16(name)),
-        last_launch_time_(last_launch_time) {}
+        last_launch_time_(last_launch_time),
+        install_time_(install_time) {}
   ~App() {}
 
   AppSearchProvider::DataSource* data_source() { return data_source_; }
   const std::string& id() const { return id_; }
   const TokenizedString& indexed_name() const { return indexed_name_; }
   const base::Time& last_launch_time() const { return last_launch_time_; }
+  const base::Time& install_time() const { return install_time_; }
 
  private:
   AppSearchProvider::DataSource* data_source_;
   const std::string id_;
   const TokenizedString indexed_name_;
   const base::Time last_launch_time_;
+  const base::Time install_time_;
 
   DISALLOW_COPY_AND_ASSIGN(App);
 };
@@ -160,7 +164,8 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
 
       std::unique_ptr<AppSearchProvider::App> app(new AppSearchProvider::App(
           this, extension->id(), extension->short_name(),
-          prefs->GetLastLaunchTime(extension->id())));
+          prefs->GetLastLaunchTime(extension->id()),
+          prefs->GetInstallTime(extension->id())));
       apps->push_back(std::move(app));
     }
   }
@@ -203,7 +208,8 @@ class ArcDataSource : public AppSearchProvider::DataSource,
       }
 
       std::unique_ptr<AppSearchProvider::App> app(new AppSearchProvider::App(
-          this, app_id, app_info->name, app_info->last_launch_time));
+          this, app_id, app_info->name, app_info->last_launch_time,
+          app_info->install_time));
       apps->push_back(std::move(app));
     }
   }
@@ -306,7 +312,12 @@ void AppSearchProvider::UpdateResults() {
       result->set_title(app->indexed_name().text());
 
       // Use the app list order to tiebreak apps that have never been launched.
-      if (app->last_launch_time().is_null()) {
+      // The apps that have been installed or launched recently should be
+      // more relevant than other apps.
+      const base::Time time = app->last_launch_time().is_null()
+                                  ? app->install_time()
+                                  : app->last_launch_time();
+      if (time.is_null()) {
         auto it = id_to_app_list_index.find(app->id());
         // If it's in a folder, it won't be in |id_to_app_list_index|. Rank
         // those as if they are at the end of the list.
@@ -318,7 +329,7 @@ void AppSearchProvider::UpdateResults() {
         result->set_relevance(kUnlaunchedAppRelevanceStepSize *
                               (apps_.size() - app_list_index));
       } else {
-        result->UpdateFromLastLaunched(clock_->Now(), app->last_launch_time());
+        result->UpdateFromLastLaunchedOrInstalledTime(clock_->Now(), time);
       }
       Add(std::move(result));
     }

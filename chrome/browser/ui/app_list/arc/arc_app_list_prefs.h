@@ -58,6 +58,7 @@ class ArcAppListPrefs
             const std::string& intent_uri,
             const std::string& icon_resource_id,
             const base::Time& last_launch_time,
+            const base::Time& install_time,
             bool sticky,
             bool notifications_enabled,
             bool ready,
@@ -73,6 +74,7 @@ class ArcAppListPrefs
     std::string intent_uri;
     std::string icon_resource_id;
     base::Time last_launch_time;
+    base::Time install_time;
     bool sticky;
     bool notifications_enabled;
     bool ready;
@@ -277,6 +279,7 @@ class ArcAppListPrefs
   // apps while Arc is not started yet. All apps in this case have disabled
   // state.
   void NotifyRegisteredApps();
+  base::Time GetInstallTime(const std::string& app_id) const;
 
   // Installs an icon to file system in the special folder of the profile
   // directory.

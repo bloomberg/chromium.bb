@@ -31,12 +31,7 @@ namespace app_list {
 SearchController::SearchController(SearchBoxModel* search_box,
                                    AppListModel::SearchResults* results,
                                    History* history)
-    : search_box_(search_box),
-      dispatching_query_(false),
-      mixer_(new Mixer(results)),
-      history_(history),
-      is_voice_query_(false) {
-}
+    : search_box_(search_box), mixer_(new Mixer(results)), history_(history) {}
 
 SearchController::~SearchController() {
 }
@@ -54,6 +49,7 @@ void SearchController::Start(bool is_voice_query) {
     (*it)->Start(is_voice_query, query);
   }
   dispatching_query_ = false;
+  query_for_recommendation_ = query.empty() ? true : false;
 
   is_voice_query_ = is_voice_query;
 
@@ -118,9 +114,8 @@ size_t SearchController::AddGroup(size_t max_results, double multiplier) {
 
 void SearchController::AddProvider(size_t group_id,
                                    std::unique_ptr<SearchProvider> provider) {
-  provider->set_result_changed_callback(base::Bind(
-      &SearchController::OnResultsChanged,
-      base::Unretained(this)));
+  provider->set_result_changed_callback(
+      base::Bind(&SearchController::OnResultsChanged, base::Unretained(this)));
   mixer_->AddProviderToGroup(group_id, provider.get());
   providers_.push_back(std::move(provider));
 }
@@ -135,7 +130,9 @@ void SearchController::OnResultsChanged() {
         ->swap(known_results);
   }
 
-  mixer_->MixAndPublish(is_voice_query_, known_results);
+  size_t num_max_results =
+      query_for_recommendation_ ? kNumStartPageTiles : kMaxSearchResults;
+  mixer_->MixAndPublish(is_voice_query_, known_results, num_max_results);
 }
 
 }  // namespace app_list

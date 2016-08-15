@@ -4,6 +4,7 @@
 
 #include "ui/app_list/views/start_page_view.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/i18n/rtl.h"
@@ -30,6 +31,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
@@ -37,19 +39,20 @@ namespace app_list {
 namespace {
 
 // Layout constants.
-const int kInstantContainerSpacing = 24;
-const int kSearchBoxAndTilesSpacing = 35;
-const int kStartPageSearchBoxWidth = 480;
+constexpr int kInstantContainerSpacing = 24;
+constexpr int kSearchBoxAndTilesSpacing = 35;
+constexpr int kStartPageSearchBoxWidth = 480;
 
 // WebView constants.
-const int kWebViewWidth = 700;
-const int kWebViewHeight = 244;
+constexpr int kWebViewWidth = 700;
+constexpr int kWebViewHeight = 224;
 
 // Tile container constants.
-const size_t kNumStartPageTiles = 4;
-const int kTileSpacing = 7;
+constexpr int kTileSpacing = 7;
+constexpr int kNumStartPageTilesCols = 5;
+constexpr int kTilesHorizontalMarginLeft = 145;
 
-const int kLauncherPageBackgroundWidth = 400;
+constexpr int kLauncherPageBackgroundWidth = 400;
 
 // An invisible placeholder view which fills the space for the search box view
 // in a box layout. The search box view itself is a child of the AppListView
@@ -131,7 +134,10 @@ class StartPageView::StartPageTilesContainer
   int GetYSize() override;
 
  private:
+  void CreateAppsGrid(int apps_num);
+
   ContentsView* contents_view_;
+  AppListViewDelegate* view_delegate_;
 
   std::vector<SearchResultTileItemView*> search_result_tile_views_;
   AllAppsTileItemView* all_apps_button_;
@@ -143,28 +149,14 @@ StartPageView::StartPageTilesContainer::StartPageTilesContainer(
     ContentsView* contents_view,
     AllAppsTileItemView* all_apps_button,
     AppListViewDelegate* view_delegate)
-    : contents_view_(contents_view), all_apps_button_(all_apps_button) {
-  views::BoxLayout* tiles_layout_manager =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, kTileSpacing);
-  tiles_layout_manager->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(tiles_layout_manager);
+    : contents_view_(contents_view),
+      view_delegate_(view_delegate),
+      all_apps_button_(all_apps_button) {
   set_background(
       views::Background::CreateSolidBackground(kLabelBackgroundColor));
-
-  // Add SearchResultTileItemViews to the container.
-  for (size_t i = 0; i < kNumStartPageTiles; ++i) {
-    SearchResultTileItemView* tile_item =
-        new SearchResultTileItemView(this, view_delegate);
-    AddChildView(tile_item);
-    tile_item->SetParentBackgroundColor(kLabelBackgroundColor);
-    tile_item->SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
-    search_result_tile_views_.push_back(tile_item);
-  }
-
-  // Also add a special "all apps" button to the end of the container.
+  all_apps_button_->SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
   all_apps_button_->SetParentBackgroundColor(kLabelBackgroundColor);
-  AddChildView(all_apps_button_);
+  CreateAppsGrid(kNumStartPageTiles);
 }
 
 StartPageView::StartPageTilesContainer::~StartPageTilesContainer() {
@@ -192,10 +184,18 @@ int StartPageView::StartPageTilesContainer::Update() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
           results(), SearchResult::DISPLAY_RECOMMENDATION, kNumStartPageTiles);
+  if (display_results.size() != search_result_tile_views_.size()) {
+    // We should recreate the grid layout in this case.
+    for (size_t i = 0; i < search_result_tile_views_.size(); ++i)
+      delete search_result_tile_views_[i];
+    search_result_tile_views_.clear();
+    RemoveChildView(all_apps_button_);
+    CreateAppsGrid(std::min(kNumStartPageTiles, display_results.size()));
+  }
 
   // Update the tile item results.
   for (size_t i = 0; i < search_result_tile_views_.size(); ++i) {
-    SearchResult* item = NULL;
+    SearchResult* item = nullptr;
     if (i < display_results.size())
       item = display_results[i];
     search_result_tile_views_[i]->SetSearchResult(item);
@@ -232,6 +232,41 @@ void StartPageView::StartPageTilesContainer::NotifyFirstResultYIndex(
 int StartPageView::StartPageTilesContainer::GetYSize() {
   NOTREACHED();
   return 0;
+}
+
+void StartPageView::StartPageTilesContainer::CreateAppsGrid(int apps_num) {
+  DCHECK(search_result_tile_views_.empty());
+  views::GridLayout* tiles_layout_manager = new views::GridLayout(this);
+  SetLayoutManager(tiles_layout_manager);
+
+  views::ColumnSet* column_set = tiles_layout_manager->AddColumnSet(0);
+  column_set->AddPaddingColumn(0, kTilesHorizontalMarginLeft);
+  for (int col = 0; col < kNumStartPageTilesCols; ++col) {
+    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                          views::GridLayout::USE_PREF, 0, 0);
+    column_set->AddPaddingColumn(0, kTileSpacing);
+  }
+
+  // Add SearchResultTileItemViews to the container.
+  int i = 0;
+  for (; i < apps_num; ++i) {
+    SearchResultTileItemView* tile_item =
+        new SearchResultTileItemView(this, view_delegate_);
+    if (i % kNumStartPageTilesCols == 0)
+      tiles_layout_manager->StartRow(0, 0);
+    tiles_layout_manager->AddView(tile_item);
+    AddChildView(tile_item);
+    tile_item->SetParentBackgroundColor(kLabelBackgroundColor);
+    tile_item->SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
+    search_result_tile_views_.push_back(tile_item);
+  }
+
+  // Also add a special "all apps" button to the end of the container.
+  all_apps_button_->UpdateIcon();
+  if (i % kNumStartPageTilesCols == 0)
+    tiles_layout_manager->StartRow(0, 0);
+  tiles_layout_manager->AddView(all_apps_button_);
+  AddChildView(all_apps_button_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

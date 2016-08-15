@@ -107,6 +107,12 @@ const int kCenteredPreferredRows = 3;
 const int kExperimentalPreferredCols = 6;
 const int kExperimentalPreferredRows = 4;
 
+// The number of apps shown in the start page app grid.
+const size_t kNumStartPageTiles = 9;
+
+// Maximum number of results to show in the launcher Search UI.
+const size_t kMaxSearchResults = 6;
+
 // Radius of the circle, in which if entered, show re-order preview.
 const int kReorderDroppingCircleRadius = 35;
 

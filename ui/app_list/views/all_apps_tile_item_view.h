@@ -21,6 +21,8 @@ class AllAppsTileItemView : public TileItemView {
 
   ~AllAppsTileItemView() override;
 
+  void UpdateIcon();
+
   // TileItemView overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

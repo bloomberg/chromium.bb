@@ -76,6 +76,9 @@ APP_LIST_EXPORT extern const int kCenteredPreferredRows;
 APP_LIST_EXPORT extern const int kExperimentalPreferredCols;
 APP_LIST_EXPORT extern const int kExperimentalPreferredRows;
 
+APP_LIST_EXPORT extern const size_t kNumStartPageTiles;
+APP_LIST_EXPORT extern const size_t kMaxSearchResults;
+
 APP_LIST_EXPORT extern const int kReorderDroppingCircleRadius;
 
 APP_LIST_EXPORT extern const int kExperimentalAppsGridPadding;
