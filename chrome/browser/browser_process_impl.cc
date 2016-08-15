@@ -892,7 +892,8 @@ BrowserProcessImpl::component_updater() {
     scoped_refptr<update_client::Configurator> configurator =
         component_updater::MakeChromeComponentUpdaterConfigurator(
             base::CommandLine::ForCurrentProcess(),
-            io_thread()->system_url_request_context_getter());
+            io_thread()->system_url_request_context_getter(),
+            g_browser_process->local_state());
     // Creating the component updater does not do anything, components
     // need to be registered and Start() needs to be called.
     component_updater_.reset(component_updater::ComponentUpdateServiceFactory(
@@ -952,8 +953,7 @@ void BrowserProcessImpl::OnKeepAliveStateChanged(bool is_keeping_alive) {
     Unpin();
 }
 
-void BrowserProcessImpl::OnKeepAliveRestartStateChanged(bool can_restart){
-}
+void BrowserProcessImpl::OnKeepAliveRestartStateChanged(bool can_restart) {}
 
 void BrowserProcessImpl::CreateWatchdogThread() {
   DCHECK(!created_watchdog_thread_ && !watchdog_thread_);

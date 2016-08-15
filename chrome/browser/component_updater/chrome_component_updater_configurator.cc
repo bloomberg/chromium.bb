@@ -32,7 +32,8 @@ namespace {
 class ChromeConfigurator : public update_client::Configurator {
  public:
   ChromeConfigurator(const base::CommandLine* cmdline,
-                     net::URLRequestContextGetter* url_request_getter);
+                     net::URLRequestContextGetter* url_request_getter,
+                     PrefService* pref_service);
 
   // update_client::Configurator overrides.
   int InitialDelay() const override;
@@ -65,6 +66,8 @@ class ChromeConfigurator : public update_client::Configurator {
 
   ConfiguratorImpl configurator_impl_;
 
+  PrefService* pref_service_;  // This member is not owned by this class.
+
   ~ChromeConfigurator() override {}
 };
 
@@ -73,8 +76,12 @@ class ChromeConfigurator : public update_client::Configurator {
 // a custom message signing protocol and it does not depend on using HTTPS.
 ChromeConfigurator::ChromeConfigurator(
     const base::CommandLine* cmdline,
-    net::URLRequestContextGetter* url_request_getter)
-    : configurator_impl_(cmdline, url_request_getter, false) {}
+    net::URLRequestContextGetter* url_request_getter,
+    PrefService* pref_service)
+    : configurator_impl_(cmdline, url_request_getter, false),
+      pref_service_(pref_service) {
+  DCHECK(pref_service_);
+}
 
 int ChromeConfigurator::InitialDelay() const {
   return configurator_impl_.InitialDelay();
@@ -181,7 +188,8 @@ ChromeConfigurator::GetSequencedTaskRunner() const {
 }
 
 PrefService* ChromeConfigurator::GetPrefService() const {
-  return g_browser_process->local_state();
+  DCHECK(pref_service_);
+  return pref_service_;
 }
 
 }  // namespace
@@ -189,8 +197,9 @@ PrefService* ChromeConfigurator::GetPrefService() const {
 scoped_refptr<update_client::Configurator>
 MakeChromeComponentUpdaterConfigurator(
     const base::CommandLine* cmdline,
-    net::URLRequestContextGetter* context_getter) {
-  return new ChromeConfigurator(cmdline, context_getter);
+    net::URLRequestContextGetter* context_getter,
+    PrefService* pref_service) {
+  return new ChromeConfigurator(cmdline, context_getter, pref_service);
 }
 
 }  // namespace component_updater

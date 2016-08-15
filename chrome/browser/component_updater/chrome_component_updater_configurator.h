@@ -8,6 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "components/update_client/configurator.h"
 
+class PrefService;
+
 namespace base {
 class CommandLine;
 }
@@ -21,7 +23,8 @@ namespace component_updater {
 scoped_refptr<update_client::Configurator>
 MakeChromeComponentUpdaterConfigurator(
     const base::CommandLine* cmdline,
-    net::URLRequestContextGetter* context_getter);
+    net::URLRequestContextGetter* context_getter,
+    PrefService* pref_service);
 
 }  // namespace component_updater
 

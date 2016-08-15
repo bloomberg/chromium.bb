@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,27 +12,47 @@
 #include "components/component_updater/component_updater_switches.h"
 #include "components/component_updater/component_updater_url_constants.h"
 #include "components/component_updater/configurator_impl.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/update_client/configurator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace component_updater {
 
-TEST(ChromeComponentUpdaterConfiguratorTest, TestDisablePings) {
+class ChromeComponentUpdaterConfiguratorTest : public testing::Test {
+ public:
+  ChromeComponentUpdaterConfiguratorTest();
+  ~ChromeComponentUpdaterConfiguratorTest() override{};
+
+ protected:
+  PrefService* pref_service() { return pref_service_.get(); }
+
+ private:
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeComponentUpdaterConfiguratorTest);
+};
+
+ChromeComponentUpdaterConfiguratorTest::ChromeComponentUpdaterConfiguratorTest()
+    : pref_service_(new TestingPrefServiceSimple()) {}
+
+TEST_F(ChromeComponentUpdaterConfiguratorTest, TestDisablePings) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
   cmdline.AppendSwitchASCII(switches::kComponentUpdater, "disable-pings");
 
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr));
+  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
+                                                           pref_service()));
 
   const std::vector<GURL> pingUrls = config->PingUrl();
   EXPECT_TRUE(pingUrls.empty());
 }
 
-TEST(ChromeComponentUpdaterConfiguratorTest, TestFastUpdate) {
+TEST_F(ChromeComponentUpdaterConfiguratorTest, TestFastUpdate) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
   cmdline.AppendSwitchASCII(switches::kComponentUpdater, "fast-update");
 
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr));
+  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
+                                                           pref_service()));
 
   CHECK_EQ(10, config->InitialDelay());
   CHECK_EQ(6 * 60 * 60, config->NextCheckDelay());
@@ -40,7 +61,7 @@ TEST(ChromeComponentUpdaterConfiguratorTest, TestFastUpdate) {
   CHECK_EQ(10, config->UpdateDelay());
 }
 
-TEST(ChromeComponentUpdaterConfiguratorTest, TestOverrideUrl) {
+TEST_F(ChromeComponentUpdaterConfiguratorTest, TestOverrideUrl) {
   const char overrideUrl[] = "http://0.0.0.0/";
 
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
@@ -50,7 +71,8 @@ TEST(ChromeComponentUpdaterConfiguratorTest, TestOverrideUrl) {
   val.append(overrideUrl);
   cmdline.AppendSwitchASCII(switches::kComponentUpdater, val.c_str());
 
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr));
+  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
+                                                           pref_service()));
 
   const std::vector<GURL> urls = config->UpdateUrl();
 
@@ -58,18 +80,20 @@ TEST(ChromeComponentUpdaterConfiguratorTest, TestOverrideUrl) {
   ASSERT_EQ(overrideUrl, urls.at(0).possibly_invalid_spec());
 }
 
-TEST(ChromeComponentUpdaterConfiguratorTest, TestSwitchRequestParam) {
+TEST_F(ChromeComponentUpdaterConfiguratorTest, TestSwitchRequestParam) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
   cmdline.AppendSwitchASCII(switches::kComponentUpdater, "test-request");
 
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr));
+  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
+                                                           pref_service()));
 
   EXPECT_FALSE(config->ExtraRequestParams().empty());
 }
 
-TEST(ChromeComponentUpdaterConfiguratorTest, TestUpdaterDefaultUrl) {
+TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUpdaterDefaultUrl) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr));
+  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
+                                                           pref_service()));
   const auto urls = config->UpdateUrl();
 
   // Expect the default url to be cryptographically secure.
@@ -77,16 +101,18 @@ TEST(ChromeComponentUpdaterConfiguratorTest, TestUpdaterDefaultUrl) {
   EXPECT_TRUE(urls.front().SchemeIsCryptographic());
 }
 
-TEST(ChromeComponentUpdaterConfiguratorTest, TestEnabledCupSigning) {
+TEST_F(ChromeComponentUpdaterConfiguratorTest, TestEnabledCupSigning) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr));
+  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
+                                                           pref_service()));
 
   EXPECT_TRUE(config->EnabledCupSigning());
 }
 
-TEST(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
+TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  const auto config(MakeChromeComponentUpdaterConfigurator(cmdline, nullptr));
+  const auto config(
+      MakeChromeComponentUpdaterConfigurator(cmdline, nullptr, pref_service()));
 
   const auto urls = config->UpdateUrl();
   ASSERT_EQ(2u, urls.size());
@@ -115,9 +141,10 @@ TEST(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
   }
 }
 
-TEST(ChromeComponentUpdaterConfiguratorTest, TestEnabledComponentUpdates) {
+TEST_F(ChromeComponentUpdaterConfiguratorTest, TestEnabledComponentUpdates) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
-  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr));
+  const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
+                                                           pref_service()));
   EXPECT_TRUE(config->EnabledComponentUpdates());
 }
 
