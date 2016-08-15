@@ -31,6 +31,23 @@ mojom("test_interfaces") {
   ]
 }
 
+component("test_export_component") {
+  testonly = true
+  deps = [
+    ":test_export",
+  ]
+}
+
+mojom("test_export") {
+  testonly = true
+  sources = [
+    "test_export.mojom",
+  ]
+  export_class_attribute = "MOJO_TEST_EXPORT"
+  export_define = "MOJO_TEST_IMPLEMENTATION=1"
+  export_header = "mojo/public/cpp/bindings/tests/mojo_test_export.h"
+}
+
 mojom("test_mojom_import") {
   testonly = true
   sources = [

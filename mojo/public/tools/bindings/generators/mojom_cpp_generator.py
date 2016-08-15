@@ -383,6 +383,12 @@ def ShouldInlineStruct(struct):
       return False
   return True
 
+def ContainsMoveOnlyMembers(struct):
+  for field in struct.fields:
+    if IsMoveOnlyKind(field.kind):
+      return True
+  return False
+
 def ShouldInlineUnion(union):
   return not any(
       mojom.IsReferenceKind(field.kind) and not mojom.IsStringKind(field.kind)
@@ -436,6 +442,7 @@ class Generator(generator.Generator):
 
   cpp_filters = {
     "constant_value": ConstantValue,
+    "contains_move_only_members": ContainsMoveOnlyMembers,
     "cpp_wrapper_param_type": GetCppWrapperParamType,
     "cpp_data_view_type": GetCppDataViewType,
     "cpp_field_type": GetCppFieldType,

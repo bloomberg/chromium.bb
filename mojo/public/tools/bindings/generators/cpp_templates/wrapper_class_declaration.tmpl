@@ -75,5 +75,10 @@ class {{export_attribute}} {{struct.name}} {
 {%-   set name = field.name %}
   {{type}} {{name}};
 {%- endfor %}
+
+{%- if struct|contains_move_only_members %}
+ private:
+  DISALLOW_COPY_AND_ASSIGN({{struct.name}});
+{%- endif %}
 };
 
