@@ -52,7 +52,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   EXPECT_FALSE(tab_manager->recent_tab_discard());
 
   // Disable the protection of recent tabs.
-  tab_manager->minimum_protection_time_ = base::TimeDelta::FromMinutes(0);
+  tab_manager->set_minimum_protection_time_for_tests(
+      base::TimeDelta::FromMinutes(0));
 
   // Get three tabs open.
   WindowedNotificationObserver load1(
@@ -191,7 +192,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
   ASSERT_TRUE(tab_manager);
 
   // Disable the protection of recent tabs.
-  tab_manager->minimum_protection_time_ = base::TimeDelta::FromMinutes(0);
+  tab_manager->set_minimum_protection_time_for_tests(
+      base::TimeDelta::FromMinutes(0));
 
   // Get three tabs open.
   content::WindowedNotificationObserver load1(
@@ -241,7 +243,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
   ASSERT_TRUE(tab_manager);
 
   // Disable the protection of recent tabs.
-  tab_manager->minimum_protection_time_ = base::TimeDelta::FromMinutes(0);
+  tab_manager->set_minimum_protection_time_for_tests(
+      base::TimeDelta::FromMinutes(0));
 
   // Open two tabs. Wait for the foreground one to load but do not wait for the
   // background one.
@@ -311,8 +314,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectRecentlyUsedTabs) {
   auto* tsm = browser()->tab_strip_model();
 
   // Set the minimum time of protection.
-  tab_manager->minimum_protection_time_ =
-      base::TimeDelta::FromMinutes(kProtectionTime);
+  tab_manager->set_minimum_protection_time_for_tests(
+      base::TimeDelta::FromMinutes(kProtectionTime));
 
   // Open 2 tabs, the second one being in the background.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
@@ -360,7 +363,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
   ASSERT_TRUE(tab_manager);
 
   // Disable the protection of recent tabs.
-  tab_manager->minimum_protection_time_ = base::TimeDelta::FromMinutes(0);
+  tab_manager->set_minimum_protection_time_for_tests(
+      base::TimeDelta::FromMinutes(0));
 
   // Open 2 tabs, the second one being in the background.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
@@ -398,7 +402,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
 
   // Disable the protection of recent tabs.
-  tab_manager->minimum_protection_time_ = base::TimeDelta::FromMinutes(0);
+  tab_manager->set_minimum_protection_time_for_tests(
+      base::TimeDelta::FromMinutes(0));
 
   // Get two tabs open.
   WindowedNotificationObserver load1(
