@@ -7,13 +7,13 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 
 /**
  * Represents the data for an article card on the NTP.
  */
-public class SnippetArticleListItem implements NewTabPageListItem {
+public class SnippetArticle implements NewTabPageItem {
     /** The unique identifier for this article. */
     public final String mId;
 
@@ -57,7 +57,7 @@ public class SnippetArticleListItem implements NewTabPageListItem {
     /**
      * Creates a SnippetArticleListItem object that will hold the data.
      */
-    public SnippetArticleListItem(String id, String title, String publisher, String previewText,
+    public SnippetArticle(String id, String title, String publisher, String previewText,
             String url, String ampUrl, long timestamp, float score, int position,
             @ContentSuggestionsCardLayoutEnum int cardLayout) {
         mId = id;
@@ -74,8 +74,8 @@ public class SnippetArticleListItem implements NewTabPageListItem {
 
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof SnippetArticleListItem)) return false;
-        return mId.equals(((SnippetArticleListItem) other).mId);
+        if (!(other instanceof SnippetArticle)) return false;
+        return mId.equals(((SnippetArticle) other).mId);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class SnippetArticleListItem implements NewTabPageListItem {
 
     @Override
     public int getType() {
-        return NewTabPageListItem.VIEW_TYPE_SNIPPET;
+        return NewTabPageItem.VIEW_TYPE_SNIPPET;
     }
 
     /**

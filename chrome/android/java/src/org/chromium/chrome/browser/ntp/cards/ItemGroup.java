@@ -13,5 +13,5 @@ public interface ItemGroup {
     /**
      * @return A list of items contained in this group. The list should not be modified.
      */
-    List<NewTabPageListItem> getItems();
+    List<NewTabPageItem> getItems();
 }

@@ -93,26 +93,26 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @Override
-    public List<SnippetArticleListItem> getSuggestionsForCategory(int category) {
+    public List<SnippetArticle> getSuggestionsForCategory(int category) {
         assert mNativeSnippetsBridge != 0;
         return nativeGetSuggestionsForCategory(mNativeSnippetsBridge, category);
     }
 
     @Override
-    public void fetchSuggestionImage(SnippetArticleListItem suggestion, Callback<Bitmap> callback) {
+    public void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback) {
         assert mNativeSnippetsBridge != 0;
         nativeFetchSuggestionImage(mNativeSnippetsBridge, suggestion.mId, callback);
     }
 
     @Override
-    public void dismissSuggestion(SnippetArticleListItem suggestion) {
+    public void dismissSuggestion(SnippetArticle suggestion) {
         assert mNativeSnippetsBridge != 0;
         nativeDismissSuggestion(mNativeSnippetsBridge, suggestion.mId);
     }
 
     @Override
     public void getSuggestionVisited(
-            SnippetArticleListItem suggestion, Callback<Boolean> callback) {
+            SnippetArticle suggestion, Callback<Boolean> callback) {
         assert mNativeSnippetsBridge != 0;
         nativeGetURLVisited(mNativeSnippetsBridge, callback, suggestion.mUrl);
     }
@@ -135,16 +135,16 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @CalledByNative
-    private static List<SnippetArticleListItem> createSuggestionList() {
+    private static List<SnippetArticle> createSuggestionList() {
         return new ArrayList<>();
     }
 
     @CalledByNative
-    private static void addSuggestion(List<SnippetArticleListItem> suggestions, String id,
+    private static void addSuggestion(List<SnippetArticle> suggestions, String id,
             String title, String publisher, String previewText, String url, String ampUrl,
             long timestamp, float score, int cardLayout) {
         int position = suggestions.size();
-        suggestions.add(new SnippetArticleListItem(id, title, publisher, previewText, url, ampUrl,
+        suggestions.add(new SnippetArticle(id, title, publisher, previewText, url, ampUrl,
                 timestamp, score, position, cardLayout));
     }
 
@@ -175,7 +175,7 @@ public class SnippetsBridge implements SuggestionsSource {
     private native int nativeGetCategoryStatus(long nativeNTPSnippetsBridge, int category);
     private native SuggestionsCategoryInfo nativeGetCategoryInfo(
             long nativeNTPSnippetsBridge, int category);
-    private native List<SnippetArticleListItem> nativeGetSuggestionsForCategory(
+    private native List<SnippetArticle> nativeGetSuggestionsForCategory(
             long nativeNTPSnippetsBridge, int category);
     private native void nativeFetchSuggestionImage(
             long nativeNTPSnippetsBridge, String suggestionId, Callback<Bitmap> callback);

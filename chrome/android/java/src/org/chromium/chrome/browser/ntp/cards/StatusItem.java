@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.signin.SigninAccessPoint;
  * configuration about the NTP suggestions: there is no more available suggested content, sync
  * should be enabled, etc.
  */
-public abstract class StatusListItem implements NewTabPageListItem {
+public abstract class StatusItem implements NewTabPageItem {
     /**
      * ViewHolder for an item of type {@link #VIEW_TYPE_STATUS}.
      */
@@ -40,11 +40,11 @@ public abstract class StatusListItem implements NewTabPageListItem {
         }
 
         @Override
-        public void onBindViewHolder(NewTabPageListItem item) {
-            assert item instanceof StatusListItem;
+        public void onBindViewHolder(NewTabPageItem item) {
+            assert item instanceof StatusItem;
             super.onBindViewHolder(item);
 
-            final StatusListItem listItem = (StatusListItem) item;
+            final StatusItem listItem = (StatusItem) item;
             mTitleView.setText(listItem.mHeaderStringId);
             mBodyView.setText(listItem.mDescriptionStringId);
 
@@ -64,7 +64,7 @@ public abstract class StatusListItem implements NewTabPageListItem {
         }
     }
 
-    private static class NoSnippets extends StatusListItem {
+    private static class NoSnippets extends StatusItem {
         private final NewTabPageAdapter mNewTabPageAdapter;
 
         public NoSnippets(NewTabPageAdapter adapter) {
@@ -81,7 +81,7 @@ public abstract class StatusListItem implements NewTabPageListItem {
         }
     }
 
-    private static class SignedOut extends StatusListItem {
+    private static class SignedOut extends StatusItem {
         public SignedOut() {
             super(R.string.snippets_disabled_generic_prompt,
                     R.string.snippets_disabled_signed_out_instructions,
@@ -101,7 +101,7 @@ public abstract class StatusListItem implements NewTabPageListItem {
     private final int mDescriptionStringId;
     private final int mActionStringId;
 
-    public static StatusListItem create(@CategoryStatusEnum int categoryStatus,
+    public static StatusItem create(@CategoryStatusEnum int categoryStatus,
             NewTabPageAdapter adapter) {
         switch (categoryStatus) {
             // TODO(dgn): AVAILABLE_LOADING and INITIALIZING should show a progress indicator.
@@ -143,7 +143,7 @@ public abstract class StatusListItem implements NewTabPageListItem {
         }
     }
 
-    private StatusListItem(int headerStringId, int descriptionStringId, int actionStringId) {
+    private StatusItem(int headerStringId, int descriptionStringId, int actionStringId) {
         mHeaderStringId = headerStringId;
         mDescriptionStringId = descriptionStringId;
         mActionStringId = actionStringId;
@@ -157,6 +157,6 @@ public abstract class StatusListItem implements NewTabPageListItem {
 
     @Override
     public int getType() {
-        return NewTabPageListItem.VIEW_TYPE_STATUS;
+        return NewTabPageItem.VIEW_TYPE_STATUS;
     }
 }

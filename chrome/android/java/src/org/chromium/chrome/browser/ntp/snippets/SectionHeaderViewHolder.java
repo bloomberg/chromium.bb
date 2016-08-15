@@ -11,15 +11,15 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.MarginResizer;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.util.MathUtils;
 
 /**
- * A class that represents the view for a single card snippet.
+ * View holder for the header of a section of cards.
  */
-public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
+public class SectionHeaderViewHolder extends NewTabPageViewHolder {
     private static final double SCROLL_HEADER_HEIGHT_PERCENTAGE = 0.7;
 
     private final int mMaxSnippetHeaderHeight;
@@ -27,12 +27,12 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
     private final TextView mHeaderTextView;
     private final NewTabPageRecyclerView mRecyclerView;
 
-    private SnippetHeaderListItem mHeaderListItem;
+    private SectionHeader mHeaderListItem;
 
     /** Can the header transition. */
     private boolean mCanTransition = false;
 
-    public SnippetHeaderViewHolder(final NewTabPageRecyclerView recyclerView, UiConfig config) {
+    public SectionHeaderViewHolder(final NewTabPageRecyclerView recyclerView, UiConfig config) {
         super(LayoutInflater.from(recyclerView.getContext())
                         .inflate(R.layout.new_tab_page_snippets_header, recyclerView, false));
         mMaxSnippetHeaderHeight = itemView.getResources().getDimensionPixelSize(
@@ -47,8 +47,8 @@ public class SnippetHeaderViewHolder extends NewTabPageViewHolder {
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageListItem header) {
-        mHeaderListItem = (SnippetHeaderListItem) header;
+    public void onBindViewHolder(NewTabPageItem header) {
+        mHeaderListItem = (SectionHeader) header;
         updateDisplay();
     }
 

@@ -9,13 +9,13 @@ package org.chromium.chrome.browser.ntp.cards;
  * logo, tiles and search bar that are initially visible when opening the NTP.
  *
  * When using the new NTP UI, that is based on a RecyclerView, the view containing the entire
- * content of the old UI is put in the AboveTheFoldListItem, and inserted in the RecyclerView.
+ * content of the old UI is put in the AboveTheFoldItem, and inserted in the RecyclerView.
  * Other elements coming after it and initially off-screen are just added to the RecyclerView after
  * that.
  */
-class AboveTheFoldListItem extends SingleItemGroup {
+class AboveTheFoldItem extends SingleItemGroup {
     @Override
     public int getType() {
-        return NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD;
+        return NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD;
     }
 }

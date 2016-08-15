@@ -49,24 +49,24 @@ public interface SuggestionsSource {
      * displayed. If the status of the category is not one of the available statuses, this will
      * return an empty list.
      */
-    List<SnippetArticleListItem> getSuggestionsForCategory(int category);
+    List<SnippetArticle> getSuggestionsForCategory(int category);
 
     /**
      * Fetches the thumbnail image for a content suggestion. A null Bitmap is returned if no image
      * is available. The callback is never called synchronously.
      */
-    void fetchSuggestionImage(SnippetArticleListItem suggestion, Callback<Bitmap> callback);
+    void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback);
 
     /**
      * Tells the source to dismiss the content suggestion.
      */
-    void dismissSuggestion(SnippetArticleListItem suggestion);
+    void dismissSuggestion(SnippetArticle suggestion);
 
     /**
      * Checks whether a content suggestion has been visited. The callback is never called
      * synchronously.
      */
-    void getSuggestionVisited(SnippetArticleListItem suggestion, Callback<Boolean> callback);
+    void getSuggestionVisited(SnippetArticle suggestion, Callback<Boolean> callback);
 
     /**
      * Sets the recipient for update events from the source.

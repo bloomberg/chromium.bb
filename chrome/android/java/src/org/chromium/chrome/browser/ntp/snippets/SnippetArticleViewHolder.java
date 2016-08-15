@@ -36,7 +36,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -76,7 +76,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
     private final ImageView mThumbnailView;
 
     private FetchImageCallback mImageCallback;
-    private SnippetArticleListItem mArticle;
+    private SnippetArticle mArticle;
     private ViewTreeObserver.OnPreDrawListener mPreDrawObserver;
     private int mPublisherFaviconSizePx;
 
@@ -252,10 +252,10 @@ public class SnippetArticleViewHolder extends CardViewHolder
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageListItem article) {
+    public void onBindViewHolder(NewTabPageItem article) {
         super.onBindViewHolder(article);
 
-        mArticle = (SnippetArticleListItem) article;
+        mArticle = (SnippetArticle) article;
         updateLayout();
 
         mHeadlineTextView.setText(mArticle.mTitle);
@@ -301,10 +301,10 @@ public class SnippetArticleViewHolder extends CardViewHolder
 
     private static class FetchImageCallback extends Callback<Bitmap> {
         private SnippetArticleViewHolder mViewHolder;
-        private final SnippetArticleListItem mSnippet;
+        private final SnippetArticle mSnippet;
 
         public FetchImageCallback(
-                SnippetArticleViewHolder viewHolder, SnippetArticleListItem snippet) {
+                SnippetArticleViewHolder viewHolder, SnippetArticle snippet) {
             mViewHolder = viewHolder;
             mSnippet = snippet;
         }
@@ -328,7 +328,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
         }
     }
 
-    private void fadeThumbnailIn(SnippetArticleListItem snippet, Bitmap thumbnail) {
+    private void fadeThumbnailIn(SnippetArticle snippet, Bitmap thumbnail) {
         mImageCallback = null;
         if (thumbnail == null) return; // Nothing to do, we keep the placeholder.
 

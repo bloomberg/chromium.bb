@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.util.MathUtils;
  * - Cards will get some lateral margins when the viewport is sufficiently wide.
  *   (see {@link UiConfig#DISPLAY_STYLE_WIDE})
  *
- * Note: If a subclass overrides {@link #onBindViewHolder(NewTabPageListItem)}, it should call the
+ * Note: If a subclass overrides {@link #onBindViewHolder(NewTabPageItem)}, it should call the
  * parent implementation to reset the private state when a card is recycled.
  */
 public class CardViewHolder extends NewTabPageViewHolder {
@@ -125,7 +125,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
      * @param item The NewTabPageListItem object that holds the data for this ViewHolder
      */
     @Override
-    public void onBindViewHolder(NewTabPageListItem item) {
+    public void onBindViewHolder(NewTabPageItem item) {
         // Reset the peek status to avoid recycled view holders to be peeking at the wrong moment.
         setPeekingPercentage(0f);
 

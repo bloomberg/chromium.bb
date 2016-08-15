@@ -13,9 +13,9 @@ import android.view.ViewGroup;
  * contain enough of them. It is displayed as a dummy item with variable height that just occupies
  * the remaining space between the last item in the RecyclerView and the bottom of the screen.
  */
-public class SpacingListItem extends SingleItemGroup {
-    private static class SpacingListItemView extends View {
-        public SpacingListItemView(Context context) {
+public class SpacingItem extends SingleItemGroup {
+    private static class SpacingView extends View {
+        public SpacingView(Context context) {
             super(context);
         }
 
@@ -28,11 +28,11 @@ public class SpacingListItem extends SingleItemGroup {
 
     /** Creates the View object for displaying the variable spacing. */
     public static View createView(ViewGroup parent) {
-        return new SpacingListItemView(parent.getContext());
+        return new SpacingView(parent.getContext());
     }
 
     @Override
     public int getType() {
-        return NewTabPageListItem.VIEW_TYPE_SPACING;
+        return NewTabPageItem.VIEW_TYPE_SPACING;
     }
 }

@@ -11,11 +11,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /** Base type for anything to add to the new tab page */
-public interface NewTabPageListItem {
+public interface NewTabPageItem {
     /**
      * View type values for the items that will be held by the NTP's RecyclerView.
      * @see Adapter#getItemViewType(int)
-     * @see NewTabPageListItem#getType()
+     * @see NewTabPageItem#getType()
      */
     @IntDef({VIEW_TYPE_ABOVE_THE_FOLD, VIEW_TYPE_HEADER, VIEW_TYPE_SNIPPET, VIEW_TYPE_SPACING,
             VIEW_TYPE_STATUS, VIEW_TYPE_PROGRESS, VIEW_TYPE_ACTION})
@@ -41,25 +41,25 @@ public interface NewTabPageListItem {
     public static final int VIEW_TYPE_SNIPPET = 3;
 
     /**
-      * View type for a {@link SpacingListItem} used to provide spacing at the end of the list.
+      * View type for a {@link SpacingItem} used to provide spacing at the end of the list.
       * @see Adapter#getItemViewType(int)
       */
     public static final int VIEW_TYPE_SPACING = 4;
 
     /**
-     * View type for a {@link StatusListItem}, the card displaying status information
+     * View type for a {@link StatusItem}, the card displaying status information
      * @see Adapter#getItemViewType(int)
      */
     public static final int VIEW_TYPE_STATUS = 5;
 
     /**
-     * View type for a {@link ProgressListItem}, the progress indicator.
+     * View type for a {@link ProgressItem}, the progress indicator.
      * @see Adapter#getItemViewType(int)
      */
     public static final int VIEW_TYPE_PROGRESS = 6;
 
     /**
-     * View type for a {@link ActionListItem}, an action button.
+     * View type for a {@link ActionItem}, an action button.
      * @see Adapter#getItemViewType(int)
      */
     public static final int VIEW_TYPE_ACTION = 7;

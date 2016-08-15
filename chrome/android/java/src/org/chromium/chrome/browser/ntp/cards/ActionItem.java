@@ -15,22 +15,22 @@ import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 /**
  * Item that allows the user to perform an action on the NTP.
  */
-class ActionListItem implements NewTabPageListItem {
+class ActionItem implements NewTabPageItem {
     private static final String TAG = "NtpCards";
 
     private final int mCategory;
 
-    public ActionListItem(int category) {
+    public ActionItem(int category) {
         mCategory = category;
     }
 
     @Override
     public int getType() {
-        return NewTabPageListItem.VIEW_TYPE_ACTION;
+        return NewTabPageItem.VIEW_TYPE_ACTION;
     }
 
     public static class ViewHolder extends CardViewHolder {
-        private ActionListItem mActionListItem;
+        private ActionItem mActionListItem;
 
         public ViewHolder(NewTabPageRecyclerView recyclerView, final NewTabPageManager manager,
                 UiConfig uiConfig) {
@@ -56,9 +56,9 @@ class ActionListItem implements NewTabPageListItem {
         }
 
         @Override
-        public void onBindViewHolder(NewTabPageListItem item) {
+        public void onBindViewHolder(NewTabPageItem item) {
             super.onBindViewHolder(item);
-            mActionListItem = (ActionListItem) item;
+            mActionListItem = (ActionItem) item;
         }
     }
 }

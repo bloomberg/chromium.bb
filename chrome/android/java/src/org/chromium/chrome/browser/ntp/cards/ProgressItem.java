@@ -10,12 +10,12 @@ package org.chromium.chrome.browser.ntp.cards;
  *
  * @see ProgressViewHolder
  */
-class ProgressListItem implements NewTabPageListItem {
+class ProgressItem implements NewTabPageItem {
     private boolean mVisible = false;
 
     @Override
     public int getType() {
-        return NewTabPageListItem.VIEW_TYPE_PROGRESS;
+        return NewTabPageItem.VIEW_TYPE_PROGRESS;
     }
 
     public boolean isVisible() {

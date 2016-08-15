@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -44,7 +44,7 @@ public class NewTabPageAdapterTest {
 
     private static class FakeSnippetsSource implements SuggestionsSource {
         private SuggestionsSource.Observer mObserver;
-        private final Map<Integer, List<SnippetArticleListItem>> mSuggestions = new HashMap<>();
+        private final Map<Integer, List<SnippetArticle>> mSuggestions = new HashMap<>();
         private final Map<Integer, Integer> mCategoryStatus = new HashMap<>();
         private final Map<Integer, SuggestionsCategoryInfo> mCategoryInfo = new HashMap<>();
 
@@ -55,7 +55,7 @@ public class NewTabPageAdapterTest {
         }
 
         public void setSuggestionsForCategory(
-                @CategoryInt int category, List<SnippetArticleListItem> suggestions) {
+                @CategoryInt int category, List<SnippetArticle> suggestions) {
             // Copy the suggestions list so that it can't be modified anymore.
             mSuggestions.put(category, new ArrayList<>(suggestions));
             if (mObserver != null) mObserver.onNewSuggestions(category);
@@ -72,19 +72,19 @@ public class NewTabPageAdapterTest {
         }
 
         @Override
-        public void dismissSuggestion(SnippetArticleListItem suggestion) {
+        public void dismissSuggestion(SnippetArticle suggestion) {
             throw new UnsupportedOperationException();
         }
 
         @Override
         public void fetchSuggestionImage(
-                SnippetArticleListItem suggestion, Callback<Bitmap> callback) {
+                SnippetArticle suggestion, Callback<Bitmap> callback) {
             throw new UnsupportedOperationException();
         }
 
         @Override
         public void getSuggestionVisited(
-                SnippetArticleListItem suggestion, Callback<Boolean> callback) {
+                SnippetArticle suggestion, Callback<Boolean> callback) {
             throw new UnsupportedOperationException();
         }
 
@@ -114,12 +114,12 @@ public class NewTabPageAdapterTest {
         }
 
         @Override
-        public List<SnippetArticleListItem> getSuggestionsForCategory(int category) {
+        public List<SnippetArticle> getSuggestionsForCategory(int category) {
             if (!SnippetsBridge.isCategoryStatusAvailable(mCategoryStatus.get(category))) {
                 return Collections.emptyList();
             }
-            List<SnippetArticleListItem> result = mSuggestions.get(category);
-            return result == null ? Collections.<SnippetArticleListItem>emptyList() : result;
+            List<SnippetArticle> result = mSuggestions.get(category);
+            return result == null ? Collections.<SnippetArticle>emptyList() : result;
         }
     }
 
@@ -198,28 +198,28 @@ public class NewTabPageAdapterTest {
     @Feature({"Ntp"})
     public void testSnippetLoading() {
         assertItemsFor(sectionWithStatusCard());
-        assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, mNtpAdapter.getItemViewType(0));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, mNtpAdapter.getItemViewType(1));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_STATUS, mNtpAdapter.getItemViewType(2));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_PROGRESS, mNtpAdapter.getItemViewType(3));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_SPACING, mNtpAdapter.getItemViewType(4));
+        assertEquals(NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD, mNtpAdapter.getItemViewType(0));
+        assertEquals(NewTabPageItem.VIEW_TYPE_HEADER, mNtpAdapter.getItemViewType(1));
+        assertEquals(NewTabPageItem.VIEW_TYPE_STATUS, mNtpAdapter.getItemViewType(2));
+        assertEquals(NewTabPageItem.VIEW_TYPE_PROGRESS, mNtpAdapter.getItemViewType(3));
+        assertEquals(NewTabPageItem.VIEW_TYPE_SPACING, mNtpAdapter.getItemViewType(4));
 
-        List<SnippetArticleListItem> snippets = createDummySnippets(3);
+        List<SnippetArticle> snippets = createDummySnippets(3);
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
 
-        List<NewTabPageListItem> loadedItems = new ArrayList<>(mNtpAdapter.getItems());
-        assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, mNtpAdapter.getItemViewType(0));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, mNtpAdapter.getItemViewType(1));
+        List<NewTabPageItem> loadedItems = new ArrayList<>(mNtpAdapter.getItems());
+        assertEquals(NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD, mNtpAdapter.getItemViewType(0));
+        assertEquals(NewTabPageItem.VIEW_TYPE_HEADER, mNtpAdapter.getItemViewType(1));
         // From the loadedItems, cut out aboveTheFold and header from the front,
         // and bottom spacer from the back.
         assertEquals(snippets, loadedItems.subList(2, loadedItems.size() - 1));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_SPACING,
+        assertEquals(NewTabPageItem.VIEW_TYPE_SPACING,
                 mNtpAdapter.getItemViewType(loadedItems.size() - 1));
 
         // The adapter should ignore any new incoming data.
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES,
-                Arrays.asList(new SnippetArticleListItem[] {new SnippetArticleListItem(
+                Arrays.asList(new SnippetArticle[] {new SnippetArticle(
                         "foo", "title1", "pub1", "txt1", "foo", "bar", 0, 0, 0,
                         ContentSuggestionsCardLayout.FULL_CARD)}));
         assertEquals(loadedItems, mNtpAdapter.getItems());
@@ -234,30 +234,30 @@ public class NewTabPageAdapterTest {
     public void testSnippetLoadingInitiallyEmpty() {
         // If we don't get anything, we should be in the same situation as the initial one.
         mSnippetsSource.setSuggestionsForCategory(
-                KnownCategories.ARTICLES, new ArrayList<SnippetArticleListItem>());
+                KnownCategories.ARTICLES, new ArrayList<SnippetArticle>());
         assertItemsFor(sectionWithStatusCard());
-        assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, mNtpAdapter.getItemViewType(0));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, mNtpAdapter.getItemViewType(1));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_STATUS, mNtpAdapter.getItemViewType(2));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_PROGRESS, mNtpAdapter.getItemViewType(3));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_SPACING, mNtpAdapter.getItemViewType(4));
+        assertEquals(NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD, mNtpAdapter.getItemViewType(0));
+        assertEquals(NewTabPageItem.VIEW_TYPE_HEADER, mNtpAdapter.getItemViewType(1));
+        assertEquals(NewTabPageItem.VIEW_TYPE_STATUS, mNtpAdapter.getItemViewType(2));
+        assertEquals(NewTabPageItem.VIEW_TYPE_PROGRESS, mNtpAdapter.getItemViewType(3));
+        assertEquals(NewTabPageItem.VIEW_TYPE_SPACING, mNtpAdapter.getItemViewType(4));
 
         // We should load new snippets when we get notified about them.
-        List<SnippetArticleListItem> snippets = createDummySnippets(5);
+        List<SnippetArticle> snippets = createDummySnippets(5);
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
-        List<NewTabPageListItem> loadedItems = new ArrayList<>(mNtpAdapter.getItems());
-        assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, mNtpAdapter.getItemViewType(0));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, mNtpAdapter.getItemViewType(1));
+        List<NewTabPageItem> loadedItems = new ArrayList<>(mNtpAdapter.getItems());
+        assertEquals(NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD, mNtpAdapter.getItemViewType(0));
+        assertEquals(NewTabPageItem.VIEW_TYPE_HEADER, mNtpAdapter.getItemViewType(1));
         // From the loadedItems, cut out aboveTheFold and header from the front,
         // and bottom spacer from the back.
         assertEquals(snippets, loadedItems.subList(2, loadedItems.size() - 1));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_SPACING,
+        assertEquals(NewTabPageItem.VIEW_TYPE_SPACING,
                 mNtpAdapter.getItemViewType(loadedItems.size() - 1));
 
         // The adapter should ignore any new incoming data.
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES,
-                Arrays.asList(new SnippetArticleListItem[] {new SnippetArticleListItem(
+                Arrays.asList(new SnippetArticle[] {new SnippetArticle(
                         "foo", "title1", "pub1", "txt1", "foo", "bar", 0, 0, 0,
                         ContentSuggestionsCardLayout.FULL_CARD)}));
         assertEquals(loadedItems, mNtpAdapter.getItems());
@@ -269,7 +269,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testSnippetClearing() {
-        List<SnippetArticleListItem> snippets = createDummySnippets(4);
+        List<SnippetArticle> snippets = createDummySnippets(4);
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
         assertItemsFor(section(4));
@@ -300,7 +300,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testSnippetLoadingBlock() {
-        List<SnippetArticleListItem> snippets = createDummySnippets(3);
+        List<SnippetArticle> snippets = createDummySnippets(3);
 
         // By default, status is INITIALIZING, so we can load snippets
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
@@ -309,7 +309,7 @@ public class NewTabPageAdapterTest {
 
         // If we have snippets, we should not load the new list (i.e. the extra item does *not*
         // appear).
-        snippets.add(new SnippetArticleListItem("https://site.com/url1", "title1", "pub1", "txt1",
+        snippets.add(new SnippetArticle("https://site.com/url1", "title1", "pub1", "txt1",
                 "https://site.com/url1", "https://amp.site.com/url1", 0, 0, 0,
                 ContentSuggestionsCardLayout.FULL_CARD));
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
@@ -341,7 +341,7 @@ public class NewTabPageAdapterTest {
     @Feature({"Ntp"})
     public void testProgressIndicatorDisplay() {
         int progressPos = mNtpAdapter.getBottomSpacerPosition() - 1;
-        ProgressListItem progress = (ProgressListItem) mNtpAdapter.getItems().get(progressPos);
+        ProgressItem progress = (ProgressItem) mNtpAdapter.getItems().get(progressPos);
 
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.INITIALIZING);
@@ -367,7 +367,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testSectionClearingWhenUnavailable() {
-        List<SnippetArticleListItem> snippets = createDummySnippets(5);
+        List<SnippetArticle> snippets = createDummySnippets(5);
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
         assertItemsFor(section(5));
@@ -400,7 +400,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testUIUntouchedWhenNotProvided() {
-        List<SnippetArticleListItem> snippets = createDummySnippets(4);
+        List<SnippetArticle> snippets = createDummySnippets(4);
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
         assertItemsFor(section(4));
@@ -418,12 +418,12 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testMoreButton() {
-        List<SnippetArticleListItem> articles = createDummySnippets(3);
+        List<SnippetArticle> articles = createDummySnippets(3);
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, articles);
         assertItemsFor(section(3));
 
-        List<SnippetArticleListItem> bookmarks = createDummySnippets(10);
+        List<SnippetArticle> bookmarks = createDummySnippets(10);
         mSnippetsSource.setInfoForCategory(KnownCategories.BOOKMARKS,
                 new SuggestionsCategoryInfo("Bookmarks", ContentSuggestionsCardLayout.MINIMAL_CARD,
                                                    true));
@@ -432,10 +432,10 @@ public class NewTabPageAdapterTest {
         assertItemsFor(sectionWithMoreButton(10), section(3));
     }
 
-    private List<SnippetArticleListItem> createDummySnippets(int count) {
-        List<SnippetArticleListItem> snippets = new ArrayList<>();
+    private List<SnippetArticle> createDummySnippets(int count) {
+        List<SnippetArticle> snippets = new ArrayList<>();
         for (int index = 0; index < count; index++) {
-            snippets.add(new SnippetArticleListItem("https://site.com/url" + index, "title" + index,
+            snippets.add(new SnippetArticle("https://site.com/url" + index, "title" + index,
                     "pub" + index, "txt" + index, "https://site.com/url" + index,
                     "https://amp.site.com/url" + index, 0, 0, 0,
                     ContentSuggestionsCardLayout.FULL_CARD));

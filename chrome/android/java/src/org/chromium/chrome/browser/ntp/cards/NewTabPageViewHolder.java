@@ -9,26 +9,26 @@ import android.view.View;
 
 /**
  * Holds metadata about an item we want to display on the NTP. An item can be anything that will be
- * displayed on the NTP RecyclerView.
+ * displayed on the NTP {@link RecyclerView}.
  */
 public class NewTabPageViewHolder extends RecyclerView.ViewHolder {
     /**
-     * Constructs a NewTabPageViewHolder item used to display an part of the NTP (e.g., header,
-     * article snippet, above the fold view, etc.)
+     * Constructs a {@link NewTabPageViewHolder} used to display an part of the NTP (e.g., header,
+     * article snippet, above-the-fold view, etc.)
      *
-     * @param itemView The View for this item
+     * @param itemView The {@link View} for this item
      */
     public NewTabPageViewHolder(View itemView) {
         super(itemView);
     }
 
     /**
-     * Called when the NTP cards adapter is requested to update the currently visible ViewHolder
-     * with data. The default implementation does nothing.
+     * Called when the NTP cards adapter is requested to update the currently visible
+     * {@link ViewHolder} with data. The default implementation does nothing.
      *
-     * @param item The NewTabPageListItem object that holds the data for this ViewHolder
+     * @param item The {@link NewTabPageItem} that holds the data for this {@link ViewHolder}
      */
-    public void onBindViewHolder(NewTabPageListItem item) {
+    public void onBindViewHolder(NewTabPageItem item) {
     }
 
     /**

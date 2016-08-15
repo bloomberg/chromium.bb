@@ -21,10 +21,10 @@ import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticleListItem;
+import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
+import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
-import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderListItem;
-import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 
@@ -56,8 +56,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      * will be a list of all items the adapter exposes.
      */
     private final List<ItemGroup> mGroups = new ArrayList<>();
-    private final AboveTheFoldListItem mAboveTheFold = new AboveTheFoldListItem();
-    private final SpacingListItem mBottomSpacer = new SpacingListItem();
+    private final AboveTheFoldItem mAboveTheFold = new AboveTheFoldItem();
+    private final SpacingItem mBottomSpacer = new SpacingItem();
 
     /** Maps suggestion categories to sections, with stable iteration ordering. */
     private final Map<Integer, SuggestionsSection> mSections = new TreeMap<>();
@@ -157,7 +157,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             return;
         }
 
-        List<SnippetArticleListItem> suggestions =
+        List<SnippetArticle> suggestions =
                 mSuggestionsSource.getSuggestionsForCategory(category);
 
         Log.d(TAG, "Received %d new suggestions for category %d.", suggestions.size(), category);
@@ -198,13 +198,13 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             //   we're also not getting them now (but probably right after in OnNewSuggestions).
             // - status is non-AVAILABLE, but also none of the serious ones above, so this will
             //   show a status card and remove the current content.
-            setSuggestions(category, Collections.<SnippetArticleListItem>emptyList(), status);
+            setSuggestions(category, Collections.<SnippetArticle>emptyList(), status);
         }
         updateGroups();
     }
 
     @Override
-    @NewTabPageListItem.ViewType
+    @NewTabPageItem.ViewType
     public int getItemViewType(int position) {
         return getItems().get(position).getType();
     }
@@ -213,33 +213,33 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     public NewTabPageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         assert parent == mRecyclerView;
 
-        if (viewType == NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD) {
+        if (viewType == NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD) {
             return new NewTabPageViewHolder(mNewTabPageLayout);
         }
 
-        if (viewType == NewTabPageListItem.VIEW_TYPE_HEADER) {
-            return new SnippetHeaderViewHolder(mRecyclerView, mUiConfig);
+        if (viewType == NewTabPageItem.VIEW_TYPE_HEADER) {
+            return new SectionHeaderViewHolder(mRecyclerView, mUiConfig);
         }
 
-        if (viewType == NewTabPageListItem.VIEW_TYPE_SNIPPET) {
+        if (viewType == NewTabPageItem.VIEW_TYPE_SNIPPET) {
             return new SnippetArticleViewHolder(
                     mRecyclerView, mNewTabPageManager, mSuggestionsSource, mUiConfig);
         }
 
-        if (viewType == NewTabPageListItem.VIEW_TYPE_SPACING) {
-            return new NewTabPageViewHolder(SpacingListItem.createView(parent));
+        if (viewType == NewTabPageItem.VIEW_TYPE_SPACING) {
+            return new NewTabPageViewHolder(SpacingItem.createView(parent));
         }
 
-        if (viewType == NewTabPageListItem.VIEW_TYPE_STATUS) {
-            return new StatusListItem.ViewHolder(mRecyclerView, mUiConfig);
+        if (viewType == NewTabPageItem.VIEW_TYPE_STATUS) {
+            return new StatusItem.ViewHolder(mRecyclerView, mUiConfig);
         }
 
-        if (viewType == NewTabPageListItem.VIEW_TYPE_PROGRESS) {
+        if (viewType == NewTabPageItem.VIEW_TYPE_PROGRESS) {
             return new ProgressViewHolder(mRecyclerView);
         }
 
-        if (viewType == NewTabPageListItem.VIEW_TYPE_ACTION) {
-            return new ActionListItem.ViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
+        if (viewType == NewTabPageItem.VIEW_TYPE_ACTION) {
+            return new ActionItem.ViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
         }
 
         return null;
@@ -260,9 +260,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     public int getFirstHeaderPosition() {
-        List<NewTabPageListItem> items = getItems();
+        List<NewTabPageItem> items = getItems();
         for (int i = 0; i < items.size(); i++) {
-            if (items.get(i) instanceof SnippetHeaderListItem) return i;
+            if (items.get(i) instanceof SectionHeader) return i;
         }
         return RecyclerView.NO_POSITION;
     }
@@ -290,7 +290,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         SnippetsBridge.fetchSnippets(/*forceRequest=*/true);
     }
 
-    private void setSuggestions(@CategoryInt int category, List<SnippetArticleListItem> suggestions,
+    private void setSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions,
             @CategoryStatusEnum int status) {
         if (!mSections.containsKey(category)) {
             SuggestionsCategoryInfo info = mSuggestionsSource.getCategoryInfo(category);
@@ -328,10 +328,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     public void dismissItem(ViewHolder itemViewHolder) {
-        assert itemViewHolder.getItemViewType() == NewTabPageListItem.VIEW_TYPE_SNIPPET;
+        assert itemViewHolder.getItemViewType() == NewTabPageItem.VIEW_TYPE_SNIPPET;
 
         int position = itemViewHolder.getAdapterPosition();
-        SnippetArticleListItem suggestion = (SnippetArticleListItem) getItems().get(position);
+        SnippetArticle suggestion = (SnippetArticle) getItems().get(position);
 
         mSuggestionsSource.getSuggestionVisited(suggestion, new Callback<Boolean>() {
             @Override
@@ -364,8 +364,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     /**
      * Returns an unmodifiable list containing all items in the adapter.
      */
-    List<NewTabPageListItem> getItems() {
-        List<NewTabPageListItem> items = new ArrayList<>();
+    List<NewTabPageItem> getItems() {
+        List<NewTabPageItem> items = new ArrayList<>();
         for (ItemGroup group : mGroups) {
             items.addAll(group.getItems());
         }
@@ -375,7 +375,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private ItemGroup getGroup(int itemPosition) {
         int itemsSkipped = 0;
         for (ItemGroup group : mGroups) {
-            List<NewTabPageListItem> items = group.getItems();
+            List<NewTabPageItem> items = group.getItems();
             itemsSkipped += items.size();
             if (itemPosition < itemsSkipped) return group;
         }

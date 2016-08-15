@@ -19,7 +19,7 @@ import android.view.inputmethod.InputConnection;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
-import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderViewHolder;
+import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.util.ViewUtils;
 
 /**
@@ -137,7 +137,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
         // It might not be in the layout yet if it's not visible or ready to be displayed.
         if (bottomSpacingViewHolder == null) return;
 
-        assert bottomSpacingViewHolder.getItemViewType() == NewTabPageListItem.VIEW_TYPE_SPACING;
+        assert bottomSpacingViewHolder.getItemViewType() == NewTabPageItem.VIEW_TYPE_SPACING;
         bottomSpacingViewHolder.itemView.requestLayout();
     }
 
@@ -206,7 +206,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * top of the screen.
      */
     public void updateSnippetsHeaderDisplay() {
-        SnippetHeaderViewHolder header = findFirstHeader();
+        SectionHeaderViewHolder header = findFirstHeader();
         if (header == null) return;
 
         if (findAboveTheFoldView() == null) return;
@@ -226,12 +226,12 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * Finds the view holder for the first header.
      * @return The {@link ViewHolder} of the header, or null if it is not present.
      */
-    private SnippetHeaderViewHolder findFirstHeader() {
+    private SectionHeaderViewHolder findFirstHeader() {
         ViewHolder viewHolder =
                 findViewHolderForAdapterPosition(getNewTabPageAdapter().getFirstHeaderPosition());
-        if (!(viewHolder instanceof SnippetHeaderViewHolder)) return null;
+        if (!(viewHolder instanceof SectionHeaderViewHolder)) return null;
 
-        return (SnippetHeaderViewHolder) viewHolder;
+        return (SectionHeaderViewHolder) viewHolder;
     }
 
     /**

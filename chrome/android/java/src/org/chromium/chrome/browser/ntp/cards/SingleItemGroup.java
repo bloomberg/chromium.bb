@@ -10,12 +10,12 @@ import java.util.List;
 /**
  * A single item that represents itself as a group.
  */
-public abstract class SingleItemGroup implements ItemGroup, NewTabPageListItem {
-    private final List<NewTabPageListItem> mItems =
-            Collections.<NewTabPageListItem>singletonList(this);
+public abstract class SingleItemGroup implements ItemGroup, NewTabPageItem {
+    private final List<NewTabPageItem> mItems =
+            Collections.<NewTabPageItem>singletonList(this);
 
     @Override
-    public List<NewTabPageListItem> getItems() {
+    public List<NewTabPageItem> getItems() {
         return mItems;
     }
 }
