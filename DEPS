@@ -96,7 +96,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
-  'libfuzzer_revision': '764f3890a06c04060321ede273521faf587c868f',
+  'libfuzzer_revision': 'df7f2835bcc6c6e258126d30e96f93b3b040683c',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
