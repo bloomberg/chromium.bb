@@ -5,6 +5,7 @@
 #include "remoting/protocol/webrtc_video_renderer_adapter.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -147,7 +148,10 @@ void WebrtcVideoRendererAdapter::OnVideoFrameStats(
   frame_stats.client_stats = client_stats_queue_.front().second;
   client_stats_queue_.pop_front();
   frame_stats.host_stats = host_stats;
-  video_renderer_->GetFrameStatsConsumer()->OnVideoFrameStats(frame_stats);
+  FrameStatsConsumer* frame_stats_consumer =
+      video_renderer_->GetFrameStatsConsumer();
+  if (frame_stats_consumer)
+    frame_stats_consumer->OnVideoFrameStats(frame_stats);
 }
 
 void WebrtcVideoRendererAdapter::OnChannelInitialized(
@@ -236,7 +240,10 @@ void WebrtcVideoRendererAdapter::FrameRendered(
   frame_stats.host_stats = host_stats_queue_.front().second;
   frame_stats.client_stats = *client_stats;
   host_stats_queue_.pop_front();
-  video_renderer_->GetFrameStatsConsumer()->OnVideoFrameStats(frame_stats);
+  FrameStatsConsumer* frame_stats_consumer =
+      video_renderer_->GetFrameStatsConsumer();
+  if (frame_stats_consumer)
+    frame_stats_consumer->OnVideoFrameStats(frame_stats);
 }
 
 }  // namespace protocol
