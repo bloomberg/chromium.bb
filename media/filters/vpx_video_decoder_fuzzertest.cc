@@ -8,6 +8,7 @@
 #include <random>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
@@ -20,6 +21,7 @@ struct Env {
   Env() {
     InitializeMediaLibrary();
     base::CommandLine::Init(0, nullptr);
+    logging::SetMinLogLevel(logging::LOG_FATAL);
   }
 
   base::AtExitManager at_exit_manager;
