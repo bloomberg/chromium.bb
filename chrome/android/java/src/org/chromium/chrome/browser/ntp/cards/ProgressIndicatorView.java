@@ -52,6 +52,15 @@ public class ProgressIndicatorView extends ImageView {
         hide();
     }
 
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        // When the view is detached, the progress drawable would have been invalidated and stopped
+        // animating. We restart the animation here in that case.
+        if (getVisibility() == VISIBLE) show();
+    }
+
     public void show() {
         if (mPostedCallback) return;
 
@@ -70,6 +79,9 @@ public class ProgressIndicatorView extends ImageView {
     }
 
     public void showDelayed() {
+        // The indicator is already visible, just let it as it is to avoid jumps in the animation.
+        if (getVisibility() == View.VISIBLE) return;
+
         mPostedCallback = true;
         // We don't want to show the spinner every time we load content if it loads quickly; instead
         // only start showing the spinner if loading the content has taken longer than 500ms
