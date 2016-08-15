@@ -130,9 +130,8 @@ bool ComputeClipRectInTargetSpace(const LayerImpl* layer,
       return false;
     }
   } else {
-    if (property_trees->ComputeTransformToTarget(clip_node->target_transform_id,
-                                                 target_effect_node->id,
-                                                 &clip_to_target)) {
+    if (property_trees->ComputeTransformFromTarget(
+            target_node_id, clip_node->target_effect_id, &clip_to_target)) {
       *clip_rect_in_target_space = MathUtil::ProjectClippedRect(
           clip_to_target, clip_node->clip_in_target_space);
     } else {

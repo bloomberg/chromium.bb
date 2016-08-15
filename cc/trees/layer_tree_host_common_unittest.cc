@@ -9020,10 +9020,14 @@ TEST_F(LayerTreeHostCommonTest, ClipBetweenClipChildTargetAndClipParentTarget) {
   gfx::Transform translate;
   translate.Translate(10, 10);
 
+  gfx::Transform rotate;
+  rotate.RotateAboutXAxis(10);
+
   root->SetBounds(gfx::Size(100, 100));
   surface->SetBounds(gfx::Size(100, 100));
   surface->SetMasksToBounds(true);
   surface->test_properties()->force_render_surface = true;
+  surface->SetTransform(rotate);
   clip_layer->SetBounds(gfx::Size(20, 20));
   clip_layer->SetMasksToBounds(true);
   clip_parent->SetBounds(gfx::Size(50, 50));

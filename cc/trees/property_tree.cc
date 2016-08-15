@@ -1949,38 +1949,69 @@ const DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
     gfx::Transform from_target;
     const TransformNode* transform_node = transform_tree.Node(transform_id);
     const EffectNode* effect_node = effect_tree.Node(effect_id);
+    const TransformNode* dest_node =
+        transform_tree.Node(effect_node->transform_id);
     DCHECK(effect_id == effect_tree.kRootNodeId ||
            effect_node->has_render_surface);
+    bool already_computed_inverse = false;
     if (transform_id == effect_node->transform_id) {
       target_space_transform.Scale(effect_node->surface_contents_scale.x(),
                                    effect_node->surface_contents_scale.y());
-    } else {
-      // Compute transform from transform_id to effect_node->transform.
-      DCHECK_GT(transform_id, effect_node->transform_id);
-      const TransformNode* dest_node =
-          transform_tree.Node(effect_node->transform_id);
-      if (!dest_node || (dest_node->ancestors_are_invertible &&
-                         dest_node->node_and_ancestors_are_flat)) {
+    } else if (!dest_node || (dest_node->ancestors_are_invertible &&
+                              dest_node->node_and_ancestors_are_flat)) {
+      // Compute transform from transform_id to effect_node->transform using
+      // screen space transforms.
+      target_space_transform.ConcatTransform(
+          transform_tree.ToScreen(transform_id));
+      if (dest_node)
         target_space_transform.ConcatTransform(
-            transform_tree.ToScreen(transform_id));
-        if (dest_node)
-          target_space_transform.ConcatTransform(
-              transform_tree.FromScreen(dest_node->id));
-        if (dest_node->needs_surface_contents_scale)
-          target_space_transform.matrix().postScale(
-              dest_node->surface_contents_scale.x(),
-              dest_node->surface_contents_scale.y(), 1.f);
-      } else {
-        target_space_transform =
-            GetDrawTransforms(transform_node->parent_id, effect_id).to_target;
-        if (transform_node->flattens_inherited_transform)
-          target_space_transform.FlattenTo2d();
-        target_space_transform.PreconcatTransform(transform_node->to_parent);
+            transform_tree.FromScreen(dest_node->id));
+      if (dest_node->needs_surface_contents_scale)
+        target_space_transform.matrix().postScale(
+            dest_node->surface_contents_scale.x(),
+            dest_node->surface_contents_scale.y(), 1.f);
+    } else if (transform_node->id > dest_node->id) {
+      target_space_transform =
+          GetDrawTransforms(transform_node->parent_id, effect_id).to_target;
+      if (transform_node->flattens_inherited_transform)
+        target_space_transform.FlattenTo2d();
+      target_space_transform.PreconcatTransform(transform_node->to_parent);
+    } else {
+      const TransformNode* current = dest_node;
+      std::vector<int> source_to_destination;
+      source_to_destination.push_back(current->id);
+      current = transform_tree.parent(current);
+      for (; current && current->id > transform_node->id;
+           current = transform_tree.parent(current)) {
+        source_to_destination.push_back(current->id);
       }
+      DCHECK_EQ(current, transform_node);
+      gfx::Transform combined_transform;
+      size_t source_to_destination_size = source_to_destination.size();
+      for (size_t i = 0; i < source_to_destination_size; ++i) {
+        size_t index = source_to_destination_size - 1 - i;
+        const TransformNode* node =
+            transform_tree.Node(source_to_destination[index]);
+        if (node->flattens_inherited_transform)
+          combined_transform.FlattenTo2d();
+        combined_transform.PreconcatTransform(node->to_parent);
+      }
+      if (effect_node->surface_contents_scale.x() != 0.f &&
+          effect_node->surface_contents_scale.y() != 0.f)
+        combined_transform.Scale(
+            1.0f / effect_node->surface_contents_scale.x(),
+            1.0f / effect_node->surface_contents_scale.y());
+      cached_data_.draw_transforms[effect_id][transform_id]
+          .transforms.invertible =
+          combined_transform.GetInverse(&target_space_transform);
+      from_target = combined_transform;
+      already_computed_inverse = true;
     }
-    cached_data_.draw_transforms[effect_id][transform_id]
-        .transforms.invertible =
-        target_space_transform.GetInverse(&from_target);
+    if (!already_computed_inverse) {
+      cached_data_.draw_transforms[effect_id][transform_id]
+          .transforms.invertible =
+          target_space_transform.GetInverse(&from_target);
+    }
     cached_data_.draw_transforms[effect_id][transform_id].update_number =
         cached_data_.property_tree_update_number;
     cached_data_.draw_transforms[effect_id][transform_id]
@@ -2027,6 +2058,9 @@ bool PropertyTrees::ComputeTransformToTarget(int transform_id,
                                              gfx::Transform* transform) const {
   transform->MakeIdentity();
 
+  if (transform_id == TransformTree::kInvalidNodeId)
+    return true;
+
   int target_transform_id;
   const EffectNode* effect_node = effect_tree.Node(effect_id);
   if (effect_id == EffectTree::kInvalidNodeId) {
@@ -2042,8 +2076,7 @@ bool PropertyTrees::ComputeTransformToTarget(int transform_id,
 
   bool success = transform_tree.ComputeTransform(
       transform_id, target_transform_id, transform);
-  if (verify_transform_tree_calculations &&
-      transform_id > target_transform_id) {
+  if (verify_transform_tree_calculations) {
     gfx::Transform to_target;
     to_target.ConcatTransform(
         GetDrawTransforms(transform_id, effect_id).to_target);
@@ -2063,6 +2096,9 @@ bool PropertyTrees::ComputeTransformFromTarget(
     gfx::Transform* transform) const {
   transform->MakeIdentity();
 
+  if (transform_id == TransformTree::kInvalidNodeId)
+    return true;
+
   int target_transform_id;
   const EffectNode* effect_node = effect_tree.Node(effect_id);
   if (effect_id == EffectTree::kInvalidNodeId) {
@@ -2078,8 +2114,7 @@ bool PropertyTrees::ComputeTransformFromTarget(
 
   bool success = transform_tree.ComputeTransform(target_transform_id,
                                                  transform_id, transform);
-  if (verify_transform_tree_calculations &&
-      transform_id < target_transform_id) {
+  if (verify_transform_tree_calculations) {
     auto draw_transforms = GetDrawTransforms(transform_id, effect_id);
     gfx::Transform from_target;
     from_target.ConcatTransform(draw_transforms.from_target);
