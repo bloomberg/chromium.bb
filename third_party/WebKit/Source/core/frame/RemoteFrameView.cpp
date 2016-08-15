@@ -46,14 +46,14 @@ void RemoteFrameView::dispose()
 
 void RemoteFrameView::invalidateRect(const IntRect& rect)
 {
-    LayoutPart* layoutObject = m_remoteFrame->ownerLayoutObject();
-    if (!layoutObject)
+    LayoutPartItem layoutItem = m_remoteFrame->ownerLayoutItem();
+    if (layoutItem.isNull())
         return;
 
     LayoutRect repaintRect(rect);
-    repaintRect.move(layoutObject->borderLeft() + layoutObject->paddingLeft(),
-        layoutObject->borderTop() + layoutObject->paddingTop());
-    layoutObject->invalidatePaintRectangle(repaintRect);
+    repaintRect.move(layoutItem.borderLeft() + layoutItem.paddingLeft(),
+        layoutItem.borderTop() + layoutItem.paddingTop());
+    layoutItem.invalidatePaintRectangle(repaintRect);
 }
 
 void RemoteFrameView::setFrameRect(const IntRect& newRect)
