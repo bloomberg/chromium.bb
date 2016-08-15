@@ -200,7 +200,13 @@ std::string DetermineTextLanguage(const base::string16& text,
   if (prediction_reliable &&
       predicted_language !=
           chrome_lang_id::NNetLanguageIdentifier::kUnknown) {
-    language = predicted_language;
+    // CLD3 returns 'zh' for Chinese but Translate doesn't accept it. Thus,
+    // analogously to CLD2, 'zh-CN' is returned instead.
+    if (predicted_language == "zh") {
+      language = "zh-CN";
+    } else {
+      language = predicted_language;
+    }
   }
 
 #else
