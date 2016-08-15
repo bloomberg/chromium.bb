@@ -24,15 +24,9 @@ const int kInvalidId = -1;
 
 // The results of a find request.
 struct FindResults {
-  FindResults(int request_id, int number_of_matches, int active_match_ordinal)
-      : request_id(request_id),
-        number_of_matches(number_of_matches),
-        active_match_ordinal(active_match_ordinal) {}
-  FindResults() : FindResults(kInvalidId, 0, 0) {}
-
-  int request_id;
-  int number_of_matches;
-  int active_match_ordinal;
+  int request_id = kInvalidId;
+  int number_of_matches = 0;
+  int active_match_ordinal = 0;
 };
 
 }  // namespace
@@ -43,12 +37,11 @@ class TestWebContentsDelegate : public WebContentsDelegate {
       : last_request_id_(kInvalidId),
         last_finished_request_id_(kInvalidId),
         next_reply_received_(false),
-        record_replies_(false),
         waiting_for_(NOTHING) {}
   ~TestWebContentsDelegate() override {}
 
   // Returns the current find results.
-  const FindResults& GetFindResults() const {
+  FindResults GetFindResults() {
     return current_results_;
   }
 
@@ -83,21 +76,6 @@ class TestWebContentsDelegate : public WebContentsDelegate {
     last_request_id_ = request_id;
   }
 
-  // From when this function is called, all replies coming in via FindReply()
-  // will be recorded. These replies can be retrieved via GetReplyRecord().
-  void StartReplyRecord() {
-    reply_record_.clear();
-    record_replies_ = true;
-  }
-
-  // Retreives the results from the find replies recorded since the last call to
-  // StartReplyRecord(). Calling this function also stops the recording new find
-  // replies.
-  const std::vector<FindResults>& GetReplyRecord() {
-    record_replies_ = false;
-    return reply_record_;
-  }
-
 #if defined(OS_ANDROID)
   // Waits for all of the find match rects to be received.
   void WaitForMatchRects() {
@@ -130,11 +108,6 @@ class TestWebContentsDelegate : public WebContentsDelegate {
                  const gfx::Rect& selection_rect,
                  int active_match_ordinal,
                  bool final_update) override {
-    if (record_replies_) {
-      reply_record_.emplace_back(
-          request_id, number_of_matches, active_match_ordinal);
-    }
-
     // Update the current results.
     if (request_id > current_results_.request_id)
       current_results_.request_id = request_id;
@@ -213,14 +186,6 @@ class TestWebContentsDelegate : public WebContentsDelegate {
 
   // Indicates whether the next reply after MarkNextReply() has been received.
   bool next_reply_received_;
-
-  // Indicates whether the find results from incoming find replies are currently
-  // being recorded.
-  bool record_replies_;
-
-  // A record of all find replies that have come in via FindReply() since
-  // StartReplyRecor() was last called.
-  std::vector<FindResults> reply_record_;
 
   // Indicates what |message_loop_runner_| is waiting for, if anything.
   WaitingFor waiting_for_;
@@ -521,35 +486,6 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
   EXPECT_EQ(last_request_id(), results.request_id);
   EXPECT_EQ(8, results.number_of_matches);
   EXPECT_EQ(4, results.active_match_ordinal);
-}
-
-IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue627799)) {
-  LoadAndWait("/find_in_long_page.html");
-
-  blink::WebFindOptions options;
-  Find("42", options);
-  delegate()->WaitForFinalReply();
-
-  FindResults results = delegate()->GetFindResults();
-  EXPECT_EQ(last_request_id(), results.request_id);
-  EXPECT_EQ(970, results.number_of_matches);
-  EXPECT_EQ(1, results.active_match_ordinal);
-
-  delegate()->StartReplyRecord();
-  options.findNext = true;
-  options.forward = false;
-  Find("42", options);
-  delegate()->WaitForFinalReply();
-
-  // This is the crux of the issue that this test guards against. Searching
-  // across the frame boundary should not cause the frame to be re-scoped. If
-  // the re-scope occurs, then we will see the number of matches change in one
-  // of the recorded find replies.
-  for (auto& reply : delegate()->GetReplyRecord()) {
-    EXPECT_EQ(last_request_id(), reply.request_id);
-    EXPECT_TRUE(reply.number_of_matches == kInvalidId ||
-                reply.number_of_matches == results.number_of_matches);
-  }
 }
 
 #if defined(OS_ANDROID)
