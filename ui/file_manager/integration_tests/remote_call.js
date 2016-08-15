@@ -26,7 +26,8 @@ RemoteCall.isStepByStepEnabled = function() {
 };
 
 /**
- * Calls a remote test util in Files.app's extension. See: test_util.js.
+ * Calls a remote test util in Files.app's extension. See:
+ * registerRemoteTestUtils in test_util_base.js.
  *
  * @param {string} func Function name.
  * @param {?string} appId Target window's App ID or null for functions
@@ -59,10 +60,11 @@ RemoteCall.prototype.callRemoteTestUtil =
             appId: appId,
             args: args
           },
+          {},
           function(var_args) {
             if (stepByStep) {
               console.info('Returned value:');
-              console.info(arguments);
+              console.info(JSON.stringify(arguments));
             }
             if (opt_callback)
               opt_callback.apply(null, arguments);

@@ -26,6 +26,7 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
   }
   var styles = {};
   var styleNames = opt_styleNames || [];
+  assert(Array.isArray(styleNames));
   var computedStyles = contentWindow.getComputedStyle(element);
   for (var i = 0; i < styleNames.length; i++) {
     styles[styleNames[i]] = computedStyles[styleNames[i]];
@@ -223,32 +224,79 @@ test.util.sync.isWindowMaximized = function(contentWindow) {
 /**
  * Queries all elements.
  *
- * @param {Window} contentWindow Window to be tested.
+ * @param {!Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
  * @param {?string} iframeQuery Iframe selector or null if no iframe.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {Array<{attributes:Object<string>, text:string,
+ * @return {!Array<{attributes:Object<string>, text:string,
  *                  styles:Object<string>, hidden:boolean}>} Element
  *     information that contains contentText, attribute names and
  *     values, hidden attribute, and style names and values.
  */
 test.util.sync.queryAllElements = function(
     contentWindow, targetQuery, iframeQuery, opt_styleNames) {
+  return test.util.sync.deepQueryAllElements(
+      contentWindow, [targetQuery], iframeQuery, opt_styleNames);
+};
+
+/**
+ * Queries elements inside shadow DOM.
+ *
+ * @param {!Window} contentWindow Window to be tested.
+ * @param {!Array<string>} targetQuery Query to specify the element.
+ *   |targetQuery[0]| specifies the first element(s). |targetQuery[1]| specifies
+ *   elements inside the shadow DOM of the first element, and so on.
+ * @param {?string} iframeQuery Iframe selector or null if no iframe.
+ * @param {Array<string>=} opt_styleNames List of CSS property name to be
+ *     obtained.
+ * @return {!Array<{attributes:Object<string>, text:string,
+ *                  styles:Object<string>, hidden:boolean}>} Element
+ *     information that contains contentText, attribute names and
+ *     values, hidden attribute, and style names and values.
+ */
+test.util.sync.deepQueryAllElements = function(
+    contentWindow, targetQuery, iframeQuery, opt_styleNames) {
   var doc = test.util.sync.getDocument_(
       contentWindow, iframeQuery || undefined);
   if (!doc)
     return [];
-  // The return value of querySelectorAll is not an array.
-  return Array.prototype.map.call(
-      doc.querySelectorAll(targetQuery),
-      function(element) {
-        return extractElementInfo(element, contentWindow, opt_styleNames);
-      });
+
+  var elems = test.util.sync.deepQuerySelectorAll_(doc, targetQuery);
+  return elems.map(function(element) {
+    return extractElementInfo(element, contentWindow, opt_styleNames);
+  });
 };
 
 /**
- * Get the information of the active element.
+ * Selects elements below |root|, possibly following shadow DOM subtree.
+ *
+ * @param {(!HTMLElement|!Document)} root Element to search from.
+ * @param {!Array<string>} targetQuery Query to specify the element.
+ *   |targetQuery[0]| specifies the first element(s). |targetQuery[1]| specifies
+ *   elements inside the shadow DOM of the first element, and so on.
+ * @return {!Array<!HTMLElement>} Matched elements.
+ *
+ * @private
+ */
+test.util.sync.deepQuerySelectorAll_ = function(root, targetQuery) {
+  var elems = Array.prototype.slice.call(root.querySelectorAll(targetQuery[0]));
+  var remaining = targetQuery.slice(1);
+  if (remaining.length === 0)
+    return elems;
+
+  var res = [];
+  for (var i = 0; i < elems.length; i++) {
+    if (elems[i].shadowRoot) {
+      res = res.concat(
+          test.util.sync.deepQuerySelectorAll_(elems[i].shadowRoot, remaining));
+    }
+  }
+  return res;
+};
+
+/**
+ * Gets the information of the active element.
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
