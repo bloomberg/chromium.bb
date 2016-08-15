@@ -103,7 +103,15 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
   int32_t SetAGC(bool enable) override;
   bool AGC() const override;
   bool BuiltInAECIsAvailable() const override;
+  bool BuiltInAGCIsAvailable() const override;
+  bool BuiltInNSIsAvailable() const override;
   int32_t EnableBuiltInAEC(bool enable) override;
+  int32_t EnableBuiltInAGC(bool enable) override;
+  int32_t EnableBuiltInNS(bool enable) override;
+#if defined(OS_IOS)
+  int GetPlayoutAudioParameters(AudioParameters* params) const override;
+  int GetRecordAudioParameters(AudioParameters* params) const override;
+#endif  // OS_IOS
 
  protected:
   ~WebRtcAudioDeviceNotImpl() override{};
