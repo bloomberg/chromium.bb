@@ -106,12 +106,6 @@ class TouchSelectionControllerTest : public testing::Test,
     return base::WrapUnique(new MockTouchHandleDrawable(&dragging_enabled_));
   }
 
-  void AllowShowingOnTapForEmptyEditable() {
-    TouchSelectionController::Config config = DefaultConfig();
-    config.show_on_tap_for_empty_editable = true;
-    controller_.reset(new TouchSelectionController(this, config));
-  }
-
   void EnableLongPressDragSelection() {
     TouchSelectionController::Config config = DefaultConfig();
     config.enable_longpress_drag_selection = true;
@@ -214,14 +208,12 @@ class TouchSelectionControllerTest : public testing::Test,
 
  private:
   TouchSelectionController::Config DefaultConfig() {
-    // Both |show_on_tap_for_empty_editable| and
-    // |enable_longpress_drag_selection| are set to false by default, and should
+    // |enable_longpress_drag_selection| is set to false by default, and should
     // be overriden for explicit testing.
     TouchSelectionController::Config config;
     config.max_tap_duration =
         base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs);
     config.tap_slop = kDefaulTapSlop;
-    config.show_on_tap_for_empty_editable = false;
     config.enable_longpress_drag_selection = false;
     return config;
   }
@@ -296,13 +288,12 @@ TEST_F(TouchSelectionControllerTest, InsertionClearedWhenNoLongerEditable) {
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_CLEARED));
 }
 
-TEST_F(TouchSelectionControllerTest, InsertionWithNoShowOnTapForEmptyEditable) {
+TEST_F(TouchSelectionControllerTest, InsertionEmptyEditable) {
   gfx::RectF insertion_rect(5, 5, 0, 10);
   bool visible = true;
   controller().OnSelectionEditable(true);
 
-  // Taps on an empty editable region should be ignored if the controller is
-  // created with |show_on_tap_for_empty_editable| set to false.
+  // Taps on an empty editable region should be ignored
   OnTapEvent();
   controller().OnSelectionEmpty(true);
   ChangeInsertion(insertion_rect, visible);
@@ -331,28 +322,6 @@ TEST_F(TouchSelectionControllerTest, InsertionWithNoShowOnTapForEmptyEditable) {
   // Single Tap on an empty edit field should clear insertion handle.
   OnTapEvent();
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_CLEARED));
-}
-
-TEST_F(TouchSelectionControllerTest, InsertionWithShowOnTapForEmptyEditable) {
-  AllowShowingOnTapForEmptyEditable();
-
-  gfx::RectF insertion_rect(5, 5, 0, 10);
-  bool visible = true;
-  controller().OnSelectionEditable(true);
-
-  // Taps on an empty editable region should show the insertion handle if the
-  // controller is created with |show_on_tap_for_empty_editable| set to true.
-  OnTapEvent();
-  controller().OnSelectionEmpty(true);
-  ChangeInsertion(insertion_rect, visible);
-  EXPECT_THAT(GetAndResetEvents(),
-              ElementsAre(SELECTION_ESTABLISHED, INSERTION_HANDLE_SHOWN));
-  EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventStart());
-
-  // Additional taps should not hide the insertion handle in this case.
-  OnTapEvent();
-  ChangeInsertion(insertion_rect, visible);
-  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
 }
 
 TEST_F(TouchSelectionControllerTest, InsertionAppearsAfterTapFollowingTyping) {

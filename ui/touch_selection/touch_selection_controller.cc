@@ -46,8 +46,7 @@ TouchSelectionController::Config::Config()
     : max_tap_duration(base::TimeDelta::FromMilliseconds(300)),
       tap_slop(8),
       enable_adaptive_handle_orientation(false),
-      enable_longpress_drag_selection(false),
-      show_on_tap_for_empty_editable(false) {}
+      enable_longpress_drag_selection(false) {}
 
 TouchSelectionController::Config::~Config() {
 }
@@ -223,7 +222,7 @@ bool TouchSelectionController::WillHandleTapEvent(const gfx::PointF& location,
       activate_selection_automatically_ = false;
   }
   ShowInsertionHandleAutomatically();
-  if (selection_empty_ && !config_.show_on_tap_for_empty_editable)
+  if (selection_empty_)
     DeactivateInsertion();
   ForceNextUpdateIfInactive();
   return false;
@@ -497,7 +496,7 @@ void TouchSelectionController::OnInsertionChanged() {
 
   if ((response_pending_input_event_ == TAP ||
        response_pending_input_event_ == REPEATED_TAP) &&
-      selection_empty_ && !config_.show_on_tap_for_empty_editable) {
+      selection_empty_) {
     HideAndDisallowShowingAutomatically();
     return;
   }

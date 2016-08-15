@@ -259,7 +259,6 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
   config.max_tap_duration = base::TimeDelta::FromMilliseconds(
       gfx::ViewConfiguration::GetLongPressTimeoutInMs());
   config.tap_slop = gfx::ViewConfiguration::GetTouchSlopInDips();
-  config.show_on_tap_for_empty_editable = false;
   config.enable_adaptive_handle_orientation =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAdaptiveSelectionHandleOrientation);
