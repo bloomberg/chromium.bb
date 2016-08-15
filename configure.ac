@@ -39,6 +39,38 @@ AM_INIT_AUTOMAKE([1.11 parallel-tests foreign no-dist-gzip dist-xz color-tests s
 
 AM_SILENT_RULES([yes])
 
+# Check Weston and libweston version consistency
+m4_if(m4_cmp(weston_micro_version, [90]), [-1],
+      [
+	dnl micro < 90
+	dnl A final or stable release, not a pre-release:
+	dnl Weston and libweston versions must match.
+	m4_if(weston_version, libweston_major_version[.]libweston_minor_version[.]libweston_patch_version,
+	      [],
+	      [AC_MSG_ERROR([Weston and libweston version mismatch for a final release])])
+      ],
+      [
+	dnl A pre-release:
+	dnl libweston must be equal or greater than weston.
+	m4_case(m4_list_cmp([weston_major_version, weston_minor_version, weston_micro_version],
+			     [libweston_major_version, libweston_minor_version, libweston_patch_version]),
+		 [-1], [
+			dnl weston < libweston
+			dnl libweston must be weston_major+1.0.0
+			m4_if(m4_eval(weston_major_version+1)[.0.0],
+			      libweston_major_version[.]libweston_minor_version[.]libweston_patch_version,
+			      [],
+			      [AC_MSG_ERROR([libweston version is greater but not (weston_major+1).0.0])])
+		 ],
+		 [0], [
+			dnl weston == libweston, all ok
+		 ],
+		 [1], [
+			dnl weston > libweston, wrong
+			AC_MSG_ERROR([Weston version is greater than libweston.])
+		 ])
+       ])
+
 # Check for programs
 AC_PROG_CC
 AC_PROG_SED
