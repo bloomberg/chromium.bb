@@ -80,10 +80,15 @@ void fd_ringbuffer_reset(struct fd_ringbuffer *ring)
 		ring->funcs->reset(ring);
 }
 
-/* maybe get rid of this and use fd_ringmarker_flush() from DDX too? */
 int fd_ringbuffer_flush(struct fd_ringbuffer *ring)
 {
-	return ring->funcs->flush(ring, ring->last_start);
+	return ring->funcs->flush(ring, ring->last_start, -1, NULL);
+}
+
+int fd_ringbuffer_flush2(struct fd_ringbuffer *ring, int in_fence_fd,
+		int *out_fence_fd)
+{
+	return ring->funcs->flush(ring, ring->last_start, in_fence_fd, out_fence_fd);
 }
 
 void fd_ringbuffer_grow(struct fd_ringbuffer *ring, uint32_t ndwords)
@@ -177,5 +182,5 @@ uint32_t fd_ringmarker_dwords(struct fd_ringmarker *start,
 int fd_ringmarker_flush(struct fd_ringmarker *marker)
 {
 	struct fd_ringbuffer *ring = marker->ring;
-	return ring->funcs->flush(ring, marker->cur);
+	return ring->funcs->flush(ring, marker->cur, -1, NULL);
 }

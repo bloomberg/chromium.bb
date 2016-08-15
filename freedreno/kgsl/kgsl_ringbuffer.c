@@ -113,7 +113,8 @@ static void * kgsl_ringbuffer_hostptr(struct fd_ringbuffer *ring)
 	return kgsl_ring->bo->hostptr;
 }
 
-static int kgsl_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start)
+static int kgsl_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start,
+		int in_fence_fd, int *out_fence_fd)
 {
 	struct kgsl_ringbuffer *kgsl_ring = to_kgsl_ringbuffer(ring);
 	struct kgsl_pipe *kgsl_pipe = to_kgsl_pipe(ring->pipe);
@@ -130,6 +131,9 @@ static int kgsl_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_star
 			.flags       = KGSL_CONTEXT_SUBMIT_IB_LIST,
 	};
 	int ret;
+
+	assert(in_fence_fd == -1);
+	assert(out_fence_fd == NULL);
 
 	kgsl_pipe_pre_submit(kgsl_pipe);
 

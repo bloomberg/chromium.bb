@@ -133,7 +133,8 @@ struct fd_ringmarker {
 
 struct fd_ringbuffer_funcs {
 	void * (*hostptr)(struct fd_ringbuffer *ring);
-	int (*flush)(struct fd_ringbuffer *ring, uint32_t *last_start);
+	int (*flush)(struct fd_ringbuffer *ring, uint32_t *last_start,
+			int in_fence_fd, int *out_fence_fd);
 	void (*grow)(struct fd_ringbuffer *ring, uint32_t size);
 	void (*reset)(struct fd_ringbuffer *ring);
 	void (*emit_reloc)(struct fd_ringbuffer *ring,

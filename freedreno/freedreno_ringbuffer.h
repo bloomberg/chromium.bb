@@ -56,6 +56,11 @@ void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *parent);
 void fd_ringbuffer_reset(struct fd_ringbuffer *ring);
 int fd_ringbuffer_flush(struct fd_ringbuffer *ring);
+/* in_fence_fd: -1 for no in-fence, else fence fd
+ * out_fence_fd: NULL for no output-fence requested, else ptr to return out-fence
+ */
+int fd_ringbuffer_flush2(struct fd_ringbuffer *ring, int in_fence_fd,
+		int *out_fence_fd);
 void fd_ringbuffer_grow(struct fd_ringbuffer *ring, uint32_t ndwords);
 uint32_t fd_ringbuffer_timestamp(struct fd_ringbuffer *ring);
 

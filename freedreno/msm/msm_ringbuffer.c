@@ -395,7 +395,8 @@ static void dump_submit(struct msm_ringbuffer *msm_ring)
 	}
 }
 
-static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start)
+static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start,
+		int in_fence_fd, int *out_fence_fd)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	struct drm_msm_gem_submit req = {
@@ -403,6 +404,15 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 	};
 	uint32_t i;
 	int ret;
+
+	if (in_fence_fd != -1) {
+		req.flags |= MSM_SUBMIT_FENCE_FD_IN | MSM_SUBMIT_NO_IMPLICIT;
+		req.fence_fd = in_fence_fd;
+	}
+
+	if (out_fence_fd) {
+		req.flags |= MSM_SUBMIT_FENCE_FD_OUT;
+	}
 
 	finalize_current_cmd(ring, last_start);
 
@@ -434,6 +444,10 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
 			struct msm_cmd *msm_cmd = msm_ring->cmds[i];
 			msm_cmd->ring->last_timestamp = req.fence;
+		}
+
+		if (out_fence_fd) {
+			*out_fence_fd = req.fence_fd;
 		}
 	}
 
