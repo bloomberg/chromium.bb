@@ -42,7 +42,7 @@ public class DownloadNotificationServiceTest extends
         protected void init() {}
 
         @Override
-        protected void resumeDownload(DownloadItem item, boolean hasUserGesture) {
+        public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
             mDownloads.add(item);
         }
     }

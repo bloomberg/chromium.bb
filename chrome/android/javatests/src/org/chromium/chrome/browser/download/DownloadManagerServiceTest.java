@@ -305,7 +305,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         protected void init() {}
 
         @Override
-        protected void resumeDownload(DownloadItem item, boolean hasUserGesture) {
+        public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
             mResumed = true;
         }
     }

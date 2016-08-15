@@ -58,7 +58,8 @@ import java.util.concurrent.TimeUnit;
 public class DownloadManagerService extends BroadcastReceiver implements
         DownloadController.DownloadNotificationService,
         NetworkChangeNotifierAutoDetect.Observer,
-        DownloadManagerDelegate.DownloadQueryCallback {
+        DownloadManagerDelegate.DownloadQueryCallback,
+        DownloadServiceDelegate {
     // Download status.
     public static final int DOWNLOAD_STATUS_IN_PROGRESS = 0;
     public static final int DOWNLOAD_STATUS_COMPLETE = 1;
@@ -1080,8 +1081,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param item Download item to resume.
      * @param hasUserGesture Whether the resumption is triggered by user gesture.
      */
-    @VisibleForTesting
-    protected void resumeDownload(DownloadItem item, boolean hasUserGesture) {
+    public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
         if (progress != null && progress.mDownloadStatus == DOWNLOAD_STATUS_IN_PROGRESS
                 && !progress.mDownloadItem.getDownloadInfo().isPaused()) {
@@ -1116,7 +1116,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param isOffTheRecord Whether the download is off the record.
      * @param isNotificationDismissed Whether cancel is caused by dismissing the notification.
      */
-    void cancelDownload(String downloadGuid, boolean isOffTheRecord,
+    public void cancelDownload(String downloadGuid, boolean isOffTheRecord,
             boolean isNotificationDismissed) {
         nativeCancelDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord,
                 isNotificationDismissed);
@@ -1128,7 +1128,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param downloadGuid GUID of the download.
      * @param isOffTheRecord Whether the download is off the record.
      */
-    void pauseDownload(String downloadGuid, boolean isOffTheRecord) {
+    public void pauseDownload(String downloadGuid, boolean isOffTheRecord) {
         nativePauseDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
         DownloadProgress progress = mDownloadProgressMap.get(downloadGuid);
         // Calling pause will stop listening to the download item. Update its progress now.

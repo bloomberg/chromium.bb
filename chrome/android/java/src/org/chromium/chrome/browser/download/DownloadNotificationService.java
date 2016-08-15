@@ -79,7 +79,7 @@ public class DownloadNotificationService extends Service {
     private int mNextNotificationId;
     private int mNumAutoResumptionAttemptLeft;
 
-    /**
+   /**
      * Class for clients to access.
      */
     public class LocalBinder extends Binder {
@@ -465,26 +465,26 @@ public class DownloadNotificationService extends Service {
 
             @Override
             public void finishNativeInitialization() {
-                DownloadManagerService service =
-                        DownloadManagerService.getDownloadManagerService(getApplicationContext());
+                DownloadServiceDelegate downloadServiceDelegate = getDelegateForEntry(entry);
                 switch (intent.getAction()) {
                     case ACTION_DOWNLOAD_CANCEL:
                         // TODO(qinmin): Alternatively, we can delete the downloaded content on
                         // SD card, and remove the download ID from the SharedPreferences so we
                         // don't need to restart the browser process. http://crbug.com/579643.
                         cancelNotification(entry.notificationId, entry.downloadGuid);
-                        service.cancelDownload(entry.downloadGuid, entry.isOffTheRecord,
-                                IntentUtils.safeGetBooleanExtra(
+                        downloadServiceDelegate.cancelDownload(entry.downloadGuid,
+                                entry.isOffTheRecord, IntentUtils.safeGetBooleanExtra(
                                         intent, EXTRA_NOTIFICATION_DISMISSED, false));
                         break;
                     case ACTION_DOWNLOAD_PAUSE:
-                        service.pauseDownload(entry.downloadGuid, entry.isOffTheRecord);
+                        downloadServiceDelegate.pauseDownload(entry.downloadGuid,
+                                entry.isOffTheRecord);
                         break;
                     case ACTION_DOWNLOAD_RESUME:
                         notifyDownloadProgress(entry.downloadGuid, entry.fileName,
                                 INVALID_DOWNLOAD_PERCENTAGE, 0, 0, entry.isOffTheRecord,
                                 entry.canDownloadWhileMetered);
-                        service.resumeDownload(entry.buildDownloadItem(), true);
+                        downloadServiceDelegate.resumeDownload(entry.buildDownloadItem(), true);
                         break;
                     case ACTION_DOWNLOAD_RESUME_ALL:
                         assert entry == null;
@@ -503,6 +503,17 @@ public class DownloadNotificationService extends Service {
             Log.e(TAG, "Unable to load native library.", e);
             ChromeApplication.reportStartupErrorAndExit(e);
         }
+    }
+
+    /**
+     * Gets appropriate download delegate that can handle interactions with download item referred
+     * to by the entry.
+     * @param entry download entry for which the delegate is provided
+     * @return delegate for interactions with the entry
+     */
+    DownloadServiceDelegate getDelegateForEntry(DownloadSharedPreferenceEntry entry) {
+        // TODO(fgorski): handle cases where entry is an offline page once implemented.
+        return DownloadManagerService.getDownloadManagerService(getApplicationContext());
     }
 
     /**
@@ -591,15 +602,13 @@ public class DownloadNotificationService extends Service {
     public void resumeAllPendingDownloads() {
         boolean isNetworkMetered = DownloadManagerService.isActiveNetworkMetered(mContext);
         if (!DownloadManagerService.hasDownloadManagerService()) return;
-        DownloadManagerService service =
-                DownloadManagerService.getDownloadManagerService(getApplicationContext());
         for (int i = 0; i < mDownloadSharedPreferenceEntries.size(); ++i) {
             DownloadSharedPreferenceEntry entry = mDownloadSharedPreferenceEntries.get(i);
             if (mDownloadsInProgress.contains(entry.downloadGuid)) continue;
             if (!entry.canDownloadWhileMetered && isNetworkMetered) continue;
             notifyDownloadProgress(entry.downloadGuid, entry.fileName,
                     INVALID_DOWNLOAD_PERCENTAGE, 0, 0, false, entry.canDownloadWhileMetered);
-            service.resumeDownload(entry.buildDownloadItem(), false);
+            getDelegateForEntry(entry).resumeDownload(entry.buildDownloadItem(), false);
         }
     }
 

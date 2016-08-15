@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.offlinepages.downloads;
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.download.DownloadItem;
+import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -21,7 +23,7 @@ import java.util.List;
  * displayed in the downloads UI.
  */
 @JNINamespace("offline_pages::android")
-public class OfflinePageDownloadBridge {
+public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
     /**
      * Base observer class for notifications on changes to the offline page related download items.
      */
@@ -56,6 +58,13 @@ public class OfflinePageDownloadBridge {
     private final ObserverList<Observer> mObservers = new ObserverList<Observer>();
     private long mNativeOfflinePageDownloadBridge;
     private boolean mIsLoaded;
+
+    /**
+     * Gets DownloadServiceDelegate that is suitable for interacting with offline download items.
+     */
+    public static DownloadServiceDelegate getDownloadServiceDelegate() {
+        return new OfflinePageDownloadBridge(Profile.getLastUsedProfile());
+    }
 
     public OfflinePageDownloadBridge(Profile profile) {
         mNativeOfflinePageDownloadBridge = sIsTesting ? 0L : nativeInit(profile);
@@ -104,6 +113,19 @@ public class OfflinePageDownloadBridge {
      */
     public OfflinePageDownloadItem getItem(String guid) {
         return nativeGetItemByGuid(mNativeOfflinePageDownloadBridge, guid);
+    }
+
+    @Override
+    public void cancelDownload(String downloadGuid, boolean isOffTheRecord,
+            boolean isNotificationDismissed) {
+    }
+
+    @Override
+    public void pauseDownload(String downloadGuid, boolean isOffTheRecord) {
+    }
+
+    @Override
+    public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
     }
 
     /**
