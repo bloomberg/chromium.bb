@@ -133,7 +133,7 @@ weston_ham_sandwich(void);
 In order to use the said symbol, the one will have a similar code in their
 configure.ac:
 
-PKG_CHECK_MODULES(LIBWAYLAND, [libwayland-1 >= 1.1])
+PKG_CHECK_MODULES(LIBWESTON, [libweston-1 >= 1.1])
 AC_DEFINE(REQUIRE_LIBWESTON_API_VERSION, [0x0101])
 
 If the user is _not_ interested in forward compatibility, they can use 0xffff
