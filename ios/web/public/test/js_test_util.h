@@ -13,6 +13,12 @@
 
 namespace web {
 
+// These functions synchronously execute JavaScript and return result as id.
+// id will be backed up by different classes depending on resulting JS type:
+// NSString (string), NSNumber (number or boolean), NSDictionary (object),
+// NSArray (array), NSNull (null), NSDate (Date), nil (undefined or execution
+// exception).
+
 // Executes JavaScript on the |manager| and returns the result as an id.
 id ExecuteJavaScript(CRWJSInjectionManager* manager, NSString* script);
 

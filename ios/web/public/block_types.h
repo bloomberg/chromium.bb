@@ -15,7 +15,10 @@ namespace web {
 typedef void (^JavaScriptCompletion)(NSString*, NSError*);
 
 // The type of the completion handler block that is called to inform about
-// JavaScript evaluation completion.
+// JavaScript execution completion. id will be backed up by different classes
+// depending on resulting JS type: NSString (string), NSNumber (number or
+// boolean), NSDictionary (object), NSArray (array), NSNull (null),
+// NSDate (Date), nil (undefined).
 typedef void (^JavaScriptResultBlock)(id, NSError*);
 
 }  // namespace
