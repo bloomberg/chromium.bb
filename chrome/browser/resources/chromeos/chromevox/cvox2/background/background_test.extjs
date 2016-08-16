@@ -446,7 +446,7 @@ TEST_F('BackgroundTest', 'ToggleChromeVoxVersion', function() {
                                          true);
 
     mockFeedback.call(togglerFromBackground)
-        .expectSpeech('Switched to Classic ChromeVox')   
+        .expectSpeech('Switched to Classic ChromeVox')
         .call(togglerFromContent)
         .expectSpeech('Switched to ChromeVox Next')
         .call(togglerFromBackground)
@@ -465,6 +465,7 @@ SYNC_TEST_F('BackgroundTest', 'GlobsToRegExp', function() {
       Background.globsToRegExp_(['url1*', 'u?l2', '*url3']).toString());
 });
 
+// Flaky, see http://crbug.com/635032
 TEST_F('BackgroundTest', 'ActiveOrInactive', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
@@ -685,7 +686,7 @@ TEST_F('BackgroundTest', 'ForwardNavigationThroughIframeButtons', function() {
 
       desktopNode.addEventListener('loadComplete', function(evt) {
         runTestIfIframeIsLoaded(rootNode);
-      }, true);      
+      }, true);
     });
   });
 });
@@ -731,7 +732,7 @@ TEST_F('BackgroundTest', 'ForwardObjectNavigationThroughIframes', function() {
 
       desktopNode.addEventListener('loadComplete', function(evt) {
         runTestIfIframeIsLoaded(rootNode);
-      }, true);      
+      }, true);
     });
   });
 });
