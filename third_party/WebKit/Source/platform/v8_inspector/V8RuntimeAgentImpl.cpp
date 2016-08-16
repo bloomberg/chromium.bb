@@ -229,7 +229,7 @@ void V8RuntimeAgentImpl::evaluate(
     const String16& expression,
     const Maybe<String16>& objectGroup,
     const Maybe<bool>& includeCommandLineAPI,
-    const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+    const Maybe<bool>& silent,
     const Maybe<int>& executionContextId,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
@@ -250,7 +250,7 @@ void V8RuntimeAgentImpl::evaluate(
         return;
     }
 
-    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
+    if (silent.fromMaybe(false))
         scope.ignoreExceptionsAndMuteConsole();
     if (userGesture.fromMaybe(false))
         scope.pretendUserGesture();
@@ -325,7 +325,7 @@ void V8RuntimeAgentImpl::callFunctionOn(
     const String16& objectId,
     const String16& expression,
     const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& optionalArguments,
-    const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+    const Maybe<bool>& silent,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
     const Maybe<bool>& userGesture,
@@ -355,7 +355,7 @@ void V8RuntimeAgentImpl::callFunctionOn(
         }
     }
 
-    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
+    if (silent.fromMaybe(false))
         scope.ignoreExceptionsAndMuteConsole();
     if (userGesture.fromMaybe(false))
         scope.pretendUserGesture();
@@ -465,9 +465,9 @@ void V8RuntimeAgentImpl::releaseObjectGroup(ErrorString*, const String16& object
     m_session->releaseObjectGroup(objectGroup);
 }
 
-void V8RuntimeAgentImpl::run(ErrorString* errorString)
+void V8RuntimeAgentImpl::runIfWaitingForDebugger(ErrorString* errorString)
 {
-    m_inspector->client()->resumeStartup(m_session->contextGroupId());
+    m_inspector->client()->runIfWaitingForDebugger(m_session->contextGroupId());
 }
 
 void V8RuntimeAgentImpl::setCustomObjectFormatterEnabled(ErrorString*, bool enabled)
@@ -528,7 +528,7 @@ void V8RuntimeAgentImpl::runScript(
     const String16& scriptId,
     const Maybe<int>& executionContextId,
     const Maybe<String16>& objectGroup,
-    const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
+    const Maybe<bool>& silent,
     const Maybe<bool>& includeCommandLineAPI,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
@@ -559,7 +559,7 @@ void V8RuntimeAgentImpl::runScript(
         return;
     }
 
-    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
+    if (silent.fromMaybe(false))
         scope.ignoreExceptionsAndMuteConsole();
 
     std::unique_ptr<v8::Global<v8::Script>> scriptWrapper = std::move(it->second);

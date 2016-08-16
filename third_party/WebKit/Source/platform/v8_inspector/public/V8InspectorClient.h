@@ -21,7 +21,7 @@ public:
 
     virtual void runMessageLoopOnPause(int contextGroupId) { }
     virtual void quitMessageLoopOnPause() { }
-    virtual void resumeStartup(int contextGroupId) { }
+    virtual void runIfWaitingForDebugger(int contextGroupId) { }
 
     virtual void muteMetrics(int contextGroupId) { }
     virtual void unmuteMetrics(int contextGroupId) { }

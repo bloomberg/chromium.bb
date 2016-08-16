@@ -47,7 +47,7 @@ function test()
         workerId = messageObject["params"]["workerId"];
         InspectorTest.log("Worker created");
         sendCommandToWorker("Debugger.enable", {});
-        sendCommandToWorker("Runtime.run", {});
+        sendCommandToWorker("Runtime.runIfWaitingForDebugger", {});
     }
 
     var pauseCount = 0;

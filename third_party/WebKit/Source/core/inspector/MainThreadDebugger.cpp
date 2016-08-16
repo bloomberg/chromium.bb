@@ -280,11 +280,11 @@ bool MainThreadDebugger::canExecuteScripts(int contextGroupId)
     return frame->script().canExecuteScripts(NotAboutToExecuteScript);
 }
 
-void MainThreadDebugger::resumeStartup(int contextGroupId)
+void MainThreadDebugger::runIfWaitingForDebugger(int contextGroupId)
 {
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
     if (m_clientMessageLoop)
-        m_clientMessageLoop->resumeStartup(frame);
+        m_clientMessageLoop->runIfWaitingForDebugger(frame);
 }
 
 void MainThreadDebugger::consoleAPIMessage(int contextGroupId, v8_inspector::V8ConsoleAPIType type, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, v8_inspector::V8StackTrace* stackTrace)

@@ -189,7 +189,7 @@
                     { "name": "expression", "type": "string", "description": "Expression to evaluate." },
                     { "name": "objectGroup", "type": "string", "optional": true, "description": "Symbolic group name that can be used to release multiple objects." },
                     { "name": "includeCommandLineAPI", "type": "boolean", "optional": true, "description": "Determines whether Command Line API should be available during the evaluation.", "experimental": true },
-                    { "name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true, "description": "Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state.", "experimental": true },
+                    { "name": "silent", "type": "boolean", "optional": true, "description": "In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.", "experimental": true },
                     { "name": "contextId", "$ref": "ExecutionContextId", "optional": true, "description": "Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page." },
                     { "name": "returnByValue", "type": "boolean", "optional": true, "description": "Whether the result is expected to be a JSON object that should be sent by value." },
                     { "name": "generatePreview", "type": "boolean", "optional": true, "experimental": true, "description": "Whether preview should be generated for the result." },
@@ -224,7 +224,7 @@
                     { "name": "objectId", "$ref": "RemoteObjectId", "description": "Identifier of the object to call function on." },
                     { "name": "functionDeclaration", "type": "string", "description": "Declaration of the function to call." },
                     { "name": "arguments", "type": "array", "items": { "$ref": "CallArgument", "description": "Call argument." }, "optional": true, "description": "Call arguments. All call arguments must belong to the same JavaScript world as the target object." },
-                    { "name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true, "description": "Specifies whether function call should stop on exceptions and mute console. Overrides setPauseOnException state.", "experimental": true },
+                    { "name": "silent", "type": "boolean", "optional": true, "description": "In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.", "experimental": true },
                     { "name": "returnByValue", "type": "boolean", "optional": true, "description": "Whether the result is expected to be a JSON object which should be sent by value." },
                     { "name": "generatePreview", "type": "boolean", "optional": true, "experimental": true, "description": "Whether preview should be generated for the result." },
                     { "name": "userGesture", "type": "boolean", "optional": true, "experimental": true, "description": "Whether execution should be treated as initiated by user in the UI." },
@@ -266,9 +266,9 @@
                 "description": "Releases all remote objects that belong to a given group."
             },
             {
-                "name": "run",
+                "name": "runIfWaitingForDebugger",
                 "experimental": true,
-                "description": "Tells inspected instance(worker or page) that it can run in case it was started paused."
+                "description": "Tells inspected instance to run if it was waiting for debugger to attach."
             },
             {
                 "name": "enable",
@@ -317,7 +317,7 @@
                     { "name": "scriptId", "$ref": "ScriptId", "description": "Id of the script to run." },
                     { "name": "executionContextId", "$ref": "ExecutionContextId", "optional": true, "description": "Specifies in which execution context to perform script run. If the parameter is omitted the evaluation will be performed in the context of the inspected page." },
                     { "name": "objectGroup", "type": "string", "optional": true, "description": "Symbolic group name that can be used to release multiple objects." },
-                    { "name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true, "description": "Specifies whether script run should stop on exceptions and mute console. Overrides setPauseOnException state." },
+                    { "name": "silent", "type": "boolean", "optional": true, "description": "In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.", "experimental": true },
                     { "name": "includeCommandLineAPI", "type": "boolean", "optional": true, "description": "Determines whether Command Line API should be available during the evaluation." },
                     { "name": "returnByValue", "type": "boolean", "optional": true, "description": "Whether the result is expected to be a JSON object which should be sent by value." },
                     { "name": "generatePreview", "type": "boolean", "optional": true, "description": "Whether preview should be generated for the result." },
@@ -384,6 +384,7 @@
             },
             {
                 "name": "inspectRequested",
+                "description": "Issued when object should be inspected (for example, as a result of inspect() command line API call).",
                 "parameters": [
                     { "name": "object", "$ref": "RemoteObject" },
                     { "name": "hints", "type": "object" }
@@ -485,7 +486,7 @@
                 "name": "setSkipAllPauses",
                 "experimental": true,
                 "parameters": [
-                    { "name": "skipped", "type": "boolean", "description": "New value for skip pauses state." }
+                    { "name": "skip", "type": "boolean", "description": "New value for skip pauses state." }
                 ],
                 "description": "Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc)."
             },
@@ -568,7 +569,7 @@
                 "parameters": [
                     { "name": "scriptId", "$ref": "Runtime.ScriptId", "description": "Id of the script to edit." },
                     { "name": "scriptSource", "type": "string", "description": "New content of the script." },
-                    { "name": "preview", "type": "boolean", "optional": true, "description": " If true the change will not actually be applied. Preview mode may be used to get result description without actually modifying the code.", "experimental": true }
+                    { "name": "dryRun", "type": "boolean", "optional": true, "description": " If true the change will not actually be applied. Dry run may be used to get result description without actually modifying the code.", "experimental": true }
                 ],
                 "returns": [
                     { "name": "callFrames", "type": "array", "optional": true, "items": { "$ref": "CallFrame" }, "description": "New stack trace in case editing has happened while VM was stopped." },
@@ -614,7 +615,7 @@
                     { "name": "expression", "type": "string", "description": "Expression to evaluate." },
                     { "name": "objectGroup", "type": "string", "optional": true, "description": "String object group name to put result into (allows rapid releasing resulting object handles using <code>releaseObjectGroup</code>)." },
                     { "name": "includeCommandLineAPI", "type": "boolean", "optional": true, "description": "Specifies whether command line API should be available to the evaluated expression, defaults to false.", "experimental": true },
-                    { "name": "doNotPauseOnExceptionsAndMuteConsole", "type": "boolean", "optional": true, "description": "Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state.", "experimental": true },
+                    { "name": "silent", "type": "boolean", "optional": true, "description": "In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides <code>setPauseOnException</code> state.", "experimental": true },
                     { "name": "returnByValue", "type": "boolean", "optional": true, "description": "Whether the result is expected to be a JSON object that should be sent by value." },
                     { "name": "generatePreview", "type": "boolean", "optional": true, "experimental": true, "description": "Whether preview should be generated for the result." }
                 ],
@@ -763,20 +764,6 @@
                     { "name": "message", "$ref": "ConsoleMessage", "description": "Console message that has been added." }
                 ],
                 "description": "Issued when new console message is added."
-            },
-            {
-                "name": "messageRepeatCountUpdated",
-                "parameters": [
-                    { "name": "count", "type": "integer", "description": "New repeat count value." },
-                    { "name": "timestamp", "$ref": "Runtime.Timestamp", "description": "Timestamp of most recent message in batch.", "experimental": true }
-                ],
-                "description": "Not issued.",
-                "deprecated": true
-            },
-            {
-                "name": "messagesCleared",
-                "description": "Not issued.",
-                "deprecated": true
             }
         ]
     },

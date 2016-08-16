@@ -159,7 +159,7 @@ bool WorkerThreadDebugger::canExecuteScripts(int contextGroupId)
     return true;
 }
 
-void WorkerThreadDebugger::resumeStartup(int contextGroupId)
+void WorkerThreadDebugger::runIfWaitingForDebugger(int contextGroupId)
 {
     DCHECK(contextGroupId == workerContextGroupId);
     m_workerThread->stopRunningDebuggerTasksOnPauseOnWorkerThread();
