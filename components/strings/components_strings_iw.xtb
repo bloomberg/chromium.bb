@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">גרסה קודמת</translation>
 <translation id="3681007416295224113">פרטי אישור</translation>
 <translation id="3693415264595406141">סיסמה:</translation>
+<translation id="3696411085566228381">ללא</translation>
 <translation id="3700528541715530410">מצטערים, נראה שאין לך הרשאה לגשת לדף זה.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">טוען...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">תוקף הכרטיס פג</translation>
 <translation id="3934680773876859118">‏הטעינה של מסמך PDF נכשלה</translation>
 <translation id="3963721102035795474">מצב קורא</translation>
+<translation id="397105322502079400">מחשב...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> חסום</translation>
 <translation id="4021036232240155012">‏DNS הוא שירות הרשת שמתרגם שם של אתר לכתובת האינטרנט שלו.</translation>
 <translation id="4030383055268325496">&amp;ביטול הוספה</translation>
@@ -349,6 +351,7 @@ Del</translation>
 <translation id="4816492930507672669">התאמה לדף</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4880827082731008257">חפש בהיסטוריה</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">יש לציין ערך זה.</translation>
 <translation id="4930497775425430760">אתה רואה את ההודעה הזו מפני שההורה שלך צריך לאשר אתרים חדשים בביקור הראשון שלך.</translation>
@@ -423,6 +426,7 @@ Del</translation>
 <translation id="5803412860119678065">האם ברצונך למלא את פרטי הכרטיס <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">החיבור שלך אל <ph name="DOMAIN" /> מוצפן באמצעות חבילת צופן מיושנת.</translation>
 <translation id="5813119285467412249">&amp;ביצוע מחדש של הוספה</translation>
+<translation id="5814352347845180253">אתה עשוי לאבד גישה אל תוכן פרמיום מ-<ph name="SITE" /> ומאתרים אחרים.</translation>
 <translation id="5855235287355719921">אתה רואה את ההודעה הזו מפני שהמנהל שלך חסם את האתר הזה.</translation>
 <translation id="5857090052475505287">תיקייה חדשה</translation>
 <translation id="5869405914158311789">לא ניתן לגשת לאתר הזה</translation>
@@ -430,6 +434,7 @@ Del</translation>
 <translation id="5872918882028971132">הצעות להורים</translation>
 <translation id="59107663811261420">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments אצל הסוחר הזה. בחר כרטיס אחר.</translation>
 <translation id="59174027418879706">מופעל</translation>
+<translation id="5926846154125914413">אתה עשוי לאבד גישה אל תוכן פרמיום מאתרים מסוימים.</translation>
 <translation id="5966707198760109579">שבוע</translation>
 <translation id="5967867314010545767">הסר מההיסטוריה</translation>
 <translation id="5975083100439434680">התרחק</translation>
@@ -458,6 +463,7 @@ Del</translation>
 <translation id="6328639280570009161">נסה להשבית את חיזוי הרשת</translation>
 <translation id="6337534724793800597">סנן מדיניות לפי שם</translation>
 <translation id="6342069812937806050">זה עתה</translation>
+<translation id="6345221851280129312">גודל לא ידוע</translation>
 <translation id="6355080345576803305">שינוי הפעלה ציבורית</translation>
 <translation id="6358450015545214790">מה זה אומר?</translation>
 <translation id="6387478394221739770">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את ערוץ הביטא שלנו בכתובת chrome.com/beta.</translation>
@@ -471,6 +477,7 @@ Del</translation>
 <translation id="6489534406876378309">התחל להעלות קריסות</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
+<translation id="6593753688552673085">פחות מ-<ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">אפשרויות הצפנה</translation>
 <translation id="662080504995468778">הישאר</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> חיפוש</translation>
@@ -599,7 +606,9 @@ Del</translation>
 <translation id="8034522405403831421">דף זה מוצג ב<ph name="SOURCE_LANGUAGE" />. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">לא נמצאו רשומות היסטוריה.</translation>
 <translation id="8088680233425245692">הצגת הפריט נכשלה.</translation>
+<translation id="8089520772729574115">‏פחות מ-‎1 MB</translation>
 <translation id="8091372947890762290">ההפעלה ממתינה בשרת</translation>
+<translation id="8129262335948759431">סכום לא ידוע</translation>
 <translation id="8131740175452115882">אישור</translation>
 <translation id="8134994873729925007">‏לא ניתן היה למצוא את <ph name="BEGIN_ABBR" />כתובת ה-DNS<ph name="END_ABBR" /> של השרת של <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">המחשב עבר למצב שינה.</translation>
@@ -608,6 +617,7 @@ Del</translation>
 <translation id="8201077131113104583">כתובת אתר לא חוקית לעדכון עבור תוסף עם המזהה "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8218327578424803826">מיקום מוקצה:</translation>
 <translation id="8225771182978767009">האדם שהגדיר את המחשב הזה בחר לחסום את האתר הזה.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">הדף שאתה מחפש השתמש במידע שהזנת. החזרה לדף זה עלולה לגרום לכפילות בפעולות שביצעת. האם ברצונך להמשיך?</translation>
 <translation id="8249320324621329438">אוחזר לאחרונה:</translation>
 <translation id="8261506727792406068">מחק</translation>
@@ -623,6 +633,7 @@ Del</translation>
 <translation id="8412145213513410671">קריסות (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">עליך להזין את אותו משפט-סיסמה פעמיים.</translation>
 <translation id="8428213095426709021">הגדרות</translation>
+<translation id="8433057134996913067">פעולה זו תוציא אותך מהחשבון ברוב האתרים.</translation>
 <translation id="8437238597147034694">&amp;ביטול העברה</translation>
 <translation id="8488350697529856933">חל על</translation>
 <translation id="8498891568109133222">ל-<ph name="HOST_NAME" /> נדרש זמן רב מדי להגיב.</translation>

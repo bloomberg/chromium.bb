@@ -509,7 +509,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7074853159844403180"><ph name="SITE" /> wants to pair with:</translation>
 <translation id="7081639897063626814">Keep existing data separate</translation>
 <translation id="7094922512924405309">No nearby Physical Web pages found</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> open tabs</translation>
 <translation id="7115197232530297436">Unsupported delivery address. Select a different address.</translation>
 <translation id="7138678301420049075">Other</translation>
 <translation id="7180611975245234373">Refresh</translation>
@@ -612,6 +611,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8433057134996913067">This will sign you out of most websites.</translation>
 <translation id="8447861592752582886">Revoke device permission</translation>
 <translation id="8481940801237642152">Your connection to this site is private, but someone on the network might be able to change the look of the page.</translation>
+<translation id="8487700953926739672">Available offline</translation>
 <translation id="8493948351860045254">Free up space</translation>
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
 <translation id="8503813439785031346">Username</translation>

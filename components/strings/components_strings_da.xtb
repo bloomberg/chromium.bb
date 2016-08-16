@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">Revision</translation>
 <translation id="3681007416295224113">Certifikatoplysninger</translation>
 <translation id="3693415264595406141">Adgangskode:</translation>
+<translation id="3696411085566228381">ingen</translation>
 <translation id="3700528541715530410">Ups, det ser ud til, at du ikke har tilladelse til at se denne side.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Indlæser...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">Kortet er udløbet</translation>
 <translation id="3934680773876859118">PDF-dokumentet kunne ikke indlæses</translation>
 <translation id="3963721102035795474">Læser-tilstand</translation>
+<translation id="397105322502079400">Beregner...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokeret</translation>
 <translation id="4021036232240155012">DNS er den netværkstjeneste, der oversætter navnet på et website til dets internetadresse.</translation>
 <translation id="4030383055268325496">&amp;Fortryd tilføjelse</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">Tilpas til siden</translation>
 <translation id="4850886885716139402">Vis</translation>
 <translation id="4880827082731008257">Søg i historikken</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Denne side er oversat fra et ukendt sprog til <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Skal angives.</translation>
 <translation id="4930497775425430760">Denne meddelelse vises, fordi en af dine forældre skal godkende nye websites, første gang du besøger dem.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">Skal <ph name="CARD_DETAIL" /> udfyldes?</translation>
 <translation id="5810442152076338065">Din forbindelse til <ph name="DOMAIN" /> er krypteret ved hjælp af en forældet krypteringspakke.</translation>
 <translation id="5813119285467412249">&amp;Annuller fortryd tilføjelse</translation>
+<translation id="5814352347845180253">Du kan miste adgangen til Premium-indhold på <ph name="SITE" /> og visse andre websites.</translation>
 <translation id="5855235287355719921">Denne meddelelse vises, fordi din administrator har blokeret dette website.</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
 <translation id="5869405914158311789">Der kan ikke oprettes forbindelse til dette website</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">Forslag fra forældre</translation>
 <translation id="59107663811261420">Denne korttype understøttes ikke af Google Payments for denne sælger. Vælg et andet kort.</translation>
 <translation id="59174027418879706">Aktiveret</translation>
+<translation id="5926846154125914413">Du kan miste adgangen til Premium-indhold på visse websites.</translation>
 <translation id="5966707198760109579">Uge</translation>
 <translation id="5967867314010545767">Fjern fra historik</translation>
 <translation id="5975083100439434680">Zoom ud</translation>
@@ -453,6 +458,7 @@
 <translation id="6328639280570009161">Prøv at deaktivere netværksforslag</translation>
 <translation id="6337534724793800597">Filtrer politikker efter navn</translation>
 <translation id="6342069812937806050">Lige nu</translation>
+<translation id="6345221851280129312">ukendt størrelse</translation>
 <translation id="6355080345576803305">Tilsidesættelse af offentlig session</translation>
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
 <translation id="6387478394221739770">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores betakanal på chrome.com/beta.</translation>
@@ -466,6 +472,7 @@
 <translation id="6489534406876378309">Start upload af nedbrud</translation>
 <translation id="6529602333819889595">&amp;Annuller fortryd slet</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
+<translation id="6593753688552673085">mindre end <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Krypteringsmuligheder</translation>
 <translation id="662080504995468778">Bliv her</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> -søgning</translation>
@@ -594,7 +601,9 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8034522405403831421">Denne side er på <ph name="SOURCE_LANGUAGE" />. Vil du oversætte den til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Der blev ikke fundet nogen poster i historikken.</translation>
 <translation id="8088680233425245692">Artiklen kunne ikke vises.</translation>
+<translation id="8089520772729574115">mindre end 1 MB</translation>
 <translation id="8091372947890762290">Aktivering afventer serveren</translation>
+<translation id="8129262335948759431">ukendt mængde</translation>
 <translation id="8131740175452115882">Bekræft</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />DNS-adressen<ph name="END_ABBR" /> for <ph name="HOST_NAME" />'s server kunne ikke findes.</translation>
 <translation id="8149426793427495338">Din computer gik i dvale.</translation>
@@ -603,6 +612,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8201077131113104583">Ugyldig webadresse til opdatering for udvidelse med id'et "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8218327578424803826">Tildelt placering:</translation>
 <translation id="8225771182978767009">Den person, der har konfigureret denne computer, har valgt at blokere dette website.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Siden, du søger, benyttede oplysninger, du har indtastet. Vender du tilbage til denne side kan det betyde, at enhver handling, du har foretaget, skal gentages. Vil du fortsætte?</translation>
 <translation id="8249320324621329438">Sidste hentet:</translation>
 <translation id="8261506727792406068">Slet</translation>
@@ -618,6 +628,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8412145213513410671">Nedbrud (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Du skal angive den samme adgangssætning to gange.</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
+<translation id="8433057134996913067">Dette logger dig ud af de fleste websites.</translation>
 <translation id="8437238597147034694">&amp;Fortryd flytning</translation>
 <translation id="8488350697529856933">Gælder for</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> var for lang tid om at svare.</translation>

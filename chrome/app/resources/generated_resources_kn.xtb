@@ -626,7 +626,6 @@
 <translation id="18139523105317219">EDI ಪಾರ್ಟಿ ಹೆಸರು</translation>
 <translation id="1815083418640426271">ಸಾದಾ ಪಠ್ಯದಂತೆ ಅಂಟಿಸಿ</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />ಎಚ್ಚರಿಕೆ:<ph name="END_BOLD" />  ಡಿಸ್ಕ್ ಸ್ಥಳವನ್ನು ಮುಕ್ತಗೊಳಿಸಲು ಈ ಫೈಲ್‌ಗಳು ತಾತ್ಕಾಲಿಕವಾಗಿರುತ್ತವೆ ಹಾಗೂ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಅಳಿಸಲಾಗಬಹುದಾಗಿದೆ.  <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
-<translation id="1817598832273952216">{COUNT,plural, =1{1 ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್}one{# ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು}other{# ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು}}</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
 <translation id="1818196664359151069">ರೆಸಲ್ಯೂಶನ್:</translation>
 <translation id="1825832322945165090">ಸಾಧನದಲ್ಲಿ ಸಾಕಷ್ಟು ಸ್ಥಳಾವಕಾಶವಿಲ್ಲ</translation>
@@ -1531,7 +1530,6 @@
 <translation id="3021678814754966447">ಫ್ರೇಮ್ ಮೂಲವನ್ನು &amp;ವೀಕ್ಷಿಸಿ</translation>
 <translation id="3024374909719388945">24-ಗಂಟೆಯ ಕ್ಲಾಕ್ ಬಳಸಿ</translation>
 <translation id="3025022340603654002">ಫಾರ್ಮ್ ಅಂಶಗಳ ಮೇಲೆ ಪ್ರಾರಂಭಿಕ ಮೌಸ್ ಕ್ಲಿಕ್ ಕುರಿತು ಸ್ವಯಂತುಂಬುವಿಕೆ ಸಲಹೆಗಳನ್ನ ಮಾಡಿ.</translation>
-<translation id="3025659459015040795">{COUNT,plural, =1{1 ಸಲಹೆ}one{# ಸಲಹೆಗಳು}other{# ಸಲಹೆಗಳು}}</translation>
 <translation id="3025729795978504041">ಇತರ ವ್ಯಕ್ತಿಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಮೇಲಿರುವ ಬಟನ್ ಮೇಲೆ ರೈಟ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="3026050830483105579">ಅದೆಲ್ಲವೂ ಇಲ್ಲಿದೆ.</translation>
 <translation id="302620147503052030"> ಬಟನ್ ಅನ್ನು ತೋರಿಸು</translation>
@@ -1845,7 +1843,6 @@
 <translation id="3423858849633684918">ದಯವಿಟ್ಟು <ph name="PRODUCT_NAME" /> ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="3425233587047449821">ಹೊಸ ಕೊರಿಯನ್ IME</translation>
 <translation id="3426704822745136852">ರಾಸ್ಟರ್ ಥ್ರೆಡ್‌ಗಳ ಸಂಖ್ಯೆಯನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿ.</translation>
-<translation id="3429274334716393946">{COUNT,plural, =0{ಸಿಂಕ್ ಮಾಡಿದ ಸಾಧನಗಳಲ್ಲಿ ಕನಿಷ್ಟ 1 ಐಟಂ}=1{1 ಐಟಂ (ಮತ್ತು ಸಿಂಕ್ ಮಾಡಿದ ಸಾಧನಗಳಲ್ಲಿ ಇನ್ನಷ್ಟು)}one{# ಐಟಂಗಳು (ಮತ್ತು ಸಿಂಕ್ ಮಾಡಿದ ಸಾಧನಗಳಲ್ಲಿ ಇನ್ನಷ್ಟು)}other{# ಐಟಂಗಳು (ಮತ್ತು ಸಿಂಕ್ ಮಾಡಿದ ಸಾಧನಗಳಲ್ಲಿ ಇನ್ನಷ್ಟು)}}</translation>
 <translation id="3429599832623003132">$1 ಐಟಂಗಳು</translation>
 <translation id="3432757130254800023">ಸ್ಥಳೀಯ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ ಪ್ರದರ್ಶನಗಳಿಗೆ ಆಡಿಯೊ ಮತ್ತು ವೀಡಿಯೊ ಕಳುಹಿಸಿ</translation>
 <translation id="3433621910545056227">ಓಹ್! ಸಾಧನ ಸ್ಥಾಪನೆ-ಸಮಯದ ಲಕ್ಷಣಗಳ ಲಾಕ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲು ಸಿಸ್ಟಮ್ ವಿಫಲವಾಗಿದೆ.</translation>
@@ -2063,7 +2060,6 @@
 <translation id="3694027410380121301">ಹಿಂದಿನ ಟ್ಯಾಬ್ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="3694678678240097321">ಒಂದು ವೇಳೆ ಎಲ್ಲಾ url ಗಳಲ್ಲಿ ರನ್ ಮಾಡಲು ವಿಸ್ತರಣೆ ಅನುಮತಿಯನ್ನು ವಿನಂತಿಸಿಕೊಂಡಿದ್ದರೆ, ಪುಟದಲ್ಲಿನ ಸ್ಕ್ರಿಪ್ಟ್ ರನ್ ಮಾಡುವ ವಿಸ್ತರಣೆಗೆ ಬಳಕೆದಾರ ಸಮ್ಮತಿ ಅಗತ್ಯವಿರುತ್ತದೆ.</translation>
 <translation id="3695919544155087829">ಈ ಪ್ರಮಾಣಪತ್ರದ ಫೈಲ್ ಅನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲು ಬಳಸಿದ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ದಯವಿಟ್ಟು ನಮೂದಿಸಿ.</translation>
-<translation id="3696411085566228381">ಯಾವುದೂ ಇಲ್ಲ</translation>
 <translation id="3697100740575341996">ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಸಾಧನಕ್ಕಾಗಿ Chrome Goodies ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699080292907545058">ಗರಿಷ್ಟ ಸಕ್ರಿಯಗೊಳಿಸಿದ TLS ಆವೃತ್ತಿ ಹೊಂದಿಸಿ.</translation>
 <translation id="3699624789011381381">ಇಮೇಲ್ ವಿಳಾಸ</translation>
@@ -2291,7 +2287,6 @@
 <translation id="3979395879372752341">ಹೊಸ ವಿಸ್ತರಣೆಯನ್ನು ಸೇರಿಸಲಾಗಿದೆ (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> ಸಕ್ರಿಯಗೊಳಿಸು</translation>
 <translation id="3981760180856053153">ಅಮಾನ್ಯವಾದ ಉಳಿಸು ಪ್ರಕಾರವನ್ನು ನಮೂದಿಸಲಾಗಿದೆ.</translation>
-<translation id="3981990000224130884">{COUNT,plural, =1{1 ವಿಳಾಸ}one{# ವಿಳಾಸಗಳು}other{# ವಿಳಾಸಗಳು}}</translation>
 <translation id="3983586614702900908">ಅಜ್ಞಾತ ಮಾರಾಟಗಾರರಿಂದ ಸಾಧನಗಳು</translation>
 <translation id="3984413272403535372">ವಿಸ್ತರಣೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡುವಾಗ ದೋಷ.</translation>
 <translation id="3987970780975473420">ಪ್ರತ್ಯಕ್ಷ ವೆಬ್ ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
@@ -2364,7 +2359,6 @@
 <translation id="409579654357498729">ಮೇಘ ಮುದ್ರಣಕ್ಕೆ ಸೇರಿಸು</translation>
 <translation id="4096508467498758490">ವಿಸ್ತರಣೆಗಳ ಡೆವೆಲಪರ್ ಮೋಡ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="4098354747657067197">ವಂಚನೆಯ ಸೈಟ್ ಮುಂದಿದೆ</translation>
-<translation id="4099585076575543605">{COUNT,plural, =0{ಯಾವುದೂ ಇಲ್ಲ}=1{1}one{#}other{#}}</translation>
 <translation id="409980434320521454">ಸಿಂಕ್ ವಿಫಲಗೊಂಡಿದೆ</translation>
 <translation id="4100733287846229632">ಸಾಧನ ಸ್ಥಳಾವಕಾಶ ತೀರಾ ಕಡಿಮೆ ಇದೆ</translation>
 <translation id="4101878899871018532">ಸಿಂಕ್‌ ಮಾಡಲು ಬಳಸಲಾದ ರುಜುವಾತನ್ನು ಉಳಿಸುವ ಅವಕಾಶವನ್ನು ಪಾಸ್‌ವರ್ಡ್‌ ನಿರ್ವಾಹಕ ನೀಡುವುದಿಲ್ಲ.</translation>
@@ -2380,7 +2374,6 @@
 <translation id="4116663294526079822">ಈ ಸೈಟ್‌ನಲ್ಲಿ ಯಾವಾಗಲೂ ಅನುಮತಿಸು</translation>
 <translation id="411666854932687641">ಖಾಸಗಿ ಸ್ಮರಣೆ</translation>
 <translation id="4118990158415604803">ಇತರ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗೆ ಸಂಪರ್ಕಗೊಳಿಸುವುದನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
-<translation id="4119034994132515155">{COUNT,plural, =1{ಮತ್ತು1 ಇನ್ನಷ್ಟು}one{ಮತ್ತು # ಇನ್ನಷ್ಟು}other{ಮತ್ತು # ಇನ್ನಷ್ಟು}}</translation>
 <translation id="4119386654071687030">ಡೀಬಗ್ ಮಾಡಲು ಮತ್ತು ಓವರ್‌ಲೇ ಬೆಂಬಲವನ್ನು ಅಧ್ಯಯನ ಮಾಡಲು ಸಹಾಯ ಮಾಡುವುದಕ್ಕಾಗಿ GL ಸಂಯೋಜಿತ ವಿನ್ಯಾಸ ಕ್ವಾಡ್‌ಗಳ ಸುತ್ತಲೂ ಅಂಚನ್ನು ನೀಡುತ್ತದೆ.</translation>
 <translation id="4119828560634133962">ಮುದ್ರಣ ಪೂರ್ವವೀಕ್ಷಣೆ ನೋಂದಣಿ ಪ್ರೋಮೋಗಳು</translation>
 <translation id="4120329147617730038"><ph name="USER_EMAIL" /> ಗೆ ಬಹು ಸೈನ್‌-ಇನ್‌ ಅನುಮತಿಯನ್ನು ನಿರ್ವಾಹಕರು ರದ್ದುಗೊಳಿಸಿದ್ದಾರೆ.
@@ -2904,7 +2897,6 @@
 <translation id="4888510611625056742">ಟ್ಯಾಬ್ 2</translation>
 <translation id="4890284164788142455">ಥಾಯ್</translation>
 <translation id="4893336867552636863">ಇದು ಈ ಸಾಧನದಿಂದ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಖಾಯಂ ಆಗಿ ಅಳಿಸುತ್ತದೆ.</translation>
-<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4899376560703610051">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಕೈಯಾರೆ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ. ಪ್ರವೇಶಿಸಲು ನೀವು ಪಾಸ್‌‌ವರ್ಡ್  ನಮೂದಿಸಬೇಕು.</translation>
 <translation id="4899816749097347786">ಪ್ರಾಯೋಗಿಕ WebAssembly ಬಳಸಲು ವೆಬ್ ಪುಟಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="490074449735753175">ಕಾಗುಣಿತ ದೋಷಗಳ ಪರಿಹಾರಕ್ಕೆ ವೆಬ್ ಸೇವೆಯನ್ನು ಬಳಸು</translation>
@@ -3592,7 +3584,6 @@
 <translation id="5804241973901381774">ಅನುಮತಿಗಳು</translation>
 <translation id="580571955903695899">ಶೀರ್ಷಿಕೆಯಂತೆ ಮರುಕ್ರಮಗೊಳಿಸಿ</translation>
 <translation id="580961539202306967">ಪುಶ್‌ ಸಂದೇಶಗಳನ್ನು ಸೈಟ್‌ಗಳು ನನಗೆ ಕಳುಹಿಸಲು ಬಯಸಿದಾಗ ನನ್ನನ್ನು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
-<translation id="5814352347845180253"><ph name="SITE" /> ಮತ್ತು ಕೆಲವು ಇತರ ಸೈಟ್‌ಗಳಿಂದ ಪ್ರೀಮಿಯಂ ವಿಷಯಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ನೀವು ಕಳೆದುಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="5815645614496570556">X.400 ವಿಳಾಸ</translation>
 <translation id="5817397429773072584">ಸಾಂಪ್ರದಾಯಿಕ ಚೈನೀಸ್</translation>
 <translation id="5817918615728894473">ಜೋಡಿಸು</translation>
@@ -3680,7 +3671,6 @@
 <translation id="5916664084637901428">ಆನ್‌</translation>
 <translation id="59174027418879706">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="5925147183566400388">ದೃಢೀಕರಣ ಅಭ್ಯಾಸ ಹೇಳಿಕೆಯ ಸೂಚಕ</translation>
-<translation id="5926846154125914413">ಕೆಲವು ಸೈಟ್‌ಗಳ ಪ್ರೀಮಿಯಂ ವಿಷಯಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ನೀವು ಕಳೆದುಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="5930693802084567591">ನಿಮ್ಮ ಡೇಟಾವನ್ನು <ph name="TIME" /> ವರೆಗೆ ನಿಮ್ಮ Google ಪಾಸ್‌ವರ್ಡ್‌ನೊಂದಿಗೆ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ. ದಯವಿಟ್ಟು ಅದನ್ನು ಕೆಳಗೆ ನಮೂದಿಸಿ.</translation>
 <translation id="5931146425219109062">ನೀವು ಭೇಟಿ ಮಾಡಿದ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿರುವ ನಿಮ್ಮ ಎಲ್ಲ ಡೇಟಾವನ್ನು ಓದಿರಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
 <translation id="5932881020239635062">ಕ್ರಮ</translation>
@@ -3961,7 +3951,6 @@
 <translation id="634208815998129842">ಕಾರ್ಯ ನಿರ್ವಾಹಕ</translation>
 <translation id="6344170822609224263">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕಗಳ ಪಟ್ಟಿಯನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="6344584046526421554">ಪ್ರಾಯೋಗಿಕ ಪ್ರವೇಶಿಸುವಿಕೆ ವೈಶಿಷ್ಟ್ಯಗಳು</translation>
-<translation id="6345221851280129312">ಅಜ್ಞಾತ ಗಾತ್ರ</translation>
 <translation id="6347003977836730270">ಮಾಹಿತಿ ಪಟ್ಟಿ ಬದಲಾಗಿ ಹೊಸ ಅನುವಾದ ಬಬಲ್ UX ಆಹ್ವಾನವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="6348657800373377022">ಕಾಂಬೊ ಬಾಕ್ಸ್</translation>
 <translation id="6349839454356033837">ಮಾಧ್ಯಮ ಪ್ಲೇ ಮಾಡುವಲ್ಲಿ Android ಸಮಸ್ಯೆಯನ್ನು ಹೊಂದಿದೆ.</translation>
@@ -4142,7 +4131,6 @@
 <translation id="6588399906604251380">ಕಾಗುಣಿತ ಪರೀಕ್ಷಕಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸು</translation>
 <translation id="6589706261477377614">ಕೀಲಿ ಪ್ರಖರತೆ ಹೆಚ್ಚಿಸಿ</translation>
 <translation id="6592267180249644460">WebRTC ಲಾಗ್ ಸೆರೆಹಿಡಿಯಲಾಗಿದೆ <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
-<translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> ಗಿಂತ ಕಡಿಮೆ</translation>
 <translation id="6593868448848741421">ಅತ್ಯುತ್ತಮ</translation>
 <translation id="6596092346130528198">ನೀವು ನಿರೀಕ್ಷಿಸುತ್ತಿರುವುದು ಈ ಹೊಸ ಟ್ಯಾಬ್ ಪುಟವೇ?</translation>
 <translation id="6596325263575161958">ಎನ್‌ಕ್ರಿಫ್ಶನ್ ಆಯ್ಕೆಗಳು</translation>
@@ -4285,7 +4273,6 @@
 <translation id="6823506025919456619">ನಿಮ್ಮ ಸಾಧನಗಳನ್ನು ನೋಡಲು ನೀವು Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ</translation>
 <translation id="6824564591481349393">ಇಮೇಲ್ &amp;ವಿಳಾಸವನ್ನು ನಕಲು ಮಾಡಿ</translation>
 <translation id="6824725898506587159">ಭಾಷೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
-<translation id="6825718953004242472">ಐಕಾನ್ ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="6825883775269213504">ರಷ್ಯನ್</translation>
 <translation id="6827236167376090743">ಈ ವೀಡಿಯೊ ಸತತವಾಗಿ ಪ್ಲೇ ಆಗುತ್ತಲೇ ಇರುತ್ತದೆ.</translation>
 <translation id="6828153365543658583">ಕೆಳಗಿನ ಬಳಕೆದಾರರಿಗೆ ಸೈನ್-ಇನ್ ಮಾಡುವುದನ್ನು ನಿರ್ಬಂಧಿಸು:</translation>
@@ -5195,7 +5182,6 @@
 <translation id="8079530767338315840">ಪುನರಾವರ್ತಿಸು</translation>
 <translation id="8083739373364455075">Google ಡ್ರೈವ್ ಜೊತೆಗೆ 100 GB ಉಚಿತವಾಗಿ ಪಡೆಯಿರಿ</translation>
 <translation id="8088137642766812908">ಎಚ್ಚರಿಕೆ, ಈ ವೈಶಿಷ್ಟ್ಯವು ವಿಫಲವಾಗಬಹುದು</translation>
-<translation id="8089520772729574115">1 MB ಗಿಂತ ಕಡಿಮೆ</translation>
 <translation id="8090234456044969073">ನಿಮ್ಮ ಪದೇ ಪದೇ ಭೇಟಿ ನೀಡಿದ ವೆಬ್‌ಸೈಟ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ಓದಿ</translation>
 <translation id="8091655032047076676">ಪ್ರಾಯೋಗಿಕ</translation>
 <translation id="8094917007353911263">ನೀವು ಬಳಸುತ್ತಿರುವ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ನೀವು <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ಅನ್ನು ಭೇಟಿ ನೀಡುವ ಅಗತ್ಯವಿದೆ.</translation>
@@ -5223,7 +5209,6 @@
 <translation id="8126844665673008223">ವೆಬ್ ಬ್ಲೂಟೂತ್</translation>
 <translation id="8127181497803323361">ಡಾಕ್ಯುಮೆಂಟ್ ಹಂತದ ಗುರಿಗಳಲ್ಲಿನ ಫೋರ್ಸಸ್ ಟಚ್‌ಸ್ಟಾರ್ಟ್‌ ಮತ್ತು ಟಚ್‌ಮೂವಿ ಈವೆಂಟ್ ಕೇಳುಗರನ್ನು (ಇಲ್ಲದಿದ್ದರೆ ವಿನಂತಿಸಿದ) ನಿಷ್ಕ್ರಿಯ ಎಂದು ಪರಿಗಣಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="8127322077195964840">ಸ್ಥಳೀಯಹೋಸ್ಟ್‌ನಿಂದ ಲೋಡ್ ಮಾಡಲಾದ ಸಂಪನ್ಮೂಲಗಳಿಗೆ ಅಮಾನ್ಯವಾದ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಅನುಮತಿಸಿ.</translation>
-<translation id="8129262335948759431">ಅಜ್ಞಾತ ಪ್ರಮಾಣ</translation>
 <translation id="8130269545914251658">ಟ್ಯಾಬ್ ಆಡಿಯೊ ಮ್ಯೂಟ್ ಮಾಡುವ UI ನಿಯಂತ್ರಣ</translation>
 <translation id="813082847718468539">ಸೈಟ್ ಮಾಹಿತಿಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="8131740175452115882">ದೃಢೀಕರಿಸು</translation>
@@ -5272,7 +5257,6 @@
 <translation id="8180239481735238521">ಪುಟ</translation>
 <translation id="8180786512391440389">ಗುರುತಿಸಿದ ಸ್ಥಳಗಳಲ್ಲಿನ ಚಿತ್ರಗಳು, ವಿಡಿಯೋ, ಮತ್ತು ಧ್ವನಿ ಫೈಲ್‌ಗಳನ್ನು "<ph name="EXTENSION" />" ಓದಬಹುದು ಮತ್ತು ಅಳಿಸಬಹುದು.</translation>
 <translation id="8181988707601696997">ಅಪ್ಲಿಕೇಶನ್ ಲಾಂಚರ್ ಸಿಂಕ್</translation>
-<translation id="8183368067134675917">{COUNT,plural, =0{ಯಾವುದೂ ಇಲ್ಲ}=1{1 ಐಟಂ}one{# ಐಟಂಗಳು}other{# ಐಟಂಗಳು}}</translation>
 <translation id="8184538546369750125">ಜಾಗತಿಕ ಡಿಫಾಲ್ಟ್ ಬಳಸಿ (ಅನುಮತಿಸು)</translation>
 <translation id="818454486170715660"><ph name="NAME" /> - ಮಾಲೀಕ</translation>
 <translation id="8185331656081929126">ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿರುವ ಹೊಸ ಪ್ರಿಂಟರ್‌ಗಳನ್ನು ಪತ್ತೆ ಮಾಡಿದಾಗ ಅಧಿಸೂಚನೆಗಳನ್ನು ತೋರಿಸು</translation>
@@ -5305,7 +5289,6 @@
 <translation id="8223479393428528563">ಆಫ್‌‌ಲೈನ್ ಬಳಕೆಗಾಗಿ ಈ ಫೈಲ್ ಗಳನ್ನು ಉಳಿಸಲು, ಆನ್‌ಲೈನ್‌ಗೆ ಹಿಂತಿರುಗಲು, ಫೈಲ್‌ಗಳ ಮೇಲೆ ಬಲ ಕ್ಲಿಕ್ ಮಾಡಿ, ಮತ್ತು <ph name="OFFLINE_CHECKBOX_NAME" /> ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ.</translation>
 <translation id="8226222018808695353">ನಿಷೇಧಿತ</translation>
 <translation id="8226742006292257240">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ಗೆ ಹೊಂದಿಸಲಾದ, ರ‍್ಯಾಂಡಮ್‌‌ ಆಗಿ ರಚಿಸಲಾದ TPM ಪಾಸ್‌ವರ್ಡ್ ಕೆಳಗಿದೆ:</translation>
-<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8230421197304563332"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ನಲ್ಲಿರುವ ದಾಳಿಕೋರರು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿರುವ ಮಾಹಿತಿ (ಉದಾಹರಣೆಗೆ, ಫೋಟೋಗಳು, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಮಾಹಿತಿಗಳು) ಕದಿಯಲು ಇಲ್ಲವೇ ಅಳಿಸಲು ಅಪಾಯಕಾರಿ ಪ್ರೋಗ್ರಾಂಗಳನ್ನು ಸ್ಥಾಪಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರಬಹುದು.</translation>
 <translation id="8233254008506535819">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾ ತೆರವುಗೊಳಿಸು ಸಂವಾದದಲ್ಲಿರುವ ಪ್ರಮುಖ ಸೈಟ್‌ಗಳನ್ನು ಶ್ವೇತಪಟ್ಟಿ ಆಯ್ಕೆಗೆ ಸೇರಿಸಿ.</translation>
 <translation id="8236231079192337250">ಪ್ರಿಂಟರ್ ಡ್ರೈವರ್‌ಗಳಿಗೆ Chrome ವೆಬ್ ಅಂಗಡಿ ಗ್ಯಾಲರಿ ಅಪ್ಲಿಕೇಶನ್</translation>
@@ -5379,7 +5362,6 @@
 <translation id="8320459152843401447">ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಪರದೆ</translation>
 <translation id="8322814362483282060">ಈ ಪುಟವನ್ನು ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಪ್ರವೇಶದಿಂದ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="8326478304147373412">PKCS #7, ಪ್ರಮಾಣಪತ್ರ ಸರಣಿ</translation>
-<translation id="8327201046748601585">{COUNT,plural, =1{1 ಇತರೆ}one{# ಇತರೆ}other{# ಇತರೆ}}</translation>
 <translation id="8329978297633540474">ಸರಳ ಪಠ್ಯ</translation>
 <translation id="8330907072332288839">ಸ್ಕ್ರಾಲ್ ಮುನ್ನೋಟ</translation>
 <translation id="8332473670738981565">ದುರ್ಬಲ ಮೆಮೊರಿಕ್ಯಾಶೆ ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
@@ -5457,7 +5439,6 @@
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8428634594422941299">ಅರ್ಥವಾಯಿತು</translation>
 <translation id="8432745813735585631">ಯುಎಸ್ ಕೋಲ್‌ಮಾರ್ಕ್ ಕೀಬೋರ್ಡ್</translation>
-<translation id="8433057134996913067">ಇದು ನಿಮ್ಮನ್ನು ಹೆಚ್ಚಿನ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಂದ ಸೈನ್‌ ಔಟ್‌ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="8434177709403049435">&amp;ಎನ್ಕೋಡಿಂಗ್</translation>
 <translation id="8434480141477525001">NaCl ಡೀಬಗ್‌ ಪೋರ್ಟ್‌</translation>
 <translation id="8435334418765210033">ನೆನಪಿರುವ ನೆಟ್‌ವರ್ಕ್‌ಗಳು</translation>
@@ -5474,7 +5455,6 @@
 <translation id="8446884382197647889">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="8449008133205184768">ಅಂಟಿಸು  ಮತ್ತು  ಶೈಲಿ ಹೊಂದಿಸು</translation>
 <translation id="8449036207308062757">ಸಂಗ್ರಹಣೆಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
-<translation id="8452388482414738991">{COUNT,plural, =1{1 ಇತರೆ ಸಲಹೆ}one{# ಇತರೆ ಸಲಹೆಗಳು}other{# ಇತರೆ ಸಲಹೆಗಳು}}</translation>
 <translation id="8452588990572106089">ಅಮಾನ್ಯವಾದ ಕಾರ್ಡ್ ಸಂಖ್ಯೆ. ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="8453482423012550001">$1 ಐಟಂಗಳನ್ನು ನಕಲಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8454189779191516805">GPU ರಾಸ್ಟರೈಸೇಶನ್‌ಗೆ MSAA ಮಾದರಿಗಳ ಸಂಖ್ಯೆಯನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿ.</translation>
@@ -6059,7 +6039,6 @@
 <translation id="939736085109172342">ಹೊಸ ಫೋಲ್ಡರ್</translation>
 <translation id="940425055435005472">ಫಾಂಟ್ ಗಾತ್ರ:</translation>
 <translation id="941543339607623937">ಅಮಾನ್ಯ ಖಾಸಗಿ ಕೀಲಿ.</translation>
-<translation id="94157737897675170">{COUNT,plural, =0{ಯಾವುದೂ ಇಲ್ಲ}=1{1 ಅಪ್ಲಿಕೇಶನ್‌ ($1)}=2{2 ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ($1, $2)}one{# ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ($1, $2, $3)}other{# ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ($1, $2, $3)}}</translation>
 <translation id="942532530371314860">Chrome ಟ್ಯಾಬ್ ಮತ್ತು ಆಡಿಯೋವನ್ನು <ph name="APP_NAME" /> ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ.</translation>
 <translation id="942954117721265519">ಈ ಡೈರೆಕ್ಟರಿಯಲ್ಲಿ ಯಾವುದೇ ಚಿತ್ರಗಳಿಲ್ಲ.</translation>
 <translation id="945522503751344254">ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಿ</translation>

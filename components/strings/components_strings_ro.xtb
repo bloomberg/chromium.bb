@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">Versiune</translation>
 <translation id="3681007416295224113">Informații despre certificat</translation>
 <translation id="3693415264595406141">Parolă:</translation>
+<translation id="3696411085566228381">niciuna</translation>
 <translation id="3700528541715530410">Hopa, se pare că nu aveți permisiunea de a accesa această pagină.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Se încarcă…</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">Cardul este expirat</translation>
 <translation id="3934680773876859118">Documentul PDF nu a fost încărcat</translation>
 <translation id="3963721102035795474">Modul Cititor</translation>
+<translation id="397105322502079400">Se calculează...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> este blocat</translation>
 <translation id="4021036232240155012">DNS este serviciul de rețea care translatează numele unui site în adresa sa de internet.</translation>
 <translation id="4030383055268325496">&amp;Anulați adăugarea</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">Încadrați în pagină</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="4880827082731008257">Caută în istoric</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Această pagină a fost tradusă dintr-o limbă necunoscută în <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Valoarea trebuie specificată.</translation>
 <translation id="4930497775425430760">Ai primit acest mesaj deoarece este necesar ca părintele tău să aprobe site-urile noi la prima accesare.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">Dorești să completezi <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">Conexiunea la <ph name="DOMAIN" /> este criptată folosind o suită de codificare învechită.</translation>
 <translation id="5813119285467412249">&amp;Repetați adăugarea</translation>
+<translation id="5814352347845180253">Este posibil să pierzi accesul la conținutul premium de pe <ph name="SITE" /> și de pe alte site-uri.</translation>
 <translation id="5855235287355719921">Ai primit acest mesaj deoarece administratorul a blocat acest site.</translation>
 <translation id="5857090052475505287">Dosar nou</translation>
 <translation id="5869405914158311789">Acest site nu poate fi accesat</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">Sugestii parentale</translation>
 <translation id="59107663811261420">Acest tip de card nu este acceptat de Google Payments pentru acest comerciant. Selectează alt card.</translation>
 <translation id="59174027418879706">Activat</translation>
+<translation id="5926846154125914413">Este posibil să pierzi accesul la conținutul premium de pe anumite site-uri.</translation>
 <translation id="5966707198760109579">Săptămână</translation>
 <translation id="5967867314010545767">Eliminați din istoric</translation>
 <translation id="5975083100439434680">Micșorează</translation>
@@ -453,6 +458,7 @@
 <translation id="6328639280570009161">Încercați să dezactivați anticiparea rețelei</translation>
 <translation id="6337534724793800597">Filtrați politicile după nume</translation>
 <translation id="6342069812937806050">Adineauri</translation>
+<translation id="6345221851280129312">dimensiune necunoscută</translation>
 <translation id="6355080345576803305">Modificarea sesiunii publice</translation>
 <translation id="6358450015545214790">Ce înseamnă acestea?</translation>
 <translation id="6387478394221739770">Doriți să utilizați funcții Chrome noi și interesante? Încercați canalul nostru beta de la chrome.com/beta.</translation>
@@ -466,6 +472,7 @@
 <translation id="6489534406876378309">Începeți încărcarea rapoartelor de blocare</translation>
 <translation id="6529602333819889595">&amp;Repetați ștergerea</translation>
 <translation id="6550675742724504774">Opțiuni</translation>
+<translation id="6593753688552673085">mai puțin de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opțiuni de criptare</translation>
 <translation id="662080504995468778">Rămâi pe pagină</translation>
 <translation id="6628463337424475685">Căutare <ph name="ENGINE" /></translation>
@@ -594,7 +601,9 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8034522405403831421">Această pagină este în <ph name="SOURCE_LANGUAGE" />. Doriți traducere în <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Nu au fost găsite intrări în istoric.</translation>
 <translation id="8088680233425245692">Articolul nu a fost vizualizat.</translation>
+<translation id="8089520772729574115">mai puțin de 1 MB</translation>
 <translation id="8091372947890762290">Se așteaptă activarea pe server</translation>
+<translation id="8129262335948759431">cantitate necunoscută</translation>
 <translation id="8131740175452115882">Confirmați</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Adresa DNS<ph name="END_ABBR" /> pentru serverul <ph name="HOST_NAME" /> nu a putut fi găsită.</translation>
 <translation id="8149426793427495338">Computerul este inactiv.</translation>
@@ -603,6 +612,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8201077131113104583">Adresa URL pentru actualizarea extensiei cu ID-ul „<ph name="EXTENSION_ID" />” nu este validă.</translation>
 <translation id="8218327578424803826">Locație atribuită:</translation>
 <translation id="8225771182978767009">Persoana care a configurat computerul a ales să blocheze acest site.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Pagina pe care o cauți a utilizat informațiile pe care le-ai introdus. Întoarcerea la acea pagină ar putea face ca orice acțiune să fie repetată. Vrei să continui?</translation>
 <translation id="8249320324621329438">Ultima preluare:</translation>
 <translation id="8261506727792406068">Șterge</translation>
@@ -618,6 +628,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8412145213513410671">Blocări (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Trebuie să introduci aceeași expresie de acces de două ori.</translation>
 <translation id="8428213095426709021">Setări</translation>
+<translation id="8433057134996913067">Astfel, te vei deconecta de pe majoritatea site-urilor.</translation>
 <translation id="8437238597147034694">&amp;Anulați mutarea</translation>
 <translation id="8488350697529856933">Se aplică pentru</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a răspuns prea târziu.</translation>

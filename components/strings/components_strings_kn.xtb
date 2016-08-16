@@ -255,6 +255,7 @@
 <translation id="3658742229777143148">ಪರಿಷ್ಕರಣೆ</translation>
 <translation id="3681007416295224113">ಪ್ರಮಾಣಪತ್ರ ಮಾಹಿತಿ</translation>
 <translation id="3693415264595406141">ಪಾಸ್‌ವರ್ಡ್:</translation>
+<translation id="3696411085566228381">ಯಾವುದೂ ಇಲ್ಲ</translation>
 <translation id="3700528541715530410">ಓಹ್‌, ಈ ಪುಟವನ್ನು ಪ್ರವೇಶಿಸಲು ನಿಮಗೆ ಅನುಮತಿ ಇಲ್ಲ ಎಂದು ತೋರುತ್ತಿದೆ.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
@@ -276,6 +277,7 @@
 <translation id="3901925938762663762">ಕಾರ್ಡ್ ಅವಧಿಯು ಮುಗಿದಿದೆ</translation>
 <translation id="3934680773876859118">PDF ಡಾಕ್ಯುಮೆಂಟ್ ಅನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="3963721102035795474">ರೀಡರ್‌ ಮೋಡ್‌</translation>
+<translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="4021036232240155012">DNS ಎನ್ನುವುದು ನೆಟ್‌ವರ್ಕ್ ಸೇವೆಯಾಗಿದ್ದು ಇದು ವೆಬ್‌ಸೈಟ್ ಹೆಸರನ್ನು ಅದರ ಇಂಟರ್ನೆಟ್ ವಿಳಾಸವಾಗಿ ಪರಿವರ್ತಿಸುತ್ತದೆ.</translation>
 <translation id="4030383055268325496">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
@@ -342,6 +344,7 @@
 <translation id="4816492930507672669">ಪುಟಕ್ಕೆ ಹೊಂದಿಸು</translation>
 <translation id="4850886885716139402">ವೀಕ್ಷಣೆ</translation>
 <translation id="4880827082731008257">ಹುಡುಕಾಟ ಇತಿಹಾಸ</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">ಗೊತ್ತಿಲ್ಲದ ಭಾಷೆಯಿಂದ <ph name="LANGUAGE_LANGUAGE" /> ಗೆ ಈ ಪುಟವನ್ನು ಭಾಷಾಂತರಿಸಲಾಗಿದೆ</translation>
 <translation id="4926049483395192435">ನಿರ್ದಿಷ್ಟಪಡಿಸಬೇಕಾಗಿದೆ.</translation>
 <translation id="4930497775425430760">ನಿಮ್ಮ ಮೊದಲ ಭೇಟಿಯಲ್ಲಿ ನಿಮ್ಮ ಪೋಷಕರು ಹೊಸ ಸೈಟ್‌ಗಳನ್ನು ಅಂಗೀಕರಿಸಬೇಕಾಗಿರುವ ಕಾರಣ ನೀವು ಈ ಸಂದೇಶವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ.</translation>
@@ -415,6 +418,7 @@
 <translation id="5803412860119678065">ನಿಮ್ಮ <ph name="CARD_DETAIL" /> ಭರ್ತಿ ಮಾಡಲು ನೀವು ಬಯಸುವಿರಾ?</translation>
 <translation id="5810442152076338065">ಬಳಕೆಯಲ್ಲಿಲ್ಲದ ಸೈಫರ್ ಸೂಟ್ ಬಳಸುವ ಮೂಲಕ <ph name="DOMAIN" /> ಗೆ ನಿಮ್ಮ ಸಂಪರ್ಕವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="5813119285467412249">&amp;ಸೇರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
+<translation id="5814352347845180253"><ph name="SITE" /> ಮತ್ತು ಕೆಲವು ಇತರ ಸೈಟ್‌ಗಳಿಂದ ಪ್ರೀಮಿಯಂ ವಿಷಯಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ನೀವು ಕಳೆದುಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="5855235287355719921">ನಿಮ್ಮ ವ್ಯವಸ್ಥಾಪಕರು ಈ ಸೈಟ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಿರುವ ಕಾರಣ ನೀವು ಈ ಸಂದೇಶವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ.</translation>
 <translation id="5857090052475505287">ಹೊಸ ಫೋಲ್ಡರ್</translation>
 <translation id="5869405914158311789">ಈ ಸೈಟ್ ತಲುಪಲಾಗುವುದಿಲ್ಲ</translation>
@@ -422,6 +426,7 @@
 <translation id="5872918882028971132">ಪೋಷಕ ಸಲಹೆಗಳು</translation>
 <translation id="59107663811261420">ಈ ವರ್ತಕರಿಗೆ Google Payments ನಿಂದ ಈ ಪ್ರಕಾರದ ಕಾರ್ಡ್ ಬೆಂಬಲಿತವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಬೇರೆಯ ಕಾರ್ಡ್ ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="59174027418879706">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="5926846154125914413">ಕೆಲವು ಸೈಟ್‌ಗಳ ಪ್ರೀಮಿಯಂ ವಿಷಯಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ನೀವು ಕಳೆದುಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="5966707198760109579">ವಾರ</translation>
 <translation id="5967867314010545767">ಇತಿಹಾಸದಿಂದ ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="5975083100439434680">ಝೂಮ್ ಔಟ್</translation>
@@ -449,6 +454,7 @@
 <translation id="6328639280570009161">ನೆಟ್‌ವರ್ಕ್ ಮುನ್ಸೂಚನೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="6337534724793800597">ಹೆಸರಿನ ಪ್ರಕಾರವಾಗಿ ನೀತಿಗಳನ್ನು ಫಿಲ್ಟರ್ ಮಾಡಿ</translation>
 <translation id="6342069812937806050">ಇದೀಗ</translation>
+<translation id="6345221851280129312">ಅಜ್ಞಾತ ಗಾತ್ರ</translation>
 <translation id="6355080345576803305">ಸಾರ್ವಜನಿಕ ಸೆಷನ್ ಅತಿಕ್ರಮಿಸುವಿಕೆ</translation>
 <translation id="6358450015545214790">ಇವುಗಳ ಅರ್ಥವೇನು?</translation>
 <translation id="6387478394221739770">ಉತ್ತಮವಾದ ಹೊಸ Chrome ವೈಶಿಷ್ಟ್ಯಗಳಲ್ಲಿ ಆಸಕ್ತಿ ಇದೆಯೇ? chrome.com/beta ನಲ್ಲಿ ನಮ್ಮ ಬೀಟಾ ಚಾನಲ್ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -462,6 +468,7 @@
 <translation id="6489534406876378309">ವಿಫಲತೆಗಳನ್ನು ಅಪ್‌ಲೋಡ್‌ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸು</translation>
 <translation id="6529602333819889595">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="6550675742724504774">ಆಯ್ಕೆಗಳು</translation>
+<translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> ಗಿಂತ ಕಡಿಮೆ</translation>
 <translation id="6596325263575161958">ಎನ್‌ಕ್ರಿಫ್ಶನ್ ಆಯ್ಕೆಗಳು</translation>
 <translation id="662080504995468778">ಉಳಿಯಿರಿ</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> ಹುಡುಕಾಟ</translation>
@@ -590,7 +597,9 @@
 <translation id="8034522405403831421">ಈ ಪುಟವು <ph name="SOURCE_LANGUAGE" /> ನಲ್ಲಿ ಇದೆ. ಇದನ್ನು <ph name="TARGET_LANGUAGE" /> ಗೆ ಅನುವಾದಿಸುವುದೇ?</translation>
 <translation id="8034955203865359138">ಯಾವುದೇ ಇತಿಹಾಸ ದಾಖಲೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ.</translation>
 <translation id="8088680233425245692">ಲೇಖನವನ್ನು ವೀಕ್ಷಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
+<translation id="8089520772729574115">1 MB ಗಿಂತ ಕಡಿಮೆ</translation>
 <translation id="8091372947890762290">ಸರ್ವರ್‌ನಲ್ಲಿ ಸಕ್ರಿಯತೆ ಬಾಕಿ ಉಳಿದಿದೆ</translation>
+<translation id="8129262335948759431">ಅಜ್ಞಾತ ಪ್ರಮಾಣ</translation>
 <translation id="8131740175452115882">ದೃಢೀಕರಿಸು</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> ಅವರ ಸರ್ವರ್‌ <ph name="BEGIN_ABBR" />DNS ವಿಳಾಸ<ph name="END_ABBR" /> ಕಂಡುಬಂದಿಲ್ಲ.</translation>
 <translation id="8149426793427495338">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ನಿದ್ರಾವಸ್ಥೆಗೆ ಹೋಗಿದೆ.</translation>
@@ -599,6 +608,7 @@
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" ID ಜೊತೆಗಿನ ವಿಸ್ತರಣೆಗೆ ಅಮಾನ್ಯವಾದ ಅಪ್‌ಡೇಟ್‌‌ URL.</translation>
 <translation id="8218327578424803826">ನಿಯೋಜಿಸಲಾದ ಸ್ಥಳ:</translation>
 <translation id="8225771182978767009">ಈ ಕಂಪ್ಯೂಟರ್ ಹೊಂದಿಸಿರುವ ವ್ಯಕ್ತಿಯು ಈ ಸೈಟ್ ನಿರ್ಬಂಧಿಸಲು ಆಯ್ಕೆಮಾಡಿದ್ದಾರೆ.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">ನೀವು ಎದುರು ನೋಡುತ್ತಿರುವ ಪುಟ ನೀವು ನಮೂದಿಸಿದ ಮಾಹಿತಿಯನ್ನು ಬಳಸಿದೆ. ಆ ಪುಟಕ್ಕೆ ಹಿಂದಿರುಗುವುದರಿಂದ ನೀವು ಮಾಡಿದ ಯಾವುದೇ ಕ್ರಿಯೆ ಪುನರಾವರ್ತಿಸುವಂತೆ ಮಾಡುತ್ತದೆ. ನೀವು ಮುಂದುವರಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="8249320324621329438">ಕಳೆದ ಬಾರಿ ಪಡೆದಿರುವುದು:</translation>
 <translation id="8261506727792406068">ಅಳಿಸು</translation>
@@ -614,6 +624,7 @@
 <translation id="8412145213513410671">(<ph name="CRASH_COUNT" />) ಕ್ರ‍್ಯಾಶ್‌ಗಳು </translation>
 <translation id="8412392972487953978">ನೀವು ಒಂದೇ ರೀತಿಯ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ಎರಡು ಬಾರಿ ನಮೂದಿಸಬೇಕು.</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
+<translation id="8433057134996913067">ಇದು ನಿಮ್ಮನ್ನು ಹೆಚ್ಚಿನ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಂದ ಸೈನ್‌ ಔಟ್‌ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="8437238597147034694">&amp;ಸರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="8488350697529856933">ಇದಕ್ಕೆ ಅನ್ವಯಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="8498891568109133222">ಪ್ರತಿಕ್ರಿಯಿಸಲು <ph name="HOST_NAME" /> ಹೆಚ್ಚು ಸಮಯ ತೆಗೆದುಕೊಂಡಿದೆ.</translation>

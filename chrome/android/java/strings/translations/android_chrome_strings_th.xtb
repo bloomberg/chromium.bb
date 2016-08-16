@@ -509,7 +509,6 @@
 <translation id="7074853159844403180"><ph name="SITE" /> ต้องการจับคู่กับ:</translation>
 <translation id="7081639897063626814">เก็บข้อมูลที่มีอยู่แยกไว้ต่างหาก</translation>
 <translation id="7094922512924405309">ไม่พบหน้า Physical Web ที่อยู่ใกล้เคียง</translation>
-<translation id="7095930899177687653">แท็บที่เปิด <ph name="OPEN_TABS" /> แท็บ</translation>
 <translation id="7115197232530297436">ที่อยู่สำหรับจัดส่งนี้ใช้ไม่ได้ โปรดเลือกที่อยู่อื่น</translation>
 <translation id="7138678301420049075">อื่นๆ</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
@@ -612,6 +611,7 @@
 <translation id="8433057134996913067">วิธีนี้จะทำให้คุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
 <translation id="8447861592752582886">เพิกถอนสิทธิ์ของอุปกรณ์</translation>
 <translation id="8481940801237642152">การเชื่อมต่อกับไซต์นี้เป็นแบบส่วนตัว แต่คนอื่นในเครือข่ายอาจเปลี่ยนลักษณะของหน้าได้</translation>
+<translation id="8487700953926739672">ใช้งานแบบออฟไลน์ได้</translation>
 <translation id="8493948351860045254">เพิ่มพื้นที่ว่าง</translation>
 <translation id="8497726226069778601">ที่นี่ยังไม่มีอะไรให้ดู… เลย</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>

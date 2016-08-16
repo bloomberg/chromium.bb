@@ -509,7 +509,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7074853159844403180"><ph name="SITE" /> muốn ghép nối với:</translation>
 <translation id="7081639897063626814">Luôn tách riêng dữ liệu hiện có</translation>
 <translation id="7094922512924405309">Không tìm thấy trang Web trong cuộc sống lân cận nào</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> tab đang mở</translation>
 <translation id="7115197232530297436">Địa chỉ giao hàng không được hỗ trợ. Hãy chọn một địa chỉ khác.</translation>
 <translation id="7138678301420049075">Khác</translation>
 <translation id="7180611975245234373">Làm mới</translation>
@@ -612,6 +611,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8433057134996913067">Thao tác này sẽ đăng xuất bạn khỏi hầu hết các trang web.</translation>
 <translation id="8447861592752582886">Thu hồi quyền truy cập thiết bị</translation>
 <translation id="8481940801237642152">Kết nối của bạn tới trang web này ở chế độ riêng tư nhưng ai đó trên mạng có thể thay đổi giao diện của trang.</translation>
+<translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
 <translation id="8493948351860045254">Giải phóng dung lượng</translation>
 <translation id="8497726226069778601">Chưa có gì để xem ở đây...</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>

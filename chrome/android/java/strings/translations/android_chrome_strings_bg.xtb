@@ -509,7 +509,6 @@
 <translation id="7074853159844403180"><ph name="SITE" /> иска да се сдвои със:</translation>
 <translation id="7081639897063626814">Съхраняване на съществуващите данни отделно</translation>
 <translation id="7094922512924405309">Няма намиращи се в близост страници във Физическата мрежа</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> отворени раздела</translation>
 <translation id="7115197232530297436">Адресът за доставка не се поддържа. Изберете друг.</translation>
 <translation id="7138678301420049075">Друго</translation>
 <translation id="7180611975245234373">Опресняване</translation>
@@ -612,6 +611,7 @@
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
 <translation id="8447861592752582886">Отмяна на разрешението за достъп до устройството</translation>
 <translation id="8481940801237642152">Връзката ви с този сайт е частна, но някой в мрежата може да промени облика на страницата.</translation>
+<translation id="8487700953926739672">Налице офлайн</translation>
 <translation id="8493948351860045254">Освобождаване на място</translation>
 <translation id="8497726226069778601">Тук няма нищо… засега</translation>
 <translation id="8503813439785031346">Потребителско име</translation>

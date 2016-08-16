@@ -509,7 +509,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7074853159844403180"><ph name="SITE" /> es vol vincular amb:</translation>
 <translation id="7081639897063626814">Mantén les dades actuals separades</translation>
 <translation id="7094922512924405309">No s'ha trobat cap pàgina del Web físic a prop</translation>
-<translation id="7095930899177687653">S'han obert <ph name="OPEN_TABS" /> pestanyes</translation>
 <translation id="7115197232530297436">No s'admet l'adreça d'enviament. Seleccioneu-ne una altra.</translation>
 <translation id="7138678301420049075">Altres</translation>
 <translation id="7180611975245234373">Actualitza</translation>
@@ -612,6 +611,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8433057134996913067">Amb aquesta acció es tancarà la sessió a la majoria de llocs web.</translation>
 <translation id="8447861592752582886">Revoca el permís d'accés al dispositiu</translation>
 <translation id="8481940801237642152">La vostra connexió amb aquest lloc és privada, però és possible que algun usuari de la xarxa pugui canviar l'aspecte de la pàgina.</translation>
+<translation id="8487700953926739672">Disponible fora de línia</translation>
 <translation id="8493948351860045254">Allibera espai</translation>
 <translation id="8497726226069778601">Aquí encara no hi ha contingut per mostrar</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>

@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">Révision</translation>
 <translation id="3681007416295224113">Informations relatives au certificat</translation>
 <translation id="3693415264595406141">Mot de passe :</translation>
+<translation id="3696411085566228381">aucune</translation>
 <translation id="3700528541715530410">Petit problème… Vous n'êtes pas autorisé à accéder à cette page.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Chargement...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">La carte a expiré.</translation>
 <translation id="3934680773876859118">Échec du chargement du document PDF</translation>
 <translation id="3963721102035795474">Mode lecture</translation>
+<translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> est bloqué</translation>
 <translation id="4021036232240155012">DNS est le service Web qui convertit les noms de sites Web en adresses Internet.</translation>
 <translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">Ajuster à la page</translation>
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="4880827082731008257">Rechercher dans l'historique</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Cette page rédigée dans une langue non identifiée a été traduite en <ph name="LANGUAGE_LANGUAGE" />.</translation>
 <translation id="4926049483395192435">Doit être spécifié.</translation>
 <translation id="4930497775425430760">Ce message s'affiche, car ton papa/ta maman doit approuver les nouveaux sites lorsque tu les consultes pour la première fois.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">Souhaitez-vous indiquer les informations "<ph name="CARD_DETAIL" />" ?</translation>
 <translation id="5810442152076338065">Votre connexion à <ph name="DOMAIN" /> est chiffrée à l'aide d'une méthode de chiffrement obsolète.</translation>
 <translation id="5813119285467412249">&amp;Rétablir l'ajout</translation>
+<translation id="5814352347845180253">Vous risquez de ne plus avoir accès au contenu premium de <ph name="SITE" /> et de certains autres sites.</translation>
 <translation id="5855235287355719921">Ce message s'affiche, car votre responsable a bloqué ce site.</translation>
 <translation id="5857090052475505287">Nouveau dossier</translation>
 <translation id="5869405914158311789">Ce site est inaccessible</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">Suggestions des parents</translation>
 <translation id="59107663811261420">Ce type de carte n'est pas compatible avec Google Payments pour ce marchand. Veuillez sélectionner une autre carte.</translation>
 <translation id="59174027418879706">Activée</translation>
+<translation id="5926846154125914413">Vous risquez de ne plus avoir accès au contenu premium de certains sites.</translation>
 <translation id="5966707198760109579">Semaine</translation>
 <translation id="5967867314010545767">Supprimer de l'historique</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>
@@ -453,6 +458,7 @@
 <translation id="6328639280570009161">Essayez de désactiver la prédiction réseau</translation>
 <translation id="6337534724793800597">Filtrer les règles par nom</translation>
 <translation id="6342069812937806050">À l'instant</translation>
+<translation id="6345221851280129312">taille inconnue</translation>
 <translation id="6355080345576803305">Contournement dû à la session publique</translation>
 <translation id="6358450015545214790">Qu'est-ce que c'est ?</translation>
 <translation id="6387478394221739770">Vous souhaitez bénéficier de nouvelles fonctionnalités Chrome passionnantes ? Essayez notre version bêta à l'adresse chrome.com/beta.</translation>
@@ -466,6 +472,7 @@
 <translation id="6489534406876378309">Lancer l'importation des plantages</translation>
 <translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
 <translation id="6550675742724504774">Options</translation>
+<translation id="6593753688552673085">moins de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Options de chiffrement</translation>
 <translation id="662080504995468778">Rester</translation>
 <translation id="6628463337424475685">Recherche <ph name="ENGINE" /></translation>
@@ -594,7 +601,9 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8034522405403831421">Cette page est rédigée en <ph name="SOURCE_LANGUAGE" />. Voulez-vous la traduire en <ph name="TARGET_LANGUAGE" /> ?</translation>
 <translation id="8034955203865359138">Aucune entrée d'historique trouvée.</translation>
 <translation id="8088680233425245692">Échec de l'affichage de l'article.</translation>
+<translation id="8089520772729574115">moins de 1 Mo</translation>
 <translation id="8091372947890762290">Activation en attente sur le serveur.</translation>
+<translation id="8129262335948759431">montant inconnu</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8134994873729925007">Impossible de trouver l'<ph name="BEGIN_ABBR" />adresse DNS<ph name="END_ABBR" /> du serveur <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>
@@ -603,6 +612,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8201077131113104583">URL de mise à jour non valide pour l'extension associée à l'identifiant "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8218327578424803826">Position attribuée :</translation>
 <translation id="8225771182978767009">La personne qui a configuré cet ordinateur a choisi de bloquer ce site.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">La page que vous recherchez a utilisé des informations que vous avez envoyées. Si vous revenez sur cette page, chaque action précédemment effectuée sera répétée. Souhaitez-vous continuer ?</translation>
 <translation id="8249320324621329438">Dernière récupération :</translation>
 <translation id="8261506727792406068">Supprimer</translation>
@@ -618,6 +628,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8412145213513410671">Erreurs (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Vous devez saisir deux fois la même phrase secrète.</translation>
 <translation id="8428213095426709021">Paramètres</translation>
+<translation id="8433057134996913067">Vous serez déconnecté de la plupart des sites.</translation>
 <translation id="8437238597147034694">&amp;Annuler le déplacement</translation>
 <translation id="8488350697529856933">S'applique à</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a mis trop de temps à répondre.</translation>

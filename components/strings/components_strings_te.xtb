@@ -24,6 +24,8 @@
 <translation id="1181037720776840403">తొలగించు</translation>
 <translation id="1201402288615127009">తదుపరి</translation>
 <translation id="1201895884277373915">ఈ సైట్ నుండి మరింత</translation>
+<translation id="1206967143813997005">తప్పు ప్రారంభ సంతకం</translation>
+<translation id="1209206284964581585">ప్రస్తుతానికి దాచు</translation>
 <translation id="121201262018556460">మీరు <ph name="DOMAIN" />ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ బలహీన కీని కలిగి ఉన్న ప్రమాణపత్రాన్ని అందించింది. దాడి చేసేవారు ప్రైవేట్ కీని విచ్ఛిన్నం చేశారు మరియు సర్వర్ మీరు ఊహించిన సర్వర్ కాకపోవచ్చు (మీరు దాడి చేసే వారితో కమ్యూనికేట్ చేస్తుండవచ్చు).</translation>
 <translation id="1219129156119358924">సిస్టమ్ భద్రత</translation>
 <translation id="1227224963052638717">తెలియని విధానం.</translation>
@@ -127,6 +129,7 @@
 <translation id="2396249848217231973">&amp;తొలగించడాన్ని రద్దు చేయి</translation>
 <translation id="2413528052993050574">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రం ఉపసంహరించబడి ఉండవచ్చు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="2455981314101692989">ఈ వెబ్‌పేజీ ఈ ఫారమ్‌ కోసం స్వయంచాలకంగా పూర్తి చెయ్యడాన్ని ఆపివేసింది.</translation>
+<translation id="2463739503403862330">పూరించు</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />నెట్‌వర్క్ సమస్య విశ్లేషణలను అమలు చేయడం<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">చెల్లని శోధన URL.</translation>
 <translation id="2491120439723279231">సర్వర్ యొక్క ప్రమాణపత్రంలో లోపాలు ఉన్నాయి.</translation>
@@ -255,6 +258,7 @@
 <translation id="3658742229777143148">పునర్విమర్శ</translation>
 <translation id="3681007416295224113">సర్టిఫికెట్ సమాచారం</translation>
 <translation id="3693415264595406141">పాస్‌వర్డ్:</translation>
+<translation id="3696411085566228381">ఏదీ కాదు</translation>
 <translation id="3700528541715530410">అయ్యో, మీకు ఈ పేజీని ప్రాప్యత చేయడానికి అనుమతి లేనట్లు కనిపిస్తోంది.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
@@ -276,6 +280,7 @@
 <translation id="3901925938762663762">కార్డ్ గడువు సమయం ముగిసింది</translation>
 <translation id="3934680773876859118">PDF పత్రాన్ని లోడ్ చెయ్యడానికి విఫలమైంది</translation>
 <translation id="3963721102035795474">పాఠకుని మోడ్</translation>
+<translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> బ్లాక్ చేయబడింది</translation>
 <translation id="4021036232240155012">DNS అనేది వెబ్‌సైట్ పేరును దాని ఇంటర్నెట్ చిరునామాకి అనువదించే నెట్‌వర్క్ సేవ.</translation>
 <translation id="4030383055268325496">&amp;జోడించడాన్ని రద్దు చేయి</translation>
@@ -342,6 +347,7 @@
 <translation id="4816492930507672669">పేజీకి తగినట్లు అమర్చు</translation>
 <translation id="4850886885716139402">వీక్షణ</translation>
 <translation id="4880827082731008257">శోధన చరిత్ర</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">ఈ పేజీ తెలియని భాష నుండి <ph name="LANGUAGE_LANGUAGE" />కు అనువదించబడింది</translation>
 <translation id="4926049483395192435">ఖచ్చితంగా పేర్కొనాలి.</translation>
 <translation id="4930497775425430760">మీరు మొదటిసారి కొత్త సైట్‌లను సందర్శించినప్పుడు వాటిని మీ తల్లి/తండ్రి ఆమోదించాల్సిన ఆవశ్యకం ఉన్నందున మీకు ఈ సందేశం కనిపిస్తోంది.</translation>
@@ -411,8 +417,11 @@
 <translation id="572328651809341494">ఇటీవలి ట్యాబ్‌లు</translation>
 <translation id="5784606427469807560">మీ కార్డ్‌ను నిర్ధారించడంలో సమస్య ఏర్పడింది. మీ ఇంటర్నెట్ కనెక్షన్‌ని తనిఖీ చేసి, ఆపై మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="5785756445106461925">అలాగే, ఈ పేజీలో సురక్షితం కాని ఇతర వనరులు ఉన్నాయి. ఈ వనరులను బదిలీ చేస్తున్నప్పుడు ఇతరులు చూడగలరు మరియు దాడికి పాల్పడేవారు పేజీ రూపాన్ని మార్చేలా వీటిని సవరించగలరు.</translation>
+<translation id="5786044859038896871">మీరు మీ కార్డ్ సమాచారం పూరించాలనుకుంటున్నారా?</translation>
+<translation id="5803412860119678065">మీరు మీ <ph name="CARD_DETAIL" /> కార్డ్ సమాచారం పూరించాలనుకుంటున్నారా?</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" />కి గల మీ కనెక్షన్ వాడుకలో లేని సైఫర్ సూట్ ఉపయోగించి గుప్తీకరించబడింది.</translation>
 <translation id="5813119285467412249">&amp;జోడించడాన్ని పునరావృతం చేయి</translation>
+<translation id="5814352347845180253">మీరు <ph name="SITE" /> మరియు మరికొన్ని ఇతర సైట్‌ల నుండి ప్రీమియం కంటెంట్‌కి ప్రాప్యతను కోల్పోవచ్చు.</translation>
 <translation id="5855235287355719921">మీ నిర్వాహకులు ఈ సైట్‌ను బ్లాక్ చేసినందున మీకు ఈ సందేశం కనిపిస్తోంది.</translation>
 <translation id="5857090052475505287">క్రొత్త ఫోల్డర్</translation>
 <translation id="5869405914158311789">ఈ సైట్‌ను చేరుకోలేకపోయాము</translation>
@@ -420,6 +429,7 @@
 <translation id="5872918882028971132">తల్లి/తండ్రి సూచనలు</translation>
 <translation id="59107663811261420">ఈ వ్యాపారి కోసం Google Payments ఈ రకమైన కార్డ్‌కి మద్దతివ్వదు. దయచేసి వేరొక కార్డ్‌ను ఎంచుకోండి.</translation>
 <translation id="59174027418879706">ప్రారంభించబడింది</translation>
+<translation id="5926846154125914413">మీరు కొన్ని సైట్‌ల నుండి ప్రీమియం కంటెంట్‌కి ప్రాప్యతను కోల్పోవచ్చు.</translation>
 <translation id="5966707198760109579">వారం</translation>
 <translation id="5967867314010545767">చరిత్ర నుండి తీసివేయి</translation>
 <translation id="5975083100439434680">దూరంగా జూమ్ చెయ్యి</translation>
@@ -448,6 +458,7 @@
 <translation id="6328639280570009161">నెట్‌వర్క్ సూచనను నిలిపివేసి ప్రయత్నించండి</translation>
 <translation id="6337534724793800597">పేరు ద్వారా విధానాలను ఫిల్టర్ చేయి</translation>
 <translation id="6342069812937806050">ఇప్పుడే</translation>
+<translation id="6345221851280129312">పరిమాణం తెలియదు</translation>
 <translation id="6355080345576803305">పబ్లిక్ సెషన్ భర్తీ</translation>
 <translation id="6358450015545214790">దీని అర్ధం ఏమిటి?</translation>
 <translation id="6387478394221739770">అద్భుతమైన క్రొత్త Chrome లక్షణాల పట్ల ఆసక్తిగా ఉన్నారా? chrome.com/betaలో మా బీటా ఛానెల్‌ను ప్రయత్నించండి.</translation>
@@ -461,6 +472,7 @@
 <translation id="6489534406876378309">క్రాష్‌లను అప్‌లోడ్ చేయడాన్ని ప్రారంభించండి</translation>
 <translation id="6529602333819889595">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="6550675742724504774">ఎంపికలు</translation>
+<translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> కంటే తక్కువ</translation>
 <translation id="6596325263575161958">గుప్తీకరణ ఎంపికలు</translation>
 <translation id="662080504995468778">ఇందులోనే ఉంచు</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> శోధన</translation>
@@ -589,7 +601,9 @@
 <translation id="8034522405403831421">ఈ పేజీ <ph name="SOURCE_LANGUAGE" />లో ఉంది. దీన్ని <ph name="TARGET_LANGUAGE" />లోకి అనువదించాలా?</translation>
 <translation id="8034955203865359138">చరిత్ర నమోదులు కనుగొనబడలేదు.</translation>
 <translation id="8088680233425245692">కథనాన్ని వీక్షించడంలో విఫలమైంది.</translation>
+<translation id="8089520772729574115">1 MB కంటే తక్కువ</translation>
 <translation id="8091372947890762290">సక్రియం సర్వర్‌లో పెండింగ్‌లో ఉంది</translation>
+<translation id="8129262335948759431">డేటా మొత్తం తెలియదు</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> సర్వర్ <ph name="BEGIN_ABBR" />DNS చిరునామా<ph name="END_ABBR" />ను కనుగొనడం సాధ్యపడలేదు.</translation>
 <translation id="8149426793427495338">మీ కంప్యూటర్ నిద్రావస్థకి వెళ్లింది.</translation>
@@ -598,6 +612,7 @@
 <translation id="8201077131113104583">ID "<ph name="EXTENSION_ID" />" ఉన్న పొడిగింపు కోసం నవీకరణ URL చెల్లదు.</translation>
 <translation id="8218327578424803826">కేటాయించిన స్థానం:</translation>
 <translation id="8225771182978767009">ఈ కంప్యూటర్‌ను సెటప్ చేసిన వ్యక్తి ఈ సైట్‌ను బ్లాక్ చేయడానికి ఎంచుకున్నారు.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">మీరు వెతికే పేజీ మీరు ఎంటర్ చేసిన సమాచారాన్ని ఉపయోగించుకుంది. ఆ పేజీకి తిరిగి వెళ్ళడం ద్వారా మీరు చేసిన ఏ చర్య అయినా పునరావృతం చెయ్యవలసి వస్తుంది. మీరు కొనసాగాలనుకుంటున్నారా?</translation>
 <translation id="8249320324621329438">చివరగా పొందబడినవి:</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
@@ -613,6 +628,7 @@
 <translation id="8412145213513410671">క్రాష్‌లు (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">మీరు అదే పాస్‌ఫ్రేజ్‌ని రెండుసార్లు ఖచ్చితంగా ఎంటర్ చెయ్యాలి.</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
+<translation id="8433057134996913067">దీని వలన మీరు చాలా వెబ్‌సైట్‌ల నుండి సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="8437238597147034694">&amp;తరలించడాన్ని రద్దు చేయి</translation>
 <translation id="8488350697529856933">వీటికి వర్తిస్తుంది</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం పట్టింది.</translation>

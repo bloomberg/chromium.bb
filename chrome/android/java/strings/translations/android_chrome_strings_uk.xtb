@@ -509,7 +509,6 @@
 <translation id="7074853159844403180">Сайт <ph name="SITE" /> хоче підключитися до:</translation>
 <translation id="7081639897063626814">Зберігати наявні дані окремо</translation>
 <translation id="7094922512924405309">Немає сторінок із сервісу "Інтернет навколо нас"</translation>
-<translation id="7095930899177687653">Відкрито вкладок: <ph name="OPEN_TABS" /></translation>
 <translation id="7115197232530297436">Адреса доставки не підтримується. Укажіть іншу адресу.</translation>
 <translation id="7138678301420049075">Інше</translation>
 <translation id="7180611975245234373">Оновити</translation>
@@ -612,6 +611,7 @@
 <translation id="8433057134996913067">Ви вийдете з облікового запису на більшості веб-сайтів.</translation>
 <translation id="8447861592752582886">Скасувати доступ до пристрою</translation>
 <translation id="8481940801237642152">Ваше з’єднання з сайтом приватне, але хтось у мережі може змінювати вигляд сторінки.</translation>
+<translation id="8487700953926739672">Доступ у режимі офлайн</translation>
 <translation id="8493948351860045254">Звільнити місце</translation>
 <translation id="8497726226069778601">Тут ще нічого немає…</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>

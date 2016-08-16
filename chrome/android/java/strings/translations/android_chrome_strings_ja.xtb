@@ -509,7 +509,6 @@
 <translation id="7074853159844403180"><ph name="SITE" /> とペア設定するデバイスを選択:</translation>
 <translation id="7081639897063626814">既存のデータを別に保持する</translation>
 <translation id="7094922512924405309">近くにフィジカル ウェブページは見つかりませんでした</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> 個の開いているタブ</translation>
 <translation id="7115197232530297436">配送先住所がサポートされていません。別の住所を選択してください。</translation>
 <translation id="7138678301420049075">その他</translation>
 <translation id="7180611975245234373">更新</translation>
@@ -612,6 +611,7 @@
 <translation id="8433057134996913067">ほとんどのウェブサイトからログアウトします。</translation>
 <translation id="8447861592752582886">端末の許可を取り消します</translation>
 <translation id="8481940801237642152">このサイトへの接続はプライベート接続です。ただし、ネットワーク上のユーザーがこのページのデザインを変更できる可能性はあります。</translation>
+<translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8493948351860045254">容量を空ける</translation>
 <translation id="8497726226069778601">表示するものがまだありません</translation>
 <translation id="8503813439785031346">ユーザー名</translation>

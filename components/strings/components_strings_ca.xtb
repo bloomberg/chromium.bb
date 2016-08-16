@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">Revisió</translation>
 <translation id="3681007416295224113">Informació del certificat</translation>
 <translation id="3693415264595406141">Contrasenya:</translation>
+<translation id="3696411085566228381">cap</translation>
 <translation id="3700528541715530410">Sembla que no teniu permís per accedir a aquesta pàgina.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">S'està carregant...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">La targeta ha caducat</translation>
 <translation id="3934680773876859118">No es pot carregar el document en format PDF</translation>
 <translation id="3963721102035795474">Mode de lector</translation>
+<translation id="397105322502079400">S’està calculant...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> està bloquejat</translation>
 <translation id="4021036232240155012">DNS és el servei de xarxa que tradueix el nom d'un lloc web en l'adreça d'Internet corresponent.</translation>
 <translation id="4030383055268325496">&amp;Desfés l'addició</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">Ajusta a la mida de la pàgina</translation>
 <translation id="4850886885716139402">Visualització</translation>
 <translation id="4880827082731008257">Cerca a l'historial</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Aquesta pàgina s'ha traduït des d'un idioma desconegut a: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">S'ha d'especificar.</translation>
 <translation id="4930497775425430760">Veieu aquest missatge perquè els vostres pares han d'aprovar els llocs que visiteu per primera vegada.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">Vols emplenar la informació de la teva targeta <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">La connexió a <ph name="DOMAIN" /> s'ha encriptat amb un sistema de xifratge obsolet.</translation>
 <translation id="5813119285467412249">&amp;Refés l'addició</translation>
+<translation id="5814352347845180253">Pot ser que perdis l'accés al contingut prèmium de <ph name="SITE" /> i d'altres llocs.</translation>
 <translation id="5855235287355719921">Veieu aquest missatge perquè el gestor ha bloquejat aquest lloc.</translation>
 <translation id="5857090052475505287">Carpeta nova</translation>
 <translation id="5869405914158311789">No es pot accedir a aquest lloc</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">Suggeriments per als responsables</translation>
 <translation id="59107663811261420">Google Payments no admet aquest tipus de targeta per a aquest comerciant. Seleccioneu-ne una altra.</translation>
 <translation id="59174027418879706">Activada</translation>
+<translation id="5926846154125914413">Pot ser que perdis l'accés al contingut prèmium d'alguns llocs.</translation>
 <translation id="5966707198760109579">Setmana</translation>
 <translation id="5967867314010545767">Elimina de l'historial</translation>
 <translation id="5975083100439434680">Redueix</translation>
@@ -453,6 +458,7 @@
 <translation id="6328639280570009161">Proveu de desactivar la predicció de xarxa</translation>
 <translation id="6337534724793800597">Filtra les polítiques pel nom</translation>
 <translation id="6342069812937806050">Ara mateix</translation>
+<translation id="6345221851280129312">mida desconeguda</translation>
 <translation id="6355080345576803305">Substitueix en sessions públiques</translation>
 <translation id="6358450015545214790">Què vol dir tot això?</translation>
 <translation id="6387478394221739770">Esteu interessat en les funcions de Chrome noves i interessants? Proveu el nostre canal beta a la pàgina chrome.com/beta.</translation>
@@ -466,6 +472,7 @@
 <translation id="6489534406876378309">Comença a penjar els errors</translation>
 <translation id="6529602333819889595">&amp;Refés la supressió</translation>
 <translation id="6550675742724504774">Opcions</translation>
+<translation id="6593753688552673085">menys de: <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opcions d'encriptació</translation>
 <translation id="662080504995468778">No surtis</translation>
 <translation id="6628463337424475685">Cerca de <ph name="ENGINE" /></translation>
@@ -594,7 +601,9 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8034522405403831421">Aquesta pàgina està escrita en <ph name="SOURCE_LANGUAGE" />. Vols traduir-la a <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">No s'ha trobat cap entrada a l'historial.</translation>
 <translation id="8088680233425245692">No s'ha pogut consultar l'article.</translation>
+<translation id="8089520772729574115">menys d'1 MB</translation>
 <translation id="8091372947890762290">L'activació està pendent al servidor</translation>
+<translation id="8129262335948759431">quantitat desconeguda</translation>
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8134994873729925007">No s'ha trobat l'<ph name="BEGIN_ABBR" />adreça DNS<ph name="END_ABBR" /> del servidor de <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">L'ordinador ha entrat en mode de repòs.</translation>
@@ -603,6 +612,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8201077131113104583">L'URL d'actualització per a l'extensió amb identificador "<ph name="EXTENSION_ID" />" no és vàlid.</translation>
 <translation id="8218327578424803826">Ubicació assignada:</translation>
 <translation id="8225771182978767009">La persona que ha configurat l'ordinador ha bloquejat aquest lloc.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">La pàgina que busques utilitzava informació que vas introduir. Tornar a aquesta pàgina podria provocar una repetició de qualsevol acció realitzada. Vols continuar?</translation>
 <translation id="8249320324621329438">Última obtenció:</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
@@ -618,6 +628,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8412145213513410671">Bloqueigs (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Heu d'introduir la mateixa frase de contrasenya dues vegades.</translation>
 <translation id="8428213095426709021">Configuració</translation>
+<translation id="8433057134996913067">Amb aquesta acció es tancarà la sessió a la majoria de llocs web.</translation>
 <translation id="8437238597147034694">&amp;Desfés el moviment</translation>
 <translation id="8488350697529856933">Objectiu d'aplicació</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha tardat massa a respondre.</translation>

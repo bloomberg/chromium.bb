@@ -622,7 +622,6 @@
 <translation id="18139523105317219">Name der EDI-Partei</translation>
 <translation id="1815083418640426271">Als unformatierten Text einfügen</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Vorsicht:<ph name="END_BOLD" />Hierbei handelt es sich um Temporärdateien, die möglicherweise automatisch gelöscht werden, um Speicherplatz freizugeben. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
-<translation id="1817598832273952216">{COUNT,plural, =1{1 Kreditkarte}other{# Kreditkarten}}</translation>
 <translation id="1817871734039893258">Microsoft-Dateiwiederherstellung</translation>
 <translation id="1818196664359151069">Auflösung:</translation>
 <translation id="1825832322945165090">Nicht genug Speicherplatz auf dem Gerät</translation>
@@ -1526,7 +1525,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="3021678814754966447">Frame-Quelltext &amp;anzeigen</translation>
 <translation id="3024374909719388945">24-Stunden-Format verwenden</translation>
 <translation id="3025022340603654002">Beim ersten Mausklick auf ein Formularelement AutoFill-Vervollständigungen anbieten</translation>
-<translation id="3025659459015040795">{COUNT,plural, =1{1 Vorschlag}other{# Vorschläge}}</translation>
 <translation id="3025729795978504041">Klicken Sie mit der rechten Maustaste auf die Schaltfläche oben, um andere Nutzer zu sehen.</translation>
 <translation id="3026050830483105579">Alles an einem zentralen Ort.</translation>
 <translation id="302620147503052030">Schaltfläche anzeigen</translation>
@@ -1842,7 +1840,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3423858849633684918"><ph name="PRODUCT_NAME" /> neu starten</translation>
 <translation id="3425233587047449821">Neuer koreanischer IME</translation>
 <translation id="3426704822745136852">Gibt die Anzahl an Raster-Threads an</translation>
-<translation id="3429274334716393946">{COUNT,plural, =0{mindestens 1 Inhalt auf synchronisierten Geräten}=1{1 Inhalt (und weitere auf synchronisierten Geräten)}other{# Inhalte (und weitere auf synchronisierten Geräten)}}</translation>
 <translation id="3429599832623003132">$1 Elemente</translation>
 <translation id="3432757130254800023">Audio und Video auf Bildschirme im lokalen Netzwerk senden</translation>
 <translation id="3433621910545056227">Hoppla! Das System konnte die Attributsperre für die Installationszeit des Geräts nicht einrichten.</translation>
@@ -2060,7 +2057,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Vorherigen Tab auswählen</translation>
 <translation id="3694678678240097321">Für die Ausführung eines Skripts auf der Seite durch eine Erweiterung ist die Zustimmung des Nutzers erforderlich, falls die Erweiterung die Berechtigung zur Ausführung auf allen URLs angefordert hat.</translation>
 <translation id="3695919544155087829">Geben Sie das Passwort ein, das für die Verschlüsselung dieser Zertifikatdatei verwendet wurde.</translation>
-<translation id="3696411085566228381">keine</translation>
 <translation id="3697100740575341996">Ihr IT-Administrator hat Chrome-Extras für Ihr Gerät deaktiviert. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699080292907545058">Legen Sie die höchste aktivierte TLS-Version fest.</translation>
 <translation id="3699624789011381381">E-Mail-Adresse</translation>
@@ -2288,7 +2284,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="3979395879372752341">Neue Erweiterung hinzugefügt (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> aktivieren</translation>
 <translation id="3981760180856053153">Eingegebener Speichertyp ist ungültig.</translation>
-<translation id="3981990000224130884">{COUNT,plural, =1{1 Adresse}other{# Adressen}}</translation>
 <translation id="3983586614702900908">Geräte von einem unbekannten Anbieter</translation>
 <translation id="3984413272403535372">Fehler bei der Signatur der Erweiterung</translation>
 <translation id="3987970780975473420">Physical Web aktivieren.</translation>
@@ -2361,7 +2356,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="409579654357498729">Zu Cloud Print hinzufügen</translation>
 <translation id="4096508467498758490">Erweiterungen im Entwicklermodus deaktivieren</translation>
 <translation id="4098354747657067197">Es folgt eine betrügerische Website</translation>
-<translation id="4099585076575543605">{COUNT,plural, =0{keine}=1{1}other{#}}</translation>
 <translation id="409980434320521454">Synchronisierung fehlgeschlagen</translation>
 <translation id="4100733287846229632">Speicherplatz auf Gerät äußerst niedrig</translation>
 <translation id="4101878899871018532">Der Passwortmanager bietet nicht an, die Anmeldedaten für die Synchronisierung zu speichern.</translation>
@@ -2377,7 +2371,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4116663294526079822">Auf dieser Website immer zulassen</translation>
 <translation id="411666854932687641">Privater Speicher</translation>
 <translation id="4118990158415604803">Die Möglichkeit einer Verbindung zu anderen Netzwerken wurde von Ihrem Administrator deaktiviert.</translation>
-<translation id="4119034994132515155">{COUNT,plural, =1{und 1 weiteres}other{und # weitere}}</translation>
 <translation id="4119386654071687030">Rendert einen Rahmen um zusammengesetzte GL-Texturquadranten, um beim Debuggen und Prüfen der Overlay-Unterstützung zu helfen.</translation>
 <translation id="4119828560634133962">Werbeaktionen für Druckvorschauregistrierung</translation>
 <translation id="4120329147617730038">Ein Administrator hat die Mehrfachanmeldung für <ph name="USER_EMAIL" /> deaktiviert.
@@ -2897,7 +2890,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4888510611625056742">Tab 2</translation>
 <translation id="4890284164788142455">Thailändisch</translation>
 <translation id="4893336867552636863">Dadurch werden die Browserdaten dauerhaft von diesem Gerät gelöscht.</translation>
-<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4899376560703610051">Ihr <ph name="DEVICE_TYPE" /> wurde manuell gesperrt. Geben Sie zum Fortfahren Ihr Passwort ein.</translation>
 <translation id="4899816749097347786">Webseiten können experimentelle WebAssembly-Funktionen nutzen.</translation>
 <translation id="490074449735753175">Rechtschreibfehler mithilfe eines Webdienstes korrigieren</translation>
@@ -3578,7 +3570,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5804241973901381774">Berechtigungen</translation>
 <translation id="580571955903695899">Neu sortieren nach Titel</translation>
 <translation id="580961539202306967">Nachfragen, wenn eine Website mir Push-Nachrichten senden möchte (empfohlen)</translation>
-<translation id="5814352347845180253">Eventuell verlieren Sie den Zugriff auf Premiuminhalte von <ph name="SITE" /> und einigen anderen Websites.</translation>
 <translation id="5815645614496570556">X.400-Adresse</translation>
 <translation id="5817397429773072584">Chinesisch (traditionell)</translation>
 <translation id="5817918615728894473">Pairing durchführen</translation>
@@ -3666,7 +3657,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5916664084637901428">An</translation>
 <translation id="59174027418879706">Aktiviert</translation>
 <translation id="5925147183566400388">Verweis auf Certification Practice Statement</translation>
-<translation id="5926846154125914413">Eventuell verlieren Sie den Zugriff auf Premiuminhalte von einigen Websites.</translation>
 <translation id="5930693802084567591">Ihre Daten sind seit dem <ph name="TIME" /> mit Ihrem Google-Passwort verschlüsselt. Geben Sie dieses unten ein.</translation>
 <translation id="5931146425219109062">Alle Ihre Daten auf von Ihnen besuchten Websites lesen und ändern</translation>
 <translation id="5932881020239635062">Seriennummer</translation>
@@ -3947,7 +3937,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="634208815998129842">Task-Manager</translation>
 <translation id="6344170822609224263">Auf Liste der Netzwerkverbindungen zugreifen</translation>
 <translation id="6344584046526421554">Experimentelle Bedienungshilfen</translation>
-<translation id="6345221851280129312">unbekannte Größe</translation>
 <translation id="6347003977836730270">Dadurch wird das neue Übersetzer-Infofeld anstelle der Infoleiste angeboten.</translation>
 <translation id="6348657800373377022">Kombinationsfeld</translation>
 <translation id="6349839454356033837">Bei der Wiedergabe der Medien mit Android ist ein Problem aufgetreten.</translation>
@@ -4129,7 +4118,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6588399906604251380">Rechtschreibprüfung aktivieren</translation>
 <translation id="6589706261477377614">Tastenhelligkeit erhöhen</translation>
 <translation id="6592267180249644460">WebRTC-Protokoll erfasst am <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
-<translation id="6593753688552673085">weniger als <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6593868448848741421">beste</translation>
 <translation id="6596092346130528198">Ist das die "Neuer Tab"-Seite, die Sie erwartet hatten?</translation>
 <translation id="6596325263575161958">Verschlüsselungsoptionen</translation>
@@ -4272,7 +4260,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6823506025919456619">Melden Sie sich in Chrome an, um Ihre Geräte zu sehen.</translation>
 <translation id="6824564591481349393">E-Mail-Adr&amp;esse kopieren</translation>
 <translation id="6824725898506587159">Sprachen verwalten</translation>
-<translation id="6825718953004242472">Symbol entfernen</translation>
 <translation id="6825883775269213504">Russisch</translation>
 <translation id="6827236167376090743">Dieses Video läuft immer weiter und weiter...</translation>
 <translation id="6828153365543658583">Anmeldung auf die folgenden Nutzer beschränken:</translation>
@@ -5185,7 +5172,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8079530767338315840">Wiederholen</translation>
 <translation id="8083739373364455075">Erhalten Sie kostenlos 100 GB bei Google Drive.</translation>
 <translation id="8088137642766812908">Vorsicht!</translation>
-<translation id="8089520772729574115">weniger als 1 MB</translation>
 <translation id="8090234456044969073">Liste Ihrer meistbesuchten Websites lesen</translation>
 <translation id="8091655032047076676">Experimentell</translation>
 <translation id="8094917007353911263">Unter Umständen erfordert das von Ihnen verwendete Netzwerk, dass Sie <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> aufrufen.</translation>
@@ -5213,7 +5199,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8126844665673008223">Web Bluetooth</translation>
 <translation id="8127181497803323361">Dadurch werden die Ereignis-Listener "touchstart" und "touchmove", die keine andere Anfrage gestellt haben, bei Zielen auf Dokumentebene als passiv behandelt.</translation>
 <translation id="8127322077195964840">Ungültige Zertifikate für von localhost geladene Ressourcen erlauben</translation>
-<translation id="8129262335948759431">unbekannter Wert</translation>
 <translation id="8130269545914251658">Steuerelement zum Stummschalten von Tabs auf der Benutzeroberfläche</translation>
 <translation id="813082847718468539">Website-Informationen anzeigen</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
@@ -5262,7 +5247,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8180239481735238521">Seite</translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" kann Bilder, Video- und Sounddateien an den angegebenen Orten lesen und löschen.</translation>
 <translation id="8181988707601696997">App Launcher-Synchronisierung</translation>
-<translation id="8183368067134675917">{COUNT,plural, =0{keine}=1{1 Inhalt}other{# Inhalte}}</translation>
 <translation id="8184538546369750125">Globalen Standard verwenden (Zulassen)</translation>
 <translation id="818454486170715660"><ph name="NAME" /> - Eigentümer</translation>
 <translation id="8185331656081929126">Benachrichtigung anzeigen, wenn neue Drucker im Netzwerk gefunden werden</translation>
@@ -5295,7 +5279,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8223479393428528563">Wenn Sie diese Dateien zur Offline-Nutzung speichern möchten, gehen Sie online, klicken Sie mit der rechten Maustaste auf die Dateien und wählen Sie die Option "<ph name="OFFLINE_CHECKBOX_NAME" />" aus.</translation>
 <translation id="8226222018808695353">Unzulässig</translation>
 <translation id="8226742006292257240">Hier ist das zufällig generierte TPM-Passwort, das Ihrem Computer zugewiesen wurde:</translation>
-<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8230421197304563332">Zurzeit auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> befindliche Angreifer versuchen unter Umständen, gefährliche Programme auf Ihrem Computer zu installieren, um Ihre Daten zu stehlen oder zu löschen, zum Beispiel Fotos, Passwörter, Nachrichten und Kreditkartendaten.</translation>
 <translation id="8233254008506535819">Verwenden Sie die Option, um wichtige Websites im Dialogfeld "Browserdaten löschen" auf die weiße Liste zu setzen.</translation>
 <translation id="8236231079192337250">Chrome Web Store-Galerie App für Druckertreiber</translation>
@@ -5369,7 +5352,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8320459152843401447">Mein ganzer Bildschirm</translation>
 <translation id="8322814362483282060">Diese Seite darf nicht auf Ihr Mikrofon zugreifen.</translation>
 <translation id="8326478304147373412">PKCS #7, Zertifikatkette</translation>
-<translation id="8327201046748601585">{COUNT,plural, =1{1 weitere}other{# weitere}}</translation>
 <translation id="8329978297633540474">Unformatierter Text</translation>
 <translation id="8330907072332288839">Scrollvorhersage</translation>
 <translation id="8332473670738981565">Weak MemoryCache aktivieren.</translation>
@@ -5444,7 +5426,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8428634594422941299">OK</translation>
 <translation id="8432745813735585631">US-amerikanische Colemak-Tastatur</translation>
-<translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
 <translation id="8434177709403049435">&amp;Codierung</translation>
 <translation id="8434480141477525001">NaCl-Debug-Port</translation>
 <translation id="8435334418765210033">Gespeicherte Netzwerke</translation>
@@ -5461,7 +5442,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8446884382197647889">Weitere Informationen</translation>
 <translation id="8449008133205184768">Einfügen und Formatvorlage anpassen</translation>
 <translation id="8449036207308062757">Speicherplatz verwalten</translation>
-<translation id="8452388482414738991">{COUNT,plural, =1{1 weiterer Vorschlag}other{# weitere Vorschläge}}</translation>
 <translation id="8452588990572106089">Ungültige Kartennummer. Bitte überprüfen Sie Ihre Angaben und versuchen Sie es erneut.</translation>
 <translation id="8453482423012550001">$1-Elemente werden kopiert...</translation>
 <translation id="8454189779191516805">Gibt die Anzahl an MSAA-Beispielen für die GPU-Rasterung an</translation>
@@ -6042,7 +6022,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="939736085109172342">Neuer Ordner</translation>
 <translation id="940425055435005472">Schriftgröße:</translation>
 <translation id="941543339607623937">Ungültiger privater Schlüssel</translation>
-<translation id="94157737897675170">{COUNT,plural, =0{keine}=1{1 App ($1)}=2{2 Apps ($1, $2)}other{# Apps ($1, $2, $3)}}</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> hat einen Chrome-Tab und Audio freigegeben.</translation>
 <translation id="942954117721265519">Dieses Verzeichnis enthält keine Bilder.</translation>
 <translation id="945522503751344254">Feedback geben</translation>

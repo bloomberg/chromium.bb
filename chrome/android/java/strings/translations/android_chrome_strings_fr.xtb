@@ -509,7 +509,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7074853159844403180">Le site <ph name="SITE" /> souhaite être associé à l'appareil suivant :</translation>
 <translation id="7081639897063626814">Maintenir les données existantes à part</translation>
 <translation id="7094922512924405309">Aucune page Web physique n'a été trouvée.</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> onglets ouverts</translation>
 <translation id="7115197232530297436">Adresse de destination non acceptée. Sélectionnez une autre adresse.</translation>
 <translation id="7138678301420049075">Autre</translation>
 <translation id="7180611975245234373">Actualiser</translation>
@@ -612,6 +611,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8433057134996913067">Vous serez déconnecté de la plupart des sites.</translation>
 <translation id="8447861592752582886">Révoquer l'autorisation d'accès à l'appareil</translation>
 <translation id="8481940801237642152">Votre connexion à ce site est privée, mais d'autres personnes connectées au réseau peuvent réussir à modifier l'apparence de la page.</translation>
+<translation id="8487700953926739672">Disponible hors connexion</translation>
 <translation id="8493948351860045254">Libérer de l'espace</translation>
 <translation id="8497726226069778601">Aucune page à afficher pour le moment</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>

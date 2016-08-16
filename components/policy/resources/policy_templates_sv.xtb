@@ -1370,7 +1370,7 @@
 
       Om du aktiverar den här inställningen går utvecklarverktygen inte att öppna och det går inte längre att kontrollera element på webbplatser. Kortkommandon och alternativ för att öppna utvecklarverktygen eller JavaScript-konsolen på menyer och snabbmenyer inaktiveras.
 
-      Om du inaktiverar alternativet eller inte väljer något går det att använda utvecklarverktygen och JavaScript-konsolen..
+      Om du inaktiverar alternativet eller inte väljer något går det att använda utvecklarverktygen och JavaScript-konsolen.
 
       På <ph name="PRODUCT_OS_NAME" />-enheter som det går att köra Android-appar på styr den här principen även tillgången till Androids utvecklaralternativ. Om principen är inställd på sant kan användarna inte öppna utvecklaralternativen. Om principen är inställd på falskt eller lämnas utan inställning kan användarna öppna utvecklaralternativen genom att trycka sju gånger på versionsnumret i appen Inställningar i Android.</translation>
 <translation id="556941986578702361">Kontrollera hur <ph name="PRODUCT_OS_NAME" />-hyllan döljs automatiskt.

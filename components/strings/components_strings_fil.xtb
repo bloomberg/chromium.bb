@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">Rebisyon</translation>
 <translation id="3681007416295224113">Impormasyon sa certificate</translation>
 <translation id="3693415264595406141">Password:</translation>
+<translation id="3696411085566228381">wala</translation>
 <translation id="3700528541715530410">Oops, mukhang wala kang pahintulot na i-access ang pahinang ito.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Kumakarga...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">Na-expire na ang card</translation>
 <translation id="3934680773876859118">Nabigong i-load ang dokumentong PDF</translation>
 <translation id="3963721102035795474">Reader Mode</translation>
+<translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="3973234410852337861">Naka-block ang <ph name="HOST_NAME" /></translation>
 <translation id="4021036232240155012">Ang DNS ay ang serbisyo sa network na nagta-translate ng pangalan ng isang website sa Internet address nito.</translation>
 <translation id="4030383055268325496">&amp;I-undo ang pagdagdag</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">Pagkasyahin sa pahina</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4880827082731008257">History ng paghahanap</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Na-translate ang pahinang ito mula sa hindi kilalang wika patungo sa <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Dapat na tukuyin.</translation>
 <translation id="4930497775425430760">Nakikita mo ang mensaheng ito dahil kailangang aprubahan ng iyong magulang ang mga bagong site sa una mong pagbisita.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">Gusto mo bang ilagay ang iyong <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">Naka-encrypt ang iyong koneksyon sa <ph name="DOMAIN" /> gamit ang isang hindi na ginagamit na cipher suite.</translation>
 <translation id="5813119285467412249">&amp;Gawing Muli ang Pagdagdag</translation>
+<translation id="5814352347845180253">Maaari kang mawalan ng access sa premium na content mula sa <ph name="SITE" /> at ilan pang ibang site.</translation>
 <translation id="5855235287355719921">Nakikita mo ang mensaheng ito dahil na-block ng iyong manager ang site na ito.</translation>
 <translation id="5857090052475505287">Bagong Folder</translation>
 <translation id="5869405914158311789">Hindi makakonekta sa site na ito</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">Mga Suhestyon ng Magulang</translation>
 <translation id="59107663811261420">Ang ganitong uri ng card ay hindi sinusuportahan ng Google Payments para sa merchant na ito. Mangyaring pumili ng ibang card.</translation>
 <translation id="59174027418879706">Naka-enable</translation>
+<translation id="5926846154125914413">Maaari kang mawalan ng access sa premium na content mula sa ilang site.</translation>
 <translation id="5966707198760109579">Linggo</translation>
 <translation id="5967867314010545767">Alisin sa history</translation>
 <translation id="5975083100439434680">Mag-zoom out</translation>
@@ -453,6 +458,7 @@
 <translation id="6328639280570009161">Subukang i-disable ang paghula ng network</translation>
 <translation id="6337534724793800597">I-filter ang mga patakaran ayon sa pangalan</translation>
 <translation id="6342069812937806050">Ngayon lang</translation>
+<translation id="6345221851280129312">hindi pa natutukoy na laki</translation>
 <translation id="6355080345576803305">Override sa pampublikong session</translation>
 <translation id="6358450015545214790">Ano ang ibig sabihin ng mga ito?</translation>
 <translation id="6387478394221739770">Interesado sa mga astig at bagong tampok sa Chrome? Subukan ang aming beta channel sa chrome.com/beta.</translation>
@@ -466,6 +472,7 @@
 <translation id="6489534406876378309">Simulang mag-upload ng mga pag-crash</translation>
 <translation id="6529602333819889595">&amp;Gawing Muli ang Pagtanggal</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
+<translation id="6593753688552673085">wala pang <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Mga pagpipilian sa pag-encrypt</translation>
 <translation id="662080504995468778">Manatili</translation>
 <translation id="6628463337424475685">Paghahanap ng <ph name="ENGINE" /></translation>
@@ -594,7 +601,9 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8034522405403831421">Nasa <ph name="SOURCE_LANGUAGE" /> ang pahinang ito. Isalin ito sa <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Walang nakitang mga entry ng kasaysayan.</translation>
 <translation id="8088680233425245692">Hindi natingnan ang artikulo.</translation>
+<translation id="8089520772729574115">wala pang 1 MB</translation>
 <translation id="8091372947890762290">Nakabinbin sa server ang pag-activate</translation>
+<translation id="8129262335948759431">hindi pa natutukoy na dami</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
 <translation id="8134994873729925007">Hindi makita ang <ph name="BEGIN_ABBR" />DNS address<ph name="END_ABBR" /> ng server ng <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Nag-sleep ang iyong computer.</translation>
@@ -603,6 +612,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8201077131113104583">Di-wastong URL ng update para sa extension na may ID na "<ph name="EXTENSION_ID" />."</translation>
 <translation id="8218327578424803826">Itinakdang Lokasyon:</translation>
 <translation id="8225771182978767009">Pinili ng taong nag-set up ng computer na ito na i-block ang site na ito.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Ang pahina na hinahanap mo para sa paggamit ng impormasyon na ipinasok mo. Ang pagbalik sa pahinang iyon maaaring magsanhi ng anumang aksyon na akalo mo ay naulit. Nais mo bang ipagpatuloy?</translation>
 <translation id="8249320324621329438">Huling kinuha:</translation>
 <translation id="8261506727792406068">Burahin</translation>
@@ -618,6 +628,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8412145213513410671">Mga Pag-crash (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Dapat mong ilagay ang parehong passphrase nang dalawang beses.</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
+<translation id="8433057134996913067">Masa-sign out ka sa karamihan ng mga website.</translation>
 <translation id="8437238597147034694">&amp;I-undo ang paglilipat</translation>
 <translation id="8488350697529856933">Nalalapat sa</translation>
 <translation id="8498891568109133222">Masyadong matagal bago nakatugon ang <ph name="HOST_NAME" />.</translation>

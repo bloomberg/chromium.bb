@@ -257,6 +257,7 @@
 <translation id="3658742229777143148">Überarbeitung</translation>
 <translation id="3681007416295224113">Zertifikatinformationen</translation>
 <translation id="3693415264595406141">Passwort:</translation>
+<translation id="3696411085566228381">keine</translation>
 <translation id="3700528541715530410">Hoppla. Sie sind offenbar nicht berechtigt, auf diese Seite zuzugreifen.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Wird geladen...</translation>
@@ -278,6 +279,7 @@
 <translation id="3901925938762663762">Die Karte ist abgelaufen.</translation>
 <translation id="3934680773876859118">Fehler beim Laden des PDF-Dokuments</translation>
 <translation id="3963721102035795474">Lesemodus</translation>
+<translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ist gesperrt</translation>
 <translation id="4021036232240155012">DNS ist der Netzwerkdienst, der den Namen einer Website in die entsprechende Internetadresse umwandelt.</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
@@ -344,6 +346,7 @@
 <translation id="4816492930507672669">An Seite anpassen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Diese Seite wurde von einer unbekannten Sprache in <ph name="LANGUAGE_LANGUAGE" /> übersetzt.</translation>
 <translation id="4926049483395192435">Angabe erforderlich</translation>
 <translation id="4930497775425430760">Diese Nachricht wird dir angezeigt, weil dein Elternteil neue Websites zuerst genehmigen muss, bevor du sie öffnen kannst.</translation>
@@ -417,6 +420,7 @@
 <translation id="5803412860119678065">Möchten Sie die Daten Ihrer <ph name="CARD_DETAIL" /> eingeben?</translation>
 <translation id="5810442152076338065">Ihre Verbindung zu <ph name="DOMAIN" /> ist mit einer veralteten Codier-Suite verschlüsselt.</translation>
 <translation id="5813119285467412249">&amp;Hinzufügen wiederholen</translation>
+<translation id="5814352347845180253">Eventuell verlieren Sie den Zugriff auf Premiuminhalte von <ph name="SITE" /> und einigen anderen Websites.</translation>
 <translation id="5855235287355719921">Diese Nachricht wird Ihnen angezeigt, weil Ihr Administrator diese Website blockiert hat.</translation>
 <translation id="5857090052475505287">Neuer Ordner</translation>
 <translation id="5869405914158311789">Diese Website ist nicht erreichbar</translation>
@@ -424,6 +428,7 @@
 <translation id="5872918882028971132">Vorschläge für Eltern</translation>
 <translation id="59107663811261420">Dieser Kartentyp wird von Google Payments für diesen Händler nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
 <translation id="59174027418879706">Aktiviert</translation>
+<translation id="5926846154125914413">Eventuell verlieren Sie den Zugriff auf Premiuminhalte von einigen Websites.</translation>
 <translation id="5966707198760109579">Woche</translation>
 <translation id="5967867314010545767">Aus Verlauf entfernen</translation>
 <translation id="5975083100439434680">Verkleinern</translation>
@@ -452,6 +457,7 @@
 <translation id="6328639280570009161">Deaktivieren Sie die Netzwerkvervollständigung.</translation>
 <translation id="6337534724793800597">Richtlinien nach Name filtern</translation>
 <translation id="6342069812937806050">Abgeschlossen</translation>
+<translation id="6345221851280129312">unbekannte Größe</translation>
 <translation id="6355080345576803305">Überschreibung öffentlicher Sitzung</translation>
 <translation id="6358450015545214790">Was bedeuten diese Hinweise?</translation>
 <translation id="6387478394221739770">Interessiert an coolen neuen Chrome-Funktionen? Testen Sie unsere Betaversion unter chrome.com/beta.</translation>
@@ -465,6 +471,7 @@
 <translation id="6489534406876378309">Hochladen von Abstürzen starten</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
 <translation id="6550675742724504774">Optionen</translation>
+<translation id="6593753688552673085">weniger als <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Verschlüsselungsoptionen</translation>
 <translation id="662080504995468778">Bleiben</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />-Suche</translation>
@@ -593,7 +600,9 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8034522405403831421">Diese Seite ist auf <ph name="SOURCE_LANGUAGE" />. In folgende Sprache übersetzen: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Keine Verlaufseinträge gefunden</translation>
 <translation id="8088680233425245692">Der Artikel kann nicht angezeigt werden.</translation>
+<translation id="8089520772729574115">weniger als 1 MB</translation>
 <translation id="8091372947890762290">Aktivierung auf dem Server steht noch aus.</translation>
+<translation id="8129262335948759431">unbekannter Wert</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8134994873729925007">Die <ph name="BEGIN_ABBR" />DNS-Adresse<ph name="END_ABBR" /> des Servers von <ph name="HOST_NAME" /> wurde nicht gefunden.</translation>
 <translation id="8149426793427495338">Ihr Computer ist im Ruhemodus.</translation>
@@ -602,6 +611,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8201077131113104583">Ungültige Update-URL für Erweiterung mit der ID "<ph name="EXTENSION_ID" />"</translation>
 <translation id="8218327578424803826">Zugewiesener Standort:</translation>
 <translation id="8225771182978767009">Die Person, die diesen Computer eingerichtet hat, hat diese Website gesperrt.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Die gesuchte Seite hat die von Ihnen eingegebenen Informationen verwendet bzw. verarbeitet. Wenn Sie zu dieser Seite zurückgehen, wird möglicherweise eine bereits ausgeführte Aktion wiederholt. Möchten Sie fortfahren?</translation>
 <translation id="8249320324621329438">Letzter Abruf:</translation>
 <translation id="8261506727792406068">Löschen</translation>
@@ -617,6 +627,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8412145213513410671">Abstürze (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Sie müssen zweimal dieselbe Passphrase eingeben.</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
+<translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
 <translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
 <translation id="8488350697529856933">Gilt für</translation>
 <translation id="8498891568109133222">Die Antwort von <ph name="HOST_NAME" /> hat zu lange gedauert.</translation>

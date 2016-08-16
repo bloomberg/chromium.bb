@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">การแก้ไข</translation>
 <translation id="3681007416295224113">ข้อมูลในใบรับรอง</translation>
 <translation id="3693415264595406141">รหัสผ่าน:</translation>
+<translation id="3696411085566228381">ไม่มี</translation>
 <translation id="3700528541715530410">อ๊ะ ดูเหมือนว่าคุณไม่มีสิทธิ์ในการเข้าถึงหน้านี้</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">กำลังโหลด...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">บัตรหมดอายุ</translation>
 <translation id="3934680773876859118">โหลดเอกสาร PDF ล้มเหลว</translation>
 <translation id="3963721102035795474">โหมดนักอ่าน</translation>
+<translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ถูกบล็อก</translation>
 <translation id="4021036232240155012">DNS คือบริการเครือข่ายที่แปลชื่อของเว็บไซต์เป็นที่อยู่อินเทอร์เน็ต</translation>
 <translation id="4030383055268325496">&amp;เลิกทำการเพิ่ม</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">พอดีกับหน้า</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4880827082731008257">ค้นประวัติการเข้าชม</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> และ <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">หน้านี้แปลจากภาษาที่ไม่รู้จักเป็นภาษา <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">ต้องระบุ</translation>
 <translation id="4930497775425430760">คุณเห็นข้อความนี้เนื่องจากต้องให้ผู้ปกครองอนุมัติการเข้าชมเว็บไซต์ใหม่ในครั้งแรกของคุณ</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">คุณต้องการกรอกข้อมูล <ph name="CARD_DETAIL" /> ไหม</translation>
 <translation id="5810442152076338065">มีการเข้ารหัสการเชื่อมต่อของคุณกับ <ph name="DOMAIN" /> ด้วยชุดการเข้ารหัสที่ล้าสมัยแล้ว</translation>
 <translation id="5813119285467412249">&amp;ทำซ้ำการเพิ่ม</translation>
+<translation id="5814352347845180253">คุณอาจสูญเสียสิทธิ์การเข้าถึงเนื้อหาระดับพรีเมียมจาก <ph name="SITE" /> และเว็บไซต์อื่นๆ บางแห่ง</translation>
 <translation id="5855235287355719921">คุณเห็นข้อความนี้เนื่องจากผู้จัดการบล็อกเว็บไซต์นี้</translation>
 <translation id="5857090052475505287">โฟลเดอร์ใหม่</translation>
 <translation id="5869405914158311789">ไม่สามารถเข้าถึงเว็บไซต์นี้</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">คำแนะนำระดับบนสุด</translation>
 <translation id="59107663811261420">Google Payments ไม่สนับสนุนบัตรประเภทนี้สำหรับผู้ขายรายนี้ โปรดเลือกบัตรอื่น</translation>
 <translation id="59174027418879706">เปิดใช้งานแล้ว</translation>
+<translation id="5926846154125914413">คุณอาจสูญเสียสิทธิ์การเข้าถึงเนื้อหาระดับพรีเมียมจากเว็บไซต์บางแห่ง</translation>
 <translation id="5966707198760109579">สัปดาห์</translation>
 <translation id="5967867314010545767">ลบจากประวัติการเข้าชม</translation>
 <translation id="5975083100439434680">ย่อ</translation>
@@ -453,6 +458,7 @@
 <translation id="6328639280570009161">ลองปิดการคาดคะเนเครือข่าย</translation>
 <translation id="6337534724793800597">กรองนโยบายตามชื่อ</translation>
 <translation id="6342069812937806050">เพิ่งเสร็จ</translation>
+<translation id="6345221851280129312">ไม่ทราบขนาด</translation>
 <translation id="6355080345576803305">การลบล้างเซสชันสาธารณะ</translation>
 <translation id="6358450015545214790">นี่หมายถึงอะไร</translation>
 <translation id="6387478394221739770">หากสนใจในคุณลักษณะสุดเจ๋งของ Chrome ใหม่ ลองใช้เวอร์ชันเบต้าของเราที่ chrome.com/beta</translation>
@@ -466,6 +472,7 @@
 <translation id="6489534406876378309">เริ่มอัปโหลดข้อขัดข้อง</translation>
 <translation id="6529602333819889595">&amp;ทำซ้ำการนำออก</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
+<translation id="6593753688552673085">น้อยกว่า <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">ตัวเลือกการเข้ารหัส</translation>
 <translation id="662080504995468778">อยู่ต่อ</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> ค้นหา</translation>
@@ -594,7 +601,9 @@
 <translation id="8034522405403831421">หน้าเว็บนี้อยู่ในภาษา<ph name="SOURCE_LANGUAGE" /> ต้องการแปลเป็นภาษา<ph name="TARGET_LANGUAGE" />ไหม</translation>
 <translation id="8034955203865359138">ไม่พบข้อมูลประวัติการเข้าชม</translation>
 <translation id="8088680233425245692">การดูบทความล้มเหลว</translation>
+<translation id="8089520772729574115">ไม่ถึง 1 MB</translation>
 <translation id="8091372947890762290">กำลังรอการเปิดใช้งานบนเซิร์ฟเวอร์</translation>
+<translation id="8129262335948759431">ไม่ทราบปริมาณ</translation>
 <translation id="8131740175452115882">ยืนยัน</translation>
 <translation id="8134994873729925007">ไม่พบ<ph name="BEGIN_ABBR" />ที่อยู่ DNS<ph name="END_ABBR" /> ของเซิร์ฟเวอร์ของ <ph name="HOST_NAME" /></translation>
 <translation id="8149426793427495338">คอมพิวเตอร์ของคุณเข้าสู่โหมดสลีปแล้ว</translation>
@@ -603,6 +612,7 @@
 <translation id="8201077131113104583">การอัปเดต URL ไม่ถูกต้องสำหรับส่วนขยายรหัส "<ph name="EXTENSION_ID" />"</translation>
 <translation id="8218327578424803826">ตำแหน่งที่มอบหมาย:</translation>
 <translation id="8225771182978767009">ผู้ที่ตั้งค่าคอมพิวเตอร์เครื่องนี้เลือกบล็อกเว็บไซต์นี้</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">หน้าที่คุณกำลังมองหาใช้ข้อมูลที่คุณได้ป้อนไว้แล้ว การกลับไปสู่หน้านั้นอาจทำให้คุณต้องทำซ้ำการดำเนินการใดๆ ที่คุณทำแล้ว คุณต้องการดำเนินการต่อหรือไม่</translation>
 <translation id="8249320324621329438">เรียกดูครั้งสุดท้ายเมื่อ:</translation>
 <translation id="8261506727792406068">ลบ</translation>
@@ -618,6 +628,7 @@
 <translation id="8412145213513410671">ข้อขัดข้อง (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">คุณต้องป้อนข้อความรหัสผ่านที่เหมือนกันสองครั้ง</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
+<translation id="8433057134996913067">วิธีนี้จะทำให้คุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
 <translation id="8437238597147034694">&amp;เลิกทำการย้าย</translation>
 <translation id="8488350697529856933">ใช้กับ</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ใช้เวลาตอบกลับนานเกินไป</translation>

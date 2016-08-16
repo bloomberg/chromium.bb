@@ -509,7 +509,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7074853159844403180"><ph name="SITE" />, şu cihazla eşlenmek istiyor:</translation>
 <translation id="7081639897063626814">Mevcut verileri ayrı tut</translation>
 <translation id="7094922512924405309">Yakınlarda herhangi bir Fiziksel Web sayfası bulunamadı</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> açık sekme</translation>
 <translation id="7115197232530297436">Gönderim adresi desteklenmiyor. Farklı bir adres seçin.</translation>
 <translation id="7138678301420049075">Diğer</translation>
 <translation id="7180611975245234373">Yenile</translation>
@@ -612,6 +611,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8433057134996913067">Bu işlem, çoğu web sitesinden çıkış yapmanıza neden olacak.</translation>
 <translation id="8447861592752582886">Cihaz iznini iptal et</translation>
 <translation id="8481940801237642152">Bu siteye bağlantınız gizli bir bağlantı, ancak ağ üzerindeki biri sayfanın görünümünü değiştirebilir.</translation>
+<translation id="8487700953926739672">Çevrimdışı kullanılabilir</translation>
 <translation id="8493948351860045254">Yer aç</translation>
 <translation id="8497726226069778601">Burada görülecek bir şey yok… henüz</translation>
 <translation id="8503813439785031346">Kullanıcı adı</translation>

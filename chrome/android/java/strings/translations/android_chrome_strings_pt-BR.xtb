@@ -507,7 +507,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7074853159844403180"><ph name="SITE" /> deseja parear com:</translation>
 <translation id="7081639897063626814">Manter os dados já existentes separados</translation>
 <translation id="7094922512924405309">Nenhuma página da Web física foi encontrada nas proximidades</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> guias abertas</translation>
 <translation id="7115197232530297436">Endereço de entrega não aceito. Selecione um endereço diferente.</translation>
 <translation id="7138678301420049075">Outro</translation>
 <translation id="7180611975245234373">Atualizar</translation>
@@ -610,6 +609,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8433057134996913067">Essa opção desconecta você da maioria dos websites.</translation>
 <translation id="8447861592752582886">Revogar permissão do dispositivo</translation>
 <translation id="8481940801237642152">Sua conexão a este site é particular, mas alguém na rede pode conseguir alterar a aparência da página.</translation>
+<translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8493948351860045254">Liberar espaço</translation>
 <translation id="8497726226069778601">Não há nada para ver aqui... ainda</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>

@@ -509,7 +509,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7074853159844403180">Web <ph name="SITE" /> se chce spárovat s:</translation>
 <translation id="7081639897063626814">Uchovat existující data odděleně</translation>
 <translation id="7094922512924405309">V okolí nebyly nalezeny žádné stránky fyzického webu</translation>
-<translation id="7095930899177687653">Otevřené karty: <ph name="OPEN_TABS" /></translation>
 <translation id="7115197232530297436">Nepodporovaná dodací adresa. Vyberte jinou adresu.</translation>
 <translation id="7138678301420049075">Ostatní</translation>
 <translation id="7180611975245234373">Obnovit</translation>
@@ -612,6 +611,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="8433057134996913067">Budete odhlášeni z většiny webů.</translation>
 <translation id="8447861592752582886">Zrušit oprávnění zařízení</translation>
 <translation id="8481940801237642152">Spojení s tímto webem je soukromé, avšak některý uživatel v síti může být schopen změnit vzhled stránky.</translation>
+<translation id="8487700953926739672">Dostupné offline</translation>
 <translation id="8493948351860045254">Uvolnit místo</translation>
 <translation id="8497726226069778601">Zatím tu nic není...</translation>
 <translation id="8503813439785031346">Uživatelské jméno</translation>

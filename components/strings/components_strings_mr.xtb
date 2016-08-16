@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">पुनरावृत्ती</translation>
 <translation id="3681007416295224113">प्रमाणपत्र माहिती...</translation>
 <translation id="3693415264595406141">संकेतशब्द:</translation>
+<translation id="3696411085566228381">काहीही नाही</translation>
 <translation id="3700528541715530410">अरेरे, असे दिसते की आपल्याला या पृष्ठावर प्रवेश करण्यास परवानगी नाही.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">लोड करीत आहे...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">कार्ड कालबाह्य झाले आहे</translation>
 <translation id="3934680773876859118">PDF दस्तऐवज लोड करणे अयशस्वी</translation>
 <translation id="3963721102035795474">वाचक मोड</translation>
+<translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> अवरोधित केले आहे</translation>
 <translation id="4021036232240155012">DNS ही नेटवर्क सेवा आहे जी वेबसाइटचे नाव तिच्या इंटरनेट पत्त्यामध्‍ये भाषांतरित करते.</translation>
 <translation id="4030383055268325496">&amp;जोडा पूर्ववत करा</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">पृष्‍ठानुरुप करा</translation>
 <translation id="4850886885716139402">पहा</translation>
 <translation id="4880827082731008257">इतिहास शोध</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">हे पृष्ठ अज्ञात भाषेतून <ph name="LANGUAGE_LANGUAGE" /> मध्ये अनुवादित करण्यात आले</translation>
 <translation id="4926049483395192435">निर्दिष्‍ट केले जाणे आवश्‍यक आहे.</translation>
 <translation id="4930497775425430760">आपल्याला हा संदेश दिसत आहे कारण नवीन साइटच्या आपल्या प्रथम भेटीवर आपल्या पालकाने मंजूरी देणे आवश्यक आहे.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">आपण आपले <ph name="CARD_DETAIL" /> भरू इच्छित आहात?</translation>
 <translation id="5810442152076338065">आपले <ph name="DOMAIN" /> वरील कनेक्शन अप्रचलित सायफर सूट वापरून कूटबद्ध केलेले आहे.</translation>
 <translation id="5813119285467412249">&amp;जोडा पुन्हा करा</translation>
+<translation id="5814352347845180253">आपण <ph name="SITE" /> आणि काही अन्य साइट मधील मुख्य सामग्री मधील प्रवेश कदाचित गमवाल.</translation>
 <translation id="5855235287355719921">आपल्याला हा संदेश दिसत आहे कारण आपल्या व्यवस्थापकाने ही साइट अवरोधित केली आहे.</translation>
 <translation id="5857090052475505287">नवीन फोल्डर</translation>
 <translation id="5869405914158311789">या साइटवर पोहचणे शक्य नाही</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">पालक सूचना</translation>
 <translation id="59107663811261420">कार्डचा हा प्रकार या व्यापार्‍यासाठी Google Payments द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
 <translation id="59174027418879706">सक्षम केलेले</translation>
+<translation id="5926846154125914413">आपण काही साइट मधील मुख्य सामग्री मधील प्रवेश कदाचित गमवाल.</translation>
 <translation id="5966707198760109579">आठवडा</translation>
 <translation id="5967867314010545767">इतिहासातून काढा</translation>
 <translation id="5975083100439434680">झूम कमी करा</translation>
@@ -454,6 +459,7 @@
 <translation id="6328639280570009161">नेटवर्क पूर्वानुमान अक्षम करून पहा</translation>
 <translation id="6337534724793800597">धोरणे नावानुसार फिल्टर करा</translation>
 <translation id="6342069812937806050">आत्ताच</translation>
+<translation id="6345221851280129312">अज्ञात आकार</translation>
 <translation id="6355080345576803305">सार्वजनिक सत्र अधिशून्य</translation>
 <translation id="6358450015545214790">याचा अर्थ काय आहे?</translation>
 <translation id="6387478394221739770">छान नवीन Chrome वैशिष्ट्यांमध्ये स्वारस्य आहे? chrome.com/beta वरील आमचे बीटा चॅनेल वापरून पहा.</translation>
@@ -467,6 +473,7 @@
 <translation id="6489534406876378309">क्रॅश अपलोड करणे प्रारंभ करा</translation>
 <translation id="6529602333819889595">&amp;पुन्हा करा हटवा</translation>
 <translation id="6550675742724504774">पर्याय</translation>
+<translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> पेक्षा कमी</translation>
 <translation id="6596325263575161958">कूटबद्धता पर्याय</translation>
 <translation id="662080504995468778">यावर रहा</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> शोध</translation>
@@ -595,7 +602,9 @@
 <translation id="8034522405403831421">हे पृष्‍ठ <ph name="SOURCE_LANGUAGE" /> मध्ये आहे. त्यास <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतरीत करायचे?</translation>
 <translation id="8034955203865359138">कोणत्याही इतिहास प्रविष्ट्या आढळल्या नाहीत.</translation>
 <translation id="8088680233425245692">लेख पाहण्यात अयशस्वी.</translation>
+<translation id="8089520772729574115">1 MB पेक्षा कमी</translation>
 <translation id="8091372947890762290">सक्रियकरण सर्व्हरवर प्रलंबित आहे</translation>
+<translation id="8129262335948759431">अज्ञात प्रमाण</translation>
 <translation id="8131740175452115882">पुष्टी करा</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" />चे सर्व्हर <ph name="BEGIN_ABBR" />DNS पत्ता<ph name="END_ABBR" /> शोधणे शक्य झाले नाही.</translation>
 <translation id="8149426793427495338">आपला संगणक निष्क्रीय झाला.</translation>
@@ -604,6 +613,7 @@
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" ID असलेल्या विस्तारासाठी अवैध अद्यतन URL.</translation>
 <translation id="8218327578424803826">नियुक्त केलेले स्थान:</translation>
 <translation id="8225771182978767009">ज्या व्यक्तीने हा संगणक सेट केला त्या व्यक्तीने ही साइट अवरोधित करण्याचे निवडले आहे.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">आपण जे पृष्ठ शोधत आहत ते आपण प्रविष्ट केलेली माहिती वापरत आहे. त्या पृष्ठाकडे परत गेल्यास कदाचित आपण केलेल्या कोणत्याही क्रियेची पुनरावृत्ती होईल. आपण सुरू ठेवू इच्छिता?</translation>
 <translation id="8249320324621329438">अंतिम प्राप्त केलेले:</translation>
 <translation id="8261506727792406068">हटवा</translation>
@@ -619,6 +629,7 @@
 <translation id="8412145213513410671">क्रॅश (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">आपण समान सांकेतिक वाक्यांश दोनदा प्रविष्ट करणे आवश्यक आहे.</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
+<translation id="8433057134996913067">हे आपल्याला बहुतांश वेबसाइट वरून साइन आउट करेल.</translation>
 <translation id="8437238597147034694">&amp;हलवा पूर्ववत करा</translation>
 <translation id="8488350697529856933">यावर लागू होते</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> नी प्रतिसाद देण्यात बराच वेळ घेतला.</translation>

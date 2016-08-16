@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">Revisi</translation>
 <translation id="3681007416295224113">Informasi sertifikat</translation>
 <translation id="3693415264595406141">Sandi:</translation>
+<translation id="3696411085566228381">tidak ada</translation>
 <translation id="3700528541715530410">Ups, sepertinya Anda tidak memiliki izin untuk mengakses laman ini.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Membuka...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">Kartu telah habis masa berlakunya</translation>
 <translation id="3934680773876859118">Gagal memuat dokumen PDF</translation>
 <translation id="3963721102035795474">Mode Pembaca</translation>
+<translation id="397105322502079400">Menghitung...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> diblokir.</translation>
 <translation id="4021036232240155012">DNS adalah layanan jaringan yang menerjemahkan nama situs web ke alamat Internet-nya.</translation>
 <translation id="4030383055268325496">&amp;Urungkan penambahan</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">Paskan dengan halaman</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="4880827082731008257">Telusuri riwayat</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Laman ini telah diterjemahkan dari bahasa yang tidak diketahui ke bahasa <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Harus ditentukan.</translation>
 <translation id="4930497775425430760">Anda melihat pesan ini karena Anda baru pertama kali mengunjungi situs ini dan orang tua harus menyetujuinya terlebih dahulu.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">Ingin mengisi <ph name="CARD_DETAIL" /> Anda?</translation>
 <translation id="5810442152076338065">Sambungan Anda ke <ph name="DOMAIN" /> dienkripsi menggunakan cipher suite yang sudah usang.</translation>
 <translation id="5813119285467412249">&amp;Ulangi Penambahan</translation>
+<translation id="5814352347845180253">Anda dapat kehilangan akses ke konten premium dari <ph name="SITE" /> dan beberapa situs lain.</translation>
 <translation id="5855235287355719921">Anda melihat pesan ini karena pengelola memblokir situs ini.</translation>
 <translation id="5857090052475505287">Folder Baru</translation>
 <translation id="5869405914158311789">Situs ini tidak dapat dijangkau</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">Saran Induk</translation>
 <translation id="59107663811261420">Kartu jenis ini tidak didukung oleh Google Payments untuk pedagang ini. Pilih kartu lain.</translation>
 <translation id="59174027418879706">Diaktifkan</translation>
+<translation id="5926846154125914413">Anda dapat kehilangan akses ke konten premium dari beberapa situs.</translation>
 <translation id="5966707198760109579">Minggu</translation>
 <translation id="5967867314010545767">Hapus dari riwayat</translation>
 <translation id="5975083100439434680">Perkecil</translation>
@@ -453,6 +458,7 @@
 <translation id="6328639280570009161">Coba nonaktifkan prediksi jaringan</translation>
 <translation id="6337534724793800597">Filter kebijakan menurut nama</translation>
 <translation id="6342069812937806050">Baru saja</translation>
+<translation id="6345221851280129312">ukuran tak diketahui</translation>
 <translation id="6355080345576803305">Diganti oleh sesi publik</translation>
 <translation id="6358450015545214790">Apakah maksud ini?</translation>
 <translation id="6387478394221739770">Tertarik dengan fitur Chrome baru yang keren? Coba saluran beta kami di chrome.com/beta.</translation>
@@ -466,6 +472,7 @@
 <translation id="6489534406876378309">Mulai mengunggah kerusakan</translation>
 <translation id="6529602333819889595">&amp;Ulangi Penghapusan</translation>
 <translation id="6550675742724504774">Opsi</translation>
+<translation id="6593753688552673085">kurang dari <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opsi enkripsi</translation>
 <translation id="662080504995468778">Tinggal</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Penelusuran</translation>
@@ -594,7 +601,9 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8034522405403831421">Laman ini berbahasa <ph name="SOURCE_LANGUAGE" />. Terjemahkan ke <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Tidak ditemukan entri riwayat.</translation>
 <translation id="8088680233425245692">Gagal melihat artikel.</translation>
+<translation id="8089520772729574115">kurang dari 1 MB</translation>
 <translation id="8091372947890762290">Aktivasi ditunda di server</translation>
+<translation id="8129262335948759431">jumlah tak diketahui</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Alamat DNS<ph name="END_ABBR" /> server <ph name="HOST_NAME" /> tidak dapat ditemukan.</translation>
 <translation id="8149426793427495338">Komputer Anda sedang dalam mode tidur.</translation>
@@ -603,6 +612,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8201077131113104583">URL pembaruan tidak valid untuk ekstensi dengan ID "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8218327578424803826">Lokasi yang Ditetapkan:</translation>
 <translation id="8225771182978767009">Orang yang menyiapkan komputer ini telah memilih untuk memblokir situs ini.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Laman yang dicari menggunakan informasi yang Anda masukkan. Kembali ke laman tersebut dapat menyebabkan pengulangan tindakan apa pun yang Anda lakukan. Apakah Anda ingin melanjutkan?</translation>
 <translation id="8249320324621329438">Terakhir diambil:</translation>
 <translation id="8261506727792406068">Hapus</translation>
@@ -618,6 +628,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8412145213513410671">Ngadat (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Anda harus memasukkan frasa sandi yang sama dua kali.</translation>
 <translation id="8428213095426709021">Setelan</translation>
+<translation id="8433057134996913067">Tindakan ini akan mengeluarkan Anda dari sebagian besar situs web.</translation>
 <translation id="8437238597147034694">&amp;Urungkan pemindahan</translation>
 <translation id="8488350697529856933">Berlaku untuk</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> membutuhkan terlalu banyak waktu untuk merespons.</translation>

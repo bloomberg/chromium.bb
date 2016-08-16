@@ -509,7 +509,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7074853159844403180"><ph name="SITE" /> quiere sincronizarse con:</translation>
 <translation id="7081639897063626814">Mantener los datos existentes por separado</translation>
 <translation id="7094922512924405309">No se encontró ninguna página web física cercana</translation>
-<translation id="7095930899177687653">Pestañas abiertas: <ph name="OPEN_TABS" /></translation>
 <translation id="7115197232530297436">La dirección de envío no es compatible. Selecciona otra dirección.</translation>
 <translation id="7138678301420049075">Otros</translation>
 <translation id="7180611975245234373">Actualizar</translation>
@@ -612,6 +611,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8433057134996913067">Si realizas esta acción, saldrás de la mayoría de los sitios web.</translation>
 <translation id="8447861592752582886">Revocar permiso para el dispositivo</translation>
 <translation id="8481940801237642152">Tu conexión con este sitio es privada, pero alguien en la red podría cambiar el aspecto de la página.</translation>
+<translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8493948351860045254">Liberar espacio</translation>
 <translation id="8497726226069778601">Aún no hay elementos para ver</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>

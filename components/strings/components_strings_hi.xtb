@@ -24,6 +24,8 @@
 <translation id="1181037720776840403">निकालें</translation>
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1201895884277373915">इस साइट की ओर से अधिक</translation>
+<translation id="1206967143813997005">गलत आरंभिक हस्ताक्षर</translation>
+<translation id="1209206284964581585">अभी छिपाएं</translation>
 <translation id="121201262018556460">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया, लेकिन लेकिन सर्वर ने कमज़ोर कुंजी वाला प्रमाणपत्र प्रस्‍तुत किया. संभवत: हमलावर ने निजी कुंजी का पता लगा लिया है, और हो सकता है कि सर्वर आपका अपेक्षित सर्वर न हो (हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों).</translation>
 <translation id="1219129156119358924">सिस्‍टम सुरक्षा</translation>
 <translation id="1227224963052638717">अज्ञात नीति.</translation>
@@ -127,6 +129,7 @@
 <translation id="2396249848217231973">&amp;हटाना वापस लाएं</translation>
 <translation id="2413528052993050574">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" />; इसका सुरक्षा प्रमाणपत्र निरस्त कर दिया गया है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="2455981314101692989">इस वेब पृष्‍ठ पर इस फ़ॉर्म को स्‍वत: भरना अक्षम किया गया है.</translation>
+<translation id="2463739503403862330">भरें</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />नेटवर्क निदान चलाकर देखें<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">अमान्‍य खोज URL.</translation>
 <translation id="2491120439723279231">सर्वर के प्रमाणपत्र में त्रुटियां हैं.</translation>
@@ -255,6 +258,7 @@
 <translation id="3658742229777143148">पुनरीक्षण</translation>
 <translation id="3681007416295224113">प्रमाणपत्र जानकारी</translation>
 <translation id="3693415264595406141">पासवर्ड:</translation>
+<translation id="3696411085566228381">कोई नहीं</translation>
 <translation id="3700528541715530410">ओह, ऐसा लगता है कि आपको इस पृष्ठ को एक्सेस करने की अनुमति नहीं है.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">लोड हो रहा है...</translation>
@@ -276,6 +280,7 @@
 <translation id="3901925938762663762">इस कार्ड की समय सीमा समाप्‍त हो गई है</translation>
 <translation id="3934680773876859118">PDF दस्तावेज़ लोड करने में विफल</translation>
 <translation id="3963721102035795474">रीडर मोड</translation>
+<translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> अवरुद्ध है</translation>
 <translation id="4021036232240155012">DNS एक नेटवर्क सेवा है जो किसी वेबसाइट के नाम को उसके इंटरनेट पते में बदलती है.</translation>
 <translation id="4030383055268325496">&amp;जोड़ना वापस लाएं</translation>
@@ -342,6 +347,7 @@
 <translation id="4816492930507672669">पृष्ठ में फ़िट करें</translation>
 <translation id="4850886885716139402">देखें</translation>
 <translation id="4880827082731008257">खोज इतिहास</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">इस पृष्ठ का एक अज्ञात भाषा से <ph name="LANGUAGE_LANGUAGE" /> में अनुवाद किया गया है</translation>
 <translation id="4926049483395192435">निर्दिष्ट किया जाना चाहिए.</translation>
 <translation id="4930497775425430760">आपको यह संदेश इसलिए दिखाई दे रहा है क्योंकि किसी नई साइट पर आपके पहली बार जाने से पहले आपके अभिभावक को उसे स्वीकृति देनी होगी.</translation>
@@ -411,8 +417,11 @@
 <translation id="572328651809341494">हाल ही के टैब</translation>
 <translation id="5784606427469807560">आपके कार्ड की पुष्टि करते समय समस्‍या हुई. अपना इंटरनेट कनेक्‍शन जांचें और पुन: प्रयास करें.</translation>
 <translation id="5785756445106461925">इसके अतिरिक्त, इस पृष्ठ में ऐसे अन्य संसाधन भी शामिल हैं, जो सुरक्षित नहीं हैं. ट्रांज़िट में होने के दौरान ये संसाधन अन्य लोगों द्वारा देखे जा सकते हैं और पृष्ठ का स्वरूप बदलने के लिए किसी हमवलावर द्वारा इनमें बदलाव किए जा सकते हैं.</translation>
+<translation id="5786044859038896871">क्या अपनी कार्ड जानकारी भरना चाहते हैं?</translation>
+<translation id="5803412860119678065">क्या आप अपनी <ph name="CARD_DETAIL" /> भरना चाहते हैं?</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> से आपके कनेक्शन को किसी अप्रचलित सिफ़र सुइट का उपयोग करके एन्‍क्रिप्‍ट किया गया है.</translation>
 <translation id="5813119285467412249">&amp;जोड़ना फिर से करें</translation>
+<translation id="5814352347845180253">आप <ph name="SITE" /> और कुछ अन्य साइटों से प्रीमियम सामग्री की एक्सेस खो सकते हैं.</translation>
 <translation id="5855235287355719921">आपको यह संदेश इसलिए दिखाई दे रहा है क्योंकि आपके प्रबंधक ने यह साइट अवरुद्ध कर दी है.</translation>
 <translation id="5857090052475505287">नया फ़ोल्डर</translation>
 <translation id="5869405914158311789">इस साइट तक नहीं पहुंचा जा सकता</translation>
@@ -420,6 +429,7 @@
 <translation id="5872918882028971132">अभिभावक सुझाव</translation>
 <translation id="59107663811261420">कार्ड का यह प्रकार Google पेमेंट्स द्वारा इस व्यापारी के लिए समर्थित नहीं है. कृपया कोई भिन्न कार्ड चुनें.</translation>
 <translation id="59174027418879706">सक्षम किया गया</translation>
+<translation id="5926846154125914413">आप कुछ साइटों से प्रीमियम सामग्री की एक्सेस खो सकते हैं.</translation>
 <translation id="5966707198760109579">सप्ताह</translation>
 <translation id="5967867314010545767">इतिहास से निकालें</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
@@ -448,6 +458,7 @@
 <translation id="6328639280570009161">नेटवर्क पूर्वानुमान को अक्षम करके देखें</translation>
 <translation id="6337534724793800597">नाम के अनुसार नीतियां फ़िल्टर करें</translation>
 <translation id="6342069812937806050">अभी</translation>
+<translation id="6345221851280129312">अज्ञात आकार</translation>
 <translation id="6355080345576803305">सार्वजनिक सत्र ओवरराइड</translation>
 <translation id="6358450015545214790">इनका क्‍या अर्थ है?</translation>
 <translation id="6387478394221739770">बेहतरीन नई Chrome सुविधाओं में रूचि है? chrome.com/beta पर हमारा बीटा चैनल आज़माएं.</translation>
@@ -461,6 +472,7 @@
 <translation id="6489534406876378309">क्रैश अपलोड करना प्रारंभ करें</translation>
 <translation id="6529602333819889595">&amp;हटाना फिर से करें</translation>
 <translation id="6550675742724504774">विकल्प</translation>
+<translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> से कम</translation>
 <translation id="6596325263575161958">सुरक्षित तरीका विकल्प</translation>
 <translation id="662080504995468778">इसपर रहें</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> खोज</translation>
@@ -587,7 +599,9 @@
 <translation id="8034522405403831421">यह पृष्ठ <ph name="SOURCE_LANGUAGE" /> में है. इसका <ph name="TARGET_LANGUAGE" /> में अनुवाद करें?</translation>
 <translation id="8034955203865359138">कोई इतिहास प्रविष्टि नहीं मिली.</translation>
 <translation id="8088680233425245692">लेख देखने में विफल रहा.</translation>
+<translation id="8089520772729574115">1 MB से कम</translation>
 <translation id="8091372947890762290">सर्वर पर सक्रियण लंबित है</translation>
+<translation id="8129262335948759431">अज्ञात मात्रा</translation>
 <translation id="8131740175452115882">दुबारा पूछें</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> का सर्वर <ph name="BEGIN_ABBR" />DNS पता<ph name="END_ABBR" /> नहीं ढूंढ़ा जा सका.</translation>
 <translation id="8149426793427495338">आपका कंप्यूटर निष्क्रिय हो गया है.</translation>
@@ -596,6 +610,7 @@
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" आईडी वाले एक्‍सटेंशन का अमान्‍य अपडेट URL.</translation>
 <translation id="8218327578424803826">सौंपा गया स्‍थान:</translation>
 <translation id="8225771182978767009">जिस व्यक्ति ने इस कंप्यूटर को सेट किया है, उसने इस साइट को अवरुद्ध करना चुना है.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">आपके द्वारा खोजे जा रहे पृष्ठ ने आपके द्वारा प्रविष्ट की गई जानकारी का उपयोग किया है. उस पृष्ठ पर वापस जाने से आपके द्वारा की गई किसी क्रिया को दोहराने की आवश्यकता हो सकती है. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="8249320324621329438">पिछली बार प्राप्त किया गया:</translation>
 <translation id="8261506727792406068">हटाएं</translation>
@@ -611,6 +626,7 @@
 <translation id="8412145213513410671">क्रैश (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">आपको वही पासफ़्रेज़ दोबारा दर्ज करना होगा.</translation>
 <translation id="8428213095426709021">सेटिंग्स</translation>
+<translation id="8433057134996913067">इससे आप अधिकांश वेबसाइट से प्रस्थान कर जाएंगे.</translation>
 <translation id="8437238597147034694">&amp;ले जाना वापस लाएं</translation>
 <translation id="8488350697529856933">इस पर लागू होती है</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ने प्रतिसाद देने में अत्यधिक समय लिया.</translation>

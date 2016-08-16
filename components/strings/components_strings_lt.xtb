@@ -259,6 +259,7 @@
 <translation id="3658742229777143148">Peržiūrėtas ir pataisytas leidimas</translation>
 <translation id="3681007416295224113">Sertifikato informacija</translation>
 <translation id="3693415264595406141">Slaptažodis:</translation>
+<translation id="3696411085566228381">nėra</translation>
 <translation id="3700528541715530410">Oi, tikriausiai neturite leidimo pasiekti šį puslapį.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Įkeliama...</translation>
@@ -280,6 +281,7 @@
 <translation id="3901925938762663762">Kortelė nebegalioja</translation>
 <translation id="3934680773876859118">Nepavyko įkelti PDF dokumento</translation>
 <translation id="3963721102035795474">Skaitytojo režimas</translation>
+<translation id="397105322502079400">Skaičiuojama...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> užblokuota.</translation>
 <translation id="4021036232240155012">DNS – tai tinklo paslauga, verčianti svetainės pavadinimą į interneto adresą.</translation>
 <translation id="4030383055268325496">&amp;Anuliuoti pridėjimą</translation>
@@ -346,6 +348,7 @@
 <translation id="4816492930507672669">Pritaikyti pagal puslapį</translation>
 <translation id="4850886885716139402">Žiūrėti</translation>
 <translation id="4880827082731008257">Ieškoti istorijoje</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Šis puslapis išverstas iš nežinomos kalbos į <ph name="LANGUAGE_LANGUAGE" /> k.</translation>
 <translation id="4926049483395192435">Turi būti nurodyta.</translation>
 <translation id="4930497775425430760">Matote šį pranešimą, nes vienas iš tėvų turi patvirtinti naujas svetaines, kai lankotės pirmą kartą.</translation>
@@ -419,6 +422,7 @@
 <translation id="5803412860119678065">Ar norite, kad būtų įvesta <ph name="CARD_DETAIL" /> informacija?</translation>
 <translation id="5810442152076338065">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant pasenusį šifravimo paketą.</translation>
 <translation id="5813119285467412249">&amp;Pridėti dar kartą</translation>
+<translation id="5814352347845180253">Galite prarasti prieigą prie aukščiausios kokybės turinio iš <ph name="SITE" /> ir kelių kitų svetainių.</translation>
 <translation id="5855235287355719921">Matote šį parnešimą, nes valdytojas užblokavo šią svetainę.</translation>
 <translation id="5857090052475505287">Naujas aplankas</translation>
 <translation id="5869405914158311789">Nepavyksta pasiekti šios svetainės</translation>
@@ -426,6 +430,7 @@
 <translation id="5872918882028971132">Pasiūlymai tėvams</translation>
 <translation id="59107663811261420">„Google Payments“ nepalaiko šio tipo kortelės naudojantis šio prekybininko paslaugomis. Pasirinkite kitą kortelę.</translation>
 <translation id="59174027418879706">Įgalinta</translation>
+<translation id="5926846154125914413">Galite prarasti prieigą prie aukščiausios kokybės turinio iš kelių svetainių.</translation>
 <translation id="5966707198760109579">Savaitė</translation>
 <translation id="5967867314010545767">Pašalinti iš istorijos</translation>
 <translation id="5975083100439434680">Tolinti</translation>
@@ -454,6 +459,7 @@
 <translation id="6328639280570009161">Bandykite neleisti tinklo numatymo</translation>
 <translation id="6337534724793800597">Filtruoti politiką pagal pavadinimą</translation>
 <translation id="6342069812937806050">Ką tik</translation>
+<translation id="6345221851280129312">nežinomas dydis</translation>
 <translation id="6355080345576803305">Viešosios sesijos nepaisymas</translation>
 <translation id="6358450015545214790">Ką tai reiškia?</translation>
 <translation id="6387478394221739770">Domina naujos „Chrome“ funkcijos? Išbandykite mūsų beta kanalą adresu chrome.com/beta.</translation>
@@ -467,6 +473,7 @@
 <translation id="6489534406876378309">Pradėti įkelti strigtis</translation>
 <translation id="6529602333819889595">&amp;Ištrinti dar kartą</translation>
 <translation id="6550675742724504774">Parinktys</translation>
+<translation id="6593753688552673085">mažiau nei <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Šifravimo parinktys</translation>
 <translation id="662080504995468778">Likti</translation>
 <translation id="6628463337424475685">„<ph name="ENGINE" />“ paieška</translation>
@@ -595,7 +602,9 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8034522405403831421">Šis puslapis yra <ph name="SOURCE_LANGUAGE" /> k. Išversti į <ph name="TARGET_LANGUAGE" /> k.?</translation>
 <translation id="8034955203865359138">Nerasta jokių istorijos įrašų.</translation>
 <translation id="8088680233425245692">Nepavyko peržiūrėti straipsnio.</translation>
+<translation id="8089520772729574115">mažiau nei 1 MB</translation>
 <translation id="8091372947890762290">Laukiama aktyvinimo serveryje</translation>
+<translation id="8129262335948759431">nežinomas kiekis</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8134994873729925007">Nepavyko rasti <ph name="HOST_NAME" /> serverio <ph name="BEGIN_ABBR" />DNS adreso<ph name="END_ABBR" />.</translation>
 <translation id="8149426793427495338">Įjungta kompiuterio miego būsena.</translation>
@@ -604,6 +613,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8201077131113104583">Netinkamas plėtinio, kurio ID „<ph name="EXTENSION_ID" />“, atnaujinimo URL.</translation>
 <translation id="8218327578424803826">Priskirta vieta:</translation>
 <translation id="8225771182978767009">Šį kompiuterį nustatęs asmuo pasirinko blokuoti šią svetainę.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Jūsų ieškomas puslapis ieškojo informacijos, kurią įvedėte. Grįžus į tą puslapį bet kokie jūsų atliekami veiksmai gali būti kartojami. Ar norite tęsti?</translation>
 <translation id="8249320324621329438">Paskutinį kartą gauta:</translation>
 <translation id="8261506727792406068">Panaikinti</translation>
@@ -619,6 +629,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8412145213513410671">Strigtys (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Reikia du kartus įvesti tą pačią slaptafrazę.</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
+<translation id="8433057134996913067">Tai atlikę atsijungsite nuo daugumos svetainių.</translation>
 <translation id="8437238597147034694">&amp;Anuliuoti perkėlimą</translation>
 <translation id="8488350697529856933">Taikoma</translation>
 <translation id="8498891568109133222">Per ilgai laukta <ph name="HOST_NAME" /> atsako.</translation>

@@ -510,7 +510,6 @@
 <translation id="7074853159844403180">يريد <ph name="SITE" /> الاقتران مع:</translation>
 <translation id="7081639897063626814">الحفاظ على البيانات الموجودة منفصلة</translation>
 <translation id="7094922512924405309">لم يتم العثور على صفحات الشبكة المادية المجاورة</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> من علامات التبويب المفتوحة</translation>
 <translation id="7115197232530297436">عنوان الشحن غير متوافق. حدِّد عنوانًا آخر.</translation>
 <translation id="7138678301420049075">أخرى</translation>
 <translation id="7180611975245234373">تحديث</translation>
@@ -613,6 +612,7 @@
 <translation id="8433057134996913067">سيؤدي هذا إلى خروجك من معظم مواقع الويب.</translation>
 <translation id="8447861592752582886">إبطال إذن الجهاز</translation>
 <translation id="8481940801237642152">إن اتصالك بهذا الموقع له خصوصية، لكن قد يتمكن أحد الأشخاص على هذه الشبكة من تغيير مظهر الصفحة.</translation>
+<translation id="8487700953926739672">التوفر في وضع عدم الاتصال</translation>
 <translation id="8493948351860045254">تفريغ بعض المساحة</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>

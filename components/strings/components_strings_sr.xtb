@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">Ревизија</translation>
 <translation id="3681007416295224113">Информације о сертификату</translation>
 <translation id="3693415264595406141">Лозинка:</translation>
+<translation id="3696411085566228381">ништа</translation>
 <translation id="3700528541715530410">Упс, изгледа да немате дозволу за приступ овој страници.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Учитава се...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">Картица је истекла</translation>
 <translation id="3934680773876859118">Учитавање PDF документа није успело</translation>
 <translation id="3963721102035795474">Режим читаоца</translation>
+<translation id="397105322502079400">Израчунавање...</translation>
 <translation id="3973234410852337861">Хост <ph name="HOST_NAME" /> је блокиран</translation>
 <translation id="4021036232240155012">DNS је мрежна услуга која преводи назив веб-сајта у његову интернет адресу.</translation>
 <translation id="4030383055268325496">&amp;Опозови додавање</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">Уклопи у страницу</translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="4880827082731008257">Претражи историју</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Ова страница је преведена са непознатог језика на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Мора да буде наведено.</translation>
 <translation id="4930497775425430760">Ову поруку видите јер ваш родитељ треба да одобри нове сајтове при првој посети.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">Желите ли да попуните <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">Веза са доменом <ph name="DOMAIN" /> је шифрована помоћу застарелог пакета за шифровање.</translation>
 <translation id="5813119285467412249">&amp;Понови додавање</translation>
+<translation id="5814352347845180253">Можете да изгубите приступ премијум садржају са сајта <ph name="SITE" /> и неких других сајтова.</translation>
 <translation id="5855235287355719921">Ову поруку видите јер је ваш менаџер блокирао овај сајт.</translation>
 <translation id="5857090052475505287">Нови директоријум</translation>
 <translation id="5869405914158311789">Овај сајт није доступан</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">Предлози родитеља</translation>
 <translation id="59107663811261420">Google Payments не подржава овај тип картице за овог продавца. Изаберите неку другу картицу.</translation>
 <translation id="59174027418879706">Омогућено</translation>
+<translation id="5926846154125914413">Можете да изгубите приступ премијум садржају са неких сајтова.</translation>
 <translation id="5966707198760109579">Недеља</translation>
 <translation id="5967867314010545767">Уклони из историје</translation>
 <translation id="5975083100439434680">Умањивање</translation>
@@ -452,6 +457,7 @@
 <translation id="6328639280570009161">Покушајте да онемогућите предвиђање мреже</translation>
 <translation id="6337534724793800597">Филтрирај смернице према називу</translation>
 <translation id="6342069812937806050">Малопре</translation>
+<translation id="6345221851280129312">непозната величина</translation>
 <translation id="6355080345576803305">Замена јавне сесије</translation>
 <translation id="6358450015545214790">Шта ово значи?</translation>
 <translation id="6387478394221739770">Интересују вас нове занимљиве Chrome функције? Испробајте бета канал на chrome.com/beta.</translation>
@@ -465,6 +471,7 @@
 <translation id="6489534406876378309">Покрени отпремање отказивања</translation>
 <translation id="6529602333819889595">&amp;Понови брисање</translation>
 <translation id="6550675742724504774">Опције</translation>
+<translation id="6593753688552673085">мање од <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Опције шифровања</translation>
 <translation id="662080504995468778">Не напуштај</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> претрага</translation>
@@ -593,7 +600,9 @@
 <translation id="8034522405403831421">Језик ове странице је <ph name="SOURCE_LANGUAGE" />. Желите ли да је преведете на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Није пронађен ниједан унос у историји.</translation>
 <translation id="8088680233425245692">Прегледање чланка није успело.</translation>
+<translation id="8089520772729574115">мање од 1 MB</translation>
 <translation id="8091372947890762290">Активација је на чекању на серверу</translation>
+<translation id="8129262335948759431">непозната количина</translation>
 <translation id="8131740175452115882">Потврди</translation>
 <translation id="8134994873729925007">Нисмо успели да пронађемо <ph name="BEGIN_ABBR" />DNS адресу<ph name="END_ABBR" /> сервера хоста <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Рачунар је прешао у режим спавања.</translation>
@@ -602,6 +611,7 @@
 <translation id="8201077131113104583">Неважећи URL за ажурирање за додатак са ИД-ом „<ph name="EXTENSION_ID" />“.</translation>
 <translation id="8218327578424803826">Додељена локација:</translation>
 <translation id="8225771182978767009">Особа која је подесила овај рачунар је одлучила да блокира овај сајт.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Страница коју тражите користила је информације које сте унели. Повратак на ту страницу може да проузрокује потребну понављања радњи које сте извршили. Желите ли да наставите?</translation>
 <translation id="8249320324621329438">Последње учитано:</translation>
 <translation id="8261506727792406068">Избриши</translation>
@@ -617,6 +627,7 @@
 <translation id="8412145213513410671">Отказивања (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Потребно је да двапут унесете исту приступну фразу.</translation>
 <translation id="8428213095426709021">Подешавања</translation>
+<translation id="8433057134996913067">Овако ћете се одјавити са већине веб-сајтова.</translation>
 <translation id="8437238597147034694">&amp;Опозови премештање</translation>
 <translation id="8488350697529856933">Односе се на</translation>
 <translation id="8498891568109133222">Одговор хоста <ph name="HOST_NAME" /> је трајао предуго.</translation>

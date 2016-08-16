@@ -509,7 +509,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7074853159844403180">Web <ph name="SITE" /> žiada o spárovanie so zariadením:</translation>
 <translation id="7081639897063626814">Ponechať existujúce údaje oddelené</translation>
 <translation id="7094922512924405309">Nenašli sa žiadne stránky Fyzického webu v okolí</translation>
-<translation id="7095930899177687653">Otvorené karty: <ph name="OPEN_TABS" /></translation>
 <translation id="7115197232530297436">Nepodporovaná dodacia adresa. Vyberte inú.</translation>
 <translation id="7138678301420049075">Iné</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
@@ -612,6 +611,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8433057134996913067">Táto možnosť vás odhlási z väčšiny webov.</translation>
 <translation id="8447861592752582886">Odvolať povolenie pre zariadenie</translation>
 <translation id="8481940801237642152">Vaše pripojenie k týmto stránkam je súkromné, ale niekto v sieti možno dokáže zmeniť vzhľad danej stránky.</translation>
+<translation id="8487700953926739672">K dispozícii offline</translation>
 <translation id="8493948351860045254">Uvoľniť miesto</translation>
 <translation id="8497726226069778601">Zatiaľ tu nič nie je…</translation>
 <translation id="8503813439785031346">Meno používateľa</translation>

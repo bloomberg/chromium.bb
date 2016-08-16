@@ -259,6 +259,7 @@
 <translation id="3658742229777143148">Različica</translation>
 <translation id="3681007416295224113">Informacije o potrdilu</translation>
 <translation id="3693415264595406141">Geslo:</translation>
+<translation id="3696411085566228381">brez</translation>
 <translation id="3700528541715530410">Videti je, da nimate pravice za dostop do te strani.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Nalagam ...</translation>
@@ -280,6 +281,7 @@
 <translation id="3901925938762663762">Kartica je potekla</translation>
 <translation id="3934680773876859118">Dokumenta PDF ni bilo mogoče naložiti</translation>
 <translation id="3963721102035795474">Način bralnika</translation>
+<translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="3973234410852337861">Spletno mesto <ph name="HOST_NAME" /> je blokirano</translation>
 <translation id="4021036232240155012">DNS je omrežna storitev, ki ime spletnega mesta prevede v njegov internetni naslov.</translation>
 <translation id="4030383055268325496">&amp;Razveljavi dodajanje</translation>
@@ -346,6 +348,7 @@
 <translation id="4816492930507672669">Prilagodi strani</translation>
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="4880827082731008257">Zgodovina iskanja</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Stran je bila iz neznanega jezika prevedena v jezik »<ph name="LANGUAGE_LANGUAGE" />«</translation>
 <translation id="4926049483395192435">Vrednost mora biti določena.</translation>
 <translation id="4930497775425430760">To sporočilo je prikazano, ker mora starš odobriti nova spletna mesta ob prvem obisku.</translation>
@@ -419,6 +422,7 @@
 <translation id="5803412860119678065">Ali želite izpolniti podatke za kartico <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">Povezava z domeno <ph name="DOMAIN" /> je šifrirana z zastarelo šifrirno zbirko.</translation>
 <translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
+<translation id="5814352347845180253">Morda boste izgubili dostop do plačljive vsebine na spletnem mestu <ph name="SITE" /> in drugih spletnih mestih.</translation>
 <translation id="5855235287355719921">To sporočilo je prikazano, ker je skrbnik blokiral to spletno mesto.</translation>
 <translation id="5857090052475505287">Nova mapa</translation>
 <translation id="5869405914158311789">Tega spletnega mesta ni mogoče doseči</translation>
@@ -426,6 +430,7 @@
 <translation id="5872918882028971132">Predlogi staršev</translation>
 <translation id="59107663811261420">Ta vrsta kartice ni podprta v storitvi Google Payments pri tem trgovcu. Izberite drugo kartico.</translation>
 <translation id="59174027418879706">Omogočena</translation>
+<translation id="5926846154125914413">Morda boste izgubili dostop do plačljive vsebine na nekaterih spletnih mestih.</translation>
 <translation id="5966707198760109579">Teden</translation>
 <translation id="5967867314010545767">Odstrani iz zgodovine</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
@@ -454,6 +459,7 @@
 <translation id="6328639280570009161">Poskusite onemogočiti omrežno predvidevanje</translation>
 <translation id="6337534724793800597">Filtriraj pravilnike po imenu</translation>
 <translation id="6342069812937806050">Pravkar</translation>
+<translation id="6345221851280129312">neznana velikost</translation>
 <translation id="6355080345576803305">Preglasitev javne seje</translation>
 <translation id="6358450015545214790">Več o teh nastavitvah</translation>
 <translation id="6387478394221739770">Vas zanimajo super nove funkcije Chroma? Preskusite naš kanal za različice beta na chrome.com/beta.</translation>
@@ -467,6 +473,7 @@
 <translation id="6489534406876378309">Začetek prenašanja zrušitev v storitev</translation>
 <translation id="6529602333819889595">&amp;Uveljavi izbris</translation>
 <translation id="6550675742724504774">Možnosti</translation>
+<translation id="6593753688552673085">manj kot <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Možnosti šifriranja</translation>
 <translation id="662080504995468778">Ostani</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Iskanje</translation>
@@ -595,7 +602,9 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8034522405403831421">Ta stran je v jeziku <ph name="SOURCE_LANGUAGE" />. Jo želite prevesti v jezik <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Ni vnosov v zgodovino.</translation>
 <translation id="8088680233425245692">Članka si ni bilo mogoče ogledati.</translation>
+<translation id="8089520772729574115">manj kot 1 MB</translation>
 <translation id="8091372947890762290">Čakanje na aktivacijo v strežniku</translation>
+<translation id="8129262335948759431">neznana količina</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Naslova DNS<ph name="END_ABBR" /> strežnika spletnega mesta <ph name="HOST_NAME" /> ni bilo mogoče najti.</translation>
 <translation id="8149426793427495338">Računalnik je preklopil v stanje pripravljenosti.</translation>
@@ -604,6 +613,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8201077131113104583">Neveljaven posodobitveni URL za razširitev z ID-jem »<ph name="EXTENSION_ID" />«.</translation>
 <translation id="8218327578424803826">Dodeljena lokacija:</translation>
 <translation id="8225771182978767009">Oseba, ki je nastavila ta računalnik, je blokirala to spletno mesto.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Stran, ki jo iščete, je uporabila informacije, ki ste jih vnesli. Z vrnitvijo na to stran se bodo morda ponovila vsa vaša dejanja, ki ste jih opravili. Ali želite nadaljevati?</translation>
 <translation id="8249320324621329438">Nazadnje preneseno:</translation>
 <translation id="8261506727792406068">Izbriši</translation>
@@ -619,6 +629,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8412145213513410671">Zrušitve (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Dvakrat morate vnesti isto geslo.</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
+<translation id="8433057134996913067">S tem boste odjavljeni z večine spletnih mest.</translation>
 <translation id="8437238597147034694">&amp;Razveljavi premik</translation>
 <translation id="8488350697529856933">Velja za</translation>
 <translation id="8498891568109133222">Spletno mesto <ph name="HOST_NAME" /> se ni odzvalo v ustreznem času.</translation>

@@ -509,7 +509,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7074853159844403180"><ph name="SITE" /> želi opraviti seznanitev z napravo:</translation>
 <translation id="7081639897063626814">Obstoječi podatki naj bodo ločeni</translation>
 <translation id="7094922512924405309">Ni strani za Fizični splet v bližini</translation>
-<translation id="7095930899177687653">Odprtih je toliko zavihkov: <ph name="OPEN_TABS" /></translation>
 <translation id="7115197232530297436">Nepodprt naslov za pošiljanje. Izberite drug naslov.</translation>
 <translation id="7138678301420049075">Drugo</translation>
 <translation id="7180611975245234373">Osveži</translation>
@@ -612,6 +611,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="8433057134996913067">S tem boste odjavljeni z večine spletnih mest.</translation>
 <translation id="8447861592752582886">Umik dovoljenja za dostop do naprave</translation>
 <translation id="8481940801237642152">Povezava s tem mestom je zasebna, vendar lahko nekdo v omrežju spremeni videz strani.</translation>
+<translation id="8487700953926739672">Na voljo brez povezave</translation>
 <translation id="8493948351860045254">Sprosti prostor</translation>
 <translation id="8497726226069778601">Nimate česa videti ... Za zdaj.</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>

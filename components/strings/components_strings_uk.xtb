@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">Редакція</translation>
 <translation id="3681007416295224113">Інформація про сертифікат</translation>
 <translation id="3693415264595406141">Пароль:</translation>
+<translation id="3696411085566228381">немає</translation>
 <translation id="3700528541715530410">Схоже, ви не маєте дозволу на доступ до цієї сторінки.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Завантаження...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">Термін дії картки минув</translation>
 <translation id="3934680773876859118">Не вдалося завантажити документ PDF</translation>
 <translation id="3963721102035795474">Режим перегляду</translation>
+<translation id="397105322502079400">Обчислення...</translation>
 <translation id="3973234410852337861">Хост <ph name="HOST_NAME" /> заблокований</translation>
 <translation id="4021036232240155012">DNS – це мережева служба, яка перетворює назву веб-сайту на його інтернет-адресу.</translation>
 <translation id="4030383055268325496">&amp;Відмінити додавання</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">За розміром сторінки</translation>
 <translation id="4850886885716139402">Перегляд</translation>
 <translation id="4880827082731008257">Пошук в історії</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Цю сторінку перекладено з невідомої мови оригіналу такою мовою: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Потрібно вказати.</translation>
 <translation id="4930497775425430760">Ви бачите це повідомлення, оскільки один із ваших батьків має схвалити сайти, які ви відвідуєте вперше.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">Ввести дані кредитної картки <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">З’єднання з доменом <ph name="DOMAIN" /> шифрується за допомогою застарілого набору шифрів.</translation>
 <translation id="5813119285467412249">&amp;Повторити додавання</translation>
+<translation id="5814352347845180253">Ви можете втратити доступ до платного вмісту на сайті <ph name="SITE" /> і деяких інших сайтах.</translation>
 <translation id="5855235287355719921">Ви бачите це повідомлення, оскільки ваш адміністратор заблокував цей сайт.</translation>
 <translation id="5857090052475505287">Нова папка</translation>
 <translation id="5869405914158311789">Немає зв’язку із сайтом</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">Поради для батьків</translation>
 <translation id="59107663811261420">Цей продавець не приймає такий тип картки в Google Payments. Виберіть іншу картку.</translation>
 <translation id="59174027418879706">Увімкнено</translation>
+<translation id="5926846154125914413">Ви можете втратити доступ до платного вмісту на деяких сайтах.</translation>
 <translation id="5966707198760109579">Тиждень</translation>
 <translation id="5967867314010545767">Видалити з історії</translation>
 <translation id="5975083100439434680">Зменшити масштаб</translation>
@@ -453,6 +458,7 @@
 <translation id="6328639280570009161">Спробуйте вимкнути прогнозування мережі.</translation>
 <translation id="6337534724793800597">Фільтрувати правила за назвою</translation>
 <translation id="6342069812937806050">Лише зараз</translation>
+<translation id="6345221851280129312">невідомий розмір</translation>
 <translation id="6355080345576803305">Заміна загальнодоступного сеансу</translation>
 <translation id="6358450015545214790">Що це означає?</translation>
 <translation id="6387478394221739770">Хочете спробувати нові цікаві функції Chrome? Завантажте бета-версію зі сторінки chrome.com/beta.</translation>
@@ -466,6 +472,7 @@
 <translation id="6489534406876378309">Почати завантаження даних про аварійне завершення роботи</translation>
 <translation id="6529602333819889595">&amp;Повторити видалення</translation>
 <translation id="6550675742724504774">Параметри</translation>
+<translation id="6593753688552673085">менше <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Параметри шифрування</translation>
 <translation id="662080504995468778">Залишитися</translation>
 <translation id="6628463337424475685">Пошук <ph name="ENGINE" /></translation>
@@ -594,7 +601,9 @@
 <translation id="8034522405403831421">Мова цієї сторінки: <ph name="SOURCE_LANGUAGE" />. Перекласти її такою мовою: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Записи в історії не знайдено.</translation>
 <translation id="8088680233425245692">Не вдалося переглянути статтю.</translation>
+<translation id="8089520772729574115">менше 1 Мб</translation>
 <translation id="8091372947890762290">Активація очікує на сервері</translation>
+<translation id="8129262335948759431">невідома кількість</translation>
 <translation id="8131740175452115882">Підтвердити</translation>
 <translation id="8134994873729925007">Не вдалося знайти <ph name="BEGIN_ABBR" />адресу DNS-сервера<ph name="END_ABBR" /> хосту <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Ваш комп’ютер перейшов у режим сну.</translation>
@@ -603,6 +612,7 @@
 <translation id="8201077131113104583">Недійсна URL-адреса для оновлення розширення з ідентифікатором "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8218327578424803826">Указане місцезнаходження:</translation>
 <translation id="8225771182978767009">Користувач, який налаштував комп’ютер, заблокував цей сайт.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Сторінка, яку ви шукаєте, використовувала інформацію, введену вами. Повернення до такої сторінки може призвести до повторення ваших попередніх дій. Ви дійсно бажаєте продовжити?</translation>
 <translation id="8249320324621329438">Востаннє отримано:</translation>
 <translation id="8261506727792406068">Видалити</translation>
@@ -618,6 +628,7 @@
 <translation id="8412145213513410671">Аварійне завершення роботи (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Потрібно двічі ввести однакову парольну фразу.</translation>
 <translation id="8428213095426709021">Налаштування</translation>
+<translation id="8433057134996913067">Ви вийдете з облікового запису на більшості веб-сайтів.</translation>
 <translation id="8437238597147034694">&amp;Відмінити переміщення</translation>
 <translation id="8488350697529856933">Застосовується до:</translation>
 <translation id="8498891568109133222">Хост <ph name="HOST_NAME" /> довго не відповідає.</translation>

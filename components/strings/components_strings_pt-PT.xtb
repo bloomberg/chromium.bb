@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">Revisão</translation>
 <translation id="3681007416295224113">Informações do certificado</translation>
 <translation id="3693415264595406141">Palavra-passe:</translation>
+<translation id="3696411085566228381">nenhuns</translation>
 <translation id="3700528541715530410">Ups! Aparentemente, não tem autorização para aceder a esta página.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">A carregar...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">O cartão expirou</translation>
 <translation id="3934680773876859118">Falha ao carregar o documento em PDF</translation>
 <translation id="3963721102035795474">Modo de leitor</translation>
+<translation id="397105322502079400">A calcular...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> está bloqueado</translation>
 <translation id="4021036232240155012">O DNS é o serviço de rede que converte o nome de um Website no respetivo endereço de Internet.</translation>
 <translation id="4030383055268325496">&amp;Anular adição</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">Ajustar à página</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4880827082731008257">Pesquisar histórico</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Esta página foi traduzida de um idioma desconhecido para <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Tem de ser especificado.</translation>
 <translation id="4930497775425430760">Estás a ver esta mensagem porque o teu encarregado de educação necessita de aprovar os sites novos sempre que os visitas pela primeira vez.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">Pretende preencher o seu cartão <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">A sua ligação a <ph name="DOMAIN" /> está encriptada através de um conjunto de cifras obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Refazer adição</translation>
+<translation id="5814352347845180253">Pode perder o acesso ao conteúdo premium de <ph name="SITE" /> e de outros sites.</translation>
 <translation id="5855235287355719921">Está a ver esta mensagem porque o seu gestor bloqueou este site.</translation>
 <translation id="5857090052475505287">Nova pasta</translation>
 <translation id="5869405914158311789">Não é possível aceder a este site</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">Sugestões superiores</translation>
 <translation id="59107663811261420">O Google Payments não é compatível com este tipo de cartão para este comerciante. Selecione outro cartão.</translation>
 <translation id="59174027418879706">Ativada</translation>
+<translation id="5926846154125914413">Pode perder o acesso ao conteúdo premium de alguns sites.</translation>
 <translation id="5966707198760109579">Semana</translation>
 <translation id="5967867314010545767">Remover do histórico</translation>
 <translation id="5975083100439434680">Reduzir</translation>
@@ -453,6 +458,7 @@
 <translation id="6328639280570009161">Tente desativar a previsão de rede</translation>
 <translation id="6337534724793800597">Filtrar políticas pelo nome</translation>
 <translation id="6342069812937806050">Mesmo agora</translation>
+<translation id="6345221851280129312">tamanho desconhecido</translation>
 <translation id="6355080345576803305">Substituição da sessão pública</translation>
 <translation id="6358450015545214790">O que significam?</translation>
 <translation id="6387478394221739770">Está interessado nas novas e fantásticas funcionalidades do Chrome? Experimente o nosso canal beta em chrome.com/beta.</translation>
@@ -466,6 +472,7 @@
 <translation id="6489534406876378309">Começar a carregar falhas</translation>
 <translation id="6529602333819889595">&amp;Refazer eliminação</translation>
 <translation id="6550675742724504774">Opções</translation>
+<translation id="6593753688552673085">menos de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opções de encriptação</translation>
 <translation id="662080504995468778">Ficar</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Pesquisar</translation>
@@ -594,7 +601,9 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8034522405403831421">Esta página está em <ph name="SOURCE_LANGUAGE" />. Pretende traduzi-la para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Não foram encontradas entradas no histórico.</translation>
 <translation id="8088680233425245692">Falha ao ver o artigo.</translation>
+<translation id="8089520772729574115">menos de 1 MB</translation>
 <translation id="8091372947890762290">Ativação pendente no servidor</translation>
+<translation id="8129262335948759431">quantidade desconhecida</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8134994873729925007">Não foi possível encontrar o <ph name="BEGIN_ABBR" />endereço DNS<ph name="END_ABBR" /> do servidor de <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">O computador entrou em suspensão.</translation>
@@ -603,6 +612,7 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8201077131113104583">Atualizar URL inválido para a extensão com o ID "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8218327578424803826">Localização atribuída:</translation>
 <translation id="8225771182978767009">A pessoa que configurou este computador optou por bloquear este site.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">A página que procura utilizou informações introduzidas por si. Regressar a essa página poderá originar a repetição de qualquer acção que tenha efetuado. Pretende continuar?</translation>
 <translation id="8249320324621329438">Última obtenção:</translation>
 <translation id="8261506727792406068">Eliminar</translation>
@@ -618,6 +628,7 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8412145213513410671">Falhas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Tem de introduzir a mesma frase de acesso duas vezes.</translation>
 <translation id="8428213095426709021">Definições</translation>
+<translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Websites.</translation>
 <translation id="8437238597147034694">&amp;Anular movimentação</translation>
 <translation id="8488350697529856933">Aplica-se a</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> demorou demasiado tempo a responder.</translation>

@@ -509,7 +509,6 @@
 <translation id="7074853159844403180"><ph name="SITE" /> 要求與下列藍牙裝置配對：</translation>
 <translation id="7081639897063626814">與現有資料分開保留</translation>
 <translation id="7094922512924405309">找不到附近的實體化網路網頁</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> 個開啟的分頁</translation>
 <translation id="7115197232530297436">不支援的運送地址，請選取其他地址。</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7180611975245234373">重新整理</translation>
@@ -612,6 +611,7 @@
 <translation id="8433057134996913067">您會因此登出大多數網站。</translation>
 <translation id="8447861592752582886">撤銷裝置權限</translation>
 <translation id="8481940801237642152">您與這個網站建立了私人連線，但網路上的其他人可能可以變更網頁的外觀。</translation>
+<translation id="8487700953926739672">可離線使用</translation>
 <translation id="8493948351860045254">釋出空間</translation>
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
 <translation id="8503813439785031346">使用者名稱</translation>

@@ -254,6 +254,7 @@
 <translation id="3658742229777143148">Verzia</translation>
 <translation id="3681007416295224113">Informácie o certifikáte</translation>
 <translation id="3693415264595406141">Heslo:</translation>
+<translation id="3696411085566228381">žiadne</translation>
 <translation id="3700528541715530410">Ojoj! Zdá sa, že nemáte povolenie na prístup k tejto stránke.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Načítava sa...</translation>
@@ -275,6 +276,7 @@
 <translation id="3901925938762663762">Platnosť karty vypršala</translation>
 <translation id="3934680773876859118">Načítanie dokumentu PDF zlyhalo</translation>
 <translation id="3963721102035795474">Režim čítačky</translation>
+<translation id="397105322502079400">Prebieha výpočet...</translation>
 <translation id="3973234410852337861">Web <ph name="HOST_NAME" /> je zablokovaný</translation>
 <translation id="4021036232240155012">DNS je sieťová služba, ktorá preloží názov webu do jeho internetovej adresy.</translation>
 <translation id="4030383055268325496">&amp;Vrátiť späť pridanie</translation>
@@ -341,6 +343,7 @@
 <translation id="4816492930507672669">Prispôsobiť stránke</translation>
 <translation id="4850886885716139402">Zobraziť</translation>
 <translation id="4880827082731008257">Hľadať v histórii</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Táto stránka bola preložená z neznámeho jazyka do jazyka <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Musí byť určená.</translation>
 <translation id="4930497775425430760">Táto správa sa vám zobrazila, pretože nový web musí pri prvej návšteve schváliť váš rodič.</translation>
@@ -414,6 +417,7 @@
 <translation id="5803412860119678065">Chcete vyplniť informácie o karte <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">Vaše pripojenie k doméne <ph name="DOMAIN" /> je šifrované pomocou zastaranej šifrovacej súpravy.</translation>
 <translation id="5813119285467412249">&amp;Znova pridať</translation>
+<translation id="5814352347845180253">Môžete stratiť prístup k prémiovému obsahu z webu <ph name="SITE" /> a niektorých ďalších webov.</translation>
 <translation id="5855235287355719921">Táto správa sa vám zobrazila, pretože váš správca zablokoval tento web.</translation>
 <translation id="5857090052475505287">Nový priečinok</translation>
 <translation id="5869405914158311789">K tomuto webu sa nedá pripojiť</translation>
@@ -421,6 +425,7 @@
 <translation id="5872918882028971132">Návrhy rodiča</translation>
 <translation id="59107663811261420">Služba Google Payments nepodporuje v prípade tohto obchodníka tento typ karty. Vyberte inú kartu.</translation>
 <translation id="59174027418879706">Povolené</translation>
+<translation id="5926846154125914413">Môžete stratiť prístup k prémiovému obsahu z niektorých webov.</translation>
 <translation id="5966707198760109579">Týždeň</translation>
 <translation id="5967867314010545767">Odstrániť z histórie</translation>
 <translation id="5975083100439434680">Oddialiť</translation>
@@ -448,6 +453,7 @@
 <translation id="6328639280570009161">Skúste zakázať predpovede siete</translation>
 <translation id="6337534724793800597">Filtrovať pravidlá podľa mena</translation>
 <translation id="6342069812937806050">Práve teraz</translation>
+<translation id="6345221851280129312">neznáma veľkosť</translation>
 <translation id="6355080345576803305">Prepísanie verejnej relácie</translation>
 <translation id="6358450015545214790">Čo znamenajú tieto položky?</translation>
 <translation id="6387478394221739770">Máte záujem o skvelé nové funkcie prehliadača Chrome? Vyskúšajte verziu beta na stránke chrome.com/beta.</translation>
@@ -461,6 +467,7 @@
 <translation id="6489534406876378309">Spustiť nahrávanie správ o zlyhaní</translation>
 <translation id="6529602333819889595">&amp;Znova odstrániť</translation>
 <translation id="6550675742724504774">Možnosti</translation>
+<translation id="6593753688552673085">menej ako <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Možnosti šifrovania</translation>
 <translation id="662080504995468778">Zostať</translation>
 <translation id="6628463337424475685">Vyhľadávanie <ph name="ENGINE" /></translation>
@@ -589,7 +596,9 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8034522405403831421">Táto stránka je v jazyku <ph name="SOURCE_LANGUAGE" />. Chcete ju preložiť do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">V histórii sa nenašli žiadne záznamy.</translation>
 <translation id="8088680233425245692">Článok sa nepodarilo zobraziť.</translation>
+<translation id="8089520772729574115">menej ako 1 MB</translation>
 <translation id="8091372947890762290">Aktivácia čaká na server</translation>
+<translation id="8129262335948759431">neznáme množstvo</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Adresu DNS<ph name="END_ABBR" /> servera <ph name="HOST_NAME" /> sa nepodarilo nájsť.</translation>
 <translation id="8149426793427495338">Váš počítač prešiel do režimu spánku.</translation>
@@ -598,6 +607,7 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8201077131113104583">Neplatná webová adresa aktualizácie pre rozšírenie s ID <ph name="EXTENSION_ID" />.</translation>
 <translation id="8218327578424803826">Pridelená poloha:</translation>
 <translation id="8225771182978767009">Osoba, ktorá nastavila tento počítač, sa rozhodla daný web blokovať.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Vami hľadaná stránka použila informácie, ktoré ste zadali. Návrat na túto stránku môže spôsobiť zopakovanie akcie, ktorú ste vykonali. Chcete pokračovať?</translation>
 <translation id="8249320324621329438">Naposledy načítané:</translation>
 <translation id="8261506727792406068">Odstrániť</translation>
@@ -613,6 +623,7 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY" />).
 <translation id="8412145213513410671">Zlyhania (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Rovnakú prístupovú frázu musíte zadať dvakrát.</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
+<translation id="8433057134996913067">Táto možnosť vás odhlási z väčšiny webov.</translation>
 <translation id="8437238597147034694">&amp;Vrátiť späť presunutie</translation>
 <translation id="8488350697529856933">Platí pre</translation>
 <translation id="8498891568109133222">Web <ph name="HOST_NAME" /> príliš dlho neodpovedal.</translation>

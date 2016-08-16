@@ -1355,6 +1355,13 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se especifica, se añadirá un parámetro de consulta restrict a la URL utilizada para la obtención de la base de las variaciones. El valor del parámetro será el valor especificado en esta política.
 
       Si no se especifica, no se modificará la URL de la base de las variaciones.</translation>
+<translation id="5563853101694018649">Inhabilita las Herramientas para Desarrolladores y la consola de JavaScript.
+
+      Si habilitas esta opción, no se podrá acceder a las Herramientas para Desarrolladores ni se podrán inspeccionar los elementos de sitios web. También se inhabilitarán todas las combinaciones de teclas y las entradas de menús o de menús contextuales para abrir las Herramientas para Desarrolladores o la consola de JavaScript.
+
+      Si se inhabilita esta opción o no se configura, se podrán utilizar las Herramientas para Desarrolladores y la consola de JavaScript.
+
+      En el caso de los dispositivos con <ph name="PRODUCT_OS_NAME" /> compatibles con aplicaciones de Android, esta política también controla el acceso a las Opciones para Desarrolladores de Android. Si se le asigna el valor true a esta política, los usuarios no podrán acceder a las Opciones para Desarrolladores. Si se le asigna el valor false o no se configura, los usuarios podrán tocar siete veces el número de compilación en la aplicación Ajustes de Android para acceder a esas opciones.</translation>
 <translation id="556941986578702361">Permite controlar la opción para ocultar automáticamente los archivos de <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece en "AlwaysAutoHideShelf", los archivos se ocultarán automáticamente.

@@ -255,6 +255,7 @@
 <translation id="3658742229777143148">Revisione</translation>
 <translation id="3681007416295224113">Informazioni certificato</translation>
 <translation id="3693415264595406141">Password:</translation>
+<translation id="3696411085566228381">nessuno</translation>
 <translation id="3700528541715530410">Spiacenti, sembra che tu non sia autorizzato ad accedere a questa pagina.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Caricamento in corso...</translation>
@@ -276,6 +277,7 @@
 <translation id="3901925938762663762">La carta è scaduta</translation>
 <translation id="3934680773876859118">Caricamento del documento PDF non riuscito</translation>
 <translation id="3963721102035795474">Modalità Reader</translation>
+<translation id="397105322502079400">Calcolo in corso...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> è bloccato</translation>
 <translation id="4021036232240155012">DNS è il servizio di rete che traduce il nome di un sito web nel relativo indirizzo Internet.</translation>
 <translation id="4030383055268325496">&amp;Annulla aggiunta</translation>
@@ -342,6 +344,7 @@
 <translation id="4816492930507672669">Adatta alla pagina</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="4880827082731008257">Cerca nella cronologia</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Questa pagina è stata tradotta da una lingua sconosciuta in <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Deve essere specificato.</translation>
 <translation id="4930497775425430760">Visualizzi questo messaggio perché il tuo genitore deve approvare i nuovi siti alla tua prima visita.</translation>
@@ -415,6 +418,7 @@
 <translation id="5803412860119678065">Vuoi inserire automaticamente <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">La connessione a <ph name="DOMAIN" /> è crittografata tramite un pacchetto di crittografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Ripeti aggiunta</translation>
+<translation id="5814352347845180253">Potresti perdere l'accesso ai contenuti premium del sito <ph name="SITE" /> e di altri siti.</translation>
 <translation id="5855235287355719921">Visualizzi questo messaggio perché il gestore ha bloccato questo sito.</translation>
 <translation id="5857090052475505287">Nuova cartella</translation>
 <translation id="5869405914158311789">Impossibile raggiungere il sito</translation>
@@ -422,6 +426,7 @@
 <translation id="5872918882028971132">Suggerimenti per i genitori</translation>
 <translation id="59107663811261420">Questo tipo di carta non è supportato in Google Payments per questo commerciante. Seleziona un'altra carta.</translation>
 <translation id="59174027418879706">Attiva</translation>
+<translation id="5926846154125914413">Potresti perdere l'accesso ai contenuti premium di alcuni siti.</translation>
 <translation id="5966707198760109579">Settimana</translation>
 <translation id="5967867314010545767">Rimuovi da cronologia</translation>
 <translation id="5975083100439434680">Diminuisci lo zoom</translation>
@@ -449,6 +454,7 @@
 <translation id="6328639280570009161">Prova a disattivare la previsione della rete</translation>
 <translation id="6337534724793800597">Filtra i criteri per nome</translation>
 <translation id="6342069812937806050">In questo momento</translation>
+<translation id="6345221851280129312">dimensioni sconosciute</translation>
 <translation id="6355080345576803305">Sostituzione sessione pubblica</translation>
 <translation id="6358450015545214790">Che cosa significano?</translation>
 <translation id="6387478394221739770">Ti interessano le nuove e straordinarie funzioni di Chrome? Prova il nostro canale beta all'indirizzo chrome.com/beta.</translation>
@@ -462,6 +468,7 @@
 <translation id="6489534406876378309">Avvia caricamento arresti anomali</translation>
 <translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
 <translation id="6550675742724504774">Opzioni</translation>
+<translation id="6593753688552673085">meno di <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Opzioni di crittografia</translation>
 <translation id="662080504995468778">Rimani</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE" /></translation>
@@ -590,7 +597,9 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8034522405403831421">Questa pagina è in <ph name="SOURCE_LANGUAGE" />. Tradurla in <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Nessuna voce della cronologia trovata.</translation>
 <translation id="8088680233425245692">Impossibile visualizzare l'articolo.</translation>
+<translation id="8089520772729574115">meno di 1 MB</translation>
 <translation id="8091372947890762290">Attivazione in attesa sul server</translation>
+<translation id="8129262335948759431">importo sconosciuto</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8134994873729925007">Impossibile trovare l'<ph name="BEGIN_ABBR" />indirizzo DNS<ph name="END_ABBR" /> del server <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Il computer è entrato in modalità sospensione.</translation>
@@ -599,6 +608,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8201077131113104583">URL di aggiornamento non valido per l'estensione con ID "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8218327578424803826">Posizione assegnata:</translation>
 <translation id="8225771182978767009">La persona che ha configurato il computer ha deciso di bloccare questo sito.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">La pagina a cui stai tentando di accedere utilizzava informazioni inserite da te. Tornando a quella pagina, è possibile che eventuali azioni che hai eseguito vengano ripetute. Continuare?</translation>
 <translation id="8249320324621329438">Ultimo recupero:</translation>
 <translation id="8261506727792406068">Elimina</translation>
@@ -614,6 +624,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8412145213513410671">Arresti anomali (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Devi inserire la stessa passphrase due volte.</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
+<translation id="8433057134996913067">In questo modo uscirai dalla maggior parte dei siti web.</translation>
 <translation id="8437238597147034694">&amp;Annulla spostamento</translation>
 <translation id="8488350697529856933">Si applica a</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha impiegato troppo tempo a rispondere.</translation>

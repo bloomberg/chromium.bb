@@ -256,6 +256,7 @@
 <translation id="3658742229777143148">Ellenőrzés</translation>
 <translation id="3681007416295224113">Tanúsítvány adatai</translation>
 <translation id="3693415264595406141">Jelszó:</translation>
+<translation id="3696411085566228381">nincs</translation>
 <translation id="3700528541715530410">Hoppá! Nincs jogosultsága ennek a lapnak a megtekintéséhez.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Betöltés…</translation>
@@ -277,6 +278,7 @@
 <translation id="3901925938762663762">A kártya lejárt</translation>
 <translation id="3934680773876859118">PDF dokumentum betöltése sikertelen</translation>
 <translation id="3963721102035795474">Olvasási mód</translation>
+<translation id="397105322502079400">Számítás…</translation>
 <translation id="3973234410852337861">A(z) <ph name="HOST_NAME" /> le van tiltva</translation>
 <translation id="4021036232240155012">A DNS az a hálózati szolgáltatás, amely a webhelynevet az adott webhely internetes címére fordítja le.</translation>
 <translation id="4030383055268325496">&amp;Hozzáadás visszavonása</translation>
@@ -343,6 +345,7 @@
 <translation id="4816492930507672669">Igazítás az oldalmérethez</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="4880827082731008257">Keresés az előzmények között</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> és <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE" /> nyelvre</translation>
 <translation id="4926049483395192435">Meg kell határozni.</translation>
 <translation id="4930497775425430760">Azért látja ezt az üzenetet, mert szülőjének jóvá kell hagynia az új webhelyeket az első látogatáskor.</translation>
@@ -416,6 +419,7 @@
 <translation id="5803412860119678065">Ki szeretné tölteni <ph name="CARD_DETAIL" /> kártyájának adataival?</translation>
 <translation id="5810442152076338065">A(z) <ph name="DOMAIN" /> domainnel való kapcsolata elavult kriptográfiával van titkosítva.</translation>
 <translation id="5813119285467412249">&amp;Hozzáadás újra</translation>
+<translation id="5814352347845180253">Elveszítheti hozzáférését a(z) <ph name="SITE" /> és más webhelyek prémium tartalmaihoz.</translation>
 <translation id="5855235287355719921">Azért látja ezt az üzenetet, mert kezelője letiltotta ezt a webhelyet.</translation>
 <translation id="5857090052475505287">Új mappa</translation>
 <translation id="5869405914158311789">A webhely nem érhető el</translation>
@@ -423,6 +427,7 @@
 <translation id="5872918882028971132">Szülői javaslatok</translation>
 <translation id="59107663811261420">A Google Payments ennél a kereskedőnél nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon másik kártyát.</translation>
 <translation id="59174027418879706">Engedélyezve</translation>
+<translation id="5926846154125914413">Elveszítheti hozzáférését az egyes webhelyek prémium tartalmaihoz.</translation>
 <translation id="5966707198760109579">Hét</translation>
 <translation id="5967867314010545767">Eltávolítás az előzmények közül</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
@@ -451,6 +456,7 @@
 <translation id="6328639280570009161">Próbálkozzon a hálózati előrejelzések kikapcsolásával</translation>
 <translation id="6337534724793800597">Házirendek szűrése név szerint</translation>
 <translation id="6342069812937806050">Éppen most</translation>
+<translation id="6345221851280129312">ismeretlen méret</translation>
 <translation id="6355080345576803305">Nyilvános munkamenet általi felülbírálás</translation>
 <translation id="6358450015545214790">Mit jelent ez?</translation>
 <translation id="6387478394221739770">Érdekli néhány remek új Chrome-funkció? Próbálja ki a Béta csatornánkat a chrome.com/beta webhelyen.</translation>
@@ -464,6 +470,7 @@
 <translation id="6489534406876378309">Feltöltési összeomlások indítása</translation>
 <translation id="6529602333819889595">&amp;Törlés újra</translation>
 <translation id="6550675742724504774">Beállítások</translation>
+<translation id="6593753688552673085">kevesebb, mint <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Titkosítási lehetőségek</translation>
 <translation id="662080504995468778">Mégse</translation>
 <translation id="6628463337424475685">Keresés: <ph name="ENGINE" /></translation>
@@ -592,7 +599,9 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8034522405403831421">Ez az oldal <ph name="SOURCE_LANGUAGE" /> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE" /> nyelvre?</translation>
 <translation id="8034955203865359138">Nincsenek előzménybejegyzések.</translation>
 <translation id="8088680233425245692">Nem sikerült megtekinteni a cikket.</translation>
+<translation id="8089520772729574115">kevesebb mint 1 MB</translation>
 <translation id="8091372947890762290">Az aktiválás függőben van a szerveren</translation>
+<translation id="8129262335948759431">ismeretlen mennyiség</translation>
 <translation id="8131740175452115882">Megerősítés</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> szerverének <ph name="BEGIN_ABBR" />DNS-címe<ph name="END_ABBR" /> nem található.</translation>
 <translation id="8149426793427495338">Számítógépe alvó üzemmódba váltott.</translation>
@@ -601,6 +610,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8201077131113104583">A(z) „<ph name="EXTENSION_ID" />” azonosítójú bővítmény frissítési URL-je érvénytelen.</translation>
 <translation id="8218327578424803826">Hozzárendelt helyszín:</translation>
 <translation id="8225771182978767009">A számítógépet beállító személy a webhely letiltása mellett döntött.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" /> és <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">A keresett oldal a megadott információt használta. Ha visszatér arra az oldalra, akkor lehet, hogy az egyszer már megtett mozdulatok ismétlésre kerülnek. Mégis továbblép?</translation>
 <translation id="8249320324621329438">Utolsó lekérés:</translation>
 <translation id="8261506727792406068">Törlés</translation>
@@ -616,6 +626,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8412145213513410671">Rendszerösszeomlások ( <ph name="CRASH_COUNT" /> )</translation>
 <translation id="8412392972487953978">Mindkét alkalommal ugyanazt az összetett jelszót kell megadnia.</translation>
 <translation id="8428213095426709021">Beállítások</translation>
+<translation id="8433057134996913067">Ezzel kijelentkezik a legtöbb webhelyről.</translation>
 <translation id="8437238597147034694">&amp;Áthelyezés visszavonása</translation>
 <translation id="8488350697529856933">A következőre érvényes</translation>
 <translation id="8498891568109133222">A(z) <ph name="HOST_NAME" /> túl hosszú ideje nem válaszol.</translation>

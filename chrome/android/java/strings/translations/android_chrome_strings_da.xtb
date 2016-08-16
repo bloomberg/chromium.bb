@@ -509,7 +509,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7074853159844403180"><ph name="SITE" /> vil parre med:</translation>
 <translation id="7081639897063626814">Hold eksisterende data adskilt</translation>
 <translation id="7094922512924405309">Der blev ikke fundet nogen Fysisk web-sider i nærheden</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> åbne faner</translation>
 <translation id="7115197232530297436">Leveringsadressen understøttes ikke. Vælg en anden adresse.</translation>
 <translation id="7138678301420049075">Andet</translation>
 <translation id="7180611975245234373">Opdater</translation>
@@ -612,6 +611,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8433057134996913067">Dette logger dig ud af de fleste websites.</translation>
 <translation id="8447861592752582886">Tilbagekald adgangstilladelsen til enheden</translation>
 <translation id="8481940801237642152">Din forbindelse til dette website er privat, men andre på netværket vil muligvis kunne ændre sidens udseende.</translation>
+<translation id="8487700953926739672">Tilgængelig offline</translation>
 <translation id="8493948351860045254">Frigør plads</translation>
 <translation id="8497726226069778601">Her er ikke noget at se… endnu</translation>
 <translation id="8503813439785031346">Brugernavn</translation>

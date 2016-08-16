@@ -258,6 +258,7 @@
 <translation id="3658742229777143148">Versjon</translation>
 <translation id="3681007416295224113">Sertifikatinformasjon</translation>
 <translation id="3693415264595406141">Passord:</translation>
+<translation id="3696411085566228381">ingen</translation>
 <translation id="3700528541715530410">Beklager. Det ser ut til at du ikke har tillatelse til å åpne denne siden.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Laster inn...</translation>
@@ -279,6 +280,7 @@
 <translation id="3901925938762663762">Kortet er utløpt</translation>
 <translation id="3934680773876859118">Kan ikke laste inn PDF-dokument</translation>
 <translation id="3963721102035795474">Lesermodus</translation>
+<translation id="397105322502079400">Beregner …</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokkert</translation>
 <translation id="4021036232240155012">DNS er nettverkstjenesten som oversetter navnene på nettsteder til Internett-adressene deres.</translation>
 <translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
@@ -345,6 +347,7 @@
 <translation id="4816492930507672669">Tilpass til siden</translation>
 <translation id="4850886885716139402">Visning</translation>
 <translation id="4880827082731008257">Søk i loggen</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE" /> fra et ukjent språk</translation>
 <translation id="4926049483395192435">Må angis.</translation>
 <translation id="4930497775425430760">Du ser denne meldingen fordi en av foreldrene dine må godkjenne nye nettsteder den første gangen du åpner dem.</translation>
@@ -418,6 +421,7 @@
 <translation id="5803412860119678065">Vil du fylle ut informasjonen knyttet til <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">Tilkoblingen til <ph name="DOMAIN" /> er kryptert med en foreldet chifferserie.</translation>
 <translation id="5813119285467412249">&amp;Legg til likevel</translation>
+<translation id="5814352347845180253">Det kan hende du mister tilgang til premium-innhold fra <ph name="SITE" /> og andre nettsteder.</translation>
 <translation id="5855235287355719921">Du ser denne meldingen fordi administratoren din har blokkert dette nettstedet.</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
 <translation id="5869405914158311789">Dette nettstedet er ikke tilgjengelig</translation>
@@ -425,6 +429,7 @@
 <translation id="5872918882028971132">Overordnede forslag</translation>
 <translation id="59107663811261420">Denne korttypen støttes ikke av Google Payments for denne selgeren. Velg et annet kort.</translation>
 <translation id="59174027418879706">Aktivert</translation>
+<translation id="5926846154125914413">Det kan hende du mister tilgang til premium-innhold fra enkelte nettsteder.</translation>
 <translation id="5966707198760109579">Uke</translation>
 <translation id="5967867314010545767">Fjern fra loggen</translation>
 <translation id="5975083100439434680">Zoom ut</translation>
@@ -453,6 +458,7 @@
 <translation id="6328639280570009161">Prøv å slå av nettverksforutsigelse</translation>
 <translation id="6337534724793800597">Filtrér retningslinjer etter navn</translation>
 <translation id="6342069812937806050">Akkurat nå</translation>
+<translation id="6345221851280129312">ukjent størrelse</translation>
 <translation id="6355080345576803305">Offentlig økt-overstyring</translation>
 <translation id="6358450015545214790">Hva innebærer dette?</translation>
 <translation id="6387478394221739770">Interessert i nye kule Chrome-funksjoner? Prøv betakanalen vår på chrome.com/beta</translation>
@@ -466,6 +472,7 @@
 <translation id="6489534406876378309">Start opplastingen av krasj</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
 <translation id="6550675742724504774">Alternativer</translation>
+<translation id="6593753688552673085">mindre enn <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Krypteringsalternativer</translation>
 <translation id="662080504995468778">Bli her</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søk</translation>
@@ -594,7 +601,9 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE" />. Vil du oversette den til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Fant ingen loggoppføringer.</translation>
 <translation id="8088680233425245692">Kunne ikke åpne artikkelen.</translation>
+<translation id="8089520772729574115">under 1 MB</translation>
 <translation id="8091372947890762290">Aktivering venter på tjeneren</translation>
+<translation id="8129262335948759431">ukjent antall</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" />-tjenerens <ph name="BEGIN_ABBR" />DNS-adresse<ph name="END_ABBR" /> ble ikke funnet.</translation>
 <translation id="8149426793427495338">Datamaskinen din gikk inn i hvilemodus.</translation>
@@ -603,6 +612,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8201077131113104583">Ugyldig oppdaterings-URL for utvidelse med ID «<ph name="EXTENSION_ID" />».</translation>
 <translation id="8218327578424803826">Tilordnet posisjon:</translation>
 <translation id="8225771182978767009">Personen som konfigurerte denne datamaskinen, har valgt å blokkere dette nettstedet.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Siden du ser etter, brukte informasjon som du anga. Hvis du går tilbake til denne siden, kan det føre til at handlinger som er utført, blir gjentatt. Vil du fortsette?</translation>
 <translation id="8249320324621329438">Sist hentet:</translation>
 <translation id="8261506727792406068">Slett</translation>
@@ -618,6 +628,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8412145213513410671">Kræsj (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Du må angi den samme passordfrasen to ganger.</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
+<translation id="8433057134996913067">Dette logger deg av de fleste nettsteder.</translation>
 <translation id="8437238597147034694">&amp;Angre flyttingen</translation>
 <translation id="8488350697529856933">Gjelder for</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> brukte for lang tid på å svare.</translation>

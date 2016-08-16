@@ -14,6 +14,7 @@
 <translation id="119944043368869598">Eliminar todo</translation>
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1206892813135768548">Copiar texto de enlace</translation>
+<translation id="1209206284964581585">Ocultar por ahora</translation>
 <translation id="1240668123557180468">Descubre páginas web enviadas por los objetos cercanos. Chrome recopila páginas web asociadas a los objetos que te rodean, las envía de forma anónima a un servicio de Google para seleccionar las que te puedan resultar más útiles y, a continuación, las muestra.
 
 Debes activar la ubicación y el Bluetooth para utilizar la Web física.</translation>
@@ -45,6 +46,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1477626028522505441">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el servidor.</translation>
 <translation id="1506061864768559482">Motor de búsqueda</translation>
 <translation id="1513352483775369820">Historial web y marcadores</translation>
+<translation id="1513858653616922153">Eliminar contraseña</translation>
 <translation id="1546112724822176246">¿No aparece tu dispositivo? <ph name="BEGIN_LINK" />Obtén ayuda<ph name="END_LINK" />.</translation>
 <translation id="1549000191223877751">Mover a otra ventana</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
@@ -64,6 +66,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1749561566933687563">Sincronizar marcadores</translation>
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1756600373018374892">Toca este botón para acceder rápidamente a tus pestañas.</translation>
+<translation id="1774241295142531736">¿No aparece tu dispositivo? <ph name="BEGIN_LINK1" />Obtén ayuda<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />repite la búsqueda<ph name="END_LINK2" />.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Primera experiencia de ejecución</translation>
 <translation id="1826516787628120939">Comprobando</translation>
@@ -220,6 +223,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3656115297268584622">Activa la ubicación en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Los sitios web externos pueden guardar y leer datos de cookies</translation>
 <translation id="3672452749423051839">Sugerencias para errores de navegación</translation>
+<translation id="3690847815241521170">Buscando dispositivos… <ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="3706658020782046159">Selecciona una dirección de envío para consultar los métodos de envío y los requisitos.</translation>
 <translation id="3716158070938632480">Hay páginas web cercanas</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
@@ -365,6 +369,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5512137114520586844">Esta cuenta está administrada por <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">Chrome necesita acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualizar permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Cerrar pestañas de incógnito</translation>
+<translation id="5538968846107343822">No se han encontrado dispositivos Bluetooth. <ph name="BEGIN_LINK" />Repite la búsqueda<ph name="END_LINK" />.</translation>
 <translation id="554327794654007401">Web física</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
@@ -504,7 +509,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7074853159844403180"><ph name="SITE" /> quiere vincularse con:</translation>
 <translation id="7081639897063626814">Mantener los datos actuales de forma independiente</translation>
 <translation id="7094922512924405309">No se han encontrado páginas de la Web física cercanas</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> pestañas abiertas</translation>
 <translation id="7115197232530297436">Dirección de envío no admitida. Selecciona otra dirección.</translation>
 <translation id="7138678301420049075">Otro</translation>
 <translation id="7180611975245234373">Actualizar</translation>
@@ -607,11 +611,13 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8433057134996913067">Con esta opción, tu sesión se cerrará en la mayoría de sitios web.</translation>
 <translation id="8447861592752582886">Revocar permiso de dispositivo</translation>
 <translation id="8481940801237642152">Tu conexión a este sitio es privada, pero alguien en la red podría cambiar la apariencia de la página.</translation>
+<translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8493948351860045254">Liberar espacio</translation>
 <translation id="8497726226069778601">Aún no tienes contenido</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8514577642972634246">Navegar en modo incógnito</translation>
 <translation id="8518901949365209398">En este sitio se utiliza una configuración de seguridad vulnerable (firmas SHA-1), de modo que es posible que tu conexión no sea privada.</translation>
+<translation id="8523928698583292556">Eliminar contraseña guardada</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8559882854823529713">Leer más tarde en Chrome</translation>

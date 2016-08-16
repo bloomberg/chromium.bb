@@ -509,7 +509,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7074853159844403180"><ph name="SITE" /> vill koppla till:</translation>
 <translation id="7081639897063626814">Håll befintlig data separat</translation>
 <translation id="7094922512924405309">Inga Physical Web-sidor hittades i närheten</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> öppna flikar</translation>
 <translation id="7115197232530297436">Leveransadressen stöds inte. Välj en annan adress.</translation>
 <translation id="7138678301420049075">Övrigt</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
@@ -612,6 +611,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8433057134996913067">Alternativet innebär att du loggas ut från de flesta webbplatser.</translation>
 <translation id="8447861592752582886">Återkalla enhetsbehörighet</translation>
 <translation id="8481940801237642152">Din anslutning till webbplatsen är privat, men någon i nätverket kanske kan ändra utseendet på sidan.</translation>
+<translation id="8487700953926739672">Tillgänglig offline</translation>
 <translation id="8493948351860045254">Frigör lagringsutrymme</translation>
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
 <translation id="8503813439785031346">Användarnamn</translation>

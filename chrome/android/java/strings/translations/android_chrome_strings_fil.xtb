@@ -509,7 +509,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7074853159844403180">Gustong makipagpares ng <ph name="SITE" /> sa:</translation>
 <translation id="7081639897063626814">Panatilihing hiwalay ang kasalukuyang data</translation>
 <translation id="7094922512924405309">Walang nakitang kalapit na mga page ng Pisikal na Web</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> (na) tab ang nakabukas</translation>
 <translation id="7115197232530297436">Hindi sinusuportahan ang address sa pagpapadala. Pumili ng ibang address.</translation>
 <translation id="7138678301420049075">Iba pa</translation>
 <translation id="7180611975245234373">I-refresh</translation>
@@ -612,6 +611,7 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="8433057134996913067">Masa-sign out ka sa karamihan ng mga website.</translation>
 <translation id="8447861592752582886">Bawiin ang pahintulot ng device</translation>
 <translation id="8481940801237642152">Pribado ang iyong koneksyon sa site na ito, ngunit maaaring mabago ng isang tao sa network ang hitsura ng page.</translation>
+<translation id="8487700953926739672">Available sa offline</translation>
 <translation id="8493948351860045254">Magbakante ng espasyo</translation>
 <translation id="8497726226069778601">Walang makikita dito... sa ngayon</translation>
 <translation id="8503813439785031346">Username</translation>

@@ -509,7 +509,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7074853159844403180"><ph name="SITE" /> möchte ein Pairing durchführen mit:</translation>
 <translation id="7081639897063626814">Bestehende Daten getrennt halten</translation>
 <translation id="7094922512924405309">Keine Physical Web-Seiten zu Objekten in der Nähe gefunden</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> geöffnete Tabs</translation>
 <translation id="7115197232530297436">Nicht unterstützte Versandadresse. Wählen Sie eine andere Adresse aus.</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
@@ -612,6 +611,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
 <translation id="8447861592752582886">Zugriffsberechtigung auf Gerät widerrufen</translation>
 <translation id="8481940801237642152">Ihre Verbindung zu dieser Website ist privat, möglicherweise ist jedoch jemand im Netzwerk in der Lage, das Aussehen der Seite zu ändern.</translation>
+<translation id="8487700953926739672">Offline verfügbar</translation>
 <translation id="8493948351860045254">Speicherplatz freigeben</translation>
 <translation id="8497726226069778601">Noch keine Seiten</translation>
 <translation id="8503813439785031346">Nutzername</translation>

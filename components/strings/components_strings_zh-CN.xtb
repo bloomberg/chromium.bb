@@ -255,6 +255,7 @@
 <translation id="3658742229777143148">修订版本</translation>
 <translation id="3681007416295224113">证书信息</translation>
 <translation id="3693415264595406141">密码：</translation>
+<translation id="3696411085566228381">无</translation>
 <translation id="3700528541715530410">糟糕，您似乎没有访问此页面的权限。</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> - <ph name="BOOKMARKED" /> - <ph name="TITLE" /> - <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">正在加载...</translation>
@@ -276,6 +277,7 @@
 <translation id="3901925938762663762">此信用卡已过期</translation>
 <translation id="3934680773876859118">无法加载 PDF 文档</translation>
 <translation id="3963721102035795474">阅读器模式</translation>
+<translation id="397105322502079400">正在计算...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
 <translation id="4021036232240155012">DNS 是一项网络服务，可将网站的名称转译为其对应的互联网地址。</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
@@ -342,6 +344,7 @@
 <translation id="4816492930507672669">适合页面大小</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4880827082731008257">搜索历史记录</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE" />。</translation>
 <translation id="4926049483395192435">必须指定。</translation>
 <translation id="4930497775425430760">您之所以看到这条消息，是因为您第一次访问新的网站时需要获得家长的批准。</translation>
@@ -415,6 +418,7 @@
 <translation id="5803412860119678065">要填充您的“<ph name="CARD_DETAIL" />”吗？</translation>
 <translation id="5810442152076338065">您与 <ph name="DOMAIN" /> 之间的连接采用过时的加密套件进行了加密。</translation>
 <translation id="5813119285467412249">恢复添加(&amp;R)</translation>
+<translation id="5814352347845180253">您可能无法再访问 <ph name="SITE" /> 以及其他一些网站上的付费内容。</translation>
 <translation id="5855235287355719921">您之所以看到这条消息，是因为管理员屏蔽了此网站。</translation>
 <translation id="5857090052475505287">新文件夹</translation>
 <translation id="5869405914158311789">无法访问此网站</translation>
@@ -422,6 +426,7 @@
 <translation id="5872918882028971132">家长建议</translation>
 <translation id="59107663811261420">Google Payments 不支持使用这种类型的信用卡向此商家付款，请选择其他卡。</translation>
 <translation id="59174027418879706">已启用</translation>
+<translation id="5926846154125914413">您可能无法再访问某些网站上的付费内容。</translation>
 <translation id="5966707198760109579">周</translation>
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5975083100439434680">缩小</translation>
@@ -449,6 +454,7 @@
 <translation id="6328639280570009161">请尝试停用网络联想查询功能</translation>
 <translation id="6337534724793800597">按名称过滤政策</translation>
 <translation id="6342069812937806050">刚刚</translation>
+<translation id="6345221851280129312">大小未知</translation>
 <translation id="6355080345576803305">覆盖公用自助终端</translation>
 <translation id="6358450015545214790">这分别意味着什么？</translation>
 <translation id="6387478394221739770">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/beta，试用我们的测试版！</translation>
@@ -462,6 +468,7 @@
 <translation id="6489534406876378309">开始上传崩溃数据</translation>
 <translation id="6529602333819889595">恢复删除(&amp;R)</translation>
 <translation id="6550675742724504774">选项</translation>
+<translation id="6593753688552673085">不到 <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">加密选项</translation>
 <translation id="662080504995468778">留下</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜索</translation>
@@ -590,7 +597,9 @@
 <translation id="8034522405403831421">此网页的源语言为<ph name="SOURCE_LANGUAGE" />，要将其翻译成<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="8034955203865359138">未找到任何历史记录条目。</translation>
 <translation id="8088680233425245692">无法查看文章。</translation>
+<translation id="8089520772729574115">小于 1 MB</translation>
 <translation id="8091372947890762290">正等待在服务器上激活</translation>
+<translation id="8129262335948759431">数量未知</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8134994873729925007">找不到 <ph name="HOST_NAME" /> 的服务器 <ph name="BEGIN_ABBR" />DNS 地址<ph name="END_ABBR" />。</translation>
 <translation id="8149426793427495338">您的计算机已进入休眠模式。</translation>
@@ -599,6 +608,7 @@
 <translation id="8201077131113104583">ID 为“<ph name="EXTENSION_ID" />”的扩展程序的更新网址无效。</translation>
 <translation id="8218327578424803826">分配的位置：</translation>
 <translation id="8225771182978767009">设置此计算机的用户已选择屏蔽此网站。</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">您所查找的网页要使用已输入的信息。返回此页可能需要重复已进行的所有操作。是否要继续操作？</translation>
 <translation id="8249320324621329438">最后一次抓取时间：</translation>
 <translation id="8261506727792406068">删除</translation>
@@ -614,6 +624,7 @@
 <translation id="8412145213513410671">崩溃次数（<ph name="CRASH_COUNT" /> 次）</translation>
 <translation id="8412392972487953978">您两次输入的密码必须相同。</translation>
 <translation id="8428213095426709021">设置</translation>
+<translation id="8433057134996913067">这将使您退出大多数网站。</translation>
 <translation id="8437238597147034694">撤消移动(&amp;U)</translation>
 <translation id="8488350697529856933">适用对象</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的响应时间过长。</translation>

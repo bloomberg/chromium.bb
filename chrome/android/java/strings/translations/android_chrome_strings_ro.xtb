@@ -509,7 +509,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7074853159844403180"><ph name="SITE" /> dorește să se asocieze cu:</translation>
 <translation id="7081639897063626814">Păstrează datele existente separat</translation>
 <translation id="7094922512924405309">Nu au fost găsite pagini din Webul material în apropiere</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> (de) file deschise</translation>
 <translation id="7115197232530297436">Adresă de expediere neacceptată. Selectează o altă adresă.</translation>
 <translation id="7138678301420049075">Altele</translation>
 <translation id="7180611975245234373">Actualizați</translation>
@@ -612,6 +611,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8433057134996913067">Astfel, te vei deconecta de pe majoritatea site-urilor.</translation>
 <translation id="8447861592752582886">Revocă permisiunea de accesare a dispozitivului</translation>
 <translation id="8481940801237642152">Conexiunea la acest site este privată, dar cineva din rețea ar putea să schimbe aspectul paginii.</translation>
+<translation id="8487700953926739672">Disponibil offline</translation>
 <translation id="8493948351860045254">Eliberează spațiu</translation>
 <translation id="8497726226069778601">Nu este nimic de văzut aici... deocamdată</translation>
 <translation id="8503813439785031346">Nume utilizator</translation>

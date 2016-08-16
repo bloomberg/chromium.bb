@@ -509,7 +509,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7074853159844403180">Svetainė <ph name="SITE" /> nori būti susieta su:</translation>
 <translation id="7081639897063626814">Esamus duomenis išlaikyti atskirus</translation>
 <translation id="7094922512924405309">Nerasta jokių fizinių tinklalapių netoliese</translation>
-<translation id="7095930899177687653">Atidaryta skirtukų lapų: <ph name="OPEN_TABS" /></translation>
 <translation id="7115197232530297436">Nepalaikomas pristatymo adresas. Pasirinkite kitą adresą.</translation>
 <translation id="7138678301420049075">Kitas</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
@@ -612,6 +611,7 @@ Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali bū
 <translation id="8433057134996913067">Tai atlikę atsijungsite nuo daugumos svetainių.</translation>
 <translation id="8447861592752582886">Anuliuoti įrenginio leidimą</translation>
 <translation id="8481940801237642152">Jūsų ryšys su šia svetaine privatus, bet gali būti, kad kitas asmuo tinkle gali pakeisti puslapio išvaizdą.</translation>
+<translation id="8487700953926739672">Pasiekiama neprisijungus</translation>
 <translation id="8493948351860045254">Atlaisvinti vietos</translation>
 <translation id="8497726226069778601">Čia dar nėra nieko, ką galėtumėte peržiūrėti…</translation>
 <translation id="8503813439785031346">Vartotojo vardas</translation>

@@ -509,7 +509,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7074853159844403180"><ph name="SITE" /> ønsker å koble til</translation>
 <translation id="7081639897063626814">Hold eksisterende data adskilt</translation>
 <translation id="7094922512924405309">Fant ingen Fysisk nett-sider i nærheten</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> åpne faner</translation>
 <translation id="7115197232530297436">Fraktadressen støttes ikke. Velg en annen adresse.</translation>
 <translation id="7138678301420049075">Annet</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
@@ -612,6 +611,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8433057134996913067">Dette logger deg av de fleste nettsteder.</translation>
 <translation id="8447861592752582886">Opphev tillatelsen til enhetstilgang</translation>
 <translation id="8481940801237642152">Tilkoblingen til dette området er privat, men det kan hende at noen på nettverket kan endre utseendet på siden.</translation>
+<translation id="8487700953926739672">Tilgjengelig utenfor nettet</translation>
 <translation id="8493948351860045254">Frigjør plass</translation>
 <translation id="8497726226069778601">Det er ikke noe her foreløpig</translation>
 <translation id="8503813439785031346">Brukernavn</translation>

@@ -257,6 +257,7 @@
 <translation id="3658742229777143148">Pārskatīšana</translation>
 <translation id="3681007416295224113">Sertifikāta informācija</translation>
 <translation id="3693415264595406141">Parole:</translation>
+<translation id="3696411085566228381">nav</translation>
 <translation id="3700528541715530410">Šķiet, ka jums nav atļaujas, lai piekļūtu šai lapai.</translation>
 <translation id="3704609568417268905"><ph name="TIME" />, <ph name="BOOKMARKED" />, <ph name="TITLE" />, <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Notiek ielāde...</translation>
@@ -278,6 +279,7 @@
 <translation id="3901925938762663762">Kartes derīguma termiņš ir beidzies.</translation>
 <translation id="3934680773876859118">Neizdevās ielādēt PDF dokumentu</translation>
 <translation id="3963721102035795474">Lasītāja režīms</translation>
+<translation id="397105322502079400">Aprēķina...</translation>
 <translation id="3973234410852337861">Vietne <ph name="HOST_NAME" /> ir bloķēta</translation>
 <translation id="4021036232240155012">DNS ir tīkla pakalpojums, kurā vietnes nosaukums tiek tulkots uz tās interneta adresi.</translation>
 <translation id="4030383055268325496">&amp;Atsaukt pievienošanu</translation>
@@ -344,6 +346,7 @@
 <translation id="4816492930507672669">Ietilpināt lapā</translation>
 <translation id="4850886885716139402">Skatīt</translation>
 <translation id="4880827082731008257">Meklēšanas vēsture</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Šī lapa ir tulkota no nezināmas valodas valodā: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Jābūt norādītai.</translation>
 <translation id="4930497775425430760">Šis ziņojums tiek rādīts, jo pirmā apmeklējuma laikā vienam no vecākiem ir jāapstiprina jaunas vietnes.</translation>
@@ -417,6 +420,7 @@
 <translation id="5803412860119678065">Vai vēlaties aizpildīt lauku ar informāciju “<ph name="CARD_DETAIL" />”?</translation>
 <translation id="5810442152076338065">Savienojums ar domēnu <ph name="DOMAIN" /> ir šifrēts, izmantojot novecojušu šifra komplektu.</translation>
 <translation id="5813119285467412249">&amp;Pievienošanas atsaukuma atcelšana</translation>
+<translation id="5814352347845180253">Varat zaudēt piekļuvi maksas saturam no vietnes <ph name="SITE" /> un dažām citām vietnēm.</translation>
 <translation id="5855235287355719921">Šis ziņojums tiek rādīts, jo pārvaldnieks bloķēja šo vietni.</translation>
 <translation id="5857090052475505287">Jauna mape</translation>
 <translation id="5869405914158311789">Šī vietne nav sasniedzama</translation>
@@ -424,6 +428,7 @@
 <translation id="5872918882028971132">Vecāku ieteikumi</translation>
 <translation id="59107663811261420">Šis kartes veids šim tirgotājam pakalpojumā Google Payments netiek atbalstīts. Lūdzu, atlasiet citu karti.</translation>
 <translation id="59174027418879706">Iespējots</translation>
+<translation id="5926846154125914413">Varat zaudēt piekļuvi maksas saturam no noteiktām vietnēm.</translation>
 <translation id="5966707198760109579">Nedēļa</translation>
 <translation id="5967867314010545767">Noņemt no vēstures</translation>
 <translation id="5975083100439434680">Tālināt</translation>
@@ -452,6 +457,7 @@
 <translation id="6328639280570009161">Tīkla prognožu atspējošana</translation>
 <translation id="6337534724793800597">Filtrēt politikas pēc nosaukuma</translation>
 <translation id="6342069812937806050">Tikko</translation>
+<translation id="6345221851280129312">nezināms lielums</translation>
 <translation id="6355080345576803305">Publiskas sesijas ignorēšana</translation>
 <translation id="6358450015545214790">Ko tas nozīmē?</translation>
 <translation id="6387478394221739770">Vai jūs interesē jaunas Chrome funkcijas? Izmēģiniet mūsu Beta versiju, kas pieejama vietnē chrome.com/beta.</translation>
@@ -465,6 +471,7 @@
 <translation id="6489534406876378309">Sākt avāriju datu augšupielādi</translation>
 <translation id="6529602333819889595">&amp;Dzēšanas atsaukuma atcelšana</translation>
 <translation id="6550675742724504774">Opcijas</translation>
+<translation id="6593753688552673085">mazāk nekā <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Šifrēšanas opcijas</translation>
 <translation id="662080504995468778">Palikt</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> meklēšana</translation>
@@ -593,7 +600,9 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8034522405403831421">Šī lapas saturs ir šādā valodā: <ph name="SOURCE_LANGUAGE" />. Vai tulkot šādā valodā: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Netika atrasts neviens vēstures ieraksts.</translation>
 <translation id="8088680233425245692">Rakstu neizdevās skatīt.</translation>
+<translation id="8089520772729574115">mazāk nekā 1 MB</translation>
 <translation id="8091372947890762290">Aktivizācija vēl nav apstiprināta serverī.</translation>
+<translation id="8129262335948759431">nezināms skaits</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>
 <translation id="8134994873729925007">Nevarēja atrast <ph name="HOST_NAME" /> servera <ph name="BEGIN_ABBR" />DNS adresi<ph name="END_ABBR" />.</translation>
 <translation id="8149426793427495338">Dators tika pārslēgts miega režīmā.</translation>
@@ -602,6 +611,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8201077131113104583">Nederīgs atjaunināšanas URL paplašinājumam ar ID “<ph name="EXTENSION_ID" />”.</translation>
 <translation id="8218327578424803826">Piešķirtā atrašanās vieta:</translation>
 <translation id="8225771182978767009">Persona, kura iestatīja šo datoru, izvēlējās bloķēt šo vietni.</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8241707690549784388">Lapa, ko meklējāt, izmantoja jūsu ievadīto informāciju. Atgriešanās lapā var radīt jebkuras jūsu darbības atkārtojumu. Vai vēlaties turpināt?</translation>
 <translation id="8249320324621329438">Pēdējās pirmsielādes laiks:</translation>
 <translation id="8261506727792406068">Dzēst</translation>
@@ -617,6 +627,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8412145213513410671">Avārijas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Viena un tā pati ieejas frāze jāievada divreiz.</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
+<translation id="8433057134996913067">Šādi tiksiet izrakstīts no lielākās daļas vietņu.</translation>
 <translation id="8437238597147034694">&amp;Atsaukt pārvietošanu</translation>
 <translation id="8488350697529856933">Attiecas uz</translation>
 <translation id="8498891568109133222">Vietne <ph name="HOST_NAME" /> pārāk ilgi nereaģēja.</translation>

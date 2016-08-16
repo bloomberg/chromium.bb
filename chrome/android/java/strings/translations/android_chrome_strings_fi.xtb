@@ -509,7 +509,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7074853159844403180"><ph name="SITE" /> haluaa muodostaa parin seuraavien laitteiden kanssa:</translation>
 <translation id="7081639897063626814">Säilytä nykyiset tiedot erillään</translation>
 <translation id="7094922512924405309">Fyysisen webin sivuja ei löytynyt lähistöltä.</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS" /> avointa välilehteä</translation>
 <translation id="7115197232530297436">Toimitusosoite ei kelpaa. Valitse toinen osoite.</translation>
 <translation id="7138678301420049075">Muu</translation>
 <translation id="7180611975245234373">Päivitä</translation>
@@ -612,6 +611,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="8433057134996913067">Sinut kirjataan ulos useimmilta verkkosivustoilta.</translation>
 <translation id="8447861592752582886">Peruuta laitteen käyttöoikeus</translation>
 <translation id="8481940801237642152">Sivustoon on muodostettu salattu yhteys, mutta verkon käyttäjät voivat päästä muokkaamaan sivun ulkoasua.</translation>
+<translation id="8487700953926739672">Käytettävissä offline-tilassa</translation>
 <translation id="8493948351860045254">Vapauta tilaa</translation>
 <translation id="8497726226069778601">Täällä ei ole mitään nähtävää… vielä</translation>
 <translation id="8503813439785031346">Käyttäjätunnus</translation>
