@@ -90321,10 +90321,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="82" label="CONNECTION_MIGRATION_TOO_MANY_CHANGES"/>
   <int value="83" label="CONNECTION_MIGRATION_NO_NEW_NETWORK"/>
   <int value="84" label="CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM"/>
-  <int value="85" label="QUIC_TOO_MANY_RTOS"/>
-  <int value="86" label="QUIC_ERROR_MIGRATING_PORT"/>
-  <int value="87" label="QUIC_OVERLAPPING_STREAM_DATA"/>
-  <int value="88" label="QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA"/>
+  <int value="85" label="TOO_MANY_RTOS"/>
+  <int value="86" label="ERROR_MIGRATING_PORT"/>
+  <int value="87" label="OVERLAPPING_STREAM_DATA"/>
+  <int value="88" label="ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA"/>
+  <int value="89" label="MAYBE_CORRUPTED_MEMORY"/>
+  <int value="90" label="CRYPTO_CHLO_TOO_LARGE"/>
+  <int value="91" label="MULTIPATH_PATH_DOES_NOT_EXIST"/>
+  <int value="92" label="MULTIPATH_PATH_NOT_ACTIVE"/>
+  <int value="93" label="TOO_MANY_FRAME_GAPS"/>
+  <int value="94" label="UNSUPPORTED_PROOF_DEMAND"/>
 </enum>
 
 <enum name="QuicHandshakeFailureReason" type="int">
