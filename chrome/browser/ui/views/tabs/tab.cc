@@ -156,7 +156,7 @@ struct ImageCacheEntryMetadata {
                           SkColor fill_color,
                           SkColor stroke_color,
                           bool use_fill_and_stroke_images,
-                          ui::ScaleFactor scale_factor,
+                          float scale_factor,
                           const gfx::Size& size);
 
   ~ImageCacheEntryMetadata();
@@ -167,7 +167,7 @@ struct ImageCacheEntryMetadata {
   SkColor fill_color;  // Both colors only needed by MD
   SkColor stroke_color;
   bool use_fill_and_stroke_images;
-  ui::ScaleFactor scale_factor;
+  float scale_factor;
   gfx::Size size;
 };
 
@@ -176,7 +176,7 @@ ImageCacheEntryMetadata::ImageCacheEntryMetadata(
     SkColor fill_color,
     SkColor stroke_color,
     bool use_fill_and_stroke_images,
-    ui::ScaleFactor scale_factor,
+    float scale_factor,
     const gfx::Size& size)
     : resource_id(resource_id),
       fill_color(fill_color),
@@ -184,8 +184,6 @@ ImageCacheEntryMetadata::ImageCacheEntryMetadata(
       use_fill_and_stroke_images(use_fill_and_stroke_images),
       scale_factor(scale_factor),
       size(size) {
-  DCHECK_NE(ui::SCALE_FACTOR_NONE, scale_factor);
-
   // Some fields are only relevant for pre-MD vs. MD.  Erase the irrelevant ones
   // so they don't cause incorrect cache misses.
   // TODO(pkasting): Remove |resource_id| field when non-MD code is deleted.
@@ -1548,7 +1546,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas,
   const ImageCacheEntryMetadata metadata(
       fill_id, tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB),
       controller_->GetToolbarTopSeparatorColor(), use_fill_and_stroke_images,
-      ui::GetSupportedScaleFactor(canvas->image_scale()), size());
+      canvas->image_scale(), size());
   auto it = std::find_if(
       g_image_cache->begin(), g_image_cache->end(),
       [&metadata](const ImageCacheEntry& e) { return e.metadata == metadata; });
