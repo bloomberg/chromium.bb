@@ -318,10 +318,8 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
     // OS fullscreen.
     ash::wm::WindowState* window_state =
         ash::wm::GetWindowState(widget()->GetNativeWindow());
-    window_state->set_shelf_mode_in_fullscreen(
-        fullscreen_types != AppWindow::FULLSCREEN_TYPE_OS
-            ? ash::wm::WindowState::SHELF_HIDDEN
-            : ash::wm::WindowState::SHELF_AUTO_HIDE_VISIBLE);
+    window_state->set_hide_shelf_when_fullscreen(fullscreen_types !=
+                                                 AppWindow::FULLSCREEN_TYPE_OS);
     DCHECK(ash::Shell::HasInstance());
     ash::Shell::GetInstance()->UpdateShelfVisibility();
   }

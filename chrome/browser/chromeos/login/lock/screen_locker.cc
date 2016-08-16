@@ -423,10 +423,9 @@ void ScreenLocker::Show() {
   // visible while in fullscreen because the shelf makes it harder for a web
   // page or app to mimick the lock screen.
   ash::wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
-
-  if (active_window_state && active_window_state->IsFullscreen() &&
-      active_window_state->shelf_mode_in_fullscreen() !=
-          ash::wm::WindowState::SHELF_AUTO_HIDE_VISIBLE) {
+  if (active_window_state &&
+      active_window_state->IsFullscreen() &&
+      active_window_state->hide_shelf_when_fullscreen()) {
     const ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
     active_window_state->OnWMEvent(&event);
   }
