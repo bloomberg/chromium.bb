@@ -27,6 +27,7 @@
 #include "ash/wm/window_cycle_event_filter_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/wm/public/activation_client.h"
@@ -78,6 +79,13 @@ WmWindow* WmShellAura::GetFocusedWindow() {
 
 WmWindow* WmShellAura::GetActiveWindow() {
   return WmWindowAura::Get(wm::GetActiveWindow());
+}
+
+WmWindow* WmShellAura::GetCaptureWindow() {
+  // Ash shares capture client among all RootWindowControllers, so we need only
+  // check the primary root.
+  return WmWindowAura::Get(
+      aura::client::GetCaptureWindow(Shell::GetPrimaryRootWindow()));
 }
 
 WmWindow* WmShellAura::GetPrimaryRootWindow() {
@@ -137,6 +145,14 @@ void WmShellAura::LockCursor() {
 
 void WmShellAura::UnlockCursor() {
   Shell::GetInstance()->cursor_manager()->UnlockCursor();
+}
+
+bool WmShellAura::IsMouseEventsEnabled() {
+  return Shell::GetInstance()->cursor_manager()->IsMouseEventsEnabled();
+}
+
+gfx::Point WmShellAura::GetLastMouseLocation() {
+  return aura::Env::GetInstance()->last_mouse_location();
 }
 
 std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {

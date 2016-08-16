@@ -64,6 +64,7 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   WmWindow* NewContainerWindow() override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
+  WmWindow* GetCaptureWindow() override;
   WmWindow* GetPrimaryRootWindow() override;
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   const DisplayInfo& GetDisplayInfo(int64_t display_id) const override;
@@ -78,6 +79,8 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   bool CanShowWindowForUser(WmWindow* window) override;
   void LockCursor() override;
   void UnlockCursor() override;
+  bool IsMouseEventsEnabled() override;
+  gfx::Point GetLastMouseLocation() override;
   std::vector<WmWindow*> GetAllRootWindows() override;
   void RecordGestureAction(GestureActionType action) override;
   void RecordUserMetricsAction(UserMetricsAction action) override;

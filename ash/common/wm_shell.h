@@ -156,6 +156,8 @@ class ASH_EXPORT WmShell {
   virtual WmWindow* GetFocusedWindow() = 0;
   virtual WmWindow* GetActiveWindow() = 0;
 
+  virtual WmWindow* GetCaptureWindow() = 0;
+
   virtual WmWindow* GetPrimaryRootWindow() = 0;
 
   // Returns the root window for the specified display.
@@ -238,6 +240,9 @@ class ASH_EXPORT WmShell {
   // See aura::client::CursorClient for details on these.
   virtual void LockCursor() = 0;
   virtual void UnlockCursor() = 0;
+  virtual bool IsMouseEventsEnabled() = 0;
+
+  virtual gfx::Point GetLastMouseLocation() = 0;
 
   virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
 

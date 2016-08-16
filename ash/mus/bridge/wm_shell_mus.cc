@@ -207,6 +207,10 @@ WmWindow* WmShellMus::GetActiveWindow() {
   return GetToplevelAncestor(window_tree_client()->GetFocusedWindow());
 }
 
+WmWindow* WmShellMus::GetCaptureWindow() {
+  return WmWindowMus::Get(window_tree_client()->GetCaptureWindow());
+}
+
 WmWindow* WmShellMus::GetPrimaryRootWindow() {
   return root_window_controllers_[0]->GetWindow();
 }
@@ -264,11 +268,23 @@ bool WmShellMus::CanShowWindowForUser(WmWindow* window) {
 }
 
 void WmShellMus::LockCursor() {
+  // TODO: http::/crbug.com/637853
   NOTIMPLEMENTED();
 }
 
 void WmShellMus::UnlockCursor() {
+  // TODO: http::/crbug.com/637853
   NOTIMPLEMENTED();
+}
+
+bool WmShellMus::IsMouseEventsEnabled() {
+  // TODO: http::/crbug.com/637853
+  NOTIMPLEMENTED();
+  return true;
+}
+
+gfx::Point WmShellMus::GetLastMouseLocation() {
+  return window_tree_client()->GetCursorScreenPoint();
 }
 
 std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
