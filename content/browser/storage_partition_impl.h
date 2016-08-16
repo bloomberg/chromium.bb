@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -155,7 +157,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
   // If |in_memory| is true, the |relative_partition_path| is (ab)used as a way
   // of distinguishing different in-memory partitions, but nothing is persisted
   // on to disk.
-  static StoragePartitionImpl* Create(
+  static std::unique_ptr<StoragePartitionImpl> Create(
       BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path);

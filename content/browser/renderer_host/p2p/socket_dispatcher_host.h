@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -66,7 +67,7 @@ class P2PSocketDispatcherHost
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class base::DeleteHelper<P2PSocketDispatcherHost>;
 
-  typedef std::map<int, P2PSocketHost*> SocketsMap;
+  typedef std::map<int, std::unique_ptr<P2PSocketHost>> SocketsMap;
 
   class DnsRequest;
 

@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_messages.h"
@@ -121,7 +120,6 @@ P2PSocketDispatcherHost::P2PSocketDispatcherHost(
 
 void P2PSocketDispatcherHost::OnChannelClosing() {
   // Since the IPC sender is gone, close pending connections.
-  base::STLDeleteContainerPairSecondPointers(sockets_.begin(), sockets_.end());
   sockets_.clear();
 
   base::STLDeleteContainerPointers(dns_requests_.begin(), dns_requests_.end());
@@ -205,7 +203,7 @@ P2PSocketDispatcherHost::~P2PSocketDispatcherHost() {
 
 P2PSocketHost* P2PSocketDispatcherHost::LookupSocket(int socket_id) {
   SocketsMap::iterator it = sockets_.find(socket_id);
-  return (it == sockets_.end()) ? NULL : it->second;
+  return (it == sockets_.end()) ? nullptr : it->second.get();
 }
 
 void P2PSocketDispatcherHost::OnStartNetworkNotifications() {
@@ -264,7 +262,7 @@ void P2PSocketDispatcherHost::OnCreateSocket(
 
   if (socket->Init(local_address, port_range.min_port, port_range.max_port,
                    remote_address)) {
-    sockets_[socket_id] = socket.release();
+    sockets_[socket_id] = std::move(socket);
 
     if (dump_incoming_rtp_packet_ || dump_outgoing_rtp_packet_) {
       sockets_[socket_id]->StartRtpDump(dump_incoming_rtp_packet_,
@@ -283,16 +281,16 @@ void P2PSocketDispatcherHost::OnAcceptIncomingTcpConnection(
         "for invalid listen_socket_id.";
     return;
   }
-  if (LookupSocket(connected_socket_id) != NULL) {
+  if (LookupSocket(connected_socket_id) != nullptr) {
     LOG(ERROR) << "Received P2PHostMsg_AcceptIncomingTcpConnection "
         "for duplicated connected_socket_id.";
     return;
   }
 
-  P2PSocketHost* accepted_connection =
-      socket->AcceptIncomingTcpConnection(remote_address, connected_socket_id);
+  std::unique_ptr<P2PSocketHost> accepted_connection(
+      socket->AcceptIncomingTcpConnection(remote_address, connected_socket_id));
   if (accepted_connection) {
-    sockets_[connected_socket_id] = accepted_connection;
+    sockets_[connected_socket_id] = std::move(accepted_connection);
   }
 }
 
@@ -311,8 +309,7 @@ void P2PSocketDispatcherHost::OnSend(int socket_id,
     LOG(ERROR) << "Received P2PHostMsg_Send with a packet that is too big: "
                << data.size();
     Send(new P2PMsg_OnError(socket_id));
-    delete socket;
-    sockets_.erase(socket_id);
+    sockets_.erase(socket_id);  // deletes the socket
     return;
   }
 
@@ -334,8 +331,7 @@ void P2PSocketDispatcherHost::OnSetOption(int socket_id,
 void P2PSocketDispatcherHost::OnDestroySocket(int socket_id) {
   SocketsMap::iterator it = sockets_.find(socket_id);
   if (it != sockets_.end()) {
-    delete it->second;
-    sockets_.erase(it);
+    sockets_.erase(it);  // deletes the socket
   } else {
     LOG(ERROR) << "Received P2PHostMsg_DestroySocket for invalid socket_id.";
   }
@@ -371,7 +367,7 @@ net::IPAddress P2PSocketDispatcherHost::GetDefaultLocalAddress(int family) {
 
   std::unique_ptr<net::DatagramClientSocket> socket(
       net::ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
-          net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(), NULL,
+          net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(), nullptr,
           net::NetLog::Source()));
 
   net::IPAddress ip_address;

@@ -20,7 +20,7 @@ namespace content {
 
 AppCache::AppCache(AppCacheStorage* storage, int64_t cache_id)
     : cache_id_(cache_id),
-      owning_group_(NULL),
+      owning_group_(nullptr),
       online_whitelist_all_(false),
       is_complete_(false),
       cache_size_(0),
@@ -36,8 +36,6 @@ AppCache::~AppCache() {
   }
   DCHECK(!owning_group_.get());
   storage_->working_set()->RemoveCache(this);
-  base::STLDeleteContainerPairSecondPointers(executable_handlers_.begin(),
-                                             executable_handlers_.end());
 }
 
 void AppCache::UnassociateHost(AppCacheHost* host) {
@@ -71,7 +69,7 @@ void AppCache::RemoveEntry(const GURL& url) {
 
 AppCacheEntry* AppCache::GetEntry(const GURL& url) {
   EntryMap::iterator it = entries_.find(url);
-  return (it != entries_.end()) ? &(it->second) : NULL;
+  return (it != entries_.end()) ? &(it->second) : nullptr;
 }
 
 const AppCacheEntry* AppCache::GetEntryAndUrlWithResponseId(
@@ -85,14 +83,14 @@ const AppCacheEntry* AppCache::GetEntryAndUrlWithResponseId(
       return &iter->second;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 AppCacheExecutableHandler* AppCache::GetExecutableHandler(int64_t response_id) {
   HandlerMap::const_iterator found = executable_handlers_.find(response_id);
   if (found != executable_handlers_.end())
-    return found->second;
-  return NULL;
+    return found->second.get();
+  return nullptr;
 }
 
 AppCacheExecutableHandler* AppCache::GetOrCreateExecutableHandler(
@@ -106,16 +104,16 @@ AppCacheExecutableHandler* AppCache::GetOrCreateExecutableHandler(
   const AppCacheEntry* entry = GetEntryAndUrlWithResponseId(
       response_id, &handler_url);
   if (!entry || !entry->IsExecutable())
-    return NULL;
+    return nullptr;
 
   DCHECK(storage_->service()->handler_factory());
   std::unique_ptr<AppCacheExecutableHandler> own_ptr =
       storage_->service()->handler_factory()->CreateHandler(handler_url,
                                                             handler_source);
-  handler = own_ptr.release();
+  handler = own_ptr.get();
   if (!handler)
-    return NULL;
-  executable_handlers_[response_id] = handler;
+    return nullptr;
+  executable_handlers_[response_id] = std::move(own_ptr);
   return handler;
 }
 
@@ -325,7 +323,7 @@ const AppCacheNamespace* AppCache::FindNamespace(
     if (namespaces[i].IsMatch(url))
       return &namespaces[i];
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace content

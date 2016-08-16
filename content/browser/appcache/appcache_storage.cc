@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "storage/browser/quota/quota_client.h"
@@ -23,7 +23,6 @@ AppCacheStorage::AppCacheStorage(AppCacheServiceImpl* service)
 }
 
 AppCacheStorage::~AppCacheStorage() {
-  base::STLDeleteValues(&pending_info_loads_);
   DCHECK(delegate_references_.empty());
 }
 
@@ -47,8 +46,7 @@ AppCacheStorage::ResponseInfoLoadTask::ResponseInfoLoadTask(
       manifest_url_(manifest_url),
       response_id_(response_id),
       info_buffer_(new HttpResponseInfoIOBuffer) {
-  storage_->pending_info_loads_.insert(
-      PendingResponseInfoLoads::value_type(response_id, this));
+  storage_->pending_info_loads_[response_id] = base::WrapUnique(this);
 }
 
 AppCacheStorage::ResponseInfoLoadTask::~ResponseInfoLoadTask() {
@@ -64,7 +62,10 @@ void AppCacheStorage::ResponseInfoLoadTask::StartIfNeeded() {
 }
 
 void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {
+  std::unique_ptr<ResponseInfoLoadTask> this_wrapper(
+      std::move(storage_->pending_info_loads_[response_id_]));
   storage_->pending_info_loads_.erase(response_id_);
+
   scoped_refptr<AppCacheResponseInfo> info;
   if (result >= 0) {
     info = new AppCacheResponseInfo(storage_, manifest_url_,
@@ -73,7 +74,8 @@ void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {
                                     info_buffer_->response_data_size);
   }
   FOR_EACH_DELEGATE(delegates_, OnResponseInfoLoaded(info.get(), response_id_));
-  delete this;
+
+  // returning deletes this
 }
 
 void AppCacheStorage::LoadResponseInfo(const GURL& manifest_url,

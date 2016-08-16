@@ -38,7 +38,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   ~P2PSocketHostTcpBase() override;
 
   bool InitAccepted(const net::IPEndPoint& remote_address,
-                    net::StreamSocket* socket);
+                    std::unique_ptr<net::StreamSocket> socket);
 
   // P2PSocketHost overrides.
   bool Init(const net::IPEndPoint& local_address,
@@ -49,7 +49,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
             const std::vector<char>& data,
             const rtc::PacketOptions& options,
             uint64_t packet_id) override;
-  P2PSocketHost* AcceptIncomingTcpConnection(
+  std::unique_ptr<P2PSocketHost> AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address,
       int id) override;
   bool SetOption(P2PSocketOption option, int value) override;

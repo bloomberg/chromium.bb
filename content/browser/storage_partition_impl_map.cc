@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -377,8 +376,6 @@ StoragePartitionImplMap::StoragePartitionImplMap(
 }
 
 StoragePartitionImplMap::~StoragePartitionImplMap() {
-  base::STLDeleteContainerPairSecondPointers(partitions_.begin(),
-                                             partitions_.end());
 }
 
 StoragePartitionImpl* StoragePartitionImplMap::Get(
@@ -391,14 +388,16 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
 
   PartitionMap::const_iterator it = partitions_.find(partition_config);
   if (it != partitions_.end())
-    return it->second;
+    return it->second.get();
 
   base::FilePath relative_partition_path =
       GetStoragePartitionPath(partition_domain, partition_name);
 
-  StoragePartitionImpl* partition = StoragePartitionImpl::Create(
-      browser_context_, in_memory, relative_partition_path);
-  partitions_[partition_config] = partition;
+  std::unique_ptr<StoragePartitionImpl> partition_ptr(
+      StoragePartitionImpl::Create(browser_context_, in_memory,
+                                   relative_partition_path));
+  StoragePartitionImpl* partition = partition_ptr.get();
+  partitions_[partition_config] = std::move(partition_ptr);
 
   partition->GetQuotaManager()->SetTemporaryStorageEvictionPolicy(
       GetContentClient()->browser()->GetTemporaryStorageEvictionPolicy(
@@ -560,7 +559,7 @@ void StoragePartitionImplMap::ForEach(
   for (PartitionMap::const_iterator it = partitions_.begin();
        it != partitions_.end();
        ++it) {
-    callback.Run(it->second);
+    callback.Run(it->second.get());
   }
 }
 

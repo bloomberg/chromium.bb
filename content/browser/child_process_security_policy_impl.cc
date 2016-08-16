@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/browser/site_instance_impl.h"
@@ -313,8 +313,6 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
 ChildProcessSecurityPolicyImpl::~ChildProcessSecurityPolicyImpl() {
   web_safe_schemes_.clear();
   pseudo_schemes_.clear();
-  base::STLDeleteContainerPairSecondPointers(security_state_.begin(),
-                                             security_state_.end());
   security_state_.clear();
 }
 
@@ -341,12 +339,7 @@ void ChildProcessSecurityPolicyImpl::AddWorker(int child_id,
 
 void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
   base::AutoLock lock(lock_);
-  SecurityStateMap::iterator it = security_state_.find(child_id);
-  if (it == security_state_.end())
-    return;  // May be called multiple times.
-
-  delete it->second;
-  security_state_.erase(it);
+  security_state_.erase(child_id);
   worker_map_.erase(child_id);
 }
 
@@ -790,7 +783,7 @@ void ChildProcessSecurityPolicyImpl::AddChild(int child_id) {
     return;
   }
 
-  security_state_[child_id] = new SecurityState();
+  security_state_[child_id] = base::MakeUnique<SecurityState>();
 }
 
 bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(

@@ -275,8 +275,6 @@ class CONTENT_EXPORT AppCacheStorage {
     scoped_refptr<HttpResponseInfoIOBuffer> info_buffer_;
   };
 
-  typedef std::map<int64_t, ResponseInfoLoadTask*> PendingResponseInfoLoads;
-
   DelegateReference* GetDelegateReference(Delegate* delegate) {
     DelegateReferenceMap::iterator iter =
         delegate_references_.find(delegate);
@@ -295,10 +293,9 @@ class CONTENT_EXPORT AppCacheStorage {
   ResponseInfoLoadTask* GetOrCreateResponseInfoLoadTask(
       const GURL& manifest_url,
       int64_t response_id) {
-    PendingResponseInfoLoads::iterator iter =
-        pending_info_loads_.find(response_id);
+    auto iter = pending_info_loads_.find(response_id);
     if (iter != pending_info_loads_.end())
-      return iter->second;
+      return iter->second.get();
     return new ResponseInfoLoadTask(manifest_url, response_id, this);
   }
 
@@ -319,7 +316,9 @@ class CONTENT_EXPORT AppCacheStorage {
   AppCacheWorkingSet working_set_;
   AppCacheServiceImpl* service_;
   DelegateReferenceMap delegate_references_;
-  PendingResponseInfoLoads pending_info_loads_;
+
+  // Note that the ResponseInfoLoadTask items add themselves to this map.
+  std::map<int64_t, std::unique_ptr<ResponseInfoLoadTask>> pending_info_loads_;
 
   // The set of last ids must be retrieved from storage prior to being used.
   static const int64_t kUnitializedId;

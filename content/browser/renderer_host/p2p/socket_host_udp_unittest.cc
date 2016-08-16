@@ -120,7 +120,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
       *recv_address_ = address;
       net::CompletionCallback cb = recv_callback_;
       recv_callback_.Reset();
-      recv_buffer_ = NULL;
+      recv_buffer_ = nullptr;
       cb.Run(size);
     } else {
       incoming_packets_.push_back(UDPPacket(address, data));

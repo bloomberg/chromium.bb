@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -68,7 +69,7 @@ class CONTENT_EXPORT AppCache
   // Do not store or delete the returned ptr, they're owned by 'this'.
   AppCacheEntry* GetEntry(const GURL& url);
   const AppCacheEntry* GetEntryWithResponseId(int64_t response_id) {
-    return GetEntryAndUrlWithResponseId(response_id, NULL);
+    return GetEntryAndUrlWithResponseId(response_id, nullptr);
   }
   const AppCacheEntry* GetEntryAndUrlWithResponseId(int64_t response_id,
                                                     GURL* optional_url);
@@ -168,7 +169,7 @@ class CONTENT_EXPORT AppCache
     return FindNamespace(fallback_namespaces_, url);
   }
   bool IsInNetworkNamespace(const GURL& url) {
-    return FindNamespace(online_whitelist_namespaces_, url) != NULL;
+    return FindNamespace(online_whitelist_namespaces_, url) != nullptr;
   }
 
   GURL GetNamespaceEntryUrl(const AppCacheNamespaceVector& namespaces,
@@ -198,7 +199,8 @@ class CONTENT_EXPORT AppCache
 
   int64_t cache_size_;
 
-  typedef std::map<int64_t, AppCacheExecutableHandler*> HandlerMap;
+  typedef std::map<int64_t, std::unique_ptr<AppCacheExecutableHandler>>
+      HandlerMap;
   HandlerMap executable_handlers_;
 
   // to notify storage when cache is deleted

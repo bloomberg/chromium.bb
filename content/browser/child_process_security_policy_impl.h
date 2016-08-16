@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -174,7 +175,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   class SecurityState;
 
   typedef std::set<std::string> SchemeSet;
-  typedef std::map<int, SecurityState*> SecurityStateMap;
+  typedef std::map<int, std::unique_ptr<SecurityState>> SecurityStateMap;
   typedef std::map<int, int> WorkerToMainProcessMap;
   typedef std::map<storage::FileSystemType, int> FileSystemPermissionPolicyMap;
 

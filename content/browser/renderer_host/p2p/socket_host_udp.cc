@@ -401,11 +401,12 @@ void P2PSocketHostUdp::HandleSendResult(uint64_t packet_id,
       P2PSendPacketMetrics(packet_id, transport_sequence_number, send_time)));
 }
 
-P2PSocketHost* P2PSocketHostUdp::AcceptIncomingTcpConnection(
-    const net::IPEndPoint& remote_address, int id) {
+std::unique_ptr<P2PSocketHost> P2PSocketHostUdp::AcceptIncomingTcpConnection(
+    const net::IPEndPoint& remote_address,
+    int id) {
   NOTREACHED();
   OnError();
-  return NULL;
+  return nullptr;
 }
 
 bool P2PSocketHostUdp::SetOption(P2PSocketOption option, int value) {

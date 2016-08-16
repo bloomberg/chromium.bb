@@ -42,7 +42,7 @@ void FakeSocket::AppendInputData(const char* data, int data_size) {
     CHECK(result > 0);
     memcpy(read_buffer_->data(), &input_data_[0] + input_pos_, result);
     input_pos_ += result;
-    read_buffer_ = NULL;
+    read_buffer_ = nullptr;
     net::CompletionCallback cb = read_callback_;
     read_callback_.Reset();
     cb.Run(result);

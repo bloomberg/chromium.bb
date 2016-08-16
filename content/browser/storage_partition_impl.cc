@@ -422,7 +422,7 @@ StoragePartitionImpl::~StoragePartitionImpl() {
     GetBackgroundSyncContext()->Shutdown();
 }
 
-StoragePartitionImpl* StoragePartitionImpl::Create(
+std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
     BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
@@ -512,16 +512,17 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   scoped_refptr<BroadcastChannelProvider>
       broadcast_channel_provider = new BroadcastChannelProvider();
 
-  StoragePartitionImpl* storage_partition = new StoragePartitionImpl(
-      context, partition_path, quota_manager.get(), appcache_service.get(),
-      filesystem_context.get(), database_tracker.get(),
-      dom_storage_context.get(), indexed_db_context.get(),
-      cache_storage_context.get(), service_worker_context.get(),
-      special_storage_policy.get(), host_zoom_level_context.get(),
-      platform_notification_context.get(), background_sync_context.get(),
-      std::move(broadcast_channel_provider));
+  std::unique_ptr<StoragePartitionImpl> storage_partition(
+      new StoragePartitionImpl(
+          context, partition_path, quota_manager.get(), appcache_service.get(),
+          filesystem_context.get(), database_tracker.get(),
+          dom_storage_context.get(), indexed_db_context.get(),
+          cache_storage_context.get(), service_worker_context.get(),
+          special_storage_policy.get(), host_zoom_level_context.get(),
+          platform_notification_context.get(), background_sync_context.get(),
+          std::move(broadcast_channel_provider)));
 
-  service_worker_context->set_storage_partition(storage_partition);
+  service_worker_context->set_storage_partition(storage_partition.get());
 
   return storage_partition;
 }

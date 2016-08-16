@@ -204,7 +204,7 @@ P2PSocketHost* P2PSocketHost::Create(IPC::Sender* message_sender,
   }
 
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 void P2PSocketHost::StartRtpDump(

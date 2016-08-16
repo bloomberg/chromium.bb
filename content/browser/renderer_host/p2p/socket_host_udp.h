@@ -52,7 +52,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
             const std::vector<char>& data,
             const rtc::PacketOptions& options,
             uint64_t packet_id) override;
-  P2PSocketHost* AcceptIncomingTcpConnection(
+  std::unique_ptr<P2PSocketHost> AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address,
       int id) override;
   bool SetOption(P2PSocketOption option, int value) override;
