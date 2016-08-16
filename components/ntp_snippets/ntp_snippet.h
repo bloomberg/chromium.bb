@@ -34,11 +34,9 @@ struct SnippetSource {
 };
 
 class NTPSnippet {
-  struct CompareCategoriesByID;
-
  public:
   using PtrVector = std::vector<std::unique_ptr<NTPSnippet>>;
-  using CategoryMap = std::map<Category, PtrVector, CompareCategoriesByID>;
+  using CategoryMap = std::map<Category, PtrVector, Category::CompareByID>;
 
   // Creates a new snippet with the given |id|.
   // Public for testing only - create snippets using the Create* methods below.
@@ -135,10 +133,6 @@ class NTPSnippet {
   static std::string TimeToJsonString(const base::Time& time);
 
  private:
-  struct CompareCategoriesByID {
-    bool operator()(const Category& left, const Category& right) const;
-  };
-
   void FindBestSource();
 
   std::string id_;

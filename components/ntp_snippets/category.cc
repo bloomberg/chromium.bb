@@ -20,6 +20,11 @@ bool operator!=(const Category& left, const Category& right) {
   return !(left == right);
 }
 
+bool Category::CompareByID::operator()(const Category& left,
+                                       const Category& right) const {
+  return left.id() < right.id();
+}
+
 std::ostream& operator<<(std::ostream& os, const Category& obj) {
   os << obj.id();
   return os;

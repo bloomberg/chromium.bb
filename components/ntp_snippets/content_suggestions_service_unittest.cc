@@ -151,9 +151,7 @@ class ContentSuggestionsServiceTest : public testing::Test {
     }
   }
 
-  const std::map<Category,
-                 ContentSuggestionsProvider*,
-                 ContentSuggestionsService::CompareCategoriesByID>&
+  const std::map<Category, ContentSuggestionsProvider*, Category::CompareByID>&
   providers() {
     return service()->providers_by_category_;
   }

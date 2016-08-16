@@ -148,12 +148,6 @@ class ContentSuggestionsService : public KeyedService,
  private:
   friend class ContentSuggestionsServiceTest;
 
-  // This is just an arbitrary ordering by ID, used by the maps in this class,
-  // because the ordering needs to be constant for maps.
-  struct CompareCategoriesByID {
-    bool operator()(const Category& left, const Category& right) const;
-  };
-
   // Implementation of ContentSuggestionsProvider::Observer.
   void OnNewSuggestions(ContentSuggestionsProvider* provider,
                         Category category,
@@ -184,7 +178,7 @@ class ContentSuggestionsService : public KeyedService,
   // multiple times, if it provides multiple categories. The keys of this map
   // are exactly the entries of |categories_| and the values are a subset of
   // |providers_|.
-  std::map<Category, ContentSuggestionsProvider*, CompareCategoriesByID>
+  std::map<Category, ContentSuggestionsProvider*, Category::CompareByID>
       providers_by_category_;
 
   // All current suggestion categories, in an order determined by the
@@ -196,7 +190,7 @@ class ContentSuggestionsService : public KeyedService,
   // every category in |categories_| whose status is an available status. It may
   // contain an empty vector if the category is available but empty (or still
   // loading).
-  std::map<Category, std::vector<ContentSuggestion>, CompareCategoriesByID>
+  std::map<Category, std::vector<ContentSuggestion>, Category::CompareByID>
       suggestions_by_category_;
 
   // Map used to determine the category of a suggestion (of which only the ID

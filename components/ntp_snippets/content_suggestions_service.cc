@@ -15,12 +15,6 @@
 
 namespace ntp_snippets {
 
-bool ContentSuggestionsService::CompareCategoriesByID::operator()(
-    const Category& left,
-    const Category& right) const {
-  return left.id() < right.id();
-}
-
 ContentSuggestionsService::ContentSuggestionsService(State state)
     : state_(state) {}
 

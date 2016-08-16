@@ -41,6 +41,10 @@ enum class KnownCategories {
 // CategoryFactory to obtain instances.
 class Category {
  public:
+  // An arbitrary but consistent ordering. Can be used to look up categories in
+  // a std::map, but should not be used to order categories for other purposes.
+  struct CompareByID;
+
   // Returns a non-negative identifier that is unique for the category and can
   // be converted back to a Category instance using
   // |CategoryFactory::FromIDValue(id)|.
@@ -63,6 +67,10 @@ class Category {
 bool operator==(const Category& left, const Category& right);
 
 bool operator!=(const Category& left, const Category& right);
+
+struct Category::CompareByID {
+  bool operator()(const Category& left, const Category& right) const;
+};
 
 std::ostream& operator<<(std::ostream& os, const Category& obj);
 
