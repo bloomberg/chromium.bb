@@ -33,6 +33,7 @@
 
 #include "core/workers/WorkerLoaderProxy.h"
 
+#include "platform/heap/Handle.h"
 #include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebEmbeddedWorker.h"
@@ -42,6 +43,7 @@
 
 namespace blink {
 
+class ParentFrameTaskRunners;
 class ServiceWorkerGlobalScopeProxy;
 class WebLocalFrameImpl;
 class WebServiceWorkerNetworkProvider;
@@ -108,6 +110,8 @@ private:
 
     // Kept around only while main script loading is ongoing.
     RefPtr<WorkerScriptLoader> m_mainScriptLoader;
+
+    Persistent<ParentFrameTaskRunners> m_mainThreadTaskRunners;
 
     std::unique_ptr<WorkerThread> m_workerThread;
     RefPtr<WorkerLoaderProxy> m_loaderProxy;

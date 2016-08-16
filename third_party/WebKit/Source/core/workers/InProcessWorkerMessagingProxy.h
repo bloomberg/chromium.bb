@@ -41,12 +41,13 @@
 
 namespace blink {
 
-class InProcessWorkerObjectProxy;
-class WorkerThread;
 class ExecutionContext;
 class InProcessWorkerBase;
+class InProcessWorkerObjectProxy;
+class ParentFrameTaskRunners;
 class WorkerClients;
 class WorkerInspectorProxy;
+class WorkerThread;
 
 // TODO(nhiroki): "MessagingProxy" is not well-defined term among worker
 // components. Probably we should rename this to something more suitable.
@@ -76,6 +77,8 @@ public:
     void workerThreadCreated();
 
     ExecutionContext* getExecutionContext() const { return m_executionContext.get(); }
+
+    ParentFrameTaskRunners* getParentFrameTaskRunners() { return m_parentFrameTaskRunners.get(); }
 
     // Number of live messaging proxies, used by leak detection.
     static int proxyCount();
@@ -122,6 +125,8 @@ private:
     Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
 
     Persistent<WorkerClients> m_workerClients;
+
+    Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 
     RefPtr<WorkerLoaderProxy> m_loaderProxy;
 };

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/HashTraits.h"
 
 namespace blink {
 
@@ -16,7 +17,7 @@ class LocalFrame;
 class ScriptState;
 class WebTaskRunner;
 
-enum class TaskType {
+enum class TaskType : unsigned {
     // Speced tasks and related internal tasks should be posted to one of
     // the following task runners. These task runners may be throttled.
     DOMManipulation,
@@ -41,6 +42,14 @@ enum class TaskType {
     // Tasks that must not be throttled should be posted here, but the usage
     // should be very limited.
     Unthrottled,
+};
+
+// HashTraits for TaskType.
+struct TaskTypeTraits : WTF::GenericHashTraits<TaskType> {
+    static const bool emptyValueIsZero = false;
+    static TaskType emptyValue() { return static_cast<TaskType>(-1); }
+    static void constructDeletedValue(TaskType& slot, bool) { slot = static_cast<TaskType>(-2); }
+    static bool isDeletedValue(TaskType value) { return value == static_cast<TaskType>(-2); }
 };
 
 class CORE_EXPORT TaskRunnerHelper final {

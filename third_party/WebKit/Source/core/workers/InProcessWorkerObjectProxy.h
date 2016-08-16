@@ -44,6 +44,7 @@ class ConsoleMessage;
 class ExecutionContext;
 class ExecutionContextTask;
 class InProcessWorkerMessagingProxy;
+class ParentFrameTaskRunners;
 class WorkerOrWorkletGlobalScope;
 
 // A proxy to talk to the worker object. This object is created on the
@@ -79,6 +80,9 @@ protected:
     virtual ExecutionContext* getExecutionContext();
 
 private:
+    // Returns the parent frame's task runners.
+    ParentFrameTaskRunners* getParentFrameTaskRunners();
+
     // This object always outlives this proxy.
     InProcessWorkerMessagingProxy* m_messagingProxy;
 };

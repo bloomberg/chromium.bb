@@ -37,6 +37,9 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
+#include "core/workers/ParentFrameTaskRunners.h"
+#include "platform/CrossThreadFunctional.h"
+#include "public/platform/WebTaskRunner.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -51,55 +54,66 @@ std::unique_ptr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::create(I
 
 void InProcessWorkerObjectProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, std::unique_ptr<MessagePortChannelArray> channels)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToWorkerObject, crossThreadUnretained(m_messagingProxy), message, passed(std::move(channels))));
+    getParentFrameTaskRunners()->get(TaskType::PostedMessage)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::postMessageToWorkerObject, crossThreadUnretained(m_messagingProxy), message, passed(std::move(channels))));
 }
 
 void InProcessWorkerObjectProxy::postTaskToMainExecutionContext(std::unique_ptr<ExecutionContextTask> task)
 {
+    // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and use
+    // getParentFrameTaskRunners() instead.
     getExecutionContext()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
 void InProcessWorkerObjectProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject, crossThreadUnretained(m_messagingProxy), hasPendingActivity));
+    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject, crossThreadUnretained(m_messagingProxy), hasPendingActivity));
 }
 
 void InProcessWorkerObjectProxy::reportPendingActivity(bool hasPendingActivity)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportPendingActivity, crossThreadUnretained(m_messagingProxy), hasPendingActivity));
+    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::reportPendingActivity, crossThreadUnretained(m_messagingProxy), hasPendingActivity));
 }
 
 void InProcessWorkerObjectProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportException, crossThreadUnretained(m_messagingProxy), errorMessage, passed(location->clone()), exceptionId));
+    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::reportException, crossThreadUnretained(m_messagingProxy), errorMessage, passed(location->clone()), exceptionId));
 }
 
 void InProcessWorkerObjectProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, SourceLocation* location)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportConsoleMessage, crossThreadUnretained(m_messagingProxy), source, level, message, passed(location->clone())));
+    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::reportConsoleMessage, crossThreadUnretained(m_messagingProxy), source, level, message, passed(location->clone())));
 }
 
 void InProcessWorkerObjectProxy::postMessageToPageInspector(const String& message)
 {
     ExecutionContext* context = getExecutionContext();
-    if (context->isDocument())
+    if (context->isDocument()) {
+        // TODO(hiroshige): consider using getParentFrameTaskRunners() here
+        // too.
         toDocument(context)->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToPageInspector, crossThreadUnretained(m_messagingProxy), message));
+    }
 }
 
 void InProcessWorkerObjectProxy::workerGlobalScopeClosed()
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::terminateWorkerGlobalScope, crossThreadUnretained(m_messagingProxy)));
+    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::terminateWorkerGlobalScope, crossThreadUnretained(m_messagingProxy)));
 }
 
 void InProcessWorkerObjectProxy::workerThreadTerminated()
 {
     // This will terminate the MessagingProxy.
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerThreadTerminated, crossThreadUnretained(m_messagingProxy)));
+    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::workerThreadTerminated, crossThreadUnretained(m_messagingProxy)));
 }
 
 InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(InProcessWorkerMessagingProxy* messagingProxy)
     : m_messagingProxy(messagingProxy)
 {
+}
+
+ParentFrameTaskRunners* InProcessWorkerObjectProxy::getParentFrameTaskRunners()
+{
+    DCHECK(m_messagingProxy);
+    return m_messagingProxy->getParentFrameTaskRunners();
 }
 
 ExecutionContext* InProcessWorkerObjectProxy::getExecutionContext()
