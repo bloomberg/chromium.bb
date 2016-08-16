@@ -35,6 +35,7 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
 
   SigninManagerBase* signin_manager() { return signin_manager_; }
   ui::SimpleMenuModel* model() { return model_; }
+  MediaRouterAction* action() { return action_.get(); }
 
  private:
   std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
@@ -96,7 +97,7 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
 TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
   // The Media Router Action has a getter for the model, but not the delegate.
   // Create the MediaRouterContextualMenu ui::SimpleMenuModel::Delegate here.
-  MediaRouterContextualMenu menu(browser());
+  MediaRouterContextualMenu menu(browser(), action());
 
   // Set up an authenticated account such that the cloud services menu item is
   // surfaced. Whether or not it is surfaced is tested in the "Basic" test.
