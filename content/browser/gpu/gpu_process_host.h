@@ -163,6 +163,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void LoadedShader(const std::string& key, const std::string& data);
 
  private:
+  class ConnectionFilterImpl;
+
   static bool ValidateHost(GpuProcessHost* host);
 
   GpuProcessHost(int host_id, GpuProcessKind kind);

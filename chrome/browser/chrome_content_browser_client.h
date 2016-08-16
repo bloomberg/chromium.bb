@@ -282,6 +282,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void RegisterRenderFrameMojoInterfaces(
       shell::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
+  void ExposeInterfacesToGpuProcess(
+      shell::InterfaceRegistry* registry,
+      content::GpuProcessHost* render_process_host) override;
   void RegisterInProcessMojoApplications(
       StaticMojoApplicationMap* apps) override;
   void RegisterOutOfProcessMojoApplications(

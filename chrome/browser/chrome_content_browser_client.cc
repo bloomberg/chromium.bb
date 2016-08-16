@@ -2839,6 +2839,11 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
 #endif
 }
 
+void ChromeContentBrowserClient::ExposeInterfacesToGpuProcess(
+    shell::InterfaceRegistry* registry,
+    content::GpuProcessHost* render_process_host) {
+}
+
 void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
 #if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)

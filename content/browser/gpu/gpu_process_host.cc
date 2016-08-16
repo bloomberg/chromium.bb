@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -46,6 +47,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
+#include "content/public/common/connection_filter.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
@@ -291,6 +293,28 @@ class GpuSandboxedProcessLauncherDelegate
 };
 
 }  // anonymous namespace
+
+class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
+ public:
+  ConnectionFilterImpl(GpuProcessHost* host) : host_(host) {}
+
+ private:
+  // ConnectionFilter:
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry,
+                 shell::Connector* connector) override {
+    if (remote_identity.name() != kGpuMojoApplicationName)
+      return false;
+
+    GetContentClient()->browser()->ExposeInterfacesToGpuProcess(registry,
+                                                                host_);
+    return true;
+  }
+
+  GpuProcessHost* host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
+};
 
 // static
 bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
@@ -546,6 +570,12 @@ bool GpuProcessHost::Init() {
   init_start_time_ = base::TimeTicks::Now();
 
   TRACE_EVENT_INSTANT0("gpu", "LaunchGpuProcess", TRACE_EVENT_SCOPE_THREAD);
+
+  // May be null during test execution.
+  if (MojoShellConnection::GetForProcess()) {
+    MojoShellConnection::GetForProcess()->AddConnectionFilter(
+        base::MakeUnique<ConnectionFilterImpl>(this));
+  }
 
   const std::string mojo_channel_token =
       process_->GetHost()->CreateChannelMojo(child_token_);

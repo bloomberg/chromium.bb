@@ -111,6 +111,7 @@ class BrowserURLHandler;
 class ClientCertificateDelegate;
 class DevToolsManagerDelegate;
 class ExternalVideoSurfaceContainer;
+class GpuProcessHost;
 class LocationProvider;
 class MediaObserver;
 class NavigationHandle;
@@ -660,6 +661,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void RegisterRenderFrameMojoInterfaces(
       shell::InterfaceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
+
+  // Allows to register browser Mojo interfaces exposed through the
+  // GpuProcessHost. Called on the IO thread. Note that interface factory
+  // callbacks added to |registry| will by default be run immediately on the IO
+  // thread, unless a task runner is provided.
+  virtual void ExposeInterfacesToGpuProcess(
+      shell::InterfaceRegistry* registry,
+      GpuProcessHost* render_process_host) {}
 
   using StaticMojoApplicationMap = std::map<std::string, MojoApplicationInfo>;
 

@@ -5,6 +5,7 @@
 #include "chrome/gpu/chrome_content_gpu_client.h"
 
 #include "base/command_line.h"
+#include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_registry.h"
 
 #if defined(OS_CHROMEOS)
@@ -42,6 +43,16 @@ ChromeContentGpuClient::ChromeContentGpuClient() {}
 
 ChromeContentGpuClient::~ChromeContentGpuClient() {}
 
+void ChromeContentGpuClient::Initialize(
+    base::FieldTrialList::Observer* observer) {
+  DCHECK(!field_trial_syncer_);
+  field_trial_syncer_.reset(
+      new chrome_variations::ChildProcessFieldTrialSyncer(observer));
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  field_trial_syncer_->InitFieldTrialObserving(command_line);
+}
+
 void ChromeContentGpuClient::ExposeInterfacesToBrowser(
     shell::InterfaceRegistry* registry,
     const gpu::GpuPreferences& gpu_preferences) {
@@ -53,12 +64,6 @@ void ChromeContentGpuClient::ExposeInterfacesToBrowser(
 #endif
 }
 
-void ChromeContentGpuClient::Initialize(
-    base::FieldTrialList::Observer* observer) {
-  DCHECK(!field_trial_syncer_);
-  field_trial_syncer_.reset(
-      new chrome_variations::ChildProcessFieldTrialSyncer(observer));
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  field_trial_syncer_->InitFieldTrialObserving(command_line);
+void ChromeContentGpuClient::ConsumeInterfacesFromBrowser(
+    shell::InterfaceProvider* provider) {
 }

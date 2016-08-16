@@ -18,6 +18,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/establish_channel_params.h"
 #include "content/common/gpu_host_messages.h"
+#include "content/common/mojo/constants.h"
 #include "content/gpu/gpu_service_factory.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
@@ -136,6 +137,8 @@ ChildThreadImpl::Options GetOptions(
     builder.AddStartupFilter(message_filter);
 #endif
 
+  builder.ConnectToBrowser(true);
+
   return builder.Build();
 }
 
@@ -169,6 +172,7 @@ GpuChildThread::GpuChildThread(
                           .UseMojoChannel(true)
                           .AddStartupFilter(new GpuMemoryBufferMessageFilter(
                               gpu_memory_buffer_factory))
+                          .ConnectToBrowser(true)
                           .Build()),
       gpu_preferences_(gpu_preferences),
       dead_on_arrival_(false),
@@ -393,6 +397,8 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
   if (GetContentClient()->gpu()) {  // NULL in tests.
     GetContentClient()->gpu()->ExposeInterfacesToBrowser(
         GetInterfaceRegistry(), gpu_preferences_);
+    GetContentClient()->gpu()->ConsumeInterfacesFromBrowser(
+        GetRemoteInterfaces());
   }
 
   GetInterfaceRegistry()->ResumeBinding();

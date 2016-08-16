@@ -5,6 +5,13 @@
   "capabilities": {
     "provided": {
       "all_interfaces": [ "*" ]
+    },
+    "required": {
+      "exe:content_browser": {
+        "classes": [
+          "all_interfaces"
+        ]
+      }
     }
   }
 }
