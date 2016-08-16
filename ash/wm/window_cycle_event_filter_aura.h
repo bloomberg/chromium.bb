@@ -7,6 +7,7 @@
 
 #include "ash/common/wm/window_cycle_event_filter.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "ui/events/event_handler.h"
 
 namespace ash {
@@ -21,6 +22,12 @@ class WindowCycleEventFilterAura : public ui::EventHandler,
   void OnKeyEvent(ui::KeyEvent* event) override;
 
  private:
+  // When the user holds Alt+Tab, this timer is used to send repeated
+  // cycle commands to WindowCycleController. Note this is not accomplished
+  // by marking the Alt+Tab accelerator as "repeatable" in the accelerator
+  // table because we wish to control the repeat interval.
+  base::RepeatingTimer repeat_timer_;
+
   DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilterAura);
 };
 

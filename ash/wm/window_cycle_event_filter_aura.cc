@@ -28,6 +28,19 @@ void WindowCycleEventFilterAura::OnKeyEvent(ui::KeyEvent* event) {
       event->type() == ui::ET_KEY_RELEASED) {
     WmShell::Get()->window_cycle_controller()->StopCycling();
     // Warning: |this| will be deleted from here on.
+  } else if (event->key_code() == ui::VKEY_TAB) {
+    if (event->type() == ui::ET_KEY_RELEASED) {
+      repeat_timer_.Stop();
+    } else if (event->type() == ui::ET_KEY_PRESSED && event->is_repeat() &&
+               !repeat_timer_.IsRunning()) {
+      repeat_timer_.Start(
+          FROM_HERE, base::TimeDelta::FromMilliseconds(180),
+          base::Bind(
+              &WindowCycleController::HandleCycleWindow,
+              base::Unretained(WmShell::Get()->window_cycle_controller()),
+              event->IsShiftDown() ? WindowCycleController::BACKWARD
+                                   : WindowCycleController::FORWARD));
+    }
   }
 }
 
