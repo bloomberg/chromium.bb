@@ -72,6 +72,30 @@ bool isSelectionInTextFormControl(const VisibleSelection& selection)
     return !!enclosingTextFormControl(selection.start());
 }
 
+static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
+{
+    DCHECK(range.isNotNull());
+    const VisiblePosition& visibleEnd = createVisiblePosition(range.endPosition());
+    DCHECK(visibleEnd.isNotNull());
+    const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
+    // TODO(xiaochengh): |sentenceEnd < range.startPosition()| seems possible,
+    // which would trigger a DCHECK in EphemeralRange's constructor. Need more
+    // investigation, and if that is really the case, fix it.
+    return EphemeralRange(range.startPosition(), sentenceEnd.isNotNull() ? sentenceEnd : range.endPosition());
+}
+
+static EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
+{
+    DCHECK(range.isNotNull());
+    const VisiblePosition& visibleStart = createVisiblePosition(range.startPosition());
+    DCHECK(visibleStart.isNotNull());
+    const Position& sentenceStart = startOfSentence(visibleStart).deepEquivalent();
+    const VisiblePosition& visibleEnd = createVisiblePosition(range.endPosition());
+    DCHECK(visibleStart.isNotNull());
+    const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
+    return EphemeralRange(sentenceStart.isNull() ? range.startPosition() : sentenceStart, sentenceEnd.isNull() ? range.endPosition() : sentenceEnd);
+}
+
 } // namespace
 
 SpellChecker* SpellChecker::create(LocalFrame& frame)
@@ -266,9 +290,25 @@ void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &moving
     removeMarkers(movingSelection, DocumentMarker::MisspellingMarkers());
 }
 
-void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
+void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& selection)
 {
-    markAllMisspellingsAndBadGrammar(movingSelection, movingSelection);
+    if (!isContinuousSpellCheckingEnabled())
+        return;
+
+    const EphemeralRange& range = selection.toNormalizedEphemeralRange();
+    if (range.isNull())
+        return;
+
+    // If we're not in an editable node, bail.
+    Node* editableNode = range.startPosition().computeContainerNode();
+    if (!editableNode || !hasEditableStyle(*editableNode))
+        return;
+
+    if (!isSpellCheckingEnabledFor(editableNode))
+        return;
+
+    TextCheckingParagraph fullParagraphToCheck(expandRangeToSentenceBoundary(range));
+    chunkAndMarkAllMisspellingsAndBadGrammar(fullParagraphToCheck);
 }
 
 void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection)
@@ -278,11 +318,7 @@ void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSe
 
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterLineBreak");
 
-    VisibleSelection wholeParagraph(
-        startOfParagraph(wordSelection.visibleStart()),
-        endOfParagraph(wordSelection.visibleEnd()));
-
-    markAllMisspellingsAndBadGrammar(wordSelection, wholeParagraph);
+    markMisspellingsAndBadGrammar(wordSelection);
 }
 
 void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping)
@@ -293,8 +329,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterTypingToWord");
 
     VisibleSelection adjacentWords = VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary));
-    VisibleSelection selectedSentence = VisibleSelection(startOfSentence(wordStart), endOfSentence(wordStart));
-    markAllMisspellingsAndBadGrammar(adjacentWords, selectedSentence);
+    markMisspellingsAndBadGrammar(adjacentWords);
 }
 
 bool SpellChecker::isSpellCheckingEnabledFor(Node* node) const
@@ -327,50 +362,6 @@ bool SpellChecker::isSpellCheckingEnabledFor(const VisibleSelection& selection)
             return true;
     }
     return false;
-}
-
-void SpellChecker::markAllMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, const VisibleSelection& grammarSelection)
-{
-    if (!isContinuousSpellCheckingEnabled())
-        return;
-
-    // This function is called with selections already expanded to word boundaries.
-    // This function is triggered by selection change, in which case we check
-    // spelling and grammar, but don't autocorrect misspellings.
-
-    const EphemeralRange& spellingRange = spellingSelection.toNormalizedEphemeralRange();
-    const EphemeralRange& grammarRange = grammarSelection.toNormalizedEphemeralRange();
-    if (spellingRange.isNull() || grammarRange.isNull())
-        return;
-
-    // If we're not in an editable node, bail.
-    Node* editableNode = spellingRange.startPosition().computeContainerNode();
-    if (!editableNode || !hasEditableStyle(*editableNode))
-        return;
-
-    if (!isSpellCheckingEnabledFor(editableNode))
-        return;
-
-    TextCheckingParagraph fullParagraphToCheck(grammarRange);
-    chunkAndMarkAllMisspellingsAndBadGrammar(fullParagraphToCheck);
-}
-
-static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
-{
-    DCHECK(range.isNotNull());
-    const VisiblePosition& visibleEnd = createVisiblePosition(range.endPosition());
-    DCHECK(visibleEnd.isNotNull());
-    const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
-    return EphemeralRange(range.startPosition(), sentenceEnd.isNotNull() ? sentenceEnd : range.endPosition());
-}
-
-static EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
-{
-    DCHECK(range.isNotNull());
-    const VisiblePosition& visibleStart = createVisiblePosition(range.startPosition());
-    DCHECK(visibleStart.isNotNull());
-    const Position& sentenceStart = startOfSentence(visibleStart).deepEquivalent();
-    return expandEndToSentenceBoundary(EphemeralRange(sentenceStart.isNull() ? range.startPosition() : sentenceStart, range.endPosition()));
 }
 
 void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node, const EphemeralRange& insertedRange)
@@ -721,8 +712,7 @@ void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, 
     VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
     if (oldAdjacentWords == newAdjacentWords)
         return;
-    VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
-    markAllMisspellingsAndBadGrammar(oldAdjacentWords, selectedSentence);
+    markMisspellingsAndBadGrammar(oldAdjacentWords);
 }
 
 static Node* findFirstMarkable(Node* node)

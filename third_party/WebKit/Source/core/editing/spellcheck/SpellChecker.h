@@ -104,7 +104,6 @@ private:
     void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
 
     void chunkAndMarkAllMisspellingsAndBadGrammar(const TextCheckingParagraph& fullParagraphToCheck);
-    void markAllMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, const VisibleSelection& grammarSelection);
     void spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords);
 
     Member<LocalFrame> m_frame;
