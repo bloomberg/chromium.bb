@@ -137,8 +137,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   base::Lock photo_callbacks_lock_;
   std::list<std::unique_ptr<TakePhotoCallback>> photo_callbacks_;
 
-  gfx::Size next_photo_resolution_;
-
   const VideoCaptureDeviceDescriptor device_descriptor_;
   VideoCaptureFormat capture_format_;
 

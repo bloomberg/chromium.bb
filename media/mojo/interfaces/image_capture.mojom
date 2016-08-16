@@ -14,7 +14,7 @@ struct Range {
 };
 
 // https://w3c.github.io/mediacapture-image/#idl-def-FocusMode
-enum FocusMode { UNAVAILABLE, AUTO, MANUAL };
+enum FocusMode { UNAVAILABLE, MANUAL, SINGLE_SHOT, CONTINUOUS };
 
 // Equivalent to idl PhotoCapabilities,
 // https://w3c.github.io/mediacapture-image/#photocapabilities
@@ -36,6 +36,8 @@ struct PhotoSettings {
   uint32 width;
   bool has_height;
   uint32 height;
+  bool has_focus_mode;
+  FocusMode focus_mode;
 };
 
 // This is a mojo move-only equivalent of a Blob, i.e. MIME type and Data.

@@ -24,11 +24,11 @@ class PhotoCapabilities {
     public final int maxZoom;
     public final int minZoom;
     public final int currentZoom;
-    public final boolean autoFocusInUse;
+    public final int focusMode;
 
     PhotoCapabilities(int maxIso, int minIso, int currentIso, int maxHeight, int minHeight,
             int currentHeight, int maxWidth, int minWidth, int currentWidth, int maxZoom,
-            int minZoom, int currentZoom, boolean autoFocusInUse) {
+            int minZoom, int currentZoom, int focusMode) {
         this.maxIso = maxIso;
         this.minIso = minIso;
         this.currentIso = currentIso;
@@ -41,7 +41,7 @@ class PhotoCapabilities {
         this.maxZoom = maxZoom;
         this.minZoom = minZoom;
         this.currentZoom = currentZoom;
-        this.autoFocusInUse = autoFocusInUse;
+        this.focusMode = focusMode;
     }
 
     @CalledByNative
@@ -105,7 +105,7 @@ class PhotoCapabilities {
     }
 
     @CalledByNative
-    public boolean getAutoFocusInUse() {
-        return autoFocusInUse;
+    public int getFocusMode() {
+        return focusMode;
     }
 }

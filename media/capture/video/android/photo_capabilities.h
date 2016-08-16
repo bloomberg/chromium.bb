@@ -14,6 +14,16 @@ namespace media {
 
 class PhotoCapabilities {
  public:
+  // Focus modes from Java side, equivalent to media.mojom::FocusMode.
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
+  enum class AndroidFocusMode {
+    UNAVAILABLE,
+    FIXED,
+    SINGLE_SHOT,
+    CONTINUOUS,
+  };
+
   explicit PhotoCapabilities(base::android::ScopedJavaLocalRef<jobject> object);
   ~PhotoCapabilities();
 
@@ -29,7 +39,7 @@ class PhotoCapabilities {
   int getMinZoom() const;
   int getMaxZoom() const;
   int getCurrentZoom() const;
-  bool getAutoFocusInUse() const;
+  AndroidFocusMode getFocusMode() const;
 
  private:
   const base::android::ScopedJavaLocalRef<jobject> object_;

@@ -36,6 +36,8 @@ public abstract class VideoCaptureCamera
     // Storage of takePicture() callback Id. There can be one such request in flight at most, and
     // needs to be exercised either in case of error or sucess.
     private long mPhotoTakenCallbackId = 0;
+    private int mPhotoWidth = 0;
+    private int mPhotoHeight = 0;
 
     protected android.hardware.Camera mCamera;
     // Lock to mutually exclude execution of OnPreviewFrame() and {start/stop}Capture().
@@ -296,7 +298,7 @@ public abstract class VideoCaptureCamera
     @Override
     public PhotoCapabilities getPhotoCapabilities() {
         final android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
-        Log.d(TAG, " CAM params: " + parameters.flatten());
+        Log.i(TAG, " CAM params: %s", parameters.flatten());
 
         // Before the Camera2 API there was no official way to retrieve the supported, if any, ISO
         // values from |parameters|; some platforms had "iso-values", others "iso-mode-values" etc.
@@ -322,46 +324,76 @@ public abstract class VideoCaptureCamera
         int currentZoom = 0;
         int minZoom = 0;
         if (parameters.isZoomSupported()) {
-            Log.d(TAG, "parameters.getZoomRatios(): " + parameters.getZoomRatios().toString());
-
             // The Max zoom is returned as x100 by the API to avoid using floating point.
             maxZoom = parameters.getZoomRatios().get(parameters.getMaxZoom());
             currentZoom = 100 + 100 * parameters.getZoom();
             minZoom = parameters.getZoomRatios().get(0);
         }
 
-        Log.d(TAG, "parameters.getFocusMode(): " + parameters.getFocusMode());
+        Log.d(TAG, "parameters.getFocusMode(): %s", parameters.getFocusMode());
         final String focusMode = parameters.getFocusMode();
-        final boolean isFocusManual =
-                focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_FIXED)
-                || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_INFINITY)
-                || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_EDOF);
+
+        // Classify the Focus capabilities. In CONTINUOUS and SINGLE_SHOT, we can call
+        // autoFocus(AutoFocusCallback) to configure region(s) to focus onto.
+        int jniFocusMode = AndroidFocusMode.UNAVAILABLE;
+        if (focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
+                || focusMode.equals(
+                           android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
+                || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_EDOF)) {
+            jniFocusMode = AndroidFocusMode.CONTINUOUS;
+        } else if (focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_AUTO)
+                || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_MACRO)) {
+            jniFocusMode = AndroidFocusMode.SINGLE_SHOT;
+        } else if (focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_INFINITY)
+                || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_FIXED)) {
+            jniFocusMode = AndroidFocusMode.FIXED;
+        }
 
         return new PhotoCapabilities(minIso, maxIso, currentIso, maxHeight, minHeight,
                 currentSize.height, maxWidth, minWidth, currentSize.width, maxZoom, minZoom,
-                currentZoom, !isFocusManual);
+                currentZoom, jniFocusMode);
     }
 
     @Override
-    public void setZoom(int zoom) {
+    public void setPhotoOptions(int zoom, int focusMode, int width, int height) {
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
-        if (!parameters.isZoomSupported()) {
-            return;
-        }
-        // |zoomRatios| is an ordered list; need the closest zoom index for parameters.setZoom().
-        final List<Integer> zoomRatios = parameters.getZoomRatios();
-        int i = 1;
-        for (; i < zoomRatios.size(); ++i) {
-            if (zoom < zoomRatios.get(i)) {
-                break;
+
+        if (parameters.isZoomSupported() && zoom > 0) {
+            // |zoomRatios| is an ordered list; need the closest zoom index for parameters.setZoom()
+            final List<Integer> zoomRatios = parameters.getZoomRatios();
+            int i = 1;
+            for (; i < zoomRatios.size(); ++i) {
+                if (zoom < zoomRatios.get(i)) {
+                    break;
+                }
             }
+            parameters.setZoom(i - 1);
         }
-        parameters.setZoom(i - 1);
+
+        if (focusMode == AndroidFocusMode.FIXED) {
+            parameters.setFocusMode(android.hardware.Camera.Parameters.FOCUS_MODE_FIXED);
+        } else if (focusMode == AndroidFocusMode.SINGLE_SHOT) {
+            parameters.setFocusMode(android.hardware.Camera.Parameters.FOCUS_MODE_AUTO);
+        } else if (focusMode == AndroidFocusMode.CONTINUOUS) {
+            parameters.setFocusMode(
+                    android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        }
+        if (width > 0) mPhotoWidth = width;
+        if (height > 0) mPhotoHeight = height;
+
         mCamera.setParameters(parameters);
+
+        if (focusMode != AndroidFocusMode.SINGLE_SHOT) return;
+        mCamera.autoFocus(new android.hardware.Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean success, android.hardware.Camera camera) {
+                Log.d(TAG, "onAutoFocus() finished: %s ", success ? "success" : "failed");
+            }
+        });
     }
 
     @Override
-    public boolean takePhoto(final long callbackId, int width, int height) {
+    public boolean takePhoto(final long callbackId) {
         if (mCamera == null || !mIsRunning) {
             Log.e(TAG, "takePhoto: mCamera is null or is not running");
             return false;
@@ -381,14 +413,14 @@ public abstract class VideoCaptureCamera
         android.hardware.Camera.Size closestSize = null;
         int minDiff = Integer.MAX_VALUE;
         for (android.hardware.Camera.Size size : supportedSizes) {
-            final int diff = ((width > 0) ? Math.abs(size.width - width) : 0)
-                    + ((height > 0) ? Math.abs(size.height - height) : 0);
+            final int diff = ((mPhotoWidth > 0) ? Math.abs(size.width - mPhotoWidth) : 0)
+                    + ((mPhotoHeight > 0) ? Math.abs(size.height - mPhotoHeight) : 0);
             if (diff < minDiff) {
                 minDiff = diff;
                 closestSize = size;
             }
         }
-        Log.d(TAG, "requested resolution: (%dx%d)", width, height);
+        Log.d(TAG, "requested resolution: (%dx%d)", mPhotoWidth, mPhotoHeight);
         if (minDiff != Integer.MAX_VALUE) {
             Log.d(TAG, " matched (%dx%d)", closestSize.width, closestSize.height);
             parameters.setPictureSize(closestSize.width, closestSize.height);

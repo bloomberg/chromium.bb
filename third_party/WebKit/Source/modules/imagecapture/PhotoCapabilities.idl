@@ -6,8 +6,9 @@
 
 enum FocusMode {
     "unavailable",
-    "auto",
-    "manual"
+    "manual",
+    "single-shot",
+    "continuous",
 };
 
 [

@@ -53,11 +53,12 @@ public abstract class VideoCapture {
     @CalledByNative
     public abstract PhotoCapabilities getPhotoCapabilities();
 
+    // |zoom| should be ignored if 0.
     @CalledByNative
-    public abstract void setZoom(int zoom);
+    public abstract void setPhotoOptions(int zoom, int focusMode, int width, int height);
 
     @CalledByNative
-    public abstract boolean takePhoto(final long callbackId, int width, int height);
+    public abstract boolean takePhoto(final long callbackId);
 
     @CalledByNative
     public abstract void deallocate();

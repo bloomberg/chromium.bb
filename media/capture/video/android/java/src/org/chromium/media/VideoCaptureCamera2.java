@@ -245,6 +245,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private CameraState mCameraState = CameraState.STOPPED;
     private final float mMaxZoom;
     private Rect mCropRect = new Rect();
+    private int mFocusMode = AndroidFocusMode.CONTINUOUS;
+    private int mPhotoWidth = 0;
+    private int mPhotoHeight = 0;
 
     // Service function to grab CameraCharacteristics and handle exceptions.
     private static CameraCharacteristics getCameraCharacteristics(Context appContext, int id) {
@@ -302,6 +305,18 @@ public class VideoCaptureCamera2 extends VideoCapture {
         previewRequestBuilder.set(CaptureRequest.EDGE_MODE, CameraMetadata.EDGE_MODE_FAST);
         previewRequestBuilder.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
                 CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON);
+        if (mFocusMode == AndroidFocusMode.CONTINUOUS) {
+            Log.d(TAG, "Focus: CONTROL_AF_MODE_CONTINUOUS_PICTURE");
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                    CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+        } else if (mFocusMode == AndroidFocusMode.SINGLE_SHOT) {
+            Log.d(TAG, "Focus: triggering a single shot");
+            previewRequestBuilder.set(
+                    CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_AUTO);
+            previewRequestBuilder.set(
+                    CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+        }
+
         // SENSOR_EXPOSURE_TIME ?
         if (!mCropRect.isEmpty()) {
             previewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mCropRect);
@@ -563,42 +578,62 @@ public class VideoCaptureCamera2 extends VideoCapture {
             if (size.getWidth() > maxWidth) maxWidth = size.getWidth();
             if (size.getHeight() > maxHeight) maxHeight = size.getHeight();
         }
-        final int currentHeight = mCaptureFormat.getHeight();
-        final int currentWidth = mCaptureFormat.getWidth();
+        final int currentHeight = (mPhotoHeight > 0) ? mPhotoHeight : mCaptureFormat.getHeight();
+        final int currentWidth = (mPhotoWidth > 0) ? mPhotoWidth : mCaptureFormat.getWidth();
 
         // The Min and Max zoom are returned as x100 by the API to avoid using floating point. There
         // is no min-zoom per se, so clamp it to always 100 (TODO(mcasas): make const member).
         final int minZoom = 100;
         final int maxZoom = Math.round(mMaxZoom * 100);
         // Width Ratio x100 is used as measure of current zoom.
-        final int currentZoom = 100 * mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION).width()
-                / cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
-                          .width();
+        final int currentZoom = 100
+                * cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
+                          .width()
+                / mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION).width();
 
         final int focusMode = mPreviewRequest.get(CaptureRequest.CONTROL_AF_MODE);
-        Log.d(TAG, "focusMode " + focusMode);
-        final boolean isFocusManual = (focusMode == CameraMetadata.CONTROL_AF_MODE_OFF)
-                || (focusMode == CameraMetadata.CONTROL_AF_MODE_EDOF);
+        Log.d(TAG, "focusMode: %s", focusMode);
+        // Classify the Focus capabilities. In CONTINUOUS and SINGLE_SHOT, we can call
+        // autoFocus(AutoFocusCallback) to configure region(s) to focus onto.
+        int jniFocusMode = AndroidFocusMode.UNAVAILABLE;
+        if (focusMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO
+                || focusMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
+            jniFocusMode = AndroidFocusMode.CONTINUOUS;
+        } else if (focusMode == CameraMetadata.CONTROL_AF_MODE_AUTO
+                || focusMode == CameraMetadata.CONTROL_AF_MODE_MACRO) {
+            jniFocusMode = AndroidFocusMode.SINGLE_SHOT;
+        } else if (focusMode == CameraMetadata.CONTROL_AF_MODE_OFF) {
+            jniFocusMode = AndroidFocusMode.FIXED;
+        } else {
+            assert jniFocusMode == CameraMetadata.CONTROL_AF_MODE_EDOF;
+        }
 
         return new PhotoCapabilities(minIso, maxIso, currentIso, maxHeight, minHeight,
                 currentHeight, maxWidth, minWidth, currentWidth, maxZoom, minZoom, currentZoom,
-                !isFocusManual);
+                jniFocusMode);
     }
 
     @Override
-    public void setZoom(int zoom) {
+    public void setPhotoOptions(int zoom, int focusMode, int width, int height) {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
         final Rect canvas =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
 
-        final float normalizedZoom = Math.max(100, Math.min(zoom, mMaxZoom * 100)) / 100;
-        final float cropFactor = (normalizedZoom - 1) / (2 * normalizedZoom);
+        if (zoom != 0) {
+            final float normalizedZoom = Math.max(100, Math.min(zoom, mMaxZoom * 100)) / 100;
+            final float cropFactor = (normalizedZoom - 1) / (2 * normalizedZoom);
 
-        mCropRect = new Rect(Math.round(canvas.width() * cropFactor),
-                Math.round(canvas.height() * cropFactor),
-                Math.round(canvas.width() * (1 - cropFactor)),
-                Math.round(canvas.height() * (1 - cropFactor)));
-        Log.d(TAG, "zoom level " + normalizedZoom + ", rectangle: " + mCropRect.toString());
+            mCropRect = new Rect(Math.round(canvas.width() * cropFactor),
+                    Math.round(canvas.height() * cropFactor),
+                    Math.round(canvas.width() * (1 - cropFactor)),
+                    Math.round(canvas.height() * (1 - cropFactor)));
+            Log.d(TAG, "zoom level %f, rectangle: %s", normalizedZoom, mCropRect.toString());
+        }
+
+        mFocusMode = focusMode;
+
+        if (width > 0) mPhotoWidth = width;
+        if (height > 0) mPhotoHeight = height;
 
         final Handler mainHandler = new Handler(mContext.getMainLooper());
         mainHandler.removeCallbacks(mRestartCapture);
@@ -606,7 +641,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     }
 
     @Override
-    public boolean takePhoto(final long callbackId, int width, int height) {
+    public boolean takePhoto(final long callbackId) {
         Log.d(TAG, "takePhoto " + callbackId);
         if (mCameraDevice == null || mCameraState != CameraState.STARTED) return false;
 
@@ -614,9 +649,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         final StreamConfigurationMap streamMap =
                 cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         final Size[] supportedSizes = streamMap.getOutputSizes(ImageFormat.JPEG);
-        final Size closestSize = findClosestSizeInArray(supportedSizes, width, height);
+        final Size closestSize = findClosestSizeInArray(supportedSizes, mPhotoWidth, mPhotoHeight);
 
-        Log.d(TAG, "requested resolution: (%dx%d)", width, height);
+        Log.d(TAG, "requested resolution: (%dx%d)", mPhotoWidth, mPhotoHeight);
         if (closestSize != null) {
             Log.d(TAG, " matched (%dx%d)", closestSize.getWidth(), closestSize.getHeight());
         }
@@ -651,6 +686,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
         photoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getCameraRotation());
         if (!mCropRect.isEmpty()) {
             photoRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mCropRect);
+        }
+
+        if (mFocusMode == AndroidFocusMode.CONTINUOUS) {
+            photoRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                    CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+        } else if (mFocusMode == AndroidFocusMode.SINGLE_SHOT) {
+            Log.d(TAG, "triggering auto focus (maybe?)");
+            photoRequestBuilder.set(
+                    CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
         }
 
         final CaptureRequest photoRequest = photoRequestBuilder.build();

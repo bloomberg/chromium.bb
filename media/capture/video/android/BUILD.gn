@@ -44,6 +44,7 @@ generate_jni("capture_jni_headers") {
 java_cpp_enum("media_java_enums_srcjar") {
   sources = [
     "../video_capture_device_descriptor.h",
+    "photo_capabilities.h",
     "video_capture_device_android.h",
   ]
 }

@@ -89,10 +89,10 @@ int PhotoCapabilities::getCurrentZoom() const {
                                                object_.obj());
 }
 
-bool PhotoCapabilities::getAutoFocusInUse() const {
+PhotoCapabilities::AndroidFocusMode PhotoCapabilities::getFocusMode() const {
   DCHECK(!object_.is_null());
-  return Java_PhotoCapabilities_getAutoFocusInUse(AttachCurrentThread(),
-                                                  object_.obj());
+  return static_cast<AndroidFocusMode>(Java_PhotoCapabilities_getFocusMode(
+      AttachCurrentThread(), object_.obj()));
 }
 
 }  // namespace media

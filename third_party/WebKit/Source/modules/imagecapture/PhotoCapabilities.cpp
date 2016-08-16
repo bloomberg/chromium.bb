@@ -17,10 +17,12 @@ String PhotoCapabilities::focusMode() const
     switch (m_focusMode) {
     case media::mojom::blink::FocusMode::UNAVAILABLE:
         return "unavailable";
-    case media::mojom::blink::FocusMode::AUTO:
-        return "auto";
     case media::mojom::blink::FocusMode::MANUAL:
         return "manual";
+    case media::mojom::blink::FocusMode::SINGLE_SHOT:
+        return "single-shot";
+    case media::mojom::blink::FocusMode::CONTINUOUS:
+        return "continuous";
     default:
         NOTREACHED();
     }

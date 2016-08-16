@@ -8,9 +8,10 @@
 </body>
 <script>
 
+const focusModeNames = ["unavailable", "manual", "single-shot", "continuous"];
+
 // This test verifies that ImageCapture can call setOptions()s, with a mock Mojo
 // interface implementation.
-
 async_test(function(t) {
   var canvas = document.getElementById('canvas');
   var context = canvas.getContext("2d");
@@ -19,7 +20,10 @@ async_test(function(t) {
   var stream = canvas.captureStream();
 
   var theMock = null;
-  const optionsDict = { zoom : 7, imageWidth : 1080, imageHeight : 100 };
+  const optionsDict = { zoom : 7,
+                        imageWidth : 1080,
+                        imageHeight : 100,
+                        focusMode : "continuous" };
   mockImageCaptureReady
     .then(mock => {
       theMock = mock;
@@ -38,6 +42,10 @@ async_test(function(t) {
       assert_equals(optionsDict.imageWidth, theMock.options().width, 'width value');
       assert_equals(true, theMock.options().has_height, 'has_height must be true');
       assert_equals(optionsDict.imageHeight, theMock.options().height, 'height value');
+      assert_equals(true, theMock.options().has_focus_mode, 'has_focus_mode must be true');
+      assert_equals(optionsDict.focusMode,
+                    focusModeNames[theMock.options().focus_mode],
+                    'focusMode value');
       t.done();
     })
     .catch(error => {

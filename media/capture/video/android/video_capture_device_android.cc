@@ -389,9 +389,7 @@ void VideoCaptureDeviceAndroid::DoTakePhoto(TakePhotoCallback callback) {
   std::unique_ptr<TakePhotoCallback> heap_callback(
       new TakePhotoCallback(std::move(callback)));
   const intptr_t callback_id = reinterpret_cast<intptr_t>(heap_callback.get());
-  if (!Java_VideoCapture_takePhoto(env, j_capture_.obj(), callback_id,
-                                   next_photo_resolution_.width(),
-                                   next_photo_resolution_.height()))
+  if (!Java_VideoCapture_takePhoto(env, j_capture_.obj(), callback_id))
     return;
 
   {
@@ -435,9 +433,20 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   photo_capabilities->zoom->current = caps.getCurrentZoom();
   photo_capabilities->zoom->max = caps.getMaxZoom();
   photo_capabilities->zoom->min = caps.getMinZoom();
-  photo_capabilities->focus_mode = caps.getAutoFocusInUse()
-                                       ? mojom::FocusMode::AUTO
-                                       : mojom::FocusMode::MANUAL;
+  switch (caps.getFocusMode()) {
+    case PhotoCapabilities::AndroidFocusMode::UNAVAILABLE:
+      photo_capabilities->focus_mode = mojom::FocusMode::UNAVAILABLE;
+      break;
+    case PhotoCapabilities::AndroidFocusMode::FIXED:
+      photo_capabilities->focus_mode = mojom::FocusMode::MANUAL;
+      break;
+    case PhotoCapabilities::AndroidFocusMode::SINGLE_SHOT:
+      photo_capabilities->focus_mode = mojom::FocusMode::SINGLE_SHOT;
+      break;
+    case PhotoCapabilities::AndroidFocusMode::CONTINUOUS:
+      photo_capabilities->focus_mode = mojom::FocusMode::CONTINUOUS;
+      break;
+  }
   callback.Run(std::move(photo_capabilities));
 }
 
@@ -454,20 +463,31 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
 #endif
   JNIEnv* env = AttachCurrentThread();
 
-  // |width| and/or |height| are kept for the next TakePhoto()s.
-  if (settings->has_width || settings->has_height)
-    next_photo_resolution_.SetSize(0, 0);
-  if (settings->has_width) {
-    next_photo_resolution_.set_width(
-        base::saturated_cast<int>(settings->width));
-  }
-  if (settings->has_height) {
-    next_photo_resolution_.set_height(
-        base::saturated_cast<int>(settings->height));
+  const int width = settings->has_width ? settings->width : 0;
+  const int height = settings->has_height ? settings->height : 0;
+  const int zoom = settings->has_zoom ? settings->zoom : 0;
+
+  PhotoCapabilities::AndroidFocusMode focus_mode =
+      PhotoCapabilities::AndroidFocusMode::UNAVAILABLE;
+  if (settings->has_focus_mode) {
+    switch (settings->focus_mode) {
+      case mojom::FocusMode::MANUAL:
+        focus_mode = PhotoCapabilities::AndroidFocusMode::FIXED;
+        break;
+      case mojom::FocusMode::SINGLE_SHOT:
+        focus_mode = PhotoCapabilities::AndroidFocusMode::SINGLE_SHOT;
+        break;
+      case mojom::FocusMode::CONTINUOUS:
+        focus_mode = PhotoCapabilities::AndroidFocusMode::CONTINUOUS;
+        break;
+      case mojom::FocusMode::UNAVAILABLE:
+        focus_mode = PhotoCapabilities::AndroidFocusMode::UNAVAILABLE;
+        break;
+    }
   }
 
-  if (settings->has_zoom)
-    Java_VideoCapture_setZoom(env, j_capture_.obj(), settings->zoom);
+  Java_VideoCapture_setPhotoOptions(
+      env, j_capture_.obj(), zoom, static_cast<int>(focus_mode), width, height);
 
   callback.Run(true);
 }

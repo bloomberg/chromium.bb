@@ -124,6 +124,17 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
     settings->has_width = photoSettings.hasImageWidth();
     if (settings->has_width)
         settings->width = photoSettings.imageWidth();
+    settings->has_focus_mode = photoSettings.hasFocusMode();
+    if (settings->has_focus_mode) {
+        if (photoSettings.focusMode() == "manual")
+            settings->focus_mode = media::mojom::blink::FocusMode::MANUAL;
+        else if (photoSettings.focusMode() == "single-shot")
+            settings->focus_mode = media::mojom::blink::FocusMode::SINGLE_SHOT;
+        else if (photoSettings.focusMode() == "continuous")
+            settings->focus_mode = media::mojom::blink::FocusMode::CONTINUOUS;
+        else
+            settings->has_focus_mode = false;
+    }
 
     m_service->SetOptions(m_streamTrack->component()->source()->id(), std::move(settings), convertToBaseCallback(WTF::bind(&ImageCapture::onSetOptions, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;
