@@ -43,7 +43,6 @@
 using namespace clang::ast_matchers;
 using clang::tooling::CommonOptionsParser;
 using clang::tooling::Replacement;
-using clang::tooling::Replacements;
 using llvm::StringRef;
 
 namespace {
@@ -491,7 +490,7 @@ struct TargetNodeTraits<clang::UnresolvedMemberExpr> {
 template <typename DeclNode, typename TargetNode>
 class RewriterBase : public MatchFinder::MatchCallback {
  public:
-  explicit RewriterBase(Replacements* replacements)
+  explicit RewriterBase(std::set<Replacement>* replacements)
       : replacements_(replacements) {}
 
   void run(const MatchFinder::MatchResult& result) override {
@@ -533,7 +532,7 @@ class RewriterBase : public MatchFinder::MatchCallback {
   }
 
  private:
-  Replacements* const replacements_;
+  std::set<Replacement>* const replacements_;
   std::unordered_map<std::string, std::string> replacement_names_;
 };
 
@@ -583,7 +582,7 @@ int main(int argc, const char* argv[]) {
                                  options.getSourcePathList());
 
   MatchFinder match_finder;
-  Replacements replacements;
+  std::set<Replacement> replacements;
 
   auto in_blink_namespace =
       decl(hasAncestor(namespaceDecl(anyOf(hasName("blink"), hasName("WTF")),
