@@ -8,7 +8,6 @@ import("//build/config/ui.gni")
 # implementation (and private haders) are in 'internal'.
 source_set("cpp") {
   sources = [
-    "bitmap_uploader.h",
     "gpu_service.h",
     "input_event_handler.h",
     "mojo_gpu_memory_buffer_manager.h",
@@ -89,10 +88,12 @@ source_set("internal_or_test") {
 source_set("internal") {
   # This target is an implementation detail and is intended only to be used by
   # the 'cpp' target.
-  visibility = [ ":cpp" ]
+  visibility = [
+    ":cpp",
+    "//services/ui/demo:mus_demo_library",
+  ]
 
   sources = [
-    "bitmap_uploader.cc",
     "command_buffer_client_impl.cc",
     "command_buffer_client_impl.h",
     "context_provider.cc",

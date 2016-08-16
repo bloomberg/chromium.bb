@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_CPP_BITMAP_UPLOADER_H_
-#define SERVICES_UI_PUBLIC_CPP_BITMAP_UPLOADER_H_
+#ifndef SERVICES_UI_DEMO_BITMAP_UPLOADER_H_
+#define SERVICES_UI_DEMO_BITMAP_UPLOADER_H_
 
 #include <stdint.h>
 
@@ -83,4 +83,4 @@ class BitmapUploader : public WindowSurfaceClient {
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_PUBLIC_CPP_BITMAP_UPLOADER_H_
+#endif  // SERVICES_UI_DEMO_BITMAP_UPLOADER_H_
