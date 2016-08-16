@@ -151,6 +151,10 @@ class TabManager : public TabStripModelObserver {
   // |second|.
   static bool CompareTabStats(const TabStats& first, const TabStats& second);
 
+  // Returns a unique ID for a WebContents. Do not cast back to a pointer, as
+  // the WebContents could be deleted if the user closed the tab.
+  static int64_t IdFromWebContents(content::WebContents* web_contents);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, AutoDiscardable);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, CanOnlyDiscardOnce);

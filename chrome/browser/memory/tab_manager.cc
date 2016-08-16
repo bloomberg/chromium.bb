@@ -88,12 +88,6 @@ const int kSuspendThresholdSeconds = kAdjustmentIntervalSeconds * 4;
 // audible.
 const int kAudioProtectionTimeSeconds = 60;
 
-// Returns a unique ID for a WebContents. Do not cast back to a pointer, as
-// the WebContents could be deleted if the user closed the tab.
-int64_t IdFromWebContents(WebContents* web_contents) {
-  return reinterpret_cast<int64_t>(web_contents);
-}
-
 int FindTabStripModelById(int64_t target_web_contents_id,
                           TabStripModel** model) {
   DCHECK(model);
@@ -101,7 +95,7 @@ int FindTabStripModelById(int64_t target_web_contents_id,
     TabStripModel* local_model = browser->tab_strip_model();
     for (int idx = 0; idx < local_model->count(); idx++) {
       WebContents* web_contents = local_model->GetWebContentsAt(idx);
-      int64_t web_contents_id = IdFromWebContents(web_contents);
+      int64_t web_contents_id = TabManager::IdFromWebContents(web_contents);
       if (web_contents_id == target_web_contents_id) {
         *model = local_model;
         return idx;
@@ -352,7 +346,7 @@ WebContents* TabManager::DiscardTabById(int64_t target_web_contents_id) {
 
 WebContents* TabManager::DiscardTabByExtension(content::WebContents* contents) {
   if (contents)
-    return DiscardTabById(reinterpret_cast<int64_t>(contents));
+    return DiscardTabById(IdFromWebContents(contents));
 
   return DiscardTabImpl();
 }
@@ -463,6 +457,11 @@ bool TabManager::CompareTabStats(const TabStats& first,
 
   // Being more recently active is more important.
   return first.last_active > second.last_active;
+}
+
+// static
+int64_t TabManager::IdFromWebContents(WebContents* web_contents) {
+  return reinterpret_cast<int64_t>(web_contents);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

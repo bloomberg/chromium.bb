@@ -1360,8 +1360,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
   EXPECT_FALSE(tab_object_a->discarded);
 
   // Discards one tab.
-  EXPECT_TRUE(
-      tab_manager->DiscardTabById(reinterpret_cast<int64_t>(web_contents_a)));
+  EXPECT_TRUE(tab_manager->DiscardTabByExtension(web_contents_a));
   web_contents_a = tab_strip_model->GetWebContentsAt(1);
 
   // Make sure the property is changed accordingly after discarding the tab.
@@ -1394,8 +1393,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
   }
 
   // Discards another created tab.
-  EXPECT_TRUE(
-      tab_manager->DiscardTabById(reinterpret_cast<int64_t>(web_contents_b)));
+  EXPECT_TRUE(tab_manager->DiscardTabByExtension(web_contents_b));
 
   // Get non-discarded tabs after discarding two created tabs.
   {

@@ -37,7 +37,7 @@ class TabManagerObserverTest : public InProcessBrowserTest {
   }
 
   int64_t ContentsId(WebContents* contents) {
-    return reinterpret_cast<int64_t>(contents);
+    return TabManager::IdFromWebContents(contents);
   }
 
  private:
