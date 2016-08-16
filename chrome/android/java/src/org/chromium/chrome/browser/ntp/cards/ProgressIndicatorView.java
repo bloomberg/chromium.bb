@@ -75,7 +75,7 @@ public class ProgressIndicatorView extends ImageView {
         mProgressDrawable.stop();
         removeCallbacks(mShowSpinnerRunnable);
         mPostedCallback = false;
-        setVisibility(View.INVISIBLE);
+        setVisibility(View.GONE);
     }
 
     public void showDelayed() {
