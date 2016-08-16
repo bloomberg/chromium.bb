@@ -18,6 +18,185 @@
 
 namespace subresource_filter {
 
+namespace {
+
+// Checks whether a URL |rule| can be converted to its FlatBuffers equivalent,
+// and performs the actual conversion.
+class UrlRuleFlatBufferConverter {
+ public:
+  // Creates the converter, and initializes |is_convertible| bit. If
+  // |is_convertible| == true, then all the fields, needed for serializing the
+  // |rule| to FlatBuffer, are initialized (|options|, |anchor_right|, etc.).
+  UrlRuleFlatBufferConverter(const proto::UrlRule& rule) : rule_(rule) {
+    is_convertible_ = InitializeOptions() && InitializeElementTypes() &&
+                      InitializeActivationTypes() && InitializeUrlPattern();
+  }
+
+  // Returns whether the |rule| can be converted to its FlatBuffers equivalent.
+  // The conversion is not possible if the rule has attributes not supported by
+  // this client version.
+  bool is_convertible() const { return is_convertible_; }
+
+  // Writes the URL |rule| to the FlatBuffer using the |builder|, and returns
+  // the offset to the serialized rule.
+  flatbuffers::Offset<flat::UrlRule> SerializeConvertedRule(
+      flatbuffers::FlatBufferBuilder* builder) const {
+    DCHECK(is_convertible());
+
+    flatbuffers::Offset<
+        flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>>
+        domains_offset;
+    if (rule_.domains_size()) {
+      std::vector<flatbuffers::Offset<flatbuffers::String>> domains;
+      domains.reserve(rule_.domains_size());
+
+      std::string domain;
+      for (const auto& domain_list_item : rule_.domains()) {
+        domain.clear();
+        domain.reserve(domain_list_item.domain().size() + 1);
+        if (domain_list_item.exclude())
+          domain += '~';
+        domain += domain_list_item.domain();
+        domains.push_back(builder->CreateString(domain));
+      }
+      domains_offset = builder->CreateVector(domains);
+    }
+
+    auto url_pattern_offset = builder->CreateString(rule_.url_pattern());
+
+    std::vector<uint8_t> failure_function;
+    BuildFailureFunction(UrlPattern(rule_), &failure_function);
+    auto failure_function_offset =
+        builder->CreateVector(failure_function.data(), failure_function.size());
+
+    return flat::CreateUrlRule(*builder, options_, element_types_,
+                               activation_types_, url_pattern_type_,
+                               anchor_left_, anchor_right_, domains_offset,
+                               url_pattern_offset, failure_function_offset);
+  }
+
+ private:
+  static bool ConvertAnchorType(proto::AnchorType anchor_type,
+                                flat::AnchorType* result) {
+    switch (anchor_type) {
+      case proto::ANCHOR_TYPE_NONE:
+        *result = flat::AnchorType_NONE;
+        break;
+      case proto::ANCHOR_TYPE_BOUNDARY:
+        *result = flat::AnchorType_BOUNDARY;
+        break;
+      case proto::ANCHOR_TYPE_SUBDOMAIN:
+        *result = flat::AnchorType_SUBDOMAIN;
+        break;
+      default:
+        return false;  // Unsupported anchor type.
+    }
+    return true;
+  }
+
+  bool InitializeOptions() {
+    if (rule_.semantics() == proto::RULE_SEMANTICS_WHITELIST) {
+      options_ |= flat::OptionFlag_IS_WHITELIST;
+    } else if (rule_.semantics() != proto::RULE_SEMANTICS_BLACKLIST) {
+      return false;  // Unsupported semantics.
+    }
+
+    switch (rule_.source_type()) {
+      case proto::SOURCE_TYPE_ANY:
+        options_ |= flat::OptionFlag_APPLIES_TO_THIRD_PARTY;
+      // Note: fall through here intentionally.
+      case proto::SOURCE_TYPE_FIRST_PARTY:
+        options_ |= flat::OptionFlag_APPLIES_TO_FIRST_PARTY;
+        break;
+      case proto::SOURCE_TYPE_THIRD_PARTY:
+        options_ |= flat::OptionFlag_APPLIES_TO_THIRD_PARTY;
+        break;
+
+      default:
+        return false;  // Unsupported source type.
+    }
+
+    if (rule_.match_case())
+      options_ |= flat::OptionFlag_IS_MATCH_CASE;
+
+    return true;
+  }
+
+  bool InitializeElementTypes() {
+    static_assert(
+        proto::ELEMENT_TYPE_ALL <= std::numeric_limits<uint16_t>::max(),
+        "Element types can not be stored in uint16_t.");
+    if ((rule_.element_types() & proto::ELEMENT_TYPE_ALL) !=
+        rule_.element_types()) {
+      return false;  // Unsupported element types.
+    }
+    element_types_ = static_cast<uint16_t>(rule_.element_types());
+    // Note: Normally we can not distinguish between the main plugin resource
+    // and any other loads it makes. We treat them both as OBJECT requests.
+    if (element_types_ & proto::ELEMENT_TYPE_OBJECT_SUBREQUEST)
+      element_types_ |= proto::ELEMENT_TYPE_OBJECT;
+    return true;
+  }
+
+  bool InitializeActivationTypes() {
+    static_assert(
+        proto::ACTIVATION_TYPE_ALL <= std::numeric_limits<uint8_t>::max(),
+        "Activation types can not be stored in uint8_t.");
+    if ((rule_.activation_types() & proto::ACTIVATION_TYPE_ALL) !=
+        rule_.activation_types()) {
+      return false;  // Unsupported activation types.
+    }
+    activation_types_ = static_cast<uint8_t>(rule_.activation_types());
+    return true;
+  }
+
+  bool InitializeUrlPattern() {
+    if (rule_.url_pattern().size() >
+        static_cast<size_t>(std::numeric_limits<uint8_t>::max())) {
+      // Failure function can not always be stored as an array of uint8_t in
+      // case the pattern's length exceeds 255.
+      return false;
+    }
+
+    switch (rule_.url_pattern_type()) {
+      case proto::URL_PATTERN_TYPE_SUBSTRING:
+        url_pattern_type_ = flat::UrlPatternType_SUBSTRING;
+        break;
+      case proto::URL_PATTERN_TYPE_WILDCARDED:
+        url_pattern_type_ = flat::UrlPatternType_WILDCARDED;
+        break;
+      case proto::URL_PATTERN_TYPE_REGEXP:
+        url_pattern_type_ = flat::UrlPatternType_REGEXP;
+        break;
+
+      default:
+        return false;  // Unsupported URL pattern type.
+    }
+
+    if (!ConvertAnchorType(rule_.anchor_left(), &anchor_left_) ||
+        !ConvertAnchorType(rule_.anchor_right(), &anchor_right_)) {
+      return false;
+    }
+    if (anchor_right_ == flat::AnchorType_SUBDOMAIN)
+      return false;  // Unsupported right anchor.
+
+    return true;
+  }
+
+  const proto::UrlRule& rule_;
+
+  uint8_t options_ = 0;
+  uint16_t element_types_ = 0;
+  uint8_t activation_types_ = 0;
+  flat::UrlPatternType url_pattern_type_ = flat::UrlPatternType_WILDCARDED;
+  flat::AnchorType anchor_left_ = flat::AnchorType_NONE;
+  flat::AnchorType anchor_right_ = flat::AnchorType_NONE;
+
+  bool is_convertible_ = true;
+};
+
+}  // namespace
+
 // RulesetIndexer --------------------------------------------------------------
 
 // static
@@ -30,138 +209,10 @@ RulesetIndexer::RulesetIndexer() = default;
 RulesetIndexer::~RulesetIndexer() = default;
 
 bool RulesetIndexer::AddUrlRule(const proto::UrlRule& rule) {
-  if (rule.url_pattern().size() >
-      static_cast<size_t>(std::numeric_limits<uint8_t>::max())) {
-    // Failure function can not always be stored as an array of uint8_t in case
-    // the pattern's length exceeds 255.
+  UrlRuleFlatBufferConverter converter(rule);
+  if (!converter.is_convertible())
     return false;
-  }
-
-  flatbuffers::Offset<
-      flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>>
-      domains_offset;
-
-  if (rule.domains_size()) {
-    std::vector<flatbuffers::Offset<flatbuffers::String>> domains;
-    domains.reserve(rule.domains_size());
-
-    std::string domain;
-    for (const auto& domain_list_item : rule.domains()) {
-      domain.clear();
-      domain.reserve(domain_list_item.domain().size() + 1);
-      if (domain_list_item.exclude())
-        domain += '~';
-      domain += domain_list_item.domain();
-      domains.push_back(builder_.CreateString(domain));
-    }
-    domains_offset = builder_.CreateVector(domains);
-  }
-
-  auto url_pattern_offset = builder_.CreateString(rule.url_pattern());
-
-  std::vector<uint8_t> failure;
-  BuildFailureFunction(UrlPattern(rule), &failure);
-  auto failure_function_offset =
-      builder_.CreateVector(failure.data(), failure.size());
-
-  flat::UrlRuleBuilder rule_builder(builder_);
-  rule_builder.add_url_pattern(url_pattern_offset);
-  rule_builder.add_domains(domains_offset);
-  rule_builder.add_failure_function(failure_function_offset);
-
-  uint8_t options = 0;
-
-  if (rule.semantics() == proto::RULE_SEMANTICS_WHITELIST) {
-    options |= flat::OptionFlag_IS_WHITELIST;
-  } else if (rule.semantics() != proto::RULE_SEMANTICS_BLACKLIST) {
-    // Unsupported semantics.
-    return false;
-  }
-
-  switch (rule.source_type()) {
-    case proto::SOURCE_TYPE_ANY:
-      options |= flat::OptionFlag_APPLIES_TO_THIRD_PARTY;
-    // Note: fall through here intentionally.
-    case proto::SOURCE_TYPE_FIRST_PARTY:
-      options |= flat::OptionFlag_APPLIES_TO_FIRST_PARTY;
-      break;
-    case proto::SOURCE_TYPE_THIRD_PARTY:
-      options |= flat::OptionFlag_APPLIES_TO_THIRD_PARTY;
-      break;
-
-    default:
-      return false;  // Unsupported source type.
-  }
-
-  if (rule.match_case())
-    options |= flat::OptionFlag_IS_MATCH_CASE;
-
-  rule_builder.add_options(options);
-
-  static_assert(proto::ELEMENT_TYPE_MAX <= std::numeric_limits<uint16_t>::max(),
-                "Element types can not be stored in uint16_t.");
-  if ((rule.element_types() & proto::ELEMENT_TYPE_ALL) != rule.element_types())
-    return false;  // Unsupported element types.
-  uint16_t element_types = static_cast<uint16_t>(rule.element_types());
-  // Note: Normally we can not distinguish between the main plugin resource and
-  // any other loads it makes. We treat them both as OBJECT requests.
-  if (element_types & proto::ELEMENT_TYPE_OBJECT_SUBREQUEST)
-    element_types |= proto::ELEMENT_TYPE_OBJECT;
-  rule_builder.add_element_types(element_types);
-
-  static_assert(
-      proto::ACTIVATION_TYPE_MAX <= std::numeric_limits<uint8_t>::max(),
-      "Activation types can not be stored in uint8_t.");
-  if ((rule.activation_types() & proto::ACTIVATION_TYPE_ALL) !=
-      rule.activation_types()) {
-    return false;  // Unsupported activation types.
-  }
-  rule_builder.add_activation_types(
-      static_cast<uint8_t>(rule.activation_types()));
-
-  switch (rule.url_pattern_type()) {
-    case proto::URL_PATTERN_TYPE_SUBSTRING:
-      rule_builder.add_url_pattern_type(flat::UrlPatternType_SUBSTRING);
-      break;
-    case proto::URL_PATTERN_TYPE_WILDCARDED:
-      rule_builder.add_url_pattern_type(flat::UrlPatternType_WILDCARDED);
-      break;
-    case proto::URL_PATTERN_TYPE_REGEXP:
-      rule_builder.add_url_pattern_type(flat::UrlPatternType_REGEXP);
-      break;
-
-    default:
-      return false;  // Unsupported URL pattern type.
-  }
-
-  switch (rule.anchor_left()) {
-    case proto::ANCHOR_TYPE_NONE:
-      rule_builder.add_anchor_left(flat::AnchorType_NONE);
-      break;
-    case proto::ANCHOR_TYPE_BOUNDARY:
-      rule_builder.add_anchor_left(flat::AnchorType_BOUNDARY);
-      break;
-    case proto::ANCHOR_TYPE_SUBDOMAIN:
-      rule_builder.add_anchor_left(flat::AnchorType_SUBDOMAIN);
-      break;
-
-    default:
-      return false;  // Unsupported left anchor.
-  }
-
-  switch (rule.anchor_right()) {
-    case proto::ANCHOR_TYPE_NONE:
-      rule_builder.add_anchor_right(flat::AnchorType_NONE);
-      break;
-    case proto::ANCHOR_TYPE_BOUNDARY:
-      rule_builder.add_anchor_right(flat::AnchorType_BOUNDARY);
-      break;
-
-    default:
-      return false;  // Unsupported right anchor.
-  }
-
-  auto rule_offset = rule_builder.Finish();
+  auto rule_offset = converter.SerializeConvertedRule(&builder_);
 
   MutableUrlPatternIndex* index_part =
       (rule.semantics() == proto::RULE_SEMANTICS_BLACKLIST ? &blacklist_

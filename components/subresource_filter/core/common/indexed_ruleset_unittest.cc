@@ -78,7 +78,7 @@ class IndexedRulesetTest : public testing::Test {
 
   void AddSimpleRule(const UrlPattern& url_pattern, bool is_whitelist) {
     proto::UrlRule rule = CreateRule(url_pattern, kAnyParty, is_whitelist);
-    indexer_.AddUrlRule(rule);
+    EXPECT_TRUE(indexer_.AddUrlRule(rule));
   }
 
   void AddBlacklistRule(const UrlPattern& url_pattern,
@@ -90,7 +90,7 @@ class IndexedRulesetTest : public testing::Test {
                                         int32_t element_types) {
     proto::UrlRule rule = CreateRule(url_pattern, kAnyParty, false);
     rule.set_element_types(element_types);
-    indexer_.AddUrlRule(rule);
+    EXPECT_TRUE(indexer_.AddUrlRule(rule));
   }
 
   void AddWhitelistRuleWithActivationTypes(const UrlPattern& url_pattern,
@@ -98,7 +98,7 @@ class IndexedRulesetTest : public testing::Test {
     proto::UrlRule rule = CreateRule(url_pattern, kAnyParty, true);
     rule.set_element_types(proto::ELEMENT_TYPE_UNSPECIFIED);
     rule.set_activation_types(activation_types);
-    indexer_.AddUrlRule(rule);
+    EXPECT_TRUE(indexer_.AddUrlRule(rule));
   }
 
   void AddBlacklistRule(const UrlPattern& url_pattern,
@@ -113,7 +113,7 @@ class IndexedRulesetTest : public testing::Test {
       }
       domain->set_domain(domain_pattern);
     }
-    indexer_.AddUrlRule(rule);
+    EXPECT_TRUE(indexer_.AddUrlRule(rule));
   }
 
   void Finish() {
@@ -593,6 +593,20 @@ TEST_F(IndexedRulesetTest, BlacklistAndActivationType) {
   EXPECT_FALSE(ShouldDeactivate("https://xample.com", nullptr, kDocument));
   EXPECT_FALSE(ShouldAllow("https://example.com"));
   EXPECT_TRUE(ShouldAllow("https://xample.com"));
+}
+
+TEST_F(IndexedRulesetTest, RuleWithUnsupportedOptions) {
+  auto rule = CreateRule(UrlPattern("exmpl"), proto::SOURCE_TYPE_ANY, false);
+  rule.set_activation_types(rule.activation_types() |
+                            (proto::ACTIVATION_TYPE_MAX << 1));
+  rule.set_element_types(rule.element_types() | (proto::ELEMENT_TYPE_MAX << 1));
+  EXPECT_FALSE(indexer_.AddUrlRule(rule));
+
+  AddSimpleRule(UrlPattern("example.com", kSubstring), false);
+  Finish();
+
+  EXPECT_TRUE(ShouldAllow("https://exmpl.com"));
+  EXPECT_FALSE(ShouldAllow("https://example.com"));
 }
 
 }  // namespace subresource_filter

@@ -42,10 +42,9 @@ class RulesetIndexer {
   RulesetIndexer();
   ~RulesetIndexer();
 
-  // Adds |rule| to the ruleset unless the rule has unsupported filter options,
-  // in which case the |rule| can be serialized partially and not added to the
-  // index. Return value indicates whether the |rule| has been serialized
-  // completely and added to the index.
+  // Adds |rule| to the ruleset and the index unless the |rule| has unsupported
+  // filter options, in which case the data structures remain unmodified.
+  // Returns whether the |rule| has been serialized and added to the index.
   bool AddUrlRule(const proto::UrlRule& rule);
 
   // Finalizes construction of the data structures.
