@@ -233,7 +233,7 @@ Node::InsertionNotificationRequest HTMLSlotElement::insertedInto(ContainerNode* 
         root->owner()->setNeedsDistributionRecalc();
         // Relevant DOM Standard: https://dom.spec.whatwg.org/#concept-node-insert
         // - 6.4:  Run assign slotables for a tree with node's tree and a set containing each inclusive descendant of node that is a slot.
-        if (!wasInShadowTreeBeforeInserted(*this, *insertionPoint))
+        if (root->isV1() && !wasInShadowTreeBeforeInserted(*this, *insertionPoint))
             root->ensureSlotAssignment().slotAdded(*this);
     }
 

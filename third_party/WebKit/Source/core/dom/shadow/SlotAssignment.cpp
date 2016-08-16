@@ -105,6 +105,7 @@ SlotAssignment::SlotAssignment(ShadowRoot& owner)
     , m_needsCollectSlots(false)
     , m_slotCount(0)
 {
+    DCHECK(owner.isV1());
 }
 
 static void detachNotAssignedNode(Node& node)
