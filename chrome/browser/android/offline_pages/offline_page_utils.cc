@@ -64,10 +64,8 @@ void OnGetPagesByOnlineURLDone(
   const OfflinePageItem* selected_page = nullptr;
   std::string tab_id_str = base::IntToString(tab_id);
   for (const auto& offline_page : pages) {
-    if ((offline_page.client_id.name_space == kBookmarkNamespace) ||
-        (offline_page.client_id.name_space == kAsyncNamespace) ||
-        (offline_page.client_id.name_space == kLastNNamespace &&
-         offline_page.client_id.id == tab_id_str)) {
+    if (offline_page.client_id.name_space != kLastNNamespace ||
+        offline_page.client_id.id == tab_id_str) {
       if (!selected_page ||
           offline_page.creation_time > selected_page->creation_time) {
         selected_page = &offline_page;
