@@ -76,7 +76,7 @@ Finally, `base::Optional<T>` is integrated with `std::hash`, using
 
 ## How is it implemented?
 
-`base::Optional<T>` is implemented using `base::AlignedMemory`. The object
+`base::Optional<T>` is implemented with a union with a `T` member. The object
 doesn't behave like a pointer and doesn't do dynamic memory allocation. In
 other words, it is guaranteed to have an object allocated when it is not empty.
 
