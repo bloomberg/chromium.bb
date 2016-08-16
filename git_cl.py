@@ -3271,7 +3271,7 @@ def CMDstatus(parser, args):
   Also see 'git cl comments'.
   """
   parser.add_option('--field',
-                    help='print only specific field (desc|id|patch|url)')
+                    help='print only specific field (desc|id|patch|status|url)')
   parser.add_option('-f', '--fast', action='store_true',
                     help='Do not retrieve review status')
   parser.add_option(
@@ -3296,6 +3296,8 @@ def CMDstatus(parser, args):
       patchset = cl.GetPatchset()
       if patchset:
         print(patchset)
+    elif options.field == 'status':
+      print(cl.GetStatus())
     elif options.field == 'url':
       url = cl.GetIssueURL()
       if url:
