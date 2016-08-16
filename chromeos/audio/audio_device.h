@@ -27,6 +27,7 @@ enum AudioDeviceType {
   AUDIO_TYPE_INTERNAL_MIC,
   AUDIO_TYPE_KEYBOARD_MIC,
   AUDIO_TYPE_HOTWORD,
+  AUDIO_TYPE_LINEOUT,
   AUDIO_TYPE_POST_MIX_LOOPBACK,
   AUDIO_TYPE_POST_DSP_LOOPBACK,
   AUDIO_TYPE_OTHER,
@@ -54,7 +55,8 @@ struct CHROMEOS_EXPORT AudioDevice {
             type == AUDIO_TYPE_USB ||
             type == AUDIO_TYPE_BLUETOOTH ||
             type == AUDIO_TYPE_HDMI ||
-            type == AUDIO_TYPE_INTERNAL_SPEAKER);
+            type == AUDIO_TYPE_INTERNAL_SPEAKER ||
+            type == AUDIO_TYPE_LINEOUT);
   }
 
   bool is_input;

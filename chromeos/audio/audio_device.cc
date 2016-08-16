@@ -25,6 +25,7 @@ uint8_t GetDevicePriority(AudioDeviceType type, bool is_input) {
     return 0;
   switch (type) {
     case AUDIO_TYPE_HEADPHONE:
+    case AUDIO_TYPE_LINEOUT:
     case AUDIO_TYPE_MIC:
     case AUDIO_TYPE_USB:
     case AUDIO_TYPE_BLUETOOTH:
@@ -67,6 +68,8 @@ std::string AudioDevice::GetTypeString(AudioDeviceType type) {
       return "KEYBOARD_MIC";
     case AUDIO_TYPE_HOTWORD:
       return "HOTWORD";
+    case AUDIO_TYPE_LINEOUT:
+      return "LINEOUT";
     case AUDIO_TYPE_POST_MIX_LOOPBACK:
       return "POST_MIX_LOOPBACK";
     case AUDIO_TYPE_POST_DSP_LOOPBACK:
@@ -102,6 +105,8 @@ AudioDeviceType AudioDevice::GetAudioType(
     return AUDIO_TYPE_HOTWORD;
   else if (node_type.find("HOTWORD") != std::string::npos)
     return AUDIO_TYPE_HOTWORD;
+  else if (node_type.find("LINEOUT") != std::string::npos)
+    return AUDIO_TYPE_LINEOUT;
   else if (node_type.find("POST_MIX_LOOPBACK") != std::string::npos)
     return AUDIO_TYPE_POST_MIX_LOOPBACK;
   else if (node_type.find("POST_DSP_LOOPBACK") != std::string::npos)
