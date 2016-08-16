@@ -585,7 +585,6 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
 
     QuicFrame frame;
     QuicIOVector io_vector(MakeIOVector(data));
-    UniqueStreamBuffer stream_buffer;
     QuicPacketCreatorPeer::CreateStreamFrame(
         &creator_, kCryptoStreamId, io_vector, 0, kOffset, false, &frame);
     QuicFrames frames;
