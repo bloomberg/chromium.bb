@@ -40,6 +40,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 #include <memory>
+#include <v8.h>
 
 namespace blink {
 
@@ -247,6 +248,7 @@ PassRefPtr<SharedBuffer> ImageResource::resourceBuffer() const
 
 void ImageResource::appendData(const char* data, size_t length)
 {
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(length);
     if (m_multipartParser) {
         m_multipartParser->appendData(data, length);
     } else {
@@ -369,6 +371,8 @@ inline void ImageResource::clearImage()
 {
     if (!m_image)
         return;
+    int64_t length = m_image->data() ? m_image->data()->size() : 0;
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-length);
 
     // If our Image has an observer, it's always us so we need to clear the back pointer
     // before dropping our reference.
