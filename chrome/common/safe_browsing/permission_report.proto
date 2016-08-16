@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Protocol buffer for permission reports sent to the Safe Browsing client-side
-// detection (CSD) frontends. This should stay in sync with the Safe Browsing 
+// detection (CSD) frontends. This should stay in sync with the Safe Browsing
 // server-side protocol buffer.
 
 syntax = "proto2";
@@ -36,6 +36,18 @@ message PermissionReport {
   // The relevant field trials enabled for this report.
   repeated FieldTrial field_trials = 7;
 
+  // The number of dismissals on a prompt for this permission and origin prior
+  // to this report since the user last cleared their history.
+  optional int32 num_prior_dismissals = 8;
+
+  // The number of ignores of a prompt for this  permission and origin prior to
+  // this report since the user last cleared their history.
+  optional int32 num_prior_ignores = 9;
+
+  // The persistence decision on a prompt. Only some experimental prompts will
+  // have this field set.
+  optional PersistDecision persisted = 10;
+
   // Platform
   enum PlatformType {
     PLATFORM_TYPE_UNSPECIFIED = 0;
@@ -50,7 +62,7 @@ message PermissionReport {
     NO_GESTURE = 2;
   }
 
-  // User Permission Actions. This enum is intentionally different with 
+  // User Permission Actions. This enum is intentionally different from
   // the one in src/chrome/browser/permissions/permission_uma_util.h
   enum Action {
     ACTION_UNSPECIFIED = 0;
@@ -83,6 +95,13 @@ message PermissionReport {
     DURABLE_STORAGE = 7;
     AUDIO_CAPTURE = 8;
     VIDEO_CAPTURE = 9;
+  }
+
+  // Whether the decision on a prompt was persisted.
+  enum PersistDecision {
+    PERSIST_DECISION_UNSPECIFIED = 0;
+    PERSISTED = 1;
+    NOT_PERSISTED = 2;
   }
 
   // Description of a field trial or experiment that the user is currently
