@@ -45,7 +45,8 @@ class PDFWebContentsHelper
   ~PDFWebContentsHelper() override;
 
   // content::WebContentsObserver overrides:
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;

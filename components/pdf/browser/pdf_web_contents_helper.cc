@@ -41,7 +41,9 @@ void PDFWebContentsHelper::ShowOpenInReaderPrompt(
   UpdateLocationBar();
 }
 
-bool PDFWebContentsHelper::OnMessageReceived(const IPC::Message& message) {
+bool PDFWebContentsHelper::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PDFWebContentsHelper, message)
     IPC_MESSAGE_HANDLER(PDFHostMsg_PDFHasUnsupportedFeature,
