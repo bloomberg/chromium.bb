@@ -22,6 +22,9 @@ enum EventType {
   ET_MOUSE_CAPTURE_CHANGED,  // Event has no location.
   ET_TOUCH_RELEASED,
   ET_TOUCH_PRESSED,
+  // NOTE: This corresponds to a drag and is always preceeded by an
+  // ET_TOUCH_PRESSED. GestureRecognizers generally ignore ET_TOUCH_MOVED events
+  // without a corresponding ET_TOUCH_PRESSED.
   ET_TOUCH_MOVED,
   ET_TOUCH_CANCELLED,
   ET_DROP_TARGET_EVENT,
