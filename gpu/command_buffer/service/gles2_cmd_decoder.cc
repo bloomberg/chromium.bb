@@ -13264,19 +13264,38 @@ void GLES2DecoderImpl::DoCopyTexSubImage3D(
     return;
   }
 
-  // For 3D textures, we always clear the entire texture. See the code in
-  // TextureManager::ValidateAndDoTexSubImage for TexSubImage3D.
+  ScopedResolvedFrameBufferBinder binder(this, false, true);
+  gfx::Size size = GetBoundReadFrameBufferSize();
+  GLint copyX = 0;
+  GLint copyY = 0;
+  GLint copyWidth = 0;
+  GLint copyHeight = 0;
+  Clip(x, width, size.width(), &copyX, &copyWidth);
+  Clip(y, height, size.height(), &copyY, &copyHeight);
+
+  GLint dx = copyX - x;
+  GLint dy = copyY - y;
+  GLint destX = xoffset + dx;
+  GLint destY = yoffset + dy;
+  // For 3D textures, we always clear the entire texture to 0 if it is not
+  // cleared. See the code in TextureManager::ValidateAndDoTexSubImage
+  // for TexSubImage3D.
   if (!texture->IsLevelCleared(target, level)) {
-    texture_manager()->ClearTextureLevel(this, texture_ref, target, level);
+    if (!texture_manager()->ClearTextureLevel(this, texture_ref, target,
+                                              level)) {
+      LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "dimensions too big");
+      return;
+    }
     DCHECK(texture->IsLevelCleared(target, level));
   }
 
   // TODO(yunchao): Follow-up CLs are necessary. For instance:
   // 1. emulation of unsized formats in core profile
-  // 2. out-of-bounds reading, etc.
 
-  glCopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width,
-                      height);
+  if (copyHeight > 0 && copyWidth > 0) {
+    glCopyTexSubImage3D(target, level, destX, destY, zoffset,
+                        copyX, copyY, copyWidth, copyHeight);
+  }
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
