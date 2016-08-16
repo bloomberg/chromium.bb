@@ -133,7 +133,7 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const Dictionary& raw
     // meaningful value because most APIs are broken on file scheme and no
     // permission prompt will be shown even if the returned permission will most
     // likely be "prompt".
-    service->HasPermission(name.get(), scriptState->getExecutionContext()->getSecurityOrigin()->toString(), convertToBaseCallback(WTF::bind(&Permissions::taskComplete, wrapPersistent(this), wrapPersistent(resolver), name.get())));
+    service->HasPermission(name.get(), scriptState->getExecutionContext()->getSecurityOrigin(), convertToBaseCallback(WTF::bind(&Permissions::taskComplete, wrapPersistent(this), wrapPersistent(resolver), name.get())));
     return promise;
 }
 
@@ -153,7 +153,7 @@ ScriptPromise Permissions::request(ScriptState* scriptState, const Dictionary& r
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    service->RequestPermission(name.get(), scriptState->getExecutionContext()->getSecurityOrigin()->toString(), UserGestureIndicator::processingUserGesture(), convertToBaseCallback(WTF::bind(&Permissions::taskComplete, wrapPersistent(this), wrapPersistent(resolver), name.get())));
+    service->RequestPermission(name.get(), scriptState->getExecutionContext()->getSecurityOrigin(), UserGestureIndicator::processingUserGesture(), convertToBaseCallback(WTF::bind(&Permissions::taskComplete, wrapPersistent(this), wrapPersistent(resolver), name.get())));
     return promise;
 }
 
@@ -173,7 +173,7 @@ ScriptPromise Permissions::revoke(ScriptState* scriptState, const Dictionary& ra
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    service->RevokePermission(name.get(), scriptState->getExecutionContext()->getSecurityOrigin()->toString(), convertToBaseCallback(WTF::bind(&Permissions::taskComplete, wrapPersistent(this), wrapPersistent(resolver), name.get())));
+    service->RevokePermission(name.get(), scriptState->getExecutionContext()->getSecurityOrigin(), convertToBaseCallback(WTF::bind(&Permissions::taskComplete, wrapPersistent(this), wrapPersistent(resolver), name.get())));
     return promise;
 }
 
@@ -212,7 +212,7 @@ ScriptPromise Permissions::requestAll(ScriptState* scriptState, const Vector<Dic
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    service->RequestPermissions(internalPermissions, scriptState->getExecutionContext()->getSecurityOrigin()->toString(), UserGestureIndicator::processingUserGesture(),
+    service->RequestPermissions(internalPermissions, scriptState->getExecutionContext()->getSecurityOrigin(), UserGestureIndicator::processingUserGesture(),
         convertToBaseCallback(WTF::bind(&Permissions::batchTaskComplete, wrapPersistent(this), wrapPersistent(resolver), internalPermissions, callerIndexToInternalIndex)));
     return promise;
 }

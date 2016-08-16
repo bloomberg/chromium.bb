@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom";
+import "url/mojo/origin.mojom";
 
 enum PermissionName {
   GEOLOCATION,
@@ -23,14 +24,15 @@ enum PermissionName {
 // methods to check, request, and revoke permissions. It also allows a client to
 // start listening to permission changes.
 interface PermissionService {
-  HasPermission(PermissionName permission, string origin)
+  HasPermission(PermissionName permission, url.mojom.Origin origin)
     => (PermissionStatus status);
-  RequestPermission(PermissionName permission, string origin, bool user_gesture)
+  RequestPermission(PermissionName permission, url.mojom.Origin origin,
+      bool user_gesture)
     => (PermissionStatus status);
-  RequestPermissions(array<PermissionName> permission, string origin,
+  RequestPermissions(array<PermissionName> permission, url.mojom.Origin origin,
       bool user_gesture)
     => (array<PermissionStatus> statuses);
-  RevokePermission(PermissionName permission, string origin)
+  RevokePermission(PermissionName permission, url.mojom.Origin origin)
     => (PermissionStatus status);
 
   // Runs the callback next time there is a permission status change for the
@@ -38,7 +40,7 @@ interface PermissionService {
   // again if they want to keep listening to the changes. To prevent race
   // conditions, the caller must pass the last known value.
   GetNextPermissionChange(PermissionName permission,
-                          string origin,
+                          url.mojom.Origin origin,
                           PermissionStatus last_known_status)
     => (PermissionStatus status);
 };
