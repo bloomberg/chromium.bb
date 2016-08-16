@@ -1,11 +1,11 @@
 m4_define([weston_major_version],  [1])
 m4_define([weston_minor_version], [11])
-m4_define([weston_micro_version], [90])
+m4_define([weston_micro_version], [91])
 m4_define([weston_version],
           [weston_major_version.weston_minor_version.weston_micro_version])
 m4_define([libweston_major_version], [1])
 m4_define([libweston_minor_version], [11])
-m4_define([libweston_patch_version], [90])
+m4_define([libweston_patch_version], [91])
 
 AC_PREREQ([2.64])
 AC_INIT([weston],
@@ -14,7 +14,7 @@ AC_INIT([weston],
         [weston],
         [http://wayland.freedesktop.org])
 
-WAYLAND_PREREQ_VERSION="1.11.90"
+WAYLAND_PREREQ_VERSION="1.11.91"
 
 AC_SUBST([WESTON_VERSION_MAJOR], [weston_major_version])
 AC_SUBST([WESTON_VERSION_MINOR], [weston_minor_version])
