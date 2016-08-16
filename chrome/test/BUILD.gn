@@ -10,6 +10,7 @@ import("//build/config/ui.gni")
 import("//chrome/chrome_tests.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
+import("//components/os_crypt/features.gni")
 import("//testing/test.gni")
 import("//v8/gni/v8.gni")
 
@@ -2128,7 +2129,7 @@ test("unit_tests") {
   } else {
     sources -= [ "../browser/password_manager/password_store_x_unittest.cc" ]
   }
-  if (is_desktop_linux && current_cpu == "x64") {
+  if (use_gnome_keyring && current_cpu == "x64") {
     # Only add this test for 64 bit builds because otherwise we need the 32
     # bit library on 64 bit systems when running this test.
     sources +=

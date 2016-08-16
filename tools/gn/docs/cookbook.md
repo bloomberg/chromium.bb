@@ -282,7 +282,7 @@ places are noted in the table below.
 | `use_dbus` (0/1)                        | `use_dbus` (true/false)                        | `//build/config/features.gni` |
 | `use_gconf` (0/1)                       | `use_gconf` (true/false)                       | `//build/config/features.gni` |
 | `use_glib` (0/1)                        | `is_linux` (true/false)                        | (global)                      |
-| `use_gnome_keyring` (0/1)               | `is_desktop_linux` (true/false)                |                               |
+| `use_gnome_keyring` (0/1)               | `use_gnome_keyring` (true/false)               |                               |
 | `use_goma` (0/1)                        | `use_goma` (true/false)                        | `//build/toolchain/goma.gni`  |
 | `use_nss_certs` (0/1)                   | `use_nss_certs` (true/false)                   | `//build/config/crypto.gni` (Many of these conditions can be deleted, see the "SSL" notes on targets below.) |
 | `use_pango` (0/1)                       | `use_pango` (true/false)                       | `//build/config/ui.gni`       |

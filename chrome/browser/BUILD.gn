@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
+import("//components/os_crypt/features.gni")
 import("//media/media_options.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -568,7 +569,7 @@ split_static_library("browser") {
   if (use_cups) {
     configs += [ "//printing:cups" ]
   }
-  if (is_desktop_linux) {
+  if (use_gnome_keyring) {
     sources += rebase_path(gypi_values.chrome_browser_gnome_keyring_sources,
                            ".",
                            "//chrome")

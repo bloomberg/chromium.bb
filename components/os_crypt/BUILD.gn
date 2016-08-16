@@ -5,8 +5,9 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/config/linux/pkg_config.gni")
+import("//components/os_crypt/features.gni")
 
-if (is_desktop_linux) {
+if (use_gnome_keyring) {
   # Gnome-keyring is normally dynamically loaded. The gnome_keyring config
   # will set this up.
   pkg_config("gnome_keyring") {
@@ -76,19 +77,21 @@ static_library("os_crypt") {
     ]
     defines = []
 
+    if (use_gnome_keyring) {
+      sources += [
+        "keyring_util_linux.cc",
+        "keyring_util_linux.h",
+      ]
+      configs += [ ":gnome_keyring" ]
+    }
     if (use_glib) {
       sources += [
         "key_storage_libsecret.cc",
         "key_storage_libsecret.h",
-        "keyring_util_linux.cc",
-        "keyring_util_linux.h",
         "libsecret_util_linux.cc",
         "libsecret_util_linux.h",
       ]
-      configs += [
-        "//build/config/linux:glib",
-        ":gnome_keyring",
-      ]
+      configs += [ "//build/config/linux:glib" ]
       deps += [ "//third_party/libsecret" ]
       defines += [ "USE_LIBSECRET" ]
     }
