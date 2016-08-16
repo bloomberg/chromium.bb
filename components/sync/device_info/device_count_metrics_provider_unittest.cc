@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/device_count_metrics_provider.h"
+#include "components/sync/device_info/device_count_metrics_provider.h"
 
 #include <memory>
 #include <string>
@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/test/histogram_tester.h"
-#include "components/sync/driver/device_info.h"
-#include "components/sync/driver/device_info_tracker.h"
+#include "components/sync/device_info/device_info.h"
+#include "components/sync/device_info/device_info_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_driver {

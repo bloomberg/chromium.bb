@@ -39,7 +39,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_status_metrics_provider.h"
-#include "components/sync/driver/device_count_metrics_provider.h"
+#include "components/sync/device_info/device_count_metrics_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"

@@ -1,0 +1,10 @@
+include_rules = [
+  "+components/metrics",
+  "+components/sync/api",
+  "+components/sync/base",
+  "+components/sync/core",
+  "+components/sync/driver",
+  "+components/sync/engine",
+  "+components/sync/protocol",
+  "+components/version_info",
+]

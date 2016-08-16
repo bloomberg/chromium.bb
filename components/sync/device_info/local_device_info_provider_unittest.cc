@@ -6,7 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/base/get_session_name.h"
-#include "components/sync/driver/local_device_info_provider_impl.h"
+#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/version_info/version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

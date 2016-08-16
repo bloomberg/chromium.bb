@@ -31,7 +31,7 @@
 #include "components/sync/core/network_resources.h"
 #include "components/sync/core/sync_manager_factory.h"
 #include "components/sync/core/test/fake_sync_manager.h"
-#include "components/sync/driver/device_info.h"
+#include "components/sync/device_info/device_info.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_frontend.h"
 #include "components/sync/driver/sync_prefs.h"

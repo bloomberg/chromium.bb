@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/device_info_service.h"
+#include "components/sync/device_info/device_info_service.h"
 
 #include <map>
 #include <memory>
@@ -23,7 +23,7 @@
 #include "components/sync/base/time.h"
 #include "components/sync/core/test/data_type_error_handler_mock.h"
 #include "components/sync/core/test/model_type_store_test_util.h"
-#include "components/sync/driver/local_device_info_provider_mock.h"
+#include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

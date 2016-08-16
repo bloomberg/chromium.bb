@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/device_count_metrics_provider.h"
+#include "components/sync/device_info/device_count_metrics_provider.h"
 
 #include <algorithm>
 
 #include "base/metrics/sparse_histogram.h"
-#include "components/sync/driver/device_info_tracker.h"
+#include "components/sync/device_info/device_info_tracker.h"
 
 namespace sync_driver {
 

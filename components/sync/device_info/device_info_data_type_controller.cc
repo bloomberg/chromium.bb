@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/device_info_data_type_controller.h"
+#include "components/sync/device_info/device_info_data_type_controller.h"
 
 #include "base/callback.h"
-#include "components/sync/driver/local_device_info_provider.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 
 namespace sync_driver {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
-#define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "components/sync/driver/local_device_info_provider.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/ui_data_type_controller.h"
 
 namespace sync_driver {
@@ -41,4 +41,4 @@ class DeviceInfoDataTypeController : public UIDataTypeController {
 
 }  // namespace sync_driver
 
-#endif  // COMPONENTS_SYNC_DRIVER_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_

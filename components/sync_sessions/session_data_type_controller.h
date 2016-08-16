@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/sync/driver/local_device_info_provider.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/ui_data_type_controller.h"
 
 namespace browser_sync {

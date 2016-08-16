@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SERVICE_H_
-#define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SERVICE_H_
+#ifndef COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SERVICE_H_
+#define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SERVICE_H_
 
 #include <stdint.h>
 
@@ -20,8 +20,8 @@
 #include "components/sync/api/model_type_service.h"
 #include "components/sync/api/model_type_store.h"
 #include "components/sync/core/simple_metadata_change_list.h"
-#include "components/sync/driver/device_info_tracker.h"
-#include "components/sync/driver/local_device_info_provider.h"
+#include "components/sync/device_info/device_info_tracker.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 
 namespace syncer {
 class SyncError;
@@ -188,4 +188,4 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
 
 }  // namespace sync_driver_v2
 
-#endif  // COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SERVICE_H_
+#endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SERVICE_H_

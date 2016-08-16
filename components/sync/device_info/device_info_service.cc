@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/device_info_service.h"
+#include "components/sync/device_info/device_info_service.h"
 
 #include <set>
 #include <utility>
@@ -18,7 +18,7 @@
 #include "components/sync/base/time.h"
 #include "components/sync/core/data_batch_impl.h"
 #include "components/sync/core/simple_metadata_change_list.h"
-#include "components/sync/driver/device_info_util.h"
+#include "components/sync/device_info/device_info_util.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 

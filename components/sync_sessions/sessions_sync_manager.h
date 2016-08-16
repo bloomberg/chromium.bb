@@ -21,7 +21,7 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync/api/syncable_service.h"
-#include "components/sync/driver/device_info.h"
+#include "components/sync/device_info/device_info.h"
 #include "components/sync/driver/sync_prefs.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_router.h"

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
-#define COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
+#ifndef COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
+#define COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
 
+#include <memory>
 #include <string>
 
-#include "components/sync/driver/device_info.h"
-#include "components/sync/driver/local_device_info_provider.h"
+#include "components/sync/device_info/device_info.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 
 namespace sync_driver {
 
@@ -49,4 +50,4 @@ class LocalDeviceInfoProviderMock
 
 }  // namespace sync_driver
 
-#endif  // COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_
+#endif  // COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_

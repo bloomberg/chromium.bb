@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/device_info_sync_service.h"
+#include "components/sync/device_info/device_info_sync_service.h"
 
 #include <stddef.h>
 
@@ -13,8 +13,8 @@
 #include "base/time/time.h"
 #include "components/sync/api/sync_change.h"
 #include "components/sync/base/time.h"
-#include "components/sync/driver/device_info_util.h"
-#include "components/sync/driver/local_device_info_provider.h"
+#include "components/sync/device_info/device_info_util.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace sync_driver {

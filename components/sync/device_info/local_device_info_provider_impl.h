@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_IMPL_H_
-#define COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_IMPL_H_
+#ifndef COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_PROVIDER_IMPL_H_
+#define COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_PROVIDER_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "components/sync/driver/device_info.h"
-#include "components/sync/driver/local_device_info_provider.h"
+#include "components/sync/device_info/device_info.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/version_info/version_info.h"
 
 namespace browser_sync {
@@ -61,4 +62,4 @@ class LocalDeviceInfoProviderImpl : public sync_driver::LocalDeviceInfoProvider,
 
 }  // namespace browser_sync
 
-#endif  // COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_IMPL_H_
+#endif  // COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_PROVIDER_IMPL_H_

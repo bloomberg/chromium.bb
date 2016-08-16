@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SYNC_SERVICE_H_
-#define COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SYNC_SERVICE_H_
+#ifndef COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SYNC_SERVICE_H_
+#define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SYNC_SERVICE_H_
 
 #include <stdint.h>
 
@@ -21,7 +21,7 @@
 #include "components/sync/api/sync_data.h"
 #include "components/sync/api/sync_error_factory.h"
 #include "components/sync/api/syncable_service.h"
-#include "components/sync/driver/device_info_tracker.h"
+#include "components/sync/device_info/device_info_tracker.h"
 
 namespace sync_driver {
 
@@ -108,4 +108,4 @@ class DeviceInfoSyncService : public syncer::SyncableService,
 
 }  // namespace sync_driver
 
-#endif  // COMPONENTS_SYNC_DRIVER_DEVICE_INFO_SYNC_SERVICE_H_
+#endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SYNC_SERVICE_H_

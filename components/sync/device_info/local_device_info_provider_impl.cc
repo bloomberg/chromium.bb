@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/local_device_info_provider_impl.h"
+#include "components/sync/device_info/local_device_info_provider_impl.h"
 
 #include "base/bind.h"
 #include "base/task_runner.h"

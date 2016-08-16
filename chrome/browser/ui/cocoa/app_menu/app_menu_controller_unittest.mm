@@ -27,7 +27,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/sync/api/fake_sync_change_processor.h"
 #include "components/sync/api/sync_error_factory_mock.h"
-#include "components/sync/driver/local_device_info_provider_mock.h"
+#include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_prefs.h"
 #include "components/sync_sessions/fake_sync_sessions_client.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_DEVICE_COUNT_METRICS_PROVIDER_H_
-#define COMPONENTS_SYNC_DRIVER_DEVICE_COUNT_METRICS_PROVIDER_H_
+#ifndef COMPONENTS_SYNC_DEVICE_INFO_DEVICE_COUNT_METRICS_PROVIDER_H_
+#define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_COUNT_METRICS_PROVIDER_H_
 
 #include <memory>
 #include <vector>
@@ -50,4 +50,4 @@ class DeviceCountMetricsProvider : public metrics::MetricsProvider {
 
 }  // namespace sync_driver
 
-#endif  // COMPONENTS_SYNC_DRIVER_DEVICE_COUNT_METRICS_PROVIDER_H_
+#endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_COUNT_METRICS_PROVIDER_H_

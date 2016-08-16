@@ -8,8 +8,8 @@
 
 #include "components/sync/api/attachments/attachment_store.h"
 #include "components/sync/core/attachments/attachment_service_impl.h"
+#include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/change_processor.h"
-#include "components/sync/driver/local_device_info_provider_mock.h"
 #include "components/sync/driver/model_associator.h"
 
 using sync_driver::AssociatorInterface;

@@ -14,8 +14,8 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/signed_in_devices.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/sync/driver/device_info_tracker.h"
-#include "components/sync/driver/local_device_info_provider.h"
+#include "components/sync/device_info/device_info_tracker.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "extensions/browser/extension_prefs.h"
 
 using base::DictionaryValue;
