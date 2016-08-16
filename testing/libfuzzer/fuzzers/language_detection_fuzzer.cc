@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/metrics/statistics_recorder.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/translate/core/language_detection/language_detection_util.h"
@@ -35,3 +36,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                                    &is_cld_reliable);
   return 0;
 }
+
+struct Environment {
+  Environment() {
+    base::StatisticsRecorder::Initialize();
+  }
+};
+
+Environment* env = new Environment();
