@@ -9,7 +9,6 @@ source_set("app") {
     "web_main.mm",
     "web_main_loop.h",
     "web_main_loop.mm",
-    "web_main_runner.h",
     "web_main_runner.mm",
   ]
 
