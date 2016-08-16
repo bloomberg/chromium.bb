@@ -1,30 +1,15 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
+<title>crbug.com/468915: Resetting or removing the src attribute should reset the image immediately, rather than waiting for an asynchronous load to do it.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.dumpAsText();
-    }
-    img = new Image();
-    var testImage = 'resources/green.jpg';
-    img.onload = function(){
+async_test(function(t) {
+    var img = new Image();
+    img.onload = t.step_func_done(function() {
+        assert_equals(img.naturalWidth, 16);
         img.removeAttribute('src');
-        if (img.naturalWidth > 0) {
-            debug("Natural width is : " + img.naturalWidth + " and should be 0.");
-            if (window.testRunner)
-                testRunner.notifyDone();
-            return;
-        }
-        document.getElementById('result').textContent = "PASS";
-        if (window.testRunner)
-            testRunner.notifyDone();
-    };
-    setTimeout(function() {
-        img.src = testImage;
-        }, 0);
+        assert_equals(img.naturalWidth, 0);
+    });
+    img.src = 'resources/green.jpg';
+});
 </script>
-<div id="console">
-    crbug.com/468915: Resetting or removing the src attribute should reset the image immediately, rather than waiting for an asynchronous load to do it.<br>
-</div>
-<div id="result">FAIL</div>
-
