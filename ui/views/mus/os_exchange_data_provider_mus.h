@@ -7,15 +7,29 @@
 
 #include "ui/base/dragdrop/os_exchange_data.h"
 
+#include "mojo/public/cpp/bindings/map.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/mus/mus_export.h"
 
 namespace views {
 
-class OSExchangeDataProviderMus : public ui::OSExchangeData::Provider {
+// Translates chrome's requests for various data types to a platform specific
+// type. In the case of mus, this is a mapping of MIME types to byte arrays.
+//
+// TODO(erg): In the long run, there's a lot of optimizations that we can do
+// once everything targets mus. The entire model of OSExchangeDataProvider
+// shoves all data across the wire at once whether it is needed or not.
+class VIEWS_MUS_EXPORT OSExchangeDataProviderMus
+    : public ui::OSExchangeData::Provider {
  public:
+  using Data = std::map<std::string, std::vector<uint8_t>>;
+
   OSExchangeDataProviderMus();
   ~OSExchangeDataProviderMus() override;
+
+  // Returns the raw MIME type to data mapping.
+  Data GetData() const;
 
   // Overridden from OSExchangeData::Provider:
   std::unique_ptr<Provider> Clone() const override;
@@ -28,16 +42,16 @@ class OSExchangeDataProviderMus : public ui::OSExchangeData::Provider {
   void SetFilename(const base::FilePath& path) override;
   void SetFilenames(const std::vector<ui::FileInfo>& file_names) override;
   void SetPickledData(const ui::Clipboard::FormatType& format,
-                              const base::Pickle& data) override;
+                      const base::Pickle& data) override;
 
   bool GetString(base::string16* data) const override;
   bool GetURLAndTitle(ui::OSExchangeData::FilenameToURLPolicy policy,
-                              GURL* url,
-                              base::string16* title) const override;
+                      GURL* url,
+                      base::string16* title) const override;
   bool GetFilename(base::FilePath* path) const override;
   bool GetFilenames(std::vector<ui::FileInfo>* file_names) const override;
   bool GetPickledData(const ui::Clipboard::FormatType& format,
-                              base::Pickle* data) const override;
+                      base::Pickle* data) const override;
 
   bool HasString() const override;
   bool HasURL(ui::OSExchangeData::FilenameToURLPolicy policy) const override;
@@ -69,16 +83,25 @@ class OSExchangeDataProviderMus : public ui::OSExchangeData::Provider {
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
   void SetDragImage(const gfx::ImageSkia& image,
-                            const gfx::Vector2d& cursor_offset) override;
+                    const gfx::Vector2d& cursor_offset) override;
   const gfx::ImageSkia& GetDragImage() const override;
   const gfx::Vector2d& GetDragImageOffset() const override;
 #endif
 
  private:
+  // Returns true if |formats_| contains a file format and the file name can be
+  // parsed as a URL.
+  bool GetFileURL(GURL* url) const;
+
+  // Returns true if |formats_| contains a string format and the string can be
+  // parsed as a URL.
+  bool GetPlainTextURL(GURL* url) const;
+
   // Drag image and offset data.
   gfx::ImageSkia drag_image_;
   gfx::Vector2d drag_image_offset_;
 
+  Data mime_data_;
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderMus);
 };

@@ -62,6 +62,7 @@ component("mus") {
     "//cc/surfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
+    "//net",
     "//services/catalog/public/cpp",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
@@ -155,6 +156,7 @@ test("views_mus_unittests") {
   sources = [
     "display_list_unittest.cc",
     "native_widget_mus_unittest.cc",
+    "os_exchange_data_provider_mus_unittest.cc",
     "pointer_watcher_event_router_unittest.cc",
     "run_all_unittests_mus.cc",
     "screen_mus_unittest.cc",
@@ -185,6 +187,7 @@ test("views_mus_unittests") {
     "//base:i18n",
     "//base/test:test_support",
     "//cc",
+    "//net",
     "//services/shell/background:main",  # Provides main().
     "//services/ui/public/cpp",
     "//services/ui/public/cpp/tests:unittest_support",
