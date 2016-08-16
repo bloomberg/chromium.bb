@@ -17,7 +17,7 @@ stunnel \
 # the engine exit with a nonzero return code, stop all execution.
 while :; do
   LD_LIBRARY_PATH=/engine/ /engine/blimp_engine_app \
-    --android-fonts-path=/engine/fonts \
+    --android-fonts-path=/engine/fonts/font_bundle/marshmallow \
     --blimp-client-token-path=/engine/data/client_token \
     $@ &
 
