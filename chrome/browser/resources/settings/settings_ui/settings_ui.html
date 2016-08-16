@@ -87,11 +87,14 @@
         search-prompt="$i18n{searchPrompt}" on-cr-menu-tap="onMenuButtonTap_"
         spinner-active="[[toolbarSpinnerActive_]]">
     </cr-toolbar>
-    <app-drawer swipe-open>
+    <app-drawer swipe-open opened="{{drawerOpened_}}">
       <div class="drawer-header">$i18n{settings}</div>
       <div class="drawer-content">
-        <settings-menu id="sideNav" page-visibility="[[pageVisibility_]]">
-        </settings-menu>
+        <template is="dom-if" if="[[drawerOpened_]]">
+          <settings-menu page-visibility="[[pageVisibility_]]"
+              on-iron-activate="onIronActivate_">
+          </settings-menu>
+        </template>
       </div>
     </app-drawer>
     <paper-header-panel mode="waterfall">

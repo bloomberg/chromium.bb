@@ -36,10 +36,9 @@ Polymer({
      * @private {!GuestModePageVisibility}
      */
     pageVisibility_: Object,
-  },
 
-  listeners: {
-    'sideNav.iron-activate': 'onIronActivate_',
+    /** @private */
+    drawerOpened_: Boolean,
   },
 
   /**
