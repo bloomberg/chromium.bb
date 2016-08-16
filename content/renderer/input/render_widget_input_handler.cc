@@ -43,6 +43,7 @@ using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
+using ui::DidOverscrollParams;
 
 namespace content {
 

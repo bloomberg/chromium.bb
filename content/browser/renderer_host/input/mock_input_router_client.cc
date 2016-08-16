@@ -54,7 +54,8 @@ void MockInputRouterClient::DidFlush() {
   ++did_flush_called_count_;
 }
 
-void MockInputRouterClient::DidOverscroll(const DidOverscrollParams& params) {
+void MockInputRouterClient::DidOverscroll(
+    const ui::DidOverscrollParams& params) {
   overscroll_ = params;
 }
 
@@ -81,8 +82,8 @@ size_t MockInputRouterClient::GetAndResetDidFlushCount() {
   return did_flush_called_count;
 }
 
-DidOverscrollParams MockInputRouterClient::GetAndResetOverscroll() {
-  DidOverscrollParams overscroll;
+ui::DidOverscrollParams MockInputRouterClient::GetAndResetOverscroll() {
+  ui::DidOverscrollParams overscroll;
   std::swap(overscroll_, overscroll);
   return overscroll;
 }

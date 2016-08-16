@@ -48,6 +48,10 @@ class SurfaceFactory;
 class SurfaceIdAllocator;
 }
 
+namespace ui {
+struct DidOverscrollParams;
+}
+
 namespace blink {
 class WebExternalTextureLayer;
 class WebTouchEvent;
@@ -61,7 +65,6 @@ class OverscrollControllerAndroid;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class SynchronousCompositorHost;
-struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
 struct TextInputState;
 
@@ -151,7 +154,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnSwapCompositorFrame(uint32_t output_surface_id,
                              cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override;
-  void DidOverscroll(const DidOverscrollParams& params) override;
+  void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStopFlinging() override;
   uint32_t GetSurfaceClientId() override;
   void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,

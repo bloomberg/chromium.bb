@@ -54,7 +54,7 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
   virtual void OnDidHandleKeyEvent() = 0;
 
   // Notifies that an overscroll was completed from Blink.
-  virtual void OnDidOverscroll(const DidOverscrollParams& params) = 0;
+  virtual void OnDidOverscroll(const ui::DidOverscrollParams& params) = 0;
 
   // Called when an ACK is ready to be sent to the input event provider.
   virtual void OnInputEventAck(

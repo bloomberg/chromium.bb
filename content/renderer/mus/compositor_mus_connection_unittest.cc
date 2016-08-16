@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
-#include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/test/mock_render_thread.h"
@@ -24,6 +23,7 @@
 #include "services/ui/public/cpp/tests/test_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/mojo/event.mojom.h"
 #include "ui/events/mojo/event_constants.mojom.h"
@@ -126,7 +126,7 @@ class TestInputHandlerManagerClient
   void RegisterRoutingID(int routing_id) override {}
   void UnregisterRoutingID(int routing_id) override {}
   void DidOverscroll(int routing_id,
-                     const content::DidOverscrollParams& params) override {}
+                     const ui::DidOverscrollParams& params) override {}
   void DidStartFlinging(int routing_id) override {}
   void DidStopFlinging(int routing_id) override {}
   void NotifyInputEventHandled(

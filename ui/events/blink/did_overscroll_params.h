@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INPUT_DID_OVERSCROLL_PARAMS_H_
-#define CONTENT_COMMON_INPUT_DID_OVERSCROLL_PARAMS_H_
+#ifndef UI_EVENTS_BLINK_DID_OVERSCROLL_PARAMS_H_
+#define UI_EVENTS_BLINK_DID_OVERSCROLL_PARAMS_H_
 
-#include "content/common/content_export.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace content {
+namespace ui {
 
-struct CONTENT_EXPORT DidOverscrollParams {
+struct DidOverscrollParams {
   DidOverscrollParams();
   ~DidOverscrollParams();
   gfx::Vector2dF accumulated_overscroll;
@@ -20,6 +19,6 @@ struct CONTENT_EXPORT DidOverscrollParams {
   gfx::PointF causal_event_viewport_point;
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_COMMON_INPUT_DID_OVERSCROLL_PARAMS_H_
+#endif  // UI_EVENTS_BLINK_DID_OVERSCROLL_PARAMS_H_

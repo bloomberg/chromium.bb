@@ -13,11 +13,10 @@
 
 namespace ui {
 class LatencyInfo;
+struct DidOverscrollParams;
 }
 
 namespace content {
-
-struct DidOverscrollParams;
 
 class CONTENT_EXPORT InputRouterClient {
  public:
@@ -49,7 +48,7 @@ class CONTENT_EXPORT InputRouterClient {
 
   // Called when the router has received an overscroll notification from the
   // renderer.
-  virtual void DidOverscroll(const DidOverscrollParams& params) = 0;
+  virtual void DidOverscroll(const ui::DidOverscrollParams& params) = 0;
 
   // Called when a renderer fling has terminated.
   virtual void DidStopFlinging() = 0;

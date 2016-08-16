@@ -868,7 +868,7 @@ void RenderWidget::OnDidHandleKeyEvent() {
     owner_delegate_->RenderWidgetDidHandleKeyEvent();
 }
 
-void RenderWidget::OnDidOverscroll(const DidOverscrollParams& params) {
+void RenderWidget::OnDidOverscroll(const ui::DidOverscrollParams& params) {
   Send(new InputHostMsg_DidOverscroll(routing_id_, params));
 }
 

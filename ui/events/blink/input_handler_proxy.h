@@ -27,6 +27,7 @@ class InputHandlerProxyClient;
 class InputScrollElasticityController;
 class SynchronousInputHandler;
 class SynchronousInputHandlerProxy;
+struct DidOverscrollParams;
 
 // This class is a proxy between the blink web input events for a WebWidget and
 // the compositor's input handling logic. InputHandlerProxy instances live

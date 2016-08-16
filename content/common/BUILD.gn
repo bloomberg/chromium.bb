@@ -89,6 +89,7 @@ source_set("common") {
     "//ui/base",
     "//ui/base/ime",
     "//ui/display",
+    "//ui/events/blink",
     "//ui/events/ipc",
     "//ui/gfx",
     "//ui/gfx/geometry",

@@ -613,7 +613,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void DecrementInFlightEventCount() override;
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void DidFlush() override;
-  void DidOverscroll(const DidOverscrollParams& params) override;
+  void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStopFlinging() override;
 
   // Dispatch input events with latency information

@@ -99,7 +99,7 @@ void RenderWidgetMusConnection::OnDidHandleKeyEvent() {
 }
 
 void RenderWidgetMusConnection::OnDidOverscroll(
-    const DidOverscrollParams& params) {
+    const ui::DidOverscrollParams& params) {
   NOTIMPLEMENTED();
 }
 

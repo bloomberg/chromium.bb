@@ -15,6 +15,10 @@
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
+namespace ui {
+struct DidOverscrollParams;
+}
+
 namespace content {
 
 class InputHandlerManager;

@@ -9,6 +9,7 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "mojo/converters/blink/blink_input_events_type_converters.h"
+#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/latency_info.h"
 #include "ui/events/mojo/event.mojom.h"
 

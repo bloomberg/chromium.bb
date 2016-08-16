@@ -60,6 +60,7 @@ class SurfaceHittestDelegate;
 
 namespace ui {
 class LatencyInfo;
+struct DidOverscrollParams;
 }
 
 namespace content {
@@ -70,7 +71,6 @@ class SyntheticGesture;
 class SyntheticGestureTarget;
 class TextInputManager;
 class WebCursor;
-struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
 struct TextInputState;
 
@@ -214,7 +214,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                                       InputEventAckState ack_result) {}
 
-  virtual void DidOverscroll(const DidOverscrollParams& params) {}
+  virtual void DidOverscroll(const ui::DidOverscrollParams& params) {}
 
   virtual void DidStopFlinging() {}
 

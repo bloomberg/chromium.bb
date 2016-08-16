@@ -12,7 +12,7 @@ InputEventAck::InputEventAck(
     blink::WebInputEvent::Type type,
     InputEventAckState state,
     const ui::LatencyInfo& latency,
-    std::unique_ptr<content::DidOverscrollParams> overscroll,
+    std::unique_ptr<ui::DidOverscrollParams> overscroll,
     uint32_t unique_touch_event_id)
     : type(type),
       state(state),

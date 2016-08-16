@@ -26,6 +26,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/gfx/skia_util.h"
 
 namespace content {
@@ -330,7 +331,7 @@ void SynchronousCompositorHost::OnComputeScroll(
 }
 
 void SynchronousCompositorHost::DidOverscroll(
-    const DidOverscrollParams& over_scroll_params) {
+    const ui::DidOverscrollParams& over_scroll_params) {
   client_->DidOverscroll(this, over_scroll_params.accumulated_overscroll,
                          over_scroll_params.latest_overscroll_delta,
                          over_scroll_params.current_fling_velocity);

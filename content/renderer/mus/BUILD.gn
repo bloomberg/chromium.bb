@@ -31,6 +31,7 @@ static_library("mus") {
     "//third_party/WebKit/public:blink",
     "//ui/events:events",
     "//ui/events:events_base",
+    "//ui/events/blink",
     "//ui/gfx/geometry/mojo",
   ]
 }

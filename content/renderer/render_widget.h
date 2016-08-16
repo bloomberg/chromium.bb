@@ -79,6 +79,10 @@ namespace gfx {
 class Range;
 }
 
+namespace ui {
+struct DidOverscrollParams;
+}
+
 namespace content {
 class CompositorDependencies;
 class ExternalPopupMenu;
@@ -92,7 +96,6 @@ class RenderWidgetOwnerDelegate;
 class RenderWidgetScreenMetricsEmulator;
 class ResizingModeSelector;
 struct ContextMenuParams;
-struct DidOverscrollParams;
 struct ResizeParams;
 
 // RenderWidget provides a communication bridge between a WebWidget and
@@ -214,7 +217,7 @@ class CONTENT_EXPORT RenderWidget
                                     bool event_processed) override;
 
   void OnDidHandleKeyEvent() override;
-  void OnDidOverscroll(const DidOverscrollParams& params) override;
+  void OnDidOverscroll(const ui::DidOverscrollParams& params) override;
   void OnInputEventAck(std::unique_ptr<InputEventAck> input_event_ack) override;
   void NotifyInputEventHandled(blink::WebInputEvent::Type handled_type,
                                InputEventAckState ack_result) override;

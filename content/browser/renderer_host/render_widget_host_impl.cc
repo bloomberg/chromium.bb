@@ -1888,7 +1888,8 @@ void RenderWidgetHostImpl::DidFlush() {
     synthetic_gesture_controller_->OnDidFlushInput();
 }
 
-void RenderWidgetHostImpl::DidOverscroll(const DidOverscrollParams& params) {
+void RenderWidgetHostImpl::DidOverscroll(
+    const ui::DidOverscrollParams& params) {
   if (view_)
     view_->DidOverscroll(params);
 }

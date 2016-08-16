@@ -458,7 +458,7 @@ void InputRouterImpl::OnInputEventAck(const InputEventAck& ack) {
                        ack.unique_touch_event_id, RENDERER);
 }
 
-void InputRouterImpl::OnDidOverscroll(const DidOverscrollParams& params) {
+void InputRouterImpl::OnDidOverscroll(const ui::DidOverscrollParams& params) {
   client_->DidOverscroll(params);
 }
 

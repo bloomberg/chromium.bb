@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"
-#include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/input_event.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -27,6 +26,7 @@
 #include "content/common/input/touch_action.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/ipc/latency_info_param_traits.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -64,7 +64,7 @@ IPC_ENUM_TRAITS_VALIDATE(content::TouchAction, (
     (!(value & content::TOUCH_ACTION_PINCH_ZOOM) ||
         (value == content::TOUCH_ACTION_MANIPULATION))))
 
-IPC_STRUCT_TRAITS_BEGIN(content::DidOverscrollParams)
+IPC_STRUCT_TRAITS_BEGIN(ui::DidOverscrollParams)
   IPC_STRUCT_TRAITS_MEMBER(accumulated_overscroll)
   IPC_STRUCT_TRAITS_MEMBER(latest_overscroll_delta)
   IPC_STRUCT_TRAITS_MEMBER(current_fling_velocity)
@@ -286,7 +286,7 @@ IPC_MESSAGE_ROUTED1(InputHostMsg_SetTouchAction,
 // Sent by the compositor when input scroll events are dropped due to bounds
 // restrictions on the root scroll offset.
 IPC_MESSAGE_ROUTED1(InputHostMsg_DidOverscroll,
-                    content::DidOverscrollParams /* params */)
+                    ui::DidOverscrollParams /* params */)
 
 // Sent by the compositor when a fling animation is stopped.
 IPC_MESSAGE_ROUTED0(InputHostMsg_DidStopFlinging)

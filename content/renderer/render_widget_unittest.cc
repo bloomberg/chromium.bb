@@ -270,7 +270,7 @@ TEST_F(RenderWidgetUnittest, FlingOverscroll) {
   ASSERT_EQ(InputHostMsg_DidOverscroll::ID, message->type());
   InputHostMsg_DidOverscroll::Param params;
   InputHostMsg_DidOverscroll::Read(message, &params);
-  const DidOverscrollParams& overscroll = std::get<0>(params);
+  const ui::DidOverscrollParams& overscroll = std::get<0>(params);
   EXPECT_EQ(gfx::Vector2dF(10, 5), overscroll.latest_overscroll_delta);
   EXPECT_EQ(gfx::Vector2dF(5, 5), overscroll.accumulated_overscroll);
   EXPECT_EQ(gfx::PointF(1, 1), overscroll.causal_event_viewport_point);

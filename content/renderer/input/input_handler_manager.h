@@ -32,6 +32,10 @@ class RendererScheduler;
 }
 }
 
+namespace ui {
+struct DidOverscrollParams;
+}
+
 namespace content {
 
 class InputHandlerWrapper;
@@ -82,7 +86,7 @@ class CONTENT_EXPORT InputHandlerManager {
       ui::LatencyInfo* latency_info);
 
   // Called from the compositor's thread.
-  void DidOverscroll(int routing_id, const DidOverscrollParams& params);
+  void DidOverscroll(int routing_id, const ui::DidOverscrollParams& params);
 
   // Called from the compositor's thread.
   void DidStartFlinging(int routing_id);

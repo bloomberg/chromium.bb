@@ -51,7 +51,7 @@ class CONTENT_EXPORT RenderWidgetMusConnection
                                     const gfx::Vector2dF& gesture_unused_delta,
                                     bool event_processed) override;
   void OnDidHandleKeyEvent() override;
-  void OnDidOverscroll(const DidOverscrollParams& params) override;
+  void OnDidOverscroll(const ui::DidOverscrollParams& params) override;
   void OnInputEventAck(std::unique_ptr<InputEventAck> input_event_ack) override;
   void NotifyInputEventHandled(blink::WebInputEvent::Type handled_type,
                                InputEventAckState ack_result) override;

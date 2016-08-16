@@ -9,11 +9,11 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/blink/did_overscroll_params.h"
 
 namespace blink {
 struct WebFloatPoint;
@@ -89,7 +89,7 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   // handled. If the event causes overscroll, the overscroll metadata can be
   // bundled in the event ack, saving an IPC.  Note that we must continue
   // supporting overscroll IPC notifications due to fling animation updates.
-  std::unique_ptr<DidOverscrollParams>* handling_event_overscroll_;
+  std::unique_ptr<ui::DidOverscrollParams>* handling_event_overscroll_;
 
   // Type of the input event we are currently handling.
   blink::WebInputEvent::Type handling_event_type_;

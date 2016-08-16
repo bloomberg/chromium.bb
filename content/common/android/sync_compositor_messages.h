@@ -9,7 +9,6 @@
 #include "cc/output/compositor_frame.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"

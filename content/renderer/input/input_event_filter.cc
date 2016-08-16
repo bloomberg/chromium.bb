@@ -14,16 +14,17 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 using blink::WebInputEvent;
+using ui::DidOverscrollParams;
 
 #include "ipc/ipc_message_null_macros.h"
 #undef IPC_MESSAGE_DECL

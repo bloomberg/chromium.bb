@@ -25,12 +25,12 @@ class Layer;
 
 namespace ui {
 class WindowAndroidCompositor;
+struct DidOverscrollParams;
 }
 
 namespace content {
 
 class ContentViewCoreImpl;
-struct DidOverscrollParams;
 
 // Glue class for handling all inputs into Android-specific overscroll effects,
 // both the passive overscroll glow and the active overscroll pull-to-refresh.
@@ -50,7 +50,7 @@ class OverscrollControllerAndroid : public ui::OverscrollGlowClient {
                          InputEventAckState ack_result);
 
   // To be called upon receipt of an overscroll event.
-  void OnOverscrolled(const DidOverscrollParams& overscroll_params);
+  void OnOverscrolled(const ui::DidOverscrollParams& overscroll_params);
 
   // Returns true if the effect still needs animation ticks.
   // Note: The effect will detach itself when no further animation is required.

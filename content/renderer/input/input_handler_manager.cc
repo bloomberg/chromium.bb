@@ -17,6 +17,7 @@
 #include "content/renderer/input/input_handler_manager_client.h"
 #include "content/renderer/input/input_handler_wrapper.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/input_handler_proxy.h"
 
 using blink::WebInputEvent;
@@ -231,7 +232,7 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
 }
 
 void InputHandlerManager::DidOverscroll(int routing_id,
-                                        const DidOverscrollParams& params) {
+                                        const ui::DidOverscrollParams& params) {
   client_->DidOverscroll(routing_id, params);
 }
 

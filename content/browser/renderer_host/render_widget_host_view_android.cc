@@ -57,7 +57,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu_host_messages.h"
-#include "content/common/input/did_overscroll_params.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/android/compositor.h"
@@ -82,6 +81,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/android/device_display_info.h"
@@ -1653,7 +1653,7 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
 }
 
 void RenderWidgetHostViewAndroid::DidOverscroll(
-    const DidOverscrollParams& params) {
+    const ui::DidOverscrollParams& params) {
   if (sync_compositor_)
     sync_compositor_->DidOverscroll(params);
 

@@ -24,6 +24,7 @@ class SingleThreadTaskRunner;
 
 namespace ui {
 class SynchronousInputHandlerProxy;
+struct DidOverscrollParams;
 }
 
 namespace IPC {
@@ -64,7 +65,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void RegisterRoutingID(int routing_id) override;
   void UnregisterRoutingID(int routing_id) override;
   void DidOverscroll(int routing_id,
-                     const DidOverscrollParams& params) override;
+                     const ui::DidOverscrollParams& params) override;
   void DidStartFlinging(int routing_id) override;
   void DidStopFlinging(int routing_id) override;
   void NotifyInputEventHandled(int routing_id,
@@ -123,7 +124,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   // dispatched.  If the event causes overscroll, the overscroll metadata can be
   // bundled in the event ack, saving an IPC.  Note that we must continue
   // supporting overscroll IPC notifications due to fling animation updates.
-  std::unique_ptr<DidOverscrollParams>* current_overscroll_params_;
+  std::unique_ptr<ui::DidOverscrollParams>* current_overscroll_params_;
 };
 
 }  // namespace content

@@ -362,8 +362,6 @@
       'common/indexed_db/indexed_db_messages.h',
       'common/indexed_db/indexed_db_param_traits.cc',
       'common/indexed_db/indexed_db_param_traits.h',
-      'common/input/did_overscroll_params.cc',
-      'common/input/did_overscroll_params.h',
       'common/input/event_with_latency_info.cc',
       'common/input/event_with_latency_info.h',
       'common/input/gesture_event_stream_validator.cc',

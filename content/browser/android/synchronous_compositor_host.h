@@ -34,6 +34,7 @@ struct BeginFrameArgs;
 
 namespace ui {
 class WindowAndroid;
+struct DidOverscrollParams;
 }
 
 namespace content {
@@ -42,7 +43,6 @@ class RenderWidgetHostViewAndroid;
 class SynchronousCompositorClient;
 class SynchronousCompositorObserver;
 class WebContents;
-struct DidOverscrollParams;
 struct SyncCompositorCommonRendererParams;
 
 class SynchronousCompositorHost : public SynchronousCompositor {
@@ -67,7 +67,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   void SynchronouslyZoomBy(float zoom_delta, const gfx::Point& anchor) override;
   void OnComputeScroll(base::TimeTicks animation_time) override;
 
-  void DidOverscroll(const DidOverscrollParams& over_scroll_params);
+  void DidOverscroll(const ui::DidOverscrollParams& over_scroll_params);
   void DidSendBeginFrame(ui::WindowAndroid* window_android);
   bool OnMessageReceived(const IPC::Message& message);
 

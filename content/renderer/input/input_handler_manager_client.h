@@ -15,6 +15,7 @@
 
 namespace ui {
 class LatencyInfo;
+struct DidOverscrollParams;
 }
 
 namespace cc {
@@ -26,7 +27,6 @@ class SynchronousInputHandlerProxy;
 }
 
 namespace content {
-struct DidOverscrollParams;
 
 class CONTENT_EXPORT InputHandlerManagerClient {
  public:
@@ -50,7 +50,7 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   virtual void RegisterRoutingID(int routing_id) = 0;
   virtual void UnregisterRoutingID(int routing_id) = 0;
   virtual void DidOverscroll(int routing_id,
-                             const DidOverscrollParams& params) = 0;
+                             const ui::DidOverscrollParams& params) = 0;
   virtual void DidStartFlinging(int routing_id) = 0;
   virtual void DidStopFlinging(int routing_id) = 0;
 

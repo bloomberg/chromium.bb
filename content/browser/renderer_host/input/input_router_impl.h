@@ -28,6 +28,7 @@ class Sender;
 
 namespace ui {
 class LatencyInfo;
+struct DidOverscrollParams;
 }
 
 namespace content {
@@ -35,7 +36,6 @@ namespace content {
 class InputAckHandler;
 class InputRouterClient;
 class OverscrollController;
-struct DidOverscrollParams;
 struct InputEventAck;
 
 // A default implementation for browser input event routing.
@@ -136,7 +136,7 @@ class CONTENT_EXPORT InputRouterImpl
 
   // IPC message handlers
   void OnInputEventAck(const InputEventAck& ack);
-  void OnDidOverscroll(const DidOverscrollParams& params);
+  void OnDidOverscroll(const ui::DidOverscrollParams& params);
   void OnMsgMoveCaretAck();
   void OnSelectMessageAck();
   void OnHasTouchEventHandlers(bool has_handlers);
