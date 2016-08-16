@@ -51,12 +51,8 @@ function test()
 
     function onTestStarted()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(onDebuggerPaused);
-    }
-
-    function onDebuggerPaused()
-    {
         InspectorTest.addSniffer(WebInspector.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(() => {});
     }
 
     function onSidebarRendered()

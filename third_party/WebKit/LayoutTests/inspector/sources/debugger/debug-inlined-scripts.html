@@ -24,7 +24,8 @@ var test = function()
 
     function callstackStatus()
     {
-        var statusElement = panel.sidebarPanes.callstack._statusMessageElement;
+        var pane = self.runtime.sharedInstance(WebInspector.CallStackSidebarPane);
+        var statusElement = pane.contentElement;
         return statusElement ? statusElement.textContent : "";
     }
 

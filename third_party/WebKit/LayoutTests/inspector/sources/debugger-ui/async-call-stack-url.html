@@ -30,7 +30,7 @@ var test = function()
 
     function step3()
     {
-        var callFrameList = WebInspector.panels.sources.sidebarPanes.callstack.callFrameList;
+        var callFrameList = self.runtime.sharedInstance(WebInspector.CallStackSidebarPane).callFrameList;
         for (var item of callFrameList._items)
             InspectorTest.addResult(item.element.textContent.replace(/VM\d+/g, "VM"));
         InspectorTest.completeDebuggerTest();

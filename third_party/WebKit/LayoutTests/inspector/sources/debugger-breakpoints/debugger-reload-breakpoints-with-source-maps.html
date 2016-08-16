@@ -42,7 +42,7 @@ var test = function()
         function waitForBreakpoints()
         {
             var breakpointAddCounter = 4; // Before source map loaded and after.
-            var jsBreakpoints = WebInspector.panels.sources.sidebarPanes.jsBreakpoints;
+            var jsBreakpoints = self.runtime.sharedInstance(WebInspector.JavaScriptBreakpointsSidebarPane);
             jsBreakpoints.didReceiveBreakpointLineForTest = function(uiSourceCode)
             {
                 if (WebInspector.CompilerScriptMapping.StubProjectID === uiSourceCode.project().id())

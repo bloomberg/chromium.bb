@@ -44,7 +44,7 @@ var test = function()
 
     function step4()
     {
-        InspectorTest.assertEquals("testFunction", InspectorTest.debuggerModel.selectedCallFrame().functionName);
+        InspectorTest.assertEquals("testFunction", WebInspector.context.flavor(WebInspector.DebuggerModel.CallFrame).functionName);
         sourceFrame._toggleFormatSource(step5);
     }
 

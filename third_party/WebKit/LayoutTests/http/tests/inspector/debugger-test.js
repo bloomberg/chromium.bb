@@ -174,18 +174,15 @@ InspectorTest.resumeExecution = function(callback)
 InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
 {
     InspectorTest.waitUntilPaused(paused);
-    InspectorTest.addSniffer(WebInspector.CallStackSidebarPane.prototype, "setStatus", setStatus);
+    InspectorTest.addSniffer(WebInspector.CallStackSidebarPane.prototype, "_updateStatusMessage", setStatus);
 
     var caption;
     var callFrames;
     var asyncStackTrace;
 
-    function setStatus(status)
+    function setStatus()
     {
-        if (typeof status === "string")
-            caption = status;
-        else
-            caption = status.deepTextContent();
+        caption = this.contentElement.lastChild.deepTextContent();
         if (callFrames)
             step1();
     }
@@ -355,7 +352,7 @@ InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointId
     if (InspectorTest._waitUntilPausedCallback) {
         var callback = InspectorTest._waitUntilPausedCallback;
         delete InspectorTest._waitUntilPausedCallback;
-        callback.apply(callback, InspectorTest._pausedScriptArguments);
+        setTimeout(() => callback.apply(callback, InspectorTest._pausedScriptArguments));
     }
 };
 
@@ -421,7 +418,7 @@ InspectorTest.removeBreakpoint = function(sourceFrame, lineNumber)
 
 InspectorTest.dumpBreakpointSidebarPane = function(title)
 {
-    var paneElement = WebInspector.panels.sources.sidebarPanes.jsBreakpoints.listElement;
+    var paneElement = self.runtime.sharedInstance(WebInspector.JavaScriptBreakpointsSidebarPane).element;
     InspectorTest.addResult("Breakpoint sidebar pane " + (title || ""));
     InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(paneElement));
 };
@@ -442,7 +439,7 @@ InspectorTest.dumpScopeVariablesSidebarPane = function()
 
 InspectorTest.scopeChainSections = function()
 {
-    var children = WebInspector.panels.sources.sidebarPanes.scopechain.contentElement.children;
+    var children = self.runtime.sharedInstance(WebInspector.ScopeChainSidebarPane).contentElement.children;
     var sections = [];
     for (var i = 0; i < children.length; ++i)
         sections.push(children[i]._section);
@@ -586,7 +583,7 @@ InspectorTest.waitForExecutionContextInTarget = function(target, callback)
 
 InspectorTest.selectThread = function(target)
 {
-    var threadsPane = WebInspector.panels.sources.sidebarPanes.threads;
+    var threadsPane = self.runtime.sharedInstance(WebInspector.ThreadsSidebarPane);
     var listItem = threadsPane._debuggerModelToListItems.get(WebInspector.DebuggerModel.fromTarget(target));
     threadsPane._onListItemClick(listItem);
 }

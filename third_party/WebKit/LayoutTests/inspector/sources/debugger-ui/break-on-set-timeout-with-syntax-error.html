@@ -21,7 +21,7 @@ var test = function()
 
     function step1()
     {
-        WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints._setBreakpoint("instrumentation:timerFired");
+        self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane)._setBreakpoint("instrumentation:timerFired");
         InspectorTest.evaluateInPage("runSetTimeoutWithSyntaxError()", InspectorTest.waitUntilMessageReceived.bind(this, step2));
     }
 
@@ -34,7 +34,7 @@ var test = function()
 
     function step3()
     {
-        WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints._removeBreakpoint("instrumentation:timerFired");
+        self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane)._removeBreakpoint("instrumentation:timerFired");
         InspectorTest.completeDebuggerTest();
     }
 }
