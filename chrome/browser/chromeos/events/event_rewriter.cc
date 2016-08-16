@@ -819,6 +819,8 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
     }
     // Toggle Caps Lock if the remapped key is ui::VKEY_CAPITAL.
     if (state->key_code == ui::VKEY_CAPITAL
+        // ... except on linux Chrome OS, where InputMethodChromeOS handles it.
+        && (base::SysInfo::IsRunningOnChromeOS() || ime_keyboard_for_testing_)
 #if defined(USE_X11)
         // ... but for X11, do nothing if the original key is ui::VKEY_CAPITAL
         // (i.e. a Caps Lock key on an external keyboard is pressed) since X

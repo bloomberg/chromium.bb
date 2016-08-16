@@ -132,14 +132,6 @@ void KeyboardHandler::GetLocalizedValues(
       const input_method::ModifierKey value =
           kModifierKeysSelectItems[j].value;
       const int message_id = kModifierKeysSelectItems[j].message_id;
-      // Only the seach/caps-lock key can be remapped to the
-      // caps-lock/backspace key.
-      if (kDataValuesNames[i] != std::string("remapSearchKeyToValue") &&
-          kDataValuesNames[i] != std::string("remapCapsLockKeyToValue") &&
-          (value == input_method::kCapsLockKey ||
-           value == input_method::kBackspaceKey)) {
-        continue;
-      }
       base::ListValue* option = new base::ListValue();
       option->Append(new base::FundamentalValue(value));
       option->Append(new base::StringValue(l10n_util::GetStringUTF16(

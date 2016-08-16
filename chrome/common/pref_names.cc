@@ -535,7 +535,7 @@ const char kLanguageShouldMergeInputMethods[] =
     "settings.language.merge_input_methods";
 
 // Integer prefs which determine how we remap modifier keys (e.g. swap Alt and
-// Control.) Possible values for these prefs are 0-4. See ModifierKey enum in
+// Control.) Possible values for these prefs are 0-6. See ModifierKey enum in
 // src/chrome/browser/chromeos/input_method/xkeyboard.h
 const char kLanguageRemapSearchKeyTo[] =
     // Note: we no longer use XKB for remapping these keys, but we can't change
