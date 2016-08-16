@@ -111,7 +111,7 @@ weston_desktop_surface_set_user_data(struct weston_desktop_surface *self,
 struct weston_view *
 weston_desktop_surface_create_view(struct weston_desktop_surface *surface);
 void
-weston_desktop_surface_destroy_view(struct weston_view *view);
+weston_desktop_surface_unlink_view(struct weston_view *view);
 void
 weston_desktop_surface_propagate_layer(struct weston_desktop_surface *surface);
 void

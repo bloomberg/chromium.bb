@@ -404,7 +404,7 @@ weston_desktop_surface_create_view(struct weston_desktop_surface *surface)
 }
 
 WL_EXPORT void
-weston_desktop_surface_destroy_view(struct weston_view *wview)
+weston_desktop_surface_unlink_view(struct weston_view *wview)
 {
 	struct weston_desktop_surface *surface;
 	struct weston_desktop_view *view;

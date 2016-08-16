@@ -80,7 +80,7 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 
 	if (surface->state != state) {
 		if (surface->state == XWAYLAND) {
-			weston_desktop_surface_destroy_view(surface->view);
+			weston_desktop_surface_unlink_view(surface->view);
 			surface->view = NULL;
 		}
 
@@ -153,7 +153,7 @@ weston_desktop_xwayland_surface_destroy(struct weston_desktop_surface *dsurface,
 		weston_desktop_api_surface_removed(surface->desktop,
 						   surface->surface);
 	else if (surface->state == XWAYLAND)
-		weston_desktop_surface_destroy_view(surface->view);
+		weston_desktop_surface_unlink_view(surface->view);
 
 	free(surface);
 }
