@@ -494,7 +494,7 @@ class InputApi(object):
       local_path = affected_file.LocalPath()
       for item in items:
         if self.re.match(item, local_path):
-          logging.debug("%s matched %s" % (item, local_path))
+          logging.debug("%s matched %s", item, local_path)
           return True
       return False
     return (Find(affected_file, white_list or self.DEFAULT_WHITE_LIST) and
@@ -646,7 +646,7 @@ class AffectedFile(object):
     self._cached_changed_contents = None
     self._cached_new_contents = None
     self._diff_cache = diff_cache
-    logging.debug('%s(%s)' % (self.__class__.__name__, self._path))
+    logging.debug('%s(%s)', self.__class__.__name__, self._path)
 
   def ServerPath(self):
     """Returns a path string that identifies the file in the SCM system.
@@ -1093,11 +1093,13 @@ def ListRelevantPresubmitFiles(files, root):
   # Look for PRESUBMIT.py in all candidate directories.
   results = []
   for directory in sorted(list(candidates)):
-    p = os.path.join(directory, 'PRESUBMIT.py')
-    if os.path.isfile(p):
-      results.append(p)
+    for f in os.listdir(directory):
+      p = os.path.join(directory, f)
+      if os.path.isfile(p) and re.match(
+          r'PRESUBMIT.*\.py$', f) and not f.startswith('PRESUBMIT_test'):
+        results.append(p)
 
-  logging.debug('Presubmit files: %s' % ','.join(results))
+  logging.debug('Presubmit files: %s', ','.join(results))
   return results
 
 
@@ -1454,9 +1456,9 @@ class PresubmitExecuter(object):
       function_name = 'CheckChangeOnUpload'
     if function_name in context:
       context['__args'] = (input_api, OutputApi(self.committing))
-      logging.debug('Running %s in %s' % (function_name, presubmit_path))
+      logging.debug('Running %s in %s', function_name, presubmit_path)
       result = eval(function_name + '(*__args)', context)
-      logging.debug('Running %s done.' % function_name)
+      logging.debug('Running %s done.', function_name)
       if not (isinstance(result, types.TupleType) or
               isinstance(result, types.ListType)):
         raise PresubmitFailure(
@@ -1609,7 +1611,7 @@ def ScanSubDirs(mask, recursive):
 
 
 def ParseFiles(args, recursive):
-  logging.debug('Searching for %s' % args)
+  logging.debug('Searching for %s', args)
   files = []
   for arg in args:
     files.extend([('M', f) for f in ScanSubDirs(arg, recursive)])
@@ -1632,7 +1634,7 @@ def load_files(options, args):
     if not files:
       files = scm.GIT.CaptureStatus([], options.root, upstream)
   else:
-    logging.info('Doesn\'t seem under source control. Got %d files' % len(args))
+    logging.info('Doesn\'t seem under source control. Got %d files', len(args))
     if not files:
       return None, None
     change_class = Change
@@ -1754,7 +1756,7 @@ def main(argv=None):
   change_class, files = load_files(options, args)
   if not change_class:
     parser.error('For unversioned directory, <files> is not optional.')
-  logging.info('Found %d file(s).' % len(files))
+  logging.info('Found %d file(s).', len(files))
 
   rietveld_obj, gerrit_obj = None, None
 

@@ -112,7 +112,7 @@ class SuperMoxTestBase(TestCaseUtils, StdoutCheck, mox.MoxTestBase):
     TestCaseUtils.setUp(self)
     mox.MoxTestBase.setUp(self)
     os_to_mock = ('chdir', 'chown', 'close', 'closerange', 'dup', 'dup2',
-      'fchdir', 'fchmod', 'fchown', 'fdopen', 'getcwd', 'lseek',
+      'fchdir', 'fchmod', 'fchown', 'fdopen', 'getcwd', 'listdir', 'lseek',
       'makedirs', 'mkdir', 'open', 'popen', 'popen2', 'popen3', 'popen4',
       'read', 'remove', 'removedirs', 'rename', 'renames', 'rmdir', 'symlink',
       'system', 'tmpfile', 'walk', 'write')

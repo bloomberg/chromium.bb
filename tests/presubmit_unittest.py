@@ -217,20 +217,25 @@ class PresubmitUnittest(PresubmitTestsBase):
     inherit_path = presubmit.os.path.join(self.fake_root_dir,
                                           self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
+    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(join(self.fake_root_dir,
                                   'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.path.isfile(join(self.fake_root_dir, 'foo',
-                                  'PRESUBMIT.py')).AndReturn(False)
-    presubmit.os.path.isfile(join(self.fake_root_dir, 'foo', 'haspresubmit',
-                                  'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.path.isfile(join(self.fake_root_dir, 'foo', 'haspresubmit',
-                                  'yodle', 'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.path.isfile(join(self.fake_root_dir, 'moo',
-                                  'PRESUBMIT.py')).AndReturn(False)
-    presubmit.os.path.isfile(join(self.fake_root_dir, 'moo', 'mat',
-                                  'PRESUBMIT.py')).AndReturn(False)
-    presubmit.os.path.isfile(join(self.fake_root_dir, 'moo', 'mat', 'gat',
-                                  'PRESUBMIT.py')).AndReturn(False)
+    presubmit.os.listdir(join(self.fake_root_dir, 'foo')).AndReturn([])
+    presubmit.os.listdir(join(self.fake_root_dir, 'foo',
+                              'haspresubmit')).AndReturn(['PRESUBMIT.py'])
+    presubmit.os.path.isfile(
+        join(self.fake_root_dir, 'foo', 'haspresubmit',
+             'PRESUBMIT.py')).AndReturn(True)
+    presubmit.os.listdir(
+        join(self.fake_root_dir, 'foo', 'haspresubmit', 'yodle')).AndReturn(
+            ['PRESUBMIT.py'])
+    presubmit.os.path.isfile(
+        join(self.fake_root_dir, 'foo', 'haspresubmit', 'yodle',
+             'PRESUBMIT.py')).AndReturn(True)
+    presubmit.os.listdir(join(self.fake_root_dir, 'moo')).AndReturn([])
+    presubmit.os.listdir(join(self.fake_root_dir, 'moo', 'mat')).AndReturn([])
+    presubmit.os.listdir(join(self.fake_root_dir, 'moo', 'mat',
+                              'gat')).AndReturn([])
     self.mox.ReplayAll()
 
     presubmit_files = presubmit.ListRelevantPresubmitFiles(files,
@@ -243,6 +248,29 @@ class PresubmitUnittest(PresubmitTestsBase):
                'PRESUBMIT.py')
         ])
 
+  def testListUserPresubmitFiles(self):
+    join = presubmit.os.path.join
+    files = ['blat.cc',]
+    inherit_path = presubmit.os.path.join(self.fake_root_dir,
+                                          self._INHERIT_SETTINGS)
+    presubmit.os.path.isfile(inherit_path).AndReturn(False)
+    presubmit.os.listdir(self.fake_root_dir).AndReturn(
+        ['PRESUBMIT.py', 'PRESUBMIT_test.py', 'PRESUBMIT-user.py'])
+    presubmit.os.path.isfile(join(self.fake_root_dir,
+                                  'PRESUBMIT.py')).AndReturn(True)
+    presubmit.os.path.isfile(join(self.fake_root_dir,
+                                  'PRESUBMIT_test.py')).AndReturn(True)
+    presubmit.os.path.isfile(join(self.fake_root_dir,
+                                  'PRESUBMIT-user.py')).AndReturn(True)
+    self.mox.ReplayAll()
+
+    presubmit_files = presubmit.ListRelevantPresubmitFiles(files,
+                                                           self.fake_root_dir)
+    self.assertEqual(presubmit_files, [
+        join(self.fake_root_dir, 'PRESUBMIT.py'),
+        join(self.fake_root_dir, 'PRESUBMIT-user.py'),
+    ])
+
   def testListRelevantPresubmitFilesInheritSettings(self):
     join = presubmit.os.path.join
     sys_root_dir = self._OS_SEP
@@ -254,16 +282,16 @@ class PresubmitUnittest(PresubmitTestsBase):
     ]
     inherit_path = presubmit.os.path.join(root_dir, self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(True)
-    presubmit.os.path.isfile(join(sys_root_dir,
-                                  'PRESUBMIT.py')).AndReturn(False)
+    presubmit.os.listdir(sys_root_dir).AndReturn([])
+    presubmit.os.listdir(join(sys_root_dir, 'foo')).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(join(sys_root_dir, 'foo',
                                   'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.path.isfile(join(sys_root_dir, 'foo', 'bar',
-                                  'PRESUBMIT.py')).AndReturn(False)
-    presubmit.os.path.isfile(join(sys_root_dir, 'foo', 'bar', 'moo',
-                                  'PRESUBMIT.py')).AndReturn(True)
-    presubmit.os.path.isfile(join(sys_root_dir, 'foo', 'bar', 'zoo',
-                                  'PRESUBMIT.py')).AndReturn(False)
+    presubmit.os.listdir(join(sys_root_dir, 'foo', 'bar')).AndReturn([])
+    presubmit.os.listdir(join(sys_root_dir, 'foo', 'bar', 'moo')).AndReturn(
+        ['PRESUBMIT.py'])
+    presubmit.os.path.isfile(
+        join(sys_root_dir, 'foo', 'bar', 'moo', 'PRESUBMIT.py')).AndReturn(True)
+    presubmit.os.listdir(join(sys_root_dir, 'foo', 'bar', 'zoo')).AndReturn([])
     self.mox.ReplayAll()
 
     presubmit_files = presubmit.ListRelevantPresubmitFiles(files, root_dir)
@@ -682,7 +710,10 @@ class PresubmitUnittest(PresubmitTestsBase):
     inherit_path = presubmit.os.path.join(self.fake_root_dir,
                                           self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
+    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(root_path).AndReturn(True)
+    presubmit.os.listdir(os.path.join(
+        self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
     presubmit.gclient_utils.FileRead(root_path,
                                      'rU').AndReturn(self.presubmit_text)
@@ -721,7 +752,10 @@ class PresubmitUnittest(PresubmitTestsBase):
                                           self._INHERIT_SETTINGS)
     for _ in range(2):
       presubmit.os.path.isfile(inherit_path).AndReturn(False)
+      presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
       presubmit.os.path.isfile(presubmit_path).AndReturn(True)
+      presubmit.os.listdir(join(self.fake_root_dir, 'haspresubmit')).AndReturn(
+          ['PRESUBMIT.py'])
       presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
       presubmit.gclient_utils.FileRead(presubmit_path, 'rU'
           ).AndReturn(self.presubmit_text)
@@ -768,7 +802,10 @@ class PresubmitUnittest(PresubmitTestsBase):
     inherit_path = presubmit.os.path.join(self.fake_root_dir,
                                           self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
+    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(presubmit_path).AndReturn(True)
+    presubmit.os.listdir(join(self.fake_root_dir, 'haspresubmit')).AndReturn(
+        ['PRESUBMIT.py'])
     presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
     presubmit.gclient_utils.FileRead(presubmit_path, 'rU'
                                      ).AndReturn(self.presubmit_text)
@@ -810,8 +847,10 @@ def CheckChangeOnCommit(input_api, output_api):
     inherit_path = presubmit.os.path.join(self.fake_root_dir,
                                           self._INHERIT_SETTINGS)
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    presubmit.os.path.isfile(join(self.fake_root_dir, 'PRESUBMIT.py')
-        ).AndReturn(False)
+    presubmit.os.listdir(join(self.fake_root_dir)
+        ).AndReturn([])
+    presubmit.os.listdir(join(self.fake_root_dir, 'haspresubmit')
+        ).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(join(self.fake_root_dir,
                                   'haspresubmit',
                                   'PRESUBMIT.py')).AndReturn(False)
@@ -998,12 +1037,16 @@ def CheckChangeOnCommit(input_api, output_api):
                                           self._INHERIT_SETTINGS)
 
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
+    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(root_presubmit).AndReturn(True)
     presubmit.gclient_utils.FileRead(root_presubmit, 'rU').AndReturn(
         self.presubmit_tryslave % '["win"]')
 
     presubmit.os.path.isfile(inherit_path).AndReturn(False)
+    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
     presubmit.os.path.isfile(root_presubmit).AndReturn(True)
+    presubmit.os.listdir(join(self.fake_root_dir, 'linux_only')).AndReturn(
+        ['PRESUBMIT.py'])
     presubmit.os.path.isfile(linux_presubmit).AndReturn(True)
     presubmit.gclient_utils.FileRead(root_presubmit, 'rU').AndReturn(
         self.presubmit_tryslave % '["win"]')
@@ -1105,6 +1148,7 @@ def CheckChangeOnCommit(input_api, output_api):
 
     join = presubmit.os.path.join
     isfile = presubmit.os.path.isfile
+    listdir = presubmit.os.listdir
     FileRead = presubmit.gclient_utils.FileRead
     filename = 'foo.cc'
     filename_linux = join('linux_only', 'penguin.cc')
@@ -1113,11 +1157,14 @@ def CheckChangeOnCommit(input_api, output_api):
     inherit_path = join(self.fake_root_dir, self._INHERIT_SETTINGS)
 
     isfile(inherit_path).AndReturn(False)
+    listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
     isfile(root_presubmit).AndReturn(True)
     FileRead(root_presubmit, 'rU').AndReturn(root_text)
 
     isfile(inherit_path).AndReturn(False)
+    listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
     isfile(root_presubmit).AndReturn(True)
+    listdir(join(self.fake_root_dir, 'linux_only')).AndReturn(['PRESUBMIT.py'])
     isfile(linux_presubmit).AndReturn(True)
     FileRead(root_presubmit, 'rU').AndReturn(root_text)
     FileRead(linux_presubmit, 'rU').AndReturn(linux_text)
