@@ -99,7 +99,8 @@
     <div class="scrollable">
       <div class="content">
         <paper-progress class="blue" indeterminate></paper-progress>
-        <p class="text-status" i18n-content=progressLsoLoading></p>
+        <p class="text-status" i18n-content="progressLsoLoading"
+            aria-live="polite"></p>
       </div>
     </div>
   </div>
@@ -112,7 +113,8 @@
     <div class="scrollable">
       <div class="content">
         <paper-progress class="blue" indeterminate></paper-progress>
-        <p class="text-status" i18n-content="progressAndroidLoading"></p>
+        <p class="text-status" i18n-content="progressAndroidLoading"
+            aria-live="polite"></p>
       </div>
     </div>
   </div>
@@ -121,7 +123,7 @@
     <div class="scrollable">
       <div class="content">
         <paper-progress class="red" value="100" max="100" ></paper-progress>
-        <p class="text-status" id="error-message"></p>
+        <p class="text-status" id="error-message" aria-live="polite"></p>
         <paper-button class="blue" id="button-send-feedback"
             i18n-content="buttonSendFeedback">
         </paper-button>
