@@ -9,7 +9,12 @@
 namespace chromecast {
 namespace media {
 
-MediaCapsImpl::MediaCapsImpl() : supported_codecs_bitmask_(0) {}
+MediaCapsImpl::MediaCapsImpl()
+    : supported_codecs_bitmask_(0),
+      hdcp_version_(0),
+      supported_eotfs_(0),
+      dolby_vision_flags_(0),
+      screen_resolution_(0, 0) {}
 
 MediaCapsImpl::~MediaCapsImpl() = default;
 
@@ -36,10 +41,26 @@ void MediaCapsImpl::ScreenResolutionChanged(unsigned width, unsigned height) {
       });
 }
 
+void MediaCapsImpl::ScreenInfoChanged(int hdcp_version,
+                                      int supported_eotfs,
+                                      int dolby_vision_flags) {
+  hdcp_version_ = hdcp_version;
+  supported_eotfs_ = supported_eotfs;
+  dolby_vision_flags_ = dolby_vision_flags;
+
+  observers_.ForAllPtrs([hdcp_version, supported_eotfs, dolby_vision_flags](
+      mojom::MediaCapsObserver* observer) {
+    observer->ScreenInfoChanged(hdcp_version, supported_eotfs,
+                                dolby_vision_flags);
+  });
+}
+
 void MediaCapsImpl::AddObserver(mojom::MediaCapsObserverPtr observer) {
   observer->SupportedHdmiSinkCodecsChanged(supported_codecs_bitmask_);
   observer->ScreenResolutionChanged(screen_resolution_.width(),
                                     screen_resolution_.height());
+  observer->ScreenInfoChanged(hdcp_version_, supported_eotfs_,
+                              dolby_vision_flags_);
   observers_.AddPtr(std::move(observer));
 }
 

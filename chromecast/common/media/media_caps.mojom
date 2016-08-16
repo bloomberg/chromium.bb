@@ -12,4 +12,6 @@ interface MediaCapsObserver {
   // Bitmask values defined in enum HdmiSinkCodec
   SupportedHdmiSinkCodecsChanged(uint32 supported_codec_bitmask);
   ScreenResolutionChanged(uint32 width, uint32 height);
+  ScreenInfoChanged(int32 hdcp_version, int32 supported_eotfs,
+                    int32 dolby_vision_flags);
 };

@@ -24,5 +24,12 @@ void MediaCapsObserverImpl::ScreenResolutionChanged(uint32_t width,
   MediaCapabilities::ScreenResolutionChanged(gfx::Size(width, height));
 }
 
+void MediaCapsObserverImpl::ScreenInfoChanged(int32_t hdcp_version,
+                                              int32_t supported_eotfs,
+                                              int32_t dolby_vision_flags) {
+  MediaCapabilities::ScreenInfoChanged(hdcp_version, supported_eotfs,
+                                       dolby_vision_flags);
+}
+
 }  // namespace media
 }  // namespace chromecast

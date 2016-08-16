@@ -88,9 +88,10 @@ class AvSettings {
 
     // This event shall be fired whenever the screen information of the device
     // (or HDMI sinks connected to the device) are changed including screen
-    // resolution.
-    // On this event, GetScreenResolution() will be called on the thread where
-    // Initialize() was called.
+    // resolution, HDCP version and supported EOTFs.
+    // On this event, GetScreenResolution(), GetHDCPVersion() and
+    // GetSupportedEotfs() will be called on the thread where Initialize()
+    // was called.
     SCREEN_INFO_CHANGED = 3,
 
     // This event should be fired whenever the active output restrictions on the
@@ -225,6 +226,33 @@ class AvSettings {
   // Retrieves the resolution of screen of the device (or HDMI sinks).
   // Returns true if it gets resolution successfully.
   virtual bool GetScreenResolution(int* width, int* height) = 0;
+
+  // Returns the current HDCP version multiplied by ten (so, for example, for
+  // HDCP 2.2 the return value is 22). Or 0 if HDCP is not supported.
+  virtual int GetHDCPVersion() = 0;
+
+  // Supported Electro-Optical Transfer Function (EOTF) reported by the device.
+  // The values are according to Table 8 in CTA-861.3 (formerly CEA-861.3).
+  enum Eotf {
+    EOTF_SDR = 1 << 0,
+    EOTF_HDR = 1 << 1,
+    EOTF_SMPTE_ST_2084 = 1 << 2,
+    EOTF_HLG = 1 << 3,
+  };
+
+  // Returns a set of flags, defined in the Eotf enum above, indicating support
+  // of different EOTFs by the device or HDMI sink.
+  virtual int GetSupportedEotfs() = 0;
+
+  enum DolbyVisionCapFlags {
+    DOLBY_SUPPORTED = 1 << 0,
+    DOLBY_4K_P60_SUPPORTED = 1 << 1,
+    DOLBY_422_12BIT_SUPPORTED = 1 << 2,
+  };
+
+  // Returns a set of flags, defined in the DolbyVisionCapFlags enum above,
+  // indicating support for DolbyVision and various DV-related features.
+  virtual int GetDolbyVisionFlags() = 0;
 
   // If supported, retrieves the restrictions active on the device outputs (as
   // specified by the PlayReady CDM; see output_restrictions.h). If reporting
