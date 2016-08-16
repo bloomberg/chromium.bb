@@ -1027,6 +1027,19 @@ void Program::UpdateProgramOutputs() {
         continue;
       program_output_infos_.push_back(
           ProgramOutputInfo(color_name, index, client_name));
+    } else if (feature_info().workarounds().get_frag_data_info_bug) {
+      DCHECK(!feature_info().feature_flags().ext_blend_func_extended);
+      GLint color_name =
+          glGetFragDataLocation(service_id_, service_name.c_str());
+      if (color_name >= 0) {
+        GLint index = 0;
+        for (size_t ii = 0; ii < output_var.arraySize; ++ii) {
+          std::string array_spec(
+              std::string("[") + base::IntToString(ii) + "]");
+          program_output_infos_.push_back(ProgramOutputInfo(
+              color_name + ii, index, client_name + array_spec));
+        }
+      }
     } else {
       for (size_t ii = 0; ii < output_var.arraySize; ++ii) {
         std::string array_spec(std::string("[") + base::IntToString(ii) + "]");

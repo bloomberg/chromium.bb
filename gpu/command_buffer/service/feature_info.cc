@@ -1286,6 +1286,7 @@ void FeatureInfo::InitializeFeatures() {
       (gl_version_info_->IsAtLeastGL(3, 2) &&
        extensions.Contains("GL_ARB_blend_func_extended"));
   if (!disable_shader_translator_ &&
+      !workarounds_.get_frag_data_info_bug &&
       ((gl_version_info_->IsAtLeastGL(3, 2) &&
         has_opengl_dual_source_blending) ||
        (gl_version_info_->IsAtLeastGLES(3, 0) &&

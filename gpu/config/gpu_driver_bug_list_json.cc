@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.82",
+  "version": "8.83",
   "entries": [
     {
       "id": 1,
@@ -1898,6 +1898,17 @@ LONG_STRING_CONST(
       "gl_renderer": ".*Atom.*x5/x7.*",
       "features": [
         "gl_clear_broken"
+      ]
+    },
+    {
+      "id": 177,
+      "description": "glGetFragData{Location|Index} works incorrectly on Max",
+      "cr_bugs": [638340],
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "get_frag_data_info_bug"
       ]
     }
   ]
