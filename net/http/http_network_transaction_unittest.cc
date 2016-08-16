@@ -701,7 +701,11 @@ TEST_F(HttpNetworkTransactionTest, SimpleGETNoHeaders) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_THAT(out.rv, IsError(ERR_INVALID_HTTP_RESPONSE));
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
+  EXPECT_EQ("hello world", out.response_data);
+  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, out.total_received_bytes);
 }
 
 // Allow up to 4 bytes of junk to precede status line.
@@ -742,7 +746,11 @@ TEST_F(HttpNetworkTransactionTest, StatusLineJunk5Bytes) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_THAT(out.rv, IsError(ERR_INVALID_HTTP_RESPONSE));
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
+  EXPECT_EQ("xxxxxHTTP/1.1 404 Not Found\nServer: blah", out.response_data);
+  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, out.total_received_bytes);
 }
 
 // Same as StatusLineJunk4Bytes, except the read chunks are smaller.
@@ -772,7 +780,11 @@ TEST_F(HttpNetworkTransactionTest, StatusLinePartial) {
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
-  EXPECT_THAT(out.rv, IsError(ERR_INVALID_HTTP_RESPONSE));
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
+  EXPECT_EQ("HTT", out.response_data);
+  int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, out.total_received_bytes);
 }
 
 // Simulate a 204 response, lacking a Content-Length header, sent over a
@@ -11072,9 +11084,20 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
   std::unique_ptr<HttpNetworkTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
-  // HTTP/0.9 should fail.
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_INVALID_HTTP_RESPONSE));
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/0.9 200 OK", response->headers->GetStatusLine());
+  EXPECT_FALSE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_npn_negotiated);
+
+  std::string response_data;
+  ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
+  EXPECT_EQ("hello world", response_data);
 
   trans.reset(new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
@@ -11082,14 +11105,13 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
-  const HttpResponseInfo* response = trans->GetResponseInfo();
+  response = trans->GetResponseInfo();
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_npn_negotiated);
 
-  std::string response_data;
   ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
   ASSERT_EQ(2u, capturing_proxy_resolver.resolved().size());

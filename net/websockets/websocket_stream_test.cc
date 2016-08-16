@@ -688,7 +688,8 @@ TEST_F(WebSocketStreamCreateTest, RedirectsRejected) {
 
 // Malformed responses should be rejected. HttpStreamParser will accept just
 // about any garbage in the middle of the headers. To make it give up, the junk
-// has to be at the start of the response.
+// has to be at the start of the response. Even then, it just gets treated as an
+// HTTP/0.9 response.
 TEST_F(WebSocketStreamCreateTest, MalformedResponse) {
   static const char kMalformedResponse[] =
       "220 mx.google.com ESMTP\r\n"
@@ -702,7 +703,7 @@ TEST_F(WebSocketStreamCreateTest, MalformedResponse) {
                                  LocalhostUrl(), "", "", kMalformedResponse);
   WaitUntilConnectDone();
   EXPECT_TRUE(has_failed());
-  EXPECT_EQ("Error during WebSocket handshake: net::ERR_INVALID_HTTP_RESPONSE",
+  EXPECT_EQ("Error during WebSocket handshake: Invalid status line",
             failure_message());
 }
 
