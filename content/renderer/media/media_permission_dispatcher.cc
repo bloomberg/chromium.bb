@@ -72,7 +72,7 @@ void MediaPermissionDispatcher::HasPermission(
   DVLOG(2) << __func__ << ": request ID " << request_id;
 
   permission_service_->HasPermission(
-      MediaPermissionTypeToPermissionName(type), url::Origin(security_origin),
+      MediaPermissionTypeToPermissionName(type), security_origin.spec(),
       base::Bind(&MediaPermissionDispatcher::OnPermissionStatus, weak_ptr_,
                  request_id));
 }
@@ -98,7 +98,7 @@ void MediaPermissionDispatcher::RequestPermission(
   DVLOG(2) << __func__ << ": request ID " << request_id;
 
   permission_service_->RequestPermission(
-      MediaPermissionTypeToPermissionName(type), url::Origin(security_origin),
+      MediaPermissionTypeToPermissionName(type), security_origin.spec(),
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&MediaPermissionDispatcher::OnPermissionStatus, weak_ptr_,
                  request_id));

@@ -81,7 +81,7 @@ ScriptPromise StorageManager::persist(ScriptState* scriptState)
         resolver->reject(DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
         return promise;
     }
-    permissionService->RequestPermission(PermissionName::DURABLE_STORAGE, scriptState->getExecutionContext()->getSecurityOrigin(), UserGestureIndicator::processingUserGesture(), convertToBaseCallback(WTF::bind(&StorageManager::permissionRequestComplete, wrapPersistent(this), wrapPersistent(resolver))));
+    permissionService->RequestPermission(PermissionName::DURABLE_STORAGE, scriptState->getExecutionContext()->getSecurityOrigin()->toString(), UserGestureIndicator::processingUserGesture(), convertToBaseCallback(WTF::bind(&StorageManager::permissionRequestComplete, wrapPersistent(this), wrapPersistent(resolver))));
 
     return promise;
 }
@@ -95,7 +95,7 @@ ScriptPromise StorageManager::persisted(ScriptState* scriptState)
         resolver->reject(DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
         return promise;
     }
-    permissionService->HasPermission(PermissionName::DURABLE_STORAGE, scriptState->getExecutionContext()->getSecurityOrigin(), convertToBaseCallback(WTF::bind(&StorageManager::permissionRequestComplete, wrapPersistent(this), wrapPersistent(resolver))));
+    permissionService->HasPermission(PermissionName::DURABLE_STORAGE, scriptState->getExecutionContext()->getSecurityOrigin()->toString(), convertToBaseCallback(WTF::bind(&StorageManager::permissionRequestComplete, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;
 }
 

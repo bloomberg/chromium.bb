@@ -58,7 +58,7 @@ ScriptPromise MIDIAccessInitializer::start()
 
     m_permissionService->RequestPermissions(
         permissions,
-        getExecutionContext()->getSecurityOrigin(),
+        getExecutionContext()->getSecurityOrigin()->toString(),
         UserGestureIndicator::processingUserGesture(),
         convertToBaseCallback(WTF::bind(&MIDIAccessInitializer::onPermissionsUpdated, wrapPersistent(this))));
 

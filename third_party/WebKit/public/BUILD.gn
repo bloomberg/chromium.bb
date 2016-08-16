@@ -206,10 +206,6 @@ mojom("new_wrapper_types_mojo_bindings") {
     "platform/modules/presentation/presentation.mojom",
   ]
 
-  public_deps = [
-    "//url/mojo:url_mojom_origin",
-  ]
-
   # See comment above.
   export_class_attribute = "CONTENT_EXPORT"
   export_define = "CONTENT_IMPLEMENTATION=1"

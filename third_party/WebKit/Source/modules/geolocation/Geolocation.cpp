@@ -428,7 +428,7 @@ void Geolocation::requestPermission()
     // Ask the embedder: it maintains the geolocation challenge policy itself.
     m_permissionService->RequestPermission(
         mojom::blink::PermissionName::GEOLOCATION,
-        getExecutionContext()->getSecurityOrigin(),
+        getExecutionContext()->getSecurityOrigin()->toString(),
         UserGestureIndicator::processingUserGesture(),
         convertToBaseCallback(WTF::bind(&Geolocation::onGeolocationPermissionUpdated, wrapPersistent(this))));
 }
