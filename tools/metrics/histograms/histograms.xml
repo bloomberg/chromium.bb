@@ -23209,6 +23209,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records the autoplay source of muted videos.</summary>
 </histogram>
 
+<histogram name="Media.Video.Autoplay.Muted.PlayMethod.BecomesVisible"
+    enum="Boolean">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    Records muted video started playing with play() become visible at some
+    point. The UMA for false is not complete since it is recorded in a
+    destructor which is garbage-collected. Please subtract
+    Media.Video.Autoplay.Muted &quot;play() method&quot; count with the true
+    count of this histogram to obtain the real false count.
+  </summary>
+</histogram>
+
 <histogram name="Media.Video.Autoplay.Muted.UnmuteAction" enum="BooleanSuccess">
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>

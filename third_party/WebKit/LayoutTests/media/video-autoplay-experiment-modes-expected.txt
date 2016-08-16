@@ -2,6 +2,8 @@ CONSOLE WARNING: line 71: Failed to execute 'play' on 'HTMLMediaElement': API ca
 CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 CONSOLE WARNING: line 71: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
 CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
+CONSOLE WARNING: IntersectionObserver.observe(target): target element is not a descendant of root.
+CONSOLE WARNING: IntersectionObserver.observe(target): target element is not a descendant of root.
 CONSOLE WARNING: line 71: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
 CONSOLE ERROR: line 71: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 CONSOLE WARNING: line 71: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.

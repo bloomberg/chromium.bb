@@ -46,6 +46,7 @@ namespace blink {
 
 class AudioSourceProviderClient;
 class AudioTrackList;
+class AutoplayUmaHelper;
 class ContentType;
 class CueTimeline;
 class ElementVisibilityObserver;
@@ -298,13 +299,6 @@ protected:
     void recordAutoplayMetric(AutoplayMetrics);
 
 private:
-    // These values are used for histograms. Do not reorder.
-    enum AutoplayUnmuteActionStatus {
-        AutoplayUnmuteActionFailure = 0,
-        AutoplayUnmuteActionSuccess = 1,
-        AutoplayUnmuteActionMax
-    };
-
     void resetMediaPlayerAndMediaSource();
 
     bool alwaysCreateUserAgentShadowRoot() const final { return true; }
@@ -499,9 +493,6 @@ private:
 
     EnumerationHistogram& showControlsHistogram() const;
 
-    void recordAutoplaySourceMetric(int source);
-    void recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus);
-
     void onVisibilityChangedForAutoplay(bool isVisible);
 
     UnthrottledThreadTimer<HTMLMediaElement> m_loadTimer;
@@ -678,6 +669,7 @@ private:
 
     Member<AutoplayExperimentHelper::Client> m_autoplayHelperClient;
     Member<AutoplayExperimentHelper> m_autoplayHelper;
+    Member<AutoplayUmaHelper> m_autoplayUmaHelper;
 
     WebRemotePlaybackClient* m_remotePlaybackClient;
 

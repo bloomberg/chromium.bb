@@ -44,6 +44,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/html/AutoplayUmaHelper.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/HTMLSourceElement.h"
 #include "core/html/HTMLTrackElement.h"
@@ -281,16 +282,6 @@ String preloadTypeToString(WebMediaPlayer::Preload preloadType)
     return String();
 }
 
-// These values are used for histograms. Do not reorder.
-enum AutoplaySource {
-    // Autoplay comes from HTMLMediaElement `autoplay` attribute.
-    AutoplaySourceAttribute = 0,
-    // Autoplay comes from `play()` method.
-    AutoplaySourceMethod = 1,
-    // This enum value must be last.
-    NumberOfAutoplaySources = 2,
-};
-
 } // anonymous namespace
 
 class HTMLMediaElement::AutoplayHelperClientImpl :
@@ -448,6 +439,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_audioSourceNode(nullptr)
     , m_autoplayHelperClient(AutoplayHelperClientImpl::create(this))
     , m_autoplayHelper(AutoplayExperimentHelper::create(m_autoplayHelperClient.get()))
+    , m_autoplayUmaHelper(AutoplayUmaHelper::create(this))
     , m_remotePlaybackClient(nullptr)
     , m_autoplayVisibilityObserver(nullptr)
 {
@@ -497,6 +489,7 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
 {
     BLINK_MEDIA_LOG << "didMoveToNewDocument(" << (void*)this << ")";
 
+    m_autoplayUmaHelper->didMoveToNewDocument(oldDocument);
     // If any experiment is enabled, then we want to enable a user gesture by
     // default, otherwise the experiment does nothing.
     bool oldDocumentRequiresUserGesture = (oldDocument.settings() && oldDocument.settings()->mediaPlaybackRequiresUserGesture())
@@ -1647,7 +1640,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
 
         // Check for autoplay, and record metrics about it if needed.
         if (shouldAutoplay(RecordMetricsBehavior::DoRecord)) {
-            recordAutoplaySourceMetric(AutoplaySourceAttribute);
+            m_autoplayUmaHelper->onAutoplayInitiated(AutoplaySource::Attribute);
 
             // If the autoplay experiment says that it's okay to play now,
             // then don't require a user gesture.
@@ -2100,7 +2093,7 @@ Nullable<ExceptionCode> HTMLMediaElement::play()
     m_autoplayHelper->playMethodCalled();
 
     if (!UserGestureIndicator::processingUserGesture()) {
-        recordAutoplaySourceMetric(AutoplaySourceMethod);
+        m_autoplayUmaHelper->onAutoplayInitiated(AutoplaySource::Method);
         if (isGestureNeededForPlayback()) {
             // If playback is deferred, then don't start playback but don't
             // fail yet either.
@@ -2315,9 +2308,9 @@ void HTMLMediaElement::setMuted(bool muted)
     if (wasAutoplayingMuted) {
         if (isGestureNeededForPlayback()) {
             pause();
-            recordAutoplayUnmuteStatus(AutoplayUnmuteActionFailure);
+            m_autoplayUmaHelper->recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus::Failure);
         } else {
-            recordAutoplayUnmuteStatus(AutoplayUnmuteActionSuccess);
+            m_autoplayUmaHelper->recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus::Success);
         }
     }
 }
@@ -3671,6 +3664,7 @@ DEFINE_TRACE(HTMLMediaElement)
     visitor->trace(m_audioSourceProvider);
     visitor->trace(m_autoplayHelperClient);
     visitor->trace(m_autoplayHelper);
+    visitor->trace(m_autoplayUmaHelper);
     visitor->trace(m_srcObject);
     visitor->trace(m_autoplayVisibilityObserver);
     visitor->template registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
@@ -3889,28 +3883,6 @@ EnumerationHistogram& HTMLMediaElement::showControlsHistogram() const
 
     DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram, ("Media.Controls.Show.Audio", MediaControlsShowMax));
     return histogram;
-}
-
-void HTMLMediaElement::recordAutoplaySourceMetric(int source)
-{
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, videoHistogram, ("Media.Video.Autoplay", NumberOfAutoplaySources));
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, mutedVideoHistogram, ("Media.Video.Autoplay.Muted", NumberOfAutoplaySources));
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, audioHistogram, ("Media.Audio.Autoplay", NumberOfAutoplaySources));
-
-    if (isHTMLVideoElement()) {
-        videoHistogram.count(source);
-        if (muted())
-            mutedVideoHistogram.count(source);
-    } else {
-        audioHistogram.count(source);
-    }
-}
-
-void HTMLMediaElement::recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus status)
-{
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, autoplayUnmuteHistogram, ("Media.Video.Autoplay.Muted.UnmuteAction", AutoplayUnmuteActionMax));
-
-    autoplayUnmuteHistogram.count(status);
 }
 
 void HTMLMediaElement::onVisibilityChangedForAutoplay(bool isVisible)
