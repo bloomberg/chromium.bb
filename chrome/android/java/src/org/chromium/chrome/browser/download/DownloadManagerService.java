@@ -298,11 +298,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
         DownloadItem downloadItem = new DownloadItem(false, downloadInfo);
         updateDownloadProgress(downloadItem, status);
         scheduleUpdateIfNeeded();
-
-        if (!mHistoryAdapters.isEmpty()) {
-            nativeGetDownloadInfoFor(getNativeDownloadManagerService(), downloadItem.getId(),
-                    downloadItem.getDownloadInfo().isOffTheRecord());
-        }
     }
 
     @Override
@@ -1480,9 +1475,10 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * {@link #onDownloadInfoAdded(String, String, String, String, long, long)}.
      *
      * This call will be delayed if the native side has not yet been initialized.
+     * @param isOffTheRecord Whether or not to get downloads for the off the record profile.
      */
-    public void getAllDownloads() {
-        nativeGetAllDownloads(getNativeDownloadManagerService());
+    public void getAllDownloads(boolean isOffTheRecord) {
+        nativeGetAllDownloads(getNativeDownloadManagerService(), isOffTheRecord);
     }
 
     @CalledByNative
@@ -1498,26 +1494,26 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     @CalledByNative
-    private void onAllDownloadsRetrieved(final List<DownloadItem> list) {
+    private void onAllDownloadsRetrieved(final List<DownloadItem> list, boolean isOffTheRecord) {
         for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
-            adapter.onAllDownloadsRetrieved(list);
+            adapter.onAllDownloadsRetrieved(list, isOffTheRecord);
         }
     }
 
     @CalledByNative
     private void onDownloadItemUpdated(String guid, String displayName, String filepath, String url,
-            String mimeType, long startTimestamp, long totalBytes) {
+            String mimeType, long startTimestamp, long totalBytes, boolean isOffTheRecord) {
         DownloadItem item = createDownloadItem(
                 guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes);
         for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
-            adapter.onDownloadItemUpdated(item);
+            adapter.onDownloadItemUpdated(item, isOffTheRecord);
         }
     }
 
     @CalledByNative
-    private void onDownloadItemRemoved(String guid) {
+    private void onDownloadItemRemoved(String guid, boolean isOffTheRecord) {
         for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
-            adapter.onDownloadItemRemoved(guid);
+            adapter.onDownloadItemRemoved(guid, isOffTheRecord);
         }
     }
 
@@ -1610,7 +1606,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
             boolean isOffTheRecord);
     private native void nativeRemoveDownload(long nativeDownloadManagerService, String downloadGuid,
             boolean isOffTheRecord);
-    private native void nativeGetAllDownloads(long nativeDownloadManagerService);
-    private native void nativeGetDownloadInfoFor(
-            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
+    private native void nativeGetAllDownloads(
+            long nativeDownloadManagerService, boolean isOffTheRecord);
 }

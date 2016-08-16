@@ -59,30 +59,39 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private static final int INVALID_INDEX = -1;
 
     private final List<DownloadItemWrapper> mDownloadItems = new ArrayList<>();
+    private final List<DownloadItemWrapper> mDownloadOffTheRecordItems = new ArrayList<>();
     private final List<OfflinePageItemWrapper> mOfflinePageItems = new ArrayList<>();
     private final List<DownloadHistoryItemWrapper> mFilteredItems = new ArrayList<>();
+    private final boolean mShowOffTheRecord;
 
     private int mFilter = DownloadFilter.FILTER_ALL;
     private DownloadManagerUi mManager;
     private OfflinePageDownloadBridge mOfflinePageBridge;
+
+    DownloadHistoryAdapter(boolean showOffTheRecord) {
+        mShowOffTheRecord = showOffTheRecord;
+    }
 
     @Override
     public void initialize(DownloadManagerUi manager) {
         manager.addObserver(this);
         mManager = manager;
 
+        // Get all regular and (if necessary) off the record downloads.
         getDownloadManagerService().addDownloadHistoryAdapter(this);
-        getDownloadManagerService().getAllDownloads();
+        getDownloadManagerService().getAllDownloads(false);
+        if (mShowOffTheRecord) getDownloadManagerService().getAllDownloads(true);
 
         initializeOfflinePageBridge();
     }
 
     /** Called when the user's download history has been gathered. */
-    public void onAllDownloadsRetrieved(List<DownloadItem> result) {
-        mDownloadItems.clear();
-        for (DownloadItem item : result) {
-            mDownloadItems.add(new DownloadItemWrapper(item));
-        }
+    public void onAllDownloadsRetrieved(List<DownloadItem> result, boolean isOffTheRecord) {
+        if (isOffTheRecord && !mShowOffTheRecord) return;
+
+        List<DownloadItemWrapper> list = getDownloadItemList(isOffTheRecord);
+        list.clear();
+        for (DownloadItem item : result) list.add(new DownloadItemWrapper(item, isOffTheRecord));
         filter(DownloadFilter.FILTER_ALL);
     }
 
@@ -101,6 +110,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     public long getTotalDownloadSize() {
         long totalSize = 0;
         for (DownloadHistoryItemWrapper wrapper : mDownloadItems) {
+            totalSize += wrapper.getFileSize();
+        }
+        for (DownloadHistoryItemWrapper wrapper : mDownloadOffTheRecordItems) {
             totalSize += wrapper.getFileSize();
         }
         for (DownloadHistoryItemWrapper wrapper : mOfflinePageItems) {
@@ -163,14 +175,17 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     /**
      * Updates the list when new information about a download comes in.
      */
-    public void onDownloadItemUpdated(DownloadItem item) {
-        int index = findItemIndex(mDownloadItems, item.getId());
+    public void onDownloadItemUpdated(DownloadItem item, boolean isOffTheRecord) {
+        if (isOffTheRecord && !mShowOffTheRecord) return;
+
+        List<DownloadItemWrapper> list = getDownloadItemList(isOffTheRecord);
+        int index = findItemIndex(list, item.getId());
         if (index == INVALID_INDEX) {
             // Add a new entry.
-            mDownloadItems.add(new DownloadItemWrapper(item));
+            list.add(new DownloadItemWrapper(item, isOffTheRecord));
         } else {
             // Update the old one.
-            mDownloadItems.set(index, new DownloadItemWrapper(item));
+            list.set(index, new DownloadItemWrapper(item, isOffTheRecord));
         }
 
         filter(mFilter);
@@ -178,12 +193,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     /**
      * Removes the DownloadItem with the given ID.
-     * @param guid ID of the DownloadItem that has been removed.
+     * @param guid           ID of the DownloadItem that has been removed.
+     * @param isOffTheRecord True if off the record, false otherwise.
      */
-    public void onDownloadItemRemoved(String guid) {
-        int index = findItemIndex(mDownloadItems, guid);
+    public void onDownloadItemRemoved(String guid, boolean isOffTheRecord) {
+        if (isOffTheRecord && !mShowOffTheRecord) return;
+
+        List<DownloadItemWrapper> list = getDownloadItemList(isOffTheRecord);
+        int index = findItemIndex(list, guid);
         if (index != INVALID_INDEX) {
-            DownloadItemWrapper wrapper = mDownloadItems.remove(index);
+            DownloadItemWrapper wrapper = list.remove(index);
             if (mManager.getSelectionDelegate().isItemSelected(wrapper)) {
                 mManager.getSelectionDelegate().toggleSelectionForItem(wrapper);
             }
@@ -214,9 +233,14 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         mFilteredItems.clear();
         if (filterType == DownloadFilter.FILTER_ALL) {
             mFilteredItems.addAll(mDownloadItems);
+            mFilteredItems.addAll(mDownloadOffTheRecordItems);
             mFilteredItems.addAll(mOfflinePageItems);
         } else {
             for (DownloadHistoryItemWrapper item : mDownloadItems) {
+                if (item.getFilterType() == filterType) mFilteredItems.add(item);
+            }
+
+            for (DownloadHistoryItemWrapper item : mDownloadOffTheRecordItems) {
                 if (item.getFilterType() == filterType) mFilteredItems.add(item);
             }
 
@@ -270,6 +294,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                 if (mFilter == DownloadFilter.FILTER_PAGE) filter(mFilter);
             }
         });
+    }
+
+    private List<DownloadItemWrapper> getDownloadItemList(boolean isOffTheRecord) {
+        return isOffTheRecord ? mDownloadOffTheRecordItems : mDownloadItems;
     }
 
     /**

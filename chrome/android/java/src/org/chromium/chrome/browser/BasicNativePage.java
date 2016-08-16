@@ -27,7 +27,7 @@ public abstract class BasicNativePage implements NativePage {
     private String mUrl;
 
     public BasicNativePage(Activity activity, Tab tab) {
-        initialize(activity);
+        initialize(activity, tab);
         mActivity = activity;
         mTab = tab;
         mBackgroundColor = ApiCompatibilityUtils.getColor(activity.getResources(),
@@ -49,7 +49,7 @@ public abstract class BasicNativePage implements NativePage {
     /**
      * Subclasses shall implement this method to initialize the UI that they hold.
      */
-    protected abstract void initialize(Activity activity);
+    protected abstract void initialize(Activity activity, Tab tab);
 
     @Override
     public abstract View getView();

@@ -73,10 +73,12 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         private static final String MIMETYPE_DOCUMENT = "text";
 
         private final DownloadItem mItem;
+        private boolean mIsOffTheRecord;
         private File mFile;
 
-        DownloadItemWrapper(DownloadItem item) {
+        DownloadItemWrapper(DownloadItem item, boolean isOffTheRecord) {
             mItem = item;
+            mIsOffTheRecord = isOffTheRecord;
         }
 
         @Override
@@ -167,7 +169,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
             // Tell the DownloadManager to remove the file from history.
             DownloadManagerService service = DownloadManagerService.getDownloadManagerService(
                     ContextUtils.getApplicationContext());
-            service.removeDownload(getId(), false);
+            service.removeDownload(getId(), mIsOffTheRecord);
 
             // Delete the file from storage.
             new AsyncTask<Void, Void, Void>() {
@@ -264,6 +266,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
             return null;
         }
 
+        @Override
         public void open() {
             getBridge().openItem(getId());
         }

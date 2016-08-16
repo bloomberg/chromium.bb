@@ -29,7 +29,7 @@ public class BookmarkPage extends BasicNativePage {
     }
 
     @Override
-    protected void initialize(Activity activity) {
+    protected void initialize(Activity activity, Tab tab) {
         mManager = new BookmarkManager(activity, false);
         mManager.setBasicNativePage(this);
         mTitle = activity.getString(R.string.bookmarks);

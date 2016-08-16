@@ -80,13 +80,13 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
     private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
 
-    public DownloadManagerUi(Activity activity) {
+    public DownloadManagerUi(Activity activity, boolean isOffTheRecord) {
         mActivity = activity;
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
 
         mSelectionDelegate = new SelectionDelegate<DownloadHistoryItemWrapper>();
 
-        mHistoryAdapter = new DownloadHistoryAdapter();
+        mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord);
         mHistoryAdapter.initialize(this);
 
         mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);

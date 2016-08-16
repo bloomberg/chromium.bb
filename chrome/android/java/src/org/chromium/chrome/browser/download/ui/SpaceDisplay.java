@@ -38,7 +38,8 @@ class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         mSpaceUsedTextView = (TextView) parent.findViewById(R.id.space_used_display);
         mSpaceTotalTextView = (TextView) parent.findViewById(R.id.space_total_display);
         mSpaceBar = (ProgressBar) parent.findViewById(R.id.space_bar);
-        mFileSystemBytesTask = createStorageSizeTask().execute();
+        mFileSystemBytesTask =
+                createStorageSizeTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private AsyncTask<Void, Void, Long> createStorageSizeTask() {

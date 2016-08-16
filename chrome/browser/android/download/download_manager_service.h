@@ -67,22 +67,20 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
                       const JavaParamRef<jstring>& jdownload_guid,
                       bool is_off_the_record);
 
-  // Returns information about the item that has GUID equal to |jdownload_guid|.
-  void GetDownloadInfoFor(JNIEnv* env,
-                          jobject obj,
-                          const JavaParamRef<jstring>& jdownload_guid,
-                          bool is_off_the_record);
-
   // Called to request that the DownloadManagerService return data about all
   // downloads in the user's history.
-  void GetAllDownloads(JNIEnv* env, const JavaParamRef<jobject>& obj);
+  void GetAllDownloads(JNIEnv* env,
+                       const JavaParamRef<jobject>& obj,
+                       bool is_off_the_record);
 
   // DownloadHistory::Observer methods.
   void OnHistoryQueryComplete() override;
 
   // AllDownloadItemNotifier::Observer methods.
-  void OnDownloadRemoved(
-      content::DownloadManager* manager, content::DownloadItem* item) override;
+  void OnDownloadUpdated(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
+  void OnDownloadRemoved(content::DownloadManager* manager,
+                         content::DownloadItem* item) override;
 
  protected:
   // Called to get the content::DownloadManager instance.
@@ -109,7 +107,7 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
                               bool is_off_the_record);
 
   // Helper function to send info about all downloads to the Java-side.
-  void GetAllDownloadsInternal();
+  void GetAllDownloadsInternal(bool is_off_the_record);
 
   // Called to notify the java side that download resumption failed.
   void OnResumptionFailed(const std::string& download_guid);
@@ -126,7 +124,14 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
 
   bool is_history_query_complete_;
 
-  enum DownloadAction { RESUME, PAUSE, CANCEL, REMOVE, INITIALIZE_UI, UNKNOWN };
+  enum DownloadAction {
+    RESUME,
+    PAUSE,
+    CANCEL,
+    REMOVE,
+    INITIALIZE_UI,
+    INITIALIZE_OFF_THE_RECORD_UI,
+    UNKNOWN };
 
   using PendingDownloadActions = std::map<std::string, DownloadAction>;
   PendingDownloadActions pending_actions_;
@@ -137,6 +142,7 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
   ResumeCallback resume_callback_for_testing_;
 
   std::unique_ptr<AllDownloadItemNotifier> original_notifier_;
+  std::unique_ptr<AllDownloadItemNotifier> off_the_record_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerService);
 };

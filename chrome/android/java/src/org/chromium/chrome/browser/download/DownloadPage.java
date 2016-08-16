@@ -30,8 +30,8 @@ public class DownloadPage extends BasicNativePage {
     }
 
     @Override
-    protected void initialize(Activity activity) {
-        mManager = new DownloadManagerUi(activity);
+    protected void initialize(Activity activity, Tab tab) {
+        mManager = new DownloadManagerUi(activity, tab.isIncognito());
         mManager.setBasicNativePage(this);
         mTitle = activity.getString(R.string.download_manager_ui_all_downloads);
     }

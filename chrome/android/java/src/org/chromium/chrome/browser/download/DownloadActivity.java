@@ -4,11 +4,8 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 
@@ -22,7 +19,8 @@ public class DownloadActivity extends SnackbarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mDownloadManagerUi = new DownloadManagerUi(this);
+        mDownloadManagerUi = new DownloadManagerUi(
+                this, DownloadUtils.shouldShowOffTheRecordDownloads(getIntent()));
         setContentView(mDownloadManagerUi.getView());
     }
 
@@ -35,16 +33,5 @@ public class DownloadActivity extends SnackbarActivity {
     protected void onDestroy() {
         mDownloadManagerUi.onDestroyed();
         super.onDestroy();
-    }
-
-    /**
-     * Convenience method for launching this Activity.
-     * @param activity Activity that is launching this the Downloads page.
-     */
-    public static void launch(Activity activity) {
-        Intent intent = new Intent();
-        intent.setClass(activity, DownloadActivity.class);
-        intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
-        activity.startActivity(intent);
     }
 }

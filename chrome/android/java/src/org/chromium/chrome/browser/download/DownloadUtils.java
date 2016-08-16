@@ -5,9 +5,12 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
+import android.content.Intent;
 
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -16,6 +19,9 @@ import org.chromium.ui.base.DeviceFormFactor;
  */
 public class DownloadUtils {
 
+    private static final String EXTRA_IS_OFF_THE_RECORD =
+            "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
+
     /**
      * Displays the download manager UI. Note the UI is different on tablets and on phones.
      */
@@ -23,7 +29,19 @@ public class DownloadUtils {
         if (DeviceFormFactor.isTablet(activity)) {
             tab.loadUrl(new LoadUrlParams(UrlConstants.DOWNLOADS_URL));
         } else {
-            DownloadActivity.launch(activity);
+            Intent intent = new Intent();
+            intent.setClass(activity, DownloadActivity.class);
+            intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
+            intent.putExtra(EXTRA_IS_OFF_THE_RECORD, tab.isIncognito());
+            activity.startActivity(intent);
         }
+    }
+
+    /**
+     * @return Whether or not the Intent corresponds to a DownloadActivity that should show off the
+     *         record downloads.
+     */
+    public static boolean shouldShowOffTheRecordDownloads(Intent intent) {
+        return IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFF_THE_RECORD, false);
     }
 }

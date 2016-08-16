@@ -10,11 +10,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -111,8 +109,7 @@ public class AppMenuPropertiesDelegate {
 
                 MenuItem offlineMenuItem = menu.findItem(R.id.offline_page_id);
                 if (offlineMenuItem != null) {
-                    if (CommandLine.getInstance().hasSwitch(
-                            ChromeSwitches.ENABLE_OFFLINE_PAGE_DOWNLOADING)) {
+                    if (ChromeFeatureList.isEnabled("DownloadsUi")) {
                         offlineMenuItem.setEnabled(!isChromeScheme);
                         Drawable drawable = offlineMenuItem.getIcon();
                         if (drawable != null) {

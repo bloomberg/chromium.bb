@@ -115,47 +115,18 @@ void DownloadManagerService::RemoveDownload(
 }
 
 void DownloadManagerService::GetAllDownloads(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj) {
+                                             const JavaParamRef<jobject>& obj,
+                                             bool is_off_the_record) {
   if (is_history_query_complete_)
-    GetAllDownloadsInternal();
+    GetAllDownloadsInternal(is_off_the_record);
+  else if (is_off_the_record)
+    EnqueueDownloadAction(std::string(), INITIALIZE_OFF_THE_RECORD_UI);
   else
     EnqueueDownloadAction(std::string(), INITIALIZE_UI);
 }
 
-void DownloadManagerService::GetDownloadInfoFor(
-    JNIEnv* env,
-    jobject obj,
-    const JavaParamRef<jstring>& jdownload_guid,
-    bool is_off_the_record) {
-  // The UI shouldn't be able to request any info about a specific item until it
-  // has been initialized with the list of existing downloads.
-  DCHECK(is_history_query_complete_ || is_off_the_record);
-
+void DownloadManagerService::GetAllDownloadsInternal(bool is_off_the_record) {
   content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
-  if (java_ref_.is_null() || !manager)
-    return;
-
-  // Search through the downloads for the entry with the given GUID.
-  content::DownloadManager::DownloadVector all_items;
-  manager->GetAllDownloads(&all_items);
-  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  for (auto item : all_items) {
-    if (item->GetGuid() != download_guid)
-      continue;
-
-    Java_DownloadManagerService_onDownloadItemUpdated(
-        env, java_ref_, ConvertUTF8ToJavaString(env, item->GetGuid()),
-        ConvertUTF8ToJavaString(env, item->GetFileNameToReportUser().value()),
-        ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
-        ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
-        ConvertUTF8ToJavaString(env, item->GetMimeType()),
-        item->GetStartTime().ToJavaTime(), item->GetTotalBytes());
-    break;
-  }
-}
-
-void DownloadManagerService::GetAllDownloadsInternal() {
-  content::DownloadManager* manager = GetDownloadManager(false);
   if (java_ref_.is_null() || !manager)
     return;
 
@@ -182,8 +153,8 @@ void DownloadManagerService::GetAllDownloadsInternal() {
         item->GetStartTime().ToJavaTime(), item->GetTotalBytes());
   }
 
-  Java_DownloadManagerService_onAllDownloadsRetrieved(env, java_ref_,
-                                                      j_download_item_list);
+  Java_DownloadManagerService_onAllDownloadsRetrieved(
+      env, java_ref_, j_download_item_list, is_off_the_record);
 }
 
 
@@ -221,7 +192,10 @@ void DownloadManagerService::OnHistoryQueryComplete() {
         CancelDownloadInternal(download_guid, false);
         break;
       case INITIALIZE_UI:
-        GetAllDownloadsInternal();
+        GetAllDownloadsInternal(false);
+        break;
+      case INITIALIZE_OFF_THE_RECORD_UI:
+        GetAllDownloadsInternal(true);
         break;
       default:
         NOTREACHED();
@@ -234,13 +208,47 @@ void DownloadManagerService::OnHistoryQueryComplete() {
   content::DownloadManager* manager = GetDownloadManager(false);
   if (manager)
     original_notifier_.reset(new AllDownloadItemNotifier(manager, this));
+
+  content::DownloadManager* off_the_record_manager = GetDownloadManager(true);
+  if (off_the_record_manager) {
+    off_the_record_notifier_.reset(
+        new AllDownloadItemNotifier(off_the_record_manager, this));
+  }
+}
+
+void DownloadManagerService::OnDownloadUpdated(
+    content::DownloadManager* manager, content::DownloadItem* item) {
+  // Ignore anything that isn't a completed download notification.
+  if (!item->IsDone() || java_ref_.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_DownloadManagerService_onDownloadItemUpdated(
+      env,
+      java_ref_.obj(),
+      ConvertUTF8ToJavaString(env, item->GetGuid()).obj(),
+      ConvertUTF8ToJavaString(
+          env, item->GetFileNameToReportUser().value()).obj(),
+      ConvertUTF8ToJavaString(
+          env, item->GetTargetFilePath().value()).obj(),
+      ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()).obj(),
+      ConvertUTF8ToJavaString(env, item->GetMimeType()).obj(),
+      item->GetStartTime().ToJavaTime(),
+      item->GetTotalBytes(),
+      item->GetBrowserContext()->IsOffTheRecord());
 }
 
 void DownloadManagerService::OnDownloadRemoved(
     content::DownloadManager* manager, content::DownloadItem* item) {
+  if (java_ref_.is_null())
+    return;
+
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadManagerService_onDownloadItemRemoved(
-      env, java_ref_, ConvertUTF8ToJavaString(env, item->GetGuid()));
+      env,
+      java_ref_.obj(),
+      ConvertUTF8ToJavaString(env, item->GetGuid()),
+      item->GetBrowserContext()->IsOffTheRecord());
 }
 
 void DownloadManagerService::ResumeDownloadInternal(
@@ -323,6 +331,7 @@ void DownloadManagerService::EnqueueDownloadAction(
       iter->second = action;
       break;
     case INITIALIZE_UI:
+    case INITIALIZE_OFF_THE_RECORD_UI:
       iter->second = action;
       break;
     default:
