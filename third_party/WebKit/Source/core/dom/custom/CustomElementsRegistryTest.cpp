@@ -442,6 +442,42 @@ TEST_F(CustomElementsRegistryTest, disconnectedCallback)
         << "remove() should not invoke other callbacks";
 }
 
+TEST_F(CustomElementsRegistryTest, adoptedCallback)
+{
+    ScriptForbiddenScope doNotRelyOnScript;
+
+    Element* element = CreateElement("a-a").inDocument(&document());
+    document().documentElement()->appendChild(element);
+
+    LogUpgradeBuilder builder;
+    NonThrowableExceptionState shouldNotThrow;
+    {
+        CEReactionsScope reactions;
+        registry().define(
+            "a-a",
+            builder,
+            ElementRegistrationOptions(),
+            shouldNotThrow);
+    }
+    LogUpgradeDefinition* definition =
+        static_cast<LogUpgradeDefinition*>(registry().definitionForName("a-a"));
+
+    definition->clear();
+    Document* otherDocument = HTMLDocument::create();
+    {
+        CEReactionsScope reactions;
+        otherDocument->adoptNode(element, ASSERT_NO_EXCEPTION);
+    }
+    EXPECT_EQ(LogUpgradeDefinition::DisconnectedCallback, definition->m_logs[0])
+        << "adoptNode() should invoke disconnectedCallback";
+
+    EXPECT_EQ(LogUpgradeDefinition::AdoptedCallback, definition->m_logs[1])
+        << "adoptNode() should invoke adoptedCallback";
+
+    EXPECT_EQ(2u, definition->m_logs.size())
+        << "adoptNode() should not invoke other callbacks";
+}
+
 // TODO(dominicc): Add tests which adjust the "is" attribute when type
 // extensions are implemented.
 
