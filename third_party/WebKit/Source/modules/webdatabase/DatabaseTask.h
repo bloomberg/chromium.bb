@@ -51,9 +51,6 @@ public:
     void run();
 
     Database* database() const { return m_database.get(); }
-#if ENABLE(ASSERT)
-    bool hasSynchronizer() const { return m_synchronizer; }
-#endif
 
 protected:
     DatabaseTask(Database*, TaskSynchronizer*);

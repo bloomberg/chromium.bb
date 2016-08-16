@@ -38,7 +38,7 @@ namespace blink {
 DatabaseTask::DatabaseTask(Database* database, TaskSynchronizer* synchronizer)
     : m_database(database)
     , m_synchronizer(synchronizer)
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
     , m_complete(false)
 #endif
 {
@@ -46,7 +46,7 @@ DatabaseTask::DatabaseTask(Database* database, TaskSynchronizer* synchronizer)
 
 DatabaseTask::~DatabaseTask()
 {
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
     ASSERT(m_complete || !m_synchronizer);
 #endif
 }
@@ -54,13 +54,13 @@ DatabaseTask::~DatabaseTask()
 void DatabaseTask::run()
 {
     // Database tasks are meant to be used only once, so make sure this one hasn't been performed before.
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
     ASSERT(!m_complete);
 #endif
 
     if (!m_synchronizer && !m_database->getDatabaseContext()->databaseThread()->isDatabaseOpen(m_database.get())) {
         taskCancelled();
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
         m_complete = true;
 #endif
         return;
@@ -74,7 +74,7 @@ void DatabaseTask::run()
     if (m_synchronizer)
         m_synchronizer->taskCompleted();
 
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
     m_complete = true;
 #endif
 }
