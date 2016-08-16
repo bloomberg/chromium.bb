@@ -52,6 +52,9 @@ enum SecurityReportingOption {
     ReportSecurityError,
 };
 
+// TODO(yukishiino): Remove the first argument of v8::Isolate*.  These functions
+// just check if it's accessible or not, and never create anything.  So there is
+// no need to pass the isolate.
 class CORE_EXPORT BindingSecurity {
     STATIC_ONLY(BindingSecurity);
 public:

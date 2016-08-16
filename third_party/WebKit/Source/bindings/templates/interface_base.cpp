@@ -88,19 +88,7 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
     if (window.IsEmpty())
         return false; // the frame is gone.
 
-    DOMWindow* targetWindow = V8Window::toImpl(window);
-    ASSERT(targetWindow);
-    if (!targetWindow->isLocalDOMWindow())
-        return false;
-
-    LocalFrame* targetFrame = toLocalDOMWindow(targetWindow)->frame();
-    if (!targetFrame)
-        return false;
-
-    // Notify the loader's client if the initial document has been accessed.
-    if (targetFrame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
-        targetFrame->loader().didAccessInitialDocument();
-
+    const DOMWindow* targetWindow = V8Window::toImpl(window);
     return BindingSecurity::shouldAllowAccessTo(isolate, toLocalDOMWindow(toDOMWindow(accessingContext)), targetWindow, DoNotReportSecurityError);
     {% else %}{# if interface_name == 'Window' #}
     {# Not 'Window' means it\'s Location. #}

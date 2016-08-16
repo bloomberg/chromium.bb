@@ -1954,11 +1954,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCloseTabWithUnsafePopup) {
   nav_observer.Wait();
   // Since the popup is showing an interstitial, it shouldn't have a last
   // committed entry.
+  content::WaitForInterstitialAttach(popup);
   EXPECT_FALSE(popup->GetController().GetLastCommittedEntry());
   ASSERT_TRUE(popup->GetController().GetVisibleEntry());
   EXPECT_EQ(https_server_expired_.GetURL("/ssl/bad_iframe.html"),
             popup->GetController().GetVisibleEntry()->GetURL());
-  content::WaitForInterstitialAttach(popup);
   EXPECT_TRUE(popup->ShowingInterstitialPage());
 
   // Add another tab to make sure the browser does not exit when we close
