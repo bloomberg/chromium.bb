@@ -334,6 +334,7 @@ source_set("session") {
     ":app_settings",
     ":app_switches",
     ":app_ui",
+    ":blob_channel_service",
     ":common",
     ":common_user_agent",
     ":feature",

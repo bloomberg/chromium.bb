@@ -43,13 +43,9 @@ BlimpBrowserContext* BlimpContentBrowserClient::GetBrowserContext() {
 void BlimpContentBrowserClient::ExposeInterfacesToRenderer(
     shell::InterfaceRegistry* registry,
     content::RenderProcessHost* render_process_host) {
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI);
-  registry->AddInterface<mojom::BlobChannel>(
-      base::Bind(&BlobChannelService::Create,
-                 blimp_browser_main_parts_->GetBlobChannelSender()),
-      ui_task_runner);
+  registry->AddInterface<mojom::BlobChannel>(base::Bind(
+      &BlobChannelService::BindRequest,
+      base::Unretained(blimp_browser_main_parts_->GetBlobChannelService())));
 }
 
 }  // namespace engine

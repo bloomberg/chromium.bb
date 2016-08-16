@@ -25,6 +25,7 @@
 #include "blimp/engine/app/ui/blimp_window_tree_host.h"
 #include "blimp/engine/common/blimp_browser_context.h"
 #include "blimp/engine/common/blimp_user_agent.h"
+#include "blimp/engine/mojo/blob_channel_service.h"
 #include "blimp/engine/session/tab.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_multiplexer.h"
@@ -239,7 +240,8 @@ BlimpEngineSession::BlimpEngineSession(
   blob_channel_sender_ = base::WrapUnique(
       new BlobChannelSenderImpl(base::WrapUnique(new InMemoryBlobCache),
                                 std::move(helium_blob_delegate)));
-
+  blob_channel_service_ =
+      base::MakeUnique<BlobChannelService>(blob_channel_sender_.get());
   device::GeolocationProvider::SetGeolocationDelegate(
       geolocation_feature_.CreateGeolocationDelegate());
 }

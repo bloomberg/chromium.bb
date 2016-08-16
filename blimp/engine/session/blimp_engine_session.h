@@ -15,6 +15,7 @@
 #include "blimp/engine/feature/engine_render_widget_feature.h"
 #include "blimp/engine/feature/engine_settings_feature.h"
 #include "blimp/engine/feature/geolocation/engine_geolocation_feature.h"
+#include "blimp/engine/mojo/blob_channel_service.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/connection_error_observer.h"
 #include "content/public/browser/invalidate_type.h"
@@ -94,6 +95,10 @@ class BlimpEngineSession
 
   BlobChannelSender* blob_channel_sender() {
     return blob_channel_sender_.get();
+  }
+
+  BlobChannelService* blob_channel_service() {
+    return blob_channel_service_.get();
   }
 
   // Gets Engine's listening port. Invokes callback with the allocated port.
@@ -201,9 +206,13 @@ class BlimpEngineSession
   // Sends outgoing blob data as BlimpMessages.
   HeliumBlobSenderDelegate* blob_delegate_;
 
-  // Receives image data from the renderer and sends it to the client via
+  // Receives image data and sends it to the client via
   // |blob_delegate_|.
   std::unique_ptr<BlobChannelSender> blob_channel_sender_;
+
+  // Receives image data from the renderer and sends it to
+  // |blob_channel_sender_|.
+  std::unique_ptr<BlobChannelService> blob_channel_service_;
 
   // Handles all incoming and outgoing messages related to Geolocation.
   EngineGeolocationFeature geolocation_feature_;

@@ -16,10 +16,8 @@
 namespace blimp {
 namespace engine {
 
-BlobChannelService::BlobChannelService(BlobChannelSender* blob_channel_sender,
-                                       mojom::BlobChannelRequest request)
-    : binding_(this, std::move(request)),
-      blob_channel_sender_(blob_channel_sender) {
+BlobChannelService::BlobChannelService(BlobChannelSender* blob_channel_sender)
+    : blob_channel_sender_(blob_channel_sender) {
   DCHECK(blob_channel_sender_);
 }
 
@@ -61,13 +59,9 @@ void BlobChannelService::DeliverBlob(const std::string& id) {
   blob_channel_sender_->DeliverBlob(id);
 }
 
-// static
-void BlobChannelService::Create(
-    BlobChannelSender* blob_channel_sender,
+void BlobChannelService::BindRequest(
     mojo::InterfaceRequest<mojom::BlobChannel> request) {
-  // Object lifetime is managed by BlobChannelService's StrongBinding
-  // |binding_|.
-  new BlobChannelService(blob_channel_sender, std::move(request));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace engine

@@ -27,14 +27,16 @@ const char kBlobPayload[] = "bar";
 
 class BlobChannelSenderProxyTest : public testing::Test {
  public:
-  BlobChannelSenderProxyTest() {}
+  BlobChannelSenderProxyTest()
+      : mojo_service_impl_(
+            base::MakeUnique<BlobChannelService>(&mock_sender_)) {}
 
   void SetUp() override {
     // Set up communication path from the Proxy to a sender mock:
     // blob_channel_sender_proxy_ => (mojo) => mojo_service_impl_ =>
     //    mock_sender_;
     mojom::BlobChannelPtr mojo_ptr;
-    BlobChannelService::Create(&mock_sender_, GetProxy(&mojo_ptr));
+    mojo_service_impl_->BindRequest(GetProxy(&mojo_ptr));
     blob_channel_sender_proxy_ =
         BlobChannelSenderProxy::CreateForTest(std::move(mojo_ptr));
   }
