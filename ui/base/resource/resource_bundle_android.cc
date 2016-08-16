@@ -128,7 +128,7 @@ void SetLocalePaksStoredInApk(bool value) {
   g_locale_paks_in_apk = value;
 }
 
-bool LoadMainAndroidPackFile(const char* path_within_apk,
+void LoadMainAndroidPackFile(const char* path_within_apk,
                              const base::FilePath& disk_file_path) {
   if (LoadFromApkOrFile(path_within_apk,
                         &disk_file_path,
@@ -137,9 +137,7 @@ bool LoadMainAndroidPackFile(const char* path_within_apk,
     ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
         base::File(g_resources_pack_fd), g_resources_pack_region,
         SCALE_FACTOR_NONE);
-    return true;
   }
-  return false;
 }
 
 int GetMainAndroidPackFd(base::MemoryMappedFile::Region* out_region) {
