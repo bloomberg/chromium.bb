@@ -56,7 +56,7 @@
         <ImageButton android:id="@+id/tab_switcher_button"
             style="@style/ToolbarButton"
             android:layout_gravity="top"
-            android:contentDescription="@string/accessibility_toolbar_btn_tabswitcher_toggle" />
+            android:contentDescription="@string/accessibility_toolbar_btn_tabswitcher_toggle_default" />
 
         <FrameLayout
             android:layout_width="wrap_content"

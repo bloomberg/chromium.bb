@@ -79,6 +79,13 @@ Still reading?
     <!-- http://crbug.com/450548 -->
     <ignore regexp=".*restriction_values.xml.*" />
   </issue>
+  <!--
+    TODO(estevenson) remove this once translations are added for
+    IDS_ACCESSIBILITY_TOOLBAR_BTN_TABSWITCHER_TOGGLE (http://crbug.com/635677)
+  -->
+  <issue id="MissingQuantity">
+    <ignore regexp=".*android_chrome_strings.xml" />
+  </issue>
   <issue id="MissingVersion">
     <ignore path="AndroidManifest.xml"/>
   </issue>
@@ -118,6 +125,13 @@ Still reading?
   </issue>
   <issue id="SignatureOrSystemPermissions" severity="ignore"/>
   <issue id="UnusedAttribute" severity="ignore"/>
+  <!--
+    TODO(estevenson) remove this once translations are updated for
+    IDS_ACCESSIBILITY_TOOLBAR_BTN_TABSWITCHER_TOGGLE (http://crbug.com/635677)
+  -->
+  <issue id="UnusedQuantity">
+    <ignore regexp=".*android_chrome_strings.xml" />
+  </issue>
   <issue id="ViewConstructor" severity="ignore"/>
   <issue id="WrongCall" severity="ignore"/>
   <issue id="UselessParent">

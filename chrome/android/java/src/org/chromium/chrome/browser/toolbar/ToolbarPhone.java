@@ -1804,8 +1804,9 @@ public class ToolbarPhone extends ToolbarLayout
 
         mToggleTabStackButton.setEnabled(numberOfTabs >= 1);
         mToggleTabStackButton.setContentDescription(
-                getResources().getString(R.string.accessibility_toolbar_btn_tabswitcher_toggle,
-                        numberOfTabs));
+                getResources().getQuantityString(
+                        R.plurals.accessibility_toolbar_btn_tabswitcher_toggle,
+                        numberOfTabs, numberOfTabs));
         mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito());
         mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito());
 

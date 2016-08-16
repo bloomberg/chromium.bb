@@ -447,8 +447,9 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     @Override
     protected void updateTabCountVisuals(int numberOfTabs) {
         mAccessibilitySwitcherButton.setContentDescription(
-                getResources().getString(R.string.accessibility_toolbar_btn_tabswitcher_toggle,
-                        numberOfTabs));
+                getResources().getQuantityString(
+                        R.plurals.accessibility_toolbar_btn_tabswitcher_toggle,
+                        numberOfTabs, numberOfTabs));
         mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito());
         mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito());
     }
