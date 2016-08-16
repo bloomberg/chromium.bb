@@ -13,25 +13,20 @@
 #include "ash/common/wm/immersive_revealed_lock.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "ui/aura/window_observer.h"
-#include "ui/events/event_handler.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/views/focus/focus_manager.h"
+#include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/widget_observer.h"
-#include "ui/wm/core/transient_window_observer.h"
-
-namespace aura {
-class Window;
-}
 
 namespace gfx {
 class Point;
-class Rect;
 class SlideAnimation;
 }
 
 namespace ui {
+class GestureEvent;
 class LocatedEvent;
+class MouseEvent;
+class TouchEvent;
 }
 
 namespace views {
@@ -41,12 +36,15 @@ class Widget;
 
 namespace ash {
 
+class ImmersiveFocusWatcher;
+class ImmersiveFullscreenControllerTestApi;
+class ImmersiveGestureHandler;
+class WmWindow;
+
 class ASH_EXPORT ImmersiveFullscreenController
     : public WmImmersiveFullscreenController,
       public gfx::AnimationDelegate,
-      public ui::EventHandler,
-      public ::wm::TransientWindowObserver,
-      public views::FocusChangeListener,
+      public views::PointerWatcher,
       public views::WidgetObserver,
       public ImmersiveRevealedLock::Delegate {
  public:
@@ -79,30 +77,31 @@ class ASH_EXPORT ImmersiveFullscreenController
   // top-of-window views for the sake of testing.
   void SetupForTest();
 
-  // ui::EventHandler overrides:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnTouchEvent(ui::TouchEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
+  views::Widget* widget() { return widget_; }
+  views::View* top_container() { return top_container_; }
 
-  // views::FocusChangeObserver overrides:
-  void OnWillChangeFocus(views::View* focused_before,
-                         views::View* focused_now) override;
-  void OnDidChangeFocus(views::View* focused_before,
-                        views::View* focused_now) override;
+  // TODO(sky): move OnMouseEvent/OnTouchEvent to private section.
+  void OnMouseEvent(const ui::MouseEvent& event,
+                    const gfx::Point& location_in_screen,
+                    views::Widget* target);
+  void OnTouchEvent(const ui::TouchEvent& event,
+                    const gfx::Point& location_in_screen);
+  // Processes a GestureEvent. This may call SetHandled() on the supplied event.
+  void OnGestureEvent(ui::GestureEvent* event,
+                      const gfx::Point& location_in_screen);
+
+  // views::PointerWatcher:
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              const gfx::Point& location_in_screen,
+                              views::Widget* target) override;
+  void OnMouseCaptureChanged() override;
 
   // views::WidgetObserver overrides:
   void OnWidgetDestroying(views::Widget* widget) override;
-  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // gfx::AnimationDelegate overrides:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
-
-  // ::wm::TransientWindowObserver overrides:
-  void OnTransientChildAdded(aura::Window* window,
-                             aura::Window* transient) override;
-  void OnTransientChildRemoved(aura::Window* window,
-                               aura::Window* transient) override;
 
   // ash::ImmersiveRevealedLock::Delegate overrides:
   void LockRevealedState(AnimateReveal animate_reveal) override;
@@ -110,6 +109,7 @@ class ASH_EXPORT ImmersiveFullscreenController
 
  private:
   friend class ImmersiveFullscreenControllerTest;
+  friend class ImmersiveFullscreenControllerTestApi;
 
   enum Animate {
     ANIMATE_NO,
@@ -131,12 +131,19 @@ class ASH_EXPORT ImmersiveFullscreenController
   // hovered at the top of the screen the timer is started. If the mouse moves
   // away from the top edge, or moves too much in the x direction, the timer is
   // stopped.
-  void UpdateTopEdgeHoverTimer(const ui::MouseEvent& event);
+  void UpdateTopEdgeHoverTimer(const ui::MouseEvent& event,
+                               const gfx::Point& location_in_screen,
+                               views::Widget* target);
 
   // Updates |located_event_revealed_lock_| based on the current mouse state and
   // the current touch state.
   // |event| is NULL if the source event is not known.
-  void UpdateLocatedEventRevealedLock(const ui::LocatedEvent* event);
+  void UpdateLocatedEventRevealedLock(const ui::LocatedEvent* event,
+                                      const gfx::Point& location_in_screen);
+
+  // Convenience for calling two argument version with a null event and looking
+  // up the location from the last mouse location.
+  void UpdateLocatedEventRevealedLock();
 
   // Acquires |located_event_revealed_lock_| if it is not already held.
   void AcquireLocatedEventRevealedLock();
@@ -187,15 +194,12 @@ class ASH_EXPORT ImmersiveFullscreenController
   // is a bezel sensor above the top container.
   bool ShouldHandleGestureEvent(const gfx::Point& location) const;
 
-  // Recreate |bubble_observer_| and start observing any bubbles anchored to a
-  // child of |top_container_|.
-  void RecreateBubbleObserver();
-
   // Not owned.
   WmImmersiveFullscreenControllerDelegate* delegate_;
   views::View* top_container_;
   views::Widget* widget_;
-  aura::Window* native_window_;
+  // The WmWindow for |widget_|.
+  WmWindow* widget_window_ = nullptr;
 
   // True if the observers have been enabled.
   bool observers_enabled_;
@@ -225,20 +229,14 @@ class ASH_EXPORT ImmersiveFullscreenController
   // and when the user does a SWIPE_OPEN edge gesture.
   std::unique_ptr<ImmersiveRevealedLock> located_event_revealed_lock_;
 
-  // Lock which keeps the top-of-window views revealed based on the focused view
-  // and the active widget. Acquiring the lock never triggers a reveal because
-  // a view is not focusable till a reveal has made it visible.
-  std::unique_ptr<ImmersiveRevealedLock> focus_revealed_lock_;
-
   // The animation which controls sliding the top-of-window views in and out.
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // Whether the animations are disabled for testing.
   bool animations_disabled_for_test_;
 
-  // Manages bubbles which are anchored to a child of |top_container_|.
-  class BubbleObserver;
-  std::unique_ptr<BubbleObserver> bubble_observer_;
+  std::unique_ptr<ImmersiveFocusWatcher> immersive_focus_watcher_;
+  std::unique_ptr<ImmersiveGestureHandler> immersive_gesture_handler_;
 
   base::WeakPtrFactory<ImmersiveFullscreenController> weak_ptr_factory_;
 

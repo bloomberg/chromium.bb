@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_stub.h"
 
 #if defined(USE_ASH)
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #endif
 
@@ -12,10 +13,13 @@ namespace chrome {
 
 ImmersiveModeController* CreateImmersiveModeController() {
 #if defined(USE_ASH)
-  return new ImmersiveModeControllerAsh();
-#else
-  return new ImmersiveModeControllerStub();
+  if (!IsRunningInMash())
+    return new ImmersiveModeControllerAsh();
+
+  // TODO: http://crbug.com/548435
+  NOTIMPLEMENTED();
 #endif  // USE_ASH
+  return new ImmersiveModeControllerStub();
 }
 
 }  // namespace chrome
