@@ -203,10 +203,19 @@ void V8ConsoleMessage::setLocation(const String16& url, unsigned lineNumber, uns
 void V8ConsoleMessage::reportToFrontend(protocol::Console::Frontend* frontend) const
 {
     DCHECK(m_origin == V8MessageOrigin::kConsole);
+    String16 level = protocol::Console::ConsoleMessage::LevelEnum::Log;
+    if (m_type == ConsoleAPIType::kDebug || m_type == ConsoleAPIType::kCount || m_type == ConsoleAPIType::kTimeEnd)
+        level = protocol::Console::ConsoleMessage::LevelEnum::Debug;
+    else if (m_type == ConsoleAPIType::kError || m_type == ConsoleAPIType::kAssert)
+        level = protocol::Console::ConsoleMessage::LevelEnum::Error;
+    else if (m_type == ConsoleAPIType::kWarning)
+        level = protocol::Console::ConsoleMessage::LevelEnum::Warning;
+    else if (m_type == ConsoleAPIType::kInfo)
+        level = protocol::Console::ConsoleMessage::LevelEnum::Info;
     std::unique_ptr<protocol::Console::ConsoleMessage> result =
         protocol::Console::ConsoleMessage::create()
         .setSource(protocol::Console::ConsoleMessage::SourceEnum::ConsoleApi)
-        .setLevel(protocol::Console::ConsoleMessage::LevelEnum::Log)
+        .setLevel(level)
         .setText(m_message)
         .build();
     result->setLine(static_cast<int>(m_lineNumber));
