@@ -26,6 +26,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflinePageItemWrapper;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -245,57 +246,72 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     }
 
     private void shareSelectedItems() {
-        // TODO(twellington): disable the share button when offline pages are selected.
-
         List<DownloadHistoryItemWrapper> selectedItems = mSelectionDelegate.getSelectedItems();
         assert selectedItems.size() > 0;
 
         Intent shareIntent = new Intent();
-        String intentMimeType = Intent.normalizeMimeType(selectedItems.get(0).getMimeType());
         String intentAction;
+        ArrayList<Uri> itemUris = new ArrayList<Uri>();
+        StringBuilder offlinePagesString = new StringBuilder();
 
-        if (selectedItems.size() == 1) {
-            // Set up intent for 1 item.
-            intentAction = Intent.ACTION_SEND;
-            shareIntent.putExtra(Intent.EXTRA_STREAM, getUriForItem(selectedItems.get(0)));
-        } else {
-            // Set up intent for multiple items.
-            intentAction = Intent.ACTION_SEND_MULTIPLE;
-            ArrayList<Uri> itemUris = new ArrayList<Uri>();
+        String intentMimeType = Intent.normalizeMimeType(selectedItems.get(0).getMimeType());
+        String[] intentMimeParts = {"", ""};
+        if (!TextUtils.isEmpty(intentMimeType)) {
+            intentMimeParts = intentMimeType.split(MIME_TYPE_DELIMITER);
+            if (intentMimeParts.length != 2) intentMimeType = DEFAULT_MIME_TYPE;
+        }
 
-            String[] intentMimeParts = {"", ""};
-            if (intentMimeType != null) intentMimeParts = intentMimeType.split(MIME_TYPE_DELIMITER);
-
-            for (DownloadHistoryItemWrapper itemWrapper : mSelectionDelegate.getSelectedItems()) {
+        for (DownloadHistoryItemWrapper itemWrapper : mSelectionDelegate.getSelectedItems()) {
+            if (itemWrapper instanceof OfflinePageItemWrapper) {
+                if (offlinePagesString.length() != 0) {
+                    offlinePagesString.append("\n");
+                }
+                offlinePagesString.append(itemWrapper.getUrl());
+            } else {
                 itemUris.add(getUriForItem(itemWrapper));
-
-                String mimeType = Intent.normalizeMimeType(itemWrapper.getMimeType());
-
-                // If a mime type was not retrieved from the backend or could not be normalized,
-                // set the mime type to the default.
-                if (mimeType == null) {
-                    intentMimeType = DEFAULT_MIME_TYPE;
-                    continue;
-                }
-
-                // Either the mime type is already the default or it matches the current intent
-                // mime type. In either case, intentMimeType is already the correct value.
-                if (TextUtils.equals(intentMimeType, DEFAULT_MIME_TYPE)
-                        || TextUtils.equals(intentMimeType, mimeType)) {
-                    continue;
-                }
-
-                String[] mimeParts = mimeType.split(MIME_TYPE_DELIMITER);
-                if (!TextUtils.equals(intentMimeParts[0], mimeParts[0])) {
-                    // The top-level types don't match; fallback to the default mime type.
-                    intentMimeType = DEFAULT_MIME_TYPE;
-                } else {
-                    // The mime type should be {top-level type}/*
-                    intentMimeType = intentMimeParts[0] + MIME_TYPE_DELIMITER + "*";
-                }
             }
 
+            String mimeType = Intent.normalizeMimeType(itemWrapper.getMimeType());
+
+            // If a mime type was not retrieved from the backend or could not be normalized,
+            // set the mime type to the default.
+            if (TextUtils.isEmpty(mimeType)) {
+                intentMimeType = DEFAULT_MIME_TYPE;
+                continue;
+            }
+
+            // Either the mime type is already the default or it matches the current intent
+            // mime type. In either case, intentMimeType is already the correct value.
+            if (TextUtils.equals(intentMimeType, DEFAULT_MIME_TYPE)
+                    || TextUtils.equals(intentMimeType, mimeType)) {
+                continue;
+            }
+
+            String[] mimeParts = mimeType.split(MIME_TYPE_DELIMITER);
+            if (!TextUtils.equals(intentMimeParts[0], mimeParts[0])) {
+                // The top-level types don't match; fallback to the default mime type.
+                intentMimeType = DEFAULT_MIME_TYPE;
+            } else {
+                // The mime type should be {top-level type}/*
+                intentMimeType = intentMimeParts[0] + MIME_TYPE_DELIMITER + "*";
+            }
+        }
+
+        // Use Action_SEND if there is only one downloaded item or only text to share.
+        if (itemUris.size() == 0 || (itemUris.size() == 1 && offlinePagesString.length() == 0)) {
+            intentAction = Intent.ACTION_SEND;
+        } else {
+            intentAction = Intent.ACTION_SEND_MULTIPLE;
+        }
+
+        if (itemUris.size() == 1 && offlinePagesString.length() == 0) {
+            shareIntent.putExtra(Intent.EXTRA_STREAM, getUriForItem(selectedItems.get(0)));
+        } else {
             shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, itemUris);
+        }
+
+        if (offlinePagesString.length() != 0) {
+            shareIntent.putExtra(Intent.EXTRA_TEXT, offlinePagesString.toString());
         }
 
         shareIntent.setAction(intentAction);
