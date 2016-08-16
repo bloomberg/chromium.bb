@@ -1,0 +1,76 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
+import("//testing/test.gni")
+
+service("video_capture") {
+  sources = [
+    "service_main.cc",
+    "video_capture_service.cc",
+    "video_capture_service.h",
+  ]
+
+  deps = [
+    ":lib",
+    "//mojo/public/cpp/system",
+    "//services/shell/public/cpp",
+    "//services/video_capture/public/interfaces",
+  ]
+
+  data_deps = [
+    ":manifest",
+  ]
+}
+
+service_manifest("manifest") {
+  name = "video_capture"
+  source = "service_manifest.json"
+}
+
+source_set("lib") {
+  sources = [
+    "video_capture_device_client_impl.cc",
+    "video_capture_device_client_impl.h",
+    "video_capture_device_factory_impl.cc",
+    "video_capture_device_factory_impl.h",
+    "video_capture_device_impl.cc",
+    "video_capture_device_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/common:common_base",
+    "//services/shell/public/cpp",
+    "//services/video_capture/public/interfaces",
+  ]
+}
+
+test("video_capture_unittests") {
+  sources = [
+    "service_unittest.cc",
+  ]
+
+  deps = [
+    ":video_capture",
+    "//base",
+    "//base/test:test_support",
+    "//services/shell/public/cpp",
+    "//services/shell/public/cpp:service_test_support",
+    "//services/shell/public/cpp/test:run_all_shelltests",
+    "//services/video_capture/public/interfaces",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  data_deps = [
+    ":unittest_manifest",
+  ]
+}
+
+service_manifest("unittest_manifest") {
+  name = "video_capture_unittests"
+  source = "service_unittest_manifest.json"
+}

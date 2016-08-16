@@ -22,7 +22,7 @@ enum VideoCaptureApi {
 };
 
 enum VideoCaptureTransportType {
-  // For AVFoundation Api, identify devices that are built-in or USB.
+  // For MACOSX_AVFOUNDATION Api, identifies devices that are built-in or USB.
   MACOSX_USB_OR_BUILT_IN,
   OTHER_TRANSPORT
 };
@@ -35,6 +35,15 @@ struct VideoCaptureDeviceDescriptor {
   VideoCaptureTransportType transport_type;
 };
 
+// Entry point for accessing video capture devices available on the machine.
+// Typical operation is to first call EnumerateDeviceDescriptors() to obtain
+// information about available devices. The obtained descriptors can then be
+// used to either obtain the supported formats of a device using
+// GetSupportedFormats(), or to create an instance of VideoCaptureDevice for
+// the device using CreateDevice().
+// TODO(chfremer): Consider using a simple string identifier instead of a
+// VideoCaptureDeviceDescriptor.
+// https://crbug.com/637439
 interface VideoCaptureDeviceFactory {
   EnumerateDeviceDescriptors()
       => (array<VideoCaptureDeviceDescriptor> descriptors);

@@ -19,8 +19,9 @@ enum PowerLineFrequency {
   HZ_60
 };
 
-// Note: The VideoCaptureDevice is stopped when the corresponding message pipe
-// is closed.
+// Represents access to a video capture device available on the machine.
+// Note: Instead of offering an explicit Stop() method, the VideoCaptureDevice
+// is stopped automatically when the corresponding message pipe is closed.
 interface VideoCaptureDevice {
   Start(VideoCaptureFormat requested_format,
         ResolutionChangePolicy resolution_change_policy,

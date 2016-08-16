@@ -694,6 +694,7 @@ group("gn_only") {
     deps += [
       "//media/mojo:media_mojo_unittests",
       "//mojo/common:mojo_common_perftests",
+      "//services/video_capture:video_capture_unittests",
     ]
   }
 

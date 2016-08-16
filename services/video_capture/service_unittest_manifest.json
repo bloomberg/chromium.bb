@@ -1,0 +1,11 @@
+{
+  "manifest_version":  1,
+  "name": "exe:video_capture_unittests",
+  "display_name": "Video Capture Unittests",
+  "capabilities": {
+    "required": {
+      "mojo:video_capture": {
+        "classes": [ "tests" ] }
+    }
+  }
+}

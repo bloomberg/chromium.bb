@@ -9,7 +9,8 @@ namespace video_capture {
 
 void VideoCaptureDeviceFactoryImpl::EnumerateDeviceDescriptors(
     const EnumerateDeviceDescriptorsCallback& callback) {
-  NOTIMPLEMENTED();
+  std::vector<mojom::VideoCaptureDeviceDescriptorPtr> empty_descriptors;
+  callback.Run(std::move(empty_descriptors));
 }
 
 void VideoCaptureDeviceFactoryImpl::GetSupportedFormats(
