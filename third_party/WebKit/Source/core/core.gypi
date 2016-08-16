@@ -2560,8 +2560,6 @@
             'dom/LiveNodeListBase.h',
             'dom/MainThreadTaskRunner.cpp',
             'dom/MainThreadTaskRunner.h',
-            'dom/MemoryCoordinator.cpp',
-            'dom/MemoryCoordinator.h',
             'dom/MessageChannel.cpp',
             'dom/MessageChannel.h',
             'dom/MessagePort.cpp',

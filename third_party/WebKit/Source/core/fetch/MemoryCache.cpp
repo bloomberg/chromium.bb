@@ -104,6 +104,8 @@ inline MemoryCache::MemoryCache()
 #endif
 {
     MemoryCacheDumpProvider::instance()->setMemoryCache(this);
+    if (ProcessHeap::isLowEndDevice())
+        MemoryCoordinator::instance().registerClient(this);
 #ifdef MEMORY_CACHE_STATS
     const double statsIntervalInSeconds = 15;
     m_statsTimer.startRepeating(statsIntervalInSeconds, BLINK_FROM_HERE);
@@ -127,6 +129,7 @@ DEFINE_TRACE(MemoryCache)
     visitor->trace(m_liveDecodedResources);
     visitor->trace(m_resourceMaps);
     MemoryCacheDumpClient::trace(visitor);
+    MemoryCoordinatorClient::trace(visitor);
 }
 
 KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL)
@@ -733,6 +736,11 @@ bool MemoryCache::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProc
         }
     }
     return true;
+}
+
+void MemoryCache::onMemoryPressure(WebMemoryPressureLevel level)
+{
+    pruneAll();
 }
 
 bool MemoryCache::isInSameLRUListForTest(const Resource* x, const Resource* y)

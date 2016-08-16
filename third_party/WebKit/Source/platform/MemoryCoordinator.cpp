@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/MemoryCoordinator.h"
+#include "platform/MemoryCoordinator.h"
 
-#include "core/fetch/MemoryCache.h"
 #include "platform/TraceEvent.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/ImageDecodingStore.h"
@@ -12,6 +11,10 @@
 #include "wtf/allocator/Partitions.h"
 
 namespace blink {
+
+DEFINE_TRACE(MemoryCoordinatorClient)
+{
+}
 
 MemoryCoordinator& MemoryCoordinator::instance()
 {
@@ -27,17 +30,45 @@ MemoryCoordinator::~MemoryCoordinator()
 {
 }
 
+void MemoryCoordinator::registerClient(MemoryCoordinatorClient* client)
+{
+    DCHECK(isMainThread());
+    DCHECK(client);
+    DCHECK(!m_clients.contains(client));
+    m_clients.add(client);
+}
+
+void MemoryCoordinator::unregisterClient(MemoryCoordinatorClient* client)
+{
+    DCHECK(isMainThread());
+    m_clients.remove(client);
+}
+
+void MemoryCoordinator::purgeMemory()
+{
+    for (auto& client : m_clients)
+        client->purgeMemory();
+    WTF::Partitions::decommitFreeableMemory();
+}
+
 void MemoryCoordinator::onMemoryPressure(WebMemoryPressureLevel level)
 {
     TRACE_EVENT0("blink", "MemoryCoordinator::onMemoryPressure");
+    for (auto& client : m_clients)
+        client->onMemoryPressure(level);
     if (level == WebMemoryPressureLevelCritical) {
         // Clear the image cache.
+        // TODO(tasak|bashi): Make ImageDecodingStore and FontCache be
+        // MemoryCoordinatorClients rather than clearing caches here.
         ImageDecodingStore::instance().clear();
         FontCache::fontCache()->invalidate();
     }
-    if (ProcessHeap::isLowEndDevice())
-        memoryCache()->pruneAll();
     WTF::Partitions::decommitFreeableMemory();
+}
+
+DEFINE_TRACE(MemoryCoordinator)
+{
+    visitor->trace(m_clients);
 }
 
 } // namespace blink
