@@ -2,22 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
-import unittest
-import StringIO
-
 from collections import OrderedDict
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.filesystem_mock import MockFileSystem
+from webkitpy.common.system.logtesting import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.port.test import LAYOUT_TEST_DIR
 from webkitpy.layout_tests.update_test_expectations import main
 from webkitpy.layout_tests.update_test_expectations import RemoveFlakesOMatic
-
-logger = logging.getLogger()
-logger.level = logging.DEBUG
 
 
 class FakeBotTestExpectations(object):
@@ -81,9 +75,10 @@ class FakePortFactory(PortFactory):
         return port
 
 
-class UpdateTestExpectationsTest(unittest.TestCase):
+class UpdateTestExpectationsTest(LoggingTestCase):
 
     def setUp(self):
+        super(UpdateTestExpectationsTest, self).setUp()
         self._host = MockHost()
         self._port = self._host.port_factory.get('test', None)
         self._expectation_factory = FakeBotTestExpectationsFactory()
@@ -97,14 +92,6 @@ class UpdateTestExpectationsTest(unittest.TestCase):
         }
         filesystem = self._host.filesystem
         self._write_tests_into_filesystem(filesystem)
-
-        self._log_output = StringIO.StringIO()
-        self._stream_handler = logging.StreamHandler(self._log_output)
-        logger.addHandler(self._stream_handler)
-
-    def tearDown(self):
-        logger.removeHandler(self._stream_handler)
-        self._log_output.close()
 
     def _write_tests_into_filesystem(self, filesystem):
         test_list = ['test/a.html',
@@ -729,12 +716,11 @@ class UpdateTestExpectationsTest(unittest.TestCase):
 
         updated_expectations = (
             self._flake_remover.get_updated_test_expectations())
-        expected_errors = '\n'.join([
-            'Failed to get builder for config [win7, x86, release]',
-            'Failed to get builder for config [precise, x86_64, debug]',
-            'Failed to get builder for config [win7, x86, release]',
-            ''])
-        self.assertEqual(self._log_output.getvalue(), expected_errors)
+        self.assertLog([
+            'ERROR: Failed to get builder for config [win7, x86, release]\n',
+            'ERROR: Failed to get builder for config [precise, x86_64, debug]\n',
+            'ERROR: Failed to get builder for config [win7, x86, release]\n',
+        ])
 
         # Also make sure we didn't remove any lines if some builders were
         # missing.
@@ -805,13 +791,12 @@ class UpdateTestExpectationsTest(unittest.TestCase):
 
         updated_expectations = (
             self._flake_remover.get_updated_test_expectations())
-        expected_errors = '\n'.join([
-            'Downloaded results are missing results for builder "WebKit Linux (dbg)"',
-            'Downloaded results are missing results for builder "WebKit Win7"',
-            'Failed to find results for builder "WebKit Linux (dbg)"',
-            'Failed to find results for builder "WebKit Win7"',
-            ''])
-        self.assertEqual(self._log_output.getvalue(), expected_errors)
+        self.assertLog([
+            'WARNING: Downloaded results are missing results for builder "WebKit Linux (dbg)"\n',
+            'WARNING: Downloaded results are missing results for builder "WebKit Win7"\n',
+            'ERROR: Failed to find results for builder "WebKit Linux (dbg)"\n',
+            'ERROR: Failed to find results for builder "WebKit Win7"\n',
+        ])
 
         # Also make sure we didn't remove any lines if some builders were
         # missing.
@@ -908,10 +893,9 @@ class UpdateTestExpectationsTest(unittest.TestCase):
 
         self.assertEqual(return_code, 1)
 
-        expected_warning = (
-            "Didn't find generic expectations file at: " +
-            test_expectation_path + "\n")
-        self.assertEqual(self._log_output.getvalue(), expected_warning)
+        self.assertLog([
+            "WARNING: Didn't find generic expectations file at: %s\n" % test_expectation_path
+        ])
         self.assertFalse(host.filesystem.isfile(test_expectation_path))
 
     def test_harness_remove_all(self):
