@@ -322,7 +322,7 @@ void OfflinePageModelImplTest::SavePageWithArchiverResult(
     OfflinePageArchiver::ArchiverResult result) {
   std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(url, result));
   model()->SavePage(
-      url, client_id, std::move(archiver),
+      url, client_id, 0ul, std::move(archiver),
       base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 }
@@ -482,7 +482,7 @@ TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverReturnedWrongUrl) {
       BuildArchiver(GURL("http://other.random.url.com"),
                     OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
-      kTestUrl, kTestClientId1, std::move(archiver),
+      kTestUrl, kTestClientId1, 0ul, std::move(archiver),
       base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::ARCHIVE_CREATION_FAILED, last_save_result());
@@ -499,7 +499,7 @@ TEST_F(OfflinePageModelImplTest, SavePageLocalFileFailed) {
   // Don't create archiver since it will not be needed for pages that are not
   // going to be saved.
   model()->SavePage(
-      kFileUrl, kTestClientId1, std::unique_ptr<OfflinePageTestArchiver>(),
+      kFileUrl, kTestClientId1, 0ul, std::unique_ptr<OfflinePageTestArchiver>(),
       base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::SKIPPED, last_save_result());
@@ -513,7 +513,7 @@ TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverTwoPages) {
   OfflinePageTestArchiver* archiver_ptr = archiver.get();
   archiver_ptr->set_delayed(true);
   model()->SavePage(
-      kTestUrl, kTestClientId1, std::move(archiver),
+      kTestUrl, kTestClientId1, 0ul, std::move(archiver),
       base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   EXPECT_TRUE(archiver_ptr->create_archive_called());
 
@@ -794,7 +794,7 @@ TEST_F(OfflinePageModelImplTest, DeleteMultiplePages) {
   std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
-      kTestUrl, kTestClientId1, std::move(archiver),
+      kTestUrl, kTestClientId1, 0ul, std::move(archiver),
       base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   int64_t offline1 = last_save_offline_id();
@@ -802,7 +802,7 @@ TEST_F(OfflinePageModelImplTest, DeleteMultiplePages) {
   std::unique_ptr<OfflinePageTestArchiver> archiver2(BuildArchiver(
       kTestUrl2, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
-      kTestUrl2, kTestClientId2, std::move(archiver2),
+      kTestUrl2, kTestClientId2, 0ul, std::move(archiver2),
       base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   int64_t offline2 = last_save_offline_id();
@@ -810,7 +810,7 @@ TEST_F(OfflinePageModelImplTest, DeleteMultiplePages) {
   std::unique_ptr<OfflinePageTestArchiver> archiver3(BuildArchiver(
       kTestUrl3, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
-      kTestUrl3, kTestClientId3, std::move(archiver3),
+      kTestUrl3, kTestClientId3, 0ul, std::move(archiver3),
       base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 

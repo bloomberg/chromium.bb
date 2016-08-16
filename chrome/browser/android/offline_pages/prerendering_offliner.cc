@@ -61,7 +61,7 @@ void PrerenderingOffliner::OnLoadPageDone(
     // same as LastCommittedURL from the snapshot.
     // TODO(dougarnett): Raise issue of how to better deal with redirects.
     SavePage(web_contents->GetLastCommittedURL(), request.client_id(),
-             std::move(archiver),
+             request.request_id(), std::move(archiver),
              base::Bind(&PrerenderingOffliner::OnSavePageDone,
                         weak_ptr_factory_.GetWeakPtr(), request));
   } else {
@@ -171,11 +171,12 @@ void PrerenderingOffliner::SetApplicationStateForTesting(
 void PrerenderingOffliner::SavePage(
     const GURL& url,
     const ClientId& client_id,
+    int64_t proposed_offline_id,
     std::unique_ptr<OfflinePageArchiver> archiver,
     const SavePageCallback& save_callback) {
   DCHECK(offline_page_model_);
-  offline_page_model_->SavePage(url, client_id, std::move(archiver),
-                                save_callback);
+  offline_page_model_->SavePage(url, client_id, proposed_offline_id,
+                                std::move(archiver), save_callback);
 }
 
 PrerenderingLoader* PrerenderingOffliner::GetOrCreateLoader() {

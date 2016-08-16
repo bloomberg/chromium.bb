@@ -156,7 +156,7 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
   client_id.name_space = kBookmarkNamespace;
   client_id.id = kTestPage1ClientId;
   model->SavePage(
-      kTestPage1Url, client_id, std::move(archiver),
+      kTestPage1Url, client_id, 0ul, std::move(archiver),
       base::Bind(&OfflinePageUtilsTest::OnSavePageDone, AsWeakPtr()));
   RunUntilIdle();
   offline_url_page_1_ =
@@ -167,7 +167,7 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
                            base::FilePath(FILE_PATH_LITERAL("page2.mhtml")));
   client_id.id = kTestPage2ClientId;
   model->SavePage(
-      kTestPage2Url, client_id, std::move(archiver),
+      kTestPage2Url, client_id, 0ul, std::move(archiver),
       base::Bind(&OfflinePageUtilsTest::OnSavePageDone, AsWeakPtr()));
   RunUntilIdle();
   offline_url_page_2_ =
@@ -186,7 +186,7 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
                            base::FilePath(FILE_PATH_LITERAL("page4.mhtml")));
   client_id.id = kTestPage4ClientId;
   model->SavePage(
-      kTestPage4Url, client_id, std::move(archiver),
+      kTestPage4Url, client_id, 0ul, std::move(archiver),
       base::Bind(&OfflinePageUtilsTest::OnSavePageDone, AsWeakPtr()));
   RunUntilIdle();
   const OfflinePageItem* page_4 = model->MaybeGetPageByOfflineId(offline_id());

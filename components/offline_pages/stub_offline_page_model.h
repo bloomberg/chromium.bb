@@ -25,6 +25,7 @@ class StubOfflinePageModel : public OfflinePageModel {
   void RemoveObserver(Observer* observer) override;
   void SavePage(const GURL& url,
                 const ClientId& client_id,
+                int64_t proposed_offline_id,
                 std::unique_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback) override;
   void MarkPageAccessed(int64_t offline_id) override;

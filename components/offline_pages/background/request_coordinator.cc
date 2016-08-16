@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/time/time.h"
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
@@ -42,6 +43,12 @@ void RecordOfflinerResultUMA(const ClientId& client_id,
       static_cast<int>(Offliner::RequestStatus::STATUS_COUNT) + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(static_cast<int>(request_status));
+}
+
+// This should use the same algorithm as we use for OfflinePageItem, so the IDs
+// are similar.
+int64_t GenerateOfflineId() {
+  return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
 }
 
 }  // namespace
@@ -77,14 +84,11 @@ bool RequestCoordinator::SavePageLater(
     return false;
   }
 
-  // TODO(petewil): Use an int64_t random number for this, pass it to the
-  // offliner, and eventually use it as the offline_id - that way the client
-  // uses offline_id everywhere.
-  static int64_t id = 0;
+  int64_t id = GenerateOfflineId();
 
   // Build a SavePageRequest.
-  offline_pages::SavePageRequest request(
-      id++, url, client_id, base::Time::Now(), user_requested);
+  offline_pages::SavePageRequest request(id, url, client_id, base::Time::Now(),
+                                         user_requested);
 
   // Put the request on the request queue.
   queue_->AddRequest(request,

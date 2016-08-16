@@ -148,7 +148,7 @@ void OfflinePageDownloadBridge::StartDownload(
   client_id.id = base::GenerateGUID();
 
   offline_page_model->SavePage(
-      url, client_id, std::move(archiver),
+      url, client_id, 0ul, std::move(archiver),
       base::Bind(&OfflinePageDownloadBridge::SavePageCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 }

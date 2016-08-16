@@ -48,11 +48,13 @@ class PrerenderingOffliner : public Offliner {
       base::android::ApplicationState application_state);
 
  protected:
-  // Internal method for requesting OfflinePageModel to save page.
-  // Exposed for unit testing.
+  // Internal method for requesting OfflinePageModel to save page.  Exposed for
+  // unit testing.  |proposed_offline_id| will be used if non-zero.  If it is
+  // zero, a new, random, id will be generated instead.
   // TODO(dougarnett): Consider making OfflinePageModel mockable instead.
   virtual void SavePage(const GURL& url,
                         const ClientId& client_id,
+                        int64_t proposed_offline_id,
                         std::unique_ptr<OfflinePageArchiver> archiver,
                         const SavePageCallback& save_callback);
 

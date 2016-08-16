@@ -369,7 +369,7 @@ void OfflinePageBridge::SavePage(
   client_id.id = ConvertJavaStringToUTF8(env, j_client_id);
 
   offline_page_model_->SavePage(
-      url, client_id, std::move(archiver),
+      url, client_id, 0ul, std::move(archiver),
       base::Bind(&SavePageCallback, j_callback_ref, url));
 }
 

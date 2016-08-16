@@ -275,6 +275,7 @@ void OfflinePageModelImpl::RemoveObserver(Observer* observer) {
 void OfflinePageModelImpl::SavePage(
     const GURL& url,
     const ClientId& client_id,
+    int64_t proposed_offline_id,
     std::unique_ptr<OfflinePageArchiver> archiver,
     const SavePageCallback& callback) {
   DCHECK(is_loaded_);
@@ -294,13 +295,15 @@ void OfflinePageModelImpl::SavePage(
     return;
   }
 
-  int64_t offline_id = GenerateOfflineId();
+  // If we already have an offline id, use it.  If not, generate one.
+  if (proposed_offline_id == 0ul)
+    proposed_offline_id = GenerateOfflineId();
 
   archiver->CreateArchive(
-      archives_dir_, offline_id,
+      archives_dir_, proposed_offline_id,
       base::Bind(&OfflinePageModelImpl::OnCreateArchiveDone,
-                 weak_ptr_factory_.GetWeakPtr(), url, offline_id, client_id,
-                 base::Time::Now(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), url, proposed_offline_id,
+                 client_id, base::Time::Now(), callback));
   pending_archivers_.push_back(std::move(archiver));
 }
 

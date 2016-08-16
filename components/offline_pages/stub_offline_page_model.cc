@@ -14,6 +14,7 @@ void StubOfflinePageModel::RemoveObserver(Observer* observer) {}
 void StubOfflinePageModel::SavePage(
     const GURL& url,
     const ClientId& client_id,
+    int64_t proposed_offline_id,
     std::unique_ptr<OfflinePageArchiver> archiver,
     const SavePageCallback& callback) {}
 void StubOfflinePageModel::MarkPageAccessed(int64_t offline_id) {}

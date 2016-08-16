@@ -175,7 +175,7 @@ void OfflinePageTabHelperTest::SetUp() {
   std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestPageUrl, base::FilePath(FILE_PATH_LITERAL("page1.mhtml"))));
   model->SavePage(
-      kTestPageUrl, kTestClientId, std::move(archiver),
+      kTestPageUrl, kTestClientId, 0ul, std::move(archiver),
       base::Bind(&OfflinePageTabHelperTest::OnSavePageDone, AsWeakPtr()));
   RunUntilIdle();
 }
@@ -346,7 +346,7 @@ TEST_F(OfflinePageTabHelperTest, SelectBestPageForCurrentTab) {
   // We expect this copy to be used later.
   ClientId client_id(kLastNNamespace, base::IntToString(kTabId));
   model->SavePage(
-      kTestPageUrl, client_id, std::move(archiver),
+      kTestPageUrl, client_id, 0ul, std::move(archiver),
       base::Bind(&OfflinePageTabHelperTest::OnSavePageDone, AsWeakPtr()));
   RunUntilIdle();
   const int64_t expected_offline_id = offline_id();
@@ -356,7 +356,7 @@ TEST_F(OfflinePageTabHelperTest, SelectBestPageForCurrentTab) {
                            base::FilePath(FILE_PATH_LITERAL("page3.html")));
   client_id.id = "39";
   model->SavePage(
-      kTestPageUrl, client_id, std::move(archiver),
+      kTestPageUrl, client_id, 0ul, std::move(archiver),
       base::Bind(&OfflinePageTabHelperTest::OnSavePageDone, AsWeakPtr()));
   RunUntilIdle();
 
@@ -427,7 +427,7 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOfflineAsyncLoadedPageOnNoNetwork) {
   // We expect this Async Loading Namespace copy to be used.
   ClientId client_id(kAsyncNamespace, base::IntToString(kTabId));
   model->SavePage(
-      kTestPageUrl, client_id, std::move(archiver),
+      kTestPageUrl, client_id, 0ul, std::move(archiver),
       base::Bind(&OfflinePageTabHelperTest::OnSavePageDone, AsWeakPtr()));
   RunUntilIdle();
   const int64_t expected_offline_id = offline_id();

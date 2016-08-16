@@ -166,11 +166,10 @@ void RecentTabHelper::ContinueSnapshotAfterPurge(
     return;
   }
 
-  page_model_->SavePage(
-      snapshot_url_, client_id(),
-      delegate_->CreatePageArchiver(web_contents()),
-      base::Bind(&RecentTabHelper::SavePageCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+  page_model_->SavePage(snapshot_url_, client_id(), 0ul,
+                        delegate_->CreatePageArchiver(web_contents()),
+                        base::Bind(&RecentTabHelper::SavePageCallback,
+                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RecentTabHelper::SavePageCallback(OfflinePageModel::SavePageResult result,
