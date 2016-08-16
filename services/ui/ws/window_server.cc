@@ -431,11 +431,12 @@ void WindowServer::ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
 
 void WindowServer::SendToPointerWatchers(const ui::Event& event,
                                          const UserId& user_id,
+                                         ServerWindow* target_window,
                                          WindowTree* ignore_tree) {
   for (auto& pair : tree_map_) {
     WindowTree* tree = pair.second.get();
     if (tree->user_id() == user_id && tree != ignore_tree)
-      tree->SendToPointerWatcher(event);
+      tree->SendToPointerWatcher(event, target_window);
   }
 }
 

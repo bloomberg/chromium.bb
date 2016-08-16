@@ -159,7 +159,8 @@ class TestChangeTracker {
                           const ui::Event& event,
                           uint32_t pointer_watcher_id);
   void OnPointerEventObserved(const ui::Event& event,
-                              uint32_t pointer_watcher_id);
+                              uint32_t pointer_watcher_id,
+                              uint32_t window_id);
   void OnWindowSharedPropertyChanged(Id window_id,
                                      mojo::String name,
                                      mojo::Array<uint8_t> data);

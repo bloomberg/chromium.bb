@@ -47,6 +47,10 @@ std::string WindowIdToString(const WindowId& id) {
   return base::StringPrintf("%d,%d", id.client_id, id.window_id);
 }
 
+std::string ClientWindowIdToString(const ClientWindowId& id) {
+  return WindowIdToString(WindowIdFromTransportId(id.id));
+}
+
 ClientWindowId BuildClientWindowId(WindowTree* tree,
                                    ClientSpecificId window_id) {
   return ClientWindowId(WindowIdToTransportId(WindowId(tree->id(), window_id)));
@@ -323,14 +327,38 @@ TEST_F(WindowTreeTest, StartPointerWatcher) {
   // Pointer-down events are sent to the client.
   DispatchEventAndAckImmediately(pointer_down);
   ASSERT_EQ(1u, client->tracker()->changes()->size());
-  EXPECT_EQ("PointerWatcherEvent event_action=16 pointer_watcher_id=111",
-            ChangesToDescription1(*client->tracker()->changes())[0]);
+  EXPECT_EQ(
+      "PointerWatcherEvent event_action=16 pointer_watcher_id=111 window=null",
+      ChangesToDescription1(*client->tracker()->changes())[0]);
   client->tracker()->changes()->clear();
 
   // Stopping the watcher stops sending events to the client.
   WindowTreeTestApi(tree).StopPointerWatcher();
   DispatchEventAndAckImmediately(pointer_down);
   ASSERT_EQ(0u, client->tracker()->changes()->size());
+}
+
+// Verifies PointerWatcher sees windows known to it.
+TEST_F(WindowTreeTest, PointerWatcherGetsWindow) {
+  // Create an embedded client.
+  TestWindowTreeClient* client = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&client, &tree, &window));
+
+  WindowTreeTestApi(wm_tree()).StartPointerWatcher(false, 111u);
+
+  // Create and dispatch an event that targets the embedded window.
+  ui::PointerEvent pointer_down = CreatePointerDownEvent(25, 25);
+  DispatchEventAndAckImmediately(pointer_down);
+
+  // Expect two changes, the first is focus, the second the pointer watcher
+  // event.
+  ASSERT_EQ(2u, wm_client()->tracker()->changes()->size());
+  EXPECT_EQ(
+      "PointerWatcherEvent event_action=16 pointer_watcher_id=111 window=" +
+          ClientWindowIdToString(ClientWindowIdForWindow(wm_tree(), window)),
+      ChangesToDescription1(*wm_client()->tracker()->changes())[1]);
 }
 
 // Tests that a client using a pointer watcher does not receive events that

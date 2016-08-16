@@ -112,8 +112,9 @@ std::string ChangeToDescription(const Change& change,
 
     case CHANGE_TYPE_POINTER_WATCHER_EVENT:
       return base::StringPrintf(
-          "PointerWatcherEvent event_action=%d pointer_watcher_id=%u",
-          change.event_action, change.pointer_watcher_id);
+          "PointerWatcherEvent event_action=%d pointer_watcher_id=%u window=%s",
+          change.event_action, change.pointer_watcher_id,
+          WindowIdToString(change.window_id).c_str());
 
     case CHANGE_TYPE_PROPERTY_CHANGED:
       return base::StringPrintf("PropertyChanged window=%s key=%s value=%s",
@@ -364,11 +365,13 @@ void TestChangeTracker::OnWindowInputEvent(Id window_id,
 }
 
 void TestChangeTracker::OnPointerEventObserved(const ui::Event& event,
-                                               uint32_t pointer_watcher_id) {
+                                               uint32_t pointer_watcher_id,
+                                               uint32_t window_id) {
   Change change;
   change.type = CHANGE_TYPE_POINTER_WATCHER_EVENT;
   change.event_action = static_cast<int32_t>(event.type());
   change.pointer_watcher_id = pointer_watcher_id;
+  change.window_id = window_id;
   AddChange(change);
 }
 

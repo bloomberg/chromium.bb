@@ -244,7 +244,10 @@ class WindowTree : public mojom::WindowTree,
                                      bool originated_change);
 
   // Sends this event to the client if it matches an active pointer watcher.
-  void SendToPointerWatcher(const ui::Event& event);
+  // |target_window| is the target of the event, and may be null or not known
+  // to this tree.
+  void SendToPointerWatcher(const ui::Event& event,
+                            ServerWindow* target_window);
 
  private:
   friend class test::WindowTreeTestApi;

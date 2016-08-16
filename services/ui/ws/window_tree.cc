@@ -724,10 +724,17 @@ void WindowTree::ProcessTransientWindowRemoved(
                                      transient_client_window_id.id);
 }
 
-void WindowTree::SendToPointerWatcher(const ui::Event& event) {
-  if (EventMatchesPointerWatcher(event))
-    client()->OnPointerEventObserved(ui::Event::Clone(event),
-                                     pointer_watcher_id_);
+void WindowTree::SendToPointerWatcher(const ui::Event& event,
+                                      ServerWindow* target_window) {
+  if (!EventMatchesPointerWatcher(event))
+    return;
+
+  ClientWindowId client_window_id;
+  // Ignore the return value from IsWindowKnown() as in the case of the client
+  // not knowing the window we'll send 0, which corresponds to no window.
+  IsWindowKnown(target_window, &client_window_id);
+  client()->OnPointerEventObserved(ui::Event::Clone(event), pointer_watcher_id_,
+                                   client_window_id.id);
 }
 
 bool WindowTree::ShouldRouteToWindowManager(const ServerWindow* window) const {

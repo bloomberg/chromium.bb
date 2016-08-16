@@ -1023,12 +1023,14 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
 }
 
 void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                                              uint32_t pointer_watcher_id) {
+                                              uint32_t pointer_watcher_id,
+                                              uint32_t window_id) {
   DCHECK(event);
   DCHECK(event->IsPointerEvent());
-  if (has_pointer_watcher_ && pointer_watcher_id == pointer_watcher_id_)
-    delegate_->OnPointerEventObserved(*event->AsPointerEvent(),
-                                      nullptr /* target */);
+  if (has_pointer_watcher_ && pointer_watcher_id == pointer_watcher_id_) {
+    Window* target_window = GetWindowByServerId(window_id);
+    delegate_->OnPointerEventObserved(*event->AsPointerEvent(), target_window);
+  }
 }
 
 void WindowTreeClient::OnWindowFocused(Id focused_window_id) {

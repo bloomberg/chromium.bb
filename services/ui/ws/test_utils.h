@@ -406,7 +406,8 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
                           std::unique_ptr<ui::Event> event,
                           uint32_t event_observer_id) override;
   void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                              uint32_t event_observer_id) override;
+                              uint32_t event_observer_id,
+                              uint32_t window_id) override;
   void OnWindowFocused(uint32_t focused_window_id) override;
   void OnWindowPredefinedCursorChanged(uint32_t window_id,
                                        mojom::Cursor cursor_id) override;

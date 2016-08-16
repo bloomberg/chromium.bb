@@ -336,8 +336,9 @@ void TestWindowTreeClient::OnWindowInputEvent(uint32_t event_id,
 
 void TestWindowTreeClient::OnPointerEventObserved(
     std::unique_ptr<ui::Event> event,
-    uint32_t event_observer_id) {
-  tracker_.OnPointerEventObserved(*event.get(), event_observer_id);
+    uint32_t event_observer_id,
+    uint32_t window_id) {
+  tracker_.OnPointerEventObserved(*event.get(), event_observer_id, window_id);
 }
 
 void TestWindowTreeClient::OnWindowFocused(uint32_t focused_window_id) {

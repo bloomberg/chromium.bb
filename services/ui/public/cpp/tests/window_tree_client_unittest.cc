@@ -485,7 +485,7 @@ TEST_F(WindowTreeClientTest, OnPointerEventObserved) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks()));
   setup.window_tree_client()->OnPointerEventObserved(
-      std::move(pointer_event_down), pointer_watcher_id);
+      std::move(pointer_event_down), pointer_watcher_id, 0u);
 
   // Delegate sensed the event.
   ui::Event* last_event = setup.window_tree_delegate()->last_event_observed();
@@ -502,7 +502,7 @@ TEST_F(WindowTreeClientTest, OnPointerEventObserved) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks()));
   setup.window_tree_client()->OnPointerEventObserved(
-      std::move(pointer_event_up), pointer_watcher_id);
+      std::move(pointer_event_up), pointer_watcher_id, 0u);
 
   // No event was sensed.
   EXPECT_FALSE(setup.window_tree_delegate()->last_event_observed());
@@ -554,7 +554,7 @@ TEST_F(WindowTreeClientTest, PointerWatcherReplaced) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks()));
   setup.window_tree_client()->OnPointerEventObserved(
-      std::move(pointer_event_down), pointer_watcher_id1);
+      std::move(pointer_event_down), pointer_watcher_id1, 0u);
 
   // The event was not sensed, because it does not match the current watcher.
   EXPECT_FALSE(setup.window_tree_delegate()->last_event_observed());
@@ -565,7 +565,7 @@ TEST_F(WindowTreeClientTest, PointerWatcherReplaced) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks()));
   setup.window_tree_client()->OnPointerEventObserved(
-      std::move(pointer_event_move), pointer_watcher_id2);
+      std::move(pointer_event_move), pointer_watcher_id2, 0u);
 
   // The delegate sensed the event.
   ui::Event* last_event = setup.window_tree_delegate()->last_event_observed();
