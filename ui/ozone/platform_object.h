@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_OBJECT_H_
 #define UI_OZONE_PLATFORM_OBJECT_H_
 
+#include <memory>
 
 namespace ui {
 
