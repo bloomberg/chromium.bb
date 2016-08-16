@@ -58,7 +58,7 @@ void PermissionStatus::permissionChanged(MojoPermissionStatus status)
 
     m_status = status;
     dispatchEvent(Event::create(EventTypeNames::change));
-    m_service->GetNextPermissionChange(m_name, getExecutionContext()->getSecurityOrigin()->toString(), m_status, convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged, wrapWeakPersistent(this))));
+    m_service->GetNextPermissionChange(m_name, getExecutionContext()->getSecurityOrigin(), m_status, convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged, wrapWeakPersistent(this))));
 }
 
 bool PermissionStatus::hasPendingActivity() const
@@ -85,7 +85,7 @@ void PermissionStatus::startListening()
 {
     DCHECK(!m_service);
     Permissions::connectToService(getExecutionContext(), mojo::GetProxy(&m_service));
-    m_service->GetNextPermissionChange(m_name, getExecutionContext()->getSecurityOrigin()->toString(), m_status, convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged, wrapWeakPersistent(this))));
+    m_service->GetNextPermissionChange(m_name, getExecutionContext()->getSecurityOrigin(), m_status, convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged, wrapWeakPersistent(this))));
 }
 
 void PermissionStatus::stopListening()

@@ -75,13 +75,9 @@ PermissionServiceImpl::PendingRequest::~PendingRequest() {
 
 PermissionServiceImpl::PendingSubscription::PendingSubscription(
     PermissionType permission,
-    const GURL& origin,
+    const url::Origin& origin,
     const PermissionStatusCallback& callback)
-    : id(-1),
-      permission(permission),
-      origin(origin),
-      callback(callback) {
-}
+    : id(-1), permission(permission), origin(origin), callback(callback) {}
 
 PermissionServiceImpl::PendingSubscription::~PendingSubscription() {
   if (!callback.is_null())
@@ -111,7 +107,7 @@ void PermissionServiceImpl::OnConnectionError() {
 
 void PermissionServiceImpl::RequestPermission(
     PermissionName permission,
-    const std::string& origin,
+    const url::Origin& origin,
     bool user_gesture,
     const PermissionStatusCallback& callback) {
   // This condition is valid if the call is coming from a ChildThread instead of
@@ -125,7 +121,7 @@ void PermissionServiceImpl::RequestPermission(
   DCHECK(browser_context);
   if (!context_->render_frame_host() ||
       !browser_context->GetPermissionManager()) {
-    callback.Run(GetPermissionStatusFromName(permission, GURL(origin)));
+    callback.Run(GetPermissionStatusFromName(permission, origin));
     return;
   }
 
@@ -133,7 +129,7 @@ void PermissionServiceImpl::RequestPermission(
       base::Bind(&PermissionRequestResponseCallbackWrapper, callback), 1));
   int id = browser_context->GetPermissionManager()->RequestPermission(
       PermissionNameToPermissionType(permission), context_->render_frame_host(),
-      GURL(origin), user_gesture,
+      GURL(origin.Serialize()), user_gesture,
       base::Bind(&PermissionServiceImpl::OnRequestPermissionResponse,
                  weak_factory_.GetWeakPtr(), pending_request_id));
 
@@ -155,7 +151,7 @@ void PermissionServiceImpl::OnRequestPermissionResponse(
 
 void PermissionServiceImpl::RequestPermissions(
     const std::vector<PermissionName>& permissions,
-    const std::string& origin,
+    const url::Origin& origin,
     bool user_gesture,
     const RequestPermissionsCallback& callback) {
   // This condition is valid if the call is coming from a ChildThread instead of
@@ -171,7 +167,7 @@ void PermissionServiceImpl::RequestPermissions(
       !browser_context->GetPermissionManager()) {
     std::vector<PermissionStatus> result(permissions.size());
     for (size_t i = 0; i < permissions.size(); ++i) {
-      result[i] = GetPermissionStatusFromName(permissions[i], GURL(origin));
+      result[i] = GetPermissionStatusFromName(permissions[i], origin);
     }
     callback.Run(result);
     return;
@@ -184,7 +180,8 @@ void PermissionServiceImpl::RequestPermissions(
   int pending_request_id = pending_requests_.Add(
       new PendingRequest(callback, permissions.size()));
   int id = browser_context->GetPermissionManager()->RequestPermissions(
-      types, context_->render_frame_host(), GURL(origin), user_gesture,
+      types, context_->render_frame_host(), GURL(origin.Serialize()),
+      user_gesture,
       base::Bind(&PermissionServiceImpl::OnRequestPermissionsResponse,
                  weak_factory_.GetWeakPtr(), pending_request_id));
 
@@ -237,19 +234,18 @@ void PermissionServiceImpl::CancelPendingOperations() {
 
 void PermissionServiceImpl::HasPermission(
     PermissionName permission,
-    const std::string& origin,
+    const url::Origin& origin,
     const PermissionStatusCallback& callback) {
-  callback.Run(GetPermissionStatusFromName(permission, GURL(origin)));
+  callback.Run(GetPermissionStatusFromName(permission, origin));
 }
 
 void PermissionServiceImpl::RevokePermission(
     PermissionName permission,
-    const std::string& origin,
+    const url::Origin& origin,
     const PermissionStatusCallback& callback) {
-  GURL origin_url(origin);
   PermissionType permission_type = PermissionNameToPermissionType(permission);
   PermissionStatus status =
-      GetPermissionStatusFromType(permission_type, origin_url);
+      GetPermissionStatusFromType(permission_type, origin);
 
   // Resetting the permission should only be possible if the permission is
   // already granted.
@@ -258,17 +254,16 @@ void PermissionServiceImpl::RevokePermission(
     return;
   }
 
-  ResetPermissionStatus(permission_type, origin_url);
+  ResetPermissionStatus(permission_type, origin);
 
-  callback.Run(GetPermissionStatusFromType(permission_type, origin_url));
+  callback.Run(GetPermissionStatusFromType(permission_type, origin));
 }
 
 void PermissionServiceImpl::GetNextPermissionChange(
     PermissionName permission,
-    const std::string& mojo_origin,
+    const url::Origin& origin,
     PermissionStatus last_known_status,
     const PermissionStatusCallback& callback) {
-  GURL origin(mojo_origin);
   PermissionStatus current_status =
       GetPermissionStatusFromName(permission, origin);
   if (current_status != last_known_status) {
@@ -292,50 +287,53 @@ void PermissionServiceImpl::GetNextPermissionChange(
       new PendingSubscription(permission_type, origin, callback);
   int pending_subscription_id = pending_subscriptions_.Add(subscription);
 
+  GURL requesting_origin(origin.Serialize());
   GURL embedding_origin = context_->GetEmbeddingOrigin();
   subscription->id =
       browser_context->GetPermissionManager()->SubscribePermissionStatusChange(
-          permission_type,
-          origin,
+          permission_type, requesting_origin,
           // If the embedding_origin is empty, we,ll use the |origin| instead.
-          embedding_origin.is_empty() ? origin : embedding_origin,
+          embedding_origin.is_empty() ? requesting_origin : embedding_origin,
           base::Bind(&PermissionServiceImpl::OnPermissionStatusChanged,
-                     weak_factory_.GetWeakPtr(),
-                     pending_subscription_id));
+                     weak_factory_.GetWeakPtr(), pending_subscription_id));
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatusFromName(
     PermissionName permission,
-    const GURL& origin) {
+    const url::Origin& origin) {
   return GetPermissionStatusFromType(PermissionNameToPermissionType(permission),
                                      origin);
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
     PermissionType type,
-    const GURL& origin) {
+    const url::Origin& origin) {
   BrowserContext* browser_context = context_->GetBrowserContext();
   DCHECK(browser_context);
   if (!browser_context->GetPermissionManager())
     return PermissionStatus::DENIED;
 
+  GURL requesting_origin(origin.Serialize());
   // If the embedding_origin is empty we'll use |origin| instead.
   GURL embedding_origin = context_->GetEmbeddingOrigin();
   return browser_context->GetPermissionManager()->GetPermissionStatus(
-      type, origin, embedding_origin.is_empty() ? origin : embedding_origin);
+      type, requesting_origin,
+      embedding_origin.is_empty() ? requesting_origin : embedding_origin);
 }
 
 void PermissionServiceImpl::ResetPermissionStatus(PermissionType type,
-                                                  const GURL& origin) {
+                                                  const url::Origin& origin) {
   BrowserContext* browser_context = context_->GetBrowserContext();
   DCHECK(browser_context);
   if (!browser_context->GetPermissionManager())
     return;
 
+  GURL requesting_origin(origin.Serialize());
   // If the embedding_origin is empty we'll use |origin| instead.
   GURL embedding_origin = context_->GetEmbeddingOrigin();
   browser_context->GetPermissionManager()->ResetPermission(
-      type, origin, embedding_origin.is_empty() ? origin : embedding_origin);
+      type, requesting_origin,
+      embedding_origin.is_empty() ? requesting_origin : embedding_origin);
 }
 
 void PermissionServiceImpl::OnPermissionStatusChanged(
