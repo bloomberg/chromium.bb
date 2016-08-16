@@ -49,7 +49,7 @@ class BLIMP_NET_EXPORT BlimpStats {
   // Values must be read or modified using base::subtle::NoBarrier* functions.
   // We are using the NoBarrier* functions because we value performance over
   // accuracy of the data.
-  base::subtle::Atomic32 values_[EVENT_TYPE_MAX];
+  base::subtle::Atomic32 values_[EVENT_TYPE_MAX + 1];
 
   DISALLOW_COPY_AND_ASSIGN(BlimpStats);
 };

@@ -18,7 +18,7 @@ BlimpStats* BlimpStats::GetInstance() {
 }
 
 BlimpStats::BlimpStats() {
-  for (size_t i = 0; i < EVENT_TYPE_MAX; ++i) {
+  for (size_t i = 0; i <= EVENT_TYPE_MAX; ++i) {
     base::subtle::NoBarrier_Store(&values_[i], 0);
   }
 }
