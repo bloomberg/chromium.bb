@@ -20,6 +20,8 @@ source_set("libfuzzer") {
     "src/FuzzerTracePC.cpp",
     "src/FuzzerTraceState.cpp",
     "src/FuzzerUtil.cpp",
+    "src/FuzzerUtilDarwin.cpp",
+    "src/FuzzerUtilLinux.cpp",
   ]
 }
 
