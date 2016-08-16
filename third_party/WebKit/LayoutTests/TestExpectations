@@ -1241,7 +1241,7 @@ crbug.com/487344 media/video-no-audio.html [ Failure ]
 crbug.com/487344 media/video-paint-invalidation.html [ Failure ]
 crbug.com/614197 [ Mac ] http/tests/media/pdf-served-as-pdf.html [ Pass Timeout ]
 
-crbug.com/637930 [ Win7 ] http/tests/media/video-buffered.html [ Pass Failure ]
+crbug.com/637930 [ Win7 Linux ] http/tests/media/video-buffered.html [ Pass Failure ]
 
 crbug.com/606302 [ Linux Mac Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
 crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ Failure ]
