@@ -51,7 +51,6 @@ AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
     , m_channelCount(2)
     , m_channelCountMode(Max)
     , m_channelInterpretation(AudioBus::Speakers)
-    , m_newChannelCountMode(Max)
 {
     setNodeType(nodeType);
 
@@ -96,8 +95,6 @@ void AudioHandler::dispose()
     ASSERT(isMainThread());
     ASSERT(context()->isGraphOwner());
 
-    context()->deferredTaskHandler().removeChangedChannelCountMode(this);
-    context()->deferredTaskHandler().removeChangedChannelInterpretation(this);
     context()->deferredTaskHandler().removeAutomaticPullNode(this);
     for (auto& output : m_outputs)
         output->dispose();
@@ -213,7 +210,7 @@ void AudioHandler::setChannelCount(unsigned long channelCount, ExceptionState& e
     if (channelCount > 0 && channelCount <= BaseAudioContext::maxNumberOfChannels()) {
         if (m_channelCount != channelCount) {
             m_channelCount = channelCount;
-            if (m_channelCountMode != Max)
+            if (internalChannelCountMode() != Max)
                 updateChannelsForInputs();
         }
     } else {
@@ -231,7 +228,7 @@ void AudioHandler::setChannelCount(unsigned long channelCount, ExceptionState& e
 
 String AudioHandler::channelCountMode()
 {
-    switch (m_channelCountMode) {
+    switch (internalChannelCountMode()) {
     case Max:
         return "max";
     case ClampedMax:
@@ -248,25 +245,24 @@ void AudioHandler::setChannelCountMode(const String& mode, ExceptionState& excep
     ASSERT(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
-    ChannelCountMode oldMode = m_channelCountMode;
-
     if (mode == "max") {
-        m_newChannelCountMode = Max;
+        setInternalChannelCountMode(Max);
     } else if (mode == "clamped-max") {
-        m_newChannelCountMode = ClampedMax;
+        setInternalChannelCountMode(ClampedMax);
     } else if (mode == "explicit") {
-        m_newChannelCountMode = Explicit;
+        setInternalChannelCountMode(Explicit);
     } else {
         ASSERT_NOT_REACHED();
     }
 
-    if (m_newChannelCountMode != oldMode)
-        context()->deferredTaskHandler().addChangedChannelCountMode(this);
+    // Changing the channel count mode can affect the number of output channels;
+    // Propagate this change.
+    updateChannelsForInputs();
 }
 
 String AudioHandler::channelInterpretation()
 {
-    switch (m_channelInterpretation) {
+    switch (internalChannelInterpretation()) {
     case AudioBus::Speakers:
         return "speakers";
     case AudioBus::Discrete:
@@ -281,18 +277,18 @@ void AudioHandler::setChannelInterpretation(const String& interpretation, Except
     ASSERT(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
-    AudioBus::ChannelInterpretation oldMode = m_channelInterpretation;
-
     if (interpretation == "speakers") {
-        m_newChannelInterpretation = AudioBus::Speakers;
+        setInternalChannelInterpretation(AudioBus::Speakers);
     } else if (interpretation == "discrete") {
-        m_newChannelInterpretation = AudioBus::Discrete;
+        setInternalChannelInterpretation(AudioBus::Discrete);
     } else {
         ASSERT_NOT_REACHED();
     }
 
-    if (m_newChannelInterpretation != oldMode)
-        context()->deferredTaskHandler().addChangedChannelInterpretation(this);
+    // Changing the channel interpretation doesn't change the number of output
+    // channels, so we don't need to do any update here. The contents of each
+    // channel may change, of course, but that doesn't require updating the
+    // nodes for a different number of channels.
 }
 
 void AudioHandler::updateChannelsForInputs()
@@ -505,17 +501,6 @@ void AudioHandler::printNodeCounts()
 }
 
 #endif // DEBUG_AUDIONODE_REFERENCES
-
-void AudioHandler::updateChannelCountMode()
-{
-    m_channelCountMode = m_newChannelCountMode;
-    updateChannelsForInputs();
-}
-
-void AudioHandler::updateChannelInterpretation()
-{
-    m_channelInterpretation = m_newChannelInterpretation;
-}
 
 unsigned AudioHandler::numberOfOutputChannels() const
 {

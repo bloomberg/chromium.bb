@@ -161,8 +161,6 @@ public:
 private:
     DeferredTaskHandler();
     void updateAutomaticPullNodes();
-    void updateChangedChannelCountMode();
-    void updateChangedChannelInterpretation();
     void handleDirtyAudioSummingJunctions();
     void handleDirtyAudioNodeOutputs();
     void deleteHandlersOnMainThread();
@@ -175,13 +173,6 @@ private:
     Vector<AudioHandler*> m_renderingAutomaticPullNodes;
     // m_automaticPullNodesNeedUpdating keeps track if m_automaticPullNodes is modified.
     bool m_automaticPullNodesNeedUpdating;
-
-    // Collection of nodes where the channel count mode has changed. We want the
-    // channel count mode to change in the pre- or post-rendering phase so as
-    // not to disturb the running audio thread.
-    HashSet<AudioHandler*> m_deferredCountModeChange;
-
-    HashSet<AudioHandler*> m_deferredChannelInterpretationChange;
 
     // These two HashSet must be accessed only when the graph lock is held.
     // These raw pointers are safe because their destructors unregister them.

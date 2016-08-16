@@ -179,52 +179,6 @@ void DeferredTaskHandler::processAutomaticPullNodes(size_t framesToProcess)
         m_renderingAutomaticPullNodes[i]->processIfNecessary(framesToProcess);
 }
 
-void DeferredTaskHandler::addChangedChannelCountMode(AudioHandler* node)
-{
-    ASSERT(isGraphOwner());
-    ASSERT(isMainThread());
-    m_deferredCountModeChange.add(node);
-}
-
-void DeferredTaskHandler::removeChangedChannelCountMode(AudioHandler* node)
-{
-    ASSERT(isGraphOwner());
-
-    m_deferredCountModeChange.remove(node);
-}
-
-void DeferredTaskHandler::addChangedChannelInterpretation(AudioHandler* node)
-{
-    ASSERT(isGraphOwner());
-    ASSERT(isMainThread());
-    m_deferredChannelInterpretationChange.add(node);
-}
-
-void DeferredTaskHandler::removeChangedChannelInterpretation(AudioHandler* node)
-{
-    ASSERT(isGraphOwner());
-
-    m_deferredChannelInterpretationChange.remove(node);
-}
-
-void DeferredTaskHandler::updateChangedChannelCountMode()
-{
-    ASSERT(isGraphOwner());
-
-    for (AudioHandler* node : m_deferredCountModeChange)
-        node->updateChannelCountMode();
-    m_deferredCountModeChange.clear();
-}
-
-void DeferredTaskHandler::updateChangedChannelInterpretation()
-{
-    ASSERT(isGraphOwner());
-
-    for (AudioHandler* node : m_deferredChannelInterpretationChange)
-        node->updateChannelInterpretation();
-    m_deferredChannelInterpretationChange.clear();
-}
-
 DeferredTaskHandler::DeferredTaskHandler()
     : m_automaticPullNodesNeedUpdating(false)
     , m_audioThread(0)
@@ -246,8 +200,6 @@ DeferredTaskHandler::~DeferredTaskHandler()
 
 void DeferredTaskHandler::handleDeferredTasks()
 {
-    updateChangedChannelCountMode();
-    updateChangedChannelInterpretation();
     handleDirtyAudioSummingJunctions();
     handleDirtyAudioNodeOutputs();
     updateAutomaticPullNodes();
