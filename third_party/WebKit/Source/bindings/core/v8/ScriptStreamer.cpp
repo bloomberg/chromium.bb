@@ -498,11 +498,15 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         // here, because it might contain incomplete UTF-8 characters. Also note
         // that have at least s_smallScriptThreshold worth of data, which is more
         // than enough for detecting a BOM.
-        const char* data = 0;
-        size_t length = resource->resourceBuffer()->getSomeData(data, static_cast<size_t>(0));
+        constexpr size_t maximumLengthOfBOM = 4;
+        char maybeBOM[maximumLengthOfBOM] = {};
+        if (!resource->resourceBuffer()->getPartAsBytes(maybeBOM, static_cast<size_t>(0), maximumLengthOfBOM)) {
+            NOTREACHED();
+            return;
+        }
 
         std::unique_ptr<TextResourceDecoder> decoder(TextResourceDecoder::create("application/javascript", resource->encoding()));
-        lengthOfBOM = decoder->checkForBOM(data, length);
+        lengthOfBOM = decoder->checkForBOM(maybeBOM, maximumLengthOfBOM);
 
         // Maybe the encoding changed because we saw the BOM; get the encoding
         // from the decoder.
