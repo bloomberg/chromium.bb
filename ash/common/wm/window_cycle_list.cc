@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/display.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -254,6 +255,7 @@ class WindowCycleView : public views::WidgetDelegateView {
     DCHECK(!windows.empty());
     SetPaintToLayer(true);
     layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetMasksToBounds(true);
     layer()->SetOpacity(0.0);
     {
       ui::ScopedLayerAnimationSettings animate_fade(layer()->GetAnimator());
@@ -575,10 +577,8 @@ void WindowCycleList::InitWindowCycleView() {
       widget, kShellWindowId_OverlayContainer, &params);
   widget->Init(params);
 
-  // TODO(estade): right now this just extends past the edge of the screen if
-  // there are too many windows. Handle this more gracefully. Also, if
-  // the display metrics change, cancel the UI.
-  gfx::Rect widget_rect = widget->GetWorkAreaBoundsInScreen();
+  // TODO(estade): If the display metrics change, cancel the UI.
+  gfx::Rect widget_rect = root_window->GetDisplayNearestWindow().bounds();
   int widget_height = cycle_view_->GetPreferredSize().height();
   widget_rect.set_y((widget_rect.height() - widget_height) / 2);
   widget_rect.set_height(widget_height);
