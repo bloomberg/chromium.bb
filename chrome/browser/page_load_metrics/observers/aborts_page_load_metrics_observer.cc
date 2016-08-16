@@ -51,20 +51,42 @@ const char kHistogramAbortStopDuringParse[] =
 const char kHistogramAbortCloseDuringParse[] =
     "PageLoad.AbortTiming.Close.DuringParse";
 
+// These metrics should be temporary until we have landed on a one-size-fits-all
+// abort metric.
+const char kHistogramAbortNewNavigationUserInitiated[] =
+    "PageLoad.AbortTiming.NewNavigation.BeforeCommit.UserInitiated";
+const char kHistogramAbortForwardBackUserInitiated[] =
+    "PageLoad.AbortTiming.NewNavigation.BeforeCommit.UserInitiated";
+const char kHistogramAbortReloadUserInitiated[] =
+    "PageLoad.AbortTiming.NewNavigation.BeforeCommit.UserInitiated";
+
 }  // namespace internal
 
 namespace {
 
+bool IsAbortUserInitiated(const page_load_metrics::PageLoadExtraInfo& info) {
+  return info.abort_user_initiated && info.user_gesture;
+}
+
 void RecordAbortBeforeCommit(UserAbortType abort_type,
+                             bool user_initiated,
                              base::TimeDelta time_to_abort) {
   switch (abort_type) {
     case UserAbortType::ABORT_RELOAD:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadBeforeCommit,
                           time_to_abort);
+      if (user_initiated) {
+        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortReloadUserInitiated,
+                            time_to_abort);
+      }
       return;
     case UserAbortType::ABORT_FORWARD_BACK:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackBeforeCommit,
                           time_to_abort);
+      if (user_initiated) {
+        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortForwardBackUserInitiated,
+                            time_to_abort);
+      }
       return;
     case UserAbortType::ABORT_CLIENT_REDIRECT:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortClientRedirectBeforeCommit,
@@ -73,6 +95,10 @@ void RecordAbortBeforeCommit(UserAbortType abort_type,
     case UserAbortType::ABORT_NEW_NAVIGATION:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortNewNavigationBeforeCommit,
                           time_to_abort);
+      if (user_initiated) {
+        PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortNewNavigationUserInitiated,
+                            time_to_abort);
+      }
       return;
     case UserAbortType::ABORT_STOP:
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAbortStopBeforeCommit,
@@ -223,5 +249,6 @@ void AbortsPageLoadMetricsObserver::OnFailedProvisionalLoad(
     return;
 
   RecordAbortBeforeCommit(extra_info.abort_type,
+                          IsAbortUserInitiated(extra_info),
                           extra_info.time_to_abort.value());
 }

@@ -101244,6 +101244,18 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint.LoadType.Reload"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PageLoadMetricsUserInitiated" separator=".">
+  <suffix name="UserInitiated"
+      label="(experimental) Page load metric that is approximately user
+             initiated"/>
+  <affected-histogram
+      name="PageLoad.AbortTiming.ForwardBackNavigation.BeforeCommit"/>
+  <affected-histogram name="PageLoad.AbortTiming.NewNavigation.BeforeCommit"/>
+  <affected-histogram name="PageLoad.AbortTiming.Reload.BeforeCommit"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PageLoadType">
   <suffix name="HistoryLoad"
       label="but only for user pressing back or forward"/>

@@ -65,9 +65,11 @@ struct PageLoadExtraInfo {
       const base::Optional<base::TimeDelta>& first_background_time,
       const base::Optional<base::TimeDelta>& first_foreground_time,
       bool started_in_foreground,
+      bool user_gesture,
       const GURL& committed_url,
       const base::Optional<base::TimeDelta>& time_to_commit,
       UserAbortType abort_type,
+      bool abort_user_initiated,
       const base::Optional<base::TimeDelta>& time_to_abort,
       int num_cache_requests,
       int num_network_requests,
@@ -86,6 +88,10 @@ struct PageLoadExtraInfo {
   // True if the page load started in the foreground.
   const bool started_in_foreground;
 
+  // True if this is either a browser initiated navigation or the user_gesture
+  // bit is true in the renderer.
+  const bool user_gesture;
+
   // Committed URL. If the page load did not commit, |committed_url| will be
   // empty.
   const GURL committed_url;
@@ -96,6 +102,10 @@ struct PageLoadExtraInfo {
   // The abort time and time to abort for this page load. If the page was not
   // aborted, |abort_type| will be |ABORT_NONE|.
   const UserAbortType abort_type;
+
+  // TODO(csharrison): If more metadata for aborts is needed we should provide a
+  // better abstraction. Note that this is an approximation.
+  bool abort_user_initiated;
 
   const base::Optional<base::TimeDelta> time_to_abort;
 

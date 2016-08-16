@@ -182,9 +182,11 @@ class PageLoadTracker {
   // browser process or not. We need this to possibly clamp browser timestamp on
   // a machine with inter process time tick skew.
   void NotifyAbort(UserAbortType abort_type,
+                   bool user_initiated,
                    base::TimeTicks timestamp,
                    bool is_certainly_browser_timestamp);
   void UpdateAbort(UserAbortType abort_type,
+                   bool user_initiated,
                    base::TimeTicks timestamp,
                    bool is_certainly_browser_timestamp);
 
@@ -219,6 +221,7 @@ class PageLoadTracker {
       base::TimeTicks* event_time);
 
   void UpdateAbortInternal(UserAbortType abort_type,
+                           bool user_initiated,
                            base::TimeTicks timestamp,
                            bool is_certainly_browser_timestamp);
 
@@ -252,6 +255,12 @@ class PageLoadTracker {
   // Will be ABORT_NONE if we have not aborted this load yet. Otherwise will
   // be the first abort action the user performed.
   UserAbortType abort_type_;
+
+  // This boolean is only an approximation. As the aborts pipeline is updated,
+  // more abort types will have this set to true. Currently, this is only set
+  // for navigations aborting navigations.
+  bool abort_user_initiated_;
+
   base::TimeTicks abort_time_;
 
   // We record separate metrics for events that occur after a background,
@@ -271,6 +280,10 @@ class PageLoadTracker {
   // the WebContents.
   int num_cache_requests_;
   int num_network_requests_;
+
+  // This is derived from the user gesture bit in the renderer. For browser
+  // initiated navigations this will always be true.
+  bool user_gesture_;
 
   // This is a subtle member. If a provisional load A gets aborted by
   // provisional load B, which gets aborted by C that eventually commits, then
@@ -354,8 +367,9 @@ class MetricsWebContentsObserver
 
   // Notify all loads, provisional and committed, that we performed an action
   // that might abort them.
-  void NotifyAbortAllLoads(UserAbortType abort_type);
+  void NotifyAbortAllLoads(UserAbortType abort_type, bool user_initiated);
   void NotifyAbortAllLoadsWithTimestamp(UserAbortType abort_type,
+                                        bool user_initiated,
                                         base::TimeTicks timestamp,
                                         bool is_certainly_browser_timestamp);
 

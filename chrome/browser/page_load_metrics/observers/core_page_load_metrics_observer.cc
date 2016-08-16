@@ -190,6 +190,9 @@ const char kHistogramTotalRequestsParseStop[] =
 const char kRapporMetricsNameCoarseTiming[] =
     "PageLoad.CoarseTiming.NavigationToFirstContentfulPaint";
 
+const char kHistogramFirstContentfulPaintUserInitiated[] =
+    "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.UserInitiated";
+
 const char kHistogramFirstMeaningfulPaintStatus[] =
     "PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintStatus";
 
@@ -322,6 +325,11 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
 
     if (was_no_store_main_resource_) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintNoStore,
+                          timing.first_contentful_paint.value());
+    }
+
+    if (info.user_gesture) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintUserInitiated,
                           timing.first_contentful_paint.value());
     }
 

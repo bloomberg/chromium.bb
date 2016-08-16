@@ -252,6 +252,13 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
     observer->OnLoadingBehaviorObserved(extra_info);
 }
 
+// TODO(crbug.com/617904): Browser initiated navigations should have
+// HasUserGesture() set to true. Update this once we get enough data from just
+// renderer initiated aborts.
+bool IsNavigationUserInitiated(content::NavigationHandle* handle) {
+  return handle->HasUserGesture();
+}
+
 }  // namespace
 
 PageLoadTracker::PageLoadTracker(
@@ -266,10 +273,12 @@ PageLoadTracker::PageLoadTracker(
       navigation_start_(navigation_handle->NavigationStart()),
       url_(navigation_handle->GetURL()),
       abort_type_(ABORT_NONE),
+      abort_user_initiated_(false),
       started_in_foreground_(in_foreground),
       page_transition_(navigation_handle->GetPageTransition()),
       num_cache_requests_(0),
       num_network_requests_(0),
+      user_gesture_(IsNavigationUserInitiated(navigation_handle)),
       aborted_chain_size_(aborted_chain_size),
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
       embedder_interface_(embedder_interface) {
@@ -404,6 +413,7 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   url_ = navigation_handle->GetURL();
   // Some transitions (like CLIENT_REDIRECT) are only known at commit time.
   page_transition_ = navigation_handle->GetPageTransition();
+  user_gesture_ = navigation_handle->HasUserGesture();
   for (const auto& observer : observers_) {
     observer->OnCommit(navigation_handle);
   }
@@ -561,13 +571,17 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
     time_to_commit = commit_time_ - navigation_start_;
   }
 
+  // abort_type_ == ABORT_NONE implies !abort_user_initiated_.
+  DCHECK(abort_type_ != ABORT_NONE || !abort_user_initiated_);
   return PageLoadExtraInfo(
       first_background_time, first_foreground_time, started_in_foreground_,
-      commit_time_.is_null() ? GURL() : url_, time_to_commit, abort_type_,
-      time_to_abort, num_cache_requests_, num_network_requests_, metadata_);
+      user_gesture_, commit_time_.is_null() ? GURL() : url_, time_to_commit,
+      abort_type_, abort_user_initiated_, time_to_abort, num_cache_requests_,
+      num_network_requests_, metadata_);
 }
 
 void PageLoadTracker::NotifyAbort(UserAbortType abort_type,
+                                  bool user_initiated,
                                   base::TimeTicks timestamp,
                                   bool is_certainly_browser_timestamp) {
   DCHECK_NE(abort_type, ABORT_NONE);
@@ -575,10 +589,12 @@ void PageLoadTracker::NotifyAbort(UserAbortType abort_type,
   if (abort_type_ != ABORT_NONE)
     return;
 
-  UpdateAbortInternal(abort_type, timestamp, is_certainly_browser_timestamp);
+  UpdateAbortInternal(abort_type, user_initiated, timestamp,
+                      is_certainly_browser_timestamp);
 }
 
 void PageLoadTracker::UpdateAbort(UserAbortType abort_type,
+                                  bool user_initiated,
                                   base::TimeTicks timestamp,
                                   bool is_certainly_browser_timestamp) {
   DCHECK_NE(abort_type, ABORT_NONE);
@@ -588,7 +604,8 @@ void PageLoadTracker::UpdateAbort(UserAbortType abort_type,
   // For some aborts (e.g. navigations), the initiated timestamp can be earlier
   // than the timestamp that aborted the load. Taking the minimum gives the
   // closest user initiated time known.
-  UpdateAbortInternal(abort_type, std::min(abort_time_, timestamp),
+  UpdateAbortInternal(abort_type, user_initiated,
+                      std::min(abort_time_, timestamp),
                       is_certainly_browser_timestamp);
 }
 
@@ -608,6 +625,7 @@ bool PageLoadTracker::MatchesOriginalNavigation(
 }
 
 void PageLoadTracker::UpdateAbortInternal(UserAbortType abort_type,
+                                          bool user_initiated,
                                           base::TimeTicks timestamp,
                                           bool is_certainly_browser_timestamp) {
   // When a provisional navigation commits, that navigation's start time is
@@ -627,6 +645,7 @@ void PageLoadTracker::UpdateAbortInternal(UserAbortType abort_type,
   }
   abort_type_ = abort_type;
   abort_time_ = timestamp;
+  abort_user_initiated_ = user_initiated && abort_type != ABORT_CLIENT_REDIRECT;
 
   if (is_certainly_browser_timestamp) {
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&abort_time_);
@@ -659,7 +678,8 @@ MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
 }
 
 MetricsWebContentsObserver::~MetricsWebContentsObserver() {
-  NotifyAbortAllLoads(ABORT_CLOSE);
+  // TODO(csharrison): Use a more user-initiated signal for CLOSE.
+  NotifyAbortAllLoads(ABORT_CLOSE, false);
 }
 
 void MetricsWebContentsObserver::RegisterInputEventObserver(
@@ -794,14 +814,11 @@ void MetricsWebContentsObserver::DidFinishNavigation(
       return;
 
     // Notify other loads that they may have been aborted by this committed
-    // load.  Note that by using the committed navigation start as the abort
-    // cause, we lose data on provisional loads that were aborted by other
-    // provisional loads. Those will either be listed as ABORT_OTHER or as being
-    // aborted by this load.
-    // is_certainly_browser_timestamp is set to false because NavigationStart()
-    // could be set in either the renderer or browser process.
+    // load. is_certainly_browser_timestamp is set to false because
+    // NavigationStart() could be set in either the renderer or browser process.
     NotifyAbortAllLoadsWithTimestamp(
         AbortTypeForPageTransition(navigation_handle->GetPageTransition()),
+        IsNavigationUserInitiated(navigation_handle),
         navigation_handle->NavigationStart(), false);
 
     if (should_track) {
@@ -836,7 +853,7 @@ void MetricsWebContentsObserver::HandleFailedNavigationForTrackedLoad(
   // net::ERR_ABORTED. Note that this can come from some non user-initiated
   // errors, such as downloads, or 204 responses. See crbug.com/542369.
   if ((error == net::OK) || (error == net::ERR_ABORTED)) {
-    tracker->NotifyAbort(ABORT_OTHER, base::TimeTicks::Now(), true);
+    tracker->NotifyAbort(ABORT_OTHER, false, base::TimeTicks::Now(), true);
     aborted_provisional_loads_.push_back(std::move(tracker));
   }
 }
@@ -855,7 +872,8 @@ void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
 }
 
 void MetricsWebContentsObserver::NavigationStopped() {
-  NotifyAbortAllLoads(ABORT_STOP);
+  // TODO(csharrison): Use a more user-initiated signal for STOP.
+  NotifyAbortAllLoads(ABORT_STOP, false);
 }
 
 void MetricsWebContentsObserver::OnInputEvent(
@@ -932,25 +950,28 @@ void MetricsWebContentsObserver::RenderProcessGone(
   aborted_provisional_loads_.clear();
 }
 
-void MetricsWebContentsObserver::NotifyAbortAllLoads(UserAbortType abort_type) {
-  NotifyAbortAllLoadsWithTimestamp(abort_type, base::TimeTicks::Now(), true);
+void MetricsWebContentsObserver::NotifyAbortAllLoads(UserAbortType abort_type,
+                                                     bool user_initiated) {
+  NotifyAbortAllLoadsWithTimestamp(abort_type, user_initiated,
+                                   base::TimeTicks::Now(), true);
 }
 
 void MetricsWebContentsObserver::NotifyAbortAllLoadsWithTimestamp(
     UserAbortType abort_type,
+    bool user_initiated,
     base::TimeTicks timestamp,
     bool is_certainly_browser_timestamp) {
   if (committed_load_) {
-    committed_load_->NotifyAbort(abort_type, timestamp,
+    committed_load_->NotifyAbort(abort_type, user_initiated, timestamp,
                                  is_certainly_browser_timestamp);
   }
   for (const auto& kv : provisional_loads_) {
-    kv.second->NotifyAbort(abort_type, timestamp,
+    kv.second->NotifyAbort(abort_type, user_initiated, timestamp,
                            is_certainly_browser_timestamp);
   }
   for (const auto& tracker : aborted_provisional_loads_) {
     if (tracker->IsLikelyProvisionalAbort(timestamp)) {
-      tracker->UpdateAbort(abort_type, timestamp,
+      tracker->UpdateAbort(abort_type, user_initiated, timestamp,
                            is_certainly_browser_timestamp);
     }
   }
@@ -976,7 +997,7 @@ MetricsWebContentsObserver::NotifyAbortedProvisionalLoadsNewNavigation(
   if (last_aborted_load->IsLikelyProvisionalAbort(timestamp)) {
     last_aborted_load->UpdateAbort(
         AbortTypeForPageTransition(new_navigation->GetPageTransition()),
-        timestamp, false);
+        IsNavigationUserInitiated(new_navigation), timestamp, false);
   }
 
   aborted_provisional_loads_.clear();
