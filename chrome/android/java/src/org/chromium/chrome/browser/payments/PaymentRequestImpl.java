@@ -154,7 +154,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private SectionInformation mPaymentMethodsSection;
     private PaymentRequestUI mUI;
     private Callback<PaymentInformation> mPaymentInformationCallback;
-    private boolean mMerchantNeedsShippingAddress;
     private boolean mPaymentAppRunning;
     private boolean mMerchantSupportsAutofillPaymentInstruments;
     private ContactEditor mContactEditor;
@@ -248,12 +247,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             return;
         }
 
-        // If the merchant requests shipping and does not provide a selected shipping option, then
-        // the merchant needs the shipping address to calculate the shipping price and availability.
         boolean requestShipping = options != null && options.requestShipping;
-        mMerchantNeedsShippingAddress =
-                requestShipping && mUiShippingOptions.getSelectedItem() == null;
-
         boolean requestPayerPhone = options != null && options.requestPayerPhone;
         boolean requestPayerEmail = options != null && options.requestPayerEmail;
 
@@ -282,7 +276,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             // Automatically select the first address if one is complete and if the merchant does
             // not require a shipping address to calculate shipping costs.
             int firstCompleteAddressIndex = SectionInformation.NO_SELECTION;
-            if (!mMerchantNeedsShippingAddress && !addresses.isEmpty()
+            if (mUiShippingOptions.getSelectedItem() != null && !addresses.isEmpty()
                     && addresses.get(0).isComplete()) {
                 firstCompleteAddressIndex = 0;
             }
@@ -441,15 +435,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
-
-        // Empty shipping options means the merchant cannot ship to the user's selected shipping
-        // address.
-        if (mUiShippingOptions.isEmpty() && !mMerchantNeedsShippingAddress) {
-            disconnectFromClientWithDebugMessage("Merchant indicates inability to ship although "
-                    + "originally indicated that can ship anywhere");
-            recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_OTHER);
-            return;
-        }
 
         if (mUiShippingOptions.isEmpty() && mShippingAddressesSection.getSelectedItem() != null) {
             mShippingAddressesSection.getSelectedItem().setInvalid();
@@ -684,26 +669,15 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             assert option instanceof AutofillAddress;
             AutofillAddress address = (AutofillAddress) option;
-            @PaymentRequestUI.SelectionResult int result = PaymentRequestUI.SELECTION_RESULT_NONE;
-
             if (address.isComplete()) {
                 mShippingAddressesSection.setSelectedItem(option);
-
                 // This updates the line items and the shipping options asynchronously.
-                if (mMerchantNeedsShippingAddress) {
-                    mClient.onShippingAddressChange(address.toPaymentAddress());
-                }
+                mClient.onShippingAddressChange(address.toPaymentAddress());
             } else {
                 editAddress(address);
-                result = PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
             }
-
-            if (mMerchantNeedsShippingAddress) {
-                mPaymentInformationCallback = callback;
-                result = PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
-            }
-
-            return result;
+            mPaymentInformationCallback = callback;
+            return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
             // This may update the line items.
             mUiShippingOptions.setSelectedItem(option);
@@ -742,13 +716,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             @PaymentRequestUI.DataType int optionType, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             editAddress(null);
-
-            if (mMerchantNeedsShippingAddress) {
-                mPaymentInformationCallback = callback;
-                return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
-            } else {
-                return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
-            }
+            mPaymentInformationCallback = callback;
+            return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             editContact(null);
             return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
@@ -768,21 +737,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
                 if (completeAddress == null) {
                     mShippingAddressesSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
-                } else if (toEdit == null) {
-                    mShippingAddressesSection.addAndSelectItem(completeAddress);
+                    providePaymentInformation();
+                } else {
+                    if (toEdit == null) mShippingAddressesSection.addAndSelectItem(completeAddress);
+                    mClient.onShippingAddressChange(completeAddress.toPaymentAddress());
                 }
-
-                if (mMerchantNeedsShippingAddress) {
-                    if (completeAddress == null) {
-                        providePaymentInformation();
-                    } else {
-                        mClient.onShippingAddressChange(completeAddress.toPaymentAddress());
-                    }
-                    return;
-                }
-
-                mUI.updateSection(
-                        PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, mShippingAddressesSection);
             }
         });
     }
@@ -849,11 +808,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mClient != null) mClient.onError(reason);
         closeClient();
         closeUI(true);
-    }
-
-    @Override
-    public boolean merchantNeedsShippingAddress() {
-        return mMerchantNeedsShippingAddress;
     }
 
     /**
@@ -1076,8 +1030,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      *                       implies that the merchant attempted to process the order, failed, and
      *                       called complete("fail") to notify the user. Therefore, this parameter
      *                       may be "false" only when called from
-     *                       PaymentRequestImpl.complete(int result) method. All other callers
-     *                       should always pass "true."
+     *                       {@link PaymentRequestImpl#complete(int)}. All other callers should
+     *                       always pass "true."
      */
     private void closeUI(boolean immediateClose) {
         if (mUI != null) {

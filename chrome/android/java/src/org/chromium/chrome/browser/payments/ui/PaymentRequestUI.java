@@ -19,6 +19,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
@@ -168,12 +169,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
          * or the “X” button in UI.
          */
         void onDismiss();
-
-        /**
-         * Checks if the merchant needs a shipping address to provide the shipping options.
-         * @return Whether or not the merchant needs a shipping address.
-         */
-        boolean merchantNeedsShippingAddress();
     }
 
     /**
@@ -222,6 +217,36 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         void onPaymentRequestDismiss();
     }
 
+    /** Helper to notify tests of an event only once. */
+    private static class NotifierForTest {
+        private final Handler mHandler;
+        private final Runnable mNotification;
+        private boolean mNotificationPending;
+
+        /**
+         * Constructs the helper to notify tests for an event.
+         *
+         * @param notification The callback that notifies the test of an event.
+         */
+        public NotifierForTest(final Runnable notification) {
+            mHandler = new Handler();
+            mNotification = new Runnable() {
+                @Override
+                public void run() {
+                    notification.run();
+                    mNotificationPending = false;
+                }
+            };
+        }
+
+        /** Schedules a single notification for test, even if called only once. */
+        public void run() {
+            if (mNotificationPending) return;
+            mNotificationPending = true;
+            mHandler.post(mNotification);
+        }
+    }
+
     /** Length of the animation to either show the UI or expand it to full height. */
     private static final int DIALOG_ENTER_ANIMATION_MS = 225;
 
@@ -229,6 +254,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private static final int DIALOG_EXIT_ANIMATION_MS = 195;
 
     private static PaymentRequestObserverForTest sObserverForTest;
+
+    /** Notifies tests that the [PAY] button can be clicked. */
+    private final NotifierForTest mReadyToPayNotifierForTest;
 
     private final Context mContext;
     private final Client mClient;
@@ -309,6 +337,15 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mErrorView = (PaymentRequestUiErrorView) LayoutInflater.from(mContext).inflate(
                 R.layout.payment_request_error, null);
         mErrorView.initialize(title, origin);
+
+        mReadyToPayNotifierForTest = new NotifierForTest(new Runnable() {
+            @Override
+            public void run() {
+                if (sObserverForTest != null && isAcceptingUserInput() && mPayButton.isEnabled()) {
+                    sObserverForTest.onPaymentRequestReadyToPay(PaymentRequestUI.this);
+                }
+            }
+        });
 
         // This callback will be fired if mIsClientCheckingSelection is true.
         mUpdateSectionsCallback = new Callback<PaymentInformation>() {
@@ -812,7 +849,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 && !mIsClientCheckingSelection
                 && !mIsEditingPaymentItem
                 && !mIsClosing);
-        notifyReadyToPay();
+        mReadyToPayNotifierForTest.run();
     }
 
     /** @return Whether or not the dialog can be closed via the X close button. */
@@ -964,9 +1001,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     public String getAdditionalText(PaymentRequestSection section) {
         if (section == mShippingAddressSection) {
             int selectedItemIndex = mShippingAddressSectionInformation.getSelectedItemIndex();
-            boolean isNecessary = mClient.merchantNeedsShippingAddress()
-                    && (selectedItemIndex == SectionInformation.NO_SELECTION
-                               || selectedItemIndex == SectionInformation.INVALID_SELECTION);
+            boolean isNecessary = selectedItemIndex == SectionInformation.NO_SELECTION
+                    || selectedItemIndex == SectionInformation.INVALID_SELECTION;
             return isNecessary
                     ? mContext.getString(selectedItemIndex == SectionInformation.NO_SELECTION
                             ? R.string.payments_select_shipping_address_for_shipping_methods
@@ -1004,7 +1040,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             public void run() {
                 mSectionAnimator = null;
                 notifyReadyForInput();
-                notifyReadyToPay();
+                mReadyToPayNotifierForTest.run();
             }
         };
 
@@ -1124,7 +1160,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mSheetAnimator = null;
             mIsInitialLayoutComplete = true;
             notifyReadyForInput();
-            notifyReadyToPay();
+            mReadyToPayNotifierForTest.run();
         }
     }
 
@@ -1197,12 +1233,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private void notifyReadyForInput() {
         if (sObserverForTest != null && isAcceptingUserInput()) {
             sObserverForTest.onPaymentRequestReadyForInput(this);
-        }
-    }
-
-    private void notifyReadyToPay() {
-        if (sObserverForTest != null && isAcceptingUserInput() && mPayButton.isEnabled()) {
-            sObserverForTest.onPaymentRequestReadyToPay(this);
         }
     }
 

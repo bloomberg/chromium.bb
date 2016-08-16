@@ -6,23 +6,31 @@
 
 /* global PaymentRequest:false */
 /* global toDictionary:false */
+/* global print:false */
 
 /**
  * Launches the PaymentRequest UI that offers free shipping worldwide.
  */
 function buy() {  // eslint-disable-line no-unused-vars
   try {
+    var details = {
+      total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+      shippingOptions: [{
+        id: 'freeShippingOption',
+        label: 'Free global shipping',
+        amount: {currency: 'USD', value: '0'},
+        selected: true
+      }]
+    };
     var request = new PaymentRequest(
-        [{supportedMethods: ['visa']}], {
-          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-          shippingOptions: [{
-            id: 'freeShippingOption',
-            label: 'Free global shipping',
-            amount: {currency: 'USD', value: '0'},
-            selected: true
-          }]
-        },
+        [{supportedMethods: ['visa']}], details,
         {requestShipping: true});
+    request.addEventListener('shippingaddresschange', function(e) {
+      e.updateWith(new Promise(function(resolve) {
+        // No changes in price based on shipping address change.
+        resolve(details);
+      }));
+    });
     request.show()
         .then(function(resp) {
           resp.complete('success')
