@@ -39,7 +39,6 @@ void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Valu
             return;
         impl.setBooleanMember(booleanMember);
     }
-
 }
 
 v8::Local<v8::Value> TestPermissiveDictionary::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const

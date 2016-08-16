@@ -192,7 +192,6 @@ v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedGlobal::domTemplateForNamedP
     return namedPropertiesObjectFunctionTemplate;
 }
 
-
 bool V8TestIntegerIndexedGlobal::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);

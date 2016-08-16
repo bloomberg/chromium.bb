@@ -405,3 +405,58 @@ def shorten_union_name(union_type):
     if alias:
         return alias
     return name
+
+
+def format_blink_cpp_source_code(text):
+    """Formats C++ source code.
+
+    Supported modifications are:
+    - Reduces successive empty lines into a single empty line.
+    - Removes empty lines just after an open brace or before closing brace.
+      This rule does not apply to namespaces.
+
+    Designed to be used as a filter function for Jinja2.
+
+    Args:
+        text: A str of C++ source code.
+
+    Returns:
+        A formatted str of the source code.
+    """
+    re_first_brace = re.compile(r'(?P<first>[{}])')
+    re_last_brace = re.compile(r'.*(?P<last>[{}]).*?$')
+    was_open_brace = True  # Trick to remove the empty lines at the beginning.
+    was_empty_line = False
+    output = []
+    for line in text.split('\n'):
+        # Skip empty lines.
+        if not line:  # empty line
+            was_empty_line = True
+            continue
+
+        # Emit a single empty line if needed.
+        if was_empty_line:
+            was_empty_line = False
+            match = re_first_brace.search(line)
+            if was_open_brace:
+                # No empty line just after an open brace.
+                pass
+            elif match and match.group('first') == '}' and 'namespace' not in line:
+                # No empty line just before a closing brace.
+                pass
+            else:
+                # Preserve a single empty line.
+                output.append('')
+
+        # Emit the line itself.
+        output.append(line)
+
+        # Remember an open brace.
+        match = re_last_brace.search(line)
+        was_open_brace = (match and match.group('last') == '{' and 'namespace' not in line)
+
+    # Let |'\n'.join| emit the last newline.
+    if output:
+        output.append('')
+
+    return '\n'.join(output)

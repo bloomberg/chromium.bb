@@ -1,3 +1,5 @@
+{% filter format_blink_cpp_source_code %}
+
 {% include 'copyright_block.txt' %}
 #include "{{cpp_class}}.h"
 
@@ -30,3 +32,5 @@ DEFINE_TRACE({{cpp_class}})
 }
 
 } // namespace blink
+
+{% endfilter %}{# format_blink_cpp_source_code #}

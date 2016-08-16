@@ -16,7 +16,6 @@
 
 namespace blink {
 
-
 class CORE_EXPORT LongOrTestDictionary final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:

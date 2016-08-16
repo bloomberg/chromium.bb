@@ -1,3 +1,5 @@
+{% filter format_blink_cpp_source_code %}
+
 {% include 'copyright_block.txt' %}
 #ifndef {{v8_class_or_partial}}_h
 #define {{v8_class_or_partial}}_h
@@ -39,3 +41,5 @@ private:
 };
 }
 #endif // {{v8_class_or_partial}}_h
+
+{% endfilter %}{# format_blink_cpp_source_code #}

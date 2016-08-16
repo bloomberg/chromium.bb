@@ -83,7 +83,6 @@ void V8BooleanOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Valu
         impl.setString(cppValue);
         return;
     }
-
 }
 
 v8::Local<v8::Value> toV8(const BooleanOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)

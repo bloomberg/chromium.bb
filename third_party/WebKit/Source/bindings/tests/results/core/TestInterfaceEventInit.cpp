@@ -6,7 +6,6 @@
 
 #include "TestInterfaceEventInit.h"
 
-
 namespace blink {
 
 TestInterfaceEventInit::TestInterfaceEventInit()

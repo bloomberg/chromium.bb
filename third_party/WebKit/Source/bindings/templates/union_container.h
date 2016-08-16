@@ -1,3 +1,5 @@
+{% filter format_blink_cpp_source_code %}
+
 {% include 'copyright_block.txt' %}
 #ifndef {{cpp_class}}_h
 #define {{cpp_class}}_h
@@ -73,3 +75,5 @@ struct NativeValueTraits<{{cpp_class}}> {
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::{{cpp_class}});
 
 #endif // {{cpp_class}}_h
+
+{% endfilter %}{# format_blink_cpp_source_code #}

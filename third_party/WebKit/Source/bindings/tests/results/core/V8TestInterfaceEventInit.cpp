@@ -44,7 +44,6 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
             return;
         impl.setStringMember(stringMember);
     }
-
 }
 
 v8::Local<v8::Value> TestInterfaceEventInit::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const

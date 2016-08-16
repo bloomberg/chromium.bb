@@ -1,3 +1,5 @@
+{% filter format_blink_cpp_source_code %}
+
 {% include 'copyright_block.txt' %}
 #include "{{v8_class_or_partial}}.h"
 
@@ -433,3 +435,5 @@ void {{v8_class_or_partial}}::install{{origin_trial_feature.name}}(ScriptState* 
 {% endfor %}
 {% block partial_interface %}{% endblock %}
 } // namespace blink
+
+{% endfilter %}{# format_blink_cpp_source_code #}

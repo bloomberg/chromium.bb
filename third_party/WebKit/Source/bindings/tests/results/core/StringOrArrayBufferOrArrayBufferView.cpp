@@ -115,7 +115,6 @@ void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Lo
         impl.setString(cppValue);
         return;
     }
-
 }
 
 v8::Local<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)

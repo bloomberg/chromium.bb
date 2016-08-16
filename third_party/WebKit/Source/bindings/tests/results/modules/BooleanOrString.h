@@ -15,7 +15,6 @@
 
 namespace blink {
 
-
 class MODULES_EXPORT BooleanOrString final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:

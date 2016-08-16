@@ -2735,7 +2735,6 @@ v8::Local<v8::FunctionTemplate> V8TestInterface::domTemplate(v8::Isolate* isolat
     return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), V8TestInterface::installV8TestInterfaceTemplateFunction);
 }
 
-
 bool V8TestInterface::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
@@ -3017,7 +3016,6 @@ bool V8TestInterface::PrivateScript::stringAttributeAttributeGetter(LocalFrame* 
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     if (holder.IsEmpty())
         return false;
-
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "stringAttribute", holder);

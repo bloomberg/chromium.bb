@@ -107,7 +107,6 @@ void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
         impl.setLong(cppValue);
         return;
     }
-
 }
 
 v8::Local<v8::Value> toV8(const LongOrTestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)

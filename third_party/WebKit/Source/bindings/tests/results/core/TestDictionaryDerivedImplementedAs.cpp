@@ -6,7 +6,6 @@
 
 #include "TestDictionaryDerivedImplementedAs.h"
 
-
 namespace blink {
 
 TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs()

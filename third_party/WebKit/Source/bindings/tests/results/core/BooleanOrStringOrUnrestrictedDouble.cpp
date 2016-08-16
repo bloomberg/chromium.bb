@@ -111,7 +111,6 @@ void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Loc
         impl.setString(cppValue);
         return;
     }
-
 }
 
 v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)

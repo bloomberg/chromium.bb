@@ -391,7 +391,6 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Isolate* isolate
     }
 }
 
-
 void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scriptState, v8::Local<v8::Object> instance)
 {
     v8::Local<v8::FunctionTemplate> interfaceTemplate = V8TestInterface::wrapperTypeInfo.domTemplate(scriptState->isolate(), scriptState->world());

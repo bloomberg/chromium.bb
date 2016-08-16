@@ -88,7 +88,6 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
             return;
         impl.setStringOrDoubleSequenceMember(stringOrDoubleSequenceMember);
     }
-
 }
 
 v8::Local<v8::Value> TestDictionaryDerivedImplementedAs::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const

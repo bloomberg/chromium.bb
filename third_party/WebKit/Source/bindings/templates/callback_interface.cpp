@@ -1,3 +1,5 @@
+{% filter format_blink_cpp_source_code %}
+
 {% include 'copyright_block.txt' %}
 #include "{{v8_class}}.h"
 
@@ -55,7 +57,7 @@ DEFINE_TRACE({{v8_class}})
     {% if method.arguments %}
     v8::Local<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };
     {% else %}
-    {# Empty array initializers are illegal, and don't compile in MSVC. #}
+    {# Empty array initializers are illegal, and don\'t compile in MSVC. #}
     v8::Local<v8::Value> *argv = 0;
     {% endif %}
 
@@ -72,3 +74,5 @@ DEFINE_TRACE({{v8_class}})
 
 {% endfor %}
 } // namespace blink
+
+{% endfilter %}{# format_blink_cpp_source_code #}

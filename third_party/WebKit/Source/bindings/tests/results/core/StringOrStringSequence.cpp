@@ -86,7 +86,6 @@ void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
         impl.setString(cppValue);
         return;
     }
-
 }
 
 v8::Local<v8::Value> toV8(const StringOrStringSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)

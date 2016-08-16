@@ -172,7 +172,6 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor::domTemplate(v8:
     return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceNamedConstructorTemplate);
 }
 
-
 bool V8TestInterfaceNamedConstructor::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);

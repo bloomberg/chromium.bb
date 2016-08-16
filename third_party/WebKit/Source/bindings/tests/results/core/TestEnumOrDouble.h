@@ -15,7 +15,6 @@
 
 namespace blink {
 
-
 class CORE_EXPORT TestEnumOrDouble final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:

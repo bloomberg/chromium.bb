@@ -42,6 +42,5 @@ private:
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<ScriptState> m_scriptState;
 };
-
 }
 #endif // V8TestCallbackInterface_h

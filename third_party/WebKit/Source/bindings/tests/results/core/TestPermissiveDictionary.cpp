@@ -6,7 +6,6 @@
 
 #include "TestPermissiveDictionary.h"
 
-
 namespace blink {
 
 TestPermissiveDictionary::TestPermissiveDictionary()

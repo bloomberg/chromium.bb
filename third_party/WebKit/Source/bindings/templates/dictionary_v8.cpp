@@ -1,3 +1,5 @@
+{% filter format_blink_cpp_source_code %}
+
 {% from 'utilities.cpp' import declare_enum_validation_variable %}
 {% include 'copyright_block.txt' %}
 #include "{{v8_original_class}}.h"
@@ -136,3 +138,5 @@ bool toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictiona
 }
 
 } // namespace blink
+
+{% endfilter %}{# format_blink_cpp_source_code #}

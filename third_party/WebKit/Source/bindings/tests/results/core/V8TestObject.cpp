@@ -11799,7 +11799,6 @@ static void installV8TestObjectTemplate(v8::Isolate* isolate, const DOMWrapperWo
     V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partiallyRuntimeEnabledOverloadedVoidMethodMethodConfiguration);
 }
 
-
 void V8TestObject::installFeatureName(ScriptState* scriptState, v8::Local<v8::Object> instance)
 {
     v8::Local<v8::FunctionTemplate> interfaceTemplate = V8TestObject::wrapperTypeInfo.domTemplate(scriptState->isolate(), scriptState->world());
@@ -11878,7 +11877,6 @@ v8::Local<v8::FunctionTemplate> V8TestObject::domTemplate(v8::Isolate* isolate, 
 {
     return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestObjectTemplate);
 }
-
 
 bool V8TestObject::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
@@ -12153,7 +12151,6 @@ bool V8TestObject::PrivateScript::readonlyShortAttributeAttributeGetter(LocalFra
     if (holder.IsEmpty())
         return false;
 
-
     ExceptionState exceptionState(ExceptionState::GetterContext, "readonlyShortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "readonlyShortAttribute", holder);
     if (v8Value.IsEmpty())
@@ -12183,7 +12180,6 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeGetter(LocalFrame* fram
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     if (holder.IsEmpty())
         return false;
-
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "shortAttribute", holder);
@@ -12237,7 +12233,6 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeGetter(LocalFrame* fra
     if (holder.IsEmpty())
         return false;
 
-
     ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "stringAttribute", holder);
     if (v8Value.IsEmpty())
@@ -12290,7 +12285,6 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeGetter(LocalFrame* frame
     if (holder.IsEmpty())
         return false;
 
-
     ExceptionState exceptionState(ExceptionState::GetterContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "nodeAttribute", holder);
     if (v8Value.IsEmpty())
@@ -12340,7 +12334,6 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeGetter(L
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     if (holder.IsEmpty())
         return false;
-
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "attributeForPrivateScriptOnly", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "attributeForPrivateScriptOnly", holder);
@@ -12393,7 +12386,6 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeGetter(LocalFrame
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
     if (holder.IsEmpty())
         return false;
-
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "enumForPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "enumForPrivateScript", holder);

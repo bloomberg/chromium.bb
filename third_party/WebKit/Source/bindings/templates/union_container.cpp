@@ -1,3 +1,5 @@
+{% filter format_blink_cpp_source_code %}
+
 {% from 'utilities.cpp' import declare_enum_validation_variable %}
 {% include 'copyright_block.txt' %}
 #include "{{this_include_header_name}}.h"
@@ -97,7 +99,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
 
     {% endif %}
     {# 9., 10. ArrayBufferView #}
-    {# FIXME: Individual typed arrays (e.g. Uint8Array) aren't supported yet. #}
+    {# FIXME: Individual typed arrays (e.g. Uint8Array) aren\'t supported yet. #}
     {% if array_buffer_view_type %}
     {{assign_and_return_if_hasinstance(array_buffer_view_type) | indent}}
 
@@ -210,3 +212,5 @@ v8::Local<v8::Value> toV8(const {{cpp_class}}& impl, v8::Local<v8::Object> creat
 }
 
 } // namespace blink
+
+{% endfilter %}{# format_blink_cpp_source_code #}

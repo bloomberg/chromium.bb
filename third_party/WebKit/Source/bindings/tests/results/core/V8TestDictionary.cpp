@@ -542,7 +542,6 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
             return;
         impl.setUnrestrictedDoubleMember(unrestrictedDoubleMember);
     }
-
 }
 
 v8::Local<v8::Value> TestDictionary::toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate* isolate) const
