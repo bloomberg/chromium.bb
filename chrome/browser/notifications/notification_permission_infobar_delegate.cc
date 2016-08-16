@@ -15,9 +15,9 @@ infobars::InfoBar* NotificationPermissionInfobarDelegate::Create(
     const GURL& requesting_frame,
     bool user_gesture,
     Profile* profile,
-    const base::Callback<void(bool, bool)>& callback) {
-  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(
+    const PermissionSetCallback& callback) {
+  return infobar_service->AddInfoBar(
+      CreatePermissionInfoBar(std::unique_ptr<PermissionInfobarDelegate>(
           new NotificationPermissionInfobarDelegate(
               requesting_frame, user_gesture, profile, callback))));
 }
@@ -26,7 +26,7 @@ NotificationPermissionInfobarDelegate::NotificationPermissionInfobarDelegate(
     const GURL& requesting_frame,
     bool user_gesture,
     Profile* profile,
-    const base::Callback<void(bool, bool)>& callback)
+    const PermissionSetCallback& callback)
     : PermissionInfobarDelegate(requesting_frame,
                                 content::PermissionType::NOTIFICATIONS,
                                 CONTENT_SETTINGS_TYPE_NOTIFICATIONS,

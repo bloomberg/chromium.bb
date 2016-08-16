@@ -4,11 +4,12 @@
 
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
+#include "base/feature_list.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/infobars/core/infobar.h"
 #include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -31,14 +32,24 @@ PermissionInfobarDelegate::PermissionInfobarDelegate(
     ContentSettingsType content_settings_type,
     bool user_gesture,
     Profile* profile,
-    const base::Callback<void(bool, bool)>& callback)
+    const PermissionSetCallback& callback)
     : requesting_origin_(requesting_origin),
-      action_taken_(false),
       permission_type_(permission_type),
       content_settings_type_(content_settings_type),
-      user_gesture_(user_gesture),
       profile_(profile),
-      callback_(callback) {}
+      callback_(callback),
+      action_taken_(false),
+      user_gesture_(user_gesture),
+      persist_(true) {}
+
+bool PermissionInfobarDelegate::ShouldShowPersistenceToggle() const {
+  // Only show the persistence toggle for geolocation.
+  if (permission_type_ == content::PermissionType::GEOLOCATION) {
+    return base::FeatureList::IsEnabled(
+        features::kDisplayPersistenceToggleInPermissionPrompts);
+  }
+  return false;
+}
 
 base::string16 PermissionInfobarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
@@ -54,7 +65,7 @@ infobars::InfoBarDelegate::Type PermissionInfobarDelegate::GetInfoBarType()
 }
 
 void PermissionInfobarDelegate::InfoBarDismissed() {
-  SetPermission(false, false);
+  SetPermission(false, DISMISSED);
 }
 
 PermissionInfobarDelegate*
@@ -69,17 +80,31 @@ base::string16 PermissionInfobarDelegate::GetButtonLabel(
 }
 
 bool PermissionInfobarDelegate::Accept() {
-  SetPermission(true, true);
+  bool update_content_setting = true;
+  if (ShouldShowPersistenceToggle()) {
+    update_content_setting = persist_;
+    PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
+        permission_type_, persist_);
+  }
+
+  SetPermission(update_content_setting, GRANTED);
   return true;
 }
 
 bool PermissionInfobarDelegate::Cancel() {
-  SetPermission(true, false);
+  bool update_content_setting = true;
+  if (ShouldShowPersistenceToggle()) {
+    update_content_setting = persist_;
+    PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
+        permission_type_, persist_);
+  }
+
+  SetPermission(update_content_setting, DENIED);
   return true;
 }
 
 void PermissionInfobarDelegate::SetPermission(bool update_content_setting,
-                                              bool allowed) {
+                                              PermissionAction decision) {
   action_taken_ = true;
-  callback_.Run(update_content_setting, allowed);
+  callback_.Run(update_content_setting, decision);
 }

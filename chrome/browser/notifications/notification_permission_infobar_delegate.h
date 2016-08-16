@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
+class InfoBarService;
+
 class NotificationPermissionInfobarDelegate : public PermissionInfobarDelegate {
  public:
   // Creates a Notification permission infobar and delegate and adds the

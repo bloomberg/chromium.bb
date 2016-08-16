@@ -2132,6 +2132,7 @@
       'android/java/src/org/chromium/chrome/browser/infobar/GroupedPermissionInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
+      'android/java/src/org/chromium/chrome/browser/infobar/PermissionInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/PermissionUpdateInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/SimpleConfirmInfoBarBuilder.java',

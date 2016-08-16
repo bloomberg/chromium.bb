@@ -16,8 +16,8 @@ infobars::InfoBar* MidiPermissionInfoBarDelegateAndroid::Create(
     bool user_gesture,
     Profile* profile,
     const PermissionSetCallback& callback) {
-  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(
+  return infobar_service->AddInfoBar(
+      CreatePermissionInfoBar(std::unique_ptr<PermissionInfobarDelegate>(
           new MidiPermissionInfoBarDelegateAndroid(
               requesting_frame, user_gesture, profile, callback))));
 }

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 /**
  * An infobar for showing several permission requests which can be allowed or blocked.
  */
-public class GroupedPermissionInfoBar extends ConfirmInfoBar {
+public class GroupedPermissionInfoBar extends PermissionInfoBar {
     private final int[] mPermissionIcons;
     private final String[] mPermissionText;
     private final int[] mContentSettings;

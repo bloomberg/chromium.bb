@@ -447,6 +447,104 @@ void PermissionUmaUtil::PermissionPromptIgnored(
   }
 }
 
+void PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
+    content::PermissionType permission,
+    bool toggle_enabled) {
+  switch (permission) {
+    case PermissionType::GEOLOCATION:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Accepted.Persisted.Geolocation",
+                            toggle_enabled);
+      break;
+    case PermissionType::NOTIFICATIONS:
+      UMA_HISTOGRAM_BOOLEAN(
+          "Permissions.Prompt.Accepted.Persisted.Notifications",
+          toggle_enabled);
+      break;
+    case PermissionType::MIDI_SYSEX:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Accepted.Persisted.MidiSysEx",
+                            toggle_enabled);
+      break;
+    case PermissionType::PUSH_MESSAGING:
+      UMA_HISTOGRAM_BOOLEAN(
+          "Permissions.Prompt.Accepted.Persisted.PushMessaging",
+          toggle_enabled);
+      break;
+    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      UMA_HISTOGRAM_BOOLEAN(
+          "Permissions.Prompt.Accepted.Persisted.ProtectedMedia",
+          toggle_enabled);
+      break;
+    case PermissionType::DURABLE_STORAGE:
+      UMA_HISTOGRAM_BOOLEAN(
+          "Permissions.Prompt.Accepted.Persisted.DurableStorage",
+          toggle_enabled);
+      break;
+    case PermissionType::AUDIO_CAPTURE:
+      UMA_HISTOGRAM_BOOLEAN(
+          "Permissions.Prompt.Accepted.Persisted.AudioCapture", toggle_enabled);
+      break;
+    case PermissionType::VIDEO_CAPTURE:
+      UMA_HISTOGRAM_BOOLEAN(
+          "Permissions.Prompt.Accepted.Persisted.VideoCapture", toggle_enabled);
+      break;
+    // The user is not prompted for these permissions, thus there is no accept
+    // recorded for them.
+    case PermissionType::MIDI:
+    case PermissionType::BACKGROUND_SYNC:
+    case PermissionType::NUM:
+      NOTREACHED() << "PERMISSION "
+                   << PermissionUtil::GetPermissionString(permission)
+                   << " not accounted for";
+  }
+}
+
+void PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
+    content::PermissionType permission,
+    bool toggle_enabled) {
+  switch (permission) {
+    case PermissionType::GEOLOCATION:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.Geolocation",
+                            toggle_enabled);
+      break;
+    case PermissionType::NOTIFICATIONS:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.Notifications",
+                            toggle_enabled);
+      break;
+    case PermissionType::MIDI_SYSEX:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.MidiSysEx",
+                            toggle_enabled);
+      break;
+    case PermissionType::PUSH_MESSAGING:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.PushMessaging",
+                            toggle_enabled);
+      break;
+    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      UMA_HISTOGRAM_BOOLEAN(
+          "Permissions.Prompt.Denied.Persisted.ProtectedMedia", toggle_enabled);
+      break;
+    case PermissionType::DURABLE_STORAGE:
+      UMA_HISTOGRAM_BOOLEAN(
+          "Permissions.Prompt.Denied.Persisted.DurableStorage", toggle_enabled);
+      break;
+    case PermissionType::AUDIO_CAPTURE:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.AudioCapture",
+                            toggle_enabled);
+      break;
+    case PermissionType::VIDEO_CAPTURE:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.VideoCapture",
+                            toggle_enabled);
+      break;
+    // The user is not prompted for these permissions, thus there is no deny
+    // recorded for them.
+    case PermissionType::MIDI:
+    case PermissionType::BACKGROUND_SYNC:
+    case PermissionType::NUM:
+      NOTREACHED() << "PERMISSION "
+                   << PermissionUtil::GetPermissionString(permission)
+                   << " not accounted for";
+  }
+}
+
 bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePermissionActionReporting))

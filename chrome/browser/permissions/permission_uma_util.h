@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/browser/permissions/permission_util.h"
 
 enum class PermissionRequestGestureType;
 class GURL;
@@ -19,22 +20,6 @@ enum class PermissionType;
 }  // namespace content
 
 class PermissionRequest;
-
-// Enum for UMA purposes, make sure you update histograms.xml if you add new
-// permission actions. Never delete or reorder an entry; only add new entries
-// immediately before PERMISSION_NUM
-enum PermissionAction {
-  GRANTED = 0,
-  DENIED = 1,
-  DISMISSED = 2,
-  IGNORED = 3,
-  REVOKED = 4,
-  REENABLED = 5,
-  REQUESTED = 6,
-
-  // Always keep this at the end.
-  PERMISSION_ACTION_NUM,
-};
 
 // This should stay in sync with the SourceUI enum in the permission report
 // protobuf (src/chrome/common/safe_browsing/permission_report.proto).
@@ -123,6 +108,17 @@ class PermissionUmaUtil {
   // a single origin.
   static void PermissionPromptIgnored(content::PermissionType permission,
                                       int count);
+
+  // A permission prompt was accepted or denied, and the prompt displayed a
+  // persistence toggle. Records whether the toggle was enabled (persist) or
+  // disabled (don't persist).
+  static void PermissionPromptAcceptedWithPersistenceToggle(
+      content::PermissionType permission,
+      bool toggle_enabled);
+
+  static void PermissionPromptDeniedWithPersistenceToggle(
+      content::PermissionType permission,
+      bool toggle_enabled);
 
  private:
   friend class PermissionUmaUtilTest;

@@ -35,6 +35,8 @@ extern const base::Feature kBlockSmallContent;
 
 extern const base::Feature kBrowserHangFixesExperiment;
 
+extern const base::Feature kDisplayPersistenceToggleInPermissionPrompts;
+
 extern const base::Feature kExpectCTReporting;
 
 extern const base::Feature kExperimentalKeyboardLockUI;

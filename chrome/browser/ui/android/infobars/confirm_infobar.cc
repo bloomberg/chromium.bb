@@ -4,20 +4,12 @@
 
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 
+#include <memory>
 #include <utility>
-#include <vector>
 
-#include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "build/build_config.h"
-#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/media/media_stream_infobar_delegate_android.h"
-#include "chrome/browser/permissions/permission_infobar_delegate.h"
-#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
@@ -45,21 +37,18 @@ ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
 ConfirmInfoBar::~ConfirmInfoBar() {
 }
 
-base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
-    JNIEnv* env) {
-  base::android::ScopedJavaLocalRef<jstring> ok_button_text =
+ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(JNIEnv* env) {
+  ScopedJavaLocalRef<jstring> ok_button_text =
       base::android::ConvertUTF16ToJavaString(
           env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK));
-  base::android::ScopedJavaLocalRef<jstring> cancel_button_text =
+  ScopedJavaLocalRef<jstring> cancel_button_text =
       base::android::ConvertUTF16ToJavaString(
           env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL));
   ConfirmInfoBarDelegate* delegate = GetDelegate();
-  base::android::ScopedJavaLocalRef<jstring> message_text =
-      base::android::ConvertUTF16ToJavaString(
-          env, delegate->GetMessageText());
-  base::android::ScopedJavaLocalRef<jstring> link_text =
-      base::android::ConvertUTF16ToJavaString(
-          env, delegate->GetLinkText());
+  ScopedJavaLocalRef<jstring> message_text =
+      base::android::ConvertUTF16ToJavaString(env, delegate->GetMessageText());
+  ScopedJavaLocalRef<jstring> link_text =
+      base::android::ConvertUTF16ToJavaString(env, delegate->GetLinkText());
 
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (delegate->GetIconId() == infobars::InfoBarDelegate::kNoIconID &&
@@ -67,20 +56,12 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
     java_bitmap = gfx::ConvertToJavaBitmap(delegate->GetIcon().ToSkBitmap());
   }
 
-  std::vector<int> content_settings;
-  if (delegate->AsPermissionInfobarDelegate()) {
-    content_settings.push_back(
-        delegate->AsPermissionInfobarDelegate()->content_setting());
-  }
-
   return Java_ConfirmInfoBar_create(
-      env, GetWindowAndroid().obj(), GetEnumeratedIconId(), java_bitmap.obj(),
-      message_text.obj(), link_text.obj(), ok_button_text.obj(),
-      cancel_button_text.obj(),
-      base::android::ToJavaIntArray(env, content_settings).obj());
+      env, GetEnumeratedIconId(), java_bitmap.obj(), message_text.obj(),
+      link_text.obj(), ok_button_text.obj(), cancel_button_text.obj());
 }
 
-base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::GetWindowAndroid() {
+ScopedJavaLocalRef<jobject> ConfirmInfoBar::GetWindowAndroid() {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(this);
   DCHECK(web_contents);

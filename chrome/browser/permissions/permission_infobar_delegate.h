@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_INFOBAR_DELEGATE_H_
 
+#include <memory>
+
+#include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/browser/permission_type.h"
-#include "content/public/browser/web_contents.h"
 
 class NavigationDetails;
 class Profile;
@@ -22,8 +24,21 @@ class Profile;
 class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
 
  public:
-  using PermissionSetCallback = base::Callback<void(bool, bool)>;
+  using PermissionSetCallback = base::Callback<void(bool, PermissionAction)>;
+
+  ~PermissionInfobarDelegate() override;
   ContentSettingsType content_setting() const { return content_settings_type_; }
+
+  // Returns true if the infobar should display a toggle to allow users to
+  // opt-out of persisting their accept/deny decision.
+  bool ShouldShowPersistenceToggle() const;
+
+  // Sets whether or not a decided permission should be persisted to content
+  // settings.
+  void set_persist(bool persist) { persist_ = persist; }
+
+  // ConfirmInfoBarDelegate:
+  base::string16 GetMessageText() const override;
 
  protected:
   PermissionInfobarDelegate(const GURL& requesting_origin,
@@ -32,7 +47,6 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
                             bool user_gesture,
                             Profile* profile,
                             const PermissionSetCallback& callback);
-  ~PermissionInfobarDelegate() override;
 
   virtual int GetMessageResourceId() const = 0;
 
@@ -42,21 +56,25 @@ class PermissionInfobarDelegate : public ConfirmInfoBarDelegate {
   void InfoBarDismissed() override;
   PermissionInfobarDelegate* AsPermissionInfobarDelegate() override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
-  base::string16 GetMessageText() const override;
   bool Accept() override;
   bool Cancel() override;
 
-  void SetPermission(bool update_content_setting, bool allowed);
+  void SetPermission(bool update_content_setting, PermissionAction decision);
 
   GURL requesting_origin_;
-  bool action_taken_;
   content::PermissionType permission_type_;
   ContentSettingsType content_settings_type_;
-  bool user_gesture_;
   Profile* const profile_;
   const PermissionSetCallback callback_;
+  bool action_taken_;
+  bool user_gesture_;
+  bool persist_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionInfobarDelegate);
 };
+
+// Implemented in platform-specific code.
+std::unique_ptr<infobars::InfoBar> CreatePermissionInfoBar(
+    std::unique_ptr<PermissionInfobarDelegate> delegate);
 
 #endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_INFOBAR_DELEGATE_H_

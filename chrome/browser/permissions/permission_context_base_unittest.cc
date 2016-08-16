@@ -134,10 +134,14 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
            response == CONTENT_SETTING_ASK);
 #if defined(OS_ANDROID)
     bool update_content_setting = response != CONTENT_SETTING_ASK;
-    bool allowed = response == CONTENT_SETTING_ALLOW;
+    PermissionAction decision = DISMISSED;
+    if (response == CONTENT_SETTING_ALLOW)
+      decision = GRANTED;
+    else if (response == CONTENT_SETTING_BLOCK)
+      decision = DENIED;
     context->GetInfoBarController()->OnPermissionSet(
         id, url, url, false /* user_gesture */, update_content_setting,
-        allowed);
+        decision);
 #else
     PermissionRequestManager* manager =
         PermissionRequestManager::FromWebContents(web_contents());

@@ -48,6 +48,12 @@ const base::Feature kBlockSmallContent{"BlockSmallPluginContent",
 const base::Feature kBrowserHangFixesExperiment{
     "BrowserHangFixesExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Experiment to display a toggle allowing users to opt-out of persisting a
+// Grant or Deny decision in a permission prompt.
+const base::Feature kDisplayPersistenceToggleInPermissionPrompts{
+    "DisplayPersistenceToggleInPermissionPrompts",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Expect CT reporting, which sends reports for opted-in sites
 // that don't serve sufficient Certificate Transparency information.
 const base::Feature kExpectCTReporting{"ExpectCTReporting",

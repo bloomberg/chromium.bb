@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
+class InfoBarService;
+
 // GeolocationInfoBarDelegateAndroids are created by the
 // PermissionQueueController to control the display
 // and handling of geolocation permission infobars to the user.

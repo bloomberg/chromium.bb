@@ -209,7 +209,7 @@ void PermissionQueueController::OnPermissionSet(const PermissionRequestID& id,
                                                 const GURL& embedder,
                                                 bool user_gesture,
                                                 bool update_content_setting,
-                                                bool allowed) {
+                                                PermissionAction decision) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // TODO(miguelg): move the permission persistence to
@@ -217,19 +217,25 @@ void PermissionQueueController::OnPermissionSet(const PermissionRequestID& id,
   PermissionRequestGestureType gesture_type =
       user_gesture ? PermissionRequestGestureType::GESTURE
                    : PermissionRequestGestureType::NO_GESTURE;
-  if (update_content_setting) {
-    UpdateContentSetting(requesting_frame, embedder, allowed);
-    if (allowed) {
+  switch (decision) {
+    case GRANTED:
       PermissionUmaUtil::PermissionGranted(permission_type_, gesture_type,
                                            requesting_frame, profile_);
-    } else {
+      break;
+    case DENIED:
       PermissionUmaUtil::PermissionDenied(permission_type_, gesture_type,
                                           requesting_frame, profile_);
-    }
-  } else {
-    PermissionUmaUtil::PermissionDismissed(permission_type_, gesture_type,
-                                           requesting_frame, profile_);
+      break;
+    case DISMISSED:
+      PermissionUmaUtil::PermissionDismissed(permission_type_, gesture_type,
+                                             requesting_frame, profile_);
+      break;
+    default:
+      NOTREACHED();
   }
+
+  if (update_content_setting)
+    UpdateContentSetting(requesting_frame, embedder, decision);
 
   // Cancel this request first, then notify listeners.  TODO(pkasting): Why
   // is this order important?
@@ -267,13 +273,16 @@ void PermissionQueueController::OnPermissionSet(const PermissionRequestID& id,
 
   // PermissionContextBase needs to know about the new ContentSetting value,
   // CONTENT_SETTING_DEFAULT being the value for nothing happened. The callers
-  // of ::OnPermissionSet passes { true, true } for allow, { true, false } for
-  // block and { false, * } for dismissed. The tuple being
-  // { update_content_setting, allowed }.
+  // of ::OnPermissionSet passes { bool, GRANTED } for allow, { bool, DENIED }
+  // for block and { false, DISMISSED } for dismissed. The tuple being
+  // { update_content_setting, decision }.
   ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
-  if (update_content_setting) {
-    content_setting = allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-  }
+  if (decision == GRANTED)
+    content_setting = CONTENT_SETTING_ALLOW;
+  else if (decision == DENIED)
+    content_setting = CONTENT_SETTING_BLOCK;
+  else
+    DCHECK_EQ(DISMISSED, decision);
 
   // Send out the permission notifications.
   for (PendingInfobarRequests::iterator i = requests_to_notify.begin();
@@ -392,7 +401,8 @@ void PermissionQueueController::UnregisterForInfoBarNotifications(
 void PermissionQueueController::UpdateContentSetting(
     const GURL& requesting_frame,
     const GURL& embedder,
-    bool allowed) {
+    PermissionAction decision) {
+  DCHECK(decision == GRANTED || decision == DENIED);
   if (requesting_frame.GetOrigin().SchemeIsFile()) {
     // Chrome can be launched with --disable-web-security which allows
     // geolocation requests from file:// URLs. We don't want to store these
@@ -401,7 +411,7 @@ void PermissionQueueController::UpdateContentSetting(
   }
 
   ContentSetting content_setting =
-      allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+      (decision == GRANTED) ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
 
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->SetContentSettingDefaultScope(

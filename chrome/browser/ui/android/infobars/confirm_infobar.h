@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_CONFIRM_INFOBAR_H_
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_CONFIRM_INFOBAR_H_
 
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
@@ -26,9 +27,9 @@ class ConfirmInfoBar : public InfoBarAndroid {
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
 
- private:
   void ProcessButton(int action) override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);
 };
 

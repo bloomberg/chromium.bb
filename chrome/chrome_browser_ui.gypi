@@ -453,6 +453,8 @@
       'browser/ui/android/infobars/infobar_android.h',
       'browser/ui/android/infobars/infobar_container_android.cc',
       'browser/ui/android/infobars/infobar_container_android.h',
+      'browser/ui/android/infobars/permission_infobar.cc',
+      'browser/ui/android/infobars/permission_infobar.h',
       'browser/ui/android/infobars/save_password_infobar.cc',
       'browser/ui/android/infobars/save_password_infobar.h',
       'browser/ui/android/infobars/simple_confirm_infobar_builder.cc',

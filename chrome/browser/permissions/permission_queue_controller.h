@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -54,12 +55,13 @@ class PermissionQueueController : public content::NotificationObserver {
                        const GURL& embedder,
                        bool user_gesture,
                        bool update_content_setting,
-                       bool allowed);
+                       PermissionAction decision);
 
   // Performs the update to content settings for a particular request frame
   // context.
-  void UpdateContentSetting(
-      const GURL& requesting_frame, const GURL& embedder, bool allowed);
+  void UpdateContentSetting(const GURL& requesting_frame,
+                            const GURL& embedder,
+                            PermissionAction decision);
 
  protected:
   // content::NotificationObserver:
