@@ -1,45 +1,48 @@
-<html>
-<body>
-This tests applying a background color at the beginning, the middle and the end of one sentence, then undo and redo.
-<p>
-<a href="https://bugs.webkit.org/show_bug.cgi?id=30892">Bug 30892</a>
-</p>
-<div contenteditable="true">
-<div id="test1">Hello!</div>
-<div id="test2">Hello!</div>
-<div id="test3">Hello!</div>
-</div>
-<br>
-<ul>
-<li>Test 1: <span id="c1"></span></li>
-<li>Test 2: <span id="c2"></span></li>
-<li>Test 3: <span id="c3"></span></li>
-</ul>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+    // Test for http://wkb.ug/30892
+    test(() => assert_selection(
+        '<div contenteditable>^01|2345</div>',
+        selection => {
+            selection.document.execCommand('hilitecolor', false, '#FF0000');
+            selection.document.execCommand('undo');
+            selection.document.execCommand('redo');
+        },
+        [
+            '<div contenteditable>',
+            '<span style="background-color: rgb(255, 0, 0);">^01|</span>2345',
+            '</div>',
+        ].join('')),
+        'Hilite 01');
 
-<script type="text/javascript">
-function runTest(elem, node)
-{
-    var e = document.getElementById(node);
-    var before = e.innerHTML;
-    document.execCommand("hilitecolor", false, "#FF0000");
-    var after = e.innerHTML;
-    document.execCommand("undo");
-    var afterundo = e.innerHTML;
-    document.execCommand("redo");
+    test(() => assert_selection(
+        '<div contenteditable>01^23|45</div>',
+        selection => {
+            selection.document.execCommand('hilitecolor', false, '#FF0000');
+            selection.document.execCommand('undo');
+            selection.document.execCommand('redo');
+        },
+        [
+            '<div contenteditable>',
+            '01<span style="background-color: rgb(255, 0, 0);">^23|</span>45',
+            '</div>',
+        ].join('')),
+        'Hilite 23');
 
-    document.getElementById(elem).appendChild(document.createTextNode(((before == afterundo) && (after == e.innerHTML))? "PASSED": "FAILED"));
-}
-
-if (window.testRunner) {
-    testRunner.dumpEditingCallbacks();
-    testRunner.dumpAsText();
-}
-
-var s = window.getSelection();
-s.setBaseAndExtent(document.getElementById('test1').firstChild, 0, document.getElementById('test1').firstChild, 2);
-runTest('c1', 'test1');
-s.setBaseAndExtent(document.getElementById('test2').firstChild, 2, document.getElementById('test2').firstChild, 4);
-runTest('c2', 'test2');
-s.setBaseAndExtent(document.getElementById('test3').firstChild, 4, document.getElementById('test3').firstChild, 6);
-runTest('c3', 'test3');
+    test(() => assert_selection(
+        '<div contenteditable>0123^45|</div>',
+        selection => {
+            selection.document.execCommand('hilitecolor', false, '#FF0000');
+            selection.document.execCommand('undo');
+            selection.document.execCommand('redo');
+        },
+        [
+            '<div contenteditable>',
+            '0123<span style="background-color: rgb(255, 0, 0);">^45|</span>',
+            '</div>',
+        ].join('')),
+        'Hilite 45');
 </script>
