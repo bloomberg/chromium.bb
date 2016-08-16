@@ -23761,6 +23761,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.Browser.Committed" units="MB">
+  <owner>bashi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
+  <summary>
+    The total committed memory used by the browser process.  Recorded once per
+    UMA ping.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Browser.Large" units="MB">
   <owner>erikchen@chromium.org</owner>
   <obsolete>
@@ -24112,6 +24121,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The private working set used by each renderer process.  Each renderer
     process provides one sample.  Recorded once per UMA ping. TODO(rkaplow):
     This should be replaced with Memory.Renderer.Large2 in M54.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Renderer.Committed" units="MB">
+  <owner>bashi@chromium.org</owner>
+  <owner>kouhei@chromium.org</owner>
+  <summary>
+    The total committed memory used by each renderer process.  Each renderer
+    process provides one sample.  Recorded once per UMA ping.
   </summary>
 </histogram>
 

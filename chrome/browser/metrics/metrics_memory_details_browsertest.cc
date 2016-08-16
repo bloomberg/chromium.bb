@@ -52,11 +52,22 @@ IN_PROC_BROWSER_TEST_F(MetricsMemoryDetailsBrowserTest, TestMemoryDetails) {
   scoped_refptr<TestMemoryDetails> details(new TestMemoryDetails);
   details->StartFetchAndWait();
 
-  // Memory.Browser.Large2 histogram should have a single non-0 sample recorded.
+  // Memory.Browser.Large2 and Memory.Browser.Committed histograms should each
+  // have a single non-0 sample recorded.
   histogram_tester.ExpectTotalCount("Memory.Browser.Large2", 1);
   std::unique_ptr<base::HistogramSamples> samples(
       histogram_tester.GetHistogramSamplesSinceCreation(
           "Memory.Browser.Large2"));
   ASSERT_TRUE(samples);
   EXPECT_NE(0, samples->sum());
+
+  histogram_tester.ExpectTotalCount("Memory.Browser.Committed", 1);
+  std::unique_ptr<base::HistogramSamples> committed_samples(
+      histogram_tester.GetHistogramSamplesSinceCreation(
+          "Memory.Browser.Committed"));
+  ASSERT_TRUE(committed_samples);
+#if !defined(OS_LINUX)
+  // Committed memory isn't calculated on Linux.
+  EXPECT_NE(0, committed_samples->sum());
+#endif
 }

@@ -86,10 +86,15 @@ void MetricsMemoryDetails::UpdateHistograms() {
   int process_limit = content::RenderProcessHost::GetMaxRendererProcessCount();
   for (size_t index = 0; index < browser.processes.size(); index++) {
     int sample = static_cast<int>(browser.processes[index].working_set.priv);
+    size_t committed = browser.processes[index].committed.priv +
+                       browser.processes[index].committed.mapped +
+                       browser.processes[index].committed.image;
     aggregate_memory += sample;
     switch (browser.processes[index].process_type) {
       case content::PROCESS_TYPE_BROWSER:
         UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.Large2", sample / 1024);
+        UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.Committed",
+                                      committed / 1024);
         continue;
       case content::PROCESS_TYPE_RENDERER: {
         ProcessMemoryInformation::RendererProcessType renderer_type =
@@ -111,6 +116,8 @@ void MetricsMemoryDetails::UpdateHistograms() {
             // TODO(erikkay): Should we bother splitting out the other subtypes?
             UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Renderer.Large2",
                                           sample / 1024);
+            UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Renderer.Committed",
+                                          committed / 1024);
             int diff;
             if (memory_growth_tracker_ &&
                 memory_growth_tracker_->UpdateSample(
