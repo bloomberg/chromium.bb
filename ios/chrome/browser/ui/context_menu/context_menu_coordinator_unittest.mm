@@ -57,21 +57,6 @@ TEST_F(ContextMenuCoordinatorTest, ValidateDismissalOnStop) {
   EXPECT_FALSE([menu_coordinator_ isVisible]);
 }
 
-// Tests the context menu dismissal.
-TEST_F(ContextMenuCoordinatorTest, ValidateDismissalOnDestroy) {
-  web::ContextMenuParams params;
-  params.location = CGPointZero;
-  params.view.reset([[view_controller_ view] retain]);
-  menu_coordinator_.reset([[ContextMenuCoordinator alloc]
-      initWithBaseViewController:view_controller_
-                          params:params]);
-  [menu_coordinator_ start];
-
-  menu_coordinator_.reset();
-
-  EXPECT_FALSE([menu_coordinator_ isVisible]);
-}
-
 // Tests that only the expected actions are present on the context menu.
 TEST_F(ContextMenuCoordinatorTest, ValidateActions) {
   web::ContextMenuParams params;
