@@ -154,7 +154,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationHostsPermissions) {
 }
 
 #if defined(USE_AURA)
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
+// Flaky, see http://crbug.com/637525
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_Desktop) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "desktop.html"))
       << message_;
 }
