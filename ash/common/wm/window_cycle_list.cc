@@ -245,8 +245,10 @@ class WindowPreviewView : public views::View, public WmWindowObserver {
 // A view that shows a collection of windows the user can tab through.
 class WindowCycleView : public views::WidgetDelegateView {
  public:
-  explicit WindowCycleView(const WindowCycleList::WindowList& windows)
-      : mirror_container_(new views::View()),
+  WindowCycleView(const WindowCycleList::WindowList& windows,
+                  WindowCycleController::Direction initial_direction)
+      : initial_direction_(initial_direction),
+        mirror_container_(new views::View()),
         highlight_view_(new views::View()),
         target_window_(nullptr) {
     DCHECK(!windows.empty());
@@ -357,7 +359,10 @@ class WindowCycleView : public views::WidgetDelegateView {
     int x_offset =
         width() / 2 -
         mirror_container_->GetMirroredXInView(target_bounds.CenterPoint().x());
-    x_offset = std::min(x_offset, 0);
+    if (initial_direction_ == WindowCycleController::FORWARD)
+      x_offset = std::min(x_offset, 0);
+    else
+      x_offset = std::max(x_offset, width() - container_bounds.width());
     container_bounds.set_x(x_offset);
     mirror_container_->SetBoundsRect(container_bounds);
 
@@ -379,6 +384,7 @@ class WindowCycleView : public views::WidgetDelegateView {
   WmWindow* target_window() { return target_window_; }
 
  private:
+  WindowCycleController::Direction initial_direction_;
   std::map<WmWindow*, views::View*> window_view_map_;
   views::View* mirror_container_;
   views::View* highlight_view_;
@@ -439,7 +445,10 @@ void ScopedShowWindow::OnWindowTreeChanging(WmWindow* window,
 }
 
 WindowCycleList::WindowCycleList(const WindowList& windows)
-    : windows_(windows), current_index_(0), cycle_view_(nullptr) {
+    : windows_(windows),
+      current_index_(0),
+      initial_direction_(WindowCycleController::FORWARD),
+      cycle_view_(nullptr) {
   if (!ShouldShowUi())
     WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
 
@@ -486,6 +495,9 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   }
 
   DCHECK(static_cast<size_t>(current_index_) < windows_.size());
+
+  if (!cycle_view_ && current_index_ == 0)
+    initial_direction_ = direction;
 
   // We're in a valid cycle, so step forward or backward.
   current_index_ += direction == WindowCycleController::FORWARD ? 1 : -1;
@@ -545,7 +557,7 @@ void WindowCycleList::InitWindowCycleView() {
   if (cycle_view_)
     return;
 
-  cycle_view_ = new WindowCycleView(windows_);
+  cycle_view_ = new WindowCycleView(windows_, initial_direction_);
   cycle_view_->SetTargetWindow(windows_[current_index_]);
 
   WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
