@@ -204,7 +204,8 @@ class LocalDeviceEnvironment(environment.Environment):
     if self._logcat_output_file:
       file_utils.MergeFiles(
           self._logcat_output_file,
-          [m.output_file for m in self._logcat_monitors])
+          [m.output_file for m in self._logcat_monitors
+           if os.path.exists(m.output_file)])
       shutil.rmtree(self._logcat_output_dir)
 
   def BlacklistDevice(self, device, reason='local_device_failure'):
