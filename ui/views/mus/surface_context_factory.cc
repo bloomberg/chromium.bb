@@ -8,6 +8,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/output_surface.h"
 #include "services/ui/public/cpp/window.h"
 #include "ui/compositor/reflector.h"
@@ -81,7 +82,7 @@ cc::SharedBitmapManager* SurfaceContextFactory::GetSharedBitmapManager() {
 
 gpu::GpuMemoryBufferManager*
 SurfaceContextFactory::GetGpuMemoryBufferManager() {
-  return &gpu_memory_buffer_manager_;
+  return gpu_service_->gpu_memory_buffer_manager();
 }
 
 cc::TaskGraphRunner* SurfaceContextFactory::GetTaskGraphRunner() {

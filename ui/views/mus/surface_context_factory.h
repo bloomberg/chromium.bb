@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "services/ui/public/cpp/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/public/cpp/raster_thread_helper.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/compositor/compositor.h"
@@ -57,7 +56,6 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
 
   uint32_t next_surface_id_namespace_;
   ui::RasterThreadHelper raster_thread_helper_;
-  ui::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
   ui::GpuService* gpu_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceContextFactory);
