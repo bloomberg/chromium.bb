@@ -1733,7 +1733,7 @@ bool LayoutTableSection::hasRepeatingHeaderGroup() const
     // If the first row of the section after the header group doesn't fit on the page, then
     // don't repeat the header on each page. See https://drafts.csswg.org/css-tables-3/#repeated-headers
     LayoutTableSection* sectionBelow = table()->sectionBelow(this);
-    if (sectionBelow && sectionBelow->paginationStrutForRow(sectionBelow->firstRow(), sectionBelow->logicalTop()))
+    if (sectionBelow && sectionBelow->firstRow() && sectionBelow->paginationStrutForRow(sectionBelow->firstRow(), sectionBelow->logicalTop()))
         return false;
 
     return true;
