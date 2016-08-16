@@ -355,6 +355,11 @@ otherTrans = 64
 ucBrl = 128
 #}
 
+if charSize() == 2 and sys.maxunicode != 65535:
+    raise Exception("mismatch in Unicode width: liblouis is 2 and python isn't")
+elif charSize() == 4 and sys.maxunicode != 1114111:
+    raise Exception("mismatch in Unicode width: liblouis is 4 and python isn't")
+
 if __name__ == '__main__':
     # Just some common tests.
     print(version())
