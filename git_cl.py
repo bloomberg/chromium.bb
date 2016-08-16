@@ -63,7 +63,7 @@ import watchlists
 __version__ = '2.0'
 
 COMMIT_BOT_EMAIL = 'commit-bot@chromium.org'
-DEFAULT_SERVER = 'https://codereview.appspot.com'
+DEFAULT_SERVER = 'https://codereview.chromium.org'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 GIT_INSTRUCTIONS_URL = 'http://code.google.com/p/chromium/wiki/UsingGit'

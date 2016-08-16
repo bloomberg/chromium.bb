@@ -951,7 +951,7 @@ def gen_parser(prog):
   group.add_option("--url",
                    help="Url where to grab a patch, e.g. "
                         "http://example.com/x.diff")
-  group.add_option("-R", "--rietveld_url", default="codereview.appspot.com",
+  group.add_option("-R", "--rietveld_url", default="codereview.chromium.org",
                    metavar="URL",
                    help="Has 2 usages, both refer to the rietveld instance: "
                         "Specify which code review patch to use as the try job "
