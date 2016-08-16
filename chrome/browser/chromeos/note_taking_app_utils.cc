@@ -11,12 +11,16 @@
 #include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
+
+namespace app_runtime = extensions::api::app_runtime;
 
 namespace chromeos {
 namespace {
@@ -75,13 +79,9 @@ void LaunchNoteTakingAppForNewNote(Profile* profile,
     return;
   }
 
-  // TODO(derat): Launch with a "create new note" launch action once that's been
-  // added to chrome.appRuntime. Also decide what should be passed as the launch
-  // source.
-  if (path.empty())
-    apps::LaunchPlatformApp(profile, app, extensions::SOURCE_UNTRACKED);
-  else
-    apps::LaunchPlatformAppWithPath(profile, app, path);
+  auto action_data = base::MakeUnique<app_runtime::ActionData>();
+  action_data->action_type = app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
+  apps::LaunchPlatformAppWithAction(profile, app, std::move(action_data), path);
 }
 
 }  // namespace chromeos

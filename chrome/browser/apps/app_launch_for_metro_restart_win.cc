@@ -20,6 +20,7 @@
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/api/app_runtime.h"
 #include "extensions/common/constants.h"
 
 using extensions::AppRuntimeEventRouter;
@@ -43,7 +44,8 @@ void LaunchAppWithId(Profile* profile,
     return;
 
   AppRuntimeEventRouter::DispatchOnLaunchedEvent(
-      profile, extension, extensions::SOURCE_RESTART);
+      profile, extension, extensions::SOURCE_RESTART,
+      std::unique_ptr<extensions::api::app_runtime::ActionData>());
 }
 
 }  // namespace
