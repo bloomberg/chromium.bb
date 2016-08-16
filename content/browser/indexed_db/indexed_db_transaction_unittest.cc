@@ -89,7 +89,8 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
+      base::MakeUnique<IndexedDBConnection>(
+          db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id, connection->GetWeakPtr(), scope,
       blink::WebIDBTransactionModeReadWrite,
@@ -132,7 +133,8 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
+      base::MakeUnique<IndexedDBConnection>(
+          db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id, connection->GetWeakPtr(), scope, blink::WebIDBTransactionModeReadOnly,
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
@@ -162,7 +164,8 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
+      base::MakeUnique<IndexedDBConnection>(
+          db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id, connection->GetWeakPtr(), scope, GetParam(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
@@ -222,7 +225,8 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
   std::unique_ptr<IndexedDBConnection> connection(
-      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
+      base::MakeUnique<IndexedDBConnection>(
+          db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id, connection->GetWeakPtr(), scope,
       blink::WebIDBTransactionModeVersionChange,
@@ -282,7 +286,8 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
   std::unique_ptr<IndexedDBConnection> connection(
-      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
+      base::MakeUnique<IndexedDBConnection>(
+          db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id, connection->GetWeakPtr(), scope, GetParam(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
@@ -310,7 +315,8 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
+      base::MakeUnique<IndexedDBConnection>(
+          db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id, connection->GetWeakPtr(), scope, GetParam(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
@@ -359,7 +365,8 @@ TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
-      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
+      base::MakeUnique<IndexedDBConnection>(
+          db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
       id, connection->GetWeakPtr(), scope,
       blink::WebIDBTransactionModeReadWrite,

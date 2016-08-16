@@ -65,8 +65,8 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
       request_context_(NULL),
       indexed_db_context_(indexed_db_context),
       blob_storage_context_(blob_storage_context),
-      database_dispatcher_host_(new DatabaseDispatcherHost(this)),
-      cursor_dispatcher_host_(new CursorDispatcherHost(this)),
+      database_dispatcher_host_(base::MakeUnique<DatabaseDispatcherHost>(this)),
+      cursor_dispatcher_host_(base::MakeUnique<CursorDispatcherHost>(this)),
       ipc_process_id_(ipc_process_id) {
   DCHECK(indexed_db_context_.get());
 }
@@ -80,8 +80,8 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
       request_context_(request_context),
       indexed_db_context_(indexed_db_context),
       blob_storage_context_(blob_storage_context),
-      database_dispatcher_host_(new DatabaseDispatcherHost(this)),
-      cursor_dispatcher_host_(new CursorDispatcherHost(this)),
+      database_dispatcher_host_(base::MakeUnique<DatabaseDispatcherHost>(this)),
+      cursor_dispatcher_host_(base::MakeUnique<CursorDispatcherHost>(this)),
       ipc_process_id_(ipc_process_id) {
   DCHECK(indexed_db_context_.get());
 }
@@ -380,9 +380,9 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
       new IndexedDBDatabaseCallbacks(
           this, params.ipc_thread_id, params.ipc_database_callbacks_id);
   std::unique_ptr<IndexedDBPendingConnection> connection =
-      base::WrapUnique(new IndexedDBPendingConnection(
+      base::MakeUnique<IndexedDBPendingConnection>(
           callbacks, database_callbacks, ipc_process_id_, host_transaction_id,
-          params.version));
+          params.version);
   DCHECK(request_context_);
   context()->GetIDBFactory()->Open(params.name, std::move(connection),
                                    request_context_, params.origin,
@@ -693,8 +693,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   connection->database()->Get(
       parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      params.index_id,
-      base::WrapUnique(new IndexedDBKeyRange(params.key_range)),
+      params.index_id, base::MakeUnique<IndexedDBKeyRange>(params.key_range),
       params.key_only, callbacks);
 }
 
@@ -710,8 +709,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGetAll(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   connection->database()->GetAll(
       parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      params.index_id,
-      base::WrapUnique(new IndexedDBKeyRange(params.key_range)),
+      params.index_id, base::MakeUnique<IndexedDBKeyRange>(params.key_range),
       params.key_only, params.max_count, callbacks);
 }
 
@@ -783,7 +781,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
   value.blob_info.swap(blob_info);
   connection->database()->Put(host_transaction_id, params.object_store_id,
                               &value, &scoped_handles,
-                              base::WrapUnique(new IndexedDBKey(params.key)),
+                              base::MakeUnique<IndexedDBKey>(params.key),
                               params.put_mode, callbacks, params.index_keys);
   // Size can't be big enough to overflow because it represents the
   // actual bytes passed through IPC.
@@ -802,8 +800,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(
       parent_->HostTransactionId(params.transaction_id);
   connection->database()->SetIndexKeys(
       host_transaction_id, params.object_store_id,
-      base::WrapUnique(new IndexedDBKey(params.primary_key)),
-      params.index_keys);
+      base::MakeUnique<IndexedDBKey>(params.primary_key), params.index_keys);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexesReady(
@@ -833,8 +830,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpenCursor(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id, -1));
   connection->database()->OpenCursor(
       parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      params.index_id,
-      base::WrapUnique(new IndexedDBKeyRange(params.key_range)),
+      params.index_id, base::MakeUnique<IndexedDBKeyRange>(params.key_range),
       params.direction, params.key_only, params.task_type, callbacks);
 }
 
@@ -850,8 +846,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCount(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   connection->database()->Count(
       parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      params.index_id,
-      base::WrapUnique(new IndexedDBKeyRange(params.key_range)), callbacks);
+      params.index_id, base::MakeUnique<IndexedDBKeyRange>(params.key_range),
+      callbacks);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteRange(
@@ -866,7 +862,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteRange(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   connection->database()->DeleteRange(
       parent_->HostTransactionId(params.transaction_id), params.object_store_id,
-      base::WrapUnique(new IndexedDBKeyRange(params.key_range)), callbacks);
+      base::MakeUnique<IndexedDBKeyRange>(params.key_range), callbacks);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClear(
@@ -1051,10 +1047,10 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
   if (!idb_cursor)
     return;
 
-  idb_cursor->Continue(key.IsValid() ? base::WrapUnique(new IndexedDBKey(key))
+  idb_cursor->Continue(key.IsValid() ? base::MakeUnique<IndexedDBKey>(key)
                                      : std::unique_ptr<IndexedDBKey>(),
                        primary_key.IsValid()
-                           ? base::WrapUnique(new IndexedDBKey(primary_key))
+                           ? base::MakeUnique<IndexedDBKey>(primary_key)
                            : std::unique_ptr<IndexedDBKey>(),
                        new IndexedDBCallbacks(parent_, ipc_thread_id,
                                               ipc_callbacks_id, ipc_cursor_id));

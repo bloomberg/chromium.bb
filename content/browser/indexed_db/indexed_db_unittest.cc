@@ -136,7 +136,7 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
  public:
   ForceCloseDBCallbacks(scoped_refptr<IndexedDBContextImpl> idb_context,
                         const Origin& origin)
-      : IndexedDBCallbacks(NULL, 0, 0),
+      : IndexedDBCallbacks(nullptr, 0, 0),
         idb_context_(idb_context),
         origin_(origin) {}
 
@@ -194,18 +194,18 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
     test_path = idb_context->GetFilePathForTesting(kTestOrigin);
 
     std::unique_ptr<IndexedDBPendingConnection> open_connection(
-        new IndexedDBPendingConnection(
+        base::MakeUnique<IndexedDBPendingConnection>(
             open_callbacks, open_db_callbacks, 0 /* child_process_id */,
             0 /* host_transaction_id */, 0 /* version */));
     factory->Open(base::ASCIIToUTF16("opendb"), std::move(open_connection),
-                  NULL /* request_context */, Origin(kTestOrigin),
+                  nullptr /* request_context */, Origin(kTestOrigin),
                   idb_context->data_path());
     std::unique_ptr<IndexedDBPendingConnection> closed_connection(
-        new IndexedDBPendingConnection(
+        base::MakeUnique<IndexedDBPendingConnection>(
             closed_callbacks, closed_db_callbacks, 0 /* child_process_id */,
             0 /* host_transaction_id */, 0 /* version */));
     factory->Open(base::ASCIIToUTF16("closeddb"), std::move(closed_connection),
-                  NULL /* request_context */, Origin(kTestOrigin),
+                  nullptr /* request_context */, Origin(kTestOrigin),
                   idb_context->data_path());
 
     closed_callbacks->connection()->Close();
@@ -273,11 +273,11 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
       new MockIndexedDBDatabaseCallbacks());
   const int64_t transaction_id = 1;
   std::unique_ptr<IndexedDBPendingConnection> connection(
-      new IndexedDBPendingConnection(
+      base::MakeUnique<IndexedDBPendingConnection>(
           callbacks, db_callbacks, 0 /* child_process_id */, transaction_id,
           IndexedDBDatabaseMetadata::DEFAULT_VERSION));
   factory->Open(base::ASCIIToUTF16("db"), std::move(connection),
-                NULL /* request_context */, Origin(kTestOrigin),
+                nullptr /* request_context */, Origin(kTestOrigin),
                 temp_dir.path());
 
   EXPECT_TRUE(callbacks->connection());

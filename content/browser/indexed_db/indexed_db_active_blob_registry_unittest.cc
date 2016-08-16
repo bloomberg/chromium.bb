@@ -107,7 +107,8 @@ class IndexedDBActiveBlobRegistryTest : public testing::Test {
         factory_(new RegistryTestMockFactory),
         backing_store_(
             new MockIDBBackingStore(factory_.get(), task_runner_.get())),
-        registry_(new IndexedDBActiveBlobRegistry(backing_store_.get())) {}
+        registry_(base::MakeUnique<IndexedDBActiveBlobRegistry>(
+            backing_store_.get())) {}
 
   void RunUntilIdle() { task_runner_->RunUntilIdle(); }
   RegistryTestMockFactory* factory() const { return factory_.get(); }

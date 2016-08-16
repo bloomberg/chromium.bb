@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -48,7 +49,7 @@ class BustedLevelDBDatabase : public LevelDBDatabase {
   static std::unique_ptr<LevelDBDatabase> Open(
       const base::FilePath& file_name,
       const LevelDBComparator* /*comparator*/) {
-    return std::unique_ptr<LevelDBDatabase>(new BustedLevelDBDatabase);
+    return base::MakeUnique<BustedLevelDBDatabase>();
   }
   leveldb::Status Get(const base::StringPiece& key,
                       std::string* value,

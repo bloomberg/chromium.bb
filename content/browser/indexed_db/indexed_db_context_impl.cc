@@ -166,14 +166,16 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
 
   std::sort(origins.begin(), origins.end(), HostNameComparator);
 
-  std::unique_ptr<base::ListValue> list(new base::ListValue());
+  std::unique_ptr<base::ListValue> list(base::MakeUnique<base::ListValue>());
   for (const auto& origin : origins) {
-    std::unique_ptr<base::DictionaryValue> info(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> info(
+        base::MakeUnique<base::DictionaryValue>());
     info->SetString("url", origin.Serialize());
     info->SetString("size", ui::FormatBytes(GetOriginDiskUsage(origin)));
     info->SetDouble("last_modified", GetOriginLastModified(origin).ToJsTime());
     if (!is_incognito()) {
-      std::unique_ptr<base::ListValue> paths(new base::ListValue());
+      std::unique_ptr<base::ListValue> paths(
+          base::MakeUnique<base::ListValue>());
       for (const base::FilePath& path : GetStoragePaths(origin))
         paths->AppendString(path.value());
       info->Set("paths", paths.release());
@@ -189,14 +191,15 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
                 IndexedDBFactory::OriginDBMapIterator>
           range = factory_->GetOpenDatabasesForOrigin(origin);
       // TODO(jsbell): Sort by name?
-      std::unique_ptr<base::ListValue> database_list(new base::ListValue());
+      std::unique_ptr<base::ListValue> database_list(
+          base::MakeUnique<base::ListValue>());
 
       for (IndexedDBFactory::OriginDBMapIterator it = range.first;
            it != range.second;
            ++it) {
         const IndexedDBDatabase* db = it->second;
         std::unique_ptr<base::DictionaryValue> db_info(
-            new base::DictionaryValue());
+            base::MakeUnique<base::DictionaryValue>());
 
         db_info->SetString("name", db->name());
         db_info->SetDouble("connection_count", db->ConnectionCount());
@@ -204,12 +207,12 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
         db_info->SetDouble("pending_open_delete", db->PendingOpenDeleteCount());
 
         std::unique_ptr<base::ListValue> transaction_list(
-            new base::ListValue());
+            base::MakeUnique<base::ListValue>());
         std::vector<const IndexedDBTransaction*> transactions =
             db->transaction_coordinator().GetTransactions();
         for (const auto* transaction : transactions) {
           std::unique_ptr<base::DictionaryValue> transaction_info(
-              new base::DictionaryValue());
+              base::MakeUnique<base::DictionaryValue>());
 
           const char* const kModes[] =
               { "readonly", "readwrite", "versionchange" };
@@ -253,7 +256,8 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
           transaction_info->SetDouble(
               "tasks_completed", transaction->diagnostics().tasks_completed);
 
-          std::unique_ptr<base::ListValue> scope(new base::ListValue());
+          std::unique_ptr<base::ListValue> scope(
+              base::MakeUnique<base::ListValue>());
           for (const auto& id : transaction->scope()) {
             const auto& it = db->metadata().object_stores.find(id);
             if (it != db->metadata().object_stores.end())
@@ -556,7 +560,8 @@ std::set<Origin>* IndexedDBContextImpl::GetOriginSet() {
   if (!origin_set_) {
     std::vector<Origin> origins;
     GetAllOriginsAndPaths(data_path_, &origins, NULL);
-    origin_set_.reset(new std::set<Origin>(origins.begin(), origins.end()));
+    origin_set_ =
+        base::MakeUnique<std::set<Origin>>(origins.begin(), origins.end());
   }
   return origin_set_.get();
 }

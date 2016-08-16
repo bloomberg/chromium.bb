@@ -468,8 +468,8 @@ void IndexedDBTransaction::CloseOpenCursors() {
 void IndexedDBTransaction::AddPendingObserver(
     int32_t observer_id,
     const IndexedDBObserver::Options& options) {
-  pending_observers_.push_back(base::WrapUnique(
-      new IndexedDBObserver(observer_id, object_store_ids_, options)));
+  pending_observers_.push_back(base::MakeUnique<IndexedDBObserver>(
+      observer_id, object_store_ids_, options));
 }
 
 void IndexedDBTransaction::RemovePendingObservers(
@@ -490,8 +490,7 @@ void IndexedDBTransaction::AddObservation(
   if (it == connection_changes_map_.end()) {
     it = connection_changes_map_
              .insert(std::make_pair(
-                 connection_id,
-                 base::WrapUnique(new IndexedDBObserverChanges())))
+                 connection_id, base::MakeUnique<IndexedDBObserverChanges>()))
              .first;
   }
   it->second->AddObservation(std::move(observation));

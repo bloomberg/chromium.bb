@@ -140,7 +140,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
     if (i == 0) {
       // First prefetched result is always used, so that's the position
       // a cursor should be reset to if the prefetch is invalidated.
-      saved_cursor_.reset(cursor_->Clone());
+      saved_cursor_ = cursor_->Clone();
     }
 
     found_keys.push_back(cursor_->key());

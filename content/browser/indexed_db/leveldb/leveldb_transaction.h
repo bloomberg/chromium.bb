@@ -70,7 +70,8 @@ class CONTENT_EXPORT LevelDBTransaction
     const LevelDBComparator* comparator_;
   };
 
-  typedef std::map<base::StringPiece, Record*, Comparator> DataType;
+  typedef std::map<base::StringPiece, std::unique_ptr<Record>, Comparator>
+      DataType;
 
   class DataIterator : public LevelDBIterator {
    public:
@@ -134,7 +135,6 @@ class CONTENT_EXPORT LevelDBTransaction
   };
   // Returns true if the key was originally marked deleted, false otherwise.
   bool Set(const base::StringPiece& key, std::string* value, bool deleted);
-  void Clear();
   void RegisterIterator(TransactionIterator* iterator);
   void UnregisterIterator(TransactionIterator* iterator);
   void NotifyIterators();

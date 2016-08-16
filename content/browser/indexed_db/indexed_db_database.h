@@ -89,6 +89,9 @@ class CONTENT_EXPORT IndexedDBDatabase
                          const IndexedDBKeyPath& key_path,
                          bool auto_increment);
   void DeleteObjectStore(int64_t transaction_id, int64_t object_store_id);
+
+  // Returns a pointer to a newly created transaction. The object is owned
+  // by |transaction_coordinator_|.
   IndexedDBTransaction* CreateTransaction(
       int64_t transaction_id,
       IndexedDBConnection* connection,

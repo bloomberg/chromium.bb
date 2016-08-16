@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
@@ -27,7 +28,7 @@ IndexedDBClassFactory* IndexedDBClassFactory::Get() {
     return s_factory.Pointer();
 }
 
-IndexedDBDatabase* IndexedDBClassFactory::CreateIndexedDBDatabase(
+scoped_refptr<IndexedDBDatabase> IndexedDBClassFactory::CreateIndexedDBDatabase(
     const base::string16& name,
     IndexedDBBackingStore* backing_store,
     IndexedDBFactory* factory,
@@ -41,18 +42,21 @@ IndexedDBTransaction* IndexedDBClassFactory::CreateIndexedDBTransaction(
     const std::set<int64_t>& scope,
     blink::WebIDBTransactionMode mode,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
-  return new IndexedDBTransaction(id, std::move(connection), scope, mode,
-                                  backing_store_transaction);
+  // The transaction adds itself to |connection|'s database's transaction
+  // coordinator, which owns the object.
+  IndexedDBTransaction* transaction = new IndexedDBTransaction(
+      id, std::move(connection), scope, mode, backing_store_transaction);
+  return transaction;
 }
 
-LevelDBTransaction* IndexedDBClassFactory::CreateLevelDBTransaction(
-    LevelDBDatabase* db) {
+scoped_refptr<LevelDBTransaction>
+IndexedDBClassFactory::CreateLevelDBTransaction(LevelDBDatabase* db) {
   return new LevelDBTransaction(db);
 }
 
-content::LevelDBIteratorImpl* IndexedDBClassFactory::CreateIteratorImpl(
+std::unique_ptr<LevelDBIteratorImpl> IndexedDBClassFactory::CreateIteratorImpl(
     std::unique_ptr<leveldb::Iterator> iterator) {
-  return new LevelDBIteratorImpl(std::move(iterator));
+  return base::WrapUnique(new LevelDBIteratorImpl(std::move(iterator)));
 }
 
 }  // namespace content

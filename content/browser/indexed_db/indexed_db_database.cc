@@ -464,7 +464,7 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
     scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
     int child_process_id) {
   std::unique_ptr<IndexedDBConnection> connection(
-      new IndexedDBConnection(this, database_callbacks));
+      base::MakeUnique<IndexedDBConnection>(this, database_callbacks));
   connections_.insert(connection.get());
   backing_store_->GrantChildProcessPermissions(child_process_id);
   return connection;
@@ -796,13 +796,13 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
         continue;
       if (!recorded) {
         if (type == blink::WebIDBClear) {
-          transaction->AddObservation(connection->id(),
-                                      base::WrapUnique(new IndexedDBObservation(
-                                          object_store_id, type)));
+          transaction->AddObservation(
+              connection->id(),
+              base::MakeUnique<IndexedDBObservation>(object_store_id, type));
         } else {
           transaction->AddObservation(connection->id(),
-                                      base::WrapUnique(new IndexedDBObservation(
-                                          object_store_id, type, key_range)));
+                                      base::MakeUnique<IndexedDBObservation>(
+                                          object_store_id, type, key_range));
         }
         recorded = true;
       }
@@ -1172,13 +1172,12 @@ static std::unique_ptr<IndexedDBKey> GenerateKey(
       &current_number);
   if (!s.ok()) {
     LOG(ERROR) << "Failed to GetKeyGeneratorCurrentNumber";
-    return base::WrapUnique(new IndexedDBKey());
+    return base::MakeUnique<IndexedDBKey>();
   }
   if (current_number < 0 || current_number > max_generator_value)
-    return base::WrapUnique(new IndexedDBKey());
+    return base::MakeUnique<IndexedDBKey>();
 
-  return base::WrapUnique(
-      new IndexedDBKey(current_number, WebIDBKeyTypeNumber));
+  return base::MakeUnique<IndexedDBKey>(current_number, WebIDBKeyTypeNumber);
 }
 
 static leveldb::Status UpdateKeyGenerator(IndexedDBBackingStore* backing_store,
@@ -1226,7 +1225,8 @@ void IndexedDBDatabase::Put(int64_t transaction_id,
 
   DCHECK(key);
   DCHECK(value);
-  std::unique_ptr<PutOperationParams> params(new PutOperationParams());
+  std::unique_ptr<PutOperationParams> params(
+      base::MakeUnique<PutOperationParams>());
   params->object_store_id = object_store_id;
   params->value.swap(*value);
   params->handles.swap(*handles);
@@ -1511,7 +1511,7 @@ void IndexedDBDatabase::OpenCursor(
     return;
 
   std::unique_ptr<OpenCursorOperationParams> params(
-      new OpenCursorOperationParams());
+      base::MakeUnique<OpenCursorOperationParams>());
   params->object_store_id = object_store_id;
   params->index_id = index_id;
   params->key_range = std::move(key_range);

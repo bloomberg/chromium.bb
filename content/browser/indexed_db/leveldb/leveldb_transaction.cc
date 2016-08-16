@@ -28,13 +28,7 @@ LevelDBTransaction::LevelDBTransaction(LevelDBDatabase* db)
 LevelDBTransaction::Record::Record() : deleted(false) {}
 LevelDBTransaction::Record::~Record() {}
 
-void LevelDBTransaction::Clear() {
-  for (const auto& it : data_)
-    delete it.second;
-  data_.clear();
-}
-
-LevelDBTransaction::~LevelDBTransaction() { Clear(); }
+LevelDBTransaction::~LevelDBTransaction() {}
 
 bool LevelDBTransaction::Set(const StringPiece& key,
                              std::string* value,
@@ -43,11 +37,11 @@ bool LevelDBTransaction::Set(const StringPiece& key,
   DataType::iterator it = data_.find(key);
 
   if (it == data_.end()) {
-    Record* record = new Record();
+    std::unique_ptr<Record> record = base::MakeUnique<Record>();
     record->key.assign(key.begin(), key.end() - key.begin());
     record->value.swap(*value);
     record->deleted = deleted;
-    data_[record->key] = record;
+    data_[record->key] = std::move(record);
     NotifyIterators();
     return false;
   }
@@ -107,8 +101,6 @@ leveldb::Status LevelDBTransaction::Commit() {
       write_batch->Put(it->first, it->second->value);
     else
       write_batch->Remove(it->first);
-
-    delete it->second;
     data_.erase(it++);
   }
 
@@ -126,7 +118,7 @@ leveldb::Status LevelDBTransaction::Commit() {
 void LevelDBTransaction::Rollback() {
   DCHECK(!finished_);
   finished_ = true;
-  Clear();
+  data_.clear();
 }
 
 std::unique_ptr<LevelDBIterator> LevelDBTransaction::CreateIterator() {

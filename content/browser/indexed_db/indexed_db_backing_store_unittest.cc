@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -76,7 +77,8 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
       leveldb::Status* status) {
     DCHECK(!path_base.empty());
 
-    std::unique_ptr<LevelDBComparator> comparator(new Comparator());
+    std::unique_ptr<LevelDBComparator> comparator =
+        base::MakeUnique<Comparator>();
 
     if (!base::CreateDirectory(path_base)) {
       *status = leveldb::Status::IOError("Unable to create base dir");

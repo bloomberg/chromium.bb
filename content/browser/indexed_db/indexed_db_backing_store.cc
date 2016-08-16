@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -973,7 +974,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   data_loss_info->status = blink::WebIDBDataLossNone;
   *status = leveldb::Status::OK();
 
-  std::unique_ptr<LevelDBComparator> comparator(new Comparator());
+  std::unique_ptr<LevelDBComparator> comparator(base::MakeUnique<Comparator>());
 
   if (!base::IsStringASCII(path_base.AsUTF8Unsafe())) {
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII,
@@ -1118,7 +1119,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
     leveldb::Status* status) {
   IDB_TRACE("IndexedDBBackingStore::OpenInMemory");
 
-  std::unique_ptr<LevelDBComparator> comparator(new Comparator());
+  std::unique_ptr<LevelDBComparator> comparator(base::MakeUnique<Comparator>());
   std::unique_ptr<LevelDBDatabase> db =
       LevelDBDatabase::OpenInMemory(comparator.get());
   if (!db) {
@@ -2333,8 +2334,9 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
         storage::FileStreamWriter::CreateForLocalFile(
             task_runner_.get(), file_path, 0,
             storage::FileStreamWriter::CREATE_NEW_FILE));
-    std::unique_ptr<FileWriterDelegate> delegate(new FileWriterDelegate(
-        std::move(writer), storage::FlushPolicy::FLUSH_ON_COMPLETION));
+    std::unique_ptr<FileWriterDelegate> delegate(
+        base::MakeUnique<FileWriterDelegate>(
+            std::move(writer), storage::FlushPolicy::FLUSH_ON_COMPLETION));
 
     DCHECK(blob_url.is_valid());
     std::unique_ptr<net::URLRequest> blob_request(
@@ -3096,7 +3098,7 @@ IndexedDBBackingStore::Cursor::Cursor(
       transaction_(other->transaction_),
       database_id_(other->database_id_),
       cursor_options_(other->cursor_options_),
-      current_key_(new IndexedDBKey(*other->current_key_)) {
+      current_key_(base::MakeUnique<IndexedDBKey>(*other->current_key_)) {
   if (other->iterator_) {
     iterator_ = transaction_->transaction()->CreateIterator();
 
@@ -3380,7 +3382,9 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
                                       database_id,
                                       cursor_options) {}
 
-  Cursor* Clone() override { return new ObjectStoreKeyCursorImpl(this); }
+  std::unique_ptr<Cursor> Clone() const override {
+    return base::WrapUnique(new ObjectStoreKeyCursorImpl(this));
+  }
 
   // IndexedDBBackingStore::Cursor
   IndexedDBValue* value() override {
@@ -3446,7 +3450,9 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
                                       database_id,
                                       cursor_options) {}
 
-  Cursor* Clone() override { return new ObjectStoreCursorImpl(this); }
+  std::unique_ptr<Cursor> Clone() const override {
+    return base::WrapUnique(new ObjectStoreCursorImpl(this));
+  }
 
   // IndexedDBBackingStore::Cursor
   IndexedDBValue* value() override { return &current_value_; }
@@ -3518,7 +3524,9 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
                                       database_id,
                                       cursor_options) {}
 
-  Cursor* Clone() override { return new IndexKeyCursorImpl(this); }
+  std::unique_ptr<Cursor> Clone() const override {
+    return base::WrapUnique(new IndexKeyCursorImpl(this));
+  }
 
   // IndexedDBBackingStore::Cursor
   IndexedDBValue* value() override {
@@ -3552,7 +3560,7 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
  private:
   explicit IndexKeyCursorImpl(const IndexKeyCursorImpl* other)
       : IndexedDBBackingStore::Cursor(other),
-        primary_key_(new IndexedDBKey(*other->primary_key_)) {}
+        primary_key_(base::MakeUnique<IndexedDBKey>(*other->primary_key_)) {}
 
   std::unique_ptr<IndexedDBKey> primary_key_;
 
@@ -3634,7 +3642,9 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
                                       database_id,
                                       cursor_options) {}
 
-  Cursor* Clone() override { return new IndexCursorImpl(this); }
+  std::unique_ptr<Cursor> Clone() const override {
+    return base::WrapUnique(new IndexCursorImpl(this));
+  }
 
   // IndexedDBBackingStore::Cursor
   IndexedDBValue* value() override { return &current_value_; }
@@ -3665,7 +3675,7 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
  private:
   explicit IndexCursorImpl(const IndexCursorImpl* other)
       : IndexedDBBackingStore::Cursor(other),
-        primary_key_(new IndexedDBKey(*other->primary_key_)),
+        primary_key_(base::MakeUnique<IndexedDBKey>(*other->primary_key_)),
         current_value_(other->current_value_),
         primary_leveldb_key_(other->primary_leveldb_key_) {}
 
@@ -3908,8 +3918,9 @@ IndexedDBBackingStore::OpenObjectStoreCursor(
                                 direction,
                                 &cursor_options))
     return std::unique_ptr<IndexedDBBackingStore::Cursor>();
-  std::unique_ptr<ObjectStoreCursorImpl> cursor(new ObjectStoreCursorImpl(
-      this, transaction, database_id, cursor_options));
+  std::unique_ptr<ObjectStoreCursorImpl> cursor(
+      base::MakeUnique<ObjectStoreCursorImpl>(this, transaction, database_id,
+                                              cursor_options));
   if (!cursor->FirstSeek(s))
     return std::unique_ptr<IndexedDBBackingStore::Cursor>();
 
@@ -3935,8 +3946,9 @@ IndexedDBBackingStore::OpenObjectStoreKeyCursor(
                                 direction,
                                 &cursor_options))
     return std::unique_ptr<IndexedDBBackingStore::Cursor>();
-  std::unique_ptr<ObjectStoreKeyCursorImpl> cursor(new ObjectStoreKeyCursorImpl(
-      this, transaction, database_id, cursor_options));
+  std::unique_ptr<ObjectStoreKeyCursorImpl> cursor(
+      base::MakeUnique<ObjectStoreKeyCursorImpl>(this, transaction, database_id,
+                                                 cursor_options));
   if (!cursor->FirstSeek(s))
     return std::unique_ptr<IndexedDBBackingStore::Cursor>();
 
@@ -3965,7 +3977,8 @@ IndexedDBBackingStore::OpenIndexKeyCursor(
                           &cursor_options))
     return std::unique_ptr<IndexedDBBackingStore::Cursor>();
   std::unique_ptr<IndexKeyCursorImpl> cursor(
-      new IndexKeyCursorImpl(this, transaction, database_id, cursor_options));
+      base::MakeUnique<IndexKeyCursorImpl>(this, transaction, database_id,
+                                           cursor_options));
   if (!cursor->FirstSeek(s))
     return std::unique_ptr<IndexedDBBackingStore::Cursor>();
 

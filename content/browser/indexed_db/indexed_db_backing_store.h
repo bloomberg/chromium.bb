@@ -315,7 +315,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
     bool Advance(uint32_t count, leveldb::Status*);
     bool FirstSeek(leveldb::Status*);
 
-    virtual Cursor* Clone() = 0;
+    virtual std::unique_ptr<Cursor> Clone() const = 0;
     virtual const IndexedDBKey& primary_key() const;
     virtual IndexedDBValue* value() = 0;
     virtual const RecordIdentifier& record_identifier() const;
