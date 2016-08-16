@@ -298,8 +298,8 @@ void TranslateBubbleView::OnMenuButtonClicked(views::MenuButton* source,
         DenialMenuItem::NEVER_TRANSLATE_SITE,
         IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE);
 
-    denial_menu_runner_.reset(
-        new views::MenuRunner(denial_menu_model_.get(), 0));
+    denial_menu_runner_.reset(new views::MenuRunner(denial_menu_model_.get(),
+                                                    views::MenuRunner::ASYNC));
   }
   gfx::Rect screen_bounds = source->GetBoundsInScreen();
   screen_bounds.Inset(source->GetInsets());
