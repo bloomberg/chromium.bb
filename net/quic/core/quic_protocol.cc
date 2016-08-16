@@ -187,7 +187,11 @@ QuicVersionVector FilterSupportedVersions(QuicVersionVector versions) {
   QuicVersionVector filtered_versions(versions.size());
   filtered_versions.clear();  // Guaranteed by spec not to change capacity.
   for (QuicVersion version : versions) {
-    if (version == QUIC_VERSION_35) {
+    if (version < QUIC_VERSION_32) {
+      if (!FLAGS_quic_disable_pre_32) {
+        filtered_versions.push_back(version);
+      }
+    } else if (version == QUIC_VERSION_35) {
       if (FLAGS_quic_enable_version_35) {
         filtered_versions.push_back(version);
       }
@@ -849,24 +853,27 @@ StringPiece QuicPacket::Plaintext(QuicVersion version) const {
 }
 
 QuicVersionManager::QuicVersionManager(QuicVersionVector supported_versions)
-    : enable_quic_version_35_(FLAGS_quic_enable_version_35),
-      enable_quic_version_36_(FLAGS_quic_enable_version_36_v2),
+    : disable_pre_32_(FLAGS_quic_disable_pre_32),
+      enable_version_35_(FLAGS_quic_enable_version_35),
+      enable_version_36_(FLAGS_quic_enable_version_36_v2),
       allowed_supported_versions_(supported_versions),
       filtered_supported_versions_(
           FilterSupportedVersions(supported_versions)) {}
 
+QuicVersionManager::~QuicVersionManager() {}
+
 const QuicVersionVector& QuicVersionManager::GetSupportedVersions() {
-  if (enable_quic_version_35_ != FLAGS_quic_enable_version_35 ||
-      enable_quic_version_36_ != FLAGS_quic_enable_version_36_v2) {
-    enable_quic_version_35_ = FLAGS_quic_enable_version_35;
-    enable_quic_version_36_ = FLAGS_quic_enable_version_36_v2;
+  if (disable_pre_32_ != FLAGS_quic_disable_pre_32 ||
+      enable_version_35_ != FLAGS_quic_enable_version_35 ||
+      enable_version_36_ != FLAGS_quic_enable_version_36_v2) {
+    disable_pre_32_ = FLAGS_quic_disable_pre_32;
+    enable_version_35_ = FLAGS_quic_enable_version_35;
+    enable_version_36_ = FLAGS_quic_enable_version_36_v2;
     filtered_supported_versions_ =
         FilterSupportedVersions(allowed_supported_versions_);
   }
   return filtered_supported_versions_;
 }
-
-QuicVersionManager::~QuicVersionManager() {}
 
 AckListenerWrapper::AckListenerWrapper(QuicAckListenerInterface* listener,
                                        QuicPacketLength data_length)

@@ -29,7 +29,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_rate_based_sending;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_cheap_stateless_rejects;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_respect_http2_settings_frame;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_no_mtu_discovery_ack_listener;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_simple_packet_number_length;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_version_35;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_version_36;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_version_36_v2;
@@ -51,5 +50,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_remove_v33_hacks;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_chlo_packet_size;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_buffer_packet_till_chlo;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_app_limited_check;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_simple_packet_number_length_2;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_pre_32;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

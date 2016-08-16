@@ -619,7 +619,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
 
   if (!ClientDemandsX509Proof(client_hello) && FLAGS_quic_require_x509) {
     *error_details = "Missing or invalid PDMD";
-    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+    return QUIC_UNSUPPORTED_PROOF_DEMAND;
   }
   DCHECK(proof_source_.get());
   string chlo_hash;
@@ -1516,9 +1516,9 @@ void QuicCryptoServerConfig::BuildRejection(
   bool should_return_sct =
       params->sct_supported_by_client && enable_serving_sct_;
   const size_t sct_size = should_return_sct ? crypto_proof.cert_sct.size() : 0;
-  if (info.valid_source_address_token ||
-      crypto_proof.signature.size() + compressed.size() + sct_size <
-          max_unverified_size) {
+  const size_t total_size =
+      crypto_proof.signature.size() + compressed.size() + sct_size;
+  if (info.valid_source_address_token || total_size < max_unverified_size) {
     out->SetStringPiece(kCertificateTag, compressed);
     out->SetStringPiece(kPROF, crypto_proof.signature);
     if (should_return_sct) {
@@ -1527,6 +1527,14 @@ void QuicCryptoServerConfig::BuildRejection(
       } else {
         out->SetStringPiece(kCertificateSCTTag, crypto_proof.cert_sct);
       }
+    }
+  } else {
+    if (FLAGS_quic_use_chlo_packet_size) {
+      DLOG(WARNING) << "Sending inchoate REJ for hostname: " << info.sni
+                    << " signature: " << crypto_proof.signature.size()
+                    << " cert: " << compressed.size() << " sct:" << sct_size
+                    << " total: " << total_size
+                    << " max: " << max_unverified_size;
     }
   }
 }

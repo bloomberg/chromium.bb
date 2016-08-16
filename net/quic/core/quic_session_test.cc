@@ -211,7 +211,6 @@ class QuicSessionTestBase : public ::testing::TestWithParam<QuicVersion> {
                                                perspective,
                                                SupportedVersions(GetParam()))),
         session_(connection_) {
-    FLAGS_quic_always_log_bugs_for_tests = true;
     session_.config()->SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
     session_.config()->SetInitialSessionFlowControlWindowToSend(
@@ -381,9 +380,8 @@ TEST_P(QuicSessionTestServer, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
   // Close the stream.
   EXPECT_CALL(*connection_, SendRstStream(closed_stream_id, _, _));
   stream2->Reset(QUIC_BAD_APPLICATION_PAYLOAD);
-  EXPECT_DEBUG_DFATAL(
-      session_.MarkConnectionLevelWriteBlocked(closed_stream_id),
-      "Marking unknown stream 2 blocked.");
+  EXPECT_QUIC_BUG(session_.MarkConnectionLevelWriteBlocked(closed_stream_id),
+                  "Marking unknown stream 2 blocked.");
 }
 
 TEST_P(QuicSessionTestServer, OnCanWrite) {

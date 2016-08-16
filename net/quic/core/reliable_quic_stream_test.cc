@@ -184,7 +184,8 @@ TEST_F(ReliableQuicStreamTest, NoBlockingIfNoDataOrFin) {
 
   // Write no data and no fin.  If we consume nothing we should not be write
   // blocked.
-  EXPECT_DFATAL(stream_->WriteOrBufferData(StringPiece(), false, nullptr), "");
+  EXPECT_QUIC_BUG(stream_->WriteOrBufferData(StringPiece(), false, nullptr),
+                  "");
   EXPECT_FALSE(HasWriteBlockedStreams());
 }
 

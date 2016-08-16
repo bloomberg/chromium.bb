@@ -39,6 +39,12 @@
 
 using base::StringPiece;
 
+// EXPECT_QUIC_BUG is like EXPECT_DFATAL, except it ensures that no DFATAL
+// logging is skipped due to exponential backoff.
+//
+// For external QUIC, EXPECT_QUIC_BUG should be #defined to EXPECT_DFATAL.
+#define EXPECT_QUIC_BUG EXPECT_DFATAL
+
 namespace net {
 
 namespace test {

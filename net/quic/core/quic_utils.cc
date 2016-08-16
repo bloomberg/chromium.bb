@@ -251,6 +251,7 @@ const char* QuicUtils::ErrorToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND);
     RETURN_STRING_LITERAL(QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP);
     RETURN_STRING_LITERAL(QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND);
+    RETURN_STRING_LITERAL(QUIC_UNSUPPORTED_PROOF_DEMAND);
     RETURN_STRING_LITERAL(QUIC_INVALID_STREAM_ID);
     RETURN_STRING_LITERAL(QUIC_INVALID_PRIORITY);
     RETURN_STRING_LITERAL(QUIC_TOO_MANY_OPEN_STREAMS);
@@ -379,14 +380,6 @@ QuicTagVector QuicUtils::ParseQuicConnectionOptions(
     options.push_back(option);
   }
   return options;
-}
-
-string QuicUtils::ListTags(QuicTagValueMap tag_map) {
-  string result;
-  for (auto entry : tag_map) {
-    result.append(TagToString(entry.first) + " ");
-  }
-  return result;
 }
 
 string QuicUtils::PeerAddressChangeTypeToString(PeerAddressChangeType type) {

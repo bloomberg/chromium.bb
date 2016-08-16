@@ -4,7 +4,7 @@
 
 #include "net/quic/core/quic_framer.h"
 
-#include <stdint.h>
+#include <string.h>
 
 #include <algorithm>
 #include <map>
@@ -642,7 +642,7 @@ TEST_P(QuicFramerTest, LargePacket) {
   memset(packet + header_size, 0, kMaxPacketSize - header_size);
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_DFATAL(framer_.ProcessPacket(encrypted), "Packet too large:1");
+  EXPECT_QUIC_BUG(framer_.ProcessPacket(encrypted), "Packet too large:1");
 
   ASSERT_TRUE(visitor_.header_.get());
   // Make sure we've parsed the packet header, so we can send an error.

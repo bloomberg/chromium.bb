@@ -235,6 +235,9 @@ vector<TestParams> GetTestParams() {
                 for (const QuicVersionVector& client_versions :
                      version_buckets) {
                   CHECK(!client_versions.empty());
+                  if (FilterSupportedVersions(client_versions).empty()) {
+                    continue;
+                  }
                   // Add an entry for server and client supporting all versions.
                   params.push_back(TestParams(
                       client_versions, all_supported_versions,
@@ -260,6 +263,10 @@ vector<TestParams> GetTestParams() {
                   for (size_t i = 1; i < client_versions.size(); ++i) {
                     QuicVersionVector server_supported_versions;
                     server_supported_versions.push_back(client_versions[i]);
+                    if (FilterSupportedVersions(server_supported_versions)
+                            .empty()) {
+                      continue;
+                    }
                     params.push_back(TestParams(
                         client_versions, server_supported_versions,
                         server_supported_versions.front(),
@@ -1194,7 +1201,7 @@ TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
   ReliableQuicStreamPeer::SetWriteSideClosed(false,
                                              client_->GetOrCreateStream());
 
-  EXPECT_DFATAL(client_->SendData("eep", true), "Fin already buffered");
+  EXPECT_QUIC_BUG(client_->SendData("eep", true), "Fin already buffered");
 }
 
 TEST_P(EndToEndTest, Timeout) {

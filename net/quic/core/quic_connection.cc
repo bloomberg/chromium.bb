@@ -1681,7 +1681,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   DVLOG(1) << ENDPOINT << "time we began writing last sent packet: "
            << packet_send_time.ToDebuggingValue();
 
-  if (!FLAGS_quic_simple_packet_number_length) {
+  if (!FLAGS_quic_simple_packet_number_length_2) {
     // TODO(ianswett): Change the packet number length and other packet creator
     // options by a more explicit API than setting a struct value directly,
     // perhaps via the NetworkChangeVisitor.
@@ -1706,7 +1706,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     SetRetransmissionAlarm();
   }
 
-  if (FLAGS_quic_simple_packet_number_length) {
+  if (FLAGS_quic_simple_packet_number_length_2) {
     // The packet number length must be updated after OnPacketSent, because it
     // may change the packet number length in packet.
     if (FLAGS_quic_least_unacked_packet_number_length) {

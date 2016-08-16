@@ -67,7 +67,6 @@ class TestStream : public QuicSpdyStream {
 class QuicSpdyStreamTest : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicSpdyStreamTest() {
-    FLAGS_quic_always_log_bugs_for_tests = true;
     headers_[":host"] = "www.google.com";
     headers_[":path"] = "/index.hml";
     headers_[":scheme"] = "https";
@@ -996,8 +995,8 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersAfterFIN) {
 
   // Writing Trailers should fail, as the FIN has already been sent.
   // populated with the number of body bytes written.
-  EXPECT_DFATAL(stream_->WriteTrailers(SpdyHeaderBlock(), nullptr),
-                "Trailers cannot be sent after a FIN");
+  EXPECT_QUIC_BUG(stream_->WriteTrailers(SpdyHeaderBlock(), nullptr),
+                  "Trailers cannot be sent after a FIN");
 }
 
 }  // namespace

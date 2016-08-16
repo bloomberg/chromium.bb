@@ -129,7 +129,6 @@ class QuicServerSessionBaseTest : public ::testing::TestWithParam<QuicVersion> {
                        CryptoTestUtils::ProofSourceForTesting()),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize) {
-    FLAGS_quic_always_log_bugs_for_tests = true;
     config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
     config_.SetMaxIncomingDynamicStreamsToSend(kMaxStreamsForTest);
     QuicConfigPeer::SetReceivedMaxIncomingDynamicStreams(&config_,
@@ -363,7 +362,7 @@ TEST_P(QuicServerSessionBaseTest, GetEvenIncomingError) {
 TEST_P(QuicServerSessionBaseTest, GetStreamDisconnected) {
   // Don't create new streams if the connection is disconnected.
   QuicConnectionPeer::TearDownLocalConnectionState(connection_);
-  EXPECT_DFATAL(
+  EXPECT_QUIC_BUG(
       QuicServerSessionBasePeer::GetOrCreateDynamicStream(session_.get(), 5),
       "ShouldCreateIncomingDynamicStream called when disconnected");
 }

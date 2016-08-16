@@ -727,7 +727,6 @@ TEST_P(QuicDispatcherStatelessRejectTest, CheapRejects) {
 
 TEST_P(QuicDispatcherStatelessRejectTest, BufferNonChlo) {
   FLAGS_quic_use_cheap_stateless_rejects = true;
-  FLAGS_quic_always_log_bugs_for_tests = true;
   CreateTimeWaitListManager();
 
   const IPEndPoint client_address(net::test::Loopback4(), 1);
@@ -751,7 +750,7 @@ TEST_P(QuicDispatcherStatelessRejectTest, BufferNonChlo) {
   if (first_packet_dropped) {
     // Never do stateless reject while
     // FLAGS_quic_buffer_packet_till_chlo is off.
-    EXPECT_DFATAL(
+    EXPECT_QUIC_BUG(
         ProcessPacket(client_address, connection_id, true, false,
                       "NOT DATA FOR A CHLO"),
         "Have to drop packet because buffering non-chlo packet is "

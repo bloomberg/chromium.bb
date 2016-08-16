@@ -709,7 +709,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         connection_id_length_(PACKET_8BYTE_CONNECTION_ID) {
     connection_.set_defer_send_in_response_to_packets(GetParam().ack_response ==
                                                       AckResponse::kDefer);
-    FLAGS_quic_always_log_bugs_for_tests = true;
     connection_.set_visitor(&visitor_);
     connection_.SetSendAlgorithm(kDefaultPathId, send_algorithm_);
     connection_.SetLossAlgorithm(kDefaultPathId, loss_algorithm_.get());
@@ -1374,7 +1373,7 @@ TEST_P(QuicConnectionTest, RejectUnencryptedStreamData) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_UNENCRYPTED_STREAM_DATA, _,
                                            ConnectionCloseSource::FROM_SELF));
-  EXPECT_DFATAL(ProcessDataPacket(kDefaultPathId, 1, !kEntropyFlag), "");
+  EXPECT_QUIC_BUG(ProcessDataPacket(kDefaultPathId, 1, !kEntropyFlag), "");
   EXPECT_FALSE(QuicConnectionPeer::GetConnectionClosePacket(&connection_) ==
                nullptr);
   const vector<QuicConnectionCloseFrame>& connection_close_frames =
@@ -4782,7 +4781,7 @@ TEST_P(QuicConnectionTest, NoDataNoFin) {
   // not result in a QuicAckNotifier being used-after-free (fail under ASAN).
   // Regression test for b/18594622
   scoped_refptr<MockAckListener> listener(new MockAckListener);
-  EXPECT_DFATAL(
+  EXPECT_QUIC_BUG(
       connection_.SendStreamDataWithString(3, "", 0, !kFin, listener.get()),
       "Attempt to send empty stream frame");
 }
@@ -4841,8 +4840,8 @@ TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {
   EXPECT_CALL(visitor_,
               OnConnectionClosed(QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA,
                                  _, ConnectionCloseSource::FROM_SELF));
-  EXPECT_DFATAL(connection_.SendStreamDataWithString(3, "", 0, kFin, nullptr),
-                "Cannot send stream data without encryption.");
+  EXPECT_QUIC_BUG(connection_.SendStreamDataWithString(3, "", 0, kFin, nullptr),
+                  "Cannot send stream data without encryption.");
   EXPECT_FALSE(connection_.connected());
 }
 
@@ -4888,7 +4887,7 @@ TEST_P(QuicConnectionTest, BadMultipathFlag) {
   EXPECT_FALSE(QuicConnectionPeer::IsMultipathEnabled(&connection_));
   peer_creator_.SetCurrentPath(/*path_id=*/1u, 1u, 10u);
   QuicStreamFrame stream_frame(1u, false, 0u, StringPiece());
-  EXPECT_DFATAL(
+  EXPECT_QUIC_BUG(
       ProcessFramePacket(QuicFrame(&stream_frame)),
       "Received a packet with multipath flag but multipath is not enabled.");
   EXPECT_FALSE(connection_.connected());

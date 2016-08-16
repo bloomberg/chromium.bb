@@ -86,10 +86,6 @@ bool FLAGS_quic_respect_http2_settings_frame = true;
 // Do not use a QuicAckListener in order to confirm a larger Path MTU.
 bool FLAGS_quic_no_mtu_discovery_ack_listener = true;
 
-// Deprecate QuicPacketCreator::next_packet_number_length_ because it's no
-// longer necessary.
-bool FLAGS_quic_simple_packet_number_length = true;
-
 // If true, enables QUIC_VERSION_35.
 bool FLAGS_quic_enable_version_35 = true;
 
@@ -162,3 +158,10 @@ bool FLAGS_quic_buffer_packet_till_chlo = false;
 // If true, the connection will check whether it is application-limited, and
 // notify the congestion controller about it.
 bool FLAGS_quic_enable_app_limited_check = true;
+
+// Deprecate QuicPacketCreator::next_packet_number_length_ because it's no
+// longer necessary.
+bool FLAGS_quic_simple_packet_number_length_2 = true;
+
+// If true, disables QUIC version less than 32.
+bool FLAGS_quic_disable_pre_32 = true;

@@ -208,7 +208,6 @@ struct TestParams {
         FLAGS_spdy_framer_use_new_methods3 = true;
         break;
     }
-    FLAGS_quic_always_log_bugs_for_tests = true;
     VLOG(1) << "TestParams: version: " << QuicVersionToString(version)
             << ", perspective: " << perspective
             << ", http2_decoder: " << http2_decoder
@@ -460,7 +459,7 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
       CheckHeaders();
       saved_data_.clear();
     } else {
-      EXPECT_DFATAL(
+      EXPECT_QUIC_BUG(
           headers_stream_->WritePushPromise(stream_id, promised_stream_id,
                                             headers_.Clone(), nullptr),
           "Client shouldn't send PUSH_PROMISE");

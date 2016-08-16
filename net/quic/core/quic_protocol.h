@@ -655,6 +655,8 @@ enum QuicErrorCode {
   // A crypto message was received that contained a parameter with too few
   // values.
   QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND = 37,
+  // A demand for an unsupport proof type was received.
+  QUIC_UNSUPPORTED_PROOF_DEMAND = 94,
   // An internal error occured in crypto processing.
   QUIC_CRYPTO_INTERNAL_ERROR = 38,
   // A crypto handshake message specified an unsupported version.
@@ -715,7 +717,7 @@ enum QuicErrorCode {
   QUIC_TOO_MANY_FRAME_GAPS = 93,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 94,
+  QUIC_LAST_ERROR = 95,
 };
 
 typedef char DiversificationNonce[32];
@@ -1419,10 +1421,12 @@ class NET_EXPORT_PRIVATE QuicVersionManager {
   const QuicVersionVector& GetSupportedVersions();
 
  private:
+  // FLAGS_quic_disable_pre_32
+  bool disable_pre_32_;
   // FLAGS_quic_enable_version_35
-  bool enable_quic_version_35_;
+  bool enable_version_35_;
   // FLAGS_quic_enable_version_36_v2
-  bool enable_quic_version_36_;
+  bool enable_version_36_;
   // The list of versions that may be supported.
   QuicVersionVector allowed_supported_versions_;
   // This vector contains QUIC versions which are currently supported based
