@@ -156,7 +156,8 @@ public class SnippetArticleViewHolder extends CardViewHolder
 
         // Create a context menu akin to the one shown for MostVisitedItems.
         if (mNewTabPageManager.isOpenInNewWindowEnabled()) {
-            addContextMenuItem(menu, ID_OPEN_IN_NEW_WINDOW, R.string.contextmenu_open_in_new_tab);
+            addContextMenuItem(
+                    menu, ID_OPEN_IN_NEW_WINDOW, R.string.contextmenu_open_in_other_window);
         }
 
         addContextMenuItem(menu, ID_OPEN_IN_NEW_TAB, R.string.contextmenu_open_in_new_tab);
