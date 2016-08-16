@@ -33,6 +33,7 @@
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/WordAwareIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/page/SpellCheckerClient.h"
@@ -41,7 +42,8 @@
 
 namespace blink {
 
-static void findMisspellings(TextCheckerClient& client, const String& text, Vector<TextCheckingResult>& results)
+// TODO(xiaochengh): Move this function to SpellChecker.cpp
+void SpellChecker::findMisspellings(const String& text, Vector<TextCheckingResult>& results)
 {
     Vector<UChar> characters;
     text.appendTo(characters);
@@ -59,7 +61,7 @@ static void findMisspellings(TextCheckerClient& client, const String& text, Vect
         int wordLength = wordEnd - wordStart;
         int misspellingLocation = -1;
         int misspellingLength = 0;
-        client.checkSpellingOfString(String(characters.data() + wordStart, wordLength), &misspellingLocation, &misspellingLength);
+        textChecker().checkSpellingOfString(String(characters.data() + wordStart, wordLength), &misspellingLocation, &misspellingLength);
         if (0 < misspellingLength) {
             DCHECK_LE(0, misspellingLocation);
             DCHECK_LE(misspellingLocation, wordLength);
@@ -221,18 +223,8 @@ int TextCheckingParagraph::checkingLength() const
     return m_checkingLength;
 }
 
-TextCheckingHelper::TextCheckingHelper(SpellCheckerClient& client, const Position& start, const Position& end)
-    : m_client(&client)
-    , m_start(start)
-    , m_end(end)
-{
-}
-
-TextCheckingHelper::~TextCheckingHelper()
-{
-}
-
-String TextCheckingHelper::findFirstMisspellingOrBadGrammar(int& outFirstFoundOffset)
+// TODO(xiaochengh): Move this function to SpellChecker.cpp
+String SpellChecker::findFirstMisspellingOrBadGrammar(const Position& start, const Position& end, int& outFirstFoundOffset)
 {
     String firstFoundItem;
     String misspelledWord;
@@ -243,12 +235,12 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(int& outFirstFoundOf
     // Expand the search range to encompass entire paragraphs, since text checking needs that much context.
     // Determine the character offset from the start of the paragraph to the start of the original search range,
     // since we will want to ignore results in this area.
-    Position paragraphStart = startOfParagraph(createVisiblePosition(m_start)).toParentAnchoredPosition();
-    Position paragraphEnd = m_end;
+    Position paragraphStart = startOfParagraph(createVisiblePosition(start)).toParentAnchoredPosition();
+    Position paragraphEnd = end;
     int totalRangeLength = TextIterator::rangeLength(paragraphStart, paragraphEnd);
-    paragraphEnd = endOfParagraph(createVisiblePosition(m_start)).toParentAnchoredPosition();
+    paragraphEnd = endOfParagraph(createVisiblePosition(start)).toParentAnchoredPosition();
 
-    int rangeStartOffset = TextIterator::rangeLength(paragraphStart, m_start);
+    int rangeStartOffset = TextIterator::rangeLength(paragraphStart, start);
     int totalLengthProcessed = 0;
 
     bool firstIteration = true;
@@ -258,10 +250,10 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(int& outFirstFoundOf
         int currentLength = TextIterator::rangeLength(paragraphStart, paragraphEnd);
         int currentStartOffset = firstIteration ? rangeStartOffset : 0;
         int currentEndOffset = currentLength;
-        if (inSameParagraph(createVisiblePosition(paragraphStart), createVisiblePosition(m_end))) {
+        if (inSameParagraph(createVisiblePosition(paragraphStart), createVisiblePosition(end))) {
             // Determine the character offset from the end of the original search range to the end of the paragraph,
             // since we will want to ignore results in this area.
-            currentEndOffset = TextIterator::rangeLength(paragraphStart, m_end);
+            currentEndOffset = TextIterator::rangeLength(paragraphStart, end);
             lastIteration = true;
         }
         if (currentStartOffset < currentEndOffset) {
@@ -270,7 +262,7 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(int& outFirstFoundOf
                 int spellingLocation = 0;
 
                 Vector<TextCheckingResult> results;
-                findMisspellings(m_client->textChecker(), paragraphString, results);
+                findMisspellings(paragraphString, results);
 
                 for (unsigned i = 0; i < results.size(); i++) {
                     const TextCheckingResult* result = &results[i];
@@ -287,7 +279,7 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(int& outFirstFoundOf
                 if (!misspelledWord.isEmpty()) {
                     int spellingOffset = spellingLocation - currentStartOffset;
                     if (!firstIteration)
-                        spellingOffset += TextIterator::rangeLength(m_start, paragraphStart);
+                        spellingOffset += TextIterator::rangeLength(start, paragraphStart);
                     outFirstFoundOffset = spellingOffset;
                     firstFoundItem = misspelledWord;
                     break;

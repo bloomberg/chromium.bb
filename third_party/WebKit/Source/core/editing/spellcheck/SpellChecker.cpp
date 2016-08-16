@@ -251,7 +251,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     int searchEndOffsetAfterWrap = spellingSearchEnd.offsetInContainerNode();
 
     int misspellingOffset = 0;
-    String misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspellingOrBadGrammar(misspellingOffset);
+    String misspelledWord = findFirstMisspellingOrBadGrammar(spellingSearchStart, spellingSearchEnd, misspellingOffset);
 
     // If we did not find a misspelled word, wrap and try again (but don't bother if we started at the beginning of the
     // block rather than at a selection).
@@ -259,7 +259,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         spellingSearchStart = Position::editingPositionOf(topNode, 0);
         // going until the end of the very first chunk we tested is far enough
         spellingSearchEnd = Position::editingPositionOf(searchEndNodeAfterWrap, searchEndOffsetAfterWrap);
-        misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspellingOrBadGrammar(misspellingOffset);
+        misspelledWord = findFirstMisspellingOrBadGrammar(spellingSearchStart, spellingSearchEnd, misspellingOffset);
     }
 
     if (!misspelledWord.isEmpty()) {

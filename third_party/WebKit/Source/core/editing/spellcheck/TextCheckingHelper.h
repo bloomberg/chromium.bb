@@ -81,21 +81,6 @@ private:
     mutable int m_checkingLength;
 };
 
-class TextCheckingHelper {
-    WTF_MAKE_NONCOPYABLE(TextCheckingHelper);
-    STACK_ALLOCATED();
-public:
-    TextCheckingHelper(SpellCheckerClient&, const Position& start, const Position& end);
-    ~TextCheckingHelper();
-
-    String findFirstMisspellingOrBadGrammar(int& outFirstFoundOffset);
-
-private:
-    SpellCheckerClient* m_client;
-    Position m_start;
-    Position m_end;
-};
-
 } // namespace blink
 
 #endif // TextCheckingHelper_h

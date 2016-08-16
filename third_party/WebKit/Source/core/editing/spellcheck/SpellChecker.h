@@ -101,6 +101,10 @@ private:
         return *m_frame;
     }
 
+    // Helper functions for advanceToNextMisspelling()
+    void findMisspellings(const String& text, Vector<TextCheckingResult>& results);
+    String findFirstMisspellingOrBadGrammar(const Position&, const Position&, int& outFirstFoundOffset);
+
     void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
 
     void chunkAndMarkAllMisspellingsAndBadGrammar(const TextCheckingParagraph& fullParagraphToCheck);
