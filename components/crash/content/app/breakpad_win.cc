@@ -5,6 +5,7 @@
 #include "components/crash/content/app/breakpad_win.h"
 
 #include <windows.h>
+#include <intrin.h>
 #include <shellapi.h>
 #include <stddef.h>
 #include <tchar.h>
