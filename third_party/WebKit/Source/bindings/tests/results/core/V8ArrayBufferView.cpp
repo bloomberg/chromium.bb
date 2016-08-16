@@ -44,6 +44,12 @@ const WrapperTypeInfo V8ArrayBufferView::wrapperTypeInfo = { gin::kEmbedderBlink
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestArrayBufferView::s_wrapperTypeInfo = V8ArrayBufferView::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestArrayBufferView>::value,
+    "TestArrayBufferView inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 TestArrayBufferView* V8ArrayBufferView::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->IsArrayBufferView());

@@ -36,6 +36,12 @@ const WrapperTypeInfo V8TestInterfaceGarbageCollected::wrapperTypeInfo = { gin::
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterfaceGarbageCollected::s_wrapperTypeInfo = V8TestInterfaceGarbageCollected::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestInterfaceGarbageCollected>::value,
+    "TestInterfaceGarbageCollected inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestInterfaceGarbageCollectedV8Internal {
 
 static void attr1AttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)

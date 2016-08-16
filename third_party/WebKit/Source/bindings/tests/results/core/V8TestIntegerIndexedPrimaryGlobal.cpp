@@ -33,6 +33,12 @@ const WrapperTypeInfo V8TestIntegerIndexedPrimaryGlobal::wrapperTypeInfo = { gin
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestIntegerIndexedPrimaryGlobal::s_wrapperTypeInfo = V8TestIntegerIndexedPrimaryGlobal::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestIntegerIndexedPrimaryGlobal>::value,
+    "TestIntegerIndexedPrimaryGlobal inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestIntegerIndexedPrimaryGlobalV8Internal {
 
 static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)

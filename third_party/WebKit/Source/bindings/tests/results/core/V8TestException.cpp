@@ -32,6 +32,12 @@ const WrapperTypeInfo V8TestException::wrapperTypeInfo = { gin::kEmbedderBlink, 
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestException::s_wrapperTypeInfo = V8TestException::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestException>::value,
+    "TestException inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestExceptionV8Internal {
 
 static void readonlyUnsignedShortAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)

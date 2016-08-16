@@ -32,6 +32,12 @@ const WrapperTypeInfo V8TestInterfaceNamedConstructor2::wrapperTypeInfo = { gin:
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterfaceNamedConstructor2::s_wrapperTypeInfo = V8TestInterfaceNamedConstructor2::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestInterfaceNamedConstructor2>::value,
+    "TestInterfaceNamedConstructor2 inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestInterfaceNamedConstructor2V8Internal {
 
 } // namespace TestInterfaceNamedConstructor2V8Internal

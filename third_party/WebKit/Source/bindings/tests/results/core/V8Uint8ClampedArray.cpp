@@ -28,9 +28,11 @@ const WrapperTypeInfo V8Uint8ClampedArray::wrapperTypeInfo = { gin::kEmbedderBli
 #pragma clang diagnostic pop
 #endif
 
-// This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestUint8ClampedArray.h.
-// For details, see the comment of DEFINE_WRAPPERTYPEINFO in
-// bindings/core/v8/ScriptWrappable.h.
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestUint8ClampedArray>::value,
+    "TestUint8ClampedArray inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
 
 TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Local<v8::Object> object)
 {

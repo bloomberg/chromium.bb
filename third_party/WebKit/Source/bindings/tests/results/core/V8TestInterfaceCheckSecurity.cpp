@@ -33,6 +33,12 @@ const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapperTypeInfo = { gin::kEm
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterfaceCheckSecurity::s_wrapperTypeInfo = V8TestInterfaceCheckSecurity::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestInterfaceCheckSecurity>::value,
+    "TestInterfaceCheckSecurity inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestInterfaceCheckSecurityV8Internal {
 
 static void readonlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)

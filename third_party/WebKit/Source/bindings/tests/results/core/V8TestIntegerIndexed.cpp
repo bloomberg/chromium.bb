@@ -33,6 +33,12 @@ const WrapperTypeInfo V8TestIntegerIndexed::wrapperTypeInfo = { gin::kEmbedderBl
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestIntegerIndexed::s_wrapperTypeInfo = V8TestIntegerIndexed::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestIntegerIndexed>::value,
+    "TestIntegerIndexed inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestIntegerIndexedV8Internal {
 
 static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)

@@ -28,15 +28,23 @@ namespace blink {
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
+{% if not is_typed_array_type %}
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in {{cpp_class}}.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-{% if not is_typed_array_type %}
 const WrapperTypeInfo& {{cpp_class}}::s_wrapperTypeInfo = {{v8_class}}::wrapperTypeInfo;
 {% endif %}
+{% if not active_scriptwrappable %}
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, {{cpp_class}}>::value,
+    "{{cpp_class}} inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
 {% endif %}
+
+{% endif %}{# not is_partial #}
 {% if not is_array_buffer_or_view %}
 namespace {{cpp_class_or_partial}}V8Internal {
 {% if has_partial_interface %}

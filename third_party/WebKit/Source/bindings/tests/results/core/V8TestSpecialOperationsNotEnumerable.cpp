@@ -31,6 +31,12 @@ const WrapperTypeInfo V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo = { 
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestSpecialOperationsNotEnumerable::s_wrapperTypeInfo = V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestSpecialOperationsNotEnumerable>::value,
+    "TestSpecialOperationsNotEnumerable inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestSpecialOperationsNotEnumerableV8Internal {
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)

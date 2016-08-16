@@ -32,6 +32,12 @@ const WrapperTypeInfo V8TestInterfaceOriginTrialEnabled::wrapperTypeInfo = { gin
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterfaceOriginTrialEnabled::s_wrapperTypeInfo = V8TestInterfaceOriginTrialEnabled::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestInterfaceOriginTrialEnabled>::value,
+    "TestInterfaceOriginTrialEnabled inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestInterfaceOriginTrialEnabledV8Internal {
 
 static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)

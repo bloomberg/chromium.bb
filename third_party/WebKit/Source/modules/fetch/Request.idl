@@ -26,6 +26,7 @@ enum ReferrerPolicy {
 };
 
 [
+    ActiveScriptWrappable,
     Constructor(RequestInfo input, optional Dictionary requestInitDict),
     ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker),

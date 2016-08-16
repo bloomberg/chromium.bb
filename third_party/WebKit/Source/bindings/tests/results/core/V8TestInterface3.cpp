@@ -37,6 +37,12 @@ const WrapperTypeInfo V8TestInterface3::wrapperTypeInfo = { gin::kEmbedderBlink,
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterface3::s_wrapperTypeInfo = V8TestInterface3::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestInterface3>::value,
+    "TestInterface3 inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestInterface3V8Internal {
 
 static void readonlyStringifierAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)

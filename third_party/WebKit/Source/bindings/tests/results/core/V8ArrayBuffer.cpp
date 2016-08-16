@@ -33,6 +33,12 @@ const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = { gin::kEmbedderBlink, 0,
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestArrayBuffer::s_wrapperTypeInfo = V8ArrayBuffer::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestArrayBuffer>::value,
+    "TestArrayBuffer inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->IsArrayBuffer());

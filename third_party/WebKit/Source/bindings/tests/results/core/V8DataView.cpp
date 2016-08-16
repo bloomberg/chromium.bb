@@ -33,6 +33,12 @@ const WrapperTypeInfo V8DataView::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestDataView::s_wrapperTypeInfo = V8DataView::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestDataView>::value,
+    "TestDataView inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->IsDataView());

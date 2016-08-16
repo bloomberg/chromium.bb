@@ -38,6 +38,12 @@ const WrapperTypeInfo V8TestSpecialOperations::wrapperTypeInfo = { gin::kEmbedde
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestSpecialOperations::s_wrapperTypeInfo = V8TestSpecialOperations::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestSpecialOperations>::value,
+    "TestSpecialOperations inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestSpecialOperationsV8Internal {
 
 static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)

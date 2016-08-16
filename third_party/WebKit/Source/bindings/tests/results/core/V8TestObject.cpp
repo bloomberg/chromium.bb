@@ -99,6 +99,12 @@ const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { gin::kEmbedderBlink, V8T
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestObject::s_wrapperTypeInfo = V8TestObject::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestObject>::value,
+    "TestObject inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestObjectV8Internal {
 
 static void DEPRECATED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)

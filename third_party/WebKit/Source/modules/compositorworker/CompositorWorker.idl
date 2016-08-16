@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 [
+    ActiveScriptWrappable,
     DependentLifetime,
     Constructor(DOMString scriptUrl),
     ConstructorCallWith=ExecutionContext,

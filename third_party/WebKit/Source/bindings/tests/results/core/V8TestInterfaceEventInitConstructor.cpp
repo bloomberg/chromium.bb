@@ -33,6 +33,12 @@ const WrapperTypeInfo V8TestInterfaceEventInitConstructor::wrapperTypeInfo = { g
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterfaceEventInitConstructor::s_wrapperTypeInfo = V8TestInterfaceEventInitConstructor::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestInterfaceEventInitConstructor>::value,
+    "TestInterfaceEventInitConstructor inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestInterfaceEventInitConstructorV8Internal {
 
 static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)

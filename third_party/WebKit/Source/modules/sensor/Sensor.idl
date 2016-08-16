@@ -13,6 +13,7 @@ enum SensorState {
 };
 
 [
+    ActiveScriptWrappable,
     RuntimeEnabled=Sensor,
 ] interface Sensor : EventTarget {
     readonly attribute SensorState state;

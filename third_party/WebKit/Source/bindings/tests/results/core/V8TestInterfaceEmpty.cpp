@@ -31,6 +31,12 @@ const WrapperTypeInfo V8TestInterfaceEmpty::wrapperTypeInfo = { gin::kEmbedderBl
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterfaceEmpty::s_wrapperTypeInfo = V8TestInterfaceEmpty::wrapperTypeInfo;
 
+static_assert(
+    !std::is_base_of<ActiveScriptWrappable, TestInterfaceEmpty>::value,
+    "TestInterfaceEmpty inherits from ActiveScriptWrappable, but does not specify "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+
 namespace TestInterfaceEmptyV8Internal {
 
 } // namespace TestInterfaceEmptyV8Internal
