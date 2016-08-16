@@ -7,14 +7,14 @@
 
 //#include "Platform.h"
 //#include "String16.h"
-#include "{{export_macro_include}}"
+#include "{{config.class_export.header}}"
 
 namespace blink {
 namespace protocol {
 
 class Value;
 
-{{export_macro}} std::unique_ptr<Value> parseJSON(const String16& json);
+{{config.class_export.macro}} std::unique_ptr<Value> parseJSON(const String16& json);
 
 } // namespace platform
 } // namespace blink

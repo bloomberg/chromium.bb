@@ -5,6 +5,6 @@
 #ifndef protocol_Platform_h
 #define protocol_Platform_h
 
-#include "{{platform_impl_h_include}}"
+#include "{{config.lib.platform_header}}"
 
 #endif // !defined(protocol_Platform_h)

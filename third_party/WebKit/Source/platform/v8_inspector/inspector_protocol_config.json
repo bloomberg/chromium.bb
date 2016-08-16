@@ -5,7 +5,7 @@
         "output": "v8_inspector/protocol"
     },
 
-    "export": {
+    "exported": {
         "package": "platform/v8_inspector/public/protocol",
         "output": "v8_inspector/public/protocol"
     },
@@ -16,14 +16,14 @@
 
     "lib": {
         "output": "inspector_protocol",
-        "string16_impl_header_path": "platform/v8_inspector/String16WTF.h",
-        "platform_impl_header_path": "platform/v8_inspector/PlatformWTF.h"
+        "string16_header": "platform/v8_inspector/String16WTF.h",
+        "platform_header": "platform/v8_inspector/PlatformWTF.h"
     },
 
     "lib_package": "platform/inspector_protocol",
 
     "class_export": {
         "macro": "PLATFORM_EXPORT",
-        "header_path": "platform/PlatformExport.h"
+        "header": "platform/PlatformExport.h"
     }
 }

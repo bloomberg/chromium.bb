@@ -7,7 +7,7 @@
 
 //#include "Platform.h"
 //#include "String16.h"
-#include "{{export_macro_include}}"
+#include "{{config.class_export.header}}"
 
 #include <vector>
 
@@ -16,7 +16,7 @@ namespace protocol {
 
 using ErrorString = String16;
 
-class {{export_macro}} ErrorSupport {
+class {{config.class_export.macro}} ErrorSupport {
 public:
     ErrorSupport();
     ErrorSupport(String16* errorString);

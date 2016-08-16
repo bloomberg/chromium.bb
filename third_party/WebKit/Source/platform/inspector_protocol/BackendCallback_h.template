@@ -7,12 +7,12 @@
 
 //#include "ErrorSupport.h"
 //#include "Platform.h"
-#include "{{export_macro_include}}"
+#include "{{config.class_export.header}}"
 
 namespace blink {
 namespace protocol {
 
-class {{export_macro}} BackendCallback {
+class {{config.class_export.macro}} BackendCallback {
 public:
     virtual ~BackendCallback() { }
     virtual void sendFailure(const ErrorString&) = 0;

@@ -9,7 +9,7 @@
 //#include "Collections.h"
 //#include "Platform.h"
 //#include "String16.h"
-#include "{{export_macro_include}}"
+#include "{{config.class_export.header}}"
 
 #include <vector>
 
@@ -20,7 +20,7 @@ class ListValue;
 class DictionaryValue;
 class Value;
 
-class {{export_macro}} Value {
+class {{config.class_export.macro}} Value {
     PROTOCOL_DISALLOW_COPY(Value);
 public:
     static const int maxDepth = 1000;
@@ -68,7 +68,7 @@ private:
     ValueType m_type;
 };
 
-class {{export_macro}} FundamentalValue : public Value {
+class {{config.class_export.macro}} FundamentalValue : public Value {
 public:
     static std::unique_ptr<FundamentalValue> create(bool value)
     {
@@ -103,7 +103,7 @@ private:
     };
 };
 
-class {{export_macro}} StringValue : public Value {
+class {{config.class_export.macro}} StringValue : public Value {
 public:
     static std::unique_ptr<StringValue> create(const String16& value)
     {
@@ -126,7 +126,7 @@ private:
     String16 m_stringValue;
 };
 
-class {{export_macro}} SerializedValue : public Value {
+class {{config.class_export.macro}} SerializedValue : public Value {
 public:
     static std::unique_ptr<SerializedValue> create(const String16& value)
     {
@@ -144,7 +144,7 @@ private:
     String16 m_serializedValue;
 };
 
-class {{export_macro}} DictionaryValue : public Value {
+class {{config.class_export.macro}} DictionaryValue : public Value {
 public:
     using Entry = std::pair<String16, Value*>;
     static std::unique_ptr<DictionaryValue> create()
@@ -211,7 +211,7 @@ private:
     std::vector<String16> m_order;
 };
 
-class {{export_macro}} ListValue : public Value {
+class {{config.class_export.macro}} ListValue : public Value {
 public:
     static std::unique_ptr<ListValue> create()
     {

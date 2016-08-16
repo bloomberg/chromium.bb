@@ -6,12 +6,12 @@
 #define FrontendChannel_h
 
 //#include "String16.h"
-#include "{{export_macro_include}}"
+#include "{{config.class_export.header}}"
 
 namespace blink {
 namespace protocol {
 
-class {{export_macro}} FrontendChannel {
+class {{config.class_export.macro}} FrontendChannel {
 public:
     virtual ~FrontendChannel() { }
     virtual void sendProtocolResponse(int callId, const String16& message) = 0;

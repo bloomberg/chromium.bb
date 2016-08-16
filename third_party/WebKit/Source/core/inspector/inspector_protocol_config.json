@@ -5,7 +5,7 @@
         "output": "inspector/protocol"
     },
 
-    "import": {
+    "imported": {
         "path": "../../platform/v8_inspector/js_protocol.json",
         "package": "platform/v8_inspector/public/protocol"
     },
@@ -18,6 +18,6 @@
 
     "class_export": {
         "macro": "CORE_EXPORT",
-        "header_path": "core/CoreExport.h"
+        "header": "core/CoreExport.h"
     }
 }

@@ -7,7 +7,7 @@
 
 //#include "Collections.h"
 //#include "Platform.h"
-#include "{{export_macro_include}}"
+#include "{{config.class_export.header}}"
 
 #include <vector>
 
@@ -15,16 +15,16 @@ namespace blink {
 namespace protocol {
 
 namespace internal {
-{{export_macro}} void intToStr(int, char*, size_t);
-{{export_macro}} void doubleToStr(double, char*, size_t);
-{{export_macro}} void doubleToStr3(double, char*, size_t);
-{{export_macro}} void doubleToStr6(double, char*, size_t);
-{{export_macro}} double strToDouble(const char*, bool*);
-{{export_macro}} int strToInt(const char*, bool*);
+{{config.class_export.macro}} void intToStr(int, char*, size_t);
+{{config.class_export.macro}} void doubleToStr(double, char*, size_t);
+{{config.class_export.macro}} void doubleToStr3(double, char*, size_t);
+{{config.class_export.macro}} void doubleToStr6(double, char*, size_t);
+{{config.class_export.macro}} double strToDouble(const char*, bool*);
+{{config.class_export.macro}} int strToInt(const char*, bool*);
 } // namespace internal
 
 template <typename T, typename C>
-class {{export_macro}} String16Base {
+class {{config.class_export.macro}} String16Base {
 public:
     static bool isASCII(C c)
     {
@@ -152,12 +152,12 @@ public:
 } // namespace protocol
 } // namespace blink
 
-#include "{{string16_impl_h_include}}"
+#include "{{config.lib.string16_header}}"
 
 namespace blink {
 namespace protocol {
 
-class {{export_macro}} String16Builder {
+class {{config.class_export.macro}} String16Builder {
 public:
     String16Builder();
     void append(const String16&);
