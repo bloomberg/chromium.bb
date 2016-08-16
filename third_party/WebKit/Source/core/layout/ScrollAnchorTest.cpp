@@ -684,20 +684,21 @@ TEST_F(ScrollAnchorTest, OptOutScrollingDiv)
 
 class ScrollAnchorCornerTest : public ScrollAnchorTest {
 protected:
-    void checkCorner(const AtomicString& id, Corner corner, DoublePoint startPos, DoubleSize expectedAdjustment)
+    void checkCorner(Corner corner, DoublePoint startPos, DoubleSize expectedAdjustment)
     {
         ScrollableArea* viewport = layoutViewport();
-        Element* element = document().getElementById(id);
+        Element* element = document().getElementById("changer");
 
         viewport->setScrollPosition(startPos, UserScroll);
-        element->setAttribute(HTMLNames::classAttr, "big");
+        element->setAttribute(HTMLNames::classAttr, "change");
         update();
 
         DoublePoint endPos = startPos;
         endPos.move(expectedAdjustment);
 
         EXPECT_EQ(endPos, viewport->scrollPositionDouble());
-        EXPECT_EQ(element->layoutObject(), scrollAnchor(viewport).anchorObject());
+        EXPECT_EQ(document().getElementById("a")->layoutObject(),
+            scrollAnchor(viewport).anchorObject());
         EXPECT_EQ(corner, scrollAnchor(viewport).corner());
 
         element->removeAttribute(HTMLNames::classAttr);
@@ -705,129 +706,69 @@ protected:
     }
 };
 
-TEST_F(ScrollAnchorCornerTest, Corners)
+// Verify that we anchor to the top left corner of an element for LTR.
+TEST_F(ScrollAnchorCornerTest, CornersLTR)
 {
     setBodyInnerHTML(
         "<style>"
-        "    body {"
-        "        position: absolute; border: 10px solid #ccc;"
-        "        width: 1220px; height: 920px;"
-        "    }"
-        "    #a, #b, #c, #d {"
-        "        position: absolute; background-color: #ace;"
-        "        width: 400px; height: 300px;"
-        "    }"
-        "    #a, #b { top: 0; }"
-        "    #a, #c { left: 0; }"
-        "    #b, #d { right: 0; }"
-        "    #c, #d { bottom: 0; }"
-        "    .big { width: 800px !important; height: 600px !important }"
+        "    body { position: relative; width: 1220px; height: 920px; }"
+        "    #a { width: 400px; height: 300px; }"
+        "    .change { height: 100px; }"
         "</style>"
-        "<div id=a></div>"
-        "<div id=b></div>"
-        "<div id=c></div>"
-        "<div id=d></div>");
+        "<div id='changer'></div>"
+        "<div id='a'></div>");
 
-    checkCorner("a", Corner::TopLeft, DoublePoint(20,  20),  DoubleSize(0, 0));
-    checkCorner("b", Corner::TopLeft, DoublePoint(420, 20),  DoubleSize(-400, 0));
-    checkCorner("c", Corner::TopLeft, DoublePoint(20,  320), DoubleSize(0, -300));
-    checkCorner("d", Corner::TopLeft, DoublePoint(420, 320), DoubleSize(-400, -300));
+    checkCorner(Corner::TopLeft, DoublePoint(20,  20), DoubleSize(0, 100));
 }
 
+// Verify that we anchor to the top left corner of an anchor element for
+// vertical-lr writing mode.
 TEST_F(ScrollAnchorCornerTest, CornersVerticalLR)
 {
     setBodyInnerHTML(
         "<style>"
-        "    html {"
-        "        writing-mode: vertical-lr;"
-        "    }"
-        "    body {"
-        "        position: absolute; border: 10px solid #ccc;"
-        "        width: 1220px; height: 920px;"
-        "    }"
-        "    #a, #b, #c, #d {"
-        "        position: absolute; background-color: #ace;"
-        "        width: 400px; height: 300px;"
-        "    }"
-        "    #a, #b { top: 0; }"
-        "    #a, #c { left: 0; }"
-        "    #b, #d { right: 0; }"
-        "    #c, #d { bottom: 0; }"
-        "    .big { width: 800px !important; height: 600px !important }"
+        "    html { writing-mode: vertical-lr; }"
+        "    body { position: relative; width: 1220px; height: 920px; }"
+        "    #a { width: 400px; height: 300px; }"
+        "    .change { width: 100px; }"
         "</style>"
-        "<div id=a></div>"
-        "<div id=b></div>"
-        "<div id=c></div>"
-        "<div id=d></div>");
+        "<div id='changer'></div>"
+        "<div id='a'></div>");
 
-    checkCorner("a", Corner::TopLeft, DoublePoint(20,  20),  DoubleSize(0, 0));
-    checkCorner("b", Corner::TopLeft, DoublePoint(420, 20),  DoubleSize(-400, 0));
-    checkCorner("c", Corner::TopLeft, DoublePoint(20,  320), DoubleSize(0, -300));
-    checkCorner("d", Corner::TopLeft, DoublePoint(420, 320), DoubleSize(-400, -300));
+    checkCorner(Corner::TopLeft, DoublePoint(20,  20), DoubleSize(100, 0));
 }
 
+// Verify that we anchor to the top right corner of an anchor element for RTL.
 TEST_F(ScrollAnchorCornerTest, CornersRTL)
 {
     setBodyInnerHTML(
         "<style>"
-        "    html {"
-        "        direction: rtl;"
-        "    }"
-        "    body {"
-        "        position: absolute; border: 10px solid #ccc;"
-        "        width: 1220px; height: 920px;"
-        "    }"
-        "    #a, #b, #c, #d {"
-        "        position: absolute; background-color: #ace;"
-        "        width: 400px; height: 300px;"
-        "    }"
-        "    #a, #b { top: 0; }"
-        "    #a, #c { left: 0; }"
-        "    #b, #d { right: 0; }"
-        "    #c, #d { bottom: 0; }"
-        "    .big { width: 800px !important; height: 600px !important }"
+        "    html { direction: rtl; }"
+        "    body { position: relative; width: 1220px; height: 920px; }"
+        "    #a { width: 400px; height: 300px; }"
+        "    .change { height: 100px; }"
         "</style>"
-        "<div id=a></div>"
-        "<div id=b></div>"
-        "<div id=c></div>"
-        "<div id=d></div>");
+        "<div id='changer'></div>"
+        "<div id='a'></div>");
 
-    checkCorner("b", Corner::TopRight, DoublePoint(-20,  20),  DoubleSize(0, 0));
-    checkCorner("a", Corner::TopRight, DoublePoint(-420, 20),  DoubleSize(400, 0));
-    checkCorner("d", Corner::TopRight, DoublePoint(-20,  320), DoubleSize(0, -300));
-    checkCorner("c", Corner::TopRight, DoublePoint(-420, 320), DoubleSize(400, -300));
+    checkCorner(Corner::TopRight, DoublePoint(-20,  20), DoubleSize(0, 100));
 }
 
+// Verify that we anchor to the top right corner of an anchor element for
+// vertical-lr writing mode.
 TEST_F(ScrollAnchorCornerTest, CornersVerticalRL)
 {
     setBodyInnerHTML(
         "<style>"
-        "    html {"
-        "        writing-mode: vertical-rl;"
-        "    }"
-        "    body {"
-        "        position: absolute; border: 10px solid #ccc;"
-        "        width: 1220px; height: 920px;"
-        "    }"
-        "    #a, #b, #c, #d {"
-        "        position: absolute; background-color: #ace;"
-        "        width: 400px; height: 300px;"
-        "    }"
-        "    #a, #b { top: 0; }"
-        "    #a, #c { left: 0; }"
-        "    #b, #d { right: 0; }"
-        "    #c, #d { bottom: 0; }"
-        "    .big { width: 800px !important; height: 600px !important }"
+        "    html { writing-mode: vertical-rl; }"
+        "    body { position: relative; width: 1220px; height: 920px; }"
+        "    #a { width: 400px; height: 300px; }"
+        "    .change { width: 100px; }"
         "</style>"
-        "<div id=a></div>"
-        "<div id=b></div>"
-        "<div id=c></div>"
-        "<div id=d></div>");
+        "<div id='changer'></div>"
+        "<div id='a'></div>");
 
-    checkCorner("b", Corner::TopRight, DoublePoint(-20,  20),  DoubleSize(0, 0));
-    checkCorner("a", Corner::TopRight, DoublePoint(-420, 20),  DoubleSize(400, 0));
-    checkCorner("d", Corner::TopRight, DoublePoint(-20,  320), DoubleSize(0, -300));
-    checkCorner("c", Corner::TopRight, DoublePoint(-420, 320), DoubleSize(400, -300));
+    checkCorner(Corner::TopRight, DoublePoint(-20,  20), DoubleSize(-100, 0));
 }
 
 }
