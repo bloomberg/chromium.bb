@@ -1,18 +1,20 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-</script>
-<div id="test" contenteditable="true"></div>
-
-<script>
-var s = window.getSelection();
-s.collapse(document.getElementById("test"), 0);
-
-document.execCommand("InsertText", false, "sugare");
-document.execCommand("InsertText", false, " ");
-document.execCommand("InsertText", false, "sugari");
-document.execCommand("InsertText", false, " ");
-document.execCommand("InsertText", false, "sugarm");
-document.execCommand("InsertText", false, " ");
-document.execCommand("Undo");
+    test(() => {
+        assert_selection(
+            '<div contenteditable><span>|XX</span></div>',
+            selection => {
+                selection.document.execCommand('insertText', false, 'sugare');
+                selection.document.execCommand('insertText', false, ' ');
+                selection.document.execCommand('insertText', false, 'sugari');
+                selection.document.execCommand('insertText', false, ' ');
+                selection.document.execCommand('insertText', false, 'sugarm');
+                selection.document.execCommand('insertText', false, ' ');
+                selection.document.execCommand('Undo');
+            },
+            '<div contenteditable><span>|XX</span></div>');
+    }, 'Undo typing missspelling words');
 </script>
