@@ -161,26 +161,6 @@ source_set("sender") {
     "//ui/gfx/geometry",
   ]
 
-  # use a restricted subset of media and no software codecs on iOS
-  if (is_ios) {
-    deps += [ "//media:media_for_cast_ios" ]
-    deps -= [
-      "//media",
-      "//third_party/libvpx",
-      "//third_party/opus",
-    ]
-    sources -= [
-      "sender/external_video_encoder.cc",
-      "sender/external_video_encoder.h",
-      "sender/video_encoder_impl.cc",
-      "sender/video_encoder_impl.h",
-      "sender/vp8_encoder.cc",
-      "sender/vp8_encoder.h",
-      "sender/vp8_quantizer_parser.cc",
-      "sender/vp8_quantizer_parser.h",
-    ]
-  }
-
   libs = []
 
   # iOS and OS X encoders
@@ -228,16 +208,6 @@ source_set("receiver") {
     "//third_party/opus",
     "//ui/gfx/geometry",
   ]
-
-  # use a restricted subset of media and no software codecs on iOS
-  if (is_ios) {
-    deps += [ "//media:media_for_cast_ios" ]
-    deps -= [
-      "//media",
-      "//third_party/libvpx",
-      "//third_party/opus",
-    ]
-  }
 }
 
 static_library("test_support") {

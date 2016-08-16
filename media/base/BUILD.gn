@@ -336,39 +336,6 @@ target(link_target_type, "base") {
   }
 }
 
-# Minimal media component for media/cast on iOS.
-config("base_for_cast_ios_dependent_config") {
-  defines = [ "MEDIA_FOR_CAST_IOS" ]
-}
-
-if (is_ios) {
-  source_set("base_for_cast_ios") {
-    sources = [
-      "simd/convert_rgb_to_yuv.h",
-      "simd/convert_rgb_to_yuv_c.cc",
-      "simd/convert_yuv_to_rgb.h",
-      "simd/convert_yuv_to_rgb_c.cc",
-      "simd/filter_yuv.h",
-      "simd/filter_yuv_c.cc",
-      "video_frame.cc",
-      "video_frame.h",
-      "video_frame_metadata.cc",
-      "video_frame_metadata.h",
-      "video_types.cc",
-      "video_types.h",
-      "video_util.cc",
-      "video_util.h",
-      "yuv_convert.cc",
-      "yuv_convert.h",
-    ]
-    configs += [
-      "//build/config/compiler:no_size_t_to_int_warning",
-      "//media:media_config",
-    ]
-    all_dependent_configs = [ ":base_for_cast_ios_dependent_config" ]
-  }
-}
-
 static_library("test_support") {
   testonly = true
   sources = [
