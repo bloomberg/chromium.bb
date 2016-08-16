@@ -47,6 +47,7 @@
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
 #include "core/page/SpellCheckerClient.h"
+#include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextCheckerClient.h"
 
 namespace blink {
@@ -784,6 +785,114 @@ DEFINE_TRACE(SpellChecker)
 void SpellChecker::prepareForLeakDetection()
 {
     m_spellCheckRequester->prepareForLeakDetection();
+}
+
+void SpellChecker::findMisspellings(const String& text, Vector<TextCheckingResult>& results)
+{
+    Vector<UChar> characters;
+    text.appendTo(characters);
+    unsigned length = text.length();
+
+    TextBreakIterator* iterator = wordBreakIterator(characters.data(), length);
+    if (!iterator)
+        return;
+
+    int wordStart = iterator->current();
+    while (0 <= wordStart) {
+        int wordEnd = iterator->next();
+        if (wordEnd < 0)
+            break;
+        int wordLength = wordEnd - wordStart;
+        int misspellingLocation = -1;
+        int misspellingLength = 0;
+        textChecker().checkSpellingOfString(String(characters.data() + wordStart, wordLength), &misspellingLocation, &misspellingLength);
+        if (0 < misspellingLength) {
+            DCHECK_LE(0, misspellingLocation);
+            DCHECK_LE(misspellingLocation, wordLength);
+            DCHECK_LT(0, misspellingLength);
+            DCHECK_LE(misspellingLocation + misspellingLength, wordLength);
+            TextCheckingResult misspelling;
+            misspelling.decoration = TextDecorationTypeSpelling;
+            misspelling.location = wordStart + misspellingLocation;
+            misspelling.length = misspellingLength;
+            results.append(misspelling);
+        }
+
+        wordStart = wordEnd;
+    }
+}
+
+String SpellChecker::findFirstMisspellingOrBadGrammar(const Position& start, const Position& end, int& outFirstFoundOffset)
+{
+    String firstFoundItem;
+    String misspelledWord;
+
+    // Initialize out parameter; it will be updated if we find something to return.
+    outFirstFoundOffset = 0;
+
+    // Expand the search range to encompass entire paragraphs, since text checking needs that much context.
+    // Determine the character offset from the start of the paragraph to the start of the original search range,
+    // since we will want to ignore results in this area.
+    Position paragraphStart = startOfParagraph(createVisiblePosition(start)).toParentAnchoredPosition();
+    Position paragraphEnd = end;
+    int totalRangeLength = TextIterator::rangeLength(paragraphStart, paragraphEnd);
+    paragraphEnd = endOfParagraph(createVisiblePosition(start)).toParentAnchoredPosition();
+
+    int rangeStartOffset = TextIterator::rangeLength(paragraphStart, start);
+    int totalLengthProcessed = 0;
+
+    bool firstIteration = true;
+    bool lastIteration = false;
+    while (totalLengthProcessed < totalRangeLength) {
+        // Iterate through the search range by paragraphs, checking each one for spelling.
+        int currentLength = TextIterator::rangeLength(paragraphStart, paragraphEnd);
+        int currentStartOffset = firstIteration ? rangeStartOffset : 0;
+        int currentEndOffset = currentLength;
+        if (inSameParagraph(createVisiblePosition(paragraphStart), createVisiblePosition(end))) {
+            // Determine the character offset from the end of the original search range to the end of the paragraph,
+            // since we will want to ignore results in this area.
+            currentEndOffset = TextIterator::rangeLength(paragraphStart, end);
+            lastIteration = true;
+        }
+        if (currentStartOffset < currentEndOffset) {
+            String paragraphString = plainText(EphemeralRange(paragraphStart, paragraphEnd));
+            if (paragraphString.length() > 0) {
+                int spellingLocation = 0;
+
+                Vector<TextCheckingResult> results;
+                findMisspellings(paragraphString, results);
+
+                for (unsigned i = 0; i < results.size(); i++) {
+                    const TextCheckingResult* result = &results[i];
+                    if (result->decoration == TextDecorationTypeSpelling && result->location >= currentStartOffset && result->location + result->length <= currentEndOffset) {
+                        DCHECK_GT(result->length, 0);
+                        DCHECK_GE(result->location, 0);
+                        spellingLocation = result->location;
+                        misspelledWord = paragraphString.substring(result->location, result->length);
+                        DCHECK(misspelledWord.length());
+                        break;
+                    }
+                }
+
+                if (!misspelledWord.isEmpty()) {
+                    int spellingOffset = spellingLocation - currentStartOffset;
+                    if (!firstIteration)
+                        spellingOffset += TextIterator::rangeLength(start, paragraphStart);
+                    outFirstFoundOffset = spellingOffset;
+                    firstFoundItem = misspelledWord;
+                    break;
+                }
+            }
+        }
+        if (lastIteration || totalLengthProcessed + currentLength >= totalRangeLength)
+            break;
+        VisiblePosition newParagraphStart = startOfNextParagraph(createVisiblePosition(paragraphEnd));
+        paragraphStart = newParagraphStart.toParentAnchoredPosition();
+        paragraphEnd = endOfParagraph(newParagraphStart).toParentAnchoredPosition();
+        firstIteration = false;
+        totalLengthProcessed += currentLength;
+    }
+    return firstFoundItem;
 }
 
 } // namespace blink
