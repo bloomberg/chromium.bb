@@ -103,10 +103,23 @@ cr.define('site_settings_category', function() {
         for (var key in settings.ContentSettingsTypes) {
           var category = settings.ContentSettingsTypes[key];
 
-          // All top-level categories must have category text ids and
-          // descriptions. Categories that only appear under Site Details don't
-          // need that.
-          if (category != settings.ContentSettingsTypes.FULLSCREEN) {
+          // A quick testing note on a few special categories...
+
+          // Full Screen is not a top-level category, and only appears as a
+          // permission under Site Details. Therefore it has no Category Desc
+          // that can be tested for.
+
+          // The USB Devices category has no global toggle -- and therefore no
+          // Category Desc (and has a special way of storing its data).
+
+          // The Protocol Handlers is a special category in that is does not
+          // store its data like the rest, but it has a global default toggle
+          // and therefore can be tested like the rest below.
+
+          // Test category text ids and descriptions for those categories that
+          // have those.
+          if (category != settings.ContentSettingsTypes.FULLSCREEN &&
+              category != settings.ContentSettingsTypes.USB_DEVICES) {
             assertNotEquals('', testElement.computeCategoryTextId(category));
 
             assertNotEquals(

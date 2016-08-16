@@ -1181,6 +1181,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"siteSettingsPopups", IDS_SETTINGS_SITE_SETTINGS_POPUPS},
       {"siteSettingsUnsandboxedPlugins",
        IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS},
+      {"siteSettingsUsbDevices",
+       IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES},
       {"siteSettingsFullscreen", IDS_SETTINGS_SITE_SETTINGS_FULLSCREEN},
       {"siteSettingsMaySaveCookies",
        IDS_SETTINGS_SITE_SETTINGS_MAY_SAVE_COOKIES},

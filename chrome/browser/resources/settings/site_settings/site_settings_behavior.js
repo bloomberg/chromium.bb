@@ -100,6 +100,8 @@ var SiteSettingsBehaviorImpl = {
         return 'handlers';
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
         return 'unsandboxed-plugins';
+      case settings.ContentSettingsTypes.USB_DEVICES:
+        return 'usb-devices';
       default:
         return '';
     }
@@ -141,6 +143,8 @@ var SiteSettingsBehaviorImpl = {
         return settings.Route.SITE_SETTINGS_HANDLERS;
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
         return settings.Route.SITE_SETTINGS_UNSANDBOXED_PLUGINS;
+      case settings.ContentSettingsTypes.USB_DEVICES:
+        return settings.Route.SITE_SETTINGS_USB_DEVICES;
     }
     assertNotReached();
   },
@@ -223,6 +227,8 @@ var SiteSettingsBehaviorImpl = {
         return 'settings:open-with';
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
         return 'cr:extension';
+      case settings.ContentSettingsTypes.USB_DEVICES:
+        return 'settings:usb';
       default:
         assertNotReached('Invalid category: ' + category);
         return '';
@@ -269,6 +275,8 @@ var SiteSettingsBehaviorImpl = {
         return loadTimeData.getString('siteSettingsHandlers');
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
         return loadTimeData.getString('siteSettingsUnsandboxedPlugins');
+      case settings.ContentSettingsTypes.USB_DEVICES:
+        return loadTimeData.getString('siteSettingsUsbDevices');
       default:
         assertNotReached('Invalid category: ' + category);
         return '';

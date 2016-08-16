@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -119,6 +120,14 @@ void SiteSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "clearUsage",
       base::Bind(&SiteSettingsHandler::HandleClearUsage,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "fetchUsbDevices",
+      base::Bind(&SiteSettingsHandler::HandleFetchUsbDevices,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeUsbDevice",
+      base::Bind(&SiteSettingsHandler::HandleRemoveUsbDevice,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setDefaultValueForContentType",
@@ -249,6 +258,45 @@ void SiteSettingsHandler::HandleClearUsage(
         new BrowsingDataLocalStorageHelper(profile_);
     local_storage_helper->DeleteOrigin(url);
   }
+}
+
+void SiteSettingsHandler::HandleFetchUsbDevices(const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  base::ListValue exceptions;
+  const site_settings::ChooserTypeNameEntry* chooser_type =
+      site_settings::ChooserTypeFromGroupName(site_settings::kGroupTypeUsb);
+  // TODO(finnur): Figure out whether incognito permissions are also needed.
+  site_settings::GetChooserExceptionsFromProfile(
+      profile_, false, *chooser_type, &exceptions);
+  ResolveJavascriptCallback(*callback_id, exceptions);
+}
+
+void SiteSettingsHandler::HandleRemoveUsbDevice(const base::ListValue* args) {
+  CHECK_EQ(3U, args->GetSize());
+
+  std::string origin_string;
+  CHECK(args->GetString(0, &origin_string));
+  GURL requesting_origin(origin_string);
+  CHECK(requesting_origin.is_valid());
+
+  std::string embedding_origin_string;
+  CHECK(args->GetString(1, &embedding_origin_string));
+  GURL embedding_origin(embedding_origin_string);
+  CHECK(embedding_origin.is_valid());
+
+  const base::DictionaryValue* object = nullptr;
+  CHECK(args->GetDictionary(2, &object));
+
+  const site_settings::ChooserTypeNameEntry* chooser_type =
+      site_settings::ChooserTypeFromGroupName(site_settings::kGroupTypeUsb);
+  ChooserContextBase* chooser_context = chooser_type->get_context(profile_);
+  chooser_context->RevokeObjectPermission(requesting_origin, embedding_origin,
+                                          *object);
 }
 
 void SiteSettingsHandler::HandleSetDefaultValueForContentType(

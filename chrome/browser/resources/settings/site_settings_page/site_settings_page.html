@@ -159,6 +159,14 @@
         <div id="handlers" class="secondary"></div>
       </div>
     </div>
+    <div class="settings-box" category$="[[ContentSettingsTypes.USB_DEVICES]]"
+        on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.USB_DEVICES)]]"></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.USB_DEVICES)]]
+      </div>
+    </div>
   </template>
   <script src="site_settings_page.js"></script>
 </dom-module>

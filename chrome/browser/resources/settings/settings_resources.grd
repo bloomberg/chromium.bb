@@ -881,6 +881,12 @@
       <structure name="IDR_SETTINGS_SETTINGS_JS"
                  file="settings.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_USB_DEVICES_HTML"
+                 file="site_settings/usb_devices.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_USB_DEVICES_JS"
+                 file="site_settings/usb_devices.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_WEBSITE_USAGE_PRIVATE_API_HTML"
                  file="site_settings/website_usage_private_api.html"
                  type="chrome_html" />

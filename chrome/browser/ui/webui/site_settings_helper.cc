@@ -6,7 +6,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
@@ -19,36 +21,30 @@ const char kPolicyProviderId[] = "policy";
 const char kSource[] = "source";
 const char kEmbeddingOrigin[] = "embeddingOrigin";
 const char kPreferencesSource[] = "preference";
+const char kObject[] = "object";
+const char kObjectName[] = "objectName";
 
-struct ContentSettingsTypeNameEntry {
-  ContentSettingsType type;
-  const char* name;
-};
+const char kGroupTypeUsb[] = "usb-devices";
 
-const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
-  {CONTENT_SETTINGS_TYPE_COOKIES, "cookies"},
-  {CONTENT_SETTINGS_TYPE_IMAGES, "images"},
-  {CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript"},
-  {CONTENT_SETTINGS_TYPE_PLUGINS, "plugins"},
-  {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
-  {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
-  {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
-  {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
-  {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
-  {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
-  {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
-  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic"},
-  {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera"},
-  {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
-  {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
-  {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
-  {CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, "ssl-cert-decisions"},
-#if defined(OS_CHROMEOS)
-  {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
-#endif
-  {CONTENT_SETTINGS_TYPE_KEYGEN, "keygen"},
-  {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync"},
-};
+ChooserContextBase* GetUsbChooserContext(Profile* profile) {
+  return reinterpret_cast<ChooserContextBase*>(
+      UsbChooserContextFactory::GetForProfile(profile));
+}
+
+namespace {
+
+// Maps from the UI string to the object it represents (for sorting purposes).
+typedef std::multimap<std::string, const base::DictionaryValue*> SortedObjects;
+
+// Maps from a secondary URL to the set of objects it has permission to access.
+typedef std::map<GURL, SortedObjects> OneOriginObjects;
+
+// Maps from a primary URL/source pair to a OneOriginObjects. All the mappings
+// in OneOriginObjects share the given primary URL and source.
+typedef std::map<std::pair<GURL, std::string>, OneOriginObjects>
+    AllOriginObjects;
+
+}  // namespace
 
 bool HasRegisteredGroupName(ContentSettingsType type) {
   for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
@@ -229,6 +225,130 @@ void GetPolicyAllowedUrls(
     exceptions->push_back(GetExceptionForPage(pattern, ContentSettingsPattern(),
                                               CONTENT_SETTING_ALLOW,
                                               kPolicyProviderId));
+  }
+}
+
+const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name) {
+  for (const auto& chooser_type : kChooserTypeGroupNames) {
+    if (chooser_type.name == name)
+      return &chooser_type;
+  }
+  return nullptr;
+}
+
+// Create a DictionaryValue* that will act as a data source for a single row
+// in a chooser permission exceptions table.
+std::unique_ptr<base::DictionaryValue> GetChooserExceptionForPage(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    const std::string& provider_name,
+    const std::string& name,
+    const base::DictionaryValue* object) {
+  std::unique_ptr<base::DictionaryValue> exception(new base::DictionaryValue());
+
+  std::string setting_string =
+      content_settings::ContentSettingToString(CONTENT_SETTING_DEFAULT);
+  DCHECK(!setting_string.empty());
+
+  exception->SetString(site_settings::kSetting, setting_string);
+  exception->SetString(site_settings::kOrigin, requesting_origin.spec());
+  exception->SetString(
+      site_settings::kEmbeddingOrigin, embedding_origin.spec());
+  exception->SetString(site_settings::kSource, provider_name);
+  if (object) {
+    exception->SetString(kObjectName, name);
+    exception->Set(kObject, object->CreateDeepCopy());
+  }
+  return exception;
+}
+
+void GetChooserExceptionsFromProfile(
+    Profile* profile,
+    bool incognito,
+    const ChooserTypeNameEntry& chooser_type,
+    base::ListValue* exceptions) {
+  if (incognito) {
+    if (!profile->HasOffTheRecordProfile())
+      return;
+    profile = profile->GetOffTheRecordProfile();
+  }
+
+  ChooserContextBase* chooser_context = chooser_type.get_context(profile);
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
+      chooser_context->GetAllGrantedObjects();
+  AllOriginObjects all_origin_objects;
+  for (const auto& object : objects) {
+    std::string name;
+    bool found = object->object.GetString(chooser_type.ui_name_key, &name);
+    DCHECK(found);
+    // It is safe for this structure to hold references into |objects| because
+    // they are both destroyed at the end of this function.
+    all_origin_objects[make_pair(object->requesting_origin,
+                                 object->source)][object->embedding_origin]
+        .insert(make_pair(name, &object->object));
+  }
+
+  // Keep the exceptions sorted by provider so they will be displayed in
+  // precedence order.
+  std::vector<std::unique_ptr<base::DictionaryValue>>
+      all_provider_exceptions[HostContentSettingsMap::NUM_PROVIDER_TYPES];
+
+  for (const auto& all_origin_objects_entry : all_origin_objects) {
+    const GURL& requesting_origin = all_origin_objects_entry.first.first;
+    const std::string& source = all_origin_objects_entry.first.second;
+    const OneOriginObjects& one_origin_objects =
+        all_origin_objects_entry.second;
+
+    auto& this_provider_exceptions = all_provider_exceptions
+        [HostContentSettingsMap::GetProviderTypeFromSource(source)];
+
+    // Add entries for any non-embedded origins.
+    bool has_embedded_entries = false;
+    for (const auto& one_origin_objects_entry : one_origin_objects) {
+      const GURL& embedding_origin = one_origin_objects_entry.first;
+      const SortedObjects& sorted_objects = one_origin_objects_entry.second;
+
+      // Skip the embedded settings which will be added below.
+      if (requesting_origin != embedding_origin) {
+        has_embedded_entries = true;
+        continue;
+      }
+
+      for (const auto& sorted_objects_entry : sorted_objects) {
+        this_provider_exceptions.push_back(GetChooserExceptionForPage(
+            requesting_origin, embedding_origin, source,
+            sorted_objects_entry.first, sorted_objects_entry.second));
+      }
+    }
+
+    if (has_embedded_entries) {
+      // Add a "parent" entry that simply acts as a heading for all entries
+      // where |requesting_origin| has been embedded.
+      this_provider_exceptions.push_back(
+          GetChooserExceptionForPage(requesting_origin, requesting_origin,
+                                     source, std::string(), nullptr));
+
+      // Add the "children" for any embedded settings.
+      for (const auto& one_origin_objects_entry : one_origin_objects) {
+        const GURL& embedding_origin = one_origin_objects_entry.first;
+        const SortedObjects& sorted_objects = one_origin_objects_entry.second;
+
+        // Skip the non-embedded setting which we already added above.
+        if (requesting_origin == embedding_origin)
+          continue;
+
+        for (const auto& sorted_objects_entry : sorted_objects) {
+          this_provider_exceptions.push_back(GetChooserExceptionForPage(
+              requesting_origin, embedding_origin, source,
+              sorted_objects_entry.first, sorted_objects_entry.second));
+        }
+      }
+    }
+  }
+
+  for (auto& one_provider_exceptions : all_provider_exceptions) {
+    for (auto& exception : one_provider_exceptions)
+      exceptions->Append(std::move(exception));
   }
 }
 

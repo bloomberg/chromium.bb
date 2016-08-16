@@ -46,6 +46,24 @@ var MediaPickerEntry;
  */
  var ProtocolHandlerEntry;
 
+/**
+ * @typedef {{name: string,
+ *            product-id: Number,
+ *            serial-number: string,
+ *            vendor-id: Number}}
+ */
+var UsbDeviceDetails;
+
+/**
+ * @typedef {{embeddingOrigin: string,
+ *            object: UsbDeviceDetails,
+ *            objectName: string,
+ *            origin: string,
+ *            setting: string,
+ *            source: string}}
+ */
+var UsbDeviceEntry;
+
 cr.define('settings', function() {
   /** @interface */
   function SiteSettingsPrefsBrowserProxy() {}
@@ -160,6 +178,22 @@ cr.define('settings', function() {
      * @param {string} url The url to delete.
      */
     removeProtocolHandler: function(protocol, url) {},
+
+    /**
+     * Fetches a list of all USB devices and the sites permitted to use them.
+     * @return {!Promise<Array<UsbDeviceEntry>>} The list of USB devices.
+     */
+    fetchUsbDevices: function() {},
+
+    /**
+     * Removes a particular USB device object permission by origin and embedding
+     * origin.
+     * @param {string} origin The origin to look up the permission for.
+     * @param {string} embeddingOrigin the embedding origin to look up.
+     * @param {UsbDeviceDetails} usbDevice The USB device to revoke permission
+     *     for.
+     */
+    removeUsbDevice: function(origin, embeddingOrigin, usbDevice) {},
   };
 
   /**
@@ -249,6 +283,16 @@ cr.define('settings', function() {
     /** @override */
     removeProtocolHandler: function(protocol, url) {
       chrome.send('removeHandler', [[protocol, url]]);
+    },
+
+    /** @override */
+    fetchUsbDevices: function() {
+      return cr.sendWithPromise('fetchUsbDevices');
+    },
+
+    /** @override */
+    removeUsbDevice: function(origin, embeddingOrigin, usbDevice) {
+      chrome.send('removeUsbDevice', [origin, embeddingOrigin, usbDevice]);
     },
   };
 

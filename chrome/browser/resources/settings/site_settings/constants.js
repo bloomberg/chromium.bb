@@ -27,6 +27,7 @@ cr.define('settings', function() {
     AUTOMATIC_DOWNLOADS: 'multiple-automatic-downloads',
     KEYGEN: 'keygen',
     BACKGROUND_SYNC: 'background-sync',
+    USB_DEVICES: 'usb-chooser-data',
   };
 
   /**

@@ -254,9 +254,11 @@ Polymer({
     var promiseList = [];
     for (var type in settings.ContentSettingsTypes) {
       if (settings.ContentSettingsTypes[type] ==
-          settings.ContentSettingsTypes.PROTOCOL_HANDLERS) {
-        // Protocol handlers don't have data stored the way all the other
-        // categories do.
+          settings.ContentSettingsTypes.PROTOCOL_HANDLERS ||
+          settings.ContentSettingsTypes[type] ==
+          settings.ContentSettingsTypes.USB_DEVICES) {
+        // Protocol handlers and USB devices don't have data stored the way all
+        // the other categories do.
         continue;
       }
 
