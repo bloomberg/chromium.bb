@@ -26,6 +26,7 @@
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -375,7 +376,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::string child_token_;
 
   std::unique_ptr<MojoChildConnection> mojo_child_connection_;
-  ConnectionFilterImpl* connection_filter_ = nullptr;
+  int connection_filter_ = MojoShellConnection::kInvalidConnectionFilterId;
   shell::mojom::ServicePtr test_service_;
 #if defined(OS_ANDROID)
   std::unique_ptr<InterfaceRegistryAndroid> interface_registry_android_;

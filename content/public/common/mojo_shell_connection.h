@@ -104,6 +104,8 @@ class CONTENT_EXPORT MojoShellConnection {
       shell::InterfaceRegistry* registry,
       shell::InterfaceProvider* provider) = 0;
 
+  static const int kInvalidConnectionFilterId = 0;
+
   // Allows the caller to filter inbound connections and/or expose interfaces
   // on them. |filter| may be created on any thread, but will be used and
   // destroyed exclusively on the IO thread (the thread corresponding to
@@ -111,13 +113,15 @@ class CONTENT_EXPORT MojoShellConnection {
   //
   // Connection filters MUST be added before calling Start() in order to avoid
   // races.
-  virtual void AddConnectionFilter(
+  //
+  // Returns a unique identifier that can be passed to RemoveConnectionFilter()
+  // below.
+  virtual int AddConnectionFilter(
       std::unique_ptr<ConnectionFilter> filter) = 0;
 
-  // Returns ownership of |filter|, added via AddConnectionFilter(), to the
-  // caller.
-  virtual std::unique_ptr<ConnectionFilter> RemoveConnectionFilter(
-      ConnectionFilter* filter) = 0;
+  // Removes a filter using the id value returned by AddConnectionFilter().
+  // Removal (and destruction) happens asynchronously on the IO thread.
+  virtual void RemoveConnectionFilter(int filter_id) = 0;
 
   // Adds an embedded service to this connection's ServiceFactory.
   // |info| provides details on how to construct new instances of the

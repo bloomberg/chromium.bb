@@ -471,11 +471,10 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
       const shell::Identity& child_identity,
       std::unique_ptr<shell::InterfaceRegistry> registry)
       : child_identity_(child_identity),
-        registry_(std::move(registry)) {}
+        registry_(std::move(registry)),
+        weak_factory_(this) {}
   ~ConnectionFilterImpl() override {
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-    io_task_runner->DeleteSoon(FROM_HERE, weak_factory_.release());
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
   }
 
  private:
@@ -483,9 +482,6 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override {
-    if (!weak_factory_)
-      weak_factory_.reset(new base::WeakPtrFactory<ConnectionFilterImpl>(this));
-
     // We only fulfill connections from the renderer we host.
     if (child_identity_.name() != remote_identity.name() ||
         child_identity_.instance() != remote_identity.instance()) {
@@ -499,7 +495,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
       // destroyed in RPH::Cleanup().
       registry->AddInterface(interface_name,
                              base::Bind(&ConnectionFilterImpl::GetInterface,
-                                        weak_factory_->GetWeakPtr(),
+                                        weak_factory_.GetWeakPtr(),
                                         interface_name));
     }
     return true;
@@ -513,7 +509,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
 
   shell::Identity child_identity_;
   std::unique_ptr<shell::InterfaceRegistry> registry_;
-  std::unique_ptr<base::WeakPtrFactory<ConnectionFilterImpl>> weak_factory_;
+  base::WeakPtrFactory<ConnectionFilterImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
 };
@@ -1192,8 +1188,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   std::unique_ptr<ConnectionFilterImpl> connection_filter(
       new ConnectionFilterImpl(mojo_child_connection_->child_identity(),
                                std::move(registry)));
-  connection_filter_ = connection_filter.get();
-  mojo_shell_connection->AddConnectionFilter(std::move(connection_filter));
+  connection_filter_ =
+      mojo_shell_connection->AddConnectionFilter(std::move(connection_filter));
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
@@ -1993,11 +1989,11 @@ void RenderProcessHostImpl::Cleanup() {
         NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
 
-    if (connection_filter_) {
+    if (connection_filter_ != MojoShellConnection::kInvalidConnectionFilterId) {
       MojoShellConnection* mojo_shell_connection =
           BrowserContext::GetMojoShellConnectionFor(browser_context_);
-      // Throw the result away, so the connection filter is deleted.
       mojo_shell_connection->RemoveConnectionFilter(connection_filter_);
+      connection_filter_ = MojoShellConnection::kInvalidConnectionFilterId;
     }
 
 #ifndef NDEBUG

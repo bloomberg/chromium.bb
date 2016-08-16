@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/mojo/embedded_application_runner.h"
 #include "content/public/common/connection_filter.h"
@@ -53,7 +54,8 @@ class MojoShellConnectionImpl::IOThreadContext
       : pending_service_request_(std::move(service_request)),
         io_task_runner_(io_task_runner),
         io_thread_connector_(std::move(io_thread_connector)),
-        pending_connector_request_(std::move(connector_request)) {
+        pending_connector_request_(std::move(connector_request)),
+        weak_factory_(this) {
     // This will be reattached by any of the IO thread functions on first call.
     io_thread_checker_.DetachFromThread();
   }
@@ -86,23 +88,18 @@ class MojoShellConnectionImpl::IOThreadContext
 
   // Safe to call any time before a message is received from a process.
   // i.e. can be called when starting the process but not afterwards.
-  void AddConnectionFilter(std::unique_ptr<ConnectionFilter> filter) {
+  int AddConnectionFilter(std::unique_ptr<ConnectionFilter> filter) {
     base::AutoLock lock(lock_);
-    connection_filters_.emplace_back(std::move(filter));
+    int id = ++next_filter_id_;
+    connection_filters_[id] = std::move(filter);
+    return id;
   }
 
-  std::unique_ptr<ConnectionFilter> RemoveConnectionFilter(
-      ConnectionFilter* filter) {
-    base::AutoLock lock(lock_);
-    for (auto it = connection_filters_.begin(); it != connection_filters_.end();
-         ++it) {
-      if (it->get() == filter) {
-        std::unique_ptr<ConnectionFilter> taken = std::move(*it);
-        connection_filters_.erase(it);
-        return taken;
-      }
-    }
-    return nullptr;
+  void RemoveConnectionFilter(int filter_id) {
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&IOThreadContext::RemoveConnectionFilterOnIOThread, this,
+                   filter_id));
   }
 
   // Safe to call any time before Start() is called.
@@ -117,6 +114,27 @@ class MojoShellConnectionImpl::IOThreadContext
  private:
   friend class base::RefCountedThreadSafe<IOThreadContext>;
 
+  class Obs : public base::MessageLoop::DestructionObserver {
+   public:
+    explicit Obs(base::WeakPtr<IOThreadContext> context) : context_(context) {
+      base::MessageLoop::current()->AddDestructionObserver(this);
+    }
+    ~Obs() override {
+      base::MessageLoop::current()->RemoveDestructionObserver(this);
+    }
+
+   private:
+    void WillDestroyCurrentMessageLoop() override {
+      if (context_)
+        context_->ShutDownOnIOThread();
+      delete this;
+    }
+
+    base::WeakPtr<IOThreadContext> context_;
+
+    DISALLOW_COPY_AND_ASSIGN(Obs);
+  };
+
   ~IOThreadContext() override {}
 
   void StartOnIOThread() {
@@ -126,12 +144,21 @@ class MojoShellConnectionImpl::IOThreadContext
         this, std::move(pending_service_request_),
         std::move(io_thread_connector_),
         std::move(pending_connector_request_)));
+    new Obs(weak_factory_.GetWeakPtr());
   }
 
   void ShutDownOnIOThread() {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    service_context_.reset();
+    weak_factory_.InvalidateWeakPtrs();
     factory_bindings_.CloseAllBindings();
+    connection_filters_.clear();
+    service_context_.reset();
+  }
+
+  void RemoveConnectionFilterOnIOThread(int filter_id) {
+    auto it = connection_filters_.find(filter_id);
+    DCHECK(it != connection_filters_.end());
+    connection_filters_.erase(it);
   }
 
   void OnBrowserConnectionLost() {
@@ -145,6 +172,7 @@ class MojoShellConnectionImpl::IOThreadContext
   void OnStart(const shell::Identity& identity) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK(!initialize_handler_.is_null());
+    id_ = identity;
 
     InitializeCallback handler = base::ResetAndReturn(&initialize_handler_);
     callback_task_runner_->PostTask(FROM_HERE, base::Bind(handler, identity));
@@ -161,10 +189,10 @@ class MojoShellConnectionImpl::IOThreadContext
     }
 
     bool accept = false;
-    for (auto& filter : connection_filters_) {
+    for (auto& entry : connection_filters_) {
       accept = accept ||
-        filter->OnConnect(remote_identity, registry,
-                          service_context_->connector());
+        entry.second->OnConnect(remote_identity, registry,
+                                service_context_->connector());
     }
 
     if (remote_identity.name() == "exe:content_browser" &&
@@ -241,6 +269,8 @@ class MojoShellConnectionImpl::IOThreadContext
   // default binder (below) has been set up.
   bool has_browser_connection_ = false;
 
+  shell::Identity id_;
+
   // Default binder callback used for the browser connection's
   // InterfaceRegistry.
   //
@@ -250,9 +280,12 @@ class MojoShellConnectionImpl::IOThreadContext
 
   std::unique_ptr<shell::ServiceContext> service_context_;
   mojo::BindingSet<shell::mojom::ServiceFactory> factory_bindings_;
-  std::vector<std::unique_ptr<ConnectionFilter>> connection_filters_;
+  std::map<int, std::unique_ptr<ConnectionFilter>> connection_filters_;
+  int next_filter_id_ = kInvalidConnectionFilterId;
 
   base::Lock lock_;
+
+  base::WeakPtrFactory<IOThreadContext> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadContext);
 };
@@ -360,14 +393,13 @@ void MojoShellConnectionImpl::SetupInterfaceRequestProxies(
   // TODO(beng): remove provider parameter.
 }
 
-void MojoShellConnectionImpl::AddConnectionFilter(
+int MojoShellConnectionImpl::AddConnectionFilter(
     std::unique_ptr<ConnectionFilter> filter) {
-  context_->AddConnectionFilter(std::move(filter));
+  return context_->AddConnectionFilter(std::move(filter));
 }
 
-std::unique_ptr<ConnectionFilter>
-MojoShellConnectionImpl::RemoveConnectionFilter(ConnectionFilter* filter) {
-  return context_->RemoveConnectionFilter(filter);
+void MojoShellConnectionImpl::RemoveConnectionFilter(int filter_id) {
+  context_->RemoveConnectionFilter(filter_id);
 }
 
 void MojoShellConnectionImpl::AddEmbeddedService(
@@ -417,3 +449,4 @@ void MojoShellConnectionImpl::GetInterface(
 }
 
 }  // namespace content
+
