@@ -51,11 +51,17 @@ def parse_protobuf(fh):
   Returns:
     A recursive dictionary of lists.
   """
-  def parse_atom(text):
+  def parse_atom(field, text):
     if text == 'true':
       return True
     if text == 'false':
       return False
+
+    # repo_type is an enum. Since it does not have quotes,
+    # invoking literal_eval would fail.
+    if field == 'repo_type':
+      return text
+
     return ast.literal_eval(text)
 
   ret = {}
@@ -63,7 +69,7 @@ def parse_protobuf(fh):
     line = line.strip()
     m = re.match(r'(\w+)\s*:\s*(.*)', line)
     if m:
-      ret.setdefault(m.group(1), []).append(parse_atom(m.group(2)))
+      ret.setdefault(m.group(1), []).append(parse_atom(m.group(1), m.group(2)))
       continue
 
     m = re.match(r'(\w+)\s*{', line)
