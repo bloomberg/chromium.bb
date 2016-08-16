@@ -38,9 +38,9 @@ bool AnimatableRepeatable::usesDefaultInterpolationWith(const AnimatableValue* v
 {
     const Vector<RefPtr<AnimatableValue>>& fromValues = m_values;
     const Vector<RefPtr<AnimatableValue>>& toValues = toAnimatableRepeatable(value)->m_values;
-    ASSERT(!fromValues.isEmpty() && !toValues.isEmpty());
+    DCHECK(!fromValues.isEmpty() && !toValues.isEmpty());
     size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
-    ASSERT(size > 0);
+    DCHECK_GT(size, 0U);
     for (size_t i = 0; i < size; ++i) {
         const AnimatableValue* from = fromValues[i % fromValues.size()].get();
         const AnimatableValue* to = toValues[i % toValues.size()].get();
@@ -54,10 +54,10 @@ bool AnimatableRepeatable::usesDefaultInterpolationWith(const AnimatableValue* v
 bool AnimatableRepeatable::interpolateLists(const Vector<RefPtr<AnimatableValue>>& fromValues, const Vector<RefPtr<AnimatableValue>>& toValues, double fraction, Vector<RefPtr<AnimatableValue>>& interpolatedValues)
 {
     // Interpolation behaviour spec: http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
-    ASSERT(interpolatedValues.isEmpty());
-    ASSERT(!fromValues.isEmpty() && !toValues.isEmpty());
+    DCHECK(interpolatedValues.isEmpty());
+    DCHECK(!fromValues.isEmpty() && !toValues.isEmpty());
     size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
-    ASSERT(size > 0);
+    DCHECK_GT(size, 0U);
     for (size_t i = 0; i < size; ++i) {
         const AnimatableValue* from = fromValues[i % fromValues.size()].get();
         const AnimatableValue* to = toValues[i % toValues.size()].get();

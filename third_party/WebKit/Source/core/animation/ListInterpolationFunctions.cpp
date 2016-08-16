@@ -101,10 +101,10 @@ static void repeatToLength(InterpolationValue& value, size_t length)
     InterpolableList& interpolableList = toInterpolableList(*value.interpolableValue);
     NonInterpolableList& nonInterpolableList = toNonInterpolableList(*value.nonInterpolableValue);
     size_t currentLength = interpolableList.length();
-    ASSERT(currentLength > 0);
+    DCHECK_GT(currentLength, 0U);
     if (currentLength == length)
         return;
-    ASSERT(currentLength < length);
+    DCHECK_LT(currentLength, length);
     std::unique_ptr<InterpolableList> newInterpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> newNonInterpolableValues(length);
     for (size_t i = length; i-- > 0;) {
@@ -128,7 +128,7 @@ void ListInterpolationFunctions::composite(UnderlyingValueOwner& underlyingValue
 {
     size_t underlyingLength = toInterpolableList(*underlyingValueOwner.value().interpolableValue).length();
     if (underlyingLength == 0) {
-        ASSERT(!underlyingValueOwner.value().nonInterpolableValue);
+        DCHECK(!underlyingValueOwner.value().nonInterpolableValue);
         underlyingValueOwner.set(type, value);
         return;
     }
@@ -136,7 +136,7 @@ void ListInterpolationFunctions::composite(UnderlyingValueOwner& underlyingValue
     const InterpolableList& interpolableList = toInterpolableList(*value.interpolableValue);
     size_t valueLength = interpolableList.length();
     if (valueLength == 0) {
-        ASSERT(!value.nonInterpolableValue);
+        DCHECK(!value.nonInterpolableValue);
         underlyingValueOwner.mutableValue().interpolableValue->scale(underlyingFraction);
         return;
     }

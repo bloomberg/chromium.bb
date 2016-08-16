@@ -100,7 +100,7 @@ private:
     CSSClipNonInterpolableValue(const ClipAutos& clipAutos)
         : m_clipAutos(clipAutos)
     {
-        ASSERT(!m_clipAutos.isAuto);
+        DCHECK(!m_clipAutos.isAuto);
     }
 
     const ClipAutos m_clipAutos;
@@ -138,7 +138,7 @@ private:
     const ClipAutos m_underlyingAutos;
 };
 
-enum ClipComponentIndex {
+enum ClipComponentIndex : unsigned {
     ClipTop,
     ClipRight,
     ClipBottom,

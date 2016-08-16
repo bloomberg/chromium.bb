@@ -82,14 +82,14 @@ public:
 
     void assertValid() const
     {
-        ASSERT(std::isfinite(startDelay));
-        ASSERT(std::isfinite(endDelay));
-        ASSERT(std::isfinite(iterationStart));
-        ASSERT(iterationStart >= 0);
-        ASSERT(iterationCount >= 0);
-        ASSERT(std::isnan(iterationDuration) || iterationDuration >= 0);
-        ASSERT(std::isfinite(playbackRate));
-        ASSERT(timingFunction);
+        DCHECK(std::isfinite(startDelay));
+        DCHECK(std::isfinite(endDelay));
+        DCHECK(std::isfinite(iterationStart));
+        DCHECK_GE(iterationStart, 0);
+        DCHECK_GE(iterationCount, 0);
+        DCHECK(std::isnan(iterationDuration) || iterationDuration >= 0);
+        DCHECK(std::isfinite(playbackRate));
+        DCHECK(timingFunction);
     }
 
     bool operator==(const Timing &other) const

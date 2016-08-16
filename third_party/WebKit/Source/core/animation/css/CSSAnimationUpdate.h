@@ -99,7 +99,7 @@ public:
 
     void copy(const CSSAnimationUpdate& update)
     {
-        ASSERT(isEmpty());
+        DCHECK(isEmpty());
         m_newAnimations = update.newAnimations();
         m_animationsWithUpdates = update.animationsWithUpdates();
         m_newTransitions = update.newTransitions();

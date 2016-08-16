@@ -48,8 +48,8 @@ private:
         , m_end(end)
         , m_isSingle(m_start == m_end)
     {
-        ASSERT(m_start);
-        ASSERT(m_end);
+        DCHECK(m_start);
+        DCHECK(m_end);
     }
 
     Persistent<CSSValue> m_start;
@@ -64,8 +64,8 @@ PassRefPtr<CSSImageNonInterpolableValue> CSSImageNonInterpolableValue::merge(Pas
 {
     const CSSImageNonInterpolableValue& startImagePair = toCSSImageNonInterpolableValue(*start);
     const CSSImageNonInterpolableValue& endImagePair = toCSSImageNonInterpolableValue(*end);
-    ASSERT(startImagePair.m_isSingle);
-    ASSERT(endImagePair.m_isSingle);
+    DCHECK(startImagePair.m_isSingle);
+    DCHECK(endImagePair.m_isSingle);
     return create(startImagePair.m_start, endImagePair.m_end);
 }
 

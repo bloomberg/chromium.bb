@@ -11,7 +11,7 @@
 
 namespace blink {
 
-enum RectComponentIndex {
+enum RectComponentIndex : unsigned {
     RectX,
     RectY,
     RectWidth,

@@ -54,12 +54,12 @@ void InterpolableList::interpolate(const InterpolableValue& to, const double pro
     const InterpolableList& toList = toInterpolableList(to);
     InterpolableList& resultList = toInterpolableList(result);
 
-    ASSERT(toList.m_size == m_size);
-    ASSERT(resultList.m_size == m_size);
+    DCHECK_EQ(toList.m_size, m_size);
+    DCHECK_EQ(resultList.m_size, m_size);
 
     for (size_t i = 0; i < m_size; i++) {
-        ASSERT(m_values[i]);
-        ASSERT(toList.m_values[i]);
+        DCHECK(m_values[i]);
+        DCHECK(toList.m_values[i]);
         m_values[i]->interpolate(*(toList.m_values[i]), progress, *(resultList.m_values[i]));
     }
 }
@@ -91,7 +91,7 @@ void InterpolableNumber::scaleAndAdd(double scale, const InterpolableValue& othe
 void InterpolableList::scaleAndAdd(double scale, const InterpolableValue& other)
 {
     const InterpolableList& otherList = toInterpolableList(other);
-    ASSERT(otherList.m_size == m_size);
+    DCHECK_EQ(otherList.m_size, m_size);
     for (size_t i = 0; i < m_size; i++)
         m_values[i]->scaleAndAdd(scale, *otherList.m_values[i]);
 }

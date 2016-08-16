@@ -72,7 +72,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
     // When the animating element is null, use its parent for scoping purposes.
     const Element* elementForScoping = animatingElement ? animatingElement : &element;
     const StyleRuleKeyframes* keyframesRule = resolver->findKeyframesRule(elementForScoping, name);
-    ASSERT(keyframesRule);
+    DCHECK(keyframesRule);
 
     StringKeyframeVector keyframes;
     const HeapVector<Member<StyleRuleKeyframe>>& styleKeyframes = keyframesRule->keyframes();
@@ -83,7 +83,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
         const StyleRuleKeyframe* styleKeyframe = styleKeyframes[i].get();
         RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();
-        ASSERT(!offsets.isEmpty());
+        DCHECK(!offsets.isEmpty());
         keyframe->setOffset(offsets[0]);
         keyframe->setEasing(defaultTimingFunction);
         const StylePropertySet& properties = styleKeyframe->properties();
@@ -115,7 +115,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
 
     DEFINE_STATIC_LOCAL(SparseHistogram, propertyHistogram, ("WebCore.Animation.CSSProperties"));
     for (CSSPropertyID property : specifiedPropertiesForUseCounter) {
-        ASSERT(property != CSSPropertyInvalid);
+        DCHECK_NE(property, CSSPropertyInvalid);
         propertyHistogram.sample(UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property));
     }
 
@@ -149,9 +149,9 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
         endKeyframe->setEasing(defaultTimingFunction);
         keyframes.append(endKeyframe);
     }
-    ASSERT(keyframes.size() >= 2);
-    ASSERT(!keyframes.first()->offset());
-    ASSERT(keyframes.last()->offset() == 1);
+    DCHECK_GE(keyframes.size(), 2U);
+    DCHECK(!keyframes.first()->offset());
+    DCHECK_EQ(keyframes.last()->offset(), 1);
 
     // FIXME: This is only used for use counting neutral keyframes running on the compositor.
     PropertySet allProperties;
@@ -269,9 +269,9 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
 
     bool isAnimationStyleChange = elementAnimations && elementAnimations->isAnimationStyleChange();
 
-#if !ENABLE(ASSERT)
+#if !DCHECK_IS_ON()
     // If we're in an animation style change, no animations can have started, been cancelled or changed play state.
-    // When ASSERT is enabled, we verify this optimization.
+    // When DCHECK is enabled, we verify this optimization.
     if (isAnimationStyleChange)
         return;
 #endif
@@ -331,18 +331,18 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
                 Animation* animation = existingAnimation->animation.get();
 
                 if (keyframesRule != existingAnimation->styleRule || keyframesRule->version() != existingAnimation->styleRuleVersion || existingAnimation->specifiedTiming != specifiedTiming) {
-                    ASSERT(!isAnimationStyleChange);
+                    DCHECK(!isAnimationStyleChange);
                     update.updateAnimation(existingAnimationIndex, animation, *InertEffect::create(
                         createKeyframeEffectModel(resolver, animatingElement, element, &style, parentStyle, name, keyframeTimingFunction.get(), i),
                         timing, isPaused, animation->unlimitedCurrentTimeInternal()), specifiedTiming, keyframesRule);
                 }
 
                 if (isPaused != animation->paused()) {
-                    ASSERT(!isAnimationStyleChange);
+                    DCHECK(!isAnimationStyleChange);
                     update.toggleAnimationIndexPaused(existingAnimationIndex);
                 }
             } else {
-                ASSERT(!isAnimationStyleChange);
+                DCHECK(!isAnimationStyleChange);
                 update.startAnimation(name, nameIndex, *InertEffect::create(
                     createKeyframeEffectModel(resolver, animatingElement, element, &style, parentStyle, name, keyframeTimingFunction.get(), i),
                     timing, isPaused, 0), specifiedTiming, keyframesRule);
@@ -352,7 +352,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
 
     for (size_t i = 0; i < cancelRunningAnimationFlags.size(); i++) {
         if (cancelRunningAnimationFlags[i]) {
-            ASSERT(cssAnimations && !isAnimationStyleChange);
+            DCHECK(cssAnimations && !isAnimationStyleChange);
             update.cancelAnimation(i, *cssAnimations->m_runningAnimations[i]->animation);
         }
     }
@@ -420,7 +420,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
     const Vector<size_t>& cancelledIndices = m_pendingUpdate.cancelledAnimationIndices();
     for (size_t i = cancelledIndices.size(); i-- > 0;) {
-        ASSERT(i == cancelledIndices.size() - 1 || cancelledIndices[i] < cancelledIndices[i + 1]);
+        DCHECK(i == cancelledIndices.size() - 1 || cancelledIndices[i] < cancelledIndices[i + 1]);
         Animation& animation = *m_runningAnimations[cancelledIndices[i]]->animation;
         animation.cancel();
         animation.update(TimingUpdateOnDemand);
@@ -447,7 +447,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     // have matching cancelled animation property IDs on the compositor.
     HeapHashMap<CSSPropertyID, std::pair<Member<KeyframeEffect>, double>> retargetedCompositorTransitions;
     for (CSSPropertyID id : m_pendingUpdate.cancelledTransitions()) {
-        ASSERT(m_transitions.contains(id));
+        DCHECK(m_transitions.contains(id));
 
         Animation* animation = m_transitions.take(id).animation;
         KeyframeEffect* effect = toKeyframeEffect(animation->effect());
@@ -522,7 +522,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         animation->update(TimingUpdateOnDemand);
         runningTransition.animation = animation;
         m_transitions.set(id, runningTransition);
-        ASSERT(id != CSSPropertyInvalid);
+        DCHECK_NE(id, CSSPropertyInvalid);
 
         DEFINE_STATIC_LOCAL(SparseHistogram, propertyHistogram, ("WebCore.Animation.CSSProperties"));
         propertyHistogram.sample(UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(id));
@@ -543,7 +543,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
             if (to->equals(activeTo))
                 return;
             update.cancelTransition(id);
-            ASSERT(!element->elementAnimations() || !element->elementAnimations()->isAnimationStyleChange());
+            DCHECK(!element->elementAnimations() || !element->elementAnimations()->isAnimationStyleChange());
 
             if (to->equals(runningTransition->reversingAdjustedStartValue.get()))
                 interruptedTransition = runningTransition;
@@ -612,7 +612,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     update.startTransition(
         id, from.get(), to.get(), reversingAdjustedStartValue, reversingShorteningFactor,
         *InertEffect::create(model, timing, false, 0));
-    ASSERT(!element->elementAnimations() || !element->elementAnimations()->isAnimationStyleChange());
+    DCHECK(!element->elementAnimations() || !element->elementAnimations()->isAnimationStyleChange());
 }
 
 void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update, const Element* animatingElement, const ComputedStyle& style)
@@ -627,7 +627,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update, const 
     const TransitionMap* activeTransitions = elementAnimations ? &elementAnimations->cssAnimations().m_transitions : nullptr;
     const CSSTransitionData* transitionData = style.transitions();
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // In debug builds we verify that it would have been safe to avoid populating and testing listedProperties if the style recalc is due to animation.
     const bool animationStyleRecalc = false;
 #else
@@ -654,7 +654,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update, const 
             // If not a shorthand we only execute one iteration of this loop, and refer to the property directly.
             for (unsigned j = 0; !j || j < propertyList.length(); ++j) {
                 CSSPropertyID id = propertyList.length() ? propertyList.properties()[j] : property;
-                ASSERT(id >= firstCSSProperty);
+                DCHECK_GE(id, firstCSSProperty);
 
                 if (!animateAll) {
                     if (CSSPropertyMetadata::isInterpolableProperty(id))
@@ -679,7 +679,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update, const 
             CSSPropertyID id = entry.key;
             if (!anyTransitionHadTransitionAll && !animationStyleRecalc && !listedProperties.test(id - firstCSSProperty)) {
                 // TODO: Figure out why this fails on Chrome OS login page. crbug.com/365507
-                // ASSERT(animation.playStateInternal() == Animation::Finished || !(elementAnimations && elementAnimations->isAnimationStyleChange()));
+                // DCHECK(animation.playStateInternal() == Animation::Finished || !(elementAnimations && elementAnimations->isAnimationStyleChange()));
                 update.cancelTransition(id);
             } else if (entry.value.animation->finishedInternal()) {
                 update.finishTransition(id);
@@ -746,10 +746,10 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate& 
 
         HeapHashSet<Member<const Animation>> cancelledAnimations;
         if (!update.cancelledTransitions().isEmpty()) {
-            ASSERT(elementAnimations);
+            DCHECK(elementAnimations);
             const TransitionMap& transitionMap = elementAnimations->cssAnimations().m_transitions;
             for (CSSPropertyID id : update.cancelledTransitions()) {
-                ASSERT(transitionMap.contains(id));
+                DCHECK(transitionMap.contains(id));
                 cancelledAnimations.add(transitionMap.get(id).animation.get());
             }
         }
@@ -802,7 +802,7 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationEffe
         // between a single pair of samples. See http://crbug.com/275263. For
         // compatibility with the existing implementation, this event uses
         // the elapsedTime for the first iteration in question.
-        ASSERT(!std::isnan(animationNode.specifiedTiming().iterationDuration));
+        DCHECK(!std::isnan(animationNode.specifiedTiming().iterationDuration));
         const double elapsedTime = animationNode.specifiedTiming().iterationDuration * (m_previousIteration + 1);
         maybeDispatch(Document::ANIMATIONITERATION_LISTENER, EventTypeNames::animationiteration, elapsedTime);
     }

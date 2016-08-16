@@ -57,7 +57,7 @@ protected:
     }
     AnimatableRepeatable(Vector<RefPtr<AnimatableValue>>& values)
     {
-        ASSERT(!values.isEmpty());
+        DCHECK(!values.isEmpty());
         m_values.swap(values);
     }
 

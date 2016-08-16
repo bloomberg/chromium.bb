@@ -45,9 +45,9 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
 {
     for (const auto& entry : m_animations) {
         const Animation& animation = *entry.key;
-        ASSERT(animation.effect());
+        DCHECK(animation.effect());
         // FIXME: Needs to consider AnimationGroup once added.
-        ASSERT(animation.effect()->isKeyframeEffect());
+        DCHECK(animation.effect()->isKeyframeEffect());
         const KeyframeEffect& effect = *toKeyframeEffect(animation.effect());
         if (effect.isCurrent()) {
             if (effect.affects(PropertyHandle(CSSPropertyOpacity)))
@@ -90,7 +90,7 @@ DEFINE_TRACE(ElementAnimations)
 
 const ComputedStyle* ElementAnimations::baseComputedStyle() const
 {
-#if !ENABLE(ASSERT)
+#if !DCHECK_IS_ON()
     if (isAnimationStyleChange())
         return m_baseComputedStyle.get();
 #endif
@@ -103,9 +103,9 @@ void ElementAnimations::updateBaseComputedStyle(const ComputedStyle* computedSty
         m_baseComputedStyle = nullptr;
         return;
     }
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     if (m_baseComputedStyle && computedStyle)
-        ASSERT(*m_baseComputedStyle == *computedStyle);
+        DCHECK(*m_baseComputedStyle == *computedStyle);
 #endif
     m_baseComputedStyle = ComputedStyle::clone(*computedStyle);
 }

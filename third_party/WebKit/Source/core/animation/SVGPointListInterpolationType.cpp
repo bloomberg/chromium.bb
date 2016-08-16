@@ -67,7 +67,7 @@ SVGPropertyBase* SVGPointListInterpolationType::appliedSVGValue(const Interpolab
     SVGPointList* result = SVGPointList::create();
 
     const InterpolableList& list = toInterpolableList(interpolableValue);
-    ASSERT(list.length() % 2 == 0);
+    DCHECK_EQ(list.length() % 2, 0U);
     for (size_t i = 0; i < list.length(); i += 2) {
         FloatPoint point = FloatPoint(
             toInterpolableNumber(list.get(i))->value(),

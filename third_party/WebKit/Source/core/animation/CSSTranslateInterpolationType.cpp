@@ -42,7 +42,7 @@ private:
     RefPtr<TransformOperation> m_parentTranslate;
 };
 
-enum TranslateComponentIndex {
+enum TranslateComponentIndex : unsigned {
     TranslateX,
     TranslateY,
     TranslateZ,

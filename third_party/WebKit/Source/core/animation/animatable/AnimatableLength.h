@@ -65,7 +65,7 @@ private:
         , m_hasPixels(hasPixels)
         , m_hasPercent(hasPercent)
     {
-        ASSERT(m_hasPixels || m_hasPercent);
+        DCHECK(m_hasPixels || m_hasPercent);
     }
     AnimatableType type() const override { return TypeLength; }
     bool equalTo(const AnimatableValue*) const override;

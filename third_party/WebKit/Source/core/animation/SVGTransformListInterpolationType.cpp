@@ -244,7 +244,7 @@ InterpolationValue SVGTransformListInterpolationType::maybeConvertSingle(const P
         }
         conversionCheckers.append(SVGTransformListChecker::create(underlying));
     } else {
-        ASSERT(!keyframe.isNeutral());
+        DCHECK(!keyframe.isNeutral());
     }
 
     if (!keyframe.isNeutral()) {

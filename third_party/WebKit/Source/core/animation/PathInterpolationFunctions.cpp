@@ -42,7 +42,7 @@ private:
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(SVGPathNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(SVGPathNonInterpolableValue);
 
-enum PathComponentIndex {
+enum PathComponentIndex : unsigned {
     PathArgsIndex,
     PathNeutralIndex,
     PathComponentIndexCount,
@@ -152,7 +152,7 @@ void PathInterpolationFunctions::composite(UnderlyingValueOwner& underlyingValue
         return;
     }
 
-    ASSERT(pathSegTypesMatch(
+    DCHECK(pathSegTypesMatch(
         toSVGPathNonInterpolableValue(*underlyingValueOwner.value().nonInterpolableValue).pathSegTypes(),
         toSVGPathNonInterpolableValue(*value.nonInterpolableValue).pathSegTypes()));
     underlyingValueOwner.mutableValue().interpolableValue->scaleAndAdd(neutralComponent, *value.interpolableValue);

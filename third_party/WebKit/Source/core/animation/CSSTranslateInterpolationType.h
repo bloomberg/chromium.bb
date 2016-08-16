@@ -14,7 +14,7 @@ public:
     CSSTranslateInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     {
-        ASSERT(property == CSSPropertyTranslate);
+        DCHECK_EQ(property, CSSPropertyTranslate);
     }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;

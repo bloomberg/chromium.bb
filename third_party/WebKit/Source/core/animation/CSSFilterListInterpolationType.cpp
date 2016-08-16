@@ -181,8 +181,8 @@ void CSSFilterListInterpolationType::composite(UnderlyingValueOwner& underlyingV
 
     InterpolableList& underlyingInterpolableList = toInterpolableList(*underlyingValueOwner.mutableValue().interpolableValue);
     const InterpolableList& interpolableList = toInterpolableList(*value.interpolableValue);
-    ASSERT(underlyingLength == underlyingInterpolableList.length());
-    ASSERT(length == interpolableList.length());
+    DCHECK_EQ(underlyingLength, underlyingInterpolableList.length());
+    DCHECK_EQ(length, interpolableList.length());
 
     for (size_t i = 0; i < length && i < underlyingLength; i++)
         underlyingInterpolableList.getMutable(i)->scaleAndAdd(underlyingFraction, *interpolableList.get(i));
@@ -207,7 +207,7 @@ void CSSFilterListInterpolationType::apply(const InterpolableValue& interpolable
     const InterpolableList& interpolableList = toInterpolableList(interpolableValue);
     const NonInterpolableList& nonInterpolableList = toNonInterpolableList(*nonInterpolableValue);
     size_t length = interpolableList.length();
-    ASSERT(length == nonInterpolableList.length());
+    DCHECK_EQ(length, nonInterpolableList.length());
 
     FilterOperations filterOperations;
     filterOperations.operations().reserveCapacity(length);

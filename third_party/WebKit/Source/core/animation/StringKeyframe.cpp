@@ -24,21 +24,21 @@ StringKeyframe::StringKeyframe(const StringKeyframe& copyFrom)
 
 void StringKeyframe::setCSSPropertyValue(CSSPropertyID property, const String& value, Element* element, StyleSheetContents* styleSheetContents)
 {
-    ASSERT(property != CSSPropertyInvalid);
+    DCHECK_NE(property, CSSPropertyInvalid);
     if (CSSAnimations::isAnimatableProperty(property))
         m_cssPropertyMap->setProperty(property, value, false, styleSheetContents);
 }
 
 void StringKeyframe::setCSSPropertyValue(CSSPropertyID property, const CSSValue& value)
 {
-    ASSERT(property != CSSPropertyInvalid);
-    ASSERT(CSSAnimations::isAnimatableProperty(property));
+    DCHECK_NE(property, CSSPropertyInvalid);
+    DCHECK(CSSAnimations::isAnimatableProperty(property));
     m_cssPropertyMap->setProperty(property, value, false);
 }
 
 void StringKeyframe::setPresentationAttributeValue(CSSPropertyID property, const String& value, Element* element, StyleSheetContents* styleSheetContents)
 {
-    ASSERT(property != CSSPropertyInvalid);
+    DCHECK_NE(property, CSSPropertyInvalid);
     if (CSSAnimations::isAnimatableProperty(property))
         m_presentationAttributeMap->setProperty(property, value, false, styleSheetContents);
 }
@@ -83,7 +83,7 @@ PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::createPropertySpe
     if (property.isPresentationAttribute())
         return CSSPropertySpecificKeyframe::create(offset(), &easing(), &presentationAttributeValue(property.presentationAttribute()), composite());
 
-    ASSERT(property.isSVGAttribute());
+    DCHECK(property.isSVGAttribute());
     return SVGPropertySpecificKeyframe::create(offset(), &easing(), svgPropertyValue(property.svgAttribute()), composite());
 }
 

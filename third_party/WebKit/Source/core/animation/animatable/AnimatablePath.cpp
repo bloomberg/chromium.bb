@@ -29,8 +29,8 @@ bool AnimatablePath::usesDefaultInterpolationWith(const AnimatableValue* value) 
 
         PathSegmentData fromSeg = fromSource.parseSegment();
         PathSegmentData toSeg = toSource.parseSegment();
-        ASSERT(fromSeg.command != PathSegUnknown);
-        ASSERT(toSeg.command != PathSegUnknown);
+        DCHECK_NE(fromSeg.command, PathSegUnknown);
+        DCHECK_NE(toSeg.command, PathSegUnknown);
 
         if (toAbsolutePathSegType(fromSeg.command) != toAbsolutePathSegType(toSeg.command))
             return true;
@@ -52,7 +52,7 @@ PassRefPtr<AnimatableValue> AnimatablePath::interpolateTo(const AnimatableValue*
 
     SVGPathBlender blender(&fromSource, &toSource, &builder);
     bool ok = blender.blendAnimatedPath(fraction);
-    ASSERT_UNUSED(ok, ok);
+    ALLOW_UNUSED_LOCAL(ok);
     return AnimatablePath::create(StylePath::create(std::move(byteStream)));
 }
 

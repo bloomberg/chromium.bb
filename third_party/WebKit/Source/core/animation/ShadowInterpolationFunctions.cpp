@@ -16,7 +16,7 @@
 
 namespace blink {
 
-enum ShadowComponentIndex {
+enum ShadowComponentIndex : unsigned {
     ShadowX,
     ShadowY,
     ShadowBlur,
@@ -102,7 +102,7 @@ InterpolationValue ShadowInterpolationFunctions::maybeConvertCSSValue(const CSSV
             InterpolationValue lengthField = CSSLengthInterpolationType::maybeConvertCSSValue(*lengths[i]);
             if (!lengthField)
                 return nullptr;
-            ASSERT(!lengthField.nonInterpolableValue);
+            DCHECK(!lengthField.nonInterpolableValue);
             interpolableList->set(i, std::move(lengthField.interpolableValue));
         } else {
             interpolableList->set(i, CSSLengthInterpolationType::createInterpolablePixels(0));
@@ -128,7 +128,7 @@ std::unique_ptr<InterpolableValue> ShadowInterpolationFunctions::createNeutralIn
 
 void ShadowInterpolationFunctions::composite(std::unique_ptr<InterpolableValue>& underlyingInterpolableValue, RefPtr<NonInterpolableValue>& underlyingNonInterpolableValue, double underlyingFraction, const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)
 {
-    ASSERT(nonInterpolableValuesAreCompatible(underlyingNonInterpolableValue.get(), nonInterpolableValue));
+    DCHECK(nonInterpolableValuesAreCompatible(underlyingNonInterpolableValue.get(), nonInterpolableValue));
     InterpolableList& underlyingInterpolableList = toInterpolableList(*underlyingInterpolableValue);
     const InterpolableList& interpolableList = toInterpolableList(interpolableValue);
     underlyingInterpolableList.scaleAndAdd(underlyingFraction, interpolableList);
@@ -143,7 +143,7 @@ ShadowData ShadowInterpolationFunctions::createShadowData(const InterpolableValu
     Length shadowY = CSSLengthInterpolationType::resolveInterpolableLength(*interpolableList.get(ShadowY), nullptr, conversionData);
     Length shadowBlur = CSSLengthInterpolationType::resolveInterpolableLength(*interpolableList.get(ShadowBlur), nullptr, conversionData, ValueRangeNonNegative);
     Length shadowSpread = CSSLengthInterpolationType::resolveInterpolableLength(*interpolableList.get(ShadowSpread), nullptr, conversionData);
-    ASSERT(shadowX.isFixed() && shadowY.isFixed() && shadowBlur.isFixed() && shadowSpread.isFixed());
+    DCHECK(shadowX.isFixed() && shadowY.isFixed() && shadowBlur.isFixed() && shadowSpread.isFixed());
     return ShadowData(
         FloatPoint(shadowX.value(), shadowY.value()), shadowBlur.value(), shadowSpread.value(), shadowNonInterpolableValue.style(),
         CSSColorInterpolationType::resolveInterpolableColor(*interpolableList.get(ShadowColor), state));

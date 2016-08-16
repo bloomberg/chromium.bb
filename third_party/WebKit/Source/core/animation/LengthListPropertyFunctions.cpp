@@ -147,7 +147,7 @@ static bool appendToVector(const TransformOrigin& transformOrigin, Vector<Length
 
 bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property, const ComputedStyle& style, Vector<Length>& result)
 {
-    ASSERT(result.isEmpty());
+    DCHECK(result.isEmpty());
 
     switch (property) {
     case CSSPropertyStrokeDasharray: {
@@ -208,19 +208,19 @@ bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property, const Co
 
 static LengthPoint pointFromVector(const Vector<Length>& list)
 {
-    ASSERT(list.size() == 2);
+    DCHECK_EQ(list.size(), 2U);
     return LengthPoint(list[0], list[1]);
 }
 
 static LengthSize sizeFromVector(const Vector<Length>& list)
 {
-    ASSERT(list.size() == 2);
+    DCHECK_EQ(list.size(), 2U);
     return LengthSize(list[0], list[1]);
 }
 
 static TransformOrigin transformOriginFromVector(const Vector<Length>& list)
 {
-    ASSERT(list.size() == 3);
+    DCHECK_EQ(list.size(), 3U);
     return TransformOrigin(list[0], list[1], list[2].pixels());
 }
 
@@ -278,7 +278,7 @@ void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, Computed
 
     case CSSPropertyBackgroundSize:
     case CSSPropertyWebkitMaskSize: {
-        ASSERT(lengthList.size() % 2 == 0);
+        DCHECK_EQ(lengthList.size() % 2, 0U);
         FillLayer* fillLayer = accessFillLayer(property, style);
         FillLayer* prev = nullptr;
         FillLayerMethods fillLayerMethods(property);

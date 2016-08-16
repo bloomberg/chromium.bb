@@ -15,7 +15,7 @@ public:
     CSSFontWeightInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     {
-        ASSERT(property == CSSPropertyFontWeight);
+        DCHECK_EQ(property, CSSPropertyFontWeight);
     }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;

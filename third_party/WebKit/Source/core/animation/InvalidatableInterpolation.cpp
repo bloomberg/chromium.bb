@@ -27,7 +27,7 @@ void InvalidatableInterpolation::interpolate(int, double fraction)
 
 std::unique_ptr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConvertPairwise(const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const
 {
-    ASSERT(m_currentFraction != 0 && m_currentFraction != 1);
+    DCHECK(m_currentFraction != 0 && m_currentFraction != 1);
     for (const auto& interpolationType : m_interpolationTypes) {
         if ((m_startKeyframe->isNeutral() || m_endKeyframe->isNeutral()) && (!underlyingValueOwner || underlyingValueOwner.type() != *interpolationType))
             continue;
@@ -57,7 +57,7 @@ std::unique_ptr<TypedInterpolationValue> InvalidatableInterpolation::convertSing
         if (result)
             return TypedInterpolationValue::create(*interpolationType, std::move(result.interpolableValue), result.nonInterpolableValue.release());
     }
-    ASSERT(keyframe.isNeutral());
+    DCHECK(keyframe.isNeutral());
     return nullptr;
 }
 
@@ -117,7 +117,7 @@ bool InvalidatableInterpolation::isCacheValid(const InterpolationEnvironment& en
 
 const TypedInterpolationValue* InvalidatableInterpolation::ensureValidInterpolation(const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const
 {
-    ASSERT(!std::isnan(m_currentFraction));
+    DCHECK(!std::isnan(m_currentFraction));
     if (isCacheValid(environment, underlyingValueOwner))
         return m_cachedValue.get();
     clearCache();
@@ -166,7 +166,7 @@ double InvalidatableInterpolation::underlyingFraction() const
 
 void InvalidatableInterpolation::applyStack(const ActiveInterpolations& interpolations, InterpolationEnvironment& environment)
 {
-    ASSERT(!interpolations.isEmpty());
+    DCHECK(!interpolations.isEmpty());
     size_t startingIndex = 0;
 
     // Compute the underlying value to composite onto.
@@ -192,7 +192,7 @@ void InvalidatableInterpolation::applyStack(const ActiveInterpolations& interpol
     bool shouldApply = false;
     for (size_t i = startingIndex; i < interpolations.size(); i++) {
         const InvalidatableInterpolation& currentInterpolation = toInvalidatableInterpolation(*interpolations.at(i));
-        ASSERT(currentInterpolation.dependsOnUnderlyingValue());
+        DCHECK(currentInterpolation.dependsOnUnderlyingValue());
         const TypedInterpolationValue* currentValue = currentInterpolation.ensureValidInterpolation(environment, underlyingValueOwner);
         if (!currentValue)
             continue;

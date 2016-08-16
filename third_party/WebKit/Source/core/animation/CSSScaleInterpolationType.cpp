@@ -186,7 +186,7 @@ InterpolationValue CSSScaleInterpolationType::maybeConvertUnderlyingValue(const 
 void CSSScaleInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
 {
     const CSSScaleNonInterpolableValue& metadata = toCSSScaleNonInterpolableValue(*value.nonInterpolableValue);
-    ASSERT(metadata.isStartAdditive() || metadata.isEndAdditive());
+    DCHECK(metadata.isStartAdditive() || metadata.isEndAdditive());
 
     InterpolableList& underlyingList = toInterpolableList(*underlyingValueOwner.mutableValue().interpolableValue);
     for (size_t i = 0; i < 3; i++) {

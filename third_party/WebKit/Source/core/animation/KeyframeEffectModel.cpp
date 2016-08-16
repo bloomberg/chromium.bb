@@ -65,8 +65,8 @@ void KeyframeEffectModelBase::setFrames(KeyframeVector& keyframes)
 
 bool KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration, Vector<RefPtr<Interpolation>>& result) const
 {
-    ASSERT(iteration >= 0);
-    ASSERT(!isNull(fraction));
+    DCHECK_GE(iteration, 0);
+    DCHECK(!isNull(fraction));
     ensureKeyframeGroups();
     ensureInterpolationEffectPopulated();
 
@@ -120,9 +120,9 @@ KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyfr
     for (const auto& keyframe : keyframes) {
         double offset = keyframe->offset();
         if (!isNull(offset)) {
-            ASSERT(offset >= 0);
-            ASSERT(offset <= 1);
-            ASSERT(offset >= lastOffset);
+            DCHECK_GE(offset, 0);
+            DCHECK_LE(offset, 1);
+            DCHECK_GE(offset, lastOffset);
             lastOffset = offset;
         }
         result.append(keyframe->clone());
@@ -210,17 +210,17 @@ void KeyframeEffectModelBase::ensureInterpolationEffectPopulated() const
 
             if (i == 0) {
                 applyFrom = -std::numeric_limits<double>::infinity();
-                ASSERT(startOffset == 0.0);
+                DCHECK_EQ(startOffset, 0.0);
                 if (endOffset == 0.0) {
-                    ASSERT(keyframes[endIndex + 1]->offset() != 0.0);
+                    DCHECK_NE(keyframes[endIndex + 1]->offset(), 0.0);
                     endIndex = startIndex;
                 }
             }
             if (i == keyframes.size() - 2) {
                 applyTo = std::numeric_limits<double>::infinity();
-                ASSERT(endOffset == 1.0);
+                DCHECK_EQ(endOffset, 1.0);
                 if (startOffset == 1.0) {
-                    ASSERT(keyframes[startIndex - 1]->offset() != 1.0);
+                    DCHECK_NE(keyframes[startIndex - 1]->offset(), 1.0);
                     startIndex = endIndex;
                 }
             }
@@ -253,12 +253,12 @@ Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, Pass
     , m_easing(easing)
     , m_composite(composite)
 {
-    ASSERT(!isNull(offset));
+    DCHECK(!isNull(offset));
 }
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::appendKeyframe(PassRefPtr<Keyframe::PropertySpecificKeyframe> keyframe)
 {
-    ASSERT(m_keyframes.isEmpty() || m_keyframes.last()->offset() <= keyframe->offset());
+    DCHECK(m_keyframes.isEmpty() || m_keyframes.last()->offset() <= keyframe->offset());
     m_keyframes.append(keyframe);
 }
 
@@ -268,7 +268,7 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::removeRedundantKeyf
     // as both their neighbours, as they will never be used by sample().
     // Note that synthetic keyframes must be added before this method is
     // called.
-    ASSERT(m_keyframes.size() >= 2);
+    DCHECK_GE(m_keyframes.size(), 2U);
     for (int i = m_keyframes.size() - 2; i > 0; --i) {
         double offset = m_keyframes[i]->offset();
         bool hasSameOffsetAsPreviousNeighbor = m_keyframes[i - 1]->offset() == offset;
@@ -276,12 +276,12 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::removeRedundantKeyf
         if (hasSameOffsetAsPreviousNeighbor && hasSameOffsetAsNextNeighbor)
             m_keyframes.remove(i);
     }
-    ASSERT(m_keyframes.size() >= 2);
+    DCHECK_GE(m_keyframes.size(), 2U);
 }
 
 bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired(PassRefPtr<TimingFunction> zeroOffsetEasing)
 {
-    ASSERT(!m_keyframes.isEmpty());
+    DCHECK(!m_keyframes.isEmpty());
 
     bool addedSyntheticKeyframe = false;
 

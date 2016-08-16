@@ -94,7 +94,7 @@ private:
 
         void update(UpdatedCSSAnimation update)
         {
-            ASSERT(update.animation == animation);
+            DCHECK_EQ(update.animation, animation);
             styleRule = update.styleRule;
             styleRuleVersion = update.styleRuleVersion;
             specifiedTiming = update.specifiedTiming;

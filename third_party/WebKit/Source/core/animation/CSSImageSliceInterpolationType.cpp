@@ -15,7 +15,7 @@ namespace blink {
 
 namespace {
 
-enum SideIndex {
+enum SideIndex : unsigned {
     SideTop,
     SideRight,
     SideBottom,
@@ -187,8 +187,8 @@ InterpolationValue CSSImageSliceInterpolationType::maybeConvertValue(const CSSVa
 
     for (size_t i = 0; i < SideIndexCount; i++) {
         const CSSPrimitiveValue& side = *sides[i];
-        ASSERT_UNUSED(side, side.isNumber() || side.isPercentage());
-        list->set(i, InterpolableNumber::create(sides[i]->getDoubleValue()));
+        DCHECK(side.isNumber() || side.isPercentage());
+        list->set(i, InterpolableNumber::create(side.getDoubleValue()));
     }
 
     return InterpolationValue(std::move(list), CSSImageSliceNonInterpolableValue::create(SliceTypes(slice)));

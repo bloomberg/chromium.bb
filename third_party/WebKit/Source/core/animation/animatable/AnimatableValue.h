@@ -85,7 +85,7 @@ public:
 
     bool isSameType(const AnimatableValue* value) const
     {
-        ASSERT(value);
+        DCHECK(value);
         return value->type() == type();
     }
 

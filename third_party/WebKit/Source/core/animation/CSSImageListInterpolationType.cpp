@@ -143,9 +143,9 @@ void CSSImageListInterpolationType::apply(const InterpolableValue& interpolableV
 {
     const InterpolableList& interpolableList = toInterpolableList(interpolableValue);
     const size_t length = interpolableList.length();
-    ASSERT(length > 0);
+    DCHECK_GT(length, 0U);
     const NonInterpolableList& nonInterpolableList = toNonInterpolableList(*nonInterpolableValue);
-    ASSERT(nonInterpolableList.length() == length);
+    DCHECK_EQ(nonInterpolableList.length(), length);
     StyleImageList imageList(length);
     for (size_t i = 0; i < length; i++)
         imageList[i] = CSSImageInterpolationType::resolveStyleImage(cssProperty(), *interpolableList.get(i), nonInterpolableList.get(i), environment.state());

@@ -65,7 +65,7 @@ private:
     explicit AnimatableUnknown(CSSValue* value)
         : m_value(value)
     {
-        ASSERT(m_value);
+        DCHECK(m_value);
     }
     AnimatableType type() const override { return TypeUnknown; }
     bool equalTo(const AnimatableValue*) const override;

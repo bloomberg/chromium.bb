@@ -14,7 +14,7 @@ public:
     CSSClipInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     {
-        ASSERT(property == CSSPropertyClip);
+        DCHECK_EQ(property, CSSPropertyClip);
     }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;

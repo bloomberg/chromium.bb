@@ -22,7 +22,7 @@ public:
 
     EVisibility visibility() const
     {
-        ASSERT(m_isSingle);
+        DCHECK(m_isSingle);
         return m_start;
     }
 

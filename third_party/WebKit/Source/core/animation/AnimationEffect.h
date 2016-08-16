@@ -127,7 +127,7 @@ protected:
 
     virtual void detach()
     {
-        ASSERT(m_animation);
+        DCHECK(m_animation);
         m_animation = nullptr;
     }
 

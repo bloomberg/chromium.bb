@@ -15,7 +15,7 @@ namespace blink {
 
 namespace {
 
-enum SideIndex {
+enum SideIndex : unsigned {
     SideTop,
     SideRight,
     SideBottom,
@@ -72,7 +72,7 @@ private:
         : m_sideNumbers(sideNumbers)
         , m_sideNonInterpolableValues(sideNonInterpolableValues)
     {
-        ASSERT(m_sideNonInterpolableValues.size() == SideIndexCount);
+        DCHECK_EQ(m_sideNonInterpolableValues.size(), SideIndexCount);
     }
 
     const SideNumbers m_sideNumbers;

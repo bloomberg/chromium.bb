@@ -65,7 +65,7 @@ namespace {
 
 void getKeyframeValuesForProperty(const KeyframeEffectModelBase* effect, PropertyHandle property, double scale, PropertySpecificKeyframeVector& values)
 {
-    ASSERT(values.isEmpty());
+    DCHECK(values.isEmpty());
 
     for (const auto& keyframe : effect->getPropertySpecificKeyframes(property)) {
         double offset = keyframe->offset() * scale;
@@ -122,7 +122,7 @@ bool hasIncompatibleAnimations(const Element& targetElement, const Animation& an
         return false;
 
     ElementAnimations* elementAnimations = targetElement.elementAnimations();
-    ASSERT(elementAnimations);
+    DCHECK(elementAnimations);
 
     for (const auto& entry : elementAnimations->animations()) {
         const Animation* attachedAnimation = entry.key;
@@ -244,7 +244,7 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
         }
 
         const PropertySpecificKeyframeVector& keyframes = keyframeEffect.getPropertySpecificKeyframes(property);
-        ASSERT(keyframes.size() >= 2);
+        DCHECK_GE(keyframes.size(), 2U);
         for (const auto& keyframe : keyframes) {
             // FIXME: Determine candidacy based on the CSSValue instead of a snapshot AnimatableValue.
             bool isNeutralKeyframe = keyframe->isCSSPropertySpecificKeyframe() && !toCSSPropertySpecificKeyframe(keyframe.get())->value() && keyframe->composite() == EffectModel::CompositeAdd;
@@ -300,7 +300,7 @@ void CompositorAnimations::cancelIncompatibleAnimationsOnCompositor(const Elemen
         return;
 
     ElementAnimations* elementAnimations = targetElement.elementAnimations();
-    ASSERT(elementAnimations);
+    DCHECK(elementAnimations);
 
     for (const auto& entry : elementAnimations->animations()) {
         Animation* attachedAnimation = entry.key;
@@ -324,23 +324,23 @@ bool CompositorAnimations::canStartAnimationOnCompositor(const Element& element)
 
 void CompositorAnimations::startAnimationOnCompositor(const Element& element, int group, double startTime, double timeOffset, const Timing& timing, const Animation& animation, const EffectModel& effect, Vector<int>& startedAnimationIds, double animationPlaybackRate)
 {
-    ASSERT(startedAnimationIds.isEmpty());
-    ASSERT(isCandidateForAnimationOnCompositor(timing, element, &animation, effect, animationPlaybackRate));
-    ASSERT(canStartAnimationOnCompositor(element));
+    DCHECK(startedAnimationIds.isEmpty());
+    DCHECK(isCandidateForAnimationOnCompositor(timing, element, &animation, effect, animationPlaybackRate));
+    DCHECK(canStartAnimationOnCompositor(element));
 
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
     Vector<std::unique_ptr<CompositorAnimation>> animations;
     getAnimationOnCompositor(timing, group, startTime, timeOffset, keyframeEffect, animations, animationPlaybackRate);
-    ASSERT(!animations.isEmpty());
+    DCHECK(!animations.isEmpty());
     for (auto& compositorAnimation : animations) {
         int id = compositorAnimation->id();
         CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
-        ASSERT(compositorPlayer);
+        DCHECK(compositorPlayer);
         compositorPlayer->addAnimation(compositorAnimation.release());
         startedAnimationIds.append(id);
     }
-    ASSERT(!startedAnimationIds.isEmpty());
+    DCHECK(!startedAnimationIds.isEmpty());
 }
 
 void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, const Animation& animation, int id)
@@ -369,7 +369,7 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
         return;
     }
     CompositorAnimationPlayer* compositorPlayer = animation.compositorPlayer();
-    ASSERT(compositorPlayer);
+    DCHECK(compositorPlayer);
     compositorPlayer->pauseAnimation(id, pauseTime);
 }
 
@@ -478,13 +478,13 @@ void addKeyframesToCurve(PlatformAnimationCurveType& curve, const AnimatableValu
 
 void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int group, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<std::unique_ptr<CompositorAnimation>>& animations, double animationPlaybackRate)
 {
-    ASSERT(animations.isEmpty());
+    DCHECK(animations.isEmpty());
     CompositorTiming compositorTiming;
     bool timingValid = convertTimingForCompositor(timing, timeOffset, compositorTiming, animationPlaybackRate);
-    ASSERT_UNUSED(timingValid, timingValid);
+    ALLOW_UNUSED_LOCAL(timingValid);
 
     PropertyHandleSet properties = effect.properties();
-    ASSERT(!properties.isEmpty());
+    DCHECK(!properties.isEmpty());
     for (const auto& property : properties) {
         PropertySpecificKeyframeVector values;
         // If the animation duration is infinite, it doesn't make sense to scale
@@ -532,7 +532,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
             NOTREACHED();
             continue;
         }
-        ASSERT(curve.get());
+        DCHECK(curve.get());
 
         std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(*curve, targetProperty, group, 0);
 
@@ -579,7 +579,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
         }
         animations.append(std::move(animation));
     }
-    ASSERT(!animations.isEmpty());
+    DCHECK(!animations.isEmpty());
 }
 
 } // namespace blink

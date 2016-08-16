@@ -14,7 +14,7 @@ namespace blink {
 
 void CSSPathInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
-    ASSERT(cssProperty() == CSSPropertyD);
+    DCHECK_EQ(cssProperty(), CSSPropertyD);
     std::unique_ptr<SVGPathByteStream> pathByteStream = PathInterpolationFunctions::appliedValue(interpolableValue, nonInterpolableValue);
     if (pathByteStream->isEmpty()) {
         environment.state().style()->setD(nullptr);
@@ -60,7 +60,7 @@ private:
 
 InterpolationValue CSSPathInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    ASSERT(cssProperty() == CSSPropertyD);
+    DCHECK_EQ(cssProperty(), CSSPropertyD);
     if (!state.parentStyle())
         return nullptr;
 
@@ -71,7 +71,7 @@ InterpolationValue CSSPathInterpolationType::maybeConvertInherit(const StyleReso
 InterpolationValue CSSPathInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
     if (!value.isPathValue()) {
-        ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
+        DCHECK_EQ(toCSSPrimitiveValue(value).getValueID(), CSSValueNone);
         return nullptr;
     }
     return PathInterpolationFunctions::convertValue(toCSSPathValue(value).byteStream());
@@ -79,7 +79,7 @@ InterpolationValue CSSPathInterpolationType::maybeConvertValue(const CSSValue& v
 
 InterpolationValue CSSPathInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
-    ASSERT(cssProperty() == CSSPropertyD);
+    DCHECK_EQ(cssProperty(), CSSPropertyD);
     return PathInterpolationFunctions::convertValue(environment.state().style()->svgStyle().d());
 }
 

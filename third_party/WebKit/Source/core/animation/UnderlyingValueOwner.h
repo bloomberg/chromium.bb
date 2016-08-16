@@ -28,13 +28,13 @@ public:
 
     operator bool() const
     {
-        ASSERT(static_cast<bool>(m_type) == static_cast<bool>(m_value));
+        DCHECK_EQ(static_cast<bool>(m_type), static_cast<bool>(m_value));
         return m_type;
     }
 
     const InterpolationType& type() const
     {
-        ASSERT(m_type);
+        DCHECK(m_type);
         return *m_type;
     }
 

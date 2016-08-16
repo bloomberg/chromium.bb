@@ -81,7 +81,7 @@ AnimationTimeline::AnimationTimeline(Document* document, PlatformTiming* timing)
     if (Platform::current()->isThreadedAnimationEnabled())
         m_compositorTimeline = CompositorAnimationTimeline::create();
 
-    ASSERT(document);
+    DCHECK(document);
 }
 
 bool AnimationTimeline::isActive()
@@ -91,8 +91,8 @@ bool AnimationTimeline::isActive()
 
 void AnimationTimeline::animationAttached(Animation& animation)
 {
-    ASSERT(animation.timeline() == this);
-    ASSERT(!m_animations.contains(&animation));
+    DCHECK_EQ(animation.timeline(), this);
+    DCHECK(!m_animations.contains(&animation));
     m_animations.add(&animation);
 }
 
@@ -102,10 +102,10 @@ Animation* AnimationTimeline::play(AnimationEffect* child)
         return nullptr;
 
     Animation* animation = Animation::create(child, this);
-    ASSERT(m_animations.contains(animation));
+    DCHECK(m_animations.contains(animation));
 
     animation->play();
-    ASSERT(m_animationsNeedingUpdate.contains(animation));
+    DCHECK(m_animationsNeedingUpdate.contains(animation));
 
     return animation;
 }
@@ -144,18 +144,18 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
             m_animationsNeedingUpdate.remove(animation);
     }
 
-    ASSERT(m_outdatedAnimationCount == 0);
-    ASSERT(m_lastCurrentTimeInternal == currentTimeInternal() || (std::isnan(currentTimeInternal()) && std::isnan(m_lastCurrentTimeInternal)));
+    DCHECK_EQ(m_outdatedAnimationCount, 0U);
+    DCHECK(m_lastCurrentTimeInternal == currentTimeInternal() || (std::isnan(currentTimeInternal()) && std::isnan(m_lastCurrentTimeInternal)));
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     for (const auto& animation : m_animationsNeedingUpdate)
-        ASSERT(!animation->outdated());
+        DCHECK(!animation->outdated());
 #endif
 }
 
 void AnimationTimeline::scheduleNextService()
 {
-    ASSERT(m_outdatedAnimationCount == 0);
+    DCHECK_EQ(m_outdatedAnimationCount, 0U);
 
     double timeToNextEffect = std::numeric_limits<double>::infinity();
     for (const auto& animation : m_animationsNeedingUpdate) {
@@ -290,13 +290,13 @@ bool AnimationTimeline::needsAnimationTimingUpdate()
 
 void AnimationTimeline::clearOutdatedAnimation(Animation* animation)
 {
-    ASSERT(!animation->outdated());
+    DCHECK(!animation->outdated());
     m_outdatedAnimationCount--;
 }
 
 void AnimationTimeline::setOutdatedAnimation(Animation* animation)
 {
-    ASSERT(animation->outdated());
+    DCHECK(animation->outdated());
     m_outdatedAnimationCount++;
     m_animationsNeedingUpdate.add(animation);
     if (isActive() && !m_document->page()->animator().isServicingAnimations())

@@ -14,7 +14,7 @@ public:
     CSSRotateInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     {
-        ASSERT(property == CSSPropertyRotate);
+        DCHECK_EQ(property, CSSPropertyRotate);
     }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;

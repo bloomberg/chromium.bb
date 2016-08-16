@@ -25,7 +25,7 @@ public:
     void clearPropertyValue(CSSPropertyID property) { m_propertyValues.remove(property); }
     AnimatableValue* propertyValue(CSSPropertyID property) const
     {
-        ASSERT(m_propertyValues.contains(property));
+        DCHECK(m_propertyValues.contains(property));
         return m_propertyValues.get(property);
     }
     PropertyHandleSet properties() const override;

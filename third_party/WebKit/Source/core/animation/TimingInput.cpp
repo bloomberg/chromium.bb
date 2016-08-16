@@ -43,7 +43,7 @@ void TimingInput::setFillMode(Timing& timing, const String& fillMode)
 
 bool TimingInput::setIterationStart(Timing& timing, double iterationStart, ExceptionState& exceptionState)
 {
-    ASSERT(std::isfinite(iterationStart));
+    DCHECK(std::isfinite(iterationStart));
     if (std::isnan(iterationStart) || iterationStart < 0) {
         exceptionState.throwTypeError("iterationStart must be non-negative.");
         return false;
@@ -143,7 +143,7 @@ bool TimingInput::convert(const KeyframeEffectOptions& timingInput, Timing& timi
 
 bool TimingInput::convert(double duration, Timing& timingOutput, ExceptionState& exceptionState)
 {
-    ASSERT(timingOutput == Timing::defaults());
+    DCHECK(timingOutput == Timing::defaults());
     return setIterationDuration(timingOutput, UnrestrictedDoubleOrString::fromUnrestrictedDouble(duration), exceptionState);
 }
 

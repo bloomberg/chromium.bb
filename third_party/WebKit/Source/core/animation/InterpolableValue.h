@@ -122,17 +122,17 @@ public:
     bool isList() const final { return true; }
     void set(size_t position, std::unique_ptr<InterpolableValue> value)
     {
-        ASSERT(position < m_size);
+        DCHECK_LT(position, m_size);
         m_values[position] = std::move(value);
     }
     const InterpolableValue* get(size_t position) const
     {
-        ASSERT(position < m_size);
+        DCHECK_LT(position, m_size);
         return m_values[position].get();
     }
     std::unique_ptr<InterpolableValue>& getMutable(size_t position)
     {
-        ASSERT(position < m_size);
+        DCHECK_LT(position, m_size);
         return m_values[position];
     }
     size_t length() const { return m_size; }

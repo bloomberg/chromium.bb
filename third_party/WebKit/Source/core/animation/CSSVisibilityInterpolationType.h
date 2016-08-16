@@ -15,7 +15,7 @@ public:
     CSSVisibilityInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     {
-        ASSERT(property == CSSPropertyVisibility);
+        DCHECK_EQ(property, CSSPropertyVisibility);
     }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;

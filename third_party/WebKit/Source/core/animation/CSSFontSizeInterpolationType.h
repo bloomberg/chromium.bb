@@ -14,7 +14,7 @@ public:
     CSSFontSizeInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     {
-        ASSERT(property == CSSPropertyFontSize);
+        DCHECK_EQ(property, CSSPropertyFontSize);
     }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;

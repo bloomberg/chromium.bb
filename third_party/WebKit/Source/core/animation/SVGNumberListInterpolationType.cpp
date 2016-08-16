@@ -71,7 +71,7 @@ void SVGNumberListInterpolationType::composite(UnderlyingValueOwner& underlyingV
 
     InterpolableList& underlyingList = toInterpolableList(*underlyingValueOwner.mutableValue().interpolableValue);
 
-    ASSERT(underlyingList.length() >= list.length());
+    DCHECK_GE(underlyingList.length(), list.length());
     size_t i = 0;
     for (; i < list.length(); i++)
         underlyingList.getMutable(i)->scaleAndAdd(underlyingFraction, *list.get(i));

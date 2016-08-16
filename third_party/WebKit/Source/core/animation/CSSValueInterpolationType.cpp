@@ -27,7 +27,7 @@ private:
     CSSValueNonInterpolableValue(const CSSValue* cssValue)
         : m_cssValue(cssValue)
     {
-        ASSERT(m_cssValue);
+        DCHECK(m_cssValue);
     }
 
     Persistent<const CSSValue> m_cssValue;

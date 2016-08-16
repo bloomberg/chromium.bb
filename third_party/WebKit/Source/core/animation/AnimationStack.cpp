@@ -62,7 +62,7 @@ void copyToActiveInterpolationsMap(const Vector<RefPtr<Interpolation>>& source, 
 
 bool compareSampledEffects(const Member<SampledEffect>& sampledEffect1, const Member<SampledEffect>& sampledEffect2)
 {
-    ASSERT(sampledEffect1 && sampledEffect2);
+    DCHECK(sampledEffect1 && sampledEffect2);
     return sampledEffect1->sequenceNumber() < sampledEffect2->sequenceNumber();
 }
 

@@ -249,7 +249,7 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
             applicableTypes->append(wrapUnique(new CSSTransformInterpolationType(cssProperty)));
             break;
         default:
-            ASSERT(!CSSPropertyMetadata::isInterpolableProperty(cssProperty));
+            DCHECK(!CSSPropertyMetadata::isInterpolableProperty(cssProperty));
         }
 
         applicableTypes->append(wrapUnique(new CSSValueInterpolationType(cssProperty)));

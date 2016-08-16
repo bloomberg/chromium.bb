@@ -64,14 +64,14 @@ AnimationEffect::AnimationEffect(const Timing& timing, EventDelegate* eventDeleg
 double AnimationEffect::iterationDuration() const
 {
     double result = std::isnan(m_timing.iterationDuration) ? intrinsicIterationDuration() : m_timing.iterationDuration;
-    ASSERT(result >= 0);
+    DCHECK_GE(result, 0);
     return result;
 }
 
 double AnimationEffect::repeatedDuration() const
 {
     const double result = multiplyZeroAlwaysGivesZero(iterationDuration(), m_timing.iterationCount);
-    ASSERT(result >= 0);
+    DCHECK_GE(result, 0);
     return result;
 }
 
@@ -80,7 +80,7 @@ double AnimationEffect::activeDurationInternal() const
     const double result = m_timing.playbackRate
         ? repeatedDuration() / std::abs(m_timing.playbackRate)
         : std::numeric_limits<double>::infinity();
-    ASSERT(result >= 0);
+    DCHECK_GE(result, 0);
     return result;
 }
 
@@ -153,7 +153,7 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
         double progress;
         if (const double iterationDuration = this->iterationDuration()) {
             const double startOffset = multiplyZeroAlwaysGivesZero(m_timing.iterationStart, iterationDuration);
-            ASSERT(startOffset >= 0);
+            DCHECK_GE(startOffset, 0);
             const double scaledActiveTime = calculateScaledActiveTime(activeDuration, activeTime, startOffset, m_timing);
             const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration(), scaledActiveTime, startOffset, currentPhase, m_timing);
 
@@ -177,14 +177,14 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
         } else {
             const double localIterationDuration = 1;
             const double localRepeatedDuration = localIterationDuration * m_timing.iterationCount;
-            ASSERT(localRepeatedDuration >= 0);
+            DCHECK_GE(localRepeatedDuration, 0);
             const double localActiveDuration = m_timing.playbackRate ? localRepeatedDuration / std::abs(m_timing.playbackRate) : std::numeric_limits<double>::infinity();
-            ASSERT(localActiveDuration >= 0);
+            DCHECK_GE(localActiveDuration, 0);
             const double localLocalTime = localTime < m_timing.startDelay ? localTime : localActiveDuration + m_timing.startDelay;
             const AnimationEffect::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_timing);
             const double localActiveTime = calculateActiveTime(localActiveDuration, resolvedFillMode(m_timing.fillMode, isKeyframeEffect()), localLocalTime, parentPhase, localCurrentPhase, m_timing);
             const double startOffset = m_timing.iterationStart * localIterationDuration;
-            ASSERT(startOffset >= 0);
+            DCHECK_GE(startOffset, 0);
             const double scaledActiveTime = calculateScaledActiveTime(localActiveDuration, localActiveTime, startOffset, m_timing);
             const double iterationTime = calculateIterationTime(localIterationDuration, localRepeatedDuration, scaledActiveTime, startOffset, currentPhase, m_timing);
 
@@ -203,7 +203,7 @@ void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReas
     }
 
     // Test for events even if timing didn't need an update as the animation may have gained a start time.
-    // FIXME: Refactor so that we can ASSERT(m_animation) here, this is currently required to be nullable for testing.
+    // FIXME: Refactor so that we can DCHECK(m_animation) here, this is currently required to be nullable for testing.
     if (reason == TimingUpdateForAnimationFrame && (!m_animation || m_animation->hasStartTime() || m_animation->paused())) {
         if (m_eventDelegate)
             m_eventDelegate->onEventCondition(*this);
@@ -223,7 +223,7 @@ const AnimationEffect::CalculatedTiming& AnimationEffect::ensureCalculated() con
         return m_calculated;
     if (m_animation->outdated())
         m_animation->update(TimingUpdateOnDemand);
-    ASSERT(!m_animation->outdated());
+    DCHECK(!m_animation->outdated());
     return m_calculated;
 }
 

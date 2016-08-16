@@ -54,7 +54,7 @@ private:
     AnimatableShapeValue(ShapeValue* shape)
         : m_shape(shape)
     {
-        ASSERT(m_shape);
+        DCHECK(m_shape);
     }
     AnimatableType type() const override { return TypeShapeValue; }
     bool equalTo(const AnimatableValue*) const override;

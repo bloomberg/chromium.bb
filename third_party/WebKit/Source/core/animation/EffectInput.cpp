@@ -118,7 +118,7 @@ EffectModel* createEffectModelFromKeyframes(Element& element, const StringKeyfra
         }
     }
 
-    ASSERT(!exceptionState.hadException());
+    DCHECK(!exceptionState.hadException());
     return keyframeEffectModel;
 }
 
@@ -215,7 +215,7 @@ EffectModel* EffectInput::convertArrayForm(Element& element, const Vector<Dictio
         keyframes.append(keyframe);
     }
 
-    ASSERT(!exceptionState.hadException());
+    DCHECK(!exceptionState.hadException());
 
     return createEffectModelFromKeyframes(element, keyframes, exceptionState);
 }
@@ -283,7 +283,7 @@ EffectModel* EffectInput::convertObjectForm(Element& element, const Dictionary& 
 
     std::sort(keyframes.begin(), keyframes.end(), compareKeyframes);
 
-    ASSERT(!exceptionState.hadException());
+    DCHECK(!exceptionState.hadException());
 
     return createEffectModelFromKeyframes(element, keyframes, exceptionState);
 }

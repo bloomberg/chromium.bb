@@ -45,7 +45,7 @@ bool CSSAnimationData::animationsMatchForStyleRecalc(const CSSAnimationData& oth
 
 Timing CSSAnimationData::convertToTiming(size_t index) const
 {
-    ASSERT(index < m_nameList.size());
+    DCHECK_LT(index, m_nameList.size());
     Timing timing = CSSTimingData::convertToTiming(index);
 
     timing.iterationCount = getRepeated(m_iterationCountList, index);

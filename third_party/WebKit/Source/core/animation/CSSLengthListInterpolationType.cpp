@@ -124,9 +124,9 @@ void CSSLengthListInterpolationType::apply(const InterpolableValue& interpolable
 {
     const InterpolableList& interpolableList = toInterpolableList(interpolableValue);
     const size_t length = interpolableList.length();
-    ASSERT(length > 0);
+    DCHECK_GT(length, 0U);
     const NonInterpolableList& nonInterpolableList = toNonInterpolableList(*nonInterpolableValue);
-    ASSERT(nonInterpolableList.length() == length);
+    DCHECK_EQ(nonInterpolableList.length(), length);
     Vector<Length> result(length);
     for (size_t i = 0; i < length; i++) {
         result[i] = CSSLengthInterpolationType::resolveInterpolableLength(

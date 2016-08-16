@@ -41,7 +41,7 @@ double clampNumber(double value, ValueRange range)
 {
     if (range == ValueRangeNonNegative)
         return std::max(value, 0.0);
-    ASSERT(range == ValueRangeAll);
+    DCHECK_EQ(range, ValueRangeAll);
     return value;
 }
 
@@ -49,7 +49,7 @@ double clampNumber(double value, ValueRange range)
 
 AnimatableLength::AnimatableLength(const Length& length, float zoom)
 {
-    ASSERT(zoom);
+    DCHECK(zoom);
     PixelsAndPercent pixelsAndPercent = length.getPixelsAndPercent();
     m_pixels = pixelsAndPercent.pixels / zoom;
     m_percent = pixelsAndPercent.percent;

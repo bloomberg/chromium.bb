@@ -13,7 +13,7 @@
 
 namespace blink {
 
-enum InterpolableColorIndex {
+enum InterpolableColorIndex : unsigned {
     Red,
     Green,
     Blue,
@@ -27,9 +27,9 @@ enum InterpolableColorIndex {
 
 static std::unique_ptr<InterpolableValue> createInterpolableColorForIndex(InterpolableColorIndex index)
 {
-    ASSERT(index < InterpolableColorIndexCount);
+    DCHECK_LT(index, InterpolableColorIndexCount);
     std::unique_ptr<InterpolableList> list = InterpolableList::create(InterpolableColorIndexCount);
-    for (int i = 0; i < InterpolableColorIndexCount; i++)
+    for (unsigned i = 0; i < InterpolableColorIndexCount; i++)
         list->set(i, InterpolableNumber::create(i == index));
     return std::move(list);
 }
@@ -100,7 +100,7 @@ static void addPremultipliedColor(double& red, double& green, double& blue, doub
 Color CSSColorInterpolationType::resolveInterpolableColor(const InterpolableValue& interpolableColor, const StyleResolverState& state, bool isVisited, bool isTextDecoration)
 {
     const InterpolableList& list = toInterpolableList(interpolableColor);
-    ASSERT(list.length() == InterpolableColorIndexCount);
+    DCHECK_EQ(list.length(), InterpolableColorIndexCount);
 
     double red = toInterpolableNumber(list.get(Red))->value();
     double green = toInterpolableNumber(list.get(Green))->value();
@@ -178,7 +178,7 @@ InterpolationValue CSSColorInterpolationType::maybeConvertInherit(const StyleRes
     return convertStyleColorPair(inheritedColor, inheritedColor);
 }
 
-enum InterpolableColorPairIndex {
+enum InterpolableColorPairIndex : unsigned {
     Unvisited,
     Visited,
     InterpolableColorPairIndexCount,
@@ -216,7 +216,7 @@ InterpolationValue CSSColorInterpolationType::maybeConvertUnderlyingValue(const 
 void CSSColorInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue*, InterpolationEnvironment& environment) const
 {
     const InterpolableList& colorPair = toInterpolableList(interpolableValue);
-    ASSERT(colorPair.length() == InterpolableColorPairIndexCount);
+    DCHECK_EQ(colorPair.length(), InterpolableColorPairIndexCount);
     ColorPropertyFunctions::setUnvisitedColor(cssProperty(), *environment.state().style(),
         resolveInterpolableColor(*colorPair.get(Unvisited), environment.state(), false, cssProperty() == CSSPropertyTextDecorationColor));
     ColorPropertyFunctions::setVisitedColor(cssProperty(), *environment.state().style(),

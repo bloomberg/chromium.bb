@@ -14,7 +14,7 @@ public:
     CSSTextIndentInterpolationType(CSSPropertyID property)
         : CSSInterpolationType(property)
     {
-        ASSERT(property == CSSPropertyTextIndent);
+        DCHECK_EQ(property, CSSPropertyTextIndent);
     }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;

@@ -31,16 +31,16 @@ public:
 
     PassRefPtr<CSSTransformNonInterpolableValue> composite(const CSSTransformNonInterpolableValue& other, double otherProgress)
     {
-        ASSERT(!isAdditive());
+        DCHECK(!isAdditive());
         if (other.m_isSingle) {
-            ASSERT(otherProgress == 0);
-            ASSERT(other.isAdditive());
+            DCHECK_EQ(otherProgress, 0);
+            DCHECK(other.isAdditive());
             TransformOperations result;
             result.operations() = concat(transform(), other.transform());
             return create(std::move(result));
         }
 
-        ASSERT(other.m_isStartAdditive || other.m_isEndAdditive);
+        DCHECK(other.m_isStartAdditive || other.m_isEndAdditive);
         TransformOperations start;
         start.operations() = other.m_isStartAdditive ? concat(transform(), other.m_start) : other.m_start.operations();
         TransformOperations end;
@@ -48,12 +48,12 @@ public:
         return create(end.blend(start, otherProgress));
     }
 
-    void setSingleAdditive() { ASSERT(m_isSingle); m_isStartAdditive = true; }
+    void setSingleAdditive() { DCHECK(m_isSingle); m_isStartAdditive = true; }
 
     TransformOperations getInterpolatedTransform(double progress) const
     {
-        ASSERT(!m_isStartAdditive && !m_isEndAdditive);
-        ASSERT(!m_isSingle || progress == 0);
+        DCHECK(!m_isStartAdditive && !m_isEndAdditive);
+        DCHECK(!m_isSingle || progress == 0);
         if (progress == 0)
             return m_start;
         if (progress == 1)
@@ -72,9 +72,9 @@ private:
         , m_isEndAdditive(isEndAdditive)
     { }
 
-    const TransformOperations& transform() const { ASSERT(m_isSingle); return m_start; }
-    TransformOperations& transform() { ASSERT(m_isSingle); return m_start; }
-    bool isAdditive() const { ASSERT(m_isSingle); return m_isStartAdditive; }
+    const TransformOperations& transform() const { DCHECK(m_isSingle); return m_start; }
+    TransformOperations& transform() { DCHECK(m_isSingle); return m_start; }
+    bool isAdditive() const { DCHECK(m_isSingle); return m_isStartAdditive; }
 
     Vector<RefPtr<TransformOperation>> concat(const TransformOperations& a, const TransformOperations& b)
     {

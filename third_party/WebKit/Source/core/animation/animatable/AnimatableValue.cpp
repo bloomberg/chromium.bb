@@ -44,10 +44,10 @@ PassRefPtr<AnimatableValue> AnimatableValue::neutralValue()
 
 PassRefPtr<AnimatableValue> AnimatableValue::interpolate(const AnimatableValue* left, const AnimatableValue* right, double fraction)
 {
-    ASSERT(left);
-    ASSERT(right);
-    ASSERT(!left->isNeutral());
-    ASSERT(!right->isNeutral());
+    DCHECK(left);
+    DCHECK(right);
+    DCHECK(!left->isNeutral());
+    DCHECK(!right->isNeutral());
 
     if (fraction && fraction != 1 && left->isSameType(right))
         return left->interpolateTo(right, fraction);

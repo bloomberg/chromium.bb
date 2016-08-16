@@ -66,8 +66,8 @@ public:
 
     virtual void composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
     {
-        ASSERT(!underlyingValueOwner.value().nonInterpolableValue);
-        ASSERT(!value.nonInterpolableValue);
+        DCHECK(!underlyingValueOwner.value().nonInterpolableValue);
+        DCHECK(!value.nonInterpolableValue);
         underlyingValueOwner.mutableValue().interpolableValue->scaleAndAdd(underlyingFraction, *value.interpolableValue);
     }
 
@@ -84,8 +84,8 @@ protected:
 
     virtual PairwiseInterpolationValue maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
     {
-        ASSERT(!start.nonInterpolableValue);
-        ASSERT(!end.nonInterpolableValue);
+        DCHECK(!start.nonInterpolableValue);
+        DCHECK(!end.nonInterpolableValue);
         return PairwiseInterpolationValue(
             std::move(start.interpolableValue),
             std::move(end.interpolableValue),

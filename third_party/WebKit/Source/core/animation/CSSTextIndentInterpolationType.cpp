@@ -106,7 +106,7 @@ private:
 InterpolationValue createValue(const Length& length, const IndentMode& mode, double zoom)
 {
     InterpolationValue convertedLength = CSSLengthInterpolationType::maybeConvertLength(length, zoom);
-    ASSERT(convertedLength);
+    DCHECK(convertedLength);
     return InterpolationValue(std::move(convertedLength.interpolableValue), CSSTextIndentNonInterpolableValue::create(convertedLength.nonInterpolableValue.release(), mode));
 }
 
@@ -148,7 +148,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertValue(const CSSVa
         else
             length = CSSLengthInterpolationType::maybeConvertCSSValue(primitiveValue);
     }
-    ASSERT(length);
+    DCHECK(length);
 
     return InterpolationValue(
         std::move(length.interpolableValue),

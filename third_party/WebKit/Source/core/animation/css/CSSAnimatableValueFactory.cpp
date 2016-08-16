@@ -311,7 +311,7 @@ static SVGPaintType normalizeSVGPaintType(SVGPaintType paintType)
 // FIXME: Generate this function.
 PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID property, const ComputedStyle& style)
 {
-    ASSERT(CSSPropertyMetadata::isInterpolableProperty(property));
+    DCHECK(CSSPropertyMetadata::isInterpolableProperty(property));
     switch (property) {
     case CSSPropertyBackgroundColor:
         return createFromColor(property, style);

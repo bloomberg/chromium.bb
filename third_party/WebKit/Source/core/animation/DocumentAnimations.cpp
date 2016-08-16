@@ -69,9 +69,9 @@ void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document)
 
 void DocumentAnimations::updateCompositorAnimations(Document& document)
 {
-    ASSERT(document.lifecycle().state() == DocumentLifecycle::CompositingClean);
+    DCHECK_EQ(document.lifecycle().state(), DocumentLifecycle::CompositingClean);
     if (document.compositorPendingAnimations().update()) {
-        ASSERT(document.view());
+        DCHECK(document.view());
         document.view()->scheduleAnimation();
     }
 

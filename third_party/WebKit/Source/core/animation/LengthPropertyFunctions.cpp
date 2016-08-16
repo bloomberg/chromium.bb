@@ -287,7 +287,7 @@ bool LengthPropertyFunctions::getLength(CSSPropertyID property, const ComputedSt
         result = Length(style.perspective(), Fixed);
         return true;
     case CSSPropertyStrokeWidth:
-        ASSERT(!isZoomedLength(CSSPropertyStrokeWidth));
+        DCHECK(!isZoomedLength(CSSPropertyStrokeWidth));
         result = style.strokeWidth().length();
         return true;
     case CSSPropertyVerticalAlign:

@@ -85,7 +85,7 @@ PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const A
 
     Vector<RefPtr<AnimatableValue>> interpolatedValues;
     bool success = interpolateLists(from, to, fraction, interpolatedValues);
-    ASSERT_UNUSED(success, success);
+    ALLOW_UNUSED_LOCAL(success);
     return adoptRef(new AnimatableStrokeDasharrayList(interpolatedValues));
 }
 

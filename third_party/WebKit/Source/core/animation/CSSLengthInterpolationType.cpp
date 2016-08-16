@@ -22,7 +22,7 @@ public:
     static PassRefPtr<CSSLengthNonInterpolableValue> create(bool hasPercentage)
     {
         DEFINE_STATIC_REF(CSSLengthNonInterpolableValue, singleton, adoptRef(new CSSLengthNonInterpolableValue()));
-        ASSERT(singleton);
+        DCHECK(singleton);
         return hasPercentage ? singleton : nullptr;
     }
     static PassRefPtr<CSSLengthNonInterpolableValue> merge(const NonInterpolableValue* a, const NonInterpolableValue* b)
@@ -31,7 +31,7 @@ public:
     }
     static bool hasPercentage(const NonInterpolableValue* nonInterpolableValue)
     {
-        ASSERT(!nonInterpolableValue || nonInterpolableValue->getType() == CSSLengthNonInterpolableValue::staticType);
+        DCHECK(!nonInterpolableValue || nonInterpolableValue->getType() == CSSLengthNonInterpolableValue::staticType);
         return static_cast<bool>(nonInterpolableValue);
     }
 
@@ -253,7 +253,7 @@ static Length createLength(double pixels, double percentage, bool hasPercentage,
 
 static Length resolveInterpolablePixelsOrPercentageLength(const InterpolableList& values, bool hasPercentage, ValueRange range, double zoom)
 {
-    ASSERT(isPixelsOrPercentOnly(values));
+    DCHECK(isPixelsOrPercentOnly(values));
     double pixels = toInterpolableNumber(values.get(CSSPrimitiveValue::UnitTypePixels))->value() * zoom;
     double percentage = toInterpolableNumber(values.get(CSSPrimitiveValue::UnitTypePercentage))->value();
     return createLength(pixels, percentage, hasPercentage, range);
@@ -292,7 +292,7 @@ static CSSCalcExpressionNode* createCalcExpression(const InterpolableList& value
             result = result ? CSSCalcValue::createExpressionNode(result, node, CalcAdd) : node;
         }
     }
-    ASSERT(result);
+    DCHECK(result);
     return result;
 }
 
@@ -327,12 +327,12 @@ void CSSLengthInterpolationType::apply(const InterpolableValue& interpolableValu
     if (isPixelsOrPercentOnly(values)) {
         Length length = resolveInterpolablePixelsOrPercentageLength(values, hasPercentage, m_valueRange, effectiveZoom(*state.style()));
         if (LengthPropertyFunctions::setLength(cssProperty(), *state.style(), length)) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
             // Assert that setting the length on ComputedStyle directly is identical to the AnimatableValue code path.
             RefPtr<AnimatableValue> before = CSSAnimatableValueFactory::create(cssProperty(), *state.style());
             StyleBuilder::applyProperty(cssProperty(), state, *createCSSValue(values, hasPercentage, m_valueRange));
             RefPtr<AnimatableValue> after = CSSAnimatableValueFactory::create(cssProperty(), *state.style());
-            ASSERT(before->equals(*after));
+            DCHECK(before->equals(*after));
 #endif
             return;
         }

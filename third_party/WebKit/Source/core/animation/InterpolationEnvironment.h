@@ -29,13 +29,13 @@ public:
         , m_svgBaseValue(&svgBaseValue)
     { }
 
-    StyleResolverState& state() { ASSERT(m_state); return *m_state; }
-    const StyleResolverState& state() const { ASSERT(m_state); return *m_state; }
+    StyleResolverState& state() { DCHECK(m_state); return *m_state; }
+    const StyleResolverState& state() const { DCHECK(m_state); return *m_state; }
 
-    SVGElement& svgElement() { ASSERT(m_svgElement); return *m_svgElement; }
-    const SVGElement& svgElement() const { ASSERT(m_svgElement); return *m_svgElement; }
+    SVGElement& svgElement() { DCHECK(m_svgElement); return *m_svgElement; }
+    const SVGElement& svgElement() const { DCHECK(m_svgElement); return *m_svgElement; }
 
-    const SVGPropertyBase& svgBaseValue() const { ASSERT(m_svgBaseValue); return *m_svgBaseValue; }
+    const SVGPropertyBase& svgBaseValue() const { DCHECK(m_svgBaseValue); return *m_svgBaseValue; }
 
 private:
     StyleResolverState* m_state;

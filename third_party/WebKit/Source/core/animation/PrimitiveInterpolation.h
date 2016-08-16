@@ -57,15 +57,15 @@ private:
         , m_end(std::move(end))
         , m_nonInterpolableValue(nonInterpolableValue)
     {
-        ASSERT(m_start);
-        ASSERT(m_end);
+        DCHECK(m_start);
+        DCHECK(m_end);
     }
 
     void interpolateValue(double fraction, std::unique_ptr<TypedInterpolationValue>& result) const final
     {
-        ASSERT(result);
-        ASSERT(&result->type() == &m_type);
-        ASSERT(result->getNonInterpolableValue() == m_nonInterpolableValue.get());
+        DCHECK(result);
+        DCHECK_EQ(&result->type(), &m_type);
+        DCHECK_EQ(result->getNonInterpolableValue(), m_nonInterpolableValue.get());
         m_start->interpolate(*m_end, fraction, *result->mutableValue().interpolableValue);
     }
 

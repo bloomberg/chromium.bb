@@ -28,7 +28,7 @@ public:
             : propertyType(TransitionKnownProperty)
             , unresolvedProperty(id)
         {
-            ASSERT(id != CSSPropertyInvalid);
+            DCHECK_NE(id, CSSPropertyInvalid);
         }
 
         TransitionProperty(const String& string)
@@ -42,7 +42,7 @@ public:
             : propertyType(type)
             , unresolvedProperty(CSSPropertyInvalid)
         {
-            ASSERT(type == TransitionNone);
+            DCHECK_EQ(type, TransitionNone);
         }
 
         bool operator==(const TransitionProperty& other) const { return propertyType == other.propertyType && unresolvedProperty == other.unresolvedProperty && propertyString == other.propertyString; }

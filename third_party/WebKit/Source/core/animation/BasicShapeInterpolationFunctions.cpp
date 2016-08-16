@@ -26,8 +26,8 @@ public:
 
     BasicShape::ShapeType type() const { return m_type; }
 
-    WindRule windRule() const { ASSERT(type() == BasicShape::BasicShapePolygonType); return m_windRule; }
-    size_t size() const { ASSERT(type() == BasicShape::BasicShapePolygonType); return m_size; }
+    WindRule windRule() const { DCHECK_EQ(type(), BasicShape::BasicShapePolygonType); return m_windRule; }
+    size_t size() const { DCHECK_EQ(type(), BasicShape::BasicShapePolygonType); return m_size; }
 
     bool isCompatibleWith(const BasicShapeNonInterpolableValue& other) const
     {
@@ -55,7 +55,7 @@ private:
         , m_windRule(RULE_NONZERO)
         , m_size(0)
     {
-        ASSERT(type != BasicShape::BasicShapePolygonType);
+        DCHECK_NE(type, BasicShape::BasicShapePolygonType);
     }
     BasicShapeNonInterpolableValue(WindRule windRule, size_t size)
         : m_type(BasicShape::BasicShapePolygonType)
@@ -75,7 +75,7 @@ namespace {
 
 std::unique_ptr<InterpolableValue> unwrap(InterpolationValue&& value)
 {
-    ASSERT(value.interpolableValue);
+    DCHECK(value.interpolableValue);
     return std::move(value.interpolableValue);
 }
 
@@ -158,7 +158,7 @@ LengthSize createBorderRadius(const InterpolableValue& width, const Interpolable
 
 namespace CircleFunctions {
 
-enum CircleComponentIndex {
+enum CircleComponentIndex : unsigned {
     CircleCenterXIndex,
     CircleCenterYIndex,
     CircleRadiusIndex,
@@ -216,7 +216,7 @@ PassRefPtr<BasicShape> createBasicShape(const InterpolableValue& interpolableVal
 
 namespace EllipseFunctions {
 
-enum EllipseComponentIndex {
+enum EllipseComponentIndex : unsigned {
     EllipseCenterXIndex,
     EllipseCenterYIndex,
     EllipseRadiusXIndex,
@@ -283,7 +283,7 @@ PassRefPtr<BasicShape> createBasicShape(const InterpolableValue& interpolableVal
 
 namespace InsetFunctions {
 
-enum InsetComponentIndex {
+enum InsetComponentIndex : unsigned {
     InsetTopIndex,
     InsetRightIndex,
     InsetBottomIndex,
@@ -408,8 +408,8 @@ PassRefPtr<BasicShape> createBasicShape(const InterpolableValue& interpolableVal
     polygon->setWindRule(nonInterpolableValue.windRule());
     const InterpolableList& list = toInterpolableList(interpolableValue);
     size_t size = nonInterpolableValue.size();
-    ASSERT(list.length() == size);
-    ASSERT(size % 2 == 0);
+    DCHECK_EQ(list.length(), size);
+    DCHECK_EQ(size % 2, 0U);
     for (size_t i = 0; i < size; i += 2) {
         polygon->appendPoint(
             CSSLengthInterpolationType::resolveInterpolableLength(*list.get(i), nullptr, conversionData),

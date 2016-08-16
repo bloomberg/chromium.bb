@@ -127,7 +127,7 @@ double NumberPropertyFunctions::clampNumber(CSSPropertyID property, double value
 
 bool NumberPropertyFunctions::setNumber(CSSPropertyID property, ComputedStyle& style, double value)
 {
-    ASSERT(value == clampNumber(property, value));
+    DCHECK_EQ(value, clampNumber(property, value));
     switch (property) {
     case CSSPropertyFillOpacity:
         style.setFillOpacity(value);

@@ -39,7 +39,7 @@ private:
         : m_type(type)
         , m_value(std::move(interpolableValue), nonInterpolableValue)
     {
-        ASSERT(m_value.interpolableValue);
+        DCHECK(m_value.interpolableValue);
     }
 
     const InterpolationType& m_type;

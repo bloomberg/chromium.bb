@@ -55,7 +55,7 @@ KeyframeEffect* KeyframeEffect::create(Element* target, EffectModel* model, cons
 
 KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const DictionarySequenceOrDictionary& effectInput, double duration, ExceptionState& exceptionState)
 {
-    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+    DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
         UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
     Timing timing;
@@ -66,7 +66,7 @@ KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Eleme
 
 KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const DictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
 {
-    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+    DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
         UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
     Timing timing;
@@ -78,7 +78,7 @@ KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Eleme
 
 KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const DictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
 {
-    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+    DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
         UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectNoTiming);
     return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), Timing());
@@ -121,7 +121,7 @@ void KeyframeEffect::specifiedTimingChanged()
 {
     if (animation()) {
         // FIXME: Needs to consider groups when added.
-        ASSERT(animation()->effect() == this);
+        DCHECK_EQ(animation()->effect(), this);
         animation()->setCompositorPending(true);
     }
 }
@@ -172,8 +172,8 @@ bool KeyframeEffect::hasIncompatibleStyle()
 
 void KeyframeEffect::applyEffects()
 {
-    ASSERT(isInEffect());
-    ASSERT(animation());
+    DCHECK(isInEffect());
+    DCHECK(animation());
     if (!m_target || !m_model)
         return;
 
@@ -181,7 +181,7 @@ void KeyframeEffect::applyEffects()
         animation()->cancelAnimationOnCompositor();
 
     double iteration = currentIteration();
-    ASSERT(iteration >= 0);
+    DCHECK_GE(iteration, 0);
     bool changed = false;
     if (m_sampledEffect) {
         changed = m_model->sample(clampTo<int>(iteration, 0), progress(), iterationDuration(), m_sampledEffect->mutableInterpolations());
@@ -208,8 +208,8 @@ void KeyframeEffect::applyEffects()
 
 void KeyframeEffect::clearEffects()
 {
-    ASSERT(animation());
-    ASSERT(m_sampledEffect);
+    DCHECK(animation());
+    DCHECK(m_sampledEffect);
 
     m_sampledEffect->clear();
     m_sampledEffect = nullptr;
@@ -224,7 +224,7 @@ void KeyframeEffect::updateChildrenAndEffects() const
 {
     if (!m_model)
         return;
-    ASSERT(animation());
+    DCHECK(animation());
     if (isInEffect() && !animation()->effectSuppressed())
         const_cast<KeyframeEffect*>(this)->applyEffects();
     else if (m_sampledEffect)
@@ -242,7 +242,7 @@ double KeyframeEffect::calculateTimeToEffectChange(bool forwards, double localTi
     case PhaseNone:
         return std::numeric_limits<double>::infinity();
     case PhaseBefore:
-        ASSERT(startTime >= localTime);
+        DCHECK_GE(startTime, localTime);
         return forwards
             ? startTime - localTime
             : std::numeric_limits<double>::infinity();
@@ -257,7 +257,7 @@ double KeyframeEffect::calculateTimeToEffectChange(bool forwards, double localTi
         }
         return 0;
     case PhaseAfter:
-        ASSERT(localTime >= afterTime);
+        DCHECK_GE(localTime, afterTime);
         // If this KeyframeEffect is still in effect then it will need to update
         // when its parent goes out of effect. We have no way of knowing when
         // that will be, however, so the parent will need to supply it.
@@ -290,13 +290,13 @@ bool KeyframeEffect::isCandidateForAnimationOnCompositor(double animationPlaybac
 
 bool KeyframeEffect::maybeStartAnimationOnCompositor(int group, double startTime, double currentTime, double animationPlaybackRate)
 {
-    ASSERT(!hasActiveAnimationsOnCompositor());
+    DCHECK(!hasActiveAnimationsOnCompositor());
     if (!isCandidateForAnimationOnCompositor(animationPlaybackRate))
         return false;
     if (!CompositorAnimations::canStartAnimationOnCompositor(*m_target))
         return false;
     CompositorAnimations::startAnimationOnCompositor(*m_target, group, startTime, currentTime, specifiedTiming(), *animation(), *model(), m_compositorAnimationIds, animationPlaybackRate);
-    ASSERT(!m_compositorAnimationIds.isEmpty());
+    DCHECK(!m_compositorAnimationIds.isEmpty());
     return true;
 }
 
@@ -325,7 +325,7 @@ bool KeyframeEffect::cancelAnimationOnCompositor()
         return false;
     if (!m_target || !m_target->layoutObject())
         return false;
-    ASSERT(animation());
+    DCHECK(animation());
     for (const auto& compositorAnimationId : m_compositorAnimationIds)
         CompositorAnimations::cancelAnimationOnCompositor(*m_target, *animation(), compositorAnimationId);
     m_compositorAnimationIds.clear();
@@ -346,18 +346,18 @@ void KeyframeEffect::cancelIncompatibleAnimationsOnCompositor()
 
 void KeyframeEffect::pauseAnimationForTestingOnCompositor(double pauseTime)
 {
-    ASSERT(hasActiveAnimationsOnCompositor());
+    DCHECK(hasActiveAnimationsOnCompositor());
     if (!m_target || !m_target->layoutObject())
         return;
-    ASSERT(animation());
+    DCHECK(animation());
     for (const auto& compositorAnimationId : m_compositorAnimationIds)
         CompositorAnimations::pauseAnimationForTestingOnCompositor(*m_target, *animation(), compositorAnimationId, pauseTime);
 }
 
 void KeyframeEffect::attachCompositedLayers()
 {
-    ASSERT(m_target);
-    ASSERT(animation());
+    DCHECK(m_target);
+    DCHECK(animation());
     CompositorAnimations::attachCompositedLayers(*m_target, *animation());
 }
 

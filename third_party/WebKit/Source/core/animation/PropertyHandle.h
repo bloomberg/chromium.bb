@@ -20,7 +20,7 @@ public:
         : m_handleType(isPresentationAttribute ? HandlePresentationAttribute : HandleCSSProperty)
         , m_cssProperty(property)
     {
-        ASSERT(property != CSSPropertyInvalid);
+        DCHECK_NE(property, CSSPropertyInvalid);
     }
 
     explicit PropertyHandle(const QualifiedName& attributeName)
@@ -35,13 +35,13 @@ public:
     unsigned hash() const;
 
     bool isCSSProperty() const { return m_handleType == HandleCSSProperty; }
-    CSSPropertyID cssProperty() const { ASSERT(isCSSProperty()); return m_cssProperty; }
+    CSSPropertyID cssProperty() const { DCHECK(isCSSProperty()); return m_cssProperty; }
 
     bool isPresentationAttribute() const { return m_handleType == HandlePresentationAttribute; }
-    CSSPropertyID presentationAttribute() const { ASSERT(isPresentationAttribute()); return m_cssProperty; }
+    CSSPropertyID presentationAttribute() const { DCHECK(isPresentationAttribute()); return m_cssProperty; }
 
     bool isSVGAttribute() const { return m_handleType == HandleSVGAttribute; }
-    const QualifiedName& svgAttribute() const { ASSERT(isSVGAttribute()); return *m_svgAttribute; }
+    const QualifiedName& svgAttribute() const { DCHECK(isSVGAttribute()); return *m_svgAttribute; }
 
 private:
     enum HandleType {

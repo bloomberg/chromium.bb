@@ -26,7 +26,7 @@ static bool isSVGPrefixed(const String& property)
 
 static String removeSVGPrefix(const String& property)
 {
-    ASSERT(isSVGPrefixed(property));
+    DCHECK(isSVGPrefixed(property));
     return property.substring(kSVGPrefixLength);
 }
 
@@ -171,7 +171,7 @@ const AttributeNameMap& getSupportedAttributes()
             &SVGNames::zAttr,
         };
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(attributes); i++) {
-            ASSERT(!SVGElement::isAnimatableCSSProperty(*attributes[i]));
+            DCHECK(!SVGElement::isAnimatableCSSProperty(*attributes[i]));
             supportedAttributes.set(*attributes[i], attributes[i]);
         }
     }
@@ -180,7 +180,7 @@ const AttributeNameMap& getSupportedAttributes()
 
 QualifiedName svgAttributeName(const String& property)
 {
-    ASSERT(!isSVGPrefixed(property));
+    DCHECK(!isSVGPrefixed(property));
     return QualifiedName(nullAtom, AtomicString(property), nullAtom);
 }
 
@@ -212,7 +212,7 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const Stri
 
     const CSSValue* value = CSSParser::parseSingleValue(CSSPropertyTransitionTimingFunction, string);
     if (!value || !value->isValueList()) {
-        ASSERT(!value || value->isCSSWideKeyword());
+        DCHECK(!value || value->isCSSWideKeyword());
         bool throwTypeError = true;
         if (document) {
             if (string.startsWith("function")) {

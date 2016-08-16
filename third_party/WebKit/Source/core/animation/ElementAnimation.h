@@ -94,7 +94,7 @@ public:
             return animations;
 
         for (const auto& animation : element.document().timeline().getAnimations()) {
-            ASSERT(animation->effect());
+            DCHECK(animation->effect());
             if (toKeyframeEffect(animation->effect())->target() == element && (animation->effect()->isCurrent() || animation->effect()->isInEffect()))
                 animations.append(animation);
         }

@@ -41,8 +41,8 @@ namespace blink {
 
 void CompositorPendingAnimations::add(Animation* animation)
 {
-    ASSERT(animation);
-    ASSERT(m_pending.find(animation) == kNotFound);
+    DCHECK(animation);
+    DCHECK_EQ(m_pending.find(animation), kNotFound);
     m_pending.append(animation);
 
     Document* document = animation->timeline()->document();
@@ -109,11 +109,11 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
     for (auto& animation : animations)
         animation->postCommit(animation->timeline()->currentTimeInternal());
 
-    ASSERT(m_pending.isEmpty());
-    ASSERT(startOnCompositor || deferred.isEmpty());
+    DCHECK(m_pending.isEmpty());
+    DCHECK(startOnCompositor || deferred.isEmpty());
     for (auto& animation : deferred)
         animation->setCompositorPending();
-    ASSERT(m_pending.size() == deferred.size());
+    DCHECK_EQ(m_pending.size(), deferred.size());
 
     if (startedSynchronizedOnCompositor)
         return true;
@@ -130,7 +130,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor)
     // If not, go ahead and start any animations that were waiting.
     notifyCompositorAnimationStarted(monotonicallyIncreasingTime());
 
-    ASSERT(m_pending.size() == deferred.size());
+    DCHECK_EQ(m_pending.size(), deferred.size());
     return false;
 }
 

@@ -132,7 +132,7 @@ private:
             : m_timeline(timeline)
             , m_timer(this, &AnimationTimelineTiming::timerFired)
         {
-            ASSERT(m_timeline);
+            DCHECK(m_timeline);
         }
 
         void wakeAfter(double duration) override;

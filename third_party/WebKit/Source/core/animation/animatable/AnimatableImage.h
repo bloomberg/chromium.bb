@@ -54,7 +54,7 @@ private:
     AnimatableImage(CSSValue* value)
         : m_value(value)
     {
-        ASSERT(m_value.get());
+        DCHECK(m_value.get());
     }
     AnimatableType type() const override { return TypeImage; }
     bool equalTo(const AnimatableValue*) const override;

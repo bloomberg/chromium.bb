@@ -28,7 +28,7 @@ void UnderlyingValueOwner::set(std::nullptr_t)
 
 void UnderlyingValueOwner::set(const InterpolationType& type, const InterpolationValue& value)
 {
-    ASSERT(value);
+    DCHECK(value);
     m_type = &type;
     // By clearing m_valueOwner we will perform a copy before attempting to mutate m_value,
     // thus upholding the const contract for this instance of interpolationValue.
@@ -38,7 +38,7 @@ void UnderlyingValueOwner::set(const InterpolationType& type, const Interpolatio
 
 void UnderlyingValueOwner::set(const InterpolationType& type, InterpolationValue&& value)
 {
-    ASSERT(value);
+    DCHECK(value);
     m_type = &type;
     m_valueOwner = std::move(value);
     m_value = &m_valueOwner;
@@ -62,7 +62,7 @@ void UnderlyingValueOwner::set(const TypedInterpolationValue* value)
 
 InterpolationValue& UnderlyingValueOwner::mutableValue()
 {
-    ASSERT(m_type && m_value);
+    DCHECK(m_type && m_value);
     if (!m_valueOwner) {
         m_valueOwner = m_value->clone();
         m_value = &m_valueOwner;

@@ -20,7 +20,7 @@ public:
         , m_interpolablePathSegs(listValue)
         , m_pathSegTypes(pathSegTypes)
     {
-        ASSERT(m_interpolablePathSegs.length() == m_pathSegTypes.size());
+        DCHECK_EQ(m_interpolablePathSegs.length(), m_pathSegTypes.size());
     }
 
     bool hasMoreData() const;
