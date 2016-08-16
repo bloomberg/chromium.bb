@@ -165,6 +165,12 @@ class BrowsingDataRemover : public KeyedService
 #endif
                        REMOVE_SITE_USAGE_DATA,
 
+    // Datatypes that can be deleted partially per URL / origin / domain,
+    // whichever makes sense.
+    FILTERABLE_DATATYPES = (REMOVE_SITE_DATA & ~REMOVE_PLUGIN_DATA) |
+                            REMOVE_CACHE |
+                            REMOVE_DOWNLOADS,
+
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it
     // look like a new Profile.
@@ -267,9 +273,7 @@ class BrowsingDataRemover : public KeyedService
 
   // Like Remove(), but in case of URL-keyed only removes data whose URL match
   // |filter_builder| (e.g. are on certain origin or domain).
-  // TODO(dmurph): Support all backends with filter (crbug.com/113621).
-  // DO NOT USE THIS METHOD UNLESS CALLER KNOWS WHAT THEY'RE DOING. NOT ALL
-  // BACKENDS ARE SUPPORTED YET, AND MORE DATA THAN EXPECTED COULD BE DELETED.
+  // RemoveWithFilter() currently only works with FILTERABLE_DATATYPES.
   void RemoveWithFilter(
       const TimeRange& time_range,
       int remove_mask,

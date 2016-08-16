@@ -513,19 +513,28 @@ static ScopedJavaLocalRef<jstring> GetLatestVersionWhenClickedUpdateMenuItem(
 
 namespace {
 
-// Redirects a BrowsingDataRemover completion callback back into Java.
+// Merges |task_count| BrowsingDataRemover completion callbacks and redirects
+// them back into Java.
 class ClearBrowsingDataObserver : public BrowsingDataRemover::Observer {
  public:
   // |obj| is expected to be the object passed into ClearBrowsingData(); e.g. a
   // ChromePreference.
   ClearBrowsingDataObserver(JNIEnv* env,
                             jobject obj,
-                            BrowsingDataRemover* browsing_data_remover)
-      : weak_chrome_native_preferences_(env, obj), observer_(this) {
+                            BrowsingDataRemover* browsing_data_remover,
+                            int task_count)
+      : task_count_(task_count),
+        weak_chrome_native_preferences_(env, obj),
+        observer_(this) {
+    DCHECK_GT(task_count, 0);
     observer_.Add(browsing_data_remover);
   }
 
   void OnBrowsingDataRemoverDone() override {
+    DCHECK(task_count_);
+    if (--task_count_)
+      return;
+
     // We delete ourselves when done.
     std::unique_ptr<ClearBrowsingDataObserver> auto_delete(this);
 
@@ -538,6 +547,7 @@ class ClearBrowsingDataObserver : public BrowsingDataRemover::Observer {
   }
 
  private:
+  int task_count_;
   JavaObjectWeakGlobalRef weak_chrome_native_preferences_;
   ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer> observer_;
 };
@@ -650,16 +660,38 @@ static void ClearBrowsingData(
                                                          excluding_domains);
   }
 
-  // ClearBrowsingDataObserver deletes itself when |browsing_data_remover| is
-  // done.
-  ClearBrowsingDataObserver* observer =
-      new ClearBrowsingDataObserver(env, obj, browsing_data_remover);
+  // Delete the filterable types with a filter, and the rest completely.
+  // TODO(msramek): This is only necessary until the filter is implemented in
+  // all data storage backends.
+  int filterable_mask = remove_mask & BrowsingDataRemover::FILTERABLE_DATATYPES;
+  int nonfilterable_mask =
+      remove_mask & ~BrowsingDataRemover::FILTERABLE_DATATYPES;
 
-  browsing_data_remover->RemoveWithFilterAndReply(
-      BrowsingDataRemover::Period(
-          static_cast<browsing_data::TimePeriod>(time_period)),
-      remove_mask, BrowsingDataHelper::UNPROTECTED_WEB,
-      std::move(filter_builder), observer);
+  // ClearBrowsingDataObserver deletes itself when |browsing_data_remover| is
+  // done with both removal tasks.
+  ClearBrowsingDataObserver* observer = new ClearBrowsingDataObserver(
+      env, obj, browsing_data_remover, 2 /* tasks_count */);
+
+  if (filterable_mask) {
+    browsing_data_remover->RemoveWithFilterAndReply(
+        BrowsingDataRemover::Period(
+            static_cast<browsing_data::TimePeriod>(time_period)),
+        filterable_mask, BrowsingDataHelper::UNPROTECTED_WEB,
+        std::move(filter_builder), observer);
+  } else {
+    // Make sure |observer| doesn't wait for the filtered task.
+    observer->OnBrowsingDataRemoverDone();
+  }
+
+  if (nonfilterable_mask) {
+    browsing_data_remover->RemoveAndReply(
+        BrowsingDataRemover::Period(
+            static_cast<browsing_data::TimePeriod>(time_period)),
+        nonfilterable_mask, BrowsingDataHelper::UNPROTECTED_WEB, observer);
+  } else {
+    // Make sure |observer| doesn't wait for the non-filtered task.
+    observer->OnBrowsingDataRemoverDone();
+  }
 }
 
 static jboolean CanDeleteBrowsingHistory(JNIEnv* env,

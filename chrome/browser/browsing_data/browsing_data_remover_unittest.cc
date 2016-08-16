@@ -2832,7 +2832,7 @@ TEST_F(BrowsingDataRemoverTest, MultipleTasks) {
       observer.target_b());
   tasks.emplace_back(
       BrowsingDataRemover::TimeRange(base::Time(), base::Time::UnixEpoch()),
-      BrowsingDataRemover::REMOVE_PASSWORDS,
+      BrowsingDataRemover::REMOVE_WEBSQL,
       BrowsingDataHelper::UNPROTECTED_WEB,
       std::move(filter_builder_1),
       observer.target_b());
