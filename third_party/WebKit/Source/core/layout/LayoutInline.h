@@ -160,8 +160,6 @@ public:
     LayoutBoxModelObject* virtualContinuation() const final { return continuation(); }
     LayoutInline* inlineElementContinuation() const;
 
-    void updateDragState(bool dragOn) final;
-
     LayoutSize offsetForInFlowPositionedInline(const LayoutBox& child) const;
 
     void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const final;

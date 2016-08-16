@@ -665,7 +665,6 @@ public:
     bool isText() const  { return m_bitfields.isText(); }
     bool isBox() const { return m_bitfields.isBox(); }
     bool isInline() const { return m_bitfields.isInline(); } // inline object
-    bool isDragging() const { return m_bitfields.isDragging(); }
     bool isAtomicInlineLevel() const { return m_bitfields.isAtomicInlineLevel(); }
     bool isHorizontalWritingMode() const { return m_bitfields.horizontalWritingMode(); }
     bool hasFlippedBlocksWritingMode() const
@@ -728,8 +727,6 @@ public:
     // any pseudo classes (and therefore has no concept of changing state).
     ComputedStyle* getCachedPseudoStyle(PseudoId, const ComputedStyle* parentStyle = nullptr) const;
     PassRefPtr<ComputedStyle> getUncachedPseudoStyle(const PseudoStyleRequest&, const ComputedStyle* parentStyle = nullptr, const ComputedStyle* ownStyle = nullptr) const;
-
-    virtual void updateDragState(bool dragOn);
 
     LayoutView* view() const { return document().layoutView(); }
     FrameView* frameView() const { return document().view(); }
@@ -1723,7 +1720,6 @@ private:
             , m_isInline(true)
             , m_isAtomicInlineLevel(false)
             , m_horizontalWritingMode(true)
-            , m_isDragging(false)
             , m_hasLayer(false)
             , m_hasOverflowClip(false)
             , m_hasTransformRelatedProperty(false)
@@ -1834,7 +1830,6 @@ private:
         // not inline but shouldn't (crbug.com/567964). This should be enforced.
         ADD_BOOLEAN_BITFIELD(isAtomicInlineLevel, IsAtomicInlineLevel);
         ADD_BOOLEAN_BITFIELD(horizontalWritingMode, HorizontalWritingMode);
-        ADD_BOOLEAN_BITFIELD(isDragging, IsDragging);
 
         ADD_BOOLEAN_BITFIELD(hasLayer, HasLayer);
 
@@ -1925,7 +1920,6 @@ private:
     void setNormalChildNeedsLayout(bool b) { m_bitfields.setNormalChildNeedsLayout(b); }
     void setPosChildNeedsLayout(bool b) { m_bitfields.setPosChildNeedsLayout(b); }
     void setNeedsSimplifiedNormalFlowLayout(bool b) { m_bitfields.setNeedsSimplifiedNormalFlowLayout(b); }
-    void setIsDragging(bool b) { m_bitfields.setIsDragging(b); }
     void setSelfNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setSelfNeedsOverflowRecalcAfterStyleChange(true); }
     void setChildNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(true); }
 

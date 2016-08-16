@@ -773,7 +773,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
                 element.setChildrenOrSiblingsAffectedByDrag();
             }
         }
-        return element.layoutObject() && element.layoutObject()->isDragging();
+        return element.isDragged();
     case CSSSelector::PseudoFocus:
         if (m_mode == ResolvingStyle) {
             if (context.inRightmostCompound) {

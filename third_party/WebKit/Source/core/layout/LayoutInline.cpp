@@ -1128,13 +1128,6 @@ PaintLayerType LayoutInline::layerTypeRequired() const
         ||  style()->hasCompositorProxy() || style()->containsPaint() ? NormalPaintLayer : NoPaintLayer;
 }
 
-void LayoutInline::updateDragState(bool dragOn)
-{
-    LayoutBoxModelObject::updateDragState(dragOn);
-    if (LayoutBoxModelObject* continuation = this->continuation())
-        continuation->updateDragState(dragOn);
-}
-
 void LayoutInline::childBecameNonInline(LayoutObject* child)
 {
     // We have to split the parent flow.

@@ -142,40 +142,47 @@ private:
     std::unique_ptr<SkPictureBuilder> m_pictureBuilder;
 };
 
-class NodeImageBuilder {
+class DraggedNodeImageBuilder {
     STACK_ALLOCATED();
 public:
-    NodeImageBuilder(const LocalFrame& localFrame, const Node& node)
+    DraggedNodeImageBuilder(const LocalFrame& localFrame, Node& node)
         : m_localFrame(&localFrame)
-        , m_draggedLayoutObject(draggedLayoutObjectOf(localFrame, node))
-#if DCHECK_IS_ON()
-        , m_layoutCount(m_localFrame->view()->layoutCount())
+        , m_node(&node)
+#if ENABLE(ASSERT)
+        , m_domTreeVersion(node.document().domTreeVersion())
 #endif
     {
+        for (Node& descendant : NodeTraversal::inclusiveDescendantsOf(*m_node))
+            descendant.setDragged(true);
     }
 
-    ~NodeImageBuilder()
+    ~DraggedNodeImageBuilder()
     {
-        DCHECK(isValid());
-        if (!m_draggedLayoutObject)
-            return;
-        DCHECK(m_draggedLayoutObject->isDragging());
-        m_draggedLayoutObject->updateDragState(false);
+#if ENABLE(ASSERT)
+        DCHECK_EQ(m_domTreeVersion, m_node->document().domTreeVersion());
+#endif
+        for (Node& descendant : NodeTraversal::inclusiveDescendantsOf(*m_node))
+            descendant.setDragged(false);
     }
 
     std::unique_ptr<DragImage> createImage()
     {
-        DCHECK(isValid());
-        if (!m_draggedLayoutObject)
+#if ENABLE(ASSERT)
+        DCHECK_EQ(m_domTreeVersion, m_node->document().domTreeVersion());
+#endif
+        // Construct layout object for |m_node| with pseudo class "-webkit-drag"
+        m_localFrame->view()->updateAllLifecyclePhasesExceptPaint();
+        LayoutObject* const draggedLayoutObject = m_node->layoutObject();
+        if (!draggedLayoutObject)
             return nullptr;
         // Paint starting at the nearest stacking context, clipped to the object
         // itself. This will also paint the contents behind the object if the
         // object contains transparency and there are other elements in the same
         // stacking context which stacked below.
-        PaintLayer* layer = m_draggedLayoutObject->enclosingLayer();
+        PaintLayer* layer = draggedLayoutObject->enclosingLayer();
         if (!layer->stackingNode()->isStackingContext())
             layer = layer->stackingNode()->ancestorStackingContextNode()->layer();
-        IntRect absoluteBoundingBox = m_draggedLayoutObject->absoluteBoundingBoxRectIncludingDescendants();
+        IntRect absoluteBoundingBox = draggedLayoutObject->absoluteBoundingBoxRectIncludingDescendants();
         FloatRect boundingBox = layer->layoutObject()->absoluteToLocalQuad(FloatQuad(absoluteBoundingBox), UseTransforms).boundingBox();
         DragImageBuilder dragImageBuilder(*m_localFrame, boundingBox);
         {
@@ -183,42 +190,14 @@ public:
             PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects;
             PaintLayerPainter(*layer).paintLayer(dragImageBuilder.context(), paintingInfo, flags);
         }
-        return dragImageBuilder.createImage(1.0f, LayoutObject::shouldRespectImageOrientation(m_draggedLayoutObject));
+        return dragImageBuilder.createImage(1.0f, LayoutObject::shouldRespectImageOrientation(draggedLayoutObject));
     }
 
 private:
-    static LayoutObject* draggedLayoutObjectOf(const LocalFrame& localFrame, const Node& node)
-    {
-        // TODO(yosin): We should handle pseudo-class ":-webkit-drag" as similar
-        // as ":hover" and ":active", rather than using flag in |LayoutObject|,
-        // to avoid update layout tree here.
-        localFrame.view()->updateAllLifecyclePhasesExceptPaint();
-        LayoutObject* layoutObject = node.layoutObject();
-        if (!layoutObject)
-            return nullptr;
-        // Update layout object for |node| with pseudo-class ":-webkit-drag".
-        layoutObject->updateDragState(true);
-        localFrame.view()->updateAllLifecyclePhasesExceptPaint();
-        // |node| with pseudo-class ":-webkit-drag" may blow away layout object.
-        return node.layoutObject();
-    }
-
-    bool isValid() const
-    {
-#if DCHECK_IS_ON()
-        return m_layoutCount == m_localFrame->view()->layoutCount();
-#else
-        return true;
-#endif
-    }
-
     const Member<const LocalFrame> m_localFrame;
-
-    // This class manages |isDrag()| of |m_draggedLayoutObject|.
-    LayoutObject* const m_draggedLayoutObject;
-
-#if DCHECK_IS_ON()
-    const int m_layoutCount;
+    const Member<Node> m_node;
+#if ENABLE(ASSERT)
+    const uint64_t m_domTreeVersion;
 #endif
 };
 
@@ -667,7 +646,7 @@ double LocalFrame::devicePixelRatio() const
 
 std::unique_ptr<DragImage> LocalFrame::nodeImage(Node& node)
 {
-    NodeImageBuilder imageNode(*this, node);
+    DraggedNodeImageBuilder imageNode(*this, node);
     return imageNode.createImage();
 }
 

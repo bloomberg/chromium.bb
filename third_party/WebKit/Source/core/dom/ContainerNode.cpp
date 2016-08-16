@@ -1044,6 +1044,33 @@ void ContainerNode::setActive(bool down)
     LayoutTheme::theme().controlStateChanged(*layoutObject(), PressedControlState);
 }
 
+void ContainerNode::setDragged(bool newValue)
+{
+    if (newValue == isDragged())
+        return;
+
+    Node::setDragged(newValue);
+
+    // If :-webkit-drag sets display: none we lose our dragging but still need
+    // to recalc our style.
+    if (!layoutObject()) {
+        if (newValue)
+            return;
+        if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByDrag())
+            toElement(this)->pseudoStateChanged(CSSSelector::PseudoDrag);
+        else
+            setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Drag));
+        return;
+    }
+
+    if (computedStyle()->affectedByDrag()) {
+        StyleChangeType changeType = computedStyle()->hasPseudoStyle(PseudoIdFirstLetter) ? SubtreeStyleChange : LocalStyleChange;
+        setNeedsStyleRecalc(changeType, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Drag));
+    }
+    if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByDrag())
+        toElement(this)->pseudoStateChanged(CSSSelector::PseudoDrag);
+}
+
 void ContainerNode::setHovered(bool over)
 {
     if (over == hovered())

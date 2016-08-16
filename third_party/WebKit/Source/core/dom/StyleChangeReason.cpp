@@ -50,6 +50,7 @@ const char Zoom[] = "Zoom";
 namespace StyleChangeExtraData {
 DEFINE_GLOBAL(AtomicString, Active)
 DEFINE_GLOBAL(AtomicString, Disabled)
+DEFINE_GLOBAL(AtomicString, Drag)
 DEFINE_GLOBAL(AtomicString, Focus)
 DEFINE_GLOBAL(AtomicString, Hover)
 DEFINE_GLOBAL(AtomicString, Past)
@@ -61,6 +62,7 @@ void init()
 
     new (NotNull, (void*)&Active) AtomicString(":active");
     new (NotNull, (void*)&Disabled) AtomicString(":disabled");
+    new (NotNull, (void*)&Drag) AtomicString(":-webkit-drag");
     new (NotNull, (void*)&Focus) AtomicString(":focus");
     new (NotNull, (void*)&Hover) AtomicString(":hover");
     new (NotNull, (void*)&Past) AtomicString(":past");

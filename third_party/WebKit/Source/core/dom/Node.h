@@ -344,8 +344,11 @@ public:
     bool isUserActionElement() const { return getFlag(IsUserActionElementFlag); }
     void setUserActionElement(bool flag) { setFlag(flag, IsUserActionElementFlag); }
 
+    // TODO(yosin): We should rename |active()| to |isActive()| as |UserActionElementSet|.
     bool active() const { return isUserActionElement() && isUserActionElementActive(); }
     bool inActiveChain() const { return isUserActionElement() && isUserActionElementInActiveChain(); }
+    bool isDragged() const { return isUserActionElement() && isUserActionElementDragged(); }
+    // TODO(yosin): We should rename |hovered()| to |isHovered()| as |UserActionElementSet|.
     bool hovered() const { return isUserActionElement() && isUserActionElementHovered(); }
     // Note: As a shadow host whose root with delegatesFocus=false may become focused state when
     // an inner element gets focused, in that case more than one elements in a document can return
@@ -399,6 +402,7 @@ public:
 
     virtual void setFocus(bool flag);
     virtual void setActive(bool flag = true);
+    virtual void setDragged(bool flag);
     virtual void setHovered(bool flag = true);
 
     virtual short tabIndex() const;
@@ -771,6 +775,7 @@ private:
 
     bool isUserActionElementActive() const;
     bool isUserActionElementInActiveChain() const;
+    bool isUserActionElementDragged() const;
     bool isUserActionElementHovered() const;
     bool isUserActionElementFocused() const;
 

@@ -41,10 +41,12 @@ public:
     bool isFocused(const Node* node) { return hasFlags(node, IsFocusedFlag); }
     bool isActive(const Node* node) { return hasFlags(node, IsActiveFlag); }
     bool isInActiveChain(const Node* node) { return hasFlags(node, InActiveChainFlag); }
+    bool isDragged(const Node* node) { return hasFlags(node, IsDraggedFlag); }
     bool isHovered(const Node* node) { return hasFlags(node, IsHoveredFlag); }
     void setFocused(Node* node, bool enable) { setFlags(node, enable, IsFocusedFlag); }
     void setActive(Node* node, bool enable) { setFlags(node, enable, IsActiveFlag); }
     void setInActiveChain(Node* node, bool enable) { setFlags(node, enable, InActiveChainFlag); }
+    void setDragged(Node* node, bool enable) { setFlags(node, enable, IsDraggedFlag); }
     void setHovered(Node* node, bool enable) { setFlags(node, enable, IsHoveredFlag); }
 
     UserActionElementSet();
@@ -59,7 +61,8 @@ private:
         IsActiveFlag      = 1 ,
         InActiveChainFlag = 1 << 1,
         IsHoveredFlag     = 1 << 2,
-        IsFocusedFlag     = 1 << 3
+        IsFocusedFlag     = 1 << 3,
+        IsDraggedFlag     = 1 << 4,
     };
 
     void setFlags(Node* node, bool enable, unsigned flags) { enable ? setFlags(node, flags) : clearFlags(node, flags); }

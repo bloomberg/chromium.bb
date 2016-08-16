@@ -122,6 +122,7 @@ public:
     void setFocus(bool) override;
     void focusStateChanged();
     void setActive(bool = true) override;
+    void setDragged(bool) override;
     void setHovered(bool = true) override;
 
     bool childrenOrSiblingsAffectedByFocus() const { return hasRestyleFlag(ChildrenOrSiblingsAffectedByFocus); }

@@ -1990,13 +1990,6 @@ LayoutObject* LayoutBlockFlow::hoverAncestor() const
     return isAnonymousBlockContinuation() ? continuation() : LayoutBlock::hoverAncestor();
 }
 
-void LayoutBlockFlow::updateDragState(bool dragOn)
-{
-    LayoutBlock::updateDragState(dragOn);
-    if (LayoutBoxModelObject* continuation = this->continuation())
-        continuation->updateDragState(dragOn);
-}
-
 RootInlineBox* LayoutBlockFlow::createAndAppendRootInlineBox()
 {
     RootInlineBox* rootBox = createRootInlineBox();

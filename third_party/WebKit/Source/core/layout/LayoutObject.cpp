@@ -2666,20 +2666,6 @@ PositionWithAffinity LayoutObject::positionForPoint(const LayoutPoint&)
     return createPositionWithAffinity(caretMinOffset());
 }
 
-void LayoutObject::updateDragState(bool dragOn)
-{
-    bool valueChanged = (dragOn != isDragging());
-    setIsDragging(dragOn);
-    if (valueChanged && node()) {
-        if (node()->isElementNode() && toElement(node())->childrenOrSiblingsAffectedByDrag())
-            toElement(node())->pseudoStateChanged(CSSSelector::PseudoDrag);
-        else if (style()->affectedByDrag())
-            node()->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Drag));
-    }
-    for (LayoutObject* curr = slowFirstChild(); curr; curr = curr->nextSibling())
-        curr->updateDragState(dragOn);
-}
-
 CompositingState LayoutObject::compositingState() const
 {
     return hasLayer() ? toLayoutBoxModelObject(this)->layer()->compositingState() : NotComposited;

@@ -55,6 +55,7 @@ typedef const char StyleChangeReasonString[];
 namespace StyleChangeExtraData {
 extern const AtomicString& Active;
 extern const AtomicString& Disabled;
+extern const AtomicString& Drag;
 extern const AtomicString& Focus;
 extern const AtomicString& Hover;
 extern const AtomicString& Past;

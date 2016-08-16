@@ -2203,6 +2203,11 @@ void Node::setActive(bool flag)
     document().userActionElements().setActive(this, flag);
 }
 
+void Node::setDragged(bool flag)
+{
+    document().userActionElements().setDragged(this, flag);
+}
+
 void Node::setHovered(bool flag)
 {
     document().userActionElements().setHovered(this, flag);
@@ -2218,6 +2223,12 @@ bool Node::isUserActionElementInActiveChain() const
 {
     DCHECK(isUserActionElement());
     return document().userActionElements().isInActiveChain(this);
+}
+
+bool Node::isUserActionElementDragged() const
+{
+    DCHECK(isUserActionElement());
+    return document().userActionElements().isDragged(this);
 }
 
 bool Node::isUserActionElementHovered() const
