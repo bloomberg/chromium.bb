@@ -1530,7 +1530,11 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
 
     for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
         if (node->isElementNode()) {
-            if (!nodeSet.contains(node->parentNode())) {
+            // Exclude start & end container unless the entire corresponding
+            // node is included in the range.
+            if (!nodeSet.contains(node->parentNode())
+                && (startContainer == endContainer
+                || (!node->contains(startContainer) && !node->contains(endContainer)))) {
                 if (LayoutObject* layoutObject = toElement(node)->layoutObject()) {
                     Vector<FloatQuad> elementQuads;
                     layoutObject->absoluteQuads(elementQuads);
