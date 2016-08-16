@@ -597,6 +597,11 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Returns the maximum size of the header encoder compression table.
   size_t header_encoder_table_size() const;
 
+  // For testing support (i.e. for clients and backends),
+  // allow overriding the flag on a per framer basis.
+  void set_use_new_methods_for_test(bool v) { use_new_methods_ = v; }
+  bool use_new_methods_for_test() const { return use_new_methods_; }
+
  protected:
   friend class BufferedSpdyFramer;
   friend class HttpNetworkLayer;  // This is temporary for the server.
@@ -851,6 +856,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // If true, then ProcessInput returns after processing a full frame,
   // rather than reading all available input.
   bool process_single_input_frame_ = false;
+
+  bool use_new_methods_ =
+      FLAGS_chromium_http2_flag_spdy_framer_use_new_methods3;
 };
 
 }  // namespace net
