@@ -473,22 +473,6 @@ TEST_F(SearchTest, GetInstantURL) {
   // Disable suggest. No Instant URL.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
   EXPECT_EQ(GURL(), GetInstantURL(profile(), false));
-
-  // Use alternate Instant search base URL.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:8 use_alternate_instant_url:1"));
-  EXPECT_EQ(GURL("https://foo.com/instant?foo=foo&qbp=1#foo=foo&strk"),
-            GetInstantURL(profile(), false));
-}
-
-TEST_F(SearchTest, UseSearchPathForInstant) {
-  // Use alternate Instant search base URL path.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 use_alternate_instant_url:1 use_search_path_for_instant:1"));
-  EXPECT_EQ(GURL("https://foo.com/search?foo=foo&qbp=1#foo=foo&strk"),
-            GetInstantURL(profile(), false));
 }
 
 TEST_F(SearchTest, InstantSearchEnabledCGI) {
@@ -540,33 +524,6 @@ TEST_F(SearchTest, CommandLineOverrides) {
   ASSERT_TRUE(instant_url.is_valid());
   EXPECT_EQ("http://www.bar.com/webhp?a=b&strk", instant_url.spec());
 }
-
-TEST_F(SearchTest, ShouldUseAltInstantURL_DisabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:8 use_alternate_instant_url:0"));
-  EXPECT_FALSE(ShouldUseAltInstantURL());
-}
-
-TEST_F(SearchTest, ShouldUseAltInstantURL_EnabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:8 use_alternate_instant_url:1"));
-  EXPECT_TRUE(ShouldUseAltInstantURL());
-}
-
-TEST_F(SearchTest, ShouldUseSearchPathForInstant_DisabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 use_alternate_instant_url:1 use_search_path_for_instant:0"));
-  EXPECT_FALSE(ShouldUseSearchPathForInstant());
-}
-
-TEST_F(SearchTest, ShouldUseSearchPathForInstant_EnabledViaFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 use_alternate_instant_url:1 use_search_path_for_instant:1"));
-  EXPECT_TRUE(ShouldUseSearchPathForInstant());
-}
-
 
 TEST_F(SearchTest, IsNTPURL) {
   GURL invalid_url;
