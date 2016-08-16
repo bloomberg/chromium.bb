@@ -326,15 +326,14 @@ public class DownloadNotificationServiceTest extends
      */
     @SmallTest
     @Feature({"Download"})
-    public void testIncognitoDownloadFailsOnBrowserKill() throws Exception {
+    public void testIncognitoDownloadCanceledOnBrowserKill() throws Exception {
         setupService();
         Context mockContext = new AdvancedMockContext(getSystemContext());
         getService().setContext(mockContext);
         Set<String> notifications = new HashSet<String>();
         String uuid = UUID.randomUUID().toString();
         notifications.add(new DownloadSharedPreferenceEntry(1, true, true, uuid, "test1",
-                                  DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
-                                  .getSharedPreferenceString());
+                DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD).getSharedPreferenceString());
         SharedPreferences sharedPrefs =
                 ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -345,7 +344,6 @@ public class DownloadNotificationServiceTest extends
         assertTrue(getService().isPaused());
         assertFalse(sharedPrefs.contains(
                 DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS));
-        assertEquals(uuid, getService().getFailedDownloadGuid());
     }
 
     @SmallTest

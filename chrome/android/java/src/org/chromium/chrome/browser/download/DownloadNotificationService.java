@@ -123,6 +123,7 @@ public class DownloadNotificationService extends Service {
      * notifications.
      */
     private void onBrowserKilled() {
+        cancelOffTheRecordNotifications();
         pauseAllDownloads();
         if (!mDownloadSharedPreferenceEntries.isEmpty()) {
             boolean allowMeteredConnection = false;
@@ -294,7 +295,9 @@ public class DownloadNotificationService extends Service {
                 buildPendingIntent(resumeIntent, entry.notificationId));
         updateNotification(entry.notificationId, builder.build());
         // If download is not auto resumable, there is no need to keep it in SharedPreferences.
-        if (entry.isOffTheRecord || !isAutoResumable) {
+        // Keep off the record downloads in SharedPreferences so we can cancel it when browser is
+        // killed.
+        if (!isAutoResumable && !entry.isOffTheRecord) {
             removeSharedPreferenceEntry(downloadGuid);
         }
         mDownloadsInProgress.remove(downloadGuid);
@@ -356,9 +359,21 @@ public class DownloadNotificationService extends Service {
      */
     @VisibleForTesting
     void pauseAllDownloads() {
-        for (int i = 0; i < mDownloadSharedPreferenceEntries.size(); ++i) {
+        for (int i = mDownloadSharedPreferenceEntries.size() - 1; i >= 0; --i) {
             DownloadSharedPreferenceEntry entry = mDownloadSharedPreferenceEntries.get(i);
             notifyDownloadPaused(entry.downloadGuid, !entry.isOffTheRecord, true);
+        }
+    }
+
+    /**
+     * Cancels all off the record download notifications.
+     */
+    void cancelOffTheRecordNotifications() {
+        for (int i = mDownloadSharedPreferenceEntries.size() - 1; i >= 0; --i) {
+            DownloadSharedPreferenceEntry entry = mDownloadSharedPreferenceEntries.get(i);
+            if (entry.isOffTheRecord) {
+                notifyDownloadCanceled(entry.downloadGuid);
+            }
         }
     }
 
