@@ -52,7 +52,8 @@ class MaximizableWidgetDelegate : public views::WidgetDelegateView {
 // fullscreen.)
 bool IsInImmersiveFullscreen(ash::wm::WindowState* window_state) {
   return window_state->IsFullscreen() &&
-      !window_state->hide_shelf_when_fullscreen();
+         (window_state->shelf_mode_in_fullscreen() !=
+          ash::wm::WindowState::SHELF_HIDDEN);
 }
 
 }  // namespace

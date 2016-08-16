@@ -307,7 +307,6 @@ WindowState::WindowState(WmWindow* window)
       can_consume_system_keys_(false),
       unminimize_to_restore_bounds_(false),
       in_immersive_fullscreen_(false),
-      hide_shelf_when_fullscreen_(true),
       minimum_visibility_(false),
       can_be_dragged_(true),
       cached_always_on_top_(false),

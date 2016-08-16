@@ -9,6 +9,7 @@
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
+#include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
@@ -48,6 +49,14 @@ const struct Accelerator {
     {ui::VKEY_W, ui::EF_CONTROL_DOWN},
     {ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN},
     {ui::VKEY_F4, ui::EF_ALT_DOWN}};
+
+void UpdateShelfStateForFullscreenChange(views::Widget* widget) {
+  ash::wm::WindowState* window_state =
+      ash::wm::GetWindowState(widget->GetNativeWindow());
+  window_state->set_shelf_mode_in_fullscreen(
+      ash::wm::WindowState::SHELF_AUTO_HIDE_INVISIBLE);
+  ash::Shell::GetInstance()->UpdateShelfVisibility();
+}
 
 class CustomFrameView : public views::NonClientFrameView {
  public:
@@ -117,6 +126,7 @@ class CustomWindowStateDelegate : public ash::wm::WindowStateDelegate,
     if (widget_) {
       bool enter_fullscreen = !window_state->IsFullscreen();
       widget_->SetFullscreen(enter_fullscreen);
+      UpdateShelfStateForFullscreenChange(widget_);
     }
     return true;
   }
@@ -389,6 +399,7 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
   // state doesn't change.
   ScopedConfigure scoped_configure(this, true);
   widget_->SetFullscreen(fullscreen);
+  UpdateShelfStateForFullscreenChange(widget_);
 }
 
 void ShellSurface::SetPinned(bool pinned) {

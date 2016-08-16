@@ -196,14 +196,21 @@ class ASH_EXPORT WindowState {
     unminimize_to_restore_bounds_ = value;
   }
 
+  // Controls the shelf mode when this window is in fullscreen state.
+  // This enum is temporary until MD immersive is launched.
+  // TODO(oshima): Remove this when MD immersive is launched.
+  enum FullscreenShelfMode {
+    SHELF_HIDDEN,
+    SHELF_AUTO_HIDE_VISIBLE,
+    SHELF_AUTO_HIDE_INVISIBLE,
+  };
   // Gets/sets whether the shelf should be hidden when this window is
   // fullscreen.
-  bool hide_shelf_when_fullscreen() const {
-    return hide_shelf_when_fullscreen_;
+  FullscreenShelfMode shelf_mode_in_fullscreen() const {
+    return shelf_mode_in_fullscreen_;
   }
-
-  void set_hide_shelf_when_fullscreen(bool value) {
-    hide_shelf_when_fullscreen_ = value;
+  void set_shelf_mode_in_fullscreen(FullscreenShelfMode value) {
+    shelf_mode_in_fullscreen_ = value;
   }
 
   // If the minimum visibility is true, ash will try to keep a
@@ -380,7 +387,7 @@ class ASH_EXPORT WindowState {
   bool unminimize_to_restore_bounds_;
   bool in_immersive_fullscreen_;
   bool ignore_keyboard_bounds_change_ = false;
-  bool hide_shelf_when_fullscreen_;
+  FullscreenShelfMode shelf_mode_in_fullscreen_ = SHELF_HIDDEN;
   bool minimum_visibility_;
   bool can_be_dragged_;
   bool cached_always_on_top_;
