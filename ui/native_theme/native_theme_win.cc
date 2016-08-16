@@ -257,41 +257,18 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
       break;
   }
 
-  bool needs_paint_indirect = false;
-  if (!skia::SupportsPlatformPaint(canvas)) {
-    // This block will only get hit with --enable-accelerated-drawing flag.
-    needs_paint_indirect = true;
-  } else {
-    // Scrollbar components on Windows Classic theme (on all Windows versions)
-    // have particularly problematic alpha values, so always draw them
-    // indirectly. In addition, scrollbar thumbs and grippers for the Windows XP
-    // theme (available only on Windows XP) also need their alpha values
-    // fixed.
-    switch (part) {
-      case kScrollbarDownArrow:
-      case kScrollbarUpArrow:
-      case kScrollbarLeftArrow:
-      case kScrollbarRightArrow:
-        needs_paint_indirect = !GetThemeHandle(SCROLLBAR);
-        break;
-      case kScrollbarHorizontalThumb:
-      case kScrollbarVerticalThumb:
-      case kScrollbarHorizontalGripper:
-      case kScrollbarVerticalGripper:
-        needs_paint_indirect = !GetThemeHandle(SCROLLBAR) ||
-            base::win::GetVersion() == base::win::VERSION_XP;
-        break;
-      default:
-        break;
-    }
-  }
-
   skia::ScopedPlatformPaint paint(canvas);
   HDC surface = paint.GetPlatformSurface();
-  if (needs_paint_indirect)
-    PaintIndirect(canvas, surface, part, state, rect, extra);
-  else
+
+  // When drawing the task manager or the bookmark editor, we draw into an
+  // offscreen buffer, where we can use OS-specific drawing routines for
+  // UI features like scrollbars. However, we need to set up that buffer,
+  // and then read it back when it's done and blit it onto the screen.
+
+  if (skia::SupportsPlatformPaint(canvas))
     PaintDirect(canvas, surface, part, state, rect, extra);
+  else
+    PaintIndirect(canvas, surface, part, state, rect, extra);
 }
 
 NativeThemeWin::NativeThemeWin()
