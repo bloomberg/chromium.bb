@@ -57,6 +57,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 #if !defined(OS_MACOSX)
 #include "components/prefs/pref_service.h"
@@ -298,6 +299,7 @@ void AppWindow::Init(const GURL& url,
   requested_alpha_enabled_ = new_params.alpha_enabled;
   is_ime_window_ = params.is_ime_window;
   show_in_shelf_ = params.show_in_shelf;
+  window_icon_url_ = params.window_icon_url;
 
   AppWindowClient* app_window_client = AppWindowClient::Get();
   native_app_window_.reset(
@@ -307,6 +309,17 @@ void AppWindow::Init(const GURL& url,
       browser_context_, extension_id_, web_contents(), app_delegate_.get()));
 
   UpdateExtensionAppIcon();
+  // Download showInShelf=true window icon.
+  if (window_icon_url_.is_valid()) {
+    image_loader_ptr_factory_.InvalidateWeakPtrs();
+    web_contents()->DownloadImage(
+        window_icon_url_,
+        true,   // is a favicon
+        0,      // no maximum size
+        false,  // normal cache policy
+        base::Bind(&AppWindow::DidDownloadFavicon,
+                   image_loader_ptr_factory_.GetWeakPtr()));
+  }
   AppWindowRegistry::Get(browser_context_)->AddAppWindow(this);
 
   if (new_params.hidden) {
@@ -603,9 +616,23 @@ void AppWindow::UpdateDraggableRegions(
 }
 
 void AppWindow::UpdateAppIcon(const gfx::Image& image) {
-  if (image.IsEmpty())
-    return;
-  app_icon_ = image;
+  // Set the showInShelf=true window icon and add the app_icon_image_
+  // as a badge. If the image is empty, set the default app icon placeholder
+  // as the base image.
+  if (window_icon_url_.is_valid() && !app_icon_image_->image().IsEmpty()) {
+    gfx::Image base_image =
+        !image.IsEmpty()
+            ? image
+            : gfx::Image(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                  IDR_APP_DEFAULT_ICON));
+    app_icon_ = gfx::Image(gfx::ImageSkiaOperations::CreateIconWithBadge(
+        base_image.AsImageSkia(), app_icon_image_->image_skia()));
+  } else {
+    if (image.IsEmpty())
+      return;
+
+    app_icon_ = image;
+  }
   native_app_window_->UpdateWindowIcon();
   AppWindowRegistry::Get(browser_context_)->AppWindowIconChanged(this);
 }
@@ -814,8 +841,10 @@ void AppWindow::DidDownloadFavicon(
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
-  if (image_url != app_icon_url_ || bitmaps.empty())
+  if (((image_url != app_icon_url_) && (image_url != window_icon_url_)) ||
+      bitmaps.empty()) {
     return;
+  }
 
   // Bitmaps are ordered largest to smallest. Choose the smallest bitmap
   // whose height >= the preferred size.

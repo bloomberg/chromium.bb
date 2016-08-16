@@ -196,6 +196,9 @@ class AppWindow : public content::WebContentsDelegate,
     // the app. Defaults to false.
     bool show_in_shelf;
 
+    // Icon URL to be used for setting the window icon.
+    GURL window_icon_url;
+
     // The API enables developers to specify content or window bounds. This
     // function combines them into a single, constrained window size.
     gfx::Rect GetInitialWindowBounds(const gfx::Insets& frame_insets) const;
@@ -374,6 +377,8 @@ class AppWindow : public content::WebContentsDelegate,
   bool is_ime_window() const { return is_ime_window_; }
 
   bool show_in_shelf() const { return show_in_shelf_; }
+
+  const GURL& window_icon_url() const { return window_icon_url_; }
 
   void SetAppWindowContentsForTesting(
       std::unique_ptr<AppWindowContents> contents) {
@@ -579,6 +584,11 @@ class AppWindow : public content::WebContentsDelegate,
 
   // Whether |show_in_shelf| was set in the CreateParams.
   bool show_in_shelf_;
+
+  // Icon URL to be used for setting the window icon. If not empty,
+  // app_icon_ will be fetched and set using this URL and will have
+  // app_icon_image_ as a badge.
+  GURL window_icon_url_;
 
   // PlzNavigate: this is called when the first navigation is ready to commit.
   base::Closure on_first_commit_callback_;

@@ -332,6 +332,17 @@ bool AppWindowCreateFunction::RunAsync() {
       }
     }
 
+    if (options->icon.get()) {
+      // First, check if the window icon URL is a valid global URL.
+      create_params.window_icon_url = GURL(*options->icon.get());
+
+      // If the URL is not global, check for a valid extension local URL.
+      if (!create_params.window_icon_url.is_valid()) {
+        create_params.window_icon_url =
+            extension()->GetResourceURL(*options->icon.get());
+      }
+    }
+
     if (options->type != app_window::WINDOW_TYPE_PANEL) {
       switch (options->state) {
         case app_window::STATE_NONE:

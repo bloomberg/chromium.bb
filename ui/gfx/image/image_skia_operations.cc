@@ -423,6 +423,28 @@ class RotatedSource : public ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(RotatedSource);
 };
 
+class IconWithBadgeSource : public gfx::CanvasImageSource {
+ public:
+  IconWithBadgeSource(const ImageSkia& icon, const ImageSkia& badge)
+      : gfx::CanvasImageSource(icon.size(), false /* is opaque */),
+        icon_(icon),
+        badge_(badge) {}
+
+  ~IconWithBadgeSource() override {}
+
+  // gfx::CanvasImageSource override.
+  void Draw(Canvas* canvas) override {
+    canvas->DrawImageInt(icon_, 0, 0);
+    canvas->DrawImageInt(badge_, (icon_.width() - badge_.width()),
+                         (icon_.height() - badge_.height()));
+  }
+
+ private:
+  const ImageSkia icon_;
+  const ImageSkia badge_;
+
+  DISALLOW_COPY_AND_ASSIGN(IconWithBadgeSource);
+};
 
 }  // namespace
 
@@ -546,6 +568,18 @@ ImageSkia ImageSkiaOperations::CreateRotatedImage(
           source.size() :
           gfx::Size(source.height(), source.width()));
 
+}
+
+// static
+ImageSkia ImageSkiaOperations::CreateIconWithBadge(const ImageSkia& icon,
+                                                   const ImageSkia& badge) {
+  if (icon.isNull())
+    return ImageSkia();
+
+  if (badge.isNull())
+    return icon;
+
+  return ImageSkia(new IconWithBadgeSource(icon, badge), icon.size());
 }
 
 }  // namespace gfx

@@ -93,6 +93,12 @@ class GFX_EXPORT ImageSkiaOperations {
       const ImageSkia& source,
       SkBitmapOperations::RotationAmount rotation);
 
+  // Creates an icon by painting the second icon as a badge to the first one.
+  // The second icon is in the right corner of the first icon. If the icon
+  // is valid and the badge is not, the icon will be returned.
+  static ImageSkia CreateIconWithBadge(const ImageSkia& icon,
+                                       const ImageSkia& badge);
+
  private:
   ImageSkiaOperations();  // Class for scoping only.
 };
