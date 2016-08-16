@@ -1261,15 +1261,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik vklopljen, bo sistem <ph name="PRODUCT_OS_NAME" /> preprečil, da bi se naprava zagnala v načinu za razvijalce. Če je stikalo za razvijalce vklopljeno, sistem ne bo dovolil zagona in bo prikazal zaslon z napako.
 
       Če ta pravilnik ni nastavljen ali je izklopljen, bo način za razvijalce v napravi še naprej na voljo.</translation>
-<translation id="5203271367506489164">Ta pravilnik je zastarel in nadomeščen s pravilnikom »NetworkPredictionOptions« v različici M48. Odstranjen je v različici M54.
-
-      Omogoča omrežno predvidevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
-
-      Ta pravilnik ne nadzira le vnaprejšnjega prenosa podatkov DNS, ampak tudi vnaprejšnje povezovanje TCP in SSL ter vnaprejšnje upodabljanje spletnih strani. Ime pravilnika se nanaša na vnaprejšnji prenos podatkov DNS zaradi zgodovinskih razlogov.
-
-      Če to nastavitev omogočite ali onemogočite, je uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
-
-      Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="5208240613060747912">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim ni dovoljeno prikazovati obvestil.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultNotificationsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -1369,6 +1360,13 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je pravilnik določen, se URL-ju za prenos semen različic doda parameter poizvedbe »restrict«. Vrednost parametra je vrednost, določena v tem pravilniku.
 
       Če pravilnik ni določen, se URL semen različic ne spremeni.</translation>
+<translation id="5563853101694018649">Onemogoči orodja za razvijalce in konzolo JavaScript.
+
+      Če to nastavitev omogočite, ne bo mogoče dostopati do orodij za razvijalce, prav tako pa ne bo več mogoče pregledovati elementov spletnih mest. Onemogočene bodo vse bližnjice na tipkovnici in morebitni vnosi v menijih ali kontekstnih menijih za odpiranje orodij za razvijalce in konzole JavaScript.
+
+      Če to možnost onemogočite ali je ne nastavite, bo uporabnik lahko uporabljal orodja za razvijalce in konzolo JavaScript.
+
+      Za naprave s sistemom <ph name="PRODUCT_OS_NAME" />, ki podpirajo izvajanje aplikacij za Android, ta pravilnik prav tako nadzira dostop do možnosti za razvijalce za Android. Če omogočite ta pravilnik, uporabniki ne morejo dostopati do možnosti za razvijalce. Če ta pravilnik onemogočite ali ga ne nastavite, uporabniki lahko dostopajo do možnosti za razvijalce, tako da se v aplikaciji Nastavitve za Android sedemkrat dotaknejo številke gradnje.</translation>
 <translation id="556941986578702361">Nadzira samodejno skrivanje police v sistemu <ph name="PRODUCT_OS_NAME" />.
 
       Če je ta pravilnik nastavljen na »AlwaysAutoHideShelf«, se bo polica vedno samodejno skrila.

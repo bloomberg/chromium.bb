@@ -1258,15 +1258,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si esta política está establecida en True, <ph name="PRODUCT_OS_NAME" /> evitará que el dispositivo se inicie en modo de desarrollador. El sistema no se iniciará y mostrará una pantalla de error cuando se active la opción de desarrollador.
 
       Si no se establece esta política o se establece en False, el modo de desarrollador seguirá disponible para el dispositivo.</translation>
-<translation id="5203271367506489164">Esta política está obsoleta en M48 y cambia a NetworkPredictionOptions. También se ha retirado de M54.
-
-      Habilita la predicción de red en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
-
-      Permite controlar tanto la solicitud previa de DNS como la conexión previa de SSL y TCP, así como la carga previa de páginas web. El nombre de esta política hace referencia a la solicitud previa de DNS por motivos históricos.
-
-      Si habilitas o inhabilitas esta opción, los usuarios no pueden cambiarla ni anularla en <ph name="PRODUCT_NAME" />.
-
-      Si esta política no se configura, la predicción de red se habilitará, pero los usuarios podrán cambiarla.</translation>
 <translation id="5208240613060747912">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -1911,7 +1902,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
           Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="7302043767260300182">Retraso de bloqueo de pantalla cuando el dispositivo está conectado a la red</translation>
-<translation id="7311458740754205918">Si se asigna True o si no se establece ningún valor, la página Nueva pestaña puede mostrar sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
+<translation id="7311458740754205918">Si se asigna True o no se establece ningún valor, la página Nueva pestaña puede mostrar sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
 
      Si se asigna el valor False, no se mostrarán las sugerencias de contenido generadas automáticamente en la página Nueva pestaña.</translation>
 <translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME" /></translation>

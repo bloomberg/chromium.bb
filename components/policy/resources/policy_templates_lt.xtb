@@ -1263,15 +1263,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei šios politikos nuostata nustatyta į „Taip“, „<ph name="PRODUCT_OS_NAME" />“ neleis paleisti įrenginio kūrėjo režimu. Sistema nebus paleista ir bus rodomas klaidos ekranas, įjungus kūrėjo jungiklį.
 
       Jei ši politika nenustatyta ar nustatyta „Ne“, kūrėjo režimas liks pasiekiamas įrenginiui.</translation>
-<translation id="5203271367506489164">Vietoje šios politikos M48 naudojama „NetworkPredictionOptions“ ir ji pašalinta iš M54.
-
-      Įgalinamas tinklo numatymas „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama keisti šio nustatymo.
-
-      Pagal šią politiką valdomas ne tik išankstinis DNS pateikimas, bet ir išankstinis TCP bei SSL ryšys ir tinklalapių pateikimas. Politikos pavadinime išankstinis DNS pateikimas įtrauktas atsižvelgiant į istoriją.
-
-      Jei įgalinate šį nustatymą arba jo neleidžiate, naudotojai negali jo pakeisti ar nepaisyti naudodami „<ph name="PRODUCT_NAME" />“.
-
-      Nenustačius šios politikos, šis nustatymas bus įgalintas, bet naudotojas galės jį pakeisti.</translation>
 <translation id="5208240613060747912">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti pranešimų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis pranešimų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
@@ -1371,6 +1362,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei jis nurodytas, prie pateikiant variantų pirminę reikšmę naudojamo URL bus pridėtas URL parametras „restrict“. Parametro vertė bus šioje politikoje nustatyta vertė.
 
       Jei ši politika nenustatyta, variantų pirminės reikšmės URL keičiamas nebus.</translation>
+<translation id="5563853101694018649">Išjungiami kūrėjo įrankiai ir „JavaScript“ pultas.
+
+      Jei įgalinsite šį nustatymą, nebus galima pasiekti kūrėjo įrankių, o svetainės elementų nebebus galima tikrinti. Bus išjungti visi spartieji klavišai, meniu ar kontekstinio meniu įrašai, skirti atidaryti kūrėjo įrankius ar „JavaScript“ pultą.
+
+      Išjungus šį nustatymą arba jo nenustačius, naudotojui bus leidžiama naudoti kūrėjo įrankius ir „JavaScript“ pultą.
+
+      „<ph name="PRODUCT_OS_NAME" />“ įrenginiuose, kuriuose galima paleisti „Android“ programas, pagal šią politiką valdoma ir prieiga prie „Android“ kūrėjo parinkčių. Jei nustatysite šią politiką į „true“, naudotojai negalės pasiekti Kūrėjo parinkčių. Jei nustatysite šią politiką į „false“ ar paliksite ją nenustatytą, naudotojai galės pasiekti Kūrėjo parinktis septynis kartus palietę „Android“ nustatymų programos versijos numerį.</translation>
 <translation id="556941986578702361">Valdomas automatinis „<ph name="PRODUCT_OS_NAME" />“ lentynos paslėpimas.
 
       Jei ši politika nustatyta kaip „Visada automatiškai paslėpti lentyną“, lentyna visada automatiškai paslepiama.
@@ -1926,7 +1924,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Ši politika taikoma, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="7302043767260300182">Ekrano užrakto delsa, kai naudojama kintamosios srovės energija</translation>
-<translation id="7311458740754205918">Jei ši politika nustatyta kaip „true“ arba nenustatyta, naujo skirtuko puslapyje gali būti rodomi turinio pasiūlymai.
+<translation id="7311458740754205918">Jei ši politika nustatyta kaip „true“ arba nenustatyta, naujo skirtuko puslapyje gali būti rodomi turinio pasiūlymai pagal naudotojo naršymo istoriją, pomėgius ir vietovę.
 
       Jei ši politika nustatyta kaip „false“, automatiškai sugeneruoti turinio pasiūlymai naujo skirtuko puslapyje nerodomi.</translation>
 <translation id="7323896582714668701">Papildomi „<ph name="PRODUCT_NAME" />“ komandinės eilutės parametrai</translation>

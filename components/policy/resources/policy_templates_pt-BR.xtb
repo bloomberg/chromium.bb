@@ -1156,15 +1156,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política é definida como "True", o <ph name="PRODUCT_OS_NAME" /> evita que o dispositivo seja iniciado no modo de desenvolvedor. O sistema se recusa a ser iniciado e mostra uma tela de erro quando o modo de desenvolvedor é ativado.
 
       Se esta não política não é definida ou é definida como "False", o modo de desenvolvedor permanece disponível para o dispositivo.</translation>
-<translation id="5203271367506489164">O uso dessa política foi suspenso no M48 em favor de NetworkPredictionOptions e removido no M54.
-
-      Ativa as sugestões de rede no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
-
-      Controla não apenas a pré-busca de DNS, mas também a pré-conexão de SSL e a pré-renderização de páginas da Web. O nome da política se refere à pré-busca de DNS por razões históricas.
-
-      Se você ativar ou desativar essa configuração, os usuários não poderão alterá-la ou modificá-la no <ph name="PRODUCT_NAME" />.
-
-      Se essa política não for definida, ela ficará ativada, mas o usuário poderá alterá-la.</translation>
 <translation id="5208240613060747912">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="5226033722357981948">Especificar se o localizador de plug-ins deve ser desativado</translation>
 <translation id="523505283826916779">Configurações de acessibilidade</translation>
@@ -1249,6 +1240,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se especificada, a política adicionará um parâmetro de consulta chamado "restrict" ao URL usado para buscar o termo-semente "Variações". O valor do parâmetro será o valor especificado nesta política.
 
       Se não for especificada, a política não modificará o URL do termo-semente "Variações".</translation>
+<translation id="5563853101694018649">Desativa as Ferramentas de desenvolvedor e o Console JavaScript.
+
+      Se você ativar essa configuração, as Ferramentas de desenvolvedor não poderão ser acessadas, e os elementos de websites não poderão mais ser inspecionados. Todos os atalhos do teclado e todas as entradas de menu ou menu de contexto para abrir as Ferramentas de desenvolvedor ou o Console JavaScript serão desativados.
+
+      Se esta opção for definida como desativada ou não for definida, a utilização das Ferramentas do desenvolvedor e do Console JavaScript não será permitida.
+
+      Em dispositivos <ph name="PRODUCT_OS_NAME" /> com capacidade de executar apps Android, esta política também controla o acesso a Opções do desenvolvedor Android. Se você definir esta política como "true", os usuários não poderão acessar as Opções do desenvolvedor. Se você definir esta política como "false" ou deixá-la sem definição, os usuários poderão acessar as Opções do desenvolvedor tocando sete vezes no número da versão no app Config. do Android.</translation>
 <translation id="556941986578702361">Controla a ocultação automática da estante do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida como "AlwaysAutoHideShelf", a estante sempre será ocultada automaticamente.

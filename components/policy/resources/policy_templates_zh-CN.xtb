@@ -1133,15 +1133,6 @@
       如果该政策设为True，<ph name="PRODUCT_OS_NAME" />将阻止相应设备进入开发者模式。当开发者模式开关处于打开状态时，系统将无法启动并显示错误屏幕。
 
       如果该政策未设置或设为False，相应设备将可以使用开发者模式。</translation>
-<translation id="5203271367506489164">我们在 M48 中弃用了此政策（改用 NetworkPredictionOptions），并在 M54 中移除了此政策。
-
-      在 <ph name="PRODUCT_NAME" /> 中启用网络联想查询功能，并禁止用户更改此设置。
-
-      此政策不仅控制 DNS 预提取，还控制 TCP 和 SSL 预连接及网页预呈现。但由于历史原因，此政策名称只提到了 DNS 预提取。
-
-      如果您启用或停用了此设置，用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖此设置。
-
-      如果此政策未设置，系统将会启用此政策，但用户可以自行更改。</translation>
 <translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="5226033722357981948">指定是否应停用插件查找器</translation>
 <translation id="523505283826916779">无障碍设置</translation>
@@ -1228,6 +1219,13 @@
       指定后，系统将会向用来提取变体种子的网址中添加一个名为“restrict”的查询参数。此参数的值就是此政策中指定的值。
 
       如果未指定，则不会修改变体种子网址。</translation>
+<translation id="5563853101694018649">停用开发者工具和 JavaScript 控制台。
+
+      如果您启用此设置，用户将无法访问开发者工具，并且无法再检查网站元素。用于打开开发者工具或 JavaScript 控制台的所有键盘快捷键、菜单项和上下文菜单项都将被停用。
+
+      如果此选项设为停用或未设置，将允许用户使用开发者工具和 JavaScript 控制台。
+
+      对于能够运行 Android 应用的 <ph name="PRODUCT_OS_NAME" />设备，此政策还控制对 Android 开发者选项的访问。如果此政策设为 true，用户将无法访问开发者选项。如果此政策设为 false 或未设置，用户只需在 Android 设置应用中连续点按 7 次版本号，即可访问开发者选项。</translation>
 <translation id="556941986578702361">控制 <ph name="PRODUCT_OS_NAME" />任务栏是否自动隐藏。
 
       如果此策略设置为“AlwaysAutoHideShelf”，任务栏将始终自动隐藏。

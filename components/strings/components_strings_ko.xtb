@@ -7,13 +7,11 @@
 <translation id="1038842779957582377">알 수 없는 이름</translation>
 <translation id="1055184225775184556">추가 실행 취소(&amp;U)</translation>
 <translation id="10614374240317010">비밀번호를 저장하지 않은 사이트</translation>
-<translation id="1064422015032085147">웹페이지를 호스팅하는 서버에 과부하가 발생했거나 보수 중일 수 있습니다.
-    지나친 트래픽 발생과 상황 악화를 방지하기 위해 이 URL에 대한 요청이
-    일시적으로 허용되지 않고 있습니다.</translation>
 <translation id="106701514854093668">데스크톱 북마크</translation>
 <translation id="1080116354587839789">너비에 맞춤</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> 항상 번역</translation>
 <translation id="1107591249535594099">선택하면 Chrome에서 양식을 더 빠르게 입력할 수 있도록 이 기기에 카드 사본을 저장합니다.</translation>
+<translation id="1111153019813902504">최근 북마크</translation>
 <translation id="1113869188872983271">재정렬 실행 취소(&amp;U)</translation>
 <translation id="112840717907525620">정책 캐시 확인</translation>
 <translation id="113188000913989374"><ph name="SITE" /> 내용:</translation>
@@ -26,6 +24,8 @@
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="1201895884277373915">이 사이트에서 더보기</translation>
+<translation id="1206967143813997005">잘못된 초기 서명</translation>
+<translation id="1209206284964581585">지금 숨기기</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" />에 접속하려 했으나 서버가 안전성이 낮은 키가 포함된 인증서를 전달했습니다. 공격자가 비공개 키를 손상시켰을 수 있으며 서버를 가장한 공격자와 통신 중일 수 있습니다.</translation>
 <translation id="1219129156119358924">시스템 보안</translation>
 <translation id="1227224963052638717">알 수 없는 정책입니다.</translation>
@@ -108,7 +108,6 @@
 <translation id="2181821976797666341">정책</translation>
 <translation id="2212735316055980242">정책을 찾을 수 없음</translation>
 <translation id="2213606439339815911">항목을 가져오는 중...</translation>
-<translation id="2214283295778284209"><ph name="SITE" />을(를) 사용할 수 없음</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />진단 앱<ph name="END_LINK" />을 사용하여 연결 문제를 해결하세요.</translation>
 <translation id="225207911366869382">이 값은 이 정책에 사용되지 않습니다.</translation>
 <translation id="2262243747453050782">HTTP 오류</translation>
@@ -130,6 +129,7 @@
 <translation id="2396249848217231973">삭제 실행 취소(&amp;U)</translation>
 <translation id="2413528052993050574">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 취소될 수 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="2455981314101692989">이 웹페이지에서는 이 양식에 대한 자동완성 기능을 사용할 수 없습니다.</translation>
+<translation id="2463739503403862330">작성</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />네트워크 진단 프로그램 실행<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">검색 URL이 잘못됨</translation>
 <translation id="2491120439723279231">서버 인증서에 오류가 있습니다.</translation>
@@ -170,7 +170,7 @@
 <translation id="284702764277384724"><ph name="HOST_NAME" />의 서버 인증서가 위조된 것 같습니다.</translation>
 <translation id="2889159643044928134">새로고침 안함</translation>
 <translation id="2896499918916051536">이 플러그인은 지원되지 않습니다.</translation>
-<translation id="2900469785430194048">이 웹페이지를 표시하려는 동안 Chrome에 메모리가 부족합니다.</translation>
+<translation id="2900469785430194048">이 웹페이지를 표시하려고 했으나 Chrome 메모리가 부족합니다.</translation>
 <translation id="2909946352844186028">네트워크 변경이 감지되었습니다.</translation>
 <translation id="2915500479781995473">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 만료되었습니다. 서버를 잘못 설정했거나 해커가 연결을 가로채고 있기 때문일 수 있습니다. 컴퓨터의 시계가 현재 <ph name="CURRENT_TIME" />(으)로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 다음 이 페이지를 새로고침하세요.</translation>
 <translation id="2922350208395188000">서버 인증서를 확인할 수 없습니다.</translation>
@@ -282,7 +282,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" />이(가) 차단됨</translation>
 <translation id="4021036232240155012">DNS는 웹사이트 이름을 인터넷 주소로 변환하는 네트워크 서비스입니다.</translation>
 <translation id="4030383055268325496">추가 실행 취소(&amp;U)</translation>
-<translation id="4032534284272647190"><ph name="URL" />에 대한 엑세스가 거부되었습니다.</translation>
 <translation id="404928562651467259">경고</translation>
 <translation id="4058922952496707368">'<ph name="SUBKEY" />' 키: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">클라이언트와 서버가 일반적인 SSL 프로토콜 버전 또는 암호화 제품군을 지원하지 않습니다.</translation>
@@ -329,7 +328,6 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">지금 확장 프로그램 페이지를 보고 있습니다.</translation>
 <translation id="467662567472608290">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서에 오류가 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
-<translation id="4697214168136963651"><ph name="URL" />이(가) 차단됨</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">연결이 끊김</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows 네트워크 진단 프로그램 실행<ph name="END_LINK" /></translation>
@@ -337,6 +335,7 @@
 <translation id="4728558894243024398">플랫폼</translation>
 <translation id="4744603770635761495">실행 가능 경로</translation>
 <translation id="4756388243121344051">방문 기록(&amp;H)</translation>
+<translation id="4759238208242260848">다운로드</translation>
 <translation id="4764776831041365478"><ph name="URL" />의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
 <translation id="4771973620359291008">알 수 없는 오류가 발생했습니다.</translation>
 <translation id="4782449893814226250">이 페이지를 방문해도 괜찮은지 부모님께 문의했습니다.</translation>
@@ -359,6 +358,7 @@
 <translation id="5031870354684148875">Google 번역 정보</translation>
 <translation id="5040262127954254034">개인정보</translation>
 <translation id="5045550434625856497">비밀번호가 잘못되었습니다.</translation>
+<translation id="5056549851600133418">추천 도움말</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />프록시 주소 확인<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">서버의 인증서가 현재 유효하지 않습니다.</translation>
 <translation id="5089810972385038852">주</translation>
@@ -411,8 +411,11 @@
 <translation id="5677928146339483299">차단됨</translation>
 <translation id="5710435578057952990">이 웹사이트의 주소가 확인되지 않았습니다.</translation>
 <translation id="5720705177508910913">현재 사용자</translation>
+<translation id="572328651809341494">최근 탭</translation>
 <translation id="5784606427469807560">카드 확인 중에 문제가 발생했습니다. 인터넷 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="5785756445106461925">또한 이 페이지에는 안전하지 않은 다른 리소스가 포함되어 있습니다. 이러한 리소스는 전송 중에 다른 사람이 볼 수 있으며 페이지의 모양을 변경하기 위해 공격자가 수정할 수 있습니다.</translation>
+<translation id="5786044859038896871">카드 정보를 작성하시겠습니까?</translation>
+<translation id="5803412860119678065"><ph name="CARD_DETAIL" />을(를) 작성하시겠습니까?</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" />에 대한 연결이 더 이상 사용되지 않는 암호화 기술을 사용하여 암호화됩니다.</translation>
 <translation id="5813119285467412249">추가 다시 실행(&amp;R)</translation>
 <translation id="5855235287355719921">관리자가 이 사이트를 차단해 이 메시지가 표시되었습니다.</translation>
@@ -438,7 +441,6 @@
 <translation id="614940544461990577">다음을 시도:</translation>
 <translation id="6150607114729249911">이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
 <translation id="6151417162996330722">서버 인증서의 유효 기간이 너무 깁니다.</translation>
-<translation id="6154808779448689242">반환된 정책 토큰이 현재 토큰과 일치하지 않음</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6203231073485539293">인터넷 연결을 확인하세요.</translation>
 <translation id="6218753634732582820">Chromium에서 주소를 삭제하시겠습니까?</translation>
@@ -454,8 +456,7 @@
 <translation id="6355080345576803305">공개 세션 무시</translation>
 <translation id="6358450015545214790">자세히 알아보기</translation>
 <translation id="6387478394221739770">Chrome의 멋진 새 기능에 관심이 있으십니까? chrome.com/beta 페이지에서 베타 채널을 방문해 보세요.</translation>
-<translation id="6389758589412724634">이 웹페이지를 표시하려는 동안 Chromium에 메모리가 부족합니다.</translation>
-<translation id="641480858134062906"><ph name="URL" />을(를) 로드하지 못했습니다.</translation>
+<translation id="6389758589412724634">이 웹페이지를 표시하려고 했으나 Chromium 메모리가 부족합니다.</translation>
 <translation id="6417515091412812850">인증서가 취소되었는지 확인할 수 없습니다.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" />에서 연결을 거부했습니다.</translation>
 <translation id="6445051938772793705">국가</translation>
@@ -579,7 +580,6 @@
 <translation id="785549533363645510">하지만 흔적이 아예 남지 않는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체 또는 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
 <translation id="7887683347370398519">CVC를 확인한 후 다시 시도하세요.</translation>
 <translation id="7894616681410591072">이 페이지에 액세스하려면 <ph name="NAME" />님의 승인이 필요합니다.</translation>
-<translation id="790025292736025802"><ph name="URL" />을(를) 찾을 수 없습니다.</translation>
 <translation id="7912024687060120840">폴더:</translation>
 <translation id="7920092496846849526">이 페이지를 방문해도 괜찮은지 부모님께 문의했습니다.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>

@@ -247,11 +247,11 @@
 <translation id="201557587962247231">Kekerapan muat naik laporan status peranti</translation>
 <translation id="2018836497795982119">Menentukan tempoh dalam milisaat ketika perkhidmatan pengurusan peranti diminta maklumat dasar pengguna.
 
-      Tindakan menetapkan dasar ini akan mengatasi nilai lalai iaitu 3 jam. Nilai yang sah untuk dasar ini ialah dalam julat 1800000 (30 minit) hingga 86400000 (1 hari). Sebarang nilai yang tidak berada dalam julat ini akan diapit ke sempadan masing-masing. Jika platform menyokong pemberitahuan dasar, kelewatan muat semula akan ditetapkan kepada 24 jam kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah.
+      Tindakan menetapkan dasar ini akan mengatasi nilai lalai iaitu 3 jam. Nilai yang sah untuk dasar ini ialah dalam julat 1800000 (30 minit) hingga 86400000 (1 hari). Sebarang nilai yang tidak berada dalam julat ini akan diapit ke sempadan masing-masing. Jika platform menyokong pemberitahuan dasar, lengahan muat semula akan ditetapkan kepada 24 jam kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah.
 
       Apabila dasar ini dibiarkan tanpa ditetapkan, <ph name="PRODUCT_NAME" /> akan menggunakan nilai lalai 3 jam.
 
-      Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, kelewatan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
+      Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, lengahan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
 <translation id="2024476116966025075">Konfigurasikan nama domain yang diperlukan untuk pelanggan akses jauh</translation>
 <translation id="2030905906517501646">Kata kunci pembekal carian lalai</translation>
 <translation id="206623763829450685">Menetapkan skim pengesahan HTTP yang disokong oleh <ph name="PRODUCT_NAME" />.
@@ -1263,15 +1263,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika dasar ini ditetapkan kepada Benar, <ph name="PRODUCT_OS_NAME" /> akan menghalang peranti daripada membut ke dalam mod pembangun. Sistem tidak akan but dan memaparkan skrin ralat apabila suis pembangun dihidupkan.
 
       Jika dasar ini dinyahtetapkan atau ditetapkan ke Palsu, mod pembangun akan kekal tersedia untuk peranti ini.</translation>
-<translation id="5203271367506489164">Dasar ini ditamatkan dalam M48 bagi menggantikan NetworkPredictionOptions dan dialih keluar dalam M54.
-
-      Mendayakan ramalan rangkaian dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
-
-      Tetapan ini bukan sahaja mengawal praambilan DNS tetapi juga prasambungan serta prapemaparan TCP dan SSL bagi halaman web. Nama dasar merujuk pada praambilan DNS atas sebab sejarah.
-
-      Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, ramalan rangkaian akan didayakan tetapi pengguna akan boleh mengubahnya.</translation>
 <translation id="5208240613060747912">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk memaparkan pemberitahuan.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultNotificationsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
@@ -1359,7 +1350,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Apabila dasar ini dibiarkan tanpa ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan menggunakan nilai lalai 3 jam.
 
-      Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, kelewatan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
+      Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, lengahan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
 <translation id="5535957389335373033">Kekerapan pemantauan bingkisan rangkaian dihantar, dalam milisaat.
 
       Jika dasar ini tidak ditetapkan, kekerapan lalai ialah 3 minit. Kekerapan minimum
@@ -1371,6 +1362,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika ditetapkan, parameter pertanyaan yang dipanggil 'hadkan' akan ditambahkan kepada URL yang digunakan untuk mengambil benih Variasi. Nilai yang dinyatakan dalam dasar ini akan menjadi nilai parameter.
 
       Jika tidak ditetapkan, URL benih Variasi tidak akan diubah suai.</translation>
+<translation id="5563853101694018649">Melumpuhkan Alatan Pembangun dan konsol JavaScript.
+
+      Jika anda mendayakan tetapan ini, Alatan Pembangun tidak dapat diakses dan elemen tapak web tidak dapat disemak lagi. Mana-mana pintasan papan kekunci dan mana-mana entri menu atau menu konteks untuk membuka Alatan Pembangun atau Konsol JavaScript akan dilumpuhkan.
+
+      Apabila pilihan ini dilumpuhkan atau dibiarkan tidak ditetapkan, pengguna akan dibenarkan untuk menggunakan Alatan Pembangun dan konsol JavaScript.
+
+      Untuk peranti <ph name="PRODUCT_OS_NAME" /> yang berupaya menjalankan apl Android, dasar ini turut mengawal akses kepada Pilihan Pembangun Android. Jika anda menetapkan dasar ini kepada benar, pengguna tidak dapat mengakses Pilihan Pembangun. Jika anda menetapkan dasar ini kepada palsu atau membiarkannya tidak ditetapkan, pengguna boleh mengakses Pilihan Pembangun dengan mengetik nombor binaan sebanyak tujuh kali dalam apl tetapan Android.</translation>
 <translation id="556941986578702361">Mengawal penyembunyian automatik rak <ph name="PRODUCT_OS_NAME" />.
 
       Jika dasar ini ditetapkan kepada 'AlwaysAutoHideShelf', rak akan sentiasa disembunyikan secara automatik.

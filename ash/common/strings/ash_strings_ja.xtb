@@ -147,6 +147,7 @@
 <translation id="5597451508971090205"><ph name="DATE" /> (<ph name="SHORT_WEEKDAY" />)</translation>
 <translation id="5759815399269068793">外付けのディスプレイを接続している間は、カバーを閉じても <ph name="DEVICE_TYPE" /> を使い続けることができます。</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
+<translation id="57838592816432529">ミュート</translation>
 <translation id="5825747213122829519">入力方法を <ph name="INPUT_METHOD_ID" /> に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="5871632337994001636">デバイスを管理...</translation>

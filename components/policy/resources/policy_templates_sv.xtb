@@ -245,13 +245,13 @@
       Om policyn är inställd på sant kommer <ph name="PRODUCT_OS_NAME" /> att försöka ladda ned betalningar med automatisk uppdatering via HTTP. Om policyn är inställd på falskt eller inte har angetts kommer HTTPS att användas för att ladda ned betalningar med automatisk uppdatering.</translation>
 <translation id="2006530844219044261">Energibesparing (DPMS)</translation>
 <translation id="201557587962247231">Frekvens för antal uppladdningar av statusrapport för enhet</translation>
-<translation id="2018836497795982119">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten avfrågas för principinformation.
+<translation id="2018836497795982119">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten tillfrågas om användarpolicyinformation.
 
-      När den här principen har ställts in åsidosätts standardvärdet tre timmar. Giltiga värden är från 1800000 (30 minuter) till 86400000 (en dag). Värden utanför intervallet ändras till närmaste gräns. Om plattformen stöder principmeddelanden används 24 timmar som uppdateringsfördröjning, eftersom uppdateringar då sker automatiskt så fort en princip förändras.
+      När denna policy har ställts in åsidosätts standardvärdet tre timmar. Giltiga värden är från 1800000 (30 minuter) till 86400000 (en dag). Värden utanför intervallet ändras till närmaste gräns. Om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning, eftersom uppdateringar då sker automatiskt så fort policyn förändras.
 
-      Om den här principen inte har ställts in används standardvärdet 3 timmar i <ph name="PRODUCT_NAME" />.
+      Om denna policy inte har ställts in används standardvärdet 3 timmar i <ph name="PRODUCT_NAME" />.
 
-      Observera att om plattformen stöder principmeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta principvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort en princip förändras.</translation>
+      Observera att om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta policyvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort policyn förändras. Det gör tätare uppdateringar överflödiga.</translation>
 <translation id="2024476116966025075">Konfigurera domännamnet som krävs för fjärråtkomstklienter</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="206623763829450685">Anger vilka scheman för HTTP-autentisering som stöds av <ph name="PRODUCT_NAME" />.
@@ -1267,15 +1267,6 @@
       Om den här principen ges värdet Sant förhindrar <ph name="PRODUCT_OS_NAME" /> att enheten startas i utvecklarläge. Om utvecklarväxeln har aktiverats vägrar systemet att starta och en felskärm visas.
 
       Om principen inte anges eller om den ges värdet Falskt förblir utvecklarläget tillgängligt på enheten.</translation>
-<translation id="5203271367506489164">Den här principen har fasats ut i M48 och NetworkPredictionOptions används i stället. Principen har även tagits bort från M54.
-
-      Aktiverar nätverksförutsägelse i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
-
-      Detta styr inte bara DNS-förhämtning utan också TCP- och SSL-föranslutning och förrendering av webbsidor. Principens namn refererar till DNS-förhämtning av historiska skäl.
-
-      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME" />.
-
-      Om principen inte anges är funktionen aktiverad, men den kan ändras av användarna.</translation>
 <translation id="5208240613060747912">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
@@ -1357,13 +1348,13 @@
       Om policyn har angetts kommer den angivna sessionen automatiskt att loggas in efter att en viss tid har förflutit på inloggningsskärmen utan åtgärder från användaren. Den offentliga sessionen måste redan vara konfigurerad (se |DeviceLocalAccounts|).
 
       Om policyn inte har angetts sker ingen automatisk inloggning.</translation>
-<translation id="5529037166721644841">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten avfrågas för principinformation.
+<translation id="5529037166721644841">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten tillfrågas om användarpolicyinformation.
 
-       När den här principen har ställts åsidosätts standardvärdet tre timmar. Giltiga värden är från 1800000 (30 minuter) till 86400000 (en dag). Värden utanför intervallet ändras till närmaste gräns.
+       När denna policy principen har ställts in åsidosätts standardvärdet tre timmar. Giltiga värden är från 1800000 (30 minuter) till 86400000 (en dag). Värden utanför intervallet ändras till närmaste gräns.
 
-      Om den här principen inte har ställts in används standardvärdet 3 timmar i <ph name="PRODUCT_OS_NAME" />.
+      Om denna policy inte har ställts in används standardvärdet 3 timmar i <ph name="PRODUCT_OS_NAME" />.
 
-      Observera att om plattformen stöder principmeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta principvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort en princip förändras. Det gör tätare uppdateringar överflödiga.</translation>
+      Observera att om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta principvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort policyn förändras. Det gör tätare uppdateringar överflödiga.</translation>
 <translation id="5535957389335373033">Hur ofta nätverkspaket för övervakning skickas, i millisekunder.
 
       Om policyn inte har angetts är standardfrekvensen 3 minuter. Den lägsta
@@ -1375,6 +1366,13 @@
       Om den anges läggs en frågeparameter som kallas "restrict" till i webbadressen som används för att hämta startvärdet för Variations. Värdet för parametern kommer att vara det värde som anges i policyn.
 
       Om den inte anges ändras inte webbadressen för startvärdet för Variations.</translation>
+<translation id="5563853101694018649">Inaktiverar utvecklarverktygen och JavaScript-konsolen.
+
+      Om du aktiverar den här inställningen går utvecklarverktygen inte att öppna och det går inte längre att kontrollera element på webbplatser. Kortkommandon och alternativ för att öppna utvecklarverktygen eller JavaScript-konsolen på menyer och snabbmenyer inaktiveras.
+
+      Om du inaktiverar alternativet eller inte väljer något går det att använda utvecklarverktygen och JavaScript-konsolen..
+
+      På <ph name="PRODUCT_OS_NAME" />-enheter som det går att köra Android-appar på styr den här principen även tillgången till Androids utvecklaralternativ. Om principen är inställd på sant kan användarna inte öppna utvecklaralternativen. Om principen är inställd på falskt eller lämnas utan inställning kan användarna öppna utvecklaralternativen genom att trycka sju gånger på versionsnumret i appen Inställningar i Android.</translation>
 <translation id="556941986578702361">Kontrollera hur <ph name="PRODUCT_OS_NAME" />-hyllan döljs automatiskt.
 
       Om policyn har angetts till AlwaysAutoHideShelf döljs alltid hyllan automatiskt.
@@ -1930,9 +1928,9 @@
 
           Den här policyn gäller bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="7302043767260300182">Skärmlåsningstid när enheten är ansluten till elnätet</translation>
-<translation id="7311458740754205918">Om principen är inställd på sant eller inte inställd alls kan förslag på innehåll utifrån användarens webbhistorik, intressen eller plats visas på sidan Ny flik.
+<translation id="7311458740754205918">Om policyn är inställd på sant eller inte inställd alls kan förslag på innehåll utifrån användarens webbhistorik, intressen eller plats visas på sidan Ny flik.
 
-      Om principen är inställd på falskt visas inte förslag på innehåll som genererats automatiskt på sidan Ny flik.</translation>
+      Om policyn är inställd på falskt visas inte förslag på innehåll som genererats automatiskt på sidan Ny flik.</translation>
 <translation id="7323896582714668701">Ytterligare kommandoradsparametrar för <ph name="PRODUCT_NAME" /></translation>
 <translation id="7329842439428490522">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska stängas av när enheten drivs av batteriet.
 

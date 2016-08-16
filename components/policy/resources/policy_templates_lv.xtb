@@ -1255,15 +1255,6 @@
       Ja šī politika ir iestatīta kā patiesa (“True”), <ph name="PRODUCT_OS_NAME" /> neļaus sāknēt ierīci izstrādātāja režīmā. Kad būs ieslēgts izstrādātāja slēdzis, sistēma atteiksies veikt sāknēšanu un parādīs kļūdas ekrānu.
 
       Ja šī politika nav iestatīta vai tai ir norādīta vērtība “False”, šajā ierīcē joprojām būs pieejams izstrādātāja režīms.</translation>
-<translation id="5203271367506489164">Šī politika ir novecojusi versijā M48 (tās vietā tiek izmantota politika NetworkPredictionOptions) un noņemta no versijas M54.
-
-      Pārlūkā <ph name="PRODUCT_NAME" /> tiek iespējota tīkla paredzēšana, un lietotājiem tiek liegta iespēja mainīt šo iestatījumu.
-
-      Šī politika nodrošina ne tikai DNS pirmsielādes, bet arī TCP un SSL iepriekšējas savienojuma izveides un tīmekļa lapu iepriekšējas atveidošanas kontroli. Politikas nosaukuma saistībai ar DNS pirmsielādi ir vēsturisks iemesls.
-
-     Ja šis iestatījums tiek iespējots vai atspējots, lietotāji pārlūkā <ph name="PRODUCT_NAME" /> to nevar mainīt vai ignorēt.
-
-      Ja šī politika nav iestatīta, šis iestatījums tiek iespējots, taču lietotājs to var mainīt.</translation>
 <translation id="5208240613060747912">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts attēlot paziņojumus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultNotificationsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -1363,6 +1354,13 @@
       Ja ir norādīta šīs politikas vērtība, vietrādim URL, kas tiek izmantots variantu sākotnējās vērtības iegūšanai, tiks pievienots vaicājuma parametrs “restrict”. Parametra vērtība būs šīs politikas norādītā vērtība.
 
       Ja šīs politikas vērtība nav norādīta, variantu sākotnējās vērtības URL netiks modificēts.</translation>
+<translation id="5563853101694018649">Atspējo izstrādātāju rīkus un JavaScript konsoli.
+
+      Ja iespējosiet šo iestatījumu, lietotājs vairs nevarēs piekļūt izstrādātāju rīkiem un pārbaudīt vietņu elementus. Tiks atspējoti visi īsinājumtaustiņi un izvēļņu vai kontekstizvēļņu opcijas, kas paredzētas izstrādātāju rīku vai JavaScript konsoles atvēršanai.
+
+      Ja šī opcija tiks atspējota vai netiks iestatīta, lietotājs varēs izmantot izstrādātāju rīkus un JavaScript konsoli.
+
+      <ph name="PRODUCT_OS_NAME" /> ierīcēs, kurās var palaist Android lietotnes, ar šo politiku tiek pārvaldīta arī piekļuve Android izstrādātājiem paredzētajām opcijām. Ja politikai tiek iestatīta vērtība “Patiesa”, lietotāji nevar piekļūt izstrādātājiem paredzētajām opcijām. Ja politikai tiek iestatīta vērtība “Nepatiesa” vai netiek iestatīta nekāda vērtība, lietotāji var piekļūt izstrādātājiem paredzētajām opcijām, septiņas reizes pieskaroties versijas numuram Android lietotnē Iestatījumi.</translation>
 <translation id="556941986578702361">Kontrolējiet <ph name="PRODUCT_OS_NAME" /> plaukta automātisko slēpšanu.
 
       Ja šai politikai tiks izvēlēts iestatījums “AlwaysAutoHideShelf”, plaukts vienmēr tiks automātiski slēpts.

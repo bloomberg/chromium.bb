@@ -1136,15 +1136,6 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
       Se questa norma viene impostata su True, <ph name="PRODUCT_OS_NAME" /> impedirà l'avvio del dispositivo in modalità sviluppatore. Il sistema non verrà avviato e verrà visualizzata una schermata di errore quando viene attivata la modalità sviluppatore.
 
       Se questa norma non è impostata o è impostata su False, la modalità sviluppatore continuerà a essere disponibile per il dispositivo.</translation>
-<translation id="5203271367506489164">Questa norma è stata ritirata in M48, per essere sostituita da NetworkPredictionOptions, ed è stata rimossa in M54.
-
-      Consente di attivare la previsione di rete in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
-
-      Questa norma consente di controllare il precaricamento DNS, nonché la preconnessione TCP e SSL e il prerendering delle pagine web. Il nome della norma si riferisce al precaricamento DNS per motivi storici.
-
-      Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificare questa impostazione in <ph name="PRODUCT_NAME" /> o eseguirne l'override.
-
-      Se questa norma non viene impostata, la previsione di rete verrà attivata ma l'utente potrà modificarla.</translation>
 <translation id="5208240613060747912">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="5226033722357981948">Specifica se la ricerca plug-in deve essere disattivata</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
@@ -1215,7 +1206,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questa norma è impostata, verrà eseguito l'accesso automatico alla sessione specificata dopo che è trascorso un periodo di tempo senza interazioni dell'utente nella schermata di accesso. La sessione pubblica deve essere già configurata (vedi |DeviceLocalAccounts|).
 
       Se questa norma non è impostata, non avverrà l'accesso automatico.</translation>
-<translation id="5529037166721644841">Consente di specificare in millisecondi il periodo di tempo per cui vengono richieste informazioni sulle norme relative agli utenti al servizio di gestione del dispositivo.
+<translation id="5529037166721644841">Consente di specificare in millisecondi il periodo di tempo per cui vengono richieste informazioni sulle norme relative al dispositivo al servizio di gestione del dispositivo.
 
       Se questa norma viene impostata, il valore predefinito di tre ore viene ignorato. L'intervallo dei valori validi per questa norma è compreso tra 1800000 (30 minuti) e 86400000 (un giorno). I valori non compresi in questo intervallo verranno bloccati al relativo limite.
 
@@ -1231,6 +1222,13 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se specificata, questa norma aggiunge un parametro di query chiamato "restrict" all'URL utilizzato per recuperare il numero di inizializzazione delle varianti. Il valore del parametro sarà il valore specificato in questa norma.
 
       Se non è specificata, questa norma non modifica l'URL del numero di inizializzazione delle varianti.</translation>
+<translation id="5563853101694018649">Consente di disattivare gli Strumenti per sviluppatori e la Console JavaScript.
+
+      Se attivi questa impostazione, gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile eseguire un'ispezione degli elementi del sito web. Le scorciatoie da tastiera e le voci dei menu contestuali e di altri menu che consentono di aprire gli Strumenti per sviluppatori o la Console JavaScript verranno disattivate.
+
+      Se disattivi questa opzione o non la imposti sarà possibile utilizzare gli Strumenti per sviluppatori e la Console JavaScript.
+
+      Per i dispositivi <ph name="PRODUCT_OS_NAME" /> compatibili con le app Android, questa opzione controlla anche l'accesso alle Opzioni sviluppatore di Android. Se la imposti su true, gli utenti non potranno accedere alle Opzioni sviluppatore. Se la imposti invece su false o scegli di non impostarla del tutto, gli utenti potranno accedere alle Opzioni sviluppatore toccando sette volte il numero di build nell'app Impostazioni di Android.</translation>
 <translation id="556941986578702361">Controlla la visualizzazione automatica dello shelf in <ph name="PRODUCT_OS_NAME" />.
 
       Se il criterio è impostato su "AlwaysAutoHideShelf", lo scaffale non sarà mai visualizzato.

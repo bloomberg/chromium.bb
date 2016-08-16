@@ -619,7 +619,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="7170733337935166589">Liigub pideva lugemise ajal edasi</translation>
 <translation id="7181697990050180700">Kohandage sagedasti kasutavate käskude klaviatuuri otseteid, sisestades need vastavatele allolevatele väljadele.</translation>
 <translation id="7203150201908454328">Laiendatud</translation>
-<translation id="7210211103303402262">minutit</translation>
+<translation id="7210211103303402262">minutid</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
 <translation id="7221740160534240920">rida</translation>
 <translation id="7226216518520804442">lnd</translation>
@@ -793,6 +793,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="9115913704608474258">November</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Vahekaart</translation>
 <translation id="9151211641321628915">Esitab praeguse asukoha lühikirjelduse</translation>
 <translation id="9153606228985488238">Helikõrgus: <ph name="PERCENT" /> protsenti</translation>
 <translation id="9160096769946561184">Mine praeguse veeru lõppu</translation>

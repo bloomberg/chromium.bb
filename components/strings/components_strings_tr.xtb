@@ -7,13 +7,11 @@
 <translation id="1038842779957582377">bilinmeyen ad</translation>
 <translation id="1055184225775184556">Eklemeyi &amp;Geri Al</translation>
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
-<translation id="1064422015032085147">Web sayfasını barındıran sunucu aşırı yüklenmiş veya bakımda olabilir.
-    Çok fazla trafik oluşturmaktan ve durumu daha da kötüleştirmekten
-    kaçınmak için, bu URL'ye gelen istekler geçici olarak reddediliyor.</translation>
 <translation id="106701514854093668">Masaüstü Yer İşaretleri</translation>
 <translation id="1080116354587839789">Genişliğe sığdır</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> dilini daima çevir</translation>
 <translation id="1107591249535594099">İşaretlenirse Chrome, formları daha hızlı doldurma amacıyla kartınızın bir kopyasını bu cihazda depolar.</translation>
+<translation id="1111153019813902504">Son yer işaretleri</translation>
 <translation id="1113869188872983271">Sıralama değişikliğini &amp;geri al</translation>
 <translation id="112840717907525620">Politika önbelleği uygun</translation>
 <translation id="113188000913989374"><ph name="SITE" /> web sitesinin mesajı:</translation>
@@ -26,6 +24,8 @@
 <translation id="1181037720776840403">Kaldır</translation>
 <translation id="1201402288615127009">Sonraki</translation>
 <translation id="1201895884277373915">Bu siteden daha çok</translation>
+<translation id="1206967143813997005">Başlangıç anahtarlı imza hatalı</translation>
+<translation id="1209206284964581585">Şimdilik gizle</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" /> alanına ulaşmayı denediniz, ancak sunucu zayıf anahtar içeren bir sertifika sundu. Bir saldırgan özel anahtarı ele geçirmiş olabilir ve sunucu beklediğiniz sunucu olmayabilir (bir saldırganla irtibat kuruyor olabilirsiniz).</translation>
 <translation id="1219129156119358924">Sistem Güvenliği</translation>
 <translation id="1227224963052638717">Bilinmeyen politika.</translation>
@@ -108,7 +108,6 @@
 <translation id="2181821976797666341">Politikalar</translation>
 <translation id="2212735316055980242">Politika bulunamadı</translation>
 <translation id="2213606439339815911">Girişler getiriliyor...</translation>
-<translation id="2214283295778284209"><ph name="SITE" /> kullanılamıyor</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />Tanılama uygulamasını<ph name="END_LINK" /> kullanarak bağlantınızı düzeltin</translation>
 <translation id="225207911366869382">Bu değer bu politika için kullanımdan kaldırıldı.</translation>
 <translation id="2262243747453050782">HTTP hatası</translation>
@@ -130,6 +129,7 @@
 <translation id="2396249848217231973">Silmeyi &amp;geri al</translation>
 <translation id="2413528052993050574">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası iptal edilmiş olabilir. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="2455981314101692989">Bu web sayfası bu form için otomatik doldurmayı devre dışı bıraktı.</translation>
+<translation id="2463739503403862330">Doldur</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Ağ Teşhislerini Çalıştırma<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Geçersiz arama URL'si.</translation>
 <translation id="2491120439723279231">Sunucu sertifikası hatalar içeriyor.</translation>
@@ -282,7 +282,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> engellendi</translation>
 <translation id="4021036232240155012">DNS, bir web sitesinin adını o siteye özgü İnternet adresine dönüştüren ağ hizmetidir.</translation>
 <translation id="4030383055268325496">Eklemeyi &amp;geri al</translation>
-<translation id="4032534284272647190"><ph name="URL" /> adresine erişim reddedildi.</translation>
 <translation id="404928562651467259">UYARI</translation>
 <translation id="4058922952496707368">"<ph name="SUBKEY" />" anahtarı: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">İstemci ve sunucu, ortak bir SSL protokolü sürümünü veya şifre setini desteklemiyor.</translation>
@@ -329,7 +328,6 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Bir uzantı sayfası görüntülüyorsunuz.</translation>
 <translation id="467662567472608290">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasında hatalar var. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
-<translation id="4697214168136963651"><ph name="URL" /> engellendi</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Bağlantınız kesildi</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows Ağ Teşhislerini Çalıştırma<ph name="END_LINK" /></translation>
@@ -337,6 +335,7 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Çalıştırılabilir Yol</translation>
 <translation id="4756388243121344051">&amp;Geçmiş</translation>
+<translation id="4759238208242260848">İndirilenler</translation>
 <translation id="4764776831041365478"><ph name="URL" /> adresindeki web sayfası, geçici olarak kullanılamıyor veya kalıcı olarak yeni bir web adresine taşınmış olabilir.</translation>
 <translation id="4771973620359291008">Bilinmeyen bir hata oluştu.</translation>
 <translation id="4782449893814226250">Ebeveynlerinize, bu sayfayı ziyaret etmenizin uygun olup olmadığını sordunuz.</translation>
@@ -358,7 +357,8 @@
 <translation id="5029568752722684782">Kopyayı temizle</translation>
 <translation id="5031870354684148875">Google Çeviri Hakkında</translation>
 <translation id="5040262127954254034">Gizlilik</translation>
-<translation id="5045550434625856497">Yanlış şifre</translation>
+<translation id="5045550434625856497">Hatalı parola</translation>
+<translation id="5056549851600133418">Size uygun makaleler</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Proxy adresini kontrol etme<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Sunucu sertifikası şu anda geçerli değil.</translation>
 <translation id="5089810972385038852">Eyalet</translation>
@@ -411,8 +411,11 @@
 <translation id="5677928146339483299">Engellenenler</translation>
 <translation id="5710435578057952990">Bu web sitesinin kimliği doğrulanmadı.</translation>
 <translation id="5720705177508910913">Geçerli kullanıcı</translation>
+<translation id="572328651809341494">Son sekmeler</translation>
 <translation id="5784606427469807560">Kartınız onaylanırken bir sorun oluştu. İnternet bağlantınızı kontrol edip tekrar deneyin.</translation>
 <translation id="5785756445106461925">Ayrıca, bu sayfa güvenli olmayan başka kaynaklar içeriyor. Bu kaynaklar, aktarım sırasında başkaları tarafından görülebilir ve bir saldırgan tarafından sayfanın görünüşünü değiştirmek üzere kullanılabilir.</translation>
+<translation id="5786044859038896871">Kart bilgilerinizin doldurulmasını istiyor musunuz?</translation>
+<translation id="5803412860119678065"><ph name="CARD_DETAIL" /> kartınıza ait bilgilerin doldurulmasını istiyor musunuz?</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> ile olan bağlantınız eski bir şifre seti kullanılarak şifrelendi.</translation>
 <translation id="5813119285467412249">Eklemeyi &amp;Yeniden Yap</translation>
 <translation id="5855235287355719921">Yöneticiniz bu siteyi engellediği için bu iletiyi görüyorsunuz.</translation>
@@ -438,7 +441,6 @@
 <translation id="614940544461990577">Aşağıdakileri deneyin:</translation>
 <translation id="6150607114729249911">Hata! Bu sayfayı ziyaret etmenizin uygun olup olmadığını ebeveynlerinize sormanız gerekiyor.</translation>
 <translation id="6151417162996330722">Sunucu sertifikasının geçerlilik dönemi çok uzun.</translation>
-<translation id="6154808779448689242">Döndürülen politika jetonu mevcut jetondan farklı</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="6203231073485539293">İnternet bağlantınızı kontrol edin</translation>
 <translation id="6218753634732582820">Adres Chromium'dan kaldırılsın mı?</translation>
@@ -455,7 +457,6 @@
 <translation id="6358450015545214790">Bunlar ne anlama geliyor?</translation>
 <translation id="6387478394221739770">Chrome'daki etkileyici, yeni özellikler ilginizi çekiyor mu? chrome.com/beta adresinden beta kanalımızı deneyin.</translation>
 <translation id="6389758589412724634">Bu web sayfası görüntülenmeye çalışılırken Chromium'da bellek kalmadı.</translation>
-<translation id="641480858134062906"><ph name="URL" /> yüklenemedi</translation>
 <translation id="6417515091412812850">Sertifikanın iptal edilip edilmediği kontrol edilemiyor.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> bağlanmayı reddetti.</translation>
 <translation id="6445051938772793705">Ülke</translation>
@@ -579,7 +580,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="785549533363645510">Ancak görünmez olmazsınız. Gizli moda geçmek göz atma etkinliğinizi işvereninizden, İnternet servis sağlayıcınızdan veya ziyaret ettiğiniz web sitelerinden gizlemez.</translation>
 <translation id="7887683347370398519">CVC'nizi kontrol edin ve tekrar deneyin</translation>
 <translation id="7894616681410591072">Hata! Bu sayfaya erişmeniz için <ph name="NAME" /> size izin vermelidir.</translation>
-<translation id="790025292736025802"><ph name="URL" /> bulunamadı</translation>
 <translation id="7912024687060120840">Bulunduğu Klasör:</translation>
 <translation id="7920092496846849526">Ebeveyninize bu sayfayı ziyaret etmenizin uygun olup olmadığını sordunuz.</translation>
 <translation id="7935318582918952113">DOM Ayrıştırıcı</translation>

@@ -9,7 +9,7 @@
 <translation id="1038795173450935438">Za pomicanje prema naprijed po stavkama na stranici pritišćite tipku za pretraživanje i desnu strelicu, odnosno tipku za pretraživanje i lijevu strelicu za vraćanje na prethodne stavke. Za prelazak na sljedeći redak pritisnite tipku za pretraživanje i strelicu prema dolje, a za povratak na prethodni redak pritisnite tipku za pretraživanje i strelicu prema gore. Kad dođete na stavku koju želite kliknuti, pritisnite tipku za pretraživanje i razmaknicu.</translation>
 <translation id="1044777062731150180">Nema zaglavlja</translation>
 <translation id="106222400312645156">zglvljrtk</translation>
-<translation id="1065552602950927991">Unos nije važeći</translation>
+<translation id="1065552602950927991">Unos nije valjan</translation>
 <translation id="1082209053475788238">Nema prethodnog naslova razine 6.</translation>
 <translation id="1088219014394087294">Nema naslova.</translation>
 <translation id="1106741348836243114">Uključuje ili isključuje zvučne povratne informacije (zvučne ikone).</translation>
@@ -793,6 +793,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="9115913704608474258">studeni</translation>
 <translation id="9128414153595658330">dij</translation>
 <translation id="9149560530563164529">odjljk</translation>
+<translation id="9150735707954472829">Kartica</translation>
 <translation id="9151211641321628915">Najavljuje kratak opis trenutačnog položaja</translation>
 <translation id="9153606228985488238">Visina glasa: <ph name="PERCENT" /> posto</translation>
 <translation id="9160096769946561184">Prelazak na kraj trenutačnog stupca</translation>

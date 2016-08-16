@@ -7,12 +7,11 @@
 <translation id="1038842779957582377">未知名称</translation>
 <translation id="1055184225775184556">撤消添加(&amp;U)</translation>
 <translation id="10614374240317010">一律不保存</translation>
-<translation id="1064422015032085147">托管该网页的服务器可能已超负荷或正在维护。
-    为了避免产生过多流量，进而防止情况变得更糟，系统已暂时禁止向该网址发送请求。</translation>
 <translation id="106701514854093668">桌面书签</translation>
 <translation id="1080116354587839789">适合窗口宽度</translation>
 <translation id="1103523840287552314">总是翻译<ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">选中后，Chrome 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
+<translation id="1111153019813902504">最近用过的书签</translation>
 <translation id="1113869188872983271">撤消顺序调整(&amp;U)</translation>
 <translation id="112840717907525620">策略缓存良好</translation>
 <translation id="113188000913989374"><ph name="SITE" /> 显示：</translation>
@@ -25,6 +24,8 @@
 <translation id="1181037720776840403">删除</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1201895884277373915">来自该网站的更多内容</translation>
+<translation id="1206967143813997005">初始签名不正确</translation>
+<translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="121201262018556460">您尝试访问的是 <ph name="DOMAIN" />，但是服务器出示的证书包含弱密钥。攻击者可能已经破解了私钥，因此这可能并不是您想要访问的服务器（您可能正在与攻击者进行通信）。</translation>
 <translation id="1219129156119358924">系统安全</translation>
 <translation id="1227224963052638717">未知政策。</translation>
@@ -107,7 +108,6 @@
 <translation id="2181821976797666341">政策</translation>
 <translation id="2212735316055980242">找不到策略</translation>
 <translation id="2213606439339815911">正在获取条目…</translation>
-<translation id="2214283295778284209">无法访问 <ph name="SITE" /></translation>
 <translation id="2230458221926704099">请使用<ph name="BEGIN_LINK" />诊断应用<ph name="END_LINK" />修复网络连接</translation>
 <translation id="225207911366869382">适用于该政策的此值已弃用。</translation>
 <translation id="2262243747453050782">HTTP 错误</translation>
@@ -129,6 +129,7 @@
 <translation id="2396249848217231973">撤消删除(&amp;U)</translation>
 <translation id="2413528052993050574">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能已被撤消。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="2455981314101692989">该网页已对该表单停用自动填充功能。</translation>
+<translation id="2463739503403862330">填充</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />运行网络诊断<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">搜索网址无效。</translation>
 <translation id="2491120439723279231">服务器证书中包含错误。</translation>
@@ -278,7 +279,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
 <translation id="4021036232240155012">DNS 是一项网络服务，可将网站的名称转译为其对应的互联网地址。</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
-<translation id="4032534284272647190"><ph name="URL" /> 拒绝访问。</translation>
 <translation id="404928562651467259">警告</translation>
 <translation id="4058922952496707368">“<ph name="SUBKEY" />”键：<ph name="ERROR" /></translation>
 <translation id="4075732493274867456">客户端和服务器不支持一般 SSL 协议版本或加密套件。</translation>
@@ -325,7 +325,6 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">您正在查看的是扩展程序页面。</translation>
 <translation id="467662567472608290">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书有误。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
-<translation id="4697214168136963651">已阻止 <ph name="URL" /></translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /><ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的连接已中断</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />运行 Windows 网络诊断<ph name="END_LINK" /></translation>
@@ -333,6 +332,7 @@
 <translation id="4728558894243024398">平台</translation>
 <translation id="4744603770635761495">可执行文件路径</translation>
 <translation id="4756388243121344051">历史记录(&amp;H)</translation>
+<translation id="4759238208242260848">下载内容</translation>
 <translation id="4764776831041365478">网址为 <ph name="URL" /> 的网页可能暂时无法连接，或者它已永久性地移动到了新网址。</translation>
 <translation id="4771973620359291008">发生未知错误。</translation>
 <translation id="4782449893814226250">已向您父母提出允许您访问此网页的请求。</translation>
@@ -355,6 +355,7 @@
 <translation id="5031870354684148875">关于 Google 翻译</translation>
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5045550434625856497">密码不正确</translation>
+<translation id="5056549851600133418">为您推荐的文章</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />检查代理服务器地址<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">服务器的证书目前无效。</translation>
 <translation id="5089810972385038852">州</translation>
@@ -407,8 +408,11 @@
 <translation id="5677928146339483299">已屏蔽</translation>
 <translation id="5710435578057952990">此网站尚未经过身份验证。</translation>
 <translation id="5720705177508910913">当前用户</translation>
+<translation id="572328651809341494">最近打开的标签页</translation>
 <translation id="5784606427469807560">确认您的信用卡时出现问题。请检查您的互联网连接，然后重试。</translation>
 <translation id="5785756445106461925">而且，此页中包含其他不安全的资源。他人能在这些资源传输过程中进行查看，攻击者也可以修改这些资源，从而改变此页的外观。</translation>
+<translation id="5786044859038896871">要填充您的信用卡信息吗？</translation>
+<translation id="5803412860119678065">要填充您的“<ph name="CARD_DETAIL" />”吗？</translation>
 <translation id="5810442152076338065">您与 <ph name="DOMAIN" /> 之间的连接采用过时的加密套件进行了加密。</translation>
 <translation id="5813119285467412249">恢复添加(&amp;R)</translation>
 <translation id="5855235287355719921">您之所以看到这条消息，是因为管理员屏蔽了此网站。</translation>
@@ -433,7 +437,6 @@
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6150607114729249911">糟糕！您必须先征得家长同意，然后才能访问此网页。</translation>
 <translation id="6151417162996330722">该服务器证书的有效期过长。</translation>
-<translation id="6154808779448689242">返回的策略令牌与当前令牌不匹配</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6203231073485539293">请检查您的互联网连接是否正常</translation>
 <translation id="6218753634732582820">要从 Chromium 中移除地址吗？</translation>
@@ -450,7 +453,6 @@
 <translation id="6358450015545214790">这分别意味着什么？</translation>
 <translation id="6387478394221739770">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/beta，试用我们的测试版！</translation>
 <translation id="6389758589412724634">Chromium 在尝试显示此网页时内存不足。</translation>
-<translation id="641480858134062906">无法加载 <ph name="URL" /></translation>
 <translation id="6417515091412812850">无法检查证书是否已吊销。</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒绝了我们的连接请求。</translation>
 <translation id="6445051938772793705">国家/地区</translation>
@@ -574,7 +576,6 @@
 <translation id="785549533363645510">但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="7887683347370398519">请检查您的银行卡验证码 (CVC)，然后重试</translation>
 <translation id="7894616681410591072">糟糕！您必须先征得<ph name="NAME" />的同意，然后才能访问此网页。</translation>
-<translation id="790025292736025802">未找到 <ph name="URL" /></translation>
 <translation id="7912024687060120840">在以下文件夹中：</translation>
 <translation id="7920092496846849526">已向您父母提出允许您访问此网页的请求。</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>

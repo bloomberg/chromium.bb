@@ -9,7 +9,7 @@
 <translation id="1038795173450935438">要移到网页上的下一项内容，请按搜索键 + 向右箭头；按搜索键 + 向左箭头可以移到前一项内容。要转到下一行，请按搜索键 + 向下箭头。要转到上一行，请按搜索键 + 向上箭头。到达您要点击的内容时，请按搜索键 + 空格键。</translation>
 <translation id="1044777062731150180">无标题</translation>
 <translation id="106222400312645156">rwhdr</translation>
-<translation id="1065552602950927991">输入内容无效</translation>
+<translation id="1065552602950927991">输入无效</translation>
 <translation id="1082209053475788238">不存在上一个6级标题。</translation>
 <translation id="1088219014394087294">无标题。</translation>
 <translation id="1106741348836243114">开启或关闭声音反馈（耳标）。</translation>
@@ -619,7 +619,7 @@
 <translation id="7170733337935166589">连续朗读时向前跳转</translation>
 <translation id="7181697990050180700">在下面的相应字段中输入相关内容，即可针对常用命令自定义键盘快捷键。</translation>
 <translation id="7203150201908454328">已展开</translation>
-<translation id="7210211103303402262">分钟</translation>
+<translation id="7210211103303402262">分</translation>
 <translation id="7217912842225915592">含<ph name="NUM" />项</translation>
 <translation id="7221740160534240920">布局线</translation>
 <translation id="7226216518520804442">列表</translation>
@@ -720,7 +720,7 @@
 <translation id="8313653172105209786">目录</translation>
 <translation id="8344569602005188545">小时</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{1个井号}other{#个井号}}</translation>
-<translation id="8374154622594089836">月份</translation>
+<translation id="8374154622594089836">月</translation>
 <translation id="8378855320830505539">区域</translation>
 <translation id="8382679411218029383">自动填充内嵌和列表</translation>
 <translation id="8428603554127842284"><ph name="DEPTH" />级</translation>
@@ -793,6 +793,7 @@
 <translation id="9115913704608474258">11月</translation>
 <translation id="9128414153595658330">对话框</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">标签</translation>
 <translation id="9151211641321628915">读出关于当前位置的简短说明</translation>
 <translation id="9153606228985488238">音高为<ph name="PERCENT" />%</translation>
 <translation id="9160096769946561184">转到当前列的末尾</translation>

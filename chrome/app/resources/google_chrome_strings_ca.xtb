@@ -53,7 +53,7 @@
 En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name="ACCOUNT_EMAIL_NEW" /> la informació de Chrome com ara adreces d'interès, historial i altres configuracions.</translation>
 <translation id="2397416548179033562">Mostra el menú de Chrome</translation>
 <translation id="2429317896000329049">Google Chrome no ha pogut sincronitzar les dades perquè la sincronització no està disponible per al vostre domini.</translation>
-<translation id="2446511512801740068">Chrome està obsolet perquè fa temps que no s'inicia. Hi ha una actualització disponible i s'aplicarà tan aviat com el tornis a iniciar.</translation>
+<translation id="2446511512801740068">Chrome no està actualitzat perquè fa temps que no s'inicia. Hi ha una actualització disponible i s'aplicarà tan aviat com el tornis a iniciar.</translation>
 <translation id="2485422356828889247">Desinstal·la</translation>
 <translation id="2580411288591421699">No es pot instal·lar la mateixa versió de Google Chrome que s'executa actualment. Tanqueu Google Chrome i torneu-ho a provar.</translation>
 <translation id="2582790009689336987">Aquest ordinador aviat deixarà de rebre actualitzacions de Google Chrome perquè aquest sistema Linux ja no serà compatible.</translation>

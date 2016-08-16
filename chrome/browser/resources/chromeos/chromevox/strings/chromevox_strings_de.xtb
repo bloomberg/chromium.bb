@@ -720,7 +720,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8313653172105209786">dir</translation>
 <translation id="8344569602005188545">Stunden</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{Doppelkreuz}other{# Doppelkreuze}}</translation>
-<translation id="8374154622594089836">month</translation>
+<translation id="8374154622594089836">Monat</translation>
 <translation id="8378855320830505539">Region</translation>
 <translation id="8382679411218029383">Inline-Autovervollständigung und Liste</translation>
 <translation id="8428603554127842284">Ebene <ph name="DEPTH" /></translation>
@@ -793,6 +793,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="9115913704608474258">November</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">Kurze Beschreibung der aktuellen Position ansagen</translation>
 <translation id="9153606228985488238">Tonhöhe: <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Zum Ende der aktuellen Spalte gehen</translation>

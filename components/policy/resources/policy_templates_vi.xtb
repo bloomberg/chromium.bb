@@ -1245,15 +1245,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành Đúng, <ph name="PRODUCT_OS_NAME" /> sẽ ngăn thiết bị khởi động vào chế độ của nhà phát triển. Hệ thống sẽ từ chốii khởi động và hiển thị màn hình lỗi khi công tắc của nhà phát triển được bật.
 
       Nếu chính sách này không được đặt hoặc được đặt thành Sai, chế độ của nhà phát triển vẫn sẽ khả dụng cho thiết bị.</translation>
-<translation id="5203271367506489164">Chính sách này không được sử dụng trong M48 nữa vì NetworkPredictionOptions và bị xóa trong M54.
-
-      Bật dự đoán mạng trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
-
-      Cài đặt này kiểm soát không chỉ việc tìm nạp trước DNS mà còn cả kết nối trước TCP và SSL cũng như hiển thị trước trang web. Tên chính sách đề cập đến tìm nạp trước DNS vì các lý do trước đây.
-
-      Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
-
-      Nếu chính sách này chưa được đặt, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt đó.</translation>
 <translation id="5208240613060747912">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web không được phép hiển thị thông báo.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -1357,6 +1348,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu được chỉ định, sẽ thêm thông số truy vấn được gọi là 'restrict' vào URL được sử dụng để tìm nạp khởi đầu Biến thể. Giá trị của thông số sẽ là giá trị được chỉ định trong chính sách này.
 
       Nếu không được chỉ định, sẽ không sửa đổi URL khởi đầu Biến thể.</translation>
+<translation id="5563853101694018649">Tắt các Công cụ dành cho nhà phát triển và bảng điều khiển JavaScript.
+
+      Nếu bật cài đặt này, bạn sẽ không thể truy cập các Công cụ dành cho nhà phát triển cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở các Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.
+
+      Đặt thành tắt hoặc không đặt tùy chọn này sẽ cho phép người dùng sử dụng các Công cụ dành cho nhà phát triển và bảng điều khiển JavaScript.
+
+      Đối với các thiết bị <ph name="PRODUCT_OS_NAME" /> có khả năng chạy ứng dụng Android, chính sách này cũng kiểm soát quyền truy cập vào Tùy chọn của nhà phát triển Android. Nếu bạn đặt chính sách này thành true, người dùng không thể truy cập Tùy chọn của nhà phát triển. Nếu bạn đặt chính sách này thành false hoặc không đặt, người dùng có thể truy cập Tùy chọn của nhà phát triển bằng cách nhấn bảy lần vào số phiên bản trong ứng dụng cài đặt Android.</translation>
 <translation id="556941986578702361">Kiểm soát tự động ẩn giá <ph name="PRODUCT_OS_NAME" />.
 
       Nếu chính sách này được đặt thành 'Luôn tự động ẩn giá', giá sẽ luôn tự động ẩn.

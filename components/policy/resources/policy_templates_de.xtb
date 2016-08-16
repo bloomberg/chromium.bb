@@ -1171,15 +1171,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
       Wenn für diese Richtlinie "True" festgelegt ist, verhindert <ph name="PRODUCT_OS_NAME" />, dass das Gerät im Entwicklermodus gestartet wird. Das System verweigert den Start und es wird ein Fehlerbildschirm angezeigt, wenn der Schalter für Entwickler aktiviert wird.
 
       Wird für diese Richtlinie "False" oder gar nichts festgelegt, bleibt der Entwicklermodus für das Gerät verfügbar.</translation>
-<translation id="5203271367506489164">Diese Richtlinie wurde in M48 zugunsten von NetworkPredictionOptions eingestellt und in M54 entfernt.
-
-      Sie aktiviert die Netzwerkvervollständigung in <ph name="PRODUCT_NAME" /> und verhindert, dass diese Einstellung von Nutzern geändert wird.
-
-      Dadurch wird nicht nur der DNS-Vorabruf gesteuert, sondern auch die TCP- und SSL-Vorverbindung und das Pre-Rendering von Webseiten. Der Richtlinienname bezieht sich aus historischen Gründen auf den DNS-Vorabruf.
-
-      Wenn Sie diese Einstellung aktivieren oder deaktivieren, können Nutzer diese Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
-
-      Ist die Richtlinie nicht konfiguriert, wird diese Einstellung aktiviert, kann jedoch vom Nutzer geändert werden.</translation>
 <translation id="5208240613060747912">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen es nicht gestattet ist, Benachrichtigungen anzuzeigen. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultNotificationsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="5226033722357981948">Angeben, ob Plug-in-Suchfunktion deaktiviert werden soll</translation>
 <translation id="523505283826916779">Zugänglichkeitseinstellungen</translation>
@@ -1269,6 +1260,13 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
       Ist die Richtlinie konfiguriert, wird der Abfrageparameter "restrict" zu der URL hinzugefügt, über die der Varianten-Seed abgerufen wird. Den Wert des Parameters legen Sie in dieser Richtlinie fest.
 
       Ist die Richtlinie nicht konfiguriert, bleibt die URL zum Abrufen des Varianten-Seeds unverändert.</translation>
+<translation id="5563853101694018649">Deaktiviert die Entwicklertools und die JavaScript-Konsole.
+
+      Wenn Sie diese Einstellung aktivieren, ist kein Zugriff auf die Entwicklertools möglich und Website-Elemente können nicht mehr überprüft werden. Alle Tastenkombinationen und Menü- oder Kontextmenüeinträge zum Öffnen der Entwicklertools oder der JavaScript-Konsole werden deaktiviert.
+
+      Ist diese Option deaktiviert oder nicht konfiguriert, können die Entwicklertools und die JavaScript-Konsole verwendet werden.
+
+      Bei <ph name="PRODUCT_OS_NAME" />-Geräten, die Android-Apps ausführen können, steuert diese Richtlinie zudem den Zugriff auf Android-Entwickleroptionen. Wenn Sie diese Richtlinie auf "true" stellen, können Nutzer nicht auf die Entwickleroptionen zugreifen. Falls Sie die Richtlinie auf "false" setzen oder nicht konfigurieren, können Nutzer auf die Entwickleroptionen zugreifen, indem Sie siebenmal auf die Buildnummer in der Android-App "Einstellungen" tippen.</translation>
 <translation id="556941986578702361">Automatisches Ausblenden der <ph name="PRODUCT_OS_NAME" />-Ablage verwalten
 
       Wenn diese Richtlinie auf "AlwaysAutoHideShelf" gesetzt ist, wird die Ablage immer automatisch ausgeblendet.

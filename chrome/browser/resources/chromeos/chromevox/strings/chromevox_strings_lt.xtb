@@ -720,7 +720,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="8313653172105209786">dir</translation>
 <translation id="8344569602005188545">valandos</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{grotelių ženklas}one{# grotelių ženklas}few{# grotelių ženklai}many{# pound signs}other{# grotelių ženklas}}</translation>
-<translation id="8374154622594089836">mėnuo</translation>
+<translation id="8374154622594089836">mėn.</translation>
 <translation id="8378855320830505539">Regionas</translation>
 <translation id="8382679411218029383">Automatinis eilutės ir sąrašo užbaigimas</translation>
 <translation id="8428603554127842284"><ph name="DEPTH" /> lygis</translation>
@@ -793,6 +793,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="9115913704608474258">Lapkritis</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Skirtukas</translation>
 <translation id="9151211641321628915">Paskelbiamas trumpas esamos pozicijos aprašas</translation>
 <translation id="9153606228985488238">Aukštis <ph name="PERCENT" /> proc.</translation>
 <translation id="9160096769946561184">Eiti į dabartinio stulpelio pabaigą</translation>

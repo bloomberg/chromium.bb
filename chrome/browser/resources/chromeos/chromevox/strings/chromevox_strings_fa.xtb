@@ -661,7 +661,7 @@
 <translation id="7604026522577407655">رفتن به ابتدای ستون کنونی</translation>
 <translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">‏اعلام URL صفحه کنونی</translation>
-<translation id="7609363189280667021">تغییر توصیف‌های بریل</translation>
+<translation id="7609363189280667021">روشن/خاموش کردن زیرنویس بریل</translation>
 <translation id="762020119231868829">همه ابزارک‌های رسانه ىر حال پخش را موقتاً متوقف می‌کند</translation>
 <translation id="7625690649919402823">جدول بعدی</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)، درجه <ph name="GRADE" /></translation>
@@ -793,6 +793,7 @@
 <translation id="9115913704608474258">نوامبر</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">شرح مختصری از موقعیت کنونی را اعلام می‌کند</translation>
 <translation id="9153606228985488238">گام <ph name="PERCENT" /> درصد</translation>
 <translation id="9160096769946561184">رفتن به انتهای ستون کنونی</translation>

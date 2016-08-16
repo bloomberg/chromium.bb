@@ -619,7 +619,7 @@
 <translation id="7170733337935166589">التقدم للأمام أثناء القراءة المتواصلة</translation>
 <translation id="7181697990050180700">يمكنك تخصيص اختصارات لوحة مفاتيح للأوامر شائعة الاستخدام من خلال كتابتها في الحقول المقابلة أدناه.</translation>
 <translation id="7203150201908454328">موسع</translation>
-<translation id="7210211103303402262">دقيقة</translation>
+<translation id="7210211103303402262">دقائق</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
 <translation id="7221740160534240920">خط</translation>
 <translation id="7226216518520804442">lst</translation>
@@ -718,7 +718,7 @@
 <translation id="8283603667300770666">حقل النموذج التالي</translation>
 <translation id="831207808878314375">تعريف</translation>
 <translation id="8313653172105209786">dir</translation>
-<translation id="8344569602005188545">ساعة</translation>
+<translation id="8344569602005188545">ساعات</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{علامة جنيه واحدة}zero{# pound signs}two{علامتا جنيه (#)}few{# علامات جنيه}many{# علامة جنيه}other{# من علامات الجنيه}}</translation>
 <translation id="8374154622594089836">شهر</translation>
 <translation id="8378855320830505539">منطقة</translation>
@@ -749,7 +749,7 @@
 <translation id="8651481478098336970">كتم الصوت</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">عرض قائمة الروابط</translation>
-<translation id="8664519043722036194">ثواني</translation>
+<translation id="8664519043722036194">ثوانٍ</translation>
 <translation id="867187640362843212">العنوان الخامس</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{شريط رأسي واحد}zero{# vertical pipes}two{شريطان رأسيان (#)}few{# أشرطة رأسية}many{# شريطًا رأسيًا}other{# من الأشرطة الرأسية}}</translation>
 <translation id="8721861170709424373">‏مرجع أوامر ChromeVox Next</translation>
@@ -793,6 +793,7 @@
 <translation id="9115913704608474258">تشرين الثاني (نوفمبر)</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">علامة تبويب</translation>
 <translation id="9151211641321628915">الإعلان عن وصف موجز للموضع الحالي</translation>
 <translation id="9153606228985488238">درجة صوت بنسبة <ph name="PERCENT" /> في المائة</translation>
 <translation id="9160096769946561184">الانتقال إلى نهاية العمود الحالي</translation>

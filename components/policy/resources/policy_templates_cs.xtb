@@ -1216,15 +1216,6 @@ Pokud ji ponecháte nenastavenou, lupa bude ve výchozím nastavení deaktivová
       Pokud je tato zásada nastavena na hodnotu true, systém <ph name="PRODUCT_OS_NAME" /> zabrání spuštění zařízení v režimu pro vývojáře. Po zapnutí přepínače pro vývojáře se systém odmítne spustit a zobrazí se obrazovka s chybou.
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, režim pro vývojáře bude v zařízení nadále k dispozici.</translation>
-<translation id="5203271367506489164">Ve verzi M48 byla podpora této zásady ukončena ve prospěch zásady NetworkPredictionOptions a ve verzi M54 byla tato zásada zcela odstraněna.
-      
-      Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> předvídání síťových akcí a zabraňuje uživatelům ve změně tohoto nastavení.
-
-      Kromě předběžného načítání záznamů DNS ovlivňuje tato zásada také předběžná připojení TCP a SSL a předběžné vykreslování webových stránek. Název této zásady odkazuje na předběžné načítání záznamů DNS pouze z historických důvodů.
-
-      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit.
-
-      Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání síťových akcí aktivováno, ale uživatelé budou moci nastavení změnit.</translation>
 <translation id="5208240613060747912">Umožňuje nastavit seznam vzorů adres URL webových stránek, které nemají povoleno zobrazovat oznámení.
 
          Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultNotificationsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -1321,6 +1312,13 @@ Až bude okamžité přihlašování podporovat všechny přihlašovací procesy
       Je-li zásada stanovena, bude k adrese URL přidán parametr dotazu s názvem „omezit“, který se použije k načtení počáteční hodnoty variace. Hodnota parametru bude představovat hodnotu stanovenou v této zásadě.
 
      Pokud zásada stanovena není, adresa URL počáteční hodnoty variace se nezmění.</translation>
+<translation id="5563853101694018649">Deaktivuje nástroje pro vývojáře a konzoli JavaScriptu.
+
+      Pokud toto nastavení aktivujete, nebude možné používat nástroje pro vývojáře ani kontrolovat prvky webových stránek. Deaktivovány budou také veškeré klávesové zkratky a položky klasických či kontextových nabídek, pomocí kterých lze nástroje pro vývojáře nebo konzoli JavaScriptu otevřít.
+
+      Pokud tuto možnost deaktivujete nebo nenastavíte, umožníte uživatelům používat nástroje pro vývojáře nebo konzoli JavaScript.
+
+      V případě zařízení <ph name="PRODUCT_OS_NAME" />, která dokážou spouštět aplikace pro Android, tato zásada také řídí přístup k sekci Pro vývojáře Android. Pokud tuto zásadu nastavíte na hodnotu True, uživatelé nebudou mít přístup k sekci Pro vývojáře. Pokud tuto zásadu nastavíte na hodnotu False nebo ji nenastavíte, uživatelé budou moci sekci Pro vývojáře otevřít tak, že v aplikaci Nastavení Android sedmkrát klepnout na číslo sestavení.</translation>
 <translation id="556941986578702361">Řídí automatické skrývání poličky systému <ph name="PRODUCT_OS_NAME" />.
 
 Pokud je tato zásada nastavena na hodnotu AlwaysAutoHideShelf, polička se vždy automaticky skryje.

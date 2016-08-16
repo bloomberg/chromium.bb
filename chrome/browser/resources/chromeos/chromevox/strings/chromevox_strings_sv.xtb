@@ -9,7 +9,7 @@
 <translation id="1038795173450935438">Flytta framåt mellan objekt på en sida genom att trycka på söktangenten + högerpil eller på söktangenten + vänsterpil för att gå tillbaka. Hoppa till nästa rad genom att trycka på söktangenten + nedåtpilen. Hoppa till föregående rad genom att trycka på söktangenten + uppåtpilen. Om du kommer till ett objekt som du vill klicka på trycker du på söktangenten + mellanslag.</translation>
 <translation id="1044777062731150180">Inga rubriker</translation>
 <translation id="106222400312645156">radrubrik</translation>
-<translation id="1065552602950927991">Ogiltig indata</translation>
+<translation id="1065552602950927991">Ogiltiga indata</translation>
 <translation id="1082209053475788238">Det finns ingen föregående rubrik på nivå 6.</translation>
 <translation id="1088219014394087294">Det finns inga rubriker.</translation>
 <translation id="1106741348836243114">Aktivera eller inaktivera ljudsignaler (ljudikoner).</translation>
@@ -793,6 +793,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="9115913704608474258">november</translation>
 <translation id="9128414153595658330">dialogruta</translation>
 <translation id="9149560530563164529">avsnitt</translation>
+<translation id="9150735707954472829">Flik</translation>
 <translation id="9151211641321628915">Ger en kort beskrivning av den aktuella positionen</translation>
 <translation id="9153606228985488238">Tonhöjd: <ph name="PERCENT" /> procent</translation>
 <translation id="9160096769946561184">Flytta till slutet av den aktuella kolumnen</translation>

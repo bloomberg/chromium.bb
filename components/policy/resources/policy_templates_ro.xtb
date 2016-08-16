@@ -1188,15 +1188,6 @@
       Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> nu va permite pornirea dispozitivului în modul pentru dezvoltatori. Sistemul va refuza pornirea și va afișa un ecran de eroare atunci când comutatorul modului pentru dezvoltatori este pornit.
 
       Dacă politica nu este configurată sau dacă este dezactivată, modul pentru dezvoltatori va fi în continuare disponibil pe dispozitiv.</translation>
-<translation id="5203271367506489164">Politica nu mai este dezvoltată în M48, în favoarea politicii NetworkPredictionOptions, și a fost eliminată din M54.
-
-      Activează anticiparea în rețea în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
-
-      Aceasta controlează atât preluarea anticipată a datelor DNS, cât și conectarea anticipată TCP și SSL și încărcarea anticipată a paginilor web. Numele acestei politici se referă la preluarea anticipată a datelor DNS din motive ce țin de istoric.
-
-      Dacă activezi sau dezactivezi această setare, utilizatorii nu o pot modifica sau ignora în <ph name="PRODUCT_NAME" />.
-
-      Dacă politica nu este configurată, aceasta va fi activată, dar utilizatorul o va putea modifica.</translation>
 <translation id="5208240613060747912">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea să afișeze notificări. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultNotificationsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="5226033722357981948">Specifică dacă instrumentul de găsire de pluginuri ar trebui dezactivat</translation>
 <translation id="523505283826916779">Setări de accesibilitate</translation>
@@ -1285,6 +1276,13 @@
       Dacă este specificată, politica va adăuga un parametru de interogare numit „restrict” la adresa URL utilizată pentru preluarea valorii de bază pentru variante. Valoarea parametrului va fi valoarea specificată în această politică.
 
       Dacă nu este specificată, politica nu va modifica adresa URL a valorii de bază pentru variante.</translation>
+<translation id="5563853101694018649">Dezactivează Instrumentele pentru dezvoltatori și consola JavaScript.
+
+      Dacă activezi această setare, Instrumentele pentru dezvoltatori nu pot fi accesate, iar elementele site-ului nu mai pot fi inspectate. Comenzile rapide de la tastatură și intrările din meniuri sau din meniurile contextuale pentru deschiderea Instrumentelor pentru dezvoltatori sau a consolei JavaScript vor fi dezactivate.
+
+      Dacă dezactivezi această opțiune sau nu o configurezi, utilizatorul va putea să folosească Instrumentele pentru dezvoltatori și consola JavaScript.
+
+      În cazul dispozitivelor <ph name="PRODUCT_OS_NAME" /> care rulează aplicații Android, această politică controlează și accesul la Opțiunile dezvoltatorilor Android. Dacă această politică este activată, utilizatorii nu pot accesa Opțiunile dezvoltatorilor. Dacă această politică este dezactivată sau nu este configurată, utilizatorii pot accesa Opțiunile dezvoltatorilor atingând de șapte ori numărul versiunii din aplicația Setări Android.</translation>
 <translation id="556941986578702361">Controlați ascunderea automată a raftului <ph name="PRODUCT_OS_NAME" />.
 
       Dacă această politică este setată la „AlwaysAutoHideShelf”, raftul va fi întotdeauna ascuns automat.

@@ -9,7 +9,7 @@
 <translation id="1038795173450935438">For å gå frem eller tilbake mellom elementer på en side, trykk på Søk+høyrepilen eller Søk+venstrepilen. For å gå til neste linje, trykk på Søk+nedoverpilen. For å se forrige linje, trykk på Søk+oppoverpilen. Hvis du kommer til et element du vil klikke på, kan du trykke på Søk+mellomrom.</translation>
 <translation id="1044777062731150180">Ingen overskrifter</translation>
 <translation id="106222400312645156">rwhdr</translation>
-<translation id="1065552602950927991">Ugyldige inndata</translation>
+<translation id="1065552602950927991">Ugyldig inndata</translation>
 <translation id="1082209053475788238">Det finnes ikke tidligere overskrifter på nivå 6.</translation>
 <translation id="1088219014394087294">Det fins ingen overskrifter.</translation>
 <translation id="1106741348836243114">Slå tilbakemelding via lydsignaler av eller på.</translation>
@@ -793,6 +793,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="9115913704608474258">November</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Fane</translation>
 <translation id="9151211641321628915">Kunngjør en kort beskrivelse av den gjeldende posisjonen</translation>
 <translation id="9153606228985488238">Stemmeleie – <ph name="PERCENT" /> prosent</translation>
 <translation id="9160096769946561184">Gå til slutten av den gjeldende kolonnen</translation>

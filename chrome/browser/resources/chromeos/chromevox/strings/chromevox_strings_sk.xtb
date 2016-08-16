@@ -718,7 +718,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8283603667300770666">Ďalšie pole formulára</translation>
 <translation id="831207808878314375">Definícia</translation>
 <translation id="8313653172105209786">adresár</translation>
-<translation id="8344569602005188545">hod.</translation>
+<translation id="8344569602005188545">hodiny</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{mriežka}few{# mriežky}many{# pound signs}other{# mriežok}}</translation>
 <translation id="8374154622594089836">mesiac</translation>
 <translation id="8378855320830505539">Oblasť</translation>
@@ -793,6 +793,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="9115913704608474258">november</translation>
 <translation id="9128414153595658330">dialógové okno</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Karta</translation>
 <translation id="9151211641321628915">Oznamuje stručný popis aktuálnej pozície</translation>
 <translation id="9153606228985488238">Výška: <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Prejsť na koniec aktuálneho stĺpca</translation>

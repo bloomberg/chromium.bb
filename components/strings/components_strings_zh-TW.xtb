@@ -7,13 +7,11 @@
 <translation id="1038842779957582377">不明名稱</translation>
 <translation id="1055184225775184556">復原新增(&amp;U)</translation>
 <translation id="10614374240317010">一律不儲存</translation>
-<translation id="1064422015032085147">代管這個網頁的伺服器可能已超載或正在進行維護。
-    為了避免產生過多的流量，導致情況惡化，
-    目前系統已暫時禁止傳送要求至這個網址。</translation>
 <translation id="106701514854093668">電腦版書籤</translation>
 <translation id="1080116354587839789">符合視窗寬度</translation>
 <translation id="1103523840287552314">一律翻譯<ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">勾選後，Chrome 會在這個裝置上儲存您的信用卡複本，以便更快填寫資訊。</translation>
+<translation id="1111153019813902504">最新的書籤</translation>
 <translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
 <translation id="112840717907525620">政策快取正確</translation>
 <translation id="113188000913989374"><ph name="SITE" /> 顯示：</translation>
@@ -26,6 +24,8 @@
 <translation id="1181037720776840403">移除</translation>
 <translation id="1201402288615127009">繼續</translation>
 <translation id="1201895884277373915">這個網站的更多內容</translation>
+<translation id="1206967143813997005">縮寫簽名無效</translation>
+<translation id="1209206284964581585">暫時隱藏</translation>
 <translation id="121201262018556460">您嘗試前往 <ph name="DOMAIN" />，但伺服器所提供的憑證含有防護力薄弱的金鑰。攻擊者可能已破壞私密金鑰，而該伺服器可能並非您的目標伺服器 (您的連線對象可能是攻擊者的電腦)。</translation>
 <translation id="1219129156119358924">系統安全性</translation>
 <translation id="1227224963052638717">不明政策。</translation>
@@ -108,7 +108,6 @@
 <translation id="2181821976797666341">政策</translation>
 <translation id="2212735316055980242">找不到政策</translation>
 <translation id="2213606439339815911">正在擷取項目...</translation>
-<translation id="2214283295778284209"><ph name="SITE" /> 無法使用</translation>
 <translation id="2230458221926704099">請使用<ph name="BEGIN_LINK" />診斷應用程式<ph name="END_LINK" />修正連線問題</translation>
 <translation id="225207911366869382">這個政策值已遭汰換。</translation>
 <translation id="2262243747453050782">HTTP 錯誤</translation>
@@ -130,6 +129,7 @@
 <translation id="2396249848217231973">復原刪除(&amp;U)</translation>
 <translation id="2413528052993050574">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已遭撤銷。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="2455981314101692989">這個網頁已停用這個表單的自動填入功能。</translation>
+<translation id="2463739503403862330">填入</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />執行網路診斷<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">無效的搜尋網址。</translation>
 <translation id="2491120439723279231">伺服器憑證含有錯誤。</translation>
@@ -282,7 +282,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 遭到封鎖</translation>
 <translation id="4021036232240155012">DNS 這項網路服務會將網站的名稱轉譯成網際網路位址。</translation>
 <translation id="4030383055268325496">復原新增(&amp;U)</translation>
-<translation id="4032534284272647190">瀏覽 <ph name="URL" /> 遭到拒絕。</translation>
 <translation id="404928562651467259">警告</translation>
 <translation id="4058922952496707368">鍵「<ph name="SUBKEY" />」：<ph name="ERROR" /></translation>
 <translation id="4075732493274867456">用戶端和伺服器不支援一般 SSL 通訊協定版本或加密套件。</translation>
@@ -329,7 +328,6 @@
 <translation id="4668929960204016307">，</translation>
 <translation id="4670097147947922288">您正在瀏覽擴充功能頁面。</translation>
 <translation id="467662567472608290">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證含有錯誤。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
-<translation id="4697214168136963651">系統已封鎖 <ph name="URL" /></translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的連線已中斷</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />執行 Windows 網路診斷<ph name="END_LINK" /></translation>
@@ -337,6 +335,7 @@
 <translation id="4728558894243024398">平台</translation>
 <translation id="4744603770635761495">可執行檔的路徑</translation>
 <translation id="4756388243121344051">記錄(&amp;H)</translation>
+<translation id="4759238208242260848">下載</translation>
 <translation id="4764776831041365478"><ph name="URL" /> 的網頁可能暫時無法使用或被永久移至新網址。</translation>
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
 <translation id="4782449893814226250">您已詢問家長是否同意您造訪這個網頁。</translation>
@@ -359,6 +358,7 @@
 <translation id="5031870354684148875">關於「Google 翻譯」</translation>
 <translation id="5040262127954254034">隱私權</translation>
 <translation id="5045550434625856497">密碼不正確</translation>
+<translation id="5056549851600133418">為您推薦的文章</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />檢查 Proxy 位址<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">伺服器憑證目前無效。</translation>
 <translation id="5089810972385038852">州</translation>
@@ -411,8 +411,11 @@
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5710435578057952990">此網頁的身分未經驗證。</translation>
 <translation id="5720705177508910913">目前使用者</translation>
+<translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="5784606427469807560">驗證您的信用卡時發生問題。請檢查網際網路連線，然後再試一次。</translation>
 <translation id="5785756445106461925">此外，這個網頁含有其他不安全的資源。其他人可能會在資源傳輸期間檢視這些資源，攻擊者也可能會修改這些資源，進而變更網頁外觀。</translation>
+<translation id="5786044859038896871">要填入你的信用卡資訊嗎？</translation>
+<translation id="5803412860119678065">要填入你的 <ph name="CARD_DETAIL" /> 資訊嗎？</translation>
 <translation id="5810442152076338065">您的 <ph name="DOMAIN" /> 連線使用過舊的加密套件進行加密。</translation>
 <translation id="5813119285467412249">重做新增(&amp;R)</translation>
 <translation id="5855235287355719921">Chrome 顯示這則訊息是因為您的管理員已封鎖這個網站。</translation>
@@ -438,7 +441,6 @@
 <translation id="614940544461990577">建議做法：</translation>
 <translation id="6150607114729249911">注意：您必須徵求家長同意，才能瀏覽這個網頁。</translation>
 <translation id="6151417162996330722">伺服器憑證的有效期限太長。</translation>
-<translation id="6154808779448689242">傳回的政策符記與目前符記不相符</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6203231073485539293">檢查網際網路連線</translation>
 <translation id="6218753634732582820">要從 Chromium 中移除地址嗎？</translation>
@@ -455,7 +457,6 @@
 <translation id="6358450015545214790">我需要進一步資訊</translation>
 <translation id="6387478394221739770">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/beta 安裝測試版。</translation>
 <translation id="6389758589412724634">Chromium 嘗試顯示這個網頁時用盡了記憶體。</translation>
-<translation id="641480858134062906">無法載入 <ph name="URL" /></translation>
 <translation id="6417515091412812850">無法檢查憑證是否已遭撤銷。</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒絕連線。</translation>
 <translation id="6445051938772793705">國家/地區</translation>
@@ -579,7 +580,6 @@
 <translation id="785549533363645510">不過，這並不意味著您可以完全隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可能會記錄您的瀏覽行為。</translation>
 <translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
 <translation id="7894616681410591072">注意：您需要取得 <ph name="NAME" /> 的授權才能存取這個網頁。</translation>
-<translation id="790025292736025802">找不到 <ph name="URL" /></translation>
 <translation id="7912024687060120840">在以下資料夾中：</translation>
 <translation id="7920092496846849526">您已詢問家長是否同意您造訪這個網頁。</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>

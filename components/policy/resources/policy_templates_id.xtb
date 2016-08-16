@@ -1171,15 +1171,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika kebijakan ini disetel ke True, <ph name="PRODUCT_OS_NAME" /> akan mencegah perangkat melakukan booting ke mode pengembang. Sistem akan menolak melakukan booting dan menampilkan layar kesalahan saat pengalih pengembang diaktifkan.
 
       Jika kebijakan ini tidak disetel atau disetel ke False, mode pengembang akan tetap tersedia untuk perangkat.</translation>
-<translation id="5203271367506489164">Kebijakan ini sudah tidak digunakan di M48 yang mendukung NetworkPredictionOptions, dan dihapus di M54.
-
-      Mengaktifkan prediksi jaringan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengganti setelan ini.
-
-      Tindakan ini tidak hanya mengontrol penyanggaan DNS, tetapi juga prasambungan dan praprerenderan TCP serta DNS pada laman web. Nama kebijakan ini merujuk pada penyanggaan DNS karena alasan historis.
-
-      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME" />.
-
-      Jika kebijakan ini tidak disetel, setelan ini akan diaktifkan, tetapi pengguna dapat mengubahnya.</translation>
 <translation id="5208240613060747912">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="5226033722357981948">Menentukan apakah pencari plugin harus dinonaktifkan</translation>
 <translation id="523505283826916779">Setelan aksesibilitas</translation>
@@ -1268,6 +1259,13 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika ditentukan, akan menambahkan parameter kueri yang disebut 'bataso' ke URL yang digunakan untuk mengambil bibit Variasi. Nilai parameter akan menjadi nilai yang ditentukan dalam kebijakan ini.
 
       Jika tidak ditentukan, tidak akan mengubah URL bibit Variasi.</translation>
+<translation id="5563853101694018649">Menonaktifkan Alat Pengembang dan Konsol JavaScript.
+
+      Jika Anda mengaktifkan setelan ini, Alat Pengembang tidak dapat diakses dan elemen situs web tidak dapat diperiksa lagi. Pintasan keyboard dan menu atau entri menu konteks apa pun untuk membuka Alat Pengembang maupun Konsol Javascript akan dinonaktifkan.
+
+      Jika opsi ini disetel ke nonaktif atau tidak disetel, Anda memungkinkan penggunaan Alat Pengembang dan Konsol JavaScript.
+
+      Untuk perangkat <ph name="PRODUCT_OS_NAME" /> yang dapat menjalankan aplikasi Android, kebijakan ini juga mengontrol akses ke Opsi Pengembang Android. Jika Anda menyetel kebijakan ini ke true, pengguna tidak dapat mengakses Opsi Pengembang. Jika Anda menyetel kebijakan ini ke false atau membiarkannya tidak disetel, pengguna dapat mengakses Opsi Pengembang dengan men-tap tujuh kali nomor versi di aplikasi setelan Android.</translation>
 <translation id="556941986578702361">Mengontrol rak <ph name="PRODUCT_OS_NAME" /> sembunyi otomatis.
 
       Jika kebijakan ini disetel ke 'AlwaysAutoHideShelf', rak akan selalu bersembunyi secara otomatis.

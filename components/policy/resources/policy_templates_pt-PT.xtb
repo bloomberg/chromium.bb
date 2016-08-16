@@ -1171,15 +1171,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política for definida como Verdadeiro, o <ph name="PRODUCT_OS_NAME" /> impedirá o dispositivo de arrancar no modo de programador. O sistema recusar-se-á a arrancar e apresentará um ecrã de erro quando o botão do programador for ligado.
 
       Se esta política não for definida ou for definida para Falso, o modo de programador continuará disponível para o dispositivo.</translation>
-<translation id="5203271367506489164">Esta política foi descontinuada no M48 e substituída por NetworkPredictionOptions. Posteriormente, foi removida no M54.
-
-      Ativa a previsão de rede no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
-
-      Controla não só o registo prévio de DNS, mas também a ligação e a conversão prévia TCP e SSL de páginas Web. Por motivos históricos, o nome da política refere-se ao registo prévio de DNS.
-
-      Se ativar ou desativar esta definição, os utilizadores não a podem alterar ou substituir no <ph name="PRODUCT_NAME" />.
-
-      Se esta política não for definida, é ativada, mas o utilizador pode alterá-la.</translation>
 <translation id="5208240613060747912">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a apresentar notificações. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultNotificationsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="5226033722357981948">Especificar se o localizador de plug-ins deverá ser desativado</translation>
 <translation id="523505283826916779">Definições de acessibilidade</translation>
@@ -1250,7 +1241,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida, a sessão especificada será iniciada automaticamente após ter decorrido um período de tempo no ecrã de início de sessão sem a interação do utilizador. A sessão pública já tem de estar configurada (ver |DeviceLocalAccounts|).
 
       Se esta política não estiver definida, o início de sessão automático não irá ocorrer.</translation>
-<translation id="5529037166721644841">Especifica o período em milissegundos no qual o serviço de gestão de dispositivos é consultado quanto a informações da política do utilizador.
+<translation id="5529037166721644841">Especifica o período em milissegundos no qual o serviço de gestão de dispositivos é consultado quanto a informações da política do aparelho.
 
       A definição desta política substitui o valor predefinido de 3 horas. Os valores válidos para esta política encontram-se no intervalo de 1 800 000 (30 minutos) a 86 400 000 (1 dia). Quaisquer valores que não se encontrem neste intervalo são ajustados para o respetivo limite.
 
@@ -1268,6 +1259,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se estiver especificada, irá adicionar um parâmetro de consulta denominado "restrito" ao URL utilizado para obter a semente Variações. O valor do parâmetro será o valor especificado nesta política.
 
       Se não estiver especificada, não irá modificar o URL da semente Variações.</translation>
+<translation id="5563853101694018649">Desativa as Ferramentas do programador e a Consola de JavaScript.
+
+      Se ativar esta definição, não é possível aceder às Ferramentas do programador e os elementos dos Websites deixam de poder ser inspecionados. Todos os atalhos de teclado e todas as entradas de menu ou de menu de contexto para abrir as Ferramentas do programador ou a Consola do JavaScript são desativados.
+
+      Se desativar ou não definir esta opção, os utilizadores podem utilizar as Ferramentas do programador e a Consola de JavaScript.
+
+      Para os dispositivos com o <ph name="PRODUCT_OS_NAME" /> capazes de executar aplicações Android, esta política também controla o acesso às Opções de programador Android. Se definir esta política como verdadeira, os utilizadores não podem aceder às Opções de programador. Se definir esta política como falsa ou não a definir, os utilizadores podem aceder às Opções de programador ao tocar sete vezes no número da compilação na aplicação de definições do Android.</translation>
 <translation id="556941986578702361">Controlar a ocultação automática da prateleira do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida como 'AlwaysAutoHideShelf', a prateleira será sempre ocultada automaticamente.

@@ -1171,15 +1171,6 @@
       Ha a szabály Igaz értékre van állítva, a(z) <ph name="PRODUCT_OS_NAME" /> megakadályozza, hogy az eszköz fejlesztői módban induljon el. A fejlesztői kapcsoló bekapcsolásakor a rendszer nem töltődik be, és hibát jelző képernyő jelenik meg.
 
       Ha a szabály nincs beállítva, illetve értéke Hamis, a fejlesztői mód elérhető marad az eszköz számára.</translation>
-<translation id="5203271367506489164">Ez az irányelv – a NetworkPredictionOptions miatt – megszűnt az M48-ban, majd eltávolításra került az M54-ben.
-
-      Engedélyezi a hálózati előrejelzést a(z) <ph name="PRODUCT_NAME" /> termékben, valamint megakadályozza a felhasználókat a beállítás módosításában.
-
-      Nemcsak a DNS-előtöltést, hanem az előzetes TCP- és SSL-kapcsolatokat és a weboldalak előzetes megjelenítését is vezérli. Az irányelv neve történeti okok miatt a DNS-előtöltésre utal.
-
-      A beállítás engedélyezése vagy letiltása esetén a felhasználók nem módosíthatják, és nem bírálhatják felül ezt a beállítást a(z) <ph name="PRODUCT_NAME" /> termékben.
-
-      Ha nem állítja be az irányelvet, akkor aktiválódik, de a felhasználók képesek lesznek módosítani.</translation>
 <translation id="5208240613060747912">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem jeleníthetnek meg értesítéseket. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultNotificationsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="5226033722357981948">Adja meg, hogy a bővítménykereső le legyen-e tiltva</translation>
 <translation id="523505283826916779">Kisegítő beállítások</translation>
@@ -1268,6 +1259,13 @@
       Ha meg van határozva, egy „restrict” nevű lekérdezési paramétert ad a Variations seed lekérdezésére használatos URL-hez. A paraméter értéke a házirendben meghatározott érték lesz.
 
       Ha nincs meghatározva, nem változtat a Variations seed URL-jén.</translation>
+<translation id="5563853101694018649">Letiltja a fejlesztői eszközöket és a JavaScript-konzolt.
+
+      Ha engedélyezi ezt a beállítást, akkor a fejlesztői eszközökhöz nem férhet hozzá, illetve a webhelyek elemeit nem ellenőrizheti a jövőben. Bármely billentyűparancs, menü vagy helyi menüpont le lesz tiltva, amely megnyitná a fejlesztői eszközöket vagy a JavaScript-konzolt.
+
+      Ha letiltja ezt a beállítást, vagy konfigurálatlanul hagyja, akkor a felhasználó használhatja a fejlesztői eszközöket és a JavaScript-konzolt.
+
+      Az androidos alkalmazások futtatására képes <ph name="PRODUCT_OS_NAME" />eszközök esetén ez a házirend vezérli az Android fejlesztői beállításaihoz való hozzáférést. Ha igaz értékre állítja ezt a házirendet, akkor a felhasználók nem férhetnek hozzá a fejlesztői beállításokhoz. Ha hamis értékre állítja a házirendet, illetve nem ad meg beállítást, akkor a felhasználók hozzáférhetnek a fejlesztői beállításokhoz, ha hétszer a build számára kattintanak az Android Beállítások alkalmazásában.</translation>
 <translation id="556941986578702361">A(z) <ph name="PRODUCT_OS_NAME" /> polc automatikus elrejtését szabályozza.
 
       Ha az irányelv 'AlwaysAutoHideShelf' értékre van beállítva, akkor a rendszer mindig automatikusan elrejti a polcot.

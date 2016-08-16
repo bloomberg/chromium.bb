@@ -1188,15 +1188,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 Hvis denne politik er sat til True (sandt), forhindrer <ph name="PRODUCT_OS_NAME" /> enheden i at starte i udviklertilstand. Systemet vil nægte at starte og vise en fejlskærm, når udviklerkontakten slås til. 
 
 Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertilstand fortsat tilgængelig for enheden.</translation>
-<translation id="5203271367506489164">Denne politik er udfaset i M48 til fordel for NetworkPredictionOptions og fjernet i M54.
-
-      Aktiverer netværksforudsigelse i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
-
-      Dette styrer både forudhentning af DNS og forhåndstilslutning af TCP og SSL samt forhåndsgengivelse af websider. Navnet på politikken henviser til forudhentning af DNS af historiske årsager.
-
-      Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne politik ikke angives, aktiveres dette, men brugerne vil kunne ændre det.</translation>
 <translation id="5208240613060747912">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor det ikke er tilladt at vise underretninger. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultNotificationsSetting", hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="5226033722357981948">Angiv, om pluginsøgning skal deaktiveres</translation>
 <translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>
@@ -1283,6 +1274,13 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
       Hvis dette er angivet, føjes der en forespørgselsparameter med navnet "restrict" til den webadresse, der bruges til at hente variationbasistallet. Værdien for parameteren er den værdi, der er angivet i denne politik.
 
       Hvis dette ikke er angivet, ændres variationbasistallet ikke.</translation>
+<translation id="5563853101694018649">Deaktiverer Udviklerværktøjer og JavaScript-konsollen.
+
+      Hvis du aktiverer denne indstilling, kan Udviklerværktøjer ikke tilgås, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje og alle angivelser i menuer eller genvejsmenuer, der bruges til at åbne Udviklerværktøjer eller JavaScript-konsollen, deaktiveres.
+
+      Hvis denne indstilling deaktiveres eller ikke angives, har brugerne mulighed for at bruge Udviklerværktøjer og JavaScript-konsollen.
+
+      I forbindelse med <ph name="PRODUCT_OS_NAME" />-enheder, der understøtter Android-apps, kontrollerer denne politik også adgang til Indstillinger for udviklere i Android. Hvis denne politik angives som sand, kan brugerne ikke få adgang til Indstillinger for udviklere. Hvis du angiver politikken som falsk eller ikke angiver den, kan brugerne få adgang til Indstillinger for udviklere ved at trykke syv gange på build-nummeret i appen Android Indstillinger.</translation>
 <translation id="556941986578702361">Administrer, hvornår <ph name="PRODUCT_OS_NAME" />-hylden skjules automatisk.
 
       Hvis denne politik er angivet som "AlwaysAutoHideShelf'", skjules hylden altid automatisk.

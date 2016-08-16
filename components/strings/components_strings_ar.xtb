@@ -7,13 +7,11 @@
 <translation id="1038842779957582377">اسم غير معروف</translation>
 <translation id="1055184225775184556">تراجع عن الإ&amp;ضافة</translation>
 <translation id="10614374240317010">لم يتم الحفظ مطلقًا</translation>
-<translation id="1064422015032085147">‏قد يكون الخادم الذي يستضيف صفحة الويب زائد التحميل أو قيد الصيانة.
-        ولتجنب جذب عدد زيارات كبير وتجنب جعل الموقف أكثر سوءًا،
-        فقد تم عدم السماح بالطلبات إلى عنوان URL هذا مؤقتًا.</translation>
 <translation id="106701514854093668">الإشارات المرجعية على سطح المكتب</translation>
 <translation id="1080116354587839789">ملاءمة مع العرض</translation>
 <translation id="1103523840287552314">ترجمة اللغة <ph name="LANGUAGE" /> دائمًا</translation>
 <translation id="1107591249535594099">‏إذا تم وضع علامة على هذا الخيار، سيخزّن Chrome نسخة من هذه البطاقة على هذا الجهاز لتعبئة النماذج بشكل أسرع.</translation>
+<translation id="1111153019813902504">الإشارات الجديدة</translation>
 <translation id="1113869188872983271">تراجع عن إعادة الت&amp;رتيب</translation>
 <translation id="112840717907525620">ذاكرة التخزين المؤقت للسياسة بحالة جيدة</translation>
 <translation id="113188000913989374"><ph name="SITE" /> يعرض:</translation>
@@ -26,6 +24,8 @@
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1201895884277373915">المزيد من هذا الموقع</translation>
+<translation id="1206967143813997005">توقيع أوَّلي سيئ</translation>
+<translation id="1209206284964581585">إخفاء الآن</translation>
 <translation id="121201262018556460">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن الخادم قدّم شهادة تحتوي على مفتاح ضعيف. ربما قام أحد المهاجمين باختراق المفتاح الخاص، ولا يكون الخادم هو الخادم الذي تتوقعه (قد تكون على اتصال بأحد المهاجمين).</translation>
 <translation id="1219129156119358924">أمان النظام</translation>
 <translation id="1227224963052638717">سياسة غير معروفة.</translation>
@@ -108,7 +108,6 @@
 <translation id="2181821976797666341">السياسات</translation>
 <translation id="2212735316055980242">تعذر العثور على السياسة</translation>
 <translation id="2213606439339815911">جارٍ جلب الإدخالات...</translation>
-<translation id="2214283295778284209"><ph name="SITE" /> غير متوفّر</translation>
 <translation id="2230458221926704099">إصلاح الاتصال باستخدام <ph name="BEGIN_LINK" />تطبيق بيانات التشخيص<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">تم تجاهل القيمة لهذه السياسة.</translation>
 <translation id="2262243747453050782">‏خطأ HTTP</translation>
@@ -130,6 +129,7 @@
 <translation id="2396249848217231973">تراجع عن الحذ&amp;ف</translation>
 <translation id="2413528052993050574">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان ربما تم إلغاء صلاحيتها. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="2455981314101692989">عطلت صفحة الويب هذه الملء التلقائي لهذا النموذج.</translation>
+<translation id="2463739503403862330">ملء</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />تشغيل بيانات تشخيص الشبكة<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">‏عنوان URL للبحث غير صالح.</translation>
 <translation id="2491120439723279231">تحتوي شهادة الخادم على أخطاء.</translation>
@@ -282,7 +282,6 @@
 <translation id="3973234410852337861">تم حظر <ph name="HOST_NAME" /></translation>
 <translation id="4021036232240155012">‏يُعد نظام أسماء النطاقات (DNS) هو خدمة الشبكة التي تترجم اسم موقع ويب إلى عنوانه على شبكة الإنترنت.</translation>
 <translation id="4030383055268325496">تراجع عن الإ&amp;ضافة</translation>
-<translation id="4032534284272647190">تم رفض الدخول إلى<ph name="URL" />.</translation>
 <translation id="404928562651467259">تحذير</translation>
 <translation id="4058922952496707368">المفتاح "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">لا يدعم كل من العميل والخادم مجموعة تشفير أو إصدار بروتوكول طبقة المقابس الآمنة الشائع.</translation>
@@ -329,7 +328,6 @@
 <translation id="4668929960204016307">،</translation>
 <translation id="4670097147947922288">أنت تعرض حاليًا صفحة إضافة.</translation>
 <translation id="467662567472608290">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان تحتوي على أخطاء. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
-<translation id="4697214168136963651">تم حظر <ph name="URL" /></translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" />‏ <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">تم قطع اتصالك</translation>
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />تشغيل بيانات تشخيص شبكة Windows<ph name="END_LINK" /></translation>
@@ -337,6 +335,7 @@
 <translation id="4728558894243024398">النظام الأساسي</translation>
 <translation id="4744603770635761495">المسار التنفيذي</translation>
 <translation id="4756388243121344051">ال&amp;سجل</translation>
+<translation id="4759238208242260848">التنزيلات</translation>
 <translation id="4764776831041365478">قد تكون صفحة الويب على العنوان <ph name="URL" /> غير متاحة مؤقتًا أو قد يكون تم نقلها نهائيًا إلى عنوان ويب جديد.</translation>
 <translation id="4771973620359291008">حدث خطأ غير محدّد.</translation>
 <translation id="4782449893814226250">لقد سألت والديك ما إذا كان مناسبًا لك زيارة هذه الصفحة.</translation>
@@ -359,6 +358,7 @@
 <translation id="5031870354684148875">‏معلومات عن الترجمة من Google</translation>
 <translation id="5040262127954254034">الخصوصية</translation>
 <translation id="5045550434625856497">كلمة مرور غير صحيحة</translation>
+<translation id="5056549851600133418">مقالات من أجلك</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />التحقق من عنوان الخادم الوكيل<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">شهادة الخادم ليست صالحة حاليًا.</translation>
 <translation id="5089810972385038852">بلد/دولة</translation>
@@ -411,8 +411,11 @@
 <translation id="5677928146339483299">تم المنع</translation>
 <translation id="5710435578057952990">لم  يتمّ التحقق من هوية هذا الموقع.</translation>
 <translation id="5720705177508910913">المستخدم الحالي</translation>
+<translation id="572328651809341494">علامات التبويب الأخيرة</translation>
 <translation id="5784606427469807560">حدثت مشكلة أثناء التأكد من بطاقتك. تحقق من اتصالك بالإنترنت وأعد المحاولة.</translation>
 <translation id="5785756445106461925">إضافة إلى ذلك، تتضمن هذه الصفحة موارد أخرى غير آمنة. ويستطيع الآخرون مشاهدة هذه الموارد أثناء نقلها، كما يستطيع أي مهاجم تعديلها لتغيير مظهر الصفحة.</translation>
+<translation id="5786044859038896871">هل تريد ملء معلومات بطاقتك؟</translation>
+<translation id="5803412860119678065">هل تريد ملء <ph name="CARD_DETAIL" />؟</translation>
 <translation id="5810442152076338065">يتم ترميز اتصالك بالنطاق <ph name="DOMAIN" /> باستخدام مجموعة تشفير قديمة.</translation>
 <translation id="5813119285467412249">إعا&amp;دة الإضافة</translation>
 <translation id="5855235287355719921">ظهرت هذه الرسالة لأن مديرك حظر هذا الموقع.</translation>
@@ -438,7 +441,6 @@
 <translation id="614940544461990577">جرّب:</translation>
 <translation id="6150607114729249911">عفوًا! عليك أن تسأل والديك ما إذا كان مناسبًا لك زيارة هذه الصفحة.</translation>
 <translation id="6151417162996330722">فترة صلاحية شهادة الخادم طويلة جدًا.</translation>
-<translation id="6154808779448689242">لا يتطابق الرمز المميز لسياسة الإرجاع مع الرمز المميز الحالي</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6203231073485539293">التحقق من اتصالك بالإنترنت</translation>
 <translation id="6218753634732582820">‏هل تريد إزالة العنوان من Chromium؟</translation>
@@ -455,7 +457,6 @@
 <translation id="6358450015545214790">ماذا تعني هذه الأقسام؟</translation>
 <translation id="6387478394221739770">‏إذا كنت مهتمًا بميزات Google الجديدة والرائعة، فيُمكنك تجربة القناة التجريبية على chrome.com/beta.</translation>
 <translation id="6389758589412724634">‏نفدت ذاكرة Chromium أثناء محاولة عرض صفحة الويب هذه.</translation>
-<translation id="641480858134062906">فشل تحميل <ph name="URL" /></translation>
 <translation id="6417515091412812850">تعذر التحقق مما إذا كانت الشهادة قد تم إبطالها.</translation>
 <translation id="6433595998831338502">رفض <ph name="HOST_NAME" /> الاتصال.</translation>
 <translation id="6445051938772793705">البلد</translation>
@@ -579,7 +580,6 @@
 <translation id="785549533363645510">ومع ذلك، أنت غير مرئي. لا يخفي الانتقال إلى وضع التخفي التصفح من صاحب العمل أو مزود خدمة الإنترنت أو المواقع التي تزورها.</translation>
 <translation id="7887683347370398519">‏تحقق من رمز التحقق من البطاقة (CVC) ثم أعد المحاولة.</translation>
 <translation id="7894616681410591072">عفوًا، أنت بحاجة إلى الحصول على إذن من <ph name="NAME" /> للدخول إلى هذه الصفحة.</translation>
-<translation id="790025292736025802">تعذر العثور على <ph name="URL" /></translation>
 <translation id="7912024687060120840">في المجلد:</translation>
 <translation id="7920092496846849526">هل سألت والديك ما إذا كان مناسبًا لك زيارة هذه الصفحة.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>

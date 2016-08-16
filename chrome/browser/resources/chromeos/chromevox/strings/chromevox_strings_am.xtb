@@ -619,7 +619,7 @@
 <translation id="7170733337935166589">ቀጣይነት ባለው ንባብ ጊዜ ወደፊት ይዝለሉ</translation>
 <translation id="7181697990050180700">የቁልፍ ሰሌዳ አቋራጮችን ተደጋጋሚ ለሆኑ ትዕዛዞች ለማበጀት ከታች ባሉት መስኮች ላይ ያስገቧቸው።</translation>
 <translation id="7203150201908454328">ተዘርግቷል</translation>
-<translation id="7210211103303402262">ደቂቃዎች</translation>
+<translation id="7210211103303402262">ደቂቃ</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
 <translation id="7221740160534240920">መስመር</translation>
 <translation id="7226216518520804442">lst</translation>
@@ -720,7 +720,7 @@
 <translation id="8313653172105209786">dir</translation>
 <translation id="8344569602005188545">ሰዓቶች</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{መሰላል}one{# የመሰላል ምልክቶች}other{# የመሰላል ምልክቶች}}</translation>
-<translation id="8374154622594089836">month</translation>
+<translation id="8374154622594089836">ወር</translation>
 <translation id="8378855320830505539">ክልል</translation>
 <translation id="8382679411218029383">ራስ-አጠናቅቅ መስመር ውስጥ እና ዝርዝር</translation>
 <translation id="8428603554127842284">ደረጃ <ph name="DEPTH" /></translation>
@@ -793,6 +793,7 @@
 <translation id="9115913704608474258">ኖቬምበር</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">ትር</translation>
 <translation id="9151211641321628915">የአሁኑን ቦታ አጭር ማብራሪያ ያስታውቃል</translation>
 <translation id="9153606228985488238">ቅጥነት <ph name="PERCENT" /> በመቶ</translation>
 <translation id="9160096769946561184">ወደ የአሁኑ አምድ መጨረሻ ሂድ</translation>

@@ -1168,15 +1168,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Jos tämän käytännön arvoksi asetetaan True, <ph name="PRODUCT_OS_NAME" /> estää laitetta käynnistymästä uudelleen kehittäjätilassa. Järjestelmä ei käynnisty uudelleen ja näyttää virheilmoituksen, jos kehittäjätila on otettu käyttöön.
 
       Jos käytäntöä ei määritetä tai sen arvoksi asetetaan False, laitetta voi käyttää kehittäjätilassa.</translation>
-<translation id="5203271367506489164">Tämä käytäntö poistetaan käytöstä M48:ssa ja sen korvaa NetworkPredictionOptions. Käytäntö poistetaan kokonaan M54:ssä.
-
-     Ottaa verkon ennakoinnin käyttöön tuotteessa <ph name="PRODUCT_NAME" /> ja estää käyttäjiä muuttamasta asetusta.
-
-     Tämä säätelee DNS-esilatauksen lisäksi myös TCP- ja SSL-esiyhteyksiä ja verkkosivujen ennakoivaa näytölle piirtämistä. Käytännön nimi viittaa DNS-esilataukseen historiallisista syistä.
-
-      Jos otat tämän asetuksen käyttöön tai poistat sen käytöstä, käyttäjät eivät voi muuttaa tai ohittaa asetusta tuotteessa <ph name="PRODUCT_NAME" />.
-
-      Jos käytäntöä ei ole määritetty, asetus otetaan käyttöön, mutta käyttäjät voivat vaihtaa sitä.</translation>
 <translation id="5208240613060747912">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa näyttää ilmoituksia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultNotificationsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="5226033722357981948">Määritä, tuleeko laajennuksien haun olla pois käytöstä</translation>
 <translation id="523505283826916779">Käytettävyysasetukset</translation>
@@ -1265,6 +1256,13 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Jos käytäntö määritetään, kyselyparametri "restrict" lisätään Variations-siemenarvon hakemiseen käytettävään URL-osoitteeseen. Parametrin arvo on tässä käytännössä määritetty arvo.
 
       Jos käytäntöä ei määritetä, Variations-siemenarvon URL-osoitetta ei muokata.</translation>
+<translation id="5563853101694018649">Poistaa käytöstä kehittäjän työkalut sekä JavaScript-konsolin.
+
+      Jos otat asetuksen käyttöön, kehittäjän työkaluja ei voi käyttää eikä verkkosivustojen elementtejä enää voi tarkastaa. Kehittäjän työkalut tai JavaScript-konsolin avaavat pikanäppäimet ja valikkokohteet poistetaan käytöstä.
+
+      Jos poistat asetuksen käytöstä tai et määritä sitä, kehittäjän työkaluja ja JavaScript-konsolia voi käyttää.
+
+      Laitteilla, joiden käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" /> ja joilla Android-sovelluksia voidaan käyttää, tämä käytäntö hallinnoi myös Androidin kehittäjäasetusten käyttöä. Jos käytännön arvo on Tosi, kehittäjäasetusten käyttö ei ole mahdollista käyttäjille. Jos käytännön arvo on Epätosi tai sitä ei määritetä, käyttäjät voivat avata kehittäjäasetukset koskettamalla versionumeroa seitsemän kertaa Androidin asetussovelluksessa.</translation>
 <translation id="556941986578702361">Hallinnoi <ph name="PRODUCT_OS_NAME" /> -hyllyn automaattista piilottamista.
 
 Jos tämän käytännön arvo on AlwaysAutoHideShelf, hylly piilotetaan aina automaattisesti.

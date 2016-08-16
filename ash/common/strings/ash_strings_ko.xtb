@@ -147,6 +147,7 @@
 <translation id="5597451508971090205"><ph name="DATE" /> <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5759815399269068793">외부 디스플레이에 연결되어 있는 동안에는 덮개가 닫혀 있더라도 <ph name="DEVICE_TYPE" />을(를) 계속 사용할 수 있습니다.</translation>
 <translation id="5777841717266010279">화면 공유를 중단하시겠습니까?</translation>
+<translation id="57838592816432529">음소거</translation>
 <translation id="5825747213122829519">입력 방법이 <ph name="INPUT_METHOD_ID" />(으)로 변경되었습니다.
 전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="5871632337994001636">기기 관리...</translation>

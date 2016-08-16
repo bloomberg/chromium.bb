@@ -230,11 +230,11 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="201557587962247231">Frecuencia de cargas del informe de estado del dispositivo</translation>
 <translation id="2018836497795982119">Especifica el período en milisegundos en el que se consultará el servicio de administración del dispositivo para obtener la información de política del usuario.
 
-      Si estableces esta política, se anula el valor predeterminado de tres horas. Los valores válidos para esta política van de 1800000 (30 minutos) a 86400000 (1 día). Cualquier valor que esté fuera de este rango se ajustará al límite más cercano. Si la plataforma es compatible con notificaciones de política, el retraso de actualización se establecerá en 24 horas ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie.
+      Si estableces esta política, se anula el valor predeterminado de tres horas. Los valores válidos para esta política van de 1800000 (30 minutos) a 86400000 (1 día). Cualquier valor que esté fuera de este rango se ajustará al límite más cercano. Si la plataforma es compatible con notificaciones de política, el retraso de actualización se establecerá en 24 horas, ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie.
 
       Si no estableces esta política, <ph name="PRODUCT_NAME" /> usará el valor predeterminado de 3 horas.
 
-      Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política) ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
+      Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política), ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
 <translation id="2030905906517501646">Palabra clave del proveedor de búsqueda predeterminado</translation>
 <translation id="206623763829450685">Especifica qué esquemas de autenticación de HTTP son compatibles con <ph name="PRODUCT_NAME" />.
@@ -1164,15 +1164,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si la política se establece en True, <ph name="PRODUCT_OS_NAME" /> impedirá que el dispositivo se inicie en modo de programador. El sistema no se iniciará y mostrará una pantalla de error cuando se active la opción de programador.
 
       Si la política se establece en False o no se establece, el modo de programador seguirá disponible para el dispositivo.</translation>
-<translation id="5203271367506489164">Esta política ya no está disponible en M48 a favor de NetworkPredictionOptions y se quitó en M54.
-
-      Habilita la predicción de red en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
-
-      Esto controla la solicitud previa de DNS y la conexión y representación previas de TCP y SSL de las páginas web. El nombre de la política hace referencia a la solicitud previa de DNS por razones históricas.
-
-      Si habilitas o inhabilitas esta configuración, los usuarios no pueden cambiarla ni anularla en <ph name="PRODUCT_NAME" />.
-
-      Si esta política se deja sin configurar, esta se habilitará, pero el usuario podrá cambiarla.</translation>
 <translation id="5208240613060747912">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultNotificationsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="5226033722357981948">Indicar si el buscador de complemento se debe inhabilitar.</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
@@ -1245,7 +1236,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Si no estableces esta política, <ph name="PRODUCT_OS_NAME" /> usará el valor predeterminado de 3 horas.
 
-      Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política) ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
+      Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política), ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
 <translation id="5535957389335373033">La frecuencia de envío de paquetes de red de control, en milisegundos.
 
       Si esta política no se configura, la frecuencia predeterminada es 3 minutos.
@@ -1257,6 +1248,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si se especifica, agregará un parámetro de consulta llamado "restringir" a la URL que se utiliza para obtener el valor de inicialización de las variaciones. El valor del parámetro será el valor especificado en esta política.
 
       Si no se especifica, no se modificará la URL del valor de inicialización de las variaciones.</translation>
+<translation id="5563853101694018649">Inhabilita las herramientas para programadores y la Consola de JavaScript.
+
+      Si habilitas esta configuración, no se podrá acceder a las herramientas para programadores ni volver a inspeccionar los elementos del sitio web. Se inhabilitarán todas las combinaciones de teclas y las entradas del menú contextual y de cualquier menú para abrir las herramientas para programadores o la Consola de JavaScript.
+
+      Si inhabilitas o no estableces esta opción, el usuario podrá utilizar las herramientas para programadores y la Consola de JavaScript.
+
+      Para dispositivos con <ph name="PRODUCT_OS_NAME" /> que puedan ejecutar apps para Android, esta política también controla el acceso a las Opciones para programador de Android. Si habilitas esta política, los usuarios no podrán acceder a las Opciones para programador. Si inhabilitas o no estableces esta política, los usuarios podrán acceder a las Opciones para programador al presionar siete veces el número de compilación en la app de Configuración de Android.</translation>
 <translation id="556941986578702361">Permite controlar la opción para ocultar automáticamente los archivos de <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece en "AlwaysAutoHideShelf", los archivos se ocultarán automáticamente.

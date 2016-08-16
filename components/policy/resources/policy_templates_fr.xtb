@@ -243,7 +243,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si cette règle est définie sur "True", le téléchargement des charges utiles de mise à jour automatique est effectué par <ph name="PRODUCT_OS_NAME" /> via HTTP. Si cette règle est définie sur "False", ou si elle n'est pas configurée, HTTPS est utilisé pour le téléchargement des charges utiles de mise à jour automatique.</translation>
 <translation id="2006530844219044261">Gestion de l'alimentation</translation>
 <translation id="201557587962247231">Fréquence d'importation des rapports sur l'état de l'appareil</translation>
-<translation id="2018836497795982119">Indique la fréquence en millisecondes à laquelle le service de gestion des appareils est interrogé sur les informations concernant les règles utilisateur.
+<translation id="2018836497795982119">Indique la fréquence en millisecondes à laquelle le service de gestion des appareils est interrogé sur les informations concernant les règles relatives aux utilisateurs.
 
       La définition de cette règle remplace la valeur par défaut de 3 heures. Les valeurs valides pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86,4 millions (1 jour). Toutes les valeurs non comprises dans cette plage seront nivelées à la limite respective. Si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation est défini par défaut sur 24 heures. De plus, la règle est actualisée automatiquement chaque fois qu'elle est modifiée.
 
@@ -1272,15 +1272,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
       Si cette règle est associée à la valeur "True", <ph name="PRODUCT_OS_NAME" /> empêche l'appareil de démarrer en mode développeur. Le système refuse de se lancer et un écran d'erreur s'affiche lorsque le mode développeur est activé.
 
       Si cette règle n'est pas définie ou si elle est associée à la valeur "False", le mode développeur peut être sélectionné sur l'appareil.</translation>
-<translation id="5203271367506489164">Cette règle a été abandonnée dans la version M48 (pour être remplacée par la règle NetworkPredictionOptions) et supprimée de la version M54.
-
-      Elle active la prédiction réseau dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
-
-      Cela permet non seulement de contrôler la prélecture DNS, mais également la préconnexion TCP et SSL et le préchargement des pages Web. Le nom de la règle, qui fait référence à la prélecture DNS, est hérité des anciennes versions.
-
-      Que vous activiez ou désactiviez ce paramètre, les utilisateurs ne peuvent pas le modifier ni le remplacer dans <ph name="PRODUCT_NAME" />.
-
-      Si cette règle n'est pas définie, elle est activée par défaut, mais les utilisateurs ne peuvent pas la modifier.</translation>
 <translation id="5208240613060747912">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à afficher des notifications. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultNotificationsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -1381,6 +1372,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est spécifiée, un paramètre de requête "restrict" est ajouté à l'URL utilisée pour récupérer la valeur de départ des variantes. La valeur de ce paramètre correspond à la valeur définie dans cette règle.
 
       Si elle n'est pas spécifiée, l'URL utilisée pour récupérer la valeur de départ des variantes n'est pas modifiée.</translation>
+<translation id="5563853101694018649">Permet de désactiver les outils pour les développeurs et la console JavaScript.
+
+      Si vous activez ce paramètre, les outils pour les développeurs ne sont pas accessibles, et les éléments du site Web ne peuvent plus être inspectés. Les éventuels raccourcis clavier et les entrées de menu ou de menu contextuel permettant d'accéder aux outils pour les développeurs ou à la console JavaScript sont désactivés.
+
+      Si vous désactivez cette option ou si vous la laissez telle quelle, les outils pour les développeurs et la console JavaScript pourront être utilisés.
+
+      Pour les appareils <ph name="PRODUCT_OS_NAME" /> capables d'exécuter des applications Android, cette règle contrôle également l'accès aux options pour les développeurs Android. Si vous définissez cette règle sur "True", les utilisateurs ne pourront pas accéder aux options pour les développeurs. Si vous la définissez sur "False" ou si vous ne la modifiez pas, les utilisateurs pourront accéder aux options pour les développeurs en appuyant plusieurs fois sur le numéro de version dans l'application des paramètres Android.</translation>
 <translation id="556941986578702361">Définit si l'étagère <ph name="PRODUCT_OS_NAME" /> doit être masquée automatiquement ou non.
 
       Si cette règle est définie sur "AlwaysAutoHideShelf", l'étagère est toujours masquée automatiquement.

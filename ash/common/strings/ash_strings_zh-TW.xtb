@@ -147,6 +147,7 @@
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5759815399269068793"><ph name="DEVICE_TYPE" /> 連接外接螢幕時仍可持續使用 (即使蓋上機蓋)。</translation>
 <translation id="5777841717266010279">停止共用螢幕？</translation>
+<translation id="57838592816432529">靜音</translation>
 <translation id="5825747213122829519">您的輸入法已變更為 <ph name="INPUT_METHOD_ID" />。
 按下 Shift + Alt 鍵即可切換。</translation>
 <translation id="5871632337994001636">管理裝置...</translation>

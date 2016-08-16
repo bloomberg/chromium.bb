@@ -7,13 +7,11 @@
 <translation id="1038842779957582377">ukendt navn</translation>
 <translation id="1055184225775184556">&amp;Fortryd tilføjelse</translation>
 <translation id="10614374240317010">Aldrig gemt</translation>
-<translation id="1064422015032085147">Den server, der hoster websiden, kan være overbelastet eller under vedligeholdelse.
-    For at undgå at generere for meget trafik og forværre situationen
-    er anmodninger på denne webadresse midlertidigt blevet deaktiveret.</translation>
 <translation id="106701514854093668">Bogmærker på pc</translation>
 <translation id="1080116354587839789">Tilpas til bredden</translation>
 <translation id="1103523840287552314">Oversæt altid <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Hvis dette felt er markeret, gemmer Chrome en kopi af dit kort på denne enhed, så formularer hurtigere kan udfyldes fremover.</translation>
+<translation id="1111153019813902504">Seneste bogmærker</translation>
 <translation id="1113869188872983271">&amp;Fortryd omarrangering</translation>
 <translation id="112840717907525620">Cache for politik er OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> siger:</translation>
@@ -26,6 +24,8 @@
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1201895884277373915">Mere fra dette website</translation>
+<translation id="1206967143813997005">Ugyldig første signatur</translation>
+<translation id="1209206284964581585">Skjul indtil videre</translation>
 <translation id="121201262018556460">Du har forsøgt at få fat i <ph name="DOMAIN" />, men serveren har præsenteret et certifikat med en svag nøgle. En hacker kan have knækket den private nøgle, og serveren er muligvis ikke den forventede server (du kommunikerer muligvis med en hacker).</translation>
 <translation id="1219129156119358924">Systemsikkerhed</translation>
 <translation id="1227224963052638717">Ukendt politik.</translation>
@@ -108,7 +108,6 @@
 <translation id="2181821976797666341">Politikker</translation>
 <translation id="2212735316055980242">Politikken blev ikke fundet</translation>
 <translation id="2213606439339815911">Indlæg hentes...</translation>
-<translation id="2214283295778284209"><ph name="SITE" /> er ikke tilgængelig</translation>
 <translation id="2230458221926704099">Ret problemerne med din forbindelse ved hjælp af <ph name="BEGIN_LINK" />diagnoseappen<ph name="END_LINK" /></translation>
 <translation id="225207911366869382">Denne værdi er forældet for denne politik.</translation>
 <translation id="2262243747453050782">HTTP-fejl</translation>
@@ -130,6 +129,7 @@
 <translation id="2396249848217231973">&amp;Fortryd sletning</translation>
 <translation id="2413528052993050574">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet muligvis er blevet tilbagekaldt. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="2455981314101692989">Denne webside har deaktiveret automatisk udfyldning af denne formular.</translation>
+<translation id="2463739503403862330">Udfyld</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Kører Netværksdiagnosticering<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Ugyldig søgewebadresse.</translation>
 <translation id="2491120439723279231">Serverens certifikat indeholder fejl.</translation>
@@ -282,7 +282,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokeret</translation>
 <translation id="4021036232240155012">DNS er den netværkstjeneste, der oversætter navnet på et website til dets internetadresse.</translation>
 <translation id="4030383055268325496">&amp;Fortryd tilføjelse</translation>
-<translation id="4032534284272647190">Der blev nægtet adgang til <ph name="URL" />.</translation>
 <translation id="404928562651467259">ADVARSEL</translation>
 <translation id="4058922952496707368">Nøgle "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Klienten og serveren understøtter ikke en fælles SSL-protokolversion eller et fælles krypteringsprogram.</translation>
@@ -329,7 +328,6 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Du er i øjeblikket på en udvidelsesside.</translation>
 <translation id="467662567472608290">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet indeholder fejl. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
-<translation id="4697214168136963651"><ph name="URL" /> blev blokeret</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Din forbindelse blev afbrudt</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Kører Windows Netværksdiagnosticering<ph name="END_LINK" /></translation>
@@ -337,6 +335,7 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Eksekverbar sti</translation>
 <translation id="4756388243121344051">&amp;Historik</translation>
+<translation id="4759238208242260848">Downloads</translation>
 <translation id="4764776831041365478">Websiden på <ph name="URL" /> kan være midlertidigt nede, eller også er den permanent flyttet til en ny webadresse.</translation>
 <translation id="4771973620359291008">Der er opstået en ukendt fejl.</translation>
 <translation id="4782449893814226250">Du har spurgt dine forældre, om det er i orden at besøge denne side.</translation>
@@ -359,6 +358,7 @@
 <translation id="5031870354684148875">Om Google Oversæt</translation>
 <translation id="5040262127954254034">Beskyttelse af personlige oplysninger</translation>
 <translation id="5045550434625856497">Ugyldig adgangskode</translation>
+<translation id="5056549851600133418">Artikler til dig</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Tjekke proxy-adressen<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Serverens certifikatet er ikke gyldigt i øjeblikket.</translation>
 <translation id="5089810972385038852">Delstat</translation>
@@ -411,8 +411,11 @@
 <translation id="5677928146339483299">Blokeret</translation>
 <translation id="5710435578057952990">Dette websites identitet er ikke blevet bekræftet.</translation>
 <translation id="5720705177508910913">Aktuel bruger</translation>
+<translation id="572328651809341494">Seneste faner</translation>
 <translation id="5784606427469807560">Der opstod et problem under bekræftelsen af dit kort. Kontrollér, at du har forbindelse til internettet, og prøv igen.</translation>
 <translation id="5785756445106461925">Desuden indeholder denne side andre ressourcer, som ikke er sikre. Disse ressourcer kan ses af andre under overførslen og kan ændres af en hacker, så siden ser anderledes ud.</translation>
+<translation id="5786044859038896871">Skal dine kortoplysninger udfyldes?</translation>
+<translation id="5803412860119678065">Skal <ph name="CARD_DETAIL" /> udfyldes?</translation>
 <translation id="5810442152076338065">Din forbindelse til <ph name="DOMAIN" /> er krypteret ved hjælp af en forældet krypteringspakke.</translation>
 <translation id="5813119285467412249">&amp;Annuller fortryd tilføjelse</translation>
 <translation id="5855235287355719921">Denne meddelelse vises, fordi din administrator har blokeret dette website.</translation>
@@ -438,7 +441,6 @@
 <translation id="614940544461990577">Prøv at:</translation>
 <translation id="6150607114729249911">Ups! Du er nødt til at spørge dine forældre, om det er i orden, at du åbner dette website.</translation>
 <translation id="6151417162996330722">Servercertifikatet har en gyldighedsperiode, der er for lang.</translation>
-<translation id="6154808779448689242">Det returnerede token for politikken stemmer ikke overens med det nuværende token</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6203231073485539293">Kontrollér din internetforbindelse</translation>
 <translation id="6218753634732582820">Vil du fjerne adressen fra Chromium?</translation>
@@ -455,7 +457,6 @@
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
 <translation id="6387478394221739770">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores betakanal på chrome.com/beta.</translation>
 <translation id="6389758589412724634">Chromium løb tør for hukommelse, da websiden skulle vises.</translation>
-<translation id="641480858134062906"><ph name="URL" /> indlæsningen mislykkedes</translation>
 <translation id="6417515091412812850">Kan ikke kontrollere, om certifikatet er tilbagekaldt.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> nægtede at oprette forbindelse.</translation>
 <translation id="6445051938772793705">Land</translation>
@@ -579,7 +580,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="785549533363645510">Du er dog ikke usynlig. Inkognitotilstand skjuler ikke din browserhistorik over for din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
 <translation id="7887683347370398519">Kontrollér, om din kontrolkode er korrekt, og prøv igen.</translation>
 <translation id="7894616681410591072">Ups! Du skal have tilladelse fra <ph name="NAME" /> for at få adgang til dette website.</translation>
-<translation id="790025292736025802"><ph name="URL" /> blev ikke fundet</translation>
 <translation id="7912024687060120840">I mappe:</translation>
 <translation id="7920092496846849526">Du har spurgt en af dine forældre, om det er i orden, at du besøger denne side.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>

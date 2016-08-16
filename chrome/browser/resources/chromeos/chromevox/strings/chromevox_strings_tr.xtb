@@ -720,7 +720,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8313653172105209786">dir</translation>
 <translation id="8344569602005188545">saat</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{pound işareti}other{# pound işareti}}</translation>
-<translation id="8374154622594089836">month</translation>
+<translation id="8374154622594089836">ay</translation>
 <translation id="8378855320830505539">Bölge</translation>
 <translation id="8382679411218029383">Satır içi ve liste otomatik tamamlama</translation>
 <translation id="8428603554127842284">seviye: <ph name="DEPTH" /></translation>
@@ -793,6 +793,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="9115913704608474258">Kasım</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Sekme</translation>
 <translation id="9151211641321628915">Mevcut konumun kısa açıklamasını söyler</translation>
 <translation id="9153606228985488238">Ses kalınlığı yüzde <ph name="PERCENT" /></translation>
 <translation id="9160096769946561184">Mevcut sütunun sonuna git</translation>

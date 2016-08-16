@@ -1249,15 +1249,6 @@
       Kung itatakda sa True ang patakarang ito, pipigilan ng <ph name="PRODUCT_OS_NAME" /> ang device na ma-boot sa mode ng developer. Tatangging mag-boot ang system at magpapakita ito ng screen ng error kapag naka-on ang switch ng developer.
 
       Kung hindi nakatakda o nakatakda sa False ang patakarang ito, mananatiling available ang mode ng developer para sa device.</translation>
-<translation id="5203271367506489164">Ang patakarang ito ay hindi na ginagamit sa M48 alinsunod sa NetworkPredictionOptions, at inalis na sa M54.
-
-      Ine-enable ang paghula ng network sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na palitan ang setting na ito.
-
-      Hindi lang nito kinokontrol ang pag-prefetch ng DNS ngunit pati na rin ang paunang pagkonekta at pag-render ng TCP at SSL ng mga web page. Ang pangalan ng patakaran ay tumutukoy sa pag-prefetch ng DNS batay sa dati nang ginawa.
-
-      Kung na-enable o na-disable mo ang setting na ito, hindi mababago o mao-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
-
-      Kung hindi itinakda ang patakarang ito, mae-enable ito ngunit magagawa itong baguhin ng user.</translation>
 <translation id="5208240613060747912">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapayagang magpakita ng mga notification.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -1358,6 +1349,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung tinukoy ito, magdaragdag ito ng parameter ng query na tinatawag na 'paghigpitan' sa URL na ginagamit upang kunin ang seed ng Mga Variation. Ang halaga ng parameter ay ang halagang tutukuyin sa patakarang ito.
 
       Kung hindi ito tinukoy, hindi nito babaguhin ang URL ng seed ng Mga Variation.</translation>
+<translation id="5563853101694018649">Dini-disable ang Developer Tools at ang JavaScript console.
+
+      Kung ie-enable mo ang setting na ito, hindi maa-access ang Developer Tools at hindi na masisiyasat ang mga elemento sa web-site. Madi-disable ang anumang mga keyboard shortcut at anumang entry sa menu o menu ng konteksto upang buksan ang Developer Tools o ang JavaScript Console.
+
+      Kung itatakda ang opsyong ito sa naka-disable o kung iiwan itong hindi nakatakda, papayagan nito ang paggamit ng Developer Tools at JavaScript console.
+
+      Para sa mga <ph name="PRODUCT_OS_NAME" /> device na may kakayahang magpatakbo ng mga Android app, kinokontrol din ng patakarang ito ang access sa Mga Opsyon ng Android Developer. Kung itatakda mo sa true ang patakarang ito, hindi maa-access ng mga user ang Mga Opsyon ng Developer. Kung itatakda mo sa false o iiwanang hindi nakatakda ang patakarang ito, maa-access ng mga user ang Mga Opsyon ng Developer sa pamamagitan ng pagta-tap nang pitong beses sa numero ng build sa app na Mga setting ng Android.</translation>
 <translation id="556941986578702361">Kontrolin ang awtomatikong pagtatago ng shelf ng <ph name="PRODUCT_OS_NAME" />.
 
       Kung nakatakda ang patakarang ito sa 'AlwaysAutoHideShelf', palaging awtomatikong itatago ang shelf.

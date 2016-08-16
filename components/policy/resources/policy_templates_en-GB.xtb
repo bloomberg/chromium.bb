@@ -1263,15 +1263,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set to True, <ph name="PRODUCT_OS_NAME" /> will prevent the device from booting into developer mode. The system will refuse to boot and show an error screen when the developer switch is turned on.
 
       If this policy is unset or set to False, developer mode will remain available for the device.</translation>
-<translation id="5203271367506489164">This policy is deprecated in M48 in favour of NetworkPredictionOptions, and removed in M54.
-
-      Enables network prediction in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
-
-      This controls not only DNS prefetching but also TCP and SSL preconnection and prerendering of web pages. The policy name refers to DNS prefetching for historical reasons.
-
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
-
-      If this policy is left unset, this will be enabled but the user will be able to change it.</translation>
 <translation id="5208240613060747912">Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1372,6 +1363,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
 
       If not specified, will not modify the Variations seed URL.</translation>
+<translation id="5563853101694018649">Disables the Developer Tools and the JavaScript console.
+
+      If you enable this setting, the Developer Tools cannot be accessed and web-site elements cannot be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
+
+      Setting this option to disabled or leaving it not set will allow the user to use the Developer Tools and the JavaScript console.
+
+      For <ph name="PRODUCT_OS_NAME" /> devices capable of running Android apps, this policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
 <translation id="556941986578702361">Control auto-hiding of the <ph name="PRODUCT_OS_NAME" /> shelf.
 
       If this policy is set to 'AlwaysAutoHideShelf', the shelf will always auto-hide.

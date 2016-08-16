@@ -9,7 +9,7 @@
 <translation id="1038795173450935438">כדי לעבור קדימה בין פריטים בדף, הקש על מקש החיפוש ועל מקש החץ ימינה. כדי לחזור אחורה, הקש על מקש החיפוש ועל מקש החץ שמאלה. כדי לעבור אל השורה הבאה, הקש על מקש החיפוש ועל מקש החץ למטה. כדי לעבור אל השורה הקודמת, הקש על מקש החיפוש ועל מקש החץ למעלה. אם הגעת לפריט שאתה רוצה ללחוץ עליו, הקש על מקש החיפוש ועל מקש הרווח.</translation>
 <translation id="1044777062731150180">ללא כותרות</translation>
 <translation id="106222400312645156">rwhdr</translation>
-<translation id="1065552602950927991">קלט לא חוקי</translation>
+<translation id="1065552602950927991">קלט לא תקף</translation>
 <translation id="1082209053475788238">אין כותרת קודמת של רמה 6.</translation>
 <translation id="1088219014394087294">אין כותרות.</translation>
 <translation id="1106741348836243114">‏הפעל או השבת משוב צלילים (Earcons).</translation>
@@ -720,7 +720,7 @@
 <translation id="8313653172105209786">dir</translation>
 <translation id="8344569602005188545">שעות</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{סולמית}two{# סימני סולמית}many{# סימני סולמית}other{# סימני סולמית}}</translation>
-<translation id="8374154622594089836">month</translation>
+<translation id="8374154622594089836">חודש</translation>
 <translation id="8378855320830505539">אזור</translation>
 <translation id="8382679411218029383">השלמה אוטומטית מוטבעת ורשימה</translation>
 <translation id="8428603554127842284">רמה <ph name="DEPTH" /></translation>
@@ -793,6 +793,7 @@
 <translation id="9115913704608474258">נובמבר</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">כרטיסייה</translation>
 <translation id="9151211641321628915">הכרזה על תיאור קצר של המיקום הנוכחי</translation>
 <translation id="9153606228985488238"><ph name="PERCENT" /> אחוזים מגובה הצליל</translation>
 <translation id="9160096769946561184">עבור לסוף העמודה הנוכחית</translation>

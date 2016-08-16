@@ -749,7 +749,7 @@
 <translation id="8651481478098336970">искључи звук</translation>
 <translation id="8653031188082306838">URL</translation>
 <translation id="8653646212587894517">Приказивање листе линкова</translation>
-<translation id="8664519043722036194">секундe</translation>
+<translation id="8664519043722036194">секунди</translation>
 <translation id="867187640362843212">Заглавље 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{усправна црта}one{# усправна црта}few{# усправне црте}other{# усправних црта}}</translation>
 <translation id="8721861170709424373">Референца за команде за ChromeVox Next</translation>
@@ -793,6 +793,7 @@
 <translation id="9115913704608474258">новембар</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">одељак</translation>
+<translation id="9150735707954472829">Картица</translation>
 <translation id="9151211641321628915">Објављује кратак опис актуелног положаја</translation>
 <translation id="9153606228985488238">Регистар у процентима: <ph name="PERCENT" /></translation>
 <translation id="9160096769946561184">Прелазак на крај актуелне колоне</translation>

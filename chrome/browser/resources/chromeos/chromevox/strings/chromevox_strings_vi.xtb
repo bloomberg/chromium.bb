@@ -9,7 +9,7 @@
 <translation id="1038795173450935438">Để chuyển tiếp giữa các mục trên trang, nhấn phím Tìm kiếm + Mũi tên phải hoặc để quay lại, nhấn phím Tìm kiếm + Mũi tên trái. Để chuyển tới dòng tiếp theo, nhấn phím Tìm kiếm + Mũi tên xuống. Để chuyển về dòng trước, sử dụng phím Tìm kiếm + Mũi tên lên. Nếu tới một mục mà bạn muốn nhấp vào, nhấn phím Tìm kiếm + Dấu cách.</translation>
 <translation id="1044777062731150180">Không có tiêu đề</translation>
 <translation id="106222400312645156">rwhdr</translation>
-<translation id="1065552602950927991">dữ liệu nhập không hợp lệ</translation>
+<translation id="1065552602950927991">Nhập vào không hợp lệ</translation>
 <translation id="1082209053475788238">Không có tiêu đề cấp 6 trước nào.</translation>
 <translation id="1088219014394087294">Không có tiêu đề nào.</translation>
 <translation id="1106741348836243114">Bật hoặc tắt phản hồi bằng âm thanh (kết nối tai nghe).</translation>
@@ -720,7 +720,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8313653172105209786">dir</translation>
 <translation id="8344569602005188545">giờ</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{dấu thăng}other{# dấu thăng}}</translation>
-<translation id="8374154622594089836">tháng</translation>
+<translation id="8374154622594089836">tháng</translation>
 <translation id="8378855320830505539">Khu vực</translation>
 <translation id="8382679411218029383">Tự động hoàn thành nội dòng và danh sách</translation>
 <translation id="8428603554127842284">cấp <ph name="DEPTH" /></translation>
@@ -793,6 +793,7 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="9115913704608474258">Tháng 11</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">Thông báo mô tả ngắn của vị trí hiện tại</translation>
 <translation id="9153606228985488238">Cao độ <ph name="PERCENT" /> phần trăm</translation>
 <translation id="9160096769946561184">Đi tới cuối cột hiện tại</translation>

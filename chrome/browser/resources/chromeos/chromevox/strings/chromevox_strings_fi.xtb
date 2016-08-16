@@ -720,7 +720,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="8313653172105209786">hakem.</translation>
 <translation id="8344569602005188545">tuntia</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{ristikko}other{# ristikkomerkkiä}}</translation>
-<translation id="8374154622594089836">kk</translation>
+<translation id="8374154622594089836">kuukausi</translation>
 <translation id="8378855320830505539">Alue</translation>
 <translation id="8382679411218029383">Ennakoiva tekstin syöttö upotettuna ja luettelona</translation>
 <translation id="8428603554127842284">taso <ph name="DEPTH" /></translation>
@@ -793,6 +793,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="9115913704608474258">marraskuu</translation>
 <translation id="9128414153595658330">ikk.</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Välilehti</translation>
 <translation id="9151211641321628915">Ilmoittaa nykyisen aseman lyhyen kuvauksen</translation>
 <translation id="9153606228985488238">Äänenkorkeus <ph name="PERCENT" /> prosenttia</translation>
 <translation id="9160096769946561184">Siirry nykyisen sarakkeen loppuun</translation>

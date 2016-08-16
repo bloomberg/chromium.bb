@@ -1245,15 +1245,6 @@
       Kui see reegel on tõene, ei luba üksus <ph name="PRODUCT_OS_NAME" /> seadmel arendaja režiimi käivitada. Süsteem keeldub käivitamisest ja kuvab arendaja lüliti sisselülitamisel veaekraani.
 
       Kui see reegel on määramata või vale, on arendaja režiim seadmes saadaval.</translation>
-<translation id="5203271367506489164">Selle reegli tugi katkestatakse versioonis M48 ja selle asemel võetakse kasutusele reegel NetworkPredictionOptions, ning see eemaldatakse versioonis M54.
-
-      Lubab teenuses <ph name="PRODUCT_NAME" /> võrguprognoosid ja keelab kasutajatel selle seade muutmise.
-
-      See ei juhi mitte ainult DNS-i eeltoomist, vaid ka veebilehtede TCP ja SSL-i eelühendamist ning eelrenderdust. See reegli nimi viitab ajaloolistel põhjustel DNS-i eeltoomisele.
-
-      Kui selle seade lubate või keelate, ei saa kasutajad seda seadet teenuses <ph name="PRODUCT_NAME" /> muuta ega alistada.
-
-      Kui see reegel jäetakse määramata, on see lubatud, kuid kasutaja saab seda muuta.</translation>
 <translation id="5208240613060747912">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud teatisi kuvada.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultNotificationsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
@@ -1353,6 +1344,13 @@
       Kui see on määratud, lisatakse päringu parameeter „restrict” URL-ile, mida kasutatakse variatsioonide lähteväärtuse toomiseks. Parameetri väärtus on selles reeglis määratud väärtus.
 
       Kui seda ei määrata, siis variatsioonide lähteväärtuse URL-i ei muudeta.</translation>
+<translation id="5563853101694018649">Keelab arendaja tööriistad ja JavaScripti konsooli.
+
+      Kui selle seade lubate, ei pääse kasutajad arendaja tööriistadele juurde ja veebisaidi elemente ei saa enam kontrollida. Kõik klaviatuuri otseteed ja menüüde või kontekstimenüüde sisestused arendaja tööriistade või JavaScripi konsooli avamiseks keelatakse.
+
+      Kui keelate selle valiku või ei määra seda, lubatakse arendaja tööriistade ja JavaScripti konsooli kasutamine.
+
+      Teenuse <ph name="PRODUCT_OS_NAME" /> seadmetes, milles saab käitada Androidi rakendusi, juhib see reegel ka juurdepääsu Androidi arendaja valikutele. Kui määrate selle reegli väärtuseks Tõene, ei pääse kasutajad arendaja valikutele juurde. Kui määrate selle reegli väärtuseks Väär või jätate selle määramata, pääsevad kasutajad arendaja valikutele juurde, puudutades Androidi seadete rakenduses seitse korda järgu numbrit.</translation>
 <translation id="556941986578702361">Seadistage hoidla <ph name="PRODUCT_OS_NAME" /> automaatne peitmine.
 
       Kui reegel on seatud väärtusele „AlwaysAutoHideShelf”, peidetakse hoidla alati automaatselt.

@@ -619,7 +619,7 @@
 <translation id="7170733337935166589">Перейти вперед во время непрерывного чтения</translation>
 <translation id="7181697990050180700">Ниже укажите быстрые клавиши для часто используемых команд.</translation>
 <translation id="7203150201908454328">Развернуто</translation>
-<translation id="7210211103303402262">минуты</translation>
+<translation id="7210211103303402262">мин.</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
 <translation id="7221740160534240920">Линия.</translation>
 <translation id="7226216518520804442">lst</translation>
@@ -720,7 +720,7 @@
 <translation id="8313653172105209786">dir</translation>
 <translation id="8344569602005188545">час.</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{решетка}one{# решетка}few{# решетки}many{# решеток}other{# pound signs}}</translation>
-<translation id="8374154622594089836">month</translation>
+<translation id="8374154622594089836">месяц</translation>
 <translation id="8378855320830505539">Регион</translation>
 <translation id="8382679411218029383">Строка и список автозаполнения</translation>
 <translation id="8428603554127842284">Уровень <ph name="DEPTH" />.</translation>
@@ -793,6 +793,7 @@
 <translation id="9115913704608474258">ноябрь</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Вкладка</translation>
 <translation id="9151211641321628915">Озвучить краткое описание текущего элемента</translation>
 <translation id="9153606228985488238">Высота звука: <ph name="PERCENT" />%</translation>
 <translation id="9160096769946561184">Перейти к концу текущего столбца</translation>

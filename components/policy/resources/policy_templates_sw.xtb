@@ -1235,15 +1235,6 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Ikiwa sera hii itawekwa kuwa Ukweli, <ph name="PRODUCT_OS_NAME" /> itazuia kifaa kuwaka katika hali ya wasanidi programu. Mfumo utakataa kuwaka na kuonyesha skrini ya hitilafu swichi ya wasanidi programu itakapowashwa.
 
       Ikiwa sera haitawekwa au itawekwa kuwa Uongo, hali ya wasanidi programu itaendelea kupatikana kwa kifaa.</translation>
-<translation id="5203271367506489164">Sera hii imeacha kufanya kazi katika M48 badala ya kipengele cha  NetworkPredictionOptions, na imeondolewa katika M54.
-
-      Huwasha kipengele cha ubashiri wa mtandao katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha mipangilio hii.
-
-      Hii hudhibiti sio tu kuleta DNS lakini pia uunganishaji na uonyeshaji awali wa kurasa za wavuti za TCP na SSL. Jina la sera linarejelea uletaji awali wa DNS kwa sababu za historia.
-
-      Ukiwasha au kuzima mipangilio hii, watumiaji hawawezi kubadilisha au kubatilisha mipangilio hii katika <ph name="PRODUCT_NAME" />.
-
-      Ikiwa sera hii itaachwa bila kuwekwa, kipengele hiki kitawashwa lakini mtumiaji anaweza kuibadilisha.</translation>
 <translation id="5208240613060747912">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo haziruhusiwi kuonyesha arifa.
 
           Ikiwa sera hii itasalia kama haijawekwa thamani yote chaguo-msingi itatumika kwa tovuti zote kutoka katika sera ya 'DefaultNotificationsSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
@@ -1342,6 +1333,13 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Ikibainishwa, itaongeza kigezo cha hoja kinachoitwa 'kizuizi' kwa URL inayotumika kuleta mbegu Tofauti. Thamani ya kigezo itakuwa thamani iliyobainishwa katika sera hii.
 
       Isipobainishwa, haitarekebisha URL ya mbegu Tofauti.</translation>
+<translation id="5563853101694018649">Huzima Zana za Wasanidi Programu na kidhibiti cha JavaScript.
+
+      Ukiwasha mipangilio hii, Zana za Wasanidi Programu haziwezi kufikiwa na vipengee kwenye wavuti haviwezi kukaguliwa tena. Mikato yoyote ya kibodi na uingizaji wowote wa menyu au menyu ya muktadha ya kufungua Zana za Wasanidi Programu au Kidhibiti cha JavaScript zitazimwa.
+
+     Kuweka chaguo hili kuwa limezimwa au kuliacha bila kuweka kutamruhusu mtumiaji kutumia Zana za Wasanidi Programu na Kidhibiti cha JavaScript.
+
+      Kwa vifaa vya <ph name="PRODUCT_OS_NAME" /> vinavyoweza kutumia programu za Android, sera hii pia inadhibiti idhini ya kufikia Chaguo za Wasanidi Programu za Android. Ukiweka sera hii kuwa ndivyo, watumiaji hawataweza kufikia Chaguo za Wasanidi programu. Ukiweka sera hii kuwa sivyo au uiache bila kuiweka, watumiaji wanaweza kufikia Chaguo za Wasanidi Programu kwa kugonga mara saba kwenye nambari ya muundo katika programu ya mipangilio ya Android.</translation>
 <translation id="556941986578702361">Dhibiti kujificha kiotomatiki kwa rafu ya <ph name="PRODUCT_OS_NAME" />.
 
       Iwapo sera hii itawekwa kuwa 'IjificheYenyeweKilaWakati', rafu itajificha kiotomatiki kila wakati.
@@ -1889,7 +1887,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Sera hii inazingatiwa tu iwapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="7302043767260300182">Ufungaji wa skrini unachelewa wakati nishati ya AC inapotimika</translation>
-<translation id="7311458740754205918">Sera hii ikiwekwa kuwa ndivyo au isipowekwa, ukurasa wa Kichupo Kipya utaonyesha mapendekezo ya maudhui kulingana na historia ya kuvinjari, mambo yanayovutia, mahali alipo mtumiaji.
+<translation id="7311458740754205918">Sera hii ikiwekwa kuwa ndivyo au isipowekwa, ukurasa wa Kichupo Kipya utaonyesha mapendekezo ya maudhui kulingana na historia ya kuvinjari, mambo yanayovutia, au mahali alipo mtumiaji.
 
       Sera hii ikiwekwa kuwa sivyo, mapendekezo ya maudhui yanayozalishwa kiotomatiki hayataonyeshwa katika ukurasa wa Kichupo Kipya.</translation>
 <translation id="7323896582714668701">Vigezo vya ziada vya mstari wa amri vya <ph name="PRODUCT_NAME" /></translation>

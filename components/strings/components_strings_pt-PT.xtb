@@ -7,13 +7,11 @@
 <translation id="1038842779957582377">nome desconhecido</translation>
 <translation id="1055184225775184556">&amp;Anular adição</translation>
 <translation id="10614374240317010">Nunca guardadas</translation>
-<translation id="1064422015032085147">O servidor que aloja a página Web pode estar sobrecarregado ou em manutenção.
-    Para evitar gerar demasiado tráfego e piorar a situação,
-    os pedidos a este URL foram temporariamente proibidos.</translation>
 <translation id="106701514854093668">Marcadores do Ambiente de Trabalho</translation>
 <translation id="1080116354587839789">Ajustar à largura</translation>
 <translation id="1103523840287552314">Traduzir sempre <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Se marcada, o Chrome armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
+<translation id="1111153019813902504">Marcadores recentes</translation>
 <translation id="1113869188872983271">&amp;Anular reordenação</translation>
 <translation id="112840717907525620">Cache da política OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> diz:</translation>
@@ -26,6 +24,8 @@
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1201895884277373915">Mais a partir deste Web site</translation>
+<translation id="1206967143813997005">Assinatura com inicial incorreta</translation>
+<translation id="1209206284964581585">Ocultar para já</translation>
 <translation id="121201262018556460">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado que contém uma chave fraca. Um utilizador mal intencionado poderá ter quebrado a chave privada e o servidor pode não ser o servidor esperado (pode estar a comunicar com um utilizador mal intencionado).</translation>
 <translation id="1219129156119358924">Segurança do sistema</translation>
 <translation id="1227224963052638717">Política desconhecida.</translation>
@@ -108,7 +108,6 @@
 <translation id="2181821976797666341">Políticas</translation>
 <translation id="2212735316055980242">Política não encontrada</translation>
 <translation id="2213606439339815911">A obter entradas...</translation>
-<translation id="2214283295778284209"><ph name="SITE" /> não está disponível</translation>
 <translation id="2230458221926704099">Utilize a <ph name="BEGIN_LINK" />aplicação de diagnóstico<ph name="END_LINK" /> para corrigir a ligação</translation>
 <translation id="225207911366869382">Este valor está desatualizado para esta política.</translation>
 <translation id="2262243747453050782">Erro HTTP</translation>
@@ -130,6 +129,7 @@
 <translation id="2396249848217231973">&amp;Anular eliminação</translation>
 <translation id="2413528052993050574">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ser revogado. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="2455981314101692989">Esta página Web desactivou o preenchimento automático para este formulário.</translation>
+<translation id="2463739503403862330">Preencher</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Executar o Diagnóstico de rede<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">URL de pesquisa inválido.</translation>
 <translation id="2491120439723279231">O certificado do servidor contém erros.</translation>
@@ -282,7 +282,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> está bloqueado</translation>
 <translation id="4021036232240155012">O DNS é o serviço de rede que converte o nome de um Website no respetivo endereço de Internet.</translation>
 <translation id="4030383055268325496">&amp;Anular adição</translation>
-<translation id="4032534284272647190">O acesso a <ph name="URL" /> foi negado.</translation>
 <translation id="404928562651467259">AVISO</translation>
 <translation id="4058922952496707368">Chave "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">O cliente e o servidor não suportam uma versão do protocolo SSL ou um conjunto de cifras comum.</translation>
@@ -329,7 +328,6 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Está a ver a página de uma extensão.</translation>
 <translation id="467662567472608290">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança contém erros. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
-<translation id="4697214168136963651"><ph name="URL" /> foi bloqueado</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">A ligação foi interrompida</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Executar o Diagnóstico de rede do Windows<ph name="END_LINK" /></translation>
@@ -337,6 +335,7 @@
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4744603770635761495">Caminho do Executável</translation>
 <translation id="4756388243121344051">&amp;Histórico</translation>
+<translation id="4759238208242260848">Transferências</translation>
 <translation id="4764776831041365478">A página Web em <ph name="URL" /> poderá estar temporariamente inactiva ou poderá ter sido movida permanentemente para um novo endereço Web.</translation>
 <translation id="4771973620359291008">Ocorreu um erro desconhecido.</translation>
 <translation id="4782449893814226250">Perguntaste aos teus pais se podes aceder a esta página.</translation>
@@ -358,7 +357,8 @@
 <translation id="5029568752722684782">Limpar cópia</translation>
 <translation id="5031870354684148875">Acerca do Google Tradutor</translation>
 <translation id="5040262127954254034">Privacidade</translation>
-<translation id="5045550434625856497">Palavra-passe incorreta</translation>
+<translation id="5045550434625856497">Palavra-passe incorrecta</translation>
+<translation id="5056549851600133418">Artigos para si</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Verificar o endereço proxy<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">De momento, o certificado do servidor não é válido.</translation>
 <translation id="5089810972385038852">Estado</translation>
@@ -411,8 +411,11 @@
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5710435578057952990">A identidade deste Web site não foi verificada.</translation>
 <translation id="5720705177508910913">Utilizador atual</translation>
+<translation id="572328651809341494">Separadores recentes</translation>
 <translation id="5784606427469807560">Ocorreu um erro ao confirmar o cartão. Verifique a sua ligação à Internet e tente novamente.</translation>
 <translation id="5785756445106461925">Além disso, esta página inclui outros recursos que não são seguros. Estes recursos podem ser vistos por outros utilizadores em trânsito e modificados por um utilizador mal intencionado com o intuito de alterar o aspeto da página.</translation>
+<translation id="5786044859038896871">Pretende preencher as informações do cartão?</translation>
+<translation id="5803412860119678065">Pretende preencher o seu cartão <ph name="CARD_DETAIL" />?</translation>
 <translation id="5810442152076338065">A sua ligação a <ph name="DOMAIN" /> está encriptada através de um conjunto de cifras obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Refazer adição</translation>
 <translation id="5855235287355719921">Está a ver esta mensagem porque o seu gestor bloqueou este site.</translation>
@@ -438,7 +441,6 @@
 <translation id="614940544461990577">Experimente:</translation>
 <translation id="6150607114729249911">Ups! Tens de perguntar aos teus pais se podes aceder a esta página.</translation>
 <translation id="6151417162996330722">O certificado do servidor tem um período de validade demasiado longo.</translation>
-<translation id="6154808779448689242">O token da política devolvido não corresponde ao token atual</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6203231073485539293">Verificar a ligação à Internet</translation>
 <translation id="6218753634732582820">Pretende remover o endereço do Chromium?</translation>
@@ -455,7 +457,6 @@
 <translation id="6358450015545214790">O que significam?</translation>
 <translation id="6387478394221739770">Está interessado nas novas e fantásticas funcionalidades do Chrome? Experimente o nosso canal beta em chrome.com/beta.</translation>
 <translation id="6389758589412724634">O Chromium ficou sem memória ao tentar apresentar esta página Web.</translation>
-<translation id="641480858134062906">Falha ao carregar <ph name="URL" /></translation>
 <translation id="6417515091412812850">Não é possível verificar se o certificado foi revogado.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> recusou estabelecer ligação.</translation>
 <translation id="6445051938772793705">País</translation>
@@ -579,7 +580,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="785549533363645510">No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do fornecedor de serviços de Internet, nem dos Websites que visitar.</translation>
 <translation id="7887683347370398519">Verifique o Código de Segurança/CVC e tente novamente</translation>
 <translation id="7894616681410591072">Ups! Necessita da autorização de <ph name="NAME" /> para aceder a esta página.</translation>
-<translation id="790025292736025802">Não é possível localizar <ph name="URL" /></translation>
 <translation id="7912024687060120840">Na Pasta:</translation>
 <translation id="7920092496846849526">Perguntaste aos teus pais se não havia problema em aceder a esta página.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>

@@ -1259,15 +1259,6 @@ politikayı geçersiz kılamaz.
       Bu politika Doğru seçeneğine ayarlanırsa <ph name="PRODUCT_OS_NAME" />, cihazın geliştirici modunda başlatılmasına izin vermez. Geliştirici moduna geçiş etkinleştirildiğinde, sistem başlatma yapmayı reddeder ve bir hata ekranı gösterir.
 
       Bu politika Yanlış seçeneğine ayarlanırsa geliştirici modu cihazda kullanılmaya devam eder.</translation>
-<translation id="5203271367506489164">Bu politika, NetworkPredictionOptions lehine M48 sürümünde kullanımdan kaldırılmış ve M54 sürümünde üründen çıkarılmıştır.
-
-      <ph name="PRODUCT_NAME" /> ürününde ağ tahminini sağlar ve kullanıcıların bu ayarı değiştirmesini önler.
-
-      Bu, yalnızca DNS'nin önceden getirilmesini değil, aynı zamanda TCP ve SSL ön bağlantısını ve web sayfalarının önceden oluşturulmasını da denetler. Politika adı, geçmişe dayanan nedenlerden dolayı DNS'nin önceden getirilmesine gönderme yapar.
-
-      Bu ayarı etkinleştirir veya devre dışı bırakırsanız kullanıcılar bu ayarı <ph name="PRODUCT_NAME" /> içinden değiştiremez veya geçersiz kılamaz.
-
-      Bu politika ayarlanmadan bırakılırsa etkinleştirilir, ancak kullanıcı ayarda değişiklik yapabilir.</translation>
 <translation id="5208240613060747912">Bildirim görüntülemelerine izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultNotificationsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -1353,7 +1344,7 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlandığında varsayılan değer (3 saat) geçersiz olur. Bu politika için geçerli değerler 1800000 (30 dakika) ile 86400000 (1 gün) aralığındadır. Bu aralıkta bulunmayan değerler ilgili sınıra çekilir.
 
-      Bu politika ayarlanmadan bırakılırsa <ph name="PRODUCT_OS_NAME" /> varsayılan değer (3 saat) kullanır.
+      Bu politika ayarlanmadan bırakılırsa <ph name="PRODUCT_OS_NAME" /> varsayılan değeri (3 saat) kullanır.
 
       Platform politika bildirimlerini destekliyorsa yenileme gecikmesinin 24 saate ayarlanacağını (tüm varsayılanların ve bu politikanın değerinin yoksayılacağını) unutmayın. Bunun nedeni, politika değiştiğinde politika bildirimlerinin otomatik olarak bir yenilemeyi zorlamasının beklenmesi ve bu yüzden, daha sık yenileme yapılmasına gerek olmamasıdır.</translation>
 <translation id="5535957389335373033">İzleme amaçlı ağ paketlerinin ne kadar sık gönderileceğini (milisaniye olarak) belirtir.
@@ -1368,6 +1359,13 @@ politikayı geçersiz kılamaz.
       Belirtilirse, Varyasyon temeli almak üzere kullanılan URL'ye 'restrict' adlı bir parametre eklenir. Parametrenin değeri bu politikada belirlenen değer olacaktır.
 
       Belirtilmezse, Varyasyon temeli URL'sinde değişiklik yapılmaz.</translation>
+<translation id="5563853101694018649">Geliştirici Araçları ve JavaScript konsolunu devre dışı bırakır.
+
+      Bu ayarı etkinleştirirseniz Geliştirici Araçları'na erişilemez ve web sitesi öğeleri artık incelenemez. Geliştirici Araçları veya JavaScript Konsolu'nu açmak için kullanılan klavye kısayolları ve menü veya içerik menüsü girişleri devre dışı bırakılır.
+
+      Bu seçeneğin devre dışı olarak ayarlanması veya ayarlanmadan bırakılması kullanıcıların Geliştirici Araçları ve JavaScript konsolunu kullanmalarına olanak tanır.
+
+      Android uygulamalarını çalıştırabilen <ph name="PRODUCT_OS_NAME" /> cihazlarda, bu politika Android Geliştirici Seçenekleri'ne erişimi de kontrol eder. Bu politikayı doğru (true) değerine ayarlarsanız kullanıcılar Geliştirici Seçenekleri'ne erişemez. Bu politikayı yanlış (false) değerine ayarlasanız veya ayarlanmadan bırakırsanız kullanıcılar, Android ayarları uygulamasındaki derleme numarasına yedi kez dokunarak Geliştirici Seçenekleri'ne erişebilir.</translation>
 <translation id="556941986578702361"><ph name="PRODUCT_OS_NAME" /> rafının otomatik gizlenmesini kontrol eder.
 
       Bu politika 'AlwaysAutoHideShelf' seçeneğine ayarlanırsa, raf her zaman otomatik olarak gizlenir.

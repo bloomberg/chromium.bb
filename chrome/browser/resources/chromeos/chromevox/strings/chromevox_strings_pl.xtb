@@ -619,7 +619,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="7170733337935166589">Przewiń do przodu podczas ciągłego czytania</translation>
 <translation id="7181697990050180700">Dostosuj skróty klawiszowe częstych poleceń, wpisując je do odpowiednich pól poniżej.</translation>
 <translation id="7203150201908454328">Rozwinięty</translation>
-<translation id="7210211103303402262">minuty</translation>
+<translation id="7210211103303402262">min</translation>
 <translation id="7217912842225915592">+ <ph name="NUM" /></translation>
 <translation id="7221740160534240920">wiersz</translation>
 <translation id="7226216518520804442">lst</translation>
@@ -718,7 +718,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8283603667300770666">Następne pole formularza</translation>
 <translation id="831207808878314375">Definicja</translation>
 <translation id="8313653172105209786">dir</translation>
-<translation id="8344569602005188545">godziny</translation>
+<translation id="8344569602005188545">godz.</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{funt}few{# znaki funta}many{# znaków funta}other{# pound signs}}</translation>
 <translation id="8374154622594089836">miesiąc</translation>
 <translation id="8378855320830505539">Region</translation>
@@ -749,7 +749,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8651481478098336970">wycisz</translation>
 <translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Pokaż listę linków</translation>
-<translation id="8664519043722036194">sekundy</translation>
+<translation id="8664519043722036194">sek.</translation>
 <translation id="867187640362843212">Nagłówek 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{kreska pionowa}few{# kreski pionowe}many{# kresek pionowych}other{# vertical pipes}}</translation>
 <translation id="8721861170709424373">Opis poleceń ChromeVox Next</translation>
@@ -793,6 +793,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="9115913704608474258">listopad</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">Karta</translation>
 <translation id="9151211641321628915">Przedstawia skrócony opis aktualnej pozycji</translation>
 <translation id="9153606228985488238">Ton: <ph name="PERCENT" /> procent</translation>
 <translation id="9160096769946561184">Przejdź na koniec bieżącej kolumny</translation>

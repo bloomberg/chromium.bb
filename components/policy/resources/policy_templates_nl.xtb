@@ -1255,15 +1255,6 @@
       Als dit beleid is ingesteld op Waar (True), voorkomt <ph name="PRODUCT_OS_NAME" /> dat het apparaat wordt opgestart in de ontwikkelaarsmodus. Als de schakelaar voor de ontwikkelaarsmodus op 'Aan' is gezet, wordt het systeem niet opgestart en wordt een foutscherm weergegeven.
 
       Als dit beleid niet is ingesteld of is ingesteld op Onwaar, (False) blijft de ontwikkelaarsmodus beschikbaar voor het apparaat.</translation>
-<translation id="5203271367506489164">Dit beleid is beëindigd in M48 ten gunste van NetworkPredictionOptions en is verwijderd in M54.
-
-      Hiermee wordt netwerkvoorspelling in <ph name="PRODUCT_NAME" /> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
-
-      Hiermee wordt niet alleen DNS-prefetching beheerd, maar ook het vooraf verbinden met TCP en SSL en het vooraf renderen van webpagina's. De beleidsnaam verwijst naar DNS-prefetching vanwege historische redenen.
-
-      Als je deze instelling in- of uitschakelt, kunnen gebruikers deze instelling niet wijzigen of overschrijven in <ph name="PRODUCT_NAME" />.
-
-      Als dit beleid niet wordt ingesteld, wordt het ingeschakeld, maar kan de gebruiker het wijzigen.</translation>
 <translation id="5208240613060747912">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop geen meldingen mogen worden weergegeven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultNotificationsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -1361,6 +1352,13 @@
       Als dit is gespecificeerd, wordt een queryparameter met de naam 'restrict' toegevoegd aan de URL die wordt gebruikt om de seed voor varianten op te halen. De waarde van de parameter is de waarde die wordt opgegeven in dit beleid.
 
       Als dit niet is gespecificeerd, wordt de URL voor de seed voor varianten niet aangepast.</translation>
+<translation id="5563853101694018649">Hiermee worden de ontwikkelaarstools en de JavaScript-console uitgeschakeld.
+
+      Als je deze instelling inschakelt, kunnen de ontwikkelaarstools niet meer worden geopend en kunnen website-elementen niet meer worden geïnspecteerd. Alle sneltoetsen en menu- en contextmenu-opties voor het openen van de ontwikkelaarstools of de JavaScript-console worden uitgeschakeld.
+
+      Als je deze optie uitschakelt of niet instelt, kunnen ontwikkelaarstools en de JavaScript-console worden gebruikt.
+
+      Voor <ph name="PRODUCT_OS_NAME" />-apparaten die geschikt zijn voor Android-apps beheert dit beleid tevens de toegang tot ontwikkelaarsopties van Android. Als je dit beleid instelt op 'True', hebben gebruikers geen toegang tot ontwikkelaarsopties. Als je dit beleid instelt op 'False' of niet instelt, hebben gebruikers toegang tot ontwikkelaarsopties door zeven keer te tikken op het versienummer in de app 'Android-instellingen'.</translation>
 <translation id="556941986578702361">Het automatisch verbergen van het <ph name="PRODUCT_OS_NAME" />-archief beheren.
 
       Als dit beleid is ingesteld op 'AlwaysAutoHideShelf', wordt het archief altijd automatisch verborgen.

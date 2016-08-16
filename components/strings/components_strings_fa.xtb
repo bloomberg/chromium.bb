@@ -7,9 +7,6 @@
 <translation id="1038842779957582377">نام ناشناس</translation>
 <translation id="1055184225775184556">&amp;واگرد افزودن</translation>
 <translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
-<translation id="1064422015032085147">سروری که این صفحه وب را میزبانی می‌کند ممکن است بیش از حد بار داشته باشد یا تحت سرویس و نگهداری باشد.
-    برای جلوگیری از ایجاد ترافیک بیش از حد و بدتر شدن وضعیت،
-    درخواست‌های ارسالی به این نشانی وب موقتاً رد شده‌اند.</translation>
 <translation id="106701514854093668">نشانک‌های دسک‌تاپ</translation>
 <translation id="1080116354587839789">متناسب با پهنا</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> همیشه ترجمه شود</translation>
@@ -26,6 +23,8 @@
 <translation id="1181037720776840403">حذف</translation>
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1201895884277373915">موارد بیشتر از این سایت</translation>
+<translation id="1206967143813997005">امضای اولیه نامناسب</translation>
+<translation id="1209206284964581585">فعلاً پنهان شود</translation>
 <translation id="121201262018556460">شما می‌خواستید به <ph name="DOMAIN" /> دسترسی یابید، اما سرور یک گواهی دارای کلید ضعیف ارائه داد. یک مهاجم ممکن است کلید خصوصی را تخریب کرده باشد و سرور، همان سروری نباشد که شما انتظار داشتید (ممکن است در حال ارتباط با یک مهاجم باشید).</translation>
 <translation id="1219129156119358924">سیستم امنیتی</translation>
 <translation id="1227224963052638717">خط‌مشی ناشناس.</translation>
@@ -108,7 +107,6 @@
 <translation id="2181821976797666341">خط‌ مشی‌ها</translation>
 <translation id="2212735316055980242">خط‌مشی یافت نشد</translation>
 <translation id="2213606439339815911">در حال واکشی موارد...</translation>
-<translation id="2214283295778284209"><ph name="SITE" /> در دسترس نیست</translation>
 <translation id="2230458221926704099">با استفاده از <ph name="BEGIN_LINK" />برنامه عیب‌یابی<ph name="END_LINK" />، مشکل اتصالتان را برطرف کنید</translation>
 <translation id="225207911366869382">این مقدار برای این خط‌مشی منسوخ شده است؟</translation>
 <translation id="2262243747453050782">‏خطای HTTP</translation>
@@ -130,6 +128,7 @@
 <translation id="2396249848217231973">&amp;واگرد حذف</translation>
 <translation id="2413528052993050574">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن باطل شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="2455981314101692989">این صفحهٔ وب، تکمیل خودکار این فرم را غیر فعال کرده است.</translation>
+<translation id="2463739503403862330">تکمیل</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />در حال اجرای عیب‌یابی شبکه<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">‏URL جستجو نامعتبر است.</translation>
 <translation id="2491120439723279231">گواهی سرور دارای چندین خطاست.</translation>
@@ -282,7 +281,6 @@
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود است</translation>
 <translation id="4021036232240155012">‏DNS خدماتی از شبکه است که نام وب‌سایت را به آدرس اینترنتی آن ترجمه می‌کند.</translation>
 <translation id="4030383055268325496">&amp;واگرد افزودن</translation>
-<translation id="4032534284272647190">دسترسی به <ph name="URL" /> رد شد.</translation>
 <translation id="404928562651467259">اخطار</translation>
 <translation id="4058922952496707368">کلید "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">‏کلاینت و سرور از مجموعه رمزگذاری یا نسخه پروتکل SSL مشترکی استفاده نمی‌کنند.</translation>
@@ -329,7 +327,6 @@
 <translation id="4668929960204016307">،</translation>
 <translation id="4670097147947922288">درحال مشاهده یک صفحه افزونه هستید.</translation>
 <translation id="467662567472608290">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن خطاهایی دارد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
-<translation id="4697214168136963651"><ph name="URL" /> مسدود شد</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">اتصال شما قطع شد</translation>
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />در حال اجرای Windows Network Diagnostics<ph name="END_LINK" /></translation>
@@ -337,6 +334,7 @@
 <translation id="4728558894243024398">پلت فورم</translation>
 <translation id="4744603770635761495">مسیر قابل اجرا</translation>
 <translation id="4756388243121344051">&amp;سابقه</translation>
+<translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4764776831041365478">ممکن است صفحهٔ وب <ph name="URL" /> موقتاً خراب باشد یا ممکن است برای همیشه به آدرس وب جدید منتقل شده باشد.</translation>
 <translation id="4771973620359291008">خطای ناشناخته‌ای رخ داد.</translation>
 <translation id="4782449893814226250">از والدینتان پرسیدید آیا اجازه بازدید از این صفحه را دارید.</translation>
@@ -358,7 +356,8 @@
 <translation id="5029568752722684782">پاک کردن نسخه کپی</translation>
 <translation id="5031870354684148875">‏درباره ‏‫مترجم Google‬</translation>
 <translation id="5040262127954254034">حریم خصوصی</translation>
-<translation id="5045550434625856497">گذرواژه نامعتبر</translation>
+<translation id="5045550434625856497">گذرواژه نادرست</translation>
+<translation id="5056549851600133418">مقالاتی برای شما</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />بررسی آدرس پروکسی<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">در حال حاضر گواهی سرور معتبر نیست.</translation>
 <translation id="5089810972385038852">ایالت</translation>
@@ -411,8 +410,11 @@
 <translation id="5677928146339483299">مسدود است</translation>
 <translation id="5710435578057952990">هویت این وب سایت تأیید نشده است.</translation>
 <translation id="5720705177508910913">کاربر کنونی</translation>
+<translation id="572328651809341494">برگه‌های اخیر</translation>
 <translation id="5784606427469807560">هنگام تأیید کارت مشکلی پیش آمد. اتصال اینترنتتان را بررسی و دوباره امتحان کنید.</translation>
 <translation id="5785756445106461925">علاوه بر این، این صفحه دارای منابع دیگری است که امن نیستند. دیگران می‌توانند در حین انتقال، این منابع را ببینند و این منابع می‌توانند برای تغییر قفل صفحه، توسط یک مهاجم تغییر داده شوند.</translation>
+<translation id="5786044859038896871">می‌خواهید اطلاعات کارتتان را وارد کنید؟</translation>
+<translation id="5803412860119678065">می‌خواهید <ph name="CARD_DETAIL" /> خود را وارد کنید؟</translation>
 <translation id="5810442152076338065">اتصال شما به <ph name="DOMAIN" /> با استفاده از یک مجموعه رمز منسوخ، رمزگذاری شده است.</translation>
 <translation id="5813119285467412249">&amp;انجام مجدد افزودن</translation>
 <translation id="5855235287355719921">این پیام را به این دلیل می‌بینید که مدیرتان این سایت را مسدود کرده است.</translation>
@@ -438,7 +440,6 @@
 <translation id="614940544461990577">این موارد را امتحان کنید:</translation>
 <translation id="6150607114729249911">وای! برای بازدید از این صفحه باید از والدینتان اجازه بگیرید.</translation>
 <translation id="6151417162996330722">دوره اعتبار گواهینامه سرور بسیار طولانی است.</translation>
-<translation id="6154808779448689242">نشانه خط‌مشی بازگشتی با نشانه فعلی تطابق ندارد</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6203231073485539293">اتصال اینترنتتان را بررسی کنید</translation>
 <translation id="6218753634732582820">‏آدرس از Chromium پاک شود؟</translation>
@@ -455,7 +456,6 @@
 <translation id="6358450015545214790">معنی این‌ها چیست؟</translation>
 <translation id="6387478394221739770">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال بتای ما را در chrome.com/beta امتحان کنید.</translation>
 <translation id="6389758589412724634">‏Chromium هنگام تلاش برای نمایش این صفحه با کمبود حافظه روبرو شد.</translation>
-<translation id="641480858134062906">بارگیری <ph name="URL" /> ناموفق بود</translation>
 <translation id="6417515091412812850">امکان بررسی اینکه آیا مجوز باطل شده است یا نه وجود ندارد.</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> از اتصال خودداری کرد.</translation>
 <translation id="6445051938772793705">کشور</translation>
@@ -579,7 +579,6 @@
 <translation id="785549533363645510">اما، شما نامرئی نیستید. با استفاده از حالت ناشناس، مرورتان از چشمان کارفرمای شما، ارائه‌دهنده خدمات اینترنت یا وب‌‌سایت‌هایی که بازدید می‌کنید پنهان نمی‌ماند.</translation>
 <translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="7894616681410591072">وای! برای دسترسی به این صفحه باید از <ph name="NAME" /> اجازه بگیرید.</translation>
-<translation id="790025292736025802"><ph name="URL" /> یافت نشد</translation>
 <translation id="7912024687060120840">در پوشه:</translation>
 <translation id="7920092496846849526">از والدینتان پرسیدید آیا اجازه بازدید از این صفحه را دارید.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>

@@ -9,7 +9,7 @@
 <translation id="1038795173450935438">페이지에서 항목 간 이동할 때는 검색+오른쪽 화살표를 눌러 앞으로 이동, 검색+왼쪽 화살표를 눌러 뒤로 이동할 수 있습니다. 다음 줄로 이동하려면 검색+아래쪽 화살표를 누르고, 이전 줄로 돌아가려면 검색+위쪽 화살표를 누릅니다. 항목을 클릭하려는 경우 검색+Space를 누릅니다.</translation>
 <translation id="1044777062731150180">헤더 없음</translation>
 <translation id="106222400312645156">rwhdr</translation>
-<translation id="1065552602950927991">입력이 잘못됨</translation>
+<translation id="1065552602950927991">입력이 잘못되었습니다.</translation>
 <translation id="1082209053475788238">이전 수준 6 제목이 없습니다.</translation>
 <translation id="1088219014394087294">제목이 없습니다.</translation>
 <translation id="1106741348836243114">음성 피드백(이어콘)을 사용 또는 사용 안함으로 설정합니다.</translation>
@@ -720,7 +720,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8313653172105209786">dir</translation>
 <translation id="8344569602005188545">시간</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{파운드 기호}other{파운드 기호 #개}}</translation>
-<translation id="8374154622594089836">month</translation>
+<translation id="8374154622594089836">월</translation>
 <translation id="8378855320830505539">지역</translation>
 <translation id="8382679411218029383">자동완성 본문 및 목록</translation>
 <translation id="8428603554127842284">수준 <ph name="DEPTH" /></translation>
@@ -793,6 +793,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="9115913704608474258">11월</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">탭</translation>
 <translation id="9151211641321628915">현재 위치에 대한 간단한 설명을 들려줍니다.</translation>
 <translation id="9153606228985488238">음조: <ph name="PERCENT" />퍼센트</translation>
 <translation id="9160096769946561184">현재 열의 마지막으로 이동</translation>

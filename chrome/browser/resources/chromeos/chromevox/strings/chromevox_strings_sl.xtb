@@ -619,7 +619,7 @@
 <translation id="7170733337935166589">Naprej med neprekinjenim branjem</translation>
 <translation id="7181697990050180700">Bližnjične tipke za pogosto uporabljane ukaze prilagodite tako, da jih vnesete v ustrezna polja spodaj.</translation>
 <translation id="7203150201908454328">Razširjeno</translation>
-<translation id="7210211103303402262">min</translation>
+<translation id="7210211103303402262">minut/-e</translation>
 <translation id="7217912842225915592">+ <ph name="NUM" /></translation>
 <translation id="7221740160534240920">črta</translation>
 <translation id="7226216518520804442">sezn</translation>
@@ -718,7 +718,7 @@
 <translation id="8283603667300770666">Naslednje polje obrazca</translation>
 <translation id="831207808878314375">Opredelitev</translation>
 <translation id="8313653172105209786">imn</translation>
-<translation id="8344569602005188545">h</translation>
+<translation id="8344569602005188545">ur</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{lojtra}one{# lojtra}two{# lojtri}few{# lojtre}other{# lojter}}</translation>
 <translation id="8374154622594089836">mesec</translation>
 <translation id="8378855320830505539">Območje</translation>
@@ -749,7 +749,7 @@
 <translation id="8651481478098336970">izklop zvoka</translation>
 <translation id="8653031188082306838">urlel</translation>
 <translation id="8653646212587894517">Prikaz seznama povezav</translation>
-<translation id="8664519043722036194">s</translation>
+<translation id="8664519043722036194">sekunde</translation>
 <translation id="867187640362843212">Naslov 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{navpičnica}one{# navpičnica}two{# navpičnici}few{# navpičnice}other{# navpičnic}}</translation>
 <translation id="8721861170709424373">Viri glede ukazov za ChromeVox Next</translation>
@@ -793,6 +793,7 @@
 <translation id="9115913704608474258">november</translation>
 <translation id="9128414153595658330">pog ok</translation>
 <translation id="9149560530563164529">razd</translation>
+<translation id="9150735707954472829">Zavihek</translation>
 <translation id="9151211641321628915">Objavi kratek opis trenutnega položaja</translation>
 <translation id="9153606228985488238">Višina tona: <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Pomik na konec trenutnega stolpca</translation>

@@ -1165,15 +1165,6 @@
       如果將這項政策設為 True，<ph name="PRODUCT_OS_NAME" /> 會防止裝置在開發人員模式下啟動。嘗試切換至開發人員模式時，系統會拒絕啟動指令並顯示錯誤畫面。
 
       如未設定這項政策，或將政策設定為 False，則裝置仍可使用開發人員模式。</translation>
-<translation id="5203271367506489164">自 M53 起我們已淘汰這項政策並改用 NetworkPredictionOptions，至 M54 則移除了這項政策。
-
-      啟用 <ph name="PRODUCT_NAME" /> 的網路預測功能，並且禁止使用者變更這項設定。
-
-      除了 DNS 預先擷取以外，這項設定還可控制 TCP 和 SSL 預先連線及網頁預先轉譯。政策名稱中出現「DNS Prefetching」是為了沿用過去的名稱。
-
-      無論您是否啟用這項設定，使用者都無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。
-
-      如未設定這項政策，系統會啟用網路預測功能，但使用者可以自行變更。</translation>
 <translation id="5208240613060747912">允許您設定網址模式清單，指定不可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="5226033722357981948">指定是否該停用外掛程式尋找工具</translation>
 <translation id="523505283826916779">協助工具設定</translation>
@@ -1262,6 +1253,13 @@
       如果指定這項政策，系統在連結變異版本種子的擷取網址時，會加入「restrict」這個查詢參數。參數值即為這項政策中指定的值。
 
       如果未指定這項政策，則系統不會修改變異版本種子網址。</translation>
+<translation id="5563853101694018649">停用開發人員工具和 JavaScript 控制台。
+
+      如果啟用這項設定，就無法再存取開發人員工具，也無法再檢查網站元素。凡是用於開啟開發人員工具或 JavaScript 控制台的鍵盤快速鍵、選單或內容選單項目都會遭到停用。
+
+      如果停用或未設定這個選項，使用者即可使用開發人員工具和 JavaScript 控制台。
+
+      對於可執行 Android 應用程式的 <ph name="PRODUCT_OS_NAME" /> 裝置，也可以使用這項政策控制 Android 開發人員選項存取權。如果將這項政策設為 true，使用者就無法存取開發人員選項。如果將這項政策設為 false 或不予設定，使用者只要在 Android 設定應用程式中輕觸版本號碼七次，即可存取開發人員選項。</translation>
 <translation id="556941986578702361">設定 <ph name="PRODUCT_OS_NAME" /> 檔案櫃的自動隱藏功能。
 
       如果您將這項政策設為「AlwaysAutoHideShelf」，檔案櫃就會一律自動隱藏。

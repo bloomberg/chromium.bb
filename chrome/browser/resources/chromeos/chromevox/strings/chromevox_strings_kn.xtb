@@ -718,7 +718,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8283603667300770666">ಮುಂದಿನ ಫಾರ್ಮ್ ಕ್ಷೇತ್ರ</translation>
 <translation id="831207808878314375">ವಿವರಣೆ</translation>
 <translation id="8313653172105209786">dir</translation>
-<translation id="8344569602005188545">ಗಂಟೆಗಳು</translation>
+<translation id="8344569602005188545">ಸಮಯ</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{ಪೌಂಡ್ ಚಿಹ್ನೆಗಳು}one{# ಪೌಂಡ್ ಚಿಹ್ನೆಗಳು}other{# ಪೌಂಡ್ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="8374154622594089836">ತಿಂಗಳು</translation>
 <translation id="8378855320830505539">ಪ್ರದೇಶ</translation>
@@ -793,6 +793,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="9115913704608474258">ನವೆಂಬರ್</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9149560530563164529">sctn</translation>
+<translation id="9150735707954472829">ಟ್ಯಾಬ್</translation>
 <translation id="9151211641321628915">ಪ್ರಸ್ತುತ ಸ್ಥಾನದ ಸಂಕ್ಷಿಪ್ತ ವಿವರಣೆಯ ಪ್ರಕಟಣೆ</translation>
 <translation id="9153606228985488238">ಪಿಚ್‌ <ph name="PERCENT" /> ಶೇಕಡಾ ಹೊಂದಿದೆ</translation>
 <translation id="9160096769946561184">ಪ್ರಸ್ತುತ ಕಾಲಮ್‌ನ ಅಂತ್ಯಕ್ಕೆ ಹೋಗಿ</translation>
