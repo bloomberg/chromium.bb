@@ -8,7 +8,7 @@
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8Regex.h"
 
-namespace blink {
+namespace v8_inspector {
 
 namespace {
 
@@ -277,4 +277,4 @@ std::unique_ptr<protocol::Value> toProtocolValue(v8::Local<v8::Context> context,
     return nullptr;
 }
 
-} // namespace blink
+} // namespace v8_inspector

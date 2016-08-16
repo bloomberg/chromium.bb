@@ -95,7 +95,7 @@ public:
     static bool getPseudoElementType(PseudoId, String*);
     static ShadowRoot* userAgentShadowRoot(Node*);
 
-    InspectorDOMAgent(v8::Isolate*, InspectedFrames*, V8InspectorSession*, Client*);
+    InspectorDOMAgent(v8::Isolate*, InspectedFrames*, v8_inspector::V8InspectorSession*, Client*);
     ~InspectorDOMAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -233,7 +233,7 @@ private:
 
     v8::Isolate* m_isolate;
     Member<InspectedFrames> m_inspectedFrames;
-    V8InspectorSession* m_v8Session;
+    v8_inspector::V8InspectorSession* m_v8Session;
     Client* m_client;
     Member<DOMListener> m_domListener;
     Member<NodeToIdMap> m_documentNodeToIdMap;

@@ -36,7 +36,7 @@
 
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 class InjectedScript;
 class InspectedContext;
@@ -45,11 +45,8 @@ class V8ConsoleMessage;
 class V8InspectorImpl;
 class V8InspectorSessionImpl;
 
-namespace protocol {
-class DictionaryValue;
-}
-
-using protocol::Maybe;
+namespace protocol = blink::protocol;
+using blink::protocol::Maybe;
 
 class V8RuntimeAgentImpl : public protocol::Runtime::Backend {
     PROTOCOL_DISALLOW_COPY(V8RuntimeAgentImpl);
@@ -136,6 +133,6 @@ private:
     protocol::HashMap<String16, std::unique_ptr<v8::Global<v8::Script>>> m_compiledScripts;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // V8RuntimeAgentImpl_h

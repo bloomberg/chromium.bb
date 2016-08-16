@@ -15,12 +15,14 @@
 #include <v8.h>
 #include <vector>
 
-namespace blink {
+namespace v8_inspector {
 
 struct ScriptBreakpoint;
 class V8DebuggerAgentImpl;
 class V8InspectorImpl;
 class V8StackTraceImpl;
+
+namespace protocol = blink::protocol;
 
 class V8Debugger {
     PROTOCOL_DISALLOW_COPY(V8Debugger);
@@ -124,6 +126,6 @@ private:
     protocol::HashMap<V8DebuggerAgentImpl*, int> m_maxAsyncCallStackDepthMap;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // V8Debugger_h

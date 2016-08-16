@@ -12,7 +12,7 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
-namespace blink {
+namespace v8_inspector {
 
 namespace {
 
@@ -182,4 +182,4 @@ void V8InjectedScriptHost::proxyTargetValueCallback(const v8::FunctionCallbackIn
     info.GetReturnValue().Set(target);
 }
 
-} // namespace blink
+} // namespace v8_inspector

@@ -29,7 +29,7 @@ namespace blink {
 
 ThreadDebugger::ThreadDebugger(v8::Isolate* isolate)
     : m_isolate(isolate)
-    , m_v8Inspector(V8Inspector::create(isolate, this))
+    , m_v8Inspector(v8_inspector::V8Inspector::create(isolate, this))
 {
 }
 
@@ -47,14 +47,14 @@ ThreadDebugger* ThreadDebugger::from(v8::Isolate* isolate)
 }
 
 // static
-MessageLevel ThreadDebugger::consoleAPITypeToMessageLevel(V8ConsoleAPIType type)
+MessageLevel ThreadDebugger::consoleAPITypeToMessageLevel(v8_inspector::V8ConsoleAPIType type)
 {
     switch (type) {
-    case V8ConsoleAPIType::kDebug: return DebugMessageLevel;
-    case V8ConsoleAPIType::kLog: return LogMessageLevel;
-    case V8ConsoleAPIType::kInfo: return InfoMessageLevel;
-    case V8ConsoleAPIType::kWarning: return WarningMessageLevel;
-    case V8ConsoleAPIType::kError: return ErrorMessageLevel;
+    case v8_inspector::V8ConsoleAPIType::kDebug: return DebugMessageLevel;
+    case v8_inspector::V8ConsoleAPIType::kLog: return LogMessageLevel;
+    case v8_inspector::V8ConsoleAPIType::kInfo: return InfoMessageLevel;
+    case v8_inspector::V8ConsoleAPIType::kWarning: return WarningMessageLevel;
+    case v8_inspector::V8ConsoleAPIType::kError: return ErrorMessageLevel;
     default: return LogMessageLevel;
     }
 }

@@ -74,7 +74,6 @@
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformTouchEvent.h"
-#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
@@ -241,7 +240,7 @@ bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, protocol::DOM::P
     }
 }
 
-InspectorDOMAgent::InspectorDOMAgent(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8InspectorSession* v8Session, Client* client)
+InspectorDOMAgent::InspectorDOMAgent(v8::Isolate* isolate, InspectedFrames* inspectedFrames, v8_inspector::V8InspectorSession* v8Session, Client* client)
     : m_isolate(isolate)
     , m_inspectedFrames(inspectedFrames)
     , m_v8Session(v8Session)
@@ -1994,7 +1993,7 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
     }
 }
 
-class InspectableNode final : public V8InspectorSession::Inspectable {
+class InspectableNode final : public v8_inspector::V8InspectorSession::Inspectable {
 public:
     explicit InspectableNode(Node* node) : m_nodeId(DOMNodeIds::idForNode(node)) { }
 

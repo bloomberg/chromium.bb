@@ -148,7 +148,7 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     std::unique_ptr<protocol::DictionaryValue> auxData = protocol::DictionaryValue::create();
     auxData->setBoolean("isDefault", world.isMainWorld());
     auxData->setString("frameId", IdentifiersFactory::frameId(frame));
-    V8ContextInfo contextInfo(scriptState->context(), contextGroupId(frame), world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "");
+    v8_inspector::V8ContextInfo contextInfo(scriptState->context(), contextGroupId(frame), world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "");
     if (origin)
         contextInfo.origin = origin->toRawString();
     contextInfo.auxData = auxData->toJSONString();
@@ -287,12 +287,12 @@ void MainThreadDebugger::resumeStartup(int contextGroupId)
         m_clientMessageLoop->resumeStartup(frame);
 }
 
-void MainThreadDebugger::consoleAPIMessage(int contextGroupId, V8ConsoleAPIType type, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
+void MainThreadDebugger::consoleAPIMessage(int contextGroupId, v8_inspector::V8ConsoleAPIType type, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, v8_inspector::V8StackTrace* stackTrace)
 {
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
     if (!frame)
         return;
-    if (type == V8ConsoleAPIType::kClear && frame->host())
+    if (type == v8_inspector::V8ConsoleAPIType::kClear && frame->host())
         frame->host()->consoleMessageStorage().clear();
     std::unique_ptr<SourceLocation> location = SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0);
     frame->console().reportMessageToClient(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), message, location.get());

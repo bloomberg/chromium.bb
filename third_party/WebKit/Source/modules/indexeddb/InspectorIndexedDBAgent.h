@@ -36,14 +36,17 @@
 #include "modules/ModulesExport.h"
 #include "wtf/text/WTFString.h"
 
+namespace v8_inspector {
+class V8InspectorSession;
+}
+
 namespace blink {
 
 class InspectedFrames;
-class V8InspectorSession;
 
 class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<protocol::IndexedDB::Metainfo> {
 public:
-    InspectorIndexedDBAgent(InspectedFrames*, V8InspectorSession*);
+    InspectorIndexedDBAgent(InspectedFrames*, v8_inspector::V8InspectorSession*);
     ~InspectorIndexedDBAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -60,7 +63,7 @@ public:
 
 private:
     Member<InspectedFrames> m_inspectedFrames;
-    V8InspectorSession* m_v8Session;
+    v8_inspector::V8InspectorSession* m_v8Session;
 };
 
 } // namespace blink

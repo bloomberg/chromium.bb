@@ -86,7 +86,7 @@ int WorkerThreadDebugger::contextGroupId(ExecutionContext* context)
 
 void WorkerThreadDebugger::contextCreated(v8::Local<v8::Context> context)
 {
-    V8ContextInfo contextInfo(context, workerContextGroupId, "");
+    v8_inspector::V8ContextInfo contextInfo(context, workerContextGroupId, "");
     contextInfo.origin = m_workerThread->globalScope()->url().getString();
     v8Inspector()->contextCreated(contextInfo);
 }
@@ -165,10 +165,10 @@ void WorkerThreadDebugger::resumeStartup(int contextGroupId)
     m_workerThread->stopRunningDebuggerTasksOnPauseOnWorkerThread();
 }
 
-void WorkerThreadDebugger::consoleAPIMessage(int contextGroupId, V8ConsoleAPIType type, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
+void WorkerThreadDebugger::consoleAPIMessage(int contextGroupId, v8_inspector::V8ConsoleAPIType type, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, v8_inspector::V8StackTrace* stackTrace)
 {
     DCHECK(contextGroupId == workerContextGroupId);
-    if (type == V8ConsoleAPIType::kClear)
+    if (type == v8_inspector::V8ConsoleAPIType::kClear)
         m_workerThread->consoleMessageStorage()->clear();
     std::unique_ptr<SourceLocation> location = SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0);
     m_workerThread->workerReportingProxy().reportConsoleMessage(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), message, location.get());

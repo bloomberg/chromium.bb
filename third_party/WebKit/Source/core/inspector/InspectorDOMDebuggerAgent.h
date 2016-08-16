@@ -39,6 +39,10 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
+namespace v8_inspector {
+class V8InspectorSession;
+}
+
 namespace blink {
 
 class Element;
@@ -46,7 +50,6 @@ class Event;
 class EventTarget;
 class InspectorDOMAgent;
 class Node;
-class V8InspectorSession;
 
 namespace protocol {
 class DictionaryValue;
@@ -58,7 +61,7 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
 public:
     static void eventListenersInfoForTarget(v8::Isolate*, v8::Local<v8::Value>, V8EventListenerInfoList& listeners);
 
-    InspectorDOMDebuggerAgent(v8::Isolate*, InspectorDOMAgent*, V8InspectorSession*);
+    InspectorDOMDebuggerAgent(v8::Isolate*, InspectorDOMAgent*, v8_inspector::V8InspectorSession*);
     ~InspectorDOMDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -114,7 +117,7 @@ private:
 
     v8::Isolate* m_isolate;
     Member<InspectorDOMAgent> m_domAgent;
-    V8InspectorSession* m_v8Session;
+    v8_inspector::V8InspectorSession* m_v8Session;
     HeapHashMap<Member<Node>, uint32_t> m_domBreakpoints;
 };
 

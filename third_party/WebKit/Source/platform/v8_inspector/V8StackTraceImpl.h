@@ -11,10 +11,12 @@
 
 #include <vector>
 
-namespace blink {
+namespace v8_inspector {
 
 class TracedValue;
 class V8Debugger;
+
+namespace protocol = blink::protocol;
 
 // Note: async stack trace may have empty top stack with non-empty tail to indicate
 // that current native-only state had some async story.
@@ -79,6 +81,6 @@ private:
     std::unique_ptr<V8StackTraceImpl> m_parent;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // V8StackTraceImpl_h

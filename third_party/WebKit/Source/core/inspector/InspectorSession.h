@@ -12,14 +12,17 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
+namespace v8_inspector {
+class V8Inspector;
+class V8InspectorSession;
+}
+
 namespace blink {
 
 class ExecutionContext;
 class InspectorAgent;
 class InstrumentingAgents;
 class LocalFrame;
-class V8Inspector;
-class V8InspectorSession;
 
 class CORE_EXPORT InspectorSession
     : public GarbageCollectedFinalized<InspectorSession>
@@ -32,10 +35,10 @@ public:
         virtual ~Client() {}
     };
 
-    InspectorSession(Client*, InstrumentingAgents*, int sessionId, V8Inspector*, int contextGroupId, const String* savedState);
+    InspectorSession(Client*, InstrumentingAgents*, int sessionId, v8_inspector::V8Inspector*, int contextGroupId, const String* savedState);
     ~InspectorSession() override;
     int sessionId() { return m_sessionId; }
-    V8InspectorSession* v8Session() { return m_v8Session.get(); }
+    v8_inspector::V8InspectorSession* v8Session() { return m_v8Session.get(); }
 
     void append(InspectorAgent*);
     void restore();
@@ -52,7 +55,7 @@ private:
     void sendProtocolNotification(const protocol::String16& message) override;
 
     Client* m_client;
-    std::unique_ptr<V8InspectorSession> m_v8Session;
+    std::unique_ptr<v8_inspector::V8InspectorSession> m_v8Session;
     int m_sessionId;
     bool m_disposed;
     Member<InstrumentingAgents> m_instrumentingAgents;

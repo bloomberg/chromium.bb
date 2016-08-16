@@ -43,7 +43,7 @@
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 #include <v8-profiler.h>
 
-namespace blink {
+namespace v8_inspector {
 
 std::unique_ptr<V8Inspector> V8Inspector::create(v8::Isolate* isolate, V8InspectorClient* client)
 {
@@ -347,4 +347,4 @@ V8InspectorSessionImpl* V8InspectorImpl::sessionForContextGroup(int contextGroup
     return iter == m_sessions.end() ? nullptr : iter->second;
 }
 
-} // namespace blink
+} // namespace v8_inspector

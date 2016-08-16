@@ -38,7 +38,7 @@ static const char animationAgentPlaybackRate[] = "animationAgentPlaybackRate";
 
 namespace blink {
 
-InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8InspectorSession* v8Session)
+InspectorAnimationAgent::InspectorAnimationAgent(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, v8_inspector::V8InspectorSession* v8Session)
     : m_inspectedFrames(inspectedFrames)
     , m_domAgent(domAgent)
     , m_cssAgent(cssAgent)

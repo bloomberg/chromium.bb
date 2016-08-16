@@ -32,7 +32,9 @@
 
 #include "platform/inspector_protocol/InspectorProtocol.h"
 
-namespace blink {
+namespace v8_inspector {
+
+namespace protocol = blink::protocol;
 
 struct ScriptBreakpoint {
     ScriptBreakpoint() : ScriptBreakpoint(0, 0, String16()) { }
@@ -49,6 +51,6 @@ struct ScriptBreakpoint {
     String16 condition;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // !defined(ScriptBreakpoint_h)

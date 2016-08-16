@@ -9,9 +9,11 @@
 #include "platform/v8_inspector/protocol/Debugger.h"
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 class V8InspectorSession;
+
+namespace protocol = blink::protocol;
 
 std::unique_ptr<protocol::Value> toProtocolValue(v8::Local<v8::Context>, v8::Local<v8::Value>, int maxDepth = protocol::Value::maxDepth);
 
@@ -26,7 +28,7 @@ String16 findSourceURL(const String16& content, bool multiline);
 String16 findSourceMapURL(const String16& content, bool multiline);
 std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> searchInTextByLinesImpl(V8InspectorSession*, const String16& text, const String16& query, bool caseSensitive, bool isRegex);
 
-} //  namespace blink
+} //  namespace v8_inspector
 
 
 #endif // !defined(V8StringUtil_h)

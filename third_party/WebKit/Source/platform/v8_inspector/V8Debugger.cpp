@@ -14,7 +14,7 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
-namespace blink {
+namespace v8_inspector {
 
 namespace {
 const char stepIntoV8MethodName[] = "stepIntoStatement";
@@ -28,7 +28,7 @@ inline v8::Local<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
     return value ? v8::True(isolate) : v8::False(isolate);
 }
 
-}
+} // namespace
 
 static bool inLiveEditScope = false;
 
@@ -836,4 +836,4 @@ std::unique_ptr<V8StackTraceImpl> V8Debugger::captureStackTrace(bool fullStack)
     return V8StackTraceImpl::capture(this, contextGroupId, stackSize);
 }
 
-} // namespace blink
+} // namespace v8_inspector

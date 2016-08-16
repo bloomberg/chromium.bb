@@ -33,7 +33,9 @@
 #include "platform/inspector_protocol/InspectorProtocol.h"
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
+
+namespace protocol = blink::protocol;
 
 class V8DebuggerScript {
     PROTOCOL_DISALLOW_COPY(V8DebuggerScript);
@@ -76,7 +78,7 @@ private:
     bool m_isLiveEdit;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 
 #endif // V8DebuggerScript_h

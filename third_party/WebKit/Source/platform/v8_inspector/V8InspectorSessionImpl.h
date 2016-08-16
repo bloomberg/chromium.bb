@@ -13,7 +13,7 @@
 
 #include <vector>
 
-namespace blink {
+namespace v8_inspector {
 
 class InjectedScript;
 class RemoteObjectIdBase;
@@ -23,6 +23,8 @@ class V8InspectorImpl;
 class V8HeapProfilerAgentImpl;
 class V8ProfilerAgentImpl;
 class V8RuntimeAgentImpl;
+
+namespace protocol = blink::protocol;
 
 class V8InspectorSessionImpl : public V8InspectorSession {
     PROTOCOL_DISALLOW_COPY(V8InspectorSessionImpl);
@@ -83,6 +85,6 @@ private:
     std::vector<std::unique_ptr<V8InspectorSession::Inspectable>> m_inspectedObjects;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif

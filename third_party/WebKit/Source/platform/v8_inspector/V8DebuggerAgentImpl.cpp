@@ -30,7 +30,7 @@ using blink::protocol::Runtime::ScriptId;
 using blink::protocol::Runtime::StackTrace;
 using blink::protocol::Runtime::RemoteObject;
 
-namespace blink {
+namespace v8_inspector {
 
 namespace DebuggerAgentState {
 static const char javaScriptBreakpoints[] = "javaScriptBreakopints";
@@ -1164,4 +1164,4 @@ void V8DebuggerAgentImpl::reset()
     m_breakpointIdToDebuggerBreakpointIds.clear();
 }
 
-} // namespace blink
+} // namespace v8_inspector

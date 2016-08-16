@@ -408,7 +408,7 @@ class DataLoader;
 
 class OpenCursorCallback final : public EventListener {
 public:
-    static OpenCursorCallback* create(V8InspectorSession* v8Session, ScriptState* scriptState, std::unique_ptr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    static OpenCursorCallback* create(v8_inspector::V8InspectorSession* v8Session, ScriptState* scriptState, std::unique_ptr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
     {
         return new OpenCursorCallback(v8Session, scriptState, std::move(requestCallback), skipCount, pageSize);
     }
@@ -487,7 +487,7 @@ public:
     }
 
 private:
-    OpenCursorCallback(V8InspectorSession* v8Session, ScriptState* scriptState, std::unique_ptr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    OpenCursorCallback(v8_inspector::V8InspectorSession* v8Session, ScriptState* scriptState, std::unique_ptr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
         : EventListener(EventListener::CPPEventListenerType)
         , m_v8Session(v8Session)
         , m_scriptState(scriptState)
@@ -498,7 +498,7 @@ private:
         m_result = Array<DataEntry>::create();
     }
 
-    V8InspectorSession* m_v8Session;
+    v8_inspector::V8InspectorSession* m_v8Session;
     RefPtr<ScriptState> m_scriptState;
     std::unique_ptr<RequestDataCallback> m_requestCallback;
     int m_skipCount;
@@ -508,7 +508,7 @@ private:
 
 class DataLoader final : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DataLoader> create(V8InspectorSession* v8Session, ScriptState* scriptState, std::unique_ptr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, IDBKeyRange* idbKeyRange, int skipCount, unsigned pageSize)
+    static PassRefPtr<DataLoader> create(v8_inspector::V8InspectorSession* v8Session, ScriptState* scriptState, std::unique_ptr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, IDBKeyRange* idbKeyRange, int skipCount, unsigned pageSize)
     {
         return adoptRef(new DataLoader(v8Session, scriptState, std::move(requestCallback), objectStoreName, indexName, idbKeyRange, skipCount, pageSize));
     }
@@ -545,7 +545,7 @@ public:
     }
 
     RequestCallback* getRequestCallback() override { return m_requestCallback.get(); }
-    DataLoader(V8InspectorSession* v8Session, ScriptState* scriptState, std::unique_ptr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, IDBKeyRange* idbKeyRange, int skipCount, unsigned pageSize)
+    DataLoader(v8_inspector::V8InspectorSession* v8Session, ScriptState* scriptState, std::unique_ptr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, IDBKeyRange* idbKeyRange, int skipCount, unsigned pageSize)
         : ExecutableWithDatabase(scriptState)
         , m_v8Session(v8Session)
         , m_requestCallback(std::move(requestCallback))
@@ -557,7 +557,7 @@ public:
     {
     }
 
-    V8InspectorSession* m_v8Session;
+    v8_inspector::V8InspectorSession* m_v8Session;
     std::unique_ptr<RequestDataCallback> m_requestCallback;
     String m_objectStoreName;
     String m_indexName;
@@ -569,7 +569,7 @@ public:
 } // namespace
 
 // static
-InspectorIndexedDBAgent::InspectorIndexedDBAgent(InspectedFrames* inspectedFrames, V8InspectorSession* v8Session)
+InspectorIndexedDBAgent::InspectorIndexedDBAgent(InspectedFrames* inspectedFrames, v8_inspector::V8InspectorSession* v8Session)
     : m_inspectedFrames(inspectedFrames)
     , m_v8Session(v8Session)
 {

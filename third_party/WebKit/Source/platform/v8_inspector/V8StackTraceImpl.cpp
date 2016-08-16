@@ -11,7 +11,7 @@
 #include <v8-profiler.h>
 #include <v8-version.h>
 
-namespace blink {
+namespace v8_inspector {
 
 namespace {
 
@@ -262,4 +262,4 @@ String16 V8StackTraceImpl::toString() const
     return stackTrace.toString();
 }
 
-} // namespace blink
+} // namespace v8_inspector

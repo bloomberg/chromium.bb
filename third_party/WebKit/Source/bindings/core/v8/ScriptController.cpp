@@ -67,7 +67,6 @@
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/Widget.h"
-#include "platform/v8_inspector/public/V8StackTrace.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"

@@ -10,11 +10,12 @@
 
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 class V8InspectorSessionImpl;
 
-using protocol::Maybe;
+namespace protocol = blink::protocol;
+using blink::protocol::Maybe;
 
 class V8HeapProfilerAgentImpl : public protocol::HeapProfiler::Backend {
     PROTOCOL_DISALLOW_COPY(V8HeapProfilerAgentImpl);
@@ -53,6 +54,6 @@ private:
     bool m_hasTimer;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // !defined(V8HeapProfilerAgentImpl_h)

@@ -18,7 +18,7 @@ namespace {
 const char kV8StateKey[] = "v8";
 }
 
-InspectorSession::InspectorSession(Client* client, InstrumentingAgents* instrumentingAgents, int sessionId, V8Inspector* inspector, int contextGroupId, const String* savedState)
+InspectorSession::InspectorSession(Client* client, InstrumentingAgents* instrumentingAgents, int sessionId, v8_inspector::V8Inspector* inspector, int contextGroupId, const String* savedState)
     : m_client(client)
     , m_v8Session(nullptr)
     , m_sessionId(sessionId)
@@ -73,7 +73,7 @@ void InspectorSession::dispose()
 void InspectorSession::dispatchProtocolMessage(const String& method, const String& message)
 {
     DCHECK(!m_disposed);
-    if (V8InspectorSession::canDispatchMethod(method))
+    if (v8_inspector::V8InspectorSession::canDispatchMethod(method))
         m_v8Session->dispatchProtocolMessage(message);
     else
         m_inspectorBackendDispatcher->dispatch(message);

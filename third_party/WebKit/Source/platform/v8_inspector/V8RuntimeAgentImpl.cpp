@@ -43,7 +43,7 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
-namespace blink {
+namespace v8_inspector {
 
 namespace V8RuntimeAgentImplState {
 static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled";
@@ -685,4 +685,4 @@ void V8RuntimeAgentImpl::reportMessage(V8ConsoleMessage* message, bool generateP
     m_frontend.flush();
 }
 
-} // namespace blink
+} // namespace v8_inspector

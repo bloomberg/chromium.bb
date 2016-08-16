@@ -15,9 +15,11 @@ class CpuProfiler;
 class Isolate;
 }
 
-namespace blink {
+namespace v8_inspector {
 
 class V8InspectorSessionImpl;
+
+namespace protocol = blink::protocol;
 
 class V8ProfilerAgentImpl : public protocol::Profiler::Backend {
     PROTOCOL_DISALLOW_COPY(V8ProfilerAgentImpl);
@@ -58,6 +60,6 @@ private:
     String16 m_frontendInitiatedProfileId;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // !defined(V8ProfilerAgentImpl_h)

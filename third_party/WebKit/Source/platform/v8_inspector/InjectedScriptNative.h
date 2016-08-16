@@ -10,7 +10,9 @@
 
 #include <vector>
 
-namespace blink {
+namespace v8_inspector {
+
+namespace protocol = blink::protocol;
 
 class InjectedScriptNative final {
 public:
@@ -39,6 +41,6 @@ private:
     NameToObjectGroup m_nameToObjectGroup;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif

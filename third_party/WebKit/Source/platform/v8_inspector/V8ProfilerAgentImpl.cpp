@@ -16,7 +16,7 @@
 #define ENSURE_V8_VERSION(major, minor) \
     (V8_MAJOR_VERSION * 1000 + V8_MINOR_VERSION >= (major) * 1000 + (minor))
 
-namespace blink {
+namespace v8_inspector {
 
 namespace ProfilerAgentState {
 static const char samplingInterval[] = "samplingInterval";
@@ -317,4 +317,4 @@ v8::CpuProfiler* V8ProfilerAgentImpl::profiler()
 #endif
 }
 
-} // namespace blink
+} // namespace v8_inspector

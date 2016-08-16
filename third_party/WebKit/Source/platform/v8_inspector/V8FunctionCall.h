@@ -35,9 +35,11 @@
 
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 class V8InspectorImpl;
+
+namespace protocol = blink::protocol;
 
 class V8FunctionCall {
 public:
@@ -59,6 +61,6 @@ protected:
     v8::Local<v8::Value> m_value;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // V8FunctionCall

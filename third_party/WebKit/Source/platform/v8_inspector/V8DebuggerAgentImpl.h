@@ -11,7 +11,7 @@
 
 #include <vector>
 
-namespace blink {
+namespace v8_inspector {
 
 struct ScriptBreakpoint;
 class JavaScriptCallFrame;
@@ -23,11 +23,8 @@ class V8InspectorSessionImpl;
 class V8Regex;
 class V8StackTraceImpl;
 
-namespace protocol {
-class DictionaryValue;
-}
-
-using protocol::Maybe;
+namespace protocol = blink::protocol;
+using blink::protocol::Maybe;
 
 class V8DebuggerAgentImpl : public protocol::Debugger::Backend {
     PROTOCOL_DISALLOW_COPY(V8DebuggerAgentImpl);
@@ -210,7 +207,6 @@ private:
     protocol::HashMap<String16, std::vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 
-} // namespace blink
-
+} // namespace v8_inspector
 
 #endif // V8DebuggerAgentImpl_h

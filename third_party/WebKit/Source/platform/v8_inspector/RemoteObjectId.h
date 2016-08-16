@@ -7,11 +7,9 @@
 
 #include "platform/inspector_protocol/InspectorProtocol.h"
 
-namespace blink {
+namespace v8_inspector {
 
-namespace protocol {
-class DictionaryValue;
-}
+namespace protocol = blink::protocol;
 
 class RemoteObjectIdBase {
 public:
@@ -52,6 +50,6 @@ private:
     int m_frameOrdinal;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // !defined(RemoteObjectId_h)

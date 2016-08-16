@@ -38,7 +38,7 @@
 
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 V8FunctionCall::V8FunctionCall(V8InspectorImpl* inspector, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& name)
     : m_inspector(inspector)
@@ -112,4 +112,4 @@ v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
     return result;
 }
 
-} // namespace blink
+} // namespace v8_inspector

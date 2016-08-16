@@ -30,7 +30,6 @@
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
-#include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"

@@ -241,7 +241,7 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
     }
 }
 
-InspectorPageAgent* InspectorPageAgent::create(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, V8InspectorSession* v8Session)
+InspectorPageAgent* InspectorPageAgent::create(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, v8_inspector::V8InspectorSession* v8Session)
 {
     return new InspectorPageAgent(inspectedFrames, client, resourceContentLoader, v8Session);
 }
@@ -332,7 +332,7 @@ String InspectorPageAgent::cachedResourceTypeJson(const Resource& cachedResource
     return resourceTypeJson(cachedResourceType(cachedResource));
 }
 
-InspectorPageAgent::InspectorPageAgent(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, V8InspectorSession* v8Session)
+InspectorPageAgent::InspectorPageAgent(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, v8_inspector::V8InspectorSession* v8Session)
     : m_inspectedFrames(inspectedFrames)
     , m_v8Session(v8Session)
     , m_client(client)

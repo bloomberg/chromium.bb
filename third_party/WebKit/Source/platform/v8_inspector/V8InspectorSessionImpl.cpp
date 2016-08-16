@@ -18,7 +18,7 @@
 #include "platform/v8_inspector/public/V8ContextInfo.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
-namespace blink {
+namespace v8_inspector {
 
 // static
 bool V8InspectorSession::canDispatchMethod(const String16& method)
@@ -318,4 +318,4 @@ std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> V8Inspect
     return result;
 }
 
-} // namespace blink
+} // namespace v8_inspector

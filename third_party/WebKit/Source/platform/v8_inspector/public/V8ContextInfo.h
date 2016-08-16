@@ -9,7 +9,7 @@
 
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 class V8ContextInfo {
 public:
@@ -32,6 +32,6 @@ public:
     bool hasMemoryOnConsole;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // V8ContextInfo_h

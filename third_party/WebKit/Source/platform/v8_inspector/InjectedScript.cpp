@@ -51,7 +51,7 @@ using blink::protocol::Runtime::InternalPropertyDescriptor;
 using blink::protocol::Runtime::RemoteObject;
 using blink::protocol::Maybe;
 
-namespace blink {
+namespace v8_inspector {
 
 static bool hasInternalError(ErrorString* errorString, bool hasError)
 {
@@ -486,4 +486,4 @@ void InjectedScript::CallFrameScope::findInjectedScript(V8InspectorSessionImpl* 
     m_injectedScript = session->findInjectedScript(m_errorString, remoteId.get());
 }
 
-} // namespace blink
+} // namespace v8_inspector

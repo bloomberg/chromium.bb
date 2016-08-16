@@ -11,12 +11,14 @@
 #include <deque>
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 class InspectedContext;
 class V8InspectorImpl;
 class V8InspectorSessionImpl;
 class V8StackTraceImpl;
+
+namespace protocol = blink::protocol;
 
 enum class V8MessageOrigin { kConsole, kException, kRevokedException };
 
@@ -102,6 +104,6 @@ private:
     std::deque<std::unique_ptr<V8ConsoleMessage>> m_messages;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // V8ConsoleMessage_h

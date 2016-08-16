@@ -13,7 +13,7 @@
 #include <v8-profiler.h>
 #include <v8-version.h>
 
-namespace blink {
+namespace v8_inspector {
 
 namespace {
 
@@ -398,4 +398,4 @@ void V8HeapProfilerAgentImpl::stopSampling(ErrorString* errorString, std::unique
 #endif
 }
 
-} // namespace blink
+} // namespace v8_inspector

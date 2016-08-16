@@ -23,7 +23,7 @@ class ExecutionContext;
 class SourceLocation;
 
 // TODO(dgozman): rename this to ThreadInspector (and subclasses).
-class CORE_EXPORT ThreadDebugger : public V8InspectorClient {
+class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient {
     WTF_MAKE_NONCOPYABLE(ThreadDebugger);
 public:
     explicit ThreadDebugger(v8::Isolate*);
@@ -31,7 +31,7 @@ public:
 
     static ThreadDebugger* from(v8::Isolate*);
     virtual bool isWorker() = 0;
-    V8Inspector* v8Inspector() const { return m_v8Inspector.get(); }
+    v8_inspector::V8Inspector* v8Inspector() const { return m_v8Inspector.get(); }
 
     static void willExecuteScript(v8::Isolate*, int scriptId);
     static void didExecuteScript(v8::Isolate*);
@@ -51,7 +51,7 @@ protected:
     virtual void reportConsoleMessage(ExecutionContext*, MessageSource, MessageLevel, const String& message, SourceLocation*) = 0;
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
     void createFunctionProperty(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name, v8::FunctionCallback, const char* description);
-    static MessageLevel consoleAPITypeToMessageLevel(V8ConsoleAPIType);
+    static MessageLevel consoleAPITypeToMessageLevel(v8_inspector::V8ConsoleAPIType);
 
     v8::Isolate* m_isolate;
 
@@ -66,7 +66,7 @@ private:
     void consoleTime(const String16& title) override;
     void consoleTimeEnd(const String16& title) override;
     void consoleTimeStamp(const String16& title) override;
-    void startRepeatingTimer(double, V8InspectorClient::TimerCallback, void* data) override;
+    void startRepeatingTimer(double, v8_inspector::V8InspectorClient::TimerCallback, void* data) override;
     void cancelTimer(void* data) override;
 
     void onTimer(TimerBase*);
@@ -77,9 +77,9 @@ private:
 
     static void getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
-    std::unique_ptr<V8Inspector> m_v8Inspector;
+    std::unique_ptr<v8_inspector::V8Inspector> m_v8Inspector;
     Vector<std::unique_ptr<Timer<ThreadDebugger>>> m_timers;
-    Vector<V8InspectorClient::TimerCallback> m_timerCallbacks;
+    Vector<v8_inspector::V8InspectorClient::TimerCallback> m_timerCallbacks;
     Vector<void*> m_timerData;
     std::unique_ptr<UserGestureIndicator> m_userGestureIndicator;
 };

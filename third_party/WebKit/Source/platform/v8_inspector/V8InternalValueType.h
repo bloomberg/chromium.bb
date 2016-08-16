@@ -8,7 +8,7 @@
 #include "platform/inspector_protocol/InspectorProtocol.h"
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 enum class V8InternalValueType { kEntry, kLocation, kScope, kScopeList };
 
@@ -17,6 +17,6 @@ bool markArrayEntriesAsInternal(v8::Local<v8::Context>, v8::Local<v8::Array>, V8
 v8::Local<v8::Value> v8InternalValueTypeFrom(v8::Local<v8::Context>, v8::Local<v8::Object>);
 
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // V8InternalValueType_h

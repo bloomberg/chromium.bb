@@ -6,7 +6,7 @@
 
 #include "platform/v8_inspector/V8StringUtil.h"
 
-namespace blink {
+namespace v8_inspector {
 
 static const char hexDigits[17] = "0123456789ABCDEF";
 
@@ -117,4 +117,4 @@ void V8DebuggerScript::setSource(v8::Isolate* isolate, v8::Local<v8::String> sou
     m_hash = calculateHash(toProtocolString(source));
 }
 
-} // namespace blink
+} // namespace v8_inspector

@@ -42,6 +42,10 @@
 #include "wtf/text/WTFString.h"
 #include <memory>
 
+namespace v8_inspector {
+class V8InspectorSession;
+}
+
 namespace blink {
 
 class Color;
@@ -54,7 +58,6 @@ class LayoutEditor;
 class Node;
 class Page;
 class PageOverlay;
-class V8InspectorSession;
 class WebViewImpl;
 
 namespace protocol {
@@ -75,7 +78,7 @@ public:
     ~InspectorOverlay() override;
     DECLARE_TRACE();
 
-    void init(InspectorCSSAgent*, V8InspectorSession*, InspectorDOMAgent*);
+    void init(InspectorCSSAgent*, v8_inspector::V8InspectorSession*, InspectorDOMAgent*);
 
     void clear();
     void suspend();
@@ -158,7 +161,7 @@ private:
     bool m_suspended;
     bool m_inLayout;
     bool m_needsUpdate;
-    V8InspectorSession* m_v8Session;
+    v8_inspector::V8InspectorSession* m_v8Session;
     Member<InspectorDOMAgent> m_domAgent;
     Member<InspectorCSSAgent> m_cssAgent;
     Member<LayoutEditor> m_layoutEditor;

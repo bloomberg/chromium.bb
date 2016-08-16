@@ -16,7 +16,6 @@ namespace blink {
 
 class ExecutionContext;
 class TracedValue;
-class V8StackTrace;
 
 class CORE_EXPORT SourceLocation {
 public:
@@ -33,7 +32,7 @@ public:
     // Forces full stack trace.
     static std::unique_ptr<SourceLocation> captureWithFullStackTrace();
 
-    static std::unique_ptr<SourceLocation> create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId = 0);
+    static std::unique_ptr<SourceLocation> create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<v8_inspector::V8StackTrace>, int scriptId = 0);
     ~SourceLocation();
 
     bool isUnknown() const { return m_url.isNull() && !m_scriptId && !m_lineNumber; }
@@ -41,7 +40,7 @@ public:
     unsigned lineNumber() const { return m_lineNumber; }
     unsigned columnNumber() const { return m_columnNumber; }
     int scriptId() const { return m_scriptId; }
-    std::unique_ptr<V8StackTrace> takeStackTrace() { return std::move(m_stackTrace); }
+    std::unique_ptr<v8_inspector::V8StackTrace> takeStackTrace() { return std::move(m_stackTrace); }
 
     std::unique_ptr<SourceLocation> clone() const; // Safe to pass between threads.
 
@@ -55,13 +54,13 @@ public:
     std::unique_ptr<protocol::Runtime::API::StackTrace> buildInspectorObject() const;
 
 private:
-    SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId);
-    static std::unique_ptr<SourceLocation> createFromNonEmptyV8StackTrace(std::unique_ptr<V8StackTrace>, int scriptId);
+    SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<v8_inspector::V8StackTrace>, int scriptId);
+    static std::unique_ptr<SourceLocation> createFromNonEmptyV8StackTrace(std::unique_ptr<v8_inspector::V8StackTrace>, int scriptId);
 
     String m_url;
     unsigned m_lineNumber;
     unsigned m_columnNumber;
-    std::unique_ptr<V8StackTrace> m_stackTrace;
+    std::unique_ptr<v8_inspector::V8StackTrace> m_stackTrace;
     int m_scriptId;
 };
 

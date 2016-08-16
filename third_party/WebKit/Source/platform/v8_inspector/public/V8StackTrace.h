@@ -10,7 +10,7 @@
 
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 class V8StackTrace {
 public:
@@ -22,13 +22,13 @@ public:
     virtual String16 topFunctionName() const = 0;
 
     virtual ~V8StackTrace() { }
-    virtual std::unique_ptr<protocol::Runtime::API::StackTrace> buildInspectorObject() const = 0;
+    virtual std::unique_ptr<blink::protocol::Runtime::API::StackTrace> buildInspectorObject() const = 0;
     virtual String16 toString() const = 0;
 
     // Safe to pass between threads, drops async chain.
     virtual std::unique_ptr<V8StackTrace> clone() = 0;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // V8StackTrace_h

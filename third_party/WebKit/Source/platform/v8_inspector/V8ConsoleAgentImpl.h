@@ -8,10 +8,12 @@
 #include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/protocol/Console.h"
 
-namespace blink {
+namespace v8_inspector {
 
 class V8ConsoleMessage;
 class V8InspectorSessionImpl;
+
+namespace protocol = blink::protocol;
 
 class V8ConsoleAgentImpl : public protocol::Console::Backend {
     PROTOCOL_DISALLOW_COPY(V8ConsoleAgentImpl);
@@ -38,7 +40,7 @@ private:
     bool m_enabled;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 
 #endif // !defined(V8ConsoleAgentImpl_h)

@@ -39,6 +39,10 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
+namespace v8_inspector {
+class V8InspectorSession;
+}
+
 namespace blink {
 
 class Resource;
@@ -51,7 +55,6 @@ class KURL;
 class LocalFrame;
 class SharedBuffer;
 class TextResourceDecoder;
-class V8InspectorSession;
 
 using blink::protocol::Maybe;
 
@@ -82,7 +85,7 @@ public:
         OtherResource
     };
 
-    static InspectorPageAgent* create(InspectedFrames*, Client*, InspectorResourceContentLoader*, V8InspectorSession*);
+    static InspectorPageAgent* create(InspectedFrames*, Client*, InspectorResourceContentLoader*, v8_inspector::V8InspectorSession*);
 
     static HeapVector<Member<Document>> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
@@ -136,7 +139,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InspectorPageAgent(InspectedFrames*, Client*, InspectorResourceContentLoader*, V8InspectorSession*);
+    InspectorPageAgent(InspectedFrames*, Client*, InspectorResourceContentLoader*, v8_inspector::V8InspectorSession*);
 
     void finishReload();
     void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, std::unique_ptr<GetResourceContentCallback>);
@@ -147,7 +150,7 @@ private:
     std::unique_ptr<protocol::Page::Frame> buildObjectForFrame(LocalFrame*);
     std::unique_ptr<protocol::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
     Member<InspectedFrames> m_inspectedFrames;
-    V8InspectorSession* m_v8Session;
+    v8_inspector::V8InspectorSession* m_v8Session;
     Client* m_client;
     long m_lastScriptIdentifier;
     String m_pendingScriptToEvaluateOnLoadOnce;

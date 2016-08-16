@@ -40,18 +40,15 @@
 
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 class RemoteObjectId;
 class V8FunctionCall;
 class V8InspectorImpl;
 class V8InspectorSessionImpl;
 
-namespace protocol {
-class DictionaryValue;
-}
-
-using protocol::Maybe;
+namespace protocol = blink::protocol;
+using blink::protocol::Maybe;
 
 class InjectedScript final {
     PROTOCOL_DISALLOW_COPY(InjectedScript);
@@ -169,6 +166,6 @@ private:
     v8::Global<v8::Object> m_commandLineAPI;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif

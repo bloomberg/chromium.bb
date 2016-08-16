@@ -13,7 +13,7 @@
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
-namespace blink {
+namespace v8_inspector {
 
 namespace {
 
@@ -439,4 +439,4 @@ void V8ConsoleMessageStorage::contextDestroyed(int contextId)
         m_messages[i]->contextDestroyed(contextId);
 }
 
-} // namespace blink
+} // namespace v8_inspector

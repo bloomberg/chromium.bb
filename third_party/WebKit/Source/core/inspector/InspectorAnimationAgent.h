@@ -12,6 +12,10 @@
 #include "core/inspector/protocol/Animation.h"
 #include "wtf/text/WTFString.h"
 
+namespace v8_inspector {
+class V8InspectorSession;
+}
+
 namespace blink {
 
 class AnimationNode;
@@ -21,12 +25,11 @@ class InspectedFrames;
 class InspectorCSSAgent;
 class InspectorDOMAgent;
 class TimingFunction;
-class V8InspectorSession;
 
 class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<protocol::Animation::Metainfo> {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
-    InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InspectorCSSAgent*, V8InspectorSession*);
+    InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InspectorCSSAgent*, v8_inspector::V8InspectorSession*);
 
     // Base agent methods.
     void restore() override;
@@ -67,7 +70,7 @@ private:
     Member<InspectedFrames> m_inspectedFrames;
     Member<InspectorDOMAgent> m_domAgent;
     Member<InspectorCSSAgent> m_cssAgent;
-    V8InspectorSession* m_v8Session;
+    v8_inspector::V8InspectorSession* m_v8Session;
     HeapHashMap<String, Member<blink::Animation>> m_idToAnimation;
     HeapHashMap<String, Member<blink::Animation>> m_idToAnimationClone;
     HashMap<String, String> m_idToAnimationType;

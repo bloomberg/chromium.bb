@@ -36,7 +36,9 @@
 
 #include <vector>
 
-namespace blink {
+namespace v8_inspector {
+
+namespace protocol = blink::protocol;
 
 class JavaScriptCallFrame {
 public:
@@ -69,6 +71,6 @@ private:
 
 using JavaScriptCallFrames = std::vector<std::unique_ptr<JavaScriptCallFrame>>;
 
-} // namespace blink
+} // namespace v8_inspector
 
 #endif // JavaScriptCallFrame_h

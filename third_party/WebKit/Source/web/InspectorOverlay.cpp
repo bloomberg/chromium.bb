@@ -202,7 +202,7 @@ DEFINE_TRACE(InspectorOverlay)
     visitor->trace(m_hoveredNodeForInspectMode);
 }
 
-void InspectorOverlay::init(InspectorCSSAgent* cssAgent, V8InspectorSession* v8Session, InspectorDOMAgent* domAgent)
+void InspectorOverlay::init(InspectorCSSAgent* cssAgent, v8_inspector::V8InspectorSession* v8Session, InspectorDOMAgent* domAgent)
 {
     m_v8Session = v8Session;
     m_domAgent = domAgent;

@@ -9,7 +9,7 @@
 
 #include <v8.h>
 
-namespace blink {
+namespace v8_inspector {
 
 class V8StackTrace;
 
@@ -53,7 +53,7 @@ public:
     virtual bool canExecuteScripts(int contextGroupId) { return true; }
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 
 #endif // V8InspectorClient_h

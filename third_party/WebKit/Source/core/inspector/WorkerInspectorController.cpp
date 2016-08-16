@@ -39,8 +39,6 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/inspector_protocol/InspectorProtocol.h"
-#include "platform/v8_inspector/public/V8Inspector.h"
-#include "platform/v8_inspector/public/V8InspectorSession.h"
 
 namespace blink {
 

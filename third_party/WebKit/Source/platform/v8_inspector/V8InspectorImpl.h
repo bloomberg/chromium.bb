@@ -38,7 +38,7 @@
 #include <v8.h>
 #include <vector>
 
-namespace blink {
+namespace v8_inspector {
 
 class InspectedContext;
 class V8ConsoleMessageStorage;
@@ -47,6 +47,8 @@ class V8DebuggerAgentImpl;
 class V8InspectorSessionImpl;
 class V8RuntimeAgentImpl;
 class V8StackTraceImpl;
+
+namespace protocol = blink::protocol;
 
 class V8InspectorImpl : public V8Inspector {
     PROTOCOL_DISALLOW_COPY(V8InspectorImpl);
@@ -118,7 +120,7 @@ private:
     ConsoleStorageMap m_consoleStorageMap;
 };
 
-} // namespace blink
+} // namespace v8_inspector
 
 
 #endif // V8InspectorImpl_h
