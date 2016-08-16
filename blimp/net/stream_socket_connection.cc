@@ -14,12 +14,12 @@
 
 namespace blimp {
 
+// TODO(kmarshall): Re-enable CompressedPacket(Reader|Writer)
+// after zlib bug in crbug.com/r637376 is resolved.
 StreamSocketConnection::StreamSocketConnection(
     std::unique_ptr<net::StreamSocket> socket)
-    : BlimpConnection(base::MakeUnique<CompressedPacketReader>(
-                          base::MakeUnique<StreamPacketReader>(socket.get())),
-                      base::MakeUnique<CompressedPacketWriter>(
-                          base::MakeUnique<StreamPacketWriter>(socket.get()))),
+    : BlimpConnection(base::MakeUnique<StreamPacketReader>(socket.get()),
+                      base::MakeUnique<StreamPacketWriter>(socket.get())),
       socket_(std::move(socket)) {
   DCHECK(socket_);
 }
