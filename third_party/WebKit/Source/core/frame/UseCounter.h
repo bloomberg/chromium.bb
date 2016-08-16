@@ -1277,6 +1277,7 @@ public:
         SVGViewElement = 1500,
         WebShareShare = 1501,
         AuxclickAddListenerCount = 1502,
+        HTMLCanvasElement = 1503,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

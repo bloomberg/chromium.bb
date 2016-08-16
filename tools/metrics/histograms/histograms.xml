@@ -78901,6 +78901,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1500" label="SVGViewElement"/>
   <int value="1501" label="WebShareShare"/>
   <int value="1502" label="AuxclickAddListenerCount"/>
+  <int value="1503" label="HTMLCanvasElement"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

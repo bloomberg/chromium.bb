@@ -41,6 +41,7 @@
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLSelectElement.h"
@@ -154,6 +155,7 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     , m_pendingRenderingModeSwitch(false)
 {
     CanvasMetrics::countCanvasContextUsage(CanvasMetrics::CanvasCreated);
+    UseCounter::count(document, UseCounter::HTMLCanvasElement);
 }
 
 DEFINE_NODE_FACTORY(HTMLCanvasElement)
