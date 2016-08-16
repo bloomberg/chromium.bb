@@ -5,6 +5,7 @@ import os
 import unittest
 
 from core import benchmark_finders
+from telemetry import decorators
 
 
 class TestGetBenchmarkNamesForFile(unittest.TestCase):
@@ -23,6 +24,7 @@ class TestGetBenchmarkNamesForFile(unittest.TestCase):
         ['test_benchmark_1', 'test_benchmark_2', 'test_benchmark_subclass_1',
          'test_benchmark_subclass_2'])
 
+  @decorators.Disabled('chromeos')  # http://crbug.com/637938
   def testListSimpleBenchmarksDefinedInOneFileComplex(self):
     self.assertEquals(
         benchmark_finders.GetBenchmarkNamesForFile(
