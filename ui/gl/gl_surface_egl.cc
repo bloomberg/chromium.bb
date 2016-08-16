@@ -748,12 +748,14 @@ bool NativeViewGLSurfaceEGL::IsOffscreen() {
 
 void NativeViewGLSurfaceEGL::UpdateSwapInterval() {
 #if defined(OS_WIN)
-  if (swap_interval_ != 0) {
+  if (!g_use_direct_composition && (swap_interval_ != 0)) {
     // This code is a simple way of enforcing that we only vsync if one surface
     // is swapping per frame. This provides single window cases a stable refresh
     // while allowing multi-window cases to not slow down due to multiple syncs
     // on a single thread. A better way to fix this problem would be to have
-    // each surface present on its own thread.
+    // each surface present on its own thread. This is unnecessary with
+    // DirectComposition because that doesn't block swaps, but instead blocks
+    // the first draw into a surface during the next frame.
 
     if (current_swap_generation_ == swap_generation_) {
       if (swaps_this_generation_ > 1)
