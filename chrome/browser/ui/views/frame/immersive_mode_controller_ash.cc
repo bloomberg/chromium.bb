@@ -266,8 +266,10 @@ void ImmersiveModeControllerAsh::Observe(
   // the shelf completely and prevent it from being revealed.
   bool in_tab_fullscreen = content::Source<FullscreenController>(source)->
       IsWindowFullscreenForTabOrPending();
-  ash::wm::GetWindowState(native_window_)->set_hide_shelf_when_fullscreen(
-      in_tab_fullscreen);
+  ash::wm::GetWindowState(native_window_)
+      ->set_shelf_mode_in_fullscreen(
+          in_tab_fullscreen ? ash::wm::WindowState::SHELF_HIDDEN
+                            : ash::wm::WindowState::SHELF_AUTO_HIDE_VISIBLE);
   ash::Shell::GetInstance()->UpdateShelfVisibility();
 
   if (tab_indicator_visibility_changed)

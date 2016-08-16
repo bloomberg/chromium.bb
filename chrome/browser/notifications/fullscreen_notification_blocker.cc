@@ -37,8 +37,9 @@ bool DoesFullscreenModeBlockNotifications() {
         controller->GetWindowForFullscreenMode();
     if (!fullscreen_window)
       return false;
-    return ash::wm::GetWindowState(fullscreen_window)->
-        hide_shelf_when_fullscreen();
+    return ash::wm::GetWindowState(fullscreen_window)
+               ->shelf_mode_in_fullscreen() ==
+           ash::wm::WindowState::SHELF_HIDDEN;
   }
 #endif
 

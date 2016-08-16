@@ -524,7 +524,8 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   // Put |widget| into fullscreen. Set the shelf to be auto hidden when |widget|
   // is fullscreen. (eg browser immersive fullscreen).
   widget->SetFullscreen(true);
-  wm::GetWindowState(window)->set_hide_shelf_when_fullscreen(false);
+  wm::GetWindowState(window)->set_shelf_mode_in_fullscreen(
+      ash::wm::WindowState::SHELF_AUTO_HIDE_VISIBLE);
   layout_manager->UpdateVisibilityState();
 
   gfx::Rect bounds_fullscreen = window->bounds();
@@ -562,9 +563,39 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ(bounds_fullscreen.ToString(), window->bounds().ToString());
 
+  // Set the shelf to be auto hide and invisible when |widget| is fullscreen.
+  // (used in arc immersive fullscreen)
+  wm::GetWindowState(window)->set_shelf_mode_in_fullscreen(
+      ash::wm::WindowState::SHELF_AUTO_HIDE_INVISIBLE);
+  layout_manager->UpdateVisibilityState();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_TRUE(widget->IsFullscreen());
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+
+  // Switch from invisible to visible autodhide.
+  wm::GetWindowState(window)->set_shelf_mode_in_fullscreen(
+      ash::wm::WindowState::SHELF_AUTO_HIDE_VISIBLE);
+  layout_manager->UpdateVisibilityState();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_TRUE(widget->IsFullscreen());
+  EXPECT_NE(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+
+  // Switch from invisible to visible autodhide.
+  wm::GetWindowState(window)->set_shelf_mode_in_fullscreen(
+      ash::wm::WindowState::SHELF_AUTO_HIDE_INVISIBLE);
+  layout_manager->UpdateVisibilityState();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_TRUE(widget->IsFullscreen());
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+            display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+
   // Set the shelf to be hidden when |widget| is fullscreen. (eg tab fullscreen
   // with or without immersive browser fullscreen).
-  wm::GetWindowState(window)->set_hide_shelf_when_fullscreen(true);
+  wm::GetWindowState(window)->set_shelf_mode_in_fullscreen(
+      ash::wm::WindowState::SHELF_HIDDEN);
+
   layout_manager->UpdateVisibilityState();
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
