@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "chrome/browser/installable/installable_logging.h"
 
 namespace banners {
 
@@ -16,6 +17,8 @@ const char kMinutesHistogram[] =
     "AppBanners.MinutesFromFirstVisitToBannerShown";
 const char kUserResponseHistogram[] = "AppBanners.UserResponse";
 const char kBeforeInstallEventHistogram[] = "AppBanners.BeforeInstallEvent";
+const char kInstallableStatusCodeHistogram[] =
+    "AppBanners.InstallableStatusCode";
 
 void TrackDismissEvent(int event) {
   DCHECK_LT(DISMISS_EVENT_MIN, event);
@@ -53,6 +56,12 @@ void TrackBeforeInstallEvent(int event) {
   DCHECK_LT(BEFORE_INSTALL_EVENT_MIN, event);
   DCHECK_LT(event, BEFORE_INSTALL_EVENT_MAX);
   UMA_HISTOGRAM_SPARSE_SLOWLY(kBeforeInstallEventHistogram, event);
+}
+
+void TrackInstallableStatusCode(InstallableStatusCode code) {
+  DCHECK_LE(NO_ERROR_DETECTED, code);
+  DCHECK_LT(code, MAX_ERROR_CODE);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kInstallableStatusCodeHistogram, code);
 }
 
 }  // namespace banners

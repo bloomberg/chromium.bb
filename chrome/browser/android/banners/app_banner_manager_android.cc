@@ -151,6 +151,7 @@ void AppBannerManagerAndroid::PerformInstallableCheck() {
       if (CanHandleNonWebApp(platform, application.url, id))
         return;
     }
+    Stop();
   }
 
   // No native app banner was requested. Continue checking for a web app banner.
@@ -159,7 +160,7 @@ void AppBannerManagerAndroid::PerformInstallableCheck() {
 
 void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   if (bitmap.drawsNothing()) {
-    ReportError(web_contents(), NO_ICON_AVAILABLE);
+    ReportStatus(web_contents(), NO_ICON_AVAILABLE);
     Stop();
   }
 
@@ -186,6 +187,9 @@ void AppBannerManagerAndroid::ShowBanner() {
     if (infobar) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
+      ReportStatus(contents, SHOWING_WEB_APP_BANNER);
+    } else {
+      ReportStatus(contents, FAILED_TO_CREATE_BANNER);
     }
   } else {
     std::unique_ptr<AppBannerInfoBarDelegateAndroid> delegate(
@@ -197,6 +201,9 @@ void AppBannerManagerAndroid::ShowBanner() {
     if (infobar) {
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
+      ReportStatus(contents, SHOWING_NATIVE_APP_BANNER);
+    } else {
+      ReportStatus(contents, FAILED_TO_CREATE_BANNER);
     }
   }
 
@@ -207,8 +214,8 @@ void AppBannerManagerAndroid::ShowBanner() {
 }
 
 bool AppBannerManagerAndroid::CanHandleNonWebApp(const std::string& platform,
-                                              const GURL& url,
-                                              const std::string& id) {
+                                                 const GURL& url,
+                                                 const std::string& id) {
   if (!CheckPlatformAndId(platform, id))
     return false;
 
@@ -221,7 +228,7 @@ bool AppBannerManagerAndroid::CanHandleNonWebApp(const std::string& platform,
 
   std::string id_from_app_url = ExtractQueryValueForName(url, kIdName);
   if (id_from_app_url.size() && id != id_from_app_url) {
-    ReportError(web_contents(), IDS_DO_NOT_MATCH);
+    ReportStatus(web_contents(), IDS_DO_NOT_MATCH);
     return false;
   }
 
@@ -253,11 +260,11 @@ void AppBannerManagerAndroid::CreateJavaBannerManager() {
 bool AppBannerManagerAndroid::CheckPlatformAndId(const std::string& platform,
                                                  const std::string& id) {
   if (platform != kPlayPlatform) {
-    ReportError(web_contents(), PLATFORM_NOT_SUPPORTED_ON_ANDROID);
+    ReportStatus(web_contents(), PLATFORM_NOT_SUPPORTED_ON_ANDROID);
     return false;
   }
   if (id.empty()) {
-    ReportError(web_contents(), NO_ID_SPECIFIED);
+    ReportStatus(web_contents(), NO_ID_SPECIFIED);
     return false;
   }
   return true;

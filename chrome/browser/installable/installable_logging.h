@@ -12,12 +12,11 @@ class WebContents;
 }
 
 // These values are a central reference for installability errors. The
-// InstallableManager will specify an InstallableErrorCode (or
-// NO_ERROR_DETECTED) in its result. Clients may also add their own error codes
-// to this list, and utilise LogErrorToConsole to write a message to the
-// devtools console.
-// TODO(dominickn) add an UMA metric for this enum.
-enum InstallableErrorCode {
+// InstallableManager will specify an InstallableStatusCode (or
+// NO_ERROR_DETECTED) in its result. Clients may also add their own error codes,
+// and utilise LogErrorToConsole to write a message to the devtools console.
+// This enum backs an UMA histogram, so it must be treated as append-only.
+enum InstallableStatusCode {
   NO_ERROR_DETECTED,
   RENDERER_EXITING,
   RENDERER_CANCELLED,
@@ -37,6 +36,14 @@ enum InstallableErrorCode {
   PLATFORM_NOT_SUPPORTED_ON_ANDROID,
   NO_ID_SPECIFIED,
   IDS_DO_NOT_MATCH,
+  ALREADY_INSTALLED,
+  INSUFFICIENT_ENGAGEMENT,
+  PACKAGE_NAME_OR_START_URL_EMPTY,
+  PREVIOUSLY_BLOCKED,
+  PREVIOUSLY_IGNORED,
+  SHOWING_NATIVE_APP_BANNER,
+  SHOWING_WEB_APP_BANNER,
+  FAILED_TO_CREATE_BANNER,
   MAX_ERROR_CODE,
 };
 
@@ -44,7 +51,7 @@ enum InstallableErrorCode {
 // devtools console attached to |web_contents|. Does nothing if |web_contents|
 // is nullptr.
 void LogErrorToConsole(content::WebContents* web_contents,
-                       InstallableErrorCode code,
+                       InstallableStatusCode code,
                        const std::string& param);
 
 #endif  // CHROME_BROWSER_INSTALLABLE_INSTALLABLE_LOGGING_H_

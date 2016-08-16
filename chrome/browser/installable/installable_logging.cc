@@ -17,7 +17,7 @@ const std::string& GetMessagePrefix() {
   return message_prefix;
 }
 
-// Error message strings corresponding to the InstallableErrorCode enum.
+// Error message strings corresponding to the InstallableStatusCode enum.
 static const char kRendererExitingMessage[] =
     "the page is in the process of being closed";
 static const char kRendererCancelledMessage[] =
@@ -63,7 +63,7 @@ static const char kIdsDoNotMatchMessage[] =
 }  // namespace
 
 void LogErrorToConsole(content::WebContents* web_contents,
-                       InstallableErrorCode code,
+                       InstallableStatusCode code,
                        const std::string& param) {
   if (!web_contents)
     return;
@@ -72,6 +72,15 @@ void LogErrorToConsole(content::WebContents* web_contents,
   const char* pattern = nullptr;
   switch (code) {
     case NO_ERROR_DETECTED:
+    // These codes are solely used for UMA reporting.
+    case ALREADY_INSTALLED:
+    case INSUFFICIENT_ENGAGEMENT:
+    case PACKAGE_NAME_OR_START_URL_EMPTY:
+    case PREVIOUSLY_BLOCKED:
+    case PREVIOUSLY_IGNORED:
+    case SHOWING_NATIVE_APP_BANNER:
+    case SHOWING_WEB_APP_BANNER:
+    case FAILED_TO_CREATE_BANNER:
     case MAX_ERROR_CODE:
       return;
     case RENDERER_EXITING:

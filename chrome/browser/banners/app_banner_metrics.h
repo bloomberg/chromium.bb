@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_BANNERS_APP_BANNER_METRICS_H_
 #define CHROME_BROWSER_BANNERS_APP_BANNER_METRICS_H_
 
+#include "chrome/browser/installable/installable_logging.h"
+
 namespace banners {
 
 // This enum backs a UMA histogram, so it should be treated as append-only.
@@ -78,6 +80,7 @@ extern const char kInstallEventHistogram[];
 extern const char kMinutesHistogram[];
 extern const char kUserResponseHistogram[];
 extern const char kBeforeInstallEventHistogram[];
+extern const char kInstallableStatusCodeHistogram[];
 
 void TrackDismissEvent(int event);
 void TrackDisplayEvent(int event);
@@ -85,6 +88,7 @@ void TrackInstallEvent(int event);
 void TrackMinutesFromFirstVisitToBannerShown(int minutes);
 void TrackUserResponse(int event);
 void TrackBeforeInstallEvent(int event);
+void TrackInstallableStatusCode(InstallableStatusCode code);
 
 };  // namespace banners
 

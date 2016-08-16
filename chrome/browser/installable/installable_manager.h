@@ -47,7 +47,7 @@ struct InstallableParams {
 // fields will be set to null, empty, or false.
 struct InstallableData {
   // NO_ERROR_DETECTED if there were no issues.
-  const InstallableErrorCode error_code;
+  const InstallableStatusCode error_code;
 
   // Empty if the site has no <link rel="manifest"> tag.
   const GURL& manifest_url;
@@ -121,13 +121,13 @@ class InstallableManager
 
   // Returns the error code associated with the resources requested in |params|,
   // or NO_ERROR_DETECTED if there is no error.
-  InstallableErrorCode GetErrorCode(const InstallableParams& params);
+  InstallableStatusCode GetErrorCode(const InstallableParams& params);
 
   // Gets/sets parts of particular properties. Exposed for testing.
-  InstallableErrorCode manifest_error() const;
-  InstallableErrorCode installable_error() const;
-  void set_installable_error(InstallableErrorCode error_code);
-  InstallableErrorCode icon_error(const IconParams& icon_params);
+  InstallableStatusCode manifest_error() const;
+  InstallableStatusCode installable_error() const;
+  void set_installable_error(InstallableStatusCode error_code);
+  InstallableStatusCode icon_error(const IconParams& icon_params);
   GURL& icon_url(const IconParams& icon_params);
   const SkBitmap* icon(const IconParams& icon);
 
@@ -148,7 +148,7 @@ class InstallableManager
   void SetManifestDependentTasksComplete();
 
   // Methods coordinating and dispatching work for the current task.
-  void RunCallback(const Task& task, InstallableErrorCode error);
+  void RunCallback(const Task& task, InstallableStatusCode error);
   void StartNextTask();
   void WorkOnTask();
 

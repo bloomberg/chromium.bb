@@ -103,7 +103,7 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns a string parameter for a devtools console message corresponding to
   // |code|. Returns the empty string if |code| requires no parameter.
-  std::string GetErrorParam(InstallableErrorCode code);
+  std::string GetStatusParam(InstallableStatusCode code);
 
   // Returns the ideal and minimum icon sizes required for being installable.
   virtual int GetIdealIconSizeInDp();
@@ -115,7 +115,7 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns true if |is_debug_mode_| is true or the
   // kBypassAppBannerEngagementChecks flag is set.
-  bool IsDebugMode() const;
+  virtual bool IsDebugMode() const;
 
   // Returns true if the webapp at |start_url| has already been installed.
   virtual bool IsWebAppInstalled(content::BrowserContext* browser_context,
@@ -142,11 +142,12 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Logs an error message corresponding to |code| to the devtools console
   // attached to |web_contents|. Does nothing if IsDebugMode() returns false.
-  void ReportError(content::WebContents* web_contents,
-                   InstallableErrorCode code);
+  void ReportStatus(content::WebContents* web_contents,
+                    InstallableStatusCode code);
 
-  // Stops the banner pipeline. Any callback currently running will terminate
-  // the next time they check |is_active_|.
+  // Stops the banner pipeline, preventing any outstanding callbacks from
+  // running and resetting the manager state. This method is virtual to allow
+  // tests to intercept it and verify correct behaviour.
   virtual void Stop();
 
   // Sends a message to the renderer that the page has met the requirements to
@@ -257,6 +258,9 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Whether we should be logging errors to the console for this request.
   bool is_debug_mode_;
+
+  // Whether the installable status has been logged for this run.
+  bool need_to_log_status_;
 
   // The concrete subclasses of this class are expected to have their lifetimes
   // scoped to the WebContents which they are observing. This allows us to use

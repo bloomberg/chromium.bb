@@ -700,6 +700,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="AppBanners.InstallableStatusCode"
+    enum="AppBannersInstallableStatusCode">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    App banners promote an application related to the current website, and are
+    requested specifically through the current page's HTML.  This stat tracks
+    the status code logged by the app banner system as it processes a site's
+    eligibility for an app banner. Every request for a banner will be logged in
+    a bucket of this histogram.
+  </summary>
+</histogram>
+
 <histogram name="AppBanners.InstallEvent" enum="AppBannersInstallEvent">
   <owner>dfalcantara@chromium.org</owner>
   <summary>
@@ -67718,6 +67730,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="10" label="Web app banner was requested by the site"/>
   <int value="11" label="Native app banner created"/>
   <int value="12" label="Web app banner created"/>
+</enum>
+
+<enum name="AppBannersInstallableStatusCode" type="int">
+  <int value="0" label="No error"/>
+  <int value="1" label="Renderer exiting"/>
+  <int value="2" label="Renderer called beforeinstallprompt.preventDefault()"/>
+  <int value="3" label="User navigated before the banner was shown"/>
+  <int value="4" label="Site not loaded in main frame"/>
+  <int value="5" label="Site not served from a secure origin"/>
+  <int value="6" label="Site did not provide a manifest link"/>
+  <int value="7" label="Manifest was empty or could not be parsed"/>
+  <int value="8" label="Manifest start_url not valid"/>
+  <int value="9" label="Manifest missing name or short_name"/>
+  <int value="10" label="Manifest display not supported"/>
+  <int value="11" label="Manifest missing suitable icon"/>
+  <int value="12" label="No matching service worker"/>
+  <int value="13" label="Could not select suitable icon to download"/>
+  <int value="14" label="Could not download selected icon"/>
+  <int value="15" label="Downloaded icon was empty"/>
+  <int value="16" label="Application platform not supported on Android"/>
+  <int value="17" label="No native app id specified"/>
+  <int value="18" label="URL and manifest specified different native app ids"/>
+  <int value="19" label="Site is already installed"/>
+  <int value="20" label="Insufficient engagement"/>
+  <int value="21" label="Package name or start_url empty"/>
+  <int value="22" label="Banner was previously blocked by the user"/>
+  <int value="23" label="Banner was previously ignored by the user"/>
+  <int value="24" label="Native app banner shown"/>
+  <int value="25" label="Web app banner shown"/>
+  <int value="26" label="Site eligible, but banner creation failed."/>
 </enum>
 
 <enum name="AppBannersInstallEvent" type="int">

@@ -38,7 +38,7 @@ class InstallableManagerUnitTest : public testing::Test {
     return manager_->IsManifestValidForWebApp(manifest);
   }
 
-  InstallableErrorCode GetErrorCode() {
+  InstallableStatusCode GetErrorCode() {
     return manager_->installable_error();
   }
 

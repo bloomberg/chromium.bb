@@ -94,8 +94,8 @@ class AppBannerManagerAndroid
   // true, only a native app banner may be shown, and the web app banner flow
   // will not be run.
   bool CanHandleNonWebApp(const std::string& platform,
-                       const GURL& url,
-                       const std::string& id);
+                          const GURL& url,
+                          const std::string& id);
 
   // The Java-side AppBannerManager.
   base::android::ScopedJavaGlobalRef<jobject> java_banner_manager_;

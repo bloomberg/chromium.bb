@@ -58,7 +58,7 @@ class CallbackTester {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
   }
 
-  InstallableErrorCode error_code() const { return error_code_; }
+  InstallableStatusCode error_code() const { return error_code_; }
   const GURL& manifest_url() const { return manifest_url_; }
   const content::Manifest& manifest() const { return manifest_; }
   const GURL& icon_url() const { return icon_url_; }
@@ -67,7 +67,7 @@ class CallbackTester {
 
  private:
   base::Closure quit_closure_;
-  InstallableErrorCode error_code_;
+  InstallableStatusCode error_code_;
   GURL manifest_url_;
   content::Manifest manifest_;
   GURL icon_url_;
@@ -121,7 +121,7 @@ class NestedCallbackTester {
   InstallableManager* manager_;
   InstallableParams params_;
   base::Closure quit_closure_;
-  InstallableErrorCode error_code_;
+  InstallableStatusCode error_code_;
   GURL manifest_url_;
   content::Manifest manifest_;
   GURL icon_url_;

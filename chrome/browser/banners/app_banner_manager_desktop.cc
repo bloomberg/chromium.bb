@@ -89,6 +89,9 @@ void AppBannerManagerDesktop::ShowBanner() {
   if (infobar) {
     RecordDidShowBanner("AppBanner.WebApp.Shown");
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
+    ReportStatus(contents, SHOWING_WEB_APP_BANNER);
+  } else {
+    ReportStatus(contents, FAILED_TO_CREATE_BANNER);
   }
 }
 

@@ -55,14 +55,14 @@ bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InstallableManager);
 
 struct InstallableManager::ManifestProperty {
-  InstallableErrorCode error = NO_ERROR_DETECTED;
+  InstallableStatusCode error = NO_ERROR_DETECTED;
   GURL url;
   content::Manifest manifest;
   bool fetched = false;
 };
 
 struct InstallableManager::InstallableProperty {
-  InstallableErrorCode error = NO_ERROR_DETECTED;
+  InstallableStatusCode error = NO_ERROR_DETECTED;
   bool installable = false;
   bool fetched = false;
 };
@@ -73,7 +73,7 @@ struct InstallableManager::IconProperty {
   IconProperty(IconProperty&& other) = default;
   IconProperty& operator=(IconProperty&& other) = default;
 
-  InstallableErrorCode error = NO_ERROR_DETECTED;
+  InstallableStatusCode error = NO_ERROR_DETECTED;
   GURL url;
   std::unique_ptr<SkBitmap> icon;
   bool fetched;
@@ -157,7 +157,7 @@ InstallableManager::IconProperty& InstallableManager::GetIcon(
   return icons_[{params.ideal_icon_size_in_dp, params.minimum_icon_size_in_dp}];
 }
 
-InstallableErrorCode InstallableManager::GetErrorCode(
+InstallableStatusCode InstallableManager::GetErrorCode(
     const InstallableParams& params) {
   if (manifest_->error != NO_ERROR_DETECTED)
     return manifest_->error;
@@ -174,20 +174,20 @@ InstallableErrorCode InstallableManager::GetErrorCode(
   return NO_ERROR_DETECTED;
 }
 
-InstallableErrorCode InstallableManager::manifest_error() const {
+InstallableStatusCode InstallableManager::manifest_error() const {
   return manifest_->error;
 }
 
-InstallableErrorCode InstallableManager::installable_error() const {
+InstallableStatusCode InstallableManager::installable_error() const {
   return installable_->error;
 }
 
 void InstallableManager::set_installable_error(
-    InstallableErrorCode error_code) {
+    InstallableStatusCode error_code) {
   installable_->error = error_code;
 }
 
-InstallableErrorCode InstallableManager::icon_error(
+InstallableStatusCode InstallableManager::icon_error(
     const InstallableManager::IconParams& icon_params) {
   return icons_[icon_params].error;
 }
@@ -251,7 +251,7 @@ void InstallableManager::StartNextTask() {
 }
 
 void InstallableManager::RunCallback(const Task& task,
-                                     InstallableErrorCode code) {
+                                     InstallableStatusCode code) {
   const InstallableParams& params = task.first;
   IconProperty& icon = GetIcon(params);
   InstallableData data = {
@@ -270,7 +270,7 @@ void InstallableManager::WorkOnTask() {
   const Task& task = tasks_[0];
   const InstallableParams& params = task.first;
 
-  InstallableErrorCode code = GetErrorCode(params);
+  InstallableStatusCode code = GetErrorCode(params);
   if (code != NO_ERROR_DETECTED || IsComplete(params)) {
     RunCallback(task, code);
     tasks_.erase(tasks_.begin());
