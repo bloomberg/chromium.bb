@@ -1551,6 +1551,49 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequestSlowResponse) {
             promised_stream_->GetTotalReceivedBytes());
 }
 
+// Verify fix for crbug.com/637349
+TEST_P(QuicHttpStreamTest, ServerPushCancelHttpStreamBeforeResponse) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  Initialize();
+
+  // Initialize the first stream, for receiving the promise on.
+  request_.method = "GET";
+  request_.url = GURL("http://www.example.org/");
+
+  EXPECT_EQ(OK,
+            stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                      net_log_.bound(), callback_.callback()));
+
+  // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
+  // packet, but does it matter?
+  ReceivePromise(promise_id_);
+  EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
+
+  request_.url = GURL(promise_url_);
+
+  // Make the second stream that will exercise the first step of the
+  // server push rendezvous mechanism.
+  EXPECT_EQ(OK, promised_stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                                   net_log_.bound(),
+                                                   callback_.callback()));
+
+  // Now sending a matching request will rendezvous with the promised
+  // stream, but pending secondary validation.
+  EXPECT_EQ(ERR_IO_PENDING, promised_stream_->SendRequest(
+                                headers_, &response_, callback_.callback()));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Cause of FinalValidation() crash as per bug.
+  promised_stream_.reset();
+
+  // Receive the promised response headers.
+  response_headers_ = promised_response_.Clone();
+  size_t spdy_response_headers_frame_length;
+  ProcessPacket(InnerConstructResponseHeadersPacket(
+      1, promise_id_, false, &spdy_response_headers_frame_length));
+}
+
 TEST_P(QuicHttpStreamTest, ServerPushCrossOriginOK) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   Initialize();

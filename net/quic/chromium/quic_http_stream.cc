@@ -358,10 +358,10 @@ void QuicHttpStream::Close(bool not_reusable) {
   if (stream_) {
     stream_->SetDelegate(nullptr);
     stream_->Reset(QUIC_STREAM_CANCELLED);
-    ResetStream();
     response_status_ = was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED
                                                 : ERR_QUIC_HANDSHAKE_FAILED;
   }
+  ResetStream();
 }
 
 HttpStream* QuicHttpStream::RenewStreamForAuth() {
