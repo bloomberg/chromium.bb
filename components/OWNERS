@@ -18,6 +18,7 @@ per-file bookmarks.gypi=file://components/bookmarks/OWNERS
 
 per-file browser_sync.gypi=file://components/browser_sync/OWNERS
 
+per-file browsing_data_strings.grdp=file://components/browsing_data/OWNERS
 per-file browsing_data.gypi=file://components/browsing_data/OWNERS
 
 per-file bubble.gypi=file://components/bubble/OWNERS

@@ -303,7 +303,7 @@ void ClearBrowsingDataHandler::UpdateCounterText(
       "cr.webUIListenerCallback",
       base::StringValue("update-counter-text"),
       base::StringValue(result->source()->GetPrefName()),
-      base::StringValue(GetCounterTextFromResult(result.get())));
+      base::StringValue(GetChromeCounterTextFromResult(result.get())));
 }
 
 }  // namespace settings

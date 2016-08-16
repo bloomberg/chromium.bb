@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
 
 namespace browsing_data {
 
@@ -41,6 +42,12 @@ enum TimePeriod {
 
 // Calculate the begin time for the deletion range specified by |time_period|.
 base::Time CalculateBeginDeleteTime(TimePeriod time_period);
+
+// Constructs the text to be displayed by a counter from the given |result|.
+// Currently this can only be used for counters for which the Result is defined
+// in components/browsing_data/core/counters.
+base::string16 GetCounterTextFromResult(
+    const browsing_data::BrowsingDataCounter::Result* result);
 
 }  // namespace browsing_data
 

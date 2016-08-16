@@ -5,4 +5,6 @@ include_rules = [
   "+components/prefs",
   "+components/sync/driver",
   "+components/webdata/common",
+  "+grit",
+  "+ui/base",
 ]

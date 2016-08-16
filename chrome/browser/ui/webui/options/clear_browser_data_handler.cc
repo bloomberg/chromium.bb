@@ -383,7 +383,7 @@ void ClearBrowserDataHandler::UpdateCounterText(
   web_ui()->CallJavascriptFunctionUnsafe(
       "ClearBrowserDataOverlay.updateCounter",
       base::StringValue(result->source()->GetPrefName()),
-      base::StringValue(GetCounterTextFromResult(result.get())));
+      base::StringValue(GetChromeCounterTextFromResult(result.get())));
 }
 
 void ClearBrowserDataHandler::OnStateChanged() {

@@ -28,8 +28,10 @@ static_library("core") {
     "//components/history/core/browser",
     "//components/password_manager/core/browser",
     "//components/prefs:prefs",
+    "//components/strings",
     "//components/sync",
     "//components/webdata/common",
+    "//ui/base",
   ]
 }
 
@@ -40,4 +42,18 @@ if (is_android) {
       "browsing_data_utils.h",
     ]
   }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "browsing_data_utils_unittest.cc",
+  ]
+
+  deps = [
+    ":core",
+    "//base",
+    "//components/autofill/core/browser:browser",
+    "//testing/gtest",
+  ]
 }

@@ -15,7 +15,7 @@ class Profile;
 bool AreCountersEnabled();
 
 // Constructs the text to be displayed by a counter from the given |result|.
-base::string16 GetCounterTextFromResult(
+base::string16 GetChromeCounterTextFromResult(
     const browsing_data::BrowsingDataCounter::Result* result);
 
 // Copies the name of the deletion preference corresponding to the given
