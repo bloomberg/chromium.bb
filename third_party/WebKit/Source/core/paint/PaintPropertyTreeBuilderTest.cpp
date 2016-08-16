@@ -882,7 +882,7 @@ TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant)
         "    left: 654px;"
         "    top: 321px;"
         "    width: 10px;"
-        "    heght: 20px"
+        "    height: 20px"
         "  }"
         "</style>"
         "<div id='clip'><div id='fixed'></div></div>"
