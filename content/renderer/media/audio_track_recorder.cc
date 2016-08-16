@@ -295,7 +295,6 @@ AudioTrackRecorder::AudioTrackRecorder(
 
   // Start the |encoder_thread_|. From this point on, |encoder_| should work
   // only on |encoder_thread_|, as enforced by DCHECKs.
-  DCHECK(!encoder_thread_.IsRunning());
   encoder_thread_.Start();
 
   // Connect the source provider to the track as a sink.
@@ -308,7 +307,6 @@ AudioTrackRecorder::~AudioTrackRecorder() {
 }
 
 void AudioTrackRecorder::OnSetFormat(const media::AudioParameters& params) {
-  DCHECK(encoder_thread_.IsRunning());
   // If the source is restarted, might have changed to another capture thread.
   capture_thread_checker_.DetachFromThread();
   DCHECK(capture_thread_checker_.CalledOnValidThread());
@@ -319,7 +317,6 @@ void AudioTrackRecorder::OnSetFormat(const media::AudioParameters& params) {
 
 void AudioTrackRecorder::OnData(const media::AudioBus& audio_bus,
                                 base::TimeTicks capture_time) {
-  DCHECK(encoder_thread_.IsRunning());
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   DCHECK(!capture_time.is_null());
 
