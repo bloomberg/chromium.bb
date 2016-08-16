@@ -13,6 +13,9 @@
           <exclude name="**/HttpUrl*.java"/>
           <exclude name="**/ResponseTooLargeException.java"/>
           <exclude name="**/UrlRequestContextConfig.java"/>
+          <!-- This file is removed but it still appears in the checkout of one bot. See crbug.com/637887 -->
+          <!-- TODO(xunjieli): Remove this. -->
+          <exclude name="**/RequestFinishedListener.java"/>
         </fileset>
         <doclet name="com.google.doclava.Doclava">
           <param name="-title" /><param name="Cronet API"/>
