@@ -33,6 +33,8 @@ class TestMenuDelegate : public MenuDelegate {
   int OnPerformDrop(MenuItemView* menu,
                     DropPosition position,
                     const ui::DropTargetEvent& event) override;
+  int GetDragOperations(MenuItemView* sender) override;
+  void WriteDragData(MenuItemView* sender, OSExchangeData* data) override;
 
  private:
   // ID of last executed command.

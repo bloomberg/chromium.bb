@@ -38,6 +38,13 @@ int TestMenuDelegate::OnPerformDrop(MenuItemView* menu,
   return ui::DragDropTypes::DRAG_COPY;
 }
 
+int TestMenuDelegate::GetDragOperations(MenuItemView* sender) {
+  return ui::DragDropTypes::DRAG_COPY;
+}
+
+void TestMenuDelegate::WriteDragData(MenuItemView* sender,
+                                     OSExchangeData* data) {}
+
 // MenuControllerTestApi ------------------------------------------------------
 
 MenuControllerTestApi::MenuControllerTestApi() {}

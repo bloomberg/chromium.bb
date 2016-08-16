@@ -33,6 +33,7 @@
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/menu/menu_pre_target_handler.h"
+#include "ui/wm/public/drag_drop_client.h"
 #endif
 
 #if defined(USE_X11)
@@ -187,6 +188,61 @@ void TestMenuMessageLoop::QuitNow() {
   original_->QuitNow();
 }
 
+#if defined(USE_AURA)
+// A DragDropClient which does not trigger a nested message loop. Instead a
+// callback is triggered during StartDragAndDrop in order to allow testing.
+class TestDragDropClient : public aura::client::DragDropClient {
+ public:
+  explicit TestDragDropClient(const base::Closure& callback)
+      : start_drag_and_drop_callback_(callback), drag_in_progress_(false) {}
+  ~TestDragDropClient() override {}
+
+  // aura::client::DragDropClient:
+  int StartDragAndDrop(const ui::OSExchangeData& data,
+                       aura::Window* root_window,
+                       aura::Window* source_window,
+                       const gfx::Point& screen_location,
+                       int operation,
+                       ui::DragDropTypes::DragEventSource source) override;
+  void DragUpdate(aura::Window* target, const ui::LocatedEvent& event) override;
+  void Drop(aura::Window* target, const ui::LocatedEvent& event) override;
+  void DragCancel() override;
+  bool IsDragDropInProgress() override;
+
+ private:
+  base::Closure start_drag_and_drop_callback_;
+  bool drag_in_progress_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDragDropClient);
+};
+
+int TestDragDropClient::StartDragAndDrop(
+    const ui::OSExchangeData& data,
+    aura::Window* root_window,
+    aura::Window* source_window,
+    const gfx::Point& screen_location,
+    int operation,
+    ui::DragDropTypes::DragEventSource source) {
+  drag_in_progress_ = true;
+  start_drag_and_drop_callback_.Run();
+  return 0;
+}
+
+void TestDragDropClient::DragUpdate(aura::Window* target,
+                                    const ui::LocatedEvent& event) {}
+void TestDragDropClient::Drop(aura::Window* target,
+                              const ui::LocatedEvent& event) {
+  drag_in_progress_ = false;
+}
+void TestDragDropClient::DragCancel() {
+  drag_in_progress_ = false;
+}
+bool TestDragDropClient::IsDragDropInProgress() {
+  return drag_in_progress_;
+}
+
+#endif  // defined(USE_AURA)
+
 }  // namespace
 
 class TestMenuItemViewShown : public MenuItemView {
@@ -319,6 +375,17 @@ class MenuControllerTest : public ViewsTestBase {
     test_message_loop_->QuitNow();
   }
 
+  // Tests destroying the active |menu_controller_| and replacing it with a new
+  // active instance.
+  void TestMenuControllerReplacementDuringDrag() {
+    DestroyMenuController();
+    menu_item()->GetSubmenu()->Close();
+    menu_controller_ =
+        new MenuController(true, menu_controller_delegate_.get());
+    menu_controller_->owner_ = owner_.get();
+    menu_controller_->showing_ = true;
+  }
+
  protected:
   void SetPendingStateItem(MenuItemView* item) {
     menu_controller_->pending_state_.item = item;
@@ -429,6 +496,15 @@ class MenuControllerTest : public ViewsTestBase {
     test_message_loop_ =
         new TestMenuMessageLoop(std::move(menu_controller_->message_loop_));
     menu_controller_->message_loop_.reset(test_message_loop_);
+  }
+
+  // Causes the |menu_controller_| to begin dragging. Use TestDragDropClient to
+  // avoid nesting message loops.
+  void StartDrag() {
+    const gfx::Point location;
+    menu_controller_->state_.item = menu_item()->GetSubmenu()->GetMenuItemAt(0);
+    menu_controller_->StartDrag(
+        menu_item()->GetSubmenu()->GetMenuItemAt(0)->CreateSubmenu(), location);
   }
 
   Widget* owner() { return owner_.get(); }
@@ -1316,6 +1392,19 @@ TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
       controller->Run(nullptr, nullptr, menu_item(), gfx::Rect(),
                       MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
   EXPECT_EQ(run_result, nullptr);
+}
+
+// Tests that if a MenuController is destroying during drag/drop, and another
+// MenuController becomes active, that the exiting of drag does not cause a
+// crash.
+TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
+  TestDragDropClient drag_drop_client(
+      base::Bind(&MenuControllerTest::TestMenuControllerReplacementDuringDrag,
+                 base::Unretained(this)));
+  aura::client::SetDragDropClient(owner()->GetNativeWindow()->GetRootWindow(),
+                                  &drag_drop_client);
+  AddButtonMenuItems();
+  StartDrag();
 }
 
 #endif  // defined(USE_AURA)

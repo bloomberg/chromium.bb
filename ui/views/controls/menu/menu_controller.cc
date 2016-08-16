@@ -1235,7 +1235,7 @@ void MenuController::StartDrag(SubmenuView* source,
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   // MenuController may have been deleted if |async_run_| so check for an active
   // instance before accessing member variables.
-  if (GetActiveInstance())
+  if (GetActiveInstance() == this)
     did_initiate_drag_ = false;
 }
 
