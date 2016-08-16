@@ -38,6 +38,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/events/ErrorEvent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
@@ -75,6 +76,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/observer/ResizeObserverController.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -2518,6 +2520,36 @@ void FrameView::scheduleVisualUpdateForPaintInvalidationIfNeeded()
     // Otherwise the paint invalidation will be handled in paint invalidation phase of this cycle.
 }
 
+void FrameView::notifyResizeObservers()
+{
+    // Controller exists only if ResizeObserver was created.
+    if (!frame().document()->resizeObserverController())
+        return;
+
+    ResizeObserverController& resizeController = m_frame->document()->ensureResizeObserverController();
+
+    DCHECK(lifecycle().state() >= DocumentLifecycle::LayoutClean);
+
+    size_t minDepth = 0;
+    for (minDepth = resizeController.gatherObservations(0);
+        minDepth != ResizeObserverController::kDepthBottom;
+        minDepth = resizeController.gatherObservations(minDepth)) {
+        resizeController.deliverObservations();
+        frame().document()->updateStyleAndLayout();
+    }
+
+    if (resizeController.skippedObservations()) {
+        resizeController.clearObservations();
+        ErrorEvent * error = ErrorEvent::create("ResizeObserver loop limit exceeded", SourceLocation::capture(m_frame->document()), nullptr);
+        m_frame->document()->reportException(error, NotSharableCrossOrigin);
+        // Ensure notifications will get delivered in next cycle.
+        if (FrameView* frameView = m_frame->view())
+            frameView->scheduleAnimation();
+    }
+
+    DCHECK(!layoutView()->needsLayout());
+}
+
 // TODO(leviw): We don't assert lifecycle information from documents in child PluginViews.
 void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState targetState)
 {
@@ -2547,6 +2579,12 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
     if (targetState == DocumentLifecycle::LayoutClean) {
         updateViewportIntersectionsForSubtree(targetState);
         return;
+    }
+
+    if (targetState == DocumentLifecycle::PaintClean) {
+        forAllNonThrottledFrameViews([](FrameView& frameView) {
+            frameView.notifyResizeObservers();
+        });
     }
 
     if (LayoutViewItem view = layoutViewItem()) {

@@ -117,6 +117,7 @@
 #include "core/layout/api/LayoutBoxItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/observer/ResizeObservation.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -1638,6 +1639,8 @@ void Element::detachLayoutTree(const AttachContext& context)
     if (svgFilterNeedsLayerUpdate())
         document().unscheduleSVGFilterLayerUpdateHack(*this);
 
+    setNeedsResizeObserverUpdate();
+
     DCHECK(needsAttach());
 }
 
@@ -2691,6 +2694,14 @@ HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>* Element::resizeO
 HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>& Element::ensureResizeObserverData()
 {
     return ensureElementRareData().ensureResizeObserverData();
+}
+
+void Element::setNeedsResizeObserverUpdate()
+{
+    if (auto* data = resizeObserverData()) {
+        for (auto& observation : data->values())
+            observation->elementSizeChanged();
+    }
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()

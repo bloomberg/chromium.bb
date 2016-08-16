@@ -72,6 +72,8 @@ void LayoutSVGImage::updateBoundingBox()
         lengthContext.valueForLength(styleRef().width(), styleRef(), SVGLengthMode::Width),
         lengthContext.valueForLength(styleRef().height(), styleRef(), SVGLengthMode::Height));
     m_needsBoundariesUpdate |= oldBoundaries != m_objectBoundingBox;
+    if (element())
+        element()->setNeedsResizeObserverUpdate();
 }
 
 void LayoutSVGImage::layout()
