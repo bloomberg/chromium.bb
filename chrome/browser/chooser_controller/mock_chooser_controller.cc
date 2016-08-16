@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
@@ -87,22 +89,32 @@ void MockChooserController::OnDiscoveryStateChanged(
   }
 }
 
-void MockChooserController::OptionAdded(const base::string16 option_name) {
+void MockChooserController::OptionAdded(const base::string16& option_name) {
   option_names_.push_back(option_name);
   if (view())
     view()->OnOptionAdded(option_names_.size() - 1);
 }
 
-void MockChooserController::OptionRemoved(const base::string16 option_name) {
-  for (auto it = option_names_.begin(); it != option_names_.end(); ++it) {
-    if (*it == option_name) {
-      size_t index = it - option_names_.begin();
-      option_names_.erase(it);
-      if (view())
-        view()->OnOptionRemoved(index);
-      return;
-    }
+void MockChooserController::OptionRemoved(const base::string16& option_name) {
+  auto it = std::find(option_names_.begin(), option_names_.end(), option_name);
+  if (it != option_names_.end()) {
+    size_t index = std::distance(option_names_.begin(), it);
+    option_names_.erase(it);
+    if (view())
+      view()->OnOptionRemoved(index);
   }
+}
+
+void MockChooserController::OptionUpdated(
+    const base::string16& previous_option_name,
+    const base::string16& new_option_name) {
+  auto it = std::find(option_names_.begin(), option_names_.end(),
+                      previous_option_name);
+  DCHECK(it != option_names_.end());
+  size_t index = std::distance(option_names_.begin(), it);
+  *it = new_option_name;
+  if (view())
+    view()->OnOptionUpdated(index);
 }
 
 void MockChooserController::ClearAllOptions() {

@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 #import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
@@ -160,6 +161,26 @@ TEST_F(ChooserDialogCocoaControllerTest, RemoveOption) {
   EXPECT_EQ(-1, table_view_.selectedRow);
 }
 
+TEST_F(ChooserDialogCocoaControllerTest, UpdateOption) {
+  CreateChooserDialog();
+
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+
+  chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
+                                     base::ASCIIToUTF16("d"));
+
+  EXPECT_EQ(3, table_view_.numberOfRows);
+  EXPECT_EQ(1, table_view_.numberOfColumns);
+  ASSERT_TRUE(table_view_.enabled);
+  EXPECT_EQ(-1, table_view_.selectedRow);
+
+  NSCell* cell = [table_view_ preparedCellAtColumn:0 row:1];
+  EXPECT_EQ(base::ASCIIToUTF16("d"),
+            base::SysNSStringToUTF16([cell stringValue]));
+}
+
 TEST_F(ChooserDialogCocoaControllerTest, AddAndRemoveOption) {
   CreateChooserDialog();
 
@@ -177,6 +198,32 @@ TEST_F(ChooserDialogCocoaControllerTest, AddAndRemoveOption) {
   EXPECT_EQ(2, table_view_.numberOfRows);
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("c"));
   EXPECT_EQ(1, table_view_.numberOfRows);
+}
+
+TEST_F(ChooserDialogCocoaControllerTest, UpdateAndRemoveTheUpdatedOption) {
+  CreateChooserDialog();
+
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+
+  chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
+                                     base::ASCIIToUTF16("d"));
+
+  chooser_controller_->OptionRemoved(base::ASCIIToUTF16("d"));
+
+  EXPECT_EQ(2, table_view_.numberOfRows);
+  EXPECT_EQ(1, table_view_.numberOfColumns);
+  ASSERT_TRUE(table_view_.enabled);
+  EXPECT_EQ(-1, table_view_.selectedRow);
+
+  NSCell* cell_a = [table_view_ preparedCellAtColumn:0 row:0];
+  EXPECT_EQ(base::ASCIIToUTF16("a"),
+            base::SysNSStringToUTF16([cell_a stringValue]));
+
+  NSCell* cell_c = [table_view_ preparedCellAtColumn:0 row:1];
+  EXPECT_EQ(base::ASCIIToUTF16("c"),
+            base::SysNSStringToUTF16([cell_c stringValue]));
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, SelectAndDeselectAnOption) {
@@ -286,6 +333,30 @@ TEST_F(ChooserDialogCocoaControllerTest,
   EXPECT_EQ(-1, table_view_.selectedRow);
   // Since no option selected, the "Connect" button should be disabled.
   ASSERT_FALSE(connect_button_.enabled);
+}
+
+TEST_F(ChooserDialogCocoaControllerTest,
+       SelectAnOptionAndUpdateTheSelectedOption) {
+  CreateChooserDialog();
+
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+
+  // Select option 1.
+  [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
+           byExtendingSelection:NO];
+
+  // Update option 1.
+  chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
+                                     base::ASCIIToUTF16("d"));
+
+  EXPECT_EQ(1, table_view_.selectedRow);
+  ASSERT_TRUE(connect_button_.enabled);
+
+  NSCell* cell = [table_view_ preparedCellAtColumn:0 row:1];
+  EXPECT_EQ(base::ASCIIToUTF16("d"),
+            base::SysNSStringToUTF16([cell stringValue]));
 }
 
 TEST_F(ChooserDialogCocoaControllerTest,

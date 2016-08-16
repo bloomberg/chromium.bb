@@ -46,6 +46,9 @@ class ChooserController {
     // since the options have already been updated.
     virtual void OnOptionRemoved(size_t index) = 0;
 
+    // Called when the option at |index| has been updated.
+    virtual void OnOptionUpdated(size_t index) = 0;
+
     // Called when the device adapter is turned on or off.
     virtual void OnAdapterEnabledChanged(bool enabled) = 0;
 

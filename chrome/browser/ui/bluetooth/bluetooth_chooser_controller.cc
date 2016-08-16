@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
@@ -58,8 +60,8 @@ base::string16 BluetoothChooserController::GetOption(size_t index) const {
   const std::string& device_id = device_ids_[index];
   const auto& device_name_it = device_id_to_name_map_.find(device_id);
   DCHECK(device_name_it != device_id_to_name_map_.end());
-  const auto& it = device_name_map_.find(device_name_it->second);
-  DCHECK(it != device_name_map_.end());
+  const auto& it = device_name_counts_.find(device_name_it->second);
+  DCHECK(it != device_name_counts_.end());
   return it->second == 1
              ? device_name_it->second
              : l10n_util::GetStringFUTF16(
@@ -170,17 +172,36 @@ void BluetoothChooserController::AddOrUpdateDevice(
     bool is_gatt_connected,
     bool is_paired,
     const int8_t* rssi) {
-  auto result = device_id_to_name_map_.insert({device_id, device_name});
-  if (!result.second) {
-    // TODO(ortuno): Update device's information.
-    // https://crbug.com/634366 Update name
+  auto name_it = device_id_to_name_map_.find(device_id);
+  if (name_it != device_id_to_name_map_.end()) {
+    if (should_update_name) {
+      base::string16 previous_device_name = name_it->second;
+      name_it->second = device_name;
+
+      const auto& it = device_name_counts_.find(previous_device_name);
+      DCHECK(it != device_name_counts_.end());
+      DCHECK_GT(it->second, 0);
+
+      if (--(it->second) == 0)
+        device_name_counts_.erase(it);
+
+      ++device_name_counts_[device_name];
+    }
+
+    size_t index = std::distance(
+        device_ids_.begin(),
+        std::find(device_ids_.begin(), device_ids_.end(), device_id));
+    DCHECK_NE(device_ids_.size(), index);
     // http://crbug.com/543466 Update connection and paired status
     // http://crbug.com/629689 Update RSSI.
+    if (view())
+      view()->OnOptionUpdated(index);
     return;
   }
 
   device_ids_.push_back(device_id);
-  ++device_name_map_[device_name];
+  device_id_to_name_map_.insert({device_id, device_name});
+  ++device_name_counts_[device_name];
   if (view())
     view()->OnOptionAdded(device_ids_.size() - 1);
 }
@@ -199,12 +220,12 @@ void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
 
     device_ids_.erase(device_ids_.begin() + index);
 
-    const auto& it = device_name_map_.find(name_it->second);
-    DCHECK(it != device_name_map_.end());
+    const auto& it = device_name_counts_.find(name_it->second);
+    DCHECK(it != device_name_counts_.end());
     DCHECK_GT(it->second, 0);
 
     if (--(it->second) == 0)
-      device_name_map_.erase(it);
+      device_name_counts_.erase(it);
 
     device_id_to_name_map_.erase(name_it);
 
@@ -221,5 +242,5 @@ void BluetoothChooserController::ResetEventHandler() {
 void BluetoothChooserController::ClearAllDevices() {
   device_ids_.clear();
   device_id_to_name_map_.clear();
-  device_name_map_.clear();
+  device_name_counts_.clear();
 }

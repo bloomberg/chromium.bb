@@ -341,9 +341,8 @@ void BluetoothDeviceChooserController::AddFilteredDevice(
     const device::BluetoothDevice& device) {
   if (chooser_.get() && MatchesFilters(device, options_->filters)) {
     chooser_->AddOrUpdateDevice(
-        device.GetAddress(),
-        // TODO(https://crbug.com/634366): Update device's name when necessary.
-        false /* should_update_name */, device.GetNameForDisplay(),
+        device.GetAddress(), !!device.GetName() /* should_update_name */,
+        device.GetNameForDisplay(),
         // TODO(http://crbug.com/543466): Show connection and paired status.
         false /* is_gatt_connected */, false /* is_paired */,
         // TODO(http://crbug.com/629689): Add signal strength indicator.

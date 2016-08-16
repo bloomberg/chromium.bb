@@ -47,6 +47,7 @@ class ChooserContentView : public views::View,
   void OnOptionsInitialized() override;
   void OnOptionAdded(size_t index) override;
   void OnOptionRemoved(size_t index) override;
+  void OnOptionUpdated(size_t index) override;
   void OnAdapterEnabledChanged(bool enabled) override;
   void OnRefreshStateChanged(bool refreshing) override;
 

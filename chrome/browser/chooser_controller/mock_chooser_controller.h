@@ -33,8 +33,10 @@ class MockChooserController : public ChooserController {
       content::BluetoothChooser::AdapterPresence presence);
   void OnDiscoveryStateChanged(content::BluetoothChooser::DiscoveryState state);
 
-  void OptionAdded(const base::string16 option_name);
-  void OptionRemoved(const base::string16 option_name);
+  void OptionAdded(const base::string16& option_name);
+  void OptionRemoved(const base::string16& option_name);
+  void OptionUpdated(const base::string16& previous_option_name,
+                     const base::string16& new_option_name);
 
  private:
   void ClearAllOptions();

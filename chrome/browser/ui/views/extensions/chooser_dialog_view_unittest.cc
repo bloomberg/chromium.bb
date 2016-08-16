@@ -172,6 +172,30 @@ TEST_F(ChooserDialogViewTest, SelectAnOptionAndRemoveTheSelectedOption) {
   EXPECT_TRUE(cancel_button_->enabled());
 }
 
+TEST_F(ChooserDialogViewTest, SelectAnOptionAndUpdateTheSelectedOption) {
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  EXPECT_FALSE(ok_button_->enabled());
+  EXPECT_TRUE(cancel_button_->enabled());
+
+  // Select option 1.
+  table_view_->Select(1);
+  EXPECT_TRUE(ok_button_->enabled());
+  EXPECT_TRUE(cancel_button_->enabled());
+
+  // Update option 1.
+  mock_chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
+                                          base::ASCIIToUTF16("d"));
+  EXPECT_TRUE(ok_button_->enabled());
+  EXPECT_TRUE(cancel_button_->enabled());
+
+  // Remove option 1.
+  mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("d"));
+  EXPECT_FALSE(ok_button_->enabled());
+  EXPECT_TRUE(cancel_button_->enabled());
+}
+
 TEST_F(ChooserDialogViewTest,
        AddAnOptionAndSelectItAndRemoveTheSelectedOption) {
   mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));

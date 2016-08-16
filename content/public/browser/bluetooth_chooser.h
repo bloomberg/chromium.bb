@@ -69,8 +69,13 @@ class CONTENT_EXPORT BluetoothChooser {
   virtual void ShowDiscoveryState(DiscoveryState state) {}
 
   // Adds a new device to the chooser or updates the information of an existing
-  // device. Passing nullptr for |rssi| means that the device doesn't not have
-  // RSSI which happens when the device is already connected.
+  // device.
+  //
+  // Sometimes when a Bluetooth device stops advertising, the |device_name| can
+  // be invalid, and in that case |should_update_name| will be set false.
+  //
+  // Passing nullptr for |rssi| means that the device doesn't have RSSI which
+  // happens when the device is already connected.
   virtual void AddOrUpdateDevice(const std::string& device_id,
                                  bool should_update_name,
                                  const base::string16& device_name,

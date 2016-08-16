@@ -163,6 +163,24 @@ TEST_F(ChooserContentViewTest, RemoveOption) {
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
 }
 
+TEST_F(ChooserContentViewTest, UpdateOption) {
+  EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(0);
+
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+
+  mock_chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
+                                          base::ASCIIToUTF16("d"));
+  EXPECT_EQ(3, table_view_->RowCount());
+  EXPECT_EQ(base::ASCIIToUTF16("a"), table_model_->GetText(0, 0));
+  EXPECT_EQ(base::ASCIIToUTF16("d"), table_model_->GetText(1, 0));
+  EXPECT_EQ(base::ASCIIToUTF16("c"), table_model_->GetText(2, 0));
+  EXPECT_TRUE(table_view_->enabled());
+  EXPECT_EQ(0, table_view_->SelectedRowCount());
+  EXPECT_EQ(-1, table_view_->FirstSelectedRow());
+}
+
 TEST_F(ChooserContentViewTest, AddAndRemoveOption) {
   // Called from TableView::OnItemsRemoved().
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(3);
@@ -181,6 +199,26 @@ TEST_F(ChooserContentViewTest, AddAndRemoveOption) {
   EXPECT_EQ(2, table_view_->RowCount());
   mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("c"));
   EXPECT_EQ(1, table_view_->RowCount());
+}
+
+TEST_F(ChooserContentViewTest, UpdateAndRemoveTheUpdatedOption) {
+  // Called from TableView::OnItemsRemoved().
+  EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(1);
+
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+
+  mock_chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
+                                          base::ASCIIToUTF16("d"));
+  mock_chooser_controller_->OptionRemoved(base::ASCIIToUTF16("d"));
+
+  EXPECT_EQ(2, table_view_->RowCount());
+  EXPECT_EQ(base::ASCIIToUTF16("a"), table_model_->GetText(0, 0));
+  EXPECT_EQ(base::ASCIIToUTF16("c"), table_model_->GetText(1, 0));
+  EXPECT_TRUE(table_view_->enabled());
+  EXPECT_EQ(0, table_view_->SelectedRowCount());
+  EXPECT_EQ(-1, table_view_->FirstSelectedRow());
 }
 
 TEST_F(ChooserContentViewTest, SelectAndDeselectAnOption) {
@@ -281,6 +319,25 @@ TEST_F(ChooserContentViewTest, SelectAnOptionAndRemoveTheSelectedOption) {
   // No option selected.
   EXPECT_EQ(0, table_view_->SelectedRowCount());
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
+}
+
+TEST_F(ChooserContentViewTest, SelectAnOptionAndUpdateTheSelectedOption) {
+  EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(1);
+
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+
+  // Select option 1.
+  table_view_->Select(1);
+
+  // Update option 1.
+  mock_chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
+                                          base::ASCIIToUTF16("d"));
+
+  EXPECT_EQ(1, table_view_->SelectedRowCount());
+  EXPECT_EQ(1, table_view_->FirstSelectedRow());
+  EXPECT_EQ(base::ASCIIToUTF16("d"), table_model_->GetText(1, 0));
 }
 
 TEST_F(ChooserContentViewTest,

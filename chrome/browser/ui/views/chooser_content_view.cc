@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/chooser_content_view.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/link.h"
@@ -63,11 +64,12 @@ gfx::Size ChooserContentView::GetPreferredSize() const {
 int ChooserContentView::RowCount() {
   // When there are no devices, the table contains a message saying there
   // are no devices, so the number of rows is always at least 1.
-  return std::max(static_cast<int>(chooser_controller_->NumOptions()), 1);
+  return std::max(base::checked_cast<int>(chooser_controller_->NumOptions()),
+                  1);
 }
 
 base::string16 ChooserContentView::GetText(int row, int column_id) {
-  int num_options = static_cast<int>(chooser_controller_->NumOptions());
+  int num_options = base::checked_cast<int>(chooser_controller_->NumOptions());
   if (num_options == 0) {
     DCHECK_EQ(0, row);
     return chooser_controller_->GetNoOptionsText();
@@ -86,7 +88,7 @@ void ChooserContentView::OnOptionsInitialized() {
 }
 
 void ChooserContentView::OnOptionAdded(size_t index) {
-  table_view_->OnItemsAdded(static_cast<int>(index), 1);
+  table_view_->OnItemsAdded(base::checked_cast<int>(index), 1);
   UpdateTableView();
   table_view_->SetVisible(true);
   throbber_->SetVisible(false);
@@ -94,7 +96,12 @@ void ChooserContentView::OnOptionAdded(size_t index) {
 }
 
 void ChooserContentView::OnOptionRemoved(size_t index) {
-  table_view_->OnItemsRemoved(static_cast<int>(index), 1);
+  table_view_->OnItemsRemoved(base::checked_cast<int>(index), 1);
+  UpdateTableView();
+}
+
+void ChooserContentView::OnOptionUpdated(size_t index) {
+  table_view_->OnItemsChanged(base::checked_cast<int>(index), 1);
   UpdateTableView();
 }
 

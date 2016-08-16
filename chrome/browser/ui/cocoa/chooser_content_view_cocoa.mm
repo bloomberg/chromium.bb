@@ -58,6 +58,7 @@ class ChooserContentViewController : public ChooserController::View {
   void OnOptionsInitialized() override;
   void OnOptionAdded(size_t index) override;
   void OnOptionRemoved(size_t index) override;
+  void OnOptionUpdated(size_t index) override;
   void OnAdapterEnabledChanged(bool enabled) override;
   void OnRefreshStateChanged(bool refreshing) override;
 
@@ -124,6 +125,10 @@ void ChooserContentViewController::OnOptionRemoved(size_t index) {
             selectRowIndexes:[NSIndexSet indexSetWithIndex:selected_row - 1]
         byExtendingSelection:NO];
 
+  UpdateTableView();
+}
+
+void ChooserContentViewController::OnOptionUpdated(size_t index) {
   UpdateTableView();
 }
 
