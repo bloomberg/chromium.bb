@@ -77,9 +77,6 @@ bool ProcessForCALayerOverlays(ResourceProvider* resource_provider,
                                const QuadList& quad_list,
                                CALayerOverlayList* ca_layer_overlays);
 
-// Allows RenderPassDrawQuads to be converted to CALayerOverlays.
-void CC_EXPORT EnableRenderPassDrawQuadForTesting();
-
 }  // namespace cc
 
 #endif  // CC_OUTPUT_CA_LAYER_OVERLAY_H_
