@@ -269,7 +269,7 @@ class BrowserProcess {
 
   virtual gcm::GCMDriver* gcm_driver() = 0;
 
-  // Returns the tab manager if it exists, null otherwise.
+  // Returns the tab manager. On non-supported platforms, this returns null.
   virtual memory::TabManager* GetTabManager() = 0;
 
   // Returns the default web client state of Chrome (i.e., was it the user's
