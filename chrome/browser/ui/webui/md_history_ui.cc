@@ -145,6 +145,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                           IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_PNG);
   source->AddResourcePath("images/200/sign_in_promo.png",
                           IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_PNG);
+  source->AddResourcePath("lazy_render.html",
+                          IDR_MD_HISTORY_LAZY_RENDER_HTML);
+  source->AddResourcePath("lazy_render.js",
+                          IDR_MD_HISTORY_LAZY_RENDER_JS);
   source->AddResourcePath("list_container.html",
                           IDR_MD_HISTORY_LIST_CONTAINER_HTML);
   source->AddResourcePath("list_container.js",

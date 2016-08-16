@@ -133,19 +133,21 @@
           show-menu="[[hasDrawer]]"
           on-search-changed="onSearchChanged_">
       </cr-toolbar>
-      <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
-        <div id="overlay-buttons">
-          <paper-icon-button icon="cr:clear" id="cancel-icon-button"
-              on-tap="onClearSelectionTap_"></paper-icon-button>
-          <div id="number-selected">[[numberOfItemsSelected_(count)]]</div>
-          <paper-button id="cancel-button" on-tap="onClearSelectionTap_">
-            $i18n{cancel}
-          </paper-button>
-          <paper-button id="delete-button" on-tap="onDeleteTap_">
-            $i18n{delete}
-          </paper-button>
+      <template is="dom-if" if="[[itemsSelected_]]">
+        <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
+          <div id="overlay-buttons">
+            <paper-icon-button icon="cr:clear" id="cancel-icon-button"
+                on-tap="onClearSelectionTap_"></paper-icon-button>
+            <div id="number-selected">[[numberOfItemsSelected_(count)]]</div>
+            <paper-button id="cancel-button" on-tap="onClearSelectionTap_">
+              $i18n{cancel}
+            </paper-button>
+            <paper-button id="delete-button" on-tap="onDeleteTap_">
+              $i18n{delete}
+            </paper-button>
+          </div>
         </div>
-      </div>
+      </template>
     </div>
     <template is="dom-if" if="[[isGroupedMode]]">
       <div id="grouped-buttons-container">

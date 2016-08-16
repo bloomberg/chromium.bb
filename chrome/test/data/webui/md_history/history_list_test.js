@@ -241,24 +241,27 @@ cr.define('md_history.history_list_test', function() {
 
           items = polymerSelectAll(element, 'history-item');
           MockInteractions.tap(items[0].$['menu-button']);
-          MockInteractions.tap(app.$['history'].$.menuMoreButton);
+          return app.$.history.$.sharedMenu.get();
+        }).then(function() {
+          MockInteractions.tap(app.$.history.$$('#menuMoreButton'));
         });
       });
 
       test('scrolling history list closes overflow menu', function() {
-        var sharedMenu = app.$.history.$.sharedMenu;
+        var lazyMenu = app.$.history.$.sharedMenu;
         for (var i = 0; i < 10; i++)
           app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-
         return flush().then(function() {
           items = polymerSelectAll(element, 'history-item');
 
           MockInteractions.tap(items[2].$['menu-button']);
-          assertTrue(sharedMenu.menuOpen);
-          element.$['infinite-list'].scrollToIndex(20);
-          return waitForEvent(sharedMenu, 'menu-open-changed');
+          return flush();
         }).then(function() {
-          assertFalse(sharedMenu.menuOpen);
+          assertTrue(lazyMenu.getIfExists().menuOpen);
+          element.$['infinite-list'].scrollToIndex(20);
+          return waitForEvent(lazyMenu.getIfExists(), 'menu-open-changed');
+        }).then(function() {
+          assertFalse(lazyMenu.getIfExists().menuOpen);
         });
       });
 
@@ -298,6 +301,12 @@ cr.define('md_history.history_list_test', function() {
           MockInteractions.tap(items[9].$.checkbox);
           MockInteractions.tap(items[10].$.checkbox);
 
+          return flush();
+        }).then(function() {
+          MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+
+          return listContainer.$.dialog.get();
+        }).then(function(dialog) {
           registerMessageCallback('removeVisits', this, function() {
             flush().then(function() {
               deleteComplete();
@@ -310,7 +319,7 @@ cr.define('md_history.history_list_test', function() {
                            '2016-03-13');
               assertEquals(element.historyData_[4].dateRelativeDay,
                            '2016-03-11');
-              assertFalse(listContainer.$.dialog.open);
+              assertFalse(dialog.open);
 
               // Ensure the UI is correctly updated.
               items = polymerSelectAll(element, 'history-item');
@@ -320,15 +329,13 @@ cr.define('md_history.history_list_test', function() {
               assertEquals('https://en.wikipedia.org', items[3].item.title);
               assertEquals('https://www.google.com', items[4].item.title);
 
+              assertFalse(dialog.open);
               done();
             });
           });
 
-          MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
-
           // Confirmation dialog should appear.
-          assertTrue(listContainer.$.dialog.open);
-
+          assertTrue(dialog.open);
           MockInteractions.tap(listContainer.$$('.action-button'));
         });
       });
@@ -353,26 +360,47 @@ cr.define('md_history.history_list_test', function() {
             });
           });
           MockInteractions.tap(items[1].$['menu-button']);
-          MockInteractions.tap(app.$['history'].$.menuRemoveButton);
+          return app.$.history.$.sharedMenu.get();
+        }).then(function(menu) {
+          MockInteractions.tap(app.$.history.$$('#menuRemoveButton'));
         });
       });
 
-
       test('deleting items using shortcuts', function(done) {
         var listContainer = app.$.history;
+        var dialog;
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-        flush().then(function() {
+        listContainer.$.dialog.get().then(function(stampedDialog) {
+          dialog = stampedDialog;
+          return flush();
+        }).then(function() {
           items = polymerSelectAll(element, 'history-item');
 
           // Dialog should not appear when there is no item selected.
           MockInteractions.pressAndReleaseKeyOn(
             document.body, 46, '', 'Delete');
-          assertFalse(listContainer.$.dialog.open);
+          return flush();
+        }).then(function() {
+          assertFalse(dialog.open);
 
           MockInteractions.tap(items[1].$.checkbox);
           MockInteractions.tap(items[2].$.checkbox);
 
           assertEquals(2, toolbar.count);
+
+          MockInteractions.pressAndReleaseKeyOn(
+            document.body, 46, '', 'Delete');
+          return flush();
+        }).then(function() {
+          assertTrue(dialog.open);
+          MockInteractions.tap(listContainer.$$('.cancel-button'));
+          assertFalse(dialog.open);
+
+          MockInteractions.pressAndReleaseKeyOn(
+            document.body, 8, '', 'Backspace');
+          return flush();
+        }).then(function() {
+          assertTrue(dialog.open);
 
           registerMessageCallback('removeVisits', this, function(toRemove) {
             assertEquals('https://www.example.com', toRemove[0].url);
@@ -381,17 +409,6 @@ cr.define('md_history.history_list_test', function() {
             assertEquals('2016-03-14 9:00 UTC', toRemove[1].timestamps[0]);
             done();
           });
-
-          MockInteractions.pressAndReleaseKeyOn(
-            document.body, 46, '', 'Delete');
-          assertTrue(listContainer.$.dialog.open);
-
-          MockInteractions.tap(listContainer.$$('.cancel-button'));
-          assertFalse(listContainer.$.dialog.open);
-
-          MockInteractions.pressAndReleaseKeyOn(
-            document.body, 8, '', 'Backspace');
-          assertTrue(listContainer.$.dialog.open);
 
           MockInteractions.tap(listContainer.$$('.action-button'));
         });
@@ -406,13 +423,16 @@ cr.define('md_history.history_list_test', function() {
           items = Polymer.dom(element.root).querySelectorAll('history-item');
 
           MockInteractions.tap(items[2].$.checkbox);
+          return flush();
+        }).then(function() {
           MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
-
+          return flush();
+        }).then(function() {
           // Confirmation dialog should appear.
-          assertTrue(listContainer.$.dialog.open);
+          assertTrue(listContainer.$.dialog.getIfExists().open);
 
           app.set('queryState_.searchTerm', 'something else');
-          assertFalse(listContainer.$.dialog.open);
+          assertFalse(listContainer.$.dialog.getIfExists().open);
         });
       });
 
@@ -445,6 +465,7 @@ cr.define('md_history.history_list_test', function() {
       });
     });
   }
+
   return {
     registerTests: registerTests
   };

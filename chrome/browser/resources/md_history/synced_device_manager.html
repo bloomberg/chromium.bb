@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_shared_menu/cr_shared_menu.html">
+<link rel="import" href="chrome://history/lazy_render.html">
 <link rel="import" href="chrome://history/shared_style.html">
 <link rel="import" href="chrome://history/synced_device_card.html">
 
@@ -86,14 +87,16 @@
       </paper-button>
     </div>
 
-    <cr-shared-menu id="menu">
-      <paper-item class="menu-item" on-tap="onOpenAllTap_">
-        $i18n{openAll}
-      </paper-item>
-      <paper-item class="menu-item" on-tap="onDeleteSessionTap_">
-        $i18n{deleteSession}
-      </paper-item>
-    </cr-shared-menu>
+    <template is="history-lazy-render" id="menu">
+      <cr-shared-menu>
+        <paper-item class="menu-item" on-tap="onOpenAllTap_">
+          $i18n{openAll}
+        </paper-item>
+        <paper-item class="menu-item" on-tap="onDeleteSessionTap_">
+          $i18n{deleteSession}
+        </paper-item>
+      </cr-shared-menu>
+    </template>
   </template>
   <script src="chrome://history/synced_device_manager.js"></script>
 </dom-module>

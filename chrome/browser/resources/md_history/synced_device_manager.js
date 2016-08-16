@@ -118,19 +118,23 @@ Polymer({
   },
 
   onToggleMenu_: function(e) {
-    this.$.menu.toggleMenu(e.detail.target, e.detail.tag);
+    this.$.menu.get().then(function(menu) {
+      menu.toggleMenu(e.detail.target, e.detail.tag);
+    });
   },
 
   onOpenAllTap_: function() {
+    var menu = assert(this.$.menu.getIfExists());
     md_history.BrowserService.getInstance().openForeignSessionAllTabs(
-        this.$.menu.itemData);
-    this.$.menu.closeMenu();
+        menu.itemData);
+    menu.closeMenu();
   },
 
   onDeleteSessionTap_: function() {
+    var menu = assert(this.$.menu.getIfExists());
     md_history.BrowserService.getInstance().deleteForeignSession(
-        this.$.menu.itemData);
-    this.$.menu.closeMenu();
+        menu.itemData);
+    menu.closeMenu();
   },
 
   /** @private */

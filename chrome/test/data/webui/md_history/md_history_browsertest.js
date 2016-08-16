@@ -37,7 +37,8 @@ MaterialHistoryBrowserTest.prototype = {
     'history_routing_test.js',
     'history_supervised_user_test.js',
     'history_synced_tabs_test.js',
-    'history_toolbar_test.js'
+    'history_toolbar_test.js',
+    'lazy_render_test.js'
   ]),
 
   /** @override */
@@ -85,6 +86,11 @@ TEST_F('MaterialHistoryBrowserTest', 'HistoryToolbarTest', function() {
 
 TEST_F('MaterialHistoryBrowserTest', 'HistoryOverflowMenuTest', function() {
   md_history.history_overflow_menu_test.registerTests();
+  mocha.run();
+});
+
+TEST_F('MaterialHistoryBrowserTest', 'LazyRenderTest', function() {
+  md_history.lazy_render_test.registerTests();
   mocha.run();
 });
 

@@ -66,8 +66,9 @@ Polymer({
     }
 
     // Close any open dialog if a new query is initiated.
-    if (!incremental && this.$.dialog.open)
-      this.$.dialog.close();
+    var dialog = this.$.dialog.getIfExists();
+    if (!incremental && dialog && dialog.open)
+      dialog.close();
 
     this.set('queryState.querying', true);
     this.set('queryState.incremental', incremental);
@@ -102,8 +103,9 @@ Polymer({
   deleteSelectedWithPrompt: function() {
     if (!loadTimeData.getBoolean('allowDeletingHistory'))
       return;
-
-    this.$.dialog.showModal();
+    this.$.dialog.get().then(function(dialog) {
+      dialog.showModal();
+    });
   },
 
   /**
@@ -146,12 +148,14 @@ Polymer({
   /** @private */
   onDialogConfirmTap_: function() {
     this.getSelectedList_().deleteSelected();
-    this.$.dialog.close();
+    var dialog = assert(this.$.dialog.getIfExists());
+    dialog.close();
   },
 
   /** @private */
   onDialogCancelTap_: function() {
-    this.$.dialog.close();
+    var dialog = assert(this.$.dialog.getIfExists());
+    dialog.close();
   },
 
   /**
@@ -159,31 +163,36 @@ Polymer({
    * @private
    */
   closeMenu_: function() {
-    /** @type {CrSharedMenuElement} */(this.$.sharedMenu).closeMenu();
+    var menu = this.$.sharedMenu.getIfExists();
+    if (menu)
+      menu.closeMenu();
   },
 
   /**
    * Opens the overflow menu unless the menu is already open and the same button
    * is pressed.
    * @param {{detail: {item: !HistoryEntry, target: !HTMLElement}}} e
+   * @return {Promise<Element>}
    * @private
    */
   toggleMenu_: function(e) {
     var target = e.detail.target;
-    /** @type {CrSharedMenuElement} */(this.$.sharedMenu).toggleMenu(
+    return this.$.sharedMenu.get().then(function(menu) {
+      /** @type {CrSharedMenuElement} */(menu).toggleMenu(
         target, e.detail);
+    });
   },
 
   /** @private */
   onMoreFromSiteTap_: function() {
-    var menu = /** @type {CrSharedMenuElement} */(this.$.sharedMenu);
+    var menu = assert(this.$.sharedMenu.getIfExists());
     this.fire('search-domain', {domain: menu.itemData.item.domain});
     menu.closeMenu();
   },
 
   /** @private */
   onRemoveFromHistoryTap_: function() {
-    var menu = /** @type {CrSharedMenuElement} */(this.$.sharedMenu);
+    var menu = assert(this.$.sharedMenu.getIfExists());
     var itemData = menu.itemData;
     md_history.BrowserService.getInstance()
         .deleteItems([itemData.item])

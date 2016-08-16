@@ -5,9 +5,6 @@
   'targets': [
     {
       'target_name': 'constants',
-      'dependencies': [
-        '../history/compiled_resources2.gyp:externs',
-      ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
@@ -17,6 +14,14 @@
         '../history/compiled_resources2.gyp:externs',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'externs',
+      'dependencies': [
+        'constants',
+        '../history/compiled_resources2.gyp:externs',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
       'target_name': 'grouped_list',
@@ -86,11 +91,19 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'lazy_render',
+      'dependencies': [
+        'externs',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'list_container',
       'dependencies': [
         'grouped_list',
         'history_list',
         'history_list_behavior',
+        'lazy_render',
         '<(EXTERNS_GYP):chrome_send',
         '../history/compiled_resources2.gyp:externs',
       ],
@@ -129,6 +142,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'browser_service',
         'constants',
+        'externs',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -137,6 +151,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
         'browser_service',
+        'lazy_render',
         'synced_device_card',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],

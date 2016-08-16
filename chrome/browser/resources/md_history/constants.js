@@ -28,26 +28,3 @@ var HistoryRange = {
   WEEK: 1,
   MONTH: 2
 };
-
-// Types:
-/**
- * @typedef {{groupedOffset: number,
- *            incremental: boolean,
- *            querying: boolean,
- *            range: HistoryRange,
- *            searchTerm: string}}
- */
-var QueryState;
-
-/**
- * @typedef {{info: ?HistoryQuery,
- *            results: ?Array<!HistoryEntry>,
- *            sessionList: ?Array<!ForeignSession>}}
- */
-var QueryResult;
-
-/** @constructor
- *  @extends {MouseEvent} */
-var DomRepeatClickEvent = function() {
-  this.model = null;
-};

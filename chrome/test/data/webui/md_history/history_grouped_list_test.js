@@ -237,6 +237,11 @@ cr.define('md_history.history_grouped_list_test', function() {
           MockInteractions.tap(items[1].$.checkbox);
           MockInteractions.tap(items[1].$.checkbox);
 
+          return flush();
+        }).then(function() {
+          MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+          return listContainer.$.dialog.get();
+        }).then(function(dialog) {
           registerMessageCallback('removeVisits', this, function() {
             flush().then(function() {
               deleteComplete();
@@ -257,15 +262,12 @@ cr.define('md_history.history_grouped_list_test', function() {
                   1, polymerSelectAll(groupedList,
                                              '.group-container').length);
 
-              assertFalse(listContainer.$.dialog.open);
+              assertFalse(dialog.open);
               done();
             });
           });
-
-          MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
-
           // Confirmation dialog should appear.
-          assertTrue(listContainer.$.dialog.open);
+          assertTrue(dialog.open);
 
           MockInteractions.tap(listContainer.$$('.action-button'));
         });
