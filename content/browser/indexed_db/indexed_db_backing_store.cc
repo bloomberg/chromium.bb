@@ -771,8 +771,6 @@ IndexedDBBackingStore::~IndexedDBBackingStore() {
     for (const auto& pid : child_process_ids_granted_)
       policy->RevokeAllPermissionsForFile(pid, blob_path_);
   }
-  base::STLDeleteContainerPairSecondPointers(incognito_blob_map_.begin(),
-                                             incognito_blob_map_.end());
   // db_'s destructor uses comparator_. The order of destruction is important.
   db_.reset();
   comparator_.reset();
@@ -2706,14 +2704,14 @@ leveldb::Status IndexedDBBackingStore::Transaction::GetBlobInfoForRecord(
     int64_t database_id,
     const std::string& object_store_data_key,
     IndexedDBValue* value) {
-  BlobChangeRecord* change_record = NULL;
+  BlobChangeRecord* change_record = nullptr;
   auto blob_iter = blob_change_map_.find(object_store_data_key);
   if (blob_iter != blob_change_map_.end()) {
-    change_record = blob_iter->second;
+    change_record = blob_iter->second.get();
   } else {
     blob_iter = incognito_blob_map_.find(object_store_data_key);
     if (blob_iter != incognito_blob_map_.end())
-      change_record = blob_iter->second;
+      change_record = blob_iter->second.get();
   }
   if (change_record) {
     // Either we haven't written the blob to disk yet or we're in incognito
@@ -4019,10 +4017,6 @@ IndexedDBBackingStore::Transaction::Transaction(
 }
 
 IndexedDBBackingStore::Transaction::~Transaction() {
-  base::STLDeleteContainerPairSecondPointers(blob_change_map_.begin(),
-                                             blob_change_map_.end());
-  base::STLDeleteContainerPairSecondPointers(incognito_blob_map_.begin(),
-                                             incognito_blob_map_.end());
   DCHECK(!committing_);
 }
 
@@ -4035,7 +4029,7 @@ void IndexedDBBackingStore::Transaction::Begin() {
   // If incognito, this snapshots blobs just as the above transaction_
   // constructor snapshots the leveldb.
   for (const auto& iter : backing_store_->incognito_blob_map_)
-    incognito_blob_map_[iter.first] = iter.second->Clone().release();
+    incognito_blob_map_[iter.first] = iter.second->Clone();
 }
 
 static GURL GetURLFromUUID(const string& uuid) {
@@ -4259,14 +4253,10 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
       auto& target_map = backing_store_->incognito_blob_map_;
       for (auto& iter : blob_change_map_) {
         auto target_record = target_map.find(iter.first);
-        if (target_record != target_map.end()) {
-          delete target_record->second;
+        if (target_record != target_map.end())
           target_map.erase(target_record);
-        }
-        if (iter.second) {
-          target_map[iter.first] = iter.second;
-          iter.second = NULL;
-        }
+        if (iter.second)
+          target_map[iter.first] = std::move(iter.second);
       }
     }
     return leveldb::Status::OK();
@@ -4444,10 +4434,13 @@ void IndexedDBBackingStore::Transaction::PutBlobInfo(
   const auto& it = blob_change_map_.find(object_store_data_key);
   BlobChangeRecord* record = NULL;
   if (it == blob_change_map_.end()) {
-    record = new BlobChangeRecord(object_store_data_key, object_store_id);
-    blob_change_map_[object_store_data_key] = record;
+    std::unique_ptr<BlobChangeRecord> new_record =
+        base::MakeUnique<BlobChangeRecord>(object_store_data_key,
+                                           object_store_id);
+    record = new_record.get();
+    blob_change_map_[object_store_data_key] = std::move(new_record);
   } else {
-    record = it->second;
+    record = it->second.get();
   }
   DCHECK_EQ(record->object_store_id(), object_store_id);
   record->SetBlobInfo(blob_info);

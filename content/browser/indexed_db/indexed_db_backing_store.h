@@ -259,8 +259,9 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     IndexedDBBackingStore* backing_store_;
     scoped_refptr<LevelDBTransaction> transaction_;
-    std::map<std::string, BlobChangeRecord*> blob_change_map_;
-    std::map<std::string, BlobChangeRecord*> incognito_blob_map_;
+    std::map<std::string, std::unique_ptr<BlobChangeRecord>> blob_change_map_;
+    std::map<std::string, std::unique_ptr<BlobChangeRecord>>
+        incognito_blob_map_;
     int64_t database_id_;
 
     // List of blob files being newly written as part of this transaction.
@@ -278,6 +279,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
     // indicate that the committing_transaction_count_ on the backing store
     // has been bumped, and journal cleaning should be deferred.
     bool committing_;
+
+    DISALLOW_COPY_AND_ASSIGN(Transaction);
   };
 
   class Cursor {
@@ -652,7 +655,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   net::URLRequestContext* request_context_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::set<int> child_process_ids_granted_;
-  std::map<std::string, BlobChangeRecord*> incognito_blob_map_;
+  std::map<std::string, std::unique_ptr<BlobChangeRecord>> incognito_blob_map_;
   base::OneShotTimer journal_cleaning_timer_;
 
   std::unique_ptr<LevelDBDatabase> db_;
