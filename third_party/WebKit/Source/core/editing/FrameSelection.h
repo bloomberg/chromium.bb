@@ -290,7 +290,6 @@ private:
     const Member<SelectionEditor> m_selectionEditor;
 
     // Used to store base before the adjustment at bidi boundary
-    VisiblePosition m_originalBase;
     VisiblePositionInFlatTree m_originalBaseInFlatTree;
     TextGranularity m_granularity;
     LayoutUnit m_xPosForVerticalArrowNavigation;

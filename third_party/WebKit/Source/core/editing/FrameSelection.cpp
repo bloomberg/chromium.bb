@@ -121,18 +121,6 @@ Document& FrameSelection::document()
     return *m_document;
 }
 
-template <>
-VisiblePosition FrameSelection::originalBase<EditingStrategy>() const
-{
-    return m_originalBase;
-}
-
-template <>
-VisiblePositionInFlatTree FrameSelection::originalBase<EditingInFlatTreeStrategy>() const
-{
-    return m_originalBaseInFlatTree;
-}
-
 // TODO(yosin): To avoid undefined symbols in clang, we explicitly
 // have specialized version of |FrameSelection::visibleSelection<Strategy>|
 // before |FrameSelection::selection()| which refers this.
@@ -231,18 +219,6 @@ static void adjustEndpointsAtBidiBoundary(VisiblePositionTemplate<Strategy>& vis
     }
 }
 
-void FrameSelection::setOriginalBase(const VisiblePosition& newBase)
-{
-    m_originalBase = newBase;
-    m_originalBaseInFlatTree = createVisiblePosition(toPositionInFlatTree(newBase.deepEquivalent()));
-}
-
-void FrameSelection::setOriginalBase(const VisiblePositionInFlatTree& newBase)
-{
-    m_originalBaseInFlatTree = newBase;
-    m_originalBase = createVisiblePosition(toPositionInDOMTree(newBase.deepEquivalent()));
-}
-
 void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
 {
     VisibleSelectionInFlatTree newSelection = passedNewSelection;
@@ -258,13 +234,13 @@ void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelectionIn
         adjustEndpointsAtBidiBoundary(newBase, newExtent);
 
     if (newBase.deepEquivalent() != base.deepEquivalent() || newExtent.deepEquivalent() != extent.deepEquivalent()) {
-        setOriginalBase(base);
+        m_originalBaseInFlatTree = base;
         newSelection.setBase(newBase);
         newSelection.setExtent(newExtent);
     } else if (originalBase.isNotNull()) {
         if (visibleSelection<EditingInFlatTreeStrategy>().base() == newSelection.base())
             newSelection.setBase(originalBase);
-        setOriginalBase(VisiblePositionInFlatTree());
+        m_originalBaseInFlatTree = VisiblePositionInFlatTree();
     }
 
     // Adjusting base and extent will make newSelection always directional
@@ -713,7 +689,6 @@ void FrameSelection::documentDetached(const Document& document)
 {
     DCHECK_EQ(m_document, document);
     m_document = nullptr;
-    m_originalBase = VisiblePosition();
     m_originalBaseInFlatTree = VisiblePositionInFlatTree();
     m_granularity = CharacterGranularity;
 
@@ -1287,7 +1262,6 @@ DEFINE_TRACE(FrameSelection)
     visitor->trace(m_frame);
     visitor->trace(m_pendingSelection);
     visitor->trace(m_selectionEditor);
-    visitor->trace(m_originalBase);
     visitor->trace(m_originalBaseInFlatTree);
     visitor->trace(m_typingStyle);
     visitor->trace(m_frameCaret);
