@@ -582,11 +582,6 @@ void WebSettingsImpl::setAutoplayExperimentMode(const WebString& mode)
     m_settings->setAutoplayExperimentMode(mode);
 }
 
-void WebSettingsImpl::setUnifiedTextCheckerEnabled(bool enabled)
-{
-    m_settings->setUnifiedTextCheckerEnabled(enabled);
-}
-
 void WebSettingsImpl::setCaretBrowsingEnabled(bool enabled)
 {
     m_settings->setCaretBrowsingEnabled(enabled);

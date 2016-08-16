@@ -6,8 +6,6 @@ if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
-if (window.internals)
-    internals.settings.setUnifiedTextCheckerEnabled(true);
 function done() {
     document.body.innerHTML = 'PASS if WebKit did not hit assertions';
     if (window.testRunner)

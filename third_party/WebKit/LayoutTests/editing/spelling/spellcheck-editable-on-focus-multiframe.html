@@ -29,7 +29,6 @@ testEditable1.innerText = "zz zz zz.";
 testEditable2.innerText = "zz zz zz.";
 
 if (window.internals) {
-    internals.settings.setUnifiedTextCheckerEnabled(true);
     internals.setContinuousSpellCheckingEnabled(true);
 
     shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '0');

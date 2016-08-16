@@ -24,7 +24,6 @@ var testTextField = document.getElementById('test_textfield');
 if (!window.internals) {
     log("Automatic testing impossible. Test manually.");
 } else {
-    internals.settings.setUnifiedTextCheckerEnabled(true);
     internals.setContinuousSpellCheckingEnabled(true);
 
     shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '0');

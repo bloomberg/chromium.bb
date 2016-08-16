@@ -27,7 +27,6 @@ function initSpellTest(testElementId, testText, testFunction, opt_doNotFinishTes
     jsTestIsAsync = true;
     internals.settings.setSmartInsertDeleteEnabled(true);
     internals.settings.setSelectTrailingWhitespaceEnabled(false);
-    internals.settings.setUnifiedTextCheckerEnabled(true);
     internals.settings.setEditingBehavior("win");
     window.destination = document.getElementById(testElementId);
     window.destination.focus();
@@ -92,6 +91,5 @@ function runSpellingTest(steps, assertions, opt_title)
         return;
     }
 
-    internals.settings.setUnifiedTextCheckerEnabled(true);
     runNextStep(t, steps, assertions);
 }

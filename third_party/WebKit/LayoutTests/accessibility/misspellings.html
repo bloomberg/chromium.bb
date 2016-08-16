@@ -13,10 +13,8 @@
 <textarea id="textarea" spellcheck="true"></textarea>
 
 <script>
-    if (window.internals) {
-        internals.settings.setUnifiedTextCheckerEnabled(true);
+    if (window.internals)
         internals.setContinuousSpellCheckingEnabled(true);
-    }
 
     async_test(function(t)
     {

@@ -11,9 +11,6 @@ description("This tests whether WebKit does not spell check in 'designMode' "
 
 jsTestIsAsync = true;
 
-if (window.internals)
-    internals.settings.setUnifiedTextCheckerEnabled(true);
-
 document.designMode = "on";
 
 function checkSpellingMarker()

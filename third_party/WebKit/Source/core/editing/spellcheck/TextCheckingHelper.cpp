@@ -232,70 +232,8 @@ TextCheckingHelper::~TextCheckingHelper()
 {
 }
 
-String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, bool markAll)
-{
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-    // see http://crbug.com/590369 for more details.
-    m_start.document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-    WordAwareIterator it(m_start, m_end);
-    firstMisspellingOffset = 0;
-
-    String firstMisspelling;
-    int currentChunkOffset = 0;
-
-    while (!it.atEnd()) {
-        int length = it.length();
-
-        // Skip some work for one-space-char hunks
-        if (!(length == 1 && it.characterAt(0) == ' ')) {
-
-            int misspellingLocation = -1;
-            int misspellingLength = 0;
-            m_client->textChecker().checkSpellingOfString(it.substring(0, length), &misspellingLocation, &misspellingLength);
-
-            // 5490627 shows that there was some code path here where the String constructor below crashes.
-            // We don't know exactly what combination of bad input caused this, so we're making this much
-            // more robust against bad input on release builds.
-            DCHECK_GE(misspellingLength, 0);
-            DCHECK_GE(misspellingLocation, -1);
-            DCHECK(!misspellingLength || misspellingLocation >= 0);
-            DCHECK_LT(misspellingLocation, length);
-            DCHECK_LE(misspellingLength, length);
-            DCHECK_LE(misspellingLocation + misspellingLength, length);
-
-            if (misspellingLocation >= 0 && misspellingLength > 0 && misspellingLocation < length && misspellingLength <= length && misspellingLocation + misspellingLength <= length) {
-
-                // Compute range of misspelled word
-                const EphemeralRange misspellingRange = calculateCharacterSubrange(EphemeralRange(m_start, m_end), currentChunkOffset + misspellingLocation, misspellingLength);
-
-                // Remember first-encountered misspelling and its offset.
-                if (!firstMisspelling) {
-                    firstMisspellingOffset = currentChunkOffset + misspellingLocation;
-                    firstMisspelling = it.substring(misspellingLocation, misspellingLength);
-                }
-
-                // Store marker for misspelled word.
-                misspellingRange.document().markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling);
-
-                // Bail out if we're marking only the first misspelling, and not all instances.
-                if (!markAll)
-                    break;
-            }
-        }
-
-        currentChunkOffset += length;
-        it.advance();
-    }
-
-    return firstMisspelling;
-}
-
 String TextCheckingHelper::findFirstMisspellingOrBadGrammar(int& outFirstFoundOffset)
 {
-    if (!unifiedTextCheckerEnabled())
-        return "";
-
     String firstFoundItem;
     String misspelledWord;
 
@@ -365,33 +303,6 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(int& outFirstFoundOf
         totalLengthProcessed += currentLength;
     }
     return firstFoundItem;
-}
-
-bool TextCheckingHelper::markAllMisspellings()
-{
-    // Use the "markAll" feature of findFirstMisspelling. Ignore the return value and the "out parameter";
-    // all we need to do is mark every instance.
-    int ignoredOffset;
-    return findFirstMisspelling(ignoredOffset, true).isEmpty();
-}
-
-bool TextCheckingHelper::unifiedTextCheckerEnabled() const
-{
-    DCHECK(m_start.isNotNull());
-    Document& doc = m_start.computeContainerNode()->document();
-    return blink::unifiedTextCheckerEnabled(doc.frame());
-}
-
-bool unifiedTextCheckerEnabled(const LocalFrame* frame)
-{
-    if (!frame)
-        return false;
-
-    const Settings* settings = frame->settings();
-    if (!settings)
-        return false;
-
-    return settings->unifiedTextCheckerEnabled();
 }
 
 } // namespace blink

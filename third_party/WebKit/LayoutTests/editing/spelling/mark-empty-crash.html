@@ -8,7 +8,6 @@
 test(function() {
     if (!window.internals)
         return;
-    internals.settings.setUnifiedTextCheckerEnabled(true);
     window.getSelection().selectAllChildren(document.getElementById('foo'));
     document.execCommand('insertParagraph');
 }, 'spelling');

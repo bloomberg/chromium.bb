@@ -24,9 +24,6 @@ description("Misspelling markers in text inputs should only be visible if an inp
     + "The test succeed if misspellings were removed from the input "
     + "but not for the first textarea. Focus the input again - misspelling markers should be restored.");
 
-if (window.internals)
-    internals.settings.setUnifiedTextCheckerEnabled(true);
-
 jsTestIsAsync = true;
 
 var testTextArea = document.getElementById("testTextArea");

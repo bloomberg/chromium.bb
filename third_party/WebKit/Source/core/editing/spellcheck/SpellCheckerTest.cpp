@@ -20,10 +20,8 @@ TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithEmptyInputNoCrash)
     updateAllLifecyclePhases();
     Element* input = document().querySelector("input");
     input->focus();
-    document().settings()->setUnifiedTextCheckerEnabled(true);
     // Do not crash in AdvanceToNextMisspelling command.
     EXPECT_TRUE(document().frame()->editor().executeCommand("AdvanceToNextMisspelling"));
-    document().settings()->setUnifiedTextCheckerEnabled(false);
 }
 
 } // namespace blink

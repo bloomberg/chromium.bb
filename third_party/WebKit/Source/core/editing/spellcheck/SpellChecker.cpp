@@ -123,31 +123,32 @@ void SpellChecker::toggleContinuousSpellChecking()
 
 void SpellChecker::didBeginEditing(Element* element)
 {
-    if (isContinuousSpellCheckingEnabled() && unifiedTextCheckerEnabled()) {
-        bool isTextField = false;
-        HTMLTextFormControlElement* enclosingHTMLTextFormControlElement = 0;
-        if (!isHTMLTextFormControlElement(*element))
-            enclosingHTMLTextFormControlElement = enclosingTextFormControl(Position::firstPositionInNode(element));
-        element = enclosingHTMLTextFormControlElement ? enclosingHTMLTextFormControlElement : element;
-        Element* parent = element;
-        if (isHTMLTextFormControlElement(*element)) {
-            HTMLTextFormControlElement* textControl = toHTMLTextFormControlElement(element);
-            parent = textControl;
-            element = textControl->innerEditorElement();
-            if (!element)
-                return;
-            isTextField = isHTMLInputElement(*textControl) && toHTMLInputElement(*textControl).isTextField();
-        }
+    if (!isContinuousSpellCheckingEnabled())
+        return;
 
-        if (isTextField || !parent->isAlreadySpellChecked()) {
-            if (EditingStrategy::editingIgnoresContent(element))
-                return;
-            // We always recheck textfields because markers are removed from them on blur.
-            VisibleSelection selection = VisibleSelection::selectionFromContentsOfNode(element);
-            markMisspellingsAndBadGrammar(selection);
-            if (!isTextField)
-                parent->setAlreadySpellChecked(true);
-        }
+    bool isTextField = false;
+    HTMLTextFormControlElement* enclosingHTMLTextFormControlElement = 0;
+    if (!isHTMLTextFormControlElement(*element))
+        enclosingHTMLTextFormControlElement = enclosingTextFormControl(Position::firstPositionInNode(element));
+    element = enclosingHTMLTextFormControlElement ? enclosingHTMLTextFormControlElement : element;
+    Element* parent = element;
+    if (isHTMLTextFormControlElement(*element)) {
+        HTMLTextFormControlElement* textControl = toHTMLTextFormControlElement(element);
+        parent = textControl;
+        element = textControl->innerEditorElement();
+        if (!element)
+            return;
+        isTextField = isHTMLInputElement(*textControl) && toHTMLInputElement(*textControl).isTextField();
+    }
+
+    if (isTextField || !parent->isAlreadySpellChecked()) {
+        if (EditingStrategy::editingIgnoresContent(element))
+            return;
+        // We always recheck textfields because markers are removed from them on blur.
+        VisibleSelection selection = VisibleSelection::selectionFromContentsOfNode(element);
+        markMisspellingsAndBadGrammar(selection);
+        if (!isTextField)
+            parent->setAlreadySpellChecked(true);
     }
 }
 
@@ -226,13 +227,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     int searchEndOffsetAfterWrap = spellingSearchEnd.offsetInContainerNode();
 
     int misspellingOffset = 0;
-    String misspelledWord;
-
-    if (unifiedTextCheckerEnabled()) {
-        misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspellingOrBadGrammar(misspellingOffset);
-    } else {
-        misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspelling(misspellingOffset, false);
-    }
+    String misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspellingOrBadGrammar(misspellingOffset);
 
     // If we did not find a misspelled word, wrap and try again (but don't bother if we started at the beginning of the
     // block rather than at a selection).
@@ -240,12 +235,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         spellingSearchStart = Position::editingPositionOf(topNode, 0);
         // going until the end of the very first chunk we tested is far enough
         spellingSearchEnd = Position::editingPositionOf(searchEndNodeAfterWrap, searchEndOffsetAfterWrap);
-
-        if (unifiedTextCheckerEnabled()) {
-            misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspellingOrBadGrammar(misspellingOffset);
-        } else {
-            misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspelling(misspellingOffset, false);
-        }
+        misspelledWord = TextCheckingHelper(spellCheckerClient(), spellingSearchStart, spellingSearchEnd).findFirstMisspellingOrBadGrammar(misspellingOffset);
     }
 
     if (!misspelledWord.isEmpty()) {
@@ -278,26 +268,21 @@ void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &moving
 
 void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
 {
-    markMisspellingsAndBadGrammar(movingSelection, movingSelection);
+    markAllMisspellingsAndBadGrammar(movingSelection, movingSelection);
 }
 
 void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection)
 {
-    TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterLineBreak");
-
-    if (!unifiedTextCheckerEnabled()) {
-        markMisspellings(wordSelection);
-        return;
-    }
-
     if (!isContinuousSpellCheckingEnabled())
         return;
+
+    TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterLineBreak");
 
     VisibleSelection wholeParagraph(
         startOfParagraph(wordSelection.visibleStart()),
         endOfParagraph(wordSelection.visibleEnd()));
 
-    markAllMisspellingsAndBadGrammarInRanges(wordSelection.toNormalizedEphemeralRange(), wholeParagraph.toNormalizedEphemeralRange());
+    markAllMisspellingsAndBadGrammar(wordSelection, wholeParagraph);
 }
 
 void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping)
@@ -307,52 +292,9 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
 
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterTypingToWord");
 
-    if (unifiedTextCheckerEnabled()) {
-        VisibleSelection adjacentWords = VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary));
-        VisibleSelection selectedSentence = VisibleSelection(startOfSentence(wordStart), endOfSentence(wordStart));
-        markAllMisspellingsAndBadGrammarInRanges(adjacentWords.toNormalizedEphemeralRange(), selectedSentence.toNormalizedEphemeralRange());
-        return;
-    }
-
-    // Check spelling of one word
-    bool result = markMisspellings(VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary)));
-
-    if (!result)
-        return;
-
-    // Check grammar of entire sentence
-    markBadGrammar(VisibleSelection(startOfSentence(wordStart), endOfSentence(wordStart)));
-}
-
-bool SpellChecker::markMisspellingsOrBadGrammar(const VisibleSelection& selection, bool checkSpelling)
-{
-    // This function is called with a selection already expanded to word boundaries.
-    // Might be nice to assert that here.
-
-    // This function is used only for as-you-type checking, so if that's off we do nothing. Note that
-    // grammar checking can only be on if spell checking is also on.
-    if (!isContinuousSpellCheckingEnabled())
-        return false;
-
-    TRACE_EVENT0("blink", "SpellChecker::markMisspellingsOrBadGrammar");
-
-    const EphemeralRange range = selection.toNormalizedEphemeralRange();
-    if (range.isNull())
-        return false;
-
-    // If we're not in an editable node, bail.
-    Node* editableNode = range.startPosition().computeContainerNode();
-    if (!editableNode || !hasEditableStyle(*editableNode))
-        return false;
-
-    if (!isSpellCheckingEnabledFor(editableNode))
-        return false;
-
-    TextCheckingHelper checker(spellCheckerClient(), range.startPosition(), range.endPosition());
-    if (checkSpelling)
-        return checker.markAllMisspellings();
-
-    return false;
+    VisibleSelection adjacentWords = VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary));
+    VisibleSelection selectedSentence = VisibleSelection(startOfSentence(wordStart), endOfSentence(wordStart));
+    markAllMisspellingsAndBadGrammar(adjacentWords, selectedSentence);
 }
 
 bool SpellChecker::isSpellCheckingEnabledFor(Node* node) const
@@ -387,21 +329,17 @@ bool SpellChecker::isSpellCheckingEnabledFor(const VisibleSelection& selection)
     return false;
 }
 
-bool SpellChecker::markMisspellings(const VisibleSelection& selection)
+void SpellChecker::markAllMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, const VisibleSelection& grammarSelection)
 {
-    return markMisspellingsOrBadGrammar(selection, true);
-}
-
-void SpellChecker::markBadGrammar(const VisibleSelection& selection)
-{
-    markMisspellingsOrBadGrammar(selection, false);
-}
-
-void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(const EphemeralRange& spellingRange, const EphemeralRange& grammarRange)
-{
-    DCHECK(unifiedTextCheckerEnabled());
+    if (!isContinuousSpellCheckingEnabled())
+        return;
 
     // This function is called with selections already expanded to word boundaries.
+    // This function is triggered by selection change, in which case we check
+    // spelling and grammar, but don't autocorrect misspellings.
+
+    const EphemeralRange& spellingRange = spellingSelection.toNormalizedEphemeralRange();
+    const EphemeralRange& grammarRange = grammarSelection.toNormalizedEphemeralRange();
     if (spellingRange.isNull() || grammarRange.isNull())
         return;
 
@@ -580,22 +518,6 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
     }
 }
 
-void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelection, const VisibleSelection& grammarSelection)
-{
-    if (unifiedTextCheckerEnabled()) {
-        if (!isContinuousSpellCheckingEnabled())
-            return;
-
-        // markMisspellingsAndBadGrammar() is triggered by selection change, in which case we check spelling and grammar, but don't autocorrect misspellings.
-        markAllMisspellingsAndBadGrammarInRanges(spellingSelection.toNormalizedEphemeralRange(), grammarSelection.toNormalizedEphemeralRange());
-        return;
-    }
-
-    markMisspellings(spellingSelection);
-    if (isContinuousSpellCheckingEnabled())
-        markBadGrammar(grammarSelection);
-}
-
 void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionAtWordBoundary)
 {
     DCHECK(frame().selection().isAvailable());
@@ -688,8 +610,7 @@ void SpellChecker::didEndEditingOnTextField(Element* e)
     HTMLTextFormControlElement* textFormControlElement = toHTMLTextFormControlElement(e);
     HTMLElement* innerEditor = textFormControlElement->innerEditorElement();
     DocumentMarker::MarkerTypes markerTypes(DocumentMarker::Spelling);
-    if (unifiedTextCheckerEnabled())
-        markerTypes.add(DocumentMarker::Grammar);
+    markerTypes.add(DocumentMarker::Grammar);
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(*innerEditor))
         frame().document()->markers().removeMarkers(&node, markerTypes);
 }
@@ -791,18 +712,17 @@ void SpellChecker::spellCheckAfterBlur()
 
 void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords)
 {
+    if (!isContinuousSpellCheckingEnabled())
+        return;
+
     TRACE_EVENT0("blink", "SpellChecker::spellCheckOldSelection");
 
     VisiblePosition oldStart(oldSelection.visibleStart());
     VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
     if (oldAdjacentWords == newAdjacentWords)
         return;
-    if (isContinuousSpellCheckingEnabled()) {
-        VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
-        markMisspellingsAndBadGrammar(oldAdjacentWords, selectedSentence);
-        return;
-    }
-    markMisspellingsAndBadGrammar(oldAdjacentWords, oldAdjacentWords);
+    VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
+    markAllMisspellingsAndBadGrammar(oldAdjacentWords, selectedSentence);
 }
 
 static Node* findFirstMarkable(Node* node)
@@ -852,11 +772,6 @@ void SpellChecker::removeMarkers(const VisibleSelection& selection, DocumentMark
     if (range.isNull())
         return;
     frame().document()->markers().removeMarkers(range, markerTypes);
-}
-
-bool SpellChecker::unifiedTextCheckerEnabled() const
-{
-    return blink::unifiedTextCheckerEnabled(m_frame);
 }
 
 void SpellChecker::cancelCheck()

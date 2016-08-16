@@ -88,19 +88,13 @@ public:
     TextCheckingHelper(SpellCheckerClient&, const Position& start, const Position& end);
     ~TextCheckingHelper();
 
-    String findFirstMisspelling(int& firstMisspellingOffset, bool markAll);
     String findFirstMisspellingOrBadGrammar(int& outFirstFoundOffset);
-    bool markAllMisspellings();
 
 private:
     SpellCheckerClient* m_client;
     Position m_start;
     Position m_end;
-
-    bool unifiedTextCheckerEnabled() const;
 };
-
-bool unifiedTextCheckerEnabled(const LocalFrame*);
 
 } // namespace blink
 

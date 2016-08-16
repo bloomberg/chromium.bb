@@ -15,7 +15,6 @@ SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar()
 test(function() {
     if (window.internals) {
         internals.setContinuousSpellCheckingEnabled(true);
-        internals.settings.setUnifiedTextCheckerEnabled(true);
     }
 
     // Make text for spell checking longer than |kChunkSize|=16*1024 defined in

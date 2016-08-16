@@ -25,9 +25,6 @@ function removeChildren(node) {
         node.removeChild(node.firstChild);
 }
 
-if (window.internals)
-    internals.settings.setUnifiedTextCheckerEnabled(true);
-
 var testData = [
     { text: 'zz', marked: ['zz'] },
     { text: 'apple,zz,orange', marked: ['zz'] },
@@ -78,9 +75,6 @@ function performTest(id, data) {
 for (var i = 0; i < testData.length; ++i) {
     performTest('test', testData[i]);
 }
-
-if (window.internals)
-    internals.settings.setUnifiedTextCheckerEnabled(false);
 
 var successfullyParsed = true;
 </script>

@@ -3,9 +3,6 @@ description('Tests if the spellchecker behaves correctly when the spellcheck att
 
 jsTestIsAsync = true;
 
-if (window.internals)
-    internals.settings.setUnifiedTextCheckerEnabled(true);
-
 var parent = document.createElement("div");
 document.body.appendChild(parent);
 var sel = document.getSelection();

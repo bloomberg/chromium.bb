@@ -42,8 +42,6 @@ function test(div, frameDocument)
         return;
     }
 
-    internals.settings.setUnifiedTextCheckerEnabled(true);
-
     shouldBecomeEqual('hasSpellingMarkerOnSetting(editableDiv, true)', 'true', function() {
         shouldBecomeEqual('hasSpellingMarkerOnSetting(editableBodyInFrame, true)', 'true', function() {
             // Turn off spellchecking, all misspellings should disappear.

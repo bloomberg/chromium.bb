@@ -2,9 +2,6 @@ description('Spelling markers should remain while merging two lines.');
 
 jsTestIsAsync = true;
 
-if (window.internals)
-    internals.settings.setUnifiedTextCheckerEnabled(true);
-
 var testRoot = document.createElement("div");
 document.body.insertBefore(testRoot, document.body.firstChild);
 

@@ -6,8 +6,6 @@
 <div id="log"></div>
 <script>
 test(function() {
-    if (window.internals)
-        internals.settings.setUnifiedTextCheckerEnabled(true);
     var text = edit.childNodes[1];
     var selection = window.getSelection();
     selection.collapse(text, text.length);
