@@ -209,7 +209,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   }
 
   void OnDomFetched(std::unique_ptr<runtime::EvaluateResult> result) {
-    if (result->GetWasThrown()) {
+    if (result->GetExceptionDetails()) {
       LOG(ERROR) << "Failed to evaluate document.body.innerHTML";
     } else {
       std::string dom;
