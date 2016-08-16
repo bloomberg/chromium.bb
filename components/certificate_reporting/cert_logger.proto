@@ -76,6 +76,7 @@ message CertLoggerRequest {
     ERR_CERT_UNABLE_TO_CHECK_REVOCATION = 11;
     ERR_CERT_NO_REVOCATION_MECHANISM = 12;
     ERR_CERT_NON_UNIQUE_NAME = 13;
+    ERR_CERTIFICATE_TRANSPARENCY_REQUIRED = 14;
   };
 
   // Certificate errors encountered (if any) when validating this

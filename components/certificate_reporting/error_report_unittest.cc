@@ -20,6 +20,7 @@
 
 using net::SSLInfo;
 using testing::UnorderedElementsAre;
+using testing::UnorderedElementsAreArray;
 
 namespace certificate_reporting {
 
@@ -46,7 +47,8 @@ enum UnverifiedCertChainStatus {
 };
 
 void GetTestSSLInfo(UnverifiedCertChainStatus unverified_cert_chain_status,
-                    SSLInfo* info) {
+                    SSLInfo* info,
+                    net::CertStatus cert_status) {
   info->cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), kTestCertFilename);
   ASSERT_TRUE(info->cert);
@@ -56,7 +58,7 @@ void GetTestSSLInfo(UnverifiedCertChainStatus unverified_cert_chain_status,
     ASSERT_TRUE(info->unverified_cert);
   }
   info->is_issued_by_known_root = true;
-  info->cert_status = kCertStatus;
+  info->cert_status = cert_status;
   info->pinning_failure_log = kDummyFailureLog;
 }
 
@@ -68,8 +70,10 @@ std::string GetPEMEncodedChain() {
   return cert_data;
 }
 
-void VerifyErrorReportSerialization(const ErrorReport& report,
-                                    const SSLInfo& ssl_info) {
+void VerifyErrorReportSerialization(
+    const ErrorReport& report,
+    const SSLInfo& ssl_info,
+    std::vector<CertLoggerRequest::CertError> cert_errors) {
   std::string serialized_report;
   ASSERT_TRUE(report.Serialize(&serialized_report));
 
@@ -83,9 +87,8 @@ void VerifyErrorReportSerialization(const ErrorReport& report,
   EXPECT_EQ(
       ssl_info.is_issued_by_known_root,
       deserialized_report.is_issued_by_known_root());
-  EXPECT_THAT(
-      deserialized_report.cert_error(),
-      UnorderedElementsAre(kFirstReportedCertError, kSecondReportedCertError));
+  EXPECT_THAT(deserialized_report.cert_error(),
+              UnorderedElementsAreArray(cert_errors));
 }
 
 // Test that a serialized ErrorReport can be deserialized as
@@ -94,16 +97,19 @@ void VerifyErrorReportSerialization(const ErrorReport& report,
 TEST(ErrorReportTest, SerializedReportAsProtobuf) {
   SSLInfo ssl_info;
   ASSERT_NO_FATAL_FAILURE(
-      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info));
+      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
   ErrorReport report_known(kDummyHostname, ssl_info);
+  std::vector<CertLoggerRequest::CertError> cert_errors;
+  cert_errors.push_back(kFirstReportedCertError);
+  cert_errors.push_back(kSecondReportedCertError);
   ASSERT_NO_FATAL_FAILURE(
-      VerifyErrorReportSerialization(report_known, ssl_info));
+      VerifyErrorReportSerialization(report_known, ssl_info, cert_errors));
   // Test that both values for |is_issued_by_known_root| are serialized
   // correctly.
   ssl_info.is_issued_by_known_root = false;
   ErrorReport report_unknown(kDummyHostname, ssl_info);
   ASSERT_NO_FATAL_FAILURE(
-      VerifyErrorReportSerialization(report_unknown, ssl_info));
+      VerifyErrorReportSerialization(report_unknown, ssl_info, cert_errors));
 }
 
 TEST(ErrorReportTest, SerializedReportAsProtobufWithInterstitialInfo) {
@@ -113,7 +119,7 @@ TEST(ErrorReportTest, SerializedReportAsProtobufWithInterstitialInfo) {
   // where SSLInfo does not contain the unverified cert chain. (The test
   // above exercises the path where it does.)
   ASSERT_NO_FATAL_FAILURE(
-      GetTestSSLInfo(EXCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info));
+      GetTestSSLInfo(EXCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
   ErrorReport report(kDummyHostname, ssl_info);
 
   report.SetInterstitialInfo(ErrorReport::INTERSTITIAL_CLOCK,
@@ -148,7 +154,7 @@ TEST(ErrorReportTest, ParseSerializedReport) {
   std::string serialized_report;
   SSLInfo ssl_info;
   ASSERT_NO_FATAL_FAILURE(
-      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info));
+      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
   ErrorReport report(kDummyHostname, ssl_info);
   EXPECT_EQ(kDummyHostname, report.hostname());
   ASSERT_TRUE(report.Serialize(&serialized_report));
@@ -156,6 +162,20 @@ TEST(ErrorReportTest, ParseSerializedReport) {
   ErrorReport parsed;
   ASSERT_TRUE(parsed.InitializeFromString(serialized_report));
   EXPECT_EQ(report.hostname(), parsed.hostname());
+}
+
+// Check that CT errors are handled correctly.
+TEST(ErrorReportTest, CertificateTransparencyError) {
+  SSLInfo ssl_info;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info,
+                     net::CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED));
+  ErrorReport report_known(kDummyHostname, ssl_info);
+  std::vector<CertLoggerRequest::CertError> cert_errors;
+  cert_errors.push_back(
+      CertLoggerRequest::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  ASSERT_NO_FATAL_FAILURE(
+      VerifyErrorReportSerialization(report_known, ssl_info, cert_errors));
 }
 
 }  // namespace
