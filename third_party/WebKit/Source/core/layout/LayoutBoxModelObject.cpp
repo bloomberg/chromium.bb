@@ -777,7 +777,6 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(const LayoutPoint& 
         return LayoutPoint();
 
     LayoutPoint referencePoint = startPoint;
-    referencePoint.move(parent()->columnOffset(referencePoint));
 
     // If the base element is null, return the distance between the canvas origin and
     // the left border edge of the element and stop this algorithm.
@@ -785,25 +784,27 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(const LayoutPoint& 
         return referencePoint;
 
     if (const LayoutBoxModelObject* offsetParent = element->layoutBoxModelObject()) {
-        if (offsetParent->isBox() && !offsetParent->isBody())
-            referencePoint.move(-toLayoutBox(offsetParent)->borderLeft(), -toLayoutBox(offsetParent)->borderTop());
-        if (!isOutOfFlowPositioned() || flowThreadContainingBlock()) {
+        if (!isOutOfFlowPositioned()) {
             if (isInFlowPositioned())
                 referencePoint.move(offsetForInFlowPosition());
 
-            LayoutObject* current;
-            for (current = parent(); current != offsetParent && current->parent(); current = current->parent()) {
+            // Note that we may fail to find |offsetParent| while walking the container chain, if
+            // |offsetParent| is an inline split into continuations.
+            // <body style="display:inline;" id="offsetParent"><div></div><span id="this">
+            // This is why we have to do a nullptr check here.
+            // offset(Left|Top) is generally broken when offsetParent is inline.
+            for (const LayoutObject* current = container(); current && current != offsetParent; current = current->container()) {
                 // FIXME: What are we supposed to do inside SVG content?
-                if (!isOutOfFlowPositioned()) {
-                    if (current->isBox() && !current->isTableRow())
-                        referencePoint.moveBy(toLayoutBox(current)->topLeftLocation());
-                    referencePoint.move(current->parent()->columnOffset(referencePoint));
-                }
+                referencePoint.move(current->columnOffset(referencePoint));
+                if (current->isBox() && !current->isTableRow())
+                    referencePoint.moveBy(toLayoutBox(current)->topLeftLocation());
             }
 
             if (offsetParent->isBox() && offsetParent->isBody() && !offsetParent->isPositioned())
                 referencePoint.moveBy(toLayoutBox(offsetParent)->topLeftLocation());
         }
+        if (offsetParent->isBox() && !offsetParent->isBody())
+            referencePoint.move(-toLayoutBox(offsetParent)->borderLeft(), -toLayoutBox(offsetParent)->borderTop());
     }
 
     return referencePoint;
