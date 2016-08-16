@@ -58,6 +58,7 @@ interface Document : Node {
     [NewObject, DoNotTestNewObject, CustomElementCallbacks, RaisesException] Element createElementNS(DOMString? namespaceURI, DOMString qualifiedName);
     [NewObject] DocumentFragment createDocumentFragment();
     [NewObject] Text createTextNode(DOMString data);
+    [NewObject, RaisesException] CDATASection createCDATASection(DOMString data);
     [NewObject] Comment createComment(DOMString data);
     [NewObject, RaisesException] ProcessingInstruction createProcessingInstruction(DOMString target, DOMString data);
 
@@ -77,9 +78,6 @@ interface Document : Node {
 
     // NonDocumentRootScroller (https://github.com/bokand/NonDocumentRootScroller)
     [RaisesException=Setter, RuntimeEnabled=SetRootScroller] attribute Element? rootScroller;
-
-    // FIXME: CDATASection has been removed from the spec. crbug.com/437205
-    [RaisesException, MeasureAs=DocumentCreateCDATASection] CDATASection createCDATASection(DOMString data);
 
     // FIXME: xmlEncoding/xmlVersion/xmlStandalone have been removed from the spec.
     [MeasureAs=DocumentXMLEncoding] readonly attribute DOMString? xmlEncoding;

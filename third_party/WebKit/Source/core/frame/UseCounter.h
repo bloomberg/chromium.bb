@@ -132,7 +132,6 @@ public:
         ConsoleMarkTimeline = 102,
         DocumentCreateAttribute = 111,
         DocumentCreateAttributeNS = 112,
-        DocumentCreateCDATASection = 113, // Removed from DOM4.
         DocumentXMLEncoding = 115, // Removed from DOM4.
         DocumentXMLStandalone = 116, // Removed from DOM4.
         DocumentXMLVersion = 117, // Removed from DOM4.

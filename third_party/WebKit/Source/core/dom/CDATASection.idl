@@ -17,9 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://dom.spec.whatwg.org/#cdatasection
+// https://dom.spec.whatwg.org/#interface-cdatasection
 
-// FIXME: CDATASection has been removed from the spec. crbug.com/437205
 interface CDATASection : Text {
 };
-

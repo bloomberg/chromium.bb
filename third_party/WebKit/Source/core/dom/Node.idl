@@ -27,7 +27,6 @@
     // FIXME: Attr should not inherit from Node. crbug.com/305105
     const unsigned short ATTRIBUTE_NODE = 2;
     const unsigned short TEXT_NODE = 3;
-    // FIXME: CDATASection has been removed from the spec. crbug.com/437205
     const unsigned short CDATA_SECTION_NODE = 4;
     const unsigned short ENTITY_REFERENCE_NODE = 5; // historical
     const unsigned short ENTITY_NODE = 6; // historical
