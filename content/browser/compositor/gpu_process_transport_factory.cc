@@ -488,7 +488,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             context_provider, data->surface_handle, compositor->vsync_manager(),
             begin_frame_source.get(),
             CreateOverlayCandidateValidator(compositor->widget()),
-            BrowserGpuMemoryBufferManager::current()));
+            GetGpuMemoryBufferManager()));
 #else
         display_output_surface =
             base::WrapUnique(new GpuSurfacelessBrowserCompositorOutputSurface(
@@ -496,7 +496,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 compositor->vsync_manager(), begin_frame_source.get(),
                 CreateOverlayCandidateValidator(compositor->widget()),
                 GL_TEXTURE_2D, GL_RGB, ui::DisplaySnapshot::PrimaryFormat(),
-                BrowserGpuMemoryBufferManager::current()));
+                GetGpuMemoryBufferManager()));
 #endif
       } else {
         std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
@@ -544,7 +544,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   // The Display owns and uses the |display_output_surface| created above.
   data->display = base::MakeUnique<cc::Display>(
       HostSharedBitmapManager::current(),
-      BrowserGpuMemoryBufferManager::current(),
+      GetGpuMemoryBufferManager(),
       compositor->GetRendererSettings(), std::move(begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(
@@ -643,7 +643,7 @@ cc::SharedBitmapManager* GpuProcessTransportFactory::GetSharedBitmapManager() {
 
 gpu::GpuMemoryBufferManager*
 GpuProcessTransportFactory::GetGpuMemoryBufferManager() {
-  return BrowserGpuMemoryBufferManager::current();
+  return gpu_channel_factory_->GetGpuMemoryBufferManager();
 }
 
 cc::TaskGraphRunner* GpuProcessTransportFactory::GetTaskGraphRunner() {

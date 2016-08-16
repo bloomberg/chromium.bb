@@ -102,6 +102,10 @@ scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannelSync() {
   return gpu_channel_;
 }
 
+gpu::GpuMemoryBufferManager* GpuService::GetGpuMemoryBufferManager() {
+  return gpu_memory_buffer_manager_.get();
+}
+
 scoped_refptr<gpu::GpuChannelHost> GpuService::GetGpuChannelLocked() {
   if (gpu_channel_ && gpu_channel_->IsLost()) {
     main_task_runner_->PostTask(

@@ -49,6 +49,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   void EstablishGpuChannel(
       const gpu::GpuChannelEstablishedCallback& callback) override;
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync() override;
+  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:
   struct CreateRequest;

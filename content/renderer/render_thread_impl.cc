@@ -1609,7 +1609,11 @@ RenderThreadImpl::GetCompositorImplThreadTaskRunner() {
 }
 
 gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
-  return gpu_memory_buffer_manager();
+#if defined(USE_AURA)
+  if (gpu_service_)
+    return gpu_service_->gpu_memory_buffer_manager();
+#endif
+  return  gpu_memory_buffer_manager();
 }
 
 blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {

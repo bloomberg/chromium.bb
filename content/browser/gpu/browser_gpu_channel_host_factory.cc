@@ -312,6 +312,11 @@ BrowserGpuChannelHostFactory::EstablishGpuChannelSync() {
   return gpu_channel_;
 }
 
+gpu::GpuMemoryBufferManager*
+BrowserGpuChannelHostFactory::GetGpuMemoryBufferManager() {
+  return gpu_memory_buffer_manager_.get();
+}
+
 gpu::GpuChannelHost* BrowserGpuChannelHostFactory::GetGpuChannel() {
   if (gpu_channel_.get() && !gpu_channel_->IsLost())
     return gpu_channel_.get();

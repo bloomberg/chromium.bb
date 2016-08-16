@@ -1228,14 +1228,14 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       shell::ShellIsRemote()) {
     established_gpu_channel = always_uses_gpu = false;
   }
-  BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-  ImageTransportFactory::Initialize();
-
   gpu::GpuChannelEstablishFactory* factory =
       GetContentClient()->browser()->GetGpuChannelEstablishFactory();
-  if (!factory)
+  if (!factory) {
+    BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
     factory = BrowserGpuChannelHostFactory::instance();
+  }
   DCHECK(factory);
+  ImageTransportFactory::Initialize();
   ImageTransportFactory::GetInstance()->SetGpuChannelEstablishFactory(factory);
 #if defined(USE_AURA)
   bool use_mus_in_renderer = base::CommandLine::ForCurrentProcess()->HasSwitch(
