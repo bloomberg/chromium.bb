@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/config.gni")
@@ -686,4 +687,22 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       ":blink_common",
     ]
   }
+}
+
+# Fuzzer for blink::MHTMLParser.
+fuzzer_test("mhtml_parser_fuzzer") {
+  sources = [
+    "mhtml/MHTMLFuzzer.cpp",
+  ]
+  deps = [
+    ":blink_common",
+    ":platform",
+    ":test_support",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/mhtml.dict"
+  seed_corpus = "//third_party/WebKit/LayoutTests/mhtml"
+  additional_configs = [
+    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source:config",
+  ]
 }

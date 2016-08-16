@@ -2,6 +2,7 @@ include_rules = [
     "+web/tests",
     # For RunAllTests.cpp only.
     "+base/bind.h",
+    "+base/bind_helpers.h",
     "+base/run_loop.h",
     "+base/test/launcher/unit_test_launcher.h",
     "+base/test/test_suite.h",

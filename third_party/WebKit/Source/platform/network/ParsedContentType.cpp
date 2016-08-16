@@ -134,7 +134,7 @@ bool parseContentType(const String& contentType, ReceiverType& receiver)
     unsigned contentTypeLength = contentType.length();
     skipSpaces(contentType, index);
     if (index >= contentTypeLength)  {
-        DLOG(ERROR) << "Invalid Content-Type string '" << contentType << "'";
+        DVLOG(1) << "Invalid Content-Type string '" << contentType << "'";
         return false;
     }
 
@@ -151,13 +151,13 @@ bool parseContentType(const String& contentType, ReceiverType& receiver)
         skipSpaces(contentType, index);
         SubstringRange keyRange = parseParameterPart(contentType, index);
         if (!keyRange.second || index >= contentTypeLength) {
-            DLOG(ERROR) << "Invalid Content-Type parameter name. (at " << index << ")";
+            DVLOG(1) << "Invalid Content-Type parameter name. (at " << index << ")";
             return false;
         }
 
         // Should we tolerate spaces here?
         if (contentType[index++] != '=' || index >= contentTypeLength) {
-            DLOG(ERROR) << "Invalid Content-Type malformed parameter (at " << index << ").";
+            DVLOG(1) << "Invalid Content-Type malformed parameter (at " << index << ").";
             return false;
         }
 
@@ -165,13 +165,13 @@ bool parseContentType(const String& contentType, ReceiverType& receiver)
         SubstringRange valueRange = parseParameterPart(contentType, index);
 
         if (!valueRange.second) {
-            DLOG(ERROR) << "Invalid Content-Type, invalid parameter value (at " << index << ", for '" << substringForRange(contentType, keyRange).stripWhiteSpace() << "').";
+            DVLOG(1) << "Invalid Content-Type, invalid parameter value (at " << index << ", for '" << substringForRange(contentType, keyRange).stripWhiteSpace() << "').";
             return false;
         }
 
         // Should we tolerate spaces here?
         if (index < contentTypeLength && contentType[index++] != ';') {
-            DLOG(ERROR) << "Invalid Content-Type, invalid character at the end of key/value parameter (at " << index << ").";
+            DVLOG(1) << "Invalid Content-Type, invalid character at the end of key/value parameter (at " << index << ").";
             return false;
         }
 

@@ -103,14 +103,13 @@ static KeyValueMap retrieveKeyValuePairs(SharedBufferChunkReader* buffer)
         if (line.isEmpty())
             break; // Empty line means end of key/value section.
         if (line[0] == '\t') {
-            ASSERT(!key.isEmpty());
             value.append(line.substring(1));
             continue;
         }
         // New key/value, store the previous one if any.
         if (!key.isEmpty()) {
             if (keyValuePairs.find(key) != keyValuePairs.end())
-                DLOG(ERROR) << "Key duplicate found in MIME header. Key is '" << key << "', previous value replaced.";
+                DVLOG(1) << "Key duplicate found in MIME header. Key is '" << key << "', previous value replaced.";
             keyValuePairs.add(key, value.toString().stripWhiteSpace());
             key = String();
             value.clear();
@@ -143,7 +142,7 @@ MIMEHeader* MIMEHeader::parseHeader(SharedBufferChunkReader* buffer)
             mimeHeader->m_multipartType = parsedContentType.parameterValueForName("type");
             mimeHeader->m_endOfPartBoundary = parsedContentType.parameterValueForName("boundary");
             if (mimeHeader->m_endOfPartBoundary.isNull()) {
-                DLOG(ERROR) << "No boundary found in multipart MIME header.";
+                DVLOG(1) << "No boundary found in multipart MIME header.";
                 return nullptr;
             }
             mimeHeader->m_endOfPartBoundary.insert("--", 0);
@@ -181,7 +180,7 @@ MIMEHeader::Encoding MIMEHeader::parseContentTransferEncoding(const String& text
         return SevenBit;
     if (encoding == "binary")
         return Binary;
-    DLOG(ERROR) << "Unknown encoding '" << text << "' found in MIME header.";
+    DVLOG(1) << "Unknown encoding '" << text << "' found in MIME header.";
     return Unknown;
 }
 
@@ -217,7 +216,7 @@ HeapVector<Member<ArchiveResource>> MHTMLParser::parseArchive()
 bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, HeapVector<Member<ArchiveResource>>& resources)
 {
     if (!header) {
-        DLOG(ERROR) << "Failed to parse MHTML part: no header.";
+        DVLOG(1) << "Failed to parse MHTML part: no header.";
         return false;
     }
 
@@ -238,23 +237,22 @@ bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, HeapVector<Member<A
     while (!endOfArchive) {
         MIMEHeader* resourceHeader = MIMEHeader::parseHeader(&m_lineReader);
         if (!resourceHeader) {
-            DLOG(ERROR) << "Failed to parse MHTML, invalid MIME header.";
+            DVLOG(1) << "Failed to parse MHTML, invalid MIME header.";
             return false;
         }
         if (resourceHeader->contentType() == "multipart/alternative") {
             // Ignore IE nesting which makes little sense (IE seems to nest only some of the frames).
             if (!parseArchiveWithHeader(resourceHeader, resources)) {
-                DLOG(ERROR) << "Failed to parse MHTML subframe.";
+                DVLOG(1) << "Failed to parse MHTML subframe.";
                 return false;
             }
-            bool endOfPartReached = skipLinesUntilBoundaryFound(m_lineReader, header->endOfPartBoundary());
-            ASSERT_UNUSED(endOfPartReached, endOfPartReached);
+            skipLinesUntilBoundaryFound(m_lineReader, header->endOfPartBoundary());
             continue;
         }
 
         ArchiveResource* resource = parseNextPart(*resourceHeader, header->endOfPartBoundary(), header->endOfDocumentBoundary(), endOfArchive);
         if (!resource) {
-            DLOG(ERROR) << "Failed to parse MHTML part.";
+            DVLOG(1) << "Failed to parse MHTML part.";
             return false;
         }
         resources.append(resource);
@@ -277,20 +275,20 @@ ArchiveResource* MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader, const 
     bool endOfPartReached = false;
     if (contentTransferEncoding == MIMEHeader::Binary) {
         if (!checkBoundary) {
-            DLOG(ERROR) << "Binary contents requires end of part";
+            DVLOG(1) << "Binary contents requires end of part";
             return nullptr;
         }
         m_lineReader.setSeparator(endOfPartBoundary.utf8().data());
         Vector<char> part;
         if (!m_lineReader.nextChunk(part)) {
-            DLOG(ERROR) << "Binary contents requires end of part";
+            DVLOG(1) << "Binary contents requires end of part";
             return nullptr;
         }
         content->append(part);
         m_lineReader.setSeparator("\r\n");
         Vector<char> nextChars;
         if (m_lineReader.peek(nextChars, 2) != 2) {
-            DLOG(ERROR) << "Invalid seperator.";
+            DVLOG(1) << "Invalid seperator.";
             return nullptr;
         }
         endOfPartReached = true;
@@ -299,7 +297,7 @@ ArchiveResource* MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader, const 
         if (!endOfArchiveReached) {
             String line = m_lineReader.nextChunkAsUTF8StringWithLatin1Fallback();
             if (!line.isEmpty()) {
-                DLOG(ERROR) << "No CRLF at end of binary section.";
+                DVLOG(1) << "No CRLF at end of binary section.";
                 return nullptr;
             }
         }
@@ -320,7 +318,7 @@ ArchiveResource* MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader, const 
         }
     }
     if (!endOfPartReached && checkBoundary) {
-        DLOG(ERROR) << "No bounday found for MHTML part.";
+        DVLOG(1) << "No boundary found for MHTML part.";
         return nullptr;
     }
 
@@ -328,7 +326,7 @@ ArchiveResource* MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader, const 
     switch (contentTransferEncoding) {
     case MIMEHeader::Base64:
         if (!base64Decode(content->data(), content->size(), data)) {
-            DLOG(ERROR) << "Invalid base64 content for MHTML part.";
+            DVLOG(1) << "Invalid base64 content for MHTML part.";
             return nullptr;
         }
         break;
@@ -341,7 +339,7 @@ ArchiveResource* MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader, const 
         data.append(content->data(), content->size());
         break;
     default:
-        DLOG(ERROR) << "Invalid encoding for MHTML part.";
+        DVLOG(1) << "Invalid encoding for MHTML part.";
         return nullptr;
     }
     RefPtr<SharedBuffer> contentBuffer = SharedBuffer::adoptVector(data);

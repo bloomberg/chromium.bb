@@ -35,6 +35,8 @@ static_library("test_support") {
     "gtest_xml_util.h",
     "histogram_tester.cc",
     "histogram_tester.h",
+    "icu_test_util.cc",
+    "icu_test_util.h",
     "ios/wait_util.h",
     "ios/wait_util.mm",
     "launcher/test_result.cc",
@@ -193,6 +195,8 @@ static_library("test_support") {
     sources -= [
       "gtest_xml_util.cc",
       "gtest_xml_util.h",
+      "icu_test_util.cc",
+      "icu_test_util.h",
       "perf_test_suite.cc",
       "perf_test_suite.h",
       "scoped_path_override.cc",
