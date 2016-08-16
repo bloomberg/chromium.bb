@@ -36,6 +36,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
         ['linux'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html', bug=634519)
 
     # All platforms.
     self.Fail('conformance/glsl/bugs/' +
@@ -204,6 +205,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     #     ['mac', ('nvidia', 0xfe9)], bug=616562)
     self.Fail('deqp/data/gles3/shaders/linkage.html',
         ['mac'], bug=601821)
+    self.Fail('conformance2/programs/gl-get-frag-data-location.html',
+        ['mac'], bug=638340)
 
     # This one's flaky on AMD, NVIDIA and Intel GPUs, but the
     # GPU-specific expectations aren't working properly.
@@ -423,7 +426,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderoperator/' +
         'angle_and_trigonometry_03.html',
         ['mac', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_fucntions.html',
+    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderoperator/geometric.html',
         ['mac', 'amd'], bug=483282)
