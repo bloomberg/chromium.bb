@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
@@ -48,6 +52,7 @@ class TestMediaRouterAction : public MediaRouterAction {
       MediaRouterDialogControllerImpl* controller) {
     DCHECK(controller);
     controller_ = controller;
+    controller_->SetMediaRouterAction(GetWeakPtr());
   }
 
  private:
@@ -58,6 +63,11 @@ class TestMediaRouterAction : public MediaRouterAction {
 
   MediaRouterActionPlatformDelegate* GetPlatformDelegate() override {
     return platform_delegate_;
+  }
+
+  void MaybeRemoveAction() override {
+    if (GetMediaRouterDialogController())
+      MediaRouterAction::MaybeRemoveAction();
   }
 
   MediaRouterDialogControllerImpl* controller_;
@@ -114,8 +124,12 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   // MediaRouterTest:
   void SetUp() override {
     MediaRouterTest::SetUp();
+    static_cast<extensions::TestExtensionSystem*>(
+        extensions::ExtensionSystem::Get(profile()))
+        ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
+                                 base::FilePath(), false);
     toolbar_model_ = extensions::extension_action_test_util::
-        CreateToolbarModelForProfileWithoutWaitingForReady(profile());
+        CreateToolbarModelForProfile(profile());
 
     // browser() will only be valid once BrowserWithTestWindowTest::SetUp()
     // has run.
@@ -125,6 +139,9 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
         new TestMediaRouterAction(
             browser(),
             browser_action_test_util_->GetToolbarActionsBar()));
+    delegate_.reset(new MockToolbarActionViewDelegate());
+
+    action()->SetDelegate(delegate_.get());
 
     local_display_route_list_.push_back(
         media_router::MediaRoute("routeId1", fake_source1_, "sinkId1",
@@ -138,12 +155,23 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   }
 
   void TearDown() override {
-    browser_action_test_util_.reset();
+    delegate_.reset();
     action_.reset();
+    browser_action_test_util_.reset();
     MediaRouterTest::TearDown();
   }
 
+  bool ActionExists() {
+    return toolbar_model_->HasComponentAction(
+        ComponentToolbarActionsFactory::kMediaRouterActionId);
+  }
+
+  void ResetTestMediaRouterAction() {
+    action_.reset();
+  }
+
   TestMediaRouterAction* action() { return action_.get(); }
+  ToolbarActionsModel* toolbar_model() { return toolbar_model_; }
   const media_router::Issue* fake_issue_notification() {
     return &fake_issue_notification_;
   }
@@ -175,6 +203,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
 
   std::unique_ptr<TestMediaRouterAction> action_;
+  std::unique_ptr<MockToolbarActionViewDelegate> delegate_;
 
   // The associated ToolbarActionsModel (owned by the keyed service setup).
   ToolbarActionsModel* toolbar_model_;
@@ -320,42 +349,131 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
 }
 
 TEST_F(MediaRouterActionUnitTest, IconPressedState) {
+  base::AutoReset<bool> disable_animations(
+      &ToolbarActionsBar::disable_animations_for_testing_, true);
+
   // Start with one window with one tab.
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   chrome::NewTab(browser());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
-  // Create a reference to initiator contents.
-  WebContents* initiator_ =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  MediaRouterDialogControllerImpl::CreateForWebContents(initiator_);
-  MediaRouterDialogControllerImpl* dialog_controller_ =
-      MediaRouterDialogControllerImpl::FromWebContents(initiator_);
-  ASSERT_TRUE(dialog_controller_);
+  WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
+  MediaRouterDialogControllerImpl::CreateForWebContents(initiator);
+  MediaRouterDialogControllerImpl* dialog_controller =
+      MediaRouterDialogControllerImpl::FromWebContents(initiator);
+  ASSERT_TRUE(dialog_controller);
 
   // Sets the controller to use for TestMediaRouterAction.
-  action()->SetMediaRouterDialogController(dialog_controller_);
+  action()->SetMediaRouterDialogController(dialog_controller);
 
-  // Create a ToolbarActionViewDelegate to use for MediaRouterAction.
-  std::unique_ptr<MockToolbarActionViewDelegate> mock_delegate(
-      new MockToolbarActionViewDelegate());
+  // Add the icon to the toolbar and make it persist.
+  toolbar_model()->AddComponentAction(
+      ComponentToolbarActionsFactory::kMediaRouterActionId);
+  action()->ToggleVisibilityPreference();
+  EXPECT_TRUE(ActionExists());
 
-  EXPECT_CALL(*mock_delegate, GetCurrentWebContents()).WillOnce(
-      testing::Return(initiator_));
-  EXPECT_CALL(*mock_delegate, OnPopupClosed()).Times(1);
-  action()->SetDelegate(mock_delegate.get());
-
-  EXPECT_CALL(*mock_delegate, OnPopupShown(true)).Times(1);
   action()->ExecuteAction(true);
+  EXPECT_TRUE(dialog_controller->IsShowingMediaRouterDialog());
 
   // Pressing the icon while the popup is shown should close the popup
-  EXPECT_CALL(*mock_delegate, OnPopupClosed()).Times(1);
   action()->ExecuteAction(true);
+  EXPECT_FALSE(dialog_controller->IsShowingMediaRouterDialog());
 
-  EXPECT_CALL(*mock_delegate, OnPopupShown(true)).Times(1);
-  dialog_controller_->CreateMediaRouterDialog();
+  dialog_controller->CreateMediaRouterDialog();
+  EXPECT_TRUE(dialog_controller->IsShowingMediaRouterDialog());
 
-  EXPECT_CALL(*mock_delegate, OnPopupClosed()).Times(1);
-  dialog_controller_->HideMediaRouterDialog();
+  dialog_controller->HideMediaRouterDialog();
+  EXPECT_FALSE(dialog_controller->IsShowingMediaRouterDialog());
+
+  // Make the icon go away.
+  action()->ToggleVisibilityPreference();
+  EXPECT_FALSE(ActionExists());
+}
+
+TEST_F(MediaRouterActionUnitTest, EphemeralIcon) {
+  // We'll be using the action created by the toolbar model in this test,
+  // so we remove the test action here.
+  ResetTestMediaRouterAction();
+
+  base::AutoReset<bool> disable_animations(
+      &ToolbarActionsBar::disable_animations_for_testing_, true);
+
+  // Start with one window with one tab.
+  EXPECT_EQ(0, browser()->tab_strip_model()->count());
+  chrome::NewTab(browser());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
+  MediaRouterDialogControllerImpl::CreateForWebContents(initiator);
+  MediaRouterDialogControllerImpl* dialog_controller =
+      MediaRouterDialogControllerImpl::FromWebContents(initiator);
+  ASSERT_TRUE(dialog_controller);
+
+  EXPECT_FALSE(ActionExists());
+  // Show the popup. The icon should become visible.
+  dialog_controller->ShowMediaRouterDialog();
+  EXPECT_TRUE(ActionExists());
+  // Hide the popup. The icon should become hidden.
+  dialog_controller->HideMediaRouterDialog();
+  EXPECT_FALSE(ActionExists());
+
+  // Show the popup.
+  dialog_controller->ShowMediaRouterDialog();
+  // Add a local display route.
+  dialog_controller->action_for_test()
+      ->OnRoutesUpdated(local_display_route_list(), empty_route_id_list());
+  EXPECT_TRUE(ActionExists());
+  // Hide the popup while there's still a local media route. The icon should not
+  // be hidden as long as the media route exists.
+  dialog_controller->HideMediaRouterDialog();
+  EXPECT_TRUE(ActionExists());
+  // Remove the local route. Now the icon should be hidden.
+  dialog_controller->action_for_test()->OnRoutesUpdated(
+      std::vector<media_router::MediaRoute>(),
+      empty_route_id_list());
+  EXPECT_FALSE(ActionExists());
+}
+
+TEST_F(MediaRouterActionUnitTest, ToggleIconVisibilityPreference) {
+  // We'll be using the action created by the toolbar model in this test,
+  // so we remove the test action here.
+  ResetTestMediaRouterAction();
+
+  base::AutoReset<bool> disable_animations(
+      &ToolbarActionsBar::disable_animations_for_testing_, true);
+
+  // Start with one window with one tab.
+  EXPECT_EQ(0, browser()->tab_strip_model()->count());
+  chrome::NewTab(browser());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  WebContents* initiator = browser()->tab_strip_model()->GetActiveWebContents();
+  MediaRouterDialogControllerImpl::CreateForWebContents(initiator);
+  MediaRouterDialogControllerImpl* dialog_controller =
+      MediaRouterDialogControllerImpl::FromWebContents(initiator);
+  ASSERT_TRUE(dialog_controller);
+
+  EXPECT_FALSE(ActionExists());
+  // Show the popup. The icon should become visible.
+  dialog_controller->ShowMediaRouterDialog();
+  EXPECT_TRUE(ActionExists());
+  // Turn on the settings to always show the icon.
+  dialog_controller->action_for_test()->ToggleVisibilityPreference();
+  // Hide the popup. The icon should stay visible.
+  dialog_controller->HideMediaRouterDialog();
+  EXPECT_TRUE(ActionExists());
+
+  // Close the tab and open another.
+  browser()->tab_strip_model()->CloseAllTabs();
+  EXPECT_EQ(0, browser()->tab_strip_model()->count());
+  chrome::NewTab(browser());
+  // The icon should persist.
+  EXPECT_TRUE(ActionExists());
+  // Get the dialog controller for the new tab.
+  dialog_controller = MediaRouterDialogControllerImpl::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  // Turn off the setting to always show the icon.
+  // The icon should get hidden now.
+  dialog_controller->action_for_test()->ToggleVisibilityPreference();
+  EXPECT_FALSE(ActionExists());
 }

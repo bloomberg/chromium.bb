@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_impl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -94,6 +95,11 @@ void ComponentMigrationHelper::OnFeatureEnabled(
 
   if (component_action_pref &&
       !delegate_->HasComponentAction(component_action_id)) {
+    if (component_action_id ==
+        ComponentToolbarActionsFactory::kMediaRouterActionId) {
+      pref_service_->SetBoolean(prefs::kMediaRouterAlwaysShowActionIcon,
+                                true);
+    }
     delegate_->AddComponentAction(component_action_id);
   }
 }
@@ -106,6 +112,12 @@ void ComponentMigrationHelper::OnFeatureDisabled(
 
   enabled_actions_.erase(component_action_id);
   RemoveComponentActionPref(component_action_id);
+
+  if (component_action_id ==
+      ComponentToolbarActionsFactory::kMediaRouterActionId) {
+    pref_service_->SetBoolean(prefs::kMediaRouterAlwaysShowActionIcon,
+                              false);
+  }
 
   if (FeatureSwitch::extension_action_redesign()->IsEnabled() &&
       delegate_->HasComponentAction(component_action_id))
@@ -133,6 +145,14 @@ void ComponentMigrationHelper::OnExtensionReady(
   if (base::ContainsKey(enabled_actions_, component_action_id)) {
     UnloadExtension(extension_id);
     SetComponentActionPref(component_action_id, true);
+
+    // We treat installation of the cast extension as a signal to permanently
+    // show the icon in the toolbar.
+    if (component_action_id ==
+        ComponentToolbarActionsFactory::kMediaRouterActionId) {
+      pref_service_->SetBoolean(prefs::kMediaRouterAlwaysShowActionIcon,
+                                true);
+    }
 
     if (!delegate_->HasComponentAction(component_action_id))
       delegate_->AddComponentAction(component_action_id);

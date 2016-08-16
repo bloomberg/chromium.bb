@@ -8,7 +8,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -22,7 +24,8 @@ namespace media_router {
 // This class is not thread safe and must be called on the UI thread.
 class MediaRouterDialogControllerImpl :
     public content::WebContentsUserData<MediaRouterDialogControllerImpl>,
-    public MediaRouterDialogController {
+    public MediaRouterDialogController,
+    public TabStripModelObserver {
  public:
   ~MediaRouterDialogControllerImpl() override;
 
@@ -36,10 +39,19 @@ class MediaRouterDialogControllerImpl :
   // |action| must always be non-null.
   void SetMediaRouterAction(const base::WeakPtr<MediaRouterAction>& action);
 
+  void UpdateMaxDialogSize();
+
   // MediaRouterDialogController:
   bool IsShowingMediaRouterDialog() const override;
+  bool ShowMediaRouterDialog() override;
 
-  void UpdateMaxDialogSize();
+  // ToolbarStripModelObserver:
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override;
+
+  MediaRouterAction* action_for_test() { return action_.get(); }
 
  private:
   class DialogWebContentsObserver;
@@ -60,11 +72,16 @@ class MediaRouterDialogControllerImpl :
 
   void PopulateDialog(content::WebContents* media_router_dialog);
 
+  void ShowMediaRouterAction();
+
   std::unique_ptr<DialogWebContentsObserver> dialog_observer_;
 
   // True if the controller is waiting for a new media router dialog to be
   // created.
   bool media_router_dialog_pending_;
+
+  ScopedObserver<TabStripModel, TabStripModelObserver>
+      tab_strip_model_observer_;
 
   // |action_| refers to the MediaRouterAction on the toolbar, rather than
   // overflow menu. A MediaRouterAction is always created for the toolbar

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "extensions/browser/extension_registry.h"
@@ -45,6 +46,11 @@ class MockComponentMigrationHelper : public ComponentMigrationHelper {
 
   void SetTestComponentActionPref(bool enabled) {
     SetComponentActionPref(kTestActionId, enabled);
+  }
+
+  void SetMediaRouterActionPref(bool enabled) {
+    SetComponentActionPref(
+        ComponentToolbarActionsFactory::kMediaRouterActionId, enabled);
   }
 
   void EnableTestFeature() { enabled_actions_.insert(kTestActionId); }
@@ -93,6 +99,11 @@ class ComponentMigrationHelperTest : public ExtensionServiceTestBase {
     bool enable_value = false;
     CHECK(migration_pref->GetBoolean(kTestActionId, &enable_value));
     return enable_value;
+  }
+
+  bool IsMediaRouterActionAlwaysShown() {
+    return profile()->GetPrefs()->
+        GetBoolean(prefs::kMediaRouterAlwaysShowActionIcon);
   }
 
   StrictMock<MockComponentActionDelegate> mock_delegate_;
@@ -207,6 +218,34 @@ TEST_F(ComponentMigrationHelperTest, RemoveComponentAction) {
 
   mock_helper_->OnActionRemoved(kTestActionId);
   EXPECT_FALSE(IsTestComponentActionEnabled());
+}
+
+TEST_F(ComponentMigrationHelperTest, EnableAndDisableMediaRouterAction) {
+  mock_helper_->SetMediaRouterActionPref(true);
+  mock_helper_->Register(
+      ComponentToolbarActionsFactory::kMediaRouterActionId,
+      "test_cast_extension");
+  EXPECT_FALSE(IsMediaRouterActionAlwaysShown());
+
+  EXPECT_CALL(mock_delegate_, HasComponentAction(
+      ComponentToolbarActionsFactory::kMediaRouterActionId))
+      .WillOnce(Return(false));
+  EXPECT_CALL(mock_delegate_, AddComponentAction(
+      ComponentToolbarActionsFactory::kMediaRouterActionId));
+
+  mock_helper_->OnFeatureEnabled(
+      ComponentToolbarActionsFactory::kMediaRouterActionId);
+  EXPECT_TRUE(IsMediaRouterActionAlwaysShown());
+
+  EXPECT_CALL(mock_delegate_, HasComponentAction(
+      ComponentToolbarActionsFactory::kMediaRouterActionId))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_delegate_, RemoveComponentAction(
+      ComponentToolbarActionsFactory::kMediaRouterActionId));
+
+  mock_helper_->OnFeatureDisabled(
+      ComponentToolbarActionsFactory::kMediaRouterActionId);
+  EXPECT_FALSE(IsMediaRouterActionAlwaysShown());
 }
 
 }  // namespace extensions

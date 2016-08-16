@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 #include "ui/gfx/vector_icons_public.h"
 
 class Browser;
@@ -28,7 +29,8 @@ class MediaRouterDialogControllerImpl;
 class MediaRouterAction : public ToolbarActionViewController,
                           public media_router::IssuesObserver,
                           public media_router::MediaRoutesObserver,
-                          public TabStripModelObserver {
+                          public TabStripModelObserver,
+                          public ToolbarActionsBarObserver {
  public:
   MediaRouterAction(Browser* browser, ToolbarActionsBar* toolbar_actions_bar);
   ~MediaRouterAction() override;
@@ -67,16 +69,30 @@ class MediaRouterAction : public ToolbarActionViewController,
                         int index,
                         int reason) override;
 
-  void OnPopupHidden();
-  void OnPopupShown();
+  // ToolbarActionsBarObserver:
+  void OnToolbarActionsBarAnimationEnded() override;
+
+  void OnDialogHidden();
+  void OnDialogShown();
+
+  // Toggle the "Always show icon" option.
+  void ToggleVisibilityPreference();
+
+  // Removes the action from the toolbar and deletes |this| if the Media Router
+  // dialog is closed and there are no active local Media Routes.
+  // Overridden by tests.
+  virtual void MaybeRemoveAction();
+
+ protected:
+  // For accessing from tests.
+  base::WeakPtr<MediaRouterAction> GetWeakPtr();
 
  private:
-  // Called when a new browser window is opened, the user switches tabs in the
-  // browser window, or when |delegate_| is swapped out to be non-null and has
-  // a valid WebContents.
+  // Called when a new browser window is opened or when |delegate_| is swapped
+  // out to be non-null and has a valid WebContents.
   // This updates the pressed/unpressed state of the icon, which is different
   // on a per-tab basis.
-  void UpdatePopupState();
+  void UpdateDialogState();
 
   // Returns a reference to the MediaRouterDialogControllerImpl associated with
   // |delegate_|'s current WebContents. Guaranteed to be non-null.
@@ -92,6 +108,9 @@ class MediaRouterAction : public ToolbarActionViewController,
   // updates |current_icon_|.
   void MaybeUpdateIcon();
 
+  // Returns whether the "Always show icon" option is checked.
+  bool ShouldAlwaysShowIcon();
+
   gfx::VectorIconId GetCurrentIcon() const;
 
   // The current icon to show. This is updated based on the current issues and
@@ -105,6 +124,10 @@ class MediaRouterAction : public ToolbarActionViewController,
   // Whether a local displayable active route exists.
   bool has_local_display_route_;
 
+  // Whether the Media Router dialog is shown in the current tab.
+  // This should only be updated in OnDialogShown() and OnDialogHidden().
+  bool has_dialog_;
+
   ToolbarActionViewDelegate* delegate_;
 
   Browser* const browser_;
@@ -117,6 +140,8 @@ class MediaRouterAction : public ToolbarActionViewController,
 
   ScopedObserver<TabStripModel, TabStripModelObserver>
       tab_strip_model_observer_;
+  ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver>
+      toolbar_actions_bar_observer_;
 
   base::WeakPtrFactory<MediaRouterAction> weak_ptr_factory_;
 

@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -43,6 +44,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
                                                               false));
     media_router_action_.reset(new MediaRouterAction(browser(),
         browser_action_test_util_->GetToolbarActionsBar()));
+    // Toggle the "always show" setting on.
+    media_router_action_->ToggleVisibilityPreference();
 
     toolbar_action_view_widget_ = new views::Widget();
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
@@ -58,6 +61,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     toolbar_action_view_widget_->Close();
+    // Toggle the "always show" setting off.
+    media_router_action_->ToggleVisibilityPreference();
     media_router_action_.reset();
     browser_action_test_util_.reset();
     InProcessBrowserTest::TearDownOnMainThread();
