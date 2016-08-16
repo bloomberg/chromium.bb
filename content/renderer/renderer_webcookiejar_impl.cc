@@ -25,7 +25,7 @@ void RendererWebCookieJarImpl::setCookie(
 
 WebString RendererWebCookieJarImpl::cookies(
     const WebURL& url, const WebURL& first_party_for_cookies) {
-  mojo::String value_utf8;
+  std::string value_utf8;
   RenderThreadImpl::current()->render_frame_message_filter()->GetCookies(
       sender_->GetRoutingID(), url, first_party_for_cookies, &value_utf8);
   return WebString::fromUTF8(value_utf8);

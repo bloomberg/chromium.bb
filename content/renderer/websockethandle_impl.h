@@ -55,18 +55,20 @@ class WebSocketHandleImpl : public blink::WebSocketHandle,
   void OnConnectionError();
 
   // mojom::WebSocketClient methods:
-  void OnFailChannel(const mojo::String& reason) override;
+  void OnFailChannel(const std::string& reason) override;
   void OnStartOpeningHandshake(
       mojom::WebSocketHandshakeRequestPtr request) override;
   void OnFinishOpeningHandshake(
       mojom::WebSocketHandshakeResponsePtr response) override;
-  void OnAddChannelResponse(const mojo::String& selected_protocol,
-                            const mojo::String& extensions) override;
-  void OnDataFrame(bool fin, mojom::WebSocketMessageType type,
-                   mojo::Array<uint8_t> data) override;
+  void OnAddChannelResponse(const std::string& selected_protocol,
+                            const std::string& extensions) override;
+  void OnDataFrame(bool fin,
+                   mojom::WebSocketMessageType type,
+                   const std::vector<uint8_t>& data) override;
   void OnFlowControl(int64_t quota) override;
-  void OnDropChannel(bool was_clean, uint16_t code,
-                     const mojo::String& reason) override;
+  void OnDropChannel(bool was_clean,
+                     uint16_t code,
+                     const std::string& reason) override;
   void OnClosingHandshake() override;
 
   blink::WebSocketHandleClient* client_;

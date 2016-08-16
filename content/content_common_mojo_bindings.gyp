@@ -29,7 +29,6 @@
           '../url/mojo/gurl.typemap',
           '../url/mojo/origin.typemap',
         ],
-        'use_new_wrapper_types': 'false',
       },
       'dependencies': [
         '../components/leveldb/leveldb.gyp:leveldb_bindings_mojom',

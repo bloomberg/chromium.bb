@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/common/leveldb_wrapper.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -52,7 +53,9 @@ class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   static void EnableAggressiveCommitDelay();
 
  private:
-  using ValueMap = std::map<mojo::Array<uint8_t>, mojo::Array<uint8_t>>;
+  using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
+  using ChangedValueMap =
+      std::map<std::vector<uint8_t>, base::Optional<std::vector<uint8_t>>>;
 
   // Used to rate limit commits.
   class RateLimiter {
@@ -79,7 +82,7 @@ class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
 
   struct CommitBatch {
     bool clear_all_first;
-    ValueMap changed_values;
+    ChangedValueMap changed_values;
 
     CommitBatch();
     ~CommitBatch();
@@ -87,17 +90,18 @@ class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   };
 
   // LevelDBWrapperImpl:
-  void Put(mojo::Array<uint8_t> key,
-           mojo::Array<uint8_t> value,
-           const mojo::String& source,
+  void Put(const std::vector<uint8_t>& key,
+           const std::vector<uint8_t>& value,
+           const std::string& source,
            const PutCallback& callback) override;
-  void Delete(mojo::Array<uint8_t> key,
-              const mojo::String& source,
+  void Delete(const std::vector<uint8_t>& key,
+              const std::string& source,
               const DeleteCallback& callback) override;
-  void DeleteAll(const mojo::String& source,
+  void DeleteAll(const std::string& source,
                  const DeleteAllCallback& callback) override;
-  void Get(mojo::Array<uint8_t> key, const GetCallback& callback) override;
-  void GetAll(const mojo::String& source,
+  void Get(const std::vector<uint8_t>& key,
+           const GetCallback& callback) override;
+  void GetAll(const std::string& source,
               const GetAllCallback& callback) override;
 
   void OnConnectionError();

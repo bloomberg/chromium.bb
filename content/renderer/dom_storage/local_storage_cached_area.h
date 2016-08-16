@@ -65,24 +65,24 @@ class LocalStorageCachedArea : public mojom::LevelDBObserver,
   ~LocalStorageCachedArea() override;
 
   // LevelDBObserver:
-  void KeyAdded(mojo::Array<uint8_t> key,
-                mojo::Array<uint8_t> value,
-                const mojo::String& source) override;
-  void KeyChanged(mojo::Array<uint8_t> key,
-                  mojo::Array<uint8_t> new_value,
-                  mojo::Array<uint8_t> old_value,
-                  const mojo::String& source) override;
-  void KeyDeleted(mojo::Array<uint8_t> key,
-                  mojo::Array<uint8_t> old_value,
-                  const mojo::String& source) override;
-  void AllDeleted(const mojo::String& source) override;
-  void GetAllComplete(const mojo::String& source) override;
+  void KeyAdded(const std::vector<uint8_t>& key,
+                const std::vector<uint8_t>& value,
+                const std::string& source) override;
+  void KeyChanged(const std::vector<uint8_t>& key,
+                  const std::vector<uint8_t>& new_value,
+                  const std::vector<uint8_t>& old_value,
+                  const std::string& source) override;
+  void KeyDeleted(const std::vector<uint8_t>& key,
+                  const std::vector<uint8_t>& old_value,
+                  const std::string& source) override;
+  void AllDeleted(const std::string& source) override;
+  void GetAllComplete(const std::string& source) override;
 
   // Common helper for KeyAdded() and KeyChanged()
-  void KeyAddedOrChanged(mojo::Array<uint8_t> key,
-                         mojo::Array<uint8_t> new_value,
+  void KeyAddedOrChanged(const std::vector<uint8_t>& key,
+                         const std::vector<uint8_t>& new_value,
                          const base::NullableString16& old_value,
-                         const mojo::String& source);
+                         const std::string& source);
 
   // Synchronously fetches the origin's local storage data if it hasn't been
   // fetched already.

@@ -39,8 +39,11 @@ size_t LevelDBWrapperImpl::CommitBatch::GetDataSize() const {
     return 0;
 
   size_t count = 0;
-  for (const auto& pair : changed_values)
-    count += (pair.first.size(), pair.second.size());
+  for (const auto& pair : changed_values) {
+    count += pair.first.size();
+    if (pair.second)
+      count += pair.second->size();
+  }
   return count;
 }
 
@@ -83,28 +86,25 @@ void LevelDBWrapperImpl::EnableAggressiveCommitDelay() {
   s_aggressive_flushing_enabled_ = true;
 }
 
-void LevelDBWrapperImpl::Put(mojo::Array<uint8_t> key,
-                             mojo::Array<uint8_t> value,
-                             const mojo::String& source,
+void LevelDBWrapperImpl::Put(const std::vector<uint8_t>& key,
+                             const std::vector<uint8_t>& value,
+                             const std::string& source,
                              const PutCallback& callback) {
   if (!map_) {
-    LoadMap(
-        base::Bind(&LevelDBWrapperImpl::Put, base::Unretained(this),
-                   base::Passed(&key), base::Passed(&value), source, callback));
+    LoadMap(base::Bind(&LevelDBWrapperImpl::Put, base::Unretained(this), key,
+                       value, source, callback));
     return;
   }
 
   bool has_old_item = false;
-  mojo::Array<uint8_t> old_value;
   size_t old_item_size = 0;
   auto found = map_->find(key);
   if (found != map_->end()) {
-    if (found->second.Equals(value)) {
+    if (found->second == value) {
       callback.Run(true);  // Key already has this value.
       return;
     }
-    old_value = std::move(found->second);
-    old_item_size = key.size() + old_value.size();
+    old_item_size = key.size() + found->second.size();
     has_old_item = true;
   }
   size_t new_item_size = key.size() + value.size();
@@ -119,35 +119,37 @@ void LevelDBWrapperImpl::Put(mojo::Array<uint8_t> key,
 
   if (database_) {
     CreateCommitBatchIfNeeded();
-    commit_batch_->changed_values[key.Clone()] = value.Clone();
+    commit_batch_->changed_values[key] = value;
   }
 
-  (*map_)[key.Clone()] = value.Clone();
+  std::vector<uint8_t> old_value;
+  if (has_old_item) {
+    old_value.swap((*map_)[key]);
+  }
+  (*map_)[key] = value;
   bytes_used_ = new_bytes_used;
   if (!has_old_item) {
     // We added a new key/value pair.
     observers_.ForAllPtrs(
         [&key, &value, &source](mojom::LevelDBObserver* observer) {
-          observer->KeyAdded(key.Clone(), value.Clone(), source);
+          observer->KeyAdded(key, value, source);
         });
   } else {
     // We changed the value for an existing key.
     observers_.ForAllPtrs(
         [&key, &value, &source, &old_value](mojom::LevelDBObserver* observer) {
-          observer->KeyChanged(
-              key.Clone(), value.Clone(), old_value.Clone(), source);
+          observer->KeyChanged(key, value, old_value, source);
         });
   }
   callback.Run(true);
 }
 
-void LevelDBWrapperImpl::Delete(mojo::Array<uint8_t> key,
-                                const mojo::String& source,
+void LevelDBWrapperImpl::Delete(const std::vector<uint8_t>& key,
+                                const std::string& source,
                                 const DeleteCallback& callback) {
   if (!map_) {
-    LoadMap(
-        base::Bind(&LevelDBWrapperImpl::Delete, base::Unretained(this),
-                   base::Passed(&key), source, callback));
+    LoadMap(base::Bind(&LevelDBWrapperImpl::Delete, base::Unretained(this), key,
+                       source, callback));
     return;
   }
 
@@ -159,21 +161,20 @@ void LevelDBWrapperImpl::Delete(mojo::Array<uint8_t> key,
 
   if (database_) {
     CreateCommitBatchIfNeeded();
-    commit_batch_->changed_values[key.Clone()] = mojo::Array<uint8_t>(nullptr);
+    commit_batch_->changed_values[key] = base::nullopt;
   }
 
-  mojo::Array<uint8_t> old_value = std::move(found->second);
+  std::vector<uint8_t> old_value(std::move(found->second));
   map_->erase(found);
   bytes_used_ -= key.size() + old_value.size();
   observers_.ForAllPtrs(
       [&key, &source, &old_value](mojom::LevelDBObserver* observer) {
-        observer->KeyDeleted(
-            key.Clone(), old_value.Clone(), source);
+        observer->KeyDeleted(key, old_value, source);
       });
   callback.Run(true);
 }
 
-void LevelDBWrapperImpl::DeleteAll(const mojo::String& source,
+void LevelDBWrapperImpl::DeleteAll(const std::string& source,
                                    const DeleteAllCallback& callback) {
   if (!map_) {
     LoadMap(
@@ -196,24 +197,23 @@ void LevelDBWrapperImpl::DeleteAll(const mojo::String& source,
   callback.Run(true);
 }
 
-void LevelDBWrapperImpl::Get(mojo::Array<uint8_t> key,
+void LevelDBWrapperImpl::Get(const std::vector<uint8_t>& key,
                              const GetCallback& callback) {
   if (!map_) {
-    LoadMap(
-        base::Bind(&LevelDBWrapperImpl::Get, base::Unretained(this),
-                   base::Passed(&key), callback));
+    LoadMap(base::Bind(&LevelDBWrapperImpl::Get, base::Unretained(this), key,
+                       callback));
     return;
   }
 
   auto found = map_->find(key);
   if (found == map_->end()) {
-    callback.Run(false, mojo::Array<uint8_t>());
+    callback.Run(false, std::vector<uint8_t>());
     return;
   }
-  callback.Run(true, found->second.Clone());
+  callback.Run(true, found->second);
 }
 
-void LevelDBWrapperImpl::GetAll(const mojo::String& source,
+void LevelDBWrapperImpl::GetAll(const std::string& source,
                                 const GetAllCallback& callback) {
   if (!map_) {
     LoadMap(
@@ -222,11 +222,11 @@ void LevelDBWrapperImpl::GetAll(const mojo::String& source,
     return;
   }
 
-  mojo::Array<mojom::KeyValuePtr> all;
+  std::vector<mojom::KeyValuePtr> all;
   for (const auto& it : (*map_)) {
     mojom::KeyValuePtr kv = mojom::KeyValue::New();
-    kv->key = it.first.Clone();
-    kv->value = it.second.Clone();
+    kv->key = it.first;
+    kv->value = it.second;
     all.push_back(std::move(kv));
   }
   callback.Run(leveldb::mojom::DatabaseError::OK, std::move(all));
@@ -260,7 +260,7 @@ void LevelDBWrapperImpl::OnLoadComplete(
   DCHECK(!map_);
   map_.reset(new ValueMap);
   for (auto& it : data)
-    (*map_)[std::move(it->key)] = std::move(it->value);
+    (*map_)[it->key.PassStorage()] = it->value.PassStorage();
 
   // We proceed without using a backing store, nothing will be persisted but the
   // class is functional for the lifetime of the object.
@@ -334,12 +334,12 @@ void LevelDBWrapperImpl::CommitChanges() {
   for (auto& it : commit_batch_->changed_values) {
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();
-    item->key = it.first.Clone();
-    if (it.second.is_null()) {
+    item->key = std::vector<uint8_t>(it.first);
+    if (!it.second) {
       item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
     } else {
       item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
-      item->value = std::move(it.second);
+      item->value = std::move(*(it.second));
     }
     operations.push_back(std::move(item));
   }

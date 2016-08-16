@@ -3091,7 +3091,7 @@ int WebContentsImpl::DownloadImage(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WebContentsImpl::OnDidDownloadImage,
                    weak_factory_.GetWeakPtr(), callback, download_id, url, 400,
-                   nullptr, nullptr));
+                   std::vector<SkBitmap>(), std::vector<gfx::Size>()));
     return download_id;
   }
 
@@ -4976,12 +4976,9 @@ void WebContentsImpl::OnDidDownloadImage(
     int id,
     const GURL& image_url,
     int32_t http_status_code,
-    mojo::Array<SkBitmap> images,
-    mojo::Array<gfx::Size> original_image_sizes) {
-  const std::vector<SkBitmap> bitmaps = images.To<std::vector<SkBitmap>>();
-
-  callback.Run(id, http_status_code, image_url, bitmaps,
-               original_image_sizes.PassStorage());
+    const std::vector<SkBitmap>& images,
+    const std::vector<gfx::Size>& original_image_sizes) {
+  callback.Run(id, http_status_code, image_url, images, original_image_sizes);
 }
 
 void WebContentsImpl::OnDialogClosed(int render_process_id,

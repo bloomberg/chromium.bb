@@ -83,15 +83,12 @@ void WebSocketHandleImpl::connect(const WebURL& url,
   DCHECK(client);
   client_ = client;
 
-  mojo::Array<mojo::String> protocols_to_pass(protocols.size());
+  std::vector<std::string> protocols_to_pass(protocols.size());
   for (size_t i = 0; i < protocols.size(); ++i)
     protocols_to_pass[i] = protocols[i].utf8();
 
   websocket_->AddChannelRequest(
-      url,
-      std::move(protocols_to_pass),
-      origin,
-      first_party_for_cookies,
+      url, protocols_to_pass, origin, first_party_for_cookies,
       user_agent_override.latin1(),
       client_binding_.CreateInterfacePtrAndBind(task_runner_));
 }
@@ -122,10 +119,10 @@ void WebSocketHandleImpl::send(bool fin,
            << " Send(" << fin << ", " << type_to_pass << ", "
            << "(data size = "  << size << "))";
 
-  mojo::Array<uint8_t> data_to_pass(size);
+  std::vector<uint8_t> data_to_pass(size);
   std::copy(data, data + size, data_to_pass.begin());
 
-  websocket_->SendFrame(fin, type_to_pass, std::move(data_to_pass));
+  websocket_->SendFrame(fin, type_to_pass, data_to_pass);
 }
 
 void WebSocketHandleImpl::flowControl(int64_t quota) {
@@ -172,7 +169,7 @@ void WebSocketHandleImpl::OnConnectionError() {
                 "net::ERR_INSUFFICIENT_RESOURCES");
 }
 
-void WebSocketHandleImpl::OnFailChannel(const mojo::String& message) {
+void WebSocketHandleImpl::OnFailChannel(const std::string& message) {
   DVLOG(1) << "WebSocketHandleImpl @" << reinterpret_cast<void*>(this)
            << " OnFailChannel(" << message << ")";
 
@@ -220,9 +217,8 @@ void WebSocketHandleImpl::OnFinishOpeningHandshake(
   client_->didFinishOpeningHandshake(this, response_to_pass);
 }
 
-void WebSocketHandleImpl::OnAddChannelResponse(
-    const mojo::String& protocol,
-    const mojo::String& extensions) {
+void WebSocketHandleImpl::OnAddChannelResponse(const std::string& protocol,
+                                               const std::string& extensions) {
   DVLOG(1) << "WebSocketHandleImpl @" << reinterpret_cast<void*>(this)
            << " OnAddChannelResponse("
            << protocol << ", " << extensions << ")";
@@ -236,9 +232,9 @@ void WebSocketHandleImpl::OnAddChannelResponse(
   // |this| can be deleted here.
 }
 
-void WebSocketHandleImpl::OnDataFrame(
-    bool fin, mojom::WebSocketMessageType type,
-    mojo::Array<uint8_t> data) {
+void WebSocketHandleImpl::OnDataFrame(bool fin,
+                                      mojom::WebSocketMessageType type,
+                                      const std::vector<uint8_t>& data) {
   DVLOG(1) << "WebSocketHandleImpl @" << reinterpret_cast<void*>(this)
            << " OnDataFrame(" << fin << ", " << type << ", "
            << "(data size = " << data.size() << "))";
@@ -274,8 +270,9 @@ void WebSocketHandleImpl::OnFlowControl(int64_t quota) {
   // |this| can be deleted here.
 }
 
-void WebSocketHandleImpl::OnDropChannel(bool was_clean, uint16_t code,
-                                        const mojo::String& reason) {
+void WebSocketHandleImpl::OnDropChannel(bool was_clean,
+                                        uint16_t code,
+                                        const std::string& reason) {
   DVLOG(1) << "WebSocketHandleImpl @" << reinterpret_cast<void*>(this)
            << " OnDropChannel(" << was_clean << ", " << code << ", "
            << reason << ")";

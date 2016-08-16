@@ -112,7 +112,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   void SetCookie(int32_t render_frame_id,
                  const GURL& url,
                  const GURL& first_party_for_cookies,
-                 const mojo::String& cookie) override;
+                 const std::string& cookie) override;
   void GetCookies(int render_frame_id,
                   const GURL& url,
                   const GURL& first_party_for_cookies,

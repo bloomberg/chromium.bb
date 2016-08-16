@@ -201,13 +201,17 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
 
   // Try to get cross-site cookies from the subframe's process and wait for it
   // to be killed.
-  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)->PostTask(
-      FROM_HERE,
-      base::Bind([] (RenderFrameHost* frame) {
-        GetFilterForProcess(frame->GetProcess())->GetCookies(
-            frame->GetRoutingID(), GURL("http://127.0.0.1/"),
-            GURL("http://127.0.0.1/"), base::Bind([] (mojo::String) {}));
-      }, iframe));
+  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+      ->PostTask(FROM_HERE,
+                 base::Bind(
+                     [](RenderFrameHost* frame) {
+                       GetFilterForProcess(frame->GetProcess())
+                           ->GetCookies(frame->GetRoutingID(),
+                                        GURL("http://127.0.0.1/"),
+                                        GURL("http://127.0.0.1/"),
+                                        base::Bind([](const std::string&) {}));
+                     },
+                     iframe));
 
   iframe_killed.Wait();
 

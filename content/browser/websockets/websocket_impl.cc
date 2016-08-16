@@ -174,11 +174,10 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnDataFrame(
            << " type=" << type << " data is " << data.size() << " bytes";
 
   // TODO(darin): Avoid this copy.
-  mojo::Array<uint8_t> data_to_pass(data.size());
+  std::vector<uint8_t> data_to_pass(data.size());
   std::copy(data.begin(), data.end(), data_to_pass.begin());
 
-  impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type),
-                              std::move(data_to_pass));
+  impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type), data_to_pass);
 
   return net::WebSocketEventInterface::CHANNEL_ALIVE;
 }
@@ -374,16 +373,11 @@ void WebSocketImpl::GoAway() {
 
 void WebSocketImpl::AddChannelRequest(
     const GURL& socket_url,
-    mojo::Array<mojo::String> requested_protocols_mojo,
+    const std::vector<std::string>& requested_protocols,
     const url::Origin& origin,
     const GURL& first_party_for_cookies,
-    const mojo::String& user_agent_override,
+    const std::string& user_agent_override,
     mojom::WebSocketClientPtr client) {
-  // Convert to STL types.
-  std::vector<std::string> requested_protocols(
-      requested_protocols_mojo.begin(),
-      requested_protocols_mojo.end());
-
   DVLOG(3) << "WebSocketImpl::AddChannelRequest @"
            << reinterpret_cast<void*>(this)
            << " socket_url=\"" << socket_url << "\" requested_protocols=\""
@@ -420,8 +414,9 @@ void WebSocketImpl::AddChannelRequest(
   }
 }
 
-void WebSocketImpl::SendFrame(bool fin, mojom::WebSocketMessageType type,
-                              mojo::Array<uint8_t> data) {
+void WebSocketImpl::SendFrame(bool fin,
+                              mojom::WebSocketMessageType type,
+                              const std::vector<uint8_t>& data) {
   DVLOG(3) << "WebSocketImpl::SendFrame @"
            << reinterpret_cast<void*>(this) << " fin=" << fin
            << " type=" << type << " data is " << data.size() << " bytes";
@@ -462,7 +457,7 @@ void WebSocketImpl::SendFlowControl(int64_t quota) {
 }
 
 void WebSocketImpl::StartClosingHandshake(uint16_t code,
-                                          const mojo::String& reason) {
+                                          const std::string& reason) {
   DVLOG(3) << "WebSocketImpl::StartClosingHandshake @"
            << reinterpret_cast<void*>(this)
            << " code=" << code << " reason=\"" << reason << "\"";

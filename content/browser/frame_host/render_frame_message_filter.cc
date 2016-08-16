@@ -385,7 +385,7 @@ void RenderFrameMessageFilter::OnRenderProcessGone() {
 void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
                                          const GURL& url,
                                          const GURL& first_party_for_cookies,
-                                         const mojo::String& cookie) {
+                                         const std::string& cookie) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {

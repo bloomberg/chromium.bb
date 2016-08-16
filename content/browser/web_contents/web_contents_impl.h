@@ -891,8 +891,8 @@ class CONTENT_EXPORT WebContentsImpl
                           int id,
                           const GURL& image_url,
                           int32_t http_status_code,
-                          mojo::Array<SkBitmap> images,
-                          mojo::Array<gfx::Size> original_image_sizes);
+                          const std::vector<SkBitmap>& images,
+                          const std::vector<gfx::Size>& original_image_sizes);
 
   // Callback function when showing JavaScript dialogs.  Takes in a routing ID
   // pair to identify the RenderFrameHost that opened the dialog, because it's

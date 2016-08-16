@@ -56,16 +56,16 @@ class CONTENT_EXPORT WebSocketImpl
 
   // mojom::WebSocket methods:
   void AddChannelRequest(const GURL& url,
-                         mojo::Array<mojo::String> requested_protocols,
+                         const std::vector<std::string>& requested_protocols,
                          const url::Origin& origin,
                          const GURL& first_party_for_cookies,
-                         const mojo::String& user_agent_override,
+                         const std::string& user_agent_override,
                          mojom::WebSocketClientPtr client) override;
-  void SendFrame(bool fin, mojom::WebSocketMessageType type,
-                 mojo::Array<uint8_t> data) override;
+  void SendFrame(bool fin,
+                 mojom::WebSocketMessageType type,
+                 const std::vector<uint8_t>& data) override;
   void SendFlowControl(int64_t quota) override;
-  void StartClosingHandshake(uint16_t code,
-                             const mojo::String& reason) override;
+  void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
   bool handshake_succeeded() const { return handshake_succeeded_; }
   void OnHandshakeSucceeded() { handshake_succeeded_ = true; }

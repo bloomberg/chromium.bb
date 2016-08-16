@@ -224,8 +224,7 @@ void ImageDownloaderImpl::ReplyDownloadResult(
     const std::vector<SkBitmap>& result_images,
     const std::vector<gfx::Size>& result_original_image_sizes,
     const DownloadImageCallback& callback) {
-  callback.Run(http_status_code, mojo::Array<SkBitmap>::From(result_images),
-               result_original_image_sizes);
+  callback.Run(http_status_code, result_images, result_original_image_sizes);
 }
 
 void ImageDownloaderImpl::OnDestruct() {
