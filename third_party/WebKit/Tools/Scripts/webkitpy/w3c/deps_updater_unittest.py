@@ -79,8 +79,11 @@ third_party/WebKit/LayoutTests/foo/baz/files.html"""
 
     def test_parse_directory_owners(self):
         updater = DepsUpdater(MockHost())
-        data_file = [{'notification-email': 'charizard@gmail.com', 'directory': 'foo/bar'},
-                     {'notification-email': 'blastoise@gmail.com', 'directory': 'foo/baz'},
-                     {'notification-email': '', 'directory': 'gol/bat'}]
-        self.assertEqual(updater.parse_directory_owners(data_file),
-                         {'foo/bar': 'charizard@gmail.com', 'foo/baz': 'blastoise@gmail.com'})
+        data_file = [
+            {'notification-email': 'charizard@gmail.com', 'directory': 'foo/bar'},
+            {'notification-email': 'blastoise@gmail.com', 'directory': 'foo/baz'},
+            {'notification-email': '', 'directory': 'gol/bat'},
+        ]
+        self.assertEqual(
+            updater.parse_directory_owners(data_file),
+            {'foo/bar': 'charizard@gmail.com', 'foo/baz': 'blastoise@gmail.com'})

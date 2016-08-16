@@ -2,7 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Pull latest revisions of a W3C test repo and make a local commit."""
+"""Fetches a copy of the latest state of a W3C test repository and commits.
+
+If this script is given the argument --auto-update, it will also attempt to
+upload a CL, triggery try jobs, and make any changes that are required for
+new failing tests before committing.
+"""
 
 import argparse
 import json
@@ -51,6 +56,7 @@ class DepsUpdater(object):
                 destination = self.path_from_webkit_base('LayoutTests', 'imported', WPT_DEST_NAME, 'resources', resource)
                 self.copyfile(source, destination)
                 self.run(['git', 'add', destination])
+
             for resource in ['vendor-prefix.js']:
                 source = self.path_from_webkit_base('LayoutTests', 'resources', resource)
                 destination = self.path_from_webkit_base('LayoutTests', 'imported', WPT_DEST_NAME, 'common', resource)
@@ -77,8 +83,7 @@ class DepsUpdater(object):
             self.check_run(self.generate_upload_command(email_list))
             self.print_('## Triggering try jobs.')
             for try_bot in try_bots:
-                self.run(['git', 'cl', 'try', '-b', try_bot,
-                          '--auth-refresh-token-json', self.auth_refresh_token_json])
+                self.run(['git', 'cl', 'try', '-b', try_bot, '--auth-refresh-token-json', self.auth_refresh_token_json])
             self.print_('## Waiting for Try Job Results')
             if self.has_failing_results():
                 self.write_test_expectations()
@@ -268,18 +273,16 @@ class DepsUpdater(object):
         self.host.print_(msg)
 
     def parse_try_job_results(self, results):
-        """Parses try job results from Rietveld.
-
-        Turns the output from git cl try-results into a usable format.
+        """Parses try job results from `git cl try-results`.
 
         Args:
-            results: The stdout obtained by running git cl try-results.
+            results: The stdout obtained by running `git cl try-results`.
 
         Returns:
-            A dict mapping result type (e.g. Success, Failure)
-            to list of bots with that result type. The list of builders
-            is represented as a set and any bots with both success and
-            failure results are not included in failures.
+            A dict mapping result type (e.g. Success, Failure) to list of bots
+            with that result type. The list of builders is represented as a set
+            and any bots with both success and failure results are not included
+            in failures.
 
         Raises:
             AttributeError: An unexpected result was found.
@@ -297,16 +300,16 @@ class DepsUpdater(object):
         return sets
 
     def generate_email_list(self, changed_files, directory_dict):
-        """Generates a list of emails to be cc'd for current import.
+        """Generates a list of emails to be CCd for current import.
 
-        Takes output from git diff master --name-only and gets the
-        directories and generates list of contact emails.
+        Takes output from git diff master --name-only and gets the directories
+        and generates list of contact emails.
 
         Args:
             changed_files: A string with newline-separated file paths relative
-                           to the repository root.
+                to the repository root.
             directory_dict: A mapping of directories in the LayoutTests/imported
-                            folder to the email address of the point of contact.
+                directory to the email address of the point of contact.
 
         Returns:
             A list of the email addresses to be notified for the current

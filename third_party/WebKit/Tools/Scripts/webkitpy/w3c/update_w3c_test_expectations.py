@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A script to modify TestExpectations lines based layout test failures in try jobs.
+"""Functionality for adding TestExpectations lines and downloading baselines
+based on layout test failures in try jobs.
 
-This script outputs a list of test expectation lines to add to a 'TestExpectations' file
-by retrieving the try job results for the current CL.
+This script is used as part of the w3c test auto-import process.
 """
 
 import logging
@@ -68,8 +68,9 @@ class W3CExpectationsLineAdder(object):
     def get_failing_results_dict(self, buildbot, builder_name, build_number):
         """Returns a nested dict of failing test results.
 
-        Retrieves a full list of layout test results from a builder result URL. Collects
-        the builder name, platform and a list of tests that did not run as expected.
+        Retrieves a full list of layout test results from a builder result URL.
+        Collects the builder name, platform and a list of tests that did not
+        run as expected.
 
         Args:
             builder: A Builder object.
@@ -92,15 +93,11 @@ class W3CExpectationsLineAdder(object):
         return failing_results_dict
 
     def merge_dicts(self, target, source, path=None):
-        """Recursively merge nested dictionaries, returning the target dictionary
-
-        Merges the keys and values from the source dict into the target dict.
+        """Recursively merges nested dictionaries.
 
         Args:
-            target: A dictionary where the keys and values from source are updated
-                in.
-            source: A dictionary that provides the new keys and values to be added
-                into target.
+            target: First dictionary, which is updated based on source.
+            source: Second dictionary, not modified.
 
         Returns:
             An updated target dictionary.
@@ -122,8 +119,8 @@ class W3CExpectationsLineAdder(object):
         """Merges keys in dictionary with same value.
 
         Traverses through a dict and compares the values of keys to one another.
-        If the values match, the keys are combined to a tuple and the previous keys
-        are removed from the dict.
+        If the values match, the keys are combined to a tuple and the previous
+        keys are removed from the dict.
 
         Args:
             dictionary: A dictionary with a dictionary as the value.
@@ -171,17 +168,18 @@ class W3CExpectationsLineAdder(object):
         and actual results of a given test name.
 
         Args:
-            results: A dictionary that maps one test to its results. Example: {
-                'test_name': {
-                    'expected': 'PASS',
-                    'actual': 'FAIL',
-                    'bug': 'crbug.com/11111'
+            results: A dictionary that maps one test to its results. Example:
+                {
+                    'test_name': {
+                        'expected': 'PASS',
+                        'actual': 'FAIL',
+                        'bug': 'crbug.com/11111'
+                    }
                 }
-            }
 
         Returns:
-            A set of one or more test expectations with the first letter capitalized. Example:
-            set(['Failure', 'Timeout'])
+            A set of one or more test expectation strings with the first letter
+            capitalized. Example: set(['Failure', 'Timeout']).
         """
         expectations = set()
         failure_types = ['TEXT', 'FAIL', 'IMAGE+TEXT', 'IMAGE', 'AUDIO', 'MISSING', 'LEAK']
@@ -199,24 +197,23 @@ class W3CExpectationsLineAdder(object):
     def create_line_list(self, merged_results):
         """Creates list of test expectations lines.
 
-        Traverses through a merged_results and parses the value to create a test
-        expectations line per key.
+        Traverses through the given |merged_results| dictionary and parses the
+        value to create one test expectations line per key.
 
         Args:
-            merged_results: A merged_results with the format {
-                'test_name': {
-                    'platform': {
-                        'expected: 'PASS',
-                        'actual': 'FAIL',
-                        'bug': 'crbug.com/11111'
+            merged_results: A merged_results with the format:
+                {
+                    'test_name': {
+                        'platform': {
+                            'expected: 'PASS',
+                            'actual': 'FAIL',
+                            'bug': 'crbug.com/11111'
+                        }
                     }
                 }
-            }
-                It is possible for the dicitonary to have many test_name
-                keys.
 
         Returns:
-            A list of test expectations lines with the format
+            A list of test expectations lines with the format:
             ['BUG_URL [PLATFORM(S)] TEST_MAME [EXPECTATION(S)]']
         """
         line_list = []
@@ -239,20 +236,17 @@ class W3CExpectationsLineAdder(object):
     def write_to_test_expectations(self, host, path, line_list):
         """Writes to TestExpectations.
 
-        Writes to the test expectations lines in line_list
-        to LayoutTest/TestExpectations. Checks the file for the string
-        '# Tests added from W3C auto import bot' and writes expectation
-        lines directly under it. If not found, it writes to the end of
-        the file. If the test name is already in LayoutTests/TestExpectations,
-        the line will be skipped.
+        Writes the test expectations lines in |line_list| to the test
+        expectations file.
+
+        The place in the file where the new lines are inserted is after a
+        marker comment line. If this marker comment line is not found, it will
+        be added to the end of the file.
 
         Args:
             host: A Host object.
-            path: The path to the file LayoutTests/TestExpectations.
+            path: The path to the file general TestExpectations file.
             line_list: A list of w3c test expectations lines.
-
-        Returns:
-            Writes to a file on the filesystem called LayoutTests/TestExpectations.
         """
         comment_line = '# Tests added from W3C auto import bot'
         file_contents = host.filesystem.read_text_file(path)
@@ -275,38 +269,40 @@ class W3CExpectationsLineAdder(object):
         host.filesystem.write_text_file(path, file_contents)
 
     def get_expected_txt_files(self, tests_results):
-        """Gets -expected.txt files.
+        """Fetches new baseline files for tests that sould be rebaselined.
 
-        Invokes webkit-patch rebaseline-from-try-jobs in order
-        to download new -expected.txt files for testharness.js
-        tests that did not Crash or Timeout. Then the platform-
-        specific test is removed from the overall failure test dictionary.
+        Invokes webkit-patch rebaseline-from-try-jobs in order to download new
+        -expected.txt files for testharness.js tests that did not crash or time
+        out. Then, the platform-specific test is removed from the overall
+        failure test dictionary.
 
         Args:
-            tests_results: A dictionary that maps test name to platforms to
-            test results.
+            tests_results: A dictmapping test name to platform to test results.
 
         Returns:
-            An updated tests_results dictionary without the platform-specific test-
-            harness.js tests that required new baselines to be downloaded from
-            webkit-patch rebaseline-from-try-jobs.
+            An updated tests_results dictionary without the platform-specific
+            testharness.js tests that required new baselines to be downloaded
+            from `webkit-patch rebaseline-from-try-jobs`.
         """
         finder = WebKitFinder(self._host.filesystem)
         tests = self._host.executive.run_command(['git', 'diff', 'master', '--name-only']).splitlines()
         tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(finder, tests, tests_results)
         if tests_to_rebaseline:
-            webkit_patch = self._host.filesystem.join(finder.chromium_base(), finder.webkit_base(),
-                                                      finder.path_to_script('webkit-patch'))
-            self._host.executive.run_command(['python', webkit_patch,
-                                              'rebaseline-from-try-jobs', '-v'] + tests_to_rebaseline)
+            webkit_patch = self._host.filesystem.join(
+                finder.chromium_base(), finder.webkit_base(), finder.path_to_script('webkit-patch'))
+            self._host.executive.run_command([
+                'python',
+                webkit_patch,
+                'rebaseline-from-try-jobs', '-v'
+            ] + tests_to_rebaseline)
         return tests_results
 
     def get_tests_to_rebaseline(self, webkit_finder, tests, tests_results):
-        """Gets test to rebaseline.
+        """Returns a list of tests to download new baselines for.
 
-        Creates a list of tests to rebaseline depending on the tests' platform specific
-        results. This function also removes the platform key form the tests_results
-        dictionary if 'actual' results not in ['CRASH', 'TIMEOUT'].
+        Creates a list of tests to rebaseline depending on the tests' platform-
+        specific results. In general, this will be non-ref tests that failed
+        due to a baseline mismatch (rather than crash or timeout).
 
         Args:
             webkit_finder: A WebKitFinder object.
@@ -314,12 +310,13 @@ class W3CExpectationsLineAdder(object):
             tests_results: A dictionary of failing tests results.
 
         Returns:
-            A set of tests to be rebaselined. These tests are both
-            js tests and test that failed during the try jobs. Also
-            returns an updated tests_results dictionary.
+            A pair: A set of tests to be rebaselined, and an updated
+            tests_results dictionary. These tests to be rebaselined includes
+            both testharness.js tests and ref tests that failed some try job.
         """
         tests_to_rebaseline = set()
-        layout_tests_rel_path = self._host.filesystem.relpath(webkit_finder.layout_tests_dir(), webkit_finder.chromium_base())
+        layout_tests_rel_path = self._host.filesystem.relpath(
+            webkit_finder.layout_tests_dir(), webkit_finder.chromium_base())
         for test in tests:
             test_path = self._host.filesystem.relpath(test, layout_tests_rel_path)
             if self.is_js_test(webkit_finder, test) and tests_results.get(test_path):
