@@ -166,23 +166,24 @@ Polymer({
   toggleMenu_: function(e) {
     var target = e.detail.target;
     /** @type {CrSharedMenuElement} */(this.$.sharedMenu).toggleMenu(
-        target, e.detail.item);
+        target, e.detail);
   },
 
   /** @private */
   onMoreFromSiteTap_: function() {
     var menu = /** @type {CrSharedMenuElement} */(this.$.sharedMenu);
-    this.fire('search-domain', {domain: menu.itemData.domain});
+    this.fire('search-domain', {domain: menu.itemData.item.domain});
     menu.closeMenu();
   },
 
   /** @private */
   onRemoveFromHistoryTap_: function() {
     var menu = /** @type {CrSharedMenuElement} */(this.$.sharedMenu);
+    var itemData = menu.itemData;
     md_history.BrowserService.getInstance()
-        .deleteItems([menu.itemData])
+        .deleteItems([itemData.item])
         .then(function(items) {
-          this.getSelectedList_().removeItemsByPath(items[0].path);
+          this.getSelectedList_().removeItemsByPath([itemData.path]);
           // This unselect-all is to reset the toolbar when deleting a selected
           // item. TODO(tsergeant): Make this automatic based on observing list
           // modifications.

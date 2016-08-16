@@ -161,18 +161,21 @@ cr.define('md_history.history_list_test', function() {
 
       test('more from this site sends and sets correct data', function(done) {
         app.queryState_.queryingDisabled = false;
-        registerMessageCallback('queryHistory', this, function (info) {
-          assertEquals('example.com', info[0]);
-          flush().then(function() {
-            assertEquals(
-                'example.com',
-                toolbar.$['main-toolbar'].getSearchField().getValue());
-            done();
+        flush().then(function () {
+          registerMessageCallback('queryHistory', this, function (info) {
+            assertEquals('www.google.com', info[0]);
+            flush().then(function() {
+              assertEquals(
+                  'www.google.com',
+                  toolbar.$['main-toolbar'].getSearchField().getValue());
+              done();
+            });
           });
-        });
 
-        app.$['history'].$.sharedMenu.itemData = {domain: 'example.com'};
-        MockInteractions.tap(app.$['history'].$.menuMoreButton);
+          items = polymerSelectAll(element, 'history-item');
+          MockInteractions.tap(items[0].$['menu-button']);
+          MockInteractions.tap(app.$['history'].$.menuMoreButton);
+        });
       });
 
       test('scrolling history list closes overflow menu', function() {
@@ -262,6 +265,31 @@ cr.define('md_history.history_list_test', function() {
           MockInteractions.tap(listContainer.$$('.action-button'));
         });
       });
+
+      test('delete via menu button', function(done) {
+        var listContainer = app.$.history;
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+
+        flush().then(function() {
+          items = polymerSelectAll(element, 'history-item');
+          registerMessageCallback('removeVisits', this, function() {
+            flush().then(function() {
+              deleteComplete();
+              return flush();
+            }).then(function() {
+              assertDeepEquals([
+                'https://www.google.com',
+                'https://www.google.com',
+                'https://en.wikipedia.org',
+              ], element.historyData_.map(item => item.title));
+              done();
+            });
+          });
+          MockInteractions.tap(items[1].$['menu-button']);
+          MockInteractions.tap(app.$['history'].$.menuRemoveButton);
+        });
+      });
+
 
       test('deleting items using shortcuts', function(done) {
         var listContainer = app.$.history;

@@ -71,6 +71,7 @@ cr.define('md_history', function() {
       this.fire('toggle-menu', {
         target: Polymer.dom(e).localTarget,
         item: this.item,
+        path: this.path,
       });
 
       // Stops the 'tap' event from closing the menu when it opens.
