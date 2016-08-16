@@ -277,10 +277,6 @@ class WindowCycleView : public views::WidgetDelegateView {
     mirror_container_->SetLayoutManager(layout);
     mirror_container_->SetPaintToLayer(true);
     mirror_container_->layer()->SetFillsBoundsOpaquely(false);
-    // The preview list animates bounds changes (other animatable properties
-    // never change).
-    mirror_container_->layer()->SetAnimator(
-        ui::LayerAnimator::CreateImplicitAnimator());
 
     for (WmWindow* window : windows) {
       // |mirror_container_| owns |view|.
@@ -299,10 +295,6 @@ class WindowCycleView : public views::WidgetDelegateView {
             kHighlightCornerRadius))));
     highlight_view_->SetPaintToLayer(true);
     highlight_view_->layer()->SetFillsBoundsOpaquely(false);
-    // The selection highlight also animates all bounds changes and never
-    // changes other animatable properties.
-    highlight_view_->layer()->SetAnimator(
-        ui::LayerAnimator::CreateImplicitAnimator());
 
     AddChildView(highlight_view_);
     AddChildView(mirror_container_);
@@ -349,6 +341,13 @@ class WindowCycleView : public views::WidgetDelegateView {
     if (!target_window_ || bounds().IsEmpty())
       return;
 
+    bool first_layout = mirror_container_->bounds().IsEmpty();
+    // If |mirror_container_| has not yet been laid out, we must lay it and its
+    // descendants out so that the calculations based on |target_view| work
+    // properly.
+    if (first_layout)
+      mirror_container_->SizeToPreferredSize();
+
     // The preview list (|mirror_container_|) starts flush to the left of
     // the screen but moves to the left (off the edge of the screen) as the use
     // iterates over the previews. The list will move just enough to ensure the
@@ -375,6 +374,18 @@ class WindowCycleView : public views::WidgetDelegateView {
     target_bounds.set_x(
         GetMirroredXWithWidthInView(target_bounds.x(), target_bounds.width()));
     highlight_view_->SetBoundsRect(gfx::ToEnclosingRect(target_bounds));
+
+    // Enable animations only after the first Layout() pass.
+    if (first_layout) {
+      // The preview list animates bounds changes (other animatable properties
+      // never change).
+      mirror_container_->layer()->SetAnimator(
+          ui::LayerAnimator::CreateImplicitAnimator());
+      // The selection highlight also animates all bounds changes and never
+      // changes other animatable properties.
+      highlight_view_->layer()->SetAnimator(
+          ui::LayerAnimator::CreateImplicitAnimator());
+    }
   }
 
   View* GetContentsView() override { return this; }
