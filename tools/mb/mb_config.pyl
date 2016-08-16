@@ -328,6 +328,7 @@
       'Win7 Debug (ATI)': 'none',
       'Win7 Debug (NVIDIA)': 'none',
       'Win7 Debug (New Intel)': 'none',
+      'Win7 Release (AMD R7 240)': 'none',
       'Win7 Release (ATI)': 'none',
       'Win7 Release (NVIDIA GeForce 730)': 'none',
       'Win7 Release (NVIDIA)': 'none',
