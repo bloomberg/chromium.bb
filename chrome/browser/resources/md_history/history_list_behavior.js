@@ -31,12 +31,14 @@ var HistoryListBehavior = {
   properties: {
     /**
      * Polymer paths to the history items contained in this list.
-     * @type {Array<string>} selectedPaths
+     * @type {!Set<string>} selectedPaths
      */
     selectedPaths: {
-      type: Array,
-      value: /** @return {Array<string>} */ function() { return []; }
+      type: Object,
+      value: /** @return {!Set<string>} */ function() { return new Set(); }
     },
+
+    lastSelectedPath: String,
   },
 
   listeners: {
@@ -72,7 +74,7 @@ var HistoryListBehavior = {
       this.set(path + '.selected', false);
     }.bind(this));
 
-    this.selectedPaths = [];
+    this.selectedPaths.clear();
   },
 
   /**
@@ -82,13 +84,15 @@ var HistoryListBehavior = {
    * does prompt.
    */
   deleteSelected: function() {
-    var toBeRemoved = this.selectedPaths.map(function(path) {
-      return this.get(path);
-    }.bind(this));
+    var toBeRemoved =
+        Array.from(this.selectedPaths.values()).map(function(path) {
+          return this.get(path);
+        }.bind(this));
+
     md_history.BrowserService.getInstance()
         .deleteItems(toBeRemoved)
         .then(function() {
-          this.removeItemsByPath(this.selectedPaths);
+          this.removeItemsByPath(Array.from(this.selectedPaths));
           this.fire('unselect-all');
         }.bind(this));
   },
@@ -186,14 +190,40 @@ var HistoryListBehavior = {
    */
   itemSelected_: function(e) {
     var item = e.detail.element;
-    var path = item.path;
-    if (item.selected) {
-      this.push('selectedPaths', path);
-      return;
+    var paths = [];
+    var itemPath = item.path;
+
+    // Handle shift selection. Change the selection state of all items between
+    // |path| and |lastSelected| to the selection state of |item|.
+    if (e.detail.shiftKey && this.lastSelectedPath) {
+      var itemPathComponents = itemPath.split('.');
+      var itemIndex = Number(itemPathComponents.pop());
+      var itemArrayPath = itemPathComponents.join('.');
+
+      var lastItemPathComponents = this.lastSelectedPath.split('.');
+      var lastItemIndex = Number(lastItemPathComponents.pop());
+      if (itemArrayPath == lastItemPathComponents.join('.')) {
+        for (var i = Math.min(itemIndex, lastItemIndex);
+             i <= Math.max(itemIndex, lastItemIndex); i++) {
+          paths.push(itemArrayPath + '.' + i);
+        }
+      }
     }
 
-    var index = this.selectedPaths.indexOf(path);
-    if (index != -1)
-      this.splice('selectedPaths', index, 1);
+    if (paths.length == 0)
+      paths.push(item.path);
+
+    paths.forEach(function(path) {
+      this.set(path + '.selected', item.selected);
+
+      if (item.selected) {
+        this.selectedPaths.add(path);
+        return;
+      }
+
+      this.selectedPaths.delete(path);
+    }.bind(this));
+
+    this.lastSelectedPath = itemPath;
   },
 };

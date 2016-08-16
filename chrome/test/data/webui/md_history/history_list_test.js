@@ -41,22 +41,89 @@ cr.define('md_history.history_list_test', function() {
 
           // Make sure that the array of data that determines whether or not an
           // item is selected is what we expect after selecting the two items.
-          assertFalse(element.historyData_[0].selected);
-          assertFalse(element.historyData_[1].selected);
-          assertTrue(element.historyData_[2].selected);
-          assertTrue(element.historyData_[3].selected);
+          assertDeepEquals([false, false, true, true],
+                           element.historyData_.map(i => i.selected));
 
           toolbar.onClearSelectionTap_();
 
           // Make sure that clearing the selection updates both the array and
           // the actual history-items affected.
-          assertFalse(element.historyData_[0].selected);
-          assertFalse(element.historyData_[1].selected);
-          assertFalse(element.historyData_[2].selected);
-          assertFalse(element.historyData_[3].selected);
+          assertDeepEquals([false, false, false, false],
+                           element.historyData_.map(i => i.selected));
 
           assertFalse(items[2].$.checkbox.checked);
           assertFalse(items[3].$.checkbox.checked);
+        });
+      });
+
+      test('selection of multiple items using shift click', function() {
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+        return flush().then(function() {
+          var items = polymerSelectAll(element, 'history-item');
+
+          MockInteractions.tap(items[1].$.checkbox);
+          assertDeepEquals([false, true, false, false],
+                           element.historyData_.map(i => i.selected));
+          assertDeepEquals(
+              ['historyData_.1'],
+              Array.from(element.selectedPaths).sort());
+
+          // Shift-select to the last item.
+          shiftClick(items[3].$.checkbox);
+          assertDeepEquals([false, true, true, true],
+                           element.historyData_.map(i => i.selected));
+          assertDeepEquals(
+              ['historyData_.1', 'historyData_.2', 'historyData_.3'],
+              Array.from(element.selectedPaths).sort());
+
+          // Shift-select back to the first item.
+          shiftClick(items[0].$.checkbox);
+          assertDeepEquals([true, true, true, true],
+                           element.historyData_.map(i => i.selected));
+          assertDeepEquals(
+              [
+                'historyData_.0', 'historyData_.1', 'historyData_.2',
+                'historyData_.3'
+              ],
+              Array.from(element.selectedPaths).sort());
+
+          // Shift-deselect to the third item.
+          shiftClick(items[2].$.checkbox);
+          assertDeepEquals([false, false, false, true],
+                           element.historyData_.map(i => i.selected));
+          assertDeepEquals(
+              ['historyData_.3'],
+              Array.from(element.selectedPaths).sort());
+
+          // Select the second item.
+          MockInteractions.tap(items[1].$.checkbox);
+          assertDeepEquals([false, true, false, true],
+                           element.historyData_.map(i => i.selected));
+          assertDeepEquals(
+              ['historyData_.1', 'historyData_.3'],
+              Array.from(element.selectedPaths).sort());
+
+          // Shift-deselect to the last item.
+          shiftClick(items[3].$.checkbox);
+          assertDeepEquals([false, false, false, false],
+                           element.historyData_.map(i => i.selected));
+          assertDeepEquals(
+              [],
+              Array.from(element.selectedPaths).sort());
+
+          // Shift-select back to the third item.
+          shiftClick(items[2].$.checkbox);
+          assertDeepEquals([false, false, true, true],
+                           element.historyData_.map(i => i.selected));
+          assertDeepEquals(
+              ['historyData_.2', 'historyData_.3'],
+              Array.from(element.selectedPaths).sort());
+
+          // Remove selected items.
+          element.removeItemsByPath(Array.from(element.selectedPaths));
+          assertDeepEquals(
+              ['https://www.google.com', 'https://www.example.com'],
+              element.historyData_.map(i => i.title));
         });
       });
 

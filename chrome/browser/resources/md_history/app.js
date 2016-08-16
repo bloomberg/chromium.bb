@@ -107,7 +107,8 @@ Polymer({
    */
   checkboxSelected: function(e) {
     var toolbar = /** @type {HistoryToolbarElement} */ (this.$.toolbar);
-    toolbar.count += e.detail.countAddition;
+    toolbar.count = /** @type {HistoryListContainerElement} */ (this.$.history)
+                        .getSelectedItemCount();
   },
 
   /**
@@ -117,7 +118,7 @@ Polymer({
    */
   unselectAll: function() {
     var listContainer =
-        /** @type {HistoryListContainerElement} */ (this.$['history']);
+        /** @type {HistoryListContainerElement} */ (this.$.history);
     var toolbar = /** @type {HistoryToolbarElement} */ (this.$.toolbar);
     listContainer.unselectAllItems(toolbar.count);
     toolbar.count = 0;

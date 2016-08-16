@@ -37,14 +37,26 @@ cr.define('md_history', function() {
     /**
      * When a history-item is selected the toolbar is notified and increases
      * or decreases its count of selected items accordingly.
+     * @param {MouseEvent} e
      * @private
      */
-    onCheckboxSelected_: function() {
+    onCheckboxSelected_: function(e) {
       // TODO(calamity): Fire this event whenever |selected| changes.
       this.fire('history-checkbox-select', {
         element: this,
-        countAddition: this.$.checkbox.checked ? 1 : -1
+        shiftKey: e.shiftKey,
       });
+      e.preventDefault();
+    },
+
+    /**
+     * @param {MouseEvent} e
+     * @private
+     */
+    onCheckboxMousedown_: function(e) {
+      // Prevent shift clicking a checkbox from selecting text.
+      if (e.shiftKey)
+        e.preventDefault();
     },
 
     /**

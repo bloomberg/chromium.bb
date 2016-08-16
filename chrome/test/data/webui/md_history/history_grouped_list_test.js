@@ -150,6 +150,57 @@ cr.define('md_history.history_grouped_list_test', function() {
         });
       });
 
+      test('shift selection in week view', function() {
+        var results = [
+          createHistoryEntry('2016-03-13', 'https://en.wikipedia.org/a'),
+          createHistoryEntry('2016-03-13', 'https://en.wikipedia.org/b'),
+          createHistoryEntry('2016-03-13', 'https://en.wikipedia.org/c'),
+          createHistoryEntry('2016-03-13', 'https://en.wikipedia.org/d'),
+          createHistoryEntry('2016-03-13', 'https://www.youtube.com/a'),
+          createHistoryEntry('2016-03-13', 'https://www.youtube.com/b'),
+          createHistoryEntry('2016-03-11', 'https://en.wikipedia.org'),
+          createHistoryEntry('2016-03-10', 'https://www.youtube.com')
+        ];
+        app.set('queryState_.range', HistoryRange.WEEK);
+        app.historyResult(createHistoryInfo(), results);
+
+        return waitForEvent(groupedList, 'dom-change', function() {
+          return polymerSelectAll(
+              groupedList, '.dropdown-indicator').length == 4;
+        }).then(function() {
+          polymerSelectAll(groupedList, '.dropdown-indicator').
+              forEach(MockInteractions.tap);
+
+          return flush();
+        }).then(function() {
+          var items = polymerSelectAll(groupedList, 'history-item');
+
+          MockInteractions.tap(items[0].$.checkbox);
+          assertDeepEquals(
+              [true, false, false, false],
+              groupedList.groupedHistoryData_[0].domains[0].visits.map(
+                  i => i.selected));
+
+          // Shift-select to the third item.
+          shiftClick(items[2].$.checkbox);
+          assertDeepEquals(
+              [true, true, true, false],
+              groupedList.groupedHistoryData_[0].domains[0].visits.map(
+                  i => i.selected));
+
+          // Shift-selecting to another domain selects as per usual.
+          shiftClick(items[5].$.checkbox);
+          assertDeepEquals(
+              [true, true, true, false],
+              groupedList.groupedHistoryData_[0].domains[0].visits.map(
+                  i => i.selected));
+          assertDeepEquals(
+              [false, true],
+              groupedList.groupedHistoryData_[0].domains[1].visits.map(
+                  i => i.selected));
+        });
+      });
+
       test('items deletion in week view', function(done) {
         var results = [
           createHistoryEntry('2016-03-13', 'https://en.wikipedia.org/a'),

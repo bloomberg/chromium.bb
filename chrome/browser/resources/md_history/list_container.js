@@ -86,6 +86,11 @@ Polymer({
     ]);
   },
 
+  /** @return {number} */
+  getSelectedItemCount: function() {
+    return this.getSelectedList_().selectedPaths.size;
+  },
+
   unselectAllItems: function(count) {
     this.getSelectedList_().unselectAllItems(count);
   },

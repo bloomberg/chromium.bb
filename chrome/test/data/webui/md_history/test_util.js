@@ -109,3 +109,23 @@ function waitForEvent(element, eventName, predicate) {
     element.addEventListener(eventName, listener);
   });
 }
+
+/**
+ * Sends a shift click event to |element|.
+ * @param {HTMLElement} element
+ */
+function shiftClick(element) {
+  var xy = MockInteractions.middleOfNode(element);
+  var props = {
+    bubbles: true,
+    cancelable: true,
+    clientX: xy.x,
+    clientY: xy.y,
+    buttons: 1,
+    shiftKey: true,
+  };
+
+  element.dispatchEvent(new MouseEvent('mousedown', props));
+  element.dispatchEvent(new MouseEvent('mouseup', props));
+  element.dispatchEvent(new MouseEvent('click', props));
+}
