@@ -36,6 +36,7 @@ shared_library("libcast_graphics_1.0") {
 
   deps = [
     "//base",
-    "//chromecast/base/",
+    "//chromecast/base:chromecast_switches",
+    "//chromecast/base:init_shlib",
   ]
 }

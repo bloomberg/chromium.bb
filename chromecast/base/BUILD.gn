@@ -34,8 +34,6 @@ source_set("base") {
     "cast_resource.h",
     "chromecast_config_android.cc",
     "chromecast_config_android.h",
-    "chromecast_switches.cc",
-    "chromecast_switches.h",
     "device_capabilities.h",
     "device_capabilities_impl.cc",
     "device_capabilities_impl.h",
@@ -43,8 +41,6 @@ source_set("base") {
     "error_codes.h",
     "file_utils.cc",
     "file_utils.h",
-    "init_command_line_shlib.cc",
-    "init_command_line_shlib.h",
     "path_utils.cc",
     "path_utils.h",
     "pref_names.cc",
@@ -60,6 +56,8 @@ source_set("base") {
   ]
 
   public_deps = [
+    ":chromecast_switches",
+    ":init_shlib",
     "//chromecast/base/metrics",
     "//chromecast/public",
   ]
@@ -71,6 +69,35 @@ source_set("base") {
   if (is_android) {
     deps += [ ":jni_headers" ]
   }
+}
+
+# chromecast related switch values
+# b/30398176 components that depend on switch values should depend on
+# this target directly instead of depend on //chromecast/base to avoid
+# unnecessary size increase.
+source_set("chromecast_switches") {
+  sources = [
+    "chromecast_switches.cc",
+    "chromecast_switches.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+# command line initialization code for shared libs
+# b/30398176 shared libs that depend on InitCommandLineShlib() only should
+# use this target instead of //chromecast/base
+source_set("init_shlib") {
+  sources = [
+    "init_command_line_shlib.cc",
+    "init_command_line_shlib.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
 }
 
 # GYP target: n/a
