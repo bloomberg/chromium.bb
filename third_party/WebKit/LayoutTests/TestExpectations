@@ -1315,11 +1315,3 @@ crbug.com/490015 http/tests/navigation/beacon-cross-origin-redirect-blob.html [ 
 crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simple-type.html [ Skip ]
 # This test fails with the stable release mode.
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
-
-crbug.com/633509 fast/dom/blur-contenteditable.html [ NeedsRebaseline ]
-crbug.com/633509 fast/inline-block/14498-positionForCoordinates.html [ NeedsRebaseline ]
-crbug.com/633509 fast/repaint/inline-outline-repaint.html [ NeedsRebaseline ]
-crbug.com/633509 fast/dom/focus-contenteditable.html [ NeedsRebaseline ]
-crbug.com/633509 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ NeedsRebaseline ]
-crbug.com/633509 fast/forms/text/input-double-click-selection-gap-bug.html [ NeedsRebaseline ]
-crbug.com/633509 compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ NeedsRebaseline ]
