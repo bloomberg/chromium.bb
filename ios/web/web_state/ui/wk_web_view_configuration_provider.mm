@@ -66,7 +66,9 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
 // TODO(crbug.com/620878) Remove these guards after moving to iOS10 SDK.
 #if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
     if (base::ios::IsRunningOnIOS10OrLater()) {
-      [configuration_ setDataDetectorTypes:WKDataDetectorTypePhoneNumber];
+      [configuration_ setDataDetectorTypes:WKDataDetectorTypeCalendarEvent |
+                                           WKDataDetectorTypeFlightNumber |
+                                           WKDataDetectorTypePhoneNumber];
     }
 #endif
     // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
