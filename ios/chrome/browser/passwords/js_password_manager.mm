@@ -6,6 +6,7 @@
 
 #include "base/json/string_escape.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace {
@@ -52,10 +53,9 @@ NSString* JSONEscape(NSString* JSONString) {
   NSString* script = [NSString
       stringWithFormat:@"__gCrWeb.fillPasswordForm(%@, %@, %@)", JSONString,
                        JSONEscape(username), JSONEscape(password)];
-  [self evaluate:script
-      stringResultHandler:^(NSString* result, NSError* error) {
-        completionHandler(!error && [result isEqualToString:@"true"]);
-      }];
+  [self executeJavaScript:script completionHandler:^(id result, NSError*) {
+    completionHandler([result isEqual:@YES]);
+  }];
 }
 
 - (void)clearAutofilledPasswordsInForm:(NSString*)formName
@@ -63,10 +63,9 @@ NSString* JSONEscape(NSString* JSONString) {
   NSString* script =
       [NSString stringWithFormat:@"__gCrWeb.clearAutofilledPasswords(%@)",
                                  JSONEscape(formName)];
-  [self evaluate:script
-      stringResultHandler:^(NSString* result, NSError* error) {
-        completionHandler(!error && [result isEqualToString:@"true"]);
-      }];
+  [self executeJavaScript:script completionHandler:^(id result, NSError*) {
+    completionHandler([result isEqual:@YES]);
+  }];
 }
 
 - (void)fillPasswordForm:(NSString*)formName
@@ -76,11 +75,10 @@ NSString* JSONEscape(NSString* JSONString) {
       [NSString stringWithFormat:
                     @"__gCrWeb.fillPasswordFormWithGeneratedPassword(%@, %@)",
                     JSONEscape(formName), JSONEscape(password)];
-  [self evaluate:script
-      stringResultHandler:^(NSString* result, NSError* error) {
-        if (completionHandler)
-          completionHandler(!error && [result isEqualToString:@"true"]);
-      }];
+  [self executeJavaScript:script completionHandler:^(id result, NSError*) {
+    if (completionHandler)
+      completionHandler([result isEqual:@YES]);
+  }];
 }
 
 #pragma mark -
@@ -97,10 +95,9 @@ NSString* JSONEscape(NSString* JSONString) {
           completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
   NSString* JS = [[self injectionContent] stringByAppendingString:script];
-  [self evaluate:JS
-      stringResultHandler:^(NSString* result, NSError*) {
-        completionHandler(result);
-      }];
+  [self executeJavaScript:JS completionHandler:^(id result, NSError*) {
+    completionHandler(base::mac::ObjCCastStrict<NSString>(result));
+  }];
 }
 
 @end

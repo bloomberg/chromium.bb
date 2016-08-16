@@ -55,11 +55,10 @@ const char kCredentialsSecurityErrorMessageUntrustedOrigin[] =
       stringWithFormat:@"__gCrWeb['credentialManager'].resolve(%ld, %@)",
                        static_cast<long>(requestID),
                        base::SysUTF8ToNSString(credentialDataJSON)];
-  [self evaluate:script
-      stringResultHandler:^(NSString* result, NSError* error) {
-        if (completionHandler)
-          completionHandler(!error && [result isEqualToString:@"true"]);
-      }];
+  [self executeJavaScript:script completionHandler:^(id result, NSError*) {
+    if (completionHandler)
+      completionHandler([result isEqual:@YES]);
+  }];
 }
 
 - (void)resolvePromiseWithRequestID:(NSInteger)requestID
@@ -83,11 +82,10 @@ const char kCredentialsSecurityErrorMessageUntrustedOrigin[] =
 
 - (void)evaluateScript:(NSString*)script
      completionHandler:(void (^)(BOOL))completionHandler {
-  [self evaluate:script
-      stringResultHandler:^(NSString* result, NSError* error) {
-        if (completionHandler)
-          completionHandler(!error && [result isEqualToString:@"true"]);
-      }];
+  [self executeJavaScript:script completionHandler:^(id result, NSError*) {
+    if (completionHandler)
+      completionHandler([result isEqual:@YES]);
+  }];
 }
 
 #pragma mark - Protected methods
