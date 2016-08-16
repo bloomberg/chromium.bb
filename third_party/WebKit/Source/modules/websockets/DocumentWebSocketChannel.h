@@ -61,6 +61,7 @@ class WebSocketHandshakeResponseInfo;
 // DOMWindow (i.e. works in the main thread).
 class MODULES_EXPORT DocumentWebSocketChannel final : public WebSocketChannel, public WebSocketHandleClient, public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(DocumentWebSocketChannel);
+    USING_PRE_FINALIZER(DocumentWebSocketChannel, dispose);
 public:
     // You can specify the source file and the line number information
     // explicitly by passing the last parameter.
@@ -72,6 +73,8 @@ public:
         return new DocumentWebSocketChannel(document, client, std::move(location), handle);
     }
     ~DocumentWebSocketChannel() override;
+
+    void dispose();
 
     // WebSocketChannel functions.
     bool connect(const KURL&, const String& protocol) override;
