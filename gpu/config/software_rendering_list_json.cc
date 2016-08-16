@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.9",
+  "version": "11.10",
   "entries": [
     {
       "id": 1,
@@ -1245,6 +1245,24 @@ LONG_STRING_CONST(
           "value": "10.0.14393"
         }
       },
+      "features": [
+        "accelerated_vpx_decode"
+      ]
+    },
+    {
+      "id": 121,
+      "description": "VPx decoding is too slow on Intel Skylake and CherryView",
+      "cr_bugs": [616318],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x22b0", "0x22b1", "0x22b2", "0x22b3", "0x1902",
+                    "0x1906", "0x190a", "0x190b", "0x190e", "0x1912",
+                    "0x1913", "0x1915", "0x1916", "0x1917", "0x191a",
+                    "0x191b", "0x191d", "0x191e", "0x1921", "0x1923",
+                    "0x1926", "0x1927", "0x192a", "0x192b", "0x192d",
+                    "0x1932", "0x193a", "0x193b", "0x193d"],
       "features": [
         "accelerated_vpx_decode"
       ]
