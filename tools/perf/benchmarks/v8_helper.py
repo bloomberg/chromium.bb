@@ -6,7 +6,7 @@ _JS_FLAGS_SWITCH = '--js-flags='
 
 
 def EnableIgnition(options):
-  AppendJSFlags(options, '--ignition')
+  AppendJSFlags(options, '--ignition-staging')
 
 
 def AppendJSFlags(options, js_flags):
