@@ -13,6 +13,7 @@ import android.os.StrictMode;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.FileUtils;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.Feature;
@@ -41,6 +42,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             "http://mock.failed.request/-2";
     private static final String MOCK_CRONET_TEST_SUCCESS_URL =
             "http://mock.http/success.txt";
+    private static final String TAG = "RequestContextTest";
     private static final int MAX_FILE_SIZE = 1000000000;
     private static final int NUM_EVENT_FILES = 10;
 
@@ -101,14 +103,22 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     class ShutdownTestUrlRequestCallback extends TestUrlRequestCallback {
         @Override
         public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
+            // TODO: Remove logging when http://crbug.com/596929 & http://crbug.com/635025 is fixed.
+            Log.d(TAG, "ShutdownTestUrlRequestCallback.onSucceeded() has started");
             super.onSucceeded(request, info);
+            Log.d(TAG, "ShutdownTestUrlRequestCallback.onSucceeded() before calling shutdown");
             mTestFramework.mCronetEngine.shutdown();
+            Log.d(TAG, "ShutdownTestUrlRequestCallback.hasFinished() has finished");
         }
 
         @Override
         public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+            // TODO: Remove logging when http://crbug.com/596929 & http://crbug.com/635025 is fixed.
+            Log.d(TAG, "ShutdownTestUrlRequestCallback.onFailed() has started");
             super.onFailed(request, info, error);
+            Log.d(TAG, "ShutdownTestUrlRequestCallback.onFailed() before calling shutdown");
             mTestFramework.mCronetEngine.shutdown();
+            Log.d(TAG, "ShutdownTestUrlRequestCallback.onFailed() has finished.");
         }
     }
 
@@ -338,7 +348,10 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    // TODO: Remove the annotation after fixing http://crbug.com/637979 & http://crbug.com/637972
+    @OnlyRunNativeCronet
     public void testShutdown() throws Exception {
+        Log.i(TAG, "testShutdown() has started");
         mTestFramework = startCronetTestFramework();
         TestUrlRequestCallback callback = new ShutdownTestUrlRequestCallback();
         // Block callback when response starts to verify that shutdown fails
@@ -382,6 +395,11 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         callback.setAutoAdvance(true);
         callback.startNextRead(urlRequest);
         callback.blockForDone();
+        // TODO: Remove sleep when http://crbug.com/596929 is fixed.
+        // The sleep gives the thread that shuts down the engine time to complete.
+        // See http://crbug.com/596929
+        Thread.sleep(3000);
+        Log.i(TAG, "testShutdown() has finished");
     }
 
     @SmallTest
@@ -472,7 +490,10 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    // TODO: Remove the annotation after fixing http://crbug.com/637972
+    @OnlyRunNativeCronet
     public void testShutdownAfterError() throws Exception {
+        Log.i(TAG, "testShutdownAfterError() has started");
         mTestFramework = startCronetTestFramework();
         TestUrlRequestCallback callback = new ShutdownTestUrlRequestCallback();
         UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(MOCK_CRONET_TEST_FAILED_URL,
@@ -480,6 +501,11 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         assertTrue(callback.mOnErrorCalled);
+        // TODO: Remove sleep when http://crbug.com/635025 is fixed.
+        // The sleep gives the thread that shuts down the engine time to complete.
+        // See http://crbug.com/637986
+        Thread.sleep(3000);
+        Log.i(TAG, "testShutdownAfterError() has finished");
     }
 
     @SmallTest
