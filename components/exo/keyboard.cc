@@ -4,7 +4,6 @@
 
 #include "components/exo/keyboard.h"
 
-#include "ash/shell.h"
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
@@ -74,20 +73,19 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
 // Keyboard, public:
 
 Keyboard::Keyboard(KeyboardDelegate* delegate) : delegate_(delegate) {
-  ash::Shell::GetInstance()->AddPostTargetHandler(this);
-  aura::client::FocusClient* focus_client =
-      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
-  focus_client->AddObserver(this);
-  OnWindowFocused(focus_client->GetFocusedWindow(), nullptr);
+  auto* helper = WMHelper::GetInstance();
+  helper->AddPostTargetHandler(this);
+  helper->AddFocusObserver(this);
+  OnWindowFocused(helper->GetFocusedWindow(), nullptr);
 }
 
 Keyboard::~Keyboard() {
   delegate_->OnKeyboardDestroying(this);
   if (focus_)
     focus_->RemoveSurfaceObserver(this);
-  aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
-      ->RemoveObserver(this);
-  ash::Shell::GetInstance()->RemovePostTargetHandler(this);
+  auto* helper = WMHelper::GetInstance();
+  helper->RemoveFocusObserver(this);
+  helper->RemovePostTargetHandler(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

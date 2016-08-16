@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
-#include "ui/aura/client/cursor_client_observer.h"
+#include "components/exo/wm_helper.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -33,7 +33,7 @@ class Surface;
 // This class implements a client pointer that represents one or more input
 // devices, such as mice, which control the pointer location and pointer focus.
 class Pointer : public ui::EventHandler,
-                public aura::client::CursorClientObserver,
+                public WMHelper::CursorObserver,
                 public SurfaceDelegate,
                 public SurfaceObserver {
  public:
@@ -54,7 +54,7 @@ class Pointer : public ui::EventHandler,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
-  // Overridden from aura::client::CursorClientObserver:
+  // Overridden from WMHelper::CursorObserver:
   void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
 
   // Overridden from SurfaceDelegate:

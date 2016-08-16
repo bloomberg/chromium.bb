@@ -4,9 +4,9 @@
 
 #include "components/exo/touch.h"
 
-#include "ash/shell.h"
 #include "components/exo/surface.h"
 #include "components/exo/touch_delegate.h"
+#include "components/exo/wm_helper.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 
@@ -32,14 +32,14 @@ bool VectorContainsItem(T& vector, U value) {
 // Touch, public:
 
 Touch::Touch(TouchDelegate* delegate) : delegate_(delegate) {
-  ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  WMHelper::GetInstance()->AddPreTargetHandler(this);
 }
 
 Touch::~Touch() {
   delegate_->OnTouchDestroying(this);
   if (focus_)
     focus_->RemoveSurfaceObserver(this);
-  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  WMHelper::GetInstance()->RemovePreTargetHandler(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

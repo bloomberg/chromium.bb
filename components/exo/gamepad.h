@@ -13,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/exo/wm_helper.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "ui/aura/client/focus_change_observer.h"
 
@@ -25,7 +26,7 @@ using CreateGamepadDataFetcherCallback =
 // This class represents one or more gamepads, it uses a background thread
 // for polling gamepad devices and notifies the GamepadDelegate of any
 // changes.
-class Gamepad : public aura::client::FocusChangeObserver {
+class Gamepad : public WMHelper::FocusObserver {
  public:
   // This class will post tasks to invoke the delegate on the thread runner
   // which is associated with the thread that is creating this instance.
@@ -38,7 +39,7 @@ class Gamepad : public aura::client::FocusChangeObserver {
           CreateGamepadDataFetcherCallback create_fetcher_callback);
   ~Gamepad() override;
 
-  // Overridden aura::client::FocusChangeObserver:
+  // Overridden WMHelper::FocusObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
 

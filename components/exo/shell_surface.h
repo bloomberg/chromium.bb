@@ -14,13 +14,13 @@
 #include "base/strings/string16.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
+#include "components/exo/wm_helper.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
 class WindowResizer;
@@ -44,7 +44,7 @@ class ShellSurface : public SurfaceDelegate,
                      public views::View,
                      public ash::wm::WindowStateObserver,
                      public aura::WindowObserver,
-                     public aura::client::ActivationChangeObserver {
+                     public WMHelper::ActivationObserver {
  public:
   ShellSurface(Surface* surface,
                ShellSurface* parent,
@@ -206,9 +206,8 @@ class ShellSurface : public SurfaceDelegate,
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // Overridden from aura::client::ActivationChangeObserver:
+  // Overridden from WMHelper::ActivationObserver:
   void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 

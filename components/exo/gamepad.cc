@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -18,7 +17,6 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_pad_state_provider.h"
 #include "device/gamepad/gamepad_platform_data_fetcher_linux.h"
-#include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 
 namespace exo {
@@ -208,10 +206,9 @@ Gamepad::Gamepad(GamepadDelegate* delegate,
       base::Bind(&Gamepad::ProcessGamepadChanges, weak_factory_.GetWeakPtr()),
       create_fetcher_callback, polling_task_runner);
 
-  aura::client::FocusClient* focus_client =
-      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
-  focus_client->AddObserver(this);
-  OnWindowFocused(focus_client->GetFocusedWindow(), nullptr);
+  auto* helper = WMHelper::GetInstance();
+  helper->AddFocusObserver(this);
+  OnWindowFocused(helper->GetFocusedWindow(), nullptr);
 }
 
 Gamepad::~Gamepad() {
@@ -220,8 +217,7 @@ Gamepad::~Gamepad() {
   gamepad_change_fetcher_->EnablePolling(false);
 
   delegate_->OnGamepadDestroying(this);
-  aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
-      ->RemoveObserver(this);
+  WMHelper::GetInstance()->RemoveFocusObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

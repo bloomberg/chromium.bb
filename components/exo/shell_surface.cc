@@ -9,7 +9,6 @@
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
-#include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
@@ -20,6 +19,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/surface.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
@@ -34,7 +34,6 @@
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
-#include "ui/wm/public/activation_client.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(std::string*)
 
@@ -254,7 +253,7 @@ ShellSurface::ShellSurface(Surface* surface,
       initial_bounds_(initial_bounds),
       activatable_(activatable),
       container_(container) {
-  ash::Shell::GetInstance()->activation_client()->AddObserver(this);
+  WMHelper::GetInstance()->AddActivationObserver(this);
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);
   surface_->window()->Show();
@@ -281,7 +280,7 @@ ShellSurface::~ShellSurface() {
       widget_->Hide();
     widget_->CloseNow();
   }
-  ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  WMHelper::GetInstance()->RemoveActivationObserver(this);
   if (parent_)
     parent_->RemoveObserver(this);
   if (surface_) {
@@ -796,10 +795,9 @@ void ShellSurface::OnWindowDestroying(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// aura::client::ActivationChangeObserver overrides:
+// WMHelper::ActivationObserver overrides:
 
 void ShellSurface::OnWindowActivated(
-    aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
   if (!widget_)
@@ -906,8 +904,8 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.show_state = show_state;
   // Make shell surface a transient child if |parent_| has been set.
-  params.parent = parent_ ? parent_ :
-      ash::Shell::GetContainer(ash::Shell::GetTargetRootWindow(), container_);
+  params.parent =
+      parent_ ? parent_ : WMHelper::GetInstance()->GetContainer(container_);
   params.bounds = initial_bounds_;
   bool activatable = activatable_;
   // ShellSurfaces in system modal container are only activatable if input
@@ -1077,7 +1075,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
   pending_origin_offset_ = gfx::Vector2d();
   resize_component_ = pending_resize_component_;
 
-  ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  WMHelper::GetInstance()->AddPreTargetHandler(this);
   widget_->GetNativeWindow()->SetCapture();
 
   // Notify client that resizing state has changed.
@@ -1096,7 +1094,7 @@ void ShellSurface::EndDrag(bool revert) {
   else
     resizer_->CompleteDrag();
 
-  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  WMHelper::GetInstance()->RemovePreTargetHandler(this);
   widget_->GetNativeWindow()->ReleaseCapture();
   resizer_.reset();
 

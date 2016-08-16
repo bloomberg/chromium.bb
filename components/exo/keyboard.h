@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/exo/surface_observer.h"
+#include "components/exo/wm_helper.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/events/event_handler.h"
 
@@ -25,7 +26,7 @@ class Surface;
 // This class implements a client keyboard that represents one or more keyboard
 // devices.
 class Keyboard : public ui::EventHandler,
-                 public aura::client::FocusChangeObserver,
+                 public WMHelper::FocusObserver,
                  public SurfaceObserver {
  public:
   explicit Keyboard(KeyboardDelegate* delegate);
@@ -34,7 +35,7 @@ class Keyboard : public ui::EventHandler,
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
 
-  // Overridden aura::client::FocusChangeObserver:
+  // Overridden WMHelper::FocusObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
 

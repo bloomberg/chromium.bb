@@ -36,6 +36,8 @@ source_set("exo") {
     "touch.cc",
     "touch.h",
     "touch_delegate.h",
+    "wm_helper.cc",
+    "wm_helper.h",
   ]
 
   deps = [

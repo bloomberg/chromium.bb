@@ -7,12 +7,14 @@
 #include "ash/common/display/display_info.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/display/display_manager.h"
-#include "ash/shell.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/pointer_stylus_delegate.h"
 #include "components/exo/surface.h"
+#include "components/exo/wm_helper.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/widget/widget.h"
@@ -42,12 +44,9 @@ Pointer::Pointer(PointerDelegate* delegate)
       surface_(nullptr),
       focus_(nullptr),
       cursor_scale_(1.0f) {
-  ash::Shell* ash_shell = ash::Shell::GetInstance();
-  ash_shell->AddPreTargetHandler(this);
-
-  wm::CursorManager* cursor_manager = ash_shell->cursor_manager();
-  DCHECK(cursor_manager);
-  cursor_manager->AddObserver(this);
+  auto* helper = WMHelper::GetInstance();
+  helper->AddPreTargetHandler(this);
+  helper->AddCursorObserver(this);
 }
 
 Pointer::~Pointer() {
@@ -63,10 +62,9 @@ Pointer::~Pointer() {
   if (widget_)
     widget_->CloseNow();
 
-  ash::Shell* ash_shell = ash::Shell::GetInstance();
-  DCHECK(ash_shell->cursor_manager());
-  ash_shell->cursor_manager()->RemoveObserver(this);
-  ash_shell->RemovePreTargetHandler(this);
+  auto* helper = WMHelper::GetInstance();
+  helper->RemoveCursorObserver(this);
+  helper->RemovePreTargetHandler(this);
 }
 
 void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
@@ -321,9 +319,8 @@ void Pointer::CreatePointerWidget() {
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
-  params.parent =
-      ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                               ash::kShellWindowId_MouseCursorContainer);
+  params.parent = WMHelper::GetInstance()->GetContainer(
+      ash::kShellWindowId_MouseCursorContainer);
   widget_.reset(new views::Widget);
   widget_->Init(params);
   widget_->GetNativeWindow()->set_owned_by_parent(false);
@@ -347,13 +344,10 @@ void Pointer::UpdateCursorScale() {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           widget_->GetNativeWindow());
-  float ui_scale = ash::Shell::GetInstance()
-                       ->display_manager()
+  float ui_scale = WMHelper::GetInstance()
                        ->GetDisplayInfo(display.id())
                        .GetEffectiveUIScale();
-
-  ash::Shell* ash_shell = ash::Shell::GetInstance();
-  if (ash_shell->cursor_manager()->GetCursorSet() == ui::CURSOR_SET_LARGE)
+  if (WMHelper::GetInstance()->GetCursorSet() == ui::CURSOR_SET_LARGE)
     ui_scale *= kLargeCursorScale;
 
   if (ui_scale != cursor_scale_) {

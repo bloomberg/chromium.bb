@@ -30,9 +30,6 @@
 #include "ash/common/display/display_info.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm_shell.h"
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
@@ -63,6 +60,7 @@
 #include "components/exo/surface_property.h"
 #include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
+#include "components/exo/wm_helper.h"
 #include "ipc/unix_domain_socket_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window_property.h"
@@ -75,8 +73,6 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
-#include "ui/wm/public/activation_change_observer.h"
-#include "ui/wm/public/activation_client.h"
 
 #if defined(USE_OZONE)
 #include <drm_fourcc.h>
@@ -1079,8 +1075,7 @@ class WaylandPrimaryDisplayObserver : public display::DisplayObserver {
         display::Screen::GetScreen()->GetPrimaryDisplay();
 
     const ash::DisplayInfo& info =
-        ash::Shell::GetInstance()->display_manager()->GetDisplayInfo(
-            display.id());
+        WMHelper::GetInstance()->GetDisplayInfo(display.id());
 
     const float kInchInMm = 25.4f;
     const char* kUnknownMake = "unknown";
@@ -1573,8 +1568,8 @@ const struct zwp_notification_surface_v1_interface
 
 // Implements remote shell interface and monitors workspace state needed
 // for the remote shell interface.
-class WaylandRemoteShell : public ash::ShellObserver,
-                           public aura::client::ActivationChangeObserver,
+class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
+                           public WMHelper::ActivationObserver,
                            public display::DisplayObserver {
  public:
   WaylandRemoteShell(Display* display,
@@ -1582,23 +1577,22 @@ class WaylandRemoteShell : public ash::ShellObserver,
       : display_(display),
         remote_shell_resource_(remote_shell_resource),
         weak_ptr_factory_(this) {
-    ash::WmShell::Get()->AddShellObserver(this);
-    ash::Shell* shell = ash::Shell::GetInstance();
-    shell->activation_client()->AddObserver(this);
+    auto* helper = WMHelper::GetInstance();
+    helper->AddMaximizeModeObserver(this);
+    helper->AddActivationObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
 
-    layout_mode_ = ash::WmShell::Get()
-                           ->maximize_mode_controller()
-                           ->IsMaximizeModeWindowManagerEnabled()
+    layout_mode_ = helper->IsMaximizeModeWindowManagerEnabled()
                        ? ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET
                        : ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
 
     SendPrimaryDisplayMetrics();
-    SendActivated(shell->activation_client()->GetActiveWindow(), nullptr);
+    SendActivated(helper->GetActiveWindow(), nullptr);
   }
   ~WaylandRemoteShell() override {
-    ash::WmShell::Get()->RemoveShellObserver(this);
-    ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
+    auto* helper = WMHelper::GetInstance();
+    helper->RemoveMaximizeModeObserver(this);
+    helper->RemoveActivationObserver(this);
     display::Screen::GetScreen()->RemoveObserver(this);
   }
 
@@ -1632,7 +1626,7 @@ class WaylandRemoteShell : public ash::ShellObserver,
     SendConfigure_DEPRECATED(display);
   }
 
-  // Overridden from ash::ShellObserver:
+  // Overridden from WMHelper::MaximizeModeObserver:
   void OnMaximizeModeStarted() override {
     layout_mode_ = ZWP_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET;
     SendLayoutModeChange_DEPRECATED();
@@ -1653,9 +1647,8 @@ class WaylandRemoteShell : public ash::ShellObserver,
         base::TimeDelta::FromMilliseconds(kConfigureDelayAfterLayoutSwitchMs));
   }
 
-  // Overridden from aura::client::ActivationChangeObserver:
+  // Overridden from WMHelper::ActivationObserver:
   void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
       aura::Window* gained_active,
       aura::Window* lost_active) override {
     SendActivated(gained_active, lost_active);
