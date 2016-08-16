@@ -291,30 +291,29 @@ void PaintInvalidationState::updateForNormalChildren()
     if (!m_cachedOffsetsEnabled)
         return;
 
-    if (!m_currentObject.isBoxModelObject() && !m_currentObject.isSVG())
+    if (!m_currentObject.isBox())
         return;
+    const LayoutBox& box = toLayoutBox(m_currentObject);
 
-    if (m_currentObject.isLayoutView()) {
-        if (!m_currentObject.document().settings() || !m_currentObject.document().settings()->rootLayerScrolls()) {
-            if (m_currentObject != m_paintInvalidationContainer) {
-                m_paintOffset -= toLayoutView(m_currentObject).frameView()->scrollOffset();
-                addClipRectRelativeToPaintOffset(toLayoutView(m_currentObject).viewRect());
+    if (box.isLayoutView()) {
+        if (!box.document().settings() || !box.document().settings()->rootLayerScrolls()) {
+            if (box != m_paintInvalidationContainer) {
+                m_paintOffset -= toLayoutView(box).frameView()->scrollOffset();
+                addClipRectRelativeToPaintOffset(toLayoutView(box).viewRect());
             }
             return;
         }
-    } else if (m_currentObject.isSVGRoot()) {
-        const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(m_currentObject);
+    } else if (box.isSVGRoot()) {
+        const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(box);
         if (svgRoot.shouldApplyViewportClip())
             addClipRectRelativeToPaintOffset(LayoutRect(LayoutPoint(), LayoutSize(svgRoot.pixelSnappedSize())));
-    } else if (m_currentObject.isTableRow()) {
+    } else if (box.isTableRow()) {
         // Child table cell's locationOffset() includes its row's locationOffset().
-        m_paintOffset -= toLayoutBox(m_currentObject).locationOffset();
+        m_paintOffset -= box.locationOffset();
     }
 
-    if (!m_currentObject.hasClipRelatedProperty())
+    if (!box.hasClipRelatedProperty())
         return;
-
-    const LayoutBox& box = toLayoutBox(m_currentObject);
 
     // Do not clip or scroll for the paint invalidation container, if it scrolls overflow, because it will always use composited
     // scrolling in this case.
