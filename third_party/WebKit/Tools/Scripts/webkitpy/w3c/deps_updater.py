@@ -19,6 +19,10 @@ from webkitpy.common.webkit_finder import WebKitFinder
 WPT_DEST_NAME = 'wpt'
 CSS_DEST_NAME = 'csswg-test'
 
+# Our mirrors of the official w3c repos, which we pull from.
+WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
+CSS_REPO_URL = 'https://chromium.googlesource.com/external/w3c/csswg-test.git'
+
 POLL_DELAY_SECONDS = 900
 
 
@@ -47,9 +51,7 @@ class DepsUpdater(object):
         chromium_commitish = show_ref_output.split()[0]
 
         if self.target == 'wpt':
-            import_commitish = self.update(
-                WPT_DEST_NAME,
-                'https://chromium.googlesource.com/external/w3c/web-platform-tests.git')
+            import_commitish = self.update(WPT_DEST_NAME, WPT_REPO_URL)
 
             for resource in ['testharnessreport.js', 'WebIDLParser.js']:
                 source = self.path_from_webkit_base('LayoutTests', 'resources', resource)
@@ -64,9 +66,7 @@ class DepsUpdater(object):
                 self.run(['git', 'add', destination])
 
         elif self.target == 'css':
-            import_commitish = self.update(
-                CSS_DEST_NAME,
-                'https://chromium.googlesource.com/external/w3c/csswg-test.git')
+            import_commitish = self.update(CSS_DEST_NAME, WPT_REPO_URL)
         else:
             raise AssertionError("Unsupported target %s" % self.target)
 
