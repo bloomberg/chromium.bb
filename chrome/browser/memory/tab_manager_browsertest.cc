@@ -48,7 +48,6 @@ class TabManagerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   using content::WindowedNotificationObserver;
   TabManager* tab_manager = g_browser_process->GetTabManager();
-  ASSERT_TRUE(tab_manager);
   EXPECT_FALSE(tab_manager->recent_tab_discard());
 
   // Disable the protection of recent tabs.
@@ -189,7 +188,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
 // discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
 IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
-  ASSERT_TRUE(tab_manager);
 
   // Disable the protection of recent tabs.
   tab_manager->set_minimum_protection_time_for_tests(
@@ -240,7 +238,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
-  ASSERT_TRUE(tab_manager);
 
   // Disable the protection of recent tabs.
   tab_manager->set_minimum_protection_time_for_tests(
@@ -277,7 +274,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
 // Makes sure that PDF pages are protected.
 IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectPDFPages) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
-  ASSERT_TRUE(tab_manager);
 
   // Start the embedded test server so we can get served the required PDF page.
   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
@@ -306,7 +302,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectRecentlyUsedTabs) {
   // constant (as of now, it gets set through variations).
   const int kProtectionTime = 5;
   TabManager* tab_manager = g_browser_process->GetTabManager();
-  ASSERT_TRUE(tab_manager);
 
   base::SimpleTestTickClock test_clock_;
   tab_manager->set_test_tick_clock(&test_clock_);
@@ -360,7 +355,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectRecentlyUsedTabs) {
 // Makes sure that tabs using media devices are protected.
 IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
-  ASSERT_TRUE(tab_manager);
 
   // Disable the protection of recent tabs.
   tab_manager->set_minimum_protection_time_for_tests(

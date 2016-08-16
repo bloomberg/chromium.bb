@@ -483,11 +483,9 @@ void TabManager::OnAutoDiscardableStateChange(content::WebContents* contents,
 
 // static
 void TabManager::PurgeMemoryAndDiscardTab() {
-  if (g_browser_process && g_browser_process->GetTabManager()) {
-    TabManager* manager = g_browser_process->GetTabManager();
-    manager->PurgeBrowserMemory();
-    manager->DiscardTab();
-  }
+  TabManager* manager = g_browser_process->GetTabManager();
+  manager->PurgeBrowserMemory();
+  manager->DiscardTab();
 }
 
 // static
