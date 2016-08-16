@@ -46,8 +46,6 @@ crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ Failure
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
-crbug.com/324370 compositing/video/video-reflection.html [ NeedsRebaseline ]
-
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Failure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Failure ]
 
