@@ -30,6 +30,12 @@ declare_args() {
 
   # Host part of |webapk_scope_url|.
   webapk_scope_url_host = "www.template.com"
+
+  # Android version code for the WebAPK.
+  webapk_version_code = "1"
+
+  # Android version name for the WebAPK.
+  webapk_version_name = "1.0"
 }
 
 shell_apk_manifest_package =
@@ -55,6 +61,8 @@ jinja_template("shell_apk_manifest") {
     "icon_url=$webapk_icon_url",
     "scope_url_host=$webapk_scope_url_host",
     "web_manifest_url=$webapk_web_manifest_url",
+    "version_code=$webapk_version_code",
+    "version_name=$webapk_version_name",
   ]
 }
 
