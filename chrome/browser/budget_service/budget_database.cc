@@ -17,9 +17,9 @@ using content::BrowserThread;
 namespace {
 
 // UMA are logged for the database with this string as part of the name.
-// They will be LevelDB.*.BackgroundBudgetService. Changes here should be
-// synchronized with histograms.xml.
-const char kDatabaseUMAName[] = "BackgroundBudgetService";
+// They will be LevelDB.*.BudgetManager. Changes here should be synchronized
+// with histograms.xml.
+const char kDatabaseUMAName[] = "BudgetManager";
 
 // The default amount of time during which a budget will be valid.
 // This is 3 days = 72 hours.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BUDGET_SERVICE_BACKGROUND_BUDGET_SERVICE_H_
-#define CHROME_BROWSER_BUDGET_SERVICE_BACKGROUND_BUDGET_SERVICE_H_
+#ifndef CHROME_BROWSER_BUDGET_SERVICE_BUDGET_MANAGER_H_
+#define CHROME_BROWSER_BUDGET_SERVICE_BUDGET_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -23,14 +23,14 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// A budget service to help Chrome decide how much background work a service
+// A budget manager to help Chrome decide how much background work a service
 // worker should be able to do on behalf of the user. The budget is calculated
-// based on the Site Engagment Score and is consumed when a service worker does
+// based on the Site Engagment Score and is consumed when a origin does
 // background work on behalf of the user.
-class BackgroundBudgetService : public KeyedService {
+class BudgetManager : public KeyedService {
  public:
-  explicit BackgroundBudgetService(Profile* profile);
-  ~BackgroundBudgetService() override;
+  explicit BudgetManager(Profile* profile);
+  ~BudgetManager() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -57,7 +57,7 @@ class BackgroundBudgetService : public KeyedService {
                    const base::Closure& closure);
 
  private:
-  friend class BackgroundBudgetServiceTest;
+  friend class BudgetManagerTest;
 
   // Used to allow tests to fast forward/reverse time.
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
@@ -66,7 +66,7 @@ class BackgroundBudgetService : public KeyedService {
   std::unique_ptr<base::Clock> clock_;
 
   Profile* profile_;
-  DISALLOW_COPY_AND_ASSIGN(BackgroundBudgetService);
+  DISALLOW_COPY_AND_ASSIGN(BudgetManager);
 };
 
-#endif  // CHROME_BROWSER_BUDGET_SERVICE_BACKGROUND_BUDGET_SERVICE_H_
+#endif  // CHROME_BROWSER_BUDGET_SERVICE_BUDGET_MANAGER_H_

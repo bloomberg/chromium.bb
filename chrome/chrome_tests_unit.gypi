@@ -63,7 +63,7 @@
       'browser/browsing_data/origin_filter_builder_unittest.cc',
       'browser/browsing_data/registrable_domain_filter_builder_unittest.cc',
       'browser/browsing_data/site_data_size_collector_unittest.cc',
-      'browser/budget_service/background_budget_service_unittest.cc',
+      'browser/budget_service/budget_manager_unittest.cc',
       'browser/budget_service/budget_database_unittest.cc',
       'browser/chrome_browser_application_mac_unittest.mm',
       'browser/chrome_content_browser_client_unittest.cc',

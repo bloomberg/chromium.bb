@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "chrome/browser/budget_service/background_budget_service_factory.h"
+#include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -37,7 +37,7 @@ PushMessagingServiceFactory::PushMessagingServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "PushMessagingProfileService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(BackgroundBudgetServiceFactory::GetInstance());
+  DependsOn(BudgetManagerFactory::GetInstance());
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
   DependsOn(HostContentSettingsMapFactory::GetInstance());
   DependsOn(PermissionManagerFactory::GetInstance());

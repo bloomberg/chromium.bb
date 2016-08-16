@@ -11,8 +11,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/budget_service/background_budget_service.h"
-#include "chrome/browser/budget_service/background_budget_service_factory.h"
+#include "chrome/browser/budget_service/budget_manager.h"
+#include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -186,10 +186,9 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     }
   }
 
-  // Get the budget for the service worker.
-  BackgroundBudgetService* service =
-      BackgroundBudgetServiceFactory::GetForProfile(profile_);
-  service->GetBudget(
+  // Get the budget for the origin.
+  BudgetManager* manager = BudgetManagerFactory::GetForProfile(profile_);
+  manager->GetBudget(
       origin,
       base::Bind(&PushMessagingNotificationManager::DidGetBudget,
                  weak_factory_.GetWeakPtr(), origin,
@@ -213,8 +212,7 @@ void PushMessagingNotificationManager::DidGetBudget(
 
   // Generate histograms for the GetBudget calls which would return "no budget"
   // or "low budget" if an API was available to app developers.
-  double cost = BackgroundBudgetService::GetCost(
-      BackgroundBudgetService::CostType::SILENT_PUSH);
+  double cost = BudgetManager::GetCost(BudgetManager::CostType::SILENT_PUSH);
   if (budget < cost)
     UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForNoBudgetOrigin", ses_score);
   else if (budget < 2.0 * cost)
@@ -284,16 +282,14 @@ void PushMessagingNotificationManager::CheckForMissedNotification(
 
   // If the service needed to show a notification but did not, update the
   // budget.
-  double cost = BackgroundBudgetService::GetCost(
-      BackgroundBudgetService::CostType::SILENT_PUSH);
+  double cost = BudgetManager::GetCost(BudgetManager::CostType::SILENT_PUSH);
   if (budget >= cost) {
     RecordUserVisibleStatus(
         content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
 
-    BackgroundBudgetService* service =
-        BackgroundBudgetServiceFactory::GetForProfile(profile_);
+    BudgetManager* manager = BudgetManagerFactory::GetForProfile(profile_);
     // Update the stored budget.
-    service->StoreBudget(origin, budget - cost, message_handled_closure);
+    manager->StoreBudget(origin, budget - cost, message_handled_closure);
 
     return;
   }

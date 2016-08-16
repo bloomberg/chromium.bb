@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/budget_service/background_budget_service.h"
+#include "chrome/browser/budget_service/budget_manager.h"
 
 #include <stdint.h>
 
@@ -88,21 +88,21 @@ void SetBudgetDataInPrefs(Profile* profile,
 
 }  // namespace
 
-BackgroundBudgetService::BackgroundBudgetService(Profile* profile)
+BudgetManager::BudgetManager(Profile* profile)
     : clock_(base::WrapUnique(new base::DefaultClock)), profile_(profile) {
   DCHECK(profile);
 }
 
-BackgroundBudgetService::~BackgroundBudgetService() {}
+BudgetManager::~BudgetManager() {}
 
 // static
-void BackgroundBudgetService::RegisterProfilePrefs(
+void BudgetManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kBackgroundBudgetMap);
 }
 
 // static
-double BackgroundBudgetService::GetCost(CostType type) {
+double BudgetManager::GetCost(CostType type) {
   switch (type) {
     case CostType::SILENT_PUSH:
       return 2.0;
@@ -112,8 +112,8 @@ double BackgroundBudgetService::GetCost(CostType type) {
   return SiteEngagementScore::kMaxPoints + 1.0;
 }
 
-void BackgroundBudgetService::GetBudget(const GURL& origin,
-                                        const GetBudgetCallback& callback) {
+void BudgetManager::GetBudget(const GURL& origin,
+                              const GetBudgetCallback& callback) {
   DCHECK_EQ(origin, origin.GetOrigin());
 
   // Get the current SES score, which we'll use to set a new budget.
@@ -172,9 +172,9 @@ void BackgroundBudgetService::GetBudget(const GURL& origin,
                           base::Bind(callback, budget));
 }
 
-void BackgroundBudgetService::StoreBudget(const GURL& origin,
-                                          double budget,
-                                          const base::Closure& closure) {
+void BudgetManager::StoreBudget(const GURL& origin,
+                                double budget,
+                                const base::Closure& closure) {
   DCHECK_EQ(origin, origin.GetOrigin());
   DCHECK_GE(budget, 0.0);
   DCHECK_LE(budget, SiteEngagementService::GetMaxPoints());
@@ -190,7 +190,6 @@ void BackgroundBudgetService::StoreBudget(const GURL& origin,
 }
 
 // Override the default clock with the specified clock. Only used for testing.
-void BackgroundBudgetService::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
+void BudgetManager::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }

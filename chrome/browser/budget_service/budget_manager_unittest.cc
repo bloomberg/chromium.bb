@@ -8,8 +8,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
-#include "chrome/browser/budget_service/background_budget_service.h"
-#include "chrome/browser/budget_service/background_budget_service_factory.h"
+#include "chrome/browser/budget_service/budget_manager.h"
+#include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -25,18 +25,18 @@ const double kTestBudget = 10.0;
 const double kTestSES = 48.0;
 const double kLowSES = 1.0;
 const double kMaxSES = 100.0;
-// Mirrors definition in BackgroundBudgetService, this is 10 days of seconds.
+// Mirrors definition in BudgetManager, this is 10 days of seconds.
 const double kSecondsToAccumulate = 864000.0;
 
 }  // namespace
 
-class BackgroundBudgetServiceTest : public testing::Test {
+class BudgetManagerTest : public testing::Test {
  public:
-  BackgroundBudgetServiceTest() : budget_(0.0) {}
-  ~BackgroundBudgetServiceTest() override {}
+  BudgetManagerTest() : budget_(0.0) {}
+  ~BudgetManagerTest() override {}
 
-  BackgroundBudgetService* GetService() {
-    return BackgroundBudgetServiceFactory::GetForProfile(&profile_);
+  BudgetManager* GetManager() {
+    return BudgetManagerFactory::GetForProfile(&profile_);
   }
 
   void SetSiteEngagementScore(const GURL& url, double score) {
@@ -48,16 +48,16 @@ class BackgroundBudgetServiceTest : public testing::Test {
 
   base::SimpleTestClock* SetClockForTesting() {
     base::SimpleTestClock* clock = new base::SimpleTestClock();
-    BackgroundBudgetServiceFactory::GetForProfile(&profile_)
-        ->SetClockForTesting(base::WrapUnique(clock));
+    BudgetManagerFactory::GetForProfile(&profile_)->SetClockForTesting(
+        base::WrapUnique(clock));
     return clock;
   }
 
   double GetBudget() {
     const GURL origin(kTestOrigin);
     base::RunLoop run_loop;
-    GetService()->GetBudget(
-        origin, base::Bind(&BackgroundBudgetServiceTest::GotBudget,
+    GetManager()->GetBudget(
+        origin, base::Bind(&BudgetManagerTest::GotBudget,
                            base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return budget_;
@@ -71,7 +71,7 @@ class BackgroundBudgetServiceTest : public testing::Test {
   void StoreBudget(double budget) {
     const GURL origin(kTestOrigin);
     base::RunLoop run_loop;
-    GetService()->StoreBudget(origin, budget, run_loop.QuitClosure());
+    GetManager()->StoreBudget(origin, budget, run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -83,11 +83,11 @@ class BackgroundBudgetServiceTest : public testing::Test {
   TestingProfile profile_;
 };
 
-TEST_F(BackgroundBudgetServiceTest, GetBudgetNoBudgetOrSES) {
+TEST_F(BudgetManagerTest, GetBudgetNoBudgetOrSES) {
   EXPECT_DOUBLE_EQ(GetBudget(), 0.0);
 }
 
-TEST_F(BackgroundBudgetServiceTest, GetBudgetNoBudgetSESExists) {
+TEST_F(BudgetManagerTest, GetBudgetNoBudgetSESExists) {
   // Set a starting SES for the url but no stored budget info.
   const GURL origin(kTestOrigin);
   SetSiteEngagementScore(origin, kTestSES);
@@ -95,13 +95,13 @@ TEST_F(BackgroundBudgetServiceTest, GetBudgetNoBudgetSESExists) {
   EXPECT_DOUBLE_EQ(GetBudget(), kTestSES);
 }
 
-TEST_F(BackgroundBudgetServiceTest, GetBudgetNoElapsedTime) {
+TEST_F(BudgetManagerTest, GetBudgetNoElapsedTime) {
   StoreBudget(kTestBudget);
   EXPECT_DOUBLE_EQ(GetBudget(), kTestBudget);
 }
 
-TEST_F(BackgroundBudgetServiceTest, GetBudgetElapsedTime) {
-  // Manually construct a BackgroundBudgetServie with a clock that the test
+TEST_F(BudgetManagerTest, GetBudgetElapsedTime) {
+  // Manually construct a BudgetManager with a clock that the test
   // can control so that we can fast forward in time.
   base::SimpleTestClock* clock = SetClockForTesting();
   base::Time starting_time = clock->Now();
@@ -174,8 +174,8 @@ TEST_F(BackgroundBudgetServiceTest, GetBudgetElapsedTime) {
   EXPECT_GT(budget, kLowSES);
 }
 
-TEST_F(BackgroundBudgetServiceTest, GetBudgetConsumedOverTime) {
-  // Manually construct a BackgroundBudgetService with a clock that the test
+TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
+  // Manually construct a BudgetManager with a clock that the test
   // can control so that we can fast forward in time.
   base::SimpleTestClock* clock = SetClockForTesting();
 
@@ -193,8 +193,8 @@ TEST_F(BackgroundBudgetServiceTest, GetBudgetConsumedOverTime) {
     budget = GetBudget();
 
     if (i % 10 == 0) {
-      double cost = BackgroundBudgetService::GetCost(
-          BackgroundBudgetService::CostType::SILENT_PUSH);
+      double cost =
+          BudgetManager::GetCost(BudgetManager::CostType::SILENT_PUSH);
       StoreBudget(budget - cost);
     }
   }
@@ -206,7 +206,7 @@ TEST_F(BackgroundBudgetServiceTest, GetBudgetConsumedOverTime) {
   EXPECT_LT(budget, kTestBudget);
 }
 
-TEST_F(BackgroundBudgetServiceTest, GetBudgetInvalidBudget) {
+TEST_F(BudgetManagerTest, GetBudgetInvalidBudget) {
   const GURL origin(kTestOrigin);
 
   // Set a starting SES for the url.
@@ -222,8 +222,8 @@ TEST_F(BackgroundBudgetServiceTest, GetBudgetInvalidBudget) {
   EXPECT_DOUBLE_EQ(GetBudget(), kTestSES);
 }
 
-TEST_F(BackgroundBudgetServiceTest, GetBudgetNegativeTime) {
-  // Manually construct a BackgroundBudgetService with a clock that the test
+TEST_F(BudgetManagerTest, GetBudgetNegativeTime) {
+  // Manually construct a BudgetManager with a clock that the test
   // can control so that we can fast forward in time.
   base::SimpleTestClock* clock = SetClockForTesting();
   base::Time starting_time = clock->Now();
