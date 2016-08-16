@@ -113,6 +113,8 @@ class AuraLinuxApplication
     return false;
   }
 
+  bool CanSetStringValue() override { return false; }
+
  private:
   friend struct base::DefaultSingletonTraits<AuraLinuxApplication>;
 

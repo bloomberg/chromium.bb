@@ -208,13 +208,20 @@ void NativeViewAccessibility::DoDefaultAction() {
 
 bool NativeViewAccessibility::SetStringValue(const base::string16& new_value) {
   // Return an error if the view can't set the value.
-  ui::AXViewState state;
-  view_->GetAccessibleState(&state);
-  if (state.set_value_callback.is_null())
+  if (!CanSetStringValue())
     return false;
 
+  ui::AXViewState state;
+  view_->GetAccessibleState(&state);
   state.set_value_callback.Run(new_value);
   return true;
+}
+
+bool NativeViewAccessibility::CanSetStringValue() {
+  ui::AXViewState state;
+  view_->GetAccessibleState(&state);
+  return !ui::AXViewState::IsFlagSet(GetData().state, ui::AX_STATE_READ_ONLY) &&
+         !state.set_value_callback.is_null();
 }
 
 void NativeViewAccessibility::OnWidgetDestroying(Widget* widget) {

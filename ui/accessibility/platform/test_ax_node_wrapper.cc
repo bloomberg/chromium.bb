@@ -120,6 +120,10 @@ bool TestAXNodeWrapper::SetStringValue(const base::string16& new_value) {
   return false;
 }
 
+bool TestAXNodeWrapper::CanSetStringValue() {
+  return false;
+}
+
 TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
     : tree_(tree),
       node_(node),

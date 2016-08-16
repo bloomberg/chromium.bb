@@ -57,6 +57,7 @@ class VIEWS_EXPORT NativeViewAccessibility
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   void DoDefaultAction() override;
   bool SetStringValue(const base::string16& new_value) override;
+  bool CanSetStringValue() override;
 
   // WidgetObserver
   void OnWidgetDestroying(Widget* widget) override;

@@ -86,6 +86,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   // Change the value of a control, such as the text content of a text field.
   virtual bool SetStringValue(const base::string16& new_value) = 0;
+
+  // Whether the string value is settable.
+  virtual bool CanSetStringValue() = 0;
 };
 
 }  // namespace ui
