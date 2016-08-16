@@ -15,6 +15,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
+#include "base/trace_event/trace_event.h"
+#include "components/tracing/common/trace_to_console.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "content/public/common/content_switches.h"
 #include "mash/app_driver/app_driver.h"
 #include "mash/quick_launch/quick_launch.h"
@@ -231,6 +234,16 @@ int MashMain() {
 #endif
   if (!IsChild())
     message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTraceToConsole)) {
+    base::trace_event::TraceConfig trace_config =
+        tracing::GetConfigForTraceToConsole();
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+        trace_config,
+        base::trace_event::TraceLog::RECORDING_MODE);
+  }
+
   MashRunner mash_runner;
   mash_runner.Run();
   return 0;

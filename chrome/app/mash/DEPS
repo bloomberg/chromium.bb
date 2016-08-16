@@ -6,6 +6,7 @@ include_rules = [
   "-chrome",
   "+chrome/app/mash",
   "+components/font_service",
+  "+components/tracing",
   "+services/ui",
   "+mash",
   "+services/shell",
