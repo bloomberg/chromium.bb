@@ -73,8 +73,8 @@ public class AddToHomescreenDialogHelper {
 
     @CalledByNative
     private void onIconAvailable(Bitmap icon) {
-        mObserver.onIconAvailable(icon);
         mIsInitialized = true;
+        mObserver.onIconAvailable(icon);
     }
 
     /**
