@@ -33,6 +33,10 @@ class DocumentWritePageLoadMetricsObserver
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
+  void OnFirstMeaningfulPaint(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+
   void OnParseStop(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
@@ -50,6 +54,10 @@ class DocumentWritePageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info);
 
   void LogDocumentWriteEvaluatorFirstContentfulPaint(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info);
+
+  void LogDocumentWriteEvaluatorFirstMeaningfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info);
 

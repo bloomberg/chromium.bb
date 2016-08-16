@@ -101163,6 +101163,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
   <affected-histogram
+      name="PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint"/>
+  <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstImagePaint"/>
   <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstPaint"/>

@@ -145,6 +145,15 @@ void DocumentWritePageLoadMetricsObserver::OnFirstContentfulPaint(
   }
 }
 
+void DocumentWritePageLoadMetricsObserver::OnFirstMeaningfulPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (info.metadata.behavior_flags &
+      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteEvaluator) {
+    LogDocumentWriteEvaluatorFirstMeaningfulPaint(timing, info);
+  }
+}
+
 void DocumentWritePageLoadMetricsObserver::OnParseStop(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
@@ -204,6 +213,25 @@ void DocumentWritePageLoadMetricsObserver::
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramDocWriteFirstContentfulPaintImmediate,
         timing.first_contentful_paint.value());
+  }
+}
+
+void DocumentWritePageLoadMetricsObserver::
+    LogDocumentWriteEvaluatorFirstMeaningfulPaint(
+        const page_load_metrics::PageLoadTiming& timing,
+        const page_load_metrics::PageLoadExtraInfo& info) {
+  // Note: The first meaningful paint calculation in the core observer filters
+  // out pages which had user interaction before the first meaningful paint.
+  // Because the counts of those instances are low (< 2%), just log everything
+  // here for simplicity. If this ends up being unreliable (the 2% is just from
+  // canary), the page_load_metrics API should be altered to return the values
+  // the consumer wants.
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.first_meaningful_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.DocWrite.Evaluator.Experimental.PaintTiming."
+        "ParseStartToFirstMeaningfulPaint",
+        timing.first_meaningful_paint.value() - timing.parse_start.value());
   }
 }
 
