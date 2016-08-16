@@ -1642,7 +1642,7 @@ if (enable_me2me_host) {
   if (is_win && is_chrome_branded) {
     # We do not release a 64 bits binary. So to avoid any potential
     # misunderstanding, we only build 32 bits MSI file.
-    if (target_cpu == "x86") {
+    if (!is_component_build && target_cpu == "x86") {
       # The script uses "ia32" instead of "x86".
       msi_script_arch = "ia32"
 
