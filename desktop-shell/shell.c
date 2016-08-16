@@ -1950,14 +1950,13 @@ unset_fullscreen(struct shell_surface *shsurf)
 					 shsurf->saved_x, shsurf->saved_y);
 	else
 		weston_view_set_initial_position(shsurf->view, shsurf->shell);
+	shsurf->saved_position_valid = false;
 
 	if (shsurf->saved_rotation_valid) {
 		wl_list_insert(&shsurf->view->geometry.transformation_list,
 		               &shsurf->rotation.transform.link);
 		shsurf->saved_rotation_valid = false;
 	}
-
-	/* Layer is updated in set_surface_type(). */
 }
 
 static void
@@ -1974,14 +1973,13 @@ unset_maximized(struct shell_surface *shsurf)
 					 shsurf->saved_x, shsurf->saved_y);
 	else
 		weston_view_set_initial_position(shsurf->view, shsurf->shell);
+	shsurf->saved_position_valid = false;
 
 	if (shsurf->saved_rotation_valid) {
 		wl_list_insert(&shsurf->view->geometry.transformation_list,
 			       &shsurf->rotation.transform.link);
 		shsurf->saved_rotation_valid = false;
 	}
-
-	/* Layer is updated in set_surface_type(). */
 }
 
 static void
@@ -2489,6 +2487,20 @@ desktop_surface_committed(struct weston_desktop_surface *desktop_surface,
 		unset_fullscreen(shsurf);
 	if (was_maximized)
 		unset_maximized(shsurf);
+
+	if ((shsurf->state.fullscreen || shsurf->state.maximized) &&
+	    !shsurf->saved_position_valid) {
+		shsurf->saved_x = shsurf->view->geometry.x;
+		shsurf->saved_y = shsurf->view->geometry.y;
+		shsurf->saved_position_valid = true;
+
+		if (!wl_list_empty(&shsurf->rotation.transform.link)) {
+			wl_list_remove(&shsurf->rotation.transform.link);
+			wl_list_init(&shsurf->rotation.transform.link);
+			weston_view_geometry_dirty(shsurf->view);
+			shsurf->saved_rotation_valid = true;
+		}
+	}
 
 	if (shsurf->state.fullscreen) {
 		shell_configure_fullscreen(shsurf);
