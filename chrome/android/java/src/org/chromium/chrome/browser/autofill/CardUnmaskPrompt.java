@@ -67,6 +67,7 @@ public class CardUnmaskPrompt
     private final View mVerificationOverlay;
     private final ProgressBar mVerificationProgressBar;
     private final TextView mVerificationView;
+    private final long mSuccessMessageDurationMilliseconds;
 
     private int mThisYear;
     private int mThisMonth;
@@ -122,7 +123,7 @@ public class CardUnmaskPrompt
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
             String instructions, String confirmButtonLabel, int drawableId,
             boolean shouldRequestExpirationDate, boolean canStoreLocally,
-            boolean defaultToStoringLocally) {
+            boolean defaultToStoringLocally, long successMessageDurationMilliseconds) {
         mDelegate = delegate;
 
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -148,6 +149,7 @@ public class CardUnmaskPrompt
         mVerificationOverlay = v.findViewById(R.id.verification_overlay);
         mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);
         mVerificationView = (TextView) v.findViewById(R.id.verification_message);
+        mSuccessMessageDurationMilliseconds = successMessageDurationMilliseconds;
         ((ImageView) v.findViewById(R.id.cvc_hint_image)).setImageResource(drawableId);
 
         mDialog = new AlertDialog.Builder(context, R.style.AlertDialogTheme)
@@ -244,17 +246,21 @@ public class CardUnmaskPrompt
                 setNoRetryError(errorMessage);
             }
         } else {
-            mVerificationProgressBar.setVisibility(View.GONE);
-            mDialog.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
-            mVerificationView.setText(R.string.autofill_card_unmask_verification_success);
-            mVerificationView.announceForAccessibility(mVerificationView.getText());
-            Handler h = new Handler();
-            h.postDelayed(new Runnable() {
+            Runnable dismissRunnable = new Runnable() {
                 @Override
                 public void run() {
                     dismiss();
                 }
-            }, 1000);
+            };
+            if (mSuccessMessageDurationMilliseconds > 0) {
+                mVerificationProgressBar.setVisibility(View.GONE);
+                mDialog.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
+                mVerificationView.setText(R.string.autofill_card_unmask_verification_success);
+                mVerificationView.announceForAccessibility(mVerificationView.getText());
+                new Handler().postDelayed(dismissRunnable, mSuccessMessageDurationMilliseconds);
+            } else {
+                new Handler().post(dismissRunnable);
+            }
         }
     }
 

@@ -53,6 +53,7 @@ void CardUnmaskPromptViewAndroid::Show() {
       confirm, ResourceMapper::MapFromChromiumId(controller_->GetCvcImageRid()),
       controller_->ShouldRequestExpirationDate(),
       controller_->CanStoreLocally(), controller_->GetStoreLocallyStartState(),
+      controller_->GetSuccessMessageDuration().InMilliseconds(),
       view_android->GetWindowAndroid()->GetJavaObject()));
 
   Java_CardUnmaskBridge_show(env, java_object_);

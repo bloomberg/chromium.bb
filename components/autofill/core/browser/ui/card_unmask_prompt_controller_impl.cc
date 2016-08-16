@@ -322,7 +322,8 @@ bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
 
 base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()
     const {
-  return base::TimeDelta::FromMilliseconds(500);
+  return base::TimeDelta::FromMilliseconds(
+      reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST ? 0 : 500);
 }
 
 }  // namespace autofill
