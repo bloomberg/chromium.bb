@@ -89,6 +89,40 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
         ['win', ('amd', 0x6779)], bug=483282)
 
+    # Keep a separate set of failures for the R7 240, since it can use a new
+    # and updated driver. The older drivers won't ever get fixes from AMD.
+    self.Fail('deqp/functional/gles3/framebufferblit/depth_stencil.html',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/texturefiltering/2d_array*',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/texturefiltering/cube*',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/texturefiltering/'
+        'textureshadow_2d_array_nearest_mipmap_nearest_*',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/texturefiltering/'
+        'textureshadow_2d_linear_mipmap*',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/texturefiltering/'
+        'textureshadow_2d_nearest_mipmap_nearest*',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/texturespecification/'
+        'teximage2d_depth.html',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/texturespecification/'
+        'texstorage2d_format_depth_stencil.html',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/texturespecification/'
+        'texstorage3d_format_depth_stencil.html',
+        ['win', ('amd', 0x6613)], bug=638323)
+    self.Fail('deqp/functional/gles3/texturespecification/'
+        'texsubimage2d_depth.html',
+        ['win', ('amd', 0x6613)], bug=638323)
+
     # It's unfortunate that these suppressions need to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
     # it's infeasible to suppress individual failures one by one.
