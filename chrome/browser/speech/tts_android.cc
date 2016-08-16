@@ -33,7 +33,7 @@ TtsPlatformImplAndroid::TtsPlatformImplAndroid()
 
 TtsPlatformImplAndroid::~TtsPlatformImplAndroid() {
   JNIEnv* env = AttachCurrentThread();
-  Java_TtsPlatformImpl_destroy(env, java_ref_.obj());
+  Java_TtsPlatformImpl_destroy(env, java_ref_);
 }
 
 bool TtsPlatformImplAndroid::PlatformImplAvailable() {
@@ -48,9 +48,9 @@ bool TtsPlatformImplAndroid::Speak(
     const UtteranceContinuousParameters& params) {
   JNIEnv* env = AttachCurrentThread();
   jboolean success = Java_TtsPlatformImpl_speak(
-      env, java_ref_.obj(), utterance_id,
-      base::android::ConvertUTF8ToJavaString(env, utterance).obj(),
-      base::android::ConvertUTF8ToJavaString(env, lang).obj(), params.rate,
+      env, java_ref_, utterance_id,
+      base::android::ConvertUTF8ToJavaString(env, utterance),
+      base::android::ConvertUTF8ToJavaString(env, lang), params.rate,
       params.pitch, params.volume);
   if (!success)
     return false;
@@ -62,7 +62,7 @@ bool TtsPlatformImplAndroid::Speak(
 
 bool TtsPlatformImplAndroid::StopSpeaking() {
   JNIEnv* env = AttachCurrentThread();
-  Java_TtsPlatformImpl_stop(env, java_ref_.obj());
+  Java_TtsPlatformImpl_stop(env, java_ref_);
   utterance_id_ = 0;
   utterance_.clear();
   return true;
@@ -82,18 +82,18 @@ bool TtsPlatformImplAndroid::IsSpeaking() {
 void TtsPlatformImplAndroid::GetVoices(
     std::vector<VoiceData>* out_voices) {
   JNIEnv* env = AttachCurrentThread();
-  if (!Java_TtsPlatformImpl_isInitialized(env, java_ref_.obj()))
+  if (!Java_TtsPlatformImpl_isInitialized(env, java_ref_))
     return;
 
-  int count = Java_TtsPlatformImpl_getVoiceCount(env, java_ref_.obj());
+  int count = Java_TtsPlatformImpl_getVoiceCount(env, java_ref_);
   for (int i = 0; i < count; ++i) {
     out_voices->push_back(VoiceData());
     VoiceData& data = out_voices->back();
     data.native = true;
     data.name = base::android::ConvertJavaStringToUTF8(
-        Java_TtsPlatformImpl_getVoiceName(env, java_ref_.obj(), i));
+        Java_TtsPlatformImpl_getVoiceName(env, java_ref_, i));
     data.lang = base::android::ConvertJavaStringToUTF8(
-        Java_TtsPlatformImpl_getVoiceLanguage(env, java_ref_.obj(), i));
+        Java_TtsPlatformImpl_getVoiceLanguage(env, java_ref_, i));
     data.gender = TTS_GENDER_NONE;
     data.events.insert(TTS_EVENT_START);
     data.events.insert(TTS_EVENT_END);

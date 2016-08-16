@@ -19,7 +19,7 @@ void SigninPromoUtilAndroid::StartAccountSigninActivityForPromo(
   if (content_view_core && content_view_core->GetWindowAndroid()) {
     Java_SigninPromoUtil_openAccountSigninActivityForPromo(
         base::android::AttachCurrentThread(),
-        content_view_core->GetWindowAndroid()->GetJavaObject().obj(),
+        content_view_core->GetWindowAndroid()->GetJavaObject(),
         jint(access_point));
   }
 }

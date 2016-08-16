@@ -1176,7 +1176,7 @@ void ChromeBrowserProvider::BookmarkModelChanged() {
   if (obj.is_null())
     return;
 
-  Java_ChromeBrowserProvider_onBookmarkChanged(env, obj.obj());
+  Java_ChromeBrowserProvider_onBookmarkChanged(env, obj);
 }
 
 void ChromeBrowserProvider::OnHistoryChanged() {
@@ -1184,7 +1184,7 @@ void ChromeBrowserProvider::OnHistoryChanged() {
   ScopedJavaLocalRef<jobject> obj = weak_java_provider_.get(env);
   if (obj.is_null())
     return;
-  Java_ChromeBrowserProvider_onHistoryChanged(env, obj.obj());
+  Java_ChromeBrowserProvider_onHistoryChanged(env, obj);
 }
 
 void ChromeBrowserProvider::OnURLVisited(
@@ -1214,7 +1214,7 @@ void ChromeBrowserProvider::OnKeywordSearchTermUpdated(
   ScopedJavaLocalRef<jobject> obj = weak_java_provider_.get(env);
   if (obj.is_null())
     return;
-  Java_ChromeBrowserProvider_onSearchTermChanged(env, obj.obj());
+  Java_ChromeBrowserProvider_onSearchTermChanged(env, obj);
 }
 
 void ChromeBrowserProvider::OnKeywordSearchTermDeleted(

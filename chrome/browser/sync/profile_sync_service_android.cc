@@ -67,9 +67,7 @@ void NativeGetAllNodesCallback(
 
   ScopedJavaLocalRef<jstring> java_json_string =
       ConvertUTF8ToJavaString(env, json_string);
-  Java_ProfileSyncService_onGetAllNodesResult(env,
-                                              callback.obj(),
-                                              java_json_string.obj());
+  Java_ProfileSyncService_onGetAllNodesResult(env, callback, java_json_string);
 }
 
 ScopedJavaLocalRef<jintArray> ModelTypeSetToJavaIntArray(
@@ -130,14 +128,14 @@ void ProfileSyncServiceAndroid::OnStateChanged() {
   // Notify the java world that our sync state has changed.
   JNIEnv* env = AttachCurrentThread();
   Java_ProfileSyncService_syncStateChanged(
-      env, weak_java_profile_sync_service_.get(env).obj());
+      env, weak_java_profile_sync_service_.get(env));
 }
 
 bool ProfileSyncServiceAndroid::IsSyncAllowedByAndroid() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   return Java_ProfileSyncService_isMasterSyncEnabled(
-      env, weak_java_profile_sync_service_.get(env).obj());
+      env, weak_java_profile_sync_service_.get(env));
 }
 
 // Pure ProfileSyncService calls.

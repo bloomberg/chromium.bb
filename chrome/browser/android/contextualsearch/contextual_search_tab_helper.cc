@@ -35,7 +35,7 @@ ContextualSearchTabHelper::~ContextualSearchTabHelper() {
 void ContextualSearchTabHelper::OnContextualSearchPrefChanged() {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jobj = weak_java_ref_.get(env);
-  Java_ContextualSearchTabHelper_onContextualSearchPrefChanged(env, jobj.obj());
+  Java_ContextualSearchTabHelper_onContextualSearchPrefChanged(env, jobj);
 }
 
 void ContextualSearchTabHelper::Destroy(JNIEnv* env,

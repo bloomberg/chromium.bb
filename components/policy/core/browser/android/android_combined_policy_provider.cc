@@ -29,7 +29,7 @@ AndroidCombinedPolicyProvider::AndroidCombinedPolicyProvider(
   policy_converter_.reset(new policy::android::PolicyConverter(schema));
   java_combined_policy_provider_.Reset(Java_CombinedPolicyProvider_linkNative(
       AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
-      policy_converter_->GetJavaObject().obj()));
+      policy_converter_->GetJavaObject()));
 }
 
 AndroidCombinedPolicyProvider::~AndroidCombinedPolicyProvider() {
@@ -39,8 +39,8 @@ AndroidCombinedPolicyProvider::~AndroidCombinedPolicyProvider() {
 
 void AndroidCombinedPolicyProvider::RefreshPolicies() {
   JNIEnv* env = AttachCurrentThread();
-  Java_CombinedPolicyProvider_refreshPolicies(
-      env, java_combined_policy_provider_.obj());
+  Java_CombinedPolicyProvider_refreshPolicies(env,
+                                              java_combined_policy_provider_);
 }
 
 void AndroidCombinedPolicyProvider::FlushPolicies(

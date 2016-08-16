@@ -34,15 +34,14 @@ JniGlDisplayHandler::JniGlDisplayHandler(ChromotingJniRuntime* runtime)
 JniGlDisplayHandler::~JniGlDisplayHandler() {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   Java_GlDisplay_invalidate(base::android::AttachCurrentThread(),
-                            java_display_.obj());
+                            java_display_);
   runtime_->ui_task_runner()->DeleteSoon(FROM_HERE, ui_task_poster_.release());
 }
 
 void JniGlDisplayHandler::InitializeClient(
     const base::android::JavaRef<jobject>& java_client) {
   return Java_GlDisplay_initializeClient(base::android::AttachCurrentThread(),
-                                         java_display_.obj(),
-                                         java_client.obj());
+                                         java_display_, java_client);
 }
 
 std::unique_ptr<protocol::CursorShapeStub>
@@ -173,7 +172,7 @@ void JniGlDisplayHandler::SetCursorShape(
 void JniGlDisplayHandler::NotifyRenderDoneOnUiThread(
     base::android::ScopedJavaGlobalRef<jobject> java_display) {
   Java_GlDisplay_canvasRendered(base::android::AttachCurrentThread(),
-                                java_display.obj());
+                                java_display);
 }
 
 void JniGlDisplayHandler::SurfaceCreatedOnDisplayThread(
@@ -203,7 +202,7 @@ void JniGlDisplayHandler::ChangeCanvasSizeOnUiThread(
     int width,
     int height) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_GlDisplay_changeCanvasSize(env, java_display.obj(), width, height);
+  Java_GlDisplay_changeCanvasSize(env, java_display, width, height);
 }
 
 }  // namespace remoting

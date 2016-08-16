@@ -33,25 +33,25 @@ void Shell::PlatformCleanUp() {
   JNIEnv* env = AttachCurrentThread();
   if (java_object_.is_null())
     return;
-  Java_Shell_onNativeDestroyed(env, java_object_.obj());
+  Java_Shell_onNativeDestroyed(env, java_object_);
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
   JNIEnv* env = AttachCurrentThread();
   if (java_object_.is_null())
     return;
-  Java_Shell_enableUiControl(env, java_object_.obj(), control, is_enabled);
+  Java_Shell_enableUiControl(env, java_object_, control, is_enabled);
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
-  Java_Shell_onUpdateUrl(env, java_object_.obj(), j_url.obj());
+  Java_Shell_onUpdateUrl(env, java_object_, j_url);
 }
 
 void Shell::PlatformSetIsLoading(bool loading) {
   JNIEnv* env = AttachCurrentThread();
-  Java_Shell_setIsLoading(env, java_object_.obj(), loading);
+  Java_Shell_setIsLoading(env, java_object_, loading);
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
@@ -60,8 +60,8 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
 void Shell::PlatformSetContents() {
   JNIEnv* env = AttachCurrentThread();
-  Java_Shell_initFromNativeTabContents(
-      env, java_object_.obj(), web_contents()->GetJavaWebContents().obj());
+  Java_Shell_initFromNativeTabContents(env, java_object_,
+                                       web_contents()->GetJavaWebContents());
 }
 
 void Shell::PlatformResizeSubViews() {
@@ -74,20 +74,19 @@ void Shell::PlatformSetTitle(const base::string16& title) {
 
 void Shell::LoadProgressChanged(WebContents* source, double progress) {
   JNIEnv* env = AttachCurrentThread();
-  Java_Shell_onLoadProgressChanged(env, java_object_.obj(), progress);
+  Java_Shell_onLoadProgressChanged(env, java_object_, progress);
 }
 
 void Shell::PlatformToggleFullscreenModeForTab(WebContents* web_contents,
                                                bool enter_fullscreen) {
   JNIEnv* env = AttachCurrentThread();
-  Java_Shell_toggleFullscreenModeForTab(
-      env, java_object_.obj(), enter_fullscreen);
+  Java_Shell_toggleFullscreenModeForTab(env, java_object_, enter_fullscreen);
 }
 
 bool Shell::PlatformIsFullscreenForTabOrPending(
     const WebContents* web_contents) const {
   JNIEnv* env = AttachCurrentThread();
-  return Java_Shell_isFullscreenForTabOrPending(env, java_object_.obj());
+  return Java_Shell_isFullscreenForTabOrPending(env, java_object_);
 }
 
 void Shell::Close() {

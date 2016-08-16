@@ -67,14 +67,12 @@ void AutoSigninFirstRunDialogAndroid::ShowDialog() {
       l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_TURN_OFF);
 
   dialog_jobject_.Reset(Java_AutoSigninFirstRunDialog_createAndShowDialog(
-      env, native_window->GetJavaObject().obj(),
-      reinterpret_cast<intptr_t>(this),
-      base::android::ConvertUTF16ToJavaString(env, message).obj(),
-      base::android::ConvertUTF16ToJavaString(env, explanation).obj(),
+      env, native_window->GetJavaObject(), reinterpret_cast<intptr_t>(this),
+      base::android::ConvertUTF16ToJavaString(env, message),
+      base::android::ConvertUTF16ToJavaString(env, explanation),
       explanation_link_range.start(), explanation_link_range.end(),
-      base::android::ConvertUTF16ToJavaString(env, ok_button_text).obj(),
-      base::android::ConvertUTF16ToJavaString(env, turn_off_button_text)
-          .obj()));
+      base::android::ConvertUTF16ToJavaString(env, ok_button_text),
+      base::android::ConvertUTF16ToJavaString(env, turn_off_button_text)));
 }
 
 void AutoSigninFirstRunDialogAndroid::Destroy(JNIEnv* env, jobject obj) {
@@ -108,14 +106,14 @@ void AutoSigninFirstRunDialogAndroid::OnLinkClicked(JNIEnv* env, jobject obj) {
 
 void AutoSigninFirstRunDialogAndroid::WebContentsDestroyed() {
   JNIEnv* env = AttachCurrentThread();
-  Java_AutoSigninFirstRunDialog_dismissDialog(env, dialog_jobject_.obj());
+  Java_AutoSigninFirstRunDialog_dismissDialog(env, dialog_jobject_);
 }
 
 void AutoSigninFirstRunDialogAndroid::WasHidden() {
   // TODO(https://crbug.com/610700): once bug is fixed, this code should be
   // gone.
   JNIEnv* env = AttachCurrentThread();
-  Java_AutoSigninFirstRunDialog_dismissDialog(env, dialog_jobject_.obj());
+  Java_AutoSigninFirstRunDialog_dismissDialog(env, dialog_jobject_);
 }
 
 bool RegisterAutoSigninFirstRunDialogAndroid(JNIEnv* env) {

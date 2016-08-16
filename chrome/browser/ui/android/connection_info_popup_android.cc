@@ -151,20 +151,15 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
     }
 
     Java_ConnectionInfoPopup_addCertificateSection(
-        env,
-        popup_jobject_.obj(),
-        icon_id,
-        ConvertUTF8ToJavaString(env, headline).obj(),
-        description.obj(),
-        ConvertUTF16ToJavaString(env, certificate_label).obj());
+        env, popup_jobject_, icon_id, ConvertUTF8ToJavaString(env, headline),
+        description, ConvertUTF16ToJavaString(env, certificate_label));
 
     if (identity_info.show_ssl_decision_revoke_button) {
       base::string16 reset_button_label = l10n_util::GetStringUTF16(
           IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON);
       Java_ConnectionInfoPopup_addResetCertDecisionsButton(
-          env,
-          popup_jobject_.obj(),
-          ConvertUTF16ToJavaString(env, reset_button_label).obj());
+          env, popup_jobject_,
+          ConvertUTF16ToJavaString(env, reset_button_label));
     }
   }
 
@@ -175,16 +170,15 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
 
     ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
         env, identity_info.connection_status_description);
-    Java_ConnectionInfoPopup_addDescriptionSection(
-        env, popup_jobject_.obj(), icon_id, nullptr, description.obj());
+    Java_ConnectionInfoPopup_addDescriptionSection(env, popup_jobject_, icon_id,
+                                                   nullptr, description);
   }
 
   Java_ConnectionInfoPopup_addMoreInfoLink(
-      env,
-      popup_jobject_.obj(),
+      env, popup_jobject_,
       ConvertUTF8ToJavaString(
-          env, l10n_util::GetStringUTF8(IDS_PAGE_INFO_HELP_CENTER_LINK)).obj());
-  Java_ConnectionInfoPopup_showDialog(env, popup_jobject_.obj());
+          env, l10n_util::GetStringUTF8(IDS_PAGE_INFO_HELP_CENTER_LINK)));
+  Java_ConnectionInfoPopup_showDialog(env, popup_jobject_);
 }
 
 void ConnectionInfoPopupAndroid::SetCookieInfo(

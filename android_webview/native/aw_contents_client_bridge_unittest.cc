@@ -111,7 +111,7 @@ void AwContentsClientBridgeTest::TestCertType(SSLClientCertType type,
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, cert_selected_callbacks_);
   ScopedJavaLocalRef<jobjectArray> key_types =
-      Java_MockAwContentsClientBridge_getKeyTypes(env_, jbridge_.obj());
+      Java_MockAwContentsClientBridge_getKeyTypes(env_, jbridge_);
   std::vector<std::string> vec;
   base::android::AppendJavaStringArrayToStringVector(env_,
                                                      key_types.obj(),
@@ -131,8 +131,8 @@ TEST_F(AwContentsClientBridgeTest,
       base::WrapUnique(new TestClientCertificateDelegate(this)));
   bridge_->ProvideClientCertificateResponse(
       env_, jbridge_,
-      Java_MockAwContentsClientBridge_getRequestId(env_, jbridge_.obj()),
-      Java_MockAwContentsClientBridge_createTestCertChain(env_, jbridge_.obj()),
+      Java_MockAwContentsClientBridge_getRequestId(env_, jbridge_),
+      Java_MockAwContentsClientBridge_createTestCertChain(env_, jbridge_),
       nullptr);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, selected_cert_);
@@ -148,8 +148,7 @@ TEST_F(AwContentsClientBridgeTest,
   bridge_->SelectClientCertificate(
       cert_request_info_.get(),
       base::WrapUnique(new TestClientCertificateDelegate(this)));
-  int requestId =
-    Java_MockAwContentsClientBridge_getRequestId(env_, jbridge_.obj());
+  int requestId = Java_MockAwContentsClientBridge_getRequestId(env_, jbridge_);
   bridge_->ProvideClientCertificateResponse(env_, jbridge_, requestId, nullptr,
                                             nullptr);
   base::RunLoop().RunUntilIdle();

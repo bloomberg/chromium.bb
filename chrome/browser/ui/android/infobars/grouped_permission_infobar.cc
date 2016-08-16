@@ -60,18 +60,18 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   }
 
   return Java_GroupedPermissionInfoBar_create(
-      env, message_text.obj(), ok_button_text.obj(), cancel_button_text.obj(),
-      base::android::ToJavaIntArray(env, permission_icons).obj(),
-      base::android::ToJavaArrayOfStrings(env, permission_strings).obj(),
-      GetWindowAndroid().obj(),
-      base::android::ToJavaIntArray(env, content_settings_types).obj());
+      env, message_text, ok_button_text, cancel_button_text,
+      base::android::ToJavaIntArray(env, permission_icons),
+      base::android::ToJavaArrayOfStrings(env, permission_strings),
+      GetWindowAndroid(),
+      base::android::ToJavaIntArray(env, content_settings_types));
 }
 
 void GroupedPermissionInfoBar::SetJavaInfoBar(
     const base::android::JavaRef<jobject>& java_info_bar) {
   InfoBarAndroid::SetJavaInfoBar(java_info_bar);
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_GroupedPermissionInfoBar_setNativePtr(env, java_info_bar.obj(),
+  Java_GroupedPermissionInfoBar_setNativePtr(env, java_info_bar,
                                              reinterpret_cast<intptr_t>(this));
 }
 

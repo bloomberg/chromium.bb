@@ -69,8 +69,8 @@ void PasswordGenerationPopupViewAndroid::Show() {
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
   java_object_.Reset(Java_PasswordGenerationPopupBridge_create(
-      env, view.obj(), reinterpret_cast<intptr_t>(this),
-      view_android->GetWindowAndroid()->GetJavaObject().obj()));
+      env, view, reinterpret_cast<intptr_t>(this),
+      view_android->GetWindowAndroid()->GetJavaObject()));
 
   UpdateBoundsAndRedrawPopup();
 }
@@ -79,7 +79,7 @@ void PasswordGenerationPopupViewAndroid::Hide() {
   controller_ = NULL;
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_object_.is_null()) {
-    Java_PasswordGenerationPopupBridge_hide(env, java_object_.obj());
+    Java_PasswordGenerationPopupBridge_hide(env, java_object_);
   } else {
     // Hide() should delete |this| either via Java dismiss or directly.
     delete this;
@@ -113,14 +113,8 @@ void PasswordGenerationPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
       base::android::ConvertUTF16ToJavaString(env, controller_->HelpText());
 
   Java_PasswordGenerationPopupBridge_show(
-      env,
-      java_object_.obj(),
-      controller_->IsRTL(),
-      controller_->display_password(),
-      password.obj(),
-      suggestion.obj(),
-      help.obj(),
-      controller_->HelpTextLinkRange().start(),
+      env, java_object_, controller_->IsRTL(), controller_->display_password(),
+      password, suggestion, help, controller_->HelpTextLinkRange().start(),
       controller_->HelpTextLinkRange().end());
 }
 

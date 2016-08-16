@@ -12,19 +12,17 @@ namespace android {
 void RunCallbackAndroid(const JavaRef<jobject>& callback,
                         const JavaRef<jobject>& arg) {
   Java_Callback_onResultFromNativeV_JLO(base::android::AttachCurrentThread(),
-                                        callback.obj(),
-                                        arg.obj());
+                                        callback, arg);
 }
 
 void RunCallbackAndroid(const JavaRef<jobject>& callback, bool arg) {
   Java_Callback_onResultFromNativeV_Z(base::android::AttachCurrentThread(),
-                                      callback.obj(),
-                                      static_cast<jboolean>(arg));
+                                      callback, static_cast<jboolean>(arg));
 }
 
 void RunCallbackAndroid(const JavaRef<jobject>& callback, int arg) {
   Java_Callback_onResultFromNativeV_I(base::android::AttachCurrentThread(),
-                                      callback.obj(), arg);
+                                      callback, arg);
 }
 
 }  // namespace android

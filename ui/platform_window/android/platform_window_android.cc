@@ -69,7 +69,7 @@ PlatformWindowAndroid::~PlatformWindowAndroid() {
   ScopedJavaLocalRef<jobject> scoped_obj =
       java_platform_window_android_.get(env);
   if (!scoped_obj.is_null()) {
-    Java_PlatformWindowAndroid_detach(env, scoped_obj.obj());
+    Java_PlatformWindowAndroid_detach(env, scoped_obj);
   }
 }
 

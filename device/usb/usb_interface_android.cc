@@ -17,23 +17,23 @@ UsbInterfaceDescriptor UsbInterfaceAndroid::Convert(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& usb_interface) {
   ScopedJavaLocalRef<jobject> wrapper =
-      Java_ChromeUsbInterface_create(env, usb_interface.obj());
+      Java_ChromeUsbInterface_create(env, usb_interface);
 
   uint8_t alternate_setting = 0;
   if (base::android::BuildInfo::GetInstance()->sdk_int() >= 21) {
     alternate_setting =
-        Java_ChromeUsbInterface_getAlternateSetting(env, wrapper.obj());
+        Java_ChromeUsbInterface_getAlternateSetting(env, wrapper);
   }
 
   UsbInterfaceDescriptor interface(
-      Java_ChromeUsbInterface_getInterfaceNumber(env, wrapper.obj()),
+      Java_ChromeUsbInterface_getInterfaceNumber(env, wrapper),
       alternate_setting,
-      Java_ChromeUsbInterface_getInterfaceClass(env, wrapper.obj()),
-      Java_ChromeUsbInterface_getInterfaceSubclass(env, wrapper.obj()),
-      Java_ChromeUsbInterface_getInterfaceProtocol(env, wrapper.obj()));
+      Java_ChromeUsbInterface_getInterfaceClass(env, wrapper),
+      Java_ChromeUsbInterface_getInterfaceSubclass(env, wrapper),
+      Java_ChromeUsbInterface_getInterfaceProtocol(env, wrapper));
 
   ScopedJavaLocalRef<jobjectArray> endpoints =
-      Java_ChromeUsbInterface_getEndpoints(env, wrapper.obj());
+      Java_ChromeUsbInterface_getEndpoints(env, wrapper);
   jsize count = env->GetArrayLength(endpoints.obj());
   interface.endpoints.reserve(count);
   for (jsize i = 0; i < count; ++i) {

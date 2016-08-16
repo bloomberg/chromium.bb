@@ -104,13 +104,13 @@ static void PostMediaMetadataCallbackTask(
     const media::MediaResourceGetter::ExtractMediaMetadataCB& callback,
     JNIEnv* env, ScopedJavaLocalRef<jobject>& j_metadata) {
   BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, base::TimeDelta::FromMilliseconds(
-                       Java_MediaMetadata_getDurationInMilliseconds(
-                           env, j_metadata.obj())),
-                   Java_MediaMetadata_getWidth(env, j_metadata.obj()),
-                   Java_MediaMetadata_getHeight(env, j_metadata.obj()),
-                   Java_MediaMetadata_isSuccess(env, j_metadata.obj())));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::TimeDelta::FromMilliseconds(
+                               Java_MediaMetadata_getDurationInMilliseconds(
+                                   env, j_metadata)),
+                 Java_MediaMetadata_getWidth(env, j_metadata),
+                 Java_MediaMetadata_getHeight(env, j_metadata),
+                 Java_MediaMetadata_isSuccess(env, j_metadata)));
 }
 
 // Gets the metadata from a media URL. When finished, a task is posted to the UI
@@ -127,11 +127,8 @@ static void GetMediaMetadata(
   ScopedJavaLocalRef<jstring> j_user_agent = ConvertUTF8ToJavaString(
       env, user_agent);
   ScopedJavaLocalRef<jobject> j_metadata =
-      Java_MediaResourceGetter_extractMediaMetadata(env,
-                                                    j_context,
-                                                    j_url_string.obj(),
-                                                    j_cookies.obj(),
-                                                    j_user_agent.obj());
+      Java_MediaResourceGetter_extractMediaMetadata(
+          env, j_context, j_url_string, j_cookies, j_user_agent);
 
   PostMediaMetadataCallbackTask(callback, env, j_metadata);
 }

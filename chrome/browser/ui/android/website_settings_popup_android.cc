@@ -83,7 +83,7 @@ void WebsiteSettingsPopupAndroid::RecordWebsiteSettingsAction(
 void WebsiteSettingsPopupAndroid::SetIdentityInfo(
     const IdentityInfo& identity_info) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_WebsiteSettingsPopup_showDialog(env, popup_jobject_.obj());
+  Java_WebsiteSettingsPopup_showDialog(env, popup_jobject_);
 }
 
 void WebsiteSettingsPopupAndroid::SetCookieInfo(
@@ -124,9 +124,7 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
           WebsiteSettingsUI::PermissionTypeToUIString(permission);
 
       Java_WebsiteSettingsPopup_addPermissionSection(
-          env,
-          popup_jobject_.obj(),
-          ConvertUTF16ToJavaString(env, setting_title).obj(),
+          env, popup_jobject_, ConvertUTF16ToJavaString(env, setting_title),
           static_cast<jint>(permission),
           static_cast<jint>(user_specified_settings_to_display[permission]));
     }
@@ -137,14 +135,13 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
         WebsiteSettingsUI::ChosenObjectToUIString(*chosen_object);
 
     Java_WebsiteSettingsPopup_addPermissionSection(
-        env, popup_jobject_.obj(),
-        ConvertUTF16ToJavaString(env, object_title).obj(),
+        env, popup_jobject_, ConvertUTF16ToJavaString(env, object_title),
         static_cast<jint>(chosen_object->ui_info.content_settings_type),
         static_cast<jint>(CONTENT_SETTING_ALLOW));
     delete chosen_object;
   }
 
-  Java_WebsiteSettingsPopup_updatePermissionDisplay(env, popup_jobject_.obj());
+  Java_WebsiteSettingsPopup_updatePermissionDisplay(env, popup_jobject_);
 }
 
 void WebsiteSettingsPopupAndroid::SetSelectedTab(

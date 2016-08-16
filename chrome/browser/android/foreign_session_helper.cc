@@ -98,11 +98,9 @@ void CopyTabToJava(
   GURL tab_url = current_navigation.virtual_url();
 
   Java_ForeignSessionHelper_pushTab(
-      env, j_window.obj(),
-      ConvertUTF8ToJavaString(env, tab_url.spec()).obj(),
-      ConvertUTF16ToJavaString(env, current_navigation.title()).obj(),
-      tab.timestamp.ToJavaTime(),
-      tab.tab_id.id());
+      env, j_window, ConvertUTF8ToJavaString(env, tab_url.spec()),
+      ConvertUTF16ToJavaString(env, current_navigation.title()),
+      tab.timestamp.ToJavaTime(), tab.tab_id.id());
 }
 
 void CopyWindowToJava(
@@ -132,11 +130,8 @@ void CopySessionToJava(
       continue;
 
     ScopedJavaLocalRef<jobject> last_pushed_window;
-    last_pushed_window.Reset(
-        Java_ForeignSessionHelper_pushWindow(
-            env, j_session.obj(),
-            window.timestamp.ToJavaTime(),
-            window.window_id.id()));
+    last_pushed_window.Reset(Java_ForeignSessionHelper_pushWindow(
+        env, j_session, window.timestamp.ToJavaTime(), window.window_id.id()));
 
     CopyWindowToJava(env, window, last_pushed_window);
   }
@@ -202,7 +197,7 @@ void ForeignSessionHelper::FireForeignSessionCallback() {
     return;
 
   JNIEnv* env = AttachCurrentThread();
-  Java_ForeignSessionCallback_onUpdated(env, callback_.obj());
+  Java_ForeignSessionCallback_onUpdated(env, callback_);
 }
 
 void ForeignSessionHelper::OnSyncConfigurationCompleted() {
@@ -248,14 +243,10 @@ jboolean ForeignSessionHelper::GetForeignSessions(
     if (is_collapsed)
       pref_collapsed_sessions->SetBoolean(session.session_tag, true);
 
-    last_pushed_session.Reset(
-        Java_ForeignSessionHelper_pushSession(
-            env,
-            result,
-            ConvertUTF8ToJavaString(env, session.session_tag).obj(),
-            ConvertUTF8ToJavaString(env, session.session_name).obj(),
-            session.device_type,
-            session.modified_time.ToJavaTime()));
+    last_pushed_session.Reset(Java_ForeignSessionHelper_pushSession(
+        env, result, ConvertUTF8ToJavaString(env, session.session_tag),
+        ConvertUTF8ToJavaString(env, session.session_name), session.device_type,
+        session.modified_time.ToJavaTime()));
 
     const std::string group_name =
         base::FieldTrialList::FindFullName("TabSyncByRecency");
@@ -266,8 +257,7 @@ jboolean ForeignSessionHelper::GetForeignSessions(
       open_tabs->GetForeignSessionTabs(session.session_tag, &tabs);
       ScopedJavaLocalRef<jobject> last_pushed_window(
           Java_ForeignSessionHelper_pushWindow(
-              env, last_pushed_session.obj(),
-              session.modified_time.ToJavaTime(), 0));
+              env, last_pushed_session, session.modified_time.ToJavaTime(), 0));
       for (const sessions::SessionTab* tab : tabs) {
          if (ShouldSkipTab(*tab))
            continue;

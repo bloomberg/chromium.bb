@@ -307,8 +307,7 @@ AwContentsIoThreadClientImpl::GetCacheMode() const {
 
   JNIEnv* env = AttachCurrentThread();
   return static_cast<AwContentsIoThreadClient::CacheMode>(
-      Java_AwContentsIoThreadClient_getCacheMode(
-          env, java_object_.obj()));
+      Java_AwContentsIoThreadClient_getCacheMode(env, java_object_));
 }
 
 
@@ -356,8 +355,8 @@ void AwContentsIoThreadClientImpl::ShouldInterceptRequestAsync(
   JNIEnv* env = AttachCurrentThread();
   if (bg_thread_client_object_.is_null() && !java_object_.is_null()) {
     bg_thread_client_object_.Reset(
-        Java_AwContentsIoThreadClient_getBackgroundThreadClient(
-            env, java_object_.obj()));
+        Java_AwContentsIoThreadClient_getBackgroundThreadClient(env,
+                                                                java_object_));
   }
   if (!bg_thread_client_object_.is_null()) {
     get_response = base::Bind(
@@ -374,8 +373,8 @@ bool AwContentsIoThreadClientImpl::ShouldBlockContentUrls() const {
     return false;
 
   JNIEnv* env = AttachCurrentThread();
-  return Java_AwContentsIoThreadClient_shouldBlockContentUrls(
-      env, java_object_.obj());
+  return Java_AwContentsIoThreadClient_shouldBlockContentUrls(env,
+                                                              java_object_);
 }
 
 bool AwContentsIoThreadClientImpl::ShouldBlockFileUrls() const {
@@ -384,8 +383,7 @@ bool AwContentsIoThreadClientImpl::ShouldBlockFileUrls() const {
     return false;
 
   JNIEnv* env = AttachCurrentThread();
-  return Java_AwContentsIoThreadClient_shouldBlockFileUrls(
-      env, java_object_.obj());
+  return Java_AwContentsIoThreadClient_shouldBlockFileUrls(env, java_object_);
 }
 
 bool AwContentsIoThreadClientImpl::ShouldAcceptThirdPartyCookies() const {
@@ -395,7 +393,7 @@ bool AwContentsIoThreadClientImpl::ShouldAcceptThirdPartyCookies() const {
 
   JNIEnv* env = AttachCurrentThread();
   return Java_AwContentsIoThreadClient_shouldAcceptThirdPartyCookies(
-      env, java_object_.obj());
+      env, java_object_);
 }
 
 bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
@@ -404,8 +402,8 @@ bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
     return false;
 
   JNIEnv* env = AttachCurrentThread();
-  return Java_AwContentsIoThreadClient_shouldBlockNetworkLoads(
-      env, java_object_.obj());
+  return Java_AwContentsIoThreadClient_shouldBlockNetworkLoads(env,
+                                                               java_object_);
 }
 
 void AwContentsIoThreadClientImpl::NewDownload(
@@ -429,13 +427,8 @@ void AwContentsIoThreadClientImpl::NewDownload(
       ConvertUTF8ToJavaString(env, mime_type);
 
   Java_AwContentsIoThreadClient_onDownloadStart(
-      env,
-      java_object_.obj(),
-      jstring_url.obj(),
-      jstring_user_agent.obj(),
-      jstring_content_disposition.obj(),
-      jstring_mime_type.obj(),
-      content_length);
+      env, java_object_, jstring_url, jstring_user_agent,
+      jstring_content_disposition, jstring_mime_type, content_length);
 }
 
 void AwContentsIoThreadClientImpl::NewLoginRequest(const string& realm,
@@ -453,8 +446,8 @@ void AwContentsIoThreadClientImpl::NewLoginRequest(const string& realm,
   if (!account.empty())
     jaccount = ConvertUTF8ToJavaString(env, account);
 
-  Java_AwContentsIoThreadClient_newLoginRequest(
-      env, java_object_.obj(), jrealm.obj(), jaccount.obj(), jargs.obj());
+  Java_AwContentsIoThreadClient_newLoginRequest(env, java_object_, jrealm,
+                                                jaccount, jargs);
 }
 
 void AwContentsIoThreadClientImpl::OnReceivedError(
@@ -471,16 +464,10 @@ void AwContentsIoThreadClientImpl::OnReceivedError(
       env, net::ErrorToString(request->status().error()));
 
   Java_AwContentsIoThreadClient_onReceivedError(
-      env,
-      java_object_.obj(),
-      web_request.jstring_url.obj(),
-      web_request.is_main_frame,
-      web_request.has_user_gesture,
-      web_request.jstring_method.obj(),
-      web_request.jstringArray_header_names.obj(),
-      web_request.jstringArray_header_values.obj(),
-      error_code,
-      jstring_description.obj());
+      env, java_object_, web_request.jstring_url, web_request.is_main_frame,
+      web_request.has_user_gesture, web_request.jstring_method,
+      web_request.jstringArray_header_names,
+      web_request.jstringArray_header_values, error_code, jstring_description);
 }
 
 void AwContentsIoThreadClientImpl::OnReceivedHttpError(
@@ -520,20 +507,12 @@ void AwContentsIoThreadClientImpl::OnReceivedHttpError(
       ToJavaArrayOfStrings(env, response_header_values);
 
   Java_AwContentsIoThreadClient_onReceivedHttpError(
-      env,
-      java_object_.obj(),
-      web_request.jstring_url.obj(),
-      web_request.is_main_frame,
-      web_request.has_user_gesture,
-      web_request.jstring_method.obj(),
-      web_request.jstringArray_header_names.obj(),
-      web_request.jstringArray_header_values.obj(),
-      jstring_mime_type.obj(),
-      jstring_encoding.obj(),
-      status_code,
-      jstring_reason.obj(),
-      jstringArray_response_header_names.obj(),
-      jstringArray_response_header_values.obj());
+      env, java_object_, web_request.jstring_url, web_request.is_main_frame,
+      web_request.has_user_gesture, web_request.jstring_method,
+      web_request.jstringArray_header_names,
+      web_request.jstringArray_header_values, jstring_mime_type,
+      jstring_encoding, status_code, jstring_reason,
+      jstringArray_response_header_names, jstringArray_response_header_values);
 }
 
 } // namespace android_webview

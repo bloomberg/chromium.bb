@@ -125,17 +125,17 @@ SharedDeviceDisplayInfo::SharedDeviceDisplayInfo()
   j_device_info_.Reset(
       Java_DeviceDisplayInfo_create(
           env, base::android::GetApplicationContext()));
-  UpdateDisplayInfo(env, j_device_info_.obj(),
-      Java_DeviceDisplayInfo_getDisplayHeight(env, j_device_info_.obj()),
-      Java_DeviceDisplayInfo_getDisplayWidth(env, j_device_info_.obj()),
-      Java_DeviceDisplayInfo_getPhysicalDisplayHeight(env,
-                                                      j_device_info_.obj()),
-      Java_DeviceDisplayInfo_getPhysicalDisplayWidth(env, j_device_info_.obj()),
-      Java_DeviceDisplayInfo_getBitsPerPixel(env, j_device_info_.obj()),
-      Java_DeviceDisplayInfo_getBitsPerComponent(env, j_device_info_.obj()),
-      Java_DeviceDisplayInfo_getDIPScale(env, j_device_info_.obj()),
-      Java_DeviceDisplayInfo_getSmallestDIPWidth(env, j_device_info_.obj()),
-      Java_DeviceDisplayInfo_getRotationDegrees(env, j_device_info_.obj()));
+  UpdateDisplayInfo(
+      env, j_device_info_.obj(),
+      Java_DeviceDisplayInfo_getDisplayHeight(env, j_device_info_),
+      Java_DeviceDisplayInfo_getDisplayWidth(env, j_device_info_),
+      Java_DeviceDisplayInfo_getPhysicalDisplayHeight(env, j_device_info_),
+      Java_DeviceDisplayInfo_getPhysicalDisplayWidth(env, j_device_info_),
+      Java_DeviceDisplayInfo_getBitsPerPixel(env, j_device_info_),
+      Java_DeviceDisplayInfo_getBitsPerComponent(env, j_device_info_),
+      Java_DeviceDisplayInfo_getDIPScale(env, j_device_info_),
+      Java_DeviceDisplayInfo_getSmallestDIPWidth(env, j_device_info_),
+      Java_DeviceDisplayInfo_getRotationDegrees(env, j_device_info_));
 }
 
 SharedDeviceDisplayInfo::~SharedDeviceDisplayInfo() {

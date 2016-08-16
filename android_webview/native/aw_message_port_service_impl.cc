@@ -40,8 +40,7 @@ AwMessagePortServiceImpl::~AwMessagePortServiceImpl() {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_AwMessagePortService_unregisterNativeAwMessagePortService(env,
-                                                                 obj.obj());
+  Java_AwMessagePortService_unregisterNativeAwMessagePortService(env, obj);
 }
 
 void AwMessagePortServiceImpl::Init(JNIEnv* env, jobject obj) {
@@ -105,11 +104,8 @@ void AwMessagePortServiceImpl::OnConvertedWebToAppMessage(
   ScopedJavaLocalRef<jstring> jmsg = ConvertUTF16ToJavaString(env, value);
   ScopedJavaLocalRef<jintArray> jports =
       ToJavaIntArray(env, sent_message_port_ids);
-  Java_AwMessagePortService_onReceivedMessage(env,
-                                              jobj.obj(),
-                                              message_port_id,
-                                              jmsg.obj(),
-                                              jports.obj());
+  Java_AwMessagePortService_onReceivedMessage(env, jobj, message_port_id, jmsg,
+                                              jports);
 }
 
 void AwMessagePortServiceImpl::OnMessagePortMessageFilterClosing(
@@ -218,8 +214,8 @@ void AwMessagePortServiceImpl::OnMessageChannelCreated(
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_AwMessagePortService_onMessageChannelCreated(env, obj.obj(), *port1,
-      *port2, ports->obj());
+  Java_AwMessagePortService_onMessageChannelCreated(env, obj, *port1, *port2,
+                                                    ports->obj());
 }
 
 // Adds a new port to the message port service.

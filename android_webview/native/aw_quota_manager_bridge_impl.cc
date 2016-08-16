@@ -284,12 +284,9 @@ void AwQuotaManagerBridgeImpl::GetOriginsCallbackImpl(
     return;
 
   Java_AwQuotaManagerBridge_onGetOriginsCallback(
-      env,
-      obj.obj(),
-      jcallback_id,
-      base::android::ToJavaArrayOfStrings(env, origin).obj(),
-      base::android::ToJavaLongArray(env, usage).obj(),
-      base::android::ToJavaLongArray(env, quota).obj());
+      env, obj, jcallback_id, base::android::ToJavaArrayOfStrings(env, origin),
+      base::android::ToJavaLongArray(env, usage),
+      base::android::ToJavaLongArray(env, quota));
 }
 
 namespace {
@@ -360,7 +357,7 @@ void AwQuotaManagerBridgeImpl::QuotaUsageCallbackImpl(int jcallback_id,
     return;
 
   Java_AwQuotaManagerBridge_onGetUsageAndQuotaForOriginCallback(
-      env, obj.obj(), jcallback_id, is_quota, usage, quota);
+      env, obj, jcallback_id, is_quota, usage, quota);
 }
 
 bool RegisterAwQuotaManagerBridge(JNIEnv* env) {

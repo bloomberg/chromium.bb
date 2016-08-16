@@ -49,8 +49,7 @@ void BlimpContentsObserverProxy::Destroy(
 
 void BlimpContentsObserverProxy::OnNavigationStateChanged() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BlimpContentsObserverProxy_onNavigationStateChanged(env,
-                                                           java_obj_.obj());
+  Java_BlimpContentsObserverProxy_onNavigationStateChanged(env, java_obj_);
 }
 
 }  // namespace client

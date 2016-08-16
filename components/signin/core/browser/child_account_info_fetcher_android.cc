@@ -24,8 +24,8 @@ void ChildAccountInfoFetcherAndroid::StartFetchingChildAccountInfo(
     return;
   Java_ChildAccountInfoFetcher_fetch(
       env, reinterpret_cast<jlong>(service),
-      base::android::ConvertUTF8ToJavaString(env, account_id).obj(),
-      base::android::ConvertUTF8ToJavaString(env, account_name).obj());
+      base::android::ConvertUTF8ToJavaString(env, account_id),
+      base::android::ConvertUTF8ToJavaString(env, account_name));
 }
 
 // static

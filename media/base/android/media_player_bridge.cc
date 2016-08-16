@@ -75,7 +75,7 @@ MediaPlayerBridge::~MediaPlayerBridge() {
   if (!j_media_player_bridge_.is_null()) {
     JNIEnv* env = base::android::AttachCurrentThread();
     CHECK(env);
-    Java_MediaPlayerBridge_destroy(env, j_media_player_bridge_.obj());
+    Java_MediaPlayerBridge_destroy(env, j_media_player_bridge_);
   }
   Release();
 
@@ -141,8 +141,8 @@ void MediaPlayerBridge::SetVideoSurface(gl::ScopedJavaSurface surface) {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  Java_MediaPlayerBridge_setSurface(
-      env, j_media_player_bridge_.obj(), surface_.j_surface().obj());
+  Java_MediaPlayerBridge_setSurface(env, j_media_player_bridge_,
+                                    surface_.j_surface());
 }
 
 void MediaPlayerBridge::Prepare() {
@@ -170,8 +170,8 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
   int64_t offset;
   int64_t size;
   if (InterceptMediaUrl(url, &fd, &offset, &size)) {
-    if (!Java_MediaPlayerBridge_setDataSourceFromFd(
-        env, j_media_player_bridge_.obj(), fd, offset, size)) {
+    if (!Java_MediaPlayerBridge_setDataSourceFromFd(env, j_media_player_bridge_,
+                                                    fd, offset, size)) {
       OnMediaError(MEDIA_ERROR_FORMAT);
       return;
     }
@@ -185,7 +185,7 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
     const std::string data_uri_prefix("data:");
     if (base::StartsWith(url, data_uri_prefix, base::CompareCase::SENSITIVE)) {
       if (!Java_MediaPlayerBridge_setDataUriDataSource(
-          env, j_media_player_bridge_.obj(), j_context, j_url_string.obj())) {
+              env, j_media_player_bridge_, j_context, j_url_string)) {
         OnMediaError(MEDIA_ERROR_FORMAT);
       }
       return;
@@ -197,14 +197,14 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
         env, user_agent_);
 
     if (!Java_MediaPlayerBridge_setDataSource(
-        env, j_media_player_bridge_.obj(), j_context, j_url_string.obj(),
-        j_cookies.obj(), j_user_agent.obj(), hide_url_log_)) {
+            env, j_media_player_bridge_, j_context, j_url_string, j_cookies,
+            j_user_agent, hide_url_log_)) {
       OnMediaError(MEDIA_ERROR_FORMAT);
       return;
     }
   }
 
-  if (!Java_MediaPlayerBridge_prepareAsync(env, j_media_player_bridge_.obj()))
+  if (!Java_MediaPlayerBridge_prepareAsync(env, j_media_player_bridge_))
     OnMediaError(MEDIA_ERROR_FORMAT);
 }
 
@@ -238,7 +238,7 @@ void MediaPlayerBridge::OnDidSetDataUriDataSource(
     return;
   }
 
-  if (!Java_MediaPlayerBridge_prepareAsync(env, j_media_player_bridge_.obj()))
+  if (!Java_MediaPlayerBridge_prepareAsync(env, j_media_player_bridge_))
     OnMediaError(MEDIA_ERROR_FORMAT);
 }
 
@@ -339,37 +339,35 @@ bool MediaPlayerBridge::IsPlaying() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
-  jboolean result = Java_MediaPlayerBridge_isPlaying(
-      env, j_media_player_bridge_.obj());
+  jboolean result =
+      Java_MediaPlayerBridge_isPlaying(env, j_media_player_bridge_);
   return result;
 }
 
 bool MediaPlayerBridge::HasVideo() const {
   DCHECK(prepared_);
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_MediaPlayerBridge_hasVideo(env, j_media_player_bridge_.obj());
+  return Java_MediaPlayerBridge_hasVideo(env, j_media_player_bridge_);
 }
 
 bool MediaPlayerBridge::HasAudio() const {
   DCHECK(prepared_);
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_MediaPlayerBridge_hasAudio(env, j_media_player_bridge_.obj());
+  return Java_MediaPlayerBridge_hasAudio(env, j_media_player_bridge_);
 }
 
 int MediaPlayerBridge::GetVideoWidth() {
   if (!prepared_)
     return width_;
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_MediaPlayerBridge_getVideoWidth(
-      env, j_media_player_bridge_.obj());
+  return Java_MediaPlayerBridge_getVideoWidth(env, j_media_player_bridge_);
 }
 
 int MediaPlayerBridge::GetVideoHeight() {
   if (!prepared_)
     return height_;
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_MediaPlayerBridge_getVideoHeight(
-      env, j_media_player_bridge_.obj());
+  return Java_MediaPlayerBridge_getVideoHeight(env, j_media_player_bridge_);
 }
 
 void MediaPlayerBridge::SeekTo(base::TimeDelta timestamp) {
@@ -386,8 +384,7 @@ base::TimeDelta MediaPlayerBridge::GetCurrentTime() {
     return pending_seek_;
   JNIEnv* env = base::android::AttachCurrentThread();
   return base::TimeDelta::FromMilliseconds(
-      Java_MediaPlayerBridge_getCurrentPosition(
-          env, j_media_player_bridge_.obj()));
+      Java_MediaPlayerBridge_getCurrentPosition(env, j_media_player_bridge_));
 }
 
 base::TimeDelta MediaPlayerBridge::GetDuration() {
@@ -395,7 +392,7 @@ base::TimeDelta MediaPlayerBridge::GetDuration() {
     return duration_;
   JNIEnv* env = base::android::AttachCurrentThread();
   const int duration_ms =
-      Java_MediaPlayerBridge_getDuration(env, j_media_player_bridge_.obj());
+      Java_MediaPlayerBridge_getDuration(env, j_media_player_bridge_);
   return duration_ms < 0 ? media::kInfiniteDuration
                          : base::TimeDelta::FromMilliseconds(duration_ms);
 }
@@ -417,7 +414,7 @@ void MediaPlayerBridge::Release() {
   pending_play_ = false;
   SetVideoSurface(gl::ScopedJavaSurface());
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_MediaPlayerBridge_release(env, j_media_player_bridge_.obj());
+  Java_MediaPlayerBridge_release(env, j_media_player_bridge_);
   j_media_player_bridge_.Reset();
   DetachListener();
 }
@@ -430,7 +427,7 @@ void MediaPlayerBridge::UpdateEffectiveVolumeInternal(double effective_volume) {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  Java_MediaPlayerBridge_setVolume(env, j_media_player_bridge_.obj(),
+  Java_MediaPlayerBridge_setVolume(env, j_media_player_bridge_,
                                    effective_volume);
 }
 
@@ -498,8 +495,8 @@ ScopedJavaLocalRef<jobject> MediaPlayerBridge::GetAllowedOperations() {
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  return Java_MediaPlayerBridge_getAllowedOperations(
-      env, j_media_player_bridge_.obj());
+  return Java_MediaPlayerBridge_getAllowedOperations(env,
+                                                     j_media_player_bridge_);
 }
 
 void MediaPlayerBridge::UpdateAllowedOperations() {
@@ -508,11 +505,11 @@ void MediaPlayerBridge::UpdateAllowedOperations() {
 
   ScopedJavaLocalRef<jobject> allowedOperations = GetAllowedOperations();
 
-  can_pause_ = Java_AllowedOperations_canPause(env, allowedOperations.obj());
-  can_seek_forward_ = Java_AllowedOperations_canSeekForward(
-      env, allowedOperations.obj());
-  can_seek_backward_ = Java_AllowedOperations_canSeekBackward(
-      env, allowedOperations.obj());
+  can_pause_ = Java_AllowedOperations_canPause(env, allowedOperations);
+  can_seek_forward_ =
+      Java_AllowedOperations_canSeekForward(env, allowedOperations);
+  can_seek_backward_ =
+      Java_AllowedOperations_canSeekBackward(env, allowedOperations);
 }
 
 void MediaPlayerBridge::StartInternal() {
@@ -522,7 +519,7 @@ void MediaPlayerBridge::StartInternal() {
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_MediaPlayerBridge_start(env, j_media_player_bridge_.obj());
+  Java_MediaPlayerBridge_start(env, j_media_player_bridge_);
   if (!time_update_timer_.IsRunning()) {
     time_update_timer_.Start(
         FROM_HERE,
@@ -533,7 +530,7 @@ void MediaPlayerBridge::StartInternal() {
 
 void MediaPlayerBridge::PauseInternal() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_MediaPlayerBridge_pause(env, j_media_player_bridge_.obj());
+  Java_MediaPlayerBridge_pause(env, j_media_player_bridge_);
   time_update_timer_.Stop();
 }
 
@@ -564,8 +561,7 @@ bool MediaPlayerBridge::SeekInternal(base::TimeDelta current_time,
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   int time_msec = static_cast<int>(time.InMilliseconds());
-  Java_MediaPlayerBridge_seekTo(
-      env, j_media_player_bridge_.obj(), time_msec);
+  Java_MediaPlayerBridge_seekTo(env, j_media_player_bridge_, time_msec);
   return true;
 }
 

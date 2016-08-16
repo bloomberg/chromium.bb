@@ -13,13 +13,13 @@ UsbEndpointDescriptor UsbEndpointAndroid::Convert(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& usb_endpoint) {
   base::android::ScopedJavaLocalRef<jobject> wrapper =
-      Java_ChromeUsbEndpoint_create(env, usb_endpoint.obj());
+      Java_ChromeUsbEndpoint_create(env, usb_endpoint);
 
   UsbEndpointDescriptor endpoint(
-      Java_ChromeUsbEndpoint_getAddress(env, wrapper.obj()),
-      Java_ChromeUsbEndpoint_getAttributes(env, wrapper.obj()),
-      Java_ChromeUsbEndpoint_getMaxPacketSize(env, wrapper.obj()),
-      Java_ChromeUsbEndpoint_getInterval(env, wrapper.obj()));
+      Java_ChromeUsbEndpoint_getAddress(env, wrapper),
+      Java_ChromeUsbEndpoint_getAttributes(env, wrapper),
+      Java_ChromeUsbEndpoint_getMaxPacketSize(env, wrapper),
+      Java_ChromeUsbEndpoint_getInterval(env, wrapper));
 
   return endpoint;
 }

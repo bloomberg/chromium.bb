@@ -54,9 +54,8 @@ void AddToHomescreenDialogHelper::OnUserTitleAvailable(
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_user_title =
       base::android::ConvertUTF16ToJavaString(env, user_title);
-  Java_AddToHomescreenDialogHelper_onUserTitleAvailable(env,
-                                                  java_ref_.obj(),
-                                                  j_user_title.obj());
+  Java_AddToHomescreenDialogHelper_onUserTitleAvailable(env, java_ref_,
+                                                        j_user_title);
 }
 
 void AddToHomescreenDialogHelper::OnDataAvailable(const ShortcutInfo& info,
@@ -66,9 +65,7 @@ void AddToHomescreenDialogHelper::OnDataAvailable(const ShortcutInfo& info,
   if (icon.getSize())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon);
 
-  Java_AddToHomescreenDialogHelper_onIconAvailable(env,
-                                             java_ref_.obj(),
-                                             java_bitmap.obj());
+  Java_AddToHomescreenDialogHelper_onIconAvailable(env, java_ref_, java_bitmap);
 
   if (add_shortcut_pending_)
     AddShortcut(info, icon);

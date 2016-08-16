@@ -20,12 +20,12 @@ MidiOutputPortAndroid::~MidiOutputPortAndroid() {
 
 bool MidiOutputPortAndroid::Open() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_MidiOutputPortAndroid_open(env, raw_port_.obj());
+  return Java_MidiOutputPortAndroid_open(env, raw_port_);
 }
 
 void MidiOutputPortAndroid::Close() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_MidiOutputPortAndroid_close(env, raw_port_.obj());
+  Java_MidiOutputPortAndroid_close(env, raw_port_);
 }
 
 void MidiOutputPortAndroid::Send(const std::vector<uint8_t>& data) {
@@ -37,7 +37,7 @@ void MidiOutputPortAndroid::Send(const std::vector<uint8_t>& data) {
   ScopedJavaLocalRef<jbyteArray> data_to_pass =
       base::android::ToJavaByteArray(env, &data[0], data.size());
 
-  Java_MidiOutputPortAndroid_send(env, raw_port_.obj(), data_to_pass.obj());
+  Java_MidiOutputPortAndroid_send(env, raw_port_, data_to_pass);
 }
 
 }  // namespace midi

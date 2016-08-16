@@ -45,7 +45,7 @@ static void Quit(JNIEnv* env,
 static void RunJavaRunnable(
     const base::android::ScopedJavaGlobalRef<jobject>& runnable_ref) {
   Java_BaseRunLoop_runRunnable(base::android::AttachCurrentThread(),
-                               runnable_ref.obj());
+                               runnable_ref);
 }
 
 static void PostDelayedTask(JNIEnv* env,

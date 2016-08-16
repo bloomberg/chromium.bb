@@ -77,7 +77,7 @@ void PrecacheLauncher::Cancel(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 void PrecacheLauncher::OnPrecacheCompleted(bool try_again_soon) {
   JNIEnv* env = AttachCurrentThread();
   Java_PrecacheLauncher_onPrecacheCompletedCallback(
-      env, weak_java_precache_launcher_.get(env).obj(),
+      env, weak_java_precache_launcher_.get(env),
       try_again_soon ? JNI_TRUE : JNI_FALSE);
 }
 

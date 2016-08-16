@@ -79,7 +79,7 @@ void PasswordUIViewAndroid::SetPasswordList(
   ScopedJavaLocalRef<jobject> ui_controller = weak_java_ui_controller_.get(env);
   if (!ui_controller.is_null()) {
     Java_PasswordUIView_passwordListAvailable(
-        env, ui_controller.obj(), static_cast<int>(password_list.size()));
+        env, ui_controller, static_cast<int>(password_list.size()));
   }
 }
 
@@ -90,9 +90,7 @@ void PasswordUIViewAndroid::SetPasswordExceptionList(
   ScopedJavaLocalRef<jobject> ui_controller = weak_java_ui_controller_.get(env);
   if (!ui_controller.is_null()) {
     Java_PasswordUIView_passwordExceptionListAvailable(
-        env,
-        ui_controller.obj(),
-        static_cast<int>(password_exception_list.size()));
+        env, ui_controller, static_cast<int>(password_exception_list.size()));
   }
 }
 
@@ -109,14 +107,13 @@ ScopedJavaLocalRef<jobject> PasswordUIViewAndroid::GetSavedPasswordEntry(
       password_manager_presenter_.GetPassword(index);
   if (!form) {
     return Java_PasswordUIView_createSavedPasswordEntry(
-        env,
-        ConvertUTF8ToJavaString(env, std::string()).obj(),
-        ConvertUTF16ToJavaString(env, base::string16()).obj());
+        env, ConvertUTF8ToJavaString(env, std::string()),
+        ConvertUTF16ToJavaString(env, base::string16()));
   }
   std::string human_readable_origin = GetDisplayOriginForSettings(*form);
   return Java_PasswordUIView_createSavedPasswordEntry(
-      env, ConvertUTF8ToJavaString(env, human_readable_origin).obj(),
-      ConvertUTF16ToJavaString(env, form->username_value).obj());
+      env, ConvertUTF8ToJavaString(env, human_readable_origin),
+      ConvertUTF16ToJavaString(env, form->username_value));
 }
 
 ScopedJavaLocalRef<jstring> PasswordUIViewAndroid::GetSavedPasswordException(

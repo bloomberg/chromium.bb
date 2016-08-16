@@ -87,22 +87,14 @@ void DateTimeChooserAndroid::ShowDialog(
           env, SanitizeSuggestionString(suggestion.localized_value));
       ScopedJavaLocalRef<jstring> label = ConvertUTF16ToJavaString(
           env, SanitizeSuggestionString(suggestion.label));
-      Java_DateTimeChooserAndroid_setDateTimeSuggestionAt(env,
-          suggestions_array.obj(), i,
-          suggestion.value, localized_value.obj(), label.obj());
+      Java_DateTimeChooserAndroid_setDateTimeSuggestionAt(
+          env, suggestions_array, i, suggestion.value, localized_value, label);
     }
   }
 
   j_date_time_chooser_.Reset(Java_DateTimeChooserAndroid_createDateTimeChooser(
-      env,
-      native_window->GetJavaObject().obj(),
-      reinterpret_cast<intptr_t>(this),
-      dialog_type,
-      dialog_value,
-      min,
-      max,
-      step,
-      suggestions_array.obj()));
+      env, native_window->GetJavaObject(), reinterpret_cast<intptr_t>(this),
+      dialog_type, dialog_value, min, max, step, suggestions_array));
   if (j_date_time_chooser_.is_null())
     ReplaceDateTime(env, j_date_time_chooser_, dialog_value);
 }

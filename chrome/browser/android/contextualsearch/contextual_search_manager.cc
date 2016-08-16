@@ -52,7 +52,7 @@ ContextualSearchManager::ContextualSearchManager(JNIEnv* env, jobject obj) {
 
 ContextualSearchManager::~ContextualSearchManager() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContextualSearchManager_clearNativeManager(env, java_manager_.obj());
+  Java_ContextualSearchManager_clearNativeManager(env, java_manager_);
 }
 
 void ContextualSearchManager::Destroy(JNIEnv* env,
@@ -138,12 +138,11 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
       base::android::ConvertUTF8ToJavaString(
           env, resolved_search_term.context_language.c_str());
   Java_ContextualSearchManager_onSearchTermResolutionResponse(
-      env, java_manager_.obj(), resolved_search_term.is_invalid,
-      resolved_search_term.response_code, j_search_term.obj(),
-      j_display_text.obj(), j_alternate_term.obj(), j_mid.obj(),
-      resolved_search_term.prevent_preload,
+      env, java_manager_, resolved_search_term.is_invalid,
+      resolved_search_term.response_code, j_search_term, j_display_text,
+      j_alternate_term, j_mid, resolved_search_term.prevent_preload,
       resolved_search_term.selection_start_adjust,
-      resolved_search_term.selection_end_adjust, j_context_language.obj());
+      resolved_search_term.selection_end_adjust, j_context_language);
 }
 
 void ContextualSearchManager::OnSurroundingTextAvailable(
@@ -151,10 +150,8 @@ void ContextualSearchManager::OnSurroundingTextAvailable(
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_after_text =
       base::android::ConvertUTF8ToJavaString(env, after_text.c_str());
-  Java_ContextualSearchManager_onSurroundingTextAvailable(
-      env,
-      java_manager_.obj(),
-      j_after_text.obj());
+  Java_ContextualSearchManager_onSurroundingTextAvailable(env, java_manager_,
+                                                          j_after_text);
 }
 
 void ContextualSearchManager::OnIcingSelectionAvailable(
@@ -168,8 +165,8 @@ void ContextualSearchManager::OnIcingSelectionAvailable(
   base::android::ScopedJavaLocalRef<jstring> j_surrounding_text =
       base::android::ConvertUTF16ToJavaString(env, surrounding_text.c_str());
   Java_ContextualSearchManager_onIcingSelectionAvailable(
-      env, java_manager_.obj(), j_encoding.obj(), j_surrounding_text.obj(),
-      start_offset, end_offset);
+      env, java_manager_, j_encoding, j_surrounding_text, start_offset,
+      end_offset);
 }
 
 void ContextualSearchManager::EnableContextualSearchJsApiForOverlay(
@@ -208,6 +205,6 @@ void ContextualSearchManager::SetCaption(std::string caption,
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_caption =
       base::android::ConvertUTF8ToJavaString(env, caption.c_str());
-  Java_ContextualSearchManager_onSetCaption(env, java_manager_.obj(),
-                                            j_caption.obj(), does_answer);
+  Java_ContextualSearchManager_onSetCaption(env, java_manager_, j_caption,
+                                            does_answer);
 }

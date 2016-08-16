@@ -87,8 +87,7 @@ AppBannerInfoBarDelegateAndroid::~AppBannerInfoBarDelegateAndroid() {
 
   TrackDismissEvent(DISMISS_EVENT_DISMISSED);
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AppBannerInfoBarDelegateAndroid_destroy(env,
-                                        java_delegate_.obj());
+  Java_AppBannerInfoBarDelegateAndroid_destroy(env, java_delegate_);
   java_delegate_.Reset();
 }
 
@@ -99,9 +98,7 @@ void AppBannerInfoBarDelegateAndroid::UpdateInstallState(
     return;
 
   int newState = Java_AppBannerInfoBarDelegateAndroid_determineInstallState(
-      env,
-      java_delegate_.obj(),
-      native_app_data_.obj());
+      env, java_delegate_, native_app_data_);
   static_cast<AppBannerInfoBarAndroid*>(infobar())
       ->OnInstallStateChanged(newState);
 }
@@ -232,12 +229,10 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
     ScopedJavaLocalRef<jstring> jreferrer(
         ConvertUTF8ToJavaString(env, referrer_));
 
-    bool was_opened = Java_AppBannerInfoBarDelegateAndroid_installOrOpenNativeApp(
-        env,
-        java_delegate_.obj(),
-        tab->GetJavaObject().obj(),
-        native_app_data_.obj(),
-        jreferrer.obj());
+    bool was_opened =
+        Java_AppBannerInfoBarDelegateAndroid_installOrOpenNativeApp(
+            env, java_delegate_, tab->GetJavaObject(), native_app_data_,
+            jreferrer);
 
     if (was_opened) {
       TrackDismissEvent(DISMISS_EVENT_APP_OPEN);
@@ -290,10 +285,8 @@ bool AppBannerInfoBarDelegateAndroid::LinkClicked(
     return true;
   }
 
-  Java_AppBannerInfoBarDelegateAndroid_showAppDetails(env,
-                                               java_delegate_.obj(),
-                                               tab->GetJavaObject().obj(),
-                                               native_app_data_.obj());
+  Java_AppBannerInfoBarDelegateAndroid_showAppDetails(
+      env, java_delegate_, tab->GetJavaObject(), native_app_data_);
 
   TrackDismissEvent(DISMISS_EVENT_BANNER_CLICK);
   return true;

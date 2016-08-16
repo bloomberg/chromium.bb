@@ -49,12 +49,12 @@ InputStreamImpl::InputStreamImpl(const JavaRef<jobject>& stream)
 
 InputStreamImpl::~InputStreamImpl() {
   JNIEnv* env = AttachCurrentThread();
-  Java_InputStreamUtil_close(env, jobject_.obj());
+  Java_InputStreamUtil_close(env, jobject_);
 }
 
 bool InputStreamImpl::BytesAvailable(int* bytes_available) const {
   JNIEnv* env = AttachCurrentThread();
-  int bytes = Java_InputStreamUtil_available(env, jobject_.obj());
+  int bytes = Java_InputStreamUtil_available(env, jobject_);
   if (bytes == kExceptionThrownStatusCode)
     return false;
   *bytes_available = bytes;
@@ -63,7 +63,7 @@ bool InputStreamImpl::BytesAvailable(int* bytes_available) const {
 
 bool InputStreamImpl::Skip(int64_t n, int64_t* bytes_skipped) {
   JNIEnv* env = AttachCurrentThread();
-  int bytes = Java_InputStreamUtil_skip(env, jobject_.obj(), n);
+  int bytes = Java_InputStreamUtil_skip(env, jobject_, n);
   if (bytes < 0)
     return false;
   if (bytes > n)
@@ -91,7 +91,7 @@ bool InputStreamImpl::Read(net::IOBuffer* dest, int length, int* bytes_read) {
   while (remaining_length > 0) {
     const int max_transfer_length = std::min(remaining_length, kBufferSize);
     const int transfer_length = Java_InputStreamUtil_read(
-        env, jobject_.obj(), buffer, 0, max_transfer_length);
+        env, jobject_, buffer, 0, max_transfer_length);
     if (transfer_length == kExceptionThrownStatusCode)
       return false;
 

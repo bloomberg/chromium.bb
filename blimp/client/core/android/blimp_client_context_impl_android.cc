@@ -52,7 +52,7 @@ BlimpClientContextImplAndroid::BlimpClientContextImplAndroid(
 
 BlimpClientContextImplAndroid::~BlimpClientContextImplAndroid() {
   Java_BlimpClientContextImpl_clearNativePtr(
-      base::android::AttachCurrentThread(), java_obj_.obj());
+      base::android::AttachCurrentThread(), java_obj_);
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -74,7 +74,7 @@ BlimpClientContextImplAndroid::CreateBlimpContentsJava(JNIEnv* env,
 GURL BlimpClientContextImplAndroid::GetAssignerURL() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> jurl =
-      Java_BlimpClientContextImpl_getAssignerUrl(env, java_obj_.obj());
+      Java_BlimpClientContextImpl_getAssignerUrl(env, java_obj_);
   GURL assigner_url = GURL(ConvertJavaStringToUTF8(env, jurl));
   DCHECK(assigner_url.is_valid());
   return assigner_url;

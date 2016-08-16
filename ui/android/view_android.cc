@@ -52,9 +52,7 @@ ViewAndroid::ScopedAnchorView::~ScopedAnchorView() {
   const ScopedJavaLocalRef<jobject> view = view_.get(env);
   const ScopedJavaLocalRef<jobject> delegate = delegate_.get(env);
   if (!view.is_null() && !delegate.is_null()) {
-    Java_ViewAndroidDelegate_removeView(env,
-                                        delegate.obj(),
-                                        view.obj());
+    Java_ViewAndroidDelegate_removeView(env, delegate, view);
   }
   view_.reset();
 }
@@ -110,9 +108,7 @@ ViewAndroid::ScopedAnchorView ViewAndroid::AcquireAnchorView() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   return ViewAndroid::ScopedAnchorView(
-      env,
-      Java_ViewAndroidDelegate_acquireView(env, delegate.obj()),
-      delegate);
+      env, Java_ViewAndroidDelegate_acquireView(env, delegate), delegate);
 }
 
 void ViewAndroid::SetAnchorRect(const JavaRef<jobject>& anchor,
@@ -133,16 +129,9 @@ void ViewAndroid::SetAnchorRect(const JavaRef<jobject>& anchor,
   float content_offset_y_pix = GetWindowAndroid()->content_offset().y();
   int top_margin = std::round(content_offset_y_pix + bounds.y() * scale);
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ViewAndroidDelegate_setViewPosition(env,
-                                           delegate.obj(),
-                                           anchor.obj(),
-                                           bounds.x(),
-                                           bounds.y(),
-                                           bounds.width(),
-                                           bounds.height(),
-                                           scale,
-                                           left_margin,
-                                           top_margin);
+  Java_ViewAndroidDelegate_setViewPosition(
+      env, delegate, anchor, bounds.x(), bounds.y(), bounds.width(),
+      bounds.height(), scale, left_margin, top_margin);
 }
 
 void ViewAndroid::RemoveChild(ViewAndroid* child) {
@@ -184,10 +173,7 @@ void ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
   if (delegate.is_null())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ViewAndroidDelegate_startDragAndDrop(env,
-                                            delegate.obj(),
-                                            jtext.obj(),
-                                            jimage.obj());
+  Java_ViewAndroidDelegate_startDragAndDrop(env, delegate, jtext, jimage);
 }
 
 }  // namespace ui

@@ -62,8 +62,8 @@ ContentVideoView::~ContentVideoView() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    Java_ContentVideoView_destroyContentVideoView(env,
-        content_video_view.obj(), true);
+    Java_ContentVideoView_destroyContentVideoView(env, content_video_view,
+                                                  true);
     j_content_video_view_.reset();
   }
   g_content_video_view = NULL;
@@ -73,7 +73,7 @@ void ContentVideoView::OpenVideo() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    Java_ContentVideoView_openVideo(env, content_video_view.obj());
+    Java_ContentVideoView_openVideo(env, content_video_view);
   }
 }
 
@@ -81,7 +81,7 @@ void ContentVideoView::OnMediaPlayerError(int error_type) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    Java_ContentVideoView_onMediaPlayerError(env, content_video_view.obj(),
+    Java_ContentVideoView_onMediaPlayerError(env, content_video_view,
                                              error_type);
   }
 }
@@ -90,8 +90,8 @@ void ContentVideoView::OnVideoSizeChanged(int width, int height) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null()) {
-    Java_ContentVideoView_onVideoSizeChanged(env, content_video_view.obj(),
-                                             width, height);
+    Java_ContentVideoView_onVideoSizeChanged(env, content_video_view, width,
+                                             height);
   }
 }
 
@@ -100,7 +100,7 @@ void ContentVideoView::ExitFullscreen() {
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   bool release_media_player = false;
   if (!content_video_view.is_null())
-    Java_ContentVideoView_exitFullscreen(env, content_video_view.obj(),
+    Java_ContentVideoView_exitFullscreen(env, content_video_view,
                                          release_media_player);
 }
 
@@ -171,7 +171,7 @@ JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject(
 
   return JavaObjectWeakGlobalRef(
       env, Java_ContentVideoView_createContentVideoView(
-               env, j_content_view_core.obj(), reinterpret_cast<intptr_t>(this),
+               env, j_content_view_core, reinterpret_cast<intptr_t>(this),
                video_natural_size.width(), video_natural_size.height())
                .obj());
 }

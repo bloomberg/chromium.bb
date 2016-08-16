@@ -76,7 +76,7 @@ AudioManagerAndroid::~AudioManagerAndroid() {
     return;
   DVLOG(2) << "Destroying Java part of the audio manager";
   Java_AudioManagerAndroid_close(base::android::AttachCurrentThread(),
-                                 j_audio_manager_.obj());
+                                 j_audio_manager_);
   j_audio_manager_.Reset();
 }
 
@@ -119,10 +119,10 @@ void AudioManagerAndroid::GetAudioInputDeviceNames(
     ScopedJavaLocalRef<jobject> j_device(
         env, env->GetObjectArrayElement(j_device_array.obj(), i));
     ScopedJavaLocalRef<jstring> j_device_name =
-        Java_AudioDeviceName_name(env, j_device.obj());
+        Java_AudioDeviceName_name(env, j_device);
     ConvertJavaStringToUTF8(env, j_device_name.obj(), &device.device_name);
     ScopedJavaLocalRef<jstring> j_device_id =
-        Java_AudioDeviceName_id(env, j_device.obj());
+        Java_AudioDeviceName_id(env, j_device);
     ConvertJavaStringToUTF8(env, j_device_id.obj(), &device.unique_id);
     device_names->push_back(device);
   }
@@ -361,7 +361,7 @@ jobject AudioManagerAndroid::GetJavaAudioManager() {
     // Prepare the list of audio devices and register receivers for device
     // notifications.
     Java_AudioManagerAndroid_init(base::android::AttachCurrentThread(),
-                                  j_audio_manager_.obj());
+                                  j_audio_manager_);
   }
   return j_audio_manager_.obj();
 }
@@ -382,7 +382,7 @@ bool AudioManagerAndroid::SetAudioDevice(const std::string& device_id) {
       env, device_id == AudioDeviceDescription::kDefaultDeviceId ? std::string()
                                                                  : device_id);
   return Java_AudioManagerAndroid_setDevice(env, GetJavaAudioManager(),
-                                            j_device_id.obj());
+                                            j_device_id);
 }
 
 int AudioManagerAndroid::GetNativeOutputSampleRate() {

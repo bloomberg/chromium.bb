@@ -65,8 +65,7 @@ void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
   std::string json;
   base::JSONWriter::Write(*result, &json);
   ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
-  Java_WebContentsImpl_onEvaluateJavaScriptResult(
-      env, j_json.obj(), callback.obj());
+  Java_WebContentsImpl_onEvaluateJavaScriptResult(env, j_json, callback);
 }
 
 struct AccessibilitySnapshotParams {
@@ -118,8 +117,8 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(
   ScopedJavaLocalRef<jobject> j_node =
       Java_WebContentsImpl_createAccessibilitySnapshotNode(
           env, parent_relative_rect.x(), parent_relative_rect.y(),
-          absolute_rect.width(), absolute_rect.height(), is_root, j_text.obj(),
-          color, bgcolor, size, text_style, j_class.obj());
+          absolute_rect.width(), absolute_rect.height(), is_root, j_text, color,
+          bgcolor, size, text_style, j_class);
 
   if (params->has_tree_data && node->PlatformIsLeaf()) {
     int start_selection = 0;
@@ -137,7 +136,7 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(
     }
     if (end_selection > 0)
       Java_WebContentsImpl_setAccessibilitySnapshotSelection(
-          env, j_node.obj(), start_selection, end_selection);
+          env, j_node, start_selection, end_selection);
   }
 
   for (uint32_t i = 0; i < node->PlatformChildCount(); i++) {
@@ -145,8 +144,7 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(
         static_cast<BrowserAccessibilityAndroid*>(
             node->PlatformGetChild(i));
     Java_WebContentsImpl_addAccessibilityNodeAsChild(
-        env, j_node.obj(),
-        WalkAXTreeDepthFirst(env, child, absolute_rect, params).obj());
+        env, j_node, WalkAXTreeDepthFirst(env, child, absolute_rect, params));
   }
   return j_node;
 }
@@ -156,7 +154,7 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
                             const ui::AXTreeUpdate& result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (result.nodes.empty()) {
-    Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback.obj());
+    Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback);
     return;
   }
   std::unique_ptr<BrowserAccessibilityManagerAndroid> manager(
@@ -176,8 +174,7 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
   gfx::Rect parent_rect;
   ScopedJavaLocalRef<jobject> j_root =
       WalkAXTreeDepthFirst(env, root, parent_rect, &params);
-  Java_WebContentsImpl_onAccessibilitySnapshot(
-      env, j_root.obj(), callback.obj());
+  Java_WebContentsImpl_onAccessibilitySnapshot(env, j_root, callback);
 }
 
 }  // namespace
@@ -246,10 +243,9 @@ WebContentsAndroid::WebContentsAndroid(WebContentsImpl* web_contents)
   g_allocated_web_contents_androids.Get().insert(this);
   JNIEnv* env = AttachCurrentThread();
   obj_.Reset(env,
-             Java_WebContentsImpl_create(
-                 env,
-                 reinterpret_cast<intptr_t>(this),
-                 navigation_controller_.GetJavaObject().obj()).obj());
+             Java_WebContentsImpl_create(env, reinterpret_cast<intptr_t>(this),
+                                         navigation_controller_.GetJavaObject())
+                 .obj());
   RendererPreferences* prefs = web_contents_->GetMutableRendererPrefs();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   prefs->network_contry_iso =
@@ -262,7 +258,7 @@ WebContentsAndroid::~WebContentsAndroid() {
   DCHECK(g_allocated_web_contents_androids.Get().find(this) !=
       g_allocated_web_contents_androids.Get().end());
   g_allocated_web_contents_androids.Get().erase(this);
-  Java_WebContentsImpl_clearNativePtr(AttachCurrentThread(), obj_.obj());
+  Java_WebContentsImpl_clearNativePtr(AttachCurrentThread(), obj_);
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -695,11 +691,8 @@ void WebContentsAndroid::OnFinishGetContentBitmap(
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (response == READBACK_SUCCESS)
     java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
-  Java_WebContentsImpl_onGetContentBitmapFinished(env,
-                                                  obj->obj(),
-                                                  callback->obj(),
-                                                  java_bitmap.obj(),
-                                                  response);
+  Java_WebContentsImpl_onGetContentBitmapFinished(
+      env, obj->obj(), callback->obj(), java_bitmap, response);
 }
 
 void WebContentsAndroid::OnFinishDownloadImage(
@@ -723,14 +716,14 @@ void WebContentsAndroid::OnFinishDownloadImage(
     // allocations, which increases the chance of OOMs if DownloadImage() is
     // misused.
     ScopedJavaLocalRef<jobject> jbitmap = gfx::ConvertToJavaBitmap(&bitmap);
-    Java_WebContentsImpl_addToBitmapList(env, jbitmaps.obj(), jbitmap.obj());
+    Java_WebContentsImpl_addToBitmapList(env, jbitmaps, jbitmap);
   }
   for (const gfx::Size& size : sizes) {
-    Java_WebContentsImpl_createSizeAndAddToList(
-        env, jsizes.obj(), size.width(), size.height());
+    Java_WebContentsImpl_createSizeAndAddToList(env, jsizes, size.width(),
+                                                size.height());
   }
-  Java_WebContentsImpl_onDownloadImageFinished(
-      env, obj->obj(), callback->obj(), id,
-      http_status_code, jurl.obj(), jbitmaps.obj(), jsizes.obj());
+  Java_WebContentsImpl_onDownloadImageFinished(env, obj->obj(), callback->obj(),
+                                               id, http_status_code, jurl,
+                                               jbitmaps, jsizes);
 }
 }  // namespace content

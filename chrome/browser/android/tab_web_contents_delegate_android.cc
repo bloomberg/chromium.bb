@@ -182,8 +182,7 @@ blink::WebDisplayMode TabWebContentsDelegateAndroid::GetDisplayMode(
     return blink::WebDisplayModeUndefined;
 
   return static_cast<blink::WebDisplayMode>(
-      Java_TabWebContentsDelegateAndroid_getDisplayMode(
-          env, obj.obj()));
+      Java_TabWebContentsDelegateAndroid_getDisplayMode(env, obj));
 }
 
 void TabWebContentsDelegateAndroid::FindReply(
@@ -223,16 +222,11 @@ void TabWebContentsDelegateAndroid::OnFindResultAvailable(
   // Create the details object.
   ScopedJavaLocalRef<jobject> details_object =
       Java_TabWebContentsDelegateAndroid_createFindNotificationDetails(
-          env,
-          find_result->number_of_matches(),
-          selection_rect.obj(),
-          find_result->active_match_ordinal(),
-          find_result->final_update());
+          env, find_result->number_of_matches(), selection_rect,
+          find_result->active_match_ordinal(), find_result->final_update());
 
-  Java_TabWebContentsDelegateAndroid_onFindResultAvailable(
-      env,
-      obj.obj(),
-      details_object.obj());
+  Java_TabWebContentsDelegateAndroid_onFindResultAvailable(env, obj,
+                                                           details_object);
 }
 
 void TabWebContentsDelegateAndroid::FindMatchRectsReply(
@@ -248,24 +242,16 @@ void TabWebContentsDelegateAndroid::FindMatchRectsReply(
   // Create the details object.
   ScopedJavaLocalRef<jobject> details_object =
       Java_TabWebContentsDelegateAndroid_createFindMatchRectsDetails(
-          env,
-          version,
-          rects.size(),
-          CreateJavaRectF(env, active_rect).obj());
+          env, version, rects.size(), CreateJavaRectF(env, active_rect));
 
   // Add the rects
   for (size_t i = 0; i < rects.size(); ++i) {
-      Java_TabWebContentsDelegateAndroid_setMatchRectByIndex(
-          env,
-          details_object.obj(),
-          i,
-          CreateJavaRectF(env, rects[i]).obj());
+    Java_TabWebContentsDelegateAndroid_setMatchRectByIndex(
+        env, details_object, i, CreateJavaRectF(env, rects[i]));
   }
 
-  Java_TabWebContentsDelegateAndroid_onFindMatchRectsAvailable(
-      env,
-      obj.obj(),
-      details_object.obj());
+  Java_TabWebContentsDelegateAndroid_onFindMatchRectsAvailable(env, obj,
+                                                               details_object);
 }
 
 content::JavaScriptDialogManager*
@@ -372,8 +358,7 @@ bool TabWebContentsDelegateAndroid::ShouldResumeRequestsForCreatedWindow() {
     return true;
 
   return Java_TabWebContentsDelegateAndroid_shouldResumeRequestsForCreatedWindow(
-      env,
-      obj.obj());
+      env, obj);
 }
 
 void TabWebContentsDelegateAndroid::AddNewContents(
@@ -402,13 +387,8 @@ void TabWebContentsDelegateAndroid::AddNewContents(
       jnew_contents = new_contents->GetJavaWebContents();
 
     handled = Java_TabWebContentsDelegateAndroid_addNewContents(
-        env,
-        obj.obj(),
-        jsource.obj(),
-        jnew_contents.obj(),
-        static_cast<jint>(disposition),
-        nullptr,
-        user_gesture);
+        env, obj, jsource, jnew_contents, static_cast<jint>(disposition),
+        nullptr, user_gesture);
   }
 
   if (was_blocked)

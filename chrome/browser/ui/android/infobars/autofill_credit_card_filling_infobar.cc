@@ -40,24 +40,18 @@ AutofillCreditCardFillingInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   base::android::ScopedJavaLocalRef<jobject> java_delegate =
       Java_AutofillCreditCardFillingInfoBar_create(
           env, reinterpret_cast<intptr_t>(this), GetEnumeratedIconId(),
-          java_bitmap.obj(),
+          java_bitmap, base::android::ConvertUTF16ToJavaString(
+                           env, delegate->GetMessageText()),
           base::android::ConvertUTF16ToJavaString(
-              env, delegate->GetMessageText())
-              .obj(),
+              env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK)),
           base::android::ConvertUTF16ToJavaString(
-              env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK))
-              .obj(),
-          base::android::ConvertUTF16ToJavaString(
-              env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL))
-              .obj());
+              env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL)));
 
   Java_AutofillCreditCardFillingInfoBar_addDetail(
-      env, java_delegate.obj(),
+      env, java_delegate,
       ResourceMapper::MapFromChromiumId(delegate->issuer_icon_id()),
-      base::android::ConvertUTF16ToJavaString(env, delegate->card_label())
-          .obj(),
-      base::android::ConvertUTF16ToJavaString(env, delegate->card_sub_label())
-          .obj());
+      base::android::ConvertUTF16ToJavaString(env, delegate->card_label()),
+      base::android::ConvertUTF16ToJavaString(env, delegate->card_sub_label()));
 
   return java_delegate;
 }

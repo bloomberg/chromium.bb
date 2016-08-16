@@ -64,13 +64,13 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
   if (popup_view.is_null())
     return;
   ScopedJavaLocalRef<jobject> obj(java_power_save_blocker_);
-  Java_PowerSaveBlocker_applyBlock(env, obj.obj(), popup_view.obj());
+  Java_PowerSaveBlocker_applyBlock(env, obj, popup_view);
 }
 
 void PowerSaveBlocker::Delegate::RemoveBlock() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   ScopedJavaLocalRef<jobject> obj(java_power_save_blocker_);
-  Java_PowerSaveBlocker_removeBlock(AttachCurrentThread(), obj.obj());
+  Java_PowerSaveBlocker_removeBlock(AttachCurrentThread(), obj);
   anchor_view_.Reset();
 }
 

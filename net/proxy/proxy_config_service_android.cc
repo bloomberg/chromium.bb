@@ -158,7 +158,7 @@ std::string GetJavaProperty(const std::string& property) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> str = ConvertUTF8ToJavaString(env, property);
   ScopedJavaLocalRef<jstring> result =
-      Java_ProxyChangeListener_getProperty(env, str.obj());
+      Java_ProxyChangeListener_getProperty(env, str);
   return result.is_null() ?
       std::string() : ConvertJavaStringToUTF8(env, result.obj());
 }
@@ -213,10 +213,8 @@ class ProxyConfigServiceAndroid::Delegate
               env, base::android::GetApplicationContext()));
       CHECK(!java_proxy_change_listener_.is_null());
     }
-    Java_ProxyChangeListener_start(
-        env,
-        java_proxy_change_listener_.obj(),
-        reinterpret_cast<intptr_t>(&jni_delegate_));
+    Java_ProxyChangeListener_start(env, java_proxy_change_listener_,
+                                   reinterpret_cast<intptr_t>(&jni_delegate_));
   }
 
   void FetchInitialConfig() {
@@ -331,7 +329,7 @@ class ProxyConfigServiceAndroid::Delegate
     if (java_proxy_change_listener_.is_null())
       return;
     JNIEnv* env = AttachCurrentThread();
-    Java_ProxyChangeListener_stop(env, java_proxy_change_listener_.obj());
+    Java_ProxyChangeListener_stop(env, java_proxy_change_listener_);
   }
 
   // Called on the network thread.

@@ -50,7 +50,7 @@ AppBannerManagerAndroid::AppBannerManagerAndroid(
 
 AppBannerManagerAndroid::~AppBannerManagerAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AppBannerManager_destroy(env, java_banner_manager_.obj());
+  Java_AppBannerManager_destroy(env, java_banner_manager_);
   java_banner_manager_.Reset();
 }
 
@@ -104,7 +104,7 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
 void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url,
                                                bool is_debug_mode) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (!Java_AppBannerManager_isEnabledForTab(env, java_banner_manager_.obj()))
+  if (!Java_AppBannerManager_isEnabledForTab(env, java_banner_manager_))
     return;
 
   AppBannerManager::RequestAppBanner(validated_url, is_debug_mode);
@@ -245,9 +245,9 @@ bool AppBannerManagerAndroid::CanHandleNonWebApp(const std::string& platform,
       ConvertUTF8ToJavaString(env, validated_url_.spec()));
   ScopedJavaLocalRef<jstring> jpackage(ConvertUTF8ToJavaString(env, id));
   ScopedJavaLocalRef<jstring> jreferrer(ConvertUTF8ToJavaString(env, referrer));
-  Java_AppBannerManager_fetchAppDetails(
-      env, java_banner_manager_.obj(), jurl.obj(), jpackage.obj(),
-      jreferrer.obj(), GetIdealIconSizeInDp());
+  Java_AppBannerManager_fetchAppDetails(env, java_banner_manager_, jurl,
+                                        jpackage, jreferrer,
+                                        GetIdealIconSizeInDp());
   return true;
 }
 

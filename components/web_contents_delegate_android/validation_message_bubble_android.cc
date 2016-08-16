@@ -43,19 +43,16 @@ ValidationMessageBubbleAndroid::ValidationMessageBubbleAndroid(
   JNIEnv* env = base::android::AttachCurrentThread();
   java_validation_message_bubble_.Reset(
       Java_ValidationMessageBubble_createAndShow(
-          env,
-          java_content_view_core.obj(),
-          anchor_in_root_view.x(),
-          anchor_in_root_view.y(),
-          anchor_in_root_view.width(),
+          env, java_content_view_core, anchor_in_root_view.x(),
+          anchor_in_root_view.y(), anchor_in_root_view.width(),
           anchor_in_root_view.height(),
-          ConvertUTF16ToJavaString(env, main_text).obj(),
-          ConvertUTF16ToJavaString(env, sub_text).obj()));
+          ConvertUTF16ToJavaString(env, main_text),
+          ConvertUTF16ToJavaString(env, sub_text)));
 }
 
 ValidationMessageBubbleAndroid::~ValidationMessageBubbleAndroid() {
   Java_ValidationMessageBubble_close(base::android::AttachCurrentThread(),
-                                     java_validation_message_bubble_.obj());
+                                     java_validation_message_bubble_);
 }
 
 void ValidationMessageBubbleAndroid::SetPositionRelativeToAnchor(
@@ -66,13 +63,9 @@ void ValidationMessageBubbleAndroid::SetPositionRelativeToAnchor(
     return;
 
   Java_ValidationMessageBubble_setPositionRelativeToAnchor(
-      base::android::AttachCurrentThread(),
-      java_validation_message_bubble_.obj(),
-      java_content_view_core.obj(),
-      anchor_in_root_view.x(),
-      anchor_in_root_view.y(),
-      anchor_in_root_view.width(),
-      anchor_in_root_view.height());
+      base::android::AttachCurrentThread(), java_validation_message_bubble_,
+      java_content_view_core, anchor_in_root_view.x(), anchor_in_root_view.y(),
+      anchor_in_root_view.width(), anchor_in_root_view.height());
 }
 
 }  // namespace web_contents_delegate_android

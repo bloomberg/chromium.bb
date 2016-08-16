@@ -109,8 +109,7 @@ NotificationPlatformBridgeAndroid::NotificationPlatformBridgeAndroid() {
 }
 
 NotificationPlatformBridgeAndroid::~NotificationPlatformBridgeAndroid() {
-  Java_NotificationPlatformBridge_destroy(AttachCurrentThread(),
-                                          java_object_.obj());
+  Java_NotificationPlatformBridge_destroy(AttachCurrentThread(), java_object_);
 }
 
 void NotificationPlatformBridgeAndroid::OnNotificationClicked(
@@ -193,7 +192,7 @@ void NotificationPlatformBridgeAndroid::Display(
     ScopedJavaLocalRef<jstring> j_scope_url =
         ConvertUTF8ToJavaString(env, scope_url.spec());
     webapk_package = Java_NotificationPlatformBridge_queryWebApkPackage(
-        env, java_object_.obj(), j_scope_url.obj());
+        env, java_object_, j_scope_url);
   } else {
     webapk_package = ConvertUTF8ToJavaString(env, "");
   }
@@ -235,12 +234,11 @@ void NotificationPlatformBridgeAndroid::Display(
       ConvertUTF8ToJavaString(env, profile_id);
 
   Java_NotificationPlatformBridge_displayNotification(
-      env, java_object_.obj(), j_notification_id.obj(), j_origin.obj(),
-      j_profile_id.obj(), incognito, tag.obj(), webapk_package.obj(),
-      title.obj(), body.obj(), notification_icon.obj(), badge.obj(),
-      vibration_pattern.obj(), notification.timestamp().ToJavaTime(),
-      notification.renotify(), notification.silent(), action_titles.obj(),
-      action_icons.obj());
+      env, java_object_, j_notification_id, j_origin, j_profile_id, incognito,
+      tag, webapk_package, title, body, notification_icon, badge,
+      vibration_pattern, notification.timestamp().ToJavaTime(),
+      notification.renotify(), notification.silent(), action_titles,
+      action_icons);
 
   regenerated_notification_infos_[notification_id] =
       RegeneratedNotificationInfo(origin_url.spec(), notification.tag(),
@@ -273,8 +271,8 @@ void NotificationPlatformBridgeAndroid::Close(
   regenerated_notification_infos_.erase(iterator);
 
   Java_NotificationPlatformBridge_closeNotification(
-      env, java_object_.obj(), j_profile_id.obj(), j_notification_id.obj(),
-      origin.obj(), tag.obj(), webapk_package.obj());
+      env, java_object_, j_profile_id, j_notification_id, origin, tag,
+      webapk_package);
 }
 
 bool NotificationPlatformBridgeAndroid::GetDisplayed(

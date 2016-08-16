@@ -38,11 +38,11 @@ BlimpContentsImplAndroid::BlimpContentsImplAndroid(
               &(blimp_contents_impl->GetNavigationController()))) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  java_obj_.Reset(
-      env, Java_BlimpContentsImpl_create(
-               env, reinterpret_cast<intptr_t>(this),
-               blimp_navigation_controller_impl_android_.GetJavaObject().obj())
-               .obj());
+  java_obj_.Reset(env,
+                  Java_BlimpContentsImpl_create(
+                      env, reinterpret_cast<intptr_t>(this),
+                      blimp_navigation_controller_impl_android_.GetJavaObject())
+                      .obj());
 }
 
 void BlimpContentsImplAndroid::Destroy(JNIEnv* env, jobject jobj) {
@@ -51,7 +51,7 @@ void BlimpContentsImplAndroid::Destroy(JNIEnv* env, jobject jobj) {
 
 BlimpContentsImplAndroid::~BlimpContentsImplAndroid() {
   Java_BlimpContentsImpl_clearNativePtr(base::android::AttachCurrentThread(),
-                                        java_obj_.obj());
+                                        java_obj_);
 }
 
 }  // namespace client

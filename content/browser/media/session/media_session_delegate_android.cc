@@ -25,7 +25,7 @@ MediaSessionDelegateAndroid::MediaSessionDelegateAndroid(
 MediaSessionDelegateAndroid::~MediaSessionDelegateAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
-  Java_MediaSessionDelegate_tearDown(env, j_media_session_delegate_.obj());
+  Java_MediaSessionDelegate_tearDown(env, j_media_session_delegate_);
 }
 
 void MediaSessionDelegateAndroid::Initialize() {
@@ -41,15 +41,13 @@ bool MediaSessionDelegateAndroid::RequestAudioFocus(MediaSession::Type type) {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
   return Java_MediaSessionDelegate_requestAudioFocus(
-      env, j_media_session_delegate_.obj(),
-      type == MediaSession::Type::Transient);
+      env, j_media_session_delegate_, type == MediaSession::Type::Transient);
 }
 
 void MediaSessionDelegateAndroid::AbandonAudioFocus() {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
-  Java_MediaSessionDelegate_abandonAudioFocus(
-      env, j_media_session_delegate_.obj());
+  Java_MediaSessionDelegate_abandonAudioFocus(env, j_media_session_delegate_);
 }
 
 void MediaSessionDelegateAndroid::OnSuspend(

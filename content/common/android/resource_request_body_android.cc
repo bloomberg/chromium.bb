@@ -66,8 +66,7 @@ ConvertResourceRequestBodyToJavaObject(
   base::android::ScopedJavaLocalRef<jbyteArray> j_encoded =
       ConvertResourceRequestBodyToJavaArray(env, *body);
 
-  return Java_ResourceRequestBody_createFromEncodedNativeForm(env,
-                                                              j_encoded.obj());
+  return Java_ResourceRequestBody_createFromEncodedNativeForm(env, j_encoded);
 }
 
 scoped_refptr<ResourceRequestBodyImpl> ExtractResourceRequestBodyFromJavaObject(
@@ -77,7 +76,7 @@ scoped_refptr<ResourceRequestBodyImpl> ExtractResourceRequestBodyFromJavaObject(
     return nullptr;
 
   base::android::ScopedJavaLocalRef<jbyteArray> j_encoded =
-      Java_ResourceRequestBody_getEncodedNativeForm(env, j_body.obj());
+      Java_ResourceRequestBody_getEncodedNativeForm(env, j_body);
   if (j_encoded.is_null())
     return nullptr;
 

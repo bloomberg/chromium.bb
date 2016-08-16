@@ -67,11 +67,9 @@ static void GetSupportedCountries(
   }
 
   Java_AutofillProfileBridge_stringArrayToList(
-      env, ToJavaArrayOfStrings(env, known_country_codes).obj(),
-      j_country_code_list);
+      env, ToJavaArrayOfStrings(env, known_country_codes), j_country_code_list);
   Java_AutofillProfileBridge_stringArrayToList(
-      env, ToJavaArrayOfStrings(env, known_country_names).obj(),
-      j_country_name_list);
+      env, ToJavaArrayOfStrings(env, known_country_names), j_country_name_list);
 }
 
 static void GetRequiredFields(
@@ -91,8 +89,8 @@ static void GetRequiredFields(
     }
   }
 
-  Java_AutofillProfileBridge_intArrayToList(
-      env, ToJavaIntArray(env, required).obj(), j_required_fields_list);
+  Java_AutofillProfileBridge_intArrayToList(env, ToJavaIntArray(env, required),
+                                            j_required_fields_list);
 }
 
 static ScopedJavaLocalRef<jstring> GetAddressUiComponents(
@@ -134,13 +132,13 @@ static ScopedJavaLocalRef<jstring> GetAddressUiComponents(
   }
 
   Java_AutofillProfileBridge_intArrayToList(
-      env, ToJavaIntArray(env, component_ids).obj(), j_id_list);
+      env, ToJavaIntArray(env, component_ids), j_id_list);
   Java_AutofillProfileBridge_stringArrayToList(
-      env, ToJavaArrayOfStrings(env, component_labels).obj(), j_name_list);
+      env, ToJavaArrayOfStrings(env, component_labels), j_name_list);
   Java_AutofillProfileBridge_intArrayToList(
-      env, ToJavaIntArray(env, component_required).obj(), j_required_list);
+      env, ToJavaIntArray(env, component_required), j_required_list);
   Java_AutofillProfileBridge_intArrayToList(
-      env, ToJavaIntArray(env, component_length).obj(), j_length_list);
+      env, ToJavaIntArray(env, component_length), j_length_list);
 
   return ConvertUTF8ToJavaString(env, best_language_tag);
 }

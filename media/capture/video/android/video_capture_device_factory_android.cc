@@ -108,7 +108,7 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
     VideoPixelFormat pixel_format =
         media::PIXEL_FORMAT_UNKNOWN;
     switch (media::Java_VideoCaptureFactory_getCaptureFormatPixelFormat(
-        env, format.obj())) {
+        env, format)) {
       case VideoCaptureDeviceAndroid::ANDROID_IMAGE_FORMAT_YV12:
         pixel_format = media::PIXEL_FORMAT_YV12;
         break;
@@ -119,12 +119,11 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
         continue;
     }
     VideoCaptureFormat capture_format(
-        gfx::Size(media::Java_VideoCaptureFactory_getCaptureFormatWidth(
-                      env, format.obj()),
-                  media::Java_VideoCaptureFactory_getCaptureFormatHeight(
-                      env, format.obj())),
-        media::Java_VideoCaptureFactory_getCaptureFormatFramerate(env,
-                                                                  format.obj()),
+        gfx::Size(
+            media::Java_VideoCaptureFactory_getCaptureFormatWidth(env, format),
+            media::Java_VideoCaptureFactory_getCaptureFormatHeight(env,
+                                                                   format)),
+        media::Java_VideoCaptureFactory_getCaptureFormatFramerate(env, format),
         pixel_format);
     capture_formats->push_back(capture_format);
     DVLOG(1) << device.display_name << " "

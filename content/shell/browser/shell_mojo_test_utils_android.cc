@@ -72,7 +72,7 @@ static ScopedJavaLocalRef<jobject> CreateInterfaceRegistryAndProvider(
       InterfaceProviderAndroid::Create(provider.get()));
 
   ScopedJavaLocalRef<jobject> obj = Java_ShellMojoTestUtils_makePair(
-      env, registry_android->GetObj().obj(), provider_android->GetObj().obj());
+      env, registry_android->GetObj(), provider_android->GetObj());
 
   test_environment->registry_wrappers.push_back(std::move(registry_android));
   test_environment->provider_wrappers.push_back(std::move(provider_android));

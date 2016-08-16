@@ -48,7 +48,7 @@ BluetoothDeviceAndroid* BluetoothDeviceAndroid::Create(
 
 BluetoothDeviceAndroid::~BluetoothDeviceAndroid() {
   Java_ChromeBluetoothDevice_onBluetoothDeviceAndroidDestruction(
-      AttachCurrentThread(), j_device_.obj());
+      AttachCurrentThread(), j_device_);
 }
 
 void BluetoothDeviceAndroid::UpdateAdvertisedUUIDs(
@@ -72,12 +72,12 @@ BluetoothDeviceAndroid::GetJavaObject() {
 
 uint32_t BluetoothDeviceAndroid::GetBluetoothClass() const {
   return Java_ChromeBluetoothDevice_getBluetoothClass(AttachCurrentThread(),
-                                                      j_device_.obj());
+                                                      j_device_);
 }
 
 std::string BluetoothDeviceAndroid::GetAddress() const {
-  return ConvertJavaStringToUTF8(Java_ChromeBluetoothDevice_getAddress(
-      AttachCurrentThread(), j_device_.obj()));
+  return ConvertJavaStringToUTF8(
+      Java_ChromeBluetoothDevice_getAddress(AttachCurrentThread(), j_device_));
 }
 
 BluetoothDevice::VendorIDSource BluetoothDeviceAndroid::GetVendorIDSource()
@@ -109,16 +109,15 @@ uint16_t BluetoothDeviceAndroid::GetAppearance() const {
 }
 
 base::Optional<std::string> BluetoothDeviceAndroid::GetName() const {
-  auto name = Java_ChromeBluetoothDevice_getName(AttachCurrentThread(),
-                                                 j_device_.obj());
+  auto name =
+      Java_ChromeBluetoothDevice_getName(AttachCurrentThread(), j_device_);
   if (name.is_null())
     return base::nullopt;
   return ConvertJavaStringToUTF8(name);
 }
 
 bool BluetoothDeviceAndroid::IsPaired() const {
-  return Java_ChromeBluetoothDevice_isPaired(AttachCurrentThread(),
-                                             j_device_.obj());
+  return Java_ChromeBluetoothDevice_isPaired(AttachCurrentThread(), j_device_);
 }
 
 bool BluetoothDeviceAndroid::IsConnected() const {
@@ -283,13 +282,11 @@ BluetoothDeviceAndroid::BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter)
 
 void BluetoothDeviceAndroid::CreateGattConnectionImpl() {
   Java_ChromeBluetoothDevice_createGattConnectionImpl(
-      AttachCurrentThread(), j_device_.obj(),
-      base::android::GetApplicationContext());
+      AttachCurrentThread(), j_device_, base::android::GetApplicationContext());
 }
 
 void BluetoothDeviceAndroid::DisconnectGatt() {
-  Java_ChromeBluetoothDevice_disconnectGatt(AttachCurrentThread(),
-                                            j_device_.obj());
+  Java_ChromeBluetoothDevice_disconnectGatt(AttachCurrentThread(), j_device_);
 }
 
 }  // namespace device

@@ -101,7 +101,7 @@ AuxiliaryCanvasHolder::AuxiliaryCanvasHolder(
   DCHECK(size.width() > 0);
   DCHECK(size.height() > 0);
   jbitmap_ = Java_JavaBrowserViewRendererHelper_createBitmap(
-      env, size.width(), size.height(), jcanvas_.obj());
+      env, size.width(), size.height(), jcanvas_);
   if (!jbitmap_.obj())
     return;
 
@@ -134,7 +134,7 @@ AuxiliaryCanvasHolder::~AuxiliaryCanvasHolder() {
   }
 
   Java_JavaBrowserViewRendererHelper_drawBitmapIntoCanvas(
-      env, jbitmap_.obj(), jcanvas_.obj(), scroll_.x(), scroll_.y());
+      env, jbitmap_, jcanvas_, scroll_.x(), scroll_.y());
 }
 
 SkCanvas* AuxiliaryCanvasHolder::GetCanvas() {

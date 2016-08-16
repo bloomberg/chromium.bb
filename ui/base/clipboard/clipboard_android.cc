@@ -102,15 +102,14 @@ void ClipboardMap::CommitToAndroidClipboard() {
         ConvertUTF8ToJavaString(env, map_[kPlainTextFormat].c_str());
 
     DCHECK(html.obj() && text.obj());
-    Java_Clipboard_setHTMLText(env, clipboard_manager_.obj(), html.obj(),
-                               text.obj());
+    Java_Clipboard_setHTMLText(env, clipboard_manager_, html, text);
   } else if (base::ContainsKey(map_, kPlainTextFormat)) {
     ScopedJavaLocalRef<jstring> str =
         ConvertUTF8ToJavaString(env, map_[kPlainTextFormat].c_str());
     DCHECK(str.obj());
-    Java_Clipboard_setText(env, clipboard_manager_.obj(), str.obj());
+    Java_Clipboard_setText(env, clipboard_manager_, str);
   } else {
-    Java_Clipboard_clear(env, clipboard_manager_.obj());
+    Java_Clipboard_clear(env, clipboard_manager_);
     NOTIMPLEMENTED();
   }
 }
@@ -119,7 +118,7 @@ void ClipboardMap::Clear() {
   JNIEnv* env = AttachCurrentThread();
   base::AutoLock lock(lock_);
   map_.clear();
-  Java_Clipboard_clear(env, clipboard_manager_.obj());
+  Java_Clipboard_clear(env, clipboard_manager_);
 }
 
 // Add a key:jstr pair to map, but only if jstr is not null, and also
@@ -155,9 +154,9 @@ void ClipboardMap::UpdateFromAndroidClipboard() {
   std::map<std::string, std::string> android_clipboard_state;
 
   ScopedJavaLocalRef<jstring> jtext =
-      Java_Clipboard_getCoercedText(env, clipboard_manager_.obj());
+      Java_Clipboard_getCoercedText(env, clipboard_manager_);
   ScopedJavaLocalRef<jstring> jhtml =
-      Java_Clipboard_getHTMLText(env, clipboard_manager_.obj());
+      Java_Clipboard_getHTMLText(env, clipboard_manager_);
 
   AddMapEntry(env, &android_clipboard_state, kPlainTextFormat, jtext);
   AddMapEntry(env, &android_clipboard_state, kHTMLFormat, jhtml);

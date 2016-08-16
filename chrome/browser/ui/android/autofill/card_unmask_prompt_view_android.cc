@@ -49,15 +49,13 @@ void CardUnmaskPromptViewAndroid::Show() {
       env, controller_->GetOkButtonLabel());
 
   java_object_.Reset(Java_CardUnmaskBridge_create(
-      env, reinterpret_cast<intptr_t>(this), dialog_title.obj(),
-      instructions.obj(), confirm.obj(),
-      ResourceMapper::MapFromChromiumId(controller_->GetCvcImageRid()),
+      env, reinterpret_cast<intptr_t>(this), dialog_title, instructions,
+      confirm, ResourceMapper::MapFromChromiumId(controller_->GetCvcImageRid()),
       controller_->ShouldRequestExpirationDate(),
-      controller_->CanStoreLocally(),
-      controller_->GetStoreLocallyStartState(),
-      view_android->GetWindowAndroid()->GetJavaObject().obj()));
+      controller_->CanStoreLocally(), controller_->GetStoreLocallyStartState(),
+      view_android->GetWindowAndroid()->GetJavaObject()));
 
-  Java_CardUnmaskBridge_show(env, java_object_.obj());
+  Java_CardUnmaskBridge_show(env, java_object_);
 }
 
 bool CardUnmaskPromptViewAndroid::CheckUserInputValidity(
@@ -86,12 +84,12 @@ void CardUnmaskPromptViewAndroid::OnNewCardLinkClicked(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   controller_->NewCardLinkClicked();
-  Java_CardUnmaskBridge_update(env, java_object_.obj(),
-      base::android::ConvertUTF16ToJavaString(
-          env, controller_->GetWindowTitle()).obj(),
-      base::android::ConvertUTF16ToJavaString(
-          env, controller_->GetInstructionsMessage()).obj(),
-      controller_->ShouldRequestExpirationDate());
+  Java_CardUnmaskBridge_update(env, java_object_,
+                               base::android::ConvertUTF16ToJavaString(
+                                   env, controller_->GetWindowTitle()),
+                               base::android::ConvertUTF16ToJavaString(
+                                   env, controller_->GetInstructionsMessage()),
+                               controller_->ShouldRequestExpirationDate());
 }
 
 void CardUnmaskPromptViewAndroid::PromptDismissed(
@@ -103,12 +101,12 @@ void CardUnmaskPromptViewAndroid::PromptDismissed(
 void CardUnmaskPromptViewAndroid::ControllerGone() {
   controller_ = nullptr;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CardUnmaskBridge_dismiss(env, java_object_.obj());
+  Java_CardUnmaskBridge_dismiss(env, java_object_);
 }
 
 void CardUnmaskPromptViewAndroid::DisableAndWaitForVerification() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CardUnmaskBridge_disableAndWaitForVerification(env, java_object_.obj());
+  Java_CardUnmaskBridge_disableAndWaitForVerification(env, java_object_);
 }
 
 void CardUnmaskPromptViewAndroid::GotVerificationResult(
@@ -119,8 +117,8 @@ void CardUnmaskPromptViewAndroid::GotVerificationResult(
   if (!error_message.empty())
       message = base::android::ConvertUTF16ToJavaString(env, error_message);
 
-  Java_CardUnmaskBridge_verificationFinished(env, java_object_.obj(),
-                                             message.obj(), allow_retry);
+  Java_CardUnmaskBridge_verificationFinished(env, java_object_, message,
+                                             allow_retry);
 }
 
 // static

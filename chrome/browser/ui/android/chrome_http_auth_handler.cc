@@ -42,10 +42,8 @@ void ChromeHttpAuthHandler::SetObserver(LoginHandler* observer) {
 
 void ChromeHttpAuthHandler::ShowDialog(jobject window_android) {
   JNIEnv* env = AttachCurrentThread();
-  Java_ChromeHttpAuthHandler_showDialog(
-      env,
-      java_chrome_http_auth_handler_.obj(),
-      window_android);
+  Java_ChromeHttpAuthHandler_showDialog(env, java_chrome_http_auth_handler_,
+                                        window_android);
 }
 
 void ChromeHttpAuthHandler::OnAutofillDataAvailable(
@@ -58,8 +56,7 @@ void ChromeHttpAuthHandler::OnAutofillDataAvailable(
   ScopedJavaLocalRef<jstring> j_password =
       ConvertUTF16ToJavaString(env, password);
   Java_ChromeHttpAuthHandler_onAutofillDataAvailable(
-      env, java_chrome_http_auth_handler_.obj(),
-      j_username.obj(), j_password.obj());
+      env, java_chrome_http_auth_handler_, j_username, j_password);
 }
 
 void ChromeHttpAuthHandler::SetAuth(JNIEnv* env,

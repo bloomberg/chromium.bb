@@ -44,7 +44,7 @@ void MidiManagerAndroid::StartInitialization() {
   raw_manager_.Reset(Java_MidiManagerAndroid_create(
       env, base::android::GetApplicationContext(), pointer));
   scheduler_.reset(new MidiScheduler(this));
-  Java_MidiManagerAndroid_initialize(env, raw_manager_.obj());
+  Java_MidiManagerAndroid_initialize(env, raw_manager_);
 }
 
 void MidiManagerAndroid::DispatchSendMidiData(MidiManagerClient* client,

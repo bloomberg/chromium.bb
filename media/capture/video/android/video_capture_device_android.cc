@@ -71,7 +71,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
   JNIEnv* env = AttachCurrentThread();
 
   jboolean ret = Java_VideoCapture_allocate(
-      env, j_capture_.obj(), params.requested_format.frame_size.width(),
+      env, j_capture_, params.requested_format.frame_size.width(),
       params.requested_format.frame_size.height(),
       params.requested_format.frame_rate);
   if (!ret) {
@@ -80,10 +80,10 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
   }
 
   capture_format_.frame_size.SetSize(
-      Java_VideoCapture_queryWidth(env, j_capture_.obj()),
-      Java_VideoCapture_queryHeight(env, j_capture_.obj()));
+      Java_VideoCapture_queryWidth(env, j_capture_),
+      Java_VideoCapture_queryHeight(env, j_capture_));
   capture_format_.frame_rate =
-      Java_VideoCapture_queryFrameRate(env, j_capture_.obj());
+      Java_VideoCapture_queryFrameRate(env, j_capture_);
   capture_format_.pixel_format = GetColorspace();
   DCHECK_NE(capture_format_.pixel_format, media::PIXEL_FORMAT_UNKNOWN);
   CHECK(capture_format_.frame_size.GetArea() > 0);
@@ -100,7 +100,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
            << capture_format_.frame_size.ToString() << ")@ "
            << capture_format_.frame_rate << "fps";
 
-  ret = Java_VideoCapture_startCapture(env, j_capture_.obj());
+  ret = Java_VideoCapture_startCapture(env, j_capture_);
   if (!ret) {
     SetErrorState(FROM_HERE, "failed to start capture");
     return;
@@ -122,7 +122,7 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
 
   JNIEnv* env = AttachCurrentThread();
 
-  const jboolean ret = Java_VideoCapture_stopCapture(env, j_capture_.obj());
+  const jboolean ret = Java_VideoCapture_stopCapture(env, j_capture_);
   if (!ret) {
     SetErrorState(FROM_HERE, "failed to stop capture");
     return;
@@ -134,7 +134,7 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
     client_.reset();
   }
 
-  Java_VideoCapture_deallocate(env, j_capture_.obj());
+  Java_VideoCapture_deallocate(env, j_capture_);
 }
 
 void VideoCaptureDeviceAndroid::TakePhoto(TakePhotoCallback callback) {
@@ -348,7 +348,7 @@ void VideoCaptureDeviceAndroid::OnPhotoTaken(
 VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
   JNIEnv* env = AttachCurrentThread();
   const int current_capture_colorspace =
-      Java_VideoCapture_getColorspace(env, j_capture_.obj());
+      Java_VideoCapture_getColorspace(env, j_capture_);
   switch (current_capture_colorspace) {
     case ANDROID_IMAGE_FORMAT_YV12:
       return media::PIXEL_FORMAT_YV12;
@@ -389,7 +389,7 @@ void VideoCaptureDeviceAndroid::DoTakePhoto(TakePhotoCallback callback) {
   std::unique_ptr<TakePhotoCallback> heap_callback(
       new TakePhotoCallback(std::move(callback)));
   const intptr_t callback_id = reinterpret_cast<intptr_t>(heap_callback.get());
-  if (!Java_VideoCapture_takePhoto(env, j_capture_.obj(), callback_id))
+  if (!Java_VideoCapture_takePhoto(env, j_capture_, callback_id))
     return;
 
   {
@@ -411,7 +411,7 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   JNIEnv* env = AttachCurrentThread();
 
   PhotoCapabilities caps(
-      Java_VideoCapture_getPhotoCapabilities(env, j_capture_.obj()));
+      Java_VideoCapture_getPhotoCapabilities(env, j_capture_));
 
   // TODO(mcasas): Manual member copying sucks, consider adding typemapping from
   // PhotoCapabilities to mojom::PhotoCapabilitiesPtr, https://crbug.com/622002.
@@ -487,7 +487,7 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
   }
 
   Java_VideoCapture_setPhotoOptions(
-      env, j_capture_.obj(), zoom, static_cast<int>(focus_mode), width, height);
+      env, j_capture_, zoom, static_cast<int>(focus_mode), width, height);
 
   callback.Run(true);
 }

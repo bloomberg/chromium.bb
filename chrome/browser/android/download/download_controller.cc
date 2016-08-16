@@ -231,7 +231,7 @@ bool DownloadController::HasFileAccessPermission(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_DownloadController_hasFileAccess(
-      env, GetJavaObject()->Controller(env).obj(), jwindow_android.obj());
+      env, GetJavaObject()->Controller(env), jwindow_android);
 }
 
 void DownloadController::CreateGETDownload(
@@ -345,11 +345,9 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
       base::TimeDelta time_delta;
       item->TimeRemaining(&time_delta);
       Java_DownloadController_onDownloadUpdated(
-          env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
-          jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), jguid.obj(),
-          item->PercentComplete(), time_delta.InMilliseconds(),
-          hasUserGesture, item->IsPaused(),
+          env, GetJavaObject()->Controller(env), jurl, jmime_type, jfilename,
+          jpath, item->GetReceivedBytes(), jguid, item->PercentComplete(),
+          time_delta.InMilliseconds(), hasUserGesture, item->IsPaused(),
           item->GetBrowserContext()->IsOffTheRecord());
       break;
     }
@@ -360,26 +358,24 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
 
       // Call onDownloadCompleted
       Java_DownloadController_onDownloadCompleted(
-          env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
-          jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), jguid.obj(),
-          joriginal_url.obj(), jreferrer_url.obj(), hasUserGesture);
+          env, GetJavaObject()->Controller(env), jurl, jmime_type, jfilename,
+          jpath, item->GetReceivedBytes(), jguid, joriginal_url, jreferrer_url,
+          hasUserGesture);
       DownloadController::RecordDownloadCancelReason(
              DownloadController::CANCEL_REASON_NOT_CANCELED);
       break;
     case DownloadItem::CANCELLED:
       Java_DownloadController_onDownloadCancelled(
-          env, GetJavaObject()->Controller(env).obj(), jguid.obj());
+          env, GetJavaObject()->Controller(env), jguid);
       break;
     case DownloadItem::INTERRUPTED:
       // When device loses/changes network, we get a NETWORK_TIMEOUT,
       // NETWORK_FAILED or NETWORK_DISCONNECTED error. Download should auto
       // resume in this case.
       Java_DownloadController_onDownloadInterrupted(
-          env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
-          jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), jguid.obj(),
-          item->CanResume(), IsInterruptedDownloadAutoResumable(item),
+          env, GetJavaObject()->Controller(env), jurl, jmime_type, jfilename,
+          jpath, item->GetReceivedBytes(), jguid, item->CanResume(),
+          IsInterruptedDownloadAutoResumable(item),
           item->GetBrowserContext()->IsOffTheRecord());
       item->RemoveObserver(this);
       break;

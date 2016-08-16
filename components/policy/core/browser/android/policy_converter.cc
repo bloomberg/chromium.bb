@@ -39,7 +39,7 @@ PolicyConverter::PolicyConverter(const Schema* policy_schema)
 
 PolicyConverter::~PolicyConverter() {
   Java_PolicyConverter_onNativeDestroyed(base::android::AttachCurrentThread(),
-                                         java_obj_.obj());
+                                         java_obj_);
 }
 
 std::unique_ptr<PolicyBundle> PolicyConverter::GetPolicyBundle() {

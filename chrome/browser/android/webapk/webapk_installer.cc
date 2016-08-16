@@ -141,8 +141,8 @@ bool WebApkInstaller::StartDownloadedWebApkInstall(
     JNIEnv* env,
     const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
     const base::android::ScopedJavaLocalRef<jstring>& java_package_name) {
-  return Java_WebApkInstaller_installAsyncFromNative(env, java_file_path.obj(),
-                                                     java_package_name.obj());
+  return Java_WebApkInstaller_installAsyncFromNative(env, java_file_path,
+                                                     java_package_name);
 }
 
 void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {

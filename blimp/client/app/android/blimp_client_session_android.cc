@@ -87,14 +87,14 @@ BlimpClientSessionAndroid::~BlimpClientSessionAndroid() {}
 
 void BlimpClientSessionAndroid::OnConnected() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BlimpClientSession_onConnected(env, java_obj_.obj());
+  Java_BlimpClientSession_onConnected(env, java_obj_);
 }
 
 void BlimpClientSessionAndroid::OnDisconnected(int result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BlimpClientSession_onDisconnected(
-      env, java_obj_.obj(), base::android::ConvertUTF8ToJavaString(
-          env, net::ErrorToShortString(result)).obj());
+      env, java_obj_, base::android::ConvertUTF8ToJavaString(
+                          env, net::ErrorToShortString(result)));
 }
 
 void BlimpClientSessionAndroid::Destroy(JNIEnv* env,
@@ -110,11 +110,10 @@ void BlimpClientSessionAndroid::OnAssignmentConnectionAttempted(
       assignment.engine_endpoint.address(), assignment.engine_endpoint.port());
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BlimpClientSession_onAssignmentReceived(
-      env, java_obj_.obj(), static_cast<jint>(result),
-      base::android::ConvertUTF8ToJavaString(env, engine_ip).obj(),
+      env, java_obj_, static_cast<jint>(result),
+      base::android::ConvertUTF8ToJavaString(env, engine_ip),
       base::android::ConvertUTF8ToJavaString(env,
-                                             version_info::GetVersionNumber())
-          .obj());
+                                             version_info::GetVersionNumber()));
 
   BlimpClientSession::OnAssignmentConnectionAttempted(result, assignment);
 }

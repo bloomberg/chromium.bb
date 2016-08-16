@@ -36,12 +36,12 @@ ExternalVideoSurfaceContainerImpl::ExternalVideoSurfaceContainerImpl(
     base::android::ScopedJavaLocalRef<jobject> java_content_view_core) {
   JNIEnv* env = AttachCurrentThread();
   jobject_.Reset(Java_ExternalVideoSurfaceContainer_create(
-      env, reinterpret_cast<intptr_t>(this), java_content_view_core.obj()));
+      env, reinterpret_cast<intptr_t>(this), java_content_view_core));
 }
 
 ExternalVideoSurfaceContainerImpl::~ExternalVideoSurfaceContainerImpl() {
   JNIEnv* env = AttachCurrentThread();
-  Java_ExternalVideoSurfaceContainer_destroy(env, jobject_.obj());
+  Java_ExternalVideoSurfaceContainer_destroy(env, jobject_);
   jobject_.Reset();
 }
 
@@ -54,15 +54,14 @@ void ExternalVideoSurfaceContainerImpl::RequestExternalVideoSurface(
 
   JNIEnv* env = AttachCurrentThread();
   Java_ExternalVideoSurfaceContainer_requestExternalVideoSurface(
-      env, jobject_.obj(), static_cast<jint>(player_id));
+      env, jobject_, static_cast<jint>(player_id));
 }
 
 int ExternalVideoSurfaceContainerImpl::GetCurrentPlayerId() {
   JNIEnv* env = AttachCurrentThread();
 
   int current_player = static_cast<int>(
-      Java_ExternalVideoSurfaceContainer_getCurrentPlayerId(
-          env, jobject_.obj()));
+      Java_ExternalVideoSurfaceContainer_getCurrentPlayerId(env, jobject_));
 
   if (current_player < 0)
     return kInvalidPlayerId;
@@ -74,7 +73,7 @@ void ExternalVideoSurfaceContainerImpl::ReleaseExternalVideoSurface(
     int player_id) {
   JNIEnv* env = AttachCurrentThread();
   Java_ExternalVideoSurfaceContainer_releaseExternalVideoSurface(
-      env, jobject_.obj(), static_cast<jint>(player_id));
+      env, jobject_, static_cast<jint>(player_id));
 
   surface_created_cb_.Reset();
   surface_destroyed_cb_.Reset();
@@ -82,18 +81,15 @@ void ExternalVideoSurfaceContainerImpl::ReleaseExternalVideoSurface(
 
 void ExternalVideoSurfaceContainerImpl::OnFrameInfoUpdated() {
   JNIEnv* env = AttachCurrentThread();
-  Java_ExternalVideoSurfaceContainer_onFrameInfoUpdated(env, jobject_.obj());
+  Java_ExternalVideoSurfaceContainer_onFrameInfoUpdated(env, jobject_);
 }
 
 void ExternalVideoSurfaceContainerImpl::OnExternalVideoSurfacePositionChanged(
     int player_id, const gfx::RectF& rect) {
   JNIEnv* env = AttachCurrentThread();
   Java_ExternalVideoSurfaceContainer_onExternalVideoSurfacePositionChanged(
-      env,
-      jobject_.obj(),
-      static_cast<jint>(player_id),
-      static_cast<jfloat>(rect.x()),
-      static_cast<jfloat>(rect.y()),
+      env, jobject_, static_cast<jint>(player_id),
+      static_cast<jfloat>(rect.x()), static_cast<jfloat>(rect.y()),
       static_cast<jfloat>(rect.x() + rect.width()),
       static_cast<jfloat>(rect.y() + rect.height()));
 }

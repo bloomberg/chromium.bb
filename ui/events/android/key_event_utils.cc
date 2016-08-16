@@ -19,8 +19,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateKeyEvent(JNIEnv* env,
 int GetKeyEventUnicodeChar(JNIEnv* env,
                            const base::android::JavaRef<jobject>& event,
                            int meta_state) {
-  return static_cast<int>(JNI_KeyEvent::Java_KeyEvent_getUnicodeCharI_I(
-      env, event.obj(), meta_state));
+  return static_cast<int>(
+      JNI_KeyEvent::Java_KeyEvent_getUnicodeCharI_I(env, event, meta_state));
 }
 
 }  // namespace android

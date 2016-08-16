@@ -85,7 +85,7 @@ void AvatarFetcherAndroid::OnFetchComplete(const GURL& url,
     base::android::ScopedJavaLocalRef<jobject> java_bitmap =
         gfx::ConvertToJavaBitmap(bitmap);
     Java_AccountChooserDialog_imageFetchComplete(
-        AttachCurrentThread(), java_dialog_.obj(), index_, java_bitmap.obj());
+        AttachCurrentThread(), java_dialog_, index_, java_bitmap);
   }
   delete this;
 }
@@ -157,12 +157,12 @@ void AccountChooserDialogAndroid::ShowDialog() {
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN);
   }
   dialog_jobject_.Reset(Java_AccountChooserDialog_createAndShowAccountChooser(
-      env, native_window->GetJavaObject().obj(),
-      reinterpret_cast<intptr_t>(this), java_credentials_array.obj(),
-      base::android::ConvertUTF16ToJavaString(env, title).obj(),
+      env, native_window->GetJavaObject(), reinterpret_cast<intptr_t>(this),
+      java_credentials_array,
+      base::android::ConvertUTF16ToJavaString(env, title),
       title_link_range.start(), title_link_range.end(),
-      base::android::ConvertUTF8ToJavaString(env, origin).obj(),
-      base::android::ConvertUTF16ToJavaString(env, signin_button).obj()));
+      base::android::ConvertUTF8ToJavaString(env, origin),
+      base::android::ConvertUTF16ToJavaString(env, signin_button)));
   net::URLRequestContextGetter* request_context =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext())
           ->GetRequestContext();
@@ -205,7 +205,7 @@ void AccountChooserDialogAndroid::OnLinkClicked(
 
 void AccountChooserDialogAndroid::WebContentsDestroyed() {
   JNIEnv* env = AttachCurrentThread();
-  Java_AccountChooserDialog_dismissDialog(env, dialog_jobject_.obj());
+  Java_AccountChooserDialog_dismissDialog(env, dialog_jobject_);
 }
 
 void AccountChooserDialogAndroid::WasHidden() {
@@ -213,7 +213,7 @@ void AccountChooserDialogAndroid::WasHidden() {
   // gone.
   OnDialogCancel();
   JNIEnv* env = AttachCurrentThread();
-  Java_AccountChooserDialog_dismissDialog(env, dialog_jobject_.obj());
+  Java_AccountChooserDialog_dismissDialog(env, dialog_jobject_);
 }
 
 void AccountChooserDialogAndroid::OnDialogCancel() {

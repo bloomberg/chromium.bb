@@ -140,7 +140,7 @@ base::android::ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetCategoryInfo(
   if (!info)
     return base::android::ScopedJavaLocalRef<jobject>(env, nullptr);
   return Java_SnippetsBridge_createSuggestionsCategoryInfo(
-      env, ConvertUTF16ToJavaString(env, info->title()).obj(),
+      env, ConvertUTF16ToJavaString(env, info->title()),
       static_cast<int>(info->card_layout()), info->has_more_button());
 }
 
@@ -163,12 +163,12 @@ ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
       Java_SnippetsBridge_createSuggestionList(env);
   for (const ContentSuggestion& suggestion : suggestions) {
     Java_SnippetsBridge_addSuggestion(
-        env, result.obj(), ConvertUTF8ToJavaString(env, suggestion.id()).obj(),
-        ConvertUTF16ToJavaString(env, suggestion.title()).obj(),
-        ConvertUTF16ToJavaString(env, suggestion.publisher_name()).obj(),
-        ConvertUTF16ToJavaString(env, suggestion.snippet_text()).obj(),
-        ConvertUTF8ToJavaString(env, suggestion.url().spec()).obj(),
-        ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()).obj(),
+        env, result, ConvertUTF8ToJavaString(env, suggestion.id()),
+        ConvertUTF16ToJavaString(env, suggestion.title()),
+        ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
+        ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
+        ConvertUTF8ToJavaString(env, suggestion.url().spec()),
+        ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()),
         suggestion.publish_date().ToJavaTime(), suggestion.score(),
         static_cast<int>(info->card_layout()));
   }
@@ -213,7 +213,7 @@ void NTPSnippetsBridge::OnNewSuggestions(Category category) {
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SnippetsBridge_onNewSuggestions(env, observer_.obj(),
+  Java_SnippetsBridge_onNewSuggestions(env, observer_,
                                        static_cast<int>(category.id()));
 }
 
@@ -223,7 +223,7 @@ void NTPSnippetsBridge::OnCategoryStatusChanged(Category category,
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SnippetsBridge_onCategoryStatusChanged(env, observer_.obj(),
+  Java_SnippetsBridge_onCategoryStatusChanged(env, observer_,
                                               static_cast<int>(category.id()),
                                               static_cast<int>(new_status));
 }

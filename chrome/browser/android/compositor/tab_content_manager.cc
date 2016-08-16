@@ -199,8 +199,7 @@ void TabContentManager::OnFinishDecompressThumbnail(int tab_id,
     java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
 
   Java_TabContentManager_notifyDecompressBitmapFinished(
-      env, weak_java_tab_content_manager_.get(env).obj(), tab_id,
-      java_bitmap.obj());
+      env, weak_java_tab_content_manager_.get(env), tab_id, java_bitmap);
 }
 
 jboolean TabContentManager::HasFullCachedThumbnail(
@@ -311,7 +310,7 @@ void TabContentManager::OnUIResourcesWereEvicted() {
 void TabContentManager::OnFinishedThumbnailRead(int tab_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_TabContentManager_notifyListenersOfThumbnailChange(
-      env, weak_java_tab_content_manager_.get(env).obj(), tab_id);
+      env, weak_java_tab_content_manager_.get(env), tab_id);
 }
 
 void TabContentManager::PutThumbnailIntoCache(int tab_id,

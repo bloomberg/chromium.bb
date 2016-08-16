@@ -133,10 +133,10 @@ void MostVisitedSitesBridge::JavaObserver::OnMostVisitedURLsAvailable(
     sources.emplace_back(static_cast<int>(tile.source));
   }
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
-      env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
-      ToJavaArrayOfStrings(env, urls).obj(),
-      ToJavaArrayOfStrings(env, whitelist_icon_paths).obj(),
-      ToJavaIntArray(env, sources).obj());
+      env, observer_, ToJavaArrayOfStrings(env, titles),
+      ToJavaArrayOfStrings(env, urls),
+      ToJavaArrayOfStrings(env, whitelist_icon_paths),
+      ToJavaIntArray(env, sources));
 }
 
 void MostVisitedSitesBridge::JavaObserver::OnPopularURLsAvailable(
@@ -151,9 +151,9 @@ void MostVisitedSitesBridge::JavaObserver::OnPopularURLsAvailable(
     large_icon_urls.emplace_back(site.large_icon_url.spec());
   }
   Java_MostVisitedURLsObserver_onPopularURLsAvailable(
-      env, observer_.obj(), ToJavaArrayOfStrings(env, urls).obj(),
-      ToJavaArrayOfStrings(env, favicon_urls).obj(),
-      ToJavaArrayOfStrings(env, large_icon_urls).obj());
+      env, observer_, ToJavaArrayOfStrings(env, urls),
+      ToJavaArrayOfStrings(env, favicon_urls),
+      ToJavaArrayOfStrings(env, large_icon_urls));
 }
 
 MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)

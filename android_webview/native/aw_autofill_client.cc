@@ -134,8 +134,7 @@ void AwAutofillClient::ShowAutofillPopupImpl(
     ScopedJavaLocalRef<jstring> label =
         ConvertUTF16ToJavaString(env, suggestions[i].label);
     Java_AwAutofillClient_addToAutofillSuggestionArray(
-        env, data_array.obj(), i, name.obj(), label.obj(),
-        suggestions[i].frontend_id);
+        env, data_array, i, name, label, suggestions[i].frontend_id);
   }
   ui::ViewAndroid* view_android = web_contents_->GetNativeView();
   if (!view_android)
@@ -150,11 +149,7 @@ void AwAutofillClient::ShowAutofillPopupImpl(
     return;
 
   view_android->SetAnchorRect(view, element_bounds);
-  Java_AwAutofillClient_showAutofillPopup(env,
-                                          obj.obj(),
-                                          view.obj(),
-                                          is_rtl,
-                                          data_array.obj());
+  Java_AwAutofillClient_showAutofillPopup(env, obj, view, is_rtl, data_array);
 }
 
 void AwAutofillClient::UpdateAutofillPopupDataListValues(
@@ -171,7 +166,7 @@ void AwAutofillClient::HideAutofillPopup() {
   if (obj.is_null())
     return;
   delegate_.reset();
-  Java_AwAutofillClient_hideAutofillPopup(env, obj.obj());
+  Java_AwAutofillClient_hideAutofillPopup(env, obj);
 }
 
 bool AwAutofillClient::IsAutocompleteEnabled() {

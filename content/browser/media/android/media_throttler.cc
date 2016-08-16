@@ -19,18 +19,17 @@ MediaThrottler::~MediaThrottler() {}
 
 bool MediaThrottler::RequestDecoderResources() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_MediaThrottler_requestDecoderResources(
-      env, j_media_throttler_.obj());
+  return Java_MediaThrottler_requestDecoderResources(env, j_media_throttler_);
 }
 
 void MediaThrottler::OnDecodeRequestFinished() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_MediaThrottler_onDecodeRequestFinished(env, j_media_throttler_.obj());
+  Java_MediaThrottler_onDecodeRequestFinished(env, j_media_throttler_);
 }
 
 void MediaThrottler::Reset() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_MediaThrottler_reset(env, j_media_throttler_.obj());
+  Java_MediaThrottler_reset(env, j_media_throttler_);
 }
 
 MediaThrottler::MediaThrottler() {

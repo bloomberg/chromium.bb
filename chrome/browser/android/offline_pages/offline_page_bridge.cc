@@ -50,12 +50,12 @@ void ToJavaOfflinePageList(JNIEnv* env,
   for (const OfflinePageItem& offline_page : offline_pages) {
     Java_OfflinePageBridge_createOfflinePageAndAddToList(
         env, j_result_obj,
-        ConvertUTF8ToJavaString(env, offline_page.url.spec()).obj(),
+        ConvertUTF8ToJavaString(env, offline_page.url.spec()),
         offline_page.offline_id,
-        ConvertUTF8ToJavaString(env, offline_page.client_id.name_space).obj(),
-        ConvertUTF8ToJavaString(env, offline_page.client_id.id).obj(),
-        ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
-        ConvertUTF8ToJavaString(env, offline_page.file_path.value()).obj(),
+        ConvertUTF8ToJavaString(env, offline_page.client_id.name_space),
+        ConvertUTF8ToJavaString(env, offline_page.client_id.id),
+        ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()),
+        ConvertUTF8ToJavaString(env, offline_page.file_path.value()),
         offline_page.file_size, offline_page.creation_time.ToJavaTime(),
         offline_page.access_count, offline_page.last_access_time.ToJavaTime());
   }
@@ -65,12 +65,12 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageItem(
     JNIEnv* env,
     const OfflinePageItem& offline_page) {
   return Java_OfflinePageBridge_createOfflinePageItem(
-      env, ConvertUTF8ToJavaString(env, offline_page.url.spec()).obj(),
+      env, ConvertUTF8ToJavaString(env, offline_page.url.spec()),
       offline_page.offline_id,
-      ConvertUTF8ToJavaString(env, offline_page.client_id.name_space).obj(),
-      ConvertUTF8ToJavaString(env, offline_page.client_id.id).obj(),
-      ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
-      ConvertUTF8ToJavaString(env, offline_page.file_path.value()).obj(),
+      ConvertUTF8ToJavaString(env, offline_page.client_id.name_space),
+      ConvertUTF8ToJavaString(env, offline_page.client_id.id),
+      ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()),
+      ConvertUTF8ToJavaString(env, offline_page.file_path.value()),
       offline_page.file_size, offline_page.creation_time.ToJavaTime(),
       offline_page.access_count, offline_page.last_access_time.ToJavaTime());
 }
@@ -88,8 +88,8 @@ void CheckPagesExistOfflineCallback(
       base::android::ToJavaArrayOfStrings(env, offline_pages_vector);
   DCHECK(j_result_array.obj());
 
-  Java_CheckPagesExistOfflineCallbackInternal_onResult(
-      env, j_callback_obj.obj(), j_result_array.obj());
+  Java_CheckPagesExistOfflineCallbackInternal_onResult(env, j_callback_obj,
+                                                       j_result_array);
 }
 
 void GetAllPagesCallback(
@@ -113,8 +113,8 @@ void SavePageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
   JNIEnv* env = base::android::AttachCurrentThread();
 
   Java_SavePageCallback_onSavePageDone(
-      env, j_callback_obj.obj(), static_cast<int>(result),
-      ConvertUTF8ToJavaString(env, url.spec()).obj(), offline_id);
+      env, j_callback_obj, static_cast<int>(result),
+      ConvertUTF8ToJavaString(env, url.spec()), offline_id);
 }
 
 void DeletePageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
@@ -208,7 +208,7 @@ OfflinePageBridge::~OfflinePageBridge() {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // Native shutdown causes the destruction of |this|.
-  Java_OfflinePageBridge_offlinePageBridgeDestroyed(env, java_ref_.obj());
+  Java_OfflinePageBridge_offlinePageBridgeDestroyed(env, java_ref_);
 }
 
 void OfflinePageBridge::OfflinePageModelLoaded(OfflinePageModel* model) {
@@ -219,14 +219,14 @@ void OfflinePageBridge::OfflinePageModelLoaded(OfflinePageModel* model) {
 void OfflinePageBridge::OfflinePageModelChanged(OfflinePageModel* model) {
   DCHECK_EQ(offline_page_model_, model);
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_OfflinePageBridge_offlinePageModelChanged(env, java_ref_.obj());
+  Java_OfflinePageBridge_offlinePageModelChanged(env, java_ref_);
 }
 
 void OfflinePageBridge::OfflinePageDeleted(int64_t offline_id,
                                            const ClientId& client_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_OfflinePageBridge_offlinePageDeleted(
-      env, java_ref_.obj(), offline_id, CreateClientId(env, client_id).obj());
+  Java_OfflinePageBridge_offlinePageDeleted(env, java_ref_, offline_id,
+                                            CreateClientId(env, client_id));
 }
 
 void OfflinePageBridge::HasPages(JNIEnv* env,
@@ -419,7 +419,7 @@ void OfflinePageBridge::NotifyIfDoneLoading() const {
   if (!offline_page_model_->is_loaded())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_OfflinePageBridge_offlinePageModelLoaded(env, java_ref_.obj());
+  Java_OfflinePageBridge_offlinePageModelLoaded(env, java_ref_);
 }
 
 
@@ -427,9 +427,8 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::CreateClientId(
     JNIEnv* env,
     const ClientId& client_id) const {
   return Java_OfflinePageBridge_createClientId(
-      env,
-      ConvertUTF8ToJavaString(env, client_id.name_space).obj(),
-      ConvertUTF8ToJavaString(env, client_id.id).obj());
+      env, ConvertUTF8ToJavaString(env, client_id.name_space),
+      ConvertUTF8ToJavaString(env, client_id.id));
 }
 
 bool RegisterOfflinePageBridge(JNIEnv* env) {

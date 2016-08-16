@@ -62,7 +62,7 @@ void BackgroundSchedulerBridge::Schedule(
       CreateTriggerConditions(env, trigger_conditions.require_power_connected,
                               trigger_conditions.minimum_battery_percentage,
                               trigger_conditions.require_unmetered_network);
-  Java_BackgroundSchedulerBridge_schedule(env, j_conditions.obj());
+  Java_BackgroundSchedulerBridge_schedule(env, j_conditions);
 }
 
 void BackgroundSchedulerBridge::Unschedule() {

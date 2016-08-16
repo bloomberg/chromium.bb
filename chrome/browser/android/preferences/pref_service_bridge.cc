@@ -194,12 +194,9 @@ static void GetContentSettingsExceptions(JNIEnv* env,
       static_cast<ContentSettingsType>(content_settings_type), "", &entries);
   for (size_t i = 0; i < entries.size(); ++i) {
     Java_PrefServiceBridge_addContentSettingExceptionToList(
-        env, list,
-        content_settings_type,
-        ConvertUTF8ToJavaString(
-            env, entries[i].primary_pattern.ToString()).obj(),
-        entries[i].setting,
-        ConvertUTF8ToJavaString(env, entries[i].source).obj());
+        env, list, content_settings_type,
+        ConvertUTF8ToJavaString(env, entries[i].primary_pattern.ToString()),
+        entries[i].setting, ConvertUTF8ToJavaString(env, entries[i].source));
   }
 }
 
@@ -543,7 +540,7 @@ class ClearBrowsingDataObserver : public BrowsingDataRemover::Observer {
       return;
 
     Java_PrefServiceBridge_browsingDataCleared(
-        env, weak_chrome_native_preferences_.get(env).obj());
+        env, weak_chrome_native_preferences_.get(env));
   }
 
  private:
@@ -647,8 +644,8 @@ static void ClearBrowsingData(
     }
   }
   std::vector<std::string> excluding_domains;
-  base::android::AppendJavaStringArrayToStringVector(
-      env, jexcluding_domains.obj(), &excluding_domains);
+  base::android::AppendJavaStringArrayToStringVector(env, jexcluding_domains,
+                                                     &excluding_domains);
   std::unique_ptr<RegistrableDomainFilterBuilder> filter_builder(
       new RegistrableDomainFilterBuilder(BrowsingDataFilterBuilder::BLACKLIST));
   for (const std::string& domain : excluding_domains) {
@@ -719,7 +716,7 @@ static void FetchImportantSites(JNIEnv* env,
       base::android::ToJavaArrayOfStrings(env, important_domains);
 
   Java_ImportantSitesCallback_onImportantRegisterableDomainsReady(
-      env, java_callback.obj(), java_domains.obj(), java_origins.obj());
+      env, java_callback, java_domains, java_origins);
 }
 
 // This value should not change during a sessions, as it's used for UMA metrics.
@@ -1089,8 +1086,8 @@ static ScopedJavaLocalRef<jobject> GetAboutVersionStrings(
   application.append(version_info::GetVersionNumber());
 
   return Java_PrefServiceBridge_createAboutVersionStrings(
-      env, ConvertUTF8ToJavaString(env, application).obj(),
-      ConvertUTF8ToJavaString(env, os_version).obj());
+      env, ConvertUTF8ToJavaString(env, application),
+      ConvertUTF8ToJavaString(env, os_version));
 }
 
 static ScopedJavaLocalRef<jstring> GetSupervisedUserCustodianName(

@@ -92,8 +92,8 @@ void NestedMessagePumpAndroid::Run(Delegate* delegate) {
     // No native tasks to process right now. Process tasks from the Java
     // System message handler. This will return when the java message queue
     // is idle.
-    bool ret = Java_NestedSystemMessageHandler_runNestedLoopTillIdle(env,
-        g_message_handler_obj.Get().obj());
+    bool ret = Java_NestedSystemMessageHandler_runNestedLoopTillIdle(
+        env, g_message_handler_obj.Get());
     CHECK(ret) << "Error running java message loop, tests will likely fail.";
 
     base::ThreadRestrictions::ScopedAllowWait allow_wait;

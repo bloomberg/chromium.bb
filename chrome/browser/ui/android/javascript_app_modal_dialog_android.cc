@@ -59,29 +59,27 @@ void JavascriptAppModalDialogAndroid::ShowAppModalDialog() {
 
   switch (dialog_->javascript_message_type()) {
     case content::JAVASCRIPT_MESSAGE_TYPE_ALERT: {
-      dialog_object = Java_JavascriptAppModalDialog_createAlertDialog(env,
-          title.obj(), message.obj(),
-          dialog_->display_suppress_checkbox());
+      dialog_object = Java_JavascriptAppModalDialog_createAlertDialog(
+          env, title, message, dialog_->display_suppress_checkbox());
       break;
     }
     case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM: {
       if (dialog_->is_before_unload_dialog()) {
         dialog_object = Java_JavascriptAppModalDialog_createBeforeUnloadDialog(
-            env, title.obj(), message.obj(), dialog_->is_reload(),
+            env, title, message, dialog_->is_reload(),
             dialog_->display_suppress_checkbox());
       } else {
-        dialog_object = Java_JavascriptAppModalDialog_createConfirmDialog(env,
-            title.obj(), message.obj(),
-            dialog_->display_suppress_checkbox());
+        dialog_object = Java_JavascriptAppModalDialog_createConfirmDialog(
+            env, title, message, dialog_->display_suppress_checkbox());
       }
       break;
     }
     case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT: {
       ScopedJavaLocalRef<jstring> default_prompt_text =
           ConvertUTF16ToJavaString(env, dialog_->default_prompt_text());
-      dialog_object = Java_JavascriptAppModalDialog_createPromptDialog(env,
-          title.obj(), message.obj(),
-          dialog_->display_suppress_checkbox(), default_prompt_text.obj());
+      dialog_object = Java_JavascriptAppModalDialog_createPromptDialog(
+          env, title, message, dialog_->display_suppress_checkbox(),
+          default_prompt_text);
       break;
     }
     default:
@@ -91,9 +89,8 @@ void JavascriptAppModalDialogAndroid::ShowAppModalDialog() {
   // Keep a ref to the java side object until we get a confirm or cancel.
   dialog_jobject_.Reset(dialog_object);
 
-  Java_JavascriptAppModalDialog_showJavascriptAppModalDialog(env,
-      dialog_object.obj(), parent_jobj.obj(),
-      reinterpret_cast<intptr_t>(this));
+  Java_JavascriptAppModalDialog_showJavascriptAppModalDialog(
+      env, dialog_object, parent_jobj, reinterpret_cast<intptr_t>(this));
 }
 
 void JavascriptAppModalDialogAndroid::ActivateAppModalDialog() {
@@ -169,7 +166,7 @@ JavascriptAppModalDialogAndroid::~JavascriptAppModalDialogAndroid() {
   // shown, and then accept the dialog.
   if (!dialog_jobject_.is_null()) {
     JNIEnv* env = AttachCurrentThread();
-    Java_JavascriptAppModalDialog_dismiss(env, dialog_jobject_.obj());
+    Java_JavascriptAppModalDialog_dismiss(env, dialog_jobject_);
   }
 }
 

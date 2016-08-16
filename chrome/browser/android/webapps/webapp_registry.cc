@@ -31,9 +31,7 @@ void WebappRegistry::UnregisterWebappsForUrls(
   UrlFilterBridge* filter_bridge = new UrlFilterBridge(url_filter);
 
   Java_WebappRegistry_unregisterWebappsForUrls(
-      env,
-      base::android::GetApplicationContext(),
-      filter_bridge->j_bridge().obj(),
+      env, base::android::GetApplicationContext(), filter_bridge->j_bridge(),
       callback_pointer);
 }
 

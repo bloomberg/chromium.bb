@@ -13,8 +13,8 @@ void JavaRuntime::GetMemoryUsage(long* total_memory, long* free_memory) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> runtime =
       JNI_Runtime::Java_Runtime_getRuntime(env);
-  *total_memory = JNI_Runtime::Java_Runtime_totalMemory(env, runtime.obj());
-  *free_memory = JNI_Runtime::Java_Runtime_freeMemory(env, runtime.obj());
+  *total_memory = JNI_Runtime::Java_Runtime_totalMemory(env, runtime);
+  *free_memory = JNI_Runtime::Java_Runtime_freeMemory(env, runtime);
 }
 
 }  // namespace android

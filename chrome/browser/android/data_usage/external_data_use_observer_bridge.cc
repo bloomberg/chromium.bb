@@ -52,8 +52,7 @@ ExternalDataUseObserverBridge::~ExternalDataUseObserverBridge() {
   if (j_external_data_use_observer_.is_null())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ExternalDataUseObserver_onDestroy(env,
-                                         j_external_data_use_observer_.obj());
+  Java_ExternalDataUseObserver_onDestroy(env, j_external_data_use_observer_);
 }
 
 void ExternalDataUseObserverBridge::Init(
@@ -79,8 +78,8 @@ void ExternalDataUseObserverBridge::Init(
   DCHECK(!j_external_data_use_observer_.is_null());
 
   Java_ExternalDataUseObserver_initControlAppManager(
-      env, j_external_data_use_observer_.obj(),
-      ConvertUTF8ToJavaString(env, GetControlAppPackageName()).obj());
+      env, j_external_data_use_observer_,
+      ConvertUTF8ToJavaString(env, GetControlAppPackageName()));
 }
 
 void ExternalDataUseObserverBridge::FetchMatchingRules() const {
@@ -88,7 +87,7 @@ void ExternalDataUseObserverBridge::FetchMatchingRules() const {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ExternalDataUseObserver_fetchMatchingRules(
-      env, j_external_data_use_observer_.obj());
+      env, j_external_data_use_observer_);
 }
 
 void ExternalDataUseObserverBridge::FetchMatchingRulesDone(
@@ -151,10 +150,9 @@ void ExternalDataUseObserverBridge::ReportDataUse(
     start_time_milliseconds = end_time_milliseconds - 1;
 
   Java_ExternalDataUseObserver_reportDataUse(
-      env, j_external_data_use_observer_.obj(),
-      ConvertUTF8ToJavaString(env, label).obj(),
-      ConvertUTF8ToJavaString(env, tag).obj(), connection_type,
-      ConvertUTF8ToJavaString(env, mcc_mnc).obj(), start_time_milliseconds,
+      env, j_external_data_use_observer_, ConvertUTF8ToJavaString(env, label),
+      ConvertUTF8ToJavaString(env, tag), connection_type,
+      ConvertUTF8ToJavaString(env, mcc_mnc), start_time_milliseconds,
       end_time_milliseconds, bytes_downloaded, bytes_uploaded);
 }
 

@@ -40,9 +40,9 @@ void ToJavaOfflinePageDownloadItemList(
     const std::vector<const DownloadUIItem*>& items) {
   for (const auto item : items) {
     Java_OfflinePageDownloadBridge_createDownloadItemAndAddToList(
-        env, j_result_obj, ConvertUTF8ToJavaString(env, item->guid).obj(),
-        ConvertUTF8ToJavaString(env, item->url.spec()).obj(),
-        ConvertUTF8ToJavaString(env, item->target_path.value()).obj(),
+        env, j_result_obj, ConvertUTF8ToJavaString(env, item->guid),
+        ConvertUTF8ToJavaString(env, item->url.spec()),
+        ConvertUTF8ToJavaString(env, item->target_path.value()),
         item->start_time.ToJavaTime(), item->total_bytes);
   }
 }
@@ -51,9 +51,9 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageDownloadItem(
     JNIEnv* env,
     const DownloadUIItem& item) {
   return Java_OfflinePageDownloadBridge_createDownloadItem(
-      env, ConvertUTF8ToJavaString(env, item.guid).obj(),
-      ConvertUTF8ToJavaString(env, item.url.spec()).obj(),
-      ConvertUTF8ToJavaString(env, item.target_path.value()).obj(),
+      env, ConvertUTF8ToJavaString(env, item.guid),
+      ConvertUTF8ToJavaString(env, item.url.spec()),
+      ConvertUTF8ToJavaString(env, item.target_path.value()),
       item.start_time.ToJavaTime(), item.total_bytes);
 }
 }  // namespace
@@ -158,7 +158,7 @@ void OfflinePageDownloadBridge::ItemsLoaded() {
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_OfflinePageDownloadBridge_downloadItemsLoaded(env, obj.obj());
+  Java_OfflinePageDownloadBridge_downloadItemsLoaded(env, obj);
 }
 
 void OfflinePageDownloadBridge::ItemAdded(const DownloadUIItem& item) {
@@ -167,7 +167,7 @@ void OfflinePageDownloadBridge::ItemAdded(const DownloadUIItem& item) {
   if (obj.is_null())
     return;
   Java_OfflinePageDownloadBridge_downloadItemAdded(
-      env, obj.obj(), ToJavaOfflinePageDownloadItem(env, item).obj());
+      env, obj, ToJavaOfflinePageDownloadItem(env, item));
 }
 
 void OfflinePageDownloadBridge::ItemDeleted(const std::string& guid) {
@@ -176,7 +176,7 @@ void OfflinePageDownloadBridge::ItemDeleted(const std::string& guid) {
   if (obj.is_null())
     return;
   Java_OfflinePageDownloadBridge_downloadItemDeleted(
-      env, obj.obj(), ConvertUTF8ToJavaString(env, guid).obj());
+      env, obj, ConvertUTF8ToJavaString(env, guid));
 }
 
 void OfflinePageDownloadBridge::ItemUpdated(const DownloadUIItem& item) {
@@ -185,7 +185,7 @@ void OfflinePageDownloadBridge::ItemUpdated(const DownloadUIItem& item) {
   if (obj.is_null())
     return;
   Java_OfflinePageDownloadBridge_downloadItemUpdated(
-      env, obj.obj(), ToJavaOfflinePageDownloadItem(env, item).obj());
+      env, obj, ToJavaOfflinePageDownloadItem(env, item));
 }
 
 void OfflinePageDownloadBridge::SavePageCallback(

@@ -98,7 +98,7 @@ bool SimpleConfirmInfoBarDelegate::ShouldExpire(
 
 void SimpleConfirmInfoBarDelegate::InfoBarDismissed() {
   Java_SimpleConfirmInfoBarBuilder_onInfoBarDismissed(
-      base::android::AttachCurrentThread(), java_listener_.obj());
+      base::android::AttachCurrentThread(), java_listener_);
 }
 
 base::string16 SimpleConfirmInfoBarDelegate::GetMessageText() const {
@@ -117,12 +117,12 @@ SimpleConfirmInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
 
 bool SimpleConfirmInfoBarDelegate::Accept() {
   return !Java_SimpleConfirmInfoBarBuilder_onInfoBarButtonClicked(
-      base::android::AttachCurrentThread(), java_listener_.obj(), true);
+      base::android::AttachCurrentThread(), java_listener_, true);
 }
 
 bool SimpleConfirmInfoBarDelegate::Cancel() {
   return !Java_SimpleConfirmInfoBarBuilder_onInfoBarButtonClicked(
-      base::android::AttachCurrentThread(), java_listener_.obj(), false);
+      base::android::AttachCurrentThread(), java_listener_, false);
 }
 
 }  // anonymous namespace

@@ -41,8 +41,8 @@ MediaMetadataAndroid::CreateJavaObject(
   ScopedJavaLocalRef<jstring> j_album(
       base::android::ConvertUTF16ToJavaString(env, metadata.album));
 
-  ScopedJavaLocalRef<jobject> j_metadata = Java_MediaMetadata_create(
-      env, j_title.obj(), j_artist.obj(), j_album.obj());
+  ScopedJavaLocalRef<jobject> j_metadata =
+      Java_MediaMetadata_create(env, j_title, j_artist, j_album);
 
   for (const auto& artwork : metadata.artwork) {
     std::string src = artwork.src.spec();
@@ -56,8 +56,8 @@ MediaMetadataAndroid::CreateJavaObject(
         base::android::ToJavaIntArray(
             env, GetFlattenedSizeArray(artwork.sizes)));
 
-    Java_MediaMetadata_createAndAddArtwork(
-        env, j_metadata.obj(), j_src.obj(), j_type.obj(), j_sizes.obj());
+    Java_MediaMetadata_createAndAddArtwork(env, j_metadata, j_src, j_type,
+                                           j_sizes);
   }
 
   return j_metadata;

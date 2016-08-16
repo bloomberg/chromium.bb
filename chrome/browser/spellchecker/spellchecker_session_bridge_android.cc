@@ -61,8 +61,7 @@ void SpellCheckerSessionBridge::RequestTextCheck(int route_id,
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SpellCheckerSessionBridge_requestTextCheck(
-      env, java_object_.obj(),
-      base::android::ConvertUTF16ToJavaString(env, text).obj());
+      env, java_object_, base::android::ConvertUTF16ToJavaString(env, text));
 }
 
 void SpellCheckerSessionBridge::ProcessSpellCheckResults(
@@ -95,9 +94,8 @@ void SpellCheckerSessionBridge::ProcessSpellCheckResults(
   if (active_request_) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_SpellCheckerSessionBridge_requestTextCheck(
-        env, java_object_.obj(),
-        base::android::ConvertUTF16ToJavaString(env, active_request_->text)
-            .obj());
+        env, java_object_,
+        base::android::ConvertUTF16ToJavaString(env, active_request_->text));
   }
 }
 

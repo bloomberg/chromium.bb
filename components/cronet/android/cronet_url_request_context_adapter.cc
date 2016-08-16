@@ -711,8 +711,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   jcronet_url_request_context_.Reset(env, jcronet_url_request_context.obj());
-  Java_CronetUrlRequestContext_initNetworkThread(
-      env, jcronet_url_request_context.obj());
+  Java_CronetUrlRequestContext_initNetworkThread(env,
+                                                 jcronet_url_request_context);
 
 #if defined(DATA_REDUCTION_PROXY_SUPPORT)
   if (data_reduction_proxy_)
@@ -872,7 +872,7 @@ void CronetURLRequestContextAdapter::OnRTTObservation(
     const base::TimeTicks& timestamp,
     net::NetworkQualityObservationSource source) {
   Java_CronetUrlRequestContext_onRttObservation(
-      base::android::AttachCurrentThread(), jcronet_url_request_context_.obj(),
+      base::android::AttachCurrentThread(), jcronet_url_request_context_,
       rtt_ms, (timestamp - base::TimeTicks::UnixEpoch()).InMilliseconds(),
       source);
 }
@@ -882,7 +882,7 @@ void CronetURLRequestContextAdapter::OnThroughputObservation(
     const base::TimeTicks& timestamp,
     net::NetworkQualityObservationSource source) {
   Java_CronetUrlRequestContext_onThroughputObservation(
-      base::android::AttachCurrentThread(), jcronet_url_request_context_.obj(),
+      base::android::AttachCurrentThread(), jcronet_url_request_context_,
       throughput_kbps,
       (timestamp - base::TimeTicks::UnixEpoch()).InMilliseconds(), source);
 }

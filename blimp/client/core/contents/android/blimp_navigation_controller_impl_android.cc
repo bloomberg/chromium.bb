@@ -46,7 +46,7 @@ BlimpNavigationControllerImplAndroid::BlimpNavigationControllerImplAndroid(
 
 BlimpNavigationControllerImplAndroid::~BlimpNavigationControllerImplAndroid() {
   Java_BlimpNavigationControllerImpl_clearNativePtr(
-      base::android::AttachCurrentThread(), java_obj_.obj());
+      base::android::AttachCurrentThread(), java_obj_);
 }
 
 void BlimpNavigationControllerImplAndroid::LoadURL(

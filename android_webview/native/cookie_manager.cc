@@ -79,8 +79,7 @@ class BoolCookieCallbackHolder {
   void Invoke(bool result) {
     if (!callback_.is_null()) {
       JNIEnv* env = base::android::AttachCurrentThread();
-      Java_AwCookieManager_invokeBooleanCookieCallback(env, callback_.obj(),
-                                                       result);
+      Java_AwCookieManager_invokeBooleanCookieCallback(env, callback_, result);
     }
   }
 

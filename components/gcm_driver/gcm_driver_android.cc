@@ -38,7 +38,7 @@ namespace gcm {
 
 GCMDriverAndroid::~GCMDriverAndroid() {
   JNIEnv* env = AttachCurrentThread();
-  Java_GCMDriver_destroy(env, java_ref_.obj());
+  Java_GCMDriver_destroy(env, java_ref_);
 }
 
 void GCMDriverAndroid::OnRegisterFinished(
@@ -233,9 +233,8 @@ void GCMDriverAndroid::RegisterImpl(
 
   recorder_.RecordRegistrationSent(app_id);
 
-  Java_GCMDriver_register(env, java_ref_.obj(),
-                          ConvertUTF8ToJavaString(env, app_id).obj(),
-                          ConvertUTF8ToJavaString(env, sender_ids[0]).obj());
+  Java_GCMDriver_register(env, java_ref_, ConvertUTF8ToJavaString(env, app_id),
+                          ConvertUTF8ToJavaString(env, sender_ids[0]));
 }
 
 void GCMDriverAndroid::UnregisterImpl(const std::string& app_id) {
@@ -249,9 +248,9 @@ void GCMDriverAndroid::UnregisterWithSenderIdImpl(
 
   recorder_.RecordUnregistrationSent(app_id);
 
-  Java_GCMDriver_unregister(env, java_ref_.obj(),
-                            ConvertUTF8ToJavaString(env, app_id).obj(),
-                            ConvertUTF8ToJavaString(env, sender_id).obj());
+  Java_GCMDriver_unregister(env, java_ref_,
+                            ConvertUTF8ToJavaString(env, app_id),
+                            ConvertUTF8ToJavaString(env, sender_id));
 }
 
 void GCMDriverAndroid::SendImpl(const std::string& app_id,

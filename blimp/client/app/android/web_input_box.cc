@@ -50,13 +50,13 @@ void WebInputBox::OnShowImeRequested(ui::TextInputType input_type,
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK_NE(ui::TEXT_INPUT_TYPE_NONE, input_type);
   Java_WebInputBox_onShowImeRequested(
-      env, java_obj_.obj(), input_type,
-      base::android::ConvertUTF8ToJavaString(env, text).obj());
+      env, java_obj_, input_type,
+      base::android::ConvertUTF8ToJavaString(env, text));
 }
 
 void WebInputBox::OnHideImeRequested() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_WebInputBox_onHideImeRequested(env, java_obj_.obj());
+  Java_WebInputBox_onHideImeRequested(env, java_obj_);
 }
 
 void WebInputBox::OnImeTextEntered(JNIEnv* env,

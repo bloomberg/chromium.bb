@@ -30,7 +30,7 @@ ScopedJavaSurface::ScopedJavaSurface(
       is_protected_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> tmp(JNI_Surface::Java_Surface_Constructor(
-      env, surface_texture->j_surface_texture().obj()));
+      env, surface_texture->j_surface_texture()));
   DCHECK(!tmp.is_null());
   j_surface_.Reset(tmp);
 }
@@ -47,7 +47,7 @@ ScopedJavaSurface& ScopedJavaSurface::operator=(ScopedJavaSurface&& rhs) {
 ScopedJavaSurface::~ScopedJavaSurface() {
   if (auto_release_ && !j_surface_.is_null()) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    JNI_Surface::Java_Surface_release(env, j_surface_.obj());
+    JNI_Surface::Java_Surface_release(env, j_surface_);
   }
 }
 

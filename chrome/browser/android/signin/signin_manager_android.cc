@@ -141,8 +141,7 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
   // This shouldn't be called when ShouldLoadPolicyForUser() is false, or when
   // CheckPolicyBeforeSignIn() failed.
   NOTREACHED();
-  Java_SigninManager_onPolicyFetchedBeforeSignIn(env,
-                                                 java_signin_manager_.obj());
+  Java_SigninManager_onPolicyFetchedBeforeSignIn(env, java_signin_manager_);
 }
 
 void SigninManagerAndroid::AbortSignIn(
@@ -217,15 +216,13 @@ void SigninManagerAndroid::OnPolicyRegisterDone(
     username_.clear();
   }
 
-  Java_SigninManager_onPolicyCheckedBeforeSignIn(env,
-                                                 java_signin_manager_.obj(),
-                                                 domain.obj());
+  Java_SigninManager_onPolicyCheckedBeforeSignIn(env, java_signin_manager_,
+                                                 domain);
 }
 
 void SigninManagerAndroid::OnPolicyFetchDone(bool success) {
   Java_SigninManager_onPolicyFetchedBeforeSignIn(
-      base::android::AttachCurrentThread(),
-      java_signin_manager_.obj());
+      base::android::AttachCurrentThread(), java_signin_manager_);
 }
 
 void SigninManagerAndroid::OnBrowsingDataRemoverDone(
@@ -238,8 +235,7 @@ void SigninManagerAndroid::OnBrowsingDataRemoverDone(
   ClearLastSignedInUser();
 
   Java_SigninManager_onProfileDataWiped(base::android::AttachCurrentThread(),
-                                        java_signin_manager_.obj(),
-                                        callback.obj());
+                                        java_signin_manager_, callback);
 }
 
 void SigninManagerAndroid::ClearLastSignedInUser(
@@ -290,12 +286,12 @@ void SigninManagerAndroid::GoogleSignedOut(const std::string& account_id,
                                            const std::string& username) {
   DCHECK(thread_checker_.CalledOnValidThread());
   Java_SigninManager_onNativeSignOut(base::android::AttachCurrentThread(),
-                                     java_signin_manager_.obj());
+                                     java_signin_manager_);
 }
 
 void SigninManagerAndroid::OnSigninAllowedPrefChanged() {
   Java_SigninManager_onSigninAllowedByPolicyChanged(
-      base::android::AttachCurrentThread(), java_signin_manager_.obj(),
+      base::android::AttachCurrentThread(), java_signin_manager_,
       SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed());
 }
 

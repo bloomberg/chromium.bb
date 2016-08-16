@@ -76,7 +76,7 @@ bool AndroidLocationApiAdapter::Start(
   // We'll start receiving notifications from java in the main thread looper
   // until Stop() is called.
   return Java_LocationProviderAdapter_start(
-      env, java_location_provider_android_object_.obj(), high_accuracy);
+      env, java_location_provider_android_object_, high_accuracy);
 }
 
 void AndroidLocationApiAdapter::Stop() {
@@ -94,8 +94,8 @@ void AndroidLocationApiAdapter::Stop() {
   location_provider_ = NULL;
 
   JNIEnv* env = AttachCurrentThread();
-  Java_LocationProviderAdapter_stop(
-      env, java_location_provider_android_object_.obj());
+  Java_LocationProviderAdapter_stop(env,
+                                    java_location_provider_android_object_);
   java_location_provider_android_object_.Reset();
 }
 

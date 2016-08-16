@@ -37,10 +37,10 @@ SavePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
           env, save_password_delegate->GetFirstRunExperienceMessage());
 
   return Java_SavePasswordInfoBar_show(
-      env, GetEnumeratedIconId(), message_text.obj(),
+      env, GetEnumeratedIconId(), message_text,
       save_password_delegate->message_link_range().start(),
-      save_password_delegate->message_link_range().end(), ok_button_text.obj(),
-      cancel_button_text.obj(), first_run_experience_message.obj());
+      save_password_delegate->message_link_range().end(), ok_button_text,
+      cancel_button_text, first_run_experience_message);
 }
 
 void SavePasswordInfoBar::OnLinkClicked(JNIEnv* env,

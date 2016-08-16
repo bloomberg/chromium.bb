@@ -64,12 +64,12 @@ bool BluetoothAdapterAndroid::RegisterJNI(JNIEnv* env) {
 
 std::string BluetoothAdapterAndroid::GetAddress() const {
   return ConvertJavaStringToUTF8(Java_ChromeBluetoothAdapter_getAddress(
-      AttachCurrentThread(), j_adapter_.obj()));
+      AttachCurrentThread(), j_adapter_));
 }
 
 std::string BluetoothAdapterAndroid::GetName() const {
-  return ConvertJavaStringToUTF8(Java_ChromeBluetoothAdapter_getName(
-      AttachCurrentThread(), j_adapter_.obj()));
+  return ConvertJavaStringToUTF8(
+      Java_ChromeBluetoothAdapter_getName(AttachCurrentThread(), j_adapter_));
 }
 
 void BluetoothAdapterAndroid::SetName(const std::string& name,
@@ -84,19 +84,19 @@ bool BluetoothAdapterAndroid::IsInitialized() const {
 
 bool BluetoothAdapterAndroid::IsPresent() const {
   return Java_ChromeBluetoothAdapter_isPresent(AttachCurrentThread(),
-                                               j_adapter_.obj());
+                                               j_adapter_);
 }
 
 bool BluetoothAdapterAndroid::IsPowered() const {
   return Java_ChromeBluetoothAdapter_isPowered(AttachCurrentThread(),
-                                               j_adapter_.obj());
+                                               j_adapter_);
 }
 
 void BluetoothAdapterAndroid::SetPowered(bool powered,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
-  if (Java_ChromeBluetoothAdapter_setPowered(AttachCurrentThread(),
-                                             j_adapter_.obj(), powered)) {
+  if (Java_ChromeBluetoothAdapter_setPowered(AttachCurrentThread(), j_adapter_,
+                                             powered)) {
     callback.Run();
   } else {
     error_callback.Run();
@@ -105,7 +105,7 @@ void BluetoothAdapterAndroid::SetPowered(bool powered,
 
 bool BluetoothAdapterAndroid::IsDiscoverable() const {
   return Java_ChromeBluetoothAdapter_isDiscoverable(AttachCurrentThread(),
-                                                    j_adapter_.obj());
+                                                    j_adapter_);
 }
 
 void BluetoothAdapterAndroid::SetDiscoverable(
@@ -117,7 +117,7 @@ void BluetoothAdapterAndroid::SetDiscoverable(
 
 bool BluetoothAdapterAndroid::IsDiscovering() const {
   return Java_ChromeBluetoothAdapter_isDiscovering(AttachCurrentThread(),
-                                                   j_adapter_.obj());
+                                                   j_adapter_);
 }
 
 BluetoothAdapter::UUIDList BluetoothAdapterAndroid::GetUUIDs() const {
@@ -214,7 +214,7 @@ BluetoothAdapterAndroid::BluetoothAdapterAndroid() : weak_ptr_factory_(this) {
 
 BluetoothAdapterAndroid::~BluetoothAdapterAndroid() {
   Java_ChromeBluetoothAdapter_onBluetoothAdapterAndroidDestruction(
-      AttachCurrentThread(), j_adapter_.obj());
+      AttachCurrentThread(), j_adapter_);
 }
 
 void BluetoothAdapterAndroid::PurgeTimedOutDevices() {
@@ -242,7 +242,7 @@ void BluetoothAdapterAndroid::AddDiscoverySession(
     if (num_discovery_sessions_ > 0) {
       session_added = true;
     } else if (Java_ChromeBluetoothAdapter_startScan(AttachCurrentThread(),
-                                                     j_adapter_.obj())) {
+                                                     j_adapter_)) {
       session_added = true;
 
       // Using a delayed task in order to give the adapter some time
@@ -281,7 +281,7 @@ void BluetoothAdapterAndroid::RemoveDiscoverySession(
     if (num_discovery_sessions_ == 0) {
       VLOG(1) << "RemoveDiscoverySession: Now 0 sessions. Stopping scan.";
       session_removed = Java_ChromeBluetoothAdapter_stopScan(
-          AttachCurrentThread(), j_adapter_.obj());
+          AttachCurrentThread(), j_adapter_);
     } else {
       VLOG(1) << "RemoveDiscoverySession: Now "
               << unsigned(num_discovery_sessions_) << " sessions.";

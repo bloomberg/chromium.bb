@@ -34,7 +34,7 @@ CardboardVRDevice::CardboardVRDevice(VRDeviceProvider* provider)
 
 CardboardVRDevice::~CardboardVRDevice() {
   Java_CardboardVRDevice_stopTracking(AttachCurrentThread(),
-                                      j_cardboard_device_.obj());
+                                      j_cardboard_device_);
 }
 
 VRDisplayPtr CardboardVRDevice::GetVRDevice() {
@@ -44,13 +44,12 @@ VRDisplayPtr CardboardVRDevice::GetVRDevice() {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> j_device_name =
-      Java_CardboardVRDevice_getDeviceName(env, j_cardboard_device_.obj());
+      Java_CardboardVRDevice_getDeviceName(env, j_cardboard_device_);
   device->displayName =
       base::android::ConvertJavaStringToUTF8(env, j_device_name.obj());
 
   ScopedJavaLocalRef<jfloatArray> j_fov(env, env->NewFloatArray(4));
-  Java_CardboardVRDevice_getFieldOfView(env, j_cardboard_device_.obj(),
-                                        j_fov.obj());
+  Java_CardboardVRDevice_getFieldOfView(env, j_cardboard_device_, j_fov);
 
   std::vector<float> fov;
   base::android::JavaFloatArrayToFloatVector(env, j_fov.obj(), &fov);
@@ -80,7 +79,7 @@ VRDisplayPtr CardboardVRDevice::GetVRDevice() {
   right_eye->fieldOfView->leftDegrees = fov[3];
   right_eye->fieldOfView->rightDegrees = fov[2];
 
-  float ipd = Java_CardboardVRDevice_getIpd(env, j_cardboard_device_.obj());
+  float ipd = Java_CardboardVRDevice_getIpd(env, j_cardboard_device_);
 
   left_eye->offset = mojo::Array<float>::New(3);
   left_eye->offset[0] = ipd * -0.5f;
@@ -93,8 +92,7 @@ VRDisplayPtr CardboardVRDevice::GetVRDevice() {
   right_eye->offset[2] = 0.0f;
 
   ScopedJavaLocalRef<jintArray> j_screen_size(env, env->NewIntArray(2));
-  Java_CardboardVRDevice_getScreenSize(env, j_cardboard_device_.obj(),
-                                       j_screen_size.obj());
+  Java_CardboardVRDevice_getScreenSize(env, j_cardboard_device_, j_screen_size);
 
   std::vector<int> screen_size;
   base::android::JavaIntArrayToIntVector(env, j_screen_size.obj(),
@@ -116,8 +114,8 @@ VRPosePtr CardboardVRDevice::GetPose() {
   pose->timestamp = base::Time::Now().ToJsTime();
 
   JNIEnv* env = AttachCurrentThread();
-  Java_CardboardVRDevice_getSensorState(env, j_cardboard_device_.obj(),
-                                        j_head_matrix_.obj());
+  Java_CardboardVRDevice_getSensorState(env, j_cardboard_device_,
+                                        j_head_matrix_);
 
   std::vector<float> head_matrix;
   base::android::JavaFloatArrayToFloatVector(env, j_head_matrix_.obj(),
@@ -148,7 +146,7 @@ VRPosePtr CardboardVRDevice::GetPose() {
 
 void CardboardVRDevice::ResetPose() {
   Java_CardboardVRDevice_resetSensor(AttachCurrentThread(),
-                                     j_cardboard_device_.obj());
+                                     j_cardboard_device_);
 }
 
 }  // namespace device

@@ -45,7 +45,7 @@ void VerifyX509CertChain(const std::vector<std::string>& cert_chain,
 
   ScopedJavaLocalRef<jobject> result =
       Java_AndroidNetworkLibrary_verifyServerCertificates(
-          env, chain_byte_array.obj(), auth_string.obj(), host_string.obj());
+          env, chain_byte_array, auth_string, host_string);
 
   ExtractCertVerifyResult(result.obj(),
                           status, is_issued_by_known_root, verified_chain);
@@ -55,7 +55,7 @@ void AddTestRootCertificate(const uint8_t* cert, size_t len) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> cert_array = ToJavaByteArray(env, cert, len);
   DCHECK(!cert_array.is_null());
-  Java_AndroidNetworkLibrary_addTestRootCertificate(env, cert_array.obj());
+  Java_AndroidNetworkLibrary_addTestRootCertificate(env, cert_array);
 }
 
 void ClearTestRootCertificates() {
@@ -72,8 +72,8 @@ bool StoreKeyPair(const uint8_t* public_key,
       ToJavaByteArray(env, public_key, public_len);
   ScopedJavaLocalRef<jbyteArray> private_array =
       ToJavaByteArray(env, private_key, private_len);
-  jboolean ret = Java_AndroidNetworkLibrary_storeKeyPair(env,
-      GetApplicationContext(), public_array.obj(), private_array.obj());
+  jboolean ret = Java_AndroidNetworkLibrary_storeKeyPair(
+      env, GetApplicationContext(), public_array, private_array);
   LOG_IF(WARNING, !ret) <<
       "Call to Java_AndroidNetworkLibrary_storeKeyPair failed";
   return ret;
@@ -85,8 +85,8 @@ void StoreCertificate(net::CertificateMimeType cert_type,
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> data_array =
       ToJavaByteArray(env, reinterpret_cast<const uint8_t*>(data), data_len);
-  jboolean ret = Java_AndroidNetworkLibrary_storeCertificate(env,
-      GetApplicationContext(), cert_type, data_array.obj());
+  jboolean ret = Java_AndroidNetworkLibrary_storeCertificate(
+      env, GetApplicationContext(), cert_type, data_array);
   LOG_IF(WARNING, !ret) <<
       "Call to Java_AndroidNetworkLibrary_storeCertificate"
       " failed";
@@ -107,8 +107,8 @@ bool GetMimeTypeFromExtension(const std::string& extension,
   ScopedJavaLocalRef<jstring> extension_string =
       ConvertUTF8ToJavaString(env, extension);
   ScopedJavaLocalRef<jstring> ret =
-      Java_AndroidNetworkLibrary_getMimeTypeFromExtension(
-          env, extension_string.obj());
+      Java_AndroidNetworkLibrary_getMimeTypeFromExtension(env,
+                                                          extension_string);
 
   if (!ret.obj())
     return false;

@@ -81,7 +81,7 @@ UsbChooserDialogAndroid::UsbChooserDialogAndroid(
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   DCHECK(security_model_client);
   java_dialog_.Reset(Java_UsbChooserDialog_create(
-      env, window_android.obj(), origin_string.obj(),
+      env, window_android, origin_string,
       security_model_client->GetSecurityInfo().security_level,
       reinterpret_cast<intptr_t>(this)));
 
@@ -98,7 +98,7 @@ UsbChooserDialogAndroid::~UsbChooserDialogAndroid() {
 
   if (!java_dialog_.is_null()) {
     Java_UsbChooserDialog_closeDialog(base::android::AttachCurrentThread(),
-                                      java_dialog_.obj());
+                                      java_dialog_);
   }
 }
 
@@ -138,7 +138,7 @@ void UsbChooserDialogAndroid::Select(const std::string& guid) {
       callback_.Reset();  // Reset |callback_| so that it is only run once.
 
       Java_UsbChooserDialog_closeDialog(base::android::AttachCurrentThread(),
-                                        java_dialog_.obj());
+                                        java_dialog_);
       RecordWebUsbChooserClosure(
           device->serial_number().empty()
               ? WEBUSB_CHOOSER_CLOSED_EPHEMERAL_PERMISSION_GRANTED
@@ -153,7 +153,7 @@ void UsbChooserDialogAndroid::Cancel() {
   callback_.Run(nullptr);
   callback_.Reset();  // Reset |callback_| so that it is only run once.
   Java_UsbChooserDialog_closeDialog(base::android::AttachCurrentThread(),
-                                    java_dialog_.obj());
+                                    java_dialog_);
 
   RecordWebUsbChooserClosure(devices_.size() == 0
                                  ? WEBUSB_CHOOSER_CLOSED_CANCELLED_NO_DEVICES
@@ -192,7 +192,7 @@ void UsbChooserDialogAndroid::GotUsbDeviceList(
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_UsbChooserDialog_setIdleState(env, java_dialog_.obj());
+  Java_UsbChooserDialog_setIdleState(env, java_dialog_);
 }
 
 void UsbChooserDialogAndroid::AddDeviceToChooserDialog(
@@ -202,8 +202,7 @@ void UsbChooserDialogAndroid::AddDeviceToChooserDialog(
       base::android::ConvertUTF8ToJavaString(env, device->guid());
   base::android::ScopedJavaLocalRef<jstring> device_name =
       base::android::ConvertUTF16ToJavaString(env, device->product_string());
-  Java_UsbChooserDialog_addDevice(env, java_dialog_.obj(), device_guid.obj(),
-                                  device_name.obj());
+  Java_UsbChooserDialog_addDevice(env, java_dialog_, device_guid, device_name);
 }
 
 void UsbChooserDialogAndroid::RemoveDeviceFromChooserDialog(
@@ -213,8 +212,8 @@ void UsbChooserDialogAndroid::RemoveDeviceFromChooserDialog(
       base::android::ConvertUTF8ToJavaString(env, device->guid());
   base::android::ScopedJavaLocalRef<jstring> device_name =
       base::android::ConvertUTF16ToJavaString(env, device->product_string());
-  Java_UsbChooserDialog_removeDevice(env, java_dialog_.obj(), device_guid.obj(),
-                                     device_name.obj());
+  Java_UsbChooserDialog_removeDevice(env, java_dialog_, device_guid,
+                                     device_name);
 }
 
 void UsbChooserDialogAndroid::OpenUrl(const std::string& url) {

@@ -30,7 +30,7 @@ void MediaDrmCredentialManagerCallback(
     bool succeeded) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaDrmCredentialManagerCallback_onCredentialResetFinished(
-      env, j_media_drm_credential_manager_callback.obj(), succeeded);
+      env, j_media_drm_credential_manager_callback, succeeded);
 }
 
 }  // namespace

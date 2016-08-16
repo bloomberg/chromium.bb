@@ -120,8 +120,7 @@ void ChromeApplication::OpenClearBrowsingData(
   DCHECK(tab);
   Java_ChromeApplication_openClearBrowsingData(
       base::android::AttachCurrentThread(),
-      base::android::GetApplicationContext(),
-      tab->GetJavaObject().obj());
+      base::android::GetApplicationContext(), tab->GetJavaObject());
 }
 
 bool ChromeApplication::AreParentalControlsEnabled() {

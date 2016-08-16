@@ -20,7 +20,7 @@ FilePath InsertImageIntoMediaStore(const FilePath& path) {
       base::android::ConvertUTF8ToJavaString(env, path.value());
   ScopedJavaLocalRef<jstring> j_uri =
       Java_ContentUriTestUtils_insertImageIntoMediaStore(
-          env, base::android::GetApplicationContext(), j_path.obj());
+          env, base::android::GetApplicationContext(), j_path);
   std::string uri = base::android::ConvertJavaStringToUTF8(j_uri);
   return FilePath(uri);
 }

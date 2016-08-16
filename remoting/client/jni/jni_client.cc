@@ -86,15 +86,14 @@ void JniClient::OnConnectionState(protocol::ConnectionToHost::State state,
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Client_onConnectionState(env, java_client_.obj(), state, error);
+  Java_Client_onConnectionState(env, java_client_, state, error);
 }
 
 void JniClient::DisplayAuthenticationPrompt(bool pairing_supported) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Client_displayAuthenticationPrompt(env, java_client_.obj(),
-                                          pairing_supported);
+  Java_Client_displayAuthenticationPrompt(env, java_client_, pairing_supported);
 }
 
 void JniClient::CommitPairingCredentials(const std::string& host,
@@ -107,8 +106,8 @@ void JniClient::CommitPairingCredentials(const std::string& host,
   ScopedJavaLocalRef<jstring> j_id = ConvertUTF8ToJavaString(env, id);
   ScopedJavaLocalRef<jstring> j_secret = ConvertUTF8ToJavaString(env, secret);
 
-  Java_Client_commitPairingCredentials(env, java_client_.obj(), j_host.obj(),
-                                       j_id.obj(), j_secret.obj());
+  Java_Client_commitPairingCredentials(env, java_client_, j_host, j_id,
+                                       j_secret);
 }
 
 void JniClient::FetchThirdPartyToken(const std::string& token_url,
@@ -122,8 +121,8 @@ void JniClient::FetchThirdPartyToken(const std::string& token_url,
       ConvertUTF8ToJavaString(env, client_id);
   ScopedJavaLocalRef<jstring> j_scope = ConvertUTF8ToJavaString(env, scope);
 
-  Java_Client_fetchThirdPartyToken(env, java_client_.obj(), j_url.obj(),
-                                   j_client_id.obj(), j_scope.obj());
+  Java_Client_fetchThirdPartyToken(env, java_client_, j_url, j_client_id,
+                                   j_scope);
 }
 
 void JniClient::SetCapabilities(const std::string& capabilities) {
@@ -133,7 +132,7 @@ void JniClient::SetCapabilities(const std::string& capabilities) {
   ScopedJavaLocalRef<jstring> j_cap =
       ConvertUTF8ToJavaString(env, capabilities);
 
-  Java_Client_setCapabilities(env, java_client_.obj(), j_cap.obj());
+  Java_Client_setCapabilities(env, java_client_, j_cap);
 }
 
 void JniClient::HandleExtensionMessage(const std::string& type,
@@ -144,8 +143,7 @@ void JniClient::HandleExtensionMessage(const std::string& type,
   ScopedJavaLocalRef<jstring> j_type = ConvertUTF8ToJavaString(env, type);
   ScopedJavaLocalRef<jstring> j_message = ConvertUTF8ToJavaString(env, message);
 
-  Java_Client_handleExtensionMessage(env, java_client_.obj(), j_type.obj(),
-                                     j_message.obj());
+  Java_Client_handleExtensionMessage(env, java_client_, j_type, j_message);
 }
 
 // static

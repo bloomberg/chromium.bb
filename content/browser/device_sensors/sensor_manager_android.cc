@@ -211,32 +211,29 @@ bool SensorManagerAndroid::Start(ConsumerType consumer_type) {
   int rate_in_microseconds = (consumer_type == CONSUMER_TYPE_LIGHT)
                                  ? kLightSensorIntervalMicroseconds
                                  : kDeviceSensorIntervalMicroseconds;
-  return Java_DeviceSensors_start(AttachCurrentThread(),
-                                  device_sensors_.obj(),
-                                  reinterpret_cast<intptr_t>(this),
-                                  static_cast<jint>(consumer_type),
-                                  rate_in_microseconds);
+  return Java_DeviceSensors_start(
+      AttachCurrentThread(), device_sensors_, reinterpret_cast<intptr_t>(this),
+      static_cast<jint>(consumer_type), rate_in_microseconds);
 }
 
 void SensorManagerAndroid::Stop(ConsumerType consumer_type) {
   DCHECK(!device_sensors_.is_null());
-  Java_DeviceSensors_stop(AttachCurrentThread(),
-                          device_sensors_.obj(),
+  Java_DeviceSensors_stop(AttachCurrentThread(), device_sensors_,
                           static_cast<jint>(consumer_type));
 }
 
 int SensorManagerAndroid::GetNumberActiveDeviceMotionSensors() {
   DCHECK(!device_sensors_.is_null());
   return Java_DeviceSensors_getNumberActiveDeviceMotionSensors(
-      AttachCurrentThread(), device_sensors_.obj());
+      AttachCurrentThread(), device_sensors_);
 }
 
 SensorManagerAndroid::OrientationSensorType
 SensorManagerAndroid::GetOrientationSensorTypeUsed() {
   DCHECK(!device_sensors_.is_null());
   return static_cast<SensorManagerAndroid::OrientationSensorType>(
-      Java_DeviceSensors_getOrientationSensorTypeUsed(
-          AttachCurrentThread(), device_sensors_.obj()));
+      Java_DeviceSensors_getOrientationSensorTypeUsed(AttachCurrentThread(),
+                                                      device_sensors_));
 }
 
 // ----- Shared memory API methods

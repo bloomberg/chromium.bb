@@ -45,8 +45,8 @@ void AutofillPopupViewAndroid::Show() {
     return;
 
   java_object_.Reset(Java_AutofillPopupBridge_create(
-      env, view.obj(), reinterpret_cast<intptr_t>(this),
-      view_android->GetWindowAndroid()->GetJavaObject().obj()));
+      env, view, reinterpret_cast<intptr_t>(this),
+      view_android->GetWindowAndroid()->GetJavaObject()));
 
   UpdateBoundsAndRedrawPopup();
 }
@@ -55,7 +55,7 @@ void AutofillPopupViewAndroid::Hide() {
   controller_ = NULL;
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_object_.is_null()) {
-    Java_AutofillPopupBridge_dismiss(env, java_object_.obj());
+    Java_AutofillPopupBridge_dismiss(env, java_object_);
   } else {
     // Hide() should delete |this| either via Java dismiss or directly.
     delete this;
@@ -100,12 +100,12 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
         suggestion.frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE ||
         suggestion.frontend_id == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO;
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
-        env, data_array.obj(), i, value.obj(), label.obj(), android_icon_id,
+        env, data_array, i, value, label, android_icon_id,
         suggestion.frontend_id, deletable, is_label_multiline);
   }
 
-  Java_AutofillPopupBridge_show(
-      env, java_object_.obj(), data_array.obj(), controller_->IsRTL());
+  Java_AutofillPopupBridge_show(env, java_object_, data_array,
+                                controller_->IsRTL());
 }
 
 void AutofillPopupViewAndroid::SuggestionSelected(
@@ -132,12 +132,9 @@ void AutofillPopupViewAndroid::DeletionRequested(
 
   deleting_index_ = list_index;
   Java_AutofillPopupBridge_confirmDeletion(
-      env,
-      java_object_.obj(),
-      base::android::ConvertUTF16ToJavaString(
-          env, confirmation_title).obj(),
-      base::android::ConvertUTF16ToJavaString(
-          env, confirmation_body).obj());
+      env, java_object_,
+      base::android::ConvertUTF16ToJavaString(env, confirmation_title),
+      base::android::ConvertUTF16ToJavaString(env, confirmation_body));
 }
 
 void AutofillPopupViewAndroid::DeletionConfirmed(

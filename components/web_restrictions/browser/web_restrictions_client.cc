@@ -24,14 +24,14 @@ bool RequestPermissionTask(
     const base::android::JavaRef<jobject>& java_provider) {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_WebRestrictionsClient_requestPermission(
-      env, java_provider.obj(),
-      base::android::ConvertUTF8ToJavaString(env, url.spec()).obj());
+      env, java_provider,
+      base::android::ConvertUTF8ToJavaString(env, url.spec()));
 }
 
 bool CheckSupportsRequestTask(
     const base::android::JavaRef<jobject>& java_provider) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_WebRestrictionsClient_supportsRequest(env, java_provider.obj());
+  return Java_WebRestrictionsClient_supportsRequest(env, java_provider);
 }
 
 }  // namespace
@@ -56,7 +56,7 @@ WebRestrictionsClient::~WebRestrictionsClient() {
   if (java_provider_.is_null())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_WebRestrictionsClient_onDestroy(env, java_provider_.obj());
+  Java_WebRestrictionsClient_onDestroy(env, java_provider_);
   java_provider_.Reset();
 }
 
@@ -66,7 +66,7 @@ void WebRestrictionsClient::SetAuthority(
   // Destroy any existing content resolver.
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_provider_.is_null()) {
-    Java_WebRestrictionsClient_onDestroy(env, java_provider_.obj());
+    Java_WebRestrictionsClient_onDestroy(env, java_provider_);
     java_provider_.Reset();
   }
   ClearCache();
@@ -78,8 +78,7 @@ void WebRestrictionsClient::SetAuthority(
     return;
   java_provider_.Reset(Java_WebRestrictionsClient_create(
       env,
-      base::android::ConvertUTF8ToJavaString(env, content_provider_authority)
-          .obj(),
+      base::android::ConvertUTF8ToJavaString(env, content_provider_authority),
       reinterpret_cast<jlong>(this)));
   supports_request_ = false;
   base::PostTaskAndReplyWithResult(
@@ -100,9 +99,8 @@ UrlAccess WebRestrictionsClient::ShouldProceed(
   if (iter != cache_.end()) {
     RecordURLAccess(url);
     JNIEnv* env = base::android::AttachCurrentThread();
-    return Java_ShouldProceedResult_shouldProceed(env, iter->second.obj())
-               ? ALLOW
-               : DISALLOW;
+    return Java_ShouldProceedResult_shouldProceed(env, iter->second) ? ALLOW
+                                                                     : DISALLOW;
   }
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
@@ -126,7 +124,7 @@ int WebRestrictionsClient::GetResultColumnCount(const GURL& url) const {
   if (iter == cache_.end())
     return 0;
   return Java_ShouldProceedResult_getColumnCount(
-      base::android::AttachCurrentThread(), iter->second.obj());
+      base::android::AttachCurrentThread(), iter->second);
 }
 
 std::string WebRestrictionsClient::GetResultColumnName(const GURL& url,
@@ -141,8 +139,7 @@ std::string WebRestrictionsClient::GetResultColumnName(const GURL& url,
   JNIEnv* env = base::android::AttachCurrentThread();
   return base::android::ConvertJavaStringToUTF8(
       env,
-      Java_ShouldProceedResult_getColumnName(env, iter->second.obj(), column)
-          .obj());
+      Java_ShouldProceedResult_getColumnName(env, iter->second, column).obj());
 }
 
 int WebRestrictionsClient::GetResultIntValue(const GURL& url,
@@ -154,7 +151,7 @@ int WebRestrictionsClient::GetResultIntValue(const GURL& url,
   if (iter == cache_.end())
     return 0;
   return Java_ShouldProceedResult_getInt(base::android::AttachCurrentThread(),
-                                         iter->second.obj(), column);
+                                         iter->second, column);
 }
 
 std::string WebRestrictionsClient::GetResultStringValue(const GURL& url,
@@ -168,8 +165,7 @@ std::string WebRestrictionsClient::GetResultStringValue(const GURL& url,
 
   JNIEnv* env = base::android::AttachCurrentThread();
   return base::android::ConvertJavaStringToUTF8(
-      env, Java_ShouldProceedResult_getString(env, iter->second.obj(), column)
-               .obj());
+      env, Java_ShouldProceedResult_getString(env, iter->second, column).obj());
 }
 
 void WebRestrictionsClient::RequestPermission(
@@ -232,7 +228,7 @@ void WebRestrictionsClient::OnShouldProceedComplete(
     const ScopedJavaGlobalRef<jobject>& result) {
   UpdateCache(provider_authority, url, result);
   JNIEnv* env = base::android::AttachCurrentThread();
-  callback.Run(Java_ShouldProceedResult_shouldProceed(env, result.obj()));
+  callback.Run(Java_ShouldProceedResult_shouldProceed(env, result));
 }
 
 void WebRestrictionsClient::ClearCache() {
@@ -248,8 +244,8 @@ ScopedJavaGlobalRef<jobject> WebRestrictionsClient::ShouldProceedTask(
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> result(
       Java_WebRestrictionsClient_shouldProceed(
-          env, java_provider.obj(),
-          base::android::ConvertUTF8ToJavaString(env, url.spec()).obj()));
+          env, java_provider,
+          base::android::ConvertUTF8ToJavaString(env, url.spec())));
   return result;
 }
 

@@ -64,16 +64,10 @@ void ServiceTabLauncher::LaunchTab(content::BrowserContext* browser_context,
       new TabLaunchedCallback(callback));
   DCHECK_GE(request_id, 1);
 
-  Java_ServiceTabLauncher_launchTab(env,
-                                    GetApplicationContext(),
-                                    request_id,
-                                    browser_context->IsOffTheRecord(),
-                                    url.obj(),
-                                    disposition,
-                                    referrer_url.obj(),
-                                    params.referrer.policy,
-                                    headers.obj(),
-                                    post_data.obj());
+  Java_ServiceTabLauncher_launchTab(env, GetApplicationContext(), request_id,
+                                    browser_context->IsOffTheRecord(), url,
+                                    disposition, referrer_url,
+                                    params.referrer.policy, headers, post_data);
 }
 
 void ServiceTabLauncher::OnTabLaunched(int request_id,

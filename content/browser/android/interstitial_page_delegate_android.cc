@@ -29,7 +29,7 @@ InterstitialPageDelegateAndroid::~InterstitialPageDelegateAndroid() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_obj_.get(env);
   if (obj.obj())
-    Java_InterstitialPageDelegateAndroid_onNativeDestroyed(env, obj.obj());
+    Java_InterstitialPageDelegateAndroid_onNativeDestroyed(env, obj);
 }
 
 void InterstitialPageDelegateAndroid::Proceed(
@@ -54,14 +54,14 @@ void InterstitialPageDelegateAndroid::OnProceed() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_obj_.get(env);
   if (obj.obj())
-    Java_InterstitialPageDelegateAndroid_onProceed(env, obj.obj());
+    Java_InterstitialPageDelegateAndroid_onProceed(env, obj);
 }
 
 void InterstitialPageDelegateAndroid::OnDontProceed() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_obj_.get(env);
   if (obj.obj())
-    Java_InterstitialPageDelegateAndroid_onDontProceed(env, obj.obj());
+    Java_InterstitialPageDelegateAndroid_onDontProceed(env, obj);
 }
 
 void InterstitialPageDelegateAndroid::CommandReceived(
@@ -77,8 +77,8 @@ void InterstitialPageDelegateAndroid::CommandReceived(
     }
 
     Java_InterstitialPageDelegateAndroid_commandReceived(
-        env, obj.obj(),
-        base::android::ConvertUTF8ToJavaString(env, sanitized_command).obj());
+        env, obj,
+        base::android::ConvertUTF8ToJavaString(env, sanitized_command));
   }
 }
 

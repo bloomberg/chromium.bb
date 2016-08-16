@@ -37,14 +37,13 @@ JniDisplayHandler::JniDisplayHandler(ChromotingJniRuntime* runtime)
 
 JniDisplayHandler::~JniDisplayHandler() {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  Java_Display_invalidate(base::android::AttachCurrentThread(),
-                          java_display_.obj());
+  Java_Display_invalidate(base::android::AttachCurrentThread(), java_display_);
 }
 
 void JniDisplayHandler::InitializeClient(
     const base::android::JavaRef<jobject>& java_client) {
   return Java_Display_initializeClient(base::android::AttachCurrentThread(),
-                                       java_display_.obj(), java_client.obj());
+                                       java_display_, java_client);
 }
 
 std::unique_ptr<protocol::CursorShapeStub>
@@ -72,14 +71,14 @@ void JniDisplayHandler::UpdateFrameBitmap(
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Display_setVideoFrame(env, java_display_.obj(), bitmap.obj());
+  Java_Display_setVideoFrame(env, java_display_, bitmap);
 }
 
 void JniDisplayHandler::RedrawCanvas() {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Display_redrawGraphicsInternal(env, java_display_.obj());
+  Java_Display_redrawGraphicsInternal(env, java_display_);
 }
 
 // static
@@ -111,8 +110,8 @@ void JniDisplayHandler::SetCursorShape(
   base::android::ScopedJavaLocalRef<jobject> buffer(
       env, env->NewDirectByteBuffer(data, cursor_total_bytes));
   Java_Display_updateCursorShape(
-      env, java_display_.obj(), cursor_shape.width(), cursor_shape.height(),
-      cursor_shape.hotspot_x(), cursor_shape.hotspot_y(), buffer.obj());
+      env, java_display_, cursor_shape.width(), cursor_shape.height(),
+      cursor_shape.hotspot_x(), cursor_shape.hotspot_y(), buffer);
 }
 
 }  // namespace remoting

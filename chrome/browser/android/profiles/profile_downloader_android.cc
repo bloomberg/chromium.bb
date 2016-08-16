@@ -88,11 +88,9 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
 
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_ProfileDownloader_onProfileDownloadSuccess(
-        env,
-        base::android::ConvertUTF8ToJavaString(env, email_).obj(),
-        base::android::ConvertUTF16ToJavaString(env, full_name).obj(),
-        base::android::ConvertUTF16ToJavaString(env, given_name).obj(),
-        jbitmap.obj());
+        env, base::android::ConvertUTF8ToJavaString(env, email_),
+        base::android::ConvertUTF16ToJavaString(env, full_name),
+        base::android::ConvertUTF16ToJavaString(env, given_name), jbitmap);
     Shutdown();
   }
 

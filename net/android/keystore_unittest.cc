@@ -167,9 +167,8 @@ ScopedJava GetPKCS8PrivateKeyJava(PrivateKeyType key_type,
           env, reinterpret_cast<const uint8_t*>(pkcs8_key.data()),
           pkcs8_key.size()));
 
-  ScopedJava key(
-      Java_AndroidKeyStoreTestUtil_createPrivateKeyFromPKCS8(
-          env, key_type, bytes.obj()));
+  ScopedJava key(Java_AndroidKeyStoreTestUtil_createPrivateKeyFromPKCS8(
+      env, key_type, bytes));
 
   return key;
 }

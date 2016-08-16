@@ -70,8 +70,8 @@ void AudioRecordInputStream::OnData(JNIEnv* env,
 bool AudioRecordInputStream::Open() {
   DVLOG(2) << __PRETTY_FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  return Java_AudioRecordInput_open(
-      base::android::AttachCurrentThread(), j_audio_record_.obj());
+  return Java_AudioRecordInput_open(base::android::AttachCurrentThread(),
+                                    j_audio_record_);
 }
 
 void AudioRecordInputStream::Start(AudioInputCallback* callback) {
@@ -87,8 +87,8 @@ void AudioRecordInputStream::Start(AudioInputCallback* callback) {
   // The Java thread has not yet started, so we are free to set |callback_|.
   callback_ = callback;
 
-  Java_AudioRecordInput_start(
-      base::android::AttachCurrentThread(), j_audio_record_.obj());
+  Java_AudioRecordInput_start(base::android::AttachCurrentThread(),
+                              j_audio_record_);
 }
 
 void AudioRecordInputStream::Stop() {
@@ -99,8 +99,8 @@ void AudioRecordInputStream::Stop() {
     return;
   }
 
-  Java_AudioRecordInput_stop(
-      base::android::AttachCurrentThread(), j_audio_record_.obj());
+  Java_AudioRecordInput_stop(base::android::AttachCurrentThread(),
+                             j_audio_record_);
 
   // The Java thread must have been stopped at this point, so we are free to
   // clear |callback_|.
@@ -112,8 +112,8 @@ void AudioRecordInputStream::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
   Stop();
   DCHECK(!callback_);
-  Java_AudioRecordInput_close(
-      base::android::AttachCurrentThread(), j_audio_record_.obj());
+  Java_AudioRecordInput_close(base::android::AttachCurrentThread(),
+                              j_audio_record_);
   audio_manager_->ReleaseInputStream(this);
 }
 

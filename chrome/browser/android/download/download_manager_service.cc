@@ -49,8 +49,8 @@ void DownloadManagerService::OnDownloadCanceled(
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jname =
       ConvertUTF8ToJavaString(env, download->GetURL().ExtractFileName());
-  Java_DownloadManagerService_onDownloadItemCanceled(
-      env, jname.obj(), has_no_external_storage);
+  Java_DownloadManagerService_onDownloadItemCanceled(env, jname,
+                                                     has_no_external_storage);
   DownloadController::RecordDownloadCancelReason(reason);
 }
 
@@ -144,17 +144,12 @@ void DownloadManagerService::GetDownloadInfoFor(
       continue;
 
     Java_DownloadManagerService_onDownloadItemUpdated(
-        env,
-        java_ref_.obj(),
-        ConvertUTF8ToJavaString(env, item->GetGuid()).obj(),
-        ConvertUTF8ToJavaString(
-            env, item->GetFileNameToReportUser().value()).obj(),
-        ConvertUTF8ToJavaString(
-            env, item->GetTargetFilePath().value()).obj(),
-        ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()).obj(),
-        ConvertUTF8ToJavaString(env, item->GetMimeType()).obj(),
-        item->GetStartTime().ToJavaTime(),
-        item->GetTotalBytes());
+        env, java_ref_, ConvertUTF8ToJavaString(env, item->GetGuid()),
+        ConvertUTF8ToJavaString(env, item->GetFileNameToReportUser().value()),
+        ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
+        ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
+        ConvertUTF8ToJavaString(env, item->GetMimeType()),
+        item->GetStartTime().ToJavaTime(), item->GetTotalBytes());
     break;
   }
 }
@@ -170,7 +165,7 @@ void DownloadManagerService::GetAllDownloadsInternal() {
   // Create a Java array of all of the visible DownloadItems.
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_download_item_list =
-      Java_DownloadManagerService_createDownloadItemList(env, java_ref_.obj());
+      Java_DownloadManagerService_createDownloadItemList(env, java_ref_);
 
   for (size_t i = 0; i < all_items.size(); i++) {
     content::DownloadItem* item = all_items[i];
@@ -178,22 +173,17 @@ void DownloadManagerService::GetAllDownloadsInternal() {
       continue;
 
     Java_DownloadManagerService_addDownloadItemToList(
-        env,
-        java_ref_.obj(),
-        j_download_item_list.obj(),
-        ConvertUTF8ToJavaString(env, item->GetGuid()).obj(),
-        ConvertUTF8ToJavaString(
-            env, item->GetFileNameToReportUser().value()).obj(),
-        ConvertUTF8ToJavaString(
-            env, item->GetTargetFilePath().value()).obj(),
-        ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()).obj(),
-        ConvertUTF8ToJavaString(env, item->GetMimeType()).obj(),
-        item->GetStartTime().ToJavaTime(),
-        item->GetTotalBytes());
+        env, java_ref_, j_download_item_list,
+        ConvertUTF8ToJavaString(env, item->GetGuid()),
+        ConvertUTF8ToJavaString(env, item->GetFileNameToReportUser().value()),
+        ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
+        ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
+        ConvertUTF8ToJavaString(env, item->GetMimeType()),
+        item->GetStartTime().ToJavaTime(), item->GetTotalBytes());
   }
 
-  Java_DownloadManagerService_onAllDownloadsRetrieved(
-      env, java_ref_.obj(), j_download_item_list.obj());
+  Java_DownloadManagerService_onAllDownloadsRetrieved(env, java_ref_,
+                                                      j_download_item_list);
 }
 
 
@@ -250,9 +240,7 @@ void DownloadManagerService::OnDownloadRemoved(
     content::DownloadManager* manager, content::DownloadItem* item) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadManagerService_onDownloadItemRemoved(
-      env,
-      java_ref_.obj(),
-      ConvertUTF8ToJavaString(env, item->GetGuid()).obj());
+      env, java_ref_, ConvertUTF8ToJavaString(env, item->GetGuid()));
 }
 
 void DownloadManagerService::ResumeDownloadInternal(
@@ -357,8 +345,7 @@ void DownloadManagerService::OnResumptionFailedInternal(
   if (!java_ref_.is_null()) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_DownloadManagerService_onResumptionFailed(
-        env, java_ref_.obj(),
-        ConvertUTF8ToJavaString(env, download_guid).obj());
+        env, java_ref_, ConvertUTF8ToJavaString(env, download_guid));
   }
   if (!resume_callback_for_testing_.is_null())
     resume_callback_for_testing_.Run(false);

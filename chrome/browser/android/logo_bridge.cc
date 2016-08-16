@@ -52,8 +52,8 @@ ScopedJavaLocalRef<jobject> ConvertLogoToJavaObject(
   if (!logo->metadata.animated_url.empty())
     j_animated_url = ConvertUTF8ToJavaString(env, logo->metadata.animated_url);
 
-  return Java_LogoBridge_createLogo(env, j_bitmap.obj(), j_on_click_url.obj(),
-                                    j_alt_text.obj(), j_animated_url.obj());
+  return Java_LogoBridge_createLogo(env, j_bitmap, j_on_click_url, j_alt_text,
+                                    j_animated_url);
 }
 
 class LogoObserverAndroid : public search_provider_logos::LogoObserver {
@@ -75,8 +75,8 @@ class LogoObserverAndroid : public search_provider_logos::LogoObserver {
 
     JNIEnv* env = base::android::AttachCurrentThread();
     ScopedJavaLocalRef<jobject> j_logo = ConvertLogoToJavaObject(env, logo);
-    Java_LogoObserver_onLogoAvailable(
-        env, j_logo_observer_.obj(), j_logo.obj(), from_cache);
+    Java_LogoObserver_onLogoAvailable(env, j_logo_observer_, j_logo,
+                                      from_cache);
   }
 
   void OnObserverRemoved() override { delete this; }
@@ -164,9 +164,9 @@ void LogoBridge::OnURLFetchComplete(const net::URLFetcher* source) {
       ToJavaByteArray(env, reinterpret_cast<const uint8_t*>(response.data()),
                       response.length());
   ScopedJavaLocalRef<jobject> j_gif_image =
-      Java_LogoBridge_createGifImage(env, j_bytes.obj());
-  Java_AnimatedLogoCallback_onAnimatedLogoAvailable(env, j_callback_.obj(),
-                                                    j_gif_image.obj());
+      Java_LogoBridge_createGifImage(env, j_bytes);
+  Java_AnimatedLogoCallback_onAnimatedLogoAvailable(env, j_callback_,
+                                                    j_gif_image);
   ClearFetcher();
 }
 

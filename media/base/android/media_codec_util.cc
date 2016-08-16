@@ -73,7 +73,7 @@ static std::string GetDefaultCodecName(const std::string& mime_type,
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime_type);
   ScopedJavaLocalRef<jstring> j_codec_name =
-      Java_MediaCodecUtil_getDefaultCodecName(env, j_mime.obj(), direction,
+      Java_MediaCodecUtil_getDefaultCodecName(env, j_mime, direction,
                                               require_software_codec);
   return ConvertJavaStringToUTF8(env, j_codec_name.obj());
 }
@@ -84,7 +84,7 @@ static bool IsDecoderSupportedByDevice(const std::string& android_mime_type) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, android_mime_type);
-  return Java_MediaCodecUtil_isDecoderSupportedForDevice(env, j_mime.obj());
+  return Java_MediaCodecUtil_isDecoderSupportedForDevice(env, j_mime);
 }
 
 // static
@@ -119,7 +119,7 @@ std::set<int> MediaCodecUtil::GetEncoderColorFormats(
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime_type);
   ScopedJavaLocalRef<jintArray> j_color_format_array =
-      Java_MediaCodecUtil_getEncoderColorFormatsForMime(env, j_mime.obj());
+      Java_MediaCodecUtil_getEncoderColorFormatsForMime(env, j_mime);
 
   if (j_color_format_array.obj()) {
     std::vector<int> formats;
@@ -140,7 +140,7 @@ bool MediaCodecUtil::CanDecode(const std::string& codec, bool is_secure) {
   if (mime.empty())
     return false;
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
-  return Java_MediaCodecUtil_canDecode(env, j_mime.obj(), is_secure);
+  return Java_MediaCodecUtil_canDecode(env, j_mime, is_secure);
 }
 
 // static

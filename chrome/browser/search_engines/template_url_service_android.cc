@@ -133,10 +133,8 @@ TemplateUrlServiceAndroid::GetPrepopulatedTemplateUrlAt(
    return ScopedJavaLocalRef<jobject>();
 
   return Java_TemplateUrl_create(
-      env,
-      index,
-      base::android::ConvertUTF16ToJavaString(
-          env, template_url->short_name()).obj());
+      env, index,
+      base::android::ConvertUTF16ToJavaString(env, template_url->short_name()));
 }
 
 bool TemplateUrlServiceAndroid::IsPrepopulatedTemplate(TemplateURL* url) {
@@ -149,8 +147,8 @@ void TemplateUrlServiceAndroid::OnTemplateURLServiceLoaded() {
   if (weak_java_obj_.get(env).is_null())
     return;
 
-  Java_TemplateUrlService_templateUrlServiceLoaded(
-      env, weak_java_obj_.get(env).obj());
+  Java_TemplateUrlService_templateUrlServiceLoaded(env,
+                                                   weak_java_obj_.get(env));
 }
 
 void TemplateUrlServiceAndroid::OnTemplateURLServiceChanged() {
@@ -158,8 +156,8 @@ void TemplateUrlServiceAndroid::OnTemplateURLServiceChanged() {
   if (weak_java_obj_.get(env).is_null())
     return;
 
-  Java_TemplateUrlService_onTemplateURLServiceChanged(
-      env, weak_java_obj_.get(env).obj());
+  Java_TemplateUrlService_onTemplateURLServiceChanged(env,
+                                                      weak_java_obj_.get(env));
 }
 
 base::android::ScopedJavaLocalRef<jstring>

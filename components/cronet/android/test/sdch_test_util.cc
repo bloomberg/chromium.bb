@@ -41,7 +41,7 @@ class TestSdchObserver : public net::SdchObserver {
     // Only notify if the dictionary for the |target_url_| has been added.
     if (manager_->GetDictionarySet(target_url_)) {
       JNIEnv* env = base::android::AttachCurrentThread();
-      Java_SdchObserver_onDictionaryAdded(env, jsdch_observer_ref_.obj());
+      Java_SdchObserver_onDictionaryAdded(env, jsdch_observer_ref_);
       manager_->RemoveObserver(this);
       delete this;
     }
@@ -72,14 +72,13 @@ void AddSdchObserverHelper(
   // If dictionaries for |target_url| are already added, skip adding the
   // observer.
   if (url_request_context->sdch_manager()->GetDictionarySet(target_url)) {
-    Java_SdchObserver_onDictionarySetAlreadyPresent(env,
-                                                    jsdch_observer_ref.obj());
+    Java_SdchObserver_onDictionarySetAlreadyPresent(env, jsdch_observer_ref);
     return;
   }
 
   url_request_context->sdch_manager()->AddObserver(new TestSdchObserver(
       target_url, url_request_context->sdch_manager(), jsdch_observer_ref));
-  Java_SdchObserver_onAddSdchObserverCompleted(env, jsdch_observer_ref.obj());
+  Java_SdchObserver_onAddSdchObserverCompleted(env, jsdch_observer_ref);
 }
 
 void AddSdchObserverOnNetworkThread(

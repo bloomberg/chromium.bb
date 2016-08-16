@@ -120,8 +120,8 @@ void MessagePumpForUI::Quit() {
     JNIEnv* env = base::android::AttachCurrentThread();
     DCHECK(env);
 
-    Java_SystemMessageHandler_removeAllPendingMessages(env,
-        system_message_handler_obj_.obj());
+    Java_SystemMessageHandler_removeAllPendingMessages(
+        env, system_message_handler_obj_);
     system_message_handler_obj_.Reset();
   }
 
@@ -138,8 +138,7 @@ void MessagePumpForUI::ScheduleWork() {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
 
-  Java_SystemMessageHandler_scheduleWork(env,
-      system_message_handler_obj_.obj());
+  Java_SystemMessageHandler_scheduleWork(env, system_message_handler_obj_);
 }
 
 void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
@@ -152,9 +151,9 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
       (delayed_work_time - TimeTicks::Now()).InMillisecondsRoundedUp();
   // Note that we're truncating to milliseconds as required by the java side,
   // even though delayed_work_time is microseconds resolution.
-  Java_SystemMessageHandler_scheduleDelayedWork(env,
-      system_message_handler_obj_.obj(),
-      delayed_work_time.ToInternalValue(), millis);
+  Java_SystemMessageHandler_scheduleDelayedWork(
+      env, system_message_handler_obj_, delayed_work_time.ToInternalValue(),
+      millis);
 }
 
 // static

@@ -60,8 +60,8 @@ void BrowsingDataCounterBridge::onCounterFinished(
   ScopedJavaLocalRef<jstring> result_string =
       base::android::ConvertUTF16ToJavaString(
           env, GetChromeCounterTextFromResult(result.get()));
-  Java_BrowsingDataCounterBridge_onBrowsingDataCounterFinished(
-      env, jobject_.obj(), result_string.obj());
+  Java_BrowsingDataCounterBridge_onBrowsingDataCounterFinished(env, jobject_,
+                                                               result_string);
 }
 
 static jlong Init(

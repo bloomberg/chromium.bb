@@ -25,8 +25,7 @@ EmbeddedTestServerAndroid::EmbeddedTestServerAndroid(JNIEnv* env, jobject jobj)
 
 EmbeddedTestServerAndroid::~EmbeddedTestServerAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_EmbeddedTestServerImpl_clearNativePtr(env,
-                                             weak_java_server_.get(env).obj());
+  Java_EmbeddedTestServerImpl_clearNativePtr(env, weak_java_server_.get(env));
 }
 
 jboolean EmbeddedTestServerAndroid::Start(JNIEnv* env,

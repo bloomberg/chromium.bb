@@ -102,7 +102,7 @@ void LaunchDownloadProcess(base::CommandLine* cmd_line) {
 
   // TODO(qinmin): pass download parameters here.
   Java_ChildProcessLauncher_startDownloadProcessIfNecessary(
-      env, base::android::GetApplicationContext(), j_argv.obj());
+      env, base::android::GetApplicationContext(), j_argv);
 }
 
 }  // anonymous namespace
@@ -194,8 +194,8 @@ void StartChildProcess(
   }
 
   Java_ChildProcessLauncher_start(
-      env, base::android::GetApplicationContext(), j_argv.obj(),
-      child_process_id, j_file_infos.obj(),
+      env, base::android::GetApplicationContext(), j_argv, child_process_id,
+      j_file_infos,
       reinterpret_cast<intptr_t>(new StartChildProcessCallback(callback)));
 }
 
@@ -261,10 +261,7 @@ void CreateSurfaceTextureSurface(int surface_texture_id,
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
   Java_ChildProcessLauncher_createSurfaceTextureSurface(
-      env,
-      surface_texture_id,
-      client_id,
-      surface_texture->j_surface_texture().obj());
+      env, surface_texture_id, client_id, surface_texture->j_surface_texture());
 }
 
 void DestroySurfaceTextureSurface(int surface_texture_id, int client_id) {

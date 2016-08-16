@@ -124,7 +124,7 @@ ImeAdapterAndroid::~ImeAdapterAndroid() {
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
   if (!obj.is_null())
-    Java_ImeAdapter_detach(env, obj.obj());
+    Java_ImeAdapter_detach(env, obj);
 }
 
 bool ImeAdapterAndroid::SendSyntheticKeyEvent(JNIEnv*,
@@ -242,15 +242,14 @@ void ImeAdapterAndroid::CancelComposition() {
   base::android::ScopedJavaLocalRef<jobject> obj =
       java_ime_adapter_.get(AttachCurrentThread());
   if (!obj.is_null())
-    Java_ImeAdapter_cancelComposition(AttachCurrentThread(), obj.obj());
+    Java_ImeAdapter_cancelComposition(AttachCurrentThread(), obj);
 }
 
 void ImeAdapterAndroid::FocusedNodeChanged(bool is_editable_node) {
   base::android::ScopedJavaLocalRef<jobject> obj =
       java_ime_adapter_.get(AttachCurrentThread());
   if (!obj.is_null()) {
-    Java_ImeAdapter_focusedNodeChanged(AttachCurrentThread(),
-                                       obj.obj(),
+    Java_ImeAdapter_focusedNodeChanged(AttachCurrentThread(), obj,
                                        is_editable_node);
   }
 }
@@ -286,11 +285,8 @@ void ImeAdapterAndroid::SetCharacterBounds(
     coordinates_array[coordinates_array_index + 3] = rect.bottom();
   }
   Java_ImeAdapter_setCharacterBounds(
-      env,
-      obj.obj(),
-      base::android::ToJavaFloatArray(env,
-                                      coordinates_array.get(),
-                                      coordinates_array_size).obj());
+      env, obj, base::android::ToJavaFloatArray(env, coordinates_array.get(),
+                                                coordinates_array_size));
 }
 
 void ImeAdapterAndroid::SetComposingRegion(JNIEnv*,

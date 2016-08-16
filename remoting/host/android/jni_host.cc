@@ -108,7 +108,7 @@ void JniHost::OnStoreAccessCode(const std::string& access_code,
                                 base::TimeDelta access_code_lifetime) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_Host_onAccessCodeReceived(
-      env, java_host_.obj(), ConvertUTF8ToJavaString(env, access_code).obj(),
+      env, java_host_, ConvertUTF8ToJavaString(env, access_code),
       static_cast<int>(access_code_lifetime.InSeconds()));
 }
 
@@ -123,8 +123,8 @@ void JniHost::OnStateChanged(It2MeHostState state,
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Host_onStateChanged(env, java_host_.obj(), state,
-                           ConvertUTF8ToJavaString(env, error_message).obj());
+  Java_Host_onStateChanged(env, java_host_, state,
+                           ConvertUTF8ToJavaString(env, error_message));
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& caller) {

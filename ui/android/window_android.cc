@@ -84,7 +84,7 @@ void WindowAndroid::DetachCompositor() {
 
 void WindowAndroid::RequestVSyncUpdate() {
   JNIEnv* env = AttachCurrentThread();
-  Java_WindowAndroid_requestVSyncUpdate(env, GetJavaObject().obj());
+  Java_WindowAndroid_requestVSyncUpdate(env, GetJavaObject());
 }
 
 void WindowAndroid::SetNeedsAnimate() {
@@ -132,17 +132,15 @@ void WindowAndroid::OnActivityStarted(JNIEnv* env,
 bool WindowAndroid::HasPermission(const std::string& permission) {
   JNIEnv* env = AttachCurrentThread();
   return Java_WindowAndroid_hasPermission(
-      env,
-      GetJavaObject().obj(),
-      base::android::ConvertUTF8ToJavaString(env, permission).obj());
+      env, GetJavaObject(),
+      base::android::ConvertUTF8ToJavaString(env, permission));
 }
 
 bool WindowAndroid::CanRequestPermission(const std::string& permission) {
   JNIEnv* env = AttachCurrentThread();
   return Java_WindowAndroid_canRequestPermission(
-      env,
-      GetJavaObject().obj(),
-      base::android::ConvertUTF8ToJavaString(env, permission).obj());
+      env, GetJavaObject(),
+      base::android::ConvertUTF8ToJavaString(env, permission));
 }
 
 WindowAndroid* WindowAndroid::GetWindowAndroid() const {

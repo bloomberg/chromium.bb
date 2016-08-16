@@ -64,10 +64,8 @@ bool InvalidationServiceAndroid::UpdateRegisteredInvalidationIds(
   }
 
   Java_InvalidationService_setRegisteredObjectIds(
-      env,
-      java_ref_.obj(),
-      base::android::ToJavaIntArray(env, sources).obj(),
-      base::android::ToJavaArrayOfStrings(env, names).obj());
+      env, java_ref_, base::android::ToJavaIntArray(env, sources),
+      base::android::ToJavaArrayOfStrings(env, names));
 
   logger_.OnUpdateIds(invalidator_registrar_.GetSanitizedHandlersIdsMap());
   return true;
@@ -93,7 +91,7 @@ std::string InvalidationServiceAndroid::GetInvalidatorClientId() const {
 
   // Ask the Java code to for the invalidator ID it's currently using.
   base::android::ScopedJavaLocalRef<_jbyteArray*> id_bytes_java =
-      Java_InvalidationService_getInvalidatorClientId(env, java_ref_.obj());
+      Java_InvalidationService_getInvalidatorClientId(env, java_ref_);
 
   // Convert it into a more convenient format for C++.
   std::vector<uint8_t> id_bytes;

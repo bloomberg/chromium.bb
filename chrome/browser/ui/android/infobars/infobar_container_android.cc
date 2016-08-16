@@ -65,7 +65,7 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   if (Java_InfoBarContainer_nextInfoBarWillBeVisible(
-          env, weak_java_infobar_container_.get(env).obj())) {
+          env, weak_java_infobar_container_.get(env))) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("InfoBar.Shown.Visible",
                                 android_bar->delegate()->GetIdentifier());
   } else {
@@ -75,8 +75,8 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
 
   base::android::ScopedJavaLocalRef<jobject> java_infobar =
       android_bar->CreateRenderInfoBar(env);
-  Java_InfoBarContainer_addInfoBar(
-      env, weak_java_infobar_container_.get(env).obj(), java_infobar.obj());
+  Java_InfoBarContainer_addInfoBar(env, weak_java_infobar_container_.get(env),
+                                   java_infobar);
   android_bar->SetJavaInfoBar(java_infobar);
 }
 

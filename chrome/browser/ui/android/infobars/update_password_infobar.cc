@@ -23,7 +23,7 @@ UpdatePasswordInfoBar::~UpdatePasswordInfoBar() {}
 
 int UpdatePasswordInfoBar::GetIdOfSelectedUsername() const {
   return Java_UpdatePasswordInfoBar_getSelectedUsername(
-      base::android::AttachCurrentThread(), java_infobar_.obj());
+      base::android::AttachCurrentThread(), java_infobar_);
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -51,8 +51,8 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   base::android::ScopedJavaLocalRef<jobject> infobar;
   infobar.Reset(Java_UpdatePasswordInfoBar_show(
       env, reinterpret_cast<intptr_t>(this), GetEnumeratedIconId(),
-      base::android::ToJavaArrayOfStrings(env, usernames).obj(),
-      ok_button_text.obj(), cancel_button_text.obj(), branding_text.obj(),
+      base::android::ToJavaArrayOfStrings(env, usernames), ok_button_text,
+      cancel_button_text, branding_text,
       update_password_delegate->ShowMultipleAccounts(),
       update_password_delegate->is_smartlock_branding_enabled()));
 

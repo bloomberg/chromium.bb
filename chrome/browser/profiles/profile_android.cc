@@ -119,7 +119,7 @@ ProfileAndroid::ProfileAndroid(Profile* profile)
 }
 
 ProfileAndroid::~ProfileAndroid() {
-  Java_Profile_onNativeDestroyed(AttachCurrentThread(), obj_.obj());
+  Java_Profile_onNativeDestroyed(AttachCurrentThread(), obj_);
 }
 
 base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetJavaObject() {

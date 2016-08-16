@@ -43,7 +43,7 @@ class AnswersImageObserverAndroid : public BitmapFetcherService::Observer {
     ScopedJavaLocalRef<jobject> java_bitmap =
         gfx::ConvertToJavaBitmap(&answers_image);
     Java_AnswersImageObserver_onAnswersImageChanged(
-        env, java_answers_image_observer_.obj(), java_bitmap.obj());
+        env, java_answers_image_observer_, java_bitmap);
   }
 
  private:

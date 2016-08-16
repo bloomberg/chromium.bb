@@ -36,7 +36,7 @@ UsbServiceAndroid::UsbServiceAndroid(
       Java_ChromeUsbService_create(env, base::android::GetApplicationContext(),
                                    reinterpret_cast<jlong>(this)));
   ScopedJavaLocalRef<jobjectArray> devices =
-      Java_ChromeUsbService_getDevices(env, j_object_.obj());
+      Java_ChromeUsbService_getDevices(env, j_object_);
   jsize length = env->GetArrayLength(devices.obj());
   for (jsize i = 0; i < length; ++i) {
     ScopedJavaLocalRef<jobject> usb_device(
@@ -49,7 +49,7 @@ UsbServiceAndroid::UsbServiceAndroid(
 
 UsbServiceAndroid::~UsbServiceAndroid() {
   JNIEnv* env = AttachCurrentThread();
-  Java_ChromeUsbService_close(env, j_object_.obj());
+  Java_ChromeUsbService_close(env, j_object_);
 }
 
 void UsbServiceAndroid::DeviceAttached(JNIEnv* env,
@@ -92,13 +92,13 @@ void UsbServiceAndroid::DevicePermissionRequestComplete(
 ScopedJavaLocalRef<jobject> UsbServiceAndroid::OpenDevice(
     JNIEnv* env,
     const JavaRef<jobject>& wrapper) {
-  return Java_ChromeUsbService_openDevice(env, j_object_.obj(), wrapper.obj());
+  return Java_ChromeUsbService_openDevice(env, j_object_, wrapper);
 }
 
 void UsbServiceAndroid::RequestDevicePermission(const JavaRef<jobject>& wrapper,
                                                 jint device_id) {
-  Java_ChromeUsbService_requestDevicePermission(
-      AttachCurrentThread(), j_object_.obj(), wrapper.obj(), device_id);
+  Java_ChromeUsbService_requestDevicePermission(AttachCurrentThread(),
+                                                j_object_, wrapper, device_id);
 }
 
 void UsbServiceAndroid::AddDevice(scoped_refptr<UsbDeviceAndroid> device) {

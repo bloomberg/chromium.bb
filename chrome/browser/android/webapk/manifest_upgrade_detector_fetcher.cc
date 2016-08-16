@@ -127,13 +127,6 @@ void ManifestUpgradeDetectorFetcher::OnDataAvailable(const ShortcutInfo& info) {
       base::android::ConvertUTF16ToJavaString(env, info.short_name);
 
   Java_ManifestUpgradeDetectorFetcher_onDataAvailable(
-      env, java_ref_.obj(),
-      java_url.obj(),
-      java_scope.obj(),
-      java_name.obj(),
-      java_short_name.obj(),
-      info.display,
-      info.orientation,
-      info.theme_color,
-      info.background_color);
+      env, java_ref_, java_url, java_scope, java_name, java_short_name,
+      info.display, info.orientation, info.theme_color, info.background_color);
 }

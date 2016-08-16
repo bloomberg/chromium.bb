@@ -39,8 +39,8 @@ void AddToJavaArray(const Suggestion& suggestion,
 
   Java_AutofillKeyboardAccessoryBridge_addToAutofillSuggestionArray(
       env, data_array, position,
-      base::android::ConvertUTF16ToJavaString(env, suggestion.value).obj(),
-      base::android::ConvertUTF16ToJavaString(env, suggestion.label).obj(),
+      base::android::ConvertUTF16ToJavaString(env, suggestion.value),
+      base::android::ConvertUTF16ToJavaString(env, suggestion.label),
       android_icon_id, suggestion.frontend_id, deletable);
 }
 
@@ -55,8 +55,8 @@ AutofillKeyboardAccessoryView::AutofillKeyboardAccessoryView(
 
 AutofillKeyboardAccessoryView::~AutofillKeyboardAccessoryView() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AutofillKeyboardAccessoryBridge_resetNativeViewPointer(
-      env, java_object_.obj());
+  Java_AutofillKeyboardAccessoryBridge_resetNativeViewPointer(env,
+                                                              java_object_);
 }
 
 void AutofillKeyboardAccessoryView::Show() {
@@ -64,9 +64,8 @@ void AutofillKeyboardAccessoryView::Show() {
   ui::ViewAndroid* view_android = controller_->container_view();
   DCHECK(view_android);
   Java_AutofillKeyboardAccessoryBridge_init(
-      env, java_object_.obj(),
-      reinterpret_cast<intptr_t>(this),
-      view_android->GetWindowAndroid()->GetJavaObject().obj());
+      env, java_object_, reinterpret_cast<intptr_t>(this),
+      view_android->GetWindowAndroid()->GetJavaObject());
 
   UpdateBoundsAndRedrawPopup();
 }
@@ -74,7 +73,7 @@ void AutofillKeyboardAccessoryView::Show() {
 void AutofillKeyboardAccessoryView::Hide() {
   controller_ = nullptr;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AutofillKeyboardAccessoryBridge_dismiss(env, java_object_.obj());
+  Java_AutofillKeyboardAccessoryBridge_dismiss(env, java_object_);
 }
 
 void AutofillKeyboardAccessoryView::UpdateBoundsAndRedrawPopup() {
@@ -109,8 +108,8 @@ void AutofillKeyboardAccessoryView::UpdateBoundsAndRedrawPopup() {
     }
   }
 
-  Java_AutofillKeyboardAccessoryBridge_show(
-      env, java_object_.obj(), data_array.obj(), controller_->IsRTL());
+  Java_AutofillKeyboardAccessoryBridge_show(env, java_object_, data_array,
+                                            controller_->IsRTL());
 }
 
 void AutofillKeyboardAccessoryView::SuggestionSelected(
@@ -137,9 +136,9 @@ void AutofillKeyboardAccessoryView::DeletionRequested(
 
   deleting_index_ = positions_[list_index];
   Java_AutofillKeyboardAccessoryBridge_confirmDeletion(
-      env, java_object_.obj(),
-      base::android::ConvertUTF16ToJavaString(env, confirmation_title).obj(),
-      base::android::ConvertUTF16ToJavaString(env, confirmation_body).obj());
+      env, java_object_,
+      base::android::ConvertUTF16ToJavaString(env, confirmation_title),
+      base::android::ConvertUTF16ToJavaString(env, confirmation_body));
 }
 
 void AutofillKeyboardAccessoryView::DeletionConfirmed(

@@ -29,5 +29,5 @@ void ReportChildAccountFeedback(content::WebContents* web_contents,
   ScopedJavaLocalRef<jstring> jurl =
       base::android::ConvertUTF8ToJavaString(env, url.spec());
   Java_ChildAccountFeedbackReporter_reportFeedbackWithWindow(
-      env, window->GetJavaObject().obj(), jdesc.obj(), jurl.obj());
+      env, window->GetJavaObject(), jdesc, jurl);
 }

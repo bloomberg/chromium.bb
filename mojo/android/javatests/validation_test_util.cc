@@ -37,8 +37,7 @@ ScopedJavaLocalRef<jobject> ParseData(
           input, &data, &num_handles, &error_message)) {
     ScopedJavaLocalRef<jstring> j_error_message =
         base::android::ConvertUTF8ToJavaString(env, error_message);
-    return Java_ValidationTestUtil_buildData(env, nullptr, 0,
-                                             j_error_message.obj());
+    return Java_ValidationTestUtil_buildData(env, nullptr, 0, j_error_message);
   }
   void* data_ptr = &data[0];
   if (!data_ptr) {

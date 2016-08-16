@@ -32,7 +32,7 @@ AwPdfExporter::~AwPdfExporter() {
   if (obj.is_null())
     return;
   // Clear the Java peer's weak pointer to |this| object.
-  Java_AwPdfExporter_setNativeAwPdfExporter(env, obj.obj(), 0);
+  Java_AwPdfExporter_setNativeAwPdfExporter(env, obj, 0);
 }
 
 void AwPdfExporter::ExportToPdf(JNIEnv* env,
@@ -98,7 +98,7 @@ void AwPdfExporter::DidExportPdf(int fd, bool success) {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_AwPdfExporter_didExportPdf(env, obj.obj(), success);
+  Java_AwPdfExporter_didExportPdf(env, obj, success);
 }
 
 bool RegisterAwPdfExporter(JNIEnv* env) {

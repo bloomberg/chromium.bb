@@ -20,8 +20,8 @@ namespace android {
 JavaHandlerThread::JavaHandlerThread(const char* name) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  java_thread_.Reset(Java_JavaHandlerThread_create(
-      env, ConvertUTF8ToJavaString(env, name).obj()));
+  java_thread_.Reset(
+      Java_JavaHandlerThread_create(env, ConvertUTF8ToJavaString(env, name)));
 }
 
 JavaHandlerThread::~JavaHandlerThread() {
@@ -35,8 +35,7 @@ void JavaHandlerThread::Start() {
   base::WaitableEvent initialize_event(
       WaitableEvent::ResetPolicy::AUTOMATIC,
       WaitableEvent::InitialState::NOT_SIGNALED);
-  Java_JavaHandlerThread_start(env,
-                               java_thread_.obj(),
+  Java_JavaHandlerThread_start(env, java_thread_,
                                reinterpret_cast<intptr_t>(this),
                                reinterpret_cast<intptr_t>(&initialize_event));
   // Wait for thread to be initialized so it is ready to be used when Start
@@ -49,8 +48,7 @@ void JavaHandlerThread::Stop() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::WaitableEvent shutdown_event(WaitableEvent::ResetPolicy::AUTOMATIC,
                                      WaitableEvent::InitialState::NOT_SIGNALED);
-  Java_JavaHandlerThread_stop(env,
-                              java_thread_.obj(),
+  Java_JavaHandlerThread_stop(env, java_thread_,
                               reinterpret_cast<intptr_t>(this),
                               reinterpret_cast<intptr_t>(&shutdown_event));
   // Wait for thread to shut down before returning.

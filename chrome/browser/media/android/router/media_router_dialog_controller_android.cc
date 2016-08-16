@@ -133,26 +133,25 @@ void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
             env, matching_route->media_route_id());
 
     Java_ChromeMediaRouterDialogController_openRouteControllerDialog(
-        env, java_dialog_controller_.obj(), jsource_urn.obj(),
-        jmedia_route_id.obj());
+        env, java_dialog_controller_, jsource_urn, jmedia_route_id);
     return;
   }
 
   Java_ChromeMediaRouterDialogController_openRouteChooserDialog(
-      env, java_dialog_controller_.obj(), jsource_urn.obj());
+      env, java_dialog_controller_, jsource_urn);
 }
 
 void MediaRouterDialogControllerAndroid::CloseMediaRouterDialog() {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  Java_ChromeMediaRouterDialogController_closeDialog(
-      env, java_dialog_controller_.obj());
+  Java_ChromeMediaRouterDialogController_closeDialog(env,
+                                                     java_dialog_controller_);
 }
 
 bool MediaRouterDialogControllerAndroid::IsShowingMediaRouterDialog() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_ChromeMediaRouterDialogController_isShowingDialog(
-      env, java_dialog_controller_.obj());
+      env, java_dialog_controller_);
 }
 
 }  // namespace media_router

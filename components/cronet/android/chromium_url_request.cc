@@ -70,8 +70,7 @@ class JniURLRequestAdapterDelegate
       JNIEnv* env = base::android::AttachCurrentThread();
       base::android::ScopedJavaLocalRef<jobject> java_buffer(
           env, env->NewDirectByteBuffer(request_adapter->Data(), bytes_read));
-      cronet::Java_ChromiumUrlRequest_onBytesRead(
-          env, owner_, java_buffer.obj());
+      cronet::Java_ChromiumUrlRequest_onBytesRead(env, owner_, java_buffer);
     }
   }
 
@@ -85,7 +84,7 @@ class JniURLRequestAdapterDelegate
     base::android::ScopedJavaLocalRef<jobject> java_buffer(
         env, env->NewDirectByteBuffer(buf->data(), buf_length));
     jint bytes_read = cronet::Java_ChromiumUrlRequest_readFromUploadChannel(
-        env, owner_, java_buffer.obj());
+        env, owner_, java_buffer);
     return bytes_read;
   }
 
@@ -387,7 +386,7 @@ static void GetAllHeaders(JNIEnv* env,
     ScopedJavaLocalRef<jstring> value =
         ConvertUTF8ToJavaString(env, header_value);
     Java_ChromiumUrlRequest_onAppendResponseHeader(env, jcaller, jheaders_map,
-                                                   name.obj(), value.obj());
+                                                   name, value);
   }
 
   // Some implementations (notably HttpURLConnection) include a mapping for the
@@ -395,7 +394,7 @@ static void GetAllHeaders(JNIEnv* env,
   ScopedJavaLocalRef<jstring> status_line =
       ConvertUTF8ToJavaString(env, headers->GetStatusLine());
   Java_ChromiumUrlRequest_onAppendResponseHeader(env, jcaller, jheaders_map,
-                                                 nullptr, status_line.obj());
+                                                 nullptr, status_line);
 }
 
 static ScopedJavaLocalRef<jstring> GetNegotiatedProtocol(

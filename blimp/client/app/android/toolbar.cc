@@ -92,14 +92,14 @@ void Toolbar::OnUrlChanged(int tab_id, const GURL& url) {
   ScopedJavaLocalRef<jstring> jurl(
       base::android::ConvertUTF8ToJavaString(env, url.spec()));
 
-  Java_Toolbar_onEngineSentUrl(env, java_obj_.obj(), jurl.obj());
+  Java_Toolbar_onEngineSentUrl(env, java_obj_, jurl);
 }
 
 void Toolbar::OnFaviconChanged(int tab_id, const SkBitmap& favicon) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jfavicon(gfx::ConvertToJavaBitmap(&favicon));
 
-  Java_Toolbar_onEngineSentFavicon(env, java_obj_.obj(), jfavicon.obj());
+  Java_Toolbar_onEngineSentFavicon(env, java_obj_, jfavicon);
 }
 
 void Toolbar::OnTitleChanged(int tab_id, const std::string& title) {
@@ -107,14 +107,13 @@ void Toolbar::OnTitleChanged(int tab_id, const std::string& title) {
   ScopedJavaLocalRef<jstring> jtitle(
       base::android::ConvertUTF8ToJavaString(env, title));
 
-  Java_Toolbar_onEngineSentTitle(env, java_obj_.obj(), jtitle.obj());
+  Java_Toolbar_onEngineSentTitle(env, java_obj_, jtitle);
 }
 
 void Toolbar::OnLoadingChanged(int tab_id, bool loading) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  Java_Toolbar_onEngineSentLoading(env,
-                                   java_obj_.obj(),
+  Java_Toolbar_onEngineSentLoading(env, java_obj_,
                                    static_cast<jboolean>(loading));
 }
 
@@ -122,9 +121,7 @@ void Toolbar::OnPageLoadStatusUpdate(int tab_id, bool completed) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   Java_Toolbar_onEngineSentPageLoadStatusUpdate(
-      env,
-      java_obj_.obj(),
-      static_cast<jboolean>(completed));
+      env, java_obj_, static_cast<jboolean>(completed));
 }
 
 }  // namespace client

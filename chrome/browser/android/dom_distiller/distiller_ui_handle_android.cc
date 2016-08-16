@@ -31,7 +31,7 @@ void DistillerUIHandleAndroid::ReportExternalFeedback(
       env, url_utils::GetOriginalUrlFromDistillerUrl(url).spec());
 
   Java_DomDistillerUIUtils_reportFeedbackWithWebContents(
-      env, web_contents->GetJavaWebContents().obj(), jurl.obj(), good);
+      env, web_contents->GetJavaWebContents(), jurl, good);
 }
 
 // static
@@ -39,7 +39,7 @@ void DistillerUIHandleAndroid::OpenSettings(
     content::WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DomDistillerUIUtils_openSettings(env,
-      web_contents->GetJavaWebContents().obj());
+                                        web_contents->GetJavaWebContents());
 }
 
 // static

@@ -42,5 +42,5 @@ void ChromeBlimpClientContextDelegateAndroid::Destroy(
 ChromeBlimpClientContextDelegateAndroid::
     ~ChromeBlimpClientContextDelegateAndroid() {
   Java_ChromeBlimpClientContextDelegate_clearNativePtr(
-      base::android::AttachCurrentThread(), java_obj_.obj());
+      base::android::AttachCurrentThread(), java_obj_);
 }

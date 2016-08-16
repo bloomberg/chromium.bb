@@ -48,13 +48,7 @@ static base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationEntry(
     j_bitmap = gfx::ConvertToJavaBitmap(status.image.ToSkBitmap());
 
   return content::Java_NavigationControllerImpl_createNavigationEntry(
-      env,
-      index,
-      j_url.obj(),
-      j_virtual_url.obj(),
-      j_original_url.obj(),
-      j_title.obj(),
-      j_bitmap.obj(),
+      env, index, j_url, j_virtual_url, j_original_url, j_title, j_bitmap,
       entry->GetTransitionType());
 }
 
@@ -63,9 +57,7 @@ static void AddNavigationEntryToHistory(JNIEnv* env,
                                         content::NavigationEntry* entry,
                                         int index) {
   content::Java_NavigationControllerImpl_addToNavigationHistory(
-      env,
-      history,
-      CreateJavaNavigationEntry(env, entry, index).obj());
+      env, history, CreateJavaNavigationEntry(env, entry, index));
 }
 
 }  // namespace
@@ -87,7 +79,7 @@ NavigationControllerAndroid::NavigationControllerAndroid(
 }
 
 NavigationControllerAndroid::~NavigationControllerAndroid() {
-  Java_NavigationControllerImpl_destroy(AttachCurrentThread(), obj_.obj());
+  Java_NavigationControllerImpl_destroy(AttachCurrentThread(), obj_);
 }
 
 base::android::ScopedJavaLocalRef<jobject>

@@ -72,11 +72,11 @@ jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 void FontSizePrefsAndroid::OnFontScaleFactorChanged() {
   JNIEnv* env = base::android::AttachCurrentThread();
   float factor = GetFontScaleFactor(env, java_ref_);
-  Java_FontSizePrefs_onFontScaleFactorChanged(env, java_ref_.obj(), factor);
+  Java_FontSizePrefs_onFontScaleFactorChanged(env, java_ref_, factor);
 }
 
 void FontSizePrefsAndroid::OnForceEnableZoomChanged() {
   JNIEnv* env = base::android::AttachCurrentThread();
   bool enabled = GetForceEnableZoom(env, java_ref_);
-  Java_FontSizePrefs_onForceEnableZoomChanged(env, java_ref_.obj(), enabled);
+  Java_FontSizePrefs_onForceEnableZoomChanged(env, java_ref_, enabled);
 }

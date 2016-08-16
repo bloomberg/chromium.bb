@@ -34,16 +34,15 @@ ResourceManagerImpl* ResourceManagerImpl::FromJavaObject(jobject jobj) {
 ResourceManagerImpl::ResourceManagerImpl(gfx::NativeWindow native_window)
     : host_(nullptr) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_obj_.Reset(env, Java_ResourceManager_create(
-                           env, native_window->GetJavaObject().obj(),
-                           reinterpret_cast<intptr_t>(this))
-                           .obj());
+  java_obj_.Reset(
+      env, Java_ResourceManager_create(env, native_window->GetJavaObject(),
+                                       reinterpret_cast<intptr_t>(this))
+               .obj());
   DCHECK(!java_obj_.is_null());
 }
 
 ResourceManagerImpl::~ResourceManagerImpl() {
-  Java_ResourceManager_destroy(base::android::AttachCurrentThread(),
-                               java_obj_.obj());
+  Java_ResourceManager_destroy(base::android::AttachCurrentThread(), java_obj_);
 }
 
 void ResourceManagerImpl::Init(cc::LayerTreeHost* host) {
@@ -230,7 +229,7 @@ void ResourceManagerImpl::PreloadResourceFromJava(AndroidResourceType res_type,
                "resource_type", res_type,
                "resource_id", res_id);
   Java_ResourceManager_preloadResource(base::android::AttachCurrentThread(),
-                                       java_obj_.obj(), res_type, res_id);
+                                       java_obj_, res_type, res_id);
 }
 
 void ResourceManagerImpl::RequestResourceFromJava(AndroidResourceType res_type,
@@ -239,7 +238,7 @@ void ResourceManagerImpl::RequestResourceFromJava(AndroidResourceType res_type,
                "resource_type", res_type,
                "resource_id", res_id);
   Java_ResourceManager_resourceRequested(base::android::AttachCurrentThread(),
-                                         java_obj_.obj(), res_type, res_id);
+                                         java_obj_, res_type, res_id);
 }
 
 void ResourceManagerImpl::RequestCrushedSpriteResourceFromJava(
@@ -249,8 +248,8 @@ void ResourceManagerImpl::RequestCrushedSpriteResourceFromJava(
                "bitmap_res_id", bitmap_res_id,
                "metadata_res_id", metadata_res_id);
   Java_ResourceManager_crushedSpriteResourceRequested(
-      base::android::AttachCurrentThread(), java_obj_.obj(),
-      bitmap_res_id, metadata_res_id, reloading);
+      base::android::AttachCurrentThread(), java_obj_, bitmap_res_id,
+      metadata_res_id, reloading);
 }
 
 }  // namespace ui

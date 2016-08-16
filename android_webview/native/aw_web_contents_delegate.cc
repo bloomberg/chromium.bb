@@ -143,8 +143,8 @@ void AwWebContentsDelegate::AddNewContents(WebContents* source,
   bool create_popup = false;
 
   if (java_delegate.obj()) {
-    create_popup = Java_AwWebContentsDelegate_addNewContents(env,
-        java_delegate.obj(), is_dialog, user_gesture);
+    create_popup = Java_AwWebContentsDelegate_addNewContents(
+        env, java_delegate, is_dialog, user_gesture);
   }
 
   if (create_popup) {
@@ -178,7 +178,7 @@ void AwWebContentsDelegate::NavigationStateChanged(
 
   ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
   if (java_delegate.obj()) {
-    Java_AwWebContentsDelegate_navigationStateChanged(env, java_delegate.obj(),
+    Java_AwWebContentsDelegate_navigationStateChanged(env, java_delegate,
                                                       changed_flags);
   }
 }
@@ -199,7 +199,7 @@ void AwWebContentsDelegate::CloseContents(WebContents* source) {
 
   ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
   if (java_delegate.obj()) {
-    Java_AwWebContentsDelegate_closeContents(env, java_delegate.obj());
+    Java_AwWebContentsDelegate_closeContents(env, java_delegate);
   }
 }
 
@@ -208,7 +208,7 @@ void AwWebContentsDelegate::ActivateContents(WebContents* contents) {
 
   ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
   if (java_delegate.obj()) {
-    Java_AwWebContentsDelegate_activateContents(env, java_delegate.obj());
+    Java_AwWebContentsDelegate_activateContents(env, java_delegate);
   }
 }
 
@@ -220,7 +220,7 @@ void AwWebContentsDelegate::LoadingStateChanged(WebContents* source,
 
   ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
   if (java_delegate.obj()) {
-    Java_AwWebContentsDelegate_loadingStateChanged(env, java_delegate.obj());
+    Java_AwWebContentsDelegate_loadingStateChanged(env, java_delegate);
   }
 }
 

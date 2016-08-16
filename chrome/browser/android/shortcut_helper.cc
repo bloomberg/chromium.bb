@@ -127,22 +127,11 @@ void ShortcutHelper::AddWebappWithSkBitmap(
   uintptr_t callback_pointer =
       reinterpret_cast<uintptr_t>(new base::Closure(splash_image_callback));
 
-  Java_ShortcutHelper_addWebapp(
-      env,
-      java_webapp_id.obj(),
-      java_url.obj(),
-      java_scope_url.obj(),
-      java_user_title.obj(),
-      java_name.obj(),
-      java_short_name.obj(),
-      java_icon_url.obj(),
-      java_bitmap.obj(),
-      info.display,
-      info.orientation,
-      info.source,
-      info.theme_color,
-      info.background_color,
-      callback_pointer);
+  Java_ShortcutHelper_addWebapp(env, java_webapp_id, java_url, java_scope_url,
+                                java_user_title, java_name, java_short_name,
+                                java_icon_url, java_bitmap, info.display,
+                                info.orientation, info.source, info.theme_color,
+                                info.background_color, callback_pointer);
 }
 
 void ShortcutHelper::AddShortcutWithSkBitmap(
@@ -157,8 +146,8 @@ void ShortcutHelper::AddShortcutWithSkBitmap(
   if (icon_bitmap.getSize())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
-  Java_ShortcutHelper_addShortcut(env, java_url.obj(), java_user_title.obj(),
-                                  java_bitmap.obj(), info.source);
+  Java_ShortcutHelper_addShortcut(env, java_url, java_user_title, java_bitmap,
+                                  info.source);
 }
 
 void ShortcutHelper::OnBuiltWebApk(bool success) {
@@ -223,10 +212,8 @@ void ShortcutHelper::StoreWebappSplashImage(
   ScopedJavaLocalRef<jobject> java_splash_image =
       gfx::ConvertToJavaBitmap(&splash_image);
 
-  Java_ShortcutHelper_storeWebappSplashImage(
-      env,
-      java_webapp_id.obj(),
-      java_splash_image.obj());
+  Java_ShortcutHelper_storeWebappSplashImage(env, java_webapp_id,
+                                             java_splash_image);
 }
 
 // static
@@ -245,8 +232,8 @@ SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
                                                          bitmap.height())) {
       ScopedJavaLocalRef<jobject> java_bitmap =
           gfx::ConvertToJavaBitmap(&bitmap);
-      result = Java_ShortcutHelper_createHomeScreenIconFromWebIcon(
-          env, java_bitmap.obj());
+      result =
+          Java_ShortcutHelper_createHomeScreenIconFromWebIcon(env, java_bitmap);
     }
   }
 
@@ -261,7 +248,7 @@ SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
 
     *is_generated = true;
     result = Java_ShortcutHelper_generateHomeScreenIcon(
-        env, java_url.obj(), SkColorGetR(mean_color), SkColorGetG(mean_color),
+        env, java_url, SkColorGetR(mean_color), SkColorGetG(mean_color),
         SkColorGetB(mean_color));
   }
 
@@ -275,7 +262,7 @@ bool ShortcutHelper::IsWebApkInstalled(const GURL& url) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_url =
       base::android::ConvertUTF8ToJavaString(env, url.spec());
-  return Java_ShortcutHelper_isWebApkInstalled(env, java_url.obj());
+  return Java_ShortcutHelper_isWebApkInstalled(env, java_url);
 }
 
 GURL ShortcutHelper::GetScopeFromURL(const GURL& url) {
@@ -283,7 +270,7 @@ GURL ShortcutHelper::GetScopeFromURL(const GURL& url) {
   ScopedJavaLocalRef<jstring> java_url =
       base::android::ConvertUTF8ToJavaString(env, url.spec());
   ScopedJavaLocalRef<jstring> java_scope_url =
-      Java_ShortcutHelper_getScopeFromUrl(env, java_url.obj());
+      Java_ShortcutHelper_getScopeFromUrl(env, java_url);
   return GURL(base::android::ConvertJavaStringToUTF16(env, java_scope_url));
 }
 

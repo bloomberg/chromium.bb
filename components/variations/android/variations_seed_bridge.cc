@@ -89,10 +89,10 @@ void SetJavaFirstRunPrefsForTesting(const std::string& seed_data,
                                     bool is_gzip_compressed) {
   JNIEnv* env = AttachCurrentThread();
   Java_VariationsSeedBridge_setVariationsFirstRunSeed(
-      env, GetApplicationContext(), StringToJavaByteArray(env, seed_data).obj(),
-      ConvertUTF8ToJavaString(env, seed_signature).obj(),
-      ConvertUTF8ToJavaString(env, seed_country).obj(),
-      ConvertUTF8ToJavaString(env, response_date).obj(),
+      env, GetApplicationContext(), StringToJavaByteArray(env, seed_data),
+      ConvertUTF8ToJavaString(env, seed_signature),
+      ConvertUTF8ToJavaString(env, seed_country),
+      ConvertUTF8ToJavaString(env, response_date),
       static_cast<jboolean>(is_gzip_compressed));
 }
 

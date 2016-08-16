@@ -73,7 +73,7 @@ void JsonSanitizerAndroid::Sanitize(const std::string& unsafe_json) {
 
   // This will synchronously call either OnSuccess() or OnError().
   Java_JsonSanitizer_sanitize(env, reinterpret_cast<jlong>(this),
-                              unsafe_json_java.obj());
+                              unsafe_json_java);
 }
 
 void JsonSanitizerAndroid::OnSuccess(const std::string& json) {

@@ -63,10 +63,10 @@ ScopedJavaLocalRef<jobject> TranslateInfoBar::CreateRenderInfoBar(JNIEnv* env) {
                                              delegate->target_language_code());
 
   return Java_TranslateInfoBar_show(
-      env, delegate->translate_step(), source_language_code.obj(),
-      target_language_code.obj(), delegate->ShouldAlwaysTranslate(),
+      env, delegate->translate_step(), source_language_code,
+      target_language_code, delegate->ShouldAlwaysTranslate(),
       ShouldDisplayNeverTranslateInfoBarOnCancel(),
-      delegate->triggered_from_menu(), java_languages.obj(), java_codes.obj());
+      delegate->triggered_from_menu(), java_languages, java_codes);
 }
 
 void TranslateInfoBar::ProcessButton(int action) {
@@ -104,7 +104,7 @@ void TranslateInfoBar::SetJavaInfoBar(
     const base::android::JavaRef<jobject>& java_info_bar) {
   InfoBarAndroid::SetJavaInfoBar(java_info_bar);
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_TranslateInfoBar_setNativePtr(env, java_info_bar.obj(),
+  Java_TranslateInfoBar_setNativePtr(env, java_info_bar,
                                      reinterpret_cast<intptr_t>(this));
 }
 

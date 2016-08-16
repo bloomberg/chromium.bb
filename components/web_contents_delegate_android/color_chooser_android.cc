@@ -37,11 +37,7 @@ ColorChooserAndroid::ColorChooserAndroid(
       ScopedJavaLocalRef<jstring> label = ConvertUTF16ToJavaString(
           env, suggestion.label);
       Java_ColorChooserAndroid_addToColorSuggestionArray(
-          env,
-          suggestions_array.obj(),
-          i,
-          suggestion.color,
-          label.obj());
+          env, suggestions_array, i, suggestion.color, label);
     }
   }
 
@@ -52,11 +48,8 @@ ColorChooserAndroid::ColorChooserAndroid(
         content_view_core->GetJavaObject();
     if (!java_content_view_core.is_null()) {
       j_color_chooser_.Reset(Java_ColorChooserAndroid_createColorChooserAndroid(
-          env,
-          reinterpret_cast<intptr_t>(this),
-          java_content_view_core.obj(),
-          initial_color,
-          suggestions_array.obj()));
+          env, reinterpret_cast<intptr_t>(this), java_content_view_core,
+          initial_color, suggestions_array));
     }
   }
   if (j_color_chooser_.is_null())
@@ -69,7 +62,7 @@ ColorChooserAndroid::~ColorChooserAndroid() {
 void ColorChooserAndroid::End() {
   if (!j_color_chooser_.is_null()) {
     JNIEnv* env = AttachCurrentThread();
-    Java_ColorChooserAndroid_closeColorChooser(env, j_color_chooser_.obj());
+    Java_ColorChooserAndroid_closeColorChooser(env, j_color_chooser_);
   }
 }
 

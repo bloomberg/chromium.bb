@@ -220,7 +220,7 @@ void ScreenCaptureMachineAndroid::Start(
   DCHECK(!(params.requested_format.frame_size.height() % 2));
 
   const jboolean ret = Java_ScreenCapture_startPrompt(
-      AttachCurrentThread(), j_capture_.obj(),
+      AttachCurrentThread(), j_capture_,
       params.requested_format.frame_size.width(),
       params.requested_format.frame_size.height());
 
@@ -228,7 +228,7 @@ void ScreenCaptureMachineAndroid::Start(
 }
 
 void ScreenCaptureMachineAndroid::Stop(const base::Closure& callback) {
-  Java_ScreenCapture_stopCapture(AttachCurrentThread(), j_capture_.obj());
+  Java_ScreenCapture_stopCapture(AttachCurrentThread(), j_capture_);
 
   callback.Run();
 }

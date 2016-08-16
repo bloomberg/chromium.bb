@@ -138,9 +138,7 @@ bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
       env, navigation_params, has_user_gesture_carryover);
 
   return Java_InterceptNavigationDelegate_shouldIgnoreNavigation(
-      env,
-      jdelegate.obj(),
-      jobject_params.obj());
+      env, jdelegate, jobject_params);
 }
 
 void InterceptNavigationDelegate::UpdateLastUserGestureCarryoverTimestamp() {

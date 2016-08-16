@@ -38,8 +38,7 @@ SceneLayer::~SceneLayer() {
     return;
 
   Java_SceneLayer_setNativePtr(
-      env, jobj.obj(),
-      reinterpret_cast<intptr_t>(static_cast<SceneLayer*>(NULL)));
+      env, jobj, reinterpret_cast<intptr_t>(static_cast<SceneLayer*>(NULL)));
 }
 
 void SceneLayer::OnDetach() {

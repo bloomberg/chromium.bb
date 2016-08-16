@@ -180,7 +180,7 @@ jboolean BlimpView::OnTouchEvent(JNIEnv* env,
 
 void BlimpView::OnSwapBuffersCompleted() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BlimpView_onSwapBuffersCompleted(env, java_obj_.obj());
+  Java_BlimpView_onSwapBuffersCompleted(env, java_obj_);
 }
 
 void BlimpView::DidCommitAndDrawFrame() {

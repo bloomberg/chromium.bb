@@ -16,7 +16,7 @@ void InterfaceRegistrarAndroid::ExposeInterfacesToRenderer(
     InterfaceRegistryAndroid* registry) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_InterfaceRegistrar_exposeInterfacesToRenderer(
-      env, registry->GetObj().obj(), base::android::GetApplicationContext());
+      env, registry->GetObj(), base::android::GetApplicationContext());
 }
 
 // static
@@ -24,6 +24,6 @@ void InterfaceRegistrarAndroid::ExposeInterfacesToFrame(
   InterfaceRegistryAndroid* registry) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_InterfaceRegistrar_exposeInterfacesToFrame(
-      env, registry->GetObj().obj(), base::android::GetApplicationContext());
+      env, registry->GetObj(), base::android::GetApplicationContext());
 }
 }  // namespace content

@@ -74,8 +74,7 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jobjectArray> joa =
-      Java_CookiesFetcher_createCookiesArray(
-          env, jobject_.obj(), cookies.size());
+      Java_CookiesFetcher_createCookiesArray(env, jobject_, cookies.size());
 
   int index = 0;
   for (net::CookieList::const_iterator i = cookies.begin();
@@ -84,18 +83,17 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
     if (domain.length() > 1 && domain[0] == '.')
       domain = domain.substr(1);
     ScopedJavaLocalRef<jobject> java_cookie = Java_CookiesFetcher_createCookie(
-        env, jobject_.obj(),
-        base::android::ConvertUTF8ToJavaString(env, i->Name()).obj(),
-        base::android::ConvertUTF8ToJavaString(env, i->Value()).obj(),
-        base::android::ConvertUTF8ToJavaString(env, i->Domain()).obj(),
-        base::android::ConvertUTF8ToJavaString(env, i->Path()).obj(),
+        env, jobject_, base::android::ConvertUTF8ToJavaString(env, i->Name()),
+        base::android::ConvertUTF8ToJavaString(env, i->Value()),
+        base::android::ConvertUTF8ToJavaString(env, i->Domain()),
+        base::android::ConvertUTF8ToJavaString(env, i->Path()),
         i->CreationDate().ToInternalValue(), i->ExpiryDate().ToInternalValue(),
         i->LastAccessDate().ToInternalValue(), i->IsSecure(), i->IsHttpOnly(),
         static_cast<int>(i->SameSite()), i->Priority());
     env->SetObjectArrayElement(joa.obj(), index++, java_cookie.obj());
   }
 
-  Java_CookiesFetcher_onCookieFetchFinished(env, jobject_.obj(), joa.obj());
+  Java_CookiesFetcher_onCookieFetchFinished(env, jobject_, joa);
 
   // Give up the reference.
   jobject_.Reset();

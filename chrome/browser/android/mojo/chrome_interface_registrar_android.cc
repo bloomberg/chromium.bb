@@ -24,6 +24,6 @@ void ChromeInterfaceRegistrarAndroid::ExposeInterfacesToFrame(
 
   Java_ChromeInterfaceRegistrar_exposeInterfacesToFrame(
       base::android::AttachCurrentThread(),
-      content::InterfaceRegistryAndroid::Create(registry)->GetObj().obj(),
-      web_contents->GetJavaWebContents().obj());
+      content::InterfaceRegistryAndroid::Create(registry)->GetObj(),
+      web_contents->GetJavaWebContents());
 }

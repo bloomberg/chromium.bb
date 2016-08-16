@@ -42,7 +42,7 @@ DummyBlimpClientContextAndroid::DummyBlimpClientContextAndroid() {
 
 DummyBlimpClientContextAndroid::~DummyBlimpClientContextAndroid() {
   Java_DummyBlimpClientContext_clearNativePtr(
-      base::android::AttachCurrentThread(), java_obj_.obj());
+      base::android::AttachCurrentThread(), java_obj_);
 }
 
 base::android::ScopedJavaLocalRef<jobject>

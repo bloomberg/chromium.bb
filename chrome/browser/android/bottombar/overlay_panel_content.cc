@@ -46,8 +46,7 @@ OverlayPanelContent::OverlayPanelContent(JNIEnv* env, jobject obj) {
 
 OverlayPanelContent::~OverlayPanelContent() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_OverlayPanelContent_clearNativePanelContentPtr(
-      env, java_manager_.obj());
+  Java_OverlayPanelContent_clearNativePanelContentPtr(env, java_manager_);
 }
 
 void OverlayPanelContent::Destroy(JNIEnv* env,

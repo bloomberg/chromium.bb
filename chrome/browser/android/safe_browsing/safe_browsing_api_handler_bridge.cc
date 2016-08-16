@@ -192,9 +192,8 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
   ScopedJavaLocalRef<jintArray> j_threat_types =
       SBThreatTypesToJavaArray(env, local_threat_types);
 
-  Java_SafeBrowsingApiBridge_startUriLookup(env, j_api_handler_.obj(),
-                                             callback_id, j_url.obj(),
-                                             j_threat_types.obj());
+  Java_SafeBrowsingApiBridge_startUriLookup(env, j_api_handler_, callback_id,
+                                            j_url, j_threat_types);
 }
 
 }  // namespace safe_browsing

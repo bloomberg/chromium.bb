@@ -135,7 +135,7 @@ TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
 TabAndroid::~TabAndroid() {
   GetContentLayer()->RemoveAllChildren();
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_clearNativePtr(env, weak_java_tab_.get(env).obj());
+  Java_Tab_clearNativePtr(env, weak_java_tab_.get(env));
 }
 
 base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetJavaObject() {
@@ -149,29 +149,29 @@ scoped_refptr<cc::Layer> TabAndroid::GetContentLayer() const {
 
 int TabAndroid::GetAndroidId() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_Tab_getId(env, weak_java_tab_.get(env).obj());
+  return Java_Tab_getId(env, weak_java_tab_.get(env));
 }
 
 int TabAndroid::GetSyncId() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_Tab_getSyncId(env, weak_java_tab_.get(env).obj());
+  return Java_Tab_getSyncId(env, weak_java_tab_.get(env));
 }
 
 base::string16 TabAndroid::GetTitle() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   return base::android::ConvertJavaStringToUTF16(
-      Java_Tab_getTitle(env, weak_java_tab_.get(env).obj()));
+      Java_Tab_getTitle(env, weak_java_tab_.get(env)));
 }
 
 GURL TabAndroid::GetURL() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   return GURL(base::android::ConvertJavaStringToUTF8(
-      Java_Tab_getUrl(env, weak_java_tab_.get(env).obj())));
+      Java_Tab_getUrl(env, weak_java_tab_.get(env))));
 }
 
 bool TabAndroid::LoadIfNeeded() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_Tab_loadIfNeeded(env, weak_java_tab_.get(env).obj());
+  return Java_Tab_loadIfNeeded(env, weak_java_tab_.get(env));
 }
 
 Profile* TabAndroid::GetProfile() const {
@@ -198,7 +198,7 @@ void TabAndroid::SetWindowSessionID(SessionID::id_type window_id) {
 
 void TabAndroid::SetSyncId(int sync_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_setSyncId(env, weak_java_tab_.get(env).obj(), sync_id);
+  Java_Tab_setSyncId(env, weak_java_tab_.get(env), sync_id);
 }
 
 void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
@@ -222,12 +222,7 @@ void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
     ScopedJavaLocalRef<jobject> jpost_data;
     if (params->uses_post && params->post_data)
       jpost_data = params->post_data->ToJavaObject(env);
-    Java_Tab_openNewTab(env,
-                        jobj.obj(),
-                        jurl.obj(),
-                        jheaders.obj(),
-                        jpost_data.obj(),
-                        disposition,
+    Java_Tab_openNewTab(env, jobj, jurl, jheaders, jpost_data, disposition,
                         params->created_with_opener,
                         params->is_renderer_initiated);
   } else {
@@ -259,12 +254,9 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
                                  bool did_start_load,
                                  bool did_finish_load) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_swapWebContents(
-      env,
-      weak_java_tab_.get(env).obj(),
-      new_contents->GetJavaWebContents().obj(),
-      did_start_load,
-      did_finish_load);
+  Java_Tab_swapWebContents(env, weak_java_tab_.get(env),
+                           new_contents->GetJavaWebContents(), did_start_load,
+                           did_finish_load);
 }
 
 void TabAndroid::DefaultSearchProviderChanged(
@@ -303,8 +295,7 @@ void TabAndroid::OnWebContentsInstantSupportDisabled(
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_onWebContentsInstantSupportDisabled(env,
-                                               weak_java_tab_.get(env).obj());
+  Java_Tab_onWebContentsInstantSupportDisabled(env, weak_java_tab_.get(env));
 }
 
 void TabAndroid::Observe(int type,
@@ -333,7 +324,7 @@ void TabAndroid::Observe(int type,
       break;
     }
     case content::NOTIFICATION_NAV_ENTRY_CHANGED:
-      Java_Tab_onNavEntryChanged(env, weak_java_tab_.get(env).obj());
+      Java_Tab_onNavEntryChanged(env, weak_java_tab_.get(env));
       break;
     default:
       NOTREACHED() << "Unexpected notification " << type;
@@ -356,8 +347,8 @@ void TabAndroid::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_onFaviconAvailable(env, weak_java_tab_.get(env).obj(),
-                              gfx::ConvertToJavaBitmap(&favicon).obj());
+  Java_Tab_onFaviconAvailable(env, weak_java_tab_.get(env),
+                              gfx::ConvertToJavaBitmap(&favicon));
 }
 
 void TabAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -641,7 +632,7 @@ bool TabAndroid::Print(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 void TabAndroid::SetPendingPrint() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_setPendingPrint(env, weak_java_tab_.get(env).obj());
+  Java_Tab_setPendingPrint(env, weak_java_tab_.get(env));
 }
 
 ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(
@@ -774,13 +765,12 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
 
 void TabAndroid::ShowOfflinePages() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_showOfflinePages(env, weak_java_tab_.get(env).obj());
+  Java_Tab_showOfflinePages(env, weak_java_tab_.get(env));
 }
 
 void TabAndroid::OnLoFiResponseReceived(bool is_preview) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_onLoFiResponseReceived(env, weak_java_tab_.get(env).obj(),
-                                  is_preview);
+  Java_Tab_onLoFiResponseReceived(env, weak_java_tab_.get(env), is_preview);
 }
 
 jboolean TabAndroid::IsOfflinePage(JNIEnv* env,

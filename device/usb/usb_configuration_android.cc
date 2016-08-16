@@ -16,16 +16,16 @@ UsbConfigDescriptor UsbConfigurationAndroid::Convert(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& usb_configuration) {
   ScopedJavaLocalRef<jobject> wrapper =
-      Java_ChromeUsbConfiguration_create(env, usb_configuration.obj());
+      Java_ChromeUsbConfiguration_create(env, usb_configuration);
 
   UsbConfigDescriptor config(
-      Java_ChromeUsbConfiguration_getConfigurationValue(env, wrapper.obj()),
-      Java_ChromeUsbConfiguration_isSelfPowered(env, wrapper.obj()),
-      Java_ChromeUsbConfiguration_isRemoteWakeup(env, wrapper.obj()),
-      Java_ChromeUsbConfiguration_getMaxPower(env, wrapper.obj()));
+      Java_ChromeUsbConfiguration_getConfigurationValue(env, wrapper),
+      Java_ChromeUsbConfiguration_isSelfPowered(env, wrapper),
+      Java_ChromeUsbConfiguration_isRemoteWakeup(env, wrapper),
+      Java_ChromeUsbConfiguration_getMaxPower(env, wrapper));
 
   ScopedJavaLocalRef<jobjectArray> interfaces =
-      Java_ChromeUsbConfiguration_getInterfaces(env, wrapper.obj());
+      Java_ChromeUsbConfiguration_getInterfaces(env, wrapper);
   jsize count = env->GetArrayLength(interfaces.obj());
   config.interfaces.reserve(count);
   for (jsize i = 0; i < count; ++i) {

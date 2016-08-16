@@ -46,7 +46,7 @@ void BackgroundSyncNetworkObserverAndroid::Observer::Init() {
 BackgroundSyncNetworkObserverAndroid::Observer::~Observer() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BackgroundSyncNetworkObserver_removeObserver(
-      env, j_observer_.obj(), reinterpret_cast<jlong>(this));
+      env, j_observer_, reinterpret_cast<jlong>(this));
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   j_observer_.Release();
 }

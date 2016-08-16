@@ -117,16 +117,9 @@ void MediaRouterAndroid::CreateRoute(
   ScopedJavaLocalRef<jstring> jorigin =
           base::android::ConvertUTF8ToJavaString(env, origin.spec());
 
-  Java_ChromeMediaRouter_createRoute(
-      env,
-      java_media_router_.obj(),
-      jsource_id.obj(),
-      jsink_id.obj(),
-      jpresentation_id.obj(),
-      jorigin.obj(),
-      tab_id,
-      is_incognito,
-      route_request_id);
+  Java_ChromeMediaRouter_createRoute(env, java_media_router_, jsource_id,
+                                     jsink_id, jpresentation_id, jorigin,
+                                     tab_id, is_incognito, route_request_id);
 }
 
 void MediaRouterAndroid::ConnectRouteByRouteId(
@@ -180,22 +173,16 @@ void MediaRouterAndroid::JoinRoute(
   ScopedJavaLocalRef<jstring> jorigin =
           base::android::ConvertUTF8ToJavaString(env, origin.spec());
 
-  Java_ChromeMediaRouter_joinRoute(
-      env,
-      java_media_router_.obj(),
-      jsource_id.obj(),
-      jpresentation_id.obj(),
-      jorigin.obj(),
-      tab_id,
-      request_id);
+  Java_ChromeMediaRouter_joinRoute(env, java_media_router_, jsource_id,
+                                   jpresentation_id, jorigin, tab_id,
+                                   request_id);
 }
 
 void MediaRouterAndroid::TerminateRoute(const MediaRoute::Id& route_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =
           base::android::ConvertUTF8ToJavaString(env, route_id);
-  Java_ChromeMediaRouter_closeRoute(
-      env, java_media_router_.obj(), jroute_id.obj());
+  Java_ChromeMediaRouter_closeRoute(env, java_media_router_, jroute_id);
 }
 
 void MediaRouterAndroid::SendRouteMessage(
@@ -209,12 +196,8 @@ void MediaRouterAndroid::SendRouteMessage(
           base::android::ConvertUTF8ToJavaString(env, route_id);
   ScopedJavaLocalRef<jstring> jmessage =
           base::android::ConvertUTF8ToJavaString(env, message);
-  Java_ChromeMediaRouter_sendStringMessage(
-      env,
-      java_media_router_.obj(),
-      jroute_id.obj(),
-      jmessage.obj(),
-      callback_id);
+  Java_ChromeMediaRouter_sendStringMessage(env, java_media_router_, jroute_id,
+                                           jmessage, callback_id);
 }
 
 void MediaRouterAndroid::SendRouteBinaryMessage(
@@ -228,9 +211,8 @@ void MediaRouterAndroid::SendRouteBinaryMessage(
       base::android::ConvertUTF8ToJavaString(env, route_id);
   ScopedJavaLocalRef<jbyteArray> jbyte_array =
       base::android::ToJavaByteArray(env, &((*data)[0]), data->size());
-  Java_ChromeMediaRouter_sendBinaryMessage(env, java_media_router_.obj(),
-                                           jroute_id.obj(), jbyte_array.obj(),
-                                           callback_id);
+  Java_ChromeMediaRouter_sendBinaryMessage(env, java_media_router_, jroute_id,
+                                           jbyte_array, callback_id);
 }
 
 void MediaRouterAndroid::AddIssue(const Issue& issue) {
@@ -257,8 +239,7 @@ void MediaRouterAndroid::DetachRoute(const MediaRoute::Id& route_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =
           base::android::ConvertUTF8ToJavaString(env, route_id);
-  Java_ChromeMediaRouter_detachRoute(
-      env, java_media_router_.obj(), jroute_id.obj());
+  Java_ChromeMediaRouter_detachRoute(env, java_media_router_, jroute_id);
 }
 
 bool MediaRouterAndroid::RegisterMediaSinksObserver(
@@ -278,7 +259,7 @@ bool MediaRouterAndroid::RegisterMediaSinksObserver(
   ScopedJavaLocalRef<jstring> jsource_id =
       base::android::ConvertUTF8ToJavaString(env, source_id);
   return Java_ChromeMediaRouter_startObservingMediaSinks(
-      env, java_media_router_.obj(), jsource_id.obj());
+      env, java_media_router_, jsource_id);
 }
 
 void MediaRouterAndroid::UnregisterMediaSinksObserver(
@@ -298,8 +279,8 @@ void MediaRouterAndroid::UnregisterMediaSinksObserver(
     JNIEnv* env = base::android::AttachCurrentThread();
     ScopedJavaLocalRef<jstring> jsource_id =
         base::android::ConvertUTF8ToJavaString(env, source_id);
-    Java_ChromeMediaRouter_stopObservingMediaSinks(
-        env, java_media_router_.obj(), jsource_id.obj());
+    Java_ChromeMediaRouter_stopObservingMediaSinks(env, java_media_router_,
+                                                   jsource_id);
   }
 }
 
@@ -360,12 +341,10 @@ void MediaRouterAndroid::OnSinksReceived(
   std::vector<MediaSink> sinks_converted;
   sinks_converted.reserve(jcount);
   for (int i = 0; i < jcount; ++i) {
-    ScopedJavaLocalRef<jstring> jsink_urn =
-        Java_ChromeMediaRouter_getSinkUrn(
-            env, java_media_router_.obj(), jsource_urn, i);
-    ScopedJavaLocalRef<jstring> jsink_name =
-        Java_ChromeMediaRouter_getSinkName(
-            env, java_media_router_.obj(), jsource_urn, i);
+    ScopedJavaLocalRef<jstring> jsink_urn = Java_ChromeMediaRouter_getSinkUrn(
+        env, java_media_router_, jsource_urn, i);
+    ScopedJavaLocalRef<jstring> jsink_name = Java_ChromeMediaRouter_getSinkName(
+        env, java_media_router_, jsource_urn, i);
     sinks_converted.push_back(
         MediaSink(ConvertJavaStringToUTF8(env, jsink_urn.obj()),
         ConvertJavaStringToUTF8(env, jsink_name.obj()),

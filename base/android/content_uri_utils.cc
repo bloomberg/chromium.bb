@@ -19,7 +19,7 @@ bool ContentUriExists(const FilePath& content_uri) {
   ScopedJavaLocalRef<jstring> j_uri =
       ConvertUTF8ToJavaString(env, content_uri.value());
   return Java_ContentUriUtils_contentUriExists(
-      env, base::android::GetApplicationContext(), j_uri.obj());
+      env, base::android::GetApplicationContext(), j_uri);
 }
 
 File OpenContentUriForRead(const FilePath& content_uri) {
@@ -27,7 +27,7 @@ File OpenContentUriForRead(const FilePath& content_uri) {
   ScopedJavaLocalRef<jstring> j_uri =
       ConvertUTF8ToJavaString(env, content_uri.value());
   jint fd = Java_ContentUriUtils_openContentUriForRead(
-      env, base::android::GetApplicationContext(), j_uri.obj());
+      env, base::android::GetApplicationContext(), j_uri);
   if (fd < 0)
     return File();
   return File(fd);
@@ -37,9 +37,8 @@ std::string GetContentUriMimeType(const FilePath& content_uri) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_uri =
       ConvertUTF8ToJavaString(env, content_uri.value());
-  ScopedJavaLocalRef<jstring> j_mime =
-      Java_ContentUriUtils_getMimeType(
-          env, base::android::GetApplicationContext(), j_uri.obj());
+  ScopedJavaLocalRef<jstring> j_mime = Java_ContentUriUtils_getMimeType(
+      env, base::android::GetApplicationContext(), j_uri);
   if (j_mime.is_null())
     return std::string();
 

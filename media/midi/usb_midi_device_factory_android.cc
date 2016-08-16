@@ -33,7 +33,7 @@ UsbMidiDeviceFactoryAndroid::~UsbMidiDeviceFactoryAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!raw_factory_.is_null())
     Java_UsbMidiDeviceFactoryAndroid_close(
-        env, raw_factory_.obj(), base::android::GetApplicationContext());
+        env, raw_factory_, base::android::GetApplicationContext());
 }
 
 void UsbMidiDeviceFactoryAndroid::EnumerateDevices(
@@ -49,7 +49,7 @@ void UsbMidiDeviceFactoryAndroid::EnumerateDevices(
   callback_ = callback;
 
   if (Java_UsbMidiDeviceFactoryAndroid_enumerateDevices(
-          env, raw_factory_.obj(), base::android::GetApplicationContext())) {
+          env, raw_factory_, base::android::GetApplicationContext())) {
     // Asynchronous operation.
     return;
   }

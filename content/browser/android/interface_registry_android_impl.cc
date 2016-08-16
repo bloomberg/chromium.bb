@@ -34,8 +34,8 @@ void CreateImplAndAttach(
     mojo::ScopedMessagePipeHandle handle) {
   JNIEnv* env = AttachCurrentThread();
   Java_InterfaceRegistry_createImplAndAttach(
-      env, j_scoped_interface_registry.obj(), handle.release().value(),
-      j_scoped_manager.obj(), j_scoped_factory.obj());
+      env, j_scoped_interface_registry, handle.release().value(),
+      j_scoped_manager, j_scoped_factory);
 }
 
 }  // namespace
@@ -52,7 +52,7 @@ bool InterfaceRegistryAndroidImpl::Register(JNIEnv* env) {
 }
 
 InterfaceRegistryAndroidImpl::~InterfaceRegistryAndroidImpl() {
-  Java_InterfaceRegistry_destroy(AttachCurrentThread(), obj_.obj());
+  Java_InterfaceRegistry_destroy(AttachCurrentThread(), obj_);
 }
 
 // Constructor and destructor call into Java.

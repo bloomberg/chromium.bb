@@ -33,7 +33,7 @@ void OpenExternal(Profile* profile, const GURL& url) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_url =
       base::android::ConvertUTF8ToJavaString(env, url.spec());
-  Java_PlatformUtil_launchExternalProtocol(env, j_url.obj());
+  Java_PlatformUtil_launchExternalProtocol(env, j_url);
 }
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {

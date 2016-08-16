@@ -38,7 +38,7 @@ AwPermissionRequest::AwPermissionRequest(
   JNIEnv* env = AttachCurrentThread();
   *java_peer = Java_AwPermissionRequest_create(
       env, reinterpret_cast<jlong>(this),
-      ConvertUTF8ToJavaString(env, GetOrigin().spec()).obj(), GetResources());
+      ConvertUTF8ToJavaString(env, GetOrigin().spec()), GetResources());
   java_ref_ = JavaObjectWeakGlobalRef(env, java_peer->obj());
 }
 
@@ -63,8 +63,7 @@ void AwPermissionRequest::DeleteThis() {
   ScopedJavaLocalRef<jobject> j_request = GetJavaObject();
   if (j_request.is_null())
     return;
-  Java_AwPermissionRequest_destroyNative(AttachCurrentThread(),
-                                         j_request.obj());
+  Java_AwPermissionRequest_destroyNative(AttachCurrentThread(), j_request);
 }
 
 void AwPermissionRequest::Destroy(JNIEnv* env,

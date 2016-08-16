@@ -61,32 +61,28 @@ AutofillSaveCardInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   base::android::ScopedJavaLocalRef<jobject> java_delegate =
       Java_AutofillSaveCardInfoBar_create(
           env, reinterpret_cast<intptr_t>(this), GetEnumeratedIconId(),
-          java_bitmap.obj(),
+          java_bitmap, base::android::ConvertUTF16ToJavaString(
+                           env, delegate->GetMessageText()),
+          base::android::ConvertUTF16ToJavaString(env, delegate->GetLinkText()),
           base::android::ConvertUTF16ToJavaString(
-              env, delegate->GetMessageText()).obj(),
+              env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK)),
           base::android::ConvertUTF16ToJavaString(
-              env, delegate->GetLinkText()).obj(),
-          base::android::ConvertUTF16ToJavaString(
-              env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK)).obj(),
-          base::android::ConvertUTF16ToJavaString(
-              env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL)).obj());
+              env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL)));
 
   Java_AutofillSaveCardInfoBar_addDetail(
-      env, java_delegate.obj(),
+      env, java_delegate,
       ResourceMapper::MapFromChromiumId(delegate->issuer_icon_id()),
-      base::android::ConvertUTF16ToJavaString(
-          env, delegate->card_label()).obj(),
-      base::android::ConvertUTF16ToJavaString(
-          env, delegate->card_sub_label()).obj());
+      base::android::ConvertUTF16ToJavaString(env, delegate->card_label()),
+      base::android::ConvertUTF16ToJavaString(env, delegate->card_sub_label()));
 
   for (const auto& line : delegate->legal_messages()) {
     Java_AutofillSaveCardInfoBar_addLegalMessageLine(
-        env, java_delegate.obj(),
-        base::android::ConvertUTF16ToJavaString(env, line.text()).obj());
+        env, java_delegate,
+        base::android::ConvertUTF16ToJavaString(env, line.text()));
     for (const auto& link : line.links()) {
       Java_AutofillSaveCardInfoBar_addLinkToLastLegalMessageLine(
-          env, java_delegate.obj(), link.range.start(), link.range.end(),
-          base::android::ConvertUTF8ToJavaString(env, link.url.spec()).obj());
+          env, java_delegate, link.range.start(), link.range.end(),
+          base::android::ConvertUTF8ToJavaString(env, link.url.spec()));
     }
   }
 

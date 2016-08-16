@@ -101,10 +101,9 @@ void PrintingContextAndroid::AskUserForSettings(
   }
 
   if (is_scripted) {
-    Java_PrintingContext_showPrintDialog(env, j_printing_context_.obj());
+    Java_PrintingContext_showPrintDialog(env, j_printing_context_);
   } else {
-    Java_PrintingContext_pageCountEstimationDone(env,
-                                                 j_printing_context_.obj(),
+    Java_PrintingContext_pageCountEstimationDone(env, j_printing_context_,
                                                  max_pages);
   }
 }
@@ -122,21 +121,20 @@ void PrintingContextAndroid::AskUserForSettingsReply(
   // We use device name variable to store the file descriptor.  This is hacky
   // but necessary. Since device name is not necessary for the upstream
   // printing code for Android, this is harmless.
-  int fd = Java_PrintingContext_getFileDescriptor(env,
-                                                  j_printing_context_.obj());
+  int fd = Java_PrintingContext_getFileDescriptor(env, j_printing_context_);
   settings_.set_device_name(base::IntToString16(fd));
 
   ScopedJavaLocalRef<jintArray> intArr =
-      Java_PrintingContext_getPages(env, j_printing_context_.obj());
+      Java_PrintingContext_getPages(env, j_printing_context_);
   if (intArr.obj() != NULL) {
     PageRanges range_vector;
     GetPageRanges(env, intArr.obj(), range_vector);
     settings_.set_ranges(range_vector);
   }
 
-  int dpi = Java_PrintingContext_getDpi(env, j_printing_context_.obj());
-  int width = Java_PrintingContext_getWidth(env, j_printing_context_.obj());
-  int height = Java_PrintingContext_getHeight(env, j_printing_context_.obj());
+  int dpi = Java_PrintingContext_getDpi(env, j_printing_context_);
+  int width = Java_PrintingContext_getWidth(env, j_printing_context_);
+  int height = Java_PrintingContext_getHeight(env, j_printing_context_);
   width = Round(ConvertUnitDouble(width, kInchToMil, 1.0) * dpi);
   height = Round(ConvertUnitDouble(height, kInchToMil, 1.0) * dpi);
   SetSizes(&settings_, dpi, width, height);

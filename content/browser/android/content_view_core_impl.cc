@@ -270,7 +270,7 @@ ContentViewCoreImpl::~ContentViewCoreImpl() {
   java_ref_.reset();
   if (!j_obj.is_null()) {
     Java_ContentViewCore_onNativeContentViewCoreDestroyed(
-        env, j_obj.obj(), reinterpret_cast<intptr_t>(this));
+        env, j_obj, reinterpret_cast<intptr_t>(this));
   }
 }
 
@@ -338,7 +338,7 @@ void ContentViewCoreImpl::RenderViewReady() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_ContentViewCore_onRenderProcessChange(env, obj.obj());
+    Java_ContentViewCore_onRenderProcessChange(env, obj);
 
   if (device_orientation_ != 0)
     SendOrientationChangeEventInternal();
@@ -368,7 +368,7 @@ void ContentViewCoreImpl::RenderViewHostChanged(RenderViewHost* old_host,
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
     if (!obj.is_null()) {
-      Java_ContentViewCore_onRenderProcessChange(env, obj.obj());
+      Java_ContentViewCore_onRenderProcessChange(env, obj);
     }
   }
 
@@ -447,24 +447,13 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       has_insertion_marker ? selection_start.edge_bottom().y() : 0.0f;
 
   Java_ContentViewCore_updateFrameInfo(
-      env, obj.obj(),
-      scroll_offset.x(),
-      scroll_offset.y(),
-      page_scale_factor,
-      page_scale_factor_limits.x(),
-      page_scale_factor_limits.y(),
-      content_size.width(),
-      content_size.height(),
-      viewport_size.width(),
-      viewport_size.height(),
-      controls_offset.y(),
-      content_offset.y(),
-      is_mobile_optimized_hint,
-      has_insertion_marker,
-      is_insertion_marker_visible,
-      insertion_marker_horizontal,
-      insertion_marker_top,
-      insertion_marker_bottom);
+      env, obj, scroll_offset.x(), scroll_offset.y(), page_scale_factor,
+      page_scale_factor_limits.x(), page_scale_factor_limits.y(),
+      content_size.width(), content_size.height(), viewport_size.width(),
+      viewport_size.height(), controls_offset.y(), content_offset.y(),
+      is_mobile_optimized_hint, has_insertion_marker,
+      is_insertion_marker_visible, insertion_marker_horizontal,
+      insertion_marker_top, insertion_marker_bottom);
 }
 
 void ContentViewCoreImpl::SetTitle(const base::string16& title) {
@@ -474,7 +463,7 @@ void ContentViewCoreImpl::SetTitle(const base::string16& title) {
     return;
   ScopedJavaLocalRef<jstring> jtitle =
       ConvertUTF8ToJavaString(env, base::UTF16ToUTF8(title));
-  Java_ContentViewCore_setTitle(env, obj.obj(), jtitle.obj());
+  Java_ContentViewCore_setTitle(env, obj, jtitle);
 }
 
 void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {
@@ -484,7 +473,7 @@ void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_ContentViewCore_onBackgroundColorChanged(env, obj.obj(), color);
+  Java_ContentViewCore_onBackgroundColorChanged(env, obj, color);
 }
 
 void ContentViewCoreImpl::ShowSelectPopupMenu(
@@ -542,16 +531,15 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   view_.SetAnchorRect(popup_view,
                       gfx::ScaleRect(gfx::RectF(bounds), page_scale_));
   Java_ContentViewCore_showSelectPopup(
-      env, j_obj.obj(), popup_view.obj(), reinterpret_cast<intptr_t>(frame),
-      items_array.obj(), enabled_array.obj(), multiple, selected_array.obj(),
-      right_aligned);
+      env, j_obj, popup_view, reinterpret_cast<intptr_t>(frame), items_array,
+      enabled_array, multiple, selected_array, right_aligned);
 }
 
 void ContentViewCoreImpl::HideSelectPopupMenu() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (!j_obj.is_null())
-    Java_ContentViewCore_hideSelectPopup(env, j_obj.obj());
+    Java_ContentViewCore_hideSelectPopup(env, j_obj);
   select_popup_.Reset();
 }
 
@@ -566,46 +554,43 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
     case WebInputEvent::GestureFlingStart:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
         // The view expects the fling velocity in pixels/s.
-        Java_ContentViewCore_onFlingStartEventConsumed(env, j_obj.obj(),
-            event.data.flingStart.velocityX * dpi_scale(),
+        Java_ContentViewCore_onFlingStartEventConsumed(
+            env, j_obj, event.data.flingStart.velocityX * dpi_scale(),
             event.data.flingStart.velocityY * dpi_scale());
       } else {
         // If a scroll ends with a fling, a SCROLL_END event is never sent.
         // However, if that fling went unconsumed, we still need to let the
         // listeners know that scrolling has ended.
-        Java_ContentViewCore_onScrollEndEventAck(env, j_obj.obj());
+        Java_ContentViewCore_onScrollEndEventAck(env, j_obj);
       }
       break;
     case WebInputEvent::GestureFlingCancel:
-      Java_ContentViewCore_onFlingCancelEventAck(env, j_obj.obj());
+      Java_ContentViewCore_onFlingCancelEventAck(env, j_obj);
       break;
     case WebInputEvent::GestureScrollBegin:
-      Java_ContentViewCore_onScrollBeginEventAck(env, j_obj.obj());
+      Java_ContentViewCore_onScrollBeginEventAck(env, j_obj);
       break;
     case WebInputEvent::GestureScrollUpdate:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-        Java_ContentViewCore_onScrollUpdateGestureConsumed(env, j_obj.obj());
+        Java_ContentViewCore_onScrollUpdateGestureConsumed(env, j_obj);
       break;
     case WebInputEvent::GestureScrollEnd:
-      Java_ContentViewCore_onScrollEndEventAck(env, j_obj.obj());
+      Java_ContentViewCore_onScrollEndEventAck(env, j_obj);
       break;
     case WebInputEvent::GesturePinchBegin:
-      Java_ContentViewCore_onPinchBeginEventAck(env, j_obj.obj());
+      Java_ContentViewCore_onPinchBeginEventAck(env, j_obj);
       break;
     case WebInputEvent::GesturePinchEnd:
-      Java_ContentViewCore_onPinchEndEventAck(env, j_obj.obj());
+      Java_ContentViewCore_onPinchEndEventAck(env, j_obj);
       break;
     case WebInputEvent::GestureTap:
       Java_ContentViewCore_onSingleTapEventAck(
-          env,
-          j_obj.obj(),
-          ack_result == INPUT_EVENT_ACK_STATE_CONSUMED,
-          event.x * dpi_scale(),
-          event.y * dpi_scale());
+          env, j_obj, ack_result == INPUT_EVENT_ACK_STATE_CONSUMED,
+          event.x * dpi_scale(), event.y * dpi_scale());
       break;
     case WebInputEvent::GestureLongPress:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
-        Java_ContentViewCore_performLongPressHapticFeedback(env, j_obj.obj());
+        Java_ContentViewCore_performLongPressHapticFeedback(env, j_obj);
       break;
     default:
       break;
@@ -627,9 +612,7 @@ bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);
   int gesture_type = ToGestureEventType(event.type);
-  return Java_ContentViewCore_filterTapOrPressEvent(env,
-                                                    j_obj.obj(),
-                                                    gesture_type,
+  return Java_ContentViewCore_filterTapOrPressEvent(env, j_obj, gesture_type,
                                                     gesture.x * dpi_scale(),
                                                     gesture.y * dpi_scale());
 }
@@ -639,14 +622,14 @@ bool ContentViewCoreImpl::HasFocus() {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
-  return Java_ContentViewCore_hasFocus(env, obj.obj());
+  return Java_ContentViewCore_hasFocus(env, obj);
 }
 
 void ContentViewCoreImpl::RequestDisallowInterceptTouchEvent() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_ContentViewCore_requestDisallowInterceptTouchEvent(env, obj.obj());
+    Java_ContentViewCore_requestDisallowInterceptTouchEvent(env, obj);
 }
 
 void ContentViewCoreImpl::OnSelectionChanged(const std::string& text) {
@@ -655,7 +638,7 @@ void ContentViewCoreImpl::OnSelectionChanged(const std::string& text) {
   if (obj.is_null())
     return;
   ScopedJavaLocalRef<jstring> jtext = ConvertUTF8ToJavaString(env, text);
-  Java_ContentViewCore_onSelectionChanged(env, obj.obj(), jtext.obj());
+  Java_ContentViewCore_onSelectionChanged(env, obj, jtext);
 }
 
 void ContentViewCoreImpl::OnSelectionEvent(ui::SelectionEventType event,
@@ -670,8 +653,8 @@ void ContentViewCoreImpl::OnSelectionEvent(ui::SelectionEventType event,
       gfx::ScalePoint(selection_anchor, dpi_scale());
   gfx::RectF selection_rect_pix = gfx::ScaleRect(selection_rect, dpi_scale());
   Java_ContentViewCore_onSelectionEvent(
-      env, j_obj.obj(), event, selection_anchor_pix.x(),
-      selection_anchor_pix.y(), selection_rect_pix.x(), selection_rect_pix.y(),
+      env, j_obj, event, selection_anchor_pix.x(), selection_anchor_pix.y(),
+      selection_rect_pix.x(), selection_rect_pix.y(),
       selection_rect_pix.right(), selection_rect_pix.bottom());
 }
 
@@ -687,7 +670,7 @@ bool ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
   if (obj.is_null())
     return false;
   return Java_ContentViewCore_showPastePopupWithFeedback(
-      env, obj.obj(), static_cast<jint>(x_dip * dpi_scale()),
+      env, obj, static_cast<jint>(x_dip * dpi_scale()),
       static_cast<jint>(y_dip * dpi_scale()));
 }
 
@@ -699,9 +682,7 @@ void ContentViewCoreImpl::StartContentIntent(const GURL& content_url,
     return;
   ScopedJavaLocalRef<jstring> jcontent_url =
       ConvertUTF8ToJavaString(env, content_url.spec());
-  Java_ContentViewCore_startContentIntent(env,
-                                          j_obj.obj(),
-                                          jcontent_url.obj(),
+  Java_ContentViewCore_startContentIntent(env, j_obj, jcontent_url,
                                           is_main_frame);
 }
 
@@ -720,10 +701,8 @@ void ContentViewCoreImpl::ShowDisambiguationPopup(
       gfx::ConvertToJavaBitmap(&zoomed_bitmap);
   DCHECK(!java_bitmap.is_null());
 
-  Java_ContentViewCore_showDisambiguationPopup(env,
-                                               obj.obj(),
-                                               rect_object.obj(),
-                                               java_bitmap.obj());
+  Java_ContentViewCore_showDisambiguationPopup(env, obj, rect_object,
+                                               java_bitmap);
 }
 
 ScopedJavaLocalRef<jobject>
@@ -733,7 +712,7 @@ ContentViewCoreImpl::CreateMotionEventSynthesizer() {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return ScopedJavaLocalRef<jobject>();
-  return Java_ContentViewCore_createMotionEventSynthesizer(env, obj.obj());
+  return Java_ContentViewCore_createMotionEventSynthesizer(env, obj);
 }
 
 bool ContentViewCoreImpl::ShouldBlockMediaRequest(const GURL& url) {
@@ -743,8 +722,7 @@ bool ContentViewCoreImpl::ShouldBlockMediaRequest(const GURL& url) {
   if (obj.is_null())
     return true;
   ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
-  return Java_ContentViewCore_shouldBlockMediaRequest(env, obj.obj(),
-                                                      j_url.obj());
+  return Java_ContentViewCore_shouldBlockMediaRequest(env, obj, j_url);
 }
 
 void ContentViewCoreImpl::DidStopFlinging() {
@@ -752,7 +730,7 @@ void ContentViewCoreImpl::DidStopFlinging() {
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_ContentViewCore_onNativeFlingStopped(env, obj.obj());
+    Java_ContentViewCore_onNativeFlingStopped(env, obj);
 }
 
 ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContext() const {
@@ -762,7 +740,7 @@ ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContext() const {
   if (obj.is_null())
     return ScopedJavaLocalRef<jobject>();
 
-  return Java_ContentViewCore_getContext(env, obj.obj());
+  return Java_ContentViewCore_getContext(env, obj);
 }
 
 gfx::Size ContentViewCoreImpl::GetViewSizeWithOSKHidden() const {
@@ -772,8 +750,8 @@ gfx::Size ContentViewCoreImpl::GetViewSizeWithOSKHidden() const {
   if (j_obj.is_null())
     return size_pix = gfx::Size();
   size_pix = gfx::Size(
-      Java_ContentViewCore_getViewportWidthPix(env, j_obj.obj()),
-      Java_ContentViewCore_getViewportHeightWithOSKHiddenPix(env, j_obj.obj()));
+      Java_ContentViewCore_getViewportWidthPix(env, j_obj),
+      Java_ContentViewCore_getViewportHeightWithOSKHiddenPix(env, j_obj));
 
   gfx::Size size_dip = gfx::ScaleToCeiledSize(size_pix, 1.0f / dpi_scale());
   if (DoTopControlsShrinkBlinkSize())
@@ -794,8 +772,8 @@ gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {
   if (j_obj.is_null())
     return gfx::Size();
   return gfx::Size(
-      Java_ContentViewCore_getPhysicalBackingWidthPix(env, j_obj.obj()),
-      Java_ContentViewCore_getPhysicalBackingHeightPix(env, j_obj.obj()));
+      Java_ContentViewCore_getPhysicalBackingWidthPix(env, j_obj),
+      Java_ContentViewCore_getPhysicalBackingHeightPix(env, j_obj));
 }
 
 gfx::Size ContentViewCoreImpl::GetViewportSizePix() const {
@@ -803,9 +781,8 @@ gfx::Size ContentViewCoreImpl::GetViewportSizePix() const {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return gfx::Size();
-  return gfx::Size(
-      Java_ContentViewCore_getViewportWidthPix(env, j_obj.obj()),
-      Java_ContentViewCore_getViewportHeightPix(env, j_obj.obj()));
+  return gfx::Size(Java_ContentViewCore_getViewportWidthPix(env, j_obj),
+                   Java_ContentViewCore_getViewportHeightPix(env, j_obj));
 }
 
 int ContentViewCoreImpl::GetTopControlsHeightPix() const {
@@ -813,7 +790,7 @@ int ContentViewCoreImpl::GetTopControlsHeightPix() const {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return 0;
-  return Java_ContentViewCore_getTopControlsHeightPix(env, j_obj.obj());
+  return Java_ContentViewCore_getTopControlsHeightPix(env, j_obj);
 }
 
 gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
@@ -825,7 +802,7 @@ bool ContentViewCoreImpl::DoTopControlsShrinkBlinkSize() const {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return false;
-  return Java_ContentViewCore_doTopControlsShrinkBlinkSize(env, j_obj.obj());
+  return Java_ContentViewCore_doTopControlsShrinkBlinkSize(env, j_obj);
 }
 
 float ContentViewCoreImpl::GetTopControlsHeightDip() const {
@@ -1314,8 +1291,7 @@ void ContentViewCoreImpl::ForceUpdateImeAdapter(long native_ime_adapter) {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_ContentViewCore_forceUpdateImeAdapter(env, obj.obj(),
-                                             native_ime_adapter);
+  Java_ContentViewCore_forceUpdateImeAdapter(env, obj, native_ime_adapter);
 }
 
 void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
@@ -1334,18 +1310,10 @@ void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
     return;
 
   ScopedJavaLocalRef<jstring> jstring_text = ConvertUTF8ToJavaString(env, text);
-  Java_ContentViewCore_updateImeAdapter(env,
-                                        obj.obj(),
-                                        native_ime_adapter,
-                                        text_input_type,
-                                        text_input_flags,
-                                        jstring_text.obj(),
-                                        selection_start,
-                                        selection_end,
-                                        composition_start,
-                                        composition_end,
-                                        show_ime_if_needed,
-                                        is_non_ime_change);
+  Java_ContentViewCore_updateImeAdapter(
+      env, obj, native_ime_adapter, text_input_type, text_input_flags,
+      jstring_text, selection_start, selection_end, composition_start,
+      composition_end, show_ime_if_needed, is_non_ime_change);
 }
 
 void ContentViewCoreImpl::SetAccessibilityEnabled(
@@ -1390,8 +1358,7 @@ bool ContentViewCoreImpl::IsFullscreenRequiredForOrientationLock() const {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return true;
-  return Java_ContentViewCore_isFullscreenRequiredForOrientationLock(env,
-                                                                     obj.obj());
+  return Java_ContentViewCore_isFullscreenRequiredForOrientationLock(env, obj);
 }
 
 void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
@@ -1544,7 +1511,7 @@ void ContentViewCoreImpl::OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip) {
   if (obj.is_null())
     return;
   Java_ContentViewCore_onShowUnhandledTapUIIfNeeded(
-      env, obj.obj(), static_cast<jint>(x_dip * dpi_scale()),
+      env, obj, static_cast<jint>(x_dip * dpi_scale()),
       static_cast<jint>(y_dip * dpi_scale()));
 }
 
@@ -1554,7 +1521,7 @@ void ContentViewCoreImpl::HidePopupsAndPreserveSelection() {
   if (obj.is_null())
     return;
 
-  Java_ContentViewCore_hidePopupsAndPreserveSelection(env, obj.obj());
+  Java_ContentViewCore_hidePopupsAndPreserveSelection(env, obj);
 }
 
 void ContentViewCoreImpl::OnSmartClipDataExtracted(
@@ -1568,8 +1535,8 @@ void ContentViewCoreImpl::OnSmartClipDataExtracted(
   ScopedJavaLocalRef<jstring> jtext = ConvertUTF16ToJavaString(env, text);
   ScopedJavaLocalRef<jstring> jhtml = ConvertUTF16ToJavaString(env, html);
   ScopedJavaLocalRef<jobject> clip_rect_object(CreateJavaRect(env, clip_rect));
-  Java_ContentViewCore_onSmartClipDataExtracted(
-      env, obj.obj(), jtext.obj(), jhtml.obj(), clip_rect_object.obj());
+  Java_ContentViewCore_onSmartClipDataExtracted(env, obj, jtext, jhtml,
+                                                clip_rect_object);
 }
 
 void ContentViewCoreImpl::WebContentsDestroyed() {
@@ -1583,7 +1550,7 @@ bool ContentViewCoreImpl::PullStart() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    return Java_ContentViewCore_onOverscrollRefreshStart(env, obj.obj());
+    return Java_ContentViewCore_onOverscrollRefreshStart(env, obj);
   return false;
 }
 
@@ -1591,15 +1558,14 @@ void ContentViewCoreImpl::PullUpdate(float delta) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_ContentViewCore_onOverscrollRefreshUpdate(env, obj.obj(), delta);
+    Java_ContentViewCore_onOverscrollRefreshUpdate(env, obj, delta);
 }
 
 void ContentViewCoreImpl::PullRelease(bool allow_refresh) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null()) {
-    Java_ContentViewCore_onOverscrollRefreshRelease(env, obj.obj(),
-                                                    allow_refresh);
+    Java_ContentViewCore_onOverscrollRefreshRelease(env, obj, allow_refresh);
   }
 }
 
@@ -1607,7 +1573,7 @@ void ContentViewCoreImpl::PullReset() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_ContentViewCore_onOverscrollRefreshReset(env, obj.obj());
+    Java_ContentViewCore_onOverscrollRefreshReset(env, obj);
 }
 
 // This is called for each ContentView.

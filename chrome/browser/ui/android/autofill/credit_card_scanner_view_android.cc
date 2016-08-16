@@ -27,7 +27,7 @@ bool CreditCardScannerView::CanShow() {
   base::android::ScopedJavaGlobalRef<jobject> java_object(
       Java_CreditCardScanner_create(
           env, 0, base::android::GetApplicationContext(), nullptr));
-  return Java_CreditCardScanner_canScan(env, java_object.obj());
+  return Java_CreditCardScanner_canScan(env, java_object);
 }
 
 // static
@@ -51,8 +51,10 @@ CreditCardScannerViewAndroid::CreditCardScannerViewAndroid(
           base::android::AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this),
           base::android::GetApplicationContext(),
-          ViewAndroidHelper::FromWebContents(web_contents)->GetViewAndroid()
-              ->GetWindowAndroid()->GetJavaObject().obj())) {}
+          ViewAndroidHelper::FromWebContents(web_contents)
+              ->GetViewAndroid()
+              ->GetWindowAndroid()
+              ->GetJavaObject())) {}
 
 CreditCardScannerViewAndroid::~CreditCardScannerViewAndroid() {}
 
@@ -75,7 +77,7 @@ void CreditCardScannerViewAndroid::ScanCompleted(
 
 void CreditCardScannerViewAndroid::Show() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CreditCardScanner_scan(env, java_object_.obj());
+  Java_CreditCardScanner_scan(env, java_object_);
 }
 
 }  // namespace autofill

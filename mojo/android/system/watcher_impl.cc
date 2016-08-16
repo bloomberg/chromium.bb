@@ -32,7 +32,7 @@ class JavaWatcherCallback {
 
   void OnHandleReady(MojoResult result) {
     Java_WatcherImpl_onHandleReady(base::android::AttachCurrentThread(),
-                                   java_watcher_.obj(), result);
+                                   java_watcher_, result);
   }
 
  private:

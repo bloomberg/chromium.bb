@@ -135,9 +135,7 @@ AndroidStreamReaderURLRequestJobDelegateImpl::OpenInputStream(JNIEnv* env,
       ConvertUTF8ToJavaString(env, url.spec());
   ScopedJavaLocalRef<jobject> stream =
       android_webview::Java_AndroidProtocolHandler_open(
-          env,
-          GetResourceContext(env).obj(),
-          jurl.obj());
+          env, GetResourceContext(env), jurl);
 
   if (stream.is_null()) {
     DLOG(ERROR) << "Unable to open input stream for Android URL";
@@ -171,9 +169,7 @@ bool AndroidStreamReaderURLRequestJobDelegateImpl::GetMimeType(
       InputStreamImpl::FromInputStream(stream);
   ScopedJavaLocalRef<jstring> returned_type =
       android_webview::Java_AndroidProtocolHandler_getMimeType(
-          env,
-          GetResourceContext(env).obj(),
-          stream_impl->jobj(), url.obj());
+          env, GetResourceContext(env), stream_impl->jobj(), url);
   if (returned_type.is_null())
     return false;
 

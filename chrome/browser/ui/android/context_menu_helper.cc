@@ -46,7 +46,7 @@ ContextMenuHelper::ContextMenuHelper(content::WebContents* web_contents)
 
 ContextMenuHelper::~ContextMenuHelper() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContextMenuHelper_destroy(env, java_obj_.obj());
+  Java_ContextMenuHelper_destroy(env, java_obj_);
 }
 
 bool ContextMenuHelper::ShowContextMenu(
@@ -70,13 +70,13 @@ bool ContextMenuHelper::ShowContextMenu(
   render_process_id_ = render_frame_host->GetProcess()->GetID();
 
   return Java_ContextMenuHelper_showContextMenu(
-      env, java_obj_.obj(), jcontent_view_core.obj(),
-      ContextMenuHelper::CreateJavaContextMenuParams(params).obj());
+      env, java_obj_, jcontent_view_core,
+      ContextMenuHelper::CreateJavaContextMenuParams(params));
 }
 
 void ContextMenuHelper::SetPopulator(jobject jpopulator) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContextMenuHelper_setPopulator(env, java_obj_.obj(), jpopulator);
+  Java_ContextMenuHelper_setPopulator(env, java_obj_, jpopulator);
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -94,18 +94,16 @@ ContextMenuHelper::CreateJavaContextMenuParams(
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> jmenu_info =
       ContextMenuParamsAndroid::Java_ContextMenuParams_create(
-          env,
-          params.media_type,
-          ConvertUTF8ToJavaString(env, params.page_url.spec()).obj(),
-          ConvertUTF8ToJavaString(env, params.link_url.spec()).obj(),
-          ConvertUTF16ToJavaString(env, params.link_text).obj(),
-          ConvertUTF8ToJavaString(env, params.unfiltered_link_url.spec()).obj(),
-          ConvertUTF8ToJavaString(env, params.src_url.spec()).obj(),
-          ConvertUTF16ToJavaString(env, params.title_text).obj(),
+          env, params.media_type,
+          ConvertUTF8ToJavaString(env, params.page_url.spec()),
+          ConvertUTF8ToJavaString(env, params.link_url.spec()),
+          ConvertUTF16ToJavaString(env, params.link_text),
+          ConvertUTF8ToJavaString(env, params.unfiltered_link_url.spec()),
+          ConvertUTF8ToJavaString(env, params.src_url.spec()),
+          ConvertUTF16ToJavaString(env, params.title_text),
           image_was_fetched_lo_fi,
-          ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()).obj(),
-          params.referrer_policy,
-          can_save);
+          ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()),
+          params.referrer_policy, can_save);
 
   return jmenu_info;
 }
@@ -172,11 +170,8 @@ void ContextMenuHelper::OnShareImage(const std::string& thumbnail_data,
           env, reinterpret_cast<const uint8_t*>(thumbnail_data.data()),
           thumbnail_data.length());
 
-  Java_ContextMenuHelper_onShareImageReceived(
-      env,
-      java_obj_.obj(),
-      jwindow_android.obj(),
-      j_bytes.obj());
+  Java_ContextMenuHelper_onShareImageReceived(env, java_obj_, jwindow_android,
+                                              j_bytes);
 }
 
 bool RegisterContextMenuHelper(JNIEnv* env) {

@@ -29,6 +29,5 @@ void AndroidPageLoadMetricsObserver::OnFirstContentfulPaint(
       web_contents_->GetJavaWebContents();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PageLoadMetrics_onFirstContentfulPaint(
-      env, java_web_contents.obj(),
-      static_cast<jlong>(first_contentful_paint_ms));
+      env, java_web_contents, static_cast<jlong>(first_contentful_paint_ms));
 }

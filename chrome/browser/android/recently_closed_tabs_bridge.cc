@@ -31,9 +31,8 @@ void AddTabToList(JNIEnv* env,
       tab.navigations.at(tab.current_navigation_index);
   Java_RecentlyClosedBridge_pushTab(
       env, jtabs_list, tab.id,
-      ConvertUTF16ToJavaString(env, current_navigation.title()).obj(),
-      ConvertUTF8ToJavaString(env, current_navigation.virtual_url().spec())
-          .obj());
+      ConvertUTF16ToJavaString(env, current_navigation.title()),
+      ConvertUTF8ToJavaString(env, current_navigation.virtual_url().spec()));
 }
 
 void AddTabsToList(JNIEnv* env,
@@ -156,7 +155,7 @@ void RecentlyClosedTabsBridge::TabRestoreServiceChanged(
   if (callback_.is_null())
     return;
   JNIEnv* env = AttachCurrentThread();
-  Java_RecentlyClosedCallback_onUpdated(env, callback_.obj());
+  Java_RecentlyClosedCallback_onUpdated(env, callback_);
 }
 
 void RecentlyClosedTabsBridge::TabRestoreServiceDestroyed(

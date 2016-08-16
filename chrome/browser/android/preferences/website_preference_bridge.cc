@@ -135,7 +135,7 @@ void GetOrigins(JNIEnv* env,
     if (embedder != origin)
       jembedder = ConvertUTF8ToJavaString(env, embedder);
 
-    insertionFunc(env, list, jorigin.obj(), jembedder.obj());
+    insertionFunc(env, list, jorigin, jembedder);
   }
 }
 
@@ -479,8 +479,7 @@ static void GetUsbOrigins(JNIEnv* env,
         ConvertUTF8ToJavaString(env, serialized);
 
     Java_WebsitePreferenceBridge_insertUsbInfoIntoList(
-        env, list, jorigin.obj(), jembedder.obj(), jname.obj(),
-        jserialized.obj());
+        env, list, jorigin, jembedder, jname, jserialized);
   }
 }
 
@@ -620,8 +619,8 @@ class StorageInfoReadyCallback {
       ScopedJavaLocalRef<jstring> host =
           ConvertUTF8ToJavaString(env_, i->host);
 
-      Java_WebsitePreferenceBridge_insertStorageInfoIntoList(
-          env_, list.obj(), host.obj(), i->type, i->usage);
+      Java_WebsitePreferenceBridge_insertStorageInfoIntoList(env_, list, host,
+                                                             i->type, i->usage);
     }
 
     base::android::RunCallbackAndroid(java_callback_, list);
@@ -643,8 +642,7 @@ class StorageInfoClearedCallback {
   void OnStorageInfoCleared(storage::QuotaStatusCode code) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    Java_StorageInfoClearedCallback_onStorageInfoCleared(
-        env_, java_callback_.obj());
+    Java_StorageInfoClearedCallback_onStorageInfoCleared(env_, java_callback_);
 
     delete this;
   }
@@ -699,7 +697,7 @@ class LocalStorageInfoReadyCallback {
       ScopedJavaLocalRef<jstring> origin =
           ConvertUTF8ToJavaString(env_, origin_str);
       Java_WebsitePreferenceBridge_insertLocalStorageInfoIntoMap(
-          env_, map.obj(), origin.obj(), full_origin.obj(), i->size, important);
+          env_, map, origin, full_origin, i->size, important);
     }
 
     base::android::RunCallbackAndroid(java_callback_, map);

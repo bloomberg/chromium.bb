@@ -52,9 +52,7 @@ void OnLargeIconAvailable(
   if (result.fallback_icon_style)
     background_color = result.fallback_icon_style->background_color;
 
-  Java_LargeIconCallback_onLargeIconAvailable(env,
-                                              j_callback->obj(),
-                                              j_bitmap.obj(),
+  Java_LargeIconCallback_onLargeIconAvailable(env, j_callback->obj(), j_bitmap,
                                               background_color);
 }
 

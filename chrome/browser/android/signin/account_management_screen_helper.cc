@@ -24,7 +24,7 @@ void AccountManagementScreenHelper::OpenAccountManagementScreen(
   Java_AccountManagementScreenHelper_openAccountManagementScreen(
       base::android::AttachCurrentThread(),
       base::android::GetApplicationContext(),
-      ProfileAndroid::FromProfile(profile)->GetJavaObject().obj(),
+      ProfileAndroid::FromProfile(profile)->GetJavaObject(),
       static_cast<int>(service_type));
 }
 

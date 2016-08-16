@@ -34,7 +34,7 @@ bool InterfaceProviderAndroidImpl::Register(JNIEnv* env) {
 }
 
 InterfaceProviderAndroidImpl::~InterfaceProviderAndroidImpl() {
-  Java_InterfaceProvider_destroy(AttachCurrentThread(), obj_.obj());
+  Java_InterfaceProvider_destroy(AttachCurrentThread(), obj_);
 }
 
 // Constructor and destructor call into Java.
