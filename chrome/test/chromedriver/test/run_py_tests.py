@@ -1291,6 +1291,11 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.WaitForCondition(lambda: self._driver.IsAlertOpen())
     self._driver.HandleAlert(True)
 
+  def testThrowErrorWithExecuteScript(self):
+    self.assertRaisesRegexp(
+        chromedriver.UnknownError, "some error",
+        self._driver.ExecuteScript, 'throw new Error("some error")')
+
 
 class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
 
