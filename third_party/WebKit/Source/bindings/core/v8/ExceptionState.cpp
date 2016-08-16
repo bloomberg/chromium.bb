@@ -60,7 +60,6 @@ void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& me
 {
     ASSERT(ec);
     ASSERT(m_isolate);
-    ASSERT(!m_creationContext.IsEmpty());
 
     // SecurityError is thrown via ::throwSecurityError, and _careful_ consideration must be given to the data exposed to JavaScript via the 'sanitizedMessage'.
     ASSERT(ec != SecurityError);
@@ -74,7 +73,6 @@ void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& me
 void ExceptionState::throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage)
 {
     ASSERT(m_isolate);
-    ASSERT(!m_creationContext.IsEmpty());
     m_code = SecurityError;
     String finalSanitized = addExceptionContext(sanitizedMessage);
     m_message = finalSanitized;

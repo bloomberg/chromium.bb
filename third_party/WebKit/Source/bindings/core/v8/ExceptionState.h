@@ -65,21 +65,35 @@ public:
         UnknownContext, // FIXME: Remove this once we've flipped over to the new API.
     };
 
-    ExceptionState(ContextType context, const char* propertyName, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
+    ExceptionState(v8::Isolate* isolate, ContextType contextType, const char* interfaceName, const char* propertyName)
         : m_code(0)
-        , m_context(context)
+        , m_context(contextType)
         , m_propertyName(propertyName)
         , m_interfaceName(interfaceName)
-        , m_creationContext(creationContext)
         , m_isolate(isolate) { }
 
-    ExceptionState(ContextType context, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
-        : m_code(0)
-        , m_context(context)
-        , m_propertyName(0)
-        , m_interfaceName(interfaceName)
-        , m_creationContext(creationContext)
-        , m_isolate(isolate) { ASSERT(m_context == ConstructionContext || m_context == EnumerationContext || m_context == IndexedSetterContext || m_context == IndexedGetterContext || m_context == IndexedDeletionContext); }
+    ExceptionState(v8::Isolate* isolate, ContextType contextType, const char* interfaceName)
+        : ExceptionState(isolate, contextType, interfaceName, nullptr)
+    {
+#if ENABLE(ASSERT)
+        switch (m_context) {
+        case ConstructionContext:
+        case EnumerationContext:
+        case IndexedGetterContext:
+        case IndexedSetterContext:
+        case IndexedDeletionContext:
+            break;
+        default:
+            NOTREACHED();
+        }
+#endif // ENABLE(ASSERT)
+    }
+
+    ExceptionState(ContextType context, const char* propertyName, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate) // DEPRECATED
+        : ExceptionState(isolate, context, interfaceName, propertyName) { }
+
+    ExceptionState(ContextType context, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate) // DEPRECATED
+        : ExceptionState(isolate, context, interfaceName) { }
 
     virtual void throwDOMException(const ExceptionCode&, const String& message);
     virtual void throwTypeError(const String& message);
@@ -136,7 +150,6 @@ private:
     String addExceptionContext(const String&) const;
 
     ScopedPersistent<v8::Value> m_exception;
-    v8::Local<v8::Object> m_creationContext;
     v8::Isolate* m_isolate;
 #if ENABLE(ASSERT)
     OnStackObjectChecker m_onStackObjectChecker;
