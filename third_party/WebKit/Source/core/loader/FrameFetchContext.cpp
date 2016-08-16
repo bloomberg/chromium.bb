@@ -813,7 +813,7 @@ WebTaskRunner* FrameFetchContext::loadingTaskRunner() const
 void FrameFetchContext::dispatchDidReceiveResponseInternal(unsigned long identifier, const ResourceResponse& response, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, Resource* resource, LinkLoader::CanLoadResources resourceLoadingPolicy)
 {
     MixedContentChecker::checkMixedPrivatePublic(frame(), response.remoteIPAddress());
-    if (m_documentLoader == frame()->loader().provisionalDocumentLoader()) {
+    if (m_documentLoader && m_documentLoader == frame()->loader().provisionalDocumentLoader()) {
         ResourceFetcher* fetcher = nullptr;
         if (frame()->document())
             fetcher = frame()->document()->fetcher();
