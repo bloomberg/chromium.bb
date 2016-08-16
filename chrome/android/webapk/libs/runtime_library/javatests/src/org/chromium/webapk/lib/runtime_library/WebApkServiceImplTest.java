@@ -12,15 +12,18 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.test.webapk.TestWebApkServiceImplWrapper;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 /**
  * Instrumentation tests for {@link org.chromium.webapk.WebApkServiceImpl}.
  */
 public class WebApkServiceImplTest extends InstrumentationTestCase {
+    private static final String APK_WITH_WEBAPK_SERVICE_PACKAGE =
+            "org.chromium.webapk.lib.runtime_library.test.apk_with_webapk_service";
+    private static final String WEBAPK_SERVICE_IMPL_WRAPPER_CLASS_NAME =
+            "org.chromium.webapk.lib.runtime_library.test.TestWebApkServiceImplWrapper";
 
     private static final int SMALL_ICON_ID = 1229;
 
@@ -62,11 +65,8 @@ public class WebApkServiceImplTest extends InstrumentationTestCase {
 
     /**
      * Test that an application which is not allowed to use the WebAPK service actually cannot.
-     *
-     * @SmallTest
-     * crbug.com/634390
      */
-    @DisabledTest(message = "crbug.com/634390")
+    @SmallTest
     public void testApiFailsIfNoPermission() throws Exception {
         IWebApkApi api = bindService(mContext, mTargetUid + 1, SMALL_ICON_ID);
         try {
@@ -79,11 +79,8 @@ public class WebApkServiceImplTest extends InstrumentationTestCase {
 
     /**
      * Test that an application which is allowed to use the WebAPK service actually can.
-     *
-     * @SmallTest
-     * crbug.com/634390
      */
-    @DisabledTest(message = "crbug.com/634390")
+    @SmallTest
     public void testApiWorksIfHasPermission() throws Exception {
         IWebApkApi api = bindService(mContext, mTargetUid, SMALL_ICON_ID);
         try {
@@ -124,7 +121,7 @@ public class WebApkServiceImplTest extends InstrumentationTestCase {
             throws Exception {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(
-                context.getPackageName(), TestWebApkServiceImplWrapper.class.getName()));
+                APK_WITH_WEBAPK_SERVICE_PACKAGE, WEBAPK_SERVICE_IMPL_WRAPPER_CLASS_NAME));
         intent.putExtra(WebApkServiceImpl.KEY_SMALL_ICON_ID, smallIconId);
         intent.putExtra(WebApkServiceImpl.KEY_HOST_BROWSER_UID, authorizedUid);
 

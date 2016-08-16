@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.test.webapk;
+package org.chromium.webapk.lib.runtime_library.test;
 
 import android.app.Service;
 import android.content.Intent;
