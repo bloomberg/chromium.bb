@@ -6,6 +6,7 @@
              (Please avoid writing new tests using video-test.js) -->
         <script src="../../media/video-test.js"></script>
         <script type="text/javascript">
+            var testedOnce = false;
             if (window.testRunner) {
                 window.testRunner.dumpAsTextWithPixelResults();
                 window.testRunner.waitUntilDone();
@@ -21,10 +22,14 @@
                 video.currentTime = 1;
             }
             function seeked(e) {
-                testExpected('video.currentTime', 1);
+                if (!testedOnce) {
+                    testExpected('video.currentTime', 1);
 
-                if (window.testRunner)
-                    setTimeout(function() { testRunner.notifyDone(); }, 150);
+                    if (window.testRunner)
+                        setTimeout(function() { testRunner.notifyDone(); }, 150);
+
+                    testedOnce = true;
+                }
             }
         </script>
         <style>
