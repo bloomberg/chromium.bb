@@ -34,6 +34,14 @@ inline static unsigned convertDeltaMode(const PlatformWheelEvent& event)
     return event.granularity() == ScrollByPageWheelEvent ? WheelEvent::kDomDeltaPage : WheelEvent::kDomDeltaPixel;
 }
 
+// Negate a long value without integer overflow.
+inline static long negateIfPossible(long value)
+{
+    if (value == LONG_MIN)
+        return value;
+    return -value;
+}
+
 WheelEvent* WheelEvent::create(const PlatformWheelEvent& event, AbstractView* view)
 {
     return new WheelEvent(FloatPoint(event.wheelTicksX(), event.wheelTicksY()), FloatPoint(event.deltaX(), event.deltaY()),
@@ -63,8 +71,8 @@ WheelEvent::WheelEvent()
 WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializer)
     : MouseEvent(type, initializer)
     , m_wheelDelta(initializer.wheelDeltaX() ? initializer.wheelDeltaX() : -initializer.deltaX(), initializer.wheelDeltaY() ? initializer.wheelDeltaY() : -initializer.deltaY())
-    , m_deltaX(initializer.deltaX() ? initializer.deltaX() : -initializer.wheelDeltaX())
-    , m_deltaY(initializer.deltaY() ? initializer.deltaY() : -initializer.wheelDeltaY())
+    , m_deltaX(initializer.deltaX() ? initializer.deltaX() : negateIfPossible(initializer.wheelDeltaX()))
+    , m_deltaY(initializer.deltaY() ? initializer.deltaY() : negateIfPossible(initializer.wheelDeltaY()))
     , m_deltaZ(initializer.deltaZ())
     , m_deltaMode(initializer.deltaMode())
     , m_resendingPluginId(-1)
