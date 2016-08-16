@@ -6,6 +6,7 @@
 #define String16STL_h
 
 #include <cctype>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <stdint.h>
@@ -68,6 +69,7 @@ private:
 };
 
 inline bool operator==(const String16& a, const String16& b) { return a.impl() == b.impl(); }
+inline bool operator<(const String16& a, const String16& b) { return a.impl() < b.impl(); }
 inline bool operator!=(const String16& a, const String16& b) { return a.impl() != b.impl(); }
 inline bool operator==(const String16& a, const char* b) { return a.impl() == String16(b).impl(); }
 inline String16 operator+(const String16& a, const char* b) { return String16(a.impl() + String16(b).impl()); }
