@@ -310,45 +310,54 @@ private:
         ASSERT(isMainThread());
         MutexLocker locker(m_mutex); // For m_cancelled + m_queueTailPosition.
 
-        // Get as much data from the ResourceBuffer as we can.
-        const char* data = 0;
-        Vector<const char*> chunks;
-        Vector<size_t> chunkLengths;
-        size_t dataLength = 0;
-
-        if (!m_cancelled) {
-            while (size_t length = m_resourceBuffer->getSomeData(data, m_queueTailPosition)) {
-                // FIXME: Here we can limit based on the total length, if it turns
-                // out that we don't want to give all the data we have (memory
-                // vs. speed).
-                chunks.append(data);
-                chunkLengths.append(length);
-                dataLength += length;
-                m_queueTailPosition += length;
-            }
-        }
-
         if (lengthOfBOM > 0) {
             ASSERT(!m_lengthOfBOM); // There should be only one BOM.
             m_lengthOfBOM = lengthOfBOM;
         }
 
-        // Copy the data chunks into a new buffer, since we're going to give the
-        // data to a background thread.
-        if (dataLength > lengthOfBOM) {
-            dataLength -= lengthOfBOM;
-            uint8_t* copiedData = new uint8_t[dataLength];
-            size_t offset = 0;
-            for (size_t i = 0; i < chunks.size(); ++i) {
-                memcpy(copiedData + offset, chunks[i] + lengthOfBOM, chunkLengths[i] - lengthOfBOM);
-                offset += chunkLengths[i] - lengthOfBOM;
-                // BOM is only in the first chunk
-                lengthOfBOM = 0;
-            }
-            m_dataQueue.produce(copiedData, dataLength);
+        if (m_cancelled) {
+            m_dataQueue.finish();
+            return;
         }
 
-        if (m_finished || m_cancelled)
+        // Get as much data from the ResourceBuffer as we can.
+        const char* data = nullptr;
+        Vector<const char*> chunks;
+        Vector<size_t> chunkLengths;
+        size_t bufferLength = 0;
+        while (size_t length = m_resourceBuffer->getSomeData(data, m_queueTailPosition)) {
+            // FIXME: Here we can limit based on the total length, if it turns
+            // out that we don't want to give all the data we have (memory
+            // vs. speed).
+            chunks.append(data);
+            chunkLengths.append(length);
+            bufferLength += length;
+            m_queueTailPosition += length;
+        }
+
+        // Copy the data chunks into a new buffer, since we're going to give the
+        // data to a background thread.
+        if (bufferLength > lengthOfBOM) {
+            size_t totalLength = bufferLength - lengthOfBOM;
+            uint8_t* copiedData = new uint8_t[totalLength];
+            size_t offset = 0;
+            size_t offsetInChunk = lengthOfBOM;
+            for (size_t i = 0; i < chunks.size(); ++i) {
+                if (offsetInChunk >= chunkLengths[i]) {
+                    offsetInChunk -= chunkLengths[i];
+                    continue;
+                }
+
+                size_t dataLength = chunkLengths[i] - offsetInChunk;
+                memcpy(copiedData + offset, chunks[i] + offsetInChunk, dataLength);
+                offset += dataLength;
+                // BOM is in the beginning of the buffer.
+                offsetInChunk = 0;
+            }
+            m_dataQueue.produce(copiedData, totalLength);
+        }
+
+        if (m_finished)
             m_dataQueue.finish();
     }
 
