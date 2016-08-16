@@ -1,45 +1,32 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+    test(() => assert_selection(
+        '<div contenteditable>|</div>',
+        selection => {
+            selection.document.execCommand('bold');
+            selection.document.execCommand('insertText', false, 'abc');
+        },
+        '<div contenteditable><b>abc|</b></div>'),
+        'bold+insertText');
 
-function editingTest() {
-    boldCommand();
-    for (i = 0; i < 6; i++)
-        typeCharacterCommand();
-    typeCharacterCommand(' ');
-    for (i = 0; i < 6; i++)
-        typeCharacterCommand();
-    typeCharacterCommand(' ');
-    for (i = 0; i < 6; i++)
-        typeCharacterCommand();
-    moveSelectionBackwardByWordCommand();
-    moveSelectionBackwardByWordCommand();
-    extendSelectionForwardByWordCommand();
-    boldCommand();
-}
+    test(() => assert_selection(
+        '<div contenteditable>^abc|</div>',
+        'bold',
+        '<div contenteditable><b>^abc|</b></div>'),
+        'add bold');
 
+    test(() => assert_selection(
+        '<div contenteditable><b>^abc def|</b></div>',
+        'bold',
+        '<div contenteditable>^abc def|</div>'),
+        'remove bold fully');
+
+    test(() => assert_selection(
+        '<div contenteditable><b>abc ^def| ghi</b></div>',
+        'bold',
+        '<div contenteditable><b>abc </b>^def|<b> ghi</b></div>'),
+        'remove bold partially');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body>
-<div contenteditable id="root" class="editing">
-<span id="test"></span>
-</div>
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
