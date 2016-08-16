@@ -9002,6 +9002,7 @@
   "Headless Linux (dbg)": {
     "additional_compile_targets": [
       "headless_lib",
+      "headless_shell",
       "headless_tests"
     ],
     "gtest_tests": [
