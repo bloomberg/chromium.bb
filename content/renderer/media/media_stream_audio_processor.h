@@ -110,6 +110,17 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   void OnDisableAecDump() override;
   void OnIpcClosing() override;
 
+  // Returns true if MediaStreamAudioProcessor would modify the audio signal,
+  // based on the |constraints| and |effects_flags| parsed from a user media
+  // request. If the audio signal would not be modified, there is no need to
+  // instantiate a MediaStreamAudioProcessor and feed audio through it. Doing so
+  // would waste a non-trivial amount of memory and CPU resources.
+  //
+  // See media::AudioParameters::PlatformEffectsMask for interpretation of
+  // |effects_flags|.
+  static bool WouldModifyAudio(const blink::WebMediaConstraints& constraints,
+                               int effects_flags);
+
  protected:
   ~MediaStreamAudioProcessor() override;
 

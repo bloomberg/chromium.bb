@@ -350,6 +350,7 @@ int ProcessedLocalAudioSource::GetBufferSize(int sample_rate) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 #if defined(OS_ANDROID)
   // TODO(henrika): Re-evaluate whether to use same logic as other platforms.
+  // http://crbug.com/638081
   return (2 * sample_rate / 100);
 #endif
 
@@ -367,7 +368,7 @@ int ProcessedLocalAudioSource::GetBufferSize(int sample_rate) const {
   // fall-back.
   //
   // TODO(miu): Identify where/why the buffer size might be missing, fix the
-  // code, and then require it here.
+  // code, and then require it here. http://crbug.com/638081
   return (sample_rate / 100);
 }
 

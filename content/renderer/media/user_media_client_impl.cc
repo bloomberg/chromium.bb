@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/renderer/media/local_media_stream_audio_source.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
@@ -640,9 +641,18 @@ void UserMediaClientImpl::InitializeSourceObject(
 MediaStreamAudioSource* UserMediaClientImpl::CreateAudioSource(
     const StreamDeviceInfo& device,
     const blink::WebMediaConstraints& constraints) {
-  // TODO(miu): In a soon-upcoming change, I'll be providing an alternative
-  // MediaStreamAudioSource that bypasses audio processing for the non-WebRTC
-  // use cases. http://crbug.com/577881
+  // If the audio device is a loopback device (for screen capture), or if the
+  // constraints/effects parameters indicate no audio processing is needed,
+  // create an efficient, direct-path MediaStreamAudioSource instance.
+  if (IsScreenCaptureMediaType(device.device.type) ||
+      !MediaStreamAudioProcessor::WouldModifyAudio(
+          constraints, device.device.input.effects)) {
+    return new LocalMediaStreamAudioSource(RenderFrameObserver::routing_id(),
+                                           device);
+  }
+
+  // The audio device is not associated with screen capture and also requires
+  // processing.
   ProcessedLocalAudioSource* source = new ProcessedLocalAudioSource(
       RenderFrameObserver::routing_id(), device, dependency_factory_);
   source->SetSourceConstraints(constraints);

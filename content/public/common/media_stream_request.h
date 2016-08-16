@@ -87,6 +87,7 @@ enum MediaStreamRequestResult {
 // audio or some video device.
 CONTENT_EXPORT bool IsAudioInputMediaType(MediaStreamType type);
 CONTENT_EXPORT bool IsVideoMediaType(MediaStreamType type);
+CONTENT_EXPORT bool IsScreenCaptureMediaType(MediaStreamType type);
 
 // TODO(xians): Change the structs to classes.
 // Represents one device in a request for media stream(s).

@@ -319,6 +319,8 @@
       'renderer/media/html_audio_element_capturer_source.h',
       'renderer/media/external_media_stream_audio_source.cc',
       'renderer/media/external_media_stream_audio_source.h',
+      'renderer/media/local_media_stream_audio_source.cc',
+      'renderer/media/local_media_stream_audio_source.h',
       'renderer/media/media_permission_dispatcher.cc',
       'renderer/media/media_permission_dispatcher.h',
       'renderer/media/media_stream_audio_deliverer.h',

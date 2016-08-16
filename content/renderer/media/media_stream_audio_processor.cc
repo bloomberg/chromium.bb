@@ -449,6 +449,42 @@ void MediaStreamAudioProcessor::OnIpcClosing() {
   aec_dump_message_filter_ = NULL;
 }
 
+// static
+bool MediaStreamAudioProcessor::WouldModifyAudio(
+    const blink::WebMediaConstraints& constraints,
+    int effects_flags) {
+  // Note: This method should by kept in-sync with any changes to the logic in
+  // MediaStreamAudioProcessor::InitializeAudioProcessingModule().
+
+  const MediaAudioConstraints audio_constraints(constraints, effects_flags);
+
+  if (audio_constraints.GetGoogAudioMirroring())
+    return true;
+
+#if !defined(OS_IOS)
+  if (audio_constraints.GetEchoCancellationProperty() ||
+      audio_constraints.GetGoogAutoGainControl()) {
+    return true;
+  }
+#endif
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  if (audio_constraints.GetGoogExperimentalEchoCancellation() ||
+      audio_constraints.GetGoogTypingNoiseDetection()) {
+    return true;
+  }
+#endif
+
+  if (audio_constraints.GetGoogNoiseSuppression() ||
+      audio_constraints.GetGoogExperimentalNoiseSuppression() ||
+      audio_constraints.GetGoogBeamforming() ||
+      audio_constraints.GetGoogHighpassFilter()) {
+    return true;
+  }
+
+  return false;
+}
+
 void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                               int sample_rate,
                                               int audio_delay_milliseconds) {
@@ -511,8 +547,9 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   MediaAudioConstraints audio_constraints(constraints, input_params.effects);
 
-  // Audio mirroring can be enabled even though audio processing is otherwise
-  // disabled.
+  // Note: The audio mirroring constraint (i.e., swap left and right channels)
+  // is handled within this MediaStreamAudioProcessor and does not, by itself,
+  // require webrtc::AudioProcessing.
   audio_mirroring_ = audio_constraints.GetGoogAudioMirroring();
 
   const bool echo_cancellation =
@@ -534,13 +571,23 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       audio_constraints.GetGoogExperimentalNoiseSuppression();
   const bool goog_beamforming = audio_constraints.GetGoogBeamforming();
   const bool goog_high_pass_filter = audio_constraints.GetGoogHighpassFilter();
-  // Return immediately if no goog constraint is enabled.
+
+  // Return immediately if none of the goog constraints requiring
+  // webrtc::AudioProcessing are enabled.
   if (!echo_cancellation && !goog_experimental_aec && !goog_ns &&
       !goog_high_pass_filter && !goog_typing_detection &&
       !goog_agc && !goog_experimental_ns && !goog_beamforming) {
+    // Sanity-check: WouldModifyAudio() should return true iff
+    // |audio_mirroring_| is true.
+    DCHECK_EQ(audio_mirroring_, WouldModifyAudio(constraints,
+                                                 input_params.effects));
     RecordProcessingState(AUDIO_PROCESSING_DISABLED);
     return;
   }
+
+  // Sanity-check: WouldModifyAudio() should return true because the above logic
+  // has determined webrtc::AudioProcessing will be used.
+  DCHECK(WouldModifyAudio(constraints, input_params.effects));
 
   // Experimental options provided at creation.
   webrtc::Config config;

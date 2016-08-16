@@ -11,14 +11,21 @@ namespace content {
 
 bool IsAudioInputMediaType(MediaStreamType type) {
   return (type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-          type == content::MEDIA_TAB_AUDIO_CAPTURE ||
-          type == content::MEDIA_DESKTOP_AUDIO_CAPTURE);
+          type == MEDIA_TAB_AUDIO_CAPTURE ||
+          type == MEDIA_DESKTOP_AUDIO_CAPTURE);
 }
 
 bool IsVideoMediaType(MediaStreamType type) {
   return (type == MEDIA_DEVICE_VIDEO_CAPTURE ||
-          type == content::MEDIA_TAB_VIDEO_CAPTURE ||
-          type == content::MEDIA_DESKTOP_VIDEO_CAPTURE);
+          type == MEDIA_TAB_VIDEO_CAPTURE ||
+          type == MEDIA_DESKTOP_VIDEO_CAPTURE);
+}
+
+bool IsScreenCaptureMediaType(MediaStreamType type) {
+  return (type == MEDIA_TAB_AUDIO_CAPTURE ||
+          type == MEDIA_TAB_VIDEO_CAPTURE ||
+          type == MEDIA_DESKTOP_AUDIO_CAPTURE ||
+          type == MEDIA_DESKTOP_VIDEO_CAPTURE);
 }
 
 MediaStreamDevice::MediaStreamDevice()
