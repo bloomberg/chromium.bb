@@ -72,6 +72,10 @@ constexpr int32_t kMaxGattAttributeHandle = 0xFFFF;
 // Bluetooth Specification Version 4.2 Vol 3 Part F Section 3.2.9
 // The maximum length of an attribute value shall be 512 octets.
 constexpr int kMaxGattAttributeLength = 512;
+// Copied from Android at system/bt/stack/btm/btm_ble_int.h
+// https://goo.gl/k7PM6u
+constexpr uint16_t kAndroidMBluetoothVersionNumber = 95;
+constexpr uint16_t kMaxAdvertisement = 5;
 
 using GattStatusCallback =
     base::Callback<void(arc::mojom::BluetoothGattStatus)>;
@@ -1520,6 +1524,26 @@ ArcBluetoothBridge::GetAdapterProperties(
       type == mojom::BluetoothPropertyType::ADAPTER_DISCOVERY_TIMEOUT) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
     btp->set_discovery_timeout(bluetooth_adapter_->GetDiscoverableTimeout());
+    properties.push_back(std::move(btp));
+  }
+  if (type == mojom::BluetoothPropertyType::ALL ||
+      type == mojom::BluetoothPropertyType::LOCAL_LE_FEATURES) {
+    // TODO(crbug.com/637171) Investigate all the le_features.
+    mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
+    mojom::BluetoothLocalLEFeaturesPtr le_features =
+        mojom::BluetoothLocalLEFeatures::New();
+    le_features->version_supported = kAndroidMBluetoothVersionNumber;
+    le_features->local_privacy_enabled = 0;
+    le_features->max_adv_instance = kMaxAdvertisement;
+    le_features->rpa_offload_supported = 0;
+    le_features->max_irk_list_size = 0;
+    le_features->max_adv_filter_supported = 0;
+    le_features->activity_energy_info_supported = 0;
+    le_features->scan_result_storage_size = 0;
+    le_features->total_trackable_advertisers = 0;
+    le_features->extended_scan_support = false;
+    le_features->debug_logging_supported = false;
+    btp->set_local_le_features(std::move(le_features));
     properties.push_back(std::move(btp));
   }
 
