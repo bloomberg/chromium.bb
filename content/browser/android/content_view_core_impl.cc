@@ -223,13 +223,11 @@ ContentViewCoreImpl::ContentViewCoreImpl(
   DCHECK(window_android);
   DCHECK(!view_android_delegate.is_null());
   window_android->AddChild(&view_);
-  view_.SetLayer(cc::SolidColorLayer::Create());
-  view_.GetLayer()->SetBackgroundColor(GetBackgroundColor(env, obj));
+  view_.SetLayer(cc::Layer::Create());
   gfx::Size physical_size(
       Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
       Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
   view_.GetLayer()->SetBounds(physical_size);
-  view_.GetLayer()->SetIsDrawable(true);
 
   // Currently, the only use case we have for overriding a user agent involves
   // spoofing a desktop Linux user agent for "Request desktop site".
@@ -467,8 +465,6 @@ void ContentViewCoreImpl::SetTitle(const base::string16& title) {
 }
 
 void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {
-  view_.GetLayer()->SetBackgroundColor(color);
-
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -807,18 +803,6 @@ bool ContentViewCoreImpl::DoTopControlsShrinkBlinkSize() const {
 
 float ContentViewCoreImpl::GetTopControlsHeightDip() const {
   return GetTopControlsHeightPix() / dpi_scale();
-}
-
-void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {
-  view_.GetLayer()->InsertChild(layer, 0);
-  view_.GetLayer()->SetIsDrawable(false);
-}
-
-void ContentViewCoreImpl::RemoveLayer(scoped_refptr<cc::Layer> layer) {
-  layer->RemoveFromParent();
-
-  if (view_.GetLayer()->children().empty())
-    view_.GetLayer()->SetIsDrawable(true);
 }
 
 void ContentViewCoreImpl::MoveRangeSelectionExtent(const gfx::PointF& extent) {

@@ -19,10 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "cc/input/selection.h"
-#include "cc/layers/surface_layer.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/surfaces/surface_factory_client.h"
-#include "cc/surfaces/surface_id.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/android/content_view_core_impl_observer.h"
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
@@ -58,6 +55,10 @@ class WebTouchEvent;
 class WebMouseEvent;
 }
 
+namespace ui {
+class DelegatedFrameHostAndroid;
+}
+
 namespace content {
 class ContentViewCoreImpl;
 class ContentViewCoreObserver;
@@ -73,7 +74,6 @@ struct TextInputState;
 // -----------------------------------------------------------------------------
 class CONTENT_EXPORT RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
-      public cc::SurfaceFactoryClient,
       public ui::GestureProviderClient,
       public ui::WindowAndroidObserver,
       public DelegatedFrameEvictorClient,
@@ -164,10 +164,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
   void OnDidNavigateMainFrameToNewPage() override;
-
-  // cc::SurfaceFactoryClient implementation.
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -272,8 +268,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Called after async screenshot task completes. Scales and crops the result
   // of the copy.
   static void PrepareTextureCopyOutputResult(
-      base::WeakPtr<RenderWidgetHostViewAndroid> rwhva,
-      scoped_refptr<cc::Layer> readback_layer,
       const gfx::Size& dst_size_in_pixel,
       SkColorType color_type,
       const base::TimeTicks& start_time,
@@ -298,6 +292,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void InternalSwapCompositorFrame(uint32_t output_surface_id,
                                    cc::CompositorFrame frame);
   void OnLostResources();
+
+  void ReturnResources(const cc::ReturnedResourceArray& resources);
 
   enum VSyncRequestType {
     FLUSH_INPUT = 1 << 0,
@@ -337,16 +333,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   mutable ui::ViewAndroid view_;
 
-  std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
-  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
-  cc::SurfaceId surface_id_;
-  gfx::Size current_surface_size_;
-  cc::ReturnedResourceArray surface_returned_resources_;
-  gfx::Vector2dF location_bar_content_translation_;
-  cc::Selection<gfx::SelectionBound> current_viewport_selection_;
+  // Manages the Compositor Frames received from the renderer.
+  std::unique_ptr<ui::DelegatedFrameHostAndroid> delegated_frame_host_;
 
-  // The most recent texture size that was pushed to the texture layer.
-  gfx::Size texture_size_in_layer_;
+  cc::ReturnedResourceArray surface_returned_resources_;
+
+  // The most recent surface size that was pushed to the surface layer.
+  gfx::Size current_surface_size_;
 
   // The output surface id of the last received frame.
   uint32_t last_output_surface_id_;

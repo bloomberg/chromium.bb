@@ -387,9 +387,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   bool DoTopControlsShrinkBlinkSize() const;
   float GetTopControlsHeightDip() const;
 
-  void AttachLayer(scoped_refptr<cc::Layer> layer);
-  void RemoveLayer(scoped_refptr<cc::Layer> layer);
-
   void MoveRangeSelectionExtent(const gfx::PointF& extent);
 
   void SelectBetweenCoordinates(const gfx::PointF& base,
