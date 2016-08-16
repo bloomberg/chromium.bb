@@ -190,9 +190,8 @@ class MojoShellConnectionImpl::IOThreadContext
 
     bool accept = false;
     for (auto& entry : connection_filters_) {
-      accept = accept ||
-        entry.second->OnConnect(remote_identity, registry,
-                                service_context_->connector());
+      accept |= entry.second->OnConnect(remote_identity, registry,
+                                        service_context_->connector());
     }
 
     if (remote_identity.name() == "exe:content_browser" &&
