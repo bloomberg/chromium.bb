@@ -131,7 +131,7 @@ HttpNetworkSession::Params::Params()
       quic_race_cert_verification(false),
       proxy_delegate(NULL),
       enable_token_binding(false) {
-  quic_supported_versions.push_back(QUIC_VERSION_34);
+  quic_supported_versions.push_back(QUIC_VERSION_35);
 }
 
 HttpNetworkSession::Params::Params(const Params& other) = default;
