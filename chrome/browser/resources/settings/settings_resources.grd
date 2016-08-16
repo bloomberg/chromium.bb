@@ -464,7 +464,8 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_ICONS"
                  file="icons.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_POWERWASH_DIALOG_HTML"
                  file="reset_page/powerwash_dialog.html"
                  type="chrome_html" />
