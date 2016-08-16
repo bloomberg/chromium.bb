@@ -8,7 +8,8 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ViewAndroidHelper);
 
-ViewAndroidHelper::ViewAndroidHelper(content::WebContents* web_contents) {
+ViewAndroidHelper::ViewAndroidHelper(content::WebContents* web_contents)
+    : view_android_(nullptr) {
 }
 
 ViewAndroidHelper::~ViewAndroidHelper() {
