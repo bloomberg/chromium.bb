@@ -151,8 +151,10 @@ weston_desktop_wl_shell_change_state(struct weston_desktop_wl_shell_surface *sur
 
 	assert(state != NONE);
 
-	if (to_add && surface->added)
+	if (to_add && surface->added) {
+		surface->state = state;
 		return;
+	}
 
 	if (surface->state != state) {
 		if (surface->state == POPUP)

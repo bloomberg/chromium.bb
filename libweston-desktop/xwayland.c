@@ -75,8 +75,10 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 
 	assert(state != NONE);
 
-	if (to_add && surface->added)
+	if (to_add && surface->added) {
+		surface->state = state;
 		return;
+	}
 
 	if (surface->state != state) {
 		if (surface->state == XWAYLAND) {
