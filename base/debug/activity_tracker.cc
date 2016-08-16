@@ -25,10 +25,10 @@ namespace debug {
 namespace {
 
 // A number that identifies the memory as having been initialized. It's
-// arbitrary but happens to be the first 8 bytes of SHA1(ThreadActivityTracker).
+// arbitrary but happens to be the first 4 bytes of SHA1(ThreadActivityTracker).
 // A version number is added on so that major structure changes won't try to
 // read an older version (since the cookie won't match).
-const uint64_t kHeaderCookie = 0xC0029B240D4A3092ULL + 1;  // v1
+const uint32_t kHeaderCookie = 0xC0029B24UL + 2;  // v2
 
 // The minimum depth a stack should support.
 const int kMinStackDepth = 2;
@@ -101,7 +101,8 @@ ActivitySnapshot::~ActivitySnapshot() {}
 // so there is no issue moving between 32 and 64-bit builds.
 struct ThreadActivityTracker::Header {
   // This unique number indicates a valid initialization of the memory.
-  uint64_t cookie;
+  std::atomic<uint32_t> cookie;
+  uint32_t reserved;  // pad out to 64 bits
 
   // The process-id and thread-id (thread_ref.as_id) to which this data belongs.
   // These identifiers are not guaranteed to mean anything but are unique, in
@@ -182,7 +183,7 @@ ThreadActivityTracker::ThreadActivityTracker(void* base, size_t size)
                 "ActivityData.data is not 64-bit aligned");
 
   // Provided memory should either be completely initialized or all zeros.
-  if (header_->cookie == 0) {
+  if (header_->cookie.load(std::memory_order_relaxed) == 0) {
     // This is a new file. Double-check other fields and then initialize.
     DCHECK_EQ(0, header_->process_id.load(std::memory_order_relaxed));
     DCHECK_EQ(0, header_->thread_ref.as_id);
@@ -202,16 +203,17 @@ ThreadActivityTracker::ThreadActivityTracker(void* base, size_t size)
     header_->thread_ref.as_handle =
         PlatformThread::CurrentHandle().platform_handle();
 #endif
+    header_->process_id.store(GetCurrentProcId(), std::memory_order_relaxed);
+
     header_->start_time = base::Time::Now().ToInternalValue();
     header_->start_ticks = base::TimeTicks::Now().ToInternalValue();
     header_->stack_slots = stack_slots_;
     strlcpy(header_->thread_name, PlatformThread::GetName(),
             sizeof(header_->thread_name));
-    header_->cookie = kHeaderCookie;
 
     // This is done last so as to guarantee that everything above is "released"
     // by the time this value gets written.
-    header_->process_id.store(GetCurrentProcId(), std::memory_order_release);
+    header_->cookie.store(kHeaderCookie, std::memory_order_release);
 
     valid_ = true;
     DCHECK(IsValid());
@@ -305,7 +307,7 @@ void ThreadActivityTracker::PopActivity() {
 }
 
 bool ThreadActivityTracker::IsValid() const {
-  if (header_->cookie != kHeaderCookie ||
+  if (header_->cookie.load(std::memory_order_acquire) != kHeaderCookie ||
       header_->process_id.load(std::memory_order_relaxed) == 0 ||
       header_->thread_ref.as_id == 0 ||
       header_->start_time == 0 ||

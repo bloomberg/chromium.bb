@@ -4,6 +4,7 @@
 
 #include "base/debug/activity_analyzer.h"
 
+#include <atomic>
 #include <memory>
 
 #include "base/bind.h"
@@ -90,6 +91,8 @@ class SimpleActivityThread : public SimpleThread {
         source_(source),
         activity_(activity),
         data_(data),
+        ready_(false),
+        exit_(false),
         exit_condition_(&lock_) {}
 
   ~SimpleActivityThread() override {}
@@ -101,8 +104,8 @@ class SimpleActivityThread : public SimpleThread {
 
     {
       AutoLock auto_lock(lock_);
-      ready_ = true;
-      while (!exit_)
+      ready_.store(true, std::memory_order_relaxed);
+      while (!exit_.load(std::memory_order_relaxed))
         exit_condition_.Wait();
     }
 
@@ -113,12 +116,12 @@ class SimpleActivityThread : public SimpleThread {
 
   void Exit() {
     AutoLock auto_lock(lock_);
-    exit_ = true;
+    exit_.store(true, std::memory_order_relaxed);
     exit_condition_.Signal();
   }
 
   void WaitReady() {
-    SPIN_FOR_1_SECOND_OR_UNTIL_TRUE(ready_);
+    SPIN_FOR_1_SECOND_OR_UNTIL_TRUE(ready_.load(std::memory_order_relaxed));
   }
 
  private:
@@ -126,8 +129,8 @@ class SimpleActivityThread : public SimpleThread {
   Activity::Type activity_;
   ActivityData data_;
 
-  bool ready_ = false;
-  bool exit_ = false;
+  std::atomic<bool> ready_;
+  std::atomic<bool> exit_;
   Lock lock_;
   ConditionVariable exit_condition_;
 
