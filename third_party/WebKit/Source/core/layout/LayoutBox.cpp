@@ -3206,10 +3206,29 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
     return heightResult;
 }
 
+static LayoutUnit accumulateStaticOffsetForFlowThread(LayoutBox& layoutBox, LayoutUnit inlinePosition, LayoutUnit& blockPosition)
+{
+    if (layoutBox.isTableRow())
+        return LayoutUnit();
+    blockPosition += layoutBox.logicalTop();
+    if (!layoutBox.isLayoutFlowThread())
+        return LayoutUnit();
+    LayoutUnit previousInlinePosition = inlinePosition;
+    // We're walking out of a flowthread here. This flow thread is not in the containing block
+    // chain, so we need to convert the position from the coordinate space of this flowthread to
+    // the containing coordinate space.
+    toLayoutFlowThread(layoutBox).flowThreadToContainingCoordinateSpace(blockPosition, inlinePosition);
+    return inlinePosition - previousInlinePosition;
+}
+
 void LayoutBox::computeInlineStaticDistance(Length& logicalLeft, Length& logicalRight, const LayoutBox* child, const LayoutBoxModelObject* containerBlock, LayoutUnit containerLogicalWidth)
 {
     if (!logicalLeft.isAuto() || !logicalRight.isAuto())
         return;
+
+    // For multicol we also need to keep track of the block position, since that determines which
+    // column we're in and thus affects the inline position.
+    LayoutUnit staticBlockPosition = child->layer()->staticBlockPosition();
 
     // FIXME: The static distance computation has not been patched for mixed writing modes yet.
     if (child->parent()->style()->direction() == LTR) {
@@ -3219,6 +3238,8 @@ void LayoutBox::computeInlineStaticDistance(Length& logicalLeft, Length& logical
                 staticPosition += toLayoutBox(curr)->logicalLeft();
                 if (toLayoutBox(curr)->isInFlowPositioned())
                     staticPosition += toLayoutBox(curr)->offsetForInFlowPosition().width();
+                if (curr->isInsideFlowThread())
+                    staticPosition += accumulateStaticOffsetForFlowThread(*toLayoutBox(curr), staticPosition, staticBlockPosition);
             } else if (curr->isInline()) {
                 if (curr->isInFlowPositioned()) {
                     if (!curr->style()->logicalLeft().isAuto())
@@ -3234,13 +3255,15 @@ void LayoutBox::computeInlineStaticDistance(Length& logicalLeft, Length& logical
         LayoutUnit staticPosition = child->layer()->staticInlinePosition() + containerLogicalWidth + containerBlock->borderLogicalLeft();
         for (LayoutObject* curr = child->parent(); curr; curr = curr->container()) {
             if (curr->isBox()) {
+                if (curr == enclosingBox)
+                    staticPosition -= enclosingBox->logicalWidth();
                 if (curr != containerBlock) {
                     staticPosition -= toLayoutBox(curr)->logicalLeft();
                     if (toLayoutBox(curr)->isInFlowPositioned())
                         staticPosition -= toLayoutBox(curr)->offsetForInFlowPosition().width();
+                    if (curr->isInsideFlowThread())
+                        staticPosition -= accumulateStaticOffsetForFlowThread(*toLayoutBox(curr), staticPosition, staticBlockPosition);
                 }
-                if (curr == enclosingBox)
-                    staticPosition -= enclosingBox->logicalWidth();
             } else if (curr->isInline()) {
                 if (curr->isInFlowPositioned()) {
                     if (!curr->style()->logicalLeft().isAuto())
@@ -3574,12 +3597,22 @@ void LayoutBox::computeBlockStaticDistance(Length& logicalTop, Length& logicalBo
         return;
 
     // FIXME: The static distance computation has not been patched for mixed writing modes.
-    LayoutUnit staticLogicalTop = child->layer()->staticBlockPosition() - containerBlock->borderBefore();
+    LayoutUnit staticLogicalTop = child->layer()->staticBlockPosition();
     for (LayoutObject* curr = child->parent(); curr && curr != containerBlock; curr = curr->container()) {
-        if (curr->isBox() && !curr->isTableRow())
-            staticLogicalTop += toLayoutBox(curr)->logicalTop();
+        if (!curr->isBox() || curr->isTableRow())
+            continue;
+        const LayoutBox& box = *toLayoutBox(curr);
+        staticLogicalTop += box.logicalTop();
+        if (!box.isLayoutFlowThread())
+            continue;
+        // We're walking out of a flowthread here. This flow thread is not in the containing block
+        // chain, so we need to convert the position from the coordinate space of this flowthread
+        // to the containing coordinate space. The inline position cannot affect the block
+        // position, so we don't bother calculating it.
+        LayoutUnit dummyInlinePosition;
+        toLayoutFlowThread(box).flowThreadToContainingCoordinateSpace(staticLogicalTop, dummyInlinePosition);
     }
-    logicalTop.setValue(Fixed, staticLogicalTop);
+    logicalTop.setValue(Fixed, staticLogicalTop - containerBlock->borderBefore());
 }
 
 void LayoutBox::computePositionedLogicalHeight(LogicalExtentComputedValues& computedValues) const
