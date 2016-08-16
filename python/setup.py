@@ -22,7 +22,7 @@
 r"""Python bindings for liblouis
 """
 
-from distutils.core import setup
+from setuptools import setup, find_packages
 import louis
 
 classifiers = [
@@ -38,5 +38,7 @@ setup(name="louis",
       download_url = "http://code.google.com/p/liblouis/",
       license="LGPLv2.2",
       classifiers=classifiers,
+      test_suite='nose.collector',
+      tests_require=['nose'],
       version=louis.version().split(',')[0].split('-',1)[-1],
       packages=["louis"])
