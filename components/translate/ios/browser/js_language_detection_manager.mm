@@ -25,8 +25,8 @@ const size_t kMaxIndexChars = 65535;
 #pragma mark - Public methods
 
 - (void)startLanguageDetection {
-  [self evaluate:@"__gCrWeb.languageDetection.detectLanguage()"
-      stringResultHandler:nil];
+  [self executeJavaScript:@"__gCrWeb.languageDetection.detectLanguage()"
+        completionHandler:nil];
 }
 
 - (void)retrieveBufferedTextContent:
@@ -34,10 +34,10 @@ const size_t kMaxIndexChars = 65535;
   DCHECK(!callback.is_null());
   // Copy the completion handler so that the block does not capture a reference.
   __block language_detection::BufferedTextCallback blockCallback = callback;
-  [self evaluate:@"__gCrWeb.languageDetection.retrieveBufferedTextContent()"
-      stringResultHandler:^(NSString* result, NSError*) {
-        blockCallback.Run(base::SysNSStringToUTF16(result));
-      }];
+  NSString* JS = @"__gCrWeb.languageDetection.retrieveBufferedTextContent()";
+  [self executeJavaScript:JS completionHandler:^(id result, NSError*) {
+    blockCallback.Run(base::SysNSStringToUTF16(result));
+  }];
 }
 
 @end
