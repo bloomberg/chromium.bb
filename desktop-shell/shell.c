@@ -2364,6 +2364,7 @@ desktop_surface_removed(struct weston_desktop_surface *desktop_surface,
 	weston_desktop_surface_set_user_data(shsurf->desktop_surface, NULL);
 	shsurf->desktop_surface = NULL;
 
+	weston_desktop_surface_destroy_view(shsurf->view);
 	if (weston_surface_is_mapped(surface) &&
 	    shsurf->shell->win_close_animation_type == ANIMATION_FADE) {
 		pixman_region32_fini(&surface->pending.input);
@@ -2373,7 +2374,6 @@ desktop_surface_removed(struct weston_desktop_surface *desktop_surface,
 		weston_fade_run(shsurf->view, 1.0, 0.0, 300.0,
 				fade_out_done, shsurf);
 	} else {
-		weston_desktop_surface_destroy_view(shsurf->view);
 		weston_view_destroy(shsurf->view);
 		free(shsurf);
 	}
