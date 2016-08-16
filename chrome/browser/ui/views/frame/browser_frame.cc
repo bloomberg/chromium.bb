@@ -28,6 +28,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/font_list.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/native_widget.h"
 
@@ -259,17 +260,16 @@ void BrowserFrame::ShowContextMenuForView(views::View* source,
   views::View::ConvertPointFromScreen(non_client_view(), &point_in_view_coords);
   int hit_test = non_client_view()->NonClientHitTest(point_in_view_coords);
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
-    menu_runner_.reset(new views::MenuRunner(
+    menu_model_adapter_.reset(new views::MenuModelAdapter(
         GetSystemMenuModel(),
-        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
-    if (menu_runner_->RunMenuAt(source->GetWidget(),
-                                nullptr,
-                                gfx::Rect(p, gfx::Size(0, 0)),
-                                views::MENU_ANCHOR_TOPLEFT,
-                                source_type) ==
-        views::MenuRunner::MENU_DELETED) {
-      return;
-    }
+        base::Bind(&BrowserFrame::OnMenuClosed, base::Unretained(this))));
+    menu_runner_.reset(new views::MenuRunner(
+        menu_model_adapter_->CreateMenu(), views::MenuRunner::HAS_MNEMONICS |
+                                               views::MenuRunner::CONTEXT_MENU |
+                                               views::MenuRunner::ASYNC));
+    menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
+                            gfx::Rect(p, gfx::Size(0, 0)),
+                            views::MENU_ANCHOR_TOPLEFT, source_type);
   }
 }
 
@@ -295,4 +295,9 @@ ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
 
 views::View* BrowserFrame::GetNewAvatarMenuButton() {
   return browser_frame_view_->GetProfileSwitcherView();
+}
+
+void BrowserFrame::OnMenuClosed() {
+  menu_model_adapter_.reset();
+  menu_runner_.reset();
 }
