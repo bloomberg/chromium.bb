@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -23,22 +25,27 @@ public interface AsyncTabParams {
     /**
      * @return The original {@link Intent} that contains this {@link AsyncTabParams}.
      */
-    Intent getOriginalIntent();
+    @Nullable Intent getOriginalIntent();
 
     /**
      * @return The request ID (tab ID) for this {@link AsyncTabParams}.
      */
-    Integer getRequestId();
+    @Nullable Integer getRequestId();
 
     /**
-     * @return The {@link WebContents} associated with this {@link AsyncTabParams}. Can be null.
+     * @return The {@link WebContents} associated with this {@link AsyncTabParams}.
      */
-    WebContents getWebContents();
+    @Nullable WebContents getWebContents();
 
     /**
-     * @return The tab that would be reparenting through this {@link AsyncTabParams}. Can be null.
+     * @return The {@link ComponentName} that should handle this Intent.
      */
-    Tab getTabToReparent();
+    @Nullable ComponentName getComponentName();
+
+    /**
+     * @return The tab that would be reparenting through this {@link AsyncTabParams}.
+     */
+    @Nullable Tab getTabToReparent();
 
     /**
      * Destroy any internal fields if it is necessary.

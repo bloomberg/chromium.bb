@@ -1780,6 +1780,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_MANAGER_UI_OTHER" desc="Indicates that clicking on this button shows any downloads that don't fit in the other categories.">
         Other
       </message>
+      <message name="IDS_DOWNLOAD_PAGE" desc="Download this page.">
+        Download page
+      </message>
 
       <!-- Document mode messages -->
       <message name="IDS_CLOSE_ALL_INCOGNITO_NOTIFICATION" desc="Message on the notification that closes all incognito tabs in document mode">

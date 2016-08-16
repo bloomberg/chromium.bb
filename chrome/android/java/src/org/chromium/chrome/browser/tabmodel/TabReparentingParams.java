@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.content.ComponentName;
 import android.content.Intent;
 
 import org.chromium.chrome.browser.tab.Tab;
@@ -47,6 +48,11 @@ public class TabReparentingParams implements AsyncTabParams {
 
     @Override
     public WebContents getWebContents() {
+        return null;
+    }
+
+    @Override
+    public ComponentName getComponentName() {
         return null;
     }
 

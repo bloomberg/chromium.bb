@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel.document;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 
@@ -122,7 +123,14 @@ public class TabDelegate extends TabCreator {
 
         Intent intent = new Intent(
                 Intent.ACTION_VIEW, Uri.parse(asyncParams.getLoadUrlParams().getUrl()));
-        intent.setClass(ContextUtils.getApplicationContext(), ChromeLauncherActivity.class);
+
+        ComponentName componentName = asyncParams.getComponentName();
+        if (componentName == null) {
+            intent.setClass(ContextUtils.getApplicationContext(), ChromeLauncherActivity.class);
+        } else {
+            intent.setComponent(componentName);
+        }
+
         intent.putExtra(IntentHandler.EXTRA_TAB_ID, assignedTabId);
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, mIsIncognito);
         intent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);

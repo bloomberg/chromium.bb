@@ -4,10 +4,13 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.content.ComponentName;
 import android.os.Bundle;
 
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
+import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
  * Activity for managing downloads handled through Chrome.
@@ -19,8 +22,10 @@ public class DownloadActivity extends SnackbarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mDownloadManagerUi = new DownloadManagerUi(
-                this, DownloadUtils.shouldShowOffTheRecordDownloads(getIntent()));
+        boolean isIncognito = DownloadUtils.shouldShowOffTheRecordDownloads(getIntent());
+        ComponentName parentComponent = IntentUtils.safeGetParcelableExtra(
+                getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
+        mDownloadManagerUi = new DownloadManagerUi(this, isIncognito, parentComponent);
         setContentView(mDownloadManagerUi.getView());
     }
 

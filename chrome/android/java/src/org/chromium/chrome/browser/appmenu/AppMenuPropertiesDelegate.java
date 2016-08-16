@@ -110,7 +110,7 @@ public class AppMenuPropertiesDelegate {
                 MenuItem offlineMenuItem = menu.findItem(R.id.offline_page_id);
                 if (offlineMenuItem != null) {
                     if (ChromeFeatureList.isEnabled("DownloadsUi")) {
-                        offlineMenuItem.setEnabled(!isChromeScheme);
+                        offlineMenuItem.setEnabled(!isChromeScheme && !isIncognito);
                         Drawable drawable = offlineMenuItem.getIcon();
                         if (drawable != null) {
                             int iconTint = ApiCompatibilityUtils.getColor(

@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.tabmodel.document;
 
+import android.content.ComponentName;
 import android.content.Intent;
 
 import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -30,27 +32,36 @@ public class AsyncTabCreationParams implements AsyncTabParams {
     /** The tab launch request ID from the {@link ServiceTabLauncher}. **/
     private final Integer mRequestId;
 
+    /** Specifies which component to fire the Intent at. */
+    private final ComponentName mComponentName;
+
     /** Create parameters for creating a Tab asynchronously. */
     public AsyncTabCreationParams(LoadUrlParams loadUrlParams) {
-        this(loadUrlParams, null, null, null);
+        this(loadUrlParams, null, null, null, null);
     }
 
-    /** Called by {@see ChromeLauncherActivity} when clobbering DocumentTabs. */
+    /** Called by {@link ChromeLauncherActivity} when clobbering DocumentTabs. */
     public AsyncTabCreationParams(LoadUrlParams loadUrlParams, Intent originalIntent) {
-        this(loadUrlParams, originalIntent, null, null);
+        this(loadUrlParams, originalIntent, null, null, null);
         assert originalIntent != null;
     }
 
-    /** Called by {@see TabDelegate} for creating new a Tab with a pre-existing WebContents. */
+    /** Called by {@link TabDelegate} for creating new a Tab with a pre-existing WebContents. */
     public AsyncTabCreationParams(LoadUrlParams loadUrlParams, WebContents webContents) {
-        this(loadUrlParams, null, webContents, null);
+        this(loadUrlParams, null, webContents, null, null);
         assert webContents != null;
     }
 
-    /** Called by {@see ServiceTabLauncher} to create tabs via service workers. */
+    /** Called by {@link ServiceTabLauncher} to create tabs via service workers. */
     public AsyncTabCreationParams(LoadUrlParams loadUrlParams, Integer requestId) {
-        this(loadUrlParams, null, null, requestId);
+        this(loadUrlParams, null, null, requestId, null);
         assert requestId != null;
+    }
+
+    /** Called by {@link OfflinePageDownloadBridge} to create tabs for Offline Pages. */
+    public AsyncTabCreationParams(LoadUrlParams loadUrlParams, ComponentName name) {
+        this(loadUrlParams, null, null, null, name);
+        assert name != null;
     }
 
     @Override
@@ -73,19 +84,34 @@ public class AsyncTabCreationParams implements AsyncTabParams {
         return mWebContents;
     }
 
+    @Override
+    public ComponentName getComponentName() {
+        return mComponentName;
+    }
+
     private AsyncTabCreationParams(LoadUrlParams loadUrlParams, Intent originalIntent,
-            WebContents webContents, Integer requestId) {
+            WebContents webContents, Integer requestId, ComponentName componentName) {
         assert loadUrlParams != null;
 
         // These parameters are set in very, very specific and exclusive circumstances.
-        if (originalIntent != null) assert webContents == null && requestId == null;
-        if (webContents != null) assert originalIntent == null && requestId == null;
-        if (requestId != null) assert originalIntent == null && webContents == null;
+        if (originalIntent != null) {
+            assert webContents == null && requestId == null && componentName == null;
+        }
+        if (webContents != null) {
+            assert originalIntent == null && requestId == null && componentName == null;
+        }
+        if (requestId != null) {
+            assert originalIntent == null && webContents == null && componentName == null;
+        }
+        if (componentName != null) {
+            assert originalIntent == null && webContents == null && requestId == null;
+        }
 
         mLoadUrlParams = loadUrlParams;
         mRequestId = requestId;
         mWebContents = webContents;
         mOriginalIntent = originalIntent;
+        mComponentName = componentName;
     }
 
     @Override

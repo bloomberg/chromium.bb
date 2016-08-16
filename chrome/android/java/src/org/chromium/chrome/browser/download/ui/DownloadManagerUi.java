@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.StrictMode;
@@ -81,13 +82,14 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
     private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
 
-    public DownloadManagerUi(Activity activity, boolean isOffTheRecord) {
+    public DownloadManagerUi(
+            Activity activity, boolean isOffTheRecord, ComponentName parentComponent) {
         mActivity = activity;
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
 
         mSelectionDelegate = new SelectionDelegate<DownloadHistoryItemWrapper>();
 
-        mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord);
+        mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord, parentComponent);
         mHistoryAdapter.initialize(this);
 
         mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);

@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.offlinepages.downloads;
 
+import android.content.ComponentName;
+import android.support.annotation.Nullable;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -12,6 +15,7 @@ import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -141,13 +145,21 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
     }
 
     /**
+     * See {@link #openItem(String, ComponentName)}.
+     */
+    public void openItem(String guid) {
+        openItem(guid, null);
+    }
+
+    /**
      * 'Opens' the offline page identified by the GUID.
      * This is done by creating a new tab and navigating it to the saved local snapshot.
      * No automatic redirection is happening based on the connection status.
      * If the item with specified GUID is not found or can't be opened, nothing happens.
-     * @param guid a GUID of the item to open.
+     * @param guid          GUID of the item to open.
+     * @param componentName If specified, targets a specific Activity to open the offline page in.
      */
-    public void openItem(String guid) {
+    public void openItem(String guid, @Nullable ComponentName componentName) {
         String url = nativeGetOfflineUrlByGuid(mNativeOfflinePageDownloadBridge, guid);
         if (url == null) return;
 
@@ -155,8 +167,11 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("X-chromium-offline", "reason=download");
         params.setExtraHeaders(headers);
+        AsyncTabCreationParams asyncParams = componentName == null
+                ? new AsyncTabCreationParams(params)
+                : new AsyncTabCreationParams(params, componentName);
         final TabDelegate tabDelegate = new TabDelegate(false);
-        tabDelegate.createNewTab(params, TabLaunchType.FROM_LINK, null);
+        tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_LINK, Tab.INVALID_TAB_ID);
     }
 
     /**

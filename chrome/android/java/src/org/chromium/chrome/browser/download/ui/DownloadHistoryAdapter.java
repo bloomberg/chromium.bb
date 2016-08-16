@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.ui;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -62,14 +63,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private final List<DownloadItemWrapper> mDownloadOffTheRecordItems = new ArrayList<>();
     private final List<OfflinePageItemWrapper> mOfflinePageItems = new ArrayList<>();
     private final List<DownloadHistoryItemWrapper> mFilteredItems = new ArrayList<>();
+    private final ComponentName mParentComponent;
     private final boolean mShowOffTheRecord;
 
     private int mFilter = DownloadFilter.FILTER_ALL;
     private DownloadManagerUi mManager;
     private OfflinePageDownloadBridge mOfflinePageBridge;
 
-    DownloadHistoryAdapter(boolean showOffTheRecord) {
+    DownloadHistoryAdapter(boolean showOffTheRecord, ComponentName parentComponent) {
         mShowOffTheRecord = showOffTheRecord;
+        mParentComponent = parentComponent;
     }
 
     @Override
@@ -99,7 +102,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private void onAllOfflinePagesRetrieved(List<OfflinePageDownloadItem> result) {
         mOfflinePageItems.clear();
         for (OfflinePageDownloadItem item : result) {
-            mOfflinePageItems.add(new OfflinePageItemWrapper(item));
+            mOfflinePageItems.add(
+                    new OfflinePageItemWrapper(item, mOfflinePageBridge, mParentComponent));
         }
 
         // TODO(ianwen): Implement a loading screen to prevent filter-changing wonkiness.
@@ -264,7 +268,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
             @Override
             public void onItemAdded(OfflinePageDownloadItem item) {
-                mOfflinePageItems.add(new OfflinePageItemWrapper(item));
+                mOfflinePageItems.add(
+                        new OfflinePageItemWrapper(item, mOfflinePageBridge, mParentComponent));
                 updateFilter();
             }
 
@@ -284,14 +289,17 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             public void onItemUpdated(OfflinePageDownloadItem item) {
                 int index = findItemIndex(mOfflinePageItems, item.getGuid());
                 if (index != INVALID_INDEX) {
-                    mOfflinePageItems.set(index, new OfflinePageItemWrapper(item));
+                    mOfflinePageItems.set(index,
+                            new OfflinePageItemWrapper(item, mOfflinePageBridge, mParentComponent));
                     updateFilter();
                 }
             }
 
             /** Re-filter the items if needed. */
             private void updateFilter() {
-                if (mFilter == DownloadFilter.FILTER_PAGE) filter(mFilter);
+                if (mFilter == DownloadFilter.FILTER_ALL || mFilter == DownloadFilter.FILTER_PAGE) {
+                    filter(mFilter);
+                }
             }
         });
     }

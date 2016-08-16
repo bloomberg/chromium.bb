@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,7 +21,6 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.ui.widget.Toast;
 
@@ -137,13 +137,17 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
             Context context = ContextUtils.getApplicationContext();
             boolean success = false;
 
-            String mimeType = mItem.getDownloadInfo().getMimeType();
+            String mimeType = Intent.normalizeMimeType(mItem.getDownloadInfo().getMimeType());
             Uri fileUri = Uri.fromFile(getFile());
 
             // Check if any apps can open the file.
             Intent fileIntent = new Intent();
             fileIntent.setAction(Intent.ACTION_VIEW);
-            fileIntent.setDataAndType(fileUri, mimeType);
+            if (TextUtils.isEmpty(mimeType)) {
+                fileIntent.setData(fileUri);
+            } else {
+                fileIntent.setDataAndType(fileUri, mimeType);
+            }
             fileIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             List<ResolveInfo> handlers = context.getPackageManager()
                     .queryIntentActivities(fileIntent, PackageManager.MATCH_DEFAULT_ONLY);
@@ -208,10 +212,15 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
     /** Wraps a {@link OfflinePageDownloadItem}. */
     static class OfflinePageItemWrapper extends DownloadHistoryItemWrapper {
         private final OfflinePageDownloadItem mItem;
+        private final OfflinePageDownloadBridge mBridge;
+        private final ComponentName mComponent;
         private File mFile;
 
-        OfflinePageItemWrapper(OfflinePageDownloadItem item) {
+        OfflinePageItemWrapper(OfflinePageDownloadItem item, OfflinePageDownloadBridge bridge,
+                ComponentName component) {
             mItem = item;
+            mBridge = bridge;
+            mComponent = component;
         }
 
         @Override
@@ -268,17 +277,12 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
 
         @Override
         public void open() {
-            getBridge().openItem(getId());
+            mBridge.openItem(getId(), mComponent);
         }
 
         @Override
         public void delete() {
-            getBridge().deleteItem(getId());
-        }
-
-        private OfflinePageDownloadBridge getBridge() {
-            return new OfflinePageDownloadBridge(
-                    Profile.getLastUsedProfile().getOriginalProfile());
+            mBridge.deleteItem(getId());
         }
     }
 }
