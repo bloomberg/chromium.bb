@@ -328,6 +328,7 @@
   enum TreeChangeObserverFilter {
     noTreeChanges,
     liveRegionTreeChanges,
+    textMarkerChanges,
     allTreeChanges
   };
 

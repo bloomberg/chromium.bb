@@ -14,6 +14,7 @@ goog.require('AutomationUtil');
 goog.require('BackgroundKeyboardHandler');
 goog.require('ChromeVoxState');
 goog.require('CommandHandler');
+goog.require('FindHandler');
 goog.require('LiveRegions');
 goog.require('NextEarcons');
 goog.require('Notifications');
@@ -234,6 +235,7 @@ Background.prototype = {
   onModeChanged_: function(newMode, oldMode) {
     this.keyboardHandler_.onModeChanged(newMode, oldMode);
     CommandHandler.onModeChanged(newMode, oldMode);
+    FindHandler.onModeChanged(newMode, oldMode);
     Notifications.onModeChange(newMode, oldMode);
 
     if (newMode == ChromeVoxMode.CLASSIC)

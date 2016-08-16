@@ -632,6 +632,13 @@ chrome.automation.AutomationNode.prototype.tableRowCount;
 /** @type {number} */
 chrome.automation.AutomationNode.prototype.hierarchicalLevel;
 
+/** @type {Array<number>} */
+chrome.automation.AutomationNode.prototype.markerTypes;
+/** @type {Array<number>} */
+chrome.automation.AutomationNode.prototype.markerStarts;
+/** @type {Array<number>} */
+chrome.automation.AutomationNode.prototype.markerEnds;
+
 /**
  * @extends {chrome.automation.AutomationNode}
  * @constructor

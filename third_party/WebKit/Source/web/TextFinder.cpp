@@ -237,6 +237,11 @@ void TextFinder::reportFindInPageResultToAccessibility(int identifier)
     if (!startObject || !endObject)
         return;
 
+    // Notify the client of new text marker data.
+    axObjectCache->postNotification(startObject, AXObjectCache::AXNotification::AXChildrenChanged);
+    if (startObject != endObject)
+        axObjectCache->postNotification(endObject, AXObjectCache::AXNotification::AXChildrenChanged);
+
     if (ownerFrame().client()) {
         ownerFrame().client()->handleAccessibilityFindInPageResult(
             identifier, m_activeMatchIndex + 1,

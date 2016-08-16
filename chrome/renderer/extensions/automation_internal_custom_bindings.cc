@@ -421,8 +421,7 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
     ScriptContext* context)
     : ObjectBackedNativeHandler(context),
       is_active_profile_(true),
-      tree_change_observer_overall_filter_(
-          api::automation::TREE_CHANGE_OBSERVER_FILTER_NOTREECHANGES) {
+      tree_change_observer_overall_filter_(0) {
   // It's safe to use base::Unretained(this) here because these bindings
   // will only be called on a valid AutomationInternalCustomBindings instance
   // and none of the functions have any side effects.
@@ -802,7 +801,9 @@ void AutomationInternalCustomBindings::AddTreeChangeObserver(
 
 void AutomationInternalCustomBindings::RemoveTreeChangeObserver(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (args.Length() != 1 || !args[0]->IsNumber()) {
+  // The argument is an integer key for an object which is automatically
+  // converted to a string.
+  if (args.Length() != 1 || !args[0]->IsString()) {
     ThrowInvalidArgumentsException(this);
     return;
   }
@@ -965,12 +966,9 @@ void AutomationInternalCustomBindings::GetState(
 }
 
 void AutomationInternalCustomBindings::UpdateOverallTreeChangeObserverFilter() {
-  tree_change_observer_overall_filter_ =
-      api::automation::TREE_CHANGE_OBSERVER_FILTER_NOTREECHANGES;
-  for (const auto& observer : tree_change_observers_) {
-    tree_change_observer_overall_filter_ =
-        std::max(observer.filter, tree_change_observer_overall_filter_);
-  }
+  tree_change_observer_overall_filter_ = 0;
+  for (const auto& observer : tree_change_observers_)
+    tree_change_observer_overall_filter_ |= 1 << observer.filter;
 }
 
 ui::AXNode* AutomationInternalCustomBindings::GetParent(
@@ -1222,19 +1220,28 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
   if (node->data().HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID))
     SendChildTreeIDEvent(tree, node);
 
-  switch (tree_change_observer_overall_filter_) {
-    case api::automation::TREE_CHANGE_OBSERVER_FILTER_NOTREECHANGES:
-    default:
-      return;
-    case api::automation::TREE_CHANGE_OBSERVER_FILTER_LIVEREGIONTREECHANGES:
-      if (!node->data().HasStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS) &&
-          node->data().role != ui::AX_ROLE_ALERT) {
-        return;
-      }
-      break;
-    case api::automation::TREE_CHANGE_OBSERVER_FILTER_ALLTREECHANGES:
-      break;
+  bool has_filter = false;
+  if (tree_change_observer_overall_filter_ &
+      (1 <<
+       api::automation::TREE_CHANGE_OBSERVER_FILTER_LIVEREGIONTREECHANGES)) {
+    if (node->data().HasStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS) ||
+        node->data().role == ui::AX_ROLE_ALERT) {
+      has_filter = true;
+    }
   }
+
+  if (tree_change_observer_overall_filter_ &
+      (1 << api::automation::TREE_CHANGE_OBSERVER_FILTER_TEXTMARKERCHANGES)) {
+    if (node->data().HasIntListAttribute(ui::AX_ATTR_MARKER_TYPES))
+      has_filter = true;
+  }
+
+  if (tree_change_observer_overall_filter_ &
+      (1 << api::automation::TREE_CHANGE_OBSERVER_FILTER_ALLTREECHANGES))
+    has_filter = true;
+
+  if (!has_filter)
+    return;
 
   auto iter = axtree_to_tree_cache_map_.find(tree);
   if (iter == axtree_to_tree_cache_map_.end())
@@ -1257,6 +1264,10 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
             node->data().role != ui::AX_ROLE_ALERT) {
           continue;
         }
+        break;
+      case api::automation::TREE_CHANGE_OBSERVER_FILTER_TEXTMARKERCHANGES:
+        if (!node->data().HasIntListAttribute(ui::AX_ATTR_MARKER_TYPES))
+          continue;
         break;
       case api::automation::TREE_CHANGE_OBSERVER_FILTER_ALLTREECHANGES:
         break;
