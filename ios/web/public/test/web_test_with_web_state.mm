@@ -36,22 +36,6 @@ CRWWebController* GetWebController(web::WebState* web_state) {
       static_cast<web::WebStateImpl*>(web_state);
   return web_state_impl->GetWebController();
 }
-
-// Returns true if JavaScript can be executed on web controller without errors.
-bool CanExecuteJavaScript(web::WebState* web_state) {
-  __block bool executed_sucessfully = false;
-  __block bool execution_completed = false;
-  [GetWebController(web_state) executeJavaScript:@"0;"
-                                 completionHandler:^(id, NSError* error) {
-                                   executed_sucessfully = !error;
-                                   execution_completed = true;
-                                 }];
-  base::test::ios::WaitUntilCondition(^{
-    return execution_completed;
-  });
-  return executed_sucessfully;
-}
-
 }  // namespace
 
 namespace web {
@@ -166,18 +150,6 @@ void WebTestWithWebState::WaitForCondition(ConditionBlock condition) {
 }
 
 id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
-  // There is an assumption that on iOS 10 JavaScript sometimes can not be
-  // executed because windowID is not injected yet. This code will verify this
-  // assumption, but the test will still fail.
-  if (!CanExecuteJavaScript(web_state())) {
-    __block int canExecuteCallsCount = 0;
-    base::test::ios::WaitUntilCondition(^{
-      canExecuteCallsCount++;
-      return CanExecuteJavaScript(web_state());
-    });
-    DCHECK_EQ(1, canExecuteCallsCount);
-  }
-
   __block base::scoped_nsprotocol<id> executionResult;
   __block bool executionCompleted = false;
   [GetWebController(web_state())
