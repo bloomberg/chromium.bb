@@ -5,6 +5,8 @@
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/android/content_settings/subresource_filter_infobar_delegate.h"
 
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
@@ -19,4 +21,13 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents_);
   content_settings->SetSubresourceBlocked(visibility);
+#if defined(OS_ANDROID)
+  if (visibility) {
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents_);
+
+    SubresourceFilterInfobarDelegate::Create(infobar_service);
+    content_settings->SetSubresourceBlockageIndicated();
+  }
+#endif
 }

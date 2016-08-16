@@ -429,6 +429,8 @@
       'browser/ui/android/connection_info_popup_android.h',
       'browser/ui/android/content_settings/popup_blocked_infobar_delegate.cc',
       'browser/ui/android/content_settings/popup_blocked_infobar_delegate.h',
+      'browser/ui/android/content_settings/subresource_filter_infobar_delegate.cc',
+      'browser/ui/android/content_settings/subresource_filter_infobar_delegate.h',
       'browser/ui/android/context_menu_helper.cc',
       'browser/ui/android/context_menu_helper.h',
       'browser/ui/android/infobars/app_banner_infobar_android.cc',

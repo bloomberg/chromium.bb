@@ -133,6 +133,7 @@ class InfoBarDelegate {
     UPDATE_PASSWORD_INFOBAR_DELEGATE = 63,
     DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID = 64,
     AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_DELEGATE_ANDROID = 65,
+    SUBRESOURCE_FILTER_INFOBAR_DELEGATE_ANDROID = 66,
   };
 
   // Describes navigation events, used to decide whether infobars should be
