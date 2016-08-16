@@ -14,16 +14,6 @@
 namespace chromecast {
 
 // static
-void RebootUtil::Initialize(const std::vector<std::string>& argv) {
-  RebootShlib::Initialize(argv);
-}
-
-// static
-void RebootUtil::Finalize() {
-  RebootShlib::Finalize();
-}
-
-// static
 bool RebootUtil::IsRebootSupported() {
   return RebootShlib::IsSupported();
 }
