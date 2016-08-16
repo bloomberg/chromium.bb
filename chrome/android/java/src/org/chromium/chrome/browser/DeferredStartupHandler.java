@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.content.browser.ChildProcessLauncher;
 
@@ -257,7 +258,7 @@ public class DeferredStartupHandler {
                     // Initialize whether or not precaching is enabled.
                     PrecacheLauncher.updatePrecachingEnabled(mAppContext);
 
-                    if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+                    if (ChromeWebApkHost.isEnabled()) {
                         WebApkVersionManager.updateWebApksIfNeeded();
                     }
 

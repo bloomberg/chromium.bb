@@ -84078,6 +84078,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1490043732" label="enable-fill-on-account-select"/>
   <int value="1490255042" label="enable-overlay-scrollbar"/>
   <int value="1495341532" label="disable-mtp-write-support"/>
+  <int value="1496571153" label="enable-webapk"/>
   <int value="1497924954" label="js-flags"/>
   <int value="1505194447" label="disable-transition-compositing"/>
   <int value="1509901380" label="disable-drive-search-in-app-launcher"/>

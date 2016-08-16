@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.InstantAppsHandler;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
+import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.sync.signin.AccountManagerHelper;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -194,6 +195,7 @@ public class FeatureUtilities {
         cacheHerbFlavor();
         InstantAppsHandler.getInstance(application).cacheInstantAppsEnabled(
                 application.getApplicationContext());
+        ChromeWebApkHost.cacheEnabledStateForNextLaunch();
     }
 
     /**

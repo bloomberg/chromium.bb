@@ -13,10 +13,8 @@ import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
@@ -65,9 +63,7 @@ public class WebappLauncherActivity extends Activity {
             // - the request was for a WebAPK that is valid;
             // - the MAC is present and valid for the homescreen shortcut to be opened;
             // - the intent was sent by Chrome.
-            if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
-                ChromeWebApkHost.init();
-            }
+            ChromeWebApkHost.init();
             boolean isValidWebApk = isValidWebApk(webApkPackageName, webappUrl);
 
             if (isValidWebApk
@@ -194,8 +190,7 @@ public class WebappLauncherActivity extends Activity {
      * @return true iff all validation criteria are met.
      */
     private boolean isValidWebApk(String webApkPackage, String url) {
-        if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)
-                || webApkPackage == null) {
+        if (webApkPackage == null || !ChromeWebApkHost.isEnabled()) {
             return false;
         }
         if (!webApkPackage.equals(WebApkValidator.queryWebApkPackage(this, url))) {

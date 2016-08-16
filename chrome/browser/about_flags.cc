@@ -2066,6 +2066,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_BROWSER_TASK_SCHEDULER_DESCRIPTION, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableBrowserTaskScheduler,
                                switches::kDisableBrowserTaskScheduler)},
+#if defined(OS_ANDROID)
+    {"enable-webapk", IDS_FLAGS_ENABLE_WEBAPK,
+     IDS_FLAGS_ENABLE_WEBAPK_DESCRIPTION, kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kEnableWebApk)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

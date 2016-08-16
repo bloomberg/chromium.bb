@@ -72,8 +72,8 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
     const base::Closure& splash_image_callback) {
   if (info.display == blink::WebDisplayModeStandalone ||
       info.display == blink::WebDisplayModeFullscreen) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableWebApk)) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    if (Java_ShortcutHelper_areWebApksEnabled(env)) {
       InstallWebApkWithSkBitmap(browser_context, info, icon_bitmap);
       return;
     }

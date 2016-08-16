@@ -18,13 +18,12 @@ import android.test.mock.MockContext;
 import android.test.mock.MockPackageManager;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
+import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -107,9 +106,9 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        CommandLine.init(new String[0]);
         RecordHistogram.disableForTests();
         mDelegate.mQueryIntentOverride = null;
+        ChromeWebApkHost.initForTesting(false);  // disabled by default
     }
 
     @SmallTest
@@ -861,10 +860,10 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
     /**
      * Test that tapping a link which falls solely into the scope of a WebAPK does not bypass the
-     * intent picker if WebAPKs are disabled in the command line.
+     * intent picker if WebAPKs are not enabled.
      */
     @SmallTest
-    public void testLaunchWebApk_WebApkDisabledCommandLine() {
+    public void testLaunchWebApk_WebApkNotEnabled() {
         checkUrl(WEBAPK_SCOPE)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
@@ -872,11 +871,11 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
     /**
      * Test that tapping a link which falls solely in the scope of a WebAPK launches a WebAPK
-     * without showing the intent picker if WebAPKs are enabled in the command line.
+     * without showing the intent picker if WebAPKs are enabled.
      */
     @SmallTest
     public void testLaunchWebApk_BypassIntentPicker() {
-        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
+        ChromeWebApkHost.initForTesting(true);
         checkUrl(WEBAPK_SCOPE)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_WEBAPK);
     }
@@ -887,7 +886,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testLaunchWebApk_ShowIntentPickerMultipleIntentHandlers() {
-        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
+        ChromeWebApkHost.initForTesting(true);
         checkUrl(WEBAPK_WITH_NATIVE_APP_SCOPE)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
@@ -899,7 +898,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testLaunchWebApk_BypassIntentPickerFromAnotherWebApk() {
-        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
+        ChromeWebApkHost.initForTesting(true);
         checkUrl(WEBAPK_SCOPE)
                 .withReferrer(WEBAPK_WITH_NATIVE_APP_SCOPE)
                 .withWebApkPackageName(WEBAPK_WITH_NATIVE_APP_PACKAGE_NAME)
@@ -913,7 +912,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testLaunchWebApk_ShowIntentPickerInvalidWebApk() {
-        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
+        ChromeWebApkHost.initForTesting(true);
         checkUrl(COUNTERFEIT_WEBAPK_SCOPE)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
@@ -925,7 +924,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testLaunchWebApk_StayInSameWebApk() {
-        CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_WEBAPK);
+        ChromeWebApkHost.initForTesting(true);
         checkUrl(WEBAPK_SCOPE + "/new.html")
                 .withWebApkPackageName(WEBAPK_PACKAGE_NAME)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);

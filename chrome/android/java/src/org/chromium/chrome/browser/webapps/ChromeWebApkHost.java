@@ -4,14 +4,25 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.os.StrictMode;
+
+import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.FieldTrialList;
+import org.chromium.base.Log;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 /**
  * Contains functionality needed for Chrome to host WebAPKs.
  */
 public class ChromeWebApkHost {
-    // The public key to verify whether a WebAPK is signed by WebAPK Minting Server.
-    // TODO(hanxi): Update {@link EXPECTED_SIGNATURE} when the real signature is available.
+    // The public key to verify whether a WebAPK is signed by WebAPK Minting
+    // Server.
+    // TODO(hanxi): Update {@link EXPECTED_SIGNATURE} when the real signature is
+    // available.
+    // TODO(yfriedman): Move this to resoures (so it can vary by channel)
     private static final byte[] EXPECTED_SIGNATURE = new byte[] {
             48, -126, 3, -121, 48, -126, 2, 111, -96, 3, 2, 1, 2, 2, 4, 20, -104, -66, -126, 48, 13,
             6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 11, 5, 0, 48, 116, 49, 11, 48, 9, 6, 3, 85, 4,
@@ -61,7 +72,62 @@ public class ChromeWebApkHost {
             -125, -31, -18, -52, 49, -73
     };
 
+    private static final String TAG = "ChromeWebApkHost";
+
+    /** Finch experiment name. */
+    private static final String WEBAPK_DISABLE_EXPERIMENT_NAME = "WebApkKillSwitch";
+
+    /** Finch experiment group which forces WebAPKs off. */
+    private static final String WEBAPK_RUNTIME_DISABLED = "Disabled";
+
+    private static Boolean sEnabledForTesting;
+
     public static void init() {
         WebApkValidator.initWithBrowserHostSignature(EXPECTED_SIGNATURE);
+    }
+
+    public static void initForTesting(boolean enabled) {
+        sEnabledForTesting = enabled;
+    }
+
+    public static boolean isEnabled() {
+        if (sEnabledForTesting != null) return sEnabledForTesting;
+
+        return isEnabledInPrefs();
+    }
+
+    /**
+     * Check the cached value to figure out if the feature is enabled. We have
+     * to use the cached value because native library may not yet been loaded.
+     *
+     * @return Whether the feature is enabled.
+     */
+    private static boolean isEnabledInPrefs() {
+        // Will go away once the feature is enabled for everyone by default.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            return ChromePreferenceManager.getInstance(
+                    ContextUtils.getApplicationContext()).getCachedWebApkRuntimeEnabled();
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+    }
+
+    /**
+     * Once native is loaded we can consult the command-line (set via about:flags) and also finch
+     * state to see if we should enable WebAPKs.
+     */
+    public static void cacheEnabledStateForNextLaunch() {
+        boolean wasEnabled = isEnabledInPrefs();
+        CommandLine instance = CommandLine.getInstance();
+        String experiment = FieldTrialList.findFullName(WEBAPK_DISABLE_EXPERIMENT_NAME);
+        boolean isEnabled = (!WEBAPK_RUNTIME_DISABLED.equals(experiment)
+                && instance.hasSwitch(ChromeSwitches.ENABLE_WEBAPK));
+
+        if (isEnabled != wasEnabled) {
+            Log.d(TAG, "WebApk setting changed (%s => %s)", wasEnabled, isEnabled);
+            ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
+                    .setCachedWebApkRuntimeEnabled(isEnabled);
+        }
     }
 }

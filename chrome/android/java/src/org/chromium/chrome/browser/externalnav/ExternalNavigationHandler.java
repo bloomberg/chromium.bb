@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.ui.base.PageTransition;
 
 import java.net.URI;
@@ -440,7 +441,7 @@ public class ExternalNavigationHandler {
                     IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
                 }
 
-                if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+                if (ChromeWebApkHost.isEnabled()) {
                     // If the only specialized intent handler is a WebAPK, set the intent's package
                     // to launch the WebAPK without showing the intent picker.
                     String targetWebApkPackageName =

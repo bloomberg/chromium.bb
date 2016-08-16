@@ -192,9 +192,7 @@ public class ChromeBrowserInitializer {
         ContentApplication.initCommandLine(mApplication);
         waitForDebuggerIfNeeded();
         ChromeStrictMode.configureStrictMode();
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
-            ChromeWebApkHost.init();
-        }
+        ChromeWebApkHost.init();
 
         warmUpSharedPrefs();
 
@@ -229,7 +227,7 @@ public class ChromeBrowserInitializer {
             throws ProcessInitException {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
 
-        final LinkedList<Runnable> initQueue = new LinkedList<Runnable>();
+        final LinkedList<Runnable> initQueue = new LinkedList<>();
 
         abstract class NativeInitTask implements Runnable {
             @Override

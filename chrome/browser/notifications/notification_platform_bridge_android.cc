@@ -183,19 +183,15 @@ void NotificationPlatformBridgeAndroid::Display(
   DCHECK_EQ(notification_type, NotificationCommon::PERSISTENT);
 
   GURL origin_url(notification.origin_url().GetOrigin());
-  ScopedJavaLocalRef<jstring> webapk_package;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebApk)) {
-    GURL scope_url(notification.service_worker_scope());
-    if (!scope_url.is_valid())
-      scope_url = origin_url;
-    ScopedJavaLocalRef<jstring> j_scope_url =
+
+  GURL scope_url(notification.service_worker_scope());
+  if (!scope_url.is_valid())
+    scope_url = origin_url;
+  ScopedJavaLocalRef<jstring> j_scope_url =
         ConvertUTF8ToJavaString(env, scope_url.spec());
-    webapk_package = Java_NotificationPlatformBridge_queryWebApkPackage(
-        env, java_object_, j_scope_url);
-  } else {
-    webapk_package = ConvertUTF8ToJavaString(env, "");
-  }
+  ScopedJavaLocalRef<jstring> webapk_package =
+      Java_NotificationPlatformBridge_queryWebApkPackage(
+          env, java_object_, j_scope_url);
 
   ScopedJavaLocalRef<jstring> j_notification_id =
       ConvertUTF8ToJavaString(env, notification_id);

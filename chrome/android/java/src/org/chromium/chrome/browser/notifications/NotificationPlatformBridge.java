@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -169,6 +170,8 @@ public class NotificationPlatformBridge {
      */
     @CalledByNative
     private String queryWebApkPackage(String url) {
+        if (!ChromeWebApkHost.isEnabled()) return "";
+
         String webApkPackage =
                 WebApkValidator.queryWebApkPackage(mAppContext, url);
         return webApkPackage == null ? "" : webApkPackage;
@@ -204,7 +207,7 @@ public class NotificationPlatformBridge {
 
         if (NotificationConstants.ACTION_CLICK_NOTIFICATION.equals(intent.getAction())) {
             String webApkPackage = "";
-            if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+            if (ChromeWebApkHost.isEnabled()) {
                 webApkPackage = intent.getStringExtra(
                     NotificationConstants.EXTRA_NOTIFICATION_INFO_WEBAPK_PACKAGE);
                 if (webApkPackage == null) {

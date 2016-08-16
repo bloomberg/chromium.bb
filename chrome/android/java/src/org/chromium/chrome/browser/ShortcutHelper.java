@@ -23,7 +23,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -31,6 +30,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
+import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
@@ -438,12 +439,17 @@ public class ShortcutHelper {
      * {@link url}.
      */
     @CalledByNative
-    public static boolean isWebApkInstalled(String url) {
-        if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+    private static boolean isWebApkInstalled(String url) {
+        if (!ChromeWebApkHost.isEnabled()) {
             return false;
         }
         return WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url)
                 != null;
+    }
+
+    @CalledByNative
+    private static boolean areWebApksEnabled() {
+        return ChromeWebApkHost.isEnabled();
     }
 
     /**

@@ -40,6 +40,8 @@ public class ChromePreferenceManager {
             "contextual_search_tap_quick_answer_count";
     private static final String HERB_FLAVOR_KEY = "herb_flavor";
     private static final String INSTANT_APPS_KEY = "applink.app_link_enabled";
+    private static final String WEBAPK_RUNTIME_KEY = "webapk.runtime_enabled";
+
     private static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
     private static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
@@ -328,6 +330,18 @@ public class ChromePreferenceManager {
     public void setCachedInstantAppsEnabled(boolean isEnabled) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putBoolean(INSTANT_APPS_KEY, isEnabled);
+        ed.apply();
+    }
+
+    /** Checks the cached value for the webapk feature. */
+    public boolean getCachedWebApkRuntimeEnabled() {
+        return mSharedPreferences.getBoolean(WEBAPK_RUNTIME_KEY, false);
+    }
+
+    /** Writes the cached value for the webapk feature is enabled. */
+    public void setCachedWebApkRuntimeEnabled(boolean isEnabled) {
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.putBoolean(WEBAPK_RUNTIME_KEY, isEnabled);
         ed.apply();
     }
 
