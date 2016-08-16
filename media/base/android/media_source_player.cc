@@ -252,7 +252,7 @@ void MediaSourcePlayer::StartInternal() {
   // related info should all be cleared.
   is_waiting_for_key_ = false;
   key_added_while_decode_pending_ = false;
-  AttachListener(NULL);
+  AttachListener(nullptr);
 
   SetPendingEvent(PREFETCH_REQUEST_EVENT_PENDING);
   ProcessPendingEvents();

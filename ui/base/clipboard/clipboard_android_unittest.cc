@@ -44,9 +44,6 @@ TEST_F(ClipboardAndroidTest, InternalClipboardInvalidation) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ASSERT_TRUE(env);
 
-  jobject context = base::android::GetApplicationContext();
-  ASSERT_TRUE(context);
-
   ScopedJavaLocalRef<jclass> context_class =
       base::android::GetClass(env, "android/content/Context");
 
@@ -59,7 +56,8 @@ TEST_F(ClipboardAndroidTest, InternalClipboardInvalidation) {
       ConvertUTF8ToJavaString(env, "clipboard");
   ScopedJavaLocalRef<jobject> clipboard_manager(
       env,
-      env->CallObjectMethod(context, get_system_service, service_name.obj()));
+      env->CallObjectMethod(base::android::GetApplicationContext(),
+                            get_system_service, service_name.obj()));
   ASSERT_TRUE(clipboard_manager.obj() && !base::android::ClearException(env));
 
   ScopedJavaLocalRef<jclass> clipboard_class =

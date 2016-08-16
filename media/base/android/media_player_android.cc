@@ -7,11 +7,14 @@
 #include <algorithm>
 
 #include "base/android/context_utils.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
+
+using base::android::JavaRef;
 
 namespace {
 
@@ -106,11 +109,10 @@ void MediaPlayerAndroid::OnSeekComplete() {
 
 void MediaPlayerAndroid::OnMediaPrepared() {}
 
-void MediaPlayerAndroid::AttachListener(jobject j_media_player) {
-  jobject j_context = base::android::GetApplicationContext();
-  DCHECK(j_context);
-
-  listener_->CreateMediaPlayerListener(j_context, j_media_player);
+void MediaPlayerAndroid::AttachListener(
+    const JavaRef<jobject>& j_media_player) {
+  listener_->CreateMediaPlayerListener(base::android::GetApplicationContext(),
+                                       j_media_player);
 }
 
 void MediaPlayerAndroid::DetachListener() {

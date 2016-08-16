@@ -64,14 +64,8 @@ class ClipboardMap {
 base::LazyInstance<ClipboardMap>::Leaky g_map = LAZY_INSTANCE_INITIALIZER;
 
 ClipboardMap::ClipboardMap() {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-
-  // Get the context.
-  jobject context = base::android::GetApplicationContext();
-  DCHECK(context);
-
-  clipboard_manager_.Reset(Java_Clipboard_create(env, context));
+  clipboard_manager_.Reset(Java_Clipboard_create(
+      AttachCurrentThread(), base::android::GetApplicationContext()));
   DCHECK(clipboard_manager_.obj());
 }
 

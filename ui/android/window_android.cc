@@ -18,6 +18,7 @@ namespace ui {
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj) : compositor_(NULL) {
@@ -43,7 +44,7 @@ WindowAndroid::~WindowAndroid() {
 
 WindowAndroid* WindowAndroid::createForTesting() {
   JNIEnv* env = AttachCurrentThread();
-  jobject context = base::android::GetApplicationContext();
+  const JavaRef<jobject>& context = base::android::GetApplicationContext();
   return new WindowAndroid(
       env, Java_WindowAndroid_createForTesting(env, context).obj());
 }

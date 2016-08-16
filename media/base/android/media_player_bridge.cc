@@ -9,6 +9,7 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -21,6 +22,7 @@
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace media {
@@ -123,7 +125,7 @@ void MediaPlayerBridge::CreateJavaMediaPlayerBridge() {
 
   UpdateEffectiveVolume();
 
-  AttachListener(j_media_player_bridge_.obj());
+  AttachListener(j_media_player_bridge_);
 }
 
 void MediaPlayerBridge::SetDuration(base::TimeDelta duration) {
@@ -178,8 +180,7 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
     ScopedJavaLocalRef<jstring> j_url_string =
         ConvertUTF8ToJavaString(env, url);
 
-    jobject j_context = base::android::GetApplicationContext();
-    DCHECK(j_context);
+    const JavaRef<jobject>& j_context = base::android::GetApplicationContext();
 
     const std::string data_uri_prefix("data:");
     if (base::StartsWith(url, data_uri_prefix, base::CompareCase::SENSITIVE)) {

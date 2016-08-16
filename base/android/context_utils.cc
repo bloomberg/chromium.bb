@@ -33,9 +33,9 @@ void SetNativeApplicationContext(JNIEnv* env, const JavaRef<jobject>& context) {
 
 }  // namespace
 
-jobject GetApplicationContext() {
+const JavaRef<jobject>& GetApplicationContext() {
   DCHECK(!g_application_context.Get().is_null());
-  return g_application_context.Get().obj();
+  return g_application_context.Get();
 }
 
 static void InitNativeSideApplicationContext(

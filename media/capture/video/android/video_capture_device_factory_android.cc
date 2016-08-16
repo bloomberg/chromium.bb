@@ -8,12 +8,14 @@
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "jni/VideoCaptureFactory_jni.h"
 #include "media/capture/video/android/video_capture_device_android.h"
 
 using base::android::AttachCurrentThread;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace media {
@@ -53,7 +55,7 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceDescriptors(
 
   JNIEnv* env = AttachCurrentThread();
 
-  const jobject context = base::android::GetApplicationContext();
+  const JavaRef<jobject>& context = base::android::GetApplicationContext();
   const int num_cameras =
       Java_VideoCaptureFactory_getNumberOfCameras(env, context);
   DVLOG(1) << __FUNCTION__ << ": num_cameras=" << num_cameras;

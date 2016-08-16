@@ -7,6 +7,7 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -36,6 +37,7 @@
 #include "url/gurl.h"
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace content {
@@ -121,7 +123,7 @@ static void GetMediaMetadata(
 
   ScopedJavaLocalRef<jstring> j_url_string = ConvertUTF8ToJavaString(env, url);
   ScopedJavaLocalRef<jstring> j_cookies = ConvertUTF8ToJavaString(env, cookies);
-  jobject j_context = base::android::GetApplicationContext();
+  const JavaRef<jobject>& j_context = base::android::GetApplicationContext();
   ScopedJavaLocalRef<jstring> j_user_agent = ConvertUTF8ToJavaString(
       env, user_agent);
   ScopedJavaLocalRef<jobject> j_metadata =

@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -128,7 +129,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Attach/Detaches |listener_| for listening to all the media events. If
   // |j_media_player| is NULL, |listener_| only listens to the system media
   // events. Otherwise, it also listens to the events from |j_media_player|.
-  void AttachListener(jobject j_media_player);
+  void AttachListener(const base::android::JavaRef<jobject>& j_media_player);
   void DetachListener();
 
  protected:

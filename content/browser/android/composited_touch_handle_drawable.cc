@@ -39,7 +39,7 @@ class HandleResources {
     TRACE_EVENT0("browser", "HandleResources::Create");
     JNIEnv* env = base::android::AttachCurrentThread();
     if (!context)
-      context = base::android::GetApplicationContext();
+      context = base::android::GetApplicationContext().obj();
 
     left_bitmap_ = CreateSkBitmapFromJavaBitmap(
         Java_HandleViewResources_getLeftHandleBitmap(env, context));

@@ -8,6 +8,9 @@
 #include "base/logging.h"
 #include "jni/TouchDevice_jni.h"
 
+using base::android::AttachCurrentThread;
+using base::android::GetApplicationContext;
+
 namespace ui {
 
 TouchScreensAvailability GetTouchScreensAvailability() {
@@ -15,18 +18,13 @@ TouchScreensAvailability GetTouchScreensAvailability() {
 }
 
 int MaxTouchPoints() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  jobject context = base::android::GetApplicationContext();
-  jint max_touch_points = Java_TouchDevice_maxTouchPoints(env, context);
-  return static_cast<int>(max_touch_points);
+  return Java_TouchDevice_maxTouchPoints(AttachCurrentThread(),
+                                         GetApplicationContext());
 }
 
 int GetAvailablePointerTypes() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  jobject context = base::android::GetApplicationContext();
-  jint available_pointer_types =
-      Java_TouchDevice_availablePointerTypes(env, context);
-  return static_cast<int>(available_pointer_types);
+  return Java_TouchDevice_availablePointerTypes(AttachCurrentThread(),
+                                                GetApplicationContext());
 }
 
 PointerType GetPrimaryPointerType() {
@@ -40,11 +38,8 @@ PointerType GetPrimaryPointerType() {
 }
 
 int GetAvailableHoverTypes() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  jobject context = base::android::GetApplicationContext();
-  jint available_hover_types =
-      Java_TouchDevice_availableHoverTypes(env, context);
-  return static_cast<int>(available_hover_types);
+  return Java_TouchDevice_availableHoverTypes(AttachCurrentThread(),
+                                              GetApplicationContext());
 }
 
 HoverType GetPrimaryHoverType() {

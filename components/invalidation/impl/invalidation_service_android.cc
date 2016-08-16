@@ -14,13 +14,14 @@
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaRef;
 using base::android::JavaParamRef;
 
 namespace invalidation {
 
-InvalidationServiceAndroid::InvalidationServiceAndroid(jobject context)
-    : invalidator_state_(syncer::INVALIDATIONS_ENABLED),
-      logger_() {
+InvalidationServiceAndroid::InvalidationServiceAndroid(
+    const JavaRef<jobject>& context)
+    : invalidator_state_(syncer::INVALIDATIONS_ENABLED), logger_() {
   DCHECK(CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> local_java_ref =
