@@ -104,6 +104,12 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
         boolean wasSelectionEnabled = mIsSelectionEnabled;
         mIsSelectionEnabled = mSelectionDelegate.isSelectionEnabled();
 
+        // If onSelectionStateChange() gets called before onFinishInflate(), mNumberRollView
+        // will be uninitialized. See crbug.com/637948.
+        if (mNumberRollView == null) {
+            mNumberRollView = (NumberRollView) findViewById(R.id.selection_mode_number);
+        }
+
         if (mIsSelectionEnabled) {
             // TODO(twellington): add the concept of normal & selected tint to apply to all
             //                    toolbar buttons.
