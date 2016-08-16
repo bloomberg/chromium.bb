@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "services/ui/public/interfaces/command_buffer.mojom.h"
 
 namespace gpu {
 class CommandBufferProxyImpl;
@@ -24,7 +23,6 @@ class GLES2CmdHelper;
 
 namespace ui {
 
-class CommandBufferClientImpl;
 class GpuService;
 
 class GLES2Context {
@@ -42,7 +40,6 @@ class GLES2Context {
   GLES2Context();
   bool Initialize(GpuService* gpu_service);
 
-  std::unique_ptr<CommandBufferClientImpl> command_buffer_client_impl_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_proxy_impl_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;

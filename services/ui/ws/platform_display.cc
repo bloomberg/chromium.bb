@@ -11,7 +11,6 @@
 #include "cc/output/delegated_frame_data.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/platform_display_factory.h"

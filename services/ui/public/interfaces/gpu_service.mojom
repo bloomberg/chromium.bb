@@ -4,9 +4,9 @@
 
 module ui.mojom;
 
+import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "services/ui/public/interfaces/channel_handle.mojom";
-import "services/ui/public/interfaces/gpu.mojom";
 import "services/ui/public/interfaces/gpu_memory_buffer.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -15,8 +15,9 @@ interface GpuService {
   // client. The GPU service responds with client ID, IPC handle and
   // GPUInfo.
   [Sync]
-  EstablishGpuChannel()
-      => (int32 client_id, ChannelHandle channel_handle, GpuInfo gpu_info);
+  EstablishGpuChannel() => (int32 client_id,
+                            ChannelHandle channel_handle,
+                            gpu.mojom.GpuInfo gpu_info);
 
   // Tells the GPU service to create a new GPU memory buffer.
   CreateGpuMemoryBuffer(GpuMemoryBufferId id,

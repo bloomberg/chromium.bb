@@ -22,7 +22,7 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
-  void EchoVersion(const base::Version& m,
+  void EchoVersion(const base::Optional<base::Version>& m,
                    const EchoVersionCallback& callback) override {
     callback.Run(m);
   }
@@ -37,11 +37,19 @@ TEST_F(StructTraitsTest, Version) {
   const std::string& version_str = "1.2.3.4";
   base::Version input(version_str);
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  base::Version output;
+  base::Optional<base::Version> output;
   proxy->EchoVersion(input, &output);
-  base::Version test_version(version_str);
+  EXPECT_TRUE(output.has_value());
+  EXPECT_EQ(version_str, output->GetString());
+}
 
-  EXPECT_EQ(version_str, output.GetString());
+TEST_F(StructTraitsTest, InvalidVersion) {
+  const std::string invalid_version_str;
+  base::Version input(invalid_version_str);
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  base::Optional<base::Version> output;
+  proxy->EchoVersion(input, &output);
+  EXPECT_FALSE(output.has_value());
 }
 
 }  // namespace

@@ -12,7 +12,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "services/ui/public/cpp/output_surface.h"
-#include "services/ui/public/interfaces/command_buffer.mojom.h"
 #include "services/ui/public/interfaces/surface.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 

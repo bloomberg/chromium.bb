@@ -281,6 +281,14 @@ TEST_F(StructTraitsTest, GpuInfo) {
             video_encode_accelerator_supported_profiles.size());
 }
 
+TEST_F(StructTraitsTest, EmptyGpuInfo) {
+  gpu::GPUInfo input;
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gpu::GPUInfo output;
+  proxy->EchoGpuInfo(input, &output);
+  EXPECT_FALSE(output.display_link_version.IsValid());
+}
+
 TEST_F(StructTraitsTest, Mailbox) {
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
       0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9,

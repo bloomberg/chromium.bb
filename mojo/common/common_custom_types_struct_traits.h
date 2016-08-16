@@ -15,6 +15,12 @@ namespace mojo {
 
 template <>
 struct StructTraits<mojo::common::mojom::Version, base::Version> {
+  static bool IsNull(const base::Version& version) {
+    return !version.IsValid();
+  }
+  static void SetToNull(base::Version* out) {
+    *out = base::Version(std::string());
+  }
   static const std::vector<uint32_t>& components(const base::Version& version);
   static bool Read(mojo::common::mojom::VersionDataView data,
                    base::Version* out);

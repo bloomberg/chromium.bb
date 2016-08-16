@@ -121,7 +121,6 @@ source_set("ipc_common_sources") {
 mojom("interfaces") {
   sources = [
     "capabilities.mojom",
-    "command_buffer.mojom",
     "dx_diag_node.mojom",
     "gpu_info.mojom",
     "mailbox.mojom",

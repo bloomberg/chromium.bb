@@ -18,7 +18,7 @@ void EstablishGpuChannelDone(
     const IPC::ChannelHandle& channel_handle) {
   // TODO(penghuang): Send the real GPUInfo to the client.
   callback.Run(client_id, mojom::ChannelHandle::From(channel_handle),
-               mojom::GpuInfo::From<gpu::GPUInfo>(gpu::GPUInfo()));
+               gpu::GPUInfo());
 }
 }
 

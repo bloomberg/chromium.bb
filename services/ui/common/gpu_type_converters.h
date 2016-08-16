@@ -9,7 +9,6 @@
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ui/common/mus_common_export.h"
 #include "services/ui/public/interfaces/channel_handle.mojom.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/public/interfaces/gpu_memory_buffer.mojom.h"
 
 namespace gfx {
@@ -83,11 +82,6 @@ struct MUS_COMMON_EXPORT TypeConverter<gfx::GpuMemoryBufferHandle,
                                        ui::mojom::GpuMemoryBufferHandlePtr> {
   static gfx::GpuMemoryBufferHandle Convert(
       const ui::mojom::GpuMemoryBufferHandlePtr& handle);
-};
-
-template <>
-struct MUS_COMMON_EXPORT TypeConverter<ui::mojom::GpuInfoPtr, gpu::GPUInfo> {
-  static ui::mojom::GpuInfoPtr Convert(const gpu::GPUInfo& input);
 };
 
 }  // namespace mojo

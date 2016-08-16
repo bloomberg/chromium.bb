@@ -24,7 +24,6 @@
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/display.mojom.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"

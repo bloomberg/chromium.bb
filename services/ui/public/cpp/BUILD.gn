@@ -94,8 +94,6 @@ source_set("internal") {
   ]
 
   sources = [
-    "command_buffer_client_impl.cc",
-    "command_buffer_client_impl.h",
     "context_provider.cc",
     "context_provider.h",
     "gles2_context.cc",

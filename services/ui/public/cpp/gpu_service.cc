@@ -148,7 +148,7 @@ void GpuService::EstablishGpuChannelOnMainThreadSyncLocked() {
 
   int client_id = 0;
   mojom::ChannelHandlePtr channel_handle;
-  mojom::GpuInfoPtr gpu_info;
+  gpu::GPUInfo gpu_info;
   connector_->ConnectToInterface("mojo:ui", &gpu_service_);
   {
     base::AutoUnlock auto_unlock(lock_);
@@ -161,15 +161,15 @@ void GpuService::EstablishGpuChannelOnMainThreadSyncLocked() {
     }
   }
   const bool locked = true;
-  EstablishGpuChannelOnMainThreadDone(
-      locked, client_id, std::move(channel_handle), std::move(gpu_info));
+  EstablishGpuChannelOnMainThreadDone(locked, client_id,
+                                      std::move(channel_handle), gpu_info);
 }
 
 void GpuService::EstablishGpuChannelOnMainThreadDone(
     bool locked,
     int client_id,
     mojom::ChannelHandlePtr channel_handle,
-    mojom::GpuInfoPtr gpu_info) {
+    const gpu::GPUInfo& gpu_info) {
   DCHECK(IsMainThread());
   scoped_refptr<gpu::GpuChannelHost> gpu_channel;
   if (client_id) {

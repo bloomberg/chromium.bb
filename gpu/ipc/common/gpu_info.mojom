@@ -77,7 +77,7 @@ struct GpuInfo {
   bool optimus;
   bool amd_switchable;
   bool lenovo_dcute;
-  mojo.common.mojom.Version display_link_version;
+  mojo.common.mojom.Version? display_link_version;
   GpuDevice gpu;
   array<GpuDevice> secondary_gpus;
   uint64 adapter_luid;

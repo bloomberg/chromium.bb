@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "cc/output/context_provider.h"
 #include "mojo/public/cpp/system/core.h"
-#include "services/ui/public/interfaces/command_buffer.mojom.h"
 
 namespace shell {
 class Connector;

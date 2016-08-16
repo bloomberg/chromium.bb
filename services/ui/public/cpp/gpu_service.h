@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/ipc/common/gpu_info.mojom.h"
 #include "services/ui/public/cpp/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
@@ -54,7 +55,7 @@ class GpuService : public gpu::GpuChannelHostFactory,
       bool locked,
       int client_id,
       mojom::ChannelHandlePtr channel_handle,
-      mojom::GpuInfoPtr gpu_info);
+      const gpu::GPUInfo& gpu_info);
 
   // gpu::GpuChannelHostFactory overrides:
   bool IsMainThread() override;

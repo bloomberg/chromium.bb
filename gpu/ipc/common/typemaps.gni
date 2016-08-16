@@ -4,7 +4,6 @@
 
 typemaps = [
   "//gpu/ipc/common/capabilities.typemap",
-  "//gpu/ipc/common/command_buffer.typemap",
   "//gpu/ipc/common/gpu_info.typemap",
   "//gpu/ipc/common/dx_diag_node.typemap",
   "//gpu/ipc/common/mailbox.typemap",

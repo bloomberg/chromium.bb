@@ -151,18 +151,4 @@ TypeConverter<gfx::GpuMemoryBufferHandle, ui::mojom::GpuMemoryBufferHandlePtr>::
   return result;
 }
 
-// static
-ui::mojom::GpuInfoPtr
-TypeConverter<ui::mojom::GpuInfoPtr, gpu::GPUInfo>::Convert(
-    const gpu::GPUInfo& input) {
-  ui::mojom::GpuInfoPtr result(ui::mojom::GpuInfo::New());
-  result->vendor_id = input.gpu.vendor_id;
-  result->device_id = input.gpu.device_id;
-  result->vendor_info = mojo::String::From<std::string>(input.gl_vendor);
-  result->renderer_info = mojo::String::From<std::string>(input.gl_renderer);
-  result->driver_version =
-      mojo::String::From<std::string>(input.driver_version);
-  return result;
-}
-
 }  // namespace mojo

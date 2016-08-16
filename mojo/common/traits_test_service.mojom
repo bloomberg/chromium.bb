@@ -10,5 +10,5 @@ import "mojo/common/common_custom_types.mojom";
 // serialization and deserialization.
 interface TraitsTestService {
   [Sync]
-  EchoVersion(Version v) => (Version pass);
+  EchoVersion(Version? v) => (Version? pass);
 };
