@@ -270,6 +270,9 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/633145
 "race:third_party/libjpeg_turbo/simd/jsimd_x86_64.c\n"
 
+// http://crbug.com/638378
+"race:~TaskSchedulerWorkerPoolCheckTlsReuse\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
