@@ -756,14 +756,16 @@ def get_dirty_files():
 
 
 def is_dirty_git_tree(cmd):
+  w = lambda s: sys.stderr.write(s+"\n")
+
   dirty = get_dirty_files()
   if dirty:
-    print 'Cannot %s with a dirty tree. '\
-          'Commit, freeze or stash your changes first.' % cmd
-    print 'Uncommitted files: (git diff-index --name-status HEAD)'
-    print dirty[:4096]
+    w('Cannot %s with a dirty tree. Commit, freeze or stash your changes first.'
+      % cmd)
+    w('Uncommitted files: (git diff-index --name-status HEAD)')
+    w(dirty[:4096])
     if len(dirty) > 4096: # pragma: no cover
-      print '... (run "git diff-index --name-status HEAD" to see full output).'
+      w('... (run "git diff-index --name-status HEAD" to see full output).')
     return True
   return False
 

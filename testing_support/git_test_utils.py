@@ -283,7 +283,7 @@ class GitRepo(object):
     Args:
       schema - An instance of GitRepoSchema
     """
-    self.repo_path = tempfile.mkdtemp(dir=self.BASE_TEMP_DIR)
+    self.repo_path = os.path.realpath(tempfile.mkdtemp(dir=self.BASE_TEMP_DIR))
     self.commit_map = {}
     self._date = datetime.datetime(1970, 1, 1, tzinfo=UTC)
 

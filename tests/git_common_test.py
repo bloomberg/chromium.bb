@@ -333,7 +333,6 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
 
   def testRepoRoot(self):
     def cd_and_repo_root(path):
-      print(os.getcwd())
       os.chdir(path)
       return self.gc.repo_root()
 
@@ -649,10 +648,18 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     ])
 
   def testIsGitTreeDirty(self):
-    self.assertEquals(False, self.repo.run(self.gc.is_dirty_git_tree, 'foo'))
+    retval = []
+    self.repo.capture_stdio(
+      lambda: retval.append(self.repo.run(self.gc.is_dirty_git_tree, 'foo')))
+
+    self.assertEquals(False, retval[0])
     self.repo.open('test.file', 'w').write('test data')
     self.repo.git('add', 'test.file')
-    self.assertEquals(True, self.repo.run(self.gc.is_dirty_git_tree, 'foo'))
+
+    retval = []
+    self.repo.capture_stdio(
+      lambda: retval.append(self.repo.run(self.gc.is_dirty_git_tree, 'foo')))
+    self.assertEquals(True, retval[0])
 
   def testSquashBranch(self):
     self.repo.git('checkout', 'branch_K')
@@ -895,10 +902,8 @@ class GitMakeWorkdir(git_test_utils.GitRepoReadOnlyTestBase, GitCommonTestBase):
   A
   """
 
+  @unittest.skipIf(not hasattr(os, 'symlink'), "OS doesn't support symlink")
   def testMakeWorkdir(self):
-    if not hasattr(os, 'symlink'):
-      return
-
     workdir = os.path.join(self._tempdir, 'workdir')
     self.gc.make_workdir(os.path.join(self.repo.repo_path, '.git'),
                          os.path.join(workdir, '.git'))
