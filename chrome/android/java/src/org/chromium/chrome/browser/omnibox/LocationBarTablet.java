@@ -18,7 +18,10 @@ import android.view.WindowManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarTablet;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.UiUtils;
@@ -77,6 +80,7 @@ public class LocationBarTablet extends LocationBarLayout {
 
     private View mLocationBarIcon;
     private View mBookmarkButton;
+    private View mSaveOfflineButton;
     private float mUrlFocusChangePercent;
     private Animator mUrlFocusChangeAnimator;
     private View[] mTargets;
@@ -120,8 +124,9 @@ public class LocationBarTablet extends LocationBarLayout {
         super.onFinishInflate();
 
         mLocationBarIcon = findViewById(R.id.location_bar_icon);
-
         mBookmarkButton = findViewById(R.id.bookmark_button);
+        mSaveOfflineButton = findViewById(R.id.save_offline_button);
+
         mTargets = new View[] { mUrlBar, mDeleteButton };
     }
 
@@ -260,34 +265,50 @@ public class LocationBarTablet extends LocationBarLayout {
     }
 
     @Override
-    protected void updateButtonVisibility() {
+    public void updateButtonVisibility() {
         updateDeleteButtonVisibility();
 
-        boolean showBookmarkButton = mShouldShowButtonsWhenUnfocused && !shouldShowDeleteButton();
+        boolean showBookmarkButton =
+                mShouldShowButtonsWhenUnfocused && shouldShowPageActionButtons();
         mBookmarkButton.setVisibility(showBookmarkButton ? View.VISIBLE : View.GONE);
+
+        boolean showSaveOfflineButton =
+                mShouldShowButtonsWhenUnfocused && shouldShowSaveOfflineButton();
+        mSaveOfflineButton.setVisibility(showSaveOfflineButton ? View.VISIBLE : View.GONE);
+        if (showSaveOfflineButton) mSaveOfflineButton.setEnabled(isSaveOfflineButtonEnabled());
 
         if (!mShouldShowButtonsWhenUnfocused) {
             updateMicButtonVisiblity(mUrlFocusChangePercent);
         } else {
-            mMicButton.setVisibility(isVoiceSearchEnabled() ? View.VISIBLE : View.GONE);
+            mMicButton.setVisibility(shouldShowMicButton() ? View.VISIBLE : View.GONE);
         }
     }
 
     @Override
     protected void updateLayoutParams() {
         // Calculate the bookmark/delete button margins.
-        final MarginLayoutParams micLayoutParams =
-                (MarginLayoutParams) mMicButton.getLayoutParams();
-        int micSpace = ApiCompatibilityUtils.getMarginEnd(micLayoutParams);
-        if (mMicButton.getVisibility() != View.GONE) micSpace += mMicButton.getWidth();
+        int lastButtonSpace;
+        if (mSaveOfflineButton.getVisibility() == View.VISIBLE) {
+            MarginLayoutParams saveOfflineLayoutParams =
+                    (MarginLayoutParams) mSaveOfflineButton.getLayoutParams();
+            lastButtonSpace = ApiCompatibilityUtils.getMarginEnd(saveOfflineLayoutParams);
+        } else {
+            MarginLayoutParams micLayoutParams = (MarginLayoutParams) mMicButton.getLayoutParams();
+            lastButtonSpace = ApiCompatibilityUtils.getMarginEnd(micLayoutParams);
+        }
+
+        if (mMicButton.getVisibility() == View.VISIBLE
+                || mSaveOfflineButton.getVisibility() == View.VISIBLE) {
+            lastButtonSpace += mMicButtonWidth;
+        }
 
         final MarginLayoutParams deleteLayoutParams =
                 (MarginLayoutParams) mDeleteButton.getLayoutParams();
         final MarginLayoutParams bookmarkLayoutParams =
                 (MarginLayoutParams) mBookmarkButton.getLayoutParams();
 
-        ApiCompatibilityUtils.setMarginEnd(deleteLayoutParams, micSpace);
-        ApiCompatibilityUtils.setMarginEnd(bookmarkLayoutParams, micSpace);
+        ApiCompatibilityUtils.setMarginEnd(deleteLayoutParams, lastButtonSpace);
+        ApiCompatibilityUtils.setMarginEnd(bookmarkLayoutParams, lastButtonSpace);
 
         mDeleteButton.setLayoutParams(deleteLayoutParams);
         mBookmarkButton.setLayoutParams(bookmarkLayoutParams);
@@ -378,8 +399,10 @@ public class LocationBarTablet extends LocationBarLayout {
             animators.add(createShowButtonAnimator(mBookmarkButton));
         }
 
+        if (shouldShowSaveOfflineButton()) {
+            animators.add(createShowButtonAnimator(mSaveOfflineButton));
         // If the microphone button is already fully visible, don't animate its appearance.
-        if (mMicButton.getVisibility() != View.VISIBLE || mMicButton.getAlpha() != 1.f) {
+        } else if (mMicButton.getVisibility() != View.VISIBLE || mMicButton.getAlpha() != 1.f) {
             animators.add(createShowButtonAnimator(mMicButton));
         }
 
@@ -431,12 +454,14 @@ public class LocationBarTablet extends LocationBarLayout {
             animators.add(createHideButtonAnimator(mBookmarkButton));
         }
 
-        // The microphone button always shows when buttons are shown in the unfocused location
-        // bar. When buttons are hidden in the unfocused location bar, the microphone shows if
-        // the location bar is focused and the delete button isn't showing. The microphone button
-        // should not be hidden if the url bar is currently focused and the delete button isn't
-        // showing.
-        if (!(mUrlBar.isFocused() && mDeleteButton.getVisibility() != View.VISIBLE)) {
+        if (shouldShowSaveOfflineButton() && mSaveOfflineButton.getVisibility() == View.VISIBLE) {
+            animators.add(createHideButtonAnimator(mSaveOfflineButton));
+        } else if (!(mUrlBar.isFocused() && mDeleteButton.getVisibility() != View.VISIBLE)) {
+            // If the save offline button isn't enabled, the microphone button always shows when
+            // buttons are shown in the unfocused location bar. When buttons are hidden in the
+            // unfocused location bar, the microphone shows if the location bar is focused and the
+            // delete button isn't showing. The microphone button should not be hidden if the
+            // url bar is currently focused and the delete button isn't showing.
             animators.add(createHideButtonAnimator(mMicButton));
         }
 
@@ -451,12 +476,14 @@ public class LocationBarTablet extends LocationBarLayout {
         mMicButton.setTranslationX(0);
         mDeleteButton.setTranslationX(0);
         mBookmarkButton.setTranslationX(0);
+        mSaveOfflineButton.setTranslationX(0);
         mLocationBarIcon.setTranslationX(0);
         mUrlBar.setTranslationX(0);
 
         mMicButton.setAlpha(1.f);
         mDeleteButton.setAlpha(1.f);
         mBookmarkButton.setAlpha(1.f);
+        mSaveOfflineButton.setAlpha(1.f);
     }
 
     /**
@@ -505,7 +532,11 @@ public class LocationBarTablet extends LocationBarLayout {
         if (!ApiCompatibilityUtils.isLayoutRtl(this)) {
             // When the location bar layout direction is LTR, the buttons at the end (left side)
             // of the location bar need to stick to the left edge.
-            mMicButton.setTranslationX(offset);
+            if (mSaveOfflineButton.getVisibility() == View.VISIBLE) {
+                mSaveOfflineButton.setTranslationX(offset);
+            } else {
+                mMicButton.setTranslationX(offset);
+            }
 
             if (mDeleteButton.getVisibility() == View.VISIBLE) {
                 mDeleteButton.setTranslationX(offset + deleteOffset);
@@ -523,5 +554,43 @@ public class LocationBarTablet extends LocationBarLayout {
                 mDeleteButton.setTranslationX(-deleteOffset);
             }
         }
+    }
+
+    private boolean shouldShowSaveOfflineButton() {
+        if (!mNativeInitialized || mToolbarDataProvider == null) return false;
+        Tab tab = mToolbarDataProvider.getTab();
+        if (tab == null) return false;
+        // The save offline button should not be shown on native pages. Currently, trying to
+        // save an offline page in incognito crashes, so don't show it on incognito either.
+        return ChromeFeatureList.isEnabled("DownloadsUi") && shouldShowPageActionButtons()
+                && !tab.isIncognito();
+    }
+
+    private boolean isSaveOfflineButtonEnabled() {
+        if (mToolbarDataProvider == null) return false;
+        Tab tab = mToolbarDataProvider.getTab();
+        if (tab == null) return false;
+        boolean isChromeScheme = tab.getUrl().startsWith(UrlConstants.CHROME_SCHEME)
+                || tab.getUrl().startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
+        return !isChromeScheme;
+    }
+
+    private boolean shouldShowPageActionButtons() {
+        if (!mNativeInitialized) return true;
+
+        // If the new downloads UI isn't enabled, the only page action is the bookmark button. It
+        // should be shown if the delete button isn't showing. If the download UI is enabled, there
+        // are two actions, bookmark and save offline, and they should be shown if the omnibox isn't
+        // focused.
+        return (!shouldShowDeleteButton() && !ChromeFeatureList.isEnabled("DownloadsUi"))
+                || !(mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
+    }
+
+    private boolean shouldShowMicButton() {
+        // If the download UI is enabled, the mic button should be only be shown when the url bar
+        // is focused.
+        return isVoiceSearchEnabled() && mNativeInitialized
+                && (!ChromeFeatureList.isEnabled("DownloadsUi")
+                        || (mUrlBar.hasFocus() || mUrlFocusChangeInProgress));
     }
 }

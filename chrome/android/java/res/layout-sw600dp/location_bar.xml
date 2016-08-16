@@ -42,37 +42,28 @@
         layout="@layout/url_bar" />
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/delete_button"
-        style="@style/LocationBarButton"
-        android:layout_width="@dimen/location_bar_icon_width"
-        android:layout_height="match_parent"
-        android:scaleType="center"
+        style="@style/LocationBarButtonTablet"
         android:layout_marginEnd="44dp"
-        android:layout_gravity="end"
         android:src="@drawable/btn_delete_url"
         android:visibility="gone"
         android:contentDescription="@string/accessibility_toolbar_btn_delete_url" />
     <!-- delete_button and bookmark_button overlap, so they should have the same right margin -->
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/bookmark_button"
-        style="@style/LocationBarButton"
-        android:layout_width="@dimen/location_bar_icon_width"
-        android:layout_height="match_parent"
-        android:scaleType="center"
+        style="@style/LocationBarButtonTablet"
         android:layout_marginEnd="40dp"
-        android:layout_gravity="end"
-        android:paddingStart="0dp"
-        android:paddingEnd="0dp"
         android:contentDescription="@string/accessibility_menu_bookmark" />
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/mic_button"
-        style="@style/LocationBarButton"
-        android:layout_width="@dimen/location_bar_icon_width"
-        android:layout_height="match_parent"
-        android:scaleType="center"
-        android:layout_gravity="end"
-        android:paddingStart="0dp"
-        android:paddingEnd="0dp"
+        style="@style/LocationBarButtonTablet"
         android:nextFocusForward="@+id/menu_button"
         android:src="@drawable/btn_mic"
         android:contentDescription="@string/accessibility_toolbar_btn_mic" />
+   <org.chromium.chrome.browser.widget.TintedImageButton
+        android:id="@+id/save_offline_button"
+        style="@style/LocationBarButtonTablet"
+        android:nextFocusForward="@+id/menu_button"
+        android:src="@drawable/ic_get_app_white_24dp"
+        android:visibility="gone"
+        android:contentDescription="@string/contextmenu_save_offline" />
 </merge>

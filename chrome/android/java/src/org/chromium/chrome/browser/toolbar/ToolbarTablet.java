@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NavigationPopup;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -46,6 +47,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     private TintedImageButton mForwardButton;
     private TintedImageButton mReloadButton;
     private TintedImageButton mBookmarkButton;
+    private TintedImageButton mSaveOfflineButton;
     private ImageButton mAccessibilitySwitcherButton;
 
     private OnClickListener mBookmarkListener;
@@ -71,6 +73,10 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     private AnimatorSet mButtonVisibilityAnimators;
 
     private NewTabPage mVisibleNtp;
+
+    // TODO(twellington): Once incognito is supported, we will need one OfflinePageDownloadBridges
+    // for each profile (normal and incognito).
+    private OfflinePageDownloadBridge mOfflinePageDownloadBridge;
 
     /**
      * Constructs a ToolbarTablet object.
@@ -116,6 +122,8 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             ApiCompatibilityUtils.setPaddingRelative((View) mMenuButtonWrapper.getParent(), 0, 0,
                     getResources().getDimensionPixelSize(R.dimen.tablet_toolbar_end_padding), 0);
         }
+
+        mSaveOfflineButton = (TintedImageButton) findViewById(R.id.save_offline_button);
 
         // Initialize values needed for showing/hiding toolbar buttons when the activity size
         // changes.
@@ -236,6 +244,8 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
         if (HomepageManager.isHomepageEnabled(getContext())) {
             mHomeButton.setVisibility(VISIBLE);
         }
+
+        mSaveOfflineButton.setOnClickListener(this);
     }
 
     @Override
@@ -300,6 +310,13 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
                 cancelAppMenuUpdateBadgeAnimation();
                 mTabSwitcherListener.onClick(mAccessibilitySwitcherButton);
             }
+        } else if (mSaveOfflineButton == v) {
+            // This is a temporary hookup point to save a page later.
+            Tab tab = getToolbarDataProvider().getTab();
+            if (mOfflinePageDownloadBridge == null) {
+                mOfflinePageDownloadBridge = new OfflinePageDownloadBridge(tab.getProfile());
+            }
+            mOfflinePageDownloadBridge.startDownload(tab);
         }
     }
 
@@ -325,6 +342,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             mHomeButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
             mBackButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
             mForwardButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
+            mSaveOfflineButton.setTint(incognito ? mLightModeTint : mDarkModeTint);
             if (incognito) {
                 mLocationBar.getContainerView().getBackground().setAlpha(
                         ToolbarPhone.LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
@@ -371,6 +389,11 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     protected void onTabContentViewChanged() {
         super.onTabContentViewChanged();
         updateNtp();
+    }
+
+    @Override
+    public void updateButtonVisibility() {
+        mLocationBar.updateButtonVisibility();
     }
 
     @Override
