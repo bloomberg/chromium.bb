@@ -1958,6 +1958,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_NTP_STATUS_CARD_BODY_EMPTY" desc="Body of the card explaining the status of the ntp suggested content, when we don't have anything to show.">
         More cards will appear when the time is right.
       </message>
+      <message name="IDS_ACCESSIBILITY_NTP_OFFLINE_BADGE" desc="Content description for the badge that indicates offline availability of a most visited item on the new tab page.">
+        Available offline
+      </message>
 
       <!-- Toolbar button strings -->
       <message name="IDS_OPEN_TABS" desc="Text for button to enter the tab switcher and show tabs that are open on this device">
