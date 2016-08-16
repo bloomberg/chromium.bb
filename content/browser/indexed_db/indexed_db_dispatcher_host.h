@@ -125,8 +125,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   friend class base::DeleteHelper<IndexedDBDispatcherHost>;
 
   // Used in nested classes.
-  typedef std::map<std::string, std::pair<storage::BlobDataHandle*, int>>
-      BlobDataHandleMap;
   typedef std::map<int64_t, int64_t> TransactionIDToDatabaseIDMap;
   typedef std::map<int64_t, uint64_t> TransactionIDToSizeMap;
   typedef std::map<int64_t, url::Origin> TransactionIDToOriginMap;
@@ -307,7 +305,12 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
-  BlobDataHandleMap blob_data_handle_map_;
+  // Maps blob uuid to a pair (handle, ref count). Entry is added and/or count
+  // is incremented in HoldBlobData(), and count is decremented and/or entry
+  // removed in DropBlobData().
+  std::map<std::string,
+           std::pair<std::unique_ptr<storage::BlobDataHandle>, int>>
+      blob_data_handle_map_;
 
   // Only access on IndexedDB thread.
   std::unique_ptr<DatabaseDispatcherHost> database_dispatcher_host_;

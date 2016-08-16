@@ -86,10 +86,7 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
   DCHECK(indexed_db_context_.get());
 }
 
-IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
-  for (auto& iter : blob_data_handle_map_)
-    delete iter.second.first;
-}
+IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {}
 
 void IndexedDBDispatcherHost::OnChannelConnected(int32_t peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
@@ -261,24 +258,23 @@ std::string IndexedDBDispatcherHost::HoldBlobData(
   }
 
   DCHECK(!base::ContainsKey(blob_data_handle_map_, uuid));
-  blob_data_handle_map_[uuid] = std::make_pair(blob_data_handle.release(), 1);
+  blob_data_handle_map_[uuid] = std::make_pair(std::move(blob_data_handle), 1);
   return uuid;
 }
 
 void IndexedDBDispatcherHost::DropBlobData(const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BlobDataHandleMap::iterator iter = blob_data_handle_map_.find(uuid);
-  if (iter != blob_data_handle_map_.end()) {
-    DCHECK_GE(iter->second.second, 1);
-    if (iter->second.second == 1) {
-      delete iter->second.first;
-      blob_data_handle_map_.erase(iter);
-    } else {
-      iter->second.second -= 1;
-    }
-  } else {
+  const auto& iter = blob_data_handle_map_.find(uuid);
+  if (iter == blob_data_handle_map_.end()) {
     DLOG(FATAL) << "Failed to find blob UUID in map:" << uuid;
+    return;
   }
+
+  DCHECK_GE(iter->second.second, 1);
+  if (iter->second.second == 1)
+    blob_data_handle_map_.erase(iter);
+  else
+    --iter->second.second;
 }
 
 IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(
