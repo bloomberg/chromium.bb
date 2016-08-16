@@ -68,7 +68,7 @@ struct rans_dec_sym {
 
 static INLINE void fetch_sym(struct rans_dec_sym *out, const rans_lut cdf,
                              AnsP10 rem) {
-  int i = 0;
+  int i = 1;
   // TODO(skal): if critical, could be a binary search.
   // Or, better, an O(1) alias-table.
   while (rem >= cdf[i]) {
