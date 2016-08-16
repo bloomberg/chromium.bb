@@ -113,8 +113,7 @@ Polymer({
   },
 
   onSignInTap_: function() {
-    chrome.send('SyncSetupShowSetupUI');
-    chrome.send('SyncSetupStartSignIn', [false]);
+    chrome.send('startSignInFlow');
   },
 
   onToggleMenu_: function(e) {
@@ -165,7 +164,13 @@ Polymer({
    * @return {boolean}
    */
   showSignInGuide: function(signInState, guestSession) {
-    return !signInState && !guestSession;
+    var show = !signInState && !guestSession;
+    if (show) {
+      md_history.BrowserService.getInstance().recordAction(
+          'Signin_Impression_FromRecentTabs');
+    }
+
+    return show;
   },
 
   /**

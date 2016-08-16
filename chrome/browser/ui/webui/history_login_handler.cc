@@ -8,7 +8,12 @@
 #include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/profile_info_watcher.h"
+#include "components/signin/core/browser/signin_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
 HistoryLoginHandler::HistoryLoginHandler() {}
@@ -23,6 +28,10 @@ void HistoryLoginHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("otherDevicesInitialized",
       base::Bind(&HistoryLoginHandler::HandleOtherDevicesInitialized,
                  base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback("startSignInFlow",
+      base::Bind(&HistoryLoginHandler::HandleStartSignInFlow,
+                 base::Unretained(this)));
 }
 
 void HistoryLoginHandler::HandleOtherDevicesInitialized(
@@ -34,4 +43,14 @@ void HistoryLoginHandler::ProfileInfoChanged() {
   bool signed_in = !profile_info_watcher_->GetAuthenticatedUsername().empty();
   web_ui()->CallJavascriptFunctionUnsafe("updateSignInState",
                                          base::FundamentalValue(signed_in));
+}
+
+void HistoryLoginHandler::HandleStartSignInFlow(
+    const base::ListValue* /*args*/) {
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  browser->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
+      signin::ManageAccountsParams(),
+      signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
 }

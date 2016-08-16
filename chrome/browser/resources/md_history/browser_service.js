@@ -81,6 +81,14 @@ cr.define('md_history', function() {
     },
 
     /**
+    * Record an action in UMA.
+    * @param {string} actionDesc The name of the action to be logged.
+    */
+    recordAction: function(actionDesc) {
+      chrome.send('metricsHandler:recordAction', [actionDesc]);
+    },
+
+    /**
      * @param {boolean} successful
      * @private
      */
