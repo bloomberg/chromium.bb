@@ -574,10 +574,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win failures
     self.Fail('conformance/extensions/oes-texture-half-float.html',
         ['win'], bug=607283)
-    # Note that the following two tests pass with OpenGL.
-    self.Fail('conformance/glsl/bugs/' +
-              'pow-of-small-constant-in-user-defined-function.html',
-        ['win'], bug=485641)
     # Note that the following test seems to pass, but it may still be flaky.
     self.Fail('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
@@ -657,11 +653,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=421710)
     self.Fail('deqp/data/gles2/shaders/scoping.html',
         ['mac'], bug=478572)
-
-    # Mac Retina NVIDIA failures
-    self.Fail(
-        'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
-        ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
 
     # Mac Retina AMD failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
