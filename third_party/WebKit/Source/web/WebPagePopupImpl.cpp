@@ -74,7 +74,7 @@ public:
         return new PagePopupChromeClient(popup);
     }
 
-    void setWindowRect(const IntRect& rect) override
+    void setWindowRect(const IntRect& rect, LocalFrame&) override
     {
         m_popup->setWindowRect(rect);
     }
@@ -91,7 +91,7 @@ private:
         m_popup->closePopup();
     }
 
-    IntRect windowRect() override
+    IntRect rootWindowRect() override
     {
         return m_popup->windowRectInScreen();
     }

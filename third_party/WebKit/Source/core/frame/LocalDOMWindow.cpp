@@ -878,8 +878,8 @@ int LocalDOMWindow::outerHeight() const
 
     ChromeClient& chromeClient = host->chromeClient();
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(chromeClient.windowRect().height() * chromeClient.screenInfo().deviceScaleFactor);
-    return chromeClient.windowRect().height();
+        return lroundf(chromeClient.rootWindowRect().height() * chromeClient.screenInfo().deviceScaleFactor);
+    return chromeClient.rootWindowRect().height();
 }
 
 int LocalDOMWindow::outerWidth() const
@@ -893,9 +893,9 @@ int LocalDOMWindow::outerWidth() const
 
     ChromeClient& chromeClient = host->chromeClient();
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(chromeClient.windowRect().width() * chromeClient.screenInfo().deviceScaleFactor);
+        return lroundf(chromeClient.rootWindowRect().width() * chromeClient.screenInfo().deviceScaleFactor);
 
-    return chromeClient.windowRect().width();
+    return chromeClient.rootWindowRect().width();
 }
 
 FloatSize LocalDOMWindow::getViewportSize(IncludeScrollbarsInRect scrollbarInclusion) const
@@ -958,8 +958,8 @@ int LocalDOMWindow::screenX() const
 
     ChromeClient& chromeClient = host->chromeClient();
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(chromeClient.windowRect().x() * chromeClient.screenInfo().deviceScaleFactor);
-    return chromeClient.windowRect().x();
+        return lroundf(chromeClient.rootWindowRect().x() * chromeClient.screenInfo().deviceScaleFactor);
+    return chromeClient.rootWindowRect().x();
 }
 
 int LocalDOMWindow::screenY() const
@@ -973,8 +973,8 @@ int LocalDOMWindow::screenY() const
 
     ChromeClient& chromeClient = host->chromeClient();
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(chromeClient.windowRect().y() * chromeClient.screenInfo().deviceScaleFactor);
-    return chromeClient.windowRect().y();
+        return lroundf(chromeClient.rootWindowRect().y() * chromeClient.screenInfo().deviceScaleFactor);
+    return chromeClient.rootWindowRect().y();
 }
 
 double LocalDOMWindow::scrollX() const
@@ -1232,10 +1232,10 @@ void LocalDOMWindow::moveBy(int x, int y) const
     if (!host)
         return;
 
-    IntRect windowRect = host->chromeClient().windowRect();
+    IntRect windowRect = host->chromeClient().rootWindowRect();
     windowRect.move(x, y);
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    host->chromeClient().setWindowRectWithAdjustment(windowRect);
+    host->chromeClient().setWindowRectWithAdjustment(windowRect, *frame());
 }
 
 void LocalDOMWindow::moveTo(int x, int y) const
@@ -1247,10 +1247,10 @@ void LocalDOMWindow::moveTo(int x, int y) const
     if (!host)
         return;
 
-    IntRect windowRect = host->chromeClient().windowRect();
+    IntRect windowRect = host->chromeClient().rootWindowRect();
     windowRect.setLocation(IntPoint(x, y));
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    host->chromeClient().setWindowRectWithAdjustment(windowRect);
+    host->chromeClient().setWindowRectWithAdjustment(windowRect, *frame());
 }
 
 void LocalDOMWindow::resizeBy(int x, int y) const
@@ -1262,10 +1262,10 @@ void LocalDOMWindow::resizeBy(int x, int y) const
     if (!host)
         return;
 
-    IntRect fr = host->chromeClient().windowRect();
+    IntRect fr = host->chromeClient().rootWindowRect();
     IntSize dest = fr.size() + IntSize(x, y);
     IntRect update(fr.location(), dest);
-    host->chromeClient().setWindowRectWithAdjustment(update);
+    host->chromeClient().setWindowRectWithAdjustment(update, *frame());
 }
 
 void LocalDOMWindow::resizeTo(int width, int height) const
@@ -1277,10 +1277,10 @@ void LocalDOMWindow::resizeTo(int width, int height) const
     if (!host)
         return;
 
-    IntRect fr = host->chromeClient().windowRect();
+    IntRect fr = host->chromeClient().rootWindowRect();
     IntSize dest = IntSize(width, height);
     IntRect update(fr.location(), dest);
-    host->chromeClient().setWindowRectWithAdjustment(update);
+    host->chromeClient().setWindowRectWithAdjustment(update, *frame());
 }
 
 int LocalDOMWindow::requestAnimationFrame(FrameRequestCallback* callback)

@@ -88,7 +88,7 @@ static Frame* createNewWindow(LocalFrame& openerFrame, const FrameLoadRequest& r
     // specify the size of the viewport. We can only resize the window, so adjust
     // for the difference between the window size and the viewport size.
 
-    IntRect windowRect = host->chromeClient().windowRect();
+    IntRect windowRect = host->chromeClient().rootWindowRect();
     IntSize viewportSize = host->chromeClient().pageRect().size();
 
     if (features.xSet)
@@ -100,7 +100,7 @@ static Frame* createNewWindow(LocalFrame& openerFrame, const FrameLoadRequest& r
     if (features.heightSet)
         windowRect.setHeight(features.height + (windowRect.height() - viewportSize.height()));
 
-    host->chromeClient().setWindowRectWithAdjustment(windowRect);
+    host->chromeClient().setWindowRectWithAdjustment(windowRect, frame);
     host->chromeClient().show(policy);
 
     if (openerFrame.document()->isSandboxed(SandboxPropagatesToAuxiliaryBrowsingContexts))

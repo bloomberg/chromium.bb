@@ -55,8 +55,8 @@ public:
 
     // ChromeClient methods:
     void chromeDestroyed() override;
-    void setWindowRect(const IntRect&) override;
-    IntRect windowRect() override;
+    void setWindowRect(const IntRect&, LocalFrame&) override;
+    IntRect rootWindowRect() override;
     IntRect pageRect() override;
     void focus() override;
     bool canTakeFocus(WebFocusType) override;

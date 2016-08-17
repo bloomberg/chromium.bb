@@ -85,8 +85,8 @@ public:
 
     // The specified rectangle is adjusted for the minimum window size and the
     // screen, then setWindowRect with the adjusted rectangle is called.
-    void setWindowRectWithAdjustment(const IntRect&);
-    virtual IntRect windowRect() = 0;
+    void setWindowRectWithAdjustment(const IntRect&, LocalFrame&);
+    virtual IntRect rootWindowRect() = 0;
 
     virtual IntRect pageRect() = 0;
 
@@ -288,7 +288,7 @@ protected:
     ~ChromeClient() override { }
 
     virtual void showMouseOverURL(const HitTestResult&) = 0;
-    virtual void setWindowRect(const IntRect&) = 0;
+    virtual void setWindowRect(const IntRect&, LocalFrame&) = 0;
     virtual bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*, bool isReload) = 0;
     virtual bool openJavaScriptAlertDelegate(LocalFrame*, const String&) = 0;
     virtual bool openJavaScriptConfirmDelegate(LocalFrame*, const String&) = 0;

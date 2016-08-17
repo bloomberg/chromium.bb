@@ -312,12 +312,10 @@ class CONTENT_EXPORT RenderViewImpl
   void setToolTipText(const blink::WebString&,
                       blink::WebTextDirection hint) override;
   void setTouchAction(blink::WebTouchAction touchAction) override;
-  void setWindowRect(const blink::WebRect& rect) override;
   void showImeIfNeeded() override;
   void showUnhandledTapUIIfNeeded(const blink::WebPoint& tappedPosition,
                                   const blink::WebNode& tappedNode,
                                   bool pageChanged) override;
-  blink::WebRect windowRect() override;
   blink::WebRect windowResizerRect() override;
   blink::WebWidgetClient* widgetClient() override;
 

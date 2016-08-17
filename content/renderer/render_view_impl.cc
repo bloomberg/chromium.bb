@@ -2074,10 +2074,6 @@ void RenderViewImpl::setTouchAction(blink::WebTouchAction touchAction) {
   RenderWidget::setTouchAction(touchAction);
 }
 
-void RenderViewImpl::setWindowRect(const blink::WebRect& rect) {
-  RenderWidget::setWindowRect(rect);
-}
-
 void RenderViewImpl::showImeIfNeeded() {
   RenderWidget::showImeIfNeeded();
 }
@@ -2088,10 +2084,6 @@ void RenderViewImpl::showUnhandledTapUIIfNeeded(
     bool pageChanged) {
   RenderWidget::showUnhandledTapUIIfNeeded(tappedPosition, tappedNode,
                                            pageChanged);
-}
-
-blink::WebRect RenderViewImpl::windowRect() {
-  return RenderWidget::windowRect();
 }
 
 blink::WebRect RenderViewImpl::windowResizerRect() {

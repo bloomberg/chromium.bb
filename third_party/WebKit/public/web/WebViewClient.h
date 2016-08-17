@@ -271,11 +271,9 @@ public:
     WebScreenInfo screenInfo() override { return WebScreenInfo(); }
     void setToolTipText(const WebString&, WebTextDirection hint) override {}
     void setTouchAction(WebTouchAction touchAction) override {}
-    void setWindowRect(const WebRect&) override {}
     void showImeIfNeeded() override {}
     void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition, const WebNode& tappedNode, bool pageChanged) override {}
     void show(WebNavigationPolicy) override {}
-    WebRect windowRect() override { return WebRect(); }
     WebRect windowResizerRect() override { return WebRect(); }
     virtual WebWidgetClient* widgetClient() { return this; }
 

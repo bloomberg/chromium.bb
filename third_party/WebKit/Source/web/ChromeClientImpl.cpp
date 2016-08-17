@@ -185,13 +185,14 @@ void ChromeClientImpl::chromeDestroyed()
     // Our lifetime is bound to the WebViewImpl.
 }
 
-void ChromeClientImpl::setWindowRect(const IntRect& r)
+void ChromeClientImpl::setWindowRect(const IntRect& r, LocalFrame& frame)
 {
-    if (m_webView->client())
-        m_webView->client()->setWindowRect(r);
+    DCHECK_EQ(&frame, m_webView->mainFrameImpl()->frame());
+    WebWidgetClient* client = WebLocalFrameImpl::fromFrame(&frame)->frameWidget()->client();
+    client->setWindowRect(r);
 }
 
-IntRect ChromeClientImpl::windowRect()
+IntRect ChromeClientImpl::rootWindowRect()
 {
     WebRect rect;
     if (m_webView->client()) {
@@ -211,7 +212,7 @@ IntRect ChromeClientImpl::pageRect()
     // We hide the details of the window's border thickness from the web page by
     // simple re-using the window position here.  So, from the point-of-view of
     // the web page, the window has no border.
-    return windowRect();
+    return rootWindowRect();
 }
 
 void ChromeClientImpl::focus()

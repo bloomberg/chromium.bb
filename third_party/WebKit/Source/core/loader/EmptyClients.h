@@ -74,8 +74,8 @@ public:
     void chromeDestroyed() override {}
 
     void* webView() const override { return nullptr; }
-    void setWindowRect(const IntRect&) override {}
-    IntRect windowRect() override { return IntRect(); }
+    void setWindowRect(const IntRect&, LocalFrame&) override {}
+    IntRect rootWindowRect() override { return IntRect(); }
 
     IntRect pageRect() override { return IntRect(); }
 
