@@ -466,7 +466,7 @@ SYNC_TEST_F('BackgroundTest', 'GlobsToRegExp', function() {
 });
 
 // Flaky, see http://crbug.com/635032
-TEST_F('BackgroundTest', 'ActiveOrInactive', function() {
+TEST_F('BackgroundTest', 'DISABLED_ActiveOrInactive', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
       <a href="a">a</a>
