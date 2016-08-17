@@ -52,7 +52,6 @@ import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.TabState.WebContentsState;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -1462,12 +1461,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             boolean creatingWebContents = webContents == null;
             if (creatingWebContents) {
-                webContents = WarmupManager.getInstance().takeSpareWebContents(
-                        isIncognito(), initiallyHidden);
-                if (webContents == null) {
-                    webContents =
-                            WebContentsFactory.createWebContents(isIncognito(), initiallyHidden);
-                }
+                webContents = WebContentsFactory.createWebContents(isIncognito(), initiallyHidden);
             }
 
             ContentViewCore contentViewCore = ContentViewCore.fromWebContents(webContents);

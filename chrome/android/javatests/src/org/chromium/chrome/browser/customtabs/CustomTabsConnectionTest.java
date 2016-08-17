@@ -23,7 +23,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content_public.browser.WebContents;
 
@@ -58,12 +57,6 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         CustomTabsTestUtils.cleanupSessions(mCustomTabsConnection);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                WarmupManager.getInstance().destroySpareWebContents();
-            }
-        });
     }
 
     /**
@@ -109,12 +102,8 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                WarmupManager warmupManager = WarmupManager.getInstance();
-                assertTrue(warmupManager.hasSpareWebContents());
-                WebContents webContents = warmupManager.takeSpareWebContents(false, false);
-                assertNotNull(webContents);
-                assertFalse(warmupManager.hasSpareWebContents());
-                webContents.destroy();
+                assertNotNull(mCustomTabsConnection.takeSpareWebContents());
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
             }
         });
     }
@@ -127,7 +116,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 assertSpareWebContentsNotNullAndDestroy();
-                assertFalse(WarmupManager.getInstance().hasSpareWebContents());
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
             }
         });
         assertTrue(mCustomTabsConnection.warmup(0));
@@ -146,7 +135,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertFalse(WarmupManager.getInstance().hasSpareWebContents());
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
                 String referrer =
                         mCustomTabsConnection.getReferrerForSession(token).getUrl();
                 WebContents webContents =
@@ -295,7 +284,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertNull(WarmupManager.getInstance().takeSpareWebContents(false, false));
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
                 String referrer = mCustomTabsConnection.getReferrerForSession(token).getUrl();
                 assertNotNull(mCustomTabsConnection.takePrerenderedUrl(token, URL, referrer));
             }
@@ -309,7 +298,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertNull(WarmupManager.getInstance().takeSpareWebContents(false, false));
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
             }
         });
         assertTrue(mCustomTabsConnection.mayLaunchUrl(token, null, null, null));
@@ -324,7 +313,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     }
 
     private void assertSpareWebContentsNotNullAndDestroy() {
-        WebContents webContents = WarmupManager.getInstance().takeSpareWebContents(false, false);
+        WebContents webContents = mCustomTabsConnection.takeSpareWebContents();
         assertNotNull(webContents);
         webContents.destroy();
     }
@@ -528,7 +517,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertNull(WarmupManager.getInstance().takeSpareWebContents(false, false));
+                assertNull(mCustomTabsConnection.takeSpareWebContents());
                 String referrer = mCustomTabsConnection.getReferrerForSession(token).getUrl();
                 WebContents prerender = mCustomTabsConnection.takePrerenderedUrl(
                         token, URL, referrer);
