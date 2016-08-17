@@ -1166,6 +1166,9 @@
       'filepath': 'third_party/WebKit/Source/core/layout' \
                   '|third_party/WebKit/Source/core/rendering'
     },
+    'blink_layout_ng': {
+      'filepath': 'third_party/WebKit/Source/core/layout/ng',
+    },
     'blink_layers': {
       'filepath': 'third_party/WebKit/Source/core/page/scrolling/ScrollingCoordinator' \
                   '|third_party/WebKit/Source/platform/graphics/GraphicsLayer' \
@@ -1274,9 +1277,6 @@
     },
     'blink_serviceworkers_tests' : {
       'filepath': 'third_party/WebKit/LayoutTests/http/tests/serviceworker'
-    },
-    'blink_sheriff_o_matic' : {
-      'filepath': 'third_party/WebKit/Tools/GardeningServer'
     },
     'blink_spellcheck' : {
       'filepath': 'third_party/WebKit/Source/core/editing/spellcheck'
@@ -1516,6 +1516,7 @@
                      'pdr+renderingwatchlist@chromium.org',
                      'szager+layoutwatch@chromium.org',
                      'zoltan@webkit.org'],
+    'blink_layout_ng': ['ojan+watch@chromium.org'],
     'blink_loader': ['gavinp+loader@chromium.org',
                      'japhet@chromium.org',
                      'loading-reviews@chromium.org',
@@ -1575,14 +1576,6 @@
                              'serviceworker-reviews@chromium.org',
                              'tzik@chromium.org'],
     'blink_serviceworkers_tests': ['kenjibaheux+watch@chromium.org'],
-    'blink_sheriff_o_matic': ['cbiesinger@chromium.org',
-                              'dsinclair@chromium.org',
-                              'jochen@chromium.org',
-                              'leviw@chromium.org',
-                              'michaelpg@chromium.org',
-                              'ojan@chromium.org',
-                              'szager@chromium.org',
-                              'teravest@chromium.org'],
     'blink_spellcheck' : ['groby+blinkspell@chromium.org'],
     'blink_spv2_layout_tests': ['jbroman+watch@chromium.org',
                                 'pdr+virtualspv2watchlist@chromium.org'],
