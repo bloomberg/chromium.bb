@@ -1583,6 +1583,20 @@ TEST_F(MaximizeModeWindowManagerTest, DontMaximizeDockedWindows) {
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
 }
 
+// Tests that windows that can control maximized bounds are not maximized
+// and not tracked.
+TEST_F(MaximizeModeWindowManagerTest, DontMaximizeClientManagedWindows) {
+  gfx::Rect rect(10, 10, 200, 50);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+
+  wm::GetWindowState(window.get())->set_allow_set_bounds_in_maximized(true);
+
+  MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  EXPECT_FALSE(wm::GetWindowState(window.get())->IsMaximized());
+  EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
+}
+
 namespace {
 
 class TestObserver : public wm::WindowStateObserver {
