@@ -32,7 +32,7 @@ scoped_refptr<net::IOBuffer> CreateTransferBuffer(size_t size) {
       std::max(static_cast<size_t>(1u), static_cast<size_t>(size)));
 }
 
-void OnTransferIn(std::unique_ptr<Device::GenericTransferInCallback> callback,
+void OnTransferIn(const Device::GenericTransferInCallback& callback,
                   UsbTransferStatus status,
                   scoped_refptr<net::IOBuffer> buffer,
                   size_t buffer_size) {
@@ -44,14 +44,15 @@ void OnTransferIn(std::unique_ptr<Device::GenericTransferInCallback> callback,
     data.resize(buffer_size);
     std::copy(buffer->data(), buffer->data() + buffer_size, data.begin());
   }
-  callback->Run(mojo::ConvertTo<TransferStatus>(status), data);
+
+  callback.Run(mojo::ConvertTo<TransferStatus>(status), data);
 }
 
-void OnTransferOut(std::unique_ptr<Device::GenericTransferOutCallback> callback,
+void OnTransferOut(const Device::GenericTransferOutCallback& callback,
                    UsbTransferStatus status,
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t buffer_size) {
-  callback->Run(mojo::ConvertTo<TransferStatus>(status));
+  callback.Run(mojo::ConvertTo<TransferStatus>(status));
 }
 
 std::vector<IsochronousPacketPtr> BuildIsochronousPacketArray(
@@ -69,7 +70,7 @@ std::vector<IsochronousPacketPtr> BuildIsochronousPacketArray(
 }
 
 void OnIsochronousTransferIn(
-    std::unique_ptr<Device::IsochronousTransferInCallback> callback,
+    const Device::IsochronousTransferInCallback& callback,
     scoped_refptr<net::IOBuffer> buffer,
     const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
   std::vector<uint8_t> data;
@@ -86,16 +87,15 @@ void OnIsochronousTransferIn(
     data.resize(buffer_size);
     std::copy(buffer->data(), buffer->data() + buffer_size, data.begin());
   }
-
-  callback->Run(data,
-                mojo::ConvertTo<std::vector<IsochronousPacketPtr>>(packets));
+  callback.Run(data,
+               mojo::ConvertTo<std::vector<IsochronousPacketPtr>>(packets));
 }
 
 void OnIsochronousTransferOut(
-    std::unique_ptr<Device::IsochronousTransferOutCallback> callback,
+    const Device::IsochronousTransferOutCallback& callback,
     scoped_refptr<net::IOBuffer> buffer,
     const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
-  callback->Run(mojo::ConvertTo<std::vector<IsochronousPacketPtr>>(packets));
+  callback.Run(mojo::ConvertTo<std::vector<IsochronousPacketPtr>>(packets));
 }
 
 }  // namespace
@@ -324,14 +324,12 @@ void DeviceImpl::ControlTransferIn(ControlTransferParamsPtr params,
 
   if (HasControlTransferPermission(params->recipient, params->index)) {
     scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
-    auto callback_ptr =
-        base::WrapUnique(new ControlTransferInCallback(callback));
     device_handle_->ControlTransfer(
         USB_DIRECTION_INBOUND,
         mojo::ConvertTo<UsbDeviceHandle::TransferRequestType>(params->type),
         mojo::ConvertTo<UsbDeviceHandle::TransferRecipient>(params->recipient),
         params->request, params->value, params->index, buffer, length, timeout,
-        base::Bind(&OnTransferIn, base::Passed(&callback_ptr)));
+        base::Bind(&OnTransferIn, callback));
   } else {
     callback.Run(TransferStatus::PERMISSION_DENIED, base::nullopt);
   }
@@ -350,14 +348,12 @@ void DeviceImpl::ControlTransferOut(
   if (HasControlTransferPermission(params->recipient, params->index)) {
     scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
     std::copy(data.begin(), data.end(), buffer->data());
-    auto callback_ptr =
-        base::WrapUnique(new ControlTransferOutCallback(callback));
     device_handle_->ControlTransfer(
         USB_DIRECTION_OUTBOUND,
         mojo::ConvertTo<UsbDeviceHandle::TransferRequestType>(params->type),
         mojo::ConvertTo<UsbDeviceHandle::TransferRecipient>(params->recipient),
         params->request, params->value, params->index, buffer, data.size(),
-        timeout, base::Bind(&OnTransferOut, base::Passed(&callback_ptr)));
+        timeout, base::Bind(&OnTransferOut, callback));
   } else {
     callback.Run(TransferStatus::PERMISSION_DENIED);
   }
@@ -372,12 +368,11 @@ void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
     return;
   }
 
-  auto callback_ptr = base::WrapUnique(new GenericTransferInCallback(callback));
   uint8_t endpoint_address = endpoint_number | 0x80;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
-  device_handle_->GenericTransfer(
-      USB_DIRECTION_INBOUND, endpoint_address, buffer, length, timeout,
-      base::Bind(&OnTransferIn, base::Passed(&callback_ptr)));
+  device_handle_->GenericTransfer(USB_DIRECTION_INBOUND, endpoint_address,
+                                  buffer, length, timeout,
+                                  base::Bind(&OnTransferIn, callback));
 }
 
 void DeviceImpl::GenericTransferOut(
@@ -390,14 +385,12 @@ void DeviceImpl::GenericTransferOut(
     return;
   }
 
-  auto callback_ptr =
-      base::WrapUnique(new GenericTransferOutCallback(callback));
   uint8_t endpoint_address = endpoint_number;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
   std::copy(data.begin(), data.end(), buffer->data());
-  device_handle_->GenericTransfer(
-      USB_DIRECTION_OUTBOUND, endpoint_address, buffer, data.size(), timeout,
-      base::Bind(&OnTransferOut, base::Passed(&callback_ptr)));
+  device_handle_->GenericTransfer(USB_DIRECTION_OUTBOUND, endpoint_address,
+                                  buffer, data.size(), timeout,
+                                  base::Bind(&OnTransferOut, callback));
 }
 
 void DeviceImpl::IsochronousTransferIn(
@@ -412,12 +405,10 @@ void DeviceImpl::IsochronousTransferIn(
     return;
   }
 
-  auto callback_ptr =
-      base::WrapUnique(new IsochronousTransferInCallback(callback));
   uint8_t endpoint_address = endpoint_number | 0x80;
   device_handle_->IsochronousTransferIn(
       endpoint_address, packet_lengths, timeout,
-      base::Bind(&OnIsochronousTransferIn, base::Passed(&callback_ptr)));
+      base::Bind(&OnIsochronousTransferIn, callback));
 }
 
 void DeviceImpl::IsochronousTransferOut(
@@ -432,14 +423,12 @@ void DeviceImpl::IsochronousTransferOut(
     return;
   }
 
-  auto callback_ptr =
-      base::WrapUnique(new IsochronousTransferOutCallback(callback));
   uint8_t endpoint_address = endpoint_number;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
   std::copy(data.begin(), data.end(), buffer->data());
   device_handle_->IsochronousTransferOut(
       endpoint_address, buffer, packet_lengths, timeout,
-      base::Bind(&OnIsochronousTransferOut, base::Passed(&callback_ptr)));
+      base::Bind(&OnIsochronousTransferOut, callback));
 }
 
 void DeviceImpl::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
