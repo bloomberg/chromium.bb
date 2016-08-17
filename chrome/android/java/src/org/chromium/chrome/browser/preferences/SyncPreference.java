@@ -12,11 +12,13 @@ import android.preference.Preference;
 import android.util.AttributeSet;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.ProtocolErrorClientAction;
 import org.chromium.components.sync.signin.ChromeSigninController;
 
 /**
@@ -102,8 +104,15 @@ public class SyncPreference extends Preference {
             return res.getString(profileSyncService.getAuthError().getMessage());
         }
 
-        // TODO(crbug/557784): Surface IDS_SYNC_UPGRADE_CLIENT string when we require the user
-        // to upgrade
+        if (profileSyncService.getProtocolErrorClientAction()
+                == ProtocolErrorClientAction.UPGRADE_CLIENT) {
+            return res.getString(
+                    R.string.sync_error_upgrade_client, BuildInfo.getPackageLabel(context));
+        }
+
+        if (profileSyncService.hasUnrecoverableError()) {
+            return res.getString(R.string.sync_error_generic);
+        }
 
         boolean syncEnabled = AndroidSyncSettings.isSyncEnabled(context);
 

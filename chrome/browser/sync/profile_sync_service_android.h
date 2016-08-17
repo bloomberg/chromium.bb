@@ -126,6 +126,11 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  // Gets SyncProtocolError.ClientAction.
+  jint GetProtocolErrorClientAction(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   // Pure SyncPrefs calls.
   jboolean IsPassphrasePrompted(
       JNIEnv* env,

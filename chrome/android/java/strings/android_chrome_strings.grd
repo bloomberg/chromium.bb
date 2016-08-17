@@ -1274,10 +1274,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_HINT_OTHER_SYNC_ERRORS" desc="Hint message to resolve sync errors not listed independently. [CHAR-LIMIT=80]">
         Try signing in again
       </message>
+      <message name="IDS_HINT_CLIENT_OUT_OF_DATE" desc="Hint message to resolve sync protocol error for out-of-date client. [CHAR-LIMIT=80]">
+        Update <ph name="PRODUCT_NAME">%1$s<ex>Chrome</ex></ph> to start sync
+      </message>
 
       <!-- Sync error strings -->
       <message name="IDS_SYNC_ERROR_GENERIC" desc="Sync error string for generic error. [CHAR-LIMIT=80]">
-        Sync error
+        Sync has stopped working
       </message>
       <message name="IDS_SYNC_ERROR_GA" desc="Sync error string for when the needs to update the sign-in details [CHAR-LIMIT=80]">
         Please update your sign-in details.
@@ -1288,6 +1291,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_ERROR_DOMAIN" desc="Sync error string for domain not supported. [CHAR-LIMIT=80]">
         Sync is not available for your domain.
       </message>
+      <message name="IDS_SYNC_ERROR_UPGRADE_CLIENT" desc="Sync error string for out-of-date client. [CHAR-LIMIT=80]">
+        <ph name="PRODUCT_NAME">%1$s<ex>Chrome</ex></ph> is out of date.
+      </message>    
       <message name="IDS_SYNC_ERROR_SERVICE_UNAVAILABLE" desc="Sync error string for service unavailable. [CHAR-LIMIT=80]">
         The service is not available; try again later.
       </message>

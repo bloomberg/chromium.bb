@@ -294,6 +294,15 @@ public class ProfileSyncService {
     }
 
     /**
+     * Gets client action for sync protocol error.
+     *
+     * @return {@link ProtocolErrorClientAction}.
+     */
+    public int getProtocolErrorClientAction() {
+        return nativeGetProtocolErrorClientAction(mNativeProfileSyncServiceAndroid);
+    }
+
+    /**
      * Gets the set of data types that are currently syncing.
      *
      * This is affected by whether sync is on.
@@ -537,6 +546,7 @@ public class ProfileSyncService {
     private native void nativeSetSyncSessionsId(long nativeProfileSyncServiceAndroid, String tag);
     private native String nativeQuerySyncStatusSummary(long nativeProfileSyncServiceAndroid);
     private native int nativeGetAuthError(long nativeProfileSyncServiceAndroid);
+    private native int nativeGetProtocolErrorClientAction(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsBackendInitialized(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEncryptEverythingAllowed(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEncryptEverythingEnabled(long nativeProfileSyncServiceAndroid);

@@ -367,6 +367,15 @@ jboolean ProfileSyncServiceAndroid::HasUnrecoverableError(
   return sync_service_->HasUnrecoverableError();
 }
 
+jint ProfileSyncServiceAndroid::GetProtocolErrorClientAction(
+    JNIEnv* env,
+    const JavaParamRef<jobject>&) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  syncer::SyncStatus status;
+  sync_service_->QueryDetailedSyncStatus(&status);
+  return status.sync_protocol_error.action;
+}
+
 // Pure SyncPrefs calls.
 
 jboolean ProfileSyncServiceAndroid::IsPassphrasePrompted(

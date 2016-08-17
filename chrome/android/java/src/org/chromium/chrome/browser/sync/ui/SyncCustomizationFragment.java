@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -46,6 +47,7 @@ import org.chromium.chrome.browser.sync.SyncAccountSwitcher;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.ProtocolErrorClientAction;
 import org.chromium.components.sync.StopSource;
 import org.chromium.components.sync.signin.AccountManagerHelper;
 import org.chromium.components.sync.signin.ChromeSigninController;
@@ -98,13 +100,14 @@ public class SyncCustomizationFragment extends PreferenceFragment
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({SYNC_NO_ERROR, SYNC_ANDROID_SYNC_DISABLED, SYNC_AUTH_ERROR, SYNC_PASSPHRASE_REQUIRED,
-            SYNC_OTHER_ERRORS})
+            SYNC_CLIENT_OUT_OF_DATE, SYNC_OTHER_ERRORS})
     private @interface SyncError {}
     private static final int SYNC_NO_ERROR = -1;
     private static final int SYNC_ANDROID_SYNC_DISABLED = 0;
     private static final int SYNC_AUTH_ERROR = 1;
     private static final int SYNC_PASSPHRASE_REQUIRED = 2;
-    private static final int SYNC_OTHER_ERRORS = 3;
+    private static final int SYNC_CLIENT_OUT_OF_DATE = 3;
+    private static final int SYNC_OTHER_ERRORS = 128;
 
     public static final String ARGUMENT_ACCOUNT = "account";
 
@@ -649,7 +652,13 @@ public class SyncCustomizationFragment extends PreferenceFragment
             return SYNC_AUTH_ERROR;
         }
 
-        if (mProfileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE) {
+        if (mProfileSyncService.getProtocolErrorClientAction()
+                == ProtocolErrorClientAction.UPGRADE_CLIENT) {
+            return SYNC_CLIENT_OUT_OF_DATE;
+        }
+
+        if (mProfileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE
+                || mProfileSyncService.hasUnrecoverableError()) {
             return SYNC_OTHER_ERRORS;
         }
 
@@ -672,6 +681,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 return res.getString(R.string.hint_android_sync_disabled);
             case SYNC_AUTH_ERROR:
                 return res.getString(R.string.hint_sync_auth_error);
+            case SYNC_CLIENT_OUT_OF_DATE:
+                return res.getString(
+                        R.string.hint_client_out_of_date, BuildInfo.getPackageLabel(getActivity()));
             case SYNC_OTHER_ERRORS:
                 return res.getString(R.string.hint_other_sync_errors);
             case SYNC_PASSPHRASE_REQUIRED:
@@ -706,6 +718,15 @@ public class SyncCustomizationFragment extends PreferenceFragment
                                 @Override
                                 public void onResult(Boolean result) {}
                             });
+            return;
+        }
+
+        if (mCurrentSyncError == SYNC_CLIENT_OUT_OF_DATE) {
+            // Opens the client in play store for update.
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(
+                    Uri.parse("market://details?id=" + BuildInfo.getPackageName(getActivity())));
+            startActivity(intent);
             return;
         }
 
