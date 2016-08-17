@@ -195,6 +195,9 @@ class ServiceWorkerMetrics {
                                         bool is_shutdown);
   static void RecordInstallEventStatus(ServiceWorkerStatusCode status);
 
+  static void RecordForeignFetchRegistrationCount(size_t scope_count,
+                                                  size_t origin_count);
+
   // Records how much of dispatched events are handled while a Service
   // Worker is awake (i.e. after it is woken up until it gets stopped).
   static void RecordEventHandledRatio(EventType event,

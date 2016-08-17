@@ -463,6 +463,9 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
   }
 
   ServiceWorkerMetrics::RecordInstallEventStatus(status);
+  ServiceWorkerMetrics::RecordForeignFetchRegistrationCount(
+      new_version()->foreign_fetch_scopes().size(),
+      new_version()->foreign_fetch_origins().size());
 
   SetPhase(STORE);
   DCHECK(!registration()->last_update_check().is_null());

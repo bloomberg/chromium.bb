@@ -52805,6 +52805,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.ForeignFetch.OriginCount">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    The number of origins a particular service worker with foreign fetch
+    registrations will intercept fetches from. A value of zero indicates that
+    the foreign fetch service worker intercepts requests from any origin.
+    Recorded at the end of a successful install event, if the service worker
+    registered for foreign fetch. A service worker that registers for foreign
+    fetch must always intercept fetches from at least one origin or intercept
+    fetches from all origins.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.ForeignFetch.ScopeCount">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    The number of foreign fetch scopes a particular service worker registered
+    for. Recorded at the end of every successful install event. A value of zero
+    indicates that the service worker did not register for foreign fetch.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.ForeignFetchEvent.Fallback.Time" units="ms">
   <owner>mek@chromium.org</owner>
   <summary>
