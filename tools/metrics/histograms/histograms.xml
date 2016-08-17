@@ -23528,6 +23528,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.WatchTime">
+  <owner>dalecurtis@chromium.org</owner>
+  <summary>
+    Watch time is defined as the amount of elapsed media time for audio+video
+    media aggregated per player instance. A minimum of 7 seconds of unmuted,
+    foreground media must be watched to start watch time monitoring. Watch time
+    is checked on a regular basis and reported to UMA upon one of the stop
+    events mentioned below or at player destruction if none occur prior.
+
+    Any one of paused, hidden, or muted is sufficient to stop watch time metric
+    reports. Each of these has a hysteresis where if the state change is undone
+    within some time, the watch time will be counted as uninterrupted.
+
+    Power events (on/off battery power) have a similar hysteresis, but unlike
+    the aforementioned properties, will not stop metric collection.
+
+    Each seek event will result in a new watch time metric being started and the
+    old metric finalized as accurately as possible.
+  </summary>
+</histogram>
+
 <histogram name="Media.WindowsCoreAudioInput" enum="BooleanSuccess">
   <owner>henrika@chromium.org</owner>
   <summary>
@@ -99271,6 +99292,24 @@ To add a new entry, add it with any value and run test to compute valid value.
              capabilities, between EnumerateDevices() and
              OnDevicesInfoEnumerated()."/>
   <affected-histogram name="Media.VideoCaptureManager"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="MediaWatchTimeCategories" separator=".">
+  <suffix name="AudioVideo.All"
+      label="Watch time for all media with both an audio and video track."/>
+  <suffix name="AudioVideo.AC"
+      label="Watch time for all media with both an audio and video track on
+             AC power."/>
+  <suffix name="AudioVideo.Battery"
+      label="Watch time for all media with both an audio and video track on
+             battery power."/>
+  <suffix name="AudioVideo.MSE"
+      label="Watch time for MSE media with both an audio and video track."/>
+  <suffix name="AudioVideo.SRC"
+      label="Watch time for SRC media with both an audio and video track."/>
+  <suffix name="AudioVideo.EME"
+      label="Watch time for EME media with both an audio and video track."/>
+  <affected-histogram name="Media.WatchTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MobileDownloadBytesDownloadedTypes" separator=".">

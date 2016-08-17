@@ -95,7 +95,10 @@ struct MediaLogEvent {
     // A property has changed without any special event occurring.
     PROPERTY_CHANGE,
 
-    TYPE_LAST = PROPERTY_CHANGE
+    // Indicates that updated watch time statistics are available.
+    WATCH_TIME_UPDATE,
+
+    TYPE_LAST = WATCH_TIME_UPDATE
   };
 
   int32_t id;

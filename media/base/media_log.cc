@@ -16,6 +16,21 @@ namespace media {
 // unique IDs.
 static base::StaticAtomicSequenceNumber g_media_log_count;
 
+const char MediaLog::kWatchTimeAudioVideoAll[] =
+    "Media.WatchTime.AudioVideo.All";
+const char MediaLog::kWatchTimeAudioVideoMse[] =
+    "Media.WatchTime.AudioVideo.MSE";
+const char MediaLog::kWatchTimeAudioVideoEme[] =
+    "Media.WatchTime.AudioVideo.EME";
+const char MediaLog::kWatchTimeAudioVideoSrc[] =
+    "Media.WatchTime.AudioVideo.SRC";
+const char MediaLog::kWatchTimeAudioVideoBattery[] =
+    "Media.WatchTime.AudioVideo.Battery";
+const char MediaLog::kWatchTimeAudioVideoAc[] = "Media.WatchTime.AudioVideo.AC";
+
+const char MediaLog::kWatchTimeFinalize[] = "FinalizeWatchTime";
+const char MediaLog::kWatchTimeFinalizePower[] = "FinalizePowerWatchTime";
+
 std::string MediaLog::MediaLogLevelToString(MediaLogLevel level) {
   switch (level) {
     case MEDIALOG_ERROR:
@@ -82,6 +97,8 @@ std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "MEDIA_DEBUG_LOG_ENTRY";
     case MediaLogEvent::PROPERTY_CHANGE:
       return "PROPERTY_CHANGE";
+    case MediaLogEvent::WATCH_TIME_UPDATE:
+      return "WATCH_TIME_UPDATE";
   }
   NOTREACHED();
   return NULL;

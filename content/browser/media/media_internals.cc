@@ -289,6 +289,15 @@ class MediaInternals::MediaInternalsUMAHandler {
                        const media::MediaLogEvent& event);
 
  private:
+  struct WatchTimeInfo {
+    base::TimeDelta all_watch_time = media::kNoTimestamp;
+    base::TimeDelta mse_watch_time = media::kNoTimestamp;
+    base::TimeDelta eme_watch_time = media::kNoTimestamp;
+    base::TimeDelta src_watch_time = media::kNoTimestamp;
+    base::TimeDelta ac_watch_time = media::kNoTimestamp;
+    base::TimeDelta battery_watch_time = media::kNoTimestamp;
+  };
+
   struct PipelineInfo {
     bool has_pipeline = false;
     media::PipelineStatus last_pipeline_status = media::PIPELINE_OK;
@@ -299,6 +308,7 @@ class MediaInternals::MediaInternalsUMAHandler {
     std::string audio_codec_name;
     std::string video_codec_name;
     std::string video_decoder;
+    WatchTimeInfo watch_time_info;
   };
 
   // Helper function to report PipelineStatus associated with a player to UMA.
@@ -306,6 +316,50 @@ class MediaInternals::MediaInternalsUMAHandler {
 
   // Helper to generate PipelineStatus UMA name for AudioVideo streams.
   std::string GetUMANameForAVStream(const PipelineInfo& player_info);
+
+  // Saves the watch time info from |event| under |key| at |watch_time| if |key|
+  // is present in |event.params|.
+  void MaybeSaveWatchTime(const media::MediaLogEvent& event,
+                          const char* key,
+                          base::TimeDelta* watch_time) {
+    if (!event.params.HasKey(key))
+      return;
+
+    double in_seconds;
+    const bool result =
+        event.params.GetDoubleWithoutPathExpansion(key, &in_seconds);
+    DCHECK(result);
+    *watch_time = base::TimeDelta::FromSecondsD(in_seconds);
+
+    DVLOG(2) << "Saved watch time for " << key << " of " << *watch_time;
+  }
+
+  enum class FinalizeType { EVERYTHING, POWER_ONLY };
+  void FinalizeWatchTime(WatchTimeInfo* watch_time_info,
+                         FinalizeType finalize_type) {
+// Use a macro instead of a function so we can use the histogram macro (which
+// checks that the uma name is a static value). We use a custom time range for
+// the histogram macro to capitalize on common expected watch times.
+#define MAYBE_RECORD_WATCH_TIME(uma_name, watch_time)                         \
+  if (watch_time_info->watch_time != media::kNoTimestamp) {                   \
+    UMA_HISTOGRAM_CUSTOM_TIMES(                                               \
+        media::MediaLog::uma_name, watch_time_info->watch_time,               \
+        base::TimeDelta::FromSeconds(7), base::TimeDelta::FromHours(10), 50); \
+    watch_time_info->watch_time = media::kNoTimestamp;                        \
+  }
+
+    if (finalize_type == FinalizeType::EVERYTHING) {
+      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoAll, all_watch_time);
+      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoMse, mse_watch_time);
+      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoEme, eme_watch_time);
+      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoSrc, src_watch_time);
+    } else {
+      DCHECK_EQ(finalize_type, FinalizeType::POWER_ONLY);
+    }
+    MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoBattery, battery_watch_time);
+    MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoAc, ac_watch_time);
+#undef MAYBE_RECORD_WATCH_TIME
+  }
 
   // Key is player id.
   typedef std::map<int, PipelineInfo> PlayerInfoMap;
@@ -369,6 +423,48 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
         event.params.GetBoolean("video_dds", &player_info[event.id].video_dds);
       }
       break;
+    case media::MediaLogEvent::Type::WATCH_TIME_UPDATE: {
+      DVLOG(2) << "Processing watch time update.";
+      WatchTimeInfo& wti = player_info[event.id].watch_time_info;
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoAll,
+                         &wti.all_watch_time);
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoMse,
+                         &wti.mse_watch_time);
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoEme,
+                         &wti.eme_watch_time);
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoSrc,
+                         &wti.src_watch_time);
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoBattery,
+                         &wti.battery_watch_time);
+      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoAc,
+                         &wti.ac_watch_time);
+
+      if (event.params.HasKey(media::MediaLog::kWatchTimeFinalize)) {
+        bool should_finalize;
+        DCHECK(event.params.GetBoolean(media::MediaLog::kWatchTimeFinalize,
+                                       &should_finalize) &&
+               should_finalize);
+        FinalizeWatchTime(&wti, FinalizeType::EVERYTHING);
+      } else if (event.params.HasKey(
+                     media::MediaLog::kWatchTimeFinalizePower)) {
+        bool should_finalize;
+        DCHECK(event.params.GetBoolean(media::MediaLog::kWatchTimeFinalizePower,
+                                       &should_finalize) &&
+               should_finalize);
+        FinalizeWatchTime(&wti, FinalizeType::POWER_ONLY);
+      }
+      break;
+    }
+    case media::MediaLogEvent::Type::WEBMEDIAPLAYER_DESTROYED: {
+      // Upon player destruction report UMA data; if the player is not torn down
+      // before process exit, it will be logged during OnProcessTerminated().
+      auto it = player_info.find(event.id);
+      if (it == player_info.end())
+        break;
+
+      ReportUMAForPipelineStatus(it->second);
+      player_info.erase(it);
+    }
     default:
       break;
   }
@@ -458,6 +554,7 @@ void MediaInternals::MediaInternalsUMAHandler::OnProcessTerminated(
   auto it = players_it->second.begin();
   while (it != players_it->second.end()) {
     ReportUMAForPipelineStatus(it->second);
+    FinalizeWatchTime(&(it->second.watch_time_info), FinalizeType::EVERYTHING);
     players_it->second.erase(it++);
   }
   renderer_info_.erase(players_it);
@@ -529,13 +626,15 @@ void MediaInternals::OnMediaEvents(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Notify observers that |event| has occurred.
   for (const auto& event : events) {
-    if (CanUpdate()) {
-      base::string16 update;
-      if (ConvertEventToUpdate(render_process_id, event, &update))
-        SendUpdate(update);
+    // Some events should not be recorded in the UI.
+    if (event.type != media::MediaLogEvent::Type::WATCH_TIME_UPDATE) {
+      if (CanUpdate()) {
+        base::string16 update;
+        if (ConvertEventToUpdate(render_process_id, event, &update))
+          SendUpdate(update);
+      }
+      SaveEvent(render_process_id, event);
     }
-
-    SaveEvent(render_process_id, event);
     uma_handler_->SavePlayerState(render_process_id, event);
   }
 }

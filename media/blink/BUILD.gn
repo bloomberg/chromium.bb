@@ -62,6 +62,8 @@ component("blink") {
     "url_index.h",
     "video_frame_compositor.cc",
     "video_frame_compositor.h",
+    "watch_time_reporter.cc",
+    "watch_time_reporter.h",
     "webaudiosourceprovider_impl.cc",
     "webaudiosourceprovider_impl.h",
     "webcontentdecryptionmodule_impl.cc",
@@ -145,6 +147,7 @@ test("media_blink_unittests") {
     "test_response_generator.h",
     "url_index_unittest.cc",
     "video_frame_compositor_unittest.cc",
+    "watch_time_reporter_unittest.cc",
     "webaudiosourceprovider_impl_unittest.cc",
     "webmediaplayer_impl_unittest.cc",
   ]

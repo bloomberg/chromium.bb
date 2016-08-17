@@ -37,6 +37,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/blink/texttrack_impl.h"
+#include "media/blink/watch_time_reporter.h"
 #include "media/blink/webaudiosourceprovider_impl.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webinbandtexttrack_impl.h"
@@ -133,6 +134,13 @@ gfx::Size GetRotatedVideoSize(VideoRotation rotation, gfx::Size natural_size) {
   return natural_size;
 }
 
+base::TimeDelta GetCurrentTimeInternal(WebMediaPlayerImpl* p_this) {
+  // We wrap currentTime() instead of using pipeline_.GetMediaTime() since there
+  // are a variety of cases in which that time is not accurate; e.g., while
+  // remoting and during a pause or seek.
+  return base::TimeDelta::FromSecondsD(p_this->currentTime());
+}
+
 }  // namespace
 
 class BufferedDataSourceHostImpl;
@@ -217,7 +225,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       surface_manager_(params.surface_manager()),
       overlay_surface_id_(SurfaceManager::kNoSurfaceID),
       suppress_destruction_errors_(false),
-      can_suspend_state_(CanSuspendState::UNKNOWN) {
+      can_suspend_state_(CanSuspendState::UNKNOWN),
+      is_encrypted_(false) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
   DCHECK(client_);
@@ -255,6 +264,9 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
     delegate_->PlayerGone(delegate_id_);
     delegate_->RemoveObserver(delegate_id_);
   }
+
+  // Finalize any watch time metrics before destroying the pipeline.
+  watch_time_reporter_.reset();
 
   // Pipeline must be stopped before it is destroyed.
   pipeline_.Stop();
@@ -397,6 +409,8 @@ void WebMediaPlayerImpl::play() {
   if (data_source_)
     data_source_->MediaIsPlaying();
 
+  DCHECK(watch_time_reporter_);
+  watch_time_reporter_->OnPlaying();
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
   UpdatePlayState();
 }
@@ -426,6 +440,8 @@ void WebMediaPlayerImpl::pause() {
   paused_time_ =
       ended_ ? pipeline_.GetMediaDuration() : pipeline_.GetMediaTime();
 
+  DCHECK(watch_time_reporter_);
+  watch_time_reporter_->OnPaused();
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PAUSE));
   UpdatePlayState();
 }
@@ -476,6 +492,11 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
     return;
   }
 
+  // Call this before setting |seeking_| so that the current media time can be
+  // recorded by the reporter.
+  if (watch_time_reporter_)
+    watch_time_reporter_->OnSeeking();
+
   // TODO(sandersd): Ideally we would not clear the idle state if
   // |pipeline_controller_| can elide the seek.
   is_idle_ = false;
@@ -522,6 +543,8 @@ void WebMediaPlayerImpl::setVolume(double volume) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   volume_ = volume;
   pipeline_.SetVolume(volume_ * volume_multiplier_);
+  if (watch_time_reporter_)
+    watch_time_reporter_->OnVolumeChange(volume);
 }
 
 void WebMediaPlayerImpl::setSinkId(
@@ -862,6 +885,12 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
   DCHECK(!set_cdm_result_);
   set_cdm_result_.reset(new blink::WebContentDecryptionModuleResult(result));
 
+  // Recreate the watch time reporter if necessary.
+  const bool was_encrypted = is_encrypted_;
+  is_encrypted_ = true;
+  if (!was_encrypted && watch_time_reporter_)
+    CreateWatchTimeReporter();
+
   SetCdm(BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnCdmAttached),
          ToWebContentDecryptionModuleImpl(cdm)->GetCdmContext());
 }
@@ -873,6 +902,12 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
 
   // TODO(xhwang): Update this UMA name. https://crbug.com/589251
   UMA_HISTOGRAM_COUNTS("Media.EME.NeedKey", 1);
+
+  // Recreate the watch time reporter if necessary.
+  const bool was_encrypted = is_encrypted_;
+  is_encrypted_ = true;
+  if (!was_encrypted && watch_time_reporter_)
+    CreateWatchTimeReporter();
 
   encrypted_client_->encrypted(
       ConvertToWebInitDataType(init_data_type), init_data.data(),
@@ -945,6 +980,9 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
 #else
     paused_time_ = pipeline_.GetMediaTime();
 #endif
+  } else {
+    DCHECK(watch_time_reporter_);
+    watch_time_reporter_->OnPlaying();
   }
   if (time_updated)
     should_notify_time_changed_ = true;
@@ -1026,9 +1064,9 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
 
   pipeline_metadata_ = metadata;
 
+  SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
   UMA_HISTOGRAM_ENUMERATION("Media.VideoRotation", metadata.video_rotation,
                             VIDEO_ROTATION_MAX + 1);
-  SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
   if (hasVideo()) {
     pipeline_metadata_.natural_size = GetRotatedVideoSize(
@@ -1045,6 +1083,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
     client_->setWebLayer(video_weblayer_.get());
   }
 
+  CreateWatchTimeReporter();
   UpdatePlayState();
 }
 
@@ -1163,6 +1202,8 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
 
 void WebMediaPlayerImpl::OnHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (watch_time_reporter_)
+    watch_time_reporter_->OnHidden();
 
   UpdatePlayState();
 
@@ -1173,6 +1214,9 @@ void WebMediaPlayerImpl::OnHidden() {
 
 void WebMediaPlayerImpl::OnShown() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (watch_time_reporter_)
+    watch_time_reporter_->OnShown();
+
   must_suspend_ = false;
   background_pause_timer_.Stop();
 
@@ -1752,6 +1796,19 @@ void WebMediaPlayerImpl::ScheduleIdlePauseTimer() {
   // Idle timeout chosen arbitrarily.
   background_pause_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(5),
                                 this, &WebMediaPlayerImpl::OnPause);
+}
+
+void WebMediaPlayerImpl::CreateWatchTimeReporter() {
+  // Create the watch time reporter and synchronize its initial state.
+  watch_time_reporter_.reset(new WatchTimeReporter(
+      hasAudio(), hasVideo(), !!chunk_demuxer_, is_encrypted_, media_log_,
+      pipeline_metadata_.natural_size,
+      base::Bind(&GetCurrentTimeInternal, this)));
+  watch_time_reporter_->OnVolumeChange(volume_);
+  if (delegate_ && delegate_->IsHidden())
+    watch_time_reporter_->OnHidden();
+  else
+    watch_time_reporter_->OnShown();
 }
 
 }  // namespace media

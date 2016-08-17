@@ -72,6 +72,7 @@ class GpuVideoAcceleratorFactories;
 class MediaLog;
 class UrlIndex;
 class VideoFrameCompositor;
+class WatchTimeReporter;
 class WebAudioSourceProviderImpl;
 class WebMediaPlayerDelegate;
 class WebTextTrackImpl;
@@ -349,6 +350,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // paused state after some idle timeout.
   void ScheduleIdlePauseTimer();
 
+  void CreateWatchTimeReporter();
+
   blink::WebLocalFrame* frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
@@ -534,6 +537,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Called some-time after OnHidden() if the media was suspended in a playing
   // state as part of the call to OnHidden().
   base::OneShotTimer background_pause_timer_;
+
+  // Monitors the watch time of the played content.
+  std::unique_ptr<WatchTimeReporter> watch_time_reporter_;
+  bool is_encrypted_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
