@@ -74,8 +74,7 @@ IOSChromeMetricsServiceClient::~IOSChromeMetricsServiceClient() {
 // static
 std::unique_ptr<IOSChromeMetricsServiceClient>
 IOSChromeMetricsServiceClient::Create(
-    metrics::MetricsStateManager* state_manager,
-    PrefService* local_state) {
+    metrics::MetricsStateManager* state_manager) {
   // Perform two-phase initialization so that |client->metrics_service_| only
   // receives pointers to fully constructed objects.
   std::unique_ptr<IOSChromeMetricsServiceClient> client(

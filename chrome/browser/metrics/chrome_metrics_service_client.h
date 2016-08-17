@@ -51,8 +51,7 @@ class ChromeMetricsServiceClient
 
   // Factory function.
   static std::unique_ptr<ChromeMetricsServiceClient> Create(
-      metrics::MetricsStateManager* state_manager,
-      PrefService* local_state);
+      metrics::MetricsStateManager* state_manager);
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);

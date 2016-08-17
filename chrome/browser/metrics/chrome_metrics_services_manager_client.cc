@@ -133,8 +133,7 @@ ChromeMetricsServicesManagerClient::CreateVariationsService() {
 std::unique_ptr<metrics::MetricsServiceClient>
 ChromeMetricsServicesManagerClient::CreateMetricsServiceClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ChromeMetricsServiceClient::Create(GetMetricsStateManager(),
-                                            local_state_);
+  return ChromeMetricsServiceClient::Create(GetMetricsStateManager());
 }
 
 net::URLRequestContextGetter*

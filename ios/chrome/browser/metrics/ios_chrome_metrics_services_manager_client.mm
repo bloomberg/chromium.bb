@@ -77,8 +77,7 @@ IOSChromeMetricsServicesManagerClient::CreateVariationsService() {
 std::unique_ptr<metrics::MetricsServiceClient>
 IOSChromeMetricsServicesManagerClient::CreateMetricsServiceClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return IOSChromeMetricsServiceClient::Create(GetMetricsStateManager(),
-                                               local_state_);
+  return IOSChromeMetricsServiceClient::Create(GetMetricsStateManager());
 }
 
 net::URLRequestContextGetter*
