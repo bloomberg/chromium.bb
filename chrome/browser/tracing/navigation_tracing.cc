@@ -67,6 +67,7 @@ void SetupNavigationTracing() {
         new base::DictionaryValue());
     rules_dict->SetString("rule", "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
     rules_dict->SetString("trigger_name", kNavigationTracingConfig);
+    rules_dict->SetBoolean("stop_tracing_on_repeated_reactive", true);
     rules_dict->SetString("category", "BENCHMARK_DEEP");
     rules_list->Append(std::move(rules_dict));
   }

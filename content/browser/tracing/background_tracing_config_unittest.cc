@@ -381,14 +381,17 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
             "\"trigger_delay\":30,\"trigger_name\":\"foo2\"}");
   config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
-      "\"TRACE_AT_RANDOM_INTERVALS\",\"category\": \"BENCHMARK_DEEP\","
+      "\"TRACE_AT_RANDOM_INTERVALS\","
+      "\"stop_tracing_on_repeated_reactive\": true,"
+      "\"category\": \"BENCHMARK_DEEP\","
       "\"timeout_min\":10, \"timeout_max\":20}]}");
   EXPECT_TRUE(config);
   EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
   EXPECT_EQ(config->rules().size(), 1u);
   EXPECT_EQ(RuleToString(config->rules()[0]),
             "{\"category\":\"BENCHMARK_DEEP\",\"rule\":\"TRACE_AT_RANDOM_"
-            "INTERVALS\",\"timeout_max\":20,\"timeout_min\":10}");
+            "INTERVALS\",\"stop_tracing_on_repeated_reactive\":true,"
+            "\"timeout_max\":20,\"timeout_min\":10}");
 }
 
 TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
