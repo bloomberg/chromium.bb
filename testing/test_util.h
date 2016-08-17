@@ -13,6 +13,11 @@
 #include <cstddef>
 #include <string>
 
+namespace mkvparser {
+class IMkvReader;
+class Segment;
+}
+
 namespace test {
 
 // constants for muxer and parser tests
@@ -51,6 +56,12 @@ std::string GetTestFilePath(const std::string& name);
 // Byte-wise comparison of two files |file1| and |file2|. Returns true if the
 // files match exactly, false otherwise.
 bool CompareFiles(const std::string& file1, const std::string& file2);
+
+// Validates cue points. Assumes caller has already called Load() on |segment|.
+// Returns true when:
+//  All cue points point at clusters, OR
+//  Data parsed by |segment| has no cue points.
+bool ValidateCues(mkvparser::Segment* segment, mkvparser::IMkvReader* reader);
 
 }  // namespace test
 

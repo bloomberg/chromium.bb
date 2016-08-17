@@ -111,72 +111,6 @@ class ParserTest : public testing::Test {
     EXPECT_EQ(static_cast<long long>(pos), track_position->m_pos);
   }
 
-  bool ValidateCues() {
-    const mkvparser::SeekHead* const seek_head = segment_->GetSeekHead();
-    if (!seek_head) {  // This likely means there are no cues. So don't fail.
-      return true;
-    }
-    long long cues_offset = -1;  // NOLINT
-    for (int i = 0; i < seek_head->GetCount(); ++i) {
-      const mkvparser::SeekHead::Entry* const entry = seek_head->GetEntry(i);
-      if (entry->id == 0xC53BB6B) {  // Cues ID as stored in Entry class.
-        cues_offset = entry->pos;
-      }
-    }
-
-    if (cues_offset == -1) {  // No Cues found. So don't fail.
-      return true;
-    }
-
-    // Parse Cues.
-    long long cues_pos;  // NOLINT
-    long cues_len;  // NOLINT
-    if (segment_->ParseCues(cues_offset, cues_pos, cues_len)) {
-      fprintf(stderr, "Error: Parsing Cues failed.\n");
-      return false;
-    }
-
-    // Get a pointer to the video track if it exists. Otherwise, we assume
-    // that Cues are based on the first track (which is true for all our test
-    // files).
-    const mkvparser::Tracks* const tracks = segment_->GetTracks();
-    const mkvparser::Track* cues_track = tracks->GetTrackByIndex(0);
-    for (int i = 1; i < static_cast<int>(tracks->GetTracksCount()); ++i) {
-      const mkvparser::Track* const track = tracks->GetTrackByIndex(i);
-      if (track->GetType() == mkvparser::Track::kVideo) {
-        cues_track = track;
-        break;
-      }
-    }
-
-    // Iterate through Cues and verify if they are pointing to the correct
-    // Cluster position.
-    const mkvparser::Cues* const cues = segment_->GetCues();
-    const mkvparser::CuePoint* cue_point = NULL;
-    while (cues->LoadCuePoint()) {
-      if (!cue_point) {
-        cue_point = cues->GetFirst();
-      } else {
-        cue_point = cues->GetNext(cue_point);
-      }
-      const mkvparser::CuePoint::TrackPosition* const track_position =
-          cue_point->Find(cues_track);
-      const long long cluster_pos = track_position->m_pos +  // NOLINT
-                                    segment_->m_start;
-
-      // If a cluster does not begin at |cluster_pos|, then the file is
-      // incorrect.
-      long length;  // NOLINT
-      const long long id =  // NOLINT
-          mkvparser::ReadUInt(&reader_, cluster_pos, length);
-      if (id != 0xF43B675) {  // ID of Cluster as stored in Cluster class.
-        fprintf(stderr, "Error: One or more Cues are invalid.\n");
-        return false;
-      }
-    }
-    return true;
-  }
-
  protected:
   MkvReader reader_;
   bool is_reader_open_;
@@ -383,7 +317,7 @@ TEST_F(ParserTest, Cues) {
   EXPECT_TRUE(cue_point == last_cue_point);
   CompareCuePointContents(track, cue_point, 4000000, kVideoTrackNumber, 269);
 
-  EXPECT_TRUE(ValidateCues());
+  EXPECT_TRUE(ValidateCues(segment_, &reader_));
 }
 
 TEST_F(ParserTest, CuesBeforeClusters) {
@@ -409,7 +343,7 @@ TEST_F(ParserTest, CuesBeforeClusters) {
   EXPECT_TRUE(cue_point == last_cue_point);
   CompareCuePointContents(track, cue_point, 6000000, kVideoTrackNumber, 301);
 
-  EXPECT_TRUE(ValidateCues());
+  EXPECT_TRUE(ValidateCues(segment_, &reader_));
 }
 
 TEST_F(ParserTest, CuesTrackNumber) {
@@ -435,7 +369,7 @@ TEST_F(ParserTest, CuesTrackNumber) {
   EXPECT_TRUE(cue_point == last_cue_point);
   CompareCuePointContents(track, cue_point, 6000000, 10, 269);
 
-  EXPECT_TRUE(ValidateCues());
+  EXPECT_TRUE(ValidateCues(segment_, &reader_));
 }
 
 TEST_F(ParserTest, Opus) {
