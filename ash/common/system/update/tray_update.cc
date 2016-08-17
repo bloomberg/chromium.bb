@@ -4,6 +4,7 @@
 
 #include "ash/common/system/update/tray_update.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -14,7 +15,10 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -22,28 +26,56 @@
 namespace ash {
 namespace {
 
-// TODO(tdanderson): The material design update icon needs to be colored
-// programmatically. See crbug.com/625692.
+// Decides the non-material design image resource to use for a given update
+// severity.
+// TODO(tdanderson): This is only used for non-material design, so remove it
+// when material design is the default. See crbug.com/625692.
 int DecideResource(UpdateInfo::UpdateSeverity severity, bool dark) {
   switch (severity) {
-    case UpdateInfo::UPDATE_NORMAL:
+    case UpdateInfo::UPDATE_NONE:
+    case UpdateInfo::UPDATE_LOW:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK : IDR_AURA_UBER_TRAY_UPDATE;
 
-    case UpdateInfo::UPDATE_LOW_GREEN:
+    case UpdateInfo::UPDATE_ELEVATED:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_GREEN
                   : IDR_AURA_UBER_TRAY_UPDATE_GREEN;
 
-    case UpdateInfo::UPDATE_HIGH_ORANGE:
+    case UpdateInfo::UPDATE_HIGH:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_ORANGE
                   : IDR_AURA_UBER_TRAY_UPDATE_ORANGE;
 
-    case UpdateInfo::UPDATE_SEVERE_RED:
+    case UpdateInfo::UPDATE_SEVERE:
+    case UpdateInfo::UPDATE_CRITICAL:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_RED
                   : IDR_AURA_UBER_TRAY_UPDATE_RED;
   }
 
   NOTREACHED() << "Unknown update severity level.";
   return 0;
+}
+
+// Returns the color to use for the material design update icon when the update
+// severity is |severity|. If |for_menu| is true, the icon color for the system
+// menu is given, otherwise the icon color for the system tray is given.
+SkColor IconColorForUpdateSeverity(UpdateInfo::UpdateSeverity severity,
+                                   bool for_menu) {
+  const SkColor default_color = for_menu ? kMenuIconColor : kTrayIconColor;
+  switch (severity) {
+    case UpdateInfo::UPDATE_NONE:
+      return default_color;
+    case UpdateInfo::UPDATE_LOW:
+      return for_menu ? gfx::kGoogleGreen700 : gfx::kGoogleGreen300;
+    case UpdateInfo::UPDATE_ELEVATED:
+      return for_menu ? gfx::kGoogleYellow700 : gfx::kGoogleYellow300;
+    case UpdateInfo::UPDATE_HIGH:
+    case UpdateInfo::UPDATE_SEVERE:
+    case UpdateInfo::UPDATE_CRITICAL:
+      return for_menu ? gfx::kGoogleRed700 : gfx::kGoogleRed300;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return default_color;
 }
 
 class UpdateView : public ActionableView {
@@ -56,9 +88,14 @@ class UpdateView : public ActionableView {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     views::ImageView* image =
         new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
-    image->SetImage(bundle.GetImageNamed(DecideResource(info.severity, true))
-                        .ToImageSkia());
-
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      image->SetImage(gfx::CreateVectorIcon(
+          gfx::VectorIconId::SYSTEM_MENU_UPDATE,
+          IconColorForUpdateSeverity(info.severity, true)));
+    } else {
+      image->SetImage(bundle.GetImageNamed(DecideResource(info.severity, true))
+                          .ToImageSkia());
+    }
     AddChildView(image);
 
     base::string16 label =
@@ -108,7 +145,10 @@ views::View* TrayUpdate::CreateDefaultView(LoginStatus status) {
 }
 
 void TrayUpdate::OnUpdateRecommended(const UpdateInfo& info) {
-  SetImageFromResourceId(DecideResource(info.severity, false));
+  if (MaterialDesignController::UseMaterialDesignSystemIcons())
+    SetIconColor(IconColorForUpdateSeverity(info.severity, false));
+  else
+    SetImageFromResourceId(DecideResource(info.severity, false));
   tray_view()->SetVisible(true);
 }
 

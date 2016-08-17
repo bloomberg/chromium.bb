@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace views {
 class ImageView;
@@ -36,14 +37,29 @@ class ASH_EXPORT TrayImageItem : public SystemTrayItem {
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
+  // Sets the color of the material design icon to |color|.
+  void SetIconColor(SkColor color);
+
   // Changes the icon of the tray-view to the specified resource.
+  // TODO(tdanderson): This is only used for non-material design, so remove it
+  // when material design is the default. See crbug.com/625692.
   void SetImageFromResourceId(int resource_id);
 
  private:
   // Set the alignment of the image depending on the shelf alignment.
   void SetItemAlignment(ShelfAlignment alignment);
 
+  // Sets the current icon on |tray_view_|'s ImageView.
+  void UpdateImageOnImageView();
+
+  // The resource ID for the non-material design icon in the tray.
+  // TODO(tdanderson): This is only used for non-material design, so remove it
+  // when material design is the default. See crbug.com/625692.
   int resource_id_;
+
+  // The color of the material design icon in the tray.
+  SkColor icon_color_;
+
   TrayItemView* tray_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayImageItem);

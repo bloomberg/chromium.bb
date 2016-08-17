@@ -91,7 +91,7 @@ bool TestSystemTrayDelegate::IsUserSupervised() const {
 
 void TestSystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {
   DCHECK(info);
-  info->severity = UpdateInfo::UPDATE_NORMAL;
+  info->severity = UpdateInfo::UPDATE_NONE;
   info->update_required = g_system_update_required;
   info->factory_reset_required = false;
 }

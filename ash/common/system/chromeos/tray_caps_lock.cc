@@ -48,8 +48,8 @@ class CapsLockDefaultView : public ActionableView {
     FixedSizedImageView* image =
         new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-      image->SetImage(CreateVectorIcon(gfx::VectorIconId::SYSTEM_MENU_CAPS_LOCK,
-                                       kMenuIconSize, kMenuIconColor));
+      image->SetImage(gfx::CreateVectorIcon(
+          gfx::VectorIconId::SYSTEM_MENU_CAPS_LOCK, kMenuIconColor));
     } else {
       ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
       image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK)

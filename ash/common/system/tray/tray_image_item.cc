@@ -59,6 +59,7 @@ TrayImageItem::TrayImageItem(SystemTray* system_tray,
                              UmaType uma_type)
     : SystemTrayItem(system_tray, uma_type),
       resource_id_(resource_id),
+      icon_color_(kTrayIconColor),
       tray_view_(nullptr) {}
 
 TrayImageItem::~TrayImageItem() {}
@@ -71,16 +72,7 @@ views::View* TrayImageItem::CreateTrayView(LoginStatus status) {
   CHECK(!tray_view_);
   tray_view_ = new TrayItemView(this);
   tray_view_->CreateImageView();
-
-  if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-    tray_view_->image_view()->SetImage(CreateVectorIcon(
-        ResourceIdToVectorIconId(resource_id_), kTrayIconSize, kTrayIconColor));
-  } else {
-    tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
-                                           .GetImageNamed(resource_id_)
-                                           .ToImageSkia());
-  }
-
+  UpdateImageOnImageView();
   tray_view_->SetVisible(GetInitialVisibility());
   SetItemAlignment(system_tray()->shelf_alignment());
   return tray_view_;
@@ -109,15 +101,14 @@ void TrayImageItem::DestroyDefaultView() {}
 
 void TrayImageItem::DestroyDetailedView() {}
 
-// TODO(tdanderson): Consider moving or renaming this function, as it is only
-// used by TrayUpdate to modify the update severity. See crbug.com/625692.
+void TrayImageItem::SetIconColor(SkColor color) {
+  icon_color_ = color;
+  UpdateImageOnImageView();
+}
+
 void TrayImageItem::SetImageFromResourceId(int resource_id) {
   resource_id_ = resource_id;
-  if (!tray_view_)
-    return;
-  tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
-                                         .GetImageNamed(resource_id_)
-                                         .ToImageSkia());
+  UpdateImageOnImageView();
 }
 
 void TrayImageItem::SetItemAlignment(ShelfAlignment alignment) {
@@ -127,6 +118,20 @@ void TrayImageItem::SetItemAlignment(ShelfAlignment alignment) {
                                              : views::BoxLayout::kVertical;
   tray_view_->SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
   tray_view_->Layout();
+}
+
+void TrayImageItem::UpdateImageOnImageView() {
+  if (!tray_view_)
+    return;
+
+  if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+    tray_view_->image_view()->SetImage(gfx::CreateVectorIcon(
+        ResourceIdToVectorIconId(resource_id_), kTrayIconSize, icon_color_));
+  } else {
+    tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
+                                           .GetImageNamed(resource_id_)
+                                           .ToImageSkia());
+  }
 }
 
 }  // namespace ash

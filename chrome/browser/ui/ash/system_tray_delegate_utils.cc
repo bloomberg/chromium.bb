@@ -13,18 +13,22 @@ void GetUpdateInfo(const UpgradeDetector* detector, ash::UpdateInfo* info) {
   DCHECK(info);
   switch (detector->upgrade_notification_stage()) {
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
+      info->severity = ash::UpdateInfo::UPDATE_CRITICAL;
+      break;
     case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-      info->severity = ash::UpdateInfo::UPDATE_SEVERE_RED;
+      info->severity = ash::UpdateInfo::UPDATE_SEVERE;
       break;
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-      info->severity = ash::UpdateInfo::UPDATE_HIGH_ORANGE;
+      info->severity = ash::UpdateInfo::UPDATE_HIGH;
       break;
     case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
-      info->severity = ash::UpdateInfo::UPDATE_LOW_GREEN;
+      info->severity = ash::UpdateInfo::UPDATE_ELEVATED;
       break;
     case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
+      info->severity = ash::UpdateInfo::UPDATE_LOW;
+      break;
     case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
-      info->severity = ash::UpdateInfo::UPDATE_NORMAL;
+      info->severity = ash::UpdateInfo::UPDATE_NONE;
       break;
   }
   info->update_required = detector->notify_upgrade();

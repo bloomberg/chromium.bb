@@ -68,10 +68,12 @@ using BluetoothDeviceList = std::vector<BluetoothDeviceInfo>;
 
 struct ASH_EXPORT UpdateInfo {
   enum UpdateSeverity {
-    UPDATE_NORMAL,
-    UPDATE_LOW_GREEN,
-    UPDATE_HIGH_ORANGE,
-    UPDATE_SEVERE_RED,
+    UPDATE_NONE,
+    UPDATE_LOW,
+    UPDATE_ELEVATED,
+    UPDATE_HIGH,
+    UPDATE_SEVERE,
+    UPDATE_CRITICAL,
   };
 
   UpdateInfo();
