@@ -932,7 +932,7 @@ void MicrodumpInfo::Initialize(const std::string& process_type,
         &GenerateMinidumpOnDemandForAndroid);
   } else if (!process_type.empty()) {
     g_signal_code_pipe_fd =
-        GetCrashReporterClient()->GetAndroidMinidumpDescriptor();
+        GetCrashReporterClient()->GetAndroidCrashSignalFD();
     if (g_signal_code_pipe_fd != -1)
       g_microdump->set_crash_handler(WriteSignalCodeToPipe);
   }

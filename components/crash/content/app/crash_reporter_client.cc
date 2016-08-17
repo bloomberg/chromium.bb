@@ -133,6 +133,10 @@ int CrashReporterClient::GetAndroidMinidumpDescriptor() {
   return 0;
 }
 
+int CrashReporterClient::GetAndroidCrashSignalFD() {
+  return -1;
+}
+
 bool CrashReporterClient::ShouldEnableBreakpadMicrodumps() {
 // Always enable microdumps on Android when stripping unwind tables. Rationale:
 // when unwind tables are stripped out (to save binary size) the stack traces

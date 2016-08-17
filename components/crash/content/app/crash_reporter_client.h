@@ -148,6 +148,10 @@ class CrashReporterClient {
   // Returns the descriptor key of the android minidump global descriptor.
   virtual int GetAndroidMinidumpDescriptor();
 
+  // Returns the file descriptor of the pipe used to inform apps of
+  // webview renderer crashes.
+  virtual int GetAndroidCrashSignalFD();
+
   // Returns true if breakpad microdumps should be enabled. This orthogonal to
   // the standard minidump uploader (which depends on the user consent).
   virtual bool ShouldEnableBreakpadMicrodumps();

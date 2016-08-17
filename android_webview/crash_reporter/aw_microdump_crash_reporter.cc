@@ -22,10 +22,10 @@ namespace {
 
 class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
  public:
-  AwCrashReporterClient() : dump_fd_(-1) {}
+  AwCrashReporterClient() : dump_fd_(-1), crash_signal_fd_(-1) {}
 
   // Does not use lock, can only be called immediately after creation.
-  void set_crash_signal_fd(int fd) { dump_fd_ = fd; }
+  void set_crash_signal_fd(int fd) { crash_signal_fd_ = fd; }
 
   // crash_reporter::CrashReporterClient implementation.
   bool IsRunningUnattended() override { return false; }
@@ -42,6 +42,7 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   bool ShouldEnableBreakpadMicrodumps() override { return true; }
 
   int GetAndroidMinidumpDescriptor() override { return dump_fd_; }
+  int GetAndroidCrashSignalFD() override { return crash_signal_fd_; }
 
   bool DumpWithoutCrashingToFd(int fd) {
     DCHECK(dump_fd_ == -1);
@@ -54,6 +55,7 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
 
  private:
   int dump_fd_;
+  int crash_signal_fd_;
   base::Lock dump_lock_;
   DISALLOW_COPY_AND_ASSIGN(AwCrashReporterClient);
 };
