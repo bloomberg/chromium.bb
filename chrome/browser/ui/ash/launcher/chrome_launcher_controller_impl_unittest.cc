@@ -1827,8 +1827,13 @@ TEST_F(ChromeLauncherControllerImplTest, ArcRunningApp) {
   EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
 
   // Normal flow, create/destroy tasks.
+  std::string window_app_id1("org.chromium.arc.1");
+  std::string window_app_id2("org.chromium.arc.2");
+  std::string window_app_id3("org.chromium.arc.3");
+  CreateArcWindow(window_app_id1);
   arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0]);
   EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  CreateArcWindow(window_app_id2);
   arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[0]);
   EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
   arc_test_.app_instance()->SendTaskDestroyed(1);
@@ -1837,6 +1842,7 @@ TEST_F(ChromeLauncherControllerImplTest, ArcRunningApp) {
   EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
 
   // Stopping bridge removes apps.
+  CreateArcWindow(window_app_id3);
   arc_test_.app_instance()->SendTaskCreated(3, arc_test_.fake_apps()[0]);
   EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
   arc_test_.StopArcInstance();

@@ -85,8 +85,10 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
 
  private:
   class AppWindow;
+  struct TaskInfo;
 
   using TaskIdToAppWindow = std::map<int, std::unique_ptr<AppWindow>>;
+  using TaskIdToTaskInfoMap = std::map<int, std::unique_ptr<TaskInfo>>;
   using AppControllerMap =
       std::map<std::string, ArcAppWindowLauncherItemController*>;
 
@@ -98,7 +100,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
 
   AppWindow* GetAppWindowForTask(int task_id);
 
-  void CheckForAppWindowWidget(aura::Window* window);
+  void MayAttachContollerToWindow(aura::Window* window);
 
   void SetOrientationLockForAppWindow(AppWindow* app_window);
 
@@ -110,6 +112,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   ash::ShelfDelegate* shelf_delegate_;
   int active_task_id_ = -1;
   TaskIdToAppWindow task_id_to_app_window_;
+  TaskIdToTaskInfoMap task_id_to_task_info_;
   AppControllerMap app_controller_map_;
   std::vector<aura::Window*> observed_windows_;
   Profile* observed_profile_ = nullptr;

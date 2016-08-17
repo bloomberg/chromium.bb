@@ -247,6 +247,15 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   DISALLOW_COPY_AND_ASSIGN(AppWindow);
 };
 
+struct ArcAppWindowLauncherController::TaskInfo {
+  TaskInfo(const std::string& package_name, const std::string& activity_name)
+      : package_name(package_name), activity_name(activity_name) {}
+  ~TaskInfo() {}
+
+  std::string package_name;
+  std::string activity_name;
+};
+
 ArcAppWindowLauncherController::ArcAppWindowLauncherController(
     ChromeLauncherController* owner,
     ash::ShelfDelegate* shelf_delegate)
@@ -312,7 +321,7 @@ void ArcAppWindowLauncherController::OnWindowVisibilityChanging(
     bool visible) {
   // The application id property should be set at this time.
   if (visible)
-    CheckForAppWindowWidget(window);
+    MayAttachContollerToWindow(window);
 }
 
 void ArcAppWindowLauncherController::OnWindowDestroying(aura::Window* window) {
@@ -336,39 +345,58 @@ ArcAppWindowLauncherController::GetAppWindowForTask(int task_id) {
   return it->second.get();
 }
 
-void ArcAppWindowLauncherController::CheckForAppWindowWidget(
+void ArcAppWindowLauncherController::MayAttachContollerToWindow(
     aura::Window* window) {
-  const std::string app_id = exo::ShellSurface::GetApplicationId(window);
-  if (app_id.empty())
+  const std::string window_app_id = exo::ShellSurface::GetApplicationId(window);
+  if (window_app_id.empty())
     return;
 
   int task_id = -1;
-  if (sscanf(app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
+  if (sscanf(window_app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
     return;
 
-  if (task_id) {
-    // We need to add the observer after exo started observing shell
-    // because we want to update the orientation after exo send
-    // the layout switch information.
-    if (!observing_shell_) {
-      observing_shell_ = true;
-      ash::WmShell::Get()->AddShellObserver(this);
-    }
+  if (!task_id)
+    return;
 
-    AppWindow* app_window = GetAppWindowForTask(task_id);
-    if (app_window) {
-      app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
-      ash::SetShelfIDForWindow(app_window->shelf_id(), window);
-      chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(
-          window,
-          user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
-      if (ash::WmShell::Get()
-              ->maximize_mode_controller()
-              ->IsMaximizeModeWindowManagerEnabled()) {
-        SetOrientationLockForAppWindow(app_window);
-      }
-    }
+  // We need to add the observer after exo started observing shell
+  // because we want to update the orientation after exo send
+  // the layout switch information.
+  if (!observing_shell_) {
+    observing_shell_ = true;
+    ash::WmShell::Get()->AddShellObserver(this);
   }
+
+  // Check if we have controller for this task.
+  if (GetAppWindowForTask(task_id))
+    return;
+
+  // Create controller if we have task info.
+  TaskIdToTaskInfoMap::iterator it = task_id_to_task_info_.find(task_id);
+  if (it == task_id_to_task_info_.end())
+    return;
+
+  const TaskInfo& task_info = *it->second;
+  const std::string app_id =
+      GetShelfAppIdFromArcAppId(ArcAppListPrefs::GetAppId(
+          task_info.package_name, task_info.activity_name));
+
+  std::unique_ptr<AppWindow> app_window(new AppWindow(task_id, app_id, this));
+  app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
+  RegisterApp(app_window.get());
+  DCHECK(app_window->controller());
+  ash::SetShelfIDForWindow(app_window->shelf_id(), window);
+  chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(
+      window,
+      user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
+  if (ash::WmShell::Get()
+          ->maximize_mode_controller()
+          ->IsMaximizeModeWindowManagerEnabled()) {
+    SetOrientationLockForAppWindow(app_window.get());
+  }
+  task_id_to_app_window_[task_id] = std::move(app_window);
+
+  // TaskInfo is no longer needed. Discard it.
+  task_id_to_task_info_.erase(task_id);
 }
 
 void ArcAppWindowLauncherController::OnAppReadyChanged(
@@ -404,20 +432,17 @@ void ArcAppWindowLauncherController::OnTaskCreated(
     const std::string& package_name,
     const std::string& activity_name) {
   DCHECK(!GetAppWindowForTask(task_id));
-
-  const std::string app_id = GetShelfAppIdFromArcAppId(
-      ArcAppListPrefs::GetAppId(package_name, activity_name));
-
-  std::unique_ptr<AppWindow> app_window(new AppWindow(task_id, app_id, this));
-  RegisterApp(app_window.get());
-
-  task_id_to_app_window_[task_id] = std::move(app_window);
+  std::unique_ptr<TaskInfo> task_info(
+      new TaskInfo(package_name, activity_name));
+  task_id_to_task_info_[task_id] = std::move(task_info);
 
   for (auto* window : observed_windows_)
-    CheckForAppWindowWidget(window);
+    MayAttachContollerToWindow(window);
 }
 
 void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
+  task_id_to_task_info_.erase(task_id);
+
   TaskIdToAppWindow::iterator it = task_id_to_app_window_.find(task_id);
   if (it == task_id_to_app_window_.end())
     return;

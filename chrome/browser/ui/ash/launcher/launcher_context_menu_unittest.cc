@@ -21,8 +21,10 @@
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/exo/shell_surface.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/views/widget/widget.h"
 
 class LauncherContextMenuTest : public ash::test::AshTestBase {
  protected:
@@ -63,6 +65,18 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
   LauncherContextMenu* CreateLauncherContextMenuForDesktopShell() {
     ash::ShelfItem* item = nullptr;
     return LauncherContextMenu::Create(controller_.get(), item, GetWmShelf());
+  }
+
+  // Creates app window and set optional Arc application id.
+  views::Widget* CreateArcWindow(std::string& window_app_id) {
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+    views::Widget* widget = new views::Widget();
+    widget->Init(params);
+    widget->Show();
+    widget->Activate();
+    exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
+                                        &window_app_id);
+    return widget;
   }
 
   ArcAppTest& arc_test() { return arc_test_; }
@@ -195,6 +209,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
       menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CHANGE_WALLPAPER));
 
   // Arc app is running.
+  std::string window_app_id1("org.chromium.arc.1");
+  CreateArcWindow(window_app_id1);
   arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0]);
   menu.reset(new ArcLauncherContextMenu(controller(), &item, wm_shelf));
 
@@ -207,6 +223,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
 
   // Arc non-launchable app is running.
   const std::string app_id2 = ArcAppTest::GetAppId(arc_test().fake_apps()[1]);
+  std::string window_app_id2("org.chromium.arc.2");
+  CreateArcWindow(window_app_id2);
   arc_test().app_instance()->SendTaskCreated(2, arc_test().fake_apps()[1]);
   item.id = controller()->GetShelfIDForAppID(app_id2);
   ASSERT_TRUE(item.id);
