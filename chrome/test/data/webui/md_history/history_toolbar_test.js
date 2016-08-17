@@ -66,8 +66,12 @@ cr.define('md_history.history_toolbar_test', function() {
         assertFalse(field.showingSearch, 'Pressing escape closes field.');
         assertNotEquals(field.$.searchInput, field.root.activeElement);
 
+        var modifier = 'ctrl';
+        if (cr.isMac)
+          modifier = 'meta';
+
         MockInteractions.pressAndReleaseKeyOn(
-            document.body, 70, 'ctrl', 'f');
+            document.body, 70, modifier, 'f');
         assertTrue(field.showingSearch);
         assertEquals(field.$.searchInput, field.root.activeElement);
       });

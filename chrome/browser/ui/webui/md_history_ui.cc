@@ -113,14 +113,26 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
       signin_manager->IsAuthenticated();
   source->AddBoolean("isUserSignedIn", is_authenticated);
 
+  source->AddResourcePath("constants.html", IDR_MD_HISTORY_CONSTANTS_HTML);
+  source->AddResourcePath("constants.js", IDR_MD_HISTORY_CONSTANTS_JS);
+  source->AddResourcePath("images/100/sign_in_promo.png",
+                          IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_PNG);
+  source->AddResourcePath("images/200/sign_in_promo.png",
+                          IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_PNG);
+  source->AddResourcePath("history.js", IDR_MD_HISTORY_HISTORY_JS);
+
+#if BUILDFLAG(USE_VULCANIZE)
+  source->AddResourcePath("app.html",
+                          IDR_MD_HISTORY_APP_VULCANIZED_HTML);
+  source->AddResourcePath("app.crisper.js",
+                          IDR_MD_HISTORY_APP_CRISPER_JS);
+#else
   source->AddResourcePath("app.html", IDR_MD_HISTORY_APP_HTML);
   source->AddResourcePath("app.js", IDR_MD_HISTORY_APP_JS);
   source->AddResourcePath("browser_service.html",
                           IDR_MD_HISTORY_BROWSER_SERVICE_HTML);
   source->AddResourcePath("browser_service.js",
                           IDR_MD_HISTORY_BROWSER_SERVICE_JS);
-  source->AddResourcePath("constants.html", IDR_MD_HISTORY_CONSTANTS_HTML);
-  source->AddResourcePath("constants.js", IDR_MD_HISTORY_CONSTANTS_JS);
   source->AddResourcePath("grouped_list.html",
                           IDR_MD_HISTORY_GROUPED_LIST_HTML);
   source->AddResourcePath("grouped_list.js", IDR_MD_HISTORY_GROUPED_LIST_JS);
@@ -138,12 +150,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                           IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML);
   source->AddResourcePath("history_toolbar.js",
                           IDR_MD_HISTORY_HISTORY_TOOLBAR_JS);
-  source->AddResourcePath("history.js", IDR_MD_HISTORY_HISTORY_JS);
   source->AddResourcePath("icons.html", IDR_MD_HISTORY_ICONS_HTML);
-  source->AddResourcePath("images/100/sign_in_promo.png",
-                          IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_PNG);
-  source->AddResourcePath("images/200/sign_in_promo.png",
-                          IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_PNG);
   source->AddResourcePath("lazy_render.html",
                           IDR_MD_HISTORY_LAZY_RENDER_HTML);
   source->AddResourcePath("lazy_render.js",
@@ -168,6 +175,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                           IDR_MD_HISTORY_SYNCED_DEVICE_MANAGER_HTML);
   source->AddResourcePath("synced_device_manager.js",
                           IDR_MD_HISTORY_SYNCED_DEVICE_MANAGER_JS);
+#endif  // BUILDFLAG(USE_VULCANIZE)
 
   source->SetDefaultResource(IDR_MD_HISTORY_HISTORY_HTML);
   source->SetJsonPath("strings.js");

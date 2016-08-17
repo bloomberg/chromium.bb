@@ -272,7 +272,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSelectedPage_(selectedPage, items) {
+  getSelectedPage_: function(selectedPage, items) {
     return selectedPage;
   },
 

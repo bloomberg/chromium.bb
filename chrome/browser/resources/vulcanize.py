@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,14 +8,11 @@ import subprocess
 import sys
 import tempfile
 
+# See //docs/vulcanize.md for instructions on installing prerequistes and
+# running the vulcanize build.
 
 _HERE_PATH = os.path.join(os.path.dirname(__file__))
-
-_HTML_IN_PATH = os.path.join(_HERE_PATH, 'downloads.html')
-_HTML_OUT_PATH = os.path.join(_HERE_PATH, 'vulcanized.html')
-_JS_OUT_PATH = os.path.join(_HERE_PATH, 'crisper.js')
-
-_SRC_PATH = os.path.normpath(os.path.join(_HERE_PATH, '..', '..', '..', '..'))
+_SRC_PATH = os.path.normpath(os.path.join(_HERE_PATH, '..', '..', '..'))
 
 _RESOURCES_PATH = os.path.join(_SRC_PATH, 'ui', 'webui', 'resources')
 
@@ -23,11 +20,10 @@ _CR_ELEMENTS_PATH = os.path.join(_RESOURCES_PATH, 'cr_elements')
 _CSS_RESOURCES_PATH = os.path.join(_RESOURCES_PATH, 'css')
 _HTML_RESOURCES_PATH = os.path.join(_RESOURCES_PATH, 'html')
 _JS_RESOURCES_PATH = os.path.join(_RESOURCES_PATH, 'js')
-
 _POLYMER_PATH = os.path.join(
     _SRC_PATH, 'third_party', 'polymer', 'v1_0', 'components-chromium')
 
-_VULCANIZE_ARGS = [
+_VULCANIZE_BASE_ARGS = [
   '--exclude', 'crisper.js',
 
   # These files are already combined and minified.
@@ -43,7 +39,6 @@ _VULCANIZE_ARGS = [
   '--inline-css',
   '--inline-scripts',
 
-  '--redirect', 'chrome://downloads/|%s' % _HERE_PATH,
   '--redirect', 'chrome://resources/cr_elements/|%s' % _CR_ELEMENTS_PATH,
   '--redirect', 'chrome://resources/css/|%s' % _CSS_RESOURCES_PATH,
   '--redirect', 'chrome://resources/html/|%s' % _HTML_RESOURCES_PATH,
@@ -53,7 +48,9 @@ _VULCANIZE_ARGS = [
   '--strip-comments',
 ]
 
-def main():
+
+def _vulcanize(directory, host, html_in_file, html_out_file='vulcanized.html',
+               js_out_file='crisper.js', extra_args=None):
   def _run_cmd(cmd_parts, stdout=None):
     cmd = "'" + "' '".join(cmd_parts) + "'"
     process = subprocess.Popen(
@@ -66,19 +63,42 @@ def main():
 
     return stdout
 
-  output = _run_cmd(['vulcanize'] + _VULCANIZE_ARGS + [_HTML_IN_PATH])
+  print 'Vulcanizing %s' % directory
+
+  target_path = os.path.join(_HERE_PATH, directory)
+  html_in_path = os.path.join(target_path, html_in_file)
+  html_out_path = os.path.join(target_path, html_out_file)
+  js_out_path = os.path.join(target_path, js_out_file)
+  extra_args = extra_args or []
+
+  output = _run_cmd(['vulcanize'] + _VULCANIZE_BASE_ARGS + extra_args +
+                    ['--redirect', 'chrome://%s/|%s' % (host, target_path),
+                     html_in_path])
 
   with tempfile.NamedTemporaryFile(mode='wt+', delete=False) as tmp:
+    # Grit includes are not supported, use HTML imports instead.
     tmp.write(output.replace(
-        '<include src="', '<include src="../../../../ui/webui/resources/js/'))
+        '<include src="', '<include src-disabled="'))
 
   try:
     _run_cmd(['crisper', '--source', tmp.name,
                          '--script-in-head', 'false',
-                         '--html', _HTML_OUT_PATH,
-                         '--js', _JS_OUT_PATH])
+                         '--html', html_out_path,
+                         '--js', js_out_path])
   finally:
     os.remove(tmp.name)
+
+
+def main():
+  _vulcanize(directory='md_downloads', host='downloads',
+             html_in_file='downloads.html')
+
+  # Already loaded by history.html:
+  history_extra_args = ['--exclude', 'chrome://resources/html/util.html',
+                        '--exclude', 'chrome://history/constants.html']
+  _vulcanize(directory='md_history', host='history', html_in_file='app.html',
+             html_out_file='app.vulcanized.html', js_out_file='app.crisper.js',
+             extra_args=history_extra_args)
 
 
 if __name__ == '__main__':

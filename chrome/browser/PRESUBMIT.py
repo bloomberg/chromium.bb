@@ -57,6 +57,8 @@ def _CommonChecks(input_api, output_api):
 
     BLACKLIST = ['chrome/browser/resources/md_downloads/crisper.js',
                  'chrome/browser/resources/md_downloads/vulcanized.html',
+                 'chrome/browser/resources/md_history/app.crisper.js',
+                 'chrome/browser/resources/md_history/app.vulcanized.html',
                  'chrome/browser/resources/pdf/index.html',
                  'chrome/browser/resources/pdf/index.js']
     def is_resource(maybe_resource):

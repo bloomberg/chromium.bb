@@ -1150,7 +1150,7 @@ cr.define('cr.ui', function() {
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// <include src="../../../../ui/webui/resources/js/assert.js">
+// <include src-disabled="assert.js">
 
 /**
  * Alias for document.getElementById. Found elements must be HTMLElements.

@@ -1,8 +1,8 @@
-# Vulcanizing Material Design downloads
+# Vulcanizing Chrome Polymer UIs
 
 `vulcanize` is an npm module used to combine resources.  In order to make the
-Material Design downloads page sufficiently fast, we run vulcanize on the source
-files to combine them and reduce blocking load/parse time.
+Material Design downloads and history pages sufficiently fast, we run vulcanize
+on the source files to combine them and reduce blocking load/parse time.
 
 ## Required software
 
@@ -24,7 +24,7 @@ We recommend telling npm where to store downloaded modules:
 $ npm config set -g prefix "$HOME/node_modules"
 ```
 
-Then install `crisper` and `vulcanize` like this:
+Then install the required modules:
 
 ```bash
 $ npm install -g crisper vulcanize
@@ -35,11 +35,11 @@ Ultimately, all that is required to run this script is that `crisper` and
 
 ## Combining resources with vulcanize
 
-To combine all the CSS/HTML/JS for the downloads page to make it production
-fast, you can run the commands:
+To combine all the CSS/HTML/JS for all pages which use vulcanize, making them
+production fast, you can run the command:
 
 ```bash
-$ chrome/browser/resources/md_downloads/vulcanize.py  # from src/
+$ chrome/browser/resources/vulcanize.py  # from src/
 ```
 
 This should overwrite the following files:
@@ -47,8 +47,10 @@ This should overwrite the following files:
 - chrome/browser/resources/md_downloads/
  - vulcanized.html (all <link rel=import> and stylesheets inlined)
  - crisper.js (all JavaScript, extracted from vulcanized.html)
+- chrome/browser/resources/md_history/
+ - app.vulcanized.html
+ - app.crisper.js
 
 ## Testing downloads without vulcanizing
 
-Build with "use_vulcanize=0" in your GYP_DEFINES to build downloads without
-vulcanizing.
+Build with `use_vulcanize = false` in your gn args to build without vulcanizing.

@@ -136,7 +136,8 @@ class UnusedElementsDetector(object):
             continue
 
           # Skip generated files that may include the element source.
-          if filename in ('crisper.js', 'vulcanized.html'):
+          if filename in ('crisper.js', 'vulcanized.html',
+                          'app.crisper.js', 'app.vulcanized.html'):
             continue
 
           with open(os.path.join(dirpath, filename)) as f:
