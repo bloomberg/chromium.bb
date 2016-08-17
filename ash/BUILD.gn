@@ -26,6 +26,7 @@ component("ash") {
     "//ash/resources",
   ]
   deps = [
+    "//ash/autoclick/common:autoclick",
     "//ash/touch_hud",
     "//base",
     "//base:i18n",
@@ -348,6 +349,7 @@ test("ash_unittests") {
     ":ash_with_content",
     ":test_support",
     ":test_support_with_content",
+    "//ash/autoclick/common:autoclick",
     "//ash/common/strings",
     "//ash/resources",
     "//ash/touch_hud",

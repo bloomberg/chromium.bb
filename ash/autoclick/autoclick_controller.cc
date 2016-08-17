@@ -5,36 +5,22 @@
 #include "ash/autoclick/autoclick_controller.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/autoclick/common/autoclick_controller_common.h"
+#include "ash/autoclick/common/autoclick_controller_common_delegate.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/shell.h"
 #include "base/timer/timer.h"
-#include "ui/aura/env.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/vector2d.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
-
-namespace {
-
-// The threshold of mouse movement measured in DIP that will
-// initiate a new autoclick.
-const int kMovementThreshold = 20;
-
-bool IsModifierKey(ui::KeyboardCode key_code) {
-  return key_code == ui::VKEY_SHIFT || key_code == ui::VKEY_LSHIFT ||
-         key_code == ui::VKEY_CONTROL || key_code == ui::VKEY_LCONTROL ||
-         key_code == ui::VKEY_RCONTROL || key_code == ui::VKEY_MENU ||
-         key_code == ui::VKEY_LMENU || key_code == ui::VKEY_RMENU;
-}
-
-}  // namespace
 
 // static.
 base::TimeDelta AutoclickController::GetDefaultAutoclickDelay() {
@@ -44,18 +30,20 @@ base::TimeDelta AutoclickController::GetDefaultAutoclickDelay() {
 const int AutoclickController::kDefaultAutoclickDelayMs = 1000;
 
 class AutoclickControllerImpl : public AutoclickController,
-                                public ui::EventHandler {
+                                public ui::EventHandler,
+                                public AutoclickControllerCommonDelegate,
+                                public aura::WindowObserver {
  public:
   AutoclickControllerImpl();
   ~AutoclickControllerImpl() override;
 
  private:
+  void SetTapDownTarget(aura::Window* target);
+
   // AutoclickController overrides:
-  void SetDelegate(std::unique_ptr<Delegate> delegate) override;
   void SetEnabled(bool enabled) override;
   bool IsEnabled() const override;
   void SetAutoclickDelay(base::TimeDelta delay) override;
-  base::TimeDelta GetAutoclickDelay() const override;
 
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -64,40 +52,46 @@ class AutoclickControllerImpl : public AutoclickController,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
-  void StartRingDisplay();
-  void StopRingDisplay();
-  void ChangeRingDisplayCenter();
+  // AutoclickControllerCommonDelegate overrides:
+  std::unique_ptr<views::Widget> CreateAutoclickRingWidget(
+      const gfx::Point& event_location) override;
+  void UpdateAutoclickRingWidget(views::Widget* widget,
+                                 const gfx::Point& event_location) override;
+  void DoAutoclick(const gfx::Point& event_location,
+                   const int mouse_event_flags) override;
+  void OnAutoclickCanceled() override;
 
-  void InitClickTimer();
-
-  void DoAutoclick();
+  // aura::WindowObserver overrides:
+  void OnWindowDestroying(aura::Window* window) override;
 
   bool enabled_;
-  base::TimeDelta delay_;
-  int mouse_event_flags_;
-  std::unique_ptr<base::Timer> autoclick_timer_;
-  std::unique_ptr<Delegate> delegate_;
-  // The position in screen coordinates used to determine
-  // the distance the mouse has moved.
-  gfx::Point anchor_location_;
-  gfx::Point current_mouse_location_;
+  // The target window is observed by AutoclickControllerImpl for the duration
+  // of a autoclick gesture.
+  aura::Window* tap_down_target_;
+  std::unique_ptr<AutoclickControllerCommon> autoclick_controller_common_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickControllerImpl);
 };
 
 AutoclickControllerImpl::AutoclickControllerImpl()
     : enabled_(false),
-      delay_(GetDefaultAutoclickDelay()),
-      mouse_event_flags_(ui::EF_NONE),
-      delegate_(nullptr),
-      anchor_location_(-kMovementThreshold, -kMovementThreshold) {
-  InitClickTimer();
+      tap_down_target_(nullptr),
+      autoclick_controller_common_(
+          new AutoclickControllerCommon(GetDefaultAutoclickDelay(), this)) {}
+
+AutoclickControllerImpl::~AutoclickControllerImpl() {
+  SetTapDownTarget(nullptr);
 }
 
-AutoclickControllerImpl::~AutoclickControllerImpl() {}
+void AutoclickControllerImpl::SetTapDownTarget(aura::Window* target) {
+  if (tap_down_target_ == target)
+    return;
 
-void AutoclickControllerImpl::SetDelegate(std::unique_ptr<Delegate> delegate) {
-  delegate_ = std::move(delegate);
+  if (tap_down_target_)
+    tap_down_target_->RemoveObserver(this);
+  tap_down_target_ = target;
+  if (tap_down_target_)
+    tap_down_target_->AddObserver(this);
 }
 
 void AutoclickControllerImpl::SetEnabled(bool enabled) {
@@ -107,7 +101,7 @@ void AutoclickControllerImpl::SetEnabled(bool enabled) {
 
   if (enabled_) {
     Shell::GetInstance()->AddPreTargetHandler(this);
-    autoclick_timer_->Stop();
+    autoclick_controller_common_->CancelAutoclick();
   } else {
     Shell::GetInstance()->RemovePreTargetHandler(this);
   }
@@ -118,118 +112,83 @@ bool AutoclickControllerImpl::IsEnabled() const {
 }
 
 void AutoclickControllerImpl::SetAutoclickDelay(base::TimeDelta delay) {
-  delay_ = delay;
-  InitClickTimer();
-}
-
-base::TimeDelta AutoclickControllerImpl::GetAutoclickDelay() const {
-  return delay_;
-}
-
-void AutoclickControllerImpl::StartRingDisplay() {
-  if (delegate_)
-    delegate_->StartGesture(delay_, anchor_location_);
-}
-
-void AutoclickControllerImpl::StopRingDisplay() {
-  if (delegate_)
-    delegate_->StopGesture();
-}
-
-void AutoclickControllerImpl::ChangeRingDisplayCenter() {
-  if (delegate_)
-    delegate_->SetGestureCenter(current_mouse_location_);
-}
-
-void AutoclickControllerImpl::InitClickTimer() {
-  autoclick_timer_.reset(new base::Timer(
-      FROM_HERE, delay_,
-      base::Bind(&AutoclickControllerImpl::DoAutoclick, base::Unretained(this)),
-      false));
+  autoclick_controller_common_->SetAutoclickDelay(delay);
 }
 
 void AutoclickControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_MOVED &&
-      !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
-    mouse_event_flags_ = event->flags();
-
-    gfx::Point mouse_location = event->location();
-    ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
-                               &mouse_location);
-
-    // The distance between the mouse location and the anchor location
-    // must exceed a certain threshold to initiate a new autoclick countdown.
-    // This ensures that mouse jitter caused by poor motor control does not
-    // 1. initiate an unwanted autoclick from rest
-    // 2. prevent the autoclick from ever occuring when the mouse
-    //    arrives at the target.
-    gfx::Vector2d delta = mouse_location - anchor_location_;
-    if (delta.LengthSquared() >= kMovementThreshold * kMovementThreshold) {
-      anchor_location_ = mouse_location;
-      autoclick_timer_->Reset();
-      StartRingDisplay();
-    } else if (autoclick_timer_->IsRunning()) {
-      current_mouse_location_ = mouse_location;
-      ChangeRingDisplayCenter();
-    }
-  } else if (event->type() == ui::ET_MOUSE_PRESSED) {
-    autoclick_timer_->Stop();
-    StopRingDisplay();
-  } else if (event->type() == ui::ET_MOUSEWHEEL &&
-             autoclick_timer_->IsRunning()) {
-    autoclick_timer_->Reset();
-    StartRingDisplay();
-  }
+  autoclick_controller_common_->HandleMouseEvent(*event);
 }
 
 void AutoclickControllerImpl::OnKeyEvent(ui::KeyEvent* event) {
-  int modifier_mask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
-                      ui::EF_IS_EXTENDED_KEY;
-  int new_modifiers = event->flags() & modifier_mask;
-  mouse_event_flags_ = (mouse_event_flags_ & ~modifier_mask) | new_modifiers;
-
-  if (!IsModifierKey(event->key_code())) {
-    autoclick_timer_->Stop();
-    StopRingDisplay();
-  }
+  autoclick_controller_common_->HandleKeyEvent(*event);
 }
 
 void AutoclickControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
-  autoclick_timer_->Stop();
-  StopRingDisplay();
+  autoclick_controller_common_->CancelAutoclick();
 }
 
 void AutoclickControllerImpl::OnGestureEvent(ui::GestureEvent* event) {
-  autoclick_timer_->Stop();
-  StopRingDisplay();
+  autoclick_controller_common_->CancelAutoclick();
 }
 
 void AutoclickControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
-  autoclick_timer_->Stop();
-  StopRingDisplay();
+  autoclick_controller_common_->CancelAutoclick();
 }
 
-void AutoclickControllerImpl::DoAutoclick() {
-  gfx::Point screen_location = aura::Env::GetInstance()->last_mouse_location();
+std::unique_ptr<views::Widget>
+AutoclickControllerImpl::CreateAutoclickRingWidget(
+    const gfx::Point& event_location) {
+  aura::Window* target =
+      WmWindowAura::GetAuraWindow(ash::wm::GetRootWindowAt(event_location));
+  SetTapDownTarget(target);
+  aura::Window* root_window = target->GetRootWindow();
+  std::unique_ptr<views::Widget> widget(new views::Widget);
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.accept_events = false;
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.context = root_window;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.parent =
+      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
+  widget->Init(params);
+  widget->SetOpacity(1.f);
+  return widget;
+}
+
+void AutoclickControllerImpl::UpdateAutoclickRingWidget(
+    views::Widget* widget,
+    const gfx::Point& event_location) {
+  aura::Window* target =
+      WmWindowAura::GetAuraWindow(ash::wm::GetRootWindowAt(event_location));
+  SetTapDownTarget(target);
+  aura::Window* root_window = target->GetRootWindow();
+  if (widget->GetNativeView()->GetRootWindow() != root_window) {
+    views::Widget::ReparentNativeView(
+        widget->GetNativeView(),
+        Shell::GetContainer(root_window, kShellWindowId_OverlayContainer));
+  }
+}
+
+void AutoclickControllerImpl::DoAutoclick(const gfx::Point& event_location,
+                                          const int mouse_event_flags) {
   aura::Window* root_window =
-      WmWindowAura::GetAuraWindow(wm::GetRootWindowAt(screen_location));
+      WmWindowAura::GetAuraWindow(wm::GetRootWindowAt(event_location));
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
-  gfx::Point click_location(screen_location);
-  anchor_location_ = click_location;
-
+  gfx::Point click_location(event_location);
   ::wm::ConvertPointFromScreen(root_window, &click_location);
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertPointToHost(&click_location);
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, click_location,
                              click_location, ui::EventTimeForNow(),
-                             mouse_event_flags_ | ui::EF_LEFT_MOUSE_BUTTON,
+                             mouse_event_flags | ui::EF_LEFT_MOUSE_BUTTON,
                              ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, click_location,
                                click_location, ui::EventTimeForNow(),
-                               mouse_event_flags_ | ui::EF_LEFT_MOUSE_BUTTON,
+                               mouse_event_flags | ui::EF_LEFT_MOUSE_BUTTON,
                                ui::EF_LEFT_MOUSE_BUTTON);
 
   ui::EventDispatchDetails details =
@@ -238,6 +197,15 @@ void AutoclickControllerImpl::DoAutoclick() {
     details = host->event_processor()->OnEventFromSource(&release_event);
   if (details.dispatcher_destroyed)
     return;
+}
+
+void AutoclickControllerImpl::OnAutoclickCanceled() {
+  SetTapDownTarget(nullptr);
+}
+
+void AutoclickControllerImpl::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(tap_down_target_, window);
+  autoclick_controller_common_->CancelAutoclick();
 }
 
 // static.
