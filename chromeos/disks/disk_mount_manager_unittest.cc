@@ -23,6 +23,9 @@ using testing::InSequence;
 
 namespace {
 
+const char kReadOnlyMountpath[] = "/device/read_only_mount_path";
+const char kReadOnlyDeviceSource[] = "/device/read_only_source_path";
+
 // Holds information needed to create a DiskMountManager::Disk instance.
 struct TestDiskInfo {
   const char* source_path;
@@ -74,6 +77,28 @@ const TestDiskInfo kTestDisks[] = {
     1073741824,  // size in bytes
     false,  // is parent
     false,  // is read only
+    true,   // has media
+    false,  // is on boot device
+    true,  // is on removable device
+    false  // is hidden
+  },
+  {
+    kReadOnlyDeviceSource,
+    kReadOnlyMountpath,
+    "/device/prefix/system_path_2",
+    "/device/file_path_2",
+    "/device/device_label_2",
+    "/device/drive_label_2",
+    "/device/vendor_id_2",
+    "/device/vendor_name_2",
+    "/device/product_id_2",
+    "/device/product_name_2",
+    "/device/fs_uuid_2",
+    "/device/prefix",
+    chromeos::DEVICE_TYPE_USB,
+    1073741824,  // size in bytes
+    false,  // is parent
+    true,  // is read only
     true,  // has media
     false,  // is on boot device
     true,  // is on removable device
@@ -92,6 +117,12 @@ const TestMountPointInfo kTestMountPoints[] = {
   {
     "/device/source_path",
     "/device/mount_path",
+    chromeos::MOUNT_TYPE_DEVICE,
+    chromeos::disks::MOUNT_CONDITION_NONE
+  },
+  {
+    kReadOnlyDeviceSource,
+    kReadOnlyMountpath,
     chromeos::MOUNT_TYPE_DEVICE,
     chromeos::disks::MOUNT_CONDITION_NONE
   },
@@ -214,6 +245,17 @@ TEST_F(DiskMountManagerTest, Format_NotMounted) {
                                        "/mount/non_existent"))
       .Times(1);
   DiskMountManager::GetInstance()->FormatMountedDevice("/mount/non_existent");
+}
+
+// Tests that the observer gets notified on attempt to format read-only mount
+// point.
+TEST_F(DiskMountManagerTest, Format_ReadOnly) {
+  EXPECT_CALL(observer_,
+              OnFormatEvent(DiskMountManager::FORMAT_COMPLETED,
+                            chromeos::FORMAT_ERROR_DEVICE_NOT_ALLOWED,
+                            kReadOnlyMountpath))
+      .Times(1);
+  DiskMountManager::GetInstance()->FormatMountedDevice(kReadOnlyMountpath);
 }
 
 // Tests that it is not possible to format archive mount point.

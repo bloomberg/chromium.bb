@@ -123,6 +123,12 @@ class DiskMountManagerImpl : public DiskMountManager {
       OnFormatCompleted(FORMAT_ERROR_UNKNOWN, device_path);
       return;
     }
+    if (disk->second->is_read_only()) {
+      LOG(ERROR) << "Mount point with path \"" << mount_path
+                 << "\" is read-only.";
+      OnFormatCompleted(FORMAT_ERROR_DEVICE_NOT_ALLOWED, mount_path);
+      return;
+    }
 
     UnmountPath(disk->second->mount_path(),
                 UNMOUNT_OPTIONS_NONE,
