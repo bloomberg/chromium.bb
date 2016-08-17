@@ -89,8 +89,8 @@ public:
     LayoutUnit logicalBottomVisualOverflow() const { return logicalOverflowRect().maxY(); }
 
     // charactersWithHyphen, if provided, must not be destroyed before the TextRun.
-    TextRun constructTextRun(const ComputedStyle&, const Font&, StringBuilder* charactersWithHyphen = nullptr) const;
-    TextRun constructTextRun(const ComputedStyle&, const Font&, StringView, int maximumLength, StringBuilder* charactersWithHyphen = nullptr) const;
+    TextRun constructTextRun(const ComputedStyle&, StringBuilder* charactersWithHyphen = nullptr) const;
+    TextRun constructTextRun(const ComputedStyle&, StringView, int maximumLength, StringBuilder* charactersWithHyphen = nullptr) const;
 
 #ifndef NDEBUG
     void showBox(int = 0) const override;
@@ -101,7 +101,7 @@ public:
     String text() const;
 
 public:
-    TextRun constructTextRunForInspector(const ComputedStyle&, const Font&) const;
+    TextRun constructTextRunForInspector(const ComputedStyle&) const;
     LayoutRect calculateBoundaries() const override { return LayoutRect(x(), y(), width(), height()); }
 
     virtual LayoutRect localSelectionRect(int startPos, int endPos) const;

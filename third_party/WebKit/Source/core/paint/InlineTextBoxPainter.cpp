@@ -111,7 +111,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     int maximumLength = m_inlineTextBox.getLineLayoutItem().textLength() - m_inlineTextBox.start();
 
     StringBuilder charactersWithHyphen;
-    TextRun textRun = m_inlineTextBox.constructTextRun(styleToUse, styleToUse.font(), string, maximumLength, m_inlineTextBox.hasHyphen() ? &charactersWithHyphen : 0);
+    TextRun textRun = m_inlineTextBox.constructTextRun(styleToUse, string, maximumLength, m_inlineTextBox.hasHyphen() ? &charactersWithHyphen : 0);
     if (m_inlineTextBox.hasHyphen())
         length = textRun.length();
 
@@ -289,7 +289,7 @@ void InlineTextBoxPainter::paintSingleCompositionBackgroundRun(GraphicsContext& 
     int deltaY = m_inlineTextBox.getLineLayoutItem().style()->isFlippedLinesWritingMode() ? m_inlineTextBox.root().selectionBottom() - m_inlineTextBox.logicalBottom() : m_inlineTextBox.logicalTop() - m_inlineTextBox.root().selectionTop();
     int selHeight = m_inlineTextBox.root().selectionHeight();
     FloatPoint localOrigin(boxOrigin.x().toFloat(), boxOrigin.y().toFloat() - deltaY);
-    context.drawHighlightForText(font, m_inlineTextBox.constructTextRun(style, font), localOrigin, selHeight, backgroundColor, sPos, ePos);
+    context.drawHighlightForText(font, m_inlineTextBox.constructTextRun(style), localOrigin, selHeight, backgroundColor, sPos, ePos);
 }
 
 void InlineTextBoxPainter::paintDocumentMarkers(const PaintInfo& paintInfo, const LayoutPoint& boxOrigin, const ComputedStyle& style, const Font& font, DocumentMarkerPaintPhase markerPaintPhase)
@@ -403,7 +403,7 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext& context, const L
         int deltaY = m_inlineTextBox.getLineLayoutItem().style()->isFlippedLinesWritingMode() ? m_inlineTextBox.root().selectionBottom() - m_inlineTextBox.logicalBottom() : m_inlineTextBox.logicalTop() - m_inlineTextBox.root().selectionTop();
         int selHeight = m_inlineTextBox.root().selectionHeight();
         LayoutPoint startPoint(boxOrigin.x(), boxOrigin.y() - deltaY);
-        TextRun run = m_inlineTextBox.constructTextRun(style, font);
+        TextRun run = m_inlineTextBox.constructTextRun(style);
 
         // FIXME: Convert the document markers to float rects.
         IntRect markerRect = enclosingIntRect(font.selectionRectForText(run, FloatPoint(startPoint), selHeight, startPosition, endPosition));
@@ -456,7 +456,7 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context, const Layout
 
     StringBuilder charactersWithHyphen;
     bool respectHyphen = ePos == length && m_inlineTextBox.hasHyphen();
-    TextRun textRun = m_inlineTextBox.constructTextRun(style, font, string, m_inlineTextBox.getLineLayoutItem().textLength() - m_inlineTextBox.start(), respectHyphen ? &charactersWithHyphen : 0);
+    TextRun textRun = m_inlineTextBox.constructTextRun(style, string, m_inlineTextBox.getLineLayoutItem().textLength() - m_inlineTextBox.start(), respectHyphen ? &charactersWithHyphen : 0);
     if (respectHyphen)
         ePos = textRun.length();
 
@@ -836,7 +836,7 @@ void InlineTextBoxPainter::paintTextMatchMarkerForeground(const PaintInfo& paint
     // TODO(ramya.v): Extract this into a helper function and share many copies of this code.
     int sPos = std::max(marker->startOffset() - m_inlineTextBox.start(), (unsigned)0);
     int ePos = std::min(marker->endOffset() - m_inlineTextBox.start(), m_inlineTextBox.len());
-    TextRun run = m_inlineTextBox.constructTextRun(style, font);
+    TextRun run = m_inlineTextBox.constructTextRun(style);
 
     Color textColor = LayoutTheme::theme().platformTextSearchColor(marker->activeMatch());
     if (style.visitedDependentColor(CSSPropertyColor) == textColor)
@@ -860,7 +860,7 @@ void InlineTextBoxPainter::paintTextMatchMarkerBackground(const PaintInfo& paint
 
     int sPos = std::max(marker->startOffset() - m_inlineTextBox.start(), (unsigned)0);
     int ePos = std::min(marker->endOffset() - m_inlineTextBox.start(), m_inlineTextBox.len());
-    TextRun run = m_inlineTextBox.constructTextRun(style, font);
+    TextRun run = m_inlineTextBox.constructTextRun(style);
 
     Color color = LayoutTheme::theme().platformTextSearchHighlightColor(marker->activeMatch());
     GraphicsContext& context = paintInfo.context;

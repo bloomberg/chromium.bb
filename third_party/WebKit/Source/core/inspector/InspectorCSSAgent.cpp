@@ -1030,7 +1030,7 @@ void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutObject* layout
     for (InlineTextBox* box = layoutText->firstTextBox(); box; box = box->nextTextBox()) {
         const ComputedStyle& style = layoutText->styleRef(box->isFirstLineStyle());
         const Font& font = style.font();
-        TextRun run = box->constructTextRunForInspector(style, font);
+        TextRun run = box->constructTextRunForInspector(style);
         TextRunPaintInfo paintInfo(run);
         GlyphBuffer glyphBuffer;
         font.buildGlyphBuffer(paintInfo, glyphBuffer);

@@ -231,7 +231,7 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos) const
 
     StringBuilder charactersWithHyphen;
     bool respectHyphen = ePos == m_len && hasHyphen();
-    TextRun textRun = constructTextRun(styleToUse, font, respectHyphen ? &charactersWithHyphen : 0);
+    TextRun textRun = constructTextRun(styleToUse, respectHyphen ? &charactersWithHyphen : 0);
 
     LayoutPoint startingPoint = LayoutPoint(logicalLeft(), selTop);
     LayoutRect r;
@@ -490,7 +490,7 @@ int InlineTextBox::offsetForPosition(LayoutUnit lineOffset, bool includePartialG
     LineLayoutText text = getLineLayoutItem();
     const ComputedStyle& style = text.styleRef(isFirstLineStyle());
     const Font& font = style.font();
-    return font.offsetForPosition(constructTextRun(style, font), (lineOffset - logicalLeft()).toFloat(), includePartialGlyphs);
+    return font.offsetForPosition(constructTextRun(style), (lineOffset - logicalLeft()).toFloat(), includePartialGlyphs);
 }
 
 LayoutUnit InlineTextBox::positionForOffset(int offset) const
@@ -507,7 +507,7 @@ LayoutUnit InlineTextBox::positionForOffset(int offset) const
     int from = !isLeftToRightDirection() ? offset - m_start : 0;
     int to = !isLeftToRightDirection() ? m_len : offset - m_start;
     // FIXME: Do we need to add rightBearing here?
-    return LayoutUnit(font.selectionRectForText(constructTextRun(styleToUse, font), IntPoint(logicalLeft(), 0), 0, from, to).maxX());
+    return LayoutUnit(font.selectionRectForText(constructTextRun(styleToUse), IntPoint(logicalLeft(), 0), 0, from, to).maxX());
 }
 
 bool InlineTextBox::containsCaretOffset(int offset) const
@@ -545,7 +545,7 @@ void InlineTextBox::characterWidths(Vector<float>& widths) const
     const ComputedStyle& styleToUse = getLineLayoutItem().styleRef(isFirstLineStyle());
     const Font& font = styleToUse.font();
 
-    TextRun textRun = constructTextRun(styleToUse, font);
+    TextRun textRun = constructTextRun(styleToUse);
     Vector<CharacterRange> ranges = font.individualCharacterRanges(textRun);
     DCHECK_EQ(ranges.size(), m_len);
 
@@ -554,17 +554,17 @@ void InlineTextBox::characterWidths(Vector<float>& widths) const
         widths[i] = ranges[i].width();
 }
 
-TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, const Font& font, StringBuilder* charactersWithHyphen) const
+TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, StringBuilder* charactersWithHyphen) const
 {
     ASSERT(getLineLayoutItem().text());
 
     String string = getLineLayoutItem().text();
     unsigned startPos = start();
     unsigned length = len();
-    return constructTextRun(style, font, StringView(string, startPos, length), getLineLayoutItem().textLength() - startPos, charactersWithHyphen);
+    return constructTextRun(style, StringView(string, startPos, length), getLineLayoutItem().textLength() - startPos, charactersWithHyphen);
 }
 
-TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, const Font& font, StringView string, int maximumLength, StringBuilder* charactersWithHyphen) const
+TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, StringView string, int maximumLength, StringBuilder* charactersWithHyphen) const
 {
     if (charactersWithHyphen) {
         const AtomicString& hyphenString = style.hyphenString();
@@ -587,9 +587,9 @@ TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, const Font& 
     return run;
 }
 
-TextRun InlineTextBox::constructTextRunForInspector(const ComputedStyle& style, const Font& font) const
+TextRun InlineTextBox::constructTextRunForInspector(const ComputedStyle& style) const
 {
-    return InlineTextBox::constructTextRun(style, font);
+    return InlineTextBox::constructTextRun(style);
 }
 
 const char* InlineTextBox::boxName() const
