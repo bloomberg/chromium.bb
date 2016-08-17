@@ -102,8 +102,8 @@ private:
     }
 
     // Helper functions for advanceToNextMisspelling()
-    void findMisspellings(const String& text, Vector<TextCheckingResult>& results);
-    String findFirstMisspellingOrBadGrammar(const Position&, const Position&, int& outFirstFoundOffset);
+    Vector<TextCheckingResult> findMisspellings(const String&);
+    std::pair<String, int> findFirstMisspelling(const Position&, const Position&);
 
     void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
 

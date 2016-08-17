@@ -251,8 +251,10 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     Node* searchEndNodeAfterWrap = spellingSearchEnd.computeContainerNode();
     int searchEndOffsetAfterWrap = spellingSearchEnd.offsetInContainerNode();
 
-    int misspellingOffset = 0;
-    String misspelledWord = findFirstMisspellingOrBadGrammar(spellingSearchStart, spellingSearchEnd, misspellingOffset);
+    std::pair<String, int> misspelledItem(String(), 0);
+    String& misspelledWord = misspelledItem.first;
+    int& misspellingOffset = misspelledItem.second;
+    misspelledItem = findFirstMisspelling(spellingSearchStart, spellingSearchEnd);
 
     // If we did not find a misspelled word, wrap and try again (but don't bother if we started at the beginning of the
     // block rather than at a selection).
@@ -260,7 +262,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         spellingSearchStart = Position::editingPositionOf(topNode, 0);
         // going until the end of the very first chunk we tested is far enough
         spellingSearchEnd = Position::editingPositionOf(searchEndNodeAfterWrap, searchEndOffsetAfterWrap);
-        misspelledWord = findFirstMisspellingOrBadGrammar(spellingSearchStart, spellingSearchEnd, misspellingOffset);
+        misspelledItem = findFirstMisspelling(spellingSearchStart, spellingSearchEnd);
     }
 
     if (!misspelledWord.isEmpty()) {
@@ -787,7 +789,7 @@ void SpellChecker::prepareForLeakDetection()
     m_spellCheckRequester->prepareForLeakDetection();
 }
 
-void SpellChecker::findMisspellings(const String& text, Vector<TextCheckingResult>& results)
+Vector<TextCheckingResult> SpellChecker::findMisspellings(const String& text)
 {
     Vector<UChar> characters;
     text.appendTo(characters);
@@ -795,10 +797,11 @@ void SpellChecker::findMisspellings(const String& text, Vector<TextCheckingResul
 
     TextBreakIterator* iterator = wordBreakIterator(characters.data(), length);
     if (!iterator)
-        return;
+        return Vector<TextCheckingResult>();
 
+    Vector<TextCheckingResult> results;
     int wordStart = iterator->current();
-    while (0 <= wordStart) {
+    while (wordStart >= 0) {
         int wordEnd = iterator->next();
         if (wordEnd < 0)
             break;
@@ -806,10 +809,8 @@ void SpellChecker::findMisspellings(const String& text, Vector<TextCheckingResul
         int misspellingLocation = -1;
         int misspellingLength = 0;
         textChecker().checkSpellingOfString(String(characters.data() + wordStart, wordLength), &misspellingLocation, &misspellingLength);
-        if (0 < misspellingLength) {
-            DCHECK_LE(0, misspellingLocation);
-            DCHECK_LE(misspellingLocation, wordLength);
-            DCHECK_LT(0, misspellingLength);
+        if (misspellingLength > 0) {
+            DCHECK_GE(misspellingLocation, 0);
             DCHECK_LE(misspellingLocation + misspellingLength, wordLength);
             TextCheckingResult misspelling;
             misspelling.decoration = TextDecorationTypeSpelling;
@@ -817,18 +818,18 @@ void SpellChecker::findMisspellings(const String& text, Vector<TextCheckingResul
             misspelling.length = misspellingLength;
             results.append(misspelling);
         }
-
         wordStart = wordEnd;
     }
+    return results;
 }
 
-String SpellChecker::findFirstMisspellingOrBadGrammar(const Position& start, const Position& end, int& outFirstFoundOffset)
+std::pair<String, int> SpellChecker::findFirstMisspelling(const Position& start, const Position& end)
 {
-    String firstFoundItem;
     String misspelledWord;
 
-    // Initialize out parameter; it will be updated if we find something to return.
-    outFirstFoundOffset = 0;
+    // Initialize out parameters; they will be updated if we find something to return.
+    String firstFoundItem;
+    int firstFoundOffset = 0;
 
     // Expand the search range to encompass entire paragraphs, since text checking needs that much context.
     // Determine the character offset from the start of the paragraph to the start of the original search range,
@@ -859,12 +860,11 @@ String SpellChecker::findFirstMisspellingOrBadGrammar(const Position& start, con
             if (paragraphString.length() > 0) {
                 int spellingLocation = 0;
 
-                Vector<TextCheckingResult> results;
-                findMisspellings(paragraphString, results);
+                Vector<TextCheckingResult> results = findMisspellings(paragraphString);
 
                 for (unsigned i = 0; i < results.size(); i++) {
                     const TextCheckingResult* result = &results[i];
-                    if (result->decoration == TextDecorationTypeSpelling && result->location >= currentStartOffset && result->location + result->length <= currentEndOffset) {
+                    if (result->location >= currentStartOffset && result->location + result->length <= currentEndOffset) {
                         DCHECK_GT(result->length, 0);
                         DCHECK_GE(result->location, 0);
                         spellingLocation = result->location;
@@ -878,7 +878,7 @@ String SpellChecker::findFirstMisspellingOrBadGrammar(const Position& start, con
                     int spellingOffset = spellingLocation - currentStartOffset;
                     if (!firstIteration)
                         spellingOffset += TextIterator::rangeLength(start, paragraphStart);
-                    outFirstFoundOffset = spellingOffset;
+                    firstFoundOffset = spellingOffset;
                     firstFoundItem = misspelledWord;
                     break;
                 }
@@ -892,7 +892,7 @@ String SpellChecker::findFirstMisspellingOrBadGrammar(const Position& start, con
         firstIteration = false;
         totalLengthProcessed += currentLength;
     }
-    return firstFoundItem;
+    return std::make_pair(firstFoundItem, firstFoundOffset);
 }
 
 } // namespace blink
