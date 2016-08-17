@@ -441,9 +441,10 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
 
         // TODO(svillar): we won't need to do this once the intrinsic width computation is isolated
         // from the LayoutGrid object state (it should not touch any attribute) (see crbug.com/627812)
-        if (m_autoRepeatColumns && m_autoRepeatColumns != computeAutoRepeatTracksCount(ForColumns))
+        size_t autoRepeatColumnsCount = computeAutoRepeatTracksCount(ForColumns);
+        if (m_autoRepeatColumns && m_autoRepeatColumns != autoRepeatColumnsCount)
             dirtyGrid();
-        placeItemsOnGrid(TrackSizing);
+        placeItemsOnGrid(autoRepeatColumnsCount);
 
         GridSizingData sizingData(gridColumnCount(), gridRowCount());
 
@@ -574,7 +575,7 @@ LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction, size_t st
 
 void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    const_cast<LayoutGrid*>(this)->placeItemsOnGrid(IntrinsicSizeComputation);
+    const_cast<LayoutGrid*>(this)->placeItemsOnGrid(styleRef().gridAutoRepeatColumns().size());
 
     GridSizingData sizingData(gridColumnCount(), gridRowCount());
     sizingData.freeSpaceForDirection(ForColumns) = LayoutUnit();
@@ -1490,17 +1491,14 @@ std::unique_ptr<LayoutGrid::OrderedTrackIndexSet> LayoutGrid::computeEmptyTracks
     return emptyTrackIndexes;
 }
 
-void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation)
+void LayoutGrid::placeItemsOnGrid(size_t autoRepeatColumnsCount)
 {
     if (!m_gridIsDirty)
         return;
 
     ASSERT(m_gridItemArea.isEmpty());
 
-    if (sizingOperation == IntrinsicSizeComputation)
-        m_autoRepeatColumns = styleRef().gridAutoRepeatColumns().size();
-    else
-        m_autoRepeatColumns = computeAutoRepeatTracksCount(ForColumns);
+    m_autoRepeatColumns = autoRepeatColumnsCount;
     m_autoRepeatRows = computeAutoRepeatTracksCount(ForRows);
 
     populateExplicitGridAndOrderIterator();

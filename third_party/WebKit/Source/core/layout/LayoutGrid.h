@@ -132,7 +132,7 @@ private:
     bool hasAutoRepeatEmptyTracks(GridTrackSizingDirection) const;
     bool isEmptyAutoRepeatTrack(GridTrackSizingDirection, size_t lineNumber) const;
 
-    void placeItemsOnGrid(SizingOperation);
+    void placeItemsOnGrid(size_t autoRepeatColumnsCount);
     void populateExplicitGridAndOrderIterator();
     std::unique_ptr<GridArea> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(const LayoutBox&, GridTrackSizingDirection, const GridSpan& specifiedPositions) const;
     void placeSpecifiedMajorAxisItemsOnGrid(const Vector<LayoutBox*>&);
