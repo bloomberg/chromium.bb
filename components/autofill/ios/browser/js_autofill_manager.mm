@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 
 @implementation JsAutofillManager
 
@@ -17,10 +18,10 @@
   NSString* extractFormsJS = [NSString
       stringWithFormat:@"__gCrWeb.autofill.extractForms(%" PRIuNS ");",
                        requiredFieldsCount];
-  [self evaluate:extractFormsJS
-      stringResultHandler:^(NSString* result, NSError*) {
-        completionHandler(result);
-      }];
+  [self executeJavaScript:extractFormsJS
+        completionHandler:^(id result, NSError*) {
+          completionHandler(base::mac::ObjCCastStrict<NSString>(result));
+        }];
 }
 
 #pragma mark -
@@ -32,14 +33,12 @@
 
 - (void)fillActiveFormField:(NSString*)dataString
           completionHandler:(ProceduralBlock)completionHandler {
-  web::JavaScriptCompletion resultHandler = ^void(NSString*, NSError*) {
-    completionHandler();
-  };
-
-  NSString* js =
+  NSString* script =
       [NSString stringWithFormat:@"__gCrWeb.autofill.fillActiveFormField(%@);",
                                  dataString];
-  [self evaluate:js stringResultHandler:resultHandler];
+  [self executeJavaScript:script completionHandler:^(id, NSError*) {
+    completionHandler();
+  }];
 }
 
 - (void)fillForm:(NSString*)dataString
@@ -53,24 +52,21 @@
   NSString* fillFormJS =
       [NSString stringWithFormat:@"__gCrWeb.autofill.fillForm(%@, %s);",
                                  dataString, fieldName.c_str()];
-  id stringResultHandler = ^(NSString*, NSError*) {
+  [self executeJavaScript:fillFormJS completionHandler:^(id, NSError*) {
     completionHandler();
-  };
-  return [self evaluate:fillFormJS stringResultHandler:stringResultHandler];
+  }];
 }
 
 - (void)clearAutofilledFieldsForFormNamed:(NSString*)formName
                         completionHandler:(ProceduralBlock)completionHandler {
   DCHECK(completionHandler);
-  web::JavaScriptCompletion resultHandler = ^void(NSString*, NSError*) {
-    completionHandler();
-  };
-
-  NSString* js =
+  NSString* script =
       [NSString stringWithFormat:
                     @"__gCrWeb.autofill.clearAutofilledFields(%s);",
                     base::GetQuotedJSONString([formName UTF8String]).c_str()];
-  [self evaluate:js stringResultHandler:resultHandler];
+  [self executeJavaScript:script completionHandler:^(id, NSError*) {
+    completionHandler();
+  }];
 }
 
 - (void)fillPredictionData:(NSString*)dataString {

@@ -35,7 +35,7 @@ NSString* JSONEscape(NSString* str) {
   NSString* selectNextElementJS = [NSString
       stringWithFormat:@"__gCrWeb.suggestion.selectNextElement(%@, %@)",
                        JSONEscape(formName), JSONEscape(fieldName)];
-  [self evaluate:selectNextElementJS stringResultHandler:nil];
+  [self executeJavaScript:selectNextElementJS completionHandler:nil];
 }
 
 - (void)selectPreviousElement {
@@ -46,7 +46,7 @@ NSString* JSONEscape(NSString* str) {
   NSString* selectPreviousElementJS = [NSString
       stringWithFormat:@"__gCrWeb.suggestion.selectPreviousElement(%@, %@)",
                        JSONEscape(formName), JSONEscape(fieldName)];
-  [self evaluate:selectPreviousElementJS stringResultHandler:nil];
+  [self executeJavaScript:selectPreviousElementJS completionHandler:nil];
 }
 
 - (void)fetchPreviousAndNextElementsPresenceWithCompletionHandler:
@@ -62,7 +62,15 @@ NSString* JSONEscape(NSString* str) {
                                       (void (^)(BOOL, BOOL))completionHandler {
   DCHECK(completionHandler);
   DCHECK([self hasBeenInjected]);
-  id stringResultHandler = ^(NSString* result, NSError* error) {
+  NSString* escapedFormName = JSONEscape(formName);
+  NSString* escapedFieldName = JSONEscape(fieldName);
+  NSString* JS = [NSString
+      stringWithFormat:@"[__gCrWeb.suggestion.hasPreviousElement(%@, %@),"
+                       @"__gCrWeb.suggestion.hasNextElement(%@, %@)]"
+                       @".toString()",
+                       escapedFormName, escapedFieldName, escapedFormName,
+                       escapedFieldName];
+  [self executeJavaScript:JS completionHandler:^(id result, NSError* error) {
     // The result maybe an empty string here due to 2 reasons:
     // 1) When there is an exception running the JS
     // 2) There is a race when the page is changing due to which
@@ -85,16 +93,7 @@ NSString* JSONEscape(NSString* str) {
            [components[1] isEqualToString:@"false"]);
     BOOL hasNextElement = [components[1] isEqualToString:@"true"];
     completionHandler(hasPreviousElement, hasNextElement);
-  };
-  NSString* escapedFormName = JSONEscape(formName);
-  NSString* escapedFieldName = JSONEscape(fieldName);
-  NSString* js = [NSString
-      stringWithFormat:@"[__gCrWeb.suggestion.hasPreviousElement(%@, %@),"
-                       @"__gCrWeb.suggestion.hasNextElement(%@, %@)]"
-                       @".toString()",
-                       escapedFormName, escapedFieldName, escapedFormName,
-                       escapedFieldName];
-  [self evaluate:js stringResultHandler:stringResultHandler];
+  }];
 }
 
 - (void)closeKeyboard {
