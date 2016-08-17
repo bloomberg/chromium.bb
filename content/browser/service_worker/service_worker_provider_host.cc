@@ -282,9 +282,7 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
 
 void ServiceWorkerProviderHost::AddMatchingRegistration(
     ServiceWorkerRegistration* registration) {
-  // TODO(shimazu): Change CHECK to DCHECK after https://crbug.com/634222 is
-  // fixed.
-  CHECK(
+  DCHECK(
       ServiceWorkerUtils::ScopeMatches(registration->pattern(), document_url_));
   if (!IsContextSecureForServiceWorker())
     return;
