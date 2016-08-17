@@ -1214,7 +1214,6 @@ crbug.com/624019 [ Mac ] bluetooth/notifications/stop-without-starting.html [ Sk
 
 crbug.com/487344 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/487344 fast/layers/video-layer.html [ Failure ]
-crbug.com/487344 [ Mac ] http/tests/media/video-buffered-range-contains-currentTime.html [ Timeout Failure ]
 crbug.com/487344 media/audio-controls-rendering.html [ Failure ]
 crbug.com/487344 media/audio-repaint.html [ Failure ]
 crbug.com/487344 media/controls-after-reload.html [ Failure ]
@@ -1232,6 +1231,8 @@ crbug.com/487344 media/video-display-toggle.html [ Failure ]
 crbug.com/487344 media/video-empty-source.html [ Failure ]
 crbug.com/487344 media/video-no-audio.html [ Failure ]
 crbug.com/487344 media/video-paint-invalidation.html [ Failure ]
+crbug.com/487344 [ Mac ] http/tests/media/video-buffered-range-contains-currentTime.html [ Timeout Failure ]
+crbug.com/638621 [ Win7 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Pass Failure ]
 crbug.com/614197 [ Mac ] http/tests/media/pdf-served-as-pdf.html [ Pass Timeout ]
 
 crbug.com/637930 [ Win Linux ] http/tests/media/video-buffered.html [ Pass Failure ]
