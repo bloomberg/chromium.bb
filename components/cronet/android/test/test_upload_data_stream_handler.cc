@@ -115,8 +115,10 @@ void TestUploadDataStreamHandler::InitOnNetworkThread() {
   init_callback_invoked_ = false;
   read_buffer_ = nullptr;
   bytes_read_ = 0;
-  int res = upload_data_stream_->Init(base::Bind(
-      &TestUploadDataStreamHandler::OnInitCompleted, base::Unretained(this)));
+  int res = upload_data_stream_->Init(
+      base::Bind(&TestUploadDataStreamHandler::OnInitCompleted,
+                 base::Unretained(this)),
+      net::BoundNetLog());
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_TestUploadDataStreamHandler_onInitCalled(
       env, jtest_upload_data_stream_handler_, res);

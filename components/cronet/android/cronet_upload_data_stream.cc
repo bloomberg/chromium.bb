@@ -24,7 +24,7 @@ CronetUploadDataStream::~CronetUploadDataStream() {
   delegate_->OnUploadDataStreamDestroyed();
 }
 
-int CronetUploadDataStream::InitInternal() {
+int CronetUploadDataStream::InitInternal(const net::BoundNetLog& net_log) {
   // ResetInternal should have been called before init, if the stream was in
   // use.
   DCHECK(!waiting_on_read_);

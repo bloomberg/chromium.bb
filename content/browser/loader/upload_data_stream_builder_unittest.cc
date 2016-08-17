@@ -136,7 +136,8 @@ TEST(UploadDataStreamBuilderTest,
     ASSERT_EQ(3U, readers.size());
 
     net::TestCompletionCallback init_callback;
-    ASSERT_EQ(net::ERR_IO_PENDING, upload->Init(init_callback.callback()));
+    ASSERT_EQ(net::ERR_IO_PENDING,
+              upload->Init(init_callback.callback(), net::BoundNetLog()));
     EXPECT_EQ(net::OK, init_callback.WaitForResult());
 
     EXPECT_EQ(kZeroLength, upload->size());
@@ -183,7 +184,8 @@ TEST(UploadDataStreamBuilderTest, ResetUploadStreamWithBlob) {
             base::ThreadTaskRunnerHandle::Get().get()));
 
     net::TestCompletionCallback init_callback;
-    ASSERT_EQ(net::OK, upload->Init(init_callback.callback()));
+    ASSERT_EQ(net::OK,
+              upload->Init(init_callback.callback(), net::BoundNetLog()));
 
     // Read part of the data.
     const int kBufferLength = 4;
@@ -197,7 +199,8 @@ TEST(UploadDataStreamBuilderTest, ResetUploadStreamWithBlob) {
               std::memcmp(kBlobData.c_str(), buffer->data(), buffer->size()));
 
     // Reset.
-    ASSERT_EQ(net::OK, upload->Init(init_callback.callback()));
+    ASSERT_EQ(net::OK,
+              upload->Init(init_callback.callback(), net::BoundNetLog()));
 
     // Read all the data.
     buffer = new net::IOBufferWithSize(kBlobDataLength);

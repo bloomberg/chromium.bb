@@ -126,8 +126,8 @@ class DevToolsNetworkControllerHelper {
   }
 
   int ReadUploadData() {
-    EXPECT_EQ(net::OK,
-        transaction_->custom_upload_data_stream_->Init(completion_callback_));
+    EXPECT_EQ(net::OK, transaction_->custom_upload_data_stream_->Init(
+                           completion_callback_, net::BoundNetLog()));
     return transaction_->custom_upload_data_stream_->Read(
         buffer_.get(), 64, completion_callback_);
   }

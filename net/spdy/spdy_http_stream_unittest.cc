@@ -76,7 +76,7 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   void CompleteRead() { UploadDataStream::OnReadCompleted(ERR_FAILED); }
 
   // UploadDataStream implementation:
-  int InitInternal() override { return OK; }
+  int InitInternal(const BoundNetLog& net_log) override { return OK; }
 
   int ReadInternal(IOBuffer* buf, int buf_len) override {
     if (async_ == FailureMode::ASYNC) {
@@ -364,7 +364,9 @@ TEST_F(SpdyHttpStreamTest, SendChunkedPost) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
+  ASSERT_THAT(
+      upload_stream.Init(TestCompletionCallback().callback(), BoundNetLog()),
+      IsOk());
 
   TestCompletionCallback callback;
   HttpResponseInfo response;
@@ -418,7 +420,9 @@ TEST_F(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
+  ASSERT_THAT(
+      upload_stream.Init(TestCompletionCallback().callback(), BoundNetLog()),
+      IsOk());
 
   TestCompletionCallback callback;
   HttpResponseInfo response;
@@ -469,7 +473,9 @@ TEST_F(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
+  ASSERT_THAT(
+      upload_stream.Init(TestCompletionCallback().callback(), BoundNetLog()),
+      IsOk());
 
   TestCompletionCallback callback;
   HttpResponseInfo response;
@@ -536,7 +542,9 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
+  ASSERT_THAT(
+      upload_stream.Init(TestCompletionCallback().callback(), BoundNetLog()),
+      IsOk());
   upload_stream.AppendData(kUploadData, kUploadDataSize, false);
 
   BoundNetLog net_log;
@@ -628,7 +636,9 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
+  ASSERT_THAT(
+      upload_stream.Init(TestCompletionCallback().callback(), BoundNetLog()),
+      IsOk());
   upload_stream.AppendData(kUploadData, kUploadDataSize, false);
 
   BoundNetLog net_log;
@@ -709,7 +719,9 @@ TEST_F(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
+  ASSERT_THAT(
+      upload_stream.Init(TestCompletionCallback().callback(), BoundNetLog()),
+      IsOk());
   upload_stream.AppendData("", 0, true);
 
   BoundNetLog net_log;
@@ -820,7 +832,9 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   request.url = GURL("http://www.example.org/");
   request.upload_data_stream = &upload_stream;
 
-  ASSERT_THAT(upload_stream.Init(TestCompletionCallback().callback()), IsOk());
+  ASSERT_THAT(
+      upload_stream.Init(TestCompletionCallback().callback(), BoundNetLog()),
+      IsOk());
 
   BoundNetLog net_log;
   std::unique_ptr<SpdyHttpStream> http_stream(
@@ -914,7 +928,8 @@ TEST_F(SpdyHttpStreamTest, DataReadErrorSynchronous) {
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::SYNC);
-  ASSERT_THAT(upload_data_stream.Init(TestCompletionCallback().callback()),
+  ASSERT_THAT(upload_data_stream.Init(TestCompletionCallback().callback(),
+                                      BoundNetLog()),
               IsOk());
 
   HttpRequestInfo request;
@@ -962,7 +977,8 @@ TEST_F(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::ASYNC);
-  ASSERT_THAT(upload_data_stream.Init(TestCompletionCallback().callback()),
+  ASSERT_THAT(upload_data_stream.Init(TestCompletionCallback().callback(),
+                                      BoundNetLog()),
               IsOk());
 
   HttpRequestInfo request;
@@ -1006,7 +1022,8 @@ TEST_F(SpdyHttpStreamTest, RequestCallbackCancelsStream) {
   request.upload_data_stream = &upload_stream;
 
   TestCompletionCallback upload_callback;
-  ASSERT_THAT(upload_stream.Init(upload_callback.callback()), IsOk());
+  ASSERT_THAT(upload_stream.Init(upload_callback.callback(), BoundNetLog()),
+              IsOk());
   upload_stream.AppendData("", 0, true);
 
   BoundNetLog net_log;

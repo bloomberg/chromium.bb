@@ -154,7 +154,7 @@ class ElementsUploadDataStreamTest : public PlatformTest {
 TEST_F(ElementsUploadDataStreamTest, EmptyUploadData) {
   std::unique_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
-  ASSERT_THAT(stream->Init(CompletionCallback()), IsOk());
+  ASSERT_THAT(stream->Init(CompletionCallback(), BoundNetLog()), IsOk());
   EXPECT_TRUE(stream->IsInMemory());
   EXPECT_EQ(0U, stream->size());
   EXPECT_EQ(0U, stream->position());
@@ -166,7 +166,7 @@ TEST_F(ElementsUploadDataStreamTest, ConsumeAllBytes) {
       base::WrapUnique(new UploadBytesElementReader(kTestData, kTestDataSize)));
   std::unique_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
-  ASSERT_THAT(stream->Init(CompletionCallback()), IsOk());
+  ASSERT_THAT(stream->Init(CompletionCallback(), BoundNetLog()), IsOk());
   EXPECT_TRUE(stream->IsInMemory());
   EXPECT_EQ(kTestDataSize, stream->size());
   EXPECT_EQ(0U, stream->position());
@@ -195,7 +195,8 @@ TEST_F(ElementsUploadDataStreamTest, File) {
   TestCompletionCallback init_callback;
   std::unique_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
-  ASSERT_THAT(stream->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(init_callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   ASSERT_THAT(init_callback.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsInMemory());
   EXPECT_EQ(kTestDataSize, stream->size());
@@ -231,7 +232,8 @@ TEST_F(ElementsUploadDataStreamTest, FileSmallerThanLength) {
   TestCompletionCallback init_callback;
   std::unique_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
-  ASSERT_THAT(stream->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(init_callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   ASSERT_THAT(init_callback.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsInMemory());
   EXPECT_EQ(kFakeSize, stream->size());
@@ -272,7 +274,7 @@ TEST_F(ElementsUploadDataStreamTest, ReadErrorSync) {
       new ElementsUploadDataStream(std::move(element_readers_), 0));
 
   // Run Init().
-  ASSERT_THAT(stream->Init(CompletionCallback()), IsOk());
+  ASSERT_THAT(stream->Init(CompletionCallback(), BoundNetLog()), IsOk());
   EXPECT_EQ(kTestDataSize*2, stream->size());
   EXPECT_EQ(0U, stream->position());
   EXPECT_FALSE(stream->IsEOF());
@@ -308,7 +310,8 @@ TEST_F(ElementsUploadDataStreamTest, ReadErrorAsync) {
 
   // Run Init().
   TestCompletionCallback init_callback;
-  ASSERT_THAT(stream->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(init_callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(init_callback.WaitForResult(), IsOk());
   EXPECT_EQ(kTestDataSize*2, stream->size());
   EXPECT_EQ(0U, stream->position());
@@ -350,7 +353,8 @@ TEST_F(ElementsUploadDataStreamTest, FileAndBytes) {
   TestCompletionCallback init_callback;
   std::unique_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
-  ASSERT_THAT(stream->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(init_callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   ASSERT_THAT(init_callback.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsInMemory());
   EXPECT_EQ(kStreamSize, stream->size());
@@ -402,7 +406,8 @@ TEST_F(ElementsUploadDataStreamTest, InitAsync) {
 
   // Run Init().
   TestCompletionCallback callback;
-  ASSERT_THAT(stream->Init(callback.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 }
 
@@ -419,7 +424,8 @@ TEST_F(ElementsUploadDataStreamTest, InitAsyncFailureAsync) {
 
   // Run Init().
   TestCompletionCallback callback;
-  ASSERT_THAT(stream->Init(callback.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FAILED));
 }
 
@@ -441,7 +447,8 @@ TEST_F(ElementsUploadDataStreamTest, InitAsyncFailureSync) {
 
   // Run Init().
   TestCompletionCallback callback;
-  ASSERT_THAT(stream->Init(callback.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_FAILED));
 }
 
@@ -452,7 +459,7 @@ TEST_F(ElementsUploadDataStreamTest, ReadAsyncWithExactSizeBuffer) {
   std::unique_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
 
-  ASSERT_THAT(stream->Init(CompletionCallback()), IsOk());
+  ASSERT_THAT(stream->Init(CompletionCallback(), BoundNetLog()), IsOk());
   EXPECT_TRUE(stream->IsInMemory());
   EXPECT_EQ(kTestDataSize, stream->size());
   EXPECT_EQ(0U, stream->position());
@@ -496,7 +503,8 @@ TEST_F(ElementsUploadDataStreamTest, ReadAsync) {
 
   // Run Init().
   TestCompletionCallback init_callback;
-  EXPECT_THAT(stream->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(stream->Init(init_callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(init_callback.WaitForResult(), IsOk());
 
   scoped_refptr<IOBuffer> buf = new IOBuffer(kTestBufferSize);
@@ -536,7 +544,8 @@ void ElementsUploadDataStreamTest::FileChangedHelper(
   TestCompletionCallback init_callback;
   std::unique_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers), 0));
-  ASSERT_THAT(stream->Init(init_callback.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(init_callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   int error_code = init_callback.WaitForResult();
   if (error_expected)
     ASSERT_THAT(error_code, IsError(ERR_UPLOAD_FILE_CHANGED));
@@ -584,7 +593,8 @@ TEST_F(ElementsUploadDataStreamTest, MultipleInit) {
 
   // Call Init().
   TestCompletionCallback init_callback1;
-  ASSERT_THAT(stream->Init(init_callback1.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(init_callback1.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   ASSERT_THAT(init_callback1.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsEOF());
   EXPECT_EQ(kTestDataSize*2, stream->size());
@@ -595,7 +605,8 @@ TEST_F(ElementsUploadDataStreamTest, MultipleInit) {
 
   // Call Init() again to reset.
   TestCompletionCallback init_callback2;
-  ASSERT_THAT(stream->Init(init_callback2.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(init_callback2.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   ASSERT_THAT(init_callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsEOF());
   EXPECT_EQ(kTestDataSize*2, stream->size());
@@ -626,7 +637,8 @@ TEST_F(ElementsUploadDataStreamTest, MultipleInitAsync) {
   expected_data += expected_data;
 
   // Call Init().
-  ASSERT_THAT(stream->Init(test_callback.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(test_callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(test_callback.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsEOF());
   EXPECT_EQ(kTestDataSize*2, stream->size());
@@ -636,7 +648,8 @@ TEST_F(ElementsUploadDataStreamTest, MultipleInitAsync) {
   EXPECT_TRUE(stream->IsEOF());
 
   // Call Init() again to reset.
-  ASSERT_THAT(stream->Init(test_callback.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(test_callback.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(test_callback.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsEOF());
   EXPECT_EQ(kTestDataSize*2, stream->size());
@@ -668,7 +681,8 @@ TEST_F(ElementsUploadDataStreamTest, InitToReset) {
 
   // Call Init().
   TestCompletionCallback init_callback1;
-  ASSERT_THAT(stream->Init(init_callback1.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(init_callback1.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(init_callback1.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsEOF());
   EXPECT_EQ(kTestDataSize*2, stream->size());
@@ -686,7 +700,8 @@ TEST_F(ElementsUploadDataStreamTest, InitToReset) {
 
   // Call Init to reset the state.
   TestCompletionCallback init_callback2;
-  ASSERT_THAT(stream->Init(init_callback2.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(init_callback2.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(init_callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsEOF());
   EXPECT_EQ(kTestDataSize*2, stream->size());
@@ -724,11 +739,13 @@ TEST_F(ElementsUploadDataStreamTest, InitDuringAsyncInit) {
 
   // Start Init.
   TestCompletionCallback init_callback1;
-  EXPECT_THAT(stream->Init(init_callback1.callback()), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(stream->Init(init_callback1.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
 
   // Call Init again to cancel the previous init.
   TestCompletionCallback init_callback2;
-  EXPECT_THAT(stream->Init(init_callback2.callback()), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(stream->Init(init_callback2.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(init_callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsEOF());
   EXPECT_EQ(kTestDataSize*2, stream->size());
@@ -770,7 +787,8 @@ TEST_F(ElementsUploadDataStreamTest, InitDuringAsyncRead) {
 
   // Call Init().
   TestCompletionCallback init_callback1;
-  ASSERT_THAT(stream->Init(init_callback1.callback()), IsError(ERR_IO_PENDING));
+  ASSERT_THAT(stream->Init(init_callback1.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(init_callback1.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsEOF());
   EXPECT_EQ(kTestDataSize*2, stream->size());
@@ -786,7 +804,8 @@ TEST_F(ElementsUploadDataStreamTest, InitDuringAsyncRead) {
 
   // Call Init to cancel the previous read.
   TestCompletionCallback init_callback2;
-  EXPECT_THAT(stream->Init(init_callback2.callback()), IsError(ERR_IO_PENDING));
+  EXPECT_THAT(stream->Init(init_callback2.callback(), BoundNetLog()),
+              IsError(ERR_IO_PENDING));
   EXPECT_THAT(init_callback2.WaitForResult(), IsOk());
   EXPECT_FALSE(stream->IsEOF());
   EXPECT_EQ(kTestDataSize*2, stream->size());

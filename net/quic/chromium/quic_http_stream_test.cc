@@ -123,7 +123,7 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   void CompleteRead() { UploadDataStream::OnReadCompleted(ERR_FAILED); }
 
   // UploadDataStream implementation:
-  int InitInternal() override { return OK; }
+  int InitInternal(const BoundNetLog& net_log) override { return OK; }
 
   int ReadInternal(IOBuffer* buf, int buf_len) override {
     if (async_ == FailureMode::ASYNC) {
@@ -960,7 +960,9 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
   request_.method = "POST";
   request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
-  ASSERT_THAT(request_.upload_data_stream->Init(CompletionCallback()), IsOk());
+  ASSERT_THAT(
+      request_.upload_data_stream->Init(CompletionCallback(), BoundNetLog()),
+      IsOk());
 
   EXPECT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
@@ -1026,7 +1028,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
-                    TestCompletionCallback().callback()));
+                    TestCompletionCallback().callback(), BoundNetLog()));
 
   ASSERT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
@@ -1096,7 +1098,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
-                    TestCompletionCallback().callback()));
+                    TestCompletionCallback().callback(), BoundNetLog()));
 
   ASSERT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
@@ -1160,7 +1162,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
   request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
-                    TestCompletionCallback().callback()));
+                    TestCompletionCallback().callback(), BoundNetLog()));
 
   ASSERT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
@@ -1350,7 +1352,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedDuringDoLoop) {
   request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
-                    TestCompletionCallback().callback()));
+                    TestCompletionCallback().callback(), BoundNetLog()));
 
   size_t chunk_size = strlen(kUploadData);
   upload_data_stream.AppendData(kUploadData, chunk_size, false);
@@ -1378,7 +1380,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendHeadersComplete) {
   request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
-                    TestCompletionCallback().callback()));
+                    TestCompletionCallback().callback(), BoundNetLog()));
 
   ASSERT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
@@ -1403,7 +1405,7 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendBodyComplete) {
   request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
-                    TestCompletionCallback().callback()));
+                    TestCompletionCallback().callback(), BoundNetLog()));
 
   ASSERT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
@@ -1901,7 +1903,7 @@ TEST_P(QuicHttpStreamTest, DataReadErrorSynchronous) {
   request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
-                    TestCompletionCallback().callback()));
+                    TestCompletionCallback().callback(), BoundNetLog()));
 
   EXPECT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
@@ -1933,7 +1935,7 @@ TEST_P(QuicHttpStreamTest, DataReadErrorAsynchronous) {
   request_.url = GURL("http://www.example.org/");
   request_.upload_data_stream = &upload_data_stream;
   ASSERT_EQ(OK, request_.upload_data_stream->Init(
-                    TestCompletionCallback().callback()));
+                    TestCompletionCallback().callback(), BoundNetLog()));
 
   EXPECT_EQ(OK,
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
