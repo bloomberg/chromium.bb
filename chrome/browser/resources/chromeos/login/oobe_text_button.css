@@ -7,12 +7,12 @@
   height: 24px;
 }
 
-#textButton:not([inverse]) {
+#textButton:not([inverse]):not([disabled]) {
   background-color: white
   color: var(--google-blue-500);
 }
 
-#textButton[inverse] {
+#textButton[inverse]:not([disabled]) {
   background-color: var(--google-blue-500);
   color: white;
 }

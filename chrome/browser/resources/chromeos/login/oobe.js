@@ -306,8 +306,9 @@ cr.define('cr.ui.Oobe', function() {
       Oobe.setupSelect($('keyboard-select'), data.inputMethodsList);
       Oobe.setupSelect($('timezone-select'), data.timezoneList);
 
-      // ---------- Welcome screen
+      // ---------- MD OOBE screen
       if (data.newOobeUI == 'on') {
+        // Welcome + etc...
         var welcomeScreen = $('oobe-welcome-md');
         welcomeScreen.currentLanguage =
             Oobe.getSelectedTitle(data.languageList);
@@ -318,6 +319,10 @@ cr.define('cr.ui.Oobe', function() {
         $('oobe-connect').hidden = true;
         welcomeScreen.hidden = false;
         welcomeScreen.enabled = true;
+        // EULA
+        $('oobe-poly-eula').hidden = false;
+        $('oobe-eula').hidden = true;
+        $('oobe').setAttribute('md-mode', 'true');
       } else {
         $('oobe-connect').hidden = false;
         $('oobe-welcome-md').hidden = true;
@@ -335,6 +340,6 @@ cr.define('cr.ui.Oobe', function() {
     updateLocalizedContent: function() {
       // Buttons, headers and links.
       Oobe.getInstance().updateLocalizedContent_();
-    }
+    },
   };
 });

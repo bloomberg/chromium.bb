@@ -129,6 +129,8 @@ login.createScreen('EulaScreen', 'eula', function() {
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {
+      $('oobe-eula-md').updateLocalizedContent();
+
       // Force iframes to refresh. It's only available method because we have
       // no access to iframe.contentWindow.
       if ($('cros-eula-frame').src) {

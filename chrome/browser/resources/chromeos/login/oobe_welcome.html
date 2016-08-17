@@ -21,7 +21,7 @@
 <dom-module name="oobe-welcome-md">
   <link rel="stylesheet" href="oobe_welcome.css">
   <template>
-    <oobe-card id="welcomeSection" class="fit" hidden="[[!welcomeScreenShown]]">
+    <oobe-card id="welcomeSection" hidden="[[!welcomeScreenShown]]">
       <div class="header flex vertical layout end-justified start">
         <h1 class="welcome-message" i18n-content="networkScreenGreeting"></h1>
       </div>
@@ -48,7 +48,7 @@
         </div>
       </div>
     </oobe-card>
-    <oobe-dialog class="fit" hidden="[[!languageSelectionScreenShown]]"
+    <oobe-dialog hidden="[[!languageSelectionScreenShown]]"
         has-buttons>
       <iron-icon icon="icons:language" class="oobe-icon"></iron-icon>
       <div class="header flex layout vertical end-justified start">
@@ -84,7 +84,7 @@
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog class="fit" hidden="[[!accessibilityOptionsScreenShown]]"
+    <oobe-dialog hidden="[[!accessibilityOptionsScreenShown]]"
         has-buttons>
       <iron-icon icon="icons:accessibility" class="oobe-icon"></iron-icon>
       <div class="header flex layout vertical end-justified start">
@@ -147,7 +147,7 @@
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog id="networkSection" class="fit"
+    <oobe-dialog id="networkSection"
         hidden="[[!networkSelectionScreenShown]]">
       <iron-icon icon="oobe-welcome:wifi" class="oobe-icon"></iron-icon>
       <div class="header flex layout vertical end-justified start">

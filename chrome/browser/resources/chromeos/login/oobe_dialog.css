@@ -3,9 +3,11 @@
    found in the LICENSE file. */
 
 :host {
+  background-color: white;
   display: flex;
   flex-direction: column;
   position: relative;
+  width: 582px;
 }
 
 .oobe-icon-div {
@@ -15,13 +17,11 @@
 }
 
 .oobe-header {
-  background-color: white;
   color: black;
   height: 150px;
 }
 
 .oobe-footer {
-  background-color: white;
   position: relative;
 }
 

@@ -146,6 +146,11 @@ void EulaScreenHandler::DeclareLocalizedValues(
 
   builder->Add("chromeCreditsLink", IDS_ABOUT_VERSION_LICENSE_EULA);
   builder->Add("chromeosCreditsLink", IDS_ABOUT_CROS_VERSION_LICENSE_EULA);
+
+  /* MD-OOBE */
+  builder->Add("oobeEulaSectionTitle", IDS_OOBE_EULA_SECTION_TITLE);
+  builder->Add("oobeEulaAcceptAndContinueButtonText",
+               IDS_OOBE_EULA_ACCEPT_AND_CONTINUE_BUTTON_TEXT);
 }
 
 void EulaScreenHandler::DeclareJSCallbacks() {

@@ -7,6 +7,10 @@
   padding: 70px 17px 21px;
 }
 
+#oobe[md-mode] #connect {
+  padding: 0;
+}
+
 #connect table {
   margin: 7em auto;
 }

@@ -208,8 +208,7 @@ Polymer({
    * @private
    */
   onSelectedNetworkConnected_: function() {
-    $('oobe-connect').hidden = false;
-    $('oobe-welcome-md').hidden = true;
+    chrome.send('login.NetworkScreen.userActed', ['continue']);
   },
 
   /**
