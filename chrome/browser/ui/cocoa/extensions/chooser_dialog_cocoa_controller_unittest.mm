@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 #import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
@@ -17,9 +16,11 @@
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
 #include "chrome/browser/ui/cocoa/spinner_view.h"
+#include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
  protected:
@@ -89,6 +90,9 @@ TEST_F(ChooserDialogCocoaControllerTest, InitialState) {
   // the number of rows is 1.
   EXPECT_EQ(1, table_view_.numberOfRows);
   EXPECT_EQ(1, table_view_.numberOfColumns);
+  EXPECT_NSEQ(
+      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
+      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
   // |table_view_| should be disabled since there is no option shown.
   ASSERT_FALSE(table_view_.enabled);
   // No option selected.
@@ -108,6 +112,7 @@ TEST_F(ChooserDialogCocoaControllerTest, AddOption) {
   // |table_view_| should be enabled since there is an option.
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
   ASSERT_FALSE(connect_button_.enabled);
   ASSERT_TRUE(cancel_button_.enabled);
   ASSERT_TRUE(help_button_.enabled);
@@ -117,12 +122,14 @@ TEST_F(ChooserDialogCocoaControllerTest, AddOption) {
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(@"b", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
 
   chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
   EXPECT_EQ(3, table_view_.numberOfRows);
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:2] stringValue]);
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, RemoveOption) {
@@ -137,6 +144,8 @@ TEST_F(ChooserDialogCocoaControllerTest, RemoveOption) {
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
 
   // Remove a non-existent option, the number of rows should not change.
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("non-existent"));
@@ -144,12 +153,15 @@ TEST_F(ChooserDialogCocoaControllerTest, RemoveOption) {
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
 
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("c"));
   EXPECT_EQ(1, table_view_.numberOfRows);
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
 
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("a"));
   // There is no option shown now. But since "No devices found."
@@ -159,6 +171,9 @@ TEST_F(ChooserDialogCocoaControllerTest, RemoveOption) {
   // |table_view_| should be disabled since all options are removed.
   ASSERT_FALSE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(
+      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
+      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, UpdateOption) {
@@ -175,10 +190,9 @@ TEST_F(ChooserDialogCocoaControllerTest, UpdateOption) {
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-
-  NSCell* cell = [table_view_ preparedCellAtColumn:0 row:1];
-  EXPECT_EQ(base::ASCIIToUTF16("d"),
-            base::SysNSStringToUTF16([cell stringValue]));
+  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  EXPECT_NSEQ(@"d", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
+  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:2] stringValue]);
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, AddAndRemoveOption) {
@@ -216,14 +230,8 @@ TEST_F(ChooserDialogCocoaControllerTest, UpdateAndRemoveTheUpdatedOption) {
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-
-  NSCell* cell_a = [table_view_ preparedCellAtColumn:0 row:0];
-  EXPECT_EQ(base::ASCIIToUTF16("a"),
-            base::SysNSStringToUTF16([cell_a stringValue]));
-
-  NSCell* cell_c = [table_view_ preparedCellAtColumn:0 row:1];
-  EXPECT_EQ(base::ASCIIToUTF16("c"),
-            base::SysNSStringToUTF16([cell_c stringValue]));
+  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, SelectAndDeselectAnOption) {
@@ -352,11 +360,10 @@ TEST_F(ChooserDialogCocoaControllerTest,
                                      base::ASCIIToUTF16("d"));
 
   EXPECT_EQ(1, table_view_.selectedRow);
+  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  EXPECT_NSEQ(@"d", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
+  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:2] stringValue]);
   ASSERT_TRUE(connect_button_.enabled);
-
-  NSCell* cell = [table_view_ preparedCellAtColumn:0 row:1];
-  EXPECT_EQ(base::ASCIIToUTF16("d"),
-            base::SysNSStringToUTF16([cell stringValue]));
 }
 
 TEST_F(ChooserDialogCocoaControllerTest,
@@ -381,6 +388,9 @@ TEST_F(ChooserDialogCocoaControllerTest,
   EXPECT_EQ(-1, table_view_.selectedRow);
   // |table_view_| should be disabled since there is no option shown.
   ASSERT_FALSE(table_view_.enabled);
+  EXPECT_NSEQ(
+      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
+      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
   // Since no option selected, the "Connect" button should be disabled.
   ASSERT_FALSE(connect_button_.enabled);
 }
@@ -447,6 +457,9 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
   ASSERT_FALSE(table_view_.enabled);
   // No option selected.
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(
+      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
+      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
@@ -476,6 +489,8 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
   EXPECT_FALSE(table_view_.enabled);
   // No option selected.
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_ADAPTER_OFF),
+              [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_TRUE(rescan_button_.hidden);
@@ -487,6 +502,9 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
 
   chooser_controller_->OnAdapterPresenceChanged(
       content::BluetoothChooser::AdapterPresence::POWERED_ON);
+  EXPECT_NSEQ(
+      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
+      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
   EXPECT_EQ(0u, chooser_controller_->NumOptions());
   ASSERT_FALSE(connect_button_.enabled);
   ASSERT_TRUE(cancel_button_.enabled);
@@ -532,6 +550,9 @@ TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndNoOptionAddedAndIdle) {
   ASSERT_FALSE(table_view_.enabled);
   // No option selected.
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(
+      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
+      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
@@ -559,6 +580,7 @@ TEST_F(ChooserDialogCocoaControllerTest,
   EXPECT_EQ(1, table_view_.numberOfRows);
   // No option selected.
   EXPECT_EQ(-1, table_view_.selectedRow);
+  EXPECT_NSEQ(@"d", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_FALSE(status_.hidden);
   EXPECT_TRUE(rescan_button_.hidden);
@@ -577,6 +599,7 @@ TEST_F(ChooserDialogCocoaControllerTest,
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(1, table_view_.numberOfRows);
   EXPECT_EQ(0, table_view_.selectedRow);
+  EXPECT_NSEQ(@"d", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);

@@ -337,7 +337,9 @@ TEST_F(ChooserContentViewTest, SelectAnOptionAndUpdateTheSelectedOption) {
 
   EXPECT_EQ(1, table_view_->SelectedRowCount());
   EXPECT_EQ(1, table_view_->FirstSelectedRow());
+  EXPECT_EQ(base::ASCIIToUTF16("a"), table_model_->GetText(0, 0));
   EXPECT_EQ(base::ASCIIToUTF16("d"), table_model_->GetText(1, 0));
+  EXPECT_EQ(base::ASCIIToUTF16("c"), table_model_->GetText(2, 0));
 }
 
 TEST_F(ChooserContentViewTest,
