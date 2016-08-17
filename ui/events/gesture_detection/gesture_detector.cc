@@ -365,9 +365,9 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           if (defer_confirm_single_tap_ && double_tap_listener_ != NULL) {
             double_tap_listener_->OnSingleTapConfirmed(ev);
           }
-        } else {
-          current_single_tap_repeat_count_ = 0;
+        } else if (!all_pointers_within_slop_regions_) {
           // A fling must travel the minimum tap distance.
+          current_single_tap_repeat_count_ = 0;
           const int pointer_id = ev.GetPointerId(0);
           velocity_tracker_.ComputeCurrentVelocity(1000, max_fling_velocity_);
           const float velocity_y = velocity_tracker_.GetYVelocity(pointer_id);

@@ -357,6 +357,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     if (!velocity_x && !velocity_y)
       return true;
 
+    DCHECK(scroll_event_sent_);
     if (!scroll_event_sent_) {
       // The native side needs a ET_GESTURE_SCROLL_BEGIN before
       // ET_SCROLL_FLING_START to send the fling to the correct target.

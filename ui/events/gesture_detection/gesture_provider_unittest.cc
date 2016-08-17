@@ -1097,6 +1097,38 @@ TEST_F(GestureProviderTest, ScrollStartWithSecondaryPointer) {
   EXPECT_EQ(4U, GetReceivedGestureCount());
 }
 
+TEST_F(GestureProviderTest, NoFlingBeforeExeedingSlopRegion) {
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  base::TimeDelta delta_time = kDeltaTimeForFlingSequences;
+  MockMotionEvent event = ObtainMotionEvent(event_time + delta_time,
+                                            MotionEvent::ACTION_DOWN, 0, 0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time + 2 * delta_time,
+                            MotionEvent::ACTION_POINTER_DOWN, 0, 0, 10, 0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  // Fast pointer movements within touch slop region.
+  event = ObtainMotionEvent(event_time + 3 * delta_time,
+                            MotionEvent::ACTION_MOVE, 1, 0, 11, 0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time + 4 * delta_time,
+                            MotionEvent::ACTION_MOVE, 2, 0, 12, 0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time + 5 * delta_time,
+                            MotionEvent::ACTION_MOVE, 3, 0, 13, 0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event.ReleasePointAtIndex(0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event.ReleasePoint();
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  // No fling must happen even though velocity is greater than the required
+  // minium.
+  EXPECT_EQ(1U, GetReceivedGestureCount());
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetReceivedGesture(0).type());
+}
+
 TEST_F(GestureProviderTest, LongPressAndTapCancelledWhenScrollBegins) {
   base::TimeTicks event_time = base::TimeTicks::Now();
 
