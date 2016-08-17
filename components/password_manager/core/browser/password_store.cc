@@ -677,4 +677,11 @@ void PasswordStore::DestroySyncableService() {
   syncable_service_.reset();
 }
 
+std::ostream& operator<<(std::ostream& os,
+                         const PasswordStore::FormDigest& digest) {
+  return os << "FormDigest(scheme: " << digest.scheme
+            << ", signon_realm: " << digest.signon_realm
+            << ", origin: " << digest.origin << ")";
+}
+
 }  // namespace password_manager

@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_H_
 
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -492,6 +493,10 @@ class PasswordStore : protected PasswordStoreSync,
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };
+
+// For logging only.
+std::ostream& operator<<(std::ostream& os,
+                         const PasswordStore::FormDigest& digest);
 
 }  // namespace password_manager
 
