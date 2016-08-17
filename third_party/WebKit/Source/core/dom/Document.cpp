@@ -450,7 +450,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_compositorPendingAnimations(new CompositorPendingAnimations())
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
-    , m_timers(TaskRunnerHelper::getTimerTaskRunner(this)->clone())
+    , m_timers(TaskRunnerHelper::get(TaskType::Timer, this)->clone())
     , m_hasViewportUnits(false)
     , m_parserSyncPolicy(AllowAsynchronousParsing)
     , m_nodeCount(0)
