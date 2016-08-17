@@ -9,12 +9,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import java.util.UUID;
 

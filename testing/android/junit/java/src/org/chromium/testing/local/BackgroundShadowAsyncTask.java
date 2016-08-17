@@ -8,9 +8,9 @@ import static org.junit.Assert.fail;
 
 import android.os.AsyncTask;
 
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowAsyncTask;
 
 import java.util.concurrent.Callable;
@@ -61,7 +61,7 @@ public class BackgroundShadowAsyncTask<Params, Progress, Result> extends
         sExecutorService.submit(new Runnable() {
             @Override
             public void run() {
-                Robolectric.runBackgroundTasks();
+                ShadowApplication.runBackgroundTasks();
             }
         }).get();
     }

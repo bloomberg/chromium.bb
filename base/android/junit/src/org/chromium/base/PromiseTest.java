@@ -13,7 +13,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowHandler;
+import org.robolectric.shadows.ShadowLooper;
 
 /** Unit tests for {@link Promise}. */
 @RunWith(LocalRobolectricTestRunner.class)
@@ -104,7 +104,7 @@ public class PromiseTest {
                 });
 
         promise.fulfill(new Integer(123));
-        ShadowHandler.runMainLooperToEndOfTasks();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertEquals(6, value.get());
     }
 
@@ -131,11 +131,11 @@ public class PromiseTest {
         assertEquals(0, value.get());
 
         promise.fulfill(5);
-        ShadowHandler.runMainLooperToEndOfTasks();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertEquals(0, value.get());
 
         innerPromise.fulfill("abc");
-        ShadowHandler.runMainLooperToEndOfTasks();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertEquals(3, value.get());
     }
 
@@ -147,7 +147,7 @@ public class PromiseTest {
         boolean caught = false;
         try {
             promise.reject();
-            ShadowHandler.runMainLooperToEndOfTasks();
+            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         } catch (UnhandledRejectionException e) {
             caught = true;
         }
@@ -163,7 +163,7 @@ public class PromiseTest {
         boolean caught = false;
         try {
             promise.reject();
-            ShadowHandler.runMainLooperToEndOfTasks();
+            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         } catch (UnhandledRejectionException e) {
             caught = true;
         }
@@ -179,7 +179,7 @@ public class PromiseTest {
         boolean caught = false;
         try {
             promise.reject();
-            ShadowHandler.runMainLooperToEndOfTasks();
+            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         } catch (UnhandledRejectionException e) {
             caught = true;
         }
@@ -195,7 +195,7 @@ public class PromiseTest {
         String message = "Promise Test";
         try {
             promise.reject(new NegativeArraySizeException(message));
-            ShadowHandler.runMainLooperToEndOfTasks();
+            ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         } catch (UnhandledRejectionException e) {
             assertTrue(e.getCause() instanceof NegativeArraySizeException);
             assertEquals(e.getCause().getMessage(), message);
@@ -214,7 +214,7 @@ public class PromiseTest {
         result.then(this.<Integer>pass(), this.<Exception>setValue(value, 5));
 
         promise.reject(new Exception());
-        ShadowHandler.runMainLooperToEndOfTasks();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
         assertEquals(value.get(), 5);
         assertTrue(result.isRejected());
@@ -234,7 +234,7 @@ public class PromiseTest {
 
         promise.fulfill(0);
 
-        ShadowHandler.runMainLooperToEndOfTasks();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertEquals(value.get(), 5);
     }
 
@@ -253,7 +253,7 @@ public class PromiseTest {
 
         promise.fulfill(0);
 
-        ShadowHandler.runMainLooperToEndOfTasks();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertEquals(value.get(), 5);
     }
 
@@ -273,12 +273,12 @@ public class PromiseTest {
 
         promise.fulfill(0);
 
-        ShadowHandler.runMainLooperToEndOfTasks();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertEquals(value.get(), 0);
 
         inner.reject();
 
-        ShadowHandler.runMainLooperToEndOfTasks();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertEquals(value.get(), 5);
     }
 

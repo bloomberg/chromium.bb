@@ -20,7 +20,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.io.ByteArrayInputStream;
@@ -46,7 +46,7 @@ public class ChromeBackupAgentTest {
         ChromeTestBackupAgent(byte[] mChromeInputPrefs) {
             // This is protected in ContextWrapper, so can only be called within a derived
             // class.
-            attachBaseContext(Robolectric.application);
+            attachBaseContext(RuntimeEnvironment.application);
             mInputStream = new ByteArrayInputStream(mChromeInputPrefs);
             mOutputStream = new ByteArrayOutputStream();
         }
@@ -79,9 +79,9 @@ public class ChromeBackupAgentTest {
 
     @Before
     public void setUp() throws Exception {
-        ContextUtils.initApplicationContextForTests(Robolectric.application);
-        AccountManager manager =
-                (AccountManager) Robolectric.application.getSystemService(Context.ACCOUNT_SERVICE);
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        AccountManager manager = (AccountManager) RuntimeEnvironment.application.getSystemService(
+                Context.ACCOUNT_SERVICE);
         manager.addAccountExplicitly(new Account("user1", "dummy"), null, null);
         manager.addAccountExplicitly(new Account("user2", "dummy"), null, null);
     }

@@ -17,7 +17,6 @@ import static org.mockito.Mockito.verify;
 import android.content.Context;
 
 import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -29,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 /**
  * Unit tests for OfflinePageUtils.

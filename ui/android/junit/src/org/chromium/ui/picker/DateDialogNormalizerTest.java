@@ -22,7 +22,8 @@ import java.util.TimeZone;
  * Tests for DateDialogNormalizer.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+// sdk 18 is used due to a bug in Robolectric, crbug.com/635199
+@Config(manifest = Config.NONE, sdk = 18)
 public class DateDialogNormalizerTest {
 
     private static final long MILLIS_PER_MINUTE = 60 * 1000;

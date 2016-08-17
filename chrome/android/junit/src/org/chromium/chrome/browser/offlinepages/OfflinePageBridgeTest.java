@@ -20,7 +20,6 @@ import static org.mockito.Mockito.verify;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -33,6 +32,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import java.util.List;
 import java.util.Set;

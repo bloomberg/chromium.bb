@@ -18,34 +18,34 @@ import org.robolectric.annotation.Implements;
  */
 @Implements(GcmNetworkManager.class)
 public class ShadowGcmNetworkManager {
-    private static Task sTask;
-    private static Task sCanceledTask;
+    private Task mTask;
+    private Task mCanceledTask;
 
     @Implementation
-    public static void schedule(Task task) {
+    public void schedule(Task task) {
         // Capture the string part divisions so we can check them.
-        sTask = task;
+        mTask = task;
     }
 
     @Implementation
-    public static void cancelTask(String tag, Class<? extends GcmTaskService> gcmTaskService) {
-        if (sTask != null && sTask.getTag().equals(tag)
-                && sTask.getServiceName().equals(gcmTaskService.getName())) {
-            sCanceledTask = sTask;
-            sTask = null;
+    public void cancelTask(String tag, Class<? extends GcmTaskService> gcmTaskService) {
+        if (mTask != null && mTask.getTag().equals(tag)
+                && mTask.getServiceName().equals(gcmTaskService.getName())) {
+            mCanceledTask = mTask;
+            mTask = null;
         }
     }
 
-    public static Task getScheduledTask() {
-        return sTask;
+    public Task getScheduledTask() {
+        return mTask;
     }
 
-    public static Task getCanceledTask() {
-        return sCanceledTask;
+    public Task getCanceledTask() {
+        return mCanceledTask;
     }
 
-    public static void clear() {
-        sTask = null;
-        sCanceledTask = null;
+    public void clear() {
+        mTask = null;
+        mCanceledTask = null;
     }
 }

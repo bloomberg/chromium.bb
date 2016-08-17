@@ -21,8 +21,9 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -135,7 +136,7 @@ public class WebappRegistryTest {
 
     @Before
     public void setUp() throws Exception {
-        mSharedPreferences = Robolectric.application
+        mSharedPreferences = RuntimeEnvironment.application
                 .getSharedPreferences(REGISTRY_FILE_NAME, Context.MODE_PRIVATE);
         mSharedPreferences.edit().putLong(KEY_LAST_CLEANUP, INITIAL_TIME).commit();
 
@@ -153,7 +154,8 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testWebappRegistrationAddsToSharedPrefs() throws Exception {
-        WebappRegistry.registerWebapp(Robolectric.application, "test", null);
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "test", null);
+
         BackgroundShadowAsyncTask.runBackgroundTasks();
 
         Set<String> actual = mSharedPreferences.getStringSet(
@@ -165,11 +167,12 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testWebappRegistrationUpdatesLastUsed() throws Exception {
-        WebappRegistry.registerWebapp(Robolectric.application, "test", null);
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "test", null);
+
         BackgroundShadowAsyncTask.runBackgroundTasks();
         long after = System.currentTimeMillis();
 
-        SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+        SharedPreferences webAppPrefs = RuntimeEnvironment.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "test", Context.MODE_PRIVATE);
         long actual = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
                 WebappDataStorage.LAST_USED_INVALID);
@@ -182,9 +185,10 @@ public class WebappRegistryTest {
         final Set<String> expected = addWebappsToRegistry("first", "second");
 
         FetchCallback callback = new FetchCallback(expected);
-        WebappRegistry.getRegisteredWebappIds(Robolectric.application, callback);
+        WebappRegistry.getRegisteredWebappIds(RuntimeEnvironment.application, callback);
+
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         assertTrue(callback.getCallbackCalled());
     }
@@ -195,13 +199,15 @@ public class WebappRegistryTest {
         final Set<String> expected = addWebappsToRegistry("first");
 
         FetchCallback callback = new FetchCallback(expected);
-        WebappRegistry.getRegisteredWebappIds(Robolectric.application, callback);
+        WebappRegistry.getRegisteredWebappIds(RuntimeEnvironment.application, callback);
+
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         assertTrue(callback.getCallbackCalled());
 
-        WebappRegistry.registerWebapp(Robolectric.application, "second", null);
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "second", null);
+
         BackgroundShadowAsyncTask.runBackgroundTasks();
 
         // A copy of the expected set needs to be made as the SharedPreferences is using the copy
@@ -210,9 +216,10 @@ public class WebappRegistryTest {
         secondExpected.add("second");
 
         callback = new FetchCallback(secondExpected);
-        WebappRegistry.getRegisteredWebappIds(Robolectric.application, callback);
+        WebappRegistry.getRegisteredWebappIds(RuntimeEnvironment.application, callback);
+
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         assertTrue(callback.getCallbackCalled());
     }
@@ -222,9 +229,9 @@ public class WebappRegistryTest {
     public void testUnregisterRunsCallback() throws Exception {
         CallbackRunner callback = new CallbackRunner();
         WebappRegistry.unregisterWebappsForUrls(
-                Robolectric.application, new UrlFilters.AllUrls(), callback);
+                RuntimeEnvironment.application, new UrlFilters.AllUrls(), callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         assertTrue(callback.getCallbackCalled());
     }
@@ -238,19 +245,19 @@ public class WebappRegistryTest {
         apps.put("webapp3", "https://www.chrome.com");
 
         for (Map.Entry<String, String> app : apps.entrySet()) {
-            WebappRegistry.registerWebapp(Robolectric.application, app.getKey(),
+            WebappRegistry.registerWebapp(RuntimeEnvironment.application, app.getKey(),
                     new FetchStorageCallback(createShortcutIntent(app.getValue())));
         }
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         // Partial deletion.
         CallbackRunner callback = new CallbackRunner();
         WebappRegistry.unregisterWebappsForUrls(
-                Robolectric.application,
+                RuntimeEnvironment.application,
                 new UrlFilters.OneUrl("http://example.com/index.html"), callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         assertTrue(callback.getCallbackCalled());
         Set<String> registeredWebapps = getRegisteredWebapps();
@@ -263,9 +270,9 @@ public class WebappRegistryTest {
         // Full deletion.
         callback = new CallbackRunner();
         WebappRegistry.unregisterWebappsForUrls(
-                Robolectric.application, new UrlFilters.AllUrls(), callback);
+                RuntimeEnvironment.application, new UrlFilters.AllUrls(), callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         assertTrue(callback.getCallbackCalled());
         assertTrue(getRegisteredWebapps().isEmpty());
@@ -280,35 +287,36 @@ public class WebappRegistryTest {
         apps.put("webapp3", "https://www.chrome.com");
 
         for (Map.Entry<String, String> app : apps.entrySet()) {
-            WebappRegistry.registerWebapp(Robolectric.application, app.getKey(),
+            WebappRegistry.registerWebapp(RuntimeEnvironment.application, app.getKey(),
                     new FetchStorageCallback(createShortcutIntent(app.getValue())));
         }
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         for (String appName : apps.keySet()) {
-            SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+            SharedPreferences webAppPrefs = RuntimeEnvironment.application.getSharedPreferences(
                     WebappDataStorage.SHARED_PREFS_FILE_PREFIX + appName, Context.MODE_PRIVATE);
             webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, 100L).apply();
         }
 
         // Partial deletion.
         WebappRegistry.unregisterWebappsForUrls(
-                Robolectric.application,
+                RuntimeEnvironment.application,
                 new UrlFilters.OneUrl("http://example.com/index.html"), null);
+
         BackgroundShadowAsyncTask.runBackgroundTasks();
         for (String appName : apps.keySet()) {
-            SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+            SharedPreferences webAppPrefs = RuntimeEnvironment.application.getSharedPreferences(
                     WebappDataStorage.SHARED_PREFS_FILE_PREFIX + appName, Context.MODE_PRIVATE);
             assertEquals(TextUtils.equals(appName, "webapp1"), webAppPrefs.getAll().isEmpty());
         }
 
         // Full deletion.
         WebappRegistry.unregisterWebappsForUrls(
-                Robolectric.application, new UrlFilters.AllUrls(), null);
+                RuntimeEnvironment.application, new UrlFilters.AllUrls(), null);
         BackgroundShadowAsyncTask.runBackgroundTasks();
         for (String appName : apps.keySet()) {
-            SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+            SharedPreferences webAppPrefs = RuntimeEnvironment.application.getSharedPreferences(
                     WebappDataStorage.SHARED_PREFS_FILE_PREFIX + appName, Context.MODE_PRIVATE);
             assertTrue(webAppPrefs.getAll().isEmpty());
         }
@@ -321,11 +329,11 @@ public class WebappRegistryTest {
         long currentTime = INITIAL_TIME + WebappRegistry.FULL_CLEANUP_DURATION - 1;
 
         addWebappsToRegistry("oldWebapp");
-        SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+        SharedPreferences webAppPrefs = RuntimeEnvironment.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "oldWebapp", Context.MODE_PRIVATE);
         webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, Long.MIN_VALUE).apply();
 
-        WebappRegistry.unregisterOldWebapps(Robolectric.application, currentTime);
+        WebappRegistry.unregisterOldWebapps(RuntimeEnvironment.application, currentTime);
         BackgroundShadowAsyncTask.runBackgroundTasks();
 
         Set<String> actual = mSharedPreferences.getStringSet(
@@ -349,7 +357,7 @@ public class WebappRegistryTest {
 
         // Put the last used time just inside the no-cleanup window.
         addWebappsToRegistry("recentWebapp");
-        SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+        SharedPreferences webAppPrefs = RuntimeEnvironment.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "recentWebapp", Context.MODE_PRIVATE);
         long lastUsed = currentTime - WebappRegistry.WEBAPP_UNOPENED_CLEANUP_DURATION + 1;
         webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, lastUsed).apply();
@@ -357,7 +365,7 @@ public class WebappRegistryTest {
         // Because the time is just inside the window, there should be a cleanup but the web app
         // should not be deleted as it was used recently. The last cleanup time should also be
         // set to the current time.
-        WebappRegistry.unregisterOldWebapps(Robolectric.application, currentTime);
+        WebappRegistry.unregisterOldWebapps(RuntimeEnvironment.application, currentTime);
         BackgroundShadowAsyncTask.runBackgroundTasks();
 
         Set<String> actual = mSharedPreferences.getStringSet(
@@ -380,14 +388,14 @@ public class WebappRegistryTest {
 
         // Put the last used time just outside the no-cleanup window.
         addWebappsToRegistry("oldWebapp");
-        SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
+        SharedPreferences webAppPrefs = RuntimeEnvironment.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "oldWebapp", Context.MODE_PRIVATE);
         long lastUsed = currentTime - WebappRegistry.WEBAPP_UNOPENED_CLEANUP_DURATION;
         webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, lastUsed).apply();
 
         // Because the time is just inside the window, there should be a cleanup of old web apps and
         // the last cleaned up time should be set to the current time.
-        WebappRegistry.unregisterOldWebapps(Robolectric.application, currentTime);
+        WebappRegistry.unregisterOldWebapps(RuntimeEnvironment.application, currentTime);
         BackgroundShadowAsyncTask.runBackgroundTasks();
 
         Set<String> actual = mSharedPreferences.getStringSet(
@@ -412,16 +420,16 @@ public class WebappRegistryTest {
 
         FetchStorageCallback storageCallback1 = new FetchStorageCallback(
                 createWebApkIntent(webappId1, webApkPackage1));
-        WebappRegistry.registerWebapp(Robolectric.application, webappId1, storageCallback1);
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, webappId1, storageCallback1);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(storageCallback1.getCallbackCalled());
 
         FetchStorageCallback storageCallback2 = new FetchStorageCallback(
                 createWebApkIntent(webappId1, webApkPackage2));
-        WebappRegistry.registerWebapp(Robolectric.application, webappId2, storageCallback2);
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, webappId2, storageCallback2);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(storageCallback2.getCallbackCalled());
 
         // Verify that both WebAPKs are registered.
@@ -436,9 +444,9 @@ public class WebappRegistryTest {
         // Because the time is just inside the window, there should be a cleanup of
         // uninstalled WebAPKs and the last cleaned up time should be set to the
         // current time.
-        WebappRegistry.unregisterOldWebapps(Robolectric.application, currentTime);
+        WebappRegistry.unregisterOldWebapps(RuntimeEnvironment.application, currentTime);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         actual = mSharedPreferences.getStringSet(
                 WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
@@ -459,17 +467,17 @@ public class WebappRegistryTest {
 
         FetchStorageCallback storageCallback = new FetchStorageCallback(
                 createWebApkIntent(webappId, webApkPackage));
-        WebappRegistry.registerWebapp(Robolectric.application, webappId, storageCallback);
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, webappId, storageCallback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(storageCallback.getCallbackCalled());
 
         FetchStorageCallback storageCallback2 = new FetchStorageCallback(
                 createWebApkIntent(uninstalledWebappId, uninstalledWebApkPackage));
-        WebappRegistry.registerWebapp(Robolectric.application, uninstalledWebappId,
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, uninstalledWebappId,
                 storageCallback2);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(storageCallback2.getCallbackCalled());
 
         // Verify that both WebAPKs are registered.
@@ -479,16 +487,16 @@ public class WebappRegistryTest {
         assertTrue(actual.contains(webappId));
         assertTrue(actual.contains(uninstalledWebappId));
 
-        Robolectric.packageManager.addPackage(webApkPackage);
+        RuntimeEnvironment.getRobolectricPackageManager().addPackage(webApkPackage);
 
         // Set the current time such that the task runs.
         long currentTime = System.currentTimeMillis() + WebappRegistry.FULL_CLEANUP_DURATION;
         // Because the time is just inside the window, there should be a cleanup of
         // uninstalled WebAPKs and the last cleaned up time should be set to the
         // current time.
-        WebappRegistry.unregisterOldWebapps(Robolectric.application, currentTime);
+        WebappRegistry.unregisterOldWebapps(RuntimeEnvironment.application, currentTime);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         actual = mSharedPreferences.getStringSet(
                 WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
@@ -504,9 +512,9 @@ public class WebappRegistryTest {
     @Feature({"Webapp"})
     public void testClearWebappHistoryRunsCallback() throws Exception {
         CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.clearWebappHistory(Robolectric.application, callback);
+        WebappRegistry.clearWebappHistory(RuntimeEnvironment.application, callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         assertTrue(callback.getCallbackCalled());
     }
@@ -520,26 +528,26 @@ public class WebappRegistryTest {
         Intent shortcutIntent2 = createShortcutIntent(webapp2Url);
 
         FetchStorageCallback storageCallback1 = new FetchStorageCallback(shortcutIntent1);
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp1", storageCallback1);
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "webapp1", storageCallback1);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(storageCallback1.getCallbackCalled());
 
         FetchStorageCallback storageCallback2 = new FetchStorageCallback(shortcutIntent2);
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp2", storageCallback2);
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "webapp2", storageCallback2);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(storageCallback2.getCallbackCalled());
 
-        SharedPreferences webapp1Prefs = Robolectric.application.getSharedPreferences(
+        SharedPreferences webapp1Prefs = RuntimeEnvironment.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp1", Context.MODE_PRIVATE);
-        SharedPreferences webapp2Prefs = Robolectric.application.getSharedPreferences(
+        SharedPreferences webapp2Prefs = RuntimeEnvironment.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp2", Context.MODE_PRIVATE);
 
         CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.clearWebappHistory(Robolectric.application, callback);
+        WebappRegistry.clearWebappHistory(RuntimeEnvironment.application, callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(callback.getCallbackCalled());
 
         Set<String> actual = mSharedPreferences.getStringSet(
@@ -574,22 +582,23 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testGetAfterClearWebappHistory() throws Exception {
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp", null);
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "webapp", null);
         BackgroundShadowAsyncTask.runBackgroundTasks();
 
-        SharedPreferences webappPrefs = Robolectric.application.getSharedPreferences(
+        SharedPreferences webappPrefs = RuntimeEnvironment.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp", Context.MODE_PRIVATE);
         CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.clearWebappHistory(Robolectric.application, callback);
+        WebappRegistry.clearWebappHistory(RuntimeEnvironment.application, callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(callback.getCallbackCalled());
 
         // Open the webapp up to set the last used time.
         FetchStorageCallback storageCallback = new FetchStorageCallback(null);
-        WebappRegistry.getWebappDataStorage(Robolectric.application, "webapp", storageCallback);
+        WebappRegistry.getWebappDataStorage(
+                RuntimeEnvironment.application, "webapp", storageCallback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(storageCallback.getCallbackCalled());
 
         // Verify that the last used time is valid.
@@ -605,12 +614,12 @@ public class WebappRegistryTest {
         final String webappUrl = "http://www.google.com";
         final String webappScope = "http://www.google.com/";
         final Intent shortcutIntent = createShortcutIntent(webappUrl);
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp",
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "webapp",
                 new FetchStorageCallback(shortcutIntent));
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
-        SharedPreferences webappPrefs = Robolectric.application.getSharedPreferences(
+        SharedPreferences webappPrefs = RuntimeEnvironment.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp", Context.MODE_PRIVATE);
 
         // Verify that the URL and scope match the original in the intent.
@@ -621,15 +630,15 @@ public class WebappRegistryTest {
                 WebappDataStorage.KEY_SCOPE, WebappDataStorage.URL_INVALID);
         assertEquals(webappScope, actualScope);
 
-        WebappRegistry.clearWebappHistory(Robolectric.application, new CallbackRunner());
+        WebappRegistry.clearWebappHistory(RuntimeEnvironment.application, new CallbackRunner());
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         // Update the webapp from the intent again.
-        WebappRegistry.getWebappDataStorage(Robolectric.application, "webapp",
+        WebappRegistry.getWebappDataStorage(RuntimeEnvironment.application, "webapp",
                 new FetchStorageCallback(shortcutIntent));
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         // Verify that the URL and scope match the original in the intent.
         actualUrl = webappPrefs.getString(WebappDataStorage.KEY_URL, WebappDataStorage.URL_INVALID);
@@ -665,66 +674,71 @@ public class WebappRegistryTest {
         Intent shortcutIntent4 = createShortcutIntent(webapp4Url);
 
         // Register the four web apps.
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp1",
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "webapp1",
                 new FetchStorageCallback(shortcutIntent1));
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp2",
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "webapp2",
                 new FetchStorageCallback(shortcutIntent2));
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp3",
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "webapp3",
                 new FetchStorageCallback(shortcutIntent3));
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
-        WebappRegistry.registerWebapp(Robolectric.application, "webapp4",
+        WebappRegistry.registerWebapp(RuntimeEnvironment.application, "webapp4",
                 new FetchStorageCallback(shortcutIntent4));
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
 
         // test1Url should return webapp1.
         FetchStorageByUrlCallback callback = new FetchStorageByUrlCallback(webapp1Url, webapp1Url);
-        WebappRegistry.getWebappDataStorageForUrl(Robolectric.application, test1Url, callback);
+        WebappRegistry.getWebappDataStorageForUrl(
+                RuntimeEnvironment.application, test1Url, callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(callback.getCallbackCalled());
 
         // test2Url should return webapp3.
         callback = new FetchStorageByUrlCallback(webapp3Url, webapp3Scope);
-        WebappRegistry.getWebappDataStorageForUrl(Robolectric.application, test2Url, callback);
+        WebappRegistry.getWebappDataStorageForUrl(
+                RuntimeEnvironment.application, test2Url, callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(callback.getCallbackCalled());
 
         // test3Url should return webapp4.
         callback = new FetchStorageByUrlCallback(webapp4Url, webapp4Scope);
-        WebappRegistry.getWebappDataStorageForUrl(Robolectric.application, test3Url, callback);
+        WebappRegistry.getWebappDataStorageForUrl(
+                RuntimeEnvironment.application, test3Url, callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(callback.getCallbackCalled());
 
         // test4Url should return webapp4.
         callback = new FetchStorageByUrlCallback(webapp4Url, webapp4Scope);
-        WebappRegistry.getWebappDataStorageForUrl(Robolectric.application, test4Url, callback);
+        WebappRegistry.getWebappDataStorageForUrl(
+                RuntimeEnvironment.application, test4Url, callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(callback.getCallbackCalled());
 
         // test5Url should return webapp2.
         callback = new FetchStorageByUrlCallback(webapp2Url, webapp2Url);
-        WebappRegistry.getWebappDataStorageForUrl(Robolectric.application, test5Url, callback);
+        WebappRegistry.getWebappDataStorageForUrl(
+                RuntimeEnvironment.application, test5Url, callback);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(callback.getCallbackCalled());
 
         // test6Url doesn't correspond to a web app, so the storage returned is null.
         // This must use a member variable; local variables must be final or effectively final to be
         // accessible inside an inner class.
         mCallbackCalled = false;
-        WebappRegistry.getWebappDataStorageForUrl(Robolectric.application, test6Url,
+        WebappRegistry.getWebappDataStorageForUrl(RuntimeEnvironment.application, test6Url,
                 new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
@@ -734,7 +748,7 @@ public class WebappRegistryTest {
                 }
         );
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        Robolectric.runUiThreadTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(mCallbackCalled);
     }
 

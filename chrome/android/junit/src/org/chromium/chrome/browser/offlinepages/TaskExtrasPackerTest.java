@@ -12,12 +12,12 @@ import android.os.Bundle;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBackgroundService;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link TaskExtrasPacker}. */
-@RunWith(JUnit4.class)
+@RunWith(LocalRobolectricTestRunner.class)
 public class TaskExtrasPackerTest {
     @Test
     @Feature({"OfflinePages"})

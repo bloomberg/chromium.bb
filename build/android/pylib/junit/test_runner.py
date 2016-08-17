@@ -46,6 +46,12 @@ class JavaTestRunner(object):
 
       # Add JVM arguments.
       jvm_args = []
+      # TODO(mikecase): Add a --robolectric-dep-dir arg to test runner.
+      # Have this arg set by GN in the generated test runner scripts.
+      jvm_args += [
+          '-Drobolectric.dependency.dir=%s' %
+          os.path.join(constants.GetOutDirectory(),
+              'lib.java', 'third_party', 'robolectric')]
       if self._coverage_dir:
         if not os.path.exists(self._coverage_dir):
           os.makedirs(self._coverage_dir)
