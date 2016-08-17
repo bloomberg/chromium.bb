@@ -472,9 +472,17 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
       std::unique_ptr<shell::InterfaceRegistry> registry)
       : child_identity_(child_identity),
         registry_(std::move(registry)),
-        weak_factory_(this) {}
+        weak_factory_(this) {
+    // Registration of this filter may race with browser shutdown, in which case
+    // it's possible for this filter to be destroyed on the main thread. This
+    // is fine as long as the filter hasn't been used on the IO thread yet. We
+    // detach the ThreadChecker initially and the first use of the filter will
+    // bind it.
+    thread_checker_.DetachFromThread();
+  }
+
   ~ConnectionFilterImpl() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(thread_checker_.CalledOnValidThread());
   }
 
  private:
@@ -482,6 +490,8 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // We only fulfill connections from the renderer we host.
     if (child_identity_.name() != remote_identity.name() ||
         child_identity_.instance() != remote_identity.instance()) {
@@ -503,10 +513,13 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
 
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle handle) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     shell::mojom::InterfaceProvider* provider = registry_.get();
     provider->GetInterface(interface_name, std::move(handle));
   }
 
+  base::ThreadChecker thread_checker_;
   shell::Identity child_identity_;
   std::unique_ptr<shell::InterfaceRegistry> registry_;
   base::WeakPtrFactory<ConnectionFilterImpl> weak_factory_;

@@ -90,7 +90,12 @@ class MojoShellConnectionImpl::IOThreadContext
   // i.e. can be called when starting the process but not afterwards.
   int AddConnectionFilter(std::unique_ptr<ConnectionFilter> filter) {
     base::AutoLock lock(lock_);
+
     int id = ++next_filter_id_;
+
+    // We should never hit this in practice, but let's crash just in case.
+    CHECK_NE(id, kInvalidConnectionFilterId);
+
     connection_filters_[id] = std::move(filter);
     return id;
   }
@@ -114,25 +119,40 @@ class MojoShellConnectionImpl::IOThreadContext
  private:
   friend class base::RefCountedThreadSafe<IOThreadContext>;
 
-  class Obs : public base::MessageLoop::DestructionObserver {
+  class MessageLoopObserver : public base::MessageLoop::DestructionObserver {
    public:
-    explicit Obs(base::WeakPtr<IOThreadContext> context) : context_(context) {
+    explicit MessageLoopObserver(base::WeakPtr<IOThreadContext> context)
+        : context_(context) {
       base::MessageLoop::current()->AddDestructionObserver(this);
     }
-    ~Obs() override {
+
+    ~MessageLoopObserver() override {
       base::MessageLoop::current()->RemoveDestructionObserver(this);
+    }
+
+    void ShutDown() {
+      if (!is_active_)
+        return;
+
+      // The call into |context_| below may reenter ShutDown(), hence we set
+      // |is_active_| to false here.
+      is_active_ = false;
+      if (context_)
+        context_->ShutDownOnIOThread();
+
+      delete this;
     }
 
    private:
     void WillDestroyCurrentMessageLoop() override {
-      if (context_)
-        context_->ShutDownOnIOThread();
-      delete this;
+      DCHECK(is_active_);
+      ShutDown();
     }
 
+    bool is_active_ = true;
     base::WeakPtr<IOThreadContext> context_;
 
-    DISALLOW_COPY_AND_ASSIGN(Obs);
+    DISALLOW_COPY_AND_ASSIGN(MessageLoopObserver);
   };
 
   ~IOThreadContext() override {}
@@ -144,18 +164,37 @@ class MojoShellConnectionImpl::IOThreadContext
         this, std::move(pending_service_request_),
         std::move(io_thread_connector_),
         std::move(pending_connector_request_)));
-    new Obs(weak_factory_.GetWeakPtr());
+
+    // MessageLoopObserver owns itself.
+    message_loop_observer_ =
+        new MessageLoopObserver(weak_factory_.GetWeakPtr());
   }
 
   void ShutDownOnIOThread() {
     DCHECK(io_thread_checker_.CalledOnValidThread());
+
     weak_factory_.InvalidateWeakPtrs();
+
+    // Note that this method may be invoked by MessageLoopObserver observing
+    // MessageLoop destruction. In that case, this call to ShutDown is
+    // effectively a no-op. In any case it's safe.
+    message_loop_observer_->ShutDown();
+    message_loop_observer_ = nullptr;
+
+    // Resetting the ServiceContext below may otherwise release the last
+    // reference to this IOThreadContext. We keep it alive until the stack
+    // unwinds.
+    scoped_refptr<IOThreadContext> keepalive(this);
+
     factory_bindings_.CloseAllBindings();
-    connection_filters_.clear();
     service_context_.reset();
+
+    base::AutoLock lock(lock_);
+    connection_filters_.clear();
   }
 
   void RemoveConnectionFilterOnIOThread(int filter_id) {
+    base::AutoLock lock(lock_);
     auto it = connection_filters_.find(filter_id);
     DCHECK(it != connection_filters_.end());
     connection_filters_.erase(it);
@@ -189,9 +228,12 @@ class MojoShellConnectionImpl::IOThreadContext
     }
 
     bool accept = false;
-    for (auto& entry : connection_filters_) {
-      accept |= entry.second->OnConnect(remote_identity, registry,
-                                        service_context_->connector());
+    {
+      base::AutoLock lock(lock_);
+      for (auto& entry : connection_filters_) {
+        accept |= entry.second->OnConnect(remote_identity, registry,
+                                          service_context_->connector());
+      }
     }
 
     if (remote_identity.name() == "exe:content_browser" &&
@@ -279,10 +321,14 @@ class MojoShellConnectionImpl::IOThreadContext
 
   std::unique_ptr<shell::ServiceContext> service_context_;
   mojo::BindingSet<shell::mojom::ServiceFactory> factory_bindings_;
-  std::map<int, std::unique_ptr<ConnectionFilter>> connection_filters_;
   int next_filter_id_ = kInvalidConnectionFilterId;
 
+  // Not owned.
+  MessageLoopObserver* message_loop_observer_ = nullptr;
+
+  // Guards |connection_filters_|.
   base::Lock lock_;
+  std::map<int, std::unique_ptr<ConnectionFilter>> connection_filters_;
 
   base::WeakPtrFactory<IOThreadContext> weak_factory_;
 
