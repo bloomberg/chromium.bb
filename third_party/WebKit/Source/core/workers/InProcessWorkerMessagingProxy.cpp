@@ -84,7 +84,7 @@ InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(InProcessWorkerBase
     , m_askedToTerminate(false)
     , m_workerInspectorProxy(WorkerInspectorProxy::create())
     , m_workerClients(workerClients)
-    , m_parentFrameTaskRunners(new ParentFrameTaskRunners(toDocument(m_executionContext.get())->frame()))
+    , m_parentFrameTaskRunners(ParentFrameTaskRunners::create(toDocument(m_executionContext.get())->frame()))
 {
     DCHECK(isParentContextThread());
     DCHECK(m_workerObject);

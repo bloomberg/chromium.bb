@@ -5,6 +5,7 @@
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 
 #include "core/html/ImageData.h"
+#include "core/testing/DummyPageHolder.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,8 +18,8 @@ typedef CanvasAsyncBlobCreator::IdleTaskStatus IdleTaskStatus;
 
 class MockCanvasAsyncBlobCreator : public CanvasAsyncBlobCreator {
 public:
-    MockCanvasAsyncBlobCreator(DOMUint8ClampedArray* data, const IntSize& size, MimeType mimeType)
-        : CanvasAsyncBlobCreator(data, mimeType, size, nullptr, 0, nullptr)
+    MockCanvasAsyncBlobCreator(DOMUint8ClampedArray* data, const IntSize& size, MimeType mimeType, Document& document)
+        : CanvasAsyncBlobCreator(data, mimeType, size, nullptr, 0, document)
     {
     }
 
@@ -54,8 +55,8 @@ void MockCanvasAsyncBlobCreator::postDelayedTaskToMainThread(const WebTraceLocat
 
 class MockCanvasAsyncBlobCreatorWithoutStartPng : public MockCanvasAsyncBlobCreator {
 public:
-    MockCanvasAsyncBlobCreatorWithoutStartPng(DOMUint8ClampedArray* data, const IntSize& size)
-        : MockCanvasAsyncBlobCreator(data, size, MimeTypePng)
+    MockCanvasAsyncBlobCreatorWithoutStartPng(DOMUint8ClampedArray* data, const IntSize& size, Document& document)
+        : MockCanvasAsyncBlobCreator(data, size, MimeTypePng, document)
     {
     }
 
@@ -70,8 +71,8 @@ protected:
 
 class MockCanvasAsyncBlobCreatorWithoutCompletePng : public MockCanvasAsyncBlobCreator {
 public:
-    MockCanvasAsyncBlobCreatorWithoutCompletePng(DOMUint8ClampedArray* data, const IntSize& size)
-        : MockCanvasAsyncBlobCreator(data, size, MimeTypePng)
+    MockCanvasAsyncBlobCreatorWithoutCompletePng(DOMUint8ClampedArray* data, const IntSize& size, Document& document)
+        : MockCanvasAsyncBlobCreator(data, size, MimeTypePng, document)
     {
     }
 
@@ -93,8 +94,8 @@ protected:
 
 class MockCanvasAsyncBlobCreatorWithoutStartJpeg : public MockCanvasAsyncBlobCreator {
 public:
-    MockCanvasAsyncBlobCreatorWithoutStartJpeg(DOMUint8ClampedArray* data, const IntSize& size)
-        : MockCanvasAsyncBlobCreator(data, size, MimeTypeJpeg)
+    MockCanvasAsyncBlobCreatorWithoutStartJpeg(DOMUint8ClampedArray* data, const IntSize& size, Document& document)
+        : MockCanvasAsyncBlobCreator(data, size, MimeTypeJpeg, document)
     {
     }
 
@@ -109,8 +110,8 @@ protected:
 
 class MockCanvasAsyncBlobCreatorWithoutCompleteJpeg : public MockCanvasAsyncBlobCreator {
 public:
-    MockCanvasAsyncBlobCreatorWithoutCompleteJpeg(DOMUint8ClampedArray* data, const IntSize& size)
-        : MockCanvasAsyncBlobCreator(data, size, MimeTypeJpeg)
+    MockCanvasAsyncBlobCreatorWithoutCompleteJpeg(DOMUint8ClampedArray* data, const IntSize& size, Document& document)
+        : MockCanvasAsyncBlobCreator(data, size, MimeTypeJpeg, document)
     {
     }
 
@@ -146,11 +147,15 @@ protected:
     void TearDown() override;
 
 private:
+    Document& document() { return m_dummyPageHolder->document(); }
+
     Persistent<MockCanvasAsyncBlobCreator> m_asyncBlobCreator;
+    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
 CanvasAsyncBlobCreatorTest::CanvasAsyncBlobCreatorTest()
 {
+    m_dummyPageHolder = DummyPageHolder::create();
 }
 
 void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutStartPng()
@@ -158,7 +163,7 @@ void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutStartPn
     IntSize testSize(20, 20);
     ImageData* imageData = ImageData::create(testSize);
 
-    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutStartPng(imageData->data(), testSize);
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutStartPng(imageData->data(), testSize, document());
 }
 
 void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutCompletePng()
@@ -166,7 +171,7 @@ void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutComplet
     IntSize testSize(20, 20);
     ImageData* imageData = ImageData::create(testSize);
 
-    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompletePng(imageData->data(), testSize);
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompletePng(imageData->data(), testSize, document());
 }
 
 void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFailPng()
@@ -176,7 +181,7 @@ void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFailPng()
 
     // We reuse the class MockCanvasAsyncBlobCreatorWithoutCompletePng because this
     // test case is expected to fail at initialization step before completion.
-    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompletePng(imageData->data(), testSize);
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompletePng(imageData->data(), testSize, document());
 }
 
 void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutStartJpeg()
@@ -184,7 +189,7 @@ void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutStartJp
     IntSize testSize(20, 20);
     ImageData* imageData = ImageData::create(testSize);
 
-    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutStartJpeg(imageData->data(), testSize);
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutStartJpeg(imageData->data(), testSize, document());
 }
 
 void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutCompleteJpeg()
@@ -192,7 +197,7 @@ void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutComplet
     IntSize testSize(20, 20);
     ImageData* imageData = ImageData::create(testSize);
 
-    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompleteJpeg(imageData->data(), testSize);
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompleteJpeg(imageData->data(), testSize, document());
 }
 
 void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFailJpeg()
@@ -202,7 +207,7 @@ void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFailJpeg()
 
     // We reuse the class MockCanvasAsyncBlobCreatorWithoutCompleteJpeg because this
     // test case is expected to fail at initialization step before completion.
-    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompleteJpeg(imageData->data(), testSize);
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompleteJpeg(imageData->data(), testSize, document());
 }
 
 void CanvasAsyncBlobCreatorTest::TearDown()

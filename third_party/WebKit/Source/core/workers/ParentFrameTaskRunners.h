@@ -31,9 +31,10 @@ class CORE_EXPORT ParentFrameTaskRunners final : public GarbageCollectedFinalize
     WTF_MAKE_NONCOPYABLE(ParentFrameTaskRunners);
 
 public:
-    // LocalFrame could be nullptr if the worker is not associated with a
-    // particular local frame.
-    explicit ParentFrameTaskRunners(LocalFrame*);
+    static ParentFrameTaskRunners* create(LocalFrame* frame)
+    {
+        return new ParentFrameTaskRunners(frame);
+    }
 
     // Might return nullptr for unsupported task types.
     WebTaskRunner* get(TaskType);
@@ -42,6 +43,10 @@ public:
 
 private:
     using TaskRunnerHashMap = HashMap<TaskType, WebTaskRunner*, WTF::IntHash<TaskType>, TaskTypeTraits>;
+
+    // LocalFrame could be nullptr if the worker is not associated with a
+    // particular local frame.
+    explicit ParentFrameTaskRunners(LocalFrame*);
 
     void contextDestroyed() override;
 

@@ -82,19 +82,20 @@ CanvasAsyncBlobCreator::MimeType convertMimeTypeStringToEnum(const String& mimeT
 
 } // anonymous namespace
 
-CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::create(DOMUint8ClampedArray* unpremultipliedRGBAImageData, const String& mimeType, const IntSize& size, BlobCallback* callback, double startTime, Document* document)
+CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::create(DOMUint8ClampedArray* unpremultipliedRGBAImageData, const String& mimeType, const IntSize& size, BlobCallback* callback, double startTime, Document& document)
 {
     return new CanvasAsyncBlobCreator(unpremultipliedRGBAImageData, convertMimeTypeStringToEnum(mimeType), size, callback, startTime, document);
 }
 
-CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, MimeType mimeType, const IntSize& size, BlobCallback* callback, double startTime, Document* document)
+CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, MimeType mimeType, const IntSize& size, BlobCallback* callback, double startTime, Document& document)
     : m_data(data)
-    , m_document(document)
+    , m_document(&document)
     , m_size(size)
     , m_mimeType(mimeType)
     , m_callback(callback)
     , m_startTime(startTime)
     , m_elapsedTime(0)
+    , m_parentFrameTaskRunner(ParentFrameTaskRunners::create(document.frame()))
 {
     ASSERT(m_data->length() == (unsigned) (size.height() * size.width() * 4));
     m_encodedImage = wrapUnique(new Vector<unsigned char>());
@@ -325,11 +326,11 @@ void CanvasAsyncBlobCreator::encodeImageOnEncoderThread(double quality)
     ASSERT(m_mimeType == MimeTypeWebp);
 
     if (!ImageDataBuffer(m_size, m_data->data()).encodeImage("image/webp", quality, m_encodedImage.get())) {
-        TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)->postTask(BLINK_FROM_HERE, crossThreadBind(&BlobCallback::handleEvent, wrapCrossThreadPersistent(m_callback.get()), nullptr));
+        m_parentFrameTaskRunner->get(TaskType::CanvasBlobSerialization)->postTask(BLINK_FROM_HERE, crossThreadBind(&BlobCallback::handleEvent, wrapCrossThreadPersistent(m_callback.get()), nullptr));
         return;
     }
 
-    TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)->postTask(BLINK_FROM_HERE, crossThreadBind(&CanvasAsyncBlobCreator::createBlobAndInvokeCallback, wrapCrossThreadPersistent(this)));
+    m_parentFrameTaskRunner->get(TaskType::CanvasBlobSerialization)->postTask(BLINK_FROM_HERE, crossThreadBind(&CanvasAsyncBlobCreator::createBlobAndInvokeCallback, wrapCrossThreadPersistent(this)));
 }
 
 bool CanvasAsyncBlobCreator::initializePngStruct()
@@ -418,6 +419,7 @@ DEFINE_TRACE(CanvasAsyncBlobCreator)
     visitor->trace(m_document);
     visitor->trace(m_data);
     visitor->trace(m_callback);
+    visitor->trace(m_parentFrameTaskRunner);
 }
 
 } // namespace blink

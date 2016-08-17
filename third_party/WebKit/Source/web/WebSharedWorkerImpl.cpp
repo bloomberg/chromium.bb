@@ -360,7 +360,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     // the document/frame of associated document(s) for this worker. Here we
     // populate the task runners with null document not to confuse the frame
     // scheduler (which will end up using the thread's default task runner).
-    m_mainThreadTaskRunners = new ParentFrameTaskRunners(nullptr);
+    m_mainThreadTaskRunners = ParentFrameTaskRunners::create(nullptr);
 
     m_loaderProxy = WorkerLoaderProxy::create(this);
     m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this);

@@ -444,7 +444,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     // the document/frame of associated document(s) for this worker. Here we
     // populate the task runners with null document not to confuse the frame
     // scheduler (which will end up using the thread's default task runner).
-    m_mainThreadTaskRunners = new ParentFrameTaskRunners(nullptr);
+    m_mainThreadTaskRunners = ParentFrameTaskRunners::create(nullptr);
 
     m_workerGlobalScopeProxy = ServiceWorkerGlobalScopeProxy::create(*this, *document, *m_workerContextClient);
     m_loaderProxy = WorkerLoaderProxy::create(this);
