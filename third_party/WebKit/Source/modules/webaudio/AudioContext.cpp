@@ -67,7 +67,7 @@ BaseAudioContext* AudioContext::create(Document& document, ExceptionState& excep
     audioContext->startRendering();
     ++s_hardwareContextCount;
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "%p: AudioContext::AudioContext(): %u #%u\n",
+    fprintf(stderr, "[%16p]: AudioContext::AudioContext(): %u #%u\n",
         audioContext, audioContext->m_contextId, s_hardwareContextCount);
 #endif
 
@@ -90,7 +90,7 @@ AudioContext::AudioContext(Document& document)
 AudioContext::~AudioContext()
 {
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "%p: AudioContext::~AudioContext(): %u\n", this, m_contextId);
+    fprintf(stderr, "[16%p]: AudioContext::~AudioContext(): %u\n", this, m_contextId);
 #endif
 }
 

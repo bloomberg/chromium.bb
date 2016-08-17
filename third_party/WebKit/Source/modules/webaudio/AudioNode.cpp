@@ -71,8 +71,8 @@ AudioHandler::~AudioHandler()
     InstanceCounters::decrementCounter(InstanceCounters::AudioHandlerCounter);
 #if DEBUG_AUDIONODE_REFERENCES
     --s_nodeCount[getNodeType()];
-    fprintf(stderr, "%p: %2d: AudioNode::~AudioNode() %d [%d]\n",
-        this, getNodeType(), m_connectionRefCount, s_nodeCount[getNodeType()]);
+    fprintf(stderr, "[%16p]: %16p: %2d: AudioHandler::~AudioHandler() %d [%d]\n",
+        context(), this, getNodeType(), m_connectionRefCount, s_nodeCount[getNodeType()]);
 #endif
 }
 
@@ -171,7 +171,8 @@ void AudioHandler::setNodeType(NodeType type)
 
 #if DEBUG_AUDIONODE_REFERENCES
     ++s_nodeCount[type];
-    fprintf(stderr, "%p: %2d: AudioNode::AudioNode [%3d]\n", this, getNodeType(), s_nodeCount[getNodeType()]);
+    fprintf(stderr, "[%16p]: %16p: %2d: AudioHandler::AudioHandler [%3d]\n",
+        context(), this, getNodeType(), s_nodeCount[getNodeType()]);
 #endif
 }
 
@@ -435,8 +436,8 @@ void AudioHandler::makeConnection()
     atomicIncrement(&m_connectionRefCount);
 
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "%p: %2d: AudioNode::ref   %3d [%3d]\n",
-        this, getNodeType(), m_connectionRefCount, s_nodeCount[getNodeType()]);
+    fprintf(stderr, "[%16p]: %16p: %2d: AudioHandler::ref   %3d [%3d]\n",
+        context(), this, getNodeType(), m_connectionRefCount, s_nodeCount[getNodeType()]);
 #endif
     // See the disabling code in disableOutputsIfNecessary(). This handles
     // the case where a node is being re-connected after being used at least
@@ -474,8 +475,8 @@ void AudioHandler::breakConnectionWithLock()
     atomicDecrement(&m_connectionRefCount);
 
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "%p: %2d: AudioNode::deref %3d [%3d]\n",
-        this, getNodeType(), m_connectionRefCount, s_nodeCount[getNodeType()]);
+    fprintf(stderr, "[%16p]: %16p: %2d: AudioHandler::deref %3d [%3d]\n",
+        context(), this, getNodeType(), m_connectionRefCount, s_nodeCount[getNodeType()]);
 #endif
 
     if (!m_connectionRefCount)
@@ -522,6 +523,10 @@ AudioNode::AudioNode(BaseAudioContext& context)
 void AudioNode::dispose()
 {
     ASSERT(isMainThread());
+#if DEBUG_AUDIONODE_REFERENCES
+    fprintf(stderr, "[%16p]: %16p: %2d: AudioNode::dispose %16p\n",
+        context(), this, handler().getNodeType(), m_handler.get());
+#endif
     BaseAudioContext::AutoLocker locker(context());
     handler().dispose();
     if (context()->contextState() == BaseAudioContext::Running)
@@ -532,6 +537,11 @@ void AudioNode::setHandler(PassRefPtr<AudioHandler> handler)
 {
     ASSERT(handler);
     m_handler = handler;
+
+#if DEBUG_AUDIONODE_REFERENCES
+    fprintf(stderr, "[%16p]: %16p: %2d: AudioNode::AudioNode %16p\n",
+        context(), this, m_handler->getNodeType(), m_handler.get());
+#endif
 }
 
 AudioHandler& AudioNode::handler() const

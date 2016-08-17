@@ -91,6 +91,9 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
             + ")");
     }
 
+#if DEBUG_AUDIONODE_REFERENCES
+    fprintf(stderr, "[%p]: OfflineAudioContext::OfflineAudioContext()\n", audioContext);
+#endif
     DEFINE_STATIC_LOCAL(SparseHistogram, offlineContextChannelCountHistogram,
         ("WebAudio.OfflineAudioContext.ChannelCount"));
     // Arbitrarly limit the maximum length to 1 million frames (about 20 sec
@@ -137,6 +140,9 @@ OfflineAudioContext::OfflineAudioContext(Document* document, unsigned numberOfCh
 
 OfflineAudioContext::~OfflineAudioContext()
 {
+#if DEBUG_AUDIONODE_REFERENCES
+    fprintf(stderr, "[%p]: OfflineAudioContext::~OfflineAudioContext()\n", this);
+#endif
 }
 
 DEFINE_TRACE(OfflineAudioContext)
