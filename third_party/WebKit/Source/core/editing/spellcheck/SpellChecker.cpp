@@ -367,9 +367,10 @@ bool SpellChecker::isSpellCheckingEnabledFor(const VisibleSelection& selection)
     return false;
 }
 
-void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node, const EphemeralRange& insertedRange)
+void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(const EphemeralRange& insertedRange)
 {
     TRACE_EVENT0("blink", "SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar");
+    Node* node = rootEditableElementOf(insertedRange.startPosition());
     if (!node)
         return;
     EphemeralRange paragraphRange(Position::firstPositionInNode(node), Position::lastPositionInNode(node));
