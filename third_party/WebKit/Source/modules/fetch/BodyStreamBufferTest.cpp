@@ -81,8 +81,8 @@ TEST_F(BodyStreamBufferTest, Tee)
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*client1, didFetchDataLoadedString(String("hello, world")));
     EXPECT_CALL(checkpoint, Call(2));
-    EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(*client2, didFetchDataLoadedString(String("hello, world")));
+    EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(checkpoint, Call(4));
 
     std::unique_ptr<DataConsumerHandleTestUtil::ReplayingHandle> handle = DataConsumerHandleTestUtil::ReplayingHandle::create();
@@ -292,6 +292,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer)
     EXPECT_CALL(checkpoint, Call(2));
 
     std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
+    handle->add(Command(Command::Wait));
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
     BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
@@ -325,6 +326,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob)
     EXPECT_CALL(checkpoint, Call(2));
 
     std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
+    handle->add(Command(Command::Wait));
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
     BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
@@ -356,6 +358,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsString)
     EXPECT_CALL(checkpoint, Call(2));
 
     std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
+    handle->add(Command(Command::Wait));
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
     BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
@@ -395,13 +398,8 @@ TEST_F(BodyStreamBufferTest, LoadClosedHandle)
     EXPECT_FALSE(buffer->isStreamDisturbed());
     EXPECT_FALSE(buffer->hasPendingActivity());
 
-    buffer->startLoading(FetchDataLoader::createLoaderAsString(), client);
-    EXPECT_TRUE(buffer->isStreamLocked());
-    EXPECT_TRUE(buffer->isStreamDisturbed());
-    EXPECT_TRUE(buffer->hasPendingActivity());
-
     checkpoint.Call(1);
-    testing::runPendingTasks();
+    buffer->startLoading(FetchDataLoader::createLoaderAsString(), client);
     checkpoint.Call(2);
 
     EXPECT_TRUE(buffer->isStreamLocked());
@@ -429,13 +427,9 @@ TEST_F(BodyStreamBufferTest, LoadErroredHandle)
     EXPECT_FALSE(buffer->isStreamLocked());
     EXPECT_FALSE(buffer->isStreamDisturbed());
     EXPECT_FALSE(buffer->hasPendingActivity());
-    buffer->startLoading(FetchDataLoader::createLoaderAsString(), client);
-    EXPECT_TRUE(buffer->isStreamLocked());
-    EXPECT_TRUE(buffer->isStreamDisturbed());
-    EXPECT_TRUE(buffer->hasPendingActivity());
 
     checkpoint.Call(1);
-    testing::runPendingTasks();
+    buffer->startLoading(FetchDataLoader::createLoaderAsString(), client);
     checkpoint.Call(2);
 
     EXPECT_TRUE(buffer->isStreamLocked());
@@ -455,6 +449,7 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer)
     EXPECT_CALL(checkpoint, Call(2));
 
     std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
+    handle->add(Command(Command::Wait));
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
     Persistent<BodyStreamBuffer> buffer = new BodyStreamBuffer(scope.getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));

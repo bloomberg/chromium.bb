@@ -14,6 +14,7 @@
 #include "core/streams/ReadableStreamOperations.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/fetch/Body.h"
+#include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/DataConsumerTee.h"
 #include "modules/fetch/ReadableStreamDataConsumerHandle.h"
@@ -205,7 +206,7 @@ void BodyStreamBuffer::startLoading(FetchDataLoader* loader, FetchDataLoader::Cl
     ASSERT(m_scriptState->contextIsValid());
     std::unique_ptr<FetchDataConsumerHandle> handle = releaseHandle();
     m_loader = loader;
-    loader->start(handle.get(), new LoaderClient(m_scriptState->getExecutionContext(), this, client));
+    loader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), new LoaderClient(m_scriptState->getExecutionContext(), this, client));
 }
 
 void BodyStreamBuffer::tee(BodyStreamBuffer** branch1, BodyStreamBuffer** branch2)

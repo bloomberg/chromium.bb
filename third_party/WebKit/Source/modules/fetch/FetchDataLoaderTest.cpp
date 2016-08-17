@@ -4,6 +4,7 @@
 
 #include "modules/fetch/FetchDataLoader.h"
 
+#include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,15 +27,16 @@ using MockFetchDataLoaderClient = DataConsumerHandleTestUtil::MockFetchDataLoade
 using MockHandle = DataConsumerHandleTestUtil::MockFetchDataConsumerHandle;
 using MockReader = DataConsumerHandleTestUtil::MockFetchDataConsumerReader;
 
-const WebDataConsumerHandle::Result kOk = WebDataConsumerHandle::Ok;
-const WebDataConsumerHandle::Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
-const WebDataConsumerHandle::Result kDone = WebDataConsumerHandle::Done;
-const WebDataConsumerHandle::Flags kNone = WebDataConsumerHandle::FlagNone;
-const FetchDataConsumerHandle::Reader::BlobSizePolicy kDisallowBlobWithInvalidSize = FetchDataConsumerHandle::Reader::DisallowBlobWithInvalidSize;
+constexpr WebDataConsumerHandle::Result kOk = WebDataConsumerHandle::Ok;
+constexpr WebDataConsumerHandle::Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
+constexpr WebDataConsumerHandle::Result kShouldWait = WebDataConsumerHandle::ShouldWait;
+constexpr WebDataConsumerHandle::Result kDone = WebDataConsumerHandle::Done;
+constexpr WebDataConsumerHandle::Flags kNone = WebDataConsumerHandle::FlagNone;
+constexpr FetchDataConsumerHandle::Reader::BlobSizePolicy kDisallowBlobWithInvalidSize = FetchDataConsumerHandle::Reader::DisallowBlobWithInvalidSize;
 
-const char kQuickBrownFox[] = "Quick brown fox";
-const size_t kQuickBrownFoxLength = 15;
-const size_t kQuickBrownFoxLengthWithTerminatingNull = 16;
+constexpr char kQuickBrownFox[] = "Quick brown fox";
+constexpr size_t kQuickBrownFoxLength = 15;
+constexpr size_t kQuickBrownFoxLengthWithTerminatingNull = 16;
 
 TEST(FetchDataLoaderTest, LoadAsBlob)
 {
@@ -54,7 +56,9 @@ TEST(FetchDataLoaderTest, LoadAsBlob)
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
     EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<2>(0), Return(kShouldWait)));
     EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*reader, read(nullptr, kNone, 0, _)).WillOnce(DoAll(SetArgPointee<3>(0), Return(kShouldWait)));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLengthWithTerminatingNull), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLengthWithTerminatingNull)).WillOnce(Return(kOk));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(Return(kDone));
@@ -64,7 +68,7 @@ TEST(FetchDataLoaderTest, LoadAsBlob)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -94,7 +98,9 @@ TEST(FetchDataLoaderTest, LoadAsBlobFailed)
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
     EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<2>(0), Return(kShouldWait)));
     EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*reader, read(nullptr, kNone, 0, _)).WillOnce(DoAll(SetArgPointee<3>(0), Return(kShouldWait)));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLengthWithTerminatingNull), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLengthWithTerminatingNull)).WillOnce(Return(kOk));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(Return(kUnexpectedError));
@@ -104,7 +110,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobFailed)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -129,12 +135,13 @@ TEST(FetchDataLoaderTest, LoadAsBlobCancel)
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
     EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<2>(0), Return(kShouldWait)));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(checkpoint, Call(3));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     fetchDataLoader->cancel();
     checkpoint.Call(3);
@@ -168,7 +175,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithSameContentType)
     EXPECT_CALL(checkpoint, Call(3));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     fetchDataLoader->cancel();
     checkpoint.Call(3);
@@ -207,7 +214,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithDifferentContent
     EXPECT_CALL(checkpoint, Call(3));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     fetchDataLoader->cancel();
     checkpoint.Call(3);
@@ -235,7 +242,9 @@ TEST(FetchDataLoaderTest, LoadAsArrayBuffer)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
+    EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<2>(0), Return(kShouldWait)));
     EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*reader, read(nullptr, kNone, 0, _)).WillOnce(DoAll(SetArgPointee<3>(0), Return(kShouldWait)));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLengthWithTerminatingNull), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLengthWithTerminatingNull)).WillOnce(Return(kOk));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(Return(kDone));
@@ -245,7 +254,7 @@ TEST(FetchDataLoaderTest, LoadAsArrayBuffer)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -274,7 +283,9 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferFailed)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
+    EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<2>(0), Return(kShouldWait)));
     EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*reader, read(nullptr, kNone, 0, _)).WillOnce(DoAll(SetArgPointee<3>(0), Return(kShouldWait)));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLengthWithTerminatingNull), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLengthWithTerminatingNull)).WillOnce(Return(kOk));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(Return(kUnexpectedError));
@@ -284,7 +295,7 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferFailed)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -307,12 +318,13 @@ TEST(FetchDataLoaderTest, LoadAsArrayBufferCancel)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
+    EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<2>(0), Return(kShouldWait)));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(checkpoint, Call(3));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     fetchDataLoader->cancel();
     checkpoint.Call(3);
@@ -334,7 +346,9 @@ TEST(FetchDataLoaderTest, LoadAsString)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
+    EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<2>(0), Return(kShouldWait)));
     EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*reader, read(nullptr, kNone, 0, _)).WillOnce(DoAll(SetArgPointee<3>(0), Return(kShouldWait)));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLength), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLength)).WillOnce(Return(kOk));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(Return(kDone));
@@ -344,7 +358,7 @@ TEST(FetchDataLoaderTest, LoadAsString)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -369,7 +383,9 @@ TEST(FetchDataLoaderTest, LoadAsStringWithNullBytes)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
+    EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<2>(0), Return(kShouldWait)));
     EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*reader, read(nullptr, kNone, 0, _)).WillOnce(DoAll(SetArgPointee<3>(0), Return(kShouldWait)));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>("Quick\0brown\0fox")), SetArgPointee<2>(16), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLengthWithTerminatingNull)).WillOnce(Return(kOk));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(Return(kDone));
@@ -379,7 +395,7 @@ TEST(FetchDataLoaderTest, LoadAsStringWithNullBytes)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -404,7 +420,9 @@ TEST(FetchDataLoaderTest, LoadAsStringError)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(ByMove(WTF::wrapUnique(reader)))));
+    EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<2>(0), Return(kShouldWait)));
     EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*reader, read(nullptr, kNone, 0, _)).WillOnce(DoAll(SetArgPointee<3>(0), Return(kShouldWait)));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLength), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLength)).WillOnce(Return(kOk));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(Return(kUnexpectedError));
@@ -414,7 +432,7 @@ TEST(FetchDataLoaderTest, LoadAsStringError)
     EXPECT_CALL(checkpoint, Call(4));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     ASSERT_TRUE(client);
     client->didGetReadable();
@@ -438,12 +456,13 @@ TEST(FetchDataLoaderTest, LoadAsStringCancel)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainFetchDataReader(_)).WillOnce(Return(ByMove(WTF::wrapUnique(reader))));
+    EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<2>(0), Return(kShouldWait)));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(checkpoint, Call(3));
 
     checkpoint.Call(1);
-    fetchDataLoader->start(handle.get(), fetchDataLoaderClient);
+    fetchDataLoader->start(new BytesConsumerForDataConsumerHandle(std::move(handle)), fetchDataLoaderClient);
     checkpoint.Call(2);
     fetchDataLoader->cancel();
     checkpoint.Call(3);

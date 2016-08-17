@@ -15,17 +15,18 @@
 
 namespace blink {
 
+class BytesConsumer;
+
 // FetchDataLoader subclasses
-// 1. take a reader of FetchDataConsumerHandle |handle|,
+// 1. take a BytesConsumer,
 // 2. read all data, and
 // 3. call either didFetchDataLoaded...() on success or
 //    difFetchDataLoadFailed() otherwise
 //    on the thread where FetchDataLoader is created.
 //
 // - Client's methods can be called synchronously in start().
-// - If FetchDataLoader::cancel() is called (or FetchDataLoader is garbage
-//   collected), Client's methods are not called anymore.
-// - FetchDataLoader takes the ownership of |handle|'s reader but not |handle|.
+// - If FetchDataLoader::cancel() is called, Client's methods will not be
+//   called anymore.
 class MODULES_EXPORT FetchDataLoader : public GarbageCollectedFinalized<FetchDataLoader> {
 public:
     class MODULES_EXPORT Client : public GarbageCollectedMixin {
@@ -64,10 +65,8 @@ public:
 
     virtual ~FetchDataLoader() { }
 
-    // start() should be called only once on the created thread.
-    // start() do not take the ownership of |handle|.
-    // |handle| must not be locked when called.
-    virtual void start(FetchDataConsumerHandle* /* handle */, Client*) = 0;
+    // |consumer| must not have a client when called.
+    virtual void start(BytesConsumer* /* consumer */, Client*) = 0;
 
     virtual void cancel() = 0;
 

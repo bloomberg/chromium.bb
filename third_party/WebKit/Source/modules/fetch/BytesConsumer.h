@@ -56,9 +56,11 @@ public:
     public:
         virtual ~Client() {}
 
-        // This function is called when the state changes. This function can
-        // be called more than needed, i.e., it can be called even when the
-        // state is not actually changed.
+        // This function is called when the state changes (e.g., readable =>
+        // errored). This function can be called more than needed, i.e., it can
+        // be called even when the state is not actually changed, but it is
+        // guaranteed that this function cannot be called after the state
+        // becomes closed or errored.
         //
         // This function is not called when the state change is trigerred by
         // public methods called by a user. For example, when a user reads
