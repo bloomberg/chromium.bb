@@ -15,7 +15,7 @@ class Rect;
 
 namespace ash {
 
-class WmImmersiveFullscreenControllerDelegate {
+class ASH_EXPORT WmImmersiveFullscreenControllerDelegate {
  public:
   // Called when a reveal of the top-of-window views starts.
   virtual void OnImmersiveRevealStarted() = 0;

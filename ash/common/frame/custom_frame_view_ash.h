@@ -12,15 +12,15 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/window/non_client_view.h"
 
-namespace ash {
-class FrameCaptionButtonContainerView;
-class WmImmersiveFullscreenController;
-}
 namespace views {
 class Widget;
 }
 
 namespace ash {
+
+class FrameCaptionButtonContainerView;
+class HeaderView;
+class WmImmersiveFullscreenController;
 
 // A NonClientFrameView used for packaged apps, dialogs and other non-browser
 // windows. It supports immersive fullscreen. When in immersive fullscreen, the
@@ -92,7 +92,6 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   views::Widget* frame_;
 
   // View which contains the title and window controls.
-  class HeaderView;
   HeaderView* header_view_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAsh);

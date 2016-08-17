@@ -92,6 +92,8 @@
       'common/frame/header_painter.h',
       'common/frame/header_painter_util.cc',
       'common/frame/header_painter_util.h',
+      'common/frame/header_view.cc',
+      'common/frame/header_view.h',
       'common/gpu_support.h',
       'common/gpu_support_stub.cc',
       'common/gpu_support_stub.h',
