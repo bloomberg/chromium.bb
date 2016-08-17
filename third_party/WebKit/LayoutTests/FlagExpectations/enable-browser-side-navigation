@@ -1,7 +1,6 @@
 # These tests currently fail when run with --enable-browser-side-navigation
 # See https://crbug.com/576261
 # before-unload issues
-  fast/loader/recursive-before-unload-crash.html [ Failure ]
   virtual/pointerevent/fast/events/before-unload-forbidden-navigation.html [ Crash ]
   virtual/pointerevent/fast/events/before-unload-in-subframe.html [ Crash ]
 
@@ -103,7 +102,6 @@
 
 # https://crbug.com/576270: Move mixed-content checks that happen during
 # navigation to the browser
-  http/tests/security/mixedContent/insecure-prefetch-in-main-frame.html [ Failure ]
   http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Timeout Failure ]
   http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
   http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
@@ -116,7 +114,6 @@
   http/tests/security/w3c/cross-origin-objects.html [ Crash Timeout Failure ]
 
 # Untriaged navigation
-  compositing/gestures/gesture-tapHighlight-simple-navigate.html [ Failure ]
   fast/loader/document-destruction-within-unload.html [ Crash ]
   fast/loader/scroll-position-restored-on-reload-at-load-event.html [ Failure ]
   fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
@@ -165,10 +162,6 @@
   imported/wpt/html/semantics/embedded-content/the-object-element/object-attributes.html [ Failure ]
   plugins/object-onfocus-mutation-crash.html [ Timeout ]
   svg/custom/anchor-on-use.svg [ Failure ]
-  svg/dynamic-updates/SVGAElement-dom-href-attr.html [ Failure ]
-  svg/dynamic-updates/SVGAElement-dom-target-attr.html [ Failure ]
-  svg/dynamic-updates/SVGAElement-svgdom-href-prop.html [ Failure ]
-  svg/dynamic-updates/SVGAElement-svgdom-target-prop.html [ Failure ]
   virtual/pointerevent/fast/events/drag-file-crash.html [ Failure ]
   virtual/pointerevent/fast/events/iframe-object-onload.html [ Failure ]
   virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Failure ]

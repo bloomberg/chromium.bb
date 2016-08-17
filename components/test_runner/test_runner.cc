@@ -1555,6 +1555,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       main_view_(nullptr),
       mock_content_settings_client_(
           new MockContentSettingsClient(&layout_test_runtime_flags_)),
+      will_navigate_(false),
       credential_manager_client_(new MockCredentialManagerClient),
       mock_screen_orientation_client_(new MockScreenOrientationClient),
       spellcheck_(new SpellCheckClient(this)),
@@ -1586,6 +1587,7 @@ void TestRunner::SetMainView(WebView* web_view) {
 
 void TestRunner::Reset() {
   is_web_platform_tests_mode_ = false;
+  will_navigate_ = false;
   top_loading_frame_ = nullptr;
   layout_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
@@ -1836,7 +1838,13 @@ bool TestRunner::IsFramePartOfMainTestWindow(blink::WebFrame* frame) const {
   return test_is_running_ && frame->top()->view() == main_view_;
 }
 
+void TestRunner::OnNavigationBegin(WebFrame* frame) {
+  if (IsFramePartOfMainTestWindow(frame))
+    will_navigate_ = true;
+}
+
 bool TestRunner::tryToSetTopLoadingFrame(WebFrame* frame) {
+  will_navigate_ = false;
   if (!IsFramePartOfMainTestWindow(frame))
     return false;
 
@@ -1850,6 +1858,7 @@ bool TestRunner::tryToSetTopLoadingFrame(WebFrame* frame) {
 }
 
 bool TestRunner::tryToClearTopLoadingFrame(WebFrame* frame) {
+  will_navigate_ = false;
   if (!IsFramePartOfMainTestWindow(frame))
     return false;
 
@@ -2735,7 +2744,7 @@ void TestRunner::CheckResponseMimeType() {
 
 void TestRunner::NotifyDone() {
   if (layout_test_runtime_flags_.wait_until_done() && !topLoadingFrame() &&
-      work_queue_.is_empty())
+      !will_navigate_ && work_queue_.is_empty())
     delegate_->TestFinished();
   layout_test_runtime_flags_.set_wait_until_done(false);
   OnLayoutTestRuntimeFlagsChanged();

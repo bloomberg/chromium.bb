@@ -512,6 +512,18 @@ void WebFrameTestClient::didFinishLoad(blink::WebLocalFrame* frame) {
   }
 }
 
+void WebFrameTestClient::didNavigateWithinPage(
+    blink::WebLocalFrame* frame,
+    const blink::WebHistoryItem& history_item,
+    blink::WebHistoryCommitType commit_type,
+    bool contentInitiated) {
+  test_runner_->OnNavigationEnd();
+}
+
+void WebFrameTestClient::didStartLoading(bool to_different_document) {
+  test_runner_->OnNavigationBegin(web_frame_test_proxy_base_->web_frame());
+}
+
 void WebFrameTestClient::didStopLoading() {
   test_runner_->tryToClearTopLoadingFrame(
       web_frame_test_proxy_base_->web_frame());
