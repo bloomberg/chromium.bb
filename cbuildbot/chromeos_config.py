@@ -2147,7 +2147,6 @@ def GetConfig():
       'toolchain',
       full,
       internal,
-      default_hw_tests_override,
       chromeos_official=False,
       build_type=constants.TOOLCHAIN_TYPE,
       build_timeout=(15 * 60 + 50) * 60,
