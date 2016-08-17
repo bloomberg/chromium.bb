@@ -44,4 +44,10 @@
         },
         '<div contenteditable>abc<b>def</b><i><b>ghi</b>jkl</i>mno|</div>'),
         'Nested styles and disabling styles');
+
+    test(() => assert_selection(
+        '<div contenteditable>here is <i>^some|</i> text</div>',
+        'insertText abcd',
+        '<div contenteditable>here is <i>abcd|</i> text</div>'),
+        'Replace selection keeps style');
 </script>
