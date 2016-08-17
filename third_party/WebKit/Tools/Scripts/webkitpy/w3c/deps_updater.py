@@ -61,7 +61,9 @@ class DepsUpdater(object):
         has_changes = self.commit_changes_if_needed(chromium_commitish, import_commitish)
 
         if self.auto_update and has_changes:
-            self.do_auto_update()
+            commit_successful = self.do_auto_update()
+            if not commit_successful:
+                return 1
         return 0
 
     def parse_args(self, argv):
@@ -274,6 +276,9 @@ class DepsUpdater(object):
         and that change has been committed. There may be newly-failing tests,
         so before being able to commit these new changes, we may need to update
         TestExpectations or download new baselines.
+
+        Returns:
+            True if successfully committed, False otherwise.
         """
         email_list = self.get_directory_owners_to_cc()
         self.print_('## Uploading change list.')
@@ -281,13 +286,19 @@ class DepsUpdater(object):
         self.trigger_try_jobs()
         if self.has_failing_results():
             self.write_test_expectations()
-            # TODO(qyearsley): After writing test expectations, the CL needs
-            # to be tried again on the try bots, and closed if it fails.
-        else:
-            self.print_('No Failures, committing patch.')
-        self.run(['git', 'cl', 'land', '-f', '--auth-refresh-token-json', self.auth_refresh_token_json])
-        # TODO(qyearsley): Attempting to land should trigger the CQ -- if
-        # the CQ fails, we should abort and close the CL.
+        command = ['git', 'cl', 'set-commit', '--rietveld']
+        if self.auth_refresh_token_json:
+            command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
+        self.run(command)
+        if self.has_failing_results():
+            self.print_('## CL has failing results when trying to land; aborting.')
+            command = ['git', 'cl', 'set-close']
+            if self.auth_refresh_token_json:
+                command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
+            self.run(command)
+            return False
+        return True
+
 
     def get_directory_owners_to_cc(self):
         """Returns a list of email addresses to CC for the current import."""
@@ -330,7 +341,7 @@ class DepsUpdater(object):
 
     def generate_upload_command(self, email_list):
         message = 'W3C auto test importer\n\nTBR=qyearsley@chromium.org'
-        command = ['git', 'cl', 'upload', '-f', '-m', message]
+        command = ['git', 'cl', 'upload', '-f', '-m', message, '--rietveld']
         command += ['--cc=' + email for email in email_list]
         if self.auth_refresh_token_json:
             command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
@@ -390,5 +401,5 @@ class DepsUpdater(object):
         self.run([self.host.executable, script_path])
         message = '\'Modifies TestExpectations and/or downloads new baselines for tests\''
         self.check_run(['git', 'commit', '-a', '-m', message])
-        self.check_run(['git', 'cl', 'upload', '-m', message,
+        self.check_run(['git', 'cl', 'upload', '-m', message, '--rietveld'
                         '--auth-refresh-token-json', self.auth_refresh_token_json])
