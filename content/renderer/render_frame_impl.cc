@@ -112,6 +112,7 @@
 #include "content/renderer/mojo/interface_provider_js_wrapper.h"
 #include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/navigation_state_impl.h"
+#include "content/renderer/notification_permission_dispatcher.h"
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
@@ -1051,6 +1052,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
+      notification_permission_dispatcher_(NULL),
       web_user_media_client_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
@@ -3755,6 +3757,17 @@ void RenderFrameImpl::dispatchLoad() {
 blink::WebEffectiveConnectionType
 RenderFrameImpl::getEffectiveConnectionType() {
   return effective_connection_type_;
+}
+
+void RenderFrameImpl::requestNotificationPermission(
+    const blink::WebSecurityOrigin& origin,
+    blink::WebNotificationPermissionCallback* callback) {
+  if (!notification_permission_dispatcher_) {
+    notification_permission_dispatcher_ =
+        new NotificationPermissionDispatcher(this);
+  }
+
+  notification_permission_dispatcher_->RequestPermission(origin, callback);
 }
 
 void RenderFrameImpl::didChangeSelection(bool is_empty_selection) {

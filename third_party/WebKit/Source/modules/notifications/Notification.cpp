@@ -44,14 +44,17 @@
 #include "modules/notifications/NotificationData.h"
 #include "modules/notifications/NotificationManager.h"
 #include "modules/notifications/NotificationOptions.h"
+#include "modules/notifications/NotificationPermissionClient.h"
 #include "modules/notifications/NotificationResourcesLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
+#include "public/platform/WebString.h"
 #include "public/platform/modules/notifications/WebNotificationAction.h"
 #include "public/platform/modules/notifications/WebNotificationConstants.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
+#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 
@@ -351,7 +354,14 @@ String Notification::permission(ExecutionContext* context)
 
 ScriptPromise Notification::requestPermission(ScriptState* scriptState, NotificationPermissionCallback* deprecatedCallback)
 {
-    return NotificationManager::from(scriptState->getExecutionContext())->requestPermission(scriptState, deprecatedCallback);
+    ExecutionContext* context = scriptState->getExecutionContext();
+    if (NotificationPermissionClient* permissionClient = NotificationPermissionClient::from(context))
+        return permissionClient->requestPermission(scriptState, deprecatedCallback);
+
+    // The context has been detached. Return a promise that will never settle.
+    DCHECK(context->activeDOMObjectsAreStopped());
+
+    return ScriptPromise();
 }
 
 size_t Notification::maxActions()

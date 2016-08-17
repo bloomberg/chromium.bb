@@ -61,6 +61,8 @@
       'MediaKeysClientImpl.h',
       'NavigatorContentUtilsClientImpl.cpp',
       'NavigatorContentUtilsClientImpl.h',
+      'NotificationPermissionClientImpl.cpp',
+      'NotificationPermissionClientImpl.h',
       'OpenedFrameTracker.cpp',
       'OpenedFrameTracker.h',
       'PageOverlay.cpp',

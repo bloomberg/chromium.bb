@@ -89,6 +89,7 @@ class WebMediaPlayerEncryptedMediaClient;
 class WebMediaPlayerSource;
 class WebMediaSession;
 class WebMediaStream;
+class WebNotificationPermissionCallback;
 class WebServiceWorkerProvider;
 class WebSocketHandle;
 class WebPlugin;
@@ -369,6 +370,11 @@ public:
 
     // Returns the effective connection type when the frame was fetched.
     virtual WebEffectiveConnectionType getEffectiveConnectionType() { return WebEffectiveConnectionType::TypeUnknown; }
+
+    // Web Notifications ---------------------------------------------------
+
+    // Requests permission to display platform notifications on the origin of this frame.
+    virtual void requestNotificationPermission(const WebSecurityOrigin&, WebNotificationPermissionCallback* callback) { }
 
 
     // Push API ---------------------------------------------------

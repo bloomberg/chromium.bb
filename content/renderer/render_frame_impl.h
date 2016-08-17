@@ -133,6 +133,7 @@ class MediaStreamRendererFactory;
 class MediaPermissionDispatcher;
 class MidiDispatcher;
 class NavigationState;
+class NotificationPermissionDispatcher;
 class PageState;
 class PepperPluginInstanceImpl;
 class PresentationDispatcher;
@@ -544,6 +545,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void didChangeThemeColor() override;
   void dispatchLoad() override;
   blink::WebEffectiveConnectionType getEffectiveConnectionType() override;
+  void requestNotificationPermission(
+      const blink::WebSecurityOrigin& origin,
+      blink::WebNotificationPermissionCallback* callback) override;
   void didChangeSelection(bool is_empty_selection) override;
   blink::WebColorChooser* createColorChooser(
       blink::WebColorChooserClient* client,
@@ -1140,6 +1144,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // The next group of objects all implement RenderFrameObserver, so are deleted
   // along with the RenderFrame automatically.  This is why we just store weak
   // references.
+
+  // Dispatches permission requests for Web Notifications.
+  NotificationPermissionDispatcher* notification_permission_dispatcher_;
 
   // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.
   UserMediaClientImpl* web_user_media_client_;
