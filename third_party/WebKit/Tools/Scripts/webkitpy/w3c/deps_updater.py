@@ -52,19 +52,7 @@ class DepsUpdater(object):
 
         if self.target == 'wpt':
             import_commitish = self.update(WPT_DEST_NAME, WPT_REPO_URL)
-
-            for resource in ['testharnessreport.js', 'WebIDLParser.js']:
-                source = self.path_from_webkit_base('LayoutTests', 'resources', resource)
-                destination = self.path_from_webkit_base('LayoutTests', 'imported', WPT_DEST_NAME, 'resources', resource)
-                self.copyfile(source, destination)
-                self.run(['git', 'add', destination])
-
-            for resource in ['vendor-prefix.js']:
-                source = self.path_from_webkit_base('LayoutTests', 'resources', resource)
-                destination = self.path_from_webkit_base('LayoutTests', 'imported', WPT_DEST_NAME, 'common', resource)
-                self.copyfile(source, destination)
-                self.run(['git', 'add', destination])
-
+            self._copy_resources_to_wpt()
         elif self.target == 'css':
             import_commitish = self.update(CSS_DEST_NAME, WPT_REPO_URL)
         else:
@@ -120,6 +108,23 @@ class DepsUpdater(object):
             return False
 
         return True
+
+    def _copy_resources_to_wpt(self):
+        """Copies some files over to a newly-updated wpt directory.
+
+        There are some resources in our repository that we use instead of the
+        upstream versions.
+        """
+        resources_to_copy = [
+            ('testharnessreport.js', 'resources'),
+            ('WebIDLParser.js', 'resources'),
+            ('vendor-prefix.js', 'common'),
+        ]
+        for filename, wpt_subdir in resources_to_copy:
+            source = self.path_from_webkit_base('LayoutTests', 'resources', filename)
+            destination = self.path_from_webkit_base('LayoutTests', 'imported', WPT_DEST_NAME, wpt_subdir, filename)
+            self.copyfile(source, destination)
+            self.run(['git', 'add', destination])
 
     def update(self, dest_dir_name, url):
         """Updates an imported repository.
