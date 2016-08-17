@@ -92,9 +92,6 @@ class BranchUtility(object):
     representing the previous Chrome version/branch combination.
     '''
     if channel_info.channel == 'stable':
-      if channel_info.version <= 5:
-        # BranchUtility can't access branch data from before Chrome version 5.
-        return None
       return self.GetStableChannelInfo(channel_info.version - 1)
     names = self.GetAllChannelNames()
     return self.GetAllChannelInfo()[names.index(channel_info.channel) - 1]
@@ -138,7 +135,10 @@ class BranchUtility(object):
     '''Given a |version| corresponding to a 'stable' version of Chrome, returns
     a ChannelInfo object representing that version.
     '''
-    return ChannelInfo('stable', self.GetBranchForVersion(version), version)
+    branch = self.GetBranchForVersion(version)
+    if branch is None:
+      return None
+    return ChannelInfo('stable', branch, version)
 
   def _ExtractFromVersionJson(self, channel_name, data_type):
     '''Returns the branch or version number for a channel name.
@@ -200,11 +200,20 @@ class BranchUtility(object):
     version_json = json.loads(self._history_result.Get().content)
     for entry in version_json:
       version_title = entry['version'].split('.')
+      # TODO(devlin): Is there a reason we don't cache all these values now?
       if version_title[0] == str(version):
         self._branch_object_store.Set(str(version), version_title[2])
         return version_title[2]
 
-    raise ValueError('The branch for %s could not be found.' % version)
+    # This can legitimately happen because
+    # https://omahaproxy.appspot.com/history.json?channel=dev&os=win&json=1
+    # (where we get the branch data) has a maximum number of results. The
+    # assertion is a nasty hack to make sure that we're at least retrieving
+    # a reasonable number of version. Unfortunately, this is also doomed to
+    # need updating every five years or so.
+    # TODO(devlin): Really, this is awful.
+    assert(version < 40)
+    return None
 
   def GetChannelForVersion(self, version):
     '''Returns the name of the development channel corresponding to a given

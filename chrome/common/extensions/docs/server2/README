@@ -48,6 +48,11 @@ server to pull data from that file:
 
        http://localhost:8080/_update_cache/FOOCACHE
 
+     If you see errors about the FOOCACHE file not existing, the server may be
+     looking for the file in the root chromium directory (under src/), even if
+     you launched the server from the server2 directory. Try moving the FOOCACHE
+     file there.
+
      The server should take about a minute to fully populate its Datastore
      from the data in your FOOCACHE file. Now you have a working dev server!
 
@@ -66,7 +71,8 @@ Using Google Cloud Storage content providers with preview.py
 Deploying the Server
 
 You will need to have access to the http://chrome-apps-doc.appspot.com app.
-Contact kalman@chromium.org or rockot@chromium.org to obtain access.
+Contact rdevlin.cronin@chromium.org or another extensions team member to obtain
+access.
 
 Once you have access:
 
