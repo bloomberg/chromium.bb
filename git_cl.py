@@ -3063,14 +3063,20 @@ def get_cl_statuses(changes, fine_grained, max_processes=None):
     # Process one branch synchronously to work through authentication, then
     # spawn processes to process all the other branches in parallel.
     if changes:
-      fetch = lambda cl: (cl, cl.GetStatus())
+      def fetch(cl):
+        try:
+          return (cl, cl.GetStatus())
+        except:
+          # See http://crbug.com/629863.
+          logging.exception('failed to fetch status for %s:', cl)
+          raise
       yield fetch(changes[0])
 
-      if not changes:
+      changes_to_fetch = changes[1:]
+      if not changes_to_fetch:
         # Exit early if there was only one branch to fetch.
         return
 
-      changes_to_fetch = changes[1:]
       pool = ThreadPool(
           min(max_processes, len(changes_to_fetch))
               if max_processes is not None
