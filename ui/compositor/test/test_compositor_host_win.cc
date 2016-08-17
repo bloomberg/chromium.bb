@@ -29,7 +29,10 @@ class TestCompositorHostWin : public TestCompositorHost,
   ~TestCompositorHostWin() override { DestroyWindow(hwnd()); }
 
   // Overridden from TestCompositorHost:
-  void Show() override { ShowWindow(hwnd(), SW_SHOWNORMAL); }
+  void Show() override {
+    ShowWindow(hwnd(), SW_SHOWNORMAL);
+    compositor_->SetVisible(true);
+  }
   ui::Compositor* GetCompositor() override { return compositor_.get(); }
 
  private:

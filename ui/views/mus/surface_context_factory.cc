@@ -98,9 +98,14 @@ cc::SurfaceManager* SurfaceContextFactory::GetSurfaceManager() {
   return nullptr;
 }
 
+void SurfaceContextFactory::SetDisplayVisible(ui::Compositor* compositor,
+                                              bool visible) {
+  // TODO(fsamuel): display[compositor]->SetVisible(visible);
+}
+
 void SurfaceContextFactory::ResizeDisplay(ui::Compositor* compositor,
                                           const gfx::Size& size) {
-  // NOTIMPLEMENTED();
+  // TODO(fsamuel): display[compositor]->Resize(size);
 }
 
 }  // namespace views

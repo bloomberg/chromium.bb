@@ -29,6 +29,7 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/test/pixel_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -1032,7 +1033,8 @@ static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
 // Checks that the damage rect for a TextureLayer is empty after a commit.
 TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
   std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
-  cc::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
+  cc::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
+                             GL_TEXTURE_2D);
   root->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(
                                        base::Bind(EmptyReleaseCallback)),
                           gfx::Size(10, 10));

@@ -176,6 +176,7 @@ bool SynchronousCompositorOutputSurface::BindToClient(
       nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
   display_->Initialize(&display_client_, surface_manager_.get(),
                        surface_id_allocator_->client_id());
+  display_->SetVisible(true);
   return true;
 }
 

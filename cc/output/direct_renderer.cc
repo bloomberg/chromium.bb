@@ -201,6 +201,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                const gfx::ColorSpace& device_color_space,
                                const gfx::Rect& device_viewport_rect,
                                const gfx::Rect& device_clip_rect) {
+  DCHECK(visible());
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS(
       "Renderer4.renderPassCount",

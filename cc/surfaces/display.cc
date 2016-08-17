@@ -105,6 +105,15 @@ void Display::SetSurfaceId(const SurfaceId& id, float device_scale_factor) {
     scheduler_->SetNewRootSurface(id);
 }
 
+void Display::SetVisible(bool visible) {
+  TRACE_EVENT1("cc", "Display::SetVisible", "visible", visible);
+  if (renderer_)
+    renderer_->SetVisible(visible);
+  if (scheduler_)
+    scheduler_->SetVisible(visible);
+  visible_ = visible;
+}
+
 void Display::Resize(const gfx::Size& size) {
   if (size == current_surface_size_)
     return;
@@ -182,6 +191,7 @@ void Display::InitializeRenderer() {
   }
 
   renderer_->SetEnlargePassTextureAmount(enlarge_texture_amount_);
+  renderer_->SetVisible(visible_);
 
   // TODO(jbauman): Outputting an incomplete quad list doesn't work when using
   // overlays.

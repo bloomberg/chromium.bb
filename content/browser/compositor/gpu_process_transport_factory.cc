@@ -658,6 +658,19 @@ uint32_t GpuProcessTransportFactory::AllocateSurfaceClientId() {
   return next_surface_client_id_++;
 }
 
+void GpuProcessTransportFactory::SetDisplayVisible(ui::Compositor* compositor,
+                                                   bool visible) {
+  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
+    return;
+  PerCompositorData* data = it->second;
+  DCHECK(data);
+  // The compositor will always SetVisible on the Display once it is set up, so
+  // do nothing if |display| is null.
+  if (data->display)
+    data->display->SetVisible(visible);
+}
+
 void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
                                                const gfx::Size& size) {
   PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);

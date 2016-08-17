@@ -38,6 +38,8 @@ class FakeExternalBeginFrameSource
 
   void TestOnBeginFrame(const BeginFrameArgs& args);
 
+  size_t num_observers() const { return observers_.size(); }
+
  private:
   void PostTestOnBeginFrame();
 

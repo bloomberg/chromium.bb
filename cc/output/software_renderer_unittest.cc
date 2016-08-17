@@ -44,6 +44,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
         output_surface_.get(), shared_bitmap_manager_.get());
     renderer_ = base::MakeUnique<SoftwareRenderer>(
         this, &settings_, output_surface_.get(), resource_provider());
+    renderer_->SetVisible(true);
   }
 
   ResourceProvider* resource_provider() const {

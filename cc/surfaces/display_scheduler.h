@@ -37,6 +37,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
 
   void SetClient(DisplaySchedulerClient* client);
 
+  void SetVisible(bool visible);
   void SetRootSurfaceResourcesLocked(bool locked);
   void ForceImmediateSwapIfPossible();
   virtual void DisplayResized();
@@ -58,6 +59,9 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   void AttemptDrawAndSwap();
   void OnBeginFrameDeadline();
   void DrawAndSwap();
+  void StartObservingBeginFrames();
+  void StopObservingBeginFrames();
+  bool ShouldDraw();
 
   DisplaySchedulerClient* client_;
   BeginFrameSource* begin_frame_source_;
@@ -71,6 +75,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   base::CancelableClosure missed_begin_frame_task_;
   bool inside_surface_damaged_;
 
+  bool visible_;
   bool output_surface_lost_;
   bool root_surface_resources_locked_;
 

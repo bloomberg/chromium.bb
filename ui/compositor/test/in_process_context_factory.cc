@@ -255,6 +255,13 @@ cc::SurfaceManager* InProcessContextFactory::GetSurfaceManager() {
   return surface_manager_;
 }
 
+void InProcessContextFactory::SetDisplayVisible(ui::Compositor* compositor,
+                                                bool visible) {
+  if (!per_compositor_data_.count(compositor))
+    return;
+  per_compositor_data_[compositor]->SetVisible(visible);
+}
+
 void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
                                             const gfx::Size& size) {
   if (!per_compositor_data_.count(compositor))

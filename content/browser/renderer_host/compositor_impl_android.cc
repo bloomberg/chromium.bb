@@ -703,6 +703,7 @@ void CompositorImpl::InitializeDisplay(
                                     manager, surface_id_allocator_.get(),
                                     display_.get(), context_provider, nullptr));
 
+  display_->SetVisible(true);
   display_->Resize(size_);
   host_->SetOutputSurface(std::move(delegated_output_surface));
 }

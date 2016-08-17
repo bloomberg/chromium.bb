@@ -301,6 +301,9 @@ void Compositor::SetOutputSurface(
         surface_id_allocator_->client_id(), client.first);
     client.second = surface_id_allocator_->client_id();
   }
+  // Visibility is reset when the output surface is lost, so update it to match
+  // the Compositor's.
+  context_factory_->SetDisplayVisible(this, host_->visible());
 }
 
 void Compositor::ScheduleDraw() {
@@ -380,6 +383,9 @@ void Compositor::SetBackgroundColor(SkColor color) {
 
 void Compositor::SetVisible(bool visible) {
   host_->SetVisible(visible);
+  // Visibility is reset when the output surface is lost, so this must also be
+  // updated then.
+  context_factory_->SetDisplayVisible(this, visible);
 }
 
 bool Compositor::IsVisible() {
@@ -503,8 +509,9 @@ void Compositor::UpdateLayerTreeHost() {
 void Compositor::RequestNewOutputSurface() {
   DCHECK(!output_surface_requested_);
   output_surface_requested_ = true;
-  if (widget_valid_)
+  if (widget_valid_) {
     context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr());
+  }
 }
 
 void Compositor::DidInitializeOutputSurface() {

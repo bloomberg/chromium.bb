@@ -140,6 +140,11 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Gets the surface manager.
   virtual cc::SurfaceManager* GetSurfaceManager() = 0;
 
+  // Inform the display corresponding to this compositor if it is visible. When
+  // false it does not need to produce any frames. Visibility is reset for each
+  // call to CreateOutputSurface.
+  virtual void SetDisplayVisible(ui::Compositor* compositor, bool visible) = 0;
+
   // Resize the display corresponding to this compositor to a particular size.
   virtual void ResizeDisplay(ui::Compositor* compositor,
                              const gfx::Size& size) = 0;

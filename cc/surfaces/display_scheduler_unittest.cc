@@ -109,6 +109,8 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilNewRootSurface) {
   SurfaceId sid1(0, 3, 0);
   base::TimeTicks late_deadline;
 
+  scheduler_.SetVisible(true);
+
   // Go trough an initial BeginFrame cycle with the root surface.
   BeginFrameForTest();
   scheduler_.SetNewRootSurface(root_surface_id1);
@@ -143,6 +145,8 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilDamagedSurface) {
   SurfaceId sid1(0, 2, 0);
   base::TimeTicks late_deadline;
 
+  scheduler_.SetVisible(true);
+
   // Go trough an initial BeginFrame cycle with the root surface.
   BeginFrameForTest();
   scheduler_.SetNewRootSurface(root_surface_id);
@@ -176,6 +180,8 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   SurfaceId root_surface_id(0, 0, 0);
   SurfaceId sid1(0, 1, 0);
   SurfaceId sid2(0, 2, 0);
+
+  scheduler_.SetVisible(true);
 
   // Set the root surface
   scheduler_.SetNewRootSurface(root_surface_id);
@@ -240,6 +246,8 @@ TEST_F(DisplaySchedulerTest, OutputSurfaceLost) {
   SurfaceId root_surface_id(0, 0, 0);
   SurfaceId sid1(0, 1, 0);
 
+  scheduler_.SetVisible(true);
+
   // Set the root surface
   scheduler_.SetNewRootSurface(root_surface_id);
 
@@ -267,9 +275,89 @@ TEST_F(DisplaySchedulerTest, OutputSurfaceLost) {
   EXPECT_EQ(1, client_.draw_and_swap_count());
 }
 
+TEST_F(DisplaySchedulerTest, VisibleWithoutDamageNoTicks) {
+  SurfaceId root_surface_id(0, 0, 0);
+  SurfaceId sid1(0, 1, 0);
+
+  EXPECT_EQ(0u, fake_begin_frame_source_.num_observers());
+  scheduler_.SetVisible(true);
+
+  // When becoming visible, don't start listening for begin frames until there
+  // is some damage.
+  EXPECT_EQ(0u, fake_begin_frame_source_.num_observers());
+  scheduler_.SetNewRootSurface(root_surface_id);
+
+  EXPECT_EQ(1u, fake_begin_frame_source_.num_observers());
+}
+
+TEST_F(DisplaySchedulerTest, VisibleWithDamageTicks) {
+  SurfaceId root_surface_id(0, 0, 0);
+  SurfaceId sid1(0, 1, 0);
+
+  scheduler_.SetNewRootSurface(root_surface_id);
+
+  // When there is damage, start listening for begin frames once becoming
+  // visible.
+  EXPECT_EQ(0u, fake_begin_frame_source_.num_observers());
+  scheduler_.SetVisible(true);
+
+  EXPECT_EQ(1u, fake_begin_frame_source_.num_observers());
+}
+
+TEST_F(DisplaySchedulerTest, Visibility) {
+  SurfaceId root_surface_id(0, 0, 0);
+  SurfaceId sid1(0, 1, 0);
+
+  scheduler_.SetNewRootSurface(root_surface_id);
+  scheduler_.SetVisible(true);
+  EXPECT_EQ(1u, fake_begin_frame_source_.num_observers());
+
+  // DrawAndSwap normally.
+  BeginFrameForTest();
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  EXPECT_EQ(0, client_.draw_and_swap_count());
+  scheduler_.SurfaceDamaged(sid1);
+  scheduler_.BeginFrameDeadlineForTest();
+  EXPECT_EQ(1, client_.draw_and_swap_count());
+
+  BeginFrameForTest();
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+
+  // Become not visible.
+  scheduler_.SetVisible(false);
+
+  // It will stop listening for begin frames after the current deadline.
+  EXPECT_EQ(1u, fake_begin_frame_source_.num_observers());
+
+  // Deadline does not DrawAndSwap when not visible.
+  EXPECT_EQ(1, client_.draw_and_swap_count());
+  scheduler_.BeginFrameDeadlineForTest();
+  EXPECT_EQ(1, client_.draw_and_swap_count());
+  // Now it stops listening for begin frames.
+  EXPECT_EQ(0u, fake_begin_frame_source_.num_observers());
+
+  // Does not start listening for begin frames when becoming visible without
+  // damage.
+  scheduler_.SetVisible(true);
+  EXPECT_EQ(0u, fake_begin_frame_source_.num_observers());
+  scheduler_.SetVisible(false);
+
+  // Does not start listening for begin frames when damage arrives.
+  scheduler_.SurfaceDamaged(sid1);
+  EXPECT_EQ(0u, fake_begin_frame_source_.num_observers());
+
+  // But does when becoming visible with damage again.
+  scheduler_.SetVisible(true);
+  EXPECT_EQ(1u, fake_begin_frame_source_.num_observers());
+}
+
 TEST_F(DisplaySchedulerTest, ResizeCausesSwap) {
   SurfaceId root_surface_id(0, 0, 0);
   SurfaceId sid1(0, 1, 0);
+
+  scheduler_.SetVisible(true);
 
   // Set the root surface
   scheduler_.SetNewRootSurface(root_surface_id);
@@ -294,6 +382,8 @@ TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
   SurfaceId root_surface_id(0, 0, 0);
   SurfaceId sid1(0, 1, 0);
   base::TimeTicks late_deadline;
+
+  scheduler_.SetVisible(true);
 
   // Set the root surface
   scheduler_.SetNewRootSurface(root_surface_id);
@@ -340,6 +430,8 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
   SurfaceId root_surface_id(0, 0, 0);
   SurfaceId sid1(0, 1, 0);
   SurfaceId sid2(0, 2, 0);
+
+  scheduler_.SetVisible(true);
 
   // Set the root surface
   scheduler_.SetNewRootSurface(root_surface_id);
@@ -405,37 +497,53 @@ TEST_F(DisplaySchedulerTest, ScheduleBeginFrameDeadline) {
   SurfaceId root_surface_id(0, 1, 0);
   SurfaceId sid1(0, 2, 0);
   int count = 1;
-  EXPECT_EQ(count++, scheduler_.scheduler_begin_frame_deadline_count());
+  EXPECT_EQ(count, scheduler_.scheduler_begin_frame_deadline_count());
 
-  // Set the root surface
+  scheduler_.SetVisible(true);
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
+
+  scheduler_.SetVisible(true);
+  EXPECT_EQ(count, scheduler_.scheduler_begin_frame_deadline_count());
+
+  scheduler_.SetVisible(false);
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
+
+  // Set the root surface while not visible.
   scheduler_.SetNewRootSurface(root_surface_id);
-  EXPECT_EQ(count++, scheduler_.scheduler_begin_frame_deadline_count());
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
+
+  scheduler_.SetVisible(true);
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
+
+  // Set the root surface while visible.
+  scheduler_.SetNewRootSurface(root_surface_id);
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
   BeginFrameForTest();
-  EXPECT_EQ(count++, scheduler_.scheduler_begin_frame_deadline_count());
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
   scheduler_.BeginFrameDeadlineForTest();
   scheduler_.DidSwapBuffers();
   BeginFrameForTest();
-  EXPECT_EQ(count++, scheduler_.scheduler_begin_frame_deadline_count());
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
   scheduler_.DidSwapBuffersComplete();
-  EXPECT_EQ(count++, scheduler_.scheduler_begin_frame_deadline_count());
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
   scheduler_.DisplayResized();
-  EXPECT_EQ(count++, scheduler_.scheduler_begin_frame_deadline_count());
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
   scheduler_.SetNewRootSurface(root_surface_id);
-  EXPECT_EQ(count++, scheduler_.scheduler_begin_frame_deadline_count());
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
   scheduler_.SurfaceDamaged(sid1);
-  EXPECT_EQ(count++, scheduler_.scheduler_begin_frame_deadline_count());
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
   scheduler_.SetRootSurfaceResourcesLocked(true);
-  EXPECT_EQ(count++, scheduler_.scheduler_begin_frame_deadline_count());
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
   scheduler_.OutputSurfaceLost();
-  EXPECT_EQ(count++, scheduler_.scheduler_begin_frame_deadline_count());
+  EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 }
 
 }  // namespace

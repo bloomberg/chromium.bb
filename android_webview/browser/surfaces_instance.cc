@@ -72,6 +72,7 @@ SurfacesInstance::SurfacesInstance()
       std::move(scheduler), std::move(texture_mailbox_deleter)));
   display_->Initialize(this, surface_manager_.get(),
                        surface_id_allocator_->client_id());
+  display_->SetVisible(true);
 
   surface_factory_.reset(new cc::SurfaceFactory(surface_manager_.get(), this));
 

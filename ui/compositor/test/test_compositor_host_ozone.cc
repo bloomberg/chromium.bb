@@ -53,6 +53,7 @@ void TestCompositorHostOzone::Show() {
   // available: http://crbug.com/255128
   compositor_.SetAcceleratedWidget(1);
   compositor_.SetScaleAndSize(1.0f, bounds_.size());
+  compositor_.SetVisible(true);
 }
 
 ui::Compositor* TestCompositorHostOzone::GetCompositor() {

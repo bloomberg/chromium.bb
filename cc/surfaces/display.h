@@ -73,6 +73,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
   void SetSurfaceId(const SurfaceId& id, float device_scale_factor);
+  void SetVisible(bool visible);
   void Resize(const gfx::Size& new_size);
   void SetColorSpace(const gfx::ColorSpace& color_space);
   void SetExternalClip(const gfx::Rect& clip);
@@ -134,6 +135,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;
   gfx::ColorSpace device_color_space_;
+  bool visible_ = false;
   bool swapped_since_resize_ = false;
   gfx::Rect external_clip_;
   gfx::Rect external_viewport_;

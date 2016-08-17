@@ -19,6 +19,7 @@ DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
     : begin_frame_source_(begin_frame_source),
       task_runner_(task_runner),
       inside_surface_damaged_(false),
+      visible_(false),
       output_surface_lost_(false),
       root_surface_resources_locked_(true),
       inside_begin_frame_deadline_interval_(false),
@@ -36,12 +37,22 @@ DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
 }
 
 DisplayScheduler::~DisplayScheduler() {
-  if (observing_begin_frame_source_)
-    begin_frame_source_->RemoveObserver(this);
+  StopObservingBeginFrames();
 }
 
 void DisplayScheduler::SetClient(DisplaySchedulerClient* client) {
   client_ = client;
+}
+
+void DisplayScheduler::SetVisible(bool visible) {
+  if (visible_ == visible)
+    return;
+
+  visible_ = visible;
+  // If going invisible, we'll stop observing begin frames once we try
+  // to draw and fail.
+  StartObservingBeginFrames();
+  ScheduleBeginFrameDeadline();
 }
 
 // If we try to draw when the root surface resources are locked, the
@@ -102,11 +113,7 @@ void DisplayScheduler::SurfaceDamaged(const SurfaceId& surface_id) {
         child_surface_ids_damaged_, child_surface_ids_to_expect_damage_from_);
   }
 
-  if (!output_surface_lost_ && !observing_begin_frame_source_) {
-    observing_begin_frame_source_ = true;
-    begin_frame_source_->AddObserver(this);
-  }
-
+  StartObservingBeginFrames();
   ScheduleBeginFrameDeadline();
 }
 
@@ -181,6 +188,30 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   missed_begin_frame_task_.Cancel();
 
   return true;
+}
+
+void DisplayScheduler::StartObservingBeginFrames() {
+  if (!observing_begin_frame_source_ && ShouldDraw()) {
+    begin_frame_source_->AddObserver(this);
+    observing_begin_frame_source_ = true;
+  }
+}
+
+void DisplayScheduler::StopObservingBeginFrames() {
+  if (observing_begin_frame_source_) {
+    begin_frame_source_->RemoveObserver(this);
+    observing_begin_frame_source_ = false;
+
+    // A missed BeginFrame may be queued, so drop that too if we're going to
+    // stop listening.
+    missed_begin_frame_task_.Cancel();
+  }
+}
+
+bool DisplayScheduler::ShouldDraw() {
+  // Note: When any of these cases becomes true, StartObservingBeginFrames must
+  // be called to ensure the draw will happen.
+  return needs_draw_ && !output_surface_lost_ && visible_;
 }
 
 void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
@@ -298,7 +329,7 @@ void DisplayScheduler::AttemptDrawAndSwap() {
   begin_frame_deadline_task_.Cancel();
   begin_frame_deadline_task_time_ = base::TimeTicks();
 
-  if (needs_draw_ && !output_surface_lost_) {
+  if (ShouldDraw()) {
     if (pending_swaps_ < max_pending_swaps_ && !root_surface_resources_locked_)
       DrawAndSwap();
   } else {
@@ -309,13 +340,7 @@ void DisplayScheduler::AttemptDrawAndSwap() {
     all_active_child_surfaces_ready_to_draw_ = true;
     expect_damage_from_root_surface_ = false;
 
-    if (observing_begin_frame_source_) {
-      observing_begin_frame_source_ = false;
-      begin_frame_source_->RemoveObserver(this);
-      // A missed BeginFrame may be queued, so drop that too if we're going to
-      // stop listening.
-      missed_begin_frame_task_.Cancel();
-    }
+    StopObservingBeginFrames();
   }
 }
 

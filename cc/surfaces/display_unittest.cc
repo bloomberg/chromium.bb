@@ -131,6 +131,7 @@ class DisplayTest : public testing::Test {
         settings, std::move(begin_frame_source), std::move(output_surface),
         std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
+    display_->SetVisible(true);
   }
 
  protected:

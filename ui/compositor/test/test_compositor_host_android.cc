@@ -27,7 +27,7 @@ class TestCompositorHostAndroid : public TestCompositorHost {
   }
 
   // Overridden from TestCompositorHost:
-  void Show() override {}
+  void Show() override { compositor_->SetVisible(true); }
   ui::Compositor* GetCompositor() override { return compositor_.get(); }
 
  private:

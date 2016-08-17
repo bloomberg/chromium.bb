@@ -84,7 +84,7 @@ class CC_EXPORT Renderer {
 
  protected:
   Renderer(RendererClient* client, const RendererSettings* settings)
-      : client_(client), settings_(settings), visible_(true) {}
+      : client_(client), settings_(settings), visible_(false) {}
 
   virtual void DidChangeVisibility() = 0;
 

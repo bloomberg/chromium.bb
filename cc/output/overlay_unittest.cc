@@ -1309,6 +1309,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
     renderer_ = base::WrapUnique(new OverlayInfoRendererGL(
         &renderer_client_, &settings_, output_surface_.get(),
         resource_provider_.get()));
+    renderer_->SetVisible(true);
   }
 
   void DrawFrame(RenderPassList* pass_list, const gfx::Rect& viewport_rect) {

@@ -61,6 +61,7 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
 
     delegated_output_surface_->BindToClient(&delegated_output_surface_client_);
     display_->Resize(display_size_);
+    display_->SetVisible(true);
 
     EXPECT_FALSE(
         delegated_output_surface_client_.did_lose_output_surface_called());

@@ -150,6 +150,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
   renderer_ = base::MakeUnique<GLRenderer>(
       this, &settings_.renderer_settings, output_surface_.get(),
       resource_provider_.get(), texture_mailbox_deleter_.get(), 0);
+  renderer_->SetVisible(true);
 }
 
 void PixelTest::ForceExpandedViewport(const gfx::Size& surface_expansion) {
@@ -192,6 +193,7 @@ void PixelTest::SetUpSoftwareRenderer() {
       resource_provider_.get());
   software_renderer_ = renderer.get();
   renderer_ = std::move(renderer);
+  renderer_->SetVisible(true);
 }
 
 }  // namespace cc

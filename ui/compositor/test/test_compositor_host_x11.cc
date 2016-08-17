@@ -76,6 +76,7 @@ void TestCompositorHostX11::Show() {
   }
   compositor_.SetAcceleratedWidget(window_);
   compositor_.SetScaleAndSize(1.0f, bounds_.size());
+  compositor_.SetVisible(true);
 }
 
 ui::Compositor* TestCompositorHostX11::GetCompositor() {

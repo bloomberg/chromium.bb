@@ -92,6 +92,7 @@ bool TestDelegatingOutputSurface::BindToClient(OutputSurfaceClient* client) {
       surface_id_allocator_->client_id(), this);
   display_->Initialize(this, surface_manager_.get(),
                        surface_id_allocator_->client_id());
+  display_->SetVisible(true);
   bound_ = true;
   return true;
 }
