@@ -288,7 +288,9 @@ class TestGitCl(TestCase):
            len(self._calls_done), args, following_calls))
       git_cl.logging.error(extended_msg)
 
-      self.fail('@%d  Expected: %r   Actual: %r' % (
+      self.fail('@%d\n'
+                '  Expected: %r\n'
+                '  Actual:   %r' % (
           len(self._calls_done), expected_args, args))
 
     self._calls_done.append(top)
@@ -1003,7 +1005,8 @@ class TestGitCl(TestCase):
         'Change-Id: 123456789\n',
         ['reviewer@example.com', 'another@example.com'],
         squash=False,
-        squash_mode='override_nosquash')
+        squash_mode='override_nosquash',
+        ref_suffix='%l=Code-Review+1')
 
   def test_gerrit_upload_squash_first_is_default(self):
     # Mock Gerrit CL description to indicate the first upload.

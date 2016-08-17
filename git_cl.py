@@ -2516,6 +2516,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # Extra options that can be specified at push time. Doc:
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
     refspec_opts = []
+    if change_desc.get_reviewers(tbr_only=True):
+      print('Adding self-LGTM (Code-Review +1) because of TBRs')
+      refspec_opts.append('l=Code-Review+1')
+
     if options.title:
       if not re.match(r'^[\w ]+$', options.title):
         options.title = re.sub(r'[^\w ]', '', options.title)
@@ -2541,9 +2545,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if cc:
       refspec_opts.extend('cc=' + email.strip() for email in cc)
 
-    if change_desc.get_reviewers():
-      refspec_opts.extend('r=' + email.strip()
-                          for email in change_desc.get_reviewers())
+    reviewers = change_desc.get_reviewers()
+    if reviewers:
+      refspec_opts.extend('r=' + email.strip() for email in reviewers)
 
     refspec_suffix = ''
     if refspec_opts:
@@ -2804,10 +2808,12 @@ class ChangeDescription(object):
     top_lines.append(line)
     self._description_lines = top_lines + separator + gerrit_footers
 
-  def get_reviewers(self):
+  def get_reviewers(self, tbr_only=False):
     """Retrieves the list of reviewers."""
     matches = [re.match(self.R_LINE, line) for line in self._description_lines]
-    reviewers = [match.group(2).strip() for match in matches if match]
+    reviewers = [match.group(2).strip()
+                 for match in matches
+                 if match and (not tbr_only or match.group(1).upper() == 'TBR')]
     return cleanup_list(reviewers)
 
 
