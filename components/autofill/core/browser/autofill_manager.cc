@@ -263,15 +263,20 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
     return false;
 
   AutofillField* autofill_field = GetAutofillField(form, field);
-  if (!autofill_field ||
-      autofill_field->Type().GetStorableType() != CREDIT_CARD_NUMBER) {
+  if (!autofill_field)
+    return false;
+
+  bool is_card_number_field =
+      autofill_field->Type().GetStorableType() == CREDIT_CARD_NUMBER &&
+      base::ContainsOnlyChars(CreditCard::StripSeparators(field.value),
+                              base::ASCIIToUTF16("0123456789"));
+  if (!is_card_number_field &&
+      autofill_field->Type().GetStorableType() != CREDIT_CARD_NAME_FULL) {
     return false;
   }
 
   static const int kShowScanCreditCardMaxValueLength = 6;
-  return field.value.size() <= kShowScanCreditCardMaxValueLength &&
-         base::ContainsOnlyChars(CreditCard::StripSeparators(field.value),
-                                 base::ASCIIToUTF16("0123456789"));
+  return field.value.size() <= kShowScanCreditCardMaxValueLength;
 }
 
 bool AutofillManager::ShouldShowCreditCardSigninPromo(

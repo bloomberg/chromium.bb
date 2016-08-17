@@ -49,12 +49,10 @@ class Controller : public CreditCardScannerViewDelegate,
   }
 
   // CreditCardScannerViewDelegate implementation.
-  void ScanCompleted(const base::string16& card_number,
-                     int expiration_month,
-                     int expiration_year) override {
+  void ScanCompleted(const CreditCard& card) override {
     AutofillMetrics::LogScanCreditCardCompleted(
         base::TimeTicks::Now() - show_time_, true);
-    callback_.Run(card_number, expiration_month, expiration_year);
+    callback_.Run(card);
     delete this;
   }
 

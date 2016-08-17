@@ -10,6 +10,8 @@
 
 namespace autofill {
 
+class CreditCard;
+
 // Receives notifications when credit card scanner UI is dismissed either due to
 // user cancelling the scan or successfully completing the scan.
 class CreditCardScannerViewDelegate {
@@ -18,9 +20,7 @@ class CreditCardScannerViewDelegate {
   virtual void ScanCancelled() = 0;
 
   // Called when the scan completed successfully.
-  virtual void ScanCompleted(const base::string16& card_number,
-                             int expiration_month,
-                             int expiration_year) = 0;
+  virtual void ScanCompleted(const CreditCard& card) = 0;
 
  protected:
   // Destroys the delegate.

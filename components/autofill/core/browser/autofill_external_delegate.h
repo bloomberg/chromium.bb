@@ -22,6 +22,7 @@ namespace autofill {
 
 class AutofillDriver;
 class AutofillManager;
+class CreditCard;
 
 // TODO(csharp): A lot of the logic in this class is copied from autofillagent.
 // Once Autofill is moved out of WebKit this class should be the only home for
@@ -91,9 +92,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
                            FillCreditCardForm);
 
   // Called when a credit card is scanned using device camera.
-  void OnCreditCardScanned(const base::string16& card_number,
-                           int expiration_month,
-                           int expiration_year);
+  void OnCreditCardScanned(const CreditCard& card);
 
   // Fills the form with the Autofill data corresponding to |unique_id|.
   // If |is_preview| is true then this is just a preview to show the user what

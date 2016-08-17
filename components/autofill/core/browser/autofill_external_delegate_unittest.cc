@@ -605,15 +605,6 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
   }
 }
 
-MATCHER_P3(CreditCardMatches,
-           card_number,
-           expiration_month,
-           expiration_year,
-           "") {
-  return !arg.Compare(
-      CreditCard(card_number, expiration_month, expiration_year));
-}
-
 // Test that autofill client will start the signin flow after the user accepted
 // the suggestion to sign in.
 TEST_F(AutofillExternalDelegateUnitTest, SigninPromoMenuItem) {
@@ -623,19 +614,18 @@ TEST_F(AutofillExternalDelegateUnitTest, SigninPromoMenuItem) {
       base::string16(), POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO, 0);
 }
 
+MATCHER_P(CreditCardMatches, card, "") {
+  return !arg.Compare(card);
+}
+
 // Test that autofill manager will fill the credit card form after user scans a
 // credit card.
 TEST_F(AutofillExternalDelegateUnitTest, FillCreditCardForm) {
-  base::string16 card_number = base::ASCIIToUTF16("test");
-  int expiration_month = 1;
-  int expiration_year = 3000;
+  CreditCard card(base::ASCIIToUTF16("test"), 1, 3000);
+  card.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("Alice"));
   EXPECT_CALL(*autofill_manager_,
-              FillCreditCardForm(
-                  _, _, _, CreditCardMatches(card_number, expiration_month,
-                                             expiration_year),
-                  base::string16()));
-  external_delegate_->OnCreditCardScanned(card_number, expiration_month,
-                                          expiration_year);
+      FillCreditCardForm(_, _, _, CreditCardMatches(card), base::string16()));
+  external_delegate_->OnCreditCardScanned(card);
 }
 
 TEST_F(AutofillExternalDelegateUnitTest, IgnoreAutocompleteOffForAutofill) {

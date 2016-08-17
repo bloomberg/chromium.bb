@@ -267,14 +267,9 @@ base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void AutofillExternalDelegate::OnCreditCardScanned(
-    const base::string16& card_number,
-    int expiration_month,
-    int expiration_year) {
-  manager_->FillCreditCardForm(
-      query_id_, query_form_, query_field_,
-      CreditCard(card_number, expiration_month, expiration_year),
-      base::string16());
+void AutofillExternalDelegate::OnCreditCardScanned(const CreditCard& card) {
+  manager_->FillCreditCardForm(query_id_, query_form_, query_field_, card,
+                               base::string16());
 }
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,

@@ -12,6 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_view_delegate.h"
+#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/CreditCardScanner_jni.h"
 #include "ui/android/view_android.h"
@@ -67,12 +69,15 @@ void CreditCardScannerViewAndroid::ScanCancelled(
 void CreditCardScannerViewAndroid::ScanCompleted(
     JNIEnv* env,
     const JavaParamRef<jobject>& object,
+    const JavaParamRef<jstring>& card_holder_name,
     const JavaParamRef<jstring>& card_number,
     jint expiration_month,
     jint expiration_year) {
-  delegate_->ScanCompleted(
-      base::android::ConvertJavaStringToUTF16(env, card_number),
+  CreditCard card(base::android::ConvertJavaStringToUTF16(env, card_number),
       static_cast<int>(expiration_month), static_cast<int>(expiration_year));
+  card.SetRawInfo(CREDIT_CARD_NAME_FULL,
+      base::android::ConvertJavaStringToUTF16(env, card_holder_name));
+  delegate_->ScanCompleted(card);
 }
 
 void CreditCardScannerViewAndroid::Show() {
