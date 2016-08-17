@@ -992,8 +992,16 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
 
 // Visit a valid HTTPS page, then a broken HTTPS page, and then go back,
 // and test that the observed security style matches.
+#if defined(OS_CHROMEOS)
+// Flaky on Chrome OS. See https://crbug.com/638576.
+#define MAYBE_SecurityStyleChangedObserverGoBack \
+  DISABLED_SecurityStyleChangedObserverGoBack
+#else
+#define MAYBE_SecurityStyleChangedObserverGoBack \
+  SecurityStyleChangedObserverGoBack
+#endif
 IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest,
-                       SecurityStyleChangedObserverGoBack) {
+                       MAYBE_SecurityStyleChangedObserverGoBack) {
   ASSERT_TRUE(https_server_.Start());
 
   net::EmbeddedTestServer https_test_server_expired(
