@@ -51,8 +51,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
  public:
   class ScopedUseGrContext;
 
-  GLRenderer(RendererClient* client,
-             const RendererSettings* settings,
+  GLRenderer(const RendererSettings* settings,
              OutputSurface* output_surface,
              ResourceProvider* resource_provider,
              TextureMailboxDeleter* texture_mailbox_deleter,
@@ -71,8 +70,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
  protected:
   void DidChangeVisibility() override;
-
-  bool IsBackbufferDiscarded() const { return is_backbuffer_discarded_; }
 
   const gfx::QuadF& SharedGeometryQuad() const { return shared_geometry_quad_; }
   const StaticGeometryBinding* SharedGeometry() const {
@@ -251,9 +248,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   void ReinitializeGLState();
   void RestoreGLState();
-
-  void DiscardBackbuffer() override;
-  void EnsureBackbuffer() override;
 
   void ScheduleCALayers(DrawingFrame* frame);
   void ScheduleOverlays(DrawingFrame* frame);
@@ -505,7 +499,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   gfx::Rect swap_buffer_rect_;
   gfx::Rect scissor_rect_;
-  bool is_backbuffer_discarded_;
   bool is_using_bind_uniform_;
   bool is_scissor_enabled_;
   bool scissor_rect_needs_reset_;

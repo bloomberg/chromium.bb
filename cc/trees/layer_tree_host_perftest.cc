@@ -84,7 +84,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
     if (!begin_frame_driven_drawing_)
       host_impl->SetNeedsRedraw();
     if (full_damage_each_frame_)
-      host_impl->SetFullRootLayerDamage();
+      host_impl->SetFullViewportDamage();
   }
 
   virtual void CleanUpAndEndTest() { EndTest(); }

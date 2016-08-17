@@ -31,7 +31,7 @@
 namespace cc {
 namespace {
 
-class SoftwareRendererTest : public testing::Test, public RendererClient {
+class SoftwareRendererTest : public testing::Test {
  public:
   void InitializeRenderer(
       std::unique_ptr<SoftwareOutputDevice> software_output_device) {
@@ -43,7 +43,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), shared_bitmap_manager_.get());
     renderer_ = base::MakeUnique<SoftwareRenderer>(
-        this, &settings_, output_surface_.get(), resource_provider());
+        &settings_, output_surface_.get(), resource_provider());
     renderer_->SetVisible(true);
   }
 
@@ -52,9 +52,6 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   }
 
   SoftwareRenderer* renderer() const { return renderer_.get(); }
-
-  // RendererClient implementation.
-  void SetFullRootLayerDamage() override {}
 
   std::unique_ptr<SkBitmap> DrawAndCopyOutput(RenderPassList* list,
                                               float device_scale_factor,

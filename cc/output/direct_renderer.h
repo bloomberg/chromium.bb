@@ -85,8 +85,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
     SURFACE_INITIALIZATION_MODE_FULL_SURFACE_CLEAR,
   };
 
-  DirectRenderer(RendererClient* client,
-                 const RendererSettings* settings,
+  DirectRenderer(const RendererSettings* settings,
                  OutputSurface* output_surface,
                  ResourceProvider* resource_provider);
 
@@ -146,8 +145,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual bool FlippedFramebuffer(const DrawingFrame* frame) const = 0;
   virtual void EnsureScissorTestEnabled() = 0;
   virtual void EnsureScissorTestDisabled() = 0;
-  virtual void DiscardBackbuffer() {}
-  virtual void EnsureBackbuffer() {}
 
   virtual void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,

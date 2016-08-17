@@ -19,8 +19,7 @@ class ResourceProvider;
 
 class CC_EXPORT DelegatingRenderer : public Renderer {
  public:
-  DelegatingRenderer(RendererClient* client,
-                     const RendererSettings* settings,
+  DelegatingRenderer(const RendererSettings* settings,
                      OutputSurface* output_surface,
                      ResourceProvider* resource_provider);
   ~DelegatingRenderer() override;
@@ -37,8 +36,6 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   void ReclaimResources(const ReturnedResourceArray&) override;
 
  private:
-  void DidChangeVisibility() override {}
-
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
   RendererCapabilitiesImpl capabilities_;

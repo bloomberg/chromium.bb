@@ -1234,16 +1234,10 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
 
 class OverlayInfoRendererGL : public GLRenderer {
  public:
-  OverlayInfoRendererGL(RendererClient* client,
-                        const RendererSettings* settings,
+  OverlayInfoRendererGL(const RendererSettings* settings,
                         OutputSurface* output_surface,
                         ResourceProvider* resource_provider)
-      : GLRenderer(client,
-                   settings,
-                   output_surface,
-                   resource_provider,
-                   NULL,
-                   0),
+      : GLRenderer(settings, output_surface, resource_provider, NULL, 0),
         expect_overlays_(false) {}
 
   MOCK_METHOD3(DoDrawQuad,
@@ -1271,12 +1265,6 @@ class OverlayInfoRendererGL : public GLRenderer {
 
  private:
   bool expect_overlays_;
-};
-
-class FakeRendererClient : public RendererClient {
- public:
-  // RendererClient methods.
-  void SetFullRootLayerDamage() override {}
 };
 
 class MockOverlayScheduler {
@@ -1307,8 +1295,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
       output_surface_->SetOverlayCandidateValidator(new SingleOverlayValidator);
 
     renderer_ = base::WrapUnique(new OverlayInfoRendererGL(
-        &renderer_client_, &settings_, output_surface_.get(),
-        resource_provider_.get()));
+        &settings_, output_surface_.get(), resource_provider_.get()));
     renderer_->SetVisible(true);
   }
 
@@ -1341,7 +1328,6 @@ class GLRendererWithOverlaysTest : public testing::Test {
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<OverlayOutputSurface> output_surface_;
-  FakeRendererClient renderer_client_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<OverlayInfoRendererGL> renderer_;
   scoped_refptr<TestContextProvider> provider_;

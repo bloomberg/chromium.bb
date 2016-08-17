@@ -49,11 +49,6 @@ struct RendererCapabilitiesImpl {
   RendererCapabilities MainThreadCapabilities() const;
 };
 
-class CC_EXPORT RendererClient {
- public:
-  virtual void SetFullRootLayerDamage() = 0;
-};
-
 class CC_EXPORT Renderer {
  public:
   virtual ~Renderer() {}
@@ -83,12 +78,11 @@ class CC_EXPORT Renderer {
   void SetVisible(bool visible);
 
  protected:
-  Renderer(RendererClient* client, const RendererSettings* settings)
-      : client_(client), settings_(settings), visible_(false) {}
+  explicit Renderer(const RendererSettings* settings)
+      : settings_(settings), visible_(false) {}
 
-  virtual void DidChangeVisibility() = 0;
+  virtual void DidChangeVisibility() {}
 
-  RendererClient* client_;
   const RendererSettings* settings_;
   bool visible_;
 

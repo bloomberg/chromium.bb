@@ -51,7 +51,6 @@ class TextureMailboxDeleter;
 // surface IDs used to draw into the display and deciding when to draw.
 class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
                                    public OutputSurfaceClient,
-                                   public RendererClient,
                                    public SurfaceDamageObserver {
  public:
   // The |begin_frame_source| and |scheduler| may be null (together). In that
@@ -103,9 +102,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
               bool resourceless_software_draw) override;
-
-  // RendererClient implementation.
-  void SetFullRootLayerDamage() override;
 
   // SurfaceDamageObserver implementation.
   void OnSurfaceDamaged(const SurfaceId& surface, bool* changed) override;

@@ -139,7 +139,6 @@ class LayerTreeHostImplClient {
 // state.
 class CC_EXPORT LayerTreeHostImpl
     : public InputHandler,
-      public RendererClient,
       public TileManagerClient,
       public OutputSurfaceClient,
       public TopControlsManagerClient,
@@ -252,6 +251,7 @@ class CC_EXPORT LayerTreeHostImpl
   void AnimatePendingTreeAfterCommit();
   void MainThreadHasStoppedFlinging();
   void DidAnimateScrollOffset();
+  void SetFullViewportDamage();
   void SetViewportDamage(const gfx::Rect& damage_rect);
 
   void SetTreeLayerFilterMutated(ElementId element_id,
@@ -341,9 +341,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Viewport rect in view space used for tiling prioritization.
   const gfx::Rect ViewportRectForTilePriority() const;
-
-  // RendererClient implementation.
-  void SetFullRootLayerDamage() override;
 
   // TileManagerClient implementation.
   void NotifyReadyToActivate() override;

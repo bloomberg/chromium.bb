@@ -128,11 +128,10 @@ gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
   return window_rect;
 }
 
-DirectRenderer::DirectRenderer(RendererClient* client,
-                               const RendererSettings* settings,
+DirectRenderer::DirectRenderer(const RendererSettings* settings,
                                OutputSurface* output_surface,
                                ResourceProvider* resource_provider)
-    : Renderer(client, settings),
+    : Renderer(settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),
       overlay_processor_(new OverlayProcessor(output_surface)) {
@@ -218,8 +217,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   frame.root_damage_rect.Intersect(gfx::Rect(device_viewport_rect.size()));
   frame.device_viewport_rect = device_viewport_rect;
   frame.device_clip_rect = device_clip_rect;
-
-  EnsureBackbuffer();
 
   // Only reshape when we know we are going to draw. Otherwise, the reshape
   // can leave the window at the wrong size if we never draw and the proper

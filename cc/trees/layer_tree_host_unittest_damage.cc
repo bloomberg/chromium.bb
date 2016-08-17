@@ -275,7 +275,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
         EXPECT_TRUE(frame_data->has_no_damage);
 
         // Then we set full damage for the next frame.
-        host_impl->SetFullRootLayerDamage();
+        host_impl->SetFullViewportDamage();
         break;
       case 2:
         // The whole frame should be damaged as requested.
@@ -294,7 +294,7 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
         // If we damage part of the frame, but also damage the full
         // frame, then the whole frame should be damaged.
         child_damage_rect_ = gfx::Rect(10, 11, 12, 13);
-        host_impl->SetFullRootLayerDamage();
+        host_impl->SetFullViewportDamage();
         break;
       case 4:
         // The whole frame is damaged.

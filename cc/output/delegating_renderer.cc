@@ -20,11 +20,10 @@
 
 namespace cc {
 
-DelegatingRenderer::DelegatingRenderer(RendererClient* client,
-                                       const RendererSettings* settings,
+DelegatingRenderer::DelegatingRenderer(const RendererSettings* settings,
                                        OutputSurface* output_surface,
                                        ResourceProvider* resource_provider)
-    : Renderer(client, settings),
+    : Renderer(settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider) {
   DCHECK(resource_provider_);

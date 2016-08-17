@@ -51,15 +51,11 @@ bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
 
 }  // anonymous namespace
 
-SoftwareRenderer::SoftwareRenderer(RendererClient* client,
-                                   const RendererSettings* settings,
+SoftwareRenderer::SoftwareRenderer(const RendererSettings* settings,
                                    OutputSurface* output_surface,
                                    ResourceProvider* resource_provider)
-    : DirectRenderer(client, settings, output_surface, resource_provider),
-      is_scissor_enabled_(false),
-      is_backbuffer_discarded_(false),
-      output_device_(output_surface->software_device()),
-      current_canvas_(nullptr) {
+    : DirectRenderer(settings, output_surface, resource_provider),
+      output_device_(output_surface->software_device()) {
   if (resource_provider_) {
     capabilities_.max_texture_size = resource_provider_->max_texture_size();
     capabilities_.best_texture_format =
@@ -89,13 +85,14 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   TRACE_EVENT0("cc", "SoftwareRenderer::FinishDrawingFrame");
   current_framebuffer_lock_ = nullptr;
   current_framebuffer_canvas_.reset();
-  current_canvas_ = NULL;
-  root_canvas_ = NULL;
+  current_canvas_ = nullptr;
+  root_canvas_ = nullptr;
 
   output_device_->EndPaint();
 }
 
 void SoftwareRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
+  DCHECK(visible());
   TRACE_EVENT0("cc,benchmark", "SoftwareRenderer::SwapBuffers");
   CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);
@@ -597,31 +594,11 @@ void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
   request->SendBitmapResult(std::move(bitmap));
 }
 
-void SoftwareRenderer::DiscardBackbuffer() {
-  if (is_backbuffer_discarded_)
-    return;
-
-  output_surface_->DiscardBackbuffer();
-
-  is_backbuffer_discarded_ = true;
-
-  // Damage tracker needs a full reset every time framebuffer is discarded.
-  client_->SetFullRootLayerDamage();
-}
-
-void SoftwareRenderer::EnsureBackbuffer() {
-  if (!is_backbuffer_discarded_)
-    return;
-
-  output_surface_->EnsureBackbuffer();
-  is_backbuffer_discarded_ = false;
-}
-
 void SoftwareRenderer::DidChangeVisibility() {
   if (visible())
-    EnsureBackbuffer();
+    output_surface_->EnsureBackbuffer();
   else
-    DiscardBackbuffer();
+    output_surface_->DiscardBackbuffer();
 }
 
 bool SoftwareRenderer::ShouldApplyBackgroundFilters(

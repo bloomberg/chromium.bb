@@ -831,7 +831,7 @@ void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
 
   set_needs_update_draw_properties();
   if (IsActiveTree())
-    layer_tree_host_impl_->SetFullRootLayerDamage();
+    layer_tree_host_impl_->SetFullViewportDamage();
 }
 
 SyncedProperty<ScaleGroup>* LayerTreeImpl::page_scale_factor() {
@@ -1202,7 +1202,7 @@ size_t LayerTreeImpl::NumLayers() {
 
 void LayerTreeImpl::DidBecomeActive() {
   if (next_activation_forces_redraw_) {
-    layer_tree_host_impl_->SetFullRootLayerDamage();
+    layer_tree_host_impl_->SetFullViewportDamage();
     next_activation_forces_redraw_ = false;
   }
 

@@ -26,8 +26,7 @@ class TileDrawQuad;
 
 class CC_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
-  SoftwareRenderer(RendererClient* client,
-                   const RendererSettings* settings,
+  SoftwareRenderer(const RendererSettings* settings,
                    OutputSurface* output_surface,
                    ResourceProvider* resource_provider);
 
@@ -35,8 +34,6 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 
   const RendererCapabilitiesImpl& Capabilities() const override;
   void SwapBuffers(CompositorFrameMetadata metadata) override;
-  void DiscardBackbuffer() override;
-  void EnsureBackbuffer() override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
     disable_picture_quad_image_filtering_ = disable;
@@ -101,13 +98,12 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   bool disable_picture_quad_image_filtering_ = false;
 
   RendererCapabilitiesImpl capabilities_;
-  bool is_scissor_enabled_;
-  bool is_backbuffer_discarded_;
+  bool is_scissor_enabled_ = false;
   gfx::Rect scissor_rect_;
 
   SoftwareOutputDevice* output_device_;
-  SkCanvas* root_canvas_;
-  SkCanvas* current_canvas_;
+  SkCanvas* root_canvas_ = nullptr;
+  SkCanvas* current_canvas_ = nullptr;
   SkPaint current_paint_;
   std::unique_ptr<ResourceProvider::ScopedWriteLockSoftware>
       current_framebuffer_lock_;

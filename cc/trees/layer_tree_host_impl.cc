@@ -1517,7 +1517,7 @@ void LayerTreeHostImpl::SetExternalTilePriorityConstraints(
 
     // Compositor, not OutputSurface, is responsible for setting damage and
     // triggering redraw for constraint changes.
-    SetFullRootLayerDamage();
+    SetFullViewportDamage();
     SetNeedsRedraw();
   }
 }
@@ -1589,7 +1589,7 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
     // always swap. Otherwise, need to set redraw for any changes to draw
     // parameters.
     if (transform_changed || viewport_changed || resourceless_software_draw_) {
-      SetFullRootLayerDamage();
+      SetFullViewportDamage();
       SetNeedsRedraw();
       active_tree_->set_needs_update_draw_properties();
     }
@@ -1607,7 +1607,7 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
     // This draw may have reset all damage, which would lead to subsequent
     // incorrect hardware draw, so explicitly set damage for next hardware
     // draw as well.
-    SetFullRootLayerDamage();
+    SetFullViewportDamage();
   }
 }
 
@@ -2094,11 +2094,9 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
     SetRequiresHighResToDraw();
   } else {
     EvictAllUIResources();
-  }
-
-  // Call PrepareTiles to evict tiles when we become invisible.
-  if (!visible)
+    // Call PrepareTiles to evict tiles when we become invisible.
     PrepareTiles();
+  }
 
   // Update visibility for the compositor context provider.
   if (output_surface_) {
@@ -2161,10 +2159,9 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
 
   DCHECK(output_surface_->capabilities().delegated_rendering);
   renderer_ = base::MakeUnique<DelegatingRenderer>(
-      this, &settings_.renderer_settings, output_surface_,
-      resource_provider_.get());
+      &settings_.renderer_settings, output_surface_, resource_provider_.get());
   renderer_->SetVisible(visible_);
-  SetFullRootLayerDamage();
+  SetFullViewportDamage();
 
   // See note in LayerTreeImpl::UpdateDrawProperties.  Renderer needs to be
   // initialized to get max texture size.  Also, after releasing resources,
@@ -2412,7 +2409,7 @@ void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
 
   UpdateViewportContainerSizes();
   client_->OnCanDrawStateChanged(CanDraw());
-  SetFullRootLayerDamage();
+  SetFullViewportDamage();
   active_tree_->set_needs_update_draw_properties();
 }
 
@@ -2443,7 +2440,7 @@ void LayerTreeHostImpl::DidChangeTopControlsPosition() {
   SetNeedsRedraw();
   SetNeedsOneBeginImplFrame();
   active_tree_->set_needs_update_draw_properties();
-  SetFullRootLayerDamage();
+  SetFullViewportDamage();
 }
 
 float LayerTreeHostImpl::TopControlsHeight() const {
@@ -3217,7 +3214,7 @@ void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
   // After applying the synchronous input handler's scroll offset, tell it what
   // we ended up with.
   UpdateRootLayerStateForSynchronousInputHandler();
-  SetFullRootLayerDamage();
+  SetFullViewportDamage();
   SetNeedsRedraw();
 }
 
@@ -3403,7 +3400,7 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   return scroll_info;
 }
 
-void LayerTreeHostImpl::SetFullRootLayerDamage() {
+void LayerTreeHostImpl::SetFullViewportDamage() {
   SetViewportDamage(gfx::Rect(DrawViewportSize()));
 }
 
@@ -3692,7 +3689,7 @@ void LayerTreeHostImpl::SetDebugState(
 
   debug_state_ = new_debug_state;
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
-  SetFullRootLayerDamage();
+  SetFullViewportDamage();
 }
 
 void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,

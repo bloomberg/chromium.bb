@@ -367,19 +367,17 @@ class GLRenderer::SyncQuery {
   DISALLOW_COPY_AND_ASSIGN(SyncQuery);
 };
 
-GLRenderer::GLRenderer(RendererClient* client,
-                       const RendererSettings* settings,
+GLRenderer::GLRenderer(const RendererSettings* settings,
                        OutputSurface* output_surface,
                        ResourceProvider* resource_provider,
                        TextureMailboxDeleter* texture_mailbox_deleter,
                        int highp_threshold_min)
-    : DirectRenderer(client, settings, output_surface, resource_provider),
+    : DirectRenderer(settings, output_surface, resource_provider),
       offscreen_framebuffer_id_(0),
       shared_geometry_quad_(QuadVertexRect()),
       gl_(output_surface->context_provider()->ContextGL()),
       context_support_(output_surface->context_provider()->ContextSupport()),
       texture_mailbox_deleter_(texture_mailbox_deleter),
-      is_backbuffer_discarded_(false),
       is_scissor_enabled_(false),
       scissor_rect_needs_reset_(true),
       stencil_shadow_(false),
@@ -449,10 +447,12 @@ const RendererCapabilitiesImpl& GLRenderer::Capabilities() const {
 }
 
 void GLRenderer::DidChangeVisibility() {
-  if (!visible()) {
+  if (visible()) {
+    output_surface_->EnsureBackbuffer();
+  } else {
     TRACE_EVENT0("cc", "GLRenderer::DidChangeVisibility dropping resources");
     ReleaseRenderPassTextures();
-    DiscardBackbuffer();
+    output_surface_->DiscardBackbuffer();
   }
 
   PrepareGeometry(NO_BINDING);
@@ -2898,7 +2898,7 @@ void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
 }
 
 void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
-  DCHECK(!is_backbuffer_discarded_);
+  DCHECK(visible());
 
   TRACE_EVENT0("cc,benchmark", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
@@ -2987,26 +2987,6 @@ void GLRenderer::DidReceiveTextureInUseResponses(
     }
   }
   color_lut_cache_.Swap();
-}
-
-void GLRenderer::DiscardBackbuffer() {
-  if (is_backbuffer_discarded_)
-    return;
-
-  output_surface_->DiscardBackbuffer();
-
-  is_backbuffer_discarded_ = true;
-
-  // Damage tracker needs a full reset every time framebuffer is discarded.
-  client_->SetFullRootLayerDamage();
-}
-
-void GLRenderer::EnsureBackbuffer() {
-  if (!is_backbuffer_discarded_)
-    return;
-
-  output_surface_->EnsureBackbuffer();
-  is_backbuffer_discarded_ = false;
 }
 
 void GLRenderer::GetFramebufferPixelsAsync(

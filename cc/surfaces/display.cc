@@ -112,6 +112,13 @@ void Display::SetVisible(bool visible) {
   if (scheduler_)
     scheduler_->SetVisible(visible);
   visible_ = visible;
+
+  if (!visible) {
+    // Damage tracker needs a full reset as renderer resources are dropped when
+    // not visible.
+    if (aggregator_ && !current_surface_id_.is_null())
+      aggregator_->SetFullDamageForSurface(current_surface_id_);
+  }
 }
 
 void Display::Resize(const gfx::Size& size) {
@@ -172,20 +179,20 @@ void Display::InitializeRenderer() {
   if (output_surface_->context_provider()) {
     DCHECK(texture_mailbox_deleter_);
     renderer_ = base::MakeUnique<GLRenderer>(
-        this, &settings_, output_surface_.get(), resource_provider_.get(),
+        &settings_, output_surface_.get(), resource_provider_.get(),
         texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
   } else if (output_surface_->vulkan_context_provider()) {
 #if defined(ENABLE_VULKAN)
     DCHECK(texture_mailbox_deleter_);
     renderer_ = base::MakeUnique<VulkanRenderer>(
-        this, &settings_, output_surface_.get(), resource_provider_.get(),
+        &settings_, output_surface_.get(), resource_provider_.get(),
         texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
 #else
     NOTREACHED();
 #endif
   } else {
     auto renderer = base::MakeUnique<SoftwareRenderer>(
-        this, &settings_, output_surface_.get(), resource_provider_.get());
+        &settings_, output_surface_.get(), resource_provider_.get());
     software_renderer_ = renderer.get();
     renderer_ = std::move(renderer);
   }
@@ -396,11 +403,6 @@ void Display::SetExternalTilePriorityConstraints(
 
 void Display::SetTreeActivationCallback(const base::Closure& callback) {
   NOTREACHED();
-}
-
-void Display::SetFullRootLayerDamage() {
-  if (aggregator_ && !current_surface_id_.is_null())
-    aggregator_->SetFullDamageForSurface(current_surface_id_);
 }
 
 void Display::OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) {

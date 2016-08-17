@@ -24,7 +24,6 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
-#include "cc/test/fake_renderer_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/pixel_test.h"
 #include "cc/test/render_pass_test_utils.h"
@@ -315,24 +314,16 @@ INSTANTIATE_TEST_CASE_P(MaskShadersCompile,
 
 class FakeRendererGL : public GLRenderer {
  public:
-  FakeRendererGL(RendererClient* client,
-                 const RendererSettings* settings,
+  FakeRendererGL(const RendererSettings* settings,
                  OutputSurface* output_surface,
                  ResourceProvider* resource_provider)
-      : GLRenderer(client,
-                   settings,
-                   output_surface,
-                   resource_provider,
-                   NULL,
-                   0) {}
+      : GLRenderer(settings, output_surface, resource_provider, nullptr, 0) {}
 
-  FakeRendererGL(RendererClient* client,
-                 const RendererSettings* settings,
+  FakeRendererGL(const RendererSettings* settings,
                  OutputSurface* output_surface,
                  ResourceProvider* resource_provider,
                  TextureMailboxDeleter* texture_mailbox_deleter)
-      : GLRenderer(client,
-                   settings,
+      : GLRenderer(settings,
                    output_surface,
                    resource_provider,
                    texture_mailbox_deleter,
@@ -345,7 +336,6 @@ class FakeRendererGL : public GLRenderer {
   // GLRenderer methods.
 
   // Changing visibility to public.
-  using GLRenderer::IsBackbufferDiscarded;
   using GLRenderer::DoDrawQuad;
   using GLRenderer::BeginDrawingFrame;
   using GLRenderer::FinishDrawingQuadList;
@@ -362,9 +352,8 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), shared_bitmap_manager_.get());
-    renderer_ = base::WrapUnique(
-        new FakeRendererGL(&renderer_client_, &settings_, output_surface_.get(),
-                           resource_provider_.get()));
+    renderer_ = base::WrapUnique(new FakeRendererGL(
+        &settings_, output_surface_.get(), resource_provider_.get()));
     renderer_->SetVisible(true);
   }
 
@@ -373,7 +362,6 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  FakeRendererClient renderer_client_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
@@ -393,9 +381,7 @@ class GLRendererShaderTest : public GLRendererTest {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), shared_bitmap_manager_.get());
-    renderer_.reset(new FakeRendererGL(&renderer_client_,
-                                       &settings_,
-                                       output_surface_.get(),
+    renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
                                        resource_provider_.get()));
     renderer_->SetVisible(true);
   }
@@ -496,71 +482,12 @@ class GLRendererShaderTest : public GLRendererTest {
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  FakeRendererClient renderer_client_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
 namespace {
-
-// Test GLRenderer DiscardBackbuffer functionality:
-// Suggest discarding framebuffer when one exists and the renderer is not
-// visible.
-// Expected: it is discarded and damage tracker is reset.
-TEST_F(
-    GLRendererWithDefaultHarnessTest,
-    SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLayerIfNotVisible) {
-  renderer_->SetVisible(false);
-  EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
-  EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
-}
-
-// Test GLRenderer DiscardBackbuffer functionality:
-// Suggest discarding framebuffer when one exists and the renderer is visible.
-// Expected: the allocation is ignored.
-TEST_F(GLRendererWithDefaultHarnessTest,
-       SuggestBackbufferNoDoNothingWhenVisible) {
-  renderer_->SetVisible(true);
-  EXPECT_EQ(0, renderer_client_.set_full_root_layer_damage_count());
-  EXPECT_FALSE(renderer_->IsBackbufferDiscarded());
-}
-
-// Test GLRenderer DiscardBackbuffer functionality:
-// Suggest discarding framebuffer when one does not exist.
-// Expected: it does nothing.
-TEST_F(GLRendererWithDefaultHarnessTest,
-       SuggestBackbufferNoWhenItDoesntExistShouldDoNothing) {
-  renderer_->SetVisible(false);
-  EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
-  EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
-
-  EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
-  EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
-}
-
-// Test GLRenderer DiscardBackbuffer functionality:
-// Begin drawing a frame while a framebuffer is discarded.
-// Expected: will recreate framebuffer.
-TEST_F(GLRendererWithDefaultHarnessTest,
-       DiscardedBackbufferIsRecreatedForScopeDuration) {
-  gfx::Rect viewport_rect(1, 1);
-  renderer_->SetVisible(false);
-  EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
-  EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
-
-  AddRenderPass(&render_passes_in_draw_order_,
-                RenderPassId(1, 0),
-                viewport_rect,
-                gfx::Transform());
-
-  renderer_->SetVisible(true);
-  DrawFrame(renderer_.get(), viewport_rect);
-  EXPECT_FALSE(renderer_->IsBackbufferDiscarded());
-
-  SwapBuffers();
-  EXPECT_EQ(1u, output_surface_->num_sent_frames());
-}
 
 TEST_F(GLRendererWithDefaultHarnessTest, ExternalStencil) {
   gfx::Rect viewport_rect(1, 1);
@@ -688,10 +615,7 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client,
-                          &settings,
-                          output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
 }
 
@@ -724,10 +648,7 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client,
-                          &settings,
-                          output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
 }
 
@@ -758,10 +679,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client,
-                          &settings,
-                          output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.SetVisible(true);
 
@@ -801,10 +719,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client,
-                          &settings,
-                          output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.SetVisible(true);
 
@@ -837,10 +752,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client,
-                          &settings,
-                          output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.SetVisible(true);
 
@@ -897,10 +809,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client,
-                          &settings,
-                          output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.SetVisible(true);
 
@@ -982,10 +891,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
   RendererSettings settings;
   settings.should_clear_root_render_pass = false;
 
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client,
-                          &settings,
-                          output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.SetVisible(true);
 
@@ -1068,10 +974,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client,
-                          &settings,
-                          output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
   renderer.SetVisible(true);
@@ -1160,10 +1063,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client,
-                          &settings,
-                          output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   EXPECT_TRUE(renderer.Capabilities().using_partial_swap);
   renderer.SetVisible(true);
@@ -1295,10 +1195,7 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client,
-                          &settings,
-                          output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
   renderer.SetVisible(true);
@@ -1335,8 +1232,7 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
                                    shared_bitmap_manager.get());
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client, &settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
   renderer.SetVisible(true);
@@ -1719,10 +1615,10 @@ class MockOutputSurfaceTest : public GLRendererTest {
     resource_provider_ = FakeResourceProvider::Create(
         &output_surface_, shared_bitmap_manager_.get());
 
-    renderer_.reset(new FakeRendererGL(&renderer_client_,
-                                       &settings_,
-                                       &output_surface_,
+    renderer_.reset(new FakeRendererGL(&settings_, &output_surface_,
                                        resource_provider_.get()));
+
+    EXPECT_CALL(output_surface_, EnsureBackbuffer()).Times(1);
     renderer_->SetVisible(true);
   }
 
@@ -1766,9 +1662,17 @@ class MockOutputSurfaceTest : public GLRendererTest {
   StrictMock<MockOutputSurface> output_surface_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
-  FakeRendererClient renderer_client_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
+
+TEST_F(MockOutputSurfaceTest, BackbufferDiscard) {
+  // Drop backbuffer on hide.
+  EXPECT_CALL(output_surface_, DiscardBackbuffer()).Times(1);
+  renderer_->SetVisible(false);
+  // Restore backbuffer on show.
+  EXPECT_CALL(output_surface_, EnsureBackbuffer()).Times(1);
+  renderer_->SetVisible(true);
+}
 
 TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
   gfx::Rect device_viewport_rect(1, 1);
@@ -1870,8 +1774,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client, &settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get(), mailbox_deleter.get());
   renderer.SetVisible(true);
 
@@ -2029,8 +1932,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
   RendererSettings settings;
-  FakeRendererClient renderer_client;
-  FakeRendererGL renderer(&renderer_client, &settings, output_surface.get(),
+  FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get(), mailbox_deleter.get());
   renderer.SetVisible(true);
 
@@ -2108,8 +2010,7 @@ class GLRendererPartialSwapTest : public GLRendererTest {
 
     RendererSettings settings;
     settings.partial_swap_enabled = partial_swap;
-    FakeRendererClient renderer_client;
-    FakeRendererGL renderer(&renderer_client, &settings, output_surface.get(),
+    FakeRendererGL renderer(&settings, output_surface.get(),
                             resource_provider.get());
     EXPECT_EQ(partial_swap, renderer.Capabilities().using_partial_swap);
     renderer.SetVisible(true);
@@ -2197,12 +2098,11 @@ class GLRendererWithMockContextTest : public ::testing::Test {
     output_surface_->BindToClient(&output_surface_client_);
     resource_provider_ =
         FakeResourceProvider::Create(output_surface_.get(), nullptr);
-    renderer_ = base::MakeUnique<GLRenderer>(
-        &renderer_client_, &settings_, output_surface_.get(),
-        resource_provider_.get(), nullptr, 0);
+    renderer_ =
+        base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
+                                     resource_provider_.get(), nullptr, 0);
   }
 
-  FakeRendererClient renderer_client_;
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   MockContextSupport* context_support_ptr_;
