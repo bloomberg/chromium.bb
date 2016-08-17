@@ -48,7 +48,7 @@ crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 
 crbug.com/463358 [ Mac Linux ] fast/transforms/transformed-caret.html [ Pass Failure ]
 crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass Failure ]
-crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
+crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ NeedsRebaseline ]
 crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Failure ]
 crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
