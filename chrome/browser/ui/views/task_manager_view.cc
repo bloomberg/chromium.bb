@@ -253,22 +253,19 @@ void TaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
 void TaskManagerView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
-  ui::SimpleMenuModel menu_model(this);
+  menu_model_.reset(new ui::SimpleMenuModel(this));
 
   for (const auto& table_column : columns_) {
-    menu_model.AddCheckItem(table_column.id,
-                            l10n_util::GetStringUTF16(table_column.id));
+    menu_model_->AddCheckItem(table_column.id,
+                              l10n_util::GetStringUTF16(table_column.id));
   }
 
-  menu_runner_.reset(
-      new views::MenuRunner(&menu_model, views::MenuRunner::CONTEXT_MENU));
+  menu_runner_.reset(new views::MenuRunner(
+      menu_model_.get(),
+      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
 
-  if (menu_runner_->RunMenuAt(GetWidget(), nullptr,
-                              gfx::Rect(point, gfx::Size()),
-                              views::MENU_ANCHOR_TOPLEFT,
-                              source_type) == views::MenuRunner::MENU_DELETED) {
-    return;
-  }
+  menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
+                          views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 bool TaskManagerView::IsCommandIdChecked(int id) const {
@@ -281,6 +278,11 @@ bool TaskManagerView::IsCommandIdEnabled(int id) const {
 
 void TaskManagerView::ExecuteCommand(int id, int event_flags) {
   table_model_->ToggleColumnVisibility(id);
+}
+
+void TaskManagerView::MenuClosed(ui::SimpleMenuModel* source) {
+  menu_model_.reset();
+  menu_runner_.reset();
 }
 
 TaskManagerView::TaskManagerView()

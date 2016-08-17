@@ -86,6 +86,7 @@ class TaskManagerView : public TableViewDelegate,
   bool IsCommandIdChecked(int id) const override;
   bool IsCommandIdEnabled(int id) const override;
   void ExecuteCommand(int id, int event_flags) override;
+  void MenuClosed(ui::SimpleMenuModel* source) override;
 
  private:
   friend class TaskManagerViewTest;
@@ -111,6 +112,7 @@ class TaskManagerView : public TableViewDelegate,
 
   std::unique_ptr<TaskManagerTableModel> table_model_;
 
+  std::unique_ptr<ui::SimpleMenuModel> menu_model_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // We need to own the text of the menu, the Windows API does not copy it.
