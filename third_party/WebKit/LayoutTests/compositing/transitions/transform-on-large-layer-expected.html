@@ -8,6 +8,7 @@
             width: 1000px;
             height: 2000px;
             background-color: green;
+            transform: translate3d(0, -1000px, 0);
         }
 
         #sandbox {
@@ -17,15 +18,27 @@
             overflow: hidden;
         }
     </style>
+    <script type="text/javascript">
+        function run()
+        {
+            if (window.testRunner) {
+                testRunner.useUnfortunateSynchronousResizeMode();
+                testRunner.waitUntilDone();
+                window.setTimeout(notifyDone, 1200);
+            }
+            window.resizeTo(1600,1200);
+        }
+        function notifyDone()
+        {
+            testRunner.notifyDone();
+        }
+    </script>
 </head>
-<script>
-    window.resizeTo(1600,1200);
-</script>
-<body>
-    <div id=description> 
+<body onload="run()">
+    <div id=description>
         The test passes if the box below turns green.
     </div>
-    <div id=sandbox> 
+    <div id=sandbox>
         <div id="box"><font style="opacity:0">ABC</font></div>
     </div>
 </body>
