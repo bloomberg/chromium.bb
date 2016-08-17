@@ -140,6 +140,10 @@ const int kMessageTextMaxSlots = 2000;
   DCHECK(!alertShown_);
   alertShown_ = YES;
   NSAlert* alert = [self alert];
+
+  [alert layout];
+  [[alert window] recalculateKeyViewLoop];
+
   [alert beginSheetModalForWindow:nil  // nil here makes it app-modal
                     modalDelegate:self
                    didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
