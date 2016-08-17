@@ -12,10 +12,5 @@ template("remoting_apk_tmpl") {
     android_manifest = "$root_gen_dir/remoting/android/AndroidManifest.xml"
     android_manifest_dep = "//remoting/android:remoting_apk_manifest"
     shared_libraries = [ "//remoting/android:remoting_client_jni" ]
-
-    if (remoting_enable_cardboard && current_cpu == "arm") {
-      deps += [ "//remoting/android:remoting_cardboard_extract_native_lib" ]
-      loadable_modules = [ "$root_out_dir/libvrtoolkit.so" ]
-    }
   }
 }

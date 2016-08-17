@@ -5,16 +5,10 @@
 package org.chromium.chromoting;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBar.OnMenuVisibilityListener;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
@@ -27,7 +21,6 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 
-import org.chromium.chromoting.cardboard.DesktopActivity;
 import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
@@ -51,12 +44,6 @@ public class Desktop
         }
     }
 
-    /**
-     * Preference used for displaying an interestitial dialog only when the user first accesses the
-     * Cardboard function.
-     */
-    private static final String PREFERENCE_CARDBOARD_DIALOG_SEEN = "cardboard_dialog_seen";
-
     /** Preference used to track the last input mode selected by the user. */
     private static final String PREFERENCE_INPUT_MODE = "input_mode";
 
@@ -73,9 +60,6 @@ public class Desktop
     private InputEventSender mInjector;
 
     private ActivityLifecycleListener mActivityLifecycleListener;
-
-    /** Flag to indicate whether the current activity is switching to Cardboard desktop activity. */
-    private boolean mSwitchToCardboardDesktopActivity;
 
     /** Indicates whether a Soft Input UI (such as a keyboard) is visible. */
     private boolean mSoftInputVisible = false;
@@ -109,7 +93,6 @@ public class Desktop
         remoteHostDesktop.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         ((ViewGroup) findViewById(R.id.desktop_view_placeholder)).addView(remoteHostDesktop);
-        mSwitchToCardboardDesktopActivity = false;
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -173,9 +156,7 @@ public class Desktop
     protected void onPause() {
         if (isFinishing()) mActivityLifecycleListener.onActivityPaused(this);
         super.onPause();
-        if (!mSwitchToCardboardDesktopActivity) {
-            mClient.enableVideoChannel(false);
-        }
+        mClient.enableVideoChannel(false);
         stopActionBarAutoHideTimer();
     }
 
@@ -192,11 +173,7 @@ public class Desktop
         mClient.getCapabilityManager().removeListener(this);
         mActivityLifecycleListener.onActivityStopped(this);
         super.onStop();
-        if (mSwitchToCardboardDesktopActivity) {
-            mSwitchToCardboardDesktopActivity = false;
-        } else {
-            mClient.enableVideoChannel(false);
-        }
+        mClient.enableVideoChannel(false);
     }
 
     /** Called to initialize the action bar. */
@@ -205,19 +182,6 @@ public class Desktop
         getMenuInflater().inflate(R.menu.desktop_actionbar, menu);
 
         mActivityLifecycleListener.onActivityCreatedOptionsMenu(this, menu);
-
-        boolean enableCardboard = false;
-        try {
-            ApplicationInfo ai = getPackageManager()
-                    .getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = ai.metaData;
-            enableCardboard = bundle.getInt("enable_cardboard") == 1;
-        } catch (NameNotFoundException e) {
-            // Does nothing since by default Cardboard activity is turned off.
-        }
-
-        MenuItem item = menu.findItem(R.id.actionbar_cardboard);
-        item.setVisible(enableCardboard);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             // We don't need to show a hide ActionBar button if immersive fullscreen is supported.
@@ -477,10 +441,6 @@ public class Desktop
 
         mActivityLifecycleListener.onActivityOptionsItemSelected(this, item);
 
-        if (id == R.id.actionbar_cardboard) {
-            onCardboardItemSelected();
-            return true;
-        }
         if (id == R.id.actionbar_trackpad_mode) {
             // When the trackpad icon is tapped, we want to switch the input mode to touch.
             setInputMode(InputMode.TOUCH);
@@ -563,41 +523,6 @@ public class Desktop
                 }
             }
         });
-    }
-
-    private void onCardboardItemSelected() {
-        if (getPreferences(MODE_PRIVATE).getBoolean(PREFERENCE_CARDBOARD_DIALOG_SEEN, false)) {
-            switchToCardboardMode();
-            return;
-        }
-
-        new AlertDialog.Builder(this)
-                .setTitle(getTitle())
-                .setMessage(R.string.cardboard_warning_message)
-                .setIcon(R.drawable.ic_cardboard)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        getPreferences(MODE_PRIVATE)
-                                .edit()
-                                .putBoolean(PREFERENCE_CARDBOARD_DIALOG_SEEN, true)
-                                .apply();
-                        switchToCardboardMode();
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                    }
-                })
-                .create()
-                .show();
-    }
-
-    private void switchToCardboardMode() {
-        mSwitchToCardboardDesktopActivity = true;
-        Intent intent = new Intent(this, DesktopActivity.class);
-        startActivityForResult(intent, Chromoting.CARDBOARD_DESKTOP_ACTIVITY);
     }
 
     /**

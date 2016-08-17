@@ -65,9 +65,6 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     /** Result code used for starting {@link DesktopActivity}. */
     public static final int DESKTOP_ACTIVITY = 0;
 
-    /** Result code used for starting {@link CardboardDesktopActivity}. */
-    public static final int CARDBOARD_DESKTOP_ACTIVITY = 1;
-
     /** Preference names for storing selected and recent accounts. */
     private static final String PREFERENCE_SELECTED_ACCOUNT = "account_name";
     private static final String PREFERENCE_RECENT_ACCOUNT_PREFIX = "recent_account_";
