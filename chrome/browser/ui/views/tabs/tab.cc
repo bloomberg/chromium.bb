@@ -121,32 +121,6 @@ const double kDesaturateHue = -1.0;
 const double kDesaturateSaturation = 0.0;
 const double kDesaturateLightness = 0.6;
 
-// Parameters for PaintTabBackgroundUsingParams().
-struct PaintBackgroundParams {
-  PaintBackgroundParams(bool is_active,
-                        gfx::ImageSkia* fill_image_ptr,
-                        bool has_custom_image,
-                        gfx::Rect rect,
-                        SkColor stroke_color,
-                        SkColor toolbar_color,
-                        SkColor background_tab_color)
-      : is_active(is_active),
-        fill_image(fill_image_ptr ? *fill_image_ptr : gfx::ImageSkia()),
-        has_custom_image(has_custom_image),
-        rect(rect),
-        stroke_color(stroke_color),
-        toolbar_color(toolbar_color),
-        background_tab_color(background_tab_color) {}
-
-  const bool is_active;
-  const gfx::ImageSkia fill_image;
-  const bool has_custom_image;
-  const gfx::Rect rect;
-  const SkColor stroke_color;
-  const SkColor toolbar_color;
-  const SkColor background_tab_color;
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // ImageCacheEntryMetadata
 //
@@ -482,103 +456,6 @@ void PaintTabFill(gfx::Canvas* canvas,
              toolbar_overlap);
   canvas->TileImageInt(fill_image, rect.x(), rect.y(), g_mask_images.l_width,
                        tab_insets.top(), rect.width(), rect.height());
-}
-
-void PaintTabBackgroundUsingParams(gfx::Canvas* fill_canvas,
-                                   gfx::Canvas* stroke_canvas,
-                                   views::GlowHoverController* hc,
-                                   const PaintBackgroundParams& params) {
-  const gfx::Rect& rect = params.rect;
-  const SkScalar kMinHoverRadius = 16;
-  const SkScalar radius =
-      std::max(SkFloatToScalar(rect.width() / 4.f), kMinHoverRadius);
-  const bool draw_hover = !params.is_active && hc;
-  SkPoint hover_location(
-      gfx::PointToSkPoint(draw_hover ? hc->location() : gfx::Point()));
-  const SkColor hover_color =
-      SkColorSetA(params.toolbar_color, draw_hover ? hc->GetAlpha() : 255);
-
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    gfx::Path fill;
-    SkPaint paint;
-    paint.setAntiAlias(true);
-
-    // Draw the fill.
-    {
-      gfx::ScopedCanvas scoped_canvas(fill_canvas);
-      const float scale = fill_canvas->UndoDeviceScaleFactor();
-
-      fill = GetFillPath(scale, rect.size());
-      {
-        gfx::ScopedCanvas clip_scoper(fill_canvas);
-        fill_canvas->ClipPath(fill, true);
-        if (!params.fill_image.isNull()) {
-          gfx::ScopedCanvas scale_scoper(fill_canvas);
-          fill_canvas->sk_canvas()->scale(scale, scale);
-          fill_canvas->TileImageInt(params.fill_image, rect.x(), rect.y(), 0, 0,
-                                    rect.width(), rect.height());
-        } else {
-          paint.setColor(params.is_active ? params.toolbar_color
-                                          : params.background_tab_color);
-          fill_canvas->DrawRect(
-              gfx::ScaleToEnclosingRect(gfx::Rect(rect.size()), scale),
-              paint);
-        }
-        if (draw_hover) {
-          hover_location.scale(SkFloatToScalar(scale));
-          DrawHighlight(fill_canvas, hover_location, radius * scale,
-                        hover_color);
-        }
-      }
-    }
-
-    // Draw the stroke.
-    {
-      gfx::ScopedCanvas scoped_canvas(stroke_canvas);
-      const float scale = stroke_canvas->UndoDeviceScaleFactor();
-
-      gfx::Path stroke = GetBorderPath(scale, false, false, rect.size());
-      Op(stroke, fill, kDifference_SkPathOp, &stroke);
-      if (!params.is_active) {
-        // Clip out the bottom line; this will be drawn for us by
-        // TabStrip::PaintChildren().
-        stroke_canvas->ClipRect(gfx::RectF(rect.width() * scale,
-                                           rect.height() * scale - 1));
-      }
-      paint.setColor(params.stroke_color);
-      stroke_canvas->DrawPath(stroke, paint);
-    }
-  } else {
-    gfx::Canvas* canvas = stroke_canvas;
-    if (draw_hover) {
-      // Draw everything to a temporary canvas so we can extract an image for
-      // use in masking the hover glow.
-      gfx::Canvas background_canvas(rect.size(), canvas->image_scale(), false);
-      PaintTabFill(&background_canvas, params.fill_image, rect,
-                   params.is_active);
-      gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
-      canvas->DrawImageInt(background_image, 0, 0);
-
-      gfx::Canvas hover_canvas(rect.size(), canvas->image_scale(), false);
-      DrawHighlight(&hover_canvas, hover_location, radius, hover_color);
-      gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
-          gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
-      canvas->DrawImageInt(result, 0, 0);
-    } else {
-      PaintTabFill(canvas, params.fill_image, rect, params.is_active);
-    }
-
-    // Now draw the stroke, highlights, and shadows around the tab edge.
-    TabImages* stroke_images =
-        params.is_active ? &g_active_images : &g_inactive_images;
-    canvas->DrawImageInt(*stroke_images->image_l, 0, 0);
-    canvas->TileImageInt(
-        *stroke_images->image_c, stroke_images->l_width, 0,
-        rect.width() - stroke_images->l_width - stroke_images->r_width,
-        rect.height());
-    canvas->DrawImageInt(*stroke_images->image_r,
-                         rect.width() - stroke_images->r_width, 0);
-  }
 }
 
 // Desaturates the favicon. Should only be used for when a tab encounters a
@@ -1586,24 +1463,102 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* fill_canvas,
                                         int fill_id,
                                         bool has_custom_image,
                                         int y_offset) {
-  views::GlowHoverController* hc =
-      hover_controller_.ShouldDraw() ? &hover_controller_ : nullptr;
-  gfx::ImageSkia* fill_image =
-      has_custom_image || !ui::MaterialDesignController::IsModeMaterial()
-          ? GetThemeProvider()->GetImageSkiaNamed(fill_id)
-          : nullptr;
+  const ui::ThemeProvider* tp = GetThemeProvider();
+  const SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  gfx::ImageSkia* fill_image = tp->GetImageSkiaNamed(fill_id);
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.  These offsets represent the tab
   // position within the frame background image.
-  gfx::Rect rect(GetLocalBounds());
-  rect.Offset(GetMirroredX() + background_offset_.x(), y_offset);
-  PaintBackgroundParams params(
-      is_active, fill_image, has_custom_image, rect,
-      controller_->GetToolbarTopSeparatorColor(),
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR),
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
+  const int x_offset = GetMirroredX() + background_offset_.x();
 
-  PaintTabBackgroundUsingParams(fill_canvas, stroke_canvas, hc, params);
+  const SkScalar kMinHoverRadius = 16;
+  const SkScalar radius =
+      std::max(SkFloatToScalar(width() / 4.f), kMinHoverRadius);
+  const bool draw_hover = !is_active && hover_controller_.ShouldDraw();
+  SkPoint hover_location(gfx::PointToSkPoint(hover_controller_.location()));
+  const SkColor hover_color =
+      SkColorSetA(toolbar_color, hover_controller_.GetAlpha());
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    gfx::Path fill;
+    SkPaint paint;
+    paint.setAntiAlias(true);
+
+    // Draw the fill.
+    {
+      gfx::ScopedCanvas scoped_canvas(fill_canvas);
+      const float scale = fill_canvas->UndoDeviceScaleFactor();
+
+      fill = GetFillPath(scale, size());
+      {
+        gfx::ScopedCanvas clip_scoper(fill_canvas);
+        fill_canvas->ClipPath(fill, true);
+        if (has_custom_image) {
+          gfx::ScopedCanvas scale_scoper(fill_canvas);
+          fill_canvas->sk_canvas()->scale(scale, scale);
+          fill_canvas->TileImageInt(*fill_image, x_offset, y_offset, 0, 0,
+                                    width(), height());
+        } else {
+          paint.setColor(
+              is_active ? toolbar_color
+                        : tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
+          fill_canvas->DrawRect(
+              gfx::ScaleToEnclosingRect(GetLocalBounds(), scale), paint);
+        }
+        if (draw_hover) {
+          hover_location.scale(SkFloatToScalar(scale));
+          DrawHighlight(fill_canvas, hover_location, radius * scale,
+                        hover_color);
+        }
+      }
+    }
+
+    // Draw the stroke.
+    {
+      gfx::ScopedCanvas scoped_canvas(stroke_canvas);
+      const float scale = stroke_canvas->UndoDeviceScaleFactor();
+
+      gfx::Path stroke = GetBorderPath(scale, false, false, size());
+      Op(stroke, fill, kDifference_SkPathOp, &stroke);
+      if (!is_active) {
+        // Clip out the bottom line; this will be drawn for us by
+        // TabStrip::PaintChildren().
+        stroke_canvas->ClipRect(
+            gfx::RectF(width() * scale, height() * scale - 1));
+      }
+      paint.setColor(controller_->GetToolbarTopSeparatorColor());
+      stroke_canvas->DrawPath(stroke, paint);
+    }
+  } else {
+    gfx::Canvas* canvas = stroke_canvas;
+    gfx::Rect rect(gfx::Point(x_offset, y_offset), size());
+    if (draw_hover) {
+      // Draw everything to a temporary canvas so we can extract an image for
+      // use in masking the hover glow.
+      gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
+      PaintTabFill(&background_canvas, *fill_image, rect, is_active);
+      gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
+      canvas->DrawImageInt(background_image, 0, 0);
+
+      gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
+      DrawHighlight(&hover_canvas, hover_location, radius, hover_color);
+      gfx::ImageSkia result = gfx::ImageSkiaOperations::CreateMaskedImage(
+          gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
+      canvas->DrawImageInt(result, 0, 0);
+    } else {
+      PaintTabFill(canvas, *fill_image, rect, is_active);
+    }
+
+    // Now draw the stroke, highlights, and shadows around the tab edge.
+    TabImages* stroke_images =
+        is_active ? &g_active_images : &g_inactive_images;
+    canvas->DrawImageInt(*stroke_images->image_l, 0, 0);
+    canvas->TileImageInt(
+        *stroke_images->image_c, stroke_images->l_width, 0,
+        width() - stroke_images->l_width - stroke_images->r_width, height());
+    canvas->DrawImageInt(*stroke_images->image_r,
+                         width() - stroke_images->r_width, 0);
+  }
 }
 
 void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
