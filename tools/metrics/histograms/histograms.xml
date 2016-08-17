@@ -90471,6 +90471,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="262144" label="SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE"/>
   <int value="524288" label="SERVER_NONCE_REQUIRED_FAILURE"/>
   <int value="1048576" label="INVALID_EXPECTED_LEAF_CERTIFICATE"/>
+  <int value="1064960"
+      label="INVALID_EXPECTED_LEAF_CERTIFICATE+SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE"/>
+  <int value="1589248"
+      label="INVALID_EXPECTED_LEAF_CERTIFICATE+SERVER_NONCE_REQUIRED_FAILURE+SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE"/>
 </enum>
 
 <enum name="QuicRstStreamErrorCodes" type="int">
