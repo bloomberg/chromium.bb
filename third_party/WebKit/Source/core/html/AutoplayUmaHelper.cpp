@@ -81,7 +81,7 @@ void AutoplayUmaHelper::didMoveToNewDocument(Document& oldDocument)
 
 void AutoplayUmaHelper::onVisibilityChangedForVideoMutedPlayMethod(bool isVisible)
 {
-    if (!isVisible)
+    if (!isVisible || !m_videoMutedPlayMethodVisibilityObserver)
         return;
 
     recordVideoAutoplayMutedPlayMethodBecomesVisibleUma(true);
@@ -115,7 +115,7 @@ void AutoplayUmaHelper::handlePlayingEvent()
 {
     if (m_source == AutoplaySource::Method && m_element->isHTMLVideoElement() && m_element->muted()) {
         if (!m_videoMutedPlayMethodVisibilityObserver) {
-            m_videoMutedPlayMethodVisibilityObserver = new ElementVisibilityObserver(m_element, WTF::bind(&AutoplayUmaHelper::onVisibilityChangedForVideoMutedPlayMethod, wrapPersistent(this)));
+            m_videoMutedPlayMethodVisibilityObserver = new ElementVisibilityObserver(m_element, WTF::bind(&AutoplayUmaHelper::onVisibilityChangedForVideoMutedPlayMethod, wrapWeakPersistent(this)));
             m_videoMutedPlayMethodVisibilityObserver->start();
             m_element->document().domWindow()->addEventListener(EventTypeNames::unload, this, false);
         }
