@@ -1532,6 +1532,42 @@ class TestGitCl(TestCase):
         'description', 'https://code.review.org/123123', '-d', '--rietveld']))
     self.assertEqual('foobar\n', out.getvalue())
 
+  def test_StatusFieldOverrideIssueMissingArgs(self):
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stderr', out)
+
+    try:
+      self.assertEqual(git_cl.main(['status', '--issue', '1']), 0)
+    except SystemExit as ex:
+      self.assertEqual(ex.code, 2)
+      self.assertRegexpMatches(out.getvalue(), r'--issue may only be specified')
+
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stderr', out)
+
+    try:
+      self.assertEqual(git_cl.main(['status', '--issue', '1', '--rietveld']), 0)
+    except SystemExit as ex:
+      self.assertEqual(ex.code, 2)
+      self.assertRegexpMatches(out.getvalue(), r'--issue may only be specified')
+
+  def test_StatusFieldOverrideIssue(self):
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stdout', out)
+
+    def assertIssue(cl_self, *_args):
+      self.assertEquals(cl_self.issue, 1)
+      return 'foobar'
+
+    self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
+    self.calls = [
+      ((['git', 'config', 'rietveld.autoupdate'],), ''),
+      ((['git', 'config', 'rietveld.server'],), ''),
+      ((['git', 'config', 'rietveld.server'],), ''),
+    ]
+    git_cl.main(['status', '--issue', '1', '--rietveld', '--field', 'desc'])
+    self.assertEqual(out.getvalue(), 'foobar\n')
+
   def test_description_gerrit(self):
     out = StringIO.StringIO()
     self.mock(git_cl.sys, 'stdout', out)
