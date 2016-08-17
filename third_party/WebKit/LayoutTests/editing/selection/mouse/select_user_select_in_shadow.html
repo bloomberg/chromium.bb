@@ -1,0 +1,38 @@
+<!doctype HTML>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<div id="div" style="-webkit-user-select: none"><div id="s1" style="-webkit-user-select: text" slot="slot1">bar</div></div>
+<div id="log"></div>
+<script>
+test(function() {
+  assert_not_equals(window.eventSender, undefined, 'This test requireswindow.eventSender');
+
+  let host = div.attachShadow({mode: 'open'});
+  let child = document.createElement('div');
+  child.style.webkitUserSelect = 'text';
+  child.textContent = 'foo';
+  host.appendChild(child);
+
+  function moveAndDoubleClick(element) {
+    eventSender.mouseMoveTo(element.offsetLeft + element.offsetWidth / 2, element.offsetTop + element.offsetHeight / 2);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    eventSender.leapForward(1);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    eventSender.leapForward(1);
+  }
+  moveAndDoubleClick(child);
+
+  let selection = window.getSelection();
+  assert_equals(selection.toString(), 'foo', 'selection.toString');
+
+  selection.removeAllRanges();
+  child.remove();
+  let slot = document.createElement('slot');
+  slot.name = 'slot1';
+  host.appendChild(slot);
+  moveAndDoubleClick(s1);
+  assert_equals(selection.toString(), 'bar', 'selection.toString');
+});
+</script>
