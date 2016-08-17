@@ -403,7 +403,7 @@ def origin_trial_enabled_function_name(definition_or_member):
     extended_attributes = definition_or_member.extended_attributes
     is_origin_trial_enabled = 'OriginTrialEnabled' in extended_attributes
 
-    if (is_origin_trial_enabled and 'RuntimeEnabled' in extended_attributes):
+    if is_origin_trial_enabled and 'RuntimeEnabled' in extended_attributes:
         raise Exception('[OriginTrialEnabled] and [RuntimeEnabled] must '
                         'not be specified on the same definition: '
                         '%s.%s' % (definition_or_member.idl_name, definition_or_member.name))
@@ -412,14 +412,26 @@ def origin_trial_enabled_function_name(definition_or_member):
         trial_name = extended_attributes['OriginTrialEnabled']
         return 'OriginTrials::%sEnabled' % uncapitalize(trial_name)
 
+    is_feature_policy_enabled = 'FeaturePolicy' in extended_attributes
+
+    if is_feature_policy_enabled and 'RuntimeEnabled' in extended_attributes:
+        raise Exception('[FeaturePolicy] and [RuntimeEnabled] must '
+                        'not be specified on the same definition: '
+                        '%s.%s' % (definition_or_member.idl_name, definition_or_member.name))
+
+    if is_feature_policy_enabled:
+        includes.add('bindings/core/v8/ScriptState.h')
+        includes.add('platform/feature_policy/FeaturePolicy.h')
+
+        trial_name = extended_attributes['FeaturePolicy']
+        return 'FeaturePolicy::%sEnabled' % uncapitalize(trial_name)
+
     return None
 
 
 def origin_trial_feature_name(definition_or_member):
     extended_attributes = definition_or_member.extended_attributes
-    if 'OriginTrialEnabled' not in extended_attributes:
-        return None
-    return extended_attributes['OriginTrialEnabled']
+    return extended_attributes.get('OriginTrialEnabled') or extended_attributes.get('FeaturePolicy')
 
 
 def runtime_feature_name(definition_or_member):
