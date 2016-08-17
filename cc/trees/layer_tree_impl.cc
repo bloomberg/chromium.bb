@@ -426,6 +426,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   }
 
   target_tree->PassSwapPromises(std::move(swap_promise_list_));
+  swap_promise_list_.clear();
 
   target_tree->set_top_controls_shrink_blink_size(
       top_controls_shrink_blink_size_);

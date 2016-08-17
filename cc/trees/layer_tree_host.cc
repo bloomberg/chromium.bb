@@ -425,6 +425,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   layer_tree_->PushPropertiesTo(sync_tree);
 
   sync_tree->PassSwapPromises(std::move(swap_promise_list_));
+  swap_promise_list_.clear();
 
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentIsSuitableForGpuRasterization(
