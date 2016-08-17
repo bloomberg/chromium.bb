@@ -2183,11 +2183,9 @@ def GetConfig():
       description='Toolchain master (all others are slaves).',
       master=True,
       sync_chrome=True,
-      chrome_sdk=True,
       health_alert_recipients=['c-compiler-chrome@google.com'],
       health_threshold=1,
       afdo_use=False,
-      usepkg_build_packages=False,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
   )
 
