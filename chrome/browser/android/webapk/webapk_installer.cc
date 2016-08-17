@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +20,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/webapk.pb.h"
+#include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
@@ -29,7 +29,6 @@
 #include "jni/WebApkInstaller_jni.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
-#include "third_party/smhasher/src/MurmurHash2.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
@@ -41,9 +40,6 @@ const char kDefaultWebApkServerUrl[] =
 
 // The MIME type of the POST data sent to the server.
 const char kProtoMimeType[] = "application/x-protobuf";
-
-// The seed to use the murmur2 hash of the app icon.
-const uint32_t kMurmur2HashSeed = 0;
 
 // The default number of milliseconds to wait for the WebAPK download URL from
 // the WebAPK server.
@@ -61,15 +57,6 @@ GURL GetScope(const ShortcutInfo& info) {
       : ShortcutHelper::GetScopeFromURL(info.url);
 }
 
-// Computes a murmur2 hash of |bitmap|'s PNG encoded bytes.
-std::string ComputeBitmapHash(const SkBitmap& bitmap) {
-  std::vector<unsigned char> png_bytes;
-  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_bytes);
-  uint64_t hash =
-      MurmurHash64B(&png_bytes.front(), png_bytes.size(), kMurmur2HashSeed);
-  return base::Uint64ToString(hash);
-}
-
 // Converts a color from the format specified in content::Manifest to a CSS
 // string.
 std::string ColorToString(int64_t color) {
@@ -82,6 +69,46 @@ std::string ColorToString(int64_t color) {
   int b = SkColorGetB(sk_color);
   double a = SkColorGetA(sk_color) / 255.0;
   return base::StringPrintf("rgba(%d,%d,%d,%.2f)", r, g, b, a);
+}
+
+// Populates webapk::WebApk and returns it.
+// Must be called on a worker thread because it encodes an SkBitmap.
+std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground(
+    const ShortcutInfo& shortcut_info,
+    const SkBitmap& shortcut_icon,
+    const std::string& shortcut_icon_murmur2_hash) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  std::unique_ptr<webapk::WebApk> webapk(new webapk::WebApk);
+  webapk->set_manifest_url(shortcut_info.manifest_url.spec());
+  webapk->set_requester_application_package(
+      base::android::BuildInfo::GetInstance()->package_name());
+  webapk->set_requester_application_version(version_info::GetVersionNumber());
+
+  webapk::WebAppManifest* web_app_manifest = webapk->mutable_manifest();
+  web_app_manifest->set_name(base::UTF16ToUTF8(shortcut_info.name));
+  web_app_manifest->set_short_name(
+      base::UTF16ToUTF8(shortcut_info.short_name));
+  web_app_manifest->set_start_url(shortcut_info.url.spec());
+  web_app_manifest->set_orientation(
+      content::WebScreenOrientationLockTypeToString(
+          shortcut_info.orientation));
+  web_app_manifest->set_display_mode(
+      content::WebDisplayModeToString(shortcut_info.display));
+  web_app_manifest->set_background_color(
+      ColorToString(shortcut_info.background_color));
+  web_app_manifest->set_theme_color(ColorToString(shortcut_info.theme_color));
+
+  std::string* scope = web_app_manifest->add_scopes();
+  scope->assign(GetScope(shortcut_info).spec());
+  webapk::Image* image = web_app_manifest->add_icons();
+  image->set_src(shortcut_info.icon_url.spec());
+  image->set_hash(shortcut_icon_murmur2_hash);
+  std::vector<unsigned char> png_bytes;
+  gfx::PNGCodec::EncodeBGRASkBitmap(shortcut_icon, false, &png_bytes);
+  image->set_image_data(&png_bytes.front(), png_bytes.size());
+
+  return webapk;
 }
 
 // Returns task runner for running background tasks.
@@ -122,14 +149,20 @@ void WebApkInstaller::InstallAsyncWithURLRequestContextGetter(
   request_context_getter_ = request_context_getter;
   finish_callback_ = finish_callback;
 
-  // base::Unretained() is safe because WebApkInstaller owns itself and does not
-  // start the timeout timer till after SendCreateWebApkRequest() is called.
-  base::PostTaskAndReplyWithResult(
-      GetBackgroundTaskRunner().get(), FROM_HERE,
-      base::Bind(&WebApkInstaller::BuildWebApkProtoInBackground,
-                 base::Unretained(this)),
-      base::Bind(&WebApkInstaller::SendCreateWebApkRequest,
-                 base::Unretained(this)));
+  if (!shortcut_info_.icon_url.is_valid()) {
+    OnFailure();
+    return;
+  }
+
+  // We need to take the hash of the bitmap at the icon URL prior to any
+  // transformations being applied to the bitmap (such as encoding/decoding
+  // the bitmap). The icon hash is used to determine whether the icon that
+  // the user sees matches the icon of a WebAPK that the WebAPK server
+  // generated for another user. (The icon can be dynamically generated.)
+  //
+  // We redownload the icon in order to take the Murmur2 hash. The redownload
+  // should be fast because the icon should be in the HTTP cache.
+  DownloadAppIconAndComputeMurmur2Hash();
 }
 
 void WebApkInstaller::SetTimeoutMs(int timeout_ms) {
@@ -170,6 +203,39 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
   OnGotWebApkDownloadUrl(signed_download_url, response->package_name());
+}
+
+void WebApkInstaller::DownloadAppIconAndComputeMurmur2Hash() {
+  timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(download_timeout_ms_),
+      base::Bind(&WebApkInstaller::OnTimeout, weak_ptr_factory_.GetWeakPtr()));
+
+  icon_hasher_.reset(new WebApkIconHasher());
+  icon_hasher_->DownloadAndComputeMurmur2Hash(
+      request_context_getter_, shortcut_info_.icon_url,
+      base::Bind(&WebApkInstaller::OnGotIconMurmur2Hash,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebApkInstaller::OnGotIconMurmur2Hash(
+    const std::string& icon_murmur2_hash) {
+  timer_.Stop();
+  icon_hasher_.reset();
+
+  shortcut_icon_murmur2_hash_ = icon_murmur2_hash;
+
+  // An empty hash indicates that |icon_hasher_| encountered an error.
+  if (icon_murmur2_hash.empty()) {
+    OnFailure();
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&BuildWebApkProtoInBackground, shortcut_info_, shortcut_icon_,
+                 shortcut_icon_murmur2_hash_),
+      base::Bind(&WebApkInstaller::SendCreateWebApkRequest,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkInstaller::SendCreateWebApkRequest(
@@ -250,54 +316,18 @@ void WebApkInstaller::OnWebApkMadeWorldReadable(
     OnFailure();
 }
 
-std::unique_ptr<webapk::WebApk>
-WebApkInstaller::BuildWebApkProtoInBackground() {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  std::unique_ptr<webapk::WebApk> webapk(new webapk::WebApk);
-  webapk->set_manifest_url(shortcut_info_.manifest_url.spec());
-  webapk->set_requester_application_package(
-      base::android::BuildInfo::GetInstance()->package_name());
-  webapk->set_requester_application_version(version_info::GetVersionNumber());
-
-  webapk::WebAppManifest* web_app_manifest = webapk->mutable_manifest();
-  web_app_manifest->set_name(base::UTF16ToUTF8(shortcut_info_.name));
-  web_app_manifest->set_short_name(
-      base::UTF16ToUTF8(shortcut_info_.short_name));
-  web_app_manifest->set_start_url(shortcut_info_.url.spec());
-  web_app_manifest->set_orientation(
-      content::WebScreenOrientationLockTypeToString(
-          shortcut_info_.orientation));
-  web_app_manifest->set_display_mode(
-      content::WebDisplayModeToString(shortcut_info_.display));
-  web_app_manifest->set_background_color(
-      ColorToString(shortcut_info_.background_color));
-  web_app_manifest->set_theme_color(ColorToString(shortcut_info_.theme_color));
-
-  std::string* scope = web_app_manifest->add_scopes();
-  scope->assign(GetScope(shortcut_info_).spec());
-  webapk::Image* image = web_app_manifest->add_icons();
-  image->set_src(shortcut_info_.icon_url.spec());
-  // TODO(pkotwicz): Get Murmur2 hash of untransformed icon's bytes (with no
-  // encoding/decoding).
-  image->set_hash(ComputeBitmapHash(shortcut_icon_));
-  std::vector<unsigned char> png_bytes;
-  gfx::PNGCodec::EncodeBGRASkBitmap(shortcut_icon_, false, &png_bytes);
-  image->set_image_data(&png_bytes.front(), png_bytes.size());
-
-  return webapk;
-}
-
 void WebApkInstaller::OnTimeout() {
   OnFailure();
 }
 
 void WebApkInstaller::OnSuccess() {
-  finish_callback_.Run(true);
+  FinishCallback callback = finish_callback_;
   delete this;
+  callback.Run(true);
 }
 
 void WebApkInstaller::OnFailure() {
-  finish_callback_.Run(false);
+  FinishCallback callback = finish_callback_;
   delete this;
+  callback.Run(false);
 }

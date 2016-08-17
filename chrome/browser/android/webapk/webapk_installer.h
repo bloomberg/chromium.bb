@@ -35,6 +35,8 @@ namespace webapk {
 class WebApk;
 }
 
+class WebApkIconHasher;
+
 // Talks to Chrome WebAPK server and Google Play to generate a WebAPK on the
 // server, download it, and install it.
 class WebApkInstaller : public net::URLFetcherDelegate {
@@ -73,6 +75,12 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
+  // Downloads app icon in order to compute Murmur2 hash.
+  void DownloadAppIconAndComputeMurmur2Hash();
+
+  // Called with the computed Murmur2 hash for the app icon.
+  void OnGotIconMurmur2Hash(const std::string& icon_murmur2_hash);
+
   // Sends request to WebAPK server to create WebAPK. During a successful
   // request the WebAPK server responds with the URL of the generated WebAPK.
   // |webapk| is the proto to send to the WebAPK server.
@@ -101,10 +109,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                                  const std::string& package_name,
                                  bool change_permission_success);
 
-  // Populates webapk::WebApk and returns it.
-  // Must be called on a worker thread because it encodes an SkBitmap.
-  std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground();
-
   // Called when the request to the WebAPK server times out or when the WebAPK
   // download times out.
   void OnTimeout();
@@ -123,6 +127,9 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Sends HTTP request to WebAPK server.
   std::unique_ptr<net::URLFetcher> url_fetcher_;
 
+  // Downloads app icon and computes Murmur2 hash.
+  std::unique_ptr<WebApkIconHasher> icon_hasher_;
+
   // Downloads WebAPK.
   std::unique_ptr<FileDownloader> downloader_;
 
@@ -138,6 +145,10 @@ class WebApkInstaller : public net::URLFetcherDelegate {
 
   // WebAPK app icon.
   const SkBitmap shortcut_icon_;
+
+  // Murmur2 hash of the bitmap at the app icon URL prior to any transformations
+  // being applied to the bitmap (such as encoding/decoding the icon bitmap).
+  std::string shortcut_icon_murmur2_hash_;
 
   // WebAPK server URL.
   GURL server_url_;

@@ -36,14 +36,19 @@ const base::FilePath::CharType kTestDataDir[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
 // URL of mock WebAPK server.
-const std::string kServerUrl = "/webapkserver";
+const char* kServerUrl = "/webapkserver";
+
+// Icon URL from Web Manifest. We use a random file in the test data directory.
+// Since WebApkInstaller does not try to decode the file as an image it is OK
+// that the file is not an image.
+const char* kIconUrl = "/simple.html";
 
 // URL of file to download from the WebAPK server. We use a random file in the
 // test data directory.
-const std::string kDownloadUrl = "/simple.html";
+const char* kDownloadUrl = "/simple.html";
 
 // The package name of the downloaded WebAPK.
-const std::string kDownloadedWebApkPackageName = "party.unicode";
+const char* kDownloadedWebApkPackageName = "party.unicode";
 
 // WebApkInstaller subclass where
 // WebApkInstaller::StartDownloadedWebApkInstall() is stubbed out.
@@ -67,25 +72,27 @@ class TestWebApkInstaller : public WebApkInstaller {
 // Runs the WebApkInstaller installation process and blocks till done.
 class WebApkInstallerRunner {
  public:
-  WebApkInstallerRunner()
+  explicit WebApkInstallerRunner(const GURL& icon_url)
       : url_request_context_getter_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())) {}
+            base::ThreadTaskRunnerHandle::Get())),
+        icon_url_(icon_url) {}
   ~WebApkInstallerRunner() {}
 
   void Run() {
     ShortcutInfo info(GURL::EmptyGURL());
+    info.icon_url = icon_url_;
 
     // WebApkInstaller owns itself.
     WebApkInstaller* installer = new TestWebApkInstaller(info, SkBitmap());
 
     installer->SetTimeoutMs(100);
+
+    base::RunLoop run_loop;
+    on_completed_callback_ = run_loop.QuitClosure();
     installer->InstallAsyncWithURLRequestContextGetter(
         url_request_context_getter_.get(),
         base::Bind(&WebApkInstallerRunner::OnCompleted,
                    base::Unretained(this)));
-
-    base::RunLoop run_loop;
-    on_completed_callback_ = run_loop.QuitClosure();
     run_loop.Run();
   }
 
@@ -99,6 +106,9 @@ class WebApkInstallerRunner {
 
   scoped_refptr<net::TestURLRequestContextGetter>
       url_request_context_getter_;
+
+  // The Web Manifest's icon URL.
+  const GURL icon_url_;
 
   // Called after the installation process has succeeded or failed.
   base::Closure on_completed_callback_;
@@ -148,6 +158,9 @@ class WebApkInstallerTest : public ::testing::Test {
     SetDefaults();
   }
 
+  // Sets the Web Manifest's icon URL.
+  void SetIconUrl(const GURL& icon_url) { icon_url_ = icon_url; }
+
   // Sets the URL to send the webapk::CreateWebApkRequest to. WebApkInstaller
   // should fail if the URL is not |kServerUrl|.
   void SetWebApkServerUrl(const GURL& server_url) {
@@ -161,11 +174,18 @@ class WebApkInstallerTest : public ::testing::Test {
     webapk_response_builder_ = builder;
   }
 
+  std::unique_ptr<WebApkInstallerRunner> CreateWebApkInstallerRunner() {
+    return std::unique_ptr<WebApkInstallerRunner>(
+        new WebApkInstallerRunner(icon_url_));
+  }
+
   net::test_server::EmbeddedTestServer* test_server() { return &test_server_; }
 
  private:
   // Sets default configuration for running WebApkInstaller.
   void SetDefaults() {
+    GURL icon_url = test_server_.GetURL(kIconUrl);
+    SetIconUrl(icon_url);
     GURL server_url = test_server_.GetURL(kServerUrl);
     SetWebApkServerUrl(server_url);
     GURL download_url = test_server_.GetURL(kDownloadUrl);
@@ -183,6 +203,9 @@ class WebApkInstallerTest : public ::testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   net::EmbeddedTestServer test_server_;
 
+  // Web Manifest's icon URL.
+  GURL icon_url_;
+
   // Builds response to the WebAPK creation request.
   WebApkResponseBuilder webapk_response_builder_;
 
@@ -191,9 +214,21 @@ class WebApkInstallerTest : public ::testing::Test {
 
 // Test installation succeeding.
 TEST_F(WebApkInstallerTest, Success) {
-  WebApkInstallerRunner runner;
-  runner.Run();
-  EXPECT_TRUE(runner.success());
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->Run();
+  EXPECT_TRUE(runner->success());
+}
+
+// Test that installation fails if fetching the bitmap at the icon URL times
+// out. In a perfect world the fetch would never time out because the bitmap at
+// the icon URL should be in the HTTP cache.
+TEST_F(WebApkInstallerTest, IconUrlDownloadTimesOut) {
+  GURL icon_url = test_server()->GetURL("/slow?1000");
+  SetIconUrl(icon_url);
+
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->Run();
+  EXPECT_FALSE(runner->success());
 }
 
 // Test that installation fails if the WebAPK creation request times out.
@@ -201,9 +236,9 @@ TEST_F(WebApkInstallerTest, CreateWebApkRequestTimesOut) {
   GURL server_url = test_server()->GetURL("/slow?1000");
   SetWebApkServerUrl(server_url);
 
-  WebApkInstallerRunner runner;
-  runner.Run();
-  EXPECT_FALSE(runner.success());
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->Run();
+  EXPECT_FALSE(runner->success());
 }
 
 // Test that installation fails if the WebAPK download times out.
@@ -211,9 +246,9 @@ TEST_F(WebApkInstallerTest, WebApkDownloadTimesOut) {
   GURL download_url = test_server()->GetURL("/slow?1000");
   SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, download_url));
 
-  WebApkInstallerRunner runner;
-  runner.Run();
-  EXPECT_FALSE(runner.success());
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->Run();
+  EXPECT_FALSE(runner->success());
 }
 
 // Test that installation fails if the WebAPK download fails.
@@ -221,9 +256,9 @@ TEST_F(WebApkInstallerTest, WebApkDownloadFails) {
   GURL download_url = test_server()->GetURL("/nocontent");
   SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, download_url));
 
-  WebApkInstallerRunner runner;
-  runner.Run();
-  EXPECT_FALSE(runner.success());
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->Run();
+  EXPECT_FALSE(runner->success());
 }
 
 namespace {
@@ -245,7 +280,7 @@ BuildUnparsableWebApkResponse() {
 TEST_F(WebApkInstallerTest, UnparsableCreateWebApkResponse) {
   SetWebApkResponseBuilder(base::Bind(&BuildUnparsableWebApkResponse));
 
-  WebApkInstallerRunner runner;
-  runner.Run();
-  EXPECT_FALSE(runner.success());
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->Run();
+  EXPECT_FALSE(runner->success());
 }

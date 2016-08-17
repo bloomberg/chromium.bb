@@ -1017,6 +1017,8 @@
       'browser/android/webapps/single_tab_mode_tab_helper.h',
       'browser/android/webapps/webapp_registry.cc',
       'browser/android/webapps/webapp_registry.h',
+      'browser/android/webapk/webapk_icon_hasher.cc',
+      'browser/android/webapk/webapk_icon_hasher.h',
       'browser/android/webapk/webapk_installer.cc',
       'browser/android/webapk/webapk_installer.h',
       'browser/autofill/android/personal_data_manager_android.cc',
