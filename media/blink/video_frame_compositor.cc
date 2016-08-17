@@ -105,7 +105,8 @@ bool VideoFrameCompositor::HasCurrentFrame() {
 }
 
 void VideoFrameCompositor::Start(RenderCallback* callback) {
-  TRACE_EVENT0("media,rail", "VideoFrameCompositor::Start");
+  TRACE_EVENT_ASYNC_BEGIN0("media,rail", "VideoPlayback",
+                           static_cast<const void*>(this));
 
   // Called from the media thread, so acquire the callback under lock before
   // returning in case a Stop() call comes in before the PostTask is processed.
@@ -118,7 +119,8 @@ void VideoFrameCompositor::Start(RenderCallback* callback) {
 }
 
 void VideoFrameCompositor::Stop() {
-  TRACE_EVENT0("media,rail", "VideoFrameCompositor::Stop");
+  TRACE_EVENT_ASYNC_END0("media,rail", "VideoPlayback",
+                         static_cast<const void*>(this));
 
   // Called from the media thread, so release the callback under lock before
   // returning to avoid a pending UpdateCurrentFrame() call occurring before
