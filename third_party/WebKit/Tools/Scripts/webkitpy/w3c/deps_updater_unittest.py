@@ -71,11 +71,19 @@ Total: 8 tryjobs
 
     def test_generate_email_list(self):
         updater = DepsUpdater(MockHost())
-        owners = {'foo/bar': 'me@gmail.com', 'foo/baz': 'you@gmail.com', 'foo/bat': 'noone@gmail.com'}
-        results = """third_party/WebKit/LayoutTests/foo/bar/file.html
-third_party/WebKit/LayoutTests/foo/bar/otherfile.html
-third_party/WebKit/LayoutTests/foo/baz/files.html"""
-        self.assertEqual(updater.generate_email_list(results, owners), ['me@gmail.com', 'you@gmail.com'])
+        changed_files = [
+            'third_party/WebKit/LayoutTests/foo/bar/file.html',
+            'third_party/WebKit/LayoutTests/foo/bar/otherfile.html',
+            'third_party/WebKit/LayoutTests/foo/baz/files.html',
+        ]
+        directory_to_owner = {
+            'foo/bar': 'me@gmail.com',
+            'foo/baz': 'you@gmail.com',
+            'foo/bat': 'noone@gmail.com',
+        }
+        self.assertEqual(
+            updater.generate_email_list(changed_files, directory_to_owner),
+            ['me@gmail.com', 'you@gmail.com'])
 
     def test_parse_directory_owners(self):
         updater = DepsUpdater(MockHost())

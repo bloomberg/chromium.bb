@@ -71,25 +71,9 @@ class DepsUpdater(object):
             raise AssertionError("Unsupported target %s" % self.target)
 
         has_changes = self.commit_changes_if_needed(chromium_commitish, import_commitish)
+
         if self.auto_update and has_changes:
-            try_bots = self.host.builders.all_try_builder_names()
-            data_file_path = self.finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'w3c', 'directory_owners.json')
-            with open(data_file_path) as data_file:
-                directory_dict = self.parse_directory_owners(json.load(data_file))
-            self.print_('## Gathering directory owners email to CC')
-            _, out = self.run(['git', 'diff', 'master', '--name-only'])
-            email_list = self.generate_email_list(out, directory_dict)
-            self.print_('## Uploading change list.')
-            self.check_run(self.generate_upload_command(email_list))
-            self.print_('## Triggering try jobs.')
-            for try_bot in try_bots:
-                self.run(['git', 'cl', 'try', '-b', try_bot, '--auth-refresh-token-json', self.auth_refresh_token_json])
-            self.print_('## Waiting for Try Job Results')
-            if self.has_failing_results():
-                self.write_test_expectations()
-            else:
-                self.print_('No Failures, committing patch.')
-            self.run(['git', 'cl', 'land', '-f', '--auth-refresh-token-json', self.auth_refresh_token_json])
+            self.do_auto_update()
         return 0
 
     def parse_args(self, argv):
@@ -249,6 +233,12 @@ class DepsUpdater(object):
             self.host.exit(proc.returncode)
         return proc.returncode, out
 
+    def check_run(self, command):
+        return_code, out = self.run(command)
+        if return_code:
+            raise Exception('%s failed with exit code %d.' % ' '.join(command), return_code)
+        return out
+
     def copyfile(self, source, destination):
         if self.verbose:
             self.print_('cp %s %s' % (source, destination))
@@ -271,6 +261,96 @@ class DepsUpdater(object):
 
     def print_(self, msg):
         self.host.print_(msg)
+
+    def do_auto_update(self):
+        """Attempts to upload a CL, make any required adjustments, and commit.
+
+        This function assumes that the imported repo has already been updated,
+        and that change has been committed. There may be newly-failing tests,
+        so before being able to commit these new changes, we may need to update
+        TestExpectations or download new baselines.
+        """
+        email_list = self.get_directory_owners_to_cc()
+        self.print_('## Uploading change list.')
+        self.check_run(self.generate_upload_command(email_list))
+        self.trigger_try_jobs()
+        if self.has_failing_results():
+            self.write_test_expectations()
+            # TODO(qyearsley): After writing test expectations, the CL needs
+            # to be tried again on the try bots, and closed if it fails.
+        else:
+            self.print_('No Failures, committing patch.')
+        self.run(['git', 'cl', 'land', '-f', '--auth-refresh-token-json', self.auth_refresh_token_json])
+        # TODO(qyearsley): Attempting to land should trigger the CQ -- if
+        # the CQ fails, we should abort and close the CL.
+
+    def get_directory_owners_to_cc(self):
+        """Returns a list of email addresses to CC for the current import."""
+        self.print_('## Gathering directory owners emails to CC.')
+        directory_owners_file_path = self.finder.path_from_webkit_base(
+            'Tools', 'Scripts', 'webkitpy', 'w3c', 'directory_owners.json')
+        with open(directory_owners_file_path) as data_file:
+            directory_to_owner = self.parse_directory_owners(json.load(data_file))
+        out = self.check_run(['git', 'diff', 'master', '--name-only'])
+        changed_files = out.splitlines()
+        return self.generate_email_list(changed_files, directory_to_owner)
+
+    @staticmethod
+    def parse_directory_owners(decoded_data_file):
+        directory_dict = {}
+        for dict_set in decoded_data_file:
+            if dict_set['notification-email']:
+                directory_dict[dict_set['directory']] = dict_set['notification-email']
+        return directory_dict
+
+    def generate_email_list(self, changed_files, directory_to_owner):
+        """Returns a list of email addresses based on the given file list and
+        directory-to-owner mapping.
+
+        Args:
+            changed_files: A list of file paths relative to the repository root.
+            directory_to_owner: A dict mapping layout test directories to emails.
+
+        Returns:
+            A list of the email addresses to be notified for the current
+            import.
+        """
+        email_addresses = set()
+        for file_path in changed_files:
+            test_path = self.finder.layout_test_name(file_path)
+            test_dir = self.fs.dirname(test_path)
+            if test_dir in directory_to_owner:
+                email_addresses.add(directory_to_owner[test_dir])
+        return sorted(email_addresses)
+
+    def generate_upload_command(self, email_list):
+        message = 'W3C auto test importer\n\nTBR=qyearsley@chromium.org'
+        command = ['git', 'cl', 'upload', '-f', '-m', message]
+        command += ['--cc=' + email for email in email_list]
+        if self.auth_refresh_token_json:
+            command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
+        return command
+
+    def trigger_try_jobs(self):
+        """Triggers try jobs on all Blink layout test try bots."""
+        self.print_('## Triggering try jobs.')
+        for try_bot in self.host.builders.all_try_builder_names():
+            self.run(['git', 'cl', 'try', '-b', try_bot,
+                      '--auth-refresh-token-json', self.auth_refresh_token_json])
+
+    def has_failing_results(self):
+        """Waits for try job results and checks whether there are failing results."""
+        self.print_('## Waiting for try job results.')
+        while True:
+            time.sleep(POLL_DELAY_SECONDS)
+            self.print_('Still waiting...')
+            _, out = self.run(['git', 'cl', 'try-results'])
+            results = self.parse_try_job_results(out)
+            if results.get('Started') or results.get('Scheduled'):
+                continue
+            if results.get('Failures'):
+                return True
+            return False
 
     def parse_try_job_results(self, results):
         """Parses try job results from `git cl try-results`.
@@ -299,48 +379,6 @@ class DepsUpdater(object):
                 sets[result_type].add(line.split()[0])
         return sets
 
-    def generate_email_list(self, changed_files, directory_dict):
-        """Generates a list of emails to be CCd for current import.
-
-        Takes output from git diff master --name-only and gets the directories
-        and generates list of contact emails.
-
-        Args:
-            changed_files: A string with newline-separated file paths relative
-                to the repository root.
-            directory_dict: A mapping of directories in the LayoutTests/imported
-                directory to the email address of the point of contact.
-
-        Returns:
-            A list of the email addresses to be notified for the current
-            import.
-        """
-        email_list = []
-        directories = set()
-        for line in changed_files.splitlines():
-            layout_tests_relative_path = self.fs.relpath(self.finder.layout_tests_dir(), self.finder.chromium_base())
-            test_path = self.fs.relpath(line, layout_tests_relative_path)
-            test_path = self.fs.dirname(test_path)
-            test_path = test_path.strip('../')
-            if test_path in directory_dict and test_path not in directories:
-                email_list.append(directory_dict[test_path])
-                directories.add(test_path)
-        return email_list
-
-    def check_run(self, command):
-        return_code, out = self.run(command)
-        if return_code:
-            raise Exception('%s failed with exit code %d.' % ' '.join(command), return_code)
-        return out
-
-    @staticmethod
-    def parse_directory_owners(decoded_data_file):
-        directory_dict = {}
-        for dict_set in decoded_data_file:
-            if dict_set['notification-email']:
-                directory_dict[dict_set['directory']] = dict_set['notification-email']
-        return directory_dict
-
     def write_test_expectations(self):
         self.print_('## Adding test expectations lines to LayoutTests/TestExpectations.')
         script_path = self.path_from_webkit_base('Tools', 'Scripts', 'update-w3c-test-expectations')
@@ -349,26 +387,3 @@ class DepsUpdater(object):
         self.check_run(['git', 'commit', '-a', '-m', message])
         self.check_run(['git', 'cl', 'upload', '-m', message,
                         '--auth-refresh-token-json', self.auth_refresh_token_json])
-
-    def has_failing_results(self):
-        while True:
-            time.sleep(POLL_DELAY_SECONDS)
-            self.print_('Still waiting...')
-            _, out = self.run(['git', 'cl', 'try-results'])
-            results = self.parse_try_job_results(out)
-            if results.get('Started') or results.get('Scheduled'):
-                continue
-            if results.get('Failures'):
-                return True
-            return False
-
-    def generate_upload_command(self, email_list):
-        message = """W3C auto test importer
-
-TBR=qyearsley@chromium.org"""
-
-        command = ['git', 'cl', 'upload', '-f', '-m', message]
-        command += ['--cc=' + email for email in email_list]
-        if self.auth_refresh_token_json:
-            command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
-        return command
