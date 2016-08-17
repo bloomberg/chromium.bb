@@ -75,7 +75,7 @@ void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {
   if (!invertible)
     from_screen = gfx::Transform();
   gfx::Rect viewport_rect = MathUtil::ProjectEnclosingClippedRect(
-      from_screen, gfx::Rect(layer->GetLayerTree()->device_viewport_size()));
+      from_screen, gfx::Rect(layer->layer_tree_host()->device_viewport_size()));
   visible_layer_rect.Intersect(viewport_rect);
   switch (mode_) {
     case FIXED_SIZE: {

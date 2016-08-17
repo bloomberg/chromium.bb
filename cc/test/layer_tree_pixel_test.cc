@@ -105,8 +105,8 @@ void LayerTreePixelTest::ReadbackResult(
 }
 
 void LayerTreePixelTest::BeginTest() {
-  Layer* target =
-      readback_target_ ? readback_target_ : layer_tree()->root_layer();
+  Layer* target = readback_target_ ? readback_target_
+                                   : layer_tree_host()->root_layer();
   target->RequestCopyOfOutput(CreateCopyOutputRequest());
   PostSetNeedsCommitToMainThread();
 }
@@ -219,7 +219,7 @@ void LayerTreePixelTest::SetupTree() {
   scoped_refptr<Layer> root = Layer::Create();
   root->SetBounds(content_root_->bounds());
   root->AddChild(content_root_);
-  layer_tree()->SetRootLayer(root);
+  layer_tree_host()->SetRootLayer(root);
   LayerTreeTest::SetupTree();
 }
 

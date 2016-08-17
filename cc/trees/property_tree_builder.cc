@@ -102,7 +102,7 @@ static inline bool IsRootLayer(const Layer* layer) {
 }
 
 static bool IsMetaInformationRecomputationNeeded(Layer* layer) {
-  return layer->GetLayerTree()->needs_meta_info_recomputation();
+  return layer->layer_tree_host()->needs_meta_info_recomputation();
 }
 
 // Recursively walks the layer tree(if needed) to compute any information
@@ -136,7 +136,7 @@ static void PreCalculateMetaInformationInternal(
       recursive_data->num_unclipped_descendants);
 
   if (IsRootLayer(layer))
-    layer->GetLayerTree()->SetNeedsMetaInfoRecomputation(false);
+    layer->layer_tree_host()->SetNeedsMetaInfoRecomputation(false);
 }
 
 static void PreCalculateMetaInformationInternalForTesting(
@@ -1426,7 +1426,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
       root_layer->layer_tree_host()
           ->settings()
           .verify_transform_tree_calculations;
-  SkColor color = root_layer->GetLayerTree()->background_color();
+  SkColor color = root_layer->layer_tree_host()->background_color();
   if (SkColorGetA(color) != 255)
     color = SkColorSetA(color, 255);
   BuildPropertyTreesTopLevelInternal(

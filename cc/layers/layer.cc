@@ -129,17 +129,17 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     return;
 
   if (layer_tree_host_) {
-    layer_tree_->property_trees()->RemoveIdFromIdToIndexMaps(id());
-    layer_tree_->property_trees()->needs_rebuild = true;
+    layer_tree_host_->property_trees()->RemoveIdFromIdToIndexMaps(id());
+    layer_tree_host_->property_trees()->needs_rebuild = true;
     layer_tree_->UnregisterLayer(this);
     if (inputs_.element_id) {
-      layer_tree_->animation_host()->UnregisterElement(inputs_.element_id,
-                                                       ElementListType::ACTIVE);
+      layer_tree_host_->animation_host()->UnregisterElement(
+          inputs_.element_id, ElementListType::ACTIVE);
       layer_tree_host_->RemoveFromElementMap(this);
     }
   }
   if (host) {
-    host->GetLayerTree()->property_trees()->needs_rebuild = true;
+    host->property_trees()->needs_rebuild = true;
     host->GetLayerTree()->RegisterLayer(this);
     if (inputs_.element_id) {
       host->AddToElementMap(this);
@@ -182,7 +182,7 @@ void Layer::SetNeedsCommit() {
     return;
 
   SetNeedsPushProperties();
-  layer_tree_->property_trees()->needs_rebuild = true;
+  layer_tree_host_->property_trees()->needs_rebuild = true;
 
   if (ignore_set_needs_commit_)
     return;
@@ -203,10 +203,10 @@ void Layer::SetNeedsCommitNoRebuild() {
 }
 
 void Layer::SetNeedsFullTreeSync() {
-  if (!layer_tree_)
+  if (!layer_tree_host_)
     return;
 
-  layer_tree_->SetNeedsFullTreeSync();
+  layer_tree_host_->SetNeedsFullTreeSync();
 }
 
 void Layer::SetNextCommitWaitsForActivation() {
@@ -246,7 +246,7 @@ void Layer::SetParent(Layer* layer) {
   if (!layer_tree_host_)
     return;
 
-  layer_tree_->property_trees()->needs_rebuild = true;
+  layer_tree_host_->property_trees()->needs_rebuild = true;
 }
 
 void Layer::AddChild(scoped_refptr<Layer> child) {
@@ -492,7 +492,7 @@ void Layer::SetOpacity(float opacity) {
   inputs_.opacity = opacity;
   SetSubtreePropertyChanged();
   if (layer_tree_host_ && !force_rebuild) {
-    PropertyTrees* property_trees = layer_tree_->property_trees();
+    PropertyTrees* property_trees = layer_tree_host_->property_trees();
     auto effect_id_to_index = property_trees->effect_id_to_index_map.find(id());
     if (effect_id_to_index != property_trees->effect_id_to_index_map.end()) {
       EffectNode* node =
@@ -596,7 +596,7 @@ void Layer::SetPosition(const gfx::PointF& position) {
     return;
 
   SetSubtreePropertyChanged();
-  PropertyTrees* property_trees = layer_tree_->property_trees();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                        id())) {
     DCHECK_EQ(transform_tree_index(),
@@ -606,7 +606,7 @@ void Layer::SetPosition(const gfx::PointF& position) {
     transform_node->update_post_local_transform(position, transform_origin());
     transform_node->needs_local_transform_update = true;
     transform_node->transform_changed = true;
-    layer_tree_->property_trees()->transform_tree.set_needs_update(true);
+    layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
     SetNeedsCommitNoRebuild();
     return;
   }
@@ -644,7 +644,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
 
   SetSubtreePropertyChanged();
   if (layer_tree_host_) {
-    PropertyTrees* property_trees = layer_tree_->property_trees();
+    PropertyTrees* property_trees = layer_tree_host_->property_trees();
     if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                          id())) {
       // We need to trigger a rebuild if we could have affected 2d axis
@@ -660,7 +660,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
       transform_node->local = transform;
       transform_node->needs_local_transform_update = true;
       transform_node->transform_changed = true;
-      layer_tree_->property_trees()->transform_tree.set_needs_update(true);
+      layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
       if (preserves_2d_axis_alignment)
         SetNeedsCommitNoRebuild();
       else
@@ -685,7 +685,7 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
     return;
 
   SetSubtreePropertyChanged();
-  PropertyTrees* property_trees = layer_tree_->property_trees();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                        id())) {
     DCHECK_EQ(transform_tree_index(),
@@ -696,7 +696,7 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
     transform_node->update_post_local_transform(position(), transform_origin);
     transform_node->needs_local_transform_update = true;
     transform_node->transform_changed = true;
-    layer_tree_->property_trees()->transform_tree.set_needs_update(true);
+    layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
     SetNeedsCommitNoRebuild();
     return;
   }
@@ -757,8 +757,8 @@ void Layer::SetClipParent(Layer* ancestor) {
     inputs_.clip_parent->AddClipChild(this);
 
   SetNeedsCommit();
-  if (layer_tree_)
-    layer_tree_->SetNeedsMetaInfoRecomputation(true);
+  if (layer_tree_host_)
+    layer_tree_host_->SetNeedsMetaInfoRecomputation(true);
 }
 
 void Layer::AddClipChild(Layer* child) {
@@ -785,7 +785,7 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   if (!layer_tree_host_)
     return;
 
-  PropertyTrees* property_trees = layer_tree_->property_trees();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
   if (scroll_tree_index() != ScrollTree::kInvalidNodeId && scrollable())
     property_trees->scroll_tree.SetScrollOffset(id(), scroll_offset);
 
@@ -818,7 +818,7 @@ void Layer::SetScrollOffsetFromImplSide(
 
   bool needs_rebuild = true;
 
-  PropertyTrees* property_trees = layer_tree_->property_trees();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
   if (scroll_tree_index() != ScrollTree::kInvalidNodeId && scrollable())
     property_trees->scroll_tree.SetScrollOffset(id(), scroll_offset);
 
@@ -944,7 +944,7 @@ void Layer::SetTransformTreeIndex(int index) {
 
 int Layer::transform_tree_index() const {
   if (!layer_tree_host_ ||
-      layer_tree_->property_trees()->sequence_number !=
+      layer_tree_host_->property_trees()->sequence_number !=
           property_tree_sequence_number_) {
     return TransformTree::kInvalidNodeId;
   }
@@ -961,7 +961,7 @@ void Layer::SetClipTreeIndex(int index) {
 
 int Layer::clip_tree_index() const {
   if (!layer_tree_host_ ||
-      layer_tree_->property_trees()->sequence_number !=
+      layer_tree_host_->property_trees()->sequence_number !=
           property_tree_sequence_number_) {
     return ClipTree::kInvalidNodeId;
   }
@@ -978,7 +978,7 @@ void Layer::SetEffectTreeIndex(int index) {
 
 int Layer::effect_tree_index() const {
   if (!layer_tree_host_ ||
-      layer_tree_->property_trees()->sequence_number !=
+      layer_tree_host_->property_trees()->sequence_number !=
           property_tree_sequence_number_) {
     return EffectTree::kInvalidNodeId;
   }
@@ -995,7 +995,7 @@ void Layer::SetScrollTreeIndex(int index) {
 
 int Layer::scroll_tree_index() const {
   if (!layer_tree_host_ ||
-      layer_tree_->property_trees()->sequence_number !=
+      layer_tree_host_->property_trees()->sequence_number !=
           property_tree_sequence_number_) {
     return ScrollTree::kInvalidNodeId;
   }
@@ -1178,7 +1178,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // active tree. To do so, avoid scrolling the pending tree along with it
   // instead of trying to undo that scrolling later.
   if (ScrollOffsetAnimationWasInterrupted())
-    layer_tree_->property_trees()
+    layer_tree_host()
+        ->property_trees()
         ->scroll_tree.SetScrollOffsetClobberActiveValue(layer->id());
 
   // If the main thread commits multiple times before the impl thread actually
@@ -1288,7 +1289,7 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
   inputs_.layer_id = proto.id();
 
   layer_tree_host_ = layer_tree_host;
-  layer_tree_ = layer_tree_host->GetLayerTree();
+  layer_tree_ = layer_tree_host ? layer_tree_host->GetLayerTree() : nullptr;
   layer_tree_->RegisterLayer(this);
 
   for (int i = 0; i < proto.children_size(); ++i) {
@@ -1646,7 +1647,7 @@ void Layer::OnOpacityAnimated(float opacity) {
   // recording may be needed.
   SetNeedsUpdate();
   if (layer_tree_host_) {
-    PropertyTrees* property_trees = layer_tree_->property_trees();
+    PropertyTrees* property_trees = layer_tree_host_->property_trees();
     if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT,
                                          id())) {
       DCHECK_EQ(effect_tree_index(),
@@ -1666,7 +1667,7 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   // recording may be needed.
   SetNeedsUpdate();
   if (layer_tree_host_) {
-    PropertyTrees* property_trees = layer_tree_->property_trees();
+    PropertyTrees* property_trees = layer_tree_host_->property_trees();
     if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                          id())) {
       DCHECK_EQ(transform_tree_index(),
@@ -1690,7 +1691,7 @@ void Layer::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
 void Layer::OnTransformIsCurrentlyAnimatingChanged(
     bool is_currently_animating) {
   DCHECK(layer_tree_host_);
-  PropertyTrees* property_trees = layer_tree_->property_trees();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
   if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                         id()))
     return;
@@ -1705,7 +1706,7 @@ void Layer::OnTransformIsPotentiallyAnimatingChanged(
     bool has_potential_animation) {
   if (!layer_tree_host_)
     return;
-  PropertyTrees* property_trees = layer_tree_->property_trees();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
   if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                         id()))
     return;
@@ -1725,7 +1726,7 @@ void Layer::OnTransformIsPotentiallyAnimatingChanged(
 
 void Layer::OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating) {
   DCHECK(layer_tree_host_);
-  PropertyTrees* property_trees = layer_tree_->property_trees();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
   if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
     return;
   DCHECK_EQ(effect_tree_index(), property_trees->effect_id_to_index_map[id()]);
@@ -1736,7 +1737,7 @@ void Layer::OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating) {
 void Layer::OnOpacityIsPotentiallyAnimatingChanged(
     bool has_potential_animation) {
   DCHECK(layer_tree_host_);
-  PropertyTrees* property_trees = layer_tree_->property_trees();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
   if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
     return;
   DCHECK_EQ(effect_tree_index(), property_trees->effect_id_to_index_map[id()]);
@@ -1748,7 +1749,7 @@ void Layer::OnOpacityIsPotentiallyAnimatingChanged(
 
 void Layer::OnFilterIsCurrentlyAnimatingChanged(bool is_currently_animating) {
   DCHECK(layer_tree_host_);
-  PropertyTrees* property_trees = layer_tree_->property_trees();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
   if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
     return;
   DCHECK_EQ(effect_tree_index(), property_trees->effect_id_to_index_map[id()]);
@@ -1759,7 +1760,7 @@ void Layer::OnFilterIsCurrentlyAnimatingChanged(bool is_currently_animating) {
 void Layer::OnFilterIsPotentiallyAnimatingChanged(
     bool has_potential_animation) {
   DCHECK(layer_tree_host_);
-  PropertyTrees* property_trees = layer_tree_->property_trees();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
   if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
     return;
   DCHECK_EQ(effect_tree_index(), property_trees->effect_id_to_index_map[id()]);
@@ -1871,7 +1872,8 @@ void Layer::DidBeginTracing() {
 }
 
 int Layer::num_copy_requests_in_target_subtree() {
-  return layer_tree_->property_trees()
+  return layer_tree_host()
+      ->property_trees()
       ->effect_tree.Node(effect_tree_index())
       ->num_copy_requests_in_subtree;
 }
@@ -1879,7 +1881,7 @@ int Layer::num_copy_requests_in_target_subtree() {
 gfx::Transform Layer::screen_space_transform() const {
   DCHECK_NE(transform_tree_index_, TransformTree::kInvalidNodeId);
   return draw_property_utils::ScreenSpaceTransform(
-      this, layer_tree_->property_trees()->transform_tree);
+      this, layer_tree_host_->property_trees()->transform_tree);
 }
 
 LayerTree* Layer::GetLayerTree() const {

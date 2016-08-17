@@ -135,11 +135,11 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
 
   void BuildTree() override {
     gfx::Size viewport = gfx::Size(720, 1038);
-    layer_tree()->SetViewportSize(viewport);
+    layer_tree_host()->SetViewportSize(viewport);
     scoped_refptr<Layer> root = ParseTreeFromJson(json_,
                                                   &fake_content_layer_client_);
     ASSERT_TRUE(root.get());
-    layer_tree()->SetRootLayer(root);
+    layer_tree_host()->SetRootLayer(root);
     fake_content_layer_client_.set_bounds(viewport);
   }
 
@@ -184,7 +184,7 @@ class LayerTreeHostPerfTestLeafInvalidates
     LayerTreeHostPerfTestJsonReader::BuildTree();
 
     // Find a leaf layer.
-    for (layer_to_invalidate_ = layer_tree()->root_layer();
+    for (layer_to_invalidate_ = layer_tree_host()->root_layer();
          layer_to_invalidate_->children().size();
          layer_to_invalidate_ = layer_to_invalidate_->children()[0].get()) {
     }
@@ -225,7 +225,7 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
 
   void BuildTree() override {
     LayerTreeHostPerfTestJsonReader::BuildTree();
-    scrollable_ = layer_tree()->root_layer()->children()[1];
+    scrollable_ = layer_tree_host()->root_layer()->children()[1];
     ASSERT_TRUE(scrollable_.get());
   }
 
@@ -261,13 +261,12 @@ class BrowserCompositorInvalidateLayerTreePerfTest
 
   void BuildTree() override {
     LayerTreeHostPerfTestJsonReader::BuildTree();
-    tab_contents_ = static_cast<TextureLayer*>(layer_tree()
-                                                   ->root_layer()
-                                                   ->children()[0]
-                                                   ->children()[0]
-                                                   ->children()[0]
-                                                   ->children()[0]
-                                                   .get());
+    tab_contents_ =
+        static_cast<TextureLayer*>(
+            layer_tree_host()->root_layer()->children()[0]->
+                                             children()[0]->
+                                             children()[0]->
+                                             children()[0].get());
     ASSERT_TRUE(tab_contents_.get());
   }
 

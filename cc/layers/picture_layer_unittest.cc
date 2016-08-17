@@ -80,7 +80,7 @@ class TestSerializationPictureLayer : public PictureLayer {
 
     scoped_refptr<TestSerializationPictureLayer> layer =
         TestSerializationPictureLayer::Create(recording_source_viewport_);
-    host->GetLayerTree()->SetRootLayer(layer);
+    host->SetRootLayer(layer);
 
     layer->FromLayerSpecificPropertiesProto(proto);
 
@@ -161,7 +161,7 @@ TEST(PictureLayerTest, TestSetAllPropsSerializationDeserialization) {
   gfx::Size recording_source_viewport(256, 256);
   scoped_refptr<TestSerializationPictureLayer> layer =
       TestSerializationPictureLayer::Create(recording_source_viewport);
-  host->GetLayerTree()->SetRootLayer(layer);
+  host->SetRootLayer(layer);
 
   Region region(gfx::Rect(14, 15, 16, 17));
   layer->set_invalidation(region);
@@ -194,7 +194,7 @@ TEST(PictureLayerTest, TestSerializationDeserialization) {
   gfx::Size recording_source_viewport(256, 256);
   scoped_refptr<TestSerializationPictureLayer> layer =
       TestSerializationPictureLayer::Create(recording_source_viewport);
-  host->GetLayerTree()->SetRootLayer(layer);
+  host->SetRootLayer(layer);
 
   layer->SetBounds(recording_source_viewport);
   layer->set_update_source_frame_number(0);
@@ -222,7 +222,7 @@ TEST(PictureLayerTest, TestEmptySerializationDeserialization) {
   gfx::Size recording_source_viewport(256, 256);
   scoped_refptr<TestSerializationPictureLayer> layer =
       TestSerializationPictureLayer::Create(recording_source_viewport);
-  host->GetLayerTree()->SetRootLayer(layer);
+  host->SetRootLayer(layer);
   layer->ValidateSerialization(fake_image_serialization_processor.get(),
                                host.get());
 }
@@ -236,7 +236,7 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
-  host->GetLayerTree()->SetRootLayer(layer);
+  host->SetRootLayer(layer);
   layer->SetIsDrawable(true);
   layer->SavePaintProperties();
   layer->Update();
@@ -281,7 +281,7 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
-  host->GetLayerTree()->SetRootLayer(layer);
+  host->SetRootLayer(layer);
   layer->SetIsDrawable(true);
   layer->SavePaintProperties();
 
@@ -326,7 +326,7 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
-  host->GetLayerTree()->SetRootLayer(layer);
+  host->SetRootLayer(layer);
   layer->SetIsDrawable(true);
   layer->SavePaintProperties();
 
@@ -371,7 +371,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
-  host->GetLayerTree()->SetRootLayer(layer);
+  host->SetRootLayer(layer);
   layer->SetIsDrawable(true);
   layer->SavePaintProperties();
   layer->Update();
@@ -453,7 +453,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   TestTaskGraphRunner task_graph_runner;
   std::unique_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
-  host->GetLayerTree()->SetRootLayer(layer);
+  host->SetRootLayer(layer);
 
   // Update layers to initialize the recording source.
   gfx::Size layer_bounds(200, 200);
@@ -525,7 +525,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   host_client2.SetLayerTreeHost(host2.get());
 
   // The PictureLayer is put in one LayerTreeHost.
-  host1->GetLayerTree()->SetRootLayer(layer);
+  host1->SetRootLayer(layer);
   // Do a main frame, record the picture layers.
   EXPECT_EQ(0, layer->update_count());
   layer->SetNeedsDisplay();
@@ -540,8 +540,8 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   EXPECT_EQ(2, host1->source_frame_number());
 
   // Then moved to another LayerTreeHost.
-  host1->GetLayerTree()->SetRootLayer(nullptr);
-  host2->GetLayerTree()->SetRootLayer(layer);
+  host1->SetRootLayer(nullptr);
+  host2->SetRootLayer(layer);
 
   // Do a main frame, record the picture layers. The frame number has changed
   // non-monotonically.

@@ -220,7 +220,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       cc::AnimationTimeline::Create(cc::AnimationIdProvider::NextTimelineId());
   host_->animation_host()->AddAnimationTimeline(animation_timeline_.get());
 
-  host_->GetLayerTree()->SetRootLayer(root_web_layer_);
+  host_->SetRootLayer(root_web_layer_);
   host_->set_surface_client_id(surface_id_allocator_->client_id());
   host_->SetVisible(true);
 }
@@ -327,8 +327,7 @@ cc::AnimationTimeline* Compositor::GetAnimationTimeline() const {
 
 void Compositor::SetHostHasTransparentBackground(
     bool host_has_transparent_background) {
-  host_->GetLayerTree()->set_has_transparent_background(
-      host_has_transparent_background);
+  host_->set_has_transparent_background(host_has_transparent_background);
 }
 
 void Compositor::ScheduleFullRedraw() {
@@ -360,13 +359,13 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
   DCHECK_GT(scale, 0);
   if (!size_in_pixel.IsEmpty()) {
     size_ = size_in_pixel;
-    host_->GetLayerTree()->SetViewportSize(size_in_pixel);
+    host_->SetViewportSize(size_in_pixel);
     root_web_layer_->SetBounds(size_in_pixel);
     context_factory_->ResizeDisplay(this, size_in_pixel);
   }
   if (device_scale_factor_ != scale) {
     device_scale_factor_ = scale;
-    host_->GetLayerTree()->SetDeviceScaleFactor(scale);
+    host_->SetDeviceScaleFactor(scale);
     if (root_layer_)
       root_layer_->OnDeviceScaleFactorChanged(scale);
   }
@@ -377,7 +376,7 @@ void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
 }
 
 void Compositor::SetBackgroundColor(SkColor color) {
-  host_->GetLayerTree()->set_background_color(color);
+  host_->set_background_color(color);
   ScheduleDraw();
 }
 

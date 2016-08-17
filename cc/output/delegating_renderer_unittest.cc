@@ -18,7 +18,7 @@ class DelegatingRendererTest : public LayerTreeTest {};
 class DelegatingRendererTestDraw : public DelegatingRendererTest {
  public:
   void BeginTest() override {
-    layer_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
     PostSetNeedsCommitToMainThread();
   }
 

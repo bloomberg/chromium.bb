@@ -641,7 +641,7 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
   LayerList update_layer_list;
   bool can_render_to_separate_surface = true;
   PropertyTrees* property_trees =
-      inputs->root_layer->GetLayerTree()->property_trees();
+      inputs->root_layer->layer_tree_host()->property_trees();
   Layer* overscroll_elasticity_layer = nullptr;
   gfx::Vector2dF elastic_overscroll;
   PropertyTreeBuilder::BuildPropertyTrees(
@@ -715,7 +715,7 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
 }
 
 PropertyTrees* GetPropertyTrees(Layer* layer) {
-  return layer->GetLayerTree()->property_trees();
+  return layer->layer_tree_host()->property_trees();
 }
 
 PropertyTrees* GetPropertyTrees(LayerImpl* layer) {

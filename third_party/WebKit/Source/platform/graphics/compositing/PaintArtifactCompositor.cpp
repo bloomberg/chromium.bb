@@ -566,7 +566,7 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
 {
     cc::LayerTreeHost* host = m_rootLayer->layer_tree_host();
 
-    setMinimalPropertyTrees(host->GetLayerTree()->property_trees(), m_rootLayer->id());
+    setMinimalPropertyTrees(host->property_trees(), m_rootLayer->id());
     m_rootLayer->RemoveAllChildren();
     m_rootLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
     m_rootLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
@@ -574,7 +574,7 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
     m_rootLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
     m_rootLayer->SetScrollTreeIndex(kRealRootNodeId);
 
-    PropertyTreeManager propertyTreeManager(*host->GetLayerTree()->property_trees(), m_rootLayer.get());
+    PropertyTreeManager propertyTreeManager(*host->property_trees(), m_rootLayer.get());
     m_contentLayerClients.clear();
     m_contentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
     for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
@@ -596,7 +596,7 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
 
         // TODO(jbroman): This probably shouldn't be necessary, but it is still
         // queried by RenderSurfaceImpl.
-        layer->Set3dSortingContextId(host->GetLayerTree()->property_trees()->transform_tree.Node(transformId)->sorting_context_id);
+        layer->Set3dSortingContextId(host->property_trees()->transform_tree.Node(transformId)->sorting_context_id);
 
         layer->SetShouldCheckBackfaceVisibility(paintChunk.properties.backfaceHidden);
 
@@ -605,8 +605,8 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
     }
 
     // Mark the property trees as having been rebuilt.
-    host->GetLayerTree()->property_trees()->sequence_number = kPropertyTreeSequenceNumber;
-    host->GetLayerTree()->property_trees()->needs_rebuild = false;
+    host->property_trees()->sequence_number = kPropertyTreeSequenceNumber;
+    host->property_trees()->needs_rebuild = false;
 }
 
 } // namespace blink

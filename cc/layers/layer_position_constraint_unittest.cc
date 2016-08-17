@@ -132,17 +132,17 @@ class LayerPositionConstraintTest : public testing::Test {
     root_->AddChild(inner_viewport_container_layer_);
 
     layer_tree_host_->SetRootLayer(root_);
-    layer_tree_host_->GetLayerTree()->RegisterViewportLayers(
-        nullptr, root_, scroll_layer_, child_);
+    layer_tree_host_->RegisterViewportLayers(nullptr, root_, scroll_layer_,
+                                             child_);
   }
 
   void CommitAndUpdateImplPointers() {
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
         root_.get(), root_->bounds());
     inputs.inner_viewport_scroll_layer =
-        layer_tree_host_->GetLayerTree()->inner_viewport_scroll_layer();
+        layer_tree_host_->inner_viewport_scroll_layer();
     inputs.outer_viewport_scroll_layer =
-        layer_tree_host_->GetLayerTree()->outer_viewport_scroll_layer();
+        layer_tree_host_->outer_viewport_scroll_layer();
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
     // Since scroll deltas aren't sent back to the main thread in this test

@@ -71,8 +71,8 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
   inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
-  host->GetLayerTree()->RegisterViewportLayers(
-      NULL, page_scale_layer, inner_viewport_scroll_layer, outer_scroll_layer);
+  host->RegisterViewportLayers(NULL, page_scale_layer,
+                               inner_viewport_scroll_layer, outer_scroll_layer);
 }
 
 void CreateVirtualViewportLayers(Layer* root_layer,
@@ -681,17 +681,17 @@ void LayerTreeTest::DoBeginTest() {
 }
 
 void LayerTreeTest::SetupTree() {
-  if (!layer_tree()->root_layer()) {
+  if (!layer_tree_host_->root_layer()) {
     scoped_refptr<Layer> root_layer = Layer::Create();
     root_layer->SetBounds(gfx::Size(1, 1));
-    layer_tree()->SetRootLayer(root_layer);
+    layer_tree_host_->SetRootLayer(root_layer);
   }
 
-  gfx::Size root_bounds = layer_tree()->root_layer()->bounds();
-  gfx::Size device_root_bounds =
-      gfx::ScaleToCeiledSize(root_bounds, layer_tree()->device_scale_factor());
-  layer_tree()->SetViewportSize(device_root_bounds);
-  layer_tree()->root_layer()->SetIsDrawable(true);
+  gfx::Size root_bounds = layer_tree_host_->root_layer()->bounds();
+  gfx::Size device_root_bounds = gfx::ScaleToCeiledSize(
+      root_bounds, layer_tree_host_->device_scale_factor());
+  layer_tree_host_->SetViewportSize(device_root_bounds);
+  layer_tree_host_->root_layer()->SetIsDrawable(true);
 }
 
 void LayerTreeTest::Timeout() {
@@ -874,8 +874,8 @@ std::unique_ptr<OutputSurface> LayerTreeTest::CreateDisplayOutputSurface(
 }
 
 void LayerTreeTest::DestroyLayerTreeHost() {
-  if (layer_tree_host_ && layer_tree_host_->GetLayerTree()->root_layer())
-    layer_tree_host_->GetLayerTree()->root_layer()->SetLayerTreeHost(NULL);
+  if (layer_tree_host_ && layer_tree_host_->root_layer())
+    layer_tree_host_->root_layer()->SetLayerTreeHost(NULL);
   layer_tree_host_ = nullptr;
 
   DCHECK(!remote_proto_channel_bridge_.channel_main.HasReceiver());
