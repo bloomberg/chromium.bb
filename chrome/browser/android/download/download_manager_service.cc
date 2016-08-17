@@ -33,6 +33,17 @@ bool ShouldShowDownloadItem(content::DownloadItem* item) {
       item->GetState() == content::DownloadItem::COMPLETE;
 }
 
+void updateNotifier(DownloadManagerService* service,
+                    content::DownloadManager* manager,
+                    std::unique_ptr<AllDownloadItemNotifier>& notifier) {
+  if (manager) {
+    if (!notifier || notifier->GetManager() != manager)
+      notifier.reset(new AllDownloadItemNotifier(manager, service));
+  } else {
+    notifier.reset(nullptr);
+  }
+}
+
 }  // namespace
 
 // static
@@ -205,15 +216,8 @@ void DownloadManagerService::OnHistoryQueryComplete() {
   pending_actions_.clear();
 
   // Monitor all DownloadItems for changes.
-  content::DownloadManager* manager = GetDownloadManager(false);
-  if (manager)
-    original_notifier_.reset(new AllDownloadItemNotifier(manager, this));
-
-  content::DownloadManager* off_the_record_manager = GetDownloadManager(true);
-  if (off_the_record_manager) {
-    off_the_record_notifier_.reset(
-        new AllDownloadItemNotifier(off_the_record_manager, this));
-  }
+  updateNotifier(this, GetDownloadManager(false), original_notifier_);
+  updateNotifier(this, GetDownloadManager(true), off_the_record_notifier_);
 }
 
 void DownloadManagerService::OnDownloadUpdated(
@@ -365,5 +369,13 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (is_off_the_record)
     profile = profile->GetOffTheRecordProfile();
-  return content::BrowserContext::GetDownloadManager(profile);
+  content::DownloadManager* manager =
+      content::BrowserContext::GetDownloadManager(profile);
+
+  // Update notifiers to monitor any newly created DownloadManagers.
+  updateNotifier(
+      this, manager,
+      is_off_the_record ? off_the_record_notifier_ : original_notifier_);
+
+  return manager;
 }
