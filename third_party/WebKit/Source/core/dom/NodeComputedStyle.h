@@ -52,7 +52,8 @@ inline ComputedStyle* Node::mutableComputedStyle() const
         return nonLayoutObjectComputedStyle();
     if (hasRareData()) {
         NodeRareData* rareData = this->rareData();
-        DCHECK(rareData->isElementRareData());
+        if (!rareData->isElementRareData())
+            return nullptr;
         return static_cast<ElementRareData*>(rareData)->computedStyle();
     }
     return m_data.m_computedStyle;
