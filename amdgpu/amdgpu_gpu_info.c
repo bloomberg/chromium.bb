@@ -119,7 +119,7 @@ int amdgpu_query_firmware_version(amdgpu_device_handle dev, unsigned fw_type,
 				  uint32_t *version, uint32_t *feature)
 {
 	struct drm_amdgpu_info request;
-	struct drm_amdgpu_info_firmware firmware;
+	struct drm_amdgpu_info_firmware firmware = {};
 	int r;
 
 	memset(&request, 0, sizeof(request));
