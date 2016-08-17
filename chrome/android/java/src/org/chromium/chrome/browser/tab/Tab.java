@@ -876,7 +876,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return The {@link View} displaying the current page in the tab. This can be {@code null}, if
      *         the tab is frozen or being initialized or destroyed.
      */
-    public View getView() {
+    public TabContentViewParent getView() {
         return mContentViewParent;
     }
 
