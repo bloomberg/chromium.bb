@@ -45,13 +45,12 @@ class TextCheckerClient;
 
 class SpellCheckRequest final : public TextCheckingRequest {
 public:
-    static SpellCheckRequest* create(TextCheckingProcessType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber = 0);
+    static SpellCheckRequest* create(TextCheckingProcessType, const EphemeralRange& checkingRange, int requestNumber = 0);
 
     ~SpellCheckRequest() override;
     void dispose();
 
     Range* checkingRange() const { return m_checkingRange; }
-    Range* paragraphRange() const { return m_paragraphRange; }
     Element* rootEditableElement() const { return m_rootEditableElement; }
 
     void setCheckerAndSequence(SpellCheckRequester*, int sequence);
@@ -66,11 +65,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SpellCheckRequest(Range* checkingRange, Range* paragraphRange, const String&, TextCheckingProcessType, const Vector<uint32_t>& documentMarkersInRange, const Vector<unsigned>& documentMarkerOffsets, int requestNumber);
+    SpellCheckRequest(Range* checkingRange, const String&, TextCheckingProcessType, const Vector<uint32_t>& documentMarkersInRange, const Vector<unsigned>& documentMarkerOffsets, int requestNumber);
 
     Member<SpellCheckRequester> m_requester;
     Member<Range> m_checkingRange;
-    Member<Range> m_paragraphRange;
     Member<Element> m_rootEditableElement;
     TextCheckingRequestData m_requestData;
     int m_requestNumber;

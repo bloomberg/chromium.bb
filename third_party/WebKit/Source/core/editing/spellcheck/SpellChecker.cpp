@@ -389,7 +389,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(const TextCheckingPa
     // Check the full paragraph instead if the paragraph is short, which saves
     // the cost on sentence boundary finding.
     if (fullParagraphToCheck.rangeLength() <= kChunkSize) {
-        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingProcessBatch, paragraphRange, paragraphRange, 0);
+        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingProcessBatch, paragraphRange, 0);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
         return;
@@ -400,7 +400,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(const TextCheckingPa
         EphemeralRange chunkRange = checkRangeIterator.calculateCharacterSubrange(0, kChunkSize);
         EphemeralRange checkRange = requestNum ? expandEndToSentenceBoundary(chunkRange) : expandRangeToSentenceBoundary(chunkRange);
 
-        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingProcessBatch, checkRange, paragraphRange, requestNum);
+        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingProcessBatch, checkRange, requestNum);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
 
@@ -430,7 +430,7 @@ void SpellChecker::markAndReplaceFor(SpellCheckRequest* request, const Vector<Te
         return;
     }
 
-    TextCheckingParagraph paragraph(request->checkingRange(), request->paragraphRange());
+    TextCheckingParagraph paragraph(request->checkingRange(), request->checkingRange());
 
     // Expand the range to encompass entire paragraphs, since text checking needs that much context.
     int selectionOffset = 0;
@@ -775,7 +775,7 @@ void SpellChecker::cancelCheck()
 void SpellChecker::requestTextChecking(const Element& element)
 {
     const EphemeralRange rangeToCheck = EphemeralRange::rangeOfContents(element);
-    m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
+    m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingProcessBatch, rangeToCheck));
 }
 
 DEFINE_TRACE(SpellChecker)

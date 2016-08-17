@@ -38,7 +38,6 @@ namespace blink {
 
 SpellCheckRequest::SpellCheckRequest(
     Range* checkingRange,
-    Range* paragraphRange,
     const String& text,
     TextCheckingProcessType processType,
     const Vector<uint32_t>& documentMarkersInRange,
@@ -46,15 +45,12 @@ SpellCheckRequest::SpellCheckRequest(
     int requestNumber)
     : m_requester(nullptr)
     , m_checkingRange(checkingRange)
-    , m_paragraphRange(paragraphRange)
     , m_rootEditableElement(blink::rootEditableElement(*m_checkingRange->startContainer()))
     , m_requestData(unrequestedTextCheckingSequence, text, processType, documentMarkersInRange, documentMarkerOffsets)
     , m_requestNumber(requestNumber)
 {
     DCHECK(m_checkingRange);
     DCHECK(m_checkingRange->isConnected());
-    DCHECK(m_paragraphRange);
-    DCHECK(m_paragraphRange->isConnected());
     DCHECK(m_rootEditableElement);
 }
 
@@ -66,7 +62,6 @@ DEFINE_TRACE(SpellCheckRequest)
 {
     visitor->trace(m_requester);
     visitor->trace(m_checkingRange);
-    visitor->trace(m_paragraphRange);
     visitor->trace(m_rootEditableElement);
     TextCheckingRequest::trace(visitor);
 }
@@ -75,12 +70,10 @@ void SpellCheckRequest::dispose()
 {
     if (m_checkingRange)
         m_checkingRange->dispose();
-    if (m_paragraphRange && m_paragraphRange != m_checkingRange)
-        m_paragraphRange->dispose();
 }
 
 // static
-SpellCheckRequest* SpellCheckRequest::create(TextCheckingProcessType processType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber)
+SpellCheckRequest* SpellCheckRequest::create(TextCheckingProcessType processType, const EphemeralRange& checkingRange, int requestNumber)
 {
     if (checkingRange.isNull())
         return nullptr;
@@ -92,12 +85,6 @@ SpellCheckRequest* SpellCheckRequest::create(TextCheckingProcessType processType
         return nullptr;
 
     Range* checkingRangeObject = createRange(checkingRange);
-    Range* paragraphRangeObject = nullptr;
-    // Share identical Range objects.
-    if (checkingRange == paragraphRange)
-        paragraphRangeObject = checkingRangeObject;
-    else
-        paragraphRangeObject = createRange(paragraphRange);
 
     const DocumentMarkerVector& markers = checkingRangeObject->ownerDocument().markers().markersInRange(checkingRange, DocumentMarker::SpellCheckClientMarkers());
     Vector<uint32_t> hashes(markers.size());
@@ -107,7 +94,7 @@ SpellCheckRequest* SpellCheckRequest::create(TextCheckingProcessType processType
         offsets[i] = markers[i]->startOffset();
     }
 
-    return new SpellCheckRequest(checkingRangeObject, paragraphRangeObject, text, processType, hashes, offsets, requestNumber);
+    return new SpellCheckRequest(checkingRangeObject, text, processType, hashes, offsets, requestNumber);
 }
 
 const TextCheckingRequestData& SpellCheckRequest::data() const
@@ -117,7 +104,7 @@ const TextCheckingRequestData& SpellCheckRequest::data() const
 
 bool SpellCheckRequest::isValid() const
 {
-    return m_checkingRange->isConnected() && m_paragraphRange->isConnected() && m_rootEditableElement->isConnected();
+    return m_checkingRange->isConnected() && m_rootEditableElement->isConnected();
 }
 
 void SpellCheckRequest::didSucceed(const Vector<TextCheckingResult>& results)
@@ -184,7 +171,7 @@ static bool canCheckAsynchronously(const Range* range)
 
 void SpellCheckRequester::requestCheckingFor(SpellCheckRequest* request)
 {
-    if (!request || !canCheckAsynchronously(request->paragraphRange()))
+    if (!request || !canCheckAsynchronously(request->checkingRange()))
         return;
 
     DCHECK_EQ(request->data().sequence(), unrequestedTextCheckingSequence);
