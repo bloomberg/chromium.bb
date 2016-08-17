@@ -46,8 +46,7 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 
-# Significant Slimming Paint failure.
-crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
+crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ NeedsRebaseline ]
 
 crbug.com/463358 [ Mac Linux ] fast/transforms/transformed-caret.html [ Pass Failure ]
 crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass Failure ]
