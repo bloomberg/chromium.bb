@@ -14,19 +14,26 @@
 namespace blink {
 namespace {
 
-template <typename PaintPropertyTreeNode>
+template <typename PropertyTreeNode>
 class PropertyTreePrinterTraits;
 
 template <typename PropertyTreeNode>
 class PropertyTreePrinter {
 public:
-    PropertyTreePrinter(const FrameView& frameView)
+    void showTree(const FrameView& frameView)
     {
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            LOG(ERROR) << "This is for slimmingPaintV2 only";
+            return;
+        }
         collectPropertyNodes(frameView);
+        showAllPropertyNodes(nullptr);
     }
 
-    void show()
+    void showPath(const PropertyTreeNode* node)
     {
+        for (const PropertyTreeNode* n = node; n; n = n->parent())
+            addPropertyNode(n, "");
         showAllPropertyNodes(nullptr);
     }
 
@@ -183,25 +190,36 @@ public:
 };
 
 } // anonymous namespace
-
-void showTransformPropertyTree(const FrameView& rootFrame)
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    PropertyTreePrinter<TransformPaintPropertyNode>(rootFrame).show();
-}
-
-void showClipPropertyTree(const FrameView& rootFrame)
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    PropertyTreePrinter<ClipPaintPropertyNode>(rootFrame).show();
-}
-
-void showEffectPropertyTree(const FrameView& rootFrame)
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    PropertyTreePrinter<EffectPaintPropertyNode>(rootFrame).show();
-}
-
 } // namespace blink
+
+void showTransformPropertyTree(const blink::FrameView& rootFrame)
+{
+    blink::PropertyTreePrinter<blink::TransformPaintPropertyNode>().showTree(rootFrame);
+}
+
+void showClipPropertyTree(const blink::FrameView& rootFrame)
+{
+    blink::PropertyTreePrinter<blink::ClipPaintPropertyNode>().showTree(rootFrame);
+}
+
+void showEffectPropertyTree(const blink::FrameView& rootFrame)
+{
+    blink::PropertyTreePrinter<blink::EffectPaintPropertyNode>().showTree(rootFrame);
+}
+
+void showPaintPropertyPath(const blink::TransformPaintPropertyNode* node)
+{
+    blink::PropertyTreePrinter<blink::TransformPaintPropertyNode>().showPath(node);
+}
+
+void showPaintPropertyPath(const blink::ClipPaintPropertyNode* node)
+{
+    blink::PropertyTreePrinter<blink::ClipPaintPropertyNode>().showPath(node);
+}
+
+void showPaintPropertyPath(const blink::EffectPaintPropertyNode* node)
+{
+    blink::PropertyTreePrinter<blink::EffectPaintPropertyNode>().showPath(node);
+}
 
 #endif

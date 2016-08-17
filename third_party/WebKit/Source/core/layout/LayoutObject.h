@@ -2153,7 +2153,7 @@ inline double adjustScrollForAbsoluteZoom(double value, LayoutObject& layoutObje
 } // namespace blink
 
 #ifndef NDEBUG
-// Outside the WebCore namespace for ease of invocation from gdb.
+// Outside the blink namespace for ease of invocation from gdb.
 void showTree(const blink::LayoutObject*);
 void showLineTree(const blink::LayoutObject*);
 void showLayoutTree(const blink::LayoutObject* object1);
