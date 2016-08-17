@@ -154,6 +154,13 @@ NavigationID::NavigationID()
       render_frame_id(-1) {
 }
 
+NavigationID::NavigationID(int render_process_id,
+                           int render_frame_id,
+                           const GURL& main_frame_url)
+    : render_process_id(render_process_id),
+      render_frame_id(render_frame_id),
+      main_frame_url(main_frame_url) {}
+
 NavigationID::NavigationID(const NavigationID& other)
     : render_process_id(other.render_process_id),
       render_frame_id(other.render_frame_id),

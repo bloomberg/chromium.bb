@@ -23,8 +23,8 @@ namespace {
 enum RequestStats {
   REQUEST_STATS_TOTAL_RESPONSES = 0,
   REQUEST_STATS_TOTAL_PROCESSED_RESPONSES = 1,
-  REQUEST_STATS_NO_RESOURCE_REQUEST_INFO = 2,
-  REQUEST_STATS_NO_RENDER_FRAME_ID_FROM_REQUEST_INFO = 3,
+  REQUEST_STATS_NO_RESOURCE_REQUEST_INFO = 2,  // Not recorded (never was).
+  REQUEST_STATS_NO_RENDER_FRAME_ID_FROM_REQUEST_INFO = 3,  // Not recorded.
   REQUEST_STATS_MAX = 4,
 };
 
@@ -49,42 +49,6 @@ void ReportMainFrameRequestStats(MainFrameRequestStats stat) {
   UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.MainFrameRequestStats",
                             stat,
                             MAIN_FRAME_REQUEST_STATS_MAX);
-}
-
-bool SummarizeResponse(net::URLRequest* request,
-                       ResourcePrefetchPredictor::URLRequestSummary* summary) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!info) {
-    ReportRequestStats(REQUEST_STATS_NO_RESOURCE_REQUEST_INFO);
-    return false;
-  }
-
-  int render_process_id, render_frame_id;
-  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id)) {
-    ReportRequestStats(REQUEST_STATS_NO_RENDER_FRAME_ID_FROM_REQUEST_INFO);
-    return false;
-  }
-
-  summary->navigation_id.render_process_id = render_process_id;
-  summary->navigation_id.render_frame_id = render_frame_id;
-  summary->navigation_id.main_frame_url = request->first_party_for_cookies();
-  summary->navigation_id.creation_time = request->creation_time();
-  summary->resource_url = request->original_url();
-  summary->resource_type = info->GetResourceType();
-  summary->priority = request->priority();
-  request->GetMimeType(&summary->mime_type);
-  summary->was_cached = request->was_cached();
-
-  // Use the mime_type to determine the resource type for subresources since
-  // types such as PREFETCH, SUB_RESOURCE, etc are not useful.
-  if (summary->resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
-    summary->resource_type =
-        ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
-            summary->mime_type,
-            summary->resource_type);
-  }
-  return true;
 }
 
 }  // namespace
@@ -150,8 +114,10 @@ void ResourcePrefetchPredictorObserver::OnRequestRedirected(
     return;
 
   ResourcePrefetchPredictor::URLRequestSummary summary;
-  if (!SummarizeResponse(request, &summary))
+  if (!ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
+          *request, &summary)) {
     return;
+  }
 
   summary.redirect_url = redirect_url;
 
@@ -184,8 +150,10 @@ void ResourcePrefetchPredictorObserver::OnResponseStarted(
   if (!ResourcePrefetchPredictor::ShouldRecordResponse(request))
     return;
   ResourcePrefetchPredictor::URLRequestSummary summary;
-  if (!SummarizeResponse(request, &summary))
+  if (!ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
+          *request, &summary)) {
     return;
+  }
 
   BrowserThread::PostTask(
       BrowserThread::UI,

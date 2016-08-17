@@ -189,10 +189,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
   requests->push_back(new ResourcePrefetcher::Request(GURL(
       "http://yahoo.com/resource5.png")));
 
-  NavigationID navigation_id;
-  navigation_id.render_process_id = 1;
-  navigation_id.render_frame_id = 2;
-  navigation_id.main_frame_url = GURL("http://www.google.com");
+  NavigationID navigation_id(1, 2, GURL("http://www.google.com"));
 
   // Needed later for comparison.
   ResourcePrefetcher::RequestVector* requests_ptr = requests.get();
@@ -310,10 +307,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
   requests->push_back(new ResourcePrefetcher::Request(GURL(
       "http://m.google.com/resource1.jpg")));
 
-  NavigationID navigation_id;
-  navigation_id.render_process_id = 1;
-  navigation_id.render_frame_id = 2;
-  navigation_id.main_frame_url = GURL("http://www.google.com");
+  NavigationID navigation_id(1, 2, GURL("http://www.google.com"));
 
   // Needed later for comparison.
   ResourcePrefetcher::RequestVector* requests_ptr = requests.get();

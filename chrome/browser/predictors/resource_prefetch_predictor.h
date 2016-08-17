@@ -89,6 +89,11 @@ class ResourcePrefetchPredictor
     std::string mime_type;
     bool was_cached;
     GURL redirect_url;  // Empty unless request was redirected to a valid url.
+
+    // Initializes a |URLRequestSummary| from a |URLRequest| response.
+    // Returns true for success.
+    static bool SummarizeResponse(const net::URLRequest& request,
+                                  URLRequestSummary* summary);
   };
 
   ResourcePrefetchPredictor(const ResourcePrefetchPredictorConfig& config,

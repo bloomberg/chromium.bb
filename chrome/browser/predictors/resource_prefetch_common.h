@@ -34,9 +34,10 @@ enum PrefetchKeyType {
 
 // Represents a single navigation for a render frame.
 struct NavigationID {
-  // TODO(shishir): Maybe take process_id, frame_id and url as input in
-  // constructor.
   NavigationID();
+  NavigationID(int render_process_id,
+               int render_frame_id,
+               const GURL& main_frame_url);
   NavigationID(const NavigationID& other);
   explicit NavigationID(content::WebContents* web_contents);
   bool operator<(const NavigationID& rhs) const;

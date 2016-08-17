@@ -96,10 +96,8 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   NavigationID CreateNavigationID(int process_id,
                                   int render_frame_id,
                                   const std::string& main_frame_url) {
-    NavigationID navigation_id;
-    navigation_id.render_process_id = process_id;
-    navigation_id.render_frame_id = render_frame_id;
-    navigation_id.main_frame_url = GURL(main_frame_url);
+    NavigationID navigation_id(process_id, render_frame_id,
+                               GURL(main_frame_url));
     navigation_id.creation_time = base::TimeTicks::Now();
     return navigation_id;
   }

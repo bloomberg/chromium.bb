@@ -363,6 +363,30 @@ ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary(
 ResourcePrefetchPredictor::URLRequestSummary::~URLRequestSummary() {
 }
 
+// static
+bool ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
+    const net::URLRequest& request,
+    URLRequestSummary* summary) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(&request);
+  if (!info)
+    return false;
+
+  int render_process_id, render_frame_id;
+  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id))
+    return false;
+
+  summary->navigation_id = NavigationID(render_process_id, render_frame_id,
+                                        request.first_party_for_cookies());
+  summary->navigation_id.creation_time = request.creation_time();
+  summary->resource_url = request.original_url();
+  summary->resource_type = info->GetResourceType();
+  summary->priority = request.priority();
+  request.GetMimeType(&summary->mime_type);
+  summary->was_cached = request.was_cached();
+  return true;
+}
+
 ResourcePrefetchPredictor::Result::Result(
     PrefetchKeyType i_key_type,
     ResourcePrefetcher::RequestVector* i_requests)
