@@ -100,7 +100,7 @@ class PermissionReporterBrowserTest : public InProcessBrowserTest {
 
 // Test that permission action report will be sent if the user is opted into it.
 IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
-                       PermissionActionReporting) {
+                       DISABLED_PermissionActionReporting) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
