@@ -392,6 +392,8 @@ void WindowSelector::Shutdown() {
     remaining_items += window_grid->size();
   }
 
+  // Setting focus after restoring windows' state avoids unnecessary animations.
+  ResetFocusRestoreWindow(true);
   RemoveAllObservers();
 
   std::vector<WmWindow*> root_windows = WmShell::Get()->GetAllRootWindows();
@@ -403,12 +405,6 @@ void WindowSelector::Shutdown() {
 
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_)
     window_grid->Shutdown();
-
-  // Setting focus last so that:
-  // 1) DockeWindowLayoutManager uses the restored state to re-layout upon
-  // activation.
-  // 2) Any bounds change due to activation should not result in reposition.
-  ResetFocusRestoreWindow(true);
 
   DCHECK(num_items_ >= remaining_items);
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.OverviewClosedItems",
