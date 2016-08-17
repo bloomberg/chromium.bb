@@ -284,13 +284,6 @@ void ChromeMetricsServiceClient::SetMetricsClientId(
   crash_keys::SetMetricsClientIdFromGUID(client_id);
 }
 
-void ChromeMetricsServiceClient::OnRecordingDisabled() {
-  // If we're shutting down, don't drop the metrics_client_id, so that late
-  // crashes won't lose it.
-  if (!g_browser_process->IsShuttingDown())
-    crash_keys::ClearMetricsClientId();
-}
-
 bool ChromeMetricsServiceClient::IsOffTheRecordSessionActive() {
   return chrome::IsIncognitoSessionActive();
 }

@@ -31,9 +31,6 @@ void TestMetricsServiceClient::SetMetricsClientId(
   client_id_ = client_id;
 }
 
-void TestMetricsServiceClient::OnRecordingDisabled() {
-}
-
 bool TestMetricsServiceClient::IsOffTheRecordSessionActive() {
   return false;
 }

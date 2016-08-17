@@ -159,12 +159,10 @@ metrics::MetricsService* AwMetricsServiceClient::GetMetricsService() {
 
 // In Chrome, UMA and Breakpad are enabled/disabled together by the same
 // checkbox and they share the same client ID (a.k.a. GUID). SetMetricsClientId
-// and OnRecordingDisabled are intended to provide the ID to Breakpad. In
-// WebView, UMA and Breakpad are independent, so these are no-ops.
+// is intended to provide the ID to Breakpad. In WebView, UMA and Breakpad are
+// independent, so this is a no-op.
 
 void AwMetricsServiceClient::SetMetricsClientId(const std::string& client_id) {}
-
-void AwMetricsServiceClient::OnRecordingDisabled() {}
 
 bool AwMetricsServiceClient::IsOffTheRecordSessionActive() {
   // WebView has no incognito mode.

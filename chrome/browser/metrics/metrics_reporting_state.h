@@ -26,6 +26,11 @@ void ChangeMetricsReportingStateWithReply(
     bool enabled,
     const OnMetricsReportingCallbackType& callback_fn);
 
+// Update metrics prefs on a permission (opt-in/out) change. When opting out,
+// this clears various client ids. When opting in, this resets saving crash
+// prefs, so as not to trigger upload of various stale data.
+void UpdateMetricsPrefsOnPermissionChange(bool metrics_enabled);
+
 // Returns whether MetricsReporting can be modified by the user (except
 // Android).
 bool IsMetricsReportingPolicyManaged();

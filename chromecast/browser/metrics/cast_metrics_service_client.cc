@@ -116,9 +116,6 @@ void CastMetricsServiceClient::SetMetricsClientId(
 #endif
 }
 
-void CastMetricsServiceClient::OnRecordingDisabled() {
-}
-
 void CastMetricsServiceClient::StoreClientInfo(
     const ::metrics::ClientInfo& client_info) {
   const std::string& client_id = client_info.client_id;

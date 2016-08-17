@@ -102,10 +102,6 @@ void IOSChromeMetricsServiceClient::SetMetricsClientId(
   crash_keys::SetMetricsClientIdFromGUID(client_id);
 }
 
-void IOSChromeMetricsServiceClient::OnRecordingDisabled() {
-  crash_keys::ClearMetricsClientId();
-}
-
 bool IOSChromeMetricsServiceClient::IsOffTheRecordSessionActive() {
   return ::IsOffTheRecordSessionActive();
 }

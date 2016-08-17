@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -60,33 +61,15 @@ bool SetGoogleUpdateSettings(bool enabled) {
 void SetMetricsReporting(bool to_update_pref,
                          const OnMetricsReportingCallbackType& callback_fn,
                          bool updated_pref) {
-  metrics::MetricsService* metrics = g_browser_process->metrics_service();
-
 #if !defined(OS_ANDROID)
   g_browser_process->local_state()->SetBoolean(
       metrics::prefs::kMetricsReportingEnabled, updated_pref);
 #endif  // !defined(OS_ANDROID)
 
-  // Clear the client id pref when opting out. Note: Mirrors code in
-  // uma_session_stats.cc. TODO(asvitkine): Unify.
-  if (!updated_pref) {
-    // Note: Clearing client id will not affect the running state (e.g. field
-    // trial randomization), as the pref is only read on startup.
-    g_browser_process->local_state()->ClearPref(
-        metrics::prefs::kMetricsClientID);
-    g_browser_process->local_state()->ClearPref(
-        metrics::prefs::kMetricsReportingEnabledTimestamp);
-  }
+  UpdateMetricsPrefsOnPermissionChange(updated_pref);
 
   // Uses the current state of whether reporting is enabled to enable services.
   g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
-
-  // When a user opts in to the metrics reporting service, the previously
-  // collected data should be cleared to ensure that nothing is reported before
-  // a user opts in and all reported data is accurate.
-  // TODO(asvitkine): This logic should be added to uma_session_stats.cc too.
-  if (updated_pref && metrics)
-    metrics->ClearSavedStabilityMetrics();
 
   if (to_update_pref == updated_pref) {
     RecordMetricsReportingHistogramValue(updated_pref ?
@@ -136,6 +119,24 @@ void ChangeMetricsReportingStateWithReply(
       FROM_HERE,
       base::Bind(&SetGoogleUpdateSettings, enabled),
       base::Bind(&SetMetricsReporting, enabled, callback_fn));
+}
+
+void UpdateMetricsPrefsOnPermissionChange(bool metrics_enabled) {
+  if (metrics_enabled) {
+    // When a user opts in to the metrics reporting service, the previously
+    // collected data should be cleared to ensure that nothing is reported
+    // before a user opts in and all reported data is accurate.
+    g_browser_process->metrics_service()->ClearSavedStabilityMetrics();
+  } else {
+    // Clear the client id pref when opting out.
+    // Note: Clearing client id will not affect the running state (e.g. field
+    // trial randomization), as the pref is only read on startup.
+    g_browser_process->local_state()->ClearPref(
+        metrics::prefs::kMetricsClientID);
+    g_browser_process->local_state()->ClearPref(
+        metrics::prefs::kMetricsReportingEnabledTimestamp);
+    crash_keys::ClearMetricsClientId();
+  }
 }
 
 bool IsMetricsReportingPolicyManaged() {

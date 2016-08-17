@@ -90,12 +90,9 @@ metrics::MetricsService* BlimpMetricsServiceClient::GetMetricsService() {
 
 // In Chrome, UMA and Breakpad are enabled/disabled together by the same
 // checkbox and they share the same client ID (a.k.a. GUID).
-// This is not required by Blimp, so these are no-ops.
+// This is not required by Blimp, so this is a no-op.
 void BlimpMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {}
-
-// Recording can not be disabled in Blimp, so this function is a no-op.
-void BlimpMetricsServiceClient::OnRecordingDisabled() {}
 
 bool BlimpMetricsServiceClient::IsOffTheRecordSessionActive() {
   // Blimp does not have incognito mode.
