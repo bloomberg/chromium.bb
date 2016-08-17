@@ -270,6 +270,11 @@ void WebRuntimeFeatures::enableOverlayScrollbars(bool enable)
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableHideScrollbars(bool enable)
+{
+    RuntimeEnabledFeatures::setHideScrollbarsEnabled(enable);
+}
+
 void WebRuntimeFeatures::forceOverlayFullscreenVideo(bool enable)
 {
     RuntimeEnabledFeatures::setForceOverlayFullscreenVideoEnabled(enable);

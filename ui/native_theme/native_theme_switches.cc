@@ -13,7 +13,8 @@ const char kEnableOverlayScrollbar[] = "enable-overlay-scrollbar";
 // Disables overlay scrollbars on Aura or Linux. Does nothing on Mac.
 const char kDisableOverlayScrollbar[] = "disable-overlay-scrollbar";
 
-// Hides scrollbars on Aura, Linux, Android, ChromeOS. Does nothing on Mac.
+// Hides scrollbars on Aura, Linux, Android, ChromeOS, MacOS (MacOS
+// support is experimental).
 const char kHideScrollbars[] = "hide-scrollbars";
 
 }  // namespace switches

@@ -150,6 +150,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (ui::IsOverlayScrollbarEnabled())
     WebRuntimeFeatures::enableOverlayScrollbars(true);
+  if (ui::ShouldHideScrollbars())
+    WebRuntimeFeatures::enableHideScrollbars(true);
 
   if (command_line.HasSwitch(switches::kEnablePreciseMemoryInfo))
     WebRuntimeFeatures::enablePreciseMemoryInfo(true);

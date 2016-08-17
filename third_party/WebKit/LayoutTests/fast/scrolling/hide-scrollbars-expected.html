@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+}
+.container {
+    width: 100px;
+    height: 100px;
+    background-color: lime;
+    position: relative;
+}
+</style>
+<script>
+</script>
+</head>
+<body>
+<p>You should see 4 green boxes that do not show scrollbars.
+The first two boxes would show overlay scrollbars if they weren't
+hidden (second one with a scrollbar on the left).</p>
+
+<div class="container"></div>
+<div dir="rtl" class="container"></div>
+
+<div class="container"></div>
+<div dir="rtl" class="container"></div>
+</body>
+</html>
