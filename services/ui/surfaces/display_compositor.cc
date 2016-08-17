@@ -72,6 +72,7 @@ DisplayCompositor::DisplayCompositor(
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));
   display_->Initialize(this, surfaces_state_->manager(),
                        allocator_.client_id());
+  display_->SetVisible(true);
 }
 
 DisplayCompositor::~DisplayCompositor() {
