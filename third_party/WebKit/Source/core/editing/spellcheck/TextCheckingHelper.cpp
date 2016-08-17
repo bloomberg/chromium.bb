@@ -26,19 +26,10 @@
 
 #include "core/editing/spellcheck/TextCheckingHelper.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/Range.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/CharacterIterator.h"
-#include "core/editing/iterators/WordAwareIterator.h"
-#include "core/editing/markers/DocumentMarkerController.h"
-#include "core/editing/spellcheck/SpellChecker.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/page/SpellCheckerClient.h"
-#include "platform/text/TextBreakIterator.h"
-#include "platform/text/TextCheckerClient.h"
 
 namespace blink {
 

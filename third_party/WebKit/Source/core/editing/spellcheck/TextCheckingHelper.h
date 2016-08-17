@@ -23,17 +23,11 @@
 
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
-#include "platform/heap/Handle.h"
-#include "platform/text/TextChecking.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class LocalFrame;
 class Range;
-class SpellCheckerClient;
-class TextCheckerClient;
-struct TextCheckingResult;
 
 class TextCheckingParagraph {
     STACK_ALLOCATED();
