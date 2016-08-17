@@ -68,16 +68,13 @@ public final class FirstRunSignInProcessor {
             return;
         }
 
-        // Skip sign in if Chrome is neither started via Chrome icon nor GSA (Google Search App).
-        if (!TextUtils.equals(activity.getIntent().getAction(), Intent.ACTION_MAIN)
-                && IntentHandler.determineExternalIntentSource(
-                           activity.getPackageName(), activity.getIntent())
-                        != ExternalAppId.GSA) {
-            return;
-        }
-
-        // Otherwise, force trigger the FRE.
-        if (!firstRunFlowComplete) {
+        // Otherwise, force trigger the FRE if Chrome is started via Chrome icon or via intent from
+        // GSA.
+        if (!firstRunFlowComplete
+                && (TextUtils.equals(activity.getIntent().getAction(), Intent.ACTION_MAIN)
+                           || IntentHandler.determineExternalIntentSource(
+                                      activity.getPackageName(), activity.getIntent())
+                                   == ExternalAppId.GSA)) {
             requestToFireIntentAndFinish(activity);
             return;
         }

@@ -16,8 +16,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
@@ -221,10 +219,11 @@ public abstract class FirstRunFlowSequencer  {
      * Checks if the First Run needs to be launched.
      * @return The intent to launch the First Run Experience if necessary, or null.
      * @param context The context.
-     * @param fromIntent The intent that was used to launch Chrome. It contains the information of
-     * the client to launch different types of the First Run Experience.
+     * @param fromIntent The intent that was used to launch Chrome.
+     * @param forLightweightFre Whether this is a check for the Lightweight First Run Experience.
      */
-    public static Intent checkIfFirstRunIsNecessary(Context context, Intent fromIntent) {
+    public static Intent checkIfFirstRunIsNecessary(
+            Context context, Intent fromIntent, boolean forLightweightFre) {
         // If FRE is disabled (e.g. in tests), proceed directly to the intent handling.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
                 || ApiCompatibilityUtils.isDemoUser(context)) {
@@ -240,19 +239,13 @@ public abstract class FirstRunFlowSequencer  {
 
         final boolean baseFreComplete = FirstRunStatus.getFirstRunFlowComplete(context);
         if (!baseFreComplete) {
-            // Show full First Run Experience if Chrome is opened via Chrome icon or GSA (Google
-            // Search App).
-            if (fromChromeIcon
-                    || (fromIntent != null
-                        && IntentHandler.determineExternalIntentSource(
-                            context.getPackageName(), fromIntent) == ExternalAppId.GSA)) {
+            if (forLightweightFre) {
+                if (!FirstRunStatus.shouldSkipWelcomePage(context)
+                        && !FirstRunStatus.getLightweightFirstRunFlowComplete(context)) {
+                    return createLightweightFirstRunIntent(context, fromChromeIcon);
+                }
+            } else {
                 return createGenericFirstRunIntent(context, fromChromeIcon);
-            }
-
-            // Show lightweight First Run Experience if the user has not accepted the ToS.
-            if (!FirstRunStatus.shouldSkipWelcomePage(context)
-                    && !FirstRunStatus.getLightweightFirstRunFlowComplete(context)) {
-                return createLightweightFirstRunIntent(context, fromChromeIcon);
             }
         }
 

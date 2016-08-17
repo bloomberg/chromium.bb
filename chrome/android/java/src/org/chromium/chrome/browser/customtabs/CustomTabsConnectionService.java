@@ -11,6 +11,8 @@ import android.os.IBinder;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 
 import java.util.List;
@@ -74,8 +76,13 @@ public class CustomTabsConnectionService extends CustomTabsService {
 
     private boolean isFirstRunDone() {
         if (mBindIntent == null) return true;
-        boolean firstRunNecessary = FirstRunFlowSequencer
-                .checkIfFirstRunIsNecessary(getApplicationContext(), mBindIntent) != null;
+        boolean showLightweightFre =
+                IntentHandler.determineExternalIntentSource(this.getPackageName(), mBindIntent)
+                != ExternalAppId.GSA;
+        boolean firstRunNecessary =
+                FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
+                        getApplicationContext(), mBindIntent, showLightweightFre)
+                != null;
         if (!firstRunNecessary) {
             mBindIntent = null;
             return true;
