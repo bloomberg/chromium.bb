@@ -38,7 +38,7 @@ This can be a single output file, to preserve symbol space; or multiple output
 files, to reduce maximum compilation unit size and allow parallel compilation.
 
 Usage:
-aggregate_generated_bindings.py COMPONENT_DIR IDL_FILES_LIST -- OUTPUT_FILE1 OUTPUT_FILE2 ...
+aggregate_generated_bindings.py --component-directory COMPONENT_DIR --input-file IDL_FILES_LIST OUTPUT_FILE1 OUTPUT_FILE2 ...
 
 COMPONENT_DIR is the relative directory of a component, e.g., 'core', 'modules'.
 IDL_FILES_LIST is a text file containing the IDL file paths, so the command
@@ -49,6 +49,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """
 
 import errno
+import optparse
 import os
 import re
 import sys
@@ -141,13 +142,26 @@ def write_content(content, output_file_name):
         f.write(content)
 
 
-def main(args):
-    if len(args) <= 4:
-        raise Exception('Expected at least 5 arguments.')
-    component_dir = args[1]
-    input_file_name = args[2]
-    in_out_break_index = args.index('--')
-    output_file_names = args[in_out_break_index + 1:]
+def parse_options():
+    parser = optparse.OptionParser()
+    parser.add_option('--component-directory')
+    parser.add_option('--input-file',
+                      help='A file name which lists up target IDL file names.',
+                      type='string')
+
+    options, output_file_names = parser.parse_args()
+    if len(output_file_names) == 0:
+        raise Exception('Expected at least one output file name(s).')
+    if not options.input_file:
+        raise Exception('No input file is specified.')
+
+    return options, output_file_names
+
+
+def main():
+    options, output_file_names = parse_options()
+    component_dir = options.component_directory
+    input_file_name = options.input_file
 
     idl_file_names = read_idl_files_list_from_file(input_file_name,
                                                    is_gyp_format=True)
@@ -170,4 +184,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+    sys.exit(main())

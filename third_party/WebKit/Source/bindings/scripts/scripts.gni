@@ -261,9 +261,10 @@ template("aggregate_generated_bindings") {
     outputs = invoker.outputs
 
     args = [
+      "--component-directory",
       invoker.component_dir,
+      "--input-file",
       rebase_path(idl_files_list, root_build_dir),
-      "--",
     ]
     args += rebase_path(invoker.outputs, root_build_dir)
   }

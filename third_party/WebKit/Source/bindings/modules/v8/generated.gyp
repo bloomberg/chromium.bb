@@ -103,9 +103,10 @@
       'action': [
         'python',
         '<(bindings_scripts_dir)/aggregate_generated_bindings.py',
+        '--component-directory',
         'modules',
+        '--input-file',
         '<(modules_idl_files_list)',
-        '--',
         '<@(bindings_modules_v8_generated_aggregate_files)',
       ],
       'message': 'Generating aggregate generated modules V8 bindings files',

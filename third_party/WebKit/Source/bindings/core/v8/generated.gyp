@@ -114,9 +114,10 @@
       'action': [
         'python',
         '<(bindings_scripts_dir)/aggregate_generated_bindings.py',
+        '--component-directory',
         'core',
+        '--input-file',
         '<(core_idl_files_list)',
-        '--',
         '<@(bindings_core_v8_generated_aggregate_files)',
       ],
       'message': 'Generating aggregate generated core V8 bindings files',
