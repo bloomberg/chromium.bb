@@ -54,10 +54,11 @@ def main(argv):
   parser.add_argument('-p', '--port', type=int, default=8080,
                       help='port to run on (default = %(default)s)')
   args = parser.parse_args(argv)
+  server_name = 'localhost'
 
-  s = BaseHTTPServer.HTTPServer(('', args.port), Handler)
+  s = BaseHTTPServer.HTTPServer((server_name, args.port), Handler)
   try:
-    print("Listening on http://localhost:%d/" % args.port)
+    print('Listening on http://{}:{}/'.format(server_name, args.port))
     s.serve_forever()
     return 0
   except KeyboardInterrupt:
