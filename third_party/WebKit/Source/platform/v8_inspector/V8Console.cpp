@@ -659,6 +659,8 @@ v8::Local<v8::Object> V8Console::createConsole(InspectedContext* inspectedContex
     v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
     v8::Local<v8::Object> console = v8::Object::New(isolate);
+    bool success = console->SetPrototype(context, v8::Object::New(isolate)).FromMaybe(false);
+    DCHECK(success);
 
     createBoundFunctionProperty(context, console, "debug", V8Console::debugCallback);
     createBoundFunctionProperty(context, console, "error", V8Console::errorCallback);
@@ -684,9 +686,6 @@ v8::Local<v8::Object> V8Console::createConsole(InspectedContext* inspectedContex
     createBoundFunctionProperty(context, console, "timeEnd", V8Console::timeEndCallback);
     createBoundFunctionProperty(context, console, "timeStamp", V8Console::timeStampCallback);
 
-    bool success = console->SetPrototype(context, v8::Object::New(isolate)).FromMaybe(false);
-    DCHECK(success);
-
     if (hasMemoryAttribute)
         console->SetAccessorProperty(toV8StringInternalized(isolate, "memory"), V8_FUNCTION_NEW_REMOVE_PROTOTYPE(context, V8Console::memoryGetterCallback, console, 0).ToLocalChecked(), V8_FUNCTION_NEW_REMOVE_PROTOTYPE(context, V8Console::memorySetterCallback, v8::Local<v8::Value>(), 0).ToLocalChecked(), static_cast<v8::PropertyAttribute>(v8::None), v8::DEFAULT);
 
@@ -707,6 +706,8 @@ v8::Local<v8::Object> V8Console::createCommandLineAPI(InspectedContext* inspecte
     v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
     v8::Local<v8::Object> commandLineAPI = v8::Object::New(isolate);
+    bool success = commandLineAPI->SetPrototype(context, v8::Null(isolate)).FromMaybe(false);
+    DCHECK(success);
 
     createBoundFunctionProperty(context, commandLineAPI, "dir", V8Console::dirCallback, "function dir(value) { [Command Line API] }");
     createBoundFunctionProperty(context, commandLineAPI, "dirxml", V8Console::dirxmlCallback, "function dirxml(value) { [Command Line API] }");

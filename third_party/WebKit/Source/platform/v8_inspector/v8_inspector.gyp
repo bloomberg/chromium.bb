@@ -294,6 +294,8 @@
         'V8StackTraceImpl.h',
         'V8StringUtil.cpp',
         'V8StringUtil.h',
+        'V8ValueCopier.cpp',
+        'V8ValueCopier.h',
         'public/V8EventListenerInfo.h',
         'public/V8ContextInfo.h',
         'public/V8Inspector.h',

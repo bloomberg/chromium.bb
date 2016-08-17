@@ -42,6 +42,8 @@ v8::Local<v8::Object> V8InjectedScriptHost::create(v8::Local<v8::Context> contex
 {
     v8::Isolate* isolate = inspector->isolate();
     v8::Local<v8::Object> injectedScriptHost = v8::Object::New(isolate);
+    bool success = injectedScriptHost->SetPrototype(context, v8::Null(isolate)).FromMaybe(false);
+    DCHECK(success);
     v8::Local<v8::External> debuggerExternal = v8::External::New(isolate, inspector);
     setFunctionProperty(context, injectedScriptHost, "internalConstructorName", V8InjectedScriptHost::internalConstructorNameCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "formatAccessorsAsProperties", V8InjectedScriptHost::formatAccessorsAsProperties, debuggerExternal);

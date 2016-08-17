@@ -76,7 +76,6 @@ public:
     std::unique_ptr<V8StackTraceImpl> createStackTrace(v8::Local<v8::StackTrace>);
     std::unique_ptr<V8StackTraceImpl> captureStackTrace(bool fullStack);
 
-    v8::MaybeLocal<v8::Value> functionScopes(v8::Local<v8::Function>);
     v8::MaybeLocal<v8::Array> internalProperties(v8::Local<v8::Context>, v8::Local<v8::Value>);
 
     void asyncTaskScheduled(const String16& taskName, void* task, bool recurring);
@@ -102,8 +101,9 @@ private:
     void handleV8AsyncTaskEvent(v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 
     v8::Local<v8::Value> collectionEntries(v8::Local<v8::Context>, v8::Local<v8::Object>);
-    v8::Local<v8::Value> generatorObjectLocation(v8::Local<v8::Object>);
+    v8::Local<v8::Value> generatorObjectLocation(v8::Local<v8::Context>, v8::Local<v8::Object>);
     v8::Local<v8::Value> functionLocation(v8::Local<v8::Context>, v8::Local<v8::Function>);
+    v8::MaybeLocal<v8::Value> functionScopes(v8::Local<v8::Context>, v8::Local<v8::Function>);
 
     v8::Isolate* m_isolate;
     V8InspectorImpl* m_inspector;

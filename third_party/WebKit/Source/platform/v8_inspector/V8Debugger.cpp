@@ -12,6 +12,7 @@
 #include "platform/v8_inspector/V8InternalValueType.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
+#include "platform/v8_inspector/V8ValueCopier.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
 namespace v8_inspector {
@@ -581,7 +582,7 @@ v8::Local<v8::Context> V8Debugger::debuggerContext() const
     return m_debuggerContext.Get(m_isolate);
 }
 
-v8::MaybeLocal<v8::Value> V8Debugger::functionScopes(v8::Local<v8::Function> function)
+v8::MaybeLocal<v8::Value> V8Debugger::functionScopes(v8::Local<v8::Context> context, v8::Local<v8::Function> function)
 {
     if (!enabled()) {
         NOTREACHED();
@@ -589,17 +590,16 @@ v8::MaybeLocal<v8::Value> V8Debugger::functionScopes(v8::Local<v8::Function> fun
     }
     v8::Local<v8::Value> argv[] = { function };
     v8::Local<v8::Value> scopesValue;
-    if (!callDebuggerMethod("getFunctionScopes", 1, argv).ToLocal(&scopesValue) || !scopesValue->IsArray())
+    if (!callDebuggerMethod("getFunctionScopes", 1, argv).ToLocal(&scopesValue))
         return v8::MaybeLocal<v8::Value>();
-    v8::Local<v8::Array> scopes = scopesValue.As<v8::Array>();
-    v8::Local<v8::Context> context = m_debuggerContext.Get(m_isolate);
-    if (!markAsInternal(context, scopes, V8InternalValueType::kScopeList))
+    v8::Local<v8::Value> copied;
+    if (!copyValueFromDebuggerContext(m_isolate, debuggerContext(), context, scopesValue).ToLocal(&copied) || !copied->IsArray())
         return v8::MaybeLocal<v8::Value>();
-    if (!markArrayEntriesAsInternal(context, scopes, V8InternalValueType::kScope))
+    if (!markAsInternal(context, v8::Local<v8::Array>::Cast(copied), V8InternalValueType::kScopeList))
         return v8::MaybeLocal<v8::Value>();
-    if (!scopes->SetPrototype(context, v8::Null(m_isolate)).FromMaybe(false))
-        return v8::Undefined(m_isolate);
-    return scopes;
+    if (!markArrayEntriesAsInternal(context, v8::Local<v8::Array>::Cast(copied), V8InternalValueType::kScope))
+        return v8::MaybeLocal<v8::Value>();
+    return copied;
 }
 
 v8::MaybeLocal<v8::Array> V8Debugger::internalProperties(v8::Local<v8::Context> context, v8::Local<v8::Value> value)
@@ -629,7 +629,7 @@ v8::MaybeLocal<v8::Array> V8Debugger::internalProperties(v8::Local<v8::Context> 
         }
     }
     if (value->IsGeneratorObject()) {
-        v8::Local<v8::Value> location = generatorObjectLocation(v8::Local<v8::Object>::Cast(value));
+        v8::Local<v8::Value> location = generatorObjectLocation(context, v8::Local<v8::Object>::Cast(value));
         if (location->IsObject()) {
             properties->Set(properties->Length(), toV8StringInternalized(m_isolate, "[[GeneratorLocation]]"));
             properties->Set(properties->Length(), location);
@@ -639,7 +639,7 @@ v8::MaybeLocal<v8::Array> V8Debugger::internalProperties(v8::Local<v8::Context> 
         v8::Local<v8::Function> function = value.As<v8::Function>();
         v8::Local<v8::Value> boundFunction = function->GetBoundFunction();
         v8::Local<v8::Value> scopes;
-        if (boundFunction->IsUndefined() && functionScopes(function).ToLocal(&scopes)) {
+        if (boundFunction->IsUndefined() && functionScopes(context, function).ToLocal(&scopes)) {
             properties->Set(properties->Length(), toV8StringInternalized(m_isolate, "[[Scopes]]"));
             properties->Set(properties->Length(), scopes);
         }
@@ -655,17 +655,15 @@ v8::Local<v8::Value> V8Debugger::collectionEntries(v8::Local<v8::Context> contex
     }
     v8::Local<v8::Value> argv[] = { object };
     v8::Local<v8::Value> entriesValue = callDebuggerMethod("getCollectionEntries", 1, argv).ToLocalChecked();
-    if (!entriesValue->IsArray())
+    v8::Local<v8::Value> copied;
+    if (!copyValueFromDebuggerContext(m_isolate, debuggerContext(), context, entriesValue).ToLocal(&copied) || !copied->IsArray())
         return v8::Undefined(m_isolate);
-    v8::Local<v8::Array> entries = entriesValue.As<v8::Array>();
-    if (!markArrayEntriesAsInternal(context, entries, V8InternalValueType::kEntry))
+    if (!markArrayEntriesAsInternal(context, v8::Local<v8::Array>::Cast(copied), V8InternalValueType::kEntry))
         return v8::Undefined(m_isolate);
-    if (!entries->SetPrototype(context, v8::Null(m_isolate)).FromMaybe(false))
-        return v8::Undefined(m_isolate);
-    return entries;
+    return copied;
 }
 
-v8::Local<v8::Value> V8Debugger::generatorObjectLocation(v8::Local<v8::Object> object)
+v8::Local<v8::Value> V8Debugger::generatorObjectLocation(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
 {
     if (!enabled()) {
         NOTREACHED();
@@ -673,12 +671,12 @@ v8::Local<v8::Value> V8Debugger::generatorObjectLocation(v8::Local<v8::Object> o
     }
     v8::Local<v8::Value> argv[] = { object };
     v8::Local<v8::Value> location = callDebuggerMethod("getGeneratorObjectLocation", 1, argv).ToLocalChecked();
-    if (!location->IsObject())
+    v8::Local<v8::Value> copied;
+    if (!copyValueFromDebuggerContext(m_isolate, debuggerContext(), context, location).ToLocal(&copied) || !copied->IsObject())
         return v8::Null(m_isolate);
-    v8::Local<v8::Context> context = m_debuggerContext.Get(m_isolate);
-    if (!markAsInternal(context, v8::Local<v8::Object>::Cast(location), V8InternalValueType::kLocation))
+    if (!markAsInternal(context, v8::Local<v8::Object>::Cast(copied), V8InternalValueType::kLocation))
         return v8::Null(m_isolate);
-    return location;
+    return copied;
 }
 
 v8::Local<v8::Value> V8Debugger::functionLocation(v8::Local<v8::Context> context, v8::Local<v8::Function> function)
@@ -691,6 +689,8 @@ v8::Local<v8::Value> V8Debugger::functionLocation(v8::Local<v8::Context> context
     if (lineNumber == v8::Function::kLineOffsetNotFound || columnNumber == v8::Function::kLineOffsetNotFound)
         return v8::Null(m_isolate);
     v8::Local<v8::Object> location = v8::Object::New(m_isolate);
+    if (!location->SetPrototype(context, v8::Null(m_isolate)).FromMaybe(false))
+        return v8::Null(m_isolate);
     if (!location->Set(context, toV8StringInternalized(m_isolate, "scriptId"), toV8String(m_isolate, String16::fromInteger(scriptId))).FromMaybe(false))
         return v8::Null(m_isolate);
     if (!location->Set(context, toV8StringInternalized(m_isolate, "lineNumber"), v8::Integer::New(m_isolate, lineNumber)).FromMaybe(false))
