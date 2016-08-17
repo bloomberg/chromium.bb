@@ -17,8 +17,6 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
-# crbug.com/619254
-@benchmark.Disabled('reference')
 class _PageCyclerV2(perf_benchmark.PerfBenchmark):
   options = {'pageset_repeat': 2}
 
@@ -37,6 +35,10 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
+    # crbug.com/619254
+    if possible_browser.browser_type == 'reference':
+      return True
+
     # crbug.com/616781
     if (cls.IsSvelte(possible_browser) or
         possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X' or
