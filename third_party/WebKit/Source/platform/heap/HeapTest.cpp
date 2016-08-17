@@ -45,6 +45,7 @@
 #include "wtf/HashTraits.h"
 #include "wtf/LinkedHashSet.h"
 #include "wtf/PtrUtil.h"
+#include <algorithm>
 #include <memory>
 
 namespace blink {
@@ -3851,6 +3852,41 @@ TEST(HeapTest, HeapWeakCollectionTypes)
             EXPECT_EQ(0u, weakOrderedSet->size());
         }
     }
+}
+
+TEST(HeapTest, HeapHashCountedSetToVector)
+{
+    HeapHashCountedSet<Member<IntWrapper>> set;
+    HeapVector<Member<IntWrapper>> vector;
+    set.add(new IntWrapper(1));
+    set.add(new IntWrapper(1));
+    set.add(new IntWrapper(2));
+
+    copyToVector(set, vector);
+    EXPECT_EQ(3u, vector.size());
+
+    Vector<int> intVector;
+    for (const auto& i : vector)
+        intVector.append(i->value());
+    std::sort(intVector.begin(), intVector.end());
+    ASSERT_EQ(3u, intVector.size());
+    EXPECT_EQ(1, intVector[0]);
+    EXPECT_EQ(1, intVector[1]);
+    EXPECT_EQ(2, intVector[2]);
+}
+
+TEST(HeapTest, WeakHeapHashCountedSetToVector)
+{
+    HeapHashCountedSet<WeakMember<IntWrapper>> set;
+    HeapVector<Member<IntWrapper>> vector;
+    set.add(new IntWrapper(1));
+    set.add(new IntWrapper(1));
+    set.add(new IntWrapper(2));
+
+    copyToVector(set, vector);
+    EXPECT_LE(3u, vector.size());
+    for (const auto& i : vector)
+        EXPECT_TRUE(i->value() == 1 || i->value() == 2);
 }
 
 TEST(HeapTest, RefCountedGarbageCollected)

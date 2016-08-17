@@ -603,6 +603,12 @@ template<typename T> struct HashTraits<blink::Persistent<T>> : HandleHashTraits<
 
 template<typename T> struct HashTraits<blink::CrossThreadPersistent<T>> : HandleHashTraits<T, blink::CrossThreadPersistent<T>> { };
 
+template <typename Value, typename HashFunctions, typename Traits, typename VectorType>
+inline void copyToVector(const blink::HeapHashCountedSet<Value, HashFunctions, Traits>& set, VectorType& vector)
+{
+    copyToVector(static_cast<const HashCountedSet<Value, HashFunctions, Traits, blink::HeapAllocator>&>(set), vector);
+}
+
 } // namespace WTF
 
 #endif

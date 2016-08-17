@@ -135,19 +135,17 @@ inline void HashCountedSet<T, U, V, W>::removeAll(iterator it)
     m_impl.remove(it);
 }
 
-template <typename Value, typename HashFunctions, typename Traits, typename Allocator, size_t inlineCapacity, typename VectorAllocator>
-inline void copyToVector(const HashCountedSet<Value, HashFunctions, Traits, Allocator>& collection, Vector<Value, inlineCapacity, VectorAllocator>& vector)
+template <typename Value, typename HashFunctions, typename Traits, typename Allocator, typename VectorType>
+inline void copyToVector(const HashCountedSet<Value, HashFunctions, Traits, Allocator>& collection, VectorType& vector)
 {
-    typedef typename HashCountedSet<Value, HashFunctions, Traits, Allocator>::const_iterator iterator;
-
     {
         // Disallow GC across resize allocation, see crbug.com/568173
-        typename Vector<Value, inlineCapacity, VectorAllocator>::GCForbiddenScope scope;
+        typename VectorType::GCForbiddenScope scope;
         vector.resize(collection.size());
     }
 
-    iterator it = collection.begin();
-    iterator end = collection.end();
+    auto it = collection.begin();
+    auto end = collection.end();
     for (unsigned i = 0; it != end; ++it, ++i)
         vector[i] = (*it).key;
 }
