@@ -1,104 +1,38 @@
 <!DOCTYPE html>
 <html manifest="resources/video.manifest">
-    <head>
-        <title>test media in the app cache</title>
-        <style>
-            video { background-color: yellow; width: 320px; height: 240px; }
-        </style>
-        <script src=/media-resources/media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=/media-resources/video-test.js></script>
-        <script>
-            var test;
+<title>Test that "video" can be loaded from the application cache.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="/media-resources/media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    applicationCache.onupdateready = t.unreached_func();
+    applicationCache.onobsolete = t.unreached_func();
+    applicationCache.onerror = t.unreached_func();
+    applicationCache.oncached = t.step_func(test1);
+    applicationCache.onnoupdate = t.step_func(test1);
 
-            function unexpectedEvent(event)
-            {
-                failTest(false, '<br>Unexpected "' + event.type + '" event!!');
-            }
+    video = document.querySelector("video");
 
-            function errorEvent()
-            {
-                consoleWrite("");
-                switch(test)
-                {
-                    case 1:
-                        failTest(false, "Failed loading file included in manifest!");
-                        break;
-                    case 2:
-                        test3()
-                        break;
-                    case 3:
-                        endTest();
-                        break;
-                }
-            }
+    function test1() {
+        // Setting "src" to file specified in manifest. This file should load.
+        video.ondurationchange = t.step_func(test2);
+        video.onerror = t.unreached_func();
+        video.src = "/media-resources/content/" + findMediaFile("video", "test");
+    }
 
-            function durationchangeEvent()
-            {
-                switch(test)
-                {
-                    case 1:
-                        test2();
-                        break;
-                    case 2:
-                        failTest("<br>Loaded file NOT included in manifest!");
-                        break;
-                    case 3:
-                        failTest("<br>Loaded JavaScript file as media!");
-                        break;
-                }
-            }
+    function test2() {
+        // Setting "src" to valid media file not in manifest. This file should fail to load.
+        video.ondurationchange = t.unreached_func();
+        video.onerror = t.step_func(test3);
+        video.src = "/media-resources/content/" + findMediaFile("audio", "silence");
+    }
 
-            function test3()
-            {
-                consoleWrite("*** Setting 'src' to non-media file that is in manifest. This file should fail to load.<br>");
-
-                test = 3;
-                video = document.getElementsByTagName('video')[0];
-                video.src = "/media-resources/media-file.js";
-            }
-
-            function test2()
-            {
-                consoleWrite("<br>*** Setting 'src' to valid media file not in manifest. This file should fail to load.<br>");
-
-                test = 2;
-                video = document.getElementsByTagName('video')[0];
-                video.src = "/media-resources/content/" + findMediaFile("audio", "silence");
-            }
-
-            function test1()
-            {
-                consoleWrite("*** Setting 'src' to file specified in manifest. This file should load.<br>");
-                test = 1;
-
-                waitForEvent('durationchange', durationchangeEvent);
-                waitForEvent('error', errorEvent);
-
-                video = document.getElementsByTagName('video')[0];
-                video.src = "/media-resources/content/" + findMediaFile("video", "test");
-            }
-
-            function updateready(event)
-            {
-                applicationCache.swapCache();
-                test1();
-            }
-
-            applicationCache.addEventListener("updateready", updateready, false);
-            applicationCache.addEventListener("noupdate", test1, false);
-            applicationCache.addEventListener("cached", test1, false);
-
-            applicationCache.addEventListener("obsolete", unexpectedEvent, false);
-            applicationCache.addEventListener("error", unexpectedEvent, false);
-        </script>
-
-    </head>
-    <body>
-
-        <video controls ></video>
-
-        <p>Test that &lt;video&gt; can be loaded from the application cache.</p>
-    </body>
-</html>
+    function test3() {
+        // Setting "src" to non-media file that is in manifest. This file should fail to load.
+        video.src = "/media-resources/media-file.js";
+        video.onerror = t.step_func_done();
+    }
+});
+</script>
