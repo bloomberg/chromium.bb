@@ -313,6 +313,7 @@
         'swarming_gpu_fyi_tests_chromeos_gn_release_trybot',
       'Linux Debug (NVIDIA)': 'none',
       'Linux Debug (New Intel)': 'none',
+      'Linux Release (AMD R7 240)': 'none',
       'Linux Release (ATI)': 'none',
       'Linux Release (NVIDIA GeForce 730)': 'none',
       'Linux Release (NVIDIA)': 'none',

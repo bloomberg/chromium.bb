@@ -408,6 +408,17 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'linux',
     },
+    'Linux Release (AMD R7 240)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6613',
+        'os': 'Linux'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'linux',
+    },
     'Android Release (Nexus 5)': {
       'swarming_dimensions': {
         # There are no PCI IDs on Android.
