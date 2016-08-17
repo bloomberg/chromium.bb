@@ -11,6 +11,9 @@
 // (chromium/src/components/autofill/core/common/form_data.h) for further
 // processing.
 
+/* Beginning of anonymous object. */
+(function() {
+
 /** @typedef {HTMLInputElement|HTMLTextAreaElement|HTMLSelectElement} */
 var FormControlElement;
 
@@ -2062,3 +2065,5 @@ __gCrWeb.autofill['fillPredictionData'] = function(data) {
     }
   }
 };
+
+}());  // End of anonymous object

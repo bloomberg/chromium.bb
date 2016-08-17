@@ -4,6 +4,9 @@
 
 // Installs suggestion management functions on the |__gCrWeb| object.
 
+/* Beginning of anonymous object. */
+(function() {
+
 /**
  * Namespace for this file. It depends on |__gCrWeb| having already been
  * injected.
@@ -313,3 +316,5 @@ __gCrWeb.suggestion['hasPreviousElement'] = function(formName, fieldName) {
   return __gCrWeb.suggestion.getPreviousElementInTabOrder(
              currentElement, document.all) !== null;
 };
+
+}());  // End of anonymous object
