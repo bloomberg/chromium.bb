@@ -700,8 +700,7 @@ class LayoutTestBluetoothAdapterProvider {
   //       Stops calling GattCharacteristicValueChanged and runs callback.
   static std::unique_ptr<
       testing::NiceMock<device::MockBluetoothGattNotifySession>>
-  GetBaseGATTNotifySession(
-      base::WeakPtr<device::BluetoothRemoteGattCharacteristic> characteristic);
+  GetBaseGATTNotifySession(const std::string& characteristic_identifier);
 
   // Helper functions:
 

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
-#include "device/bluetooth/bluetooth_gatt_notify_session.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
@@ -145,8 +145,8 @@ void BluetoothRemoteGattCharacteristicWin::StartNotifySession(
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   if (IsNotifying()) {
-    std::unique_ptr<BluetoothGattNotifySession> notify_session(
-        new BluetoothGattNotifySession(weak_ptr_factory_.GetWeakPtr()));
+    std::unique_ptr<BluetoothGattNotifySessionWin> notify_session(
+        new BluetoothGattNotifySessionWin(weak_ptr_factory_.GetWeakPtr()));
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(callback, base::Passed(std::move(notify_session))));
@@ -195,12 +195,6 @@ void BluetoothRemoteGattCharacteristicWin::StartNotifySession(
                      OnGattCharacteristicValueChanged,
                  weak_ptr_factory_.GetWeakPtr()));
   gatt_event_registeration_in_progress_ = true;
-}
-
-void BluetoothRemoteGattCharacteristicWin::StopNotifySession(
-    BluetoothGattNotifySession* session,
-    const base::Closure& callback) {
-  NOTIMPLEMENTED();
 }
 
 void BluetoothRemoteGattCharacteristicWin::ReadRemoteCharacteristic(
@@ -266,22 +260,6 @@ void BluetoothRemoteGattCharacteristicWin::Update() {
 
 uint16_t BluetoothRemoteGattCharacteristicWin::GetAttributeHandle() const {
   return characteristic_info_->AttributeHandle;
-}
-
-void BluetoothRemoteGattCharacteristicWin::SubscribeToNotifications(
-    BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  // TODO(http://crbug.com/636270): Implement this method
-  NOTIMPLEMENTED();
-}
-
-void BluetoothRemoteGattCharacteristicWin::UnsubscribeFromNotifications(
-    BluetoothRemoteGattDescriptor* ccc_descriptor,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  // TODO(http://crbug.com/636270): Implement this method
-  NOTIMPLEMENTED();
 }
 
 void BluetoothRemoteGattCharacteristicWin::OnGetIncludedDescriptorsCallback(
@@ -444,7 +422,7 @@ void BluetoothRemoteGattCharacteristicWin::GattEventRegistrationCallback(
     gatt_event_handle_ = event_handle;
     for (const auto& callback : callbacks) {
       callback.first.Run(base::WrapUnique(
-          new BluetoothGattNotifySession(weak_ptr_factory_.GetWeakPtr())));
+          new BluetoothGattNotifySessionWin(weak_ptr_factory_.GetWeakPtr())));
     }
   } else {
     for (const auto& callback : callbacks)

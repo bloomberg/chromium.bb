@@ -132,41 +132,13 @@ void BluetoothTestBase::GattConnectionCallback(
 void BluetoothTestBase::NotifyCallback(
     Call expected,
     std::unique_ptr<BluetoothGattNotifySession> notify_session) {
+  ++callback_count_;
   notify_sessions_.push_back(notify_session.release());
-
-  ++callback_count_;
-  if (expected == Call::EXPECTED)
-    ++actual_success_callback_calls_;
-  else
-    unexpected_success_callback_ = true;
-}
-
-void BluetoothTestBase::NotifyCheckForPrecedingCalls(
-    int num_of_preceding_calls,
-    std::unique_ptr<BluetoothGattNotifySession> notify_session) {
-  EXPECT_EQ(num_of_preceding_calls, callback_count_);
-
-  notify_sessions_.push_back(notify_session.release());
-
-  ++callback_count_;
-  ++actual_success_callback_calls_;
-}
-
-void BluetoothTestBase::StopNotifyCallback(Call expected) {
-  ++callback_count_;
 
   if (expected == Call::EXPECTED)
     ++actual_success_callback_calls_;
   else
     unexpected_success_callback_ = true;
-}
-
-void BluetoothTestBase::StopNotifyCheckForPrecedingCalls(
-    int num_of_preceding_calls) {
-  EXPECT_EQ(num_of_preceding_calls, callback_count_);
-
-  ++callback_count_;
-  ++actual_success_callback_calls_;
 }
 
 void BluetoothTestBase::ReadValueCallback(Call expected,
@@ -283,27 +255,6 @@ BluetoothTestBase::GetNotifyCallback(Call expected) {
     ++expected_success_callback_calls_;
   return base::Bind(&BluetoothTestBase::NotifyCallback,
                     weak_factory_.GetWeakPtr(), expected);
-}
-
-BluetoothRemoteGattCharacteristic::NotifySessionCallback
-BluetoothTestBase::GetNotifyCheckForPrecedingCalls(int num_of_preceding_calls) {
-  ++expected_success_callback_calls_;
-  return base::Bind(&BluetoothTestBase::NotifyCheckForPrecedingCalls,
-                    weak_factory_.GetWeakPtr(), num_of_preceding_calls);
-}
-
-base::Closure BluetoothTestBase::GetStopNotifyCallback(Call expected) {
-  if (expected == Call::EXPECTED)
-    ++expected_success_callback_calls_;
-  return base::Bind(&BluetoothTestBase::StopNotifyCallback,
-                    weak_factory_.GetWeakPtr(), expected);
-}
-
-base::Closure BluetoothTestBase::GetStopNotifyCheckForPrecedingCalls(
-    int num_of_preceding_calls) {
-  ++expected_success_callback_calls_;
-  return base::Bind(&BluetoothTestBase::StopNotifyCheckForPrecedingCalls,
-                    weak_factory_.GetWeakPtr(), num_of_preceding_calls);
 }
 
 BluetoothRemoteGattCharacteristic::ValueCallback

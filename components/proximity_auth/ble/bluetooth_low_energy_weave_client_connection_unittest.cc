@@ -486,7 +486,7 @@ class ProximityAuthBluetoothLowEnergyWeaveClientConnectionTest
     // Store an alias for the notify session passed |connection|.
     std::unique_ptr<device::MockBluetoothGattNotifySession> notify_session(
         new NiceMock<device::MockBluetoothGattNotifySession>(
-            tx_characteristic_->GetWeakPtr()));
+            kTXCharacteristicID));
     notify_session_alias_ = notify_session.get();
 
     notify_session_success_callback_.Run(std::move(notify_session));

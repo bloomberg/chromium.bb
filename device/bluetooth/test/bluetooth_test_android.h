@@ -52,11 +52,6 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   void SimulateGattNotifySessionStartError(
       BluetoothRemoteGattCharacteristic* characteristic,
       BluetoothRemoteGattService::GattErrorCode error_code) override;
-  void SimulateGattNotifySessionStopped(
-      BluetoothRemoteGattCharacteristic* characteristic) override;
-  void SimulateGattNotifySessionStopError(
-      BluetoothRemoteGattCharacteristic* characteristic,
-      BluetoothRemoteGattService::GattErrorCode error_code) override;
   void SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(
       BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicChanged(

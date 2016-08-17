@@ -230,12 +230,13 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(ScriptState*
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(ScriptState* scriptState)
 {
-#if OS(MACOSX)
+#if OS(MACOSX) || OS(ANDROID)
     // TODO(jlebel): Remove when stopNotifications is implemented.
+    // TODO(scheib): Remove when stopNotifications is implemented.
     return ScriptPromise::rejectWithDOMException(scriptState,
         DOMException::create(NotSupportedError,
             "stopNotifications is not implemented yet. See https://goo.gl/J6ASzs"));
-#endif // OS(MACOSX)
+#endif // OS(MACOSX) || OS(ANDROID)
 
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);

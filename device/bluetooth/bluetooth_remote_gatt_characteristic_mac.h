@@ -54,15 +54,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicMac);
 
- protected:
-  void SubscribeToNotifications(BluetoothRemoteGattDescriptor* ccc_descriptor,
-                                const base::Closure& callback,
-                                const ErrorCallback& error_callback) override;
-  void UnsubscribeFromNotifications(
-      BluetoothRemoteGattDescriptor* ccc_descriptor,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-
  private:
   friend class BluetoothRemoteGattServiceMac;
   friend class BluetoothTestMac;
