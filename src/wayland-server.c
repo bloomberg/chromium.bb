@@ -1528,6 +1528,7 @@ wl_log_set_handler_server(wl_log_func_t handler)
  *
  * \a errno is set on error.
  *
+ * \param display The display object
  * \param func The function to call to log a new protocol message
  * \param user_data The user data pointer to pass to \a func
  *
