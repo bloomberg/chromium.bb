@@ -206,11 +206,14 @@ const struct CipherSuite kCipherSuites[] = {
     {0xcc14, 0x0e8f},  // TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305 (non-standard)
     {0xcca8, 0x108f},  // TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
     {0xcca9, 0x0e8f},  // TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+    {0xccab, 0x148f},  // TLS_ECDHE_PSK_WITH_CHACHA20_POLY1305_SHA256
+    {0xd001, 0x146f},  // TLS_ECDHE_PSK_WITH_AES_128_GCM_SHA256
+    {0xd002, 0x1477},  // TLS_ECDHE_PSK_WITH_AES_256_GCM_SHA384
 };
 
 const struct {
   char name[15];
-} kKeyExchangeNames[20] = {
+} kKeyExchangeNames[21] = {
   {"NULL"},  // 0
   {"RSA"},  // 1
   {"RSA_EXPORT"},  // 2
@@ -231,6 +234,7 @@ const struct {
   {"ECDH_anon"},  // 17
   {"CECPQ1_RSA"},  // 18
   {"CECPQ1_ECDSA"},  // 19
+  {"ECDHE_PSK"},  // 20
 };
 
 const struct {
@@ -381,6 +385,7 @@ bool IsSecureTLSCipherSuite(uint16_t cipher_suite) {
     case 16:  // ECDHE_RSA
     case 18:  // CECPQ1_RSA
     case 19:  // CECPQ1_ECDSA
+    case 20:  // ECDHE_PSK
       break;
     default:
       return false;
@@ -414,6 +419,7 @@ bool IsTLSCipherSuiteAllowedByHTTP2(uint16_t cipher_suite) {
     case 16:  // ECDHE_RSA
     case 18:  // CECPQ1_RSA
     case 19:  // CECPQ1_ECDSA
+    case 20:  // ECDHE_PSK
       break;
     default:
       return false;
@@ -442,6 +448,7 @@ const char* ECCurveName(uint16_t cipher_suite, int key_exchange_info) {
   switch (key_exchange) {
     case 14:  // ECDHE_ECDSA
     case 16:  // ECDHE_RSA
+    case 20:  // ECDHE_PSK
       break;
     default:
       return nullptr;
