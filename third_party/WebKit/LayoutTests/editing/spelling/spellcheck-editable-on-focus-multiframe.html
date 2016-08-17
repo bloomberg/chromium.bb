@@ -29,7 +29,7 @@ testEditable1.innerText = "zz zz zz.";
 testEditable2.innerText = "zz zz zz.";
 
 if (window.internals) {
-    internals.setContinuousSpellCheckingEnabled(true);
+    internals.setSpellCheckingEnabled(true);
 
     shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '0');
     shouldBe('internals.markerCountForNode(testEditable2.childNodes[0], "spelling")', '0');
@@ -37,10 +37,10 @@ if (window.internals) {
     shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '3');
     testEditable2.focus();
     shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '3');
-    internals.setContinuousSpellCheckingEnabled(false);
+    internals.setSpellCheckingEnabled(false);
     shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '0');
     shouldBe('internals.markerCountForNode(testEditable2.childNodes[0], "spelling")', '0');
-    internals.setContinuousSpellCheckingEnabled(true);
+    internals.setSpellCheckingEnabled(true);
     testEditable1.focus();
     testEditable2.focus();
     shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '3');

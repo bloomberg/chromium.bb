@@ -265,8 +265,8 @@ public:
 
     // Spell-checking support -------------------------------------------------
     virtual void replaceMisspelledRange(const WebString&) = 0;
-    virtual void enableContinuousSpellChecking(bool) = 0;
-    virtual bool isContinuousSpellCheckingEnabled() const = 0;
+    virtual void enableSpellChecking(bool) = 0;
+    virtual bool isSpellCheckingEnabled() const = 0;
     virtual void requestTextChecking(const WebElement&) = 0;
     virtual void removeSpellingMarkers() = 0;
 

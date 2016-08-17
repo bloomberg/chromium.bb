@@ -293,8 +293,8 @@ public:
     EmptySpellCheckerClient() {}
     ~EmptySpellCheckerClient() override {}
 
-    bool isContinuousSpellCheckingEnabled() override { return false; }
-    void toggleContinuousSpellChecking() override {}
+    bool isSpellCheckingEnabled() override { return false; }
+    void toggleSpellCheckingEnabled() override {}
 
     TextCheckerClient& textChecker() override { return m_textCheckerClient; }
 

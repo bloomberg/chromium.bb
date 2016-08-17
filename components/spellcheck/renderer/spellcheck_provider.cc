@@ -115,7 +115,7 @@ void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
   WebElement element = frame->document().isNull() ? WebElement() :
       frame->document().focusedElement();
   bool enabled = !element.isNull() && element.isEditable();
-  bool checked = enabled && frame->isContinuousSpellCheckingEnabled();
+  bool checked = enabled && frame->isSpellCheckingEnabled();
 
   Send(new SpellCheckHostMsg_ToggleSpellCheck(routing_id(), enabled, checked));
 #endif  // USE_BROWSER_SPELLCHECKER
@@ -286,7 +286,7 @@ void SpellCheckProvider::EnableSpellcheck(bool enable) {
   if (!frame)
     return;
 
-  frame->enableContinuousSpellChecking(enable);
+  frame->enableSpellChecking(enable);
   if (!enable)
     frame->removeSpellingMarkers();
 }

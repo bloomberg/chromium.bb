@@ -32,7 +32,7 @@ steps = [
     function() {
         window.getSelection().selectAllChildren(srcNode);
         document.execCommand('Copy');
-        internals.setContinuousSpellCheckingEnabled(false);
+        internals.setSpellCheckingEnabled(false);
         document.execCommand('Paste');
     }
 ];

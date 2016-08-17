@@ -332,7 +332,7 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
     if (!frame)
         return;
 
-    if (!frame->spellChecker().isContinuousSpellCheckingEnabled())
+    if (!frame->spellChecker().isSpellCheckingEnabled())
         return;
     if (!SpellChecker::isSpellCheckingEnabledFor(endingSelection()))
         return;

@@ -233,8 +233,8 @@ void Internals::resetToConsistentState(Page* page)
     page->setPageScaleFactor(1);
     page->deprecatedLocalMainFrame()->view()->layoutViewportScrollableArea()->setScrollPosition(IntPoint(0, 0), ProgrammaticScroll);
     overrideUserPreferredLanguages(Vector<AtomicString>());
-    if (!page->deprecatedLocalMainFrame()->spellChecker().isContinuousSpellCheckingEnabled())
-        page->deprecatedLocalMainFrame()->spellChecker().toggleContinuousSpellChecking();
+    if (!page->deprecatedLocalMainFrame()->spellChecker().isSpellCheckingEnabled())
+        page->deprecatedLocalMainFrame()->spellChecker().toggleSpellCheckingEnabled();
     if (page->deprecatedLocalMainFrame()->editor().isOverwriteModeEnabled())
         page->deprecatedLocalMainFrame()->editor().toggleOverwriteModeEnabled();
 
@@ -1548,13 +1548,13 @@ bool Internals::hasSpellingMarker(Document* document, int from, int length)
     return document->frame()->spellChecker().selectionStartHasMarkerFor(DocumentMarker::Spelling, from, length);
 }
 
-void Internals::setContinuousSpellCheckingEnabled(bool enabled)
+void Internals::setSpellCheckingEnabled(bool enabled)
 {
     if (!contextDocument() || !contextDocument()->frame())
         return;
 
-    if (enabled != contextDocument()->frame()->spellChecker().isContinuousSpellCheckingEnabled())
-        contextDocument()->frame()->spellChecker().toggleContinuousSpellChecking();
+    if (enabled != contextDocument()->frame()->spellChecker().isSpellCheckingEnabled())
+        contextDocument()->frame()->spellChecker().toggleSpellCheckingEnabled();
 }
 
 bool Internals::canHyphenate(const AtomicString& locale)

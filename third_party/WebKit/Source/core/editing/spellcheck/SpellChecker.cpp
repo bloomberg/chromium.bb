@@ -128,15 +128,15 @@ SpellChecker::SpellChecker(LocalFrame& frame)
 {
 }
 
-bool SpellChecker::isContinuousSpellCheckingEnabled() const
+bool SpellChecker::isSpellCheckingEnabled() const
 {
-    return spellCheckerClient().isContinuousSpellCheckingEnabled();
+    return spellCheckerClient().isSpellCheckingEnabled();
 }
 
-void SpellChecker::toggleContinuousSpellChecking()
+void SpellChecker::toggleSpellCheckingEnabled()
 {
-    spellCheckerClient().toggleContinuousSpellChecking();
-    if (isContinuousSpellCheckingEnabled())
+    spellCheckerClient().toggleSpellCheckingEnabled();
+    if (isSpellCheckingEnabled())
         return;
     for (Frame* frame = this->frame().page()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
@@ -148,7 +148,7 @@ void SpellChecker::toggleContinuousSpellChecking()
 
 void SpellChecker::didBeginEditing(Element* element)
 {
-    if (!isContinuousSpellCheckingEnabled())
+    if (!isSpellCheckingEnabled())
         return;
 
     bool isTextField = false;
@@ -295,7 +295,7 @@ void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &moving
 
 void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& selection)
 {
-    if (!isContinuousSpellCheckingEnabled())
+    if (!isSpellCheckingEnabled())
         return;
 
     const EphemeralRange& range = selection.toNormalizedEphemeralRange();
@@ -316,7 +316,7 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& selecti
 
 void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection)
 {
-    if (!isContinuousSpellCheckingEnabled())
+    if (!isSpellCheckingEnabled())
         return;
 
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterLineBreak");
@@ -326,7 +326,7 @@ void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSe
 
 void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping)
 {
-    if (!isContinuousSpellCheckingEnabled())
+    if (!isSpellCheckingEnabled())
         return;
 
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterTypingToWord");
@@ -642,8 +642,8 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
     if (!isSpellCheckingEnabledFor(oldSelection))
         return;
 
-    // When continuous spell checking is off, existing markers disappear after the selection changes.
-    if (!isContinuousSpellCheckingEnabled()) {
+    // When spell checking is off, existing markers disappear after the selection changes.
+    if (!isSpellCheckingEnabled()) {
         frame().document()->markers().removeMarkers(DocumentMarker::Spelling);
         frame().document()->markers().removeMarkers(DocumentMarker::Grammar);
         return;
@@ -706,7 +706,7 @@ void SpellChecker::spellCheckAfterBlur()
 
 void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, const VisibleSelection& newAdjacentWords)
 {
-    if (!isContinuousSpellCheckingEnabled())
+    if (!isSpellCheckingEnabled())
         return;
 
     TRACE_EVENT0("blink", "SpellChecker::spellCheckOldSelection");

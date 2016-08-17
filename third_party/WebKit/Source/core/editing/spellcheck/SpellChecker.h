@@ -53,8 +53,8 @@ public:
     SpellCheckerClient& spellCheckerClient() const;
     TextCheckerClient& textChecker() const;
 
-    bool isContinuousSpellCheckingEnabled() const;
-    void toggleContinuousSpellChecking();
+    bool isSpellCheckingEnabled() const;
+    void toggleSpellCheckingEnabled();
     void ignoreSpelling();
     bool isSpellCheckingEnabledInFocusedNode() const;
     bool isSpellCheckingEnabledFor(Node*) const;

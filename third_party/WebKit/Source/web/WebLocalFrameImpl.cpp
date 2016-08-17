@@ -1065,16 +1065,16 @@ bool WebLocalFrameImpl::isCommandEnabled(const WebString& name) const
     return frame()->editor().createCommand(name).isEnabled();
 }
 
-void WebLocalFrameImpl::enableContinuousSpellChecking(bool enable)
+void WebLocalFrameImpl::enableSpellChecking(bool enable)
 {
-    if (enable == isContinuousSpellCheckingEnabled())
+    if (enable == isSpellCheckingEnabled())
         return;
-    frame()->spellChecker().toggleContinuousSpellChecking();
+    frame()->spellChecker().toggleSpellCheckingEnabled();
 }
 
-bool WebLocalFrameImpl::isContinuousSpellCheckingEnabled() const
+bool WebLocalFrameImpl::isSpellCheckingEnabled() const
 {
-    return frame()->spellChecker().isContinuousSpellCheckingEnabled();
+    return frame()->spellChecker().isSpellCheckingEnabled();
 }
 
 void WebLocalFrameImpl::requestTextChecking(const WebElement& webElement)

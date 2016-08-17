@@ -51,7 +51,7 @@ class DummySpellCheckerClient : public EmptySpellCheckerClient {
 public:
     virtual ~DummySpellCheckerClient() { }
 
-    bool isContinuousSpellCheckingEnabled() override { return true; }
+    bool isSpellCheckingEnabled() override { return true; }
 
     TextCheckerClient& textChecker() override { return m_emptyTextCheckerClient; }
 

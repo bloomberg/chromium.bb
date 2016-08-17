@@ -80,7 +80,7 @@ bool SpellCheckerClientImpl::shouldSpellcheckByDefault()
     return true;
 }
 
-bool SpellCheckerClientImpl::isContinuousSpellCheckingEnabled()
+bool SpellCheckerClientImpl::isSpellCheckingEnabled()
 {
     if (m_spellCheckThisFieldStatus == SpellCheckForcedOff)
         return false;
@@ -89,9 +89,9 @@ bool SpellCheckerClientImpl::isContinuousSpellCheckingEnabled()
     return shouldSpellcheckByDefault();
 }
 
-void SpellCheckerClientImpl::toggleContinuousSpellChecking()
+void SpellCheckerClientImpl::toggleSpellCheckingEnabled()
 {
-    if (isContinuousSpellCheckingEnabled()) {
+    if (isSpellCheckingEnabled()) {
         m_spellCheckThisFieldStatus = SpellCheckForcedOff;
         if (Page* page = m_webView->page()) {
             for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {

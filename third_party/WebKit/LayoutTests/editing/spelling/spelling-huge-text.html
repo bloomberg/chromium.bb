@@ -38,9 +38,9 @@ function test()
         return;
     }
 
-    internals.setContinuousSpellCheckingEnabled(false);
+    internals.setSpellCheckingEnabled(false);
     testEditable.focus();
-    internals.setContinuousSpellCheckingEnabled(true);
+    internals.setSpellCheckingEnabled(true);
     shouldBecomeEqual('internals.markerCountForNode(testEditable.childNodes[0], "spelling")', '6', function() {
         testEditable.removeChild(testEditable.childNodes[0]);
         finishJSTest();

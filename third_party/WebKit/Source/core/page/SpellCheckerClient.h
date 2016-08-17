@@ -37,8 +37,8 @@ class SpellCheckerClient {
 public:
     virtual ~SpellCheckerClient() { }
 
-    virtual bool isContinuousSpellCheckingEnabled() = 0;
-    virtual void toggleContinuousSpellChecking() = 0;
+    virtual bool isSpellCheckingEnabled() = 0;
+    virtual void toggleSpellCheckingEnabled() = 0;
 
     virtual TextCheckerClient& textChecker() = 0;
 

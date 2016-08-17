@@ -706,7 +706,7 @@ void Editor::requestSpellcheckingAfterApplyingCommand(CompositeEditCommand* cmd)
     // TODO(xiaochengh): May also need to do this after dragging crbug.com/298046.
     if (cmd->inputType() != InputEvent::InputType::Paste)
         return;
-    if (!spellChecker().isContinuousSpellCheckingEnabled())
+    if (!spellChecker().isSpellCheckingEnabled())
         return;
     if (!SpellChecker::isSpellCheckingEnabledFor(cmd->endingSelection()))
         return;

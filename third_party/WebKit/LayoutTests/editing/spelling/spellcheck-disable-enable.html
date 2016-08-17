@@ -19,7 +19,7 @@ jsTestIsAsync = true;
 
 function hasSpellingMarkerOnSetting(element, enableSpellChecking)
 {
-    internals.setContinuousSpellCheckingEnabled(enableSpellChecking);
+    internals.setSpellCheckingEnabled(enableSpellChecking);
     return !!internals.markerCountForNode(element.firstChild, "spelling");
 }
 

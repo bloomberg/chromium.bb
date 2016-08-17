@@ -149,8 +149,8 @@ public:
     bool executeCommand(const WebString&) override;
     bool executeCommand(const WebString&, const WebString& value) override;
     bool isCommandEnabled(const WebString&) const override;
-    void enableContinuousSpellChecking(bool) override;
-    bool isContinuousSpellCheckingEnabled() const override;
+    void enableSpellChecking(bool) override;
+    bool isSpellCheckingEnabled() const override;
     void requestTextChecking(const WebElement&) override;
     void replaceMisspelledRange(const WebString&) override;
     void removeSpellingMarkers() override;

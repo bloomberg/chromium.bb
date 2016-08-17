@@ -210,7 +210,7 @@ public:
 
     bool hasSpellingMarker(Document*, int from, int length);
     bool hasGrammarMarker(Document*, int from, int length);
-    void setContinuousSpellCheckingEnabled(bool);
+    void setSpellCheckingEnabled(bool);
 
     bool canHyphenate(const AtomicString& locale);
     void setMockHyphenation(const AtomicString& locale);

@@ -45,8 +45,8 @@ public:
 
     ~SpellCheckerClientImpl() override;
 
-    bool isContinuousSpellCheckingEnabled() override;
-    void toggleContinuousSpellChecking() override;
+    bool isSpellCheckingEnabled() override;
+    void toggleSpellCheckingEnabled() override;
     void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) override;
     void updateSpellingUIWithMisspelledWord(const String&) override;
     void showSpellingUI(bool show) override;
