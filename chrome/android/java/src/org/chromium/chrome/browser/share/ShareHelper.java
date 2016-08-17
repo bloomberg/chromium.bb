@@ -211,21 +211,23 @@ public class ShareHelper {
      * @param text Text to be shared. If both |text| and |url| are supplied, they are concatenated
      *             with a space.
      * @param url URL of the page to be shared.
+     * @param offlineUri URI to the offline MHTML file to be shared.
      * @param screenshot Screenshot of the page to be shared.
      * @param callback Optional callback to be called when user makes a choice. Will not be called
      *                 if receiving a response when the user makes a choice is not supported (on
      *                 older Android versions).
      */
     public static void share(boolean shareDirectly, boolean saveLastUsed, Activity activity,
-            String title, String text, String url, Bitmap screenshot,
+            String title, String text, String url, @Nullable Uri offlineUri, Bitmap screenshot,
             @Nullable TargetChosenCallback callback) {
         if (shareDirectly) {
-            shareWithLastUsed(activity, title, text, url, screenshot);
+            shareWithLastUsed(activity, title, text, url, offlineUri, screenshot);
         } else if (TargetChosenReceiver.isSupported()) {
-            makeIntentAndShare(saveLastUsed, activity, title, text, url, screenshot, null,
-                               callback);
+            makeIntentAndShare(saveLastUsed, activity, title, text, url, offlineUri, screenshot,
+                    null, callback);
         } else {
-            showShareDialog(saveLastUsed, activity, title, text, url, screenshot, callback);
+            showShareDialog(
+                    saveLastUsed, activity, title, text, url, offlineUri, screenshot, callback);
         }
     }
 
@@ -297,15 +299,16 @@ public class ShareHelper {
      * @param text Text to be shared. If both |text| and |url| are supplied, they are concatenated
      *             with a space.
      * @param url URL of the page to be shared.
+     * @oaram Uri URI of the offline page to be shared.
      * @param screenshot Screenshot of the page to be shared.
      * @param callback Optional callback to be called when user makes a choice. Will not be called
      *                 if receiving a response when the user makes a choice is not supported (on
      *                 older Android versions).
      */
     private static void showShareDialog(final boolean saveLastUsed, final Activity activity,
-            final String title, final String text, final String url, final Bitmap screenshot,
-            @Nullable final TargetChosenCallback callback) {
-        Intent intent = getShareIntent(activity, title, text, url, null);
+            final String title, final String text, final String url, final Uri offlineUri,
+            final Bitmap screenshot, @Nullable final TargetChosenCallback callback) {
+        Intent intent = getShareIntent(activity, title, text, url, null, null);
         PackageManager manager = activity.getPackageManager();
         List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
         assert resolveInfoList.size() > 0;
@@ -329,8 +332,8 @@ public class ShareHelper {
                         new ComponentName(ai.applicationInfo.packageName, ai.name);
                 if (callback != null) callback.onTargetChosen(component);
                 if (saveLastUsed) setLastShareComponentName(component);
-                makeIntentAndShare(false, activity, title, text, url, screenshot, component,
-                                   null);
+                makeIntentAndShare(
+                        false, activity, title, text, url, offlineUri, screenshot, component, null);
                 dialog.dismiss();
             }
         });
@@ -344,13 +347,15 @@ public class ShareHelper {
      * @param text Text to be shared. If both |text| and |url| are supplied, they are concatenated
      *             with a space.
      * @param url URL of the page to be shared.
+     * @oaram Uri URI of the offline page to be shared.
      * @param screenshot Screenshot of the page to be shared.
      */
-    private static void shareWithLastUsed(
-            Activity activity, String title, String text, String url, Bitmap screenshot) {
+    private static void shareWithLastUsed(Activity activity, String title, String text, String url,
+            Uri offlineUri, Bitmap screenshot) {
         ComponentName component = getLastShareComponentName();
         if (component == null) return;
-        makeIntentAndShare(false, activity, title, text, url, screenshot, component, null);
+        makeIntentAndShare(
+                false, activity, title, text, url, offlineUri, screenshot, component, null);
     }
 
     private static void shareIntent(boolean saveLastUsed, Activity activity, Intent sharingIntent,
@@ -366,13 +371,13 @@ public class ShareHelper {
     }
 
     private static void makeIntentAndShare(final boolean saveLastUsed, final Activity activity,
-            final String title, final String text, final String url, final Bitmap screenshot,
-            final ComponentName component, @Nullable final TargetChosenCallback callback) {
+            final String title, final String text, final String url, final Uri offlineUri,
+            final Bitmap screenshot, final ComponentName component,
+            @Nullable final TargetChosenCallback callback) {
         if (screenshot == null) {
-            shareIntent(
-                    saveLastUsed, activity,
-                    getDirectShareIntentForComponent(activity, title, text, url, null, component),
-                    callback);
+            Intent intent = getDirectShareIntentForComponent(
+                    activity, title, text, url, offlineUri, null, component);
+            shareIntent(saveLastUsed, activity, intent, callback);
         } else {
             new AsyncTask<Void, Void, File>() {
                 @Override
@@ -411,10 +416,9 @@ public class ShareHelper {
                             != ApplicationState.HAS_DESTROYED_ACTIVITIES) {
                         Uri screenshotUri = saveFile == null
                                 ? null : UiUtils.getUriForImageCaptureFile(activity, saveFile);
-                        shareIntent(
-                                saveLastUsed, activity,
+                        shareIntent(saveLastUsed, activity,
                                 getDirectShareIntentForComponent(activity, title, text, url,
-                                                                 screenshotUri, component),
+                                            offlineUri, screenshotUri, component),
                                 callback);
                     }
                 }
@@ -435,7 +439,7 @@ public class ShareHelper {
         final ComponentName component = getLastShareComponentName();
         boolean isComponentValid = false;
         if (component != null) {
-            Intent intent = getShareIntent(activity, "", "", "", null);
+            Intent intent = getShareIntent(activity, "", "", "", null, null);
             intent.setPackage(component.getPackageName());
             PackageManager manager = activity.getPackageManager();
             List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
@@ -494,8 +498,8 @@ public class ShareHelper {
     }
 
     @VisibleForTesting
-    protected static Intent getShareIntent(
-            Activity activity, String title, String text, String url, Uri screenshotUri) {
+    public static Intent getShareIntent(Activity activity, String title, String text, String url,
+            Uri offlineUri, Uri screenshotUri) {
         if (!TextUtils.isEmpty(url)) {
             url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
             if (!TextUtils.isEmpty(text)) {
@@ -508,18 +512,25 @@ public class ShareHelper {
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
-        intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, title);
         intent.putExtra(Intent.EXTRA_TEXT, text);
         intent.putExtra(EXTRA_TASK_ID, activity.getTaskId());
 
         if (screenshotUri != null) {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+        if (screenshotUri != null) {
             // To give read access to an Intent target, we need to put |screenshotUri| in clipData
             // because adding Intent.FLAG_GRANT_READ_URI_PERMISSION doesn't work for
             // EXTRA_SHARE_SCREENSHOT_AS_STREAM.
             intent.setClipData(ClipData.newRawUri("", screenshotUri));
             intent.putExtra(EXTRA_SHARE_SCREENSHOT_AS_STREAM, screenshotUri);
+        }
+        if (offlineUri == null) {
+            intent.setType("text/plain");
+        } else {
+            intent.setType("multipart/related");
+            intent.putExtra(Intent.EXTRA_STREAM, offlineUri);
         }
         return intent;
     }
@@ -533,10 +544,9 @@ public class ShareHelper {
         return intent;
     }
 
-    private static Intent getDirectShareIntentForComponent(
-            Activity activity, String title, String text, String url,
-            Uri screenshotUri, ComponentName component) {
-        Intent intent = getShareIntent(activity, title, text, url, screenshotUri);
+    private static Intent getDirectShareIntentForComponent(Activity activity, String title,
+            String text, String url, Uri offlineUri, Uri screenshotUri, ComponentName component) {
+        Intent intent = getShareIntent(activity, title, text, url, offlineUri, screenshotUri);
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT
                 | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         intent.setComponent(component);

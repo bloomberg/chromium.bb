@@ -84,6 +84,8 @@ import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
@@ -995,26 +997,35 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         final Activity mainActivity = this;
         ContentBitmapCallback callback = new ContentBitmapCallback() {
-                    @Override
-                    public void onFinishGetBitmap(Bitmap bitmap, int response) {
-                        // Check whether this page is an offline page, and use its online URL if so.
-                        String url = currentTab.getOriginalUrl();
-                        RecordHistogram.recordBooleanHistogram(
-                                "OfflinePages.SharedPageWasOffline", url != null);
+            @Override
+            public void onFinishGetBitmap(Bitmap bitmap, int response) {
+                // Check whether this page is an offline page, and use its online URL if so.
+                OfflinePageItem offlinePage = currentTab.getOfflinePage();
+                String url = currentTab.getOriginalUrl();
+                RecordHistogram.recordBooleanHistogram(
+                        "OfflinePages.SharedPageWasOffline", offlinePage != null);
+                boolean canShareOfflinePage =
+                        (offlinePage != null && OfflinePageBridge.isPageSharingEnabled());
 
-                        // If there is no entry in the offline pages DB for this tab, use the tab's
-                        // URL directly.
-                        if (url == null) url = currentTab.getUrl();
+                if (canShareOfflinePage) {
+                    // Share the offline page instead of the URL.
+                    OfflinePageUtils.shareOfflinePage(
+                            shareDirectly, true, mainActivity, null, url, bitmap, null, currentTab);
+                } else {
+                    // If there is no entry in the offline pages DB for this tab, use the
+                    // tab's URL directly.
+                    if (url == null) url = currentTab.getUrl();
 
-                        ShareHelper.share(shareDirectly, true, mainActivity, currentTab.getTitle(),
-                                          null, url, bitmap, null);
-                        if (shareDirectly) {
-                            RecordUserAction.record("MobileMenuDirectShare");
-                        } else {
-                            RecordUserAction.record("MobileMenuShare");
-                        }
+                    ShareHelper.share(shareDirectly, true, mainActivity, currentTab.getTitle(),
+                            null, url, null, bitmap, null);
+                    if (shareDirectly) {
+                        RecordUserAction.record("MobileMenuDirectShare");
+                    } else {
+                        RecordUserAction.record("MobileMenuShare");
                     }
-                };
+                }
+            }
+        };
         if (isIncognito || currentTab.getWebContents() == null) {
             callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
         } else {

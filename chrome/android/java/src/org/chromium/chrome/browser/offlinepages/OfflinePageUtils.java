@@ -4,19 +4,27 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.BatteryManager;
 import android.os.Environment;
 
+import org.chromium.base.Callback;
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -29,6 +37,11 @@ import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,6 +52,8 @@ public class OfflinePageUtils {
     /** Background task tag to differentiate from other task types */
     public static final String TASK_TAG = "OfflinePageUtils";
 
+    public static final String EXTERNAL_MHTML_FILE_PATH = "offline-pages";
+
     private static final int DEFAULT_SNACKBAR_DURATION_MS = 6 * 1000; // 6 second
 
     private static final long STORAGE_ALMOST_FULL_THRESHOLD_BYTES = 10L * (1 << 20); // 10M
@@ -47,6 +62,8 @@ public class OfflinePageUtils {
     private static int sSnackbarDurationMs = DEFAULT_SNACKBAR_DURATION_MS;
 
     private static OfflinePageUtils sInstance;
+
+    private static File sOfflineSharingDirectory;
 
     private static OfflinePageUtils getInstance() {
         if (sInstance == null) {
@@ -251,6 +268,172 @@ public class OfflinePageUtils {
                 "OfflinePages.Wakeup.DelayTime",
                 delayInMilliseconds,
                 TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Share saved offline page.
+     * @param shareDirectly Whether it should share directly with the activity that was most
+     *                      recently used to share.
+     * @param saveLastUsed Whether to save the chosen activity for future direct sharing.
+     * @param mainActivity Activity that is used to access package manager.
+     * @param text Text to be shared. If both |text| and |url| are supplied, they are concatenated
+     *             with a space.
+     * @param onlineUrl Online URL associated with the offline page that is used to access the
+     *                  offline page file path.
+     * @param bitmap Screenshot of the page to be shared.
+     * @param callback Optional callback to be called when user makes a choice. Will not be called
+     *                 if receiving a response when the user makes a choice is not supported (see
+     *                 TargetChosenReceiver#isSupported()).
+     * @param currentTab Tab that is used to access offlineUrl and tile.
+     */
+    public static void shareOfflinePage(final boolean shareDirectly, final boolean saveLastUsed,
+            final Activity mainActivity, final String text, final String onlineUrl,
+            final Bitmap bitmap, final ShareHelper.TargetChosenCallback callback,
+            final Tab currentTab) {
+        final String offlineUrl = currentTab.getUrl();
+        final String title = currentTab.getTitle();
+        OfflinePageBridge offlinePageBridge =
+                OfflinePageBridge.getForProfile(currentTab.getProfile());
+
+        if (offlinePageBridge == null) {
+            Log.e(TAG, "Unable to perform sharing on current tab.");
+            return;
+        }
+
+        offlinePageBridge.getPageByOfflineUrl(offlineUrl, new Callback<OfflinePageItem>() {
+            @Override
+            public void onResult(OfflinePageItem item) {
+                if (item == null) return;
+
+                String offlineFilePath = item.getFilePath();
+                prepareFileAndShare(shareDirectly, saveLastUsed, mainActivity, title, text,
+                        onlineUrl, bitmap, callback, offlineFilePath);
+            }
+        });
+    }
+
+    private static void prepareFileAndShare(final boolean shareDirectly, final boolean saveLastUsed,
+            final Activity activity, final String title, final String text, final String onlineUrl,
+            final Bitmap bitmap, final ShareHelper.TargetChosenCallback callback,
+            final String filePath) {
+        new AsyncTask<Void, Void, File>() {
+            @Override
+            protected File doInBackground(Void... params) {
+                File offlinePageOriginal = new File(filePath);
+                File shareableDir = getDirectoryForOfflineSharing(activity);
+
+                if (shareableDir == null) {
+                    Log.e(TAG, "Unable to create subdirectory in shareable directory");
+                    return null;
+                }
+
+                String fileName = rewriteOfflineFileName(offlinePageOriginal.getName());
+                File offlinePageShareable = new File(shareableDir, fileName);
+
+                if (offlinePageShareable.exists()) {
+                    try {
+                        // Old shareable files are stored in an external directory, which may cause
+                        // problems when:
+                        // 1. Files been changed by external sources.
+                        // 2. Difference in file size that results in partial overwrite.
+                        // Thus the file is deleted before we make a new copy.
+                        offlinePageShareable.delete();
+                    } catch (SecurityException e) {
+                        Log.e(TAG, "Failed to delete: " + offlinePageOriginal.getName(), e);
+                        return null;
+                    }
+                }
+                if (copyToShareableLocation(offlinePageOriginal, offlinePageShareable)) {
+                    return offlinePageShareable;
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(File offlinePageShareable) {
+                Uri offlineUri = null;
+                if (offlinePageShareable != null) {
+                    offlineUri = Uri.fromFile(offlinePageShareable);
+                }
+                ShareHelper.share(shareDirectly, saveLastUsed, activity, title, text, onlineUrl,
+                        offlineUri, bitmap, callback);
+            }
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+    }
+
+    /**
+     * Copies the file from internal storage to a sharable directory.
+     * @param src The original file to be copied.
+     * @param dst The destination file.
+     */
+    @VisibleForTesting
+    static boolean copyToShareableLocation(File src, File dst) {
+        FileInputStream inputStream = null;
+        FileOutputStream outputStream = null;
+
+        try {
+            inputStream = new FileInputStream(src);
+            outputStream = new FileOutputStream(dst);
+
+            FileChannel inChannel = inputStream.getChannel();
+            FileChannel outChannel = outputStream.getChannel();
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to copy the file: " + src.getName(), e);
+            return false;
+        } finally {
+            StreamUtil.closeQuietly(inputStream);
+            StreamUtil.closeQuietly(outputStream);
+        }
+        return true;
+    }
+
+    /**
+     * Gets the directory to use for sharing offline pages, creating it if necessary.
+     * @param context Context that is used to access external cache directory.
+     * @return Path to the directory where shared files are stored.
+     */
+    @VisibleForTesting
+    static File getDirectoryForOfflineSharing(Context context) {
+        if (sOfflineSharingDirectory == null) {
+            sOfflineSharingDirectory =
+                    new File(context.getExternalCacheDir(), EXTERNAL_MHTML_FILE_PATH);
+        }
+        if (!sOfflineSharingDirectory.exists() && !sOfflineSharingDirectory.mkdir()) {
+            sOfflineSharingDirectory = null;
+        }
+        return sOfflineSharingDirectory;
+    }
+
+    /**
+     * Rewrite file name so that it does not contain periods except the one to separate the file
+     * extension.
+     * This step is used to ensure that file name can be recognized by intent filter (.*\\.mhtml")
+     * as Android's path pattern only matches the first dot that appears in a file path.
+     * @pram fileName Name of the offline page file.
+     */
+    @VisibleForTesting
+    static String rewriteOfflineFileName(String fileName) {
+        fileName = fileName.replaceAll("\\s+", "");
+        return fileName.replaceAll("\\.(?=.*\\.)", "_");
+    }
+
+    /**
+     * Clears all shared mhtml files.
+     * @param context Context that is used to access external cache directory.
+     */
+    public static void clearSharedOfflineFiles(final Context context) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                File offlinePath = getDirectoryForOfflineSharing(context);
+                if (offlinePath != null) {
+                    FileUtils.recursivelyDeleteFile(offlinePath);
+                }
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private static boolean isPowerConnected(Intent batteryStatus) {

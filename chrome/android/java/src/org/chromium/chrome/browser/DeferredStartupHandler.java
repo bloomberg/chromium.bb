@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
@@ -189,6 +190,8 @@ public class DeferredStartupHandler {
                 PowerMonitor.create(mAppContext);
 
                 ShareHelper.clearSharedImages(mAppContext);
+
+                OfflinePageUtils.clearSharedOfflineFiles(mAppContext);
             }
         });
 

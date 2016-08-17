@@ -45,7 +45,7 @@ public class ShareServiceImpl implements ShareService {
             }
         };
 
-        ShareHelper.share(false, false, mActivity, title, text, null, null, innerCallback);
+        ShareHelper.share(false, false, mActivity, title, text, null, null, null, innerCallback);
     }
 
     @Nullable
