@@ -2159,7 +2159,6 @@ def GetConfig():
       git_sync=False,
       hw_tests=HWTestList.ToolchainTest(),
       trybot_list=False,
-      hwqual=True,
       description="Toolchain Builds (internal)",
       chrome_sdk=True,
       image_test=True,
