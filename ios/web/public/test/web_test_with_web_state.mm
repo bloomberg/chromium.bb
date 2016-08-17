@@ -155,10 +155,6 @@ id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
   [GetWebController(web_state())
       executeJavaScript:script
       completionHandler:^(id result, NSError* error) {
-        if (error && error.code != WKErrorJavaScriptResultTypeIsUnsupported) {
-          NOTREACHED() << " error: " << error.code
-                       << " for script: " << base::SysNSStringToUTF8(script);
-        }
         executionResult.reset([result copy]);
         executionCompleted = true;
       }];
@@ -184,7 +180,7 @@ const web::WebState* WebTestWithWebState::web_state() const {
 bool WebTestWithWebState::ResetPageIfNavigationStalled(NSString* load_check) {
   id inner_html = ExecuteJavaScript(
       @"(document && document.body && document.body.innerHTML) || 'undefined'");
-  if ([inner_html rangeOfString:load_check].location == NSNotFound) {
+  if (![inner_html rangeOfString:load_check].length) {
     web_state_->SetWebUsageEnabled(false);
     web_state_->SetWebUsageEnabled(true);
     [GetWebController(web_state()) triggerPendingLoad];
