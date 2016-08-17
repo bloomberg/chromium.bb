@@ -4,8 +4,9 @@
 # found in the LICENSE file.
 
 """Certificate chain with 1 intermediate, where the root certificate is expired
-(violates validity.notAfter). Verification is expected to succeed as
-constraints on trust anchors are not enforced.."""
+(violates validity.notAfter). Verification is expected to succeed even though
+the trust anchor is initialized with anchor constraints, since validity is
+not enforced."""
 
 import common
 
@@ -23,11 +24,10 @@ target = common.create_end_entity_certificate('Target', intermediate)
 target.set_validity_range(common.JANUARY_1_2015_UTC, common.JANUARY_1_2016_UTC)
 
 chain = [target, intermediate]
-trusted = common.TrustAnchor(root, constrained=False)
+trusted = common.TrustAnchor(root, constrained=True)
 
 # Both the target and intermediate are valid at this time, however the
-# root is not. This doesn't matter since the root certificate is
-# just a delivery mechanism for the name + SPKI.
+# root is not.
 time = common.MARCH_2_2015_UTC
 verify_result = True
 

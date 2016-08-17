@@ -26,35 +26,68 @@ class Input;
 //  * Public Key
 //
 // Optionally a trust anchor may contain:
-//  * An associated certificate
-//  * Trust anchor constraints
+//  * An associated certificate (used when pretty-printing)
+//  * Mandatory trust anchor constraints
 //
 // Relationship between ParsedCertificate and TrustAnchor:
 //
 // For convenience trust anchors are often described using a
 // (self-signed) certificate. TrustAnchor facilitates this by allowing
-// construction of a TrustAnchor given a ParsedCertificate, however
-// the concepts are NOT quite the same.
+// construction of a TrustAnchor given a ParsedCertificate.
 //
-// Notably when constructed from a certificate, properties/constraints of
-// the underlying certificate like expiration, signature, or basic
-// constraints are NOT processed and validated by path validation.
-// Instead such properties need to be explicitly indicated via "trust
-// anchor constraints".
+// When constructing a TrustAnchor from a certificate there are different
+// interpretations for the meaning of properties other than the Subject and
+// SPKI in the certificate.
 //
-// See RFC 5937 and RFC 5280 for more details.
+// * CreateFromCertificateNoConstraints() -- Extracts the Subject and SPKI from
+// the source certificate. ALL other information in the certificate is
+// considered irrelevant during path validation.
+//
+// * CreateFromCertificateWithConstraints() -- Extracts the Subject and SPKI
+// from the source certificate, and additionally interprets some properties of
+// the source certificate as mandatory anchor constraints.
+//
+// Trust anchor constraints are described in more detail by RFC 5937. This
+// implementation follows that description, and fixes
+// "enforceTrustAnchorConstraints" to true.
 class NET_EXPORT TrustAnchor : public base::RefCountedThreadSafe<TrustAnchor> {
  public:
-  // Creates a TrustAnchor given a certificate. The only parts of the
-  // certificate that will be used are the subject and SPKI. Any extensions in
-  // the certificate that might limit its use (like name constraints or policy)
-  // are disregarded during validation. In other words, the resulting trust
-  // anchor has no anchor constraints.
+  // Creates a TrustAnchor given a certificate. The ONLY parts of the
+  // certificate that are relevant to the resulting trust anchor are:
+  //
+  //  * Subject
+  //  * SPKI
+  //
+  // Everything else, including the source certiticate's expiration, basic
+  // constraints, policy constraints, etc is not used.
+  //
+  // This is the common interpretation for a trust anchor when given as a
+  // certificate.
   static scoped_refptr<TrustAnchor> CreateFromCertificateNoConstraints(
       scoped_refptr<ParsedCertificate> cert);
 
-  // TODO(crbug.com/635200): Support anchor constraints. For instance
-  // by adding factory method CreateFromCertificateWithConstraints()
+  // Creates a TrustAnchor given a certificate. The resulting trust anchor is
+  // initialized using the source certificate's subject and SPKI as usual,
+  // however other parts of the certificate are applied as anchor constraints.
+  //
+  // The implementation matches the properties identified by RFC 5937,
+  // resulting in the following hodgepodge of enforcement on the source
+  // certificate:
+  //
+  //  * Signature:             No
+  //  * Validity (expiration): No
+  //  * Key usage:             No
+  //  * Extended key usage:    No
+  //  * Basic constraints:     Yes, but only the pathlen (CA=false is accepted)
+  //  * Name constraints:      Yes
+  //  * Certificate policies:  Not currently, TODO(crbug.com/634453)
+  //  * inhibitAnyPolicy:      Not currently, TODO(crbug.com/634453)
+  //  * PolicyConstraints:     Not currently, TODO(crbug.com/634452)
+  //
+  // The presence of any other unrecognized extension marked as critical fails
+  // validation.
+  static scoped_refptr<TrustAnchor> CreateFromCertificateWithConstraints(
+      scoped_refptr<ParsedCertificate> cert);
 
   der::Input spki() const;
   der::Input normalized_subject() const;
@@ -64,12 +97,18 @@ class NET_EXPORT TrustAnchor : public base::RefCountedThreadSafe<TrustAnchor> {
   // however clients should be prepared to handle this case.
   const scoped_refptr<ParsedCertificate>& cert() const;
 
+  // Returns true if the trust anchor has attached (mandatory) trust anchor
+  // constraints. This returns true when the anchor was constructed using
+  // CreateFromCertificateWithConstraints.
+  bool enforces_constraints() const { return enforces_constraints_; }
+
  private:
   friend class base::RefCountedThreadSafe<TrustAnchor>;
-  explicit TrustAnchor(scoped_refptr<ParsedCertificate>);
+  TrustAnchor(scoped_refptr<ParsedCertificate>, bool enforces_constraints);
   ~TrustAnchor();
 
   scoped_refptr<ParsedCertificate> cert_;
+  bool enforces_constraints_ = false;
 };
 
 using TrustAnchors = std::vector<scoped_refptr<TrustAnchor>>;

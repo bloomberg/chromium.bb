@@ -117,8 +117,12 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExpiredTargetNotBefore) {
   this->RunTest("expired-target-notBefore.pem");
 }
 
-TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExpiredRoot) {
-  this->RunTest("expired-root.pem");
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExpiredUnconstrainedRoot) {
+  this->RunTest("expired-unconstrained-root.pem");
+}
+
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExpiredConstrainedRoot) {
+  this->RunTest("expired-constrained-root.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetNotEndEntity) {
@@ -149,8 +153,14 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
   this->RunTest("issuer-and-subject-not-byte-for-byte-equal-anchor.pem");
 }
 
-TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ViolatesPathlen1Root) {
-  this->RunTest("violates-pathlen-1-root.pem");
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
+             ViolatesPathlen1UnconstrainedRoot) {
+  this->RunTest("violates-pathlen-1-unconstrained-root.pem");
+}
+
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
+             ViolatesPathlen1ConstrainedRoot) {
+  this->RunTest("violates-pathlen-1-constrained-root.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, NonSelfSignedRoot) {
@@ -178,6 +188,36 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, UnknownRoot) {
   this->RunTest("unknown-root.pem");
 }
 
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
+             UnconstrainedRootLacksBasicConstraints) {
+  this->RunTest("unconstrained-root-lacks-basic-constraints.pem");
+}
+
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
+             ConstrainedRootLacksBasicConstraints) {
+  this->RunTest("constrained-root-lacks-basic-constraints.pem");
+}
+
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
+             UnconstrainedRootBasicConstraintsCaFalse) {
+  this->RunTest("unconstrained-root-basic-constraints-ca-false.pem");
+}
+
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
+             ConstrainedRootBasicConstraintsCaFalse) {
+  this->RunTest("constrained-root-basic-constraints-ca-false.pem");
+}
+
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
+             UnconstrainedNonSelfSignedRoot) {
+  this->RunTest("unconstrained-non-self-signed-root.pem");
+}
+
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
+             ConstrainedNonSelfSignedRoot) {
+  this->RunTest("constrained-non-self-signed-root.pem");
+}
+
 // TODO(eroman): Add test that invalid validity dates where the day or month
 // ordinal not in range, like "March 39, 2016" are rejected.
 
@@ -199,20 +239,28 @@ REGISTER_TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest,
                            ExpiredIntermediate,
                            ExpiredTarget,
                            ExpiredTargetNotBefore,
-                           ExpiredRoot,
+                           ExpiredUnconstrainedRoot,
+                           ExpiredConstrainedRoot,
                            TargetNotEndEntity,
                            TargetHasKeyCertSignButNotCa,
                            TargetHasPathlenButNotCa,
                            TargetUnknownCriticalExtension,
                            IssuerAndSubjectNotByteForByteEqual,
                            IssuerAndSubjectNotByteForByteEqualAnchor,
-                           ViolatesPathlen1Root,
+                           ViolatesPathlen1UnconstrainedRoot,
+                           ViolatesPathlen1ConstrainedRoot,
                            NonSelfSignedRoot,
                            KeyRolloverOldChain,
                            KeyRolloverRolloverChain,
                            KeyRolloverLongRolloverChain,
                            KeyRolloverNewChain,
-                           UnknownRoot);
+                           UnknownRoot,
+                           UnconstrainedRootLacksBasicConstraints,
+                           ConstrainedRootLacksBasicConstraints,
+                           UnconstrainedRootBasicConstraintsCaFalse,
+                           ConstrainedRootBasicConstraintsCaFalse,
+                           UnconstrainedNonSelfSignedRoot,
+                           ConstrainedNonSelfSignedRoot);
 
 }  // namespace net
 

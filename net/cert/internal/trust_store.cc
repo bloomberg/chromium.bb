@@ -10,7 +10,12 @@ namespace net {
 
 scoped_refptr<TrustAnchor> TrustAnchor::CreateFromCertificateNoConstraints(
     scoped_refptr<ParsedCertificate> cert) {
-  return scoped_refptr<TrustAnchor>(new TrustAnchor(std::move(cert)));
+  return scoped_refptr<TrustAnchor>(new TrustAnchor(std::move(cert), false));
+}
+
+scoped_refptr<TrustAnchor> TrustAnchor::CreateFromCertificateWithConstraints(
+    scoped_refptr<ParsedCertificate> cert) {
+  return scoped_refptr<TrustAnchor>(new TrustAnchor(std::move(cert), true));
 }
 
 der::Input TrustAnchor::spki() const {
@@ -25,8 +30,9 @@ const scoped_refptr<ParsedCertificate>& TrustAnchor::cert() const {
   return cert_;
 }
 
-TrustAnchor::TrustAnchor(scoped_refptr<ParsedCertificate> cert)
-    : cert_(std::move(cert)) {
+TrustAnchor::TrustAnchor(scoped_refptr<ParsedCertificate> cert,
+                         bool enforces_constraints)
+    : cert_(std::move(cert)), enforces_constraints_(enforces_constraints) {
   DCHECK(cert_);
 }
 
