@@ -924,6 +924,12 @@
                 "description": "Loading priority of a resource request."
             },
             {
+                "id": "CookieSameSite",
+                "type": "string",
+                "enum": ["Strict", "Lax"],
+                "description": "Represents the cookie's 'SameSite' status: https://tools.ietf.org/html/draft-west-first-party-cookies"
+            },
+            {
                 "id": "ResourceTiming",
                 "type": "object",
                 "description": "Timing information for the request.",
@@ -1112,12 +1118,12 @@
                     { "name": "value", "type": "string", "description": "Cookie value." },
                     { "name": "domain", "type": "string", "description": "Cookie domain." },
                     { "name": "path", "type": "string", "description": "Cookie path." },
-                    { "name": "expires", "type": "number", "description": "Cookie expires." },
+                    { "name": "expires", "type": "number", "description": "Cookie expiration date as the number of seconds since the UNIX epoch." },
                     { "name": "size", "type": "integer", "description": "Cookie size." },
                     { "name": "httpOnly", "type": "boolean", "description": "True if cookie is http-only." },
                     { "name": "secure", "type": "boolean", "description": "True if cookie is secure." },
                     { "name": "session", "type": "boolean", "description": "True in case of session cookie." },
-                    { "name": "sameSite", "type": "string", "optional": true, "enum": ["Strict", "Lax"], "description": "Represents the cookies' 'SameSite' status: https://tools.ietf.org/html/draft-west-first-party-cookies" }
+                    { "name": "sameSite", "$ref": "CookieSameSite", "optional": true, "description": "Cookie SameSite type." }
                 ],
                 "experimental": true
             }
@@ -1234,6 +1240,27 @@
                     { "name": "url", "type": "string", "description": "URL to match cooke domain and path." }
                 ],
                 "description": "Deletes browser cookie with given name, domain and path.",
+                "handlers": ["browser"],
+                "async": true,
+                "experimental": true
+            },
+            {
+                "name": "setCookie",
+                "parameters": [
+                    { "name": "url", "type": "string", "description": "The request-URI to associate with the setting of the cookie. This value can affect the default domain and path values of the created cookie." },
+                    { "name": "name", "type": "string", "description": "The name of the cookie." },
+                    { "name": "value", "type": "string", "description": "The value of the cookie." },
+                    { "name": "domain", "type": "string", "optional": true, "description": "If omitted, the cookie becomes a host-only cookie." },
+                    { "name": "path", "type": "string", "optional": true, "description": "Defaults to the path portion of the url parameter." },
+                    { "name": "secure", "type": "boolean", "optional": true, "description": "Defaults ot false." },
+                    { "name": "httpOnly", "type": "boolean", "optional": true, "description": "Defaults to false." },
+                    { "name": "sameSite", "$ref": "CookieSameSite", "optional": true, "description": "Defaults to browser default behavior." },
+                    { "name": "expirationDate", "$ref": "Timestamp", "optional": true, "description": "If omitted, the cookie becomes a session cookie." }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean", "description": "True if successfully set cookie." }
+                ],
+                "description": "Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.",
                 "handlers": ["browser"],
                 "async": true,
                 "experimental": true

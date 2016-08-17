@@ -1,0 +1,208 @@
+Tests that cookies are set, updated and removed.
+
+Test started
+Enabling network
+
+Running test: simpleCookieAdd
+Setting Cookie
+Logging Cookies
+Success: true
+Num of cookies 1
+  Cookie: 
+    Domain: 127.0.0.1
+    Name: foo
+    Value: bar1
+    Path: /
+    HttpOnly: false
+    Secure: false
+    Session: true
+
+Running test: simpleCookieChange
+Setting Cookie
+Logging Cookies
+Success: true
+Num of cookies 1
+  Cookie: 
+    Domain: 127.0.0.1
+    Name: foo
+    Value: second bar2
+    Path: /
+    HttpOnly: false
+    Secure: false
+    Session: true
+
+Running test: anotherSimpleCookieAdd
+Setting Cookie
+Logging Cookies
+Success: true
+Num of cookies 2
+  Cookie: 
+    Domain: 127.0.0.1
+    Name: foo2
+    Value: bar1
+    Path: /
+    HttpOnly: false
+    Secure: false
+    Session: true
+  Cookie: 
+    Domain: 127.0.0.1
+    Name: foo
+    Value: second bar2
+    Path: /
+    HttpOnly: false
+    Secure: false
+    Session: true
+
+Running test: simpleCookieDelete
+Deleting Cookie
+Logging Cookies
+Num of cookies 1
+  Cookie: 
+    Domain: 127.0.0.1
+    Name: foo2
+    Value: bar1
+    Path: /
+    HttpOnly: false
+    Secure: false
+    Session: true
+
+Running test: deleteAllCookies
+Removing All Cookies
+Logging Cookies
+Num of cookies 0
+
+Running test: sessionCookieAdd
+Setting Cookie
+Logging Cookies
+Success: true
+Num of cookies 1
+  Cookie: 
+    Domain: 127.0.0.1
+    Name: foo
+    Value: bar4
+    Path: /
+    HttpOnly: false
+    Secure: false
+    Session: true
+
+Running test: deleteAllCookies
+Removing All Cookies
+Logging Cookies
+Num of cookies 0
+
+Running test: nonSessionCookieZeroAdd
+Setting Cookie
+Logging Cookies
+Success: true
+Num of cookies 0
+
+Running test: deleteAllCookies
+Removing All Cookies
+Logging Cookies
+Num of cookies 0
+
+Running test: nonSessionCookieAdd
+Setting Cookie
+Logging Cookies
+Success: true
+Num of cookies 1
+  Cookie: 
+    Domain: 127.0.0.1
+    Name: foo
+    Value: bar6
+    Path: /
+    HttpOnly: false
+    Secure: false
+    Session: false
+
+Running test: deleteAllCookies
+Removing All Cookies
+Logging Cookies
+Num of cookies 0
+
+Running test: differentOriginCookieAdd
+Setting Cookie
+Logging Cookies
+Success: true
+Num of cookies 0
+
+Running test: invalidCookieAddDomain
+Setting Cookie
+Logging Cookies
+Success: false
+Num of cookies 0
+
+Running test: invalidCookieAddName
+Setting Cookie
+Logging Cookies
+Success: false
+Num of cookies 0
+
+Running test: deleteAllCookies
+Removing All Cookies
+Logging Cookies
+Num of cookies 0
+
+Running test: secureCookieAdd
+Setting Cookie
+Logging Cookies
+Success: false
+Num of cookies 0
+
+Running test: deleteAllCookies
+Removing All Cookies
+Logging Cookies
+Num of cookies 0
+
+Running test: cookieAddHttpOnly
+Setting Cookie
+Logging Cookies
+Success: true
+Num of cookies 1
+  Cookie: 
+    Domain: 127.0.0.1
+    Name: foo
+    Value: bar
+    Path: /
+    HttpOnly: true
+    Secure: false
+    Session: true
+
+Running test: deleteAllCookies
+Removing All Cookies
+Logging Cookies
+Num of cookies 0
+
+Running test: cookieAddSameSiteLax
+Setting Cookie
+Logging Cookies
+Success: true
+Num of cookies 1
+  Cookie: 
+    Domain: 127.0.0.1
+    Name: foo
+    Value: bar
+    Path: /
+    HttpOnly: false
+    Secure: false
+    Session: true
+
+Running test: deleteAllCookies
+Removing All Cookies
+Logging Cookies
+Num of cookies 0
+
+Running test: cookieAddSameSiteLax
+Setting Cookie
+Logging Cookies
+Success: true
+Num of cookies 1
+  Cookie: 
+    Domain: 127.0.0.1
+    Name: foo
+    Value: bar
+    Path: /
+    HttpOnly: false
+    Secure: false
+    Session: true
+

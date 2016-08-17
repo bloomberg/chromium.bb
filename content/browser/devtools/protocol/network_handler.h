@@ -20,7 +20,6 @@ namespace network {
 class NetworkHandler {
  public:
   typedef DevToolsProtocolClient::Response Response;
-
   NetworkHandler();
   virtual ~NetworkHandler();
 
@@ -33,6 +32,17 @@ class NetworkHandler {
   Response DeleteCookie(DevToolsCommandId command_id,
                         const std::string& cookie_name,
                         const std::string& url);
+
+  Response SetCookie(DevToolsCommandId command_id,
+      const std::string& url,
+      const std::string& name,
+      const std::string& value,
+      const std::string* domain,
+      const std::string* path,
+      bool* secure,
+      bool* http_only,
+      const std::string* same_site,
+      double* expires);
 
   Response CanEmulateNetworkConditions(bool* result);
   Response EmulateNetworkConditions(bool offline,
@@ -49,6 +59,7 @@ class NetworkHandler {
       DevToolsCommandId command_id,
       const net::CookieList& cookie_list);
   void SendDeleteCookieResponse(DevToolsCommandId command_id);
+  void SendSetCookieResponse(DevToolsCommandId command_id, bool success);
 
   RenderFrameHostImpl* host_;
   std::unique_ptr<Client> client_;
