@@ -29,7 +29,9 @@ settings.BluetoothAddDeviceBehavior = {
      */
     deviceList: {
       type: Array,
-      value: /** @return {Array} */ function() { return []; },
+      value: /** @return {Array} */ function() {
+        return [];
+      },
     },
   },
 
@@ -44,15 +46,18 @@ settings.BluetoothAddDeviceBehavior = {
    * @return {boolean}
    * @private
    */
-  deviceNotPaired_: function(device) { return !device.paired; },
+  deviceNotPaired_: function(device) {
+    return !device.paired;
+  },
 
   /**
-   * @param {!Array<!chrome.bluetooth.Device>} deviceList
    * @return {boolean} True if deviceList contains any unpaired devices.
    * @private
    */
   haveDevices_: function(deviceList) {
-    return this.deviceList.findIndex(function(d) { return !d.paired; }) != -1;
+    return this.deviceList.findIndex(function(d) {
+      return !d.paired;
+    }) != -1;
   },
 
   /**
@@ -98,14 +103,10 @@ settings.BluetoothPairDeviceBehavior = {
     'pairingChanged_(pairingDevice, pairingEvent)',
   ],
 
-  /**
-   * @param {?chrome.bluetooth.Device} pairingDevice
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
-   * @private
-   */
-  pairingChanged_: function(pairingDevice, pairingEvent) {
+  /** @private */
+  pairingChanged_: function() {
     // Auto-close the dialog when pairing completes.
-    if (pairingDevice && pairingDevice.connected) {
+    if (this.pairingDevice && this.pairingDevice.connected) {
       this.close();
       return;
     }
@@ -113,51 +114,46 @@ settings.BluetoothPairDeviceBehavior = {
   },
 
   /**
-   * @param {?chrome.bluetooth.Device} device
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
    * @return {string}
    * @private
    */
-  getMessage_: function(device, pairingEvent) {
-    if (!device)
+  getMessage_: function() {
+    if (!this.pairingDevice)
       return '';
     var message;
-    if (!pairingEvent)
+    if (!this.pairingEvent)
       message = 'bluetoothStartConnecting';
     else
-      message = this.getEventDesc_(pairingEvent.pairing);
-    return this.i18n(message, device.name);
+      message = this.getEventDesc_(this.pairingEvent.pairing);
+    return this.i18n(message, this.pairingDevice.name);
   },
 
   /**
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
    * @return {boolean}
    * @private
    */
-  showEnterPincode_: function(pairingEvent) {
-    return !!pairingEvent &&
-        pairingEvent.pairing == PairingEventType.REQUEST_PINCODE;
+  showEnterPincode_: function() {
+    return !!this.pairingEvent &&
+        this.pairingEvent.pairing == PairingEventType.REQUEST_PINCODE;
   },
 
   /**
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
    * @return {boolean}
    * @private
    */
-  showEnterPasskey_: function(pairingEvent) {
-    return !!pairingEvent &&
-        pairingEvent.pairing == PairingEventType.REQUEST_PASSKEY;
+  showEnterPasskey_: function() {
+    return !!this.pairingEvent &&
+        this.pairingEvent.pairing == PairingEventType.REQUEST_PASSKEY;
   },
 
   /**
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
    * @return {boolean}
    * @private
    */
-  showDisplayPassOrPin_: function(pairingEvent) {
-    if (!pairingEvent)
+  showDisplayPassOrPin_: function() {
+    if (!this.pairingEvent)
       return false;
-    var pairing = pairingEvent.pairing;
+    var pairing = this.pairingEvent.pairing;
     return (
         pairing == PairingEventType.DISPLAY_PINCODE ||
         pairing == PairingEventType.DISPLAY_PASSKEY ||
@@ -166,36 +162,32 @@ settings.BluetoothPairDeviceBehavior = {
   },
 
   /**
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
    * @return {boolean}
    * @private
    */
-  showAcceptReject_: function(pairingEvent) {
-    return !!pairingEvent &&
-        pairingEvent.pairing == PairingEventType.CONFIRM_PASSKEY;
+  showAcceptReject_: function() {
+    return !!this.pairingEvent &&
+        this.pairingEvent.pairing == PairingEventType.CONFIRM_PASSKEY;
   },
 
   /**
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
    * @return {boolean}
    * @private
    */
-  showConnect_: function(pairingEvent) {
-    if (!pairingEvent)
+  showConnect_: function() {
+    if (!this.pairingEvent)
       return false;
-    var pairing = pairingEvent.pairing;
+    var pairing = this.pairingEvent.pairing;
     return pairing == PairingEventType.REQUEST_PINCODE ||
         pairing == PairingEventType.REQUEST_PASSKEY;
   },
 
   /**
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
-   * @param {string} pinOrPass Unused; call is triggered when this changes.
    * @return {boolean}
    * @private
    */
-  enableConnect_: function(pairingEvent, pinOrPass) {
-    if (!this.showConnect_(this.pairingEvent))
+  enableConnect_: function() {
+    if (!this.showConnect_())
       return false;
     var inputId =
         (this.pairingEvent.pairing == PairingEventType.REQUEST_PINCODE) ?
@@ -208,14 +200,13 @@ settings.BluetoothPairDeviceBehavior = {
   },
 
   /**
-   * @param {?chrome.bluetooth.Device} device
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
    * @return {boolean}
    * @private
    */
-  showDismiss_: function(device, pairingEvent) {
-    return (!!device && device.paired) ||
-        (!!pairingEvent && pairingEvent.pairing == PairingEventType.COMPLETE);
+  showDismiss_: function() {
+    return (!!this.paringDevice && this.pairingDevice.paired) ||
+        (!!this.pairingEvent &&
+         this.pairingEvent.pairing == PairingEventType.COMPLETE);
   },
 
   /** @private */
@@ -233,7 +224,10 @@ settings.BluetoothPairDeviceBehavior = {
     this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.REJECT);
   },
 
-  /** @private */
+  /**
+   * @param {!chrome.bluetoothPrivate.PairingResponse} response
+   * @private
+   */
   sendResponse_: function(response) {
     if (!this.pairingDevice)
       return;
@@ -268,24 +262,24 @@ settings.BluetoothPairDeviceBehavior = {
   },
 
   /**
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
    * @param {number} index
    * @return {string}
    * @private
    */
-  getPinDigit_: function(pairingEvent, index) {
-    if (!pairingEvent)
+  getPinDigit_: function(index) {
+    if (!this.pairingEvent)
       return '';
     var digit = '0';
-    var pairing = pairingEvent.pairing;
-    if (pairing == PairingEventType.DISPLAY_PINCODE && pairingEvent.pincode &&
-        index < pairingEvent.pincode.length) {
-      digit = pairingEvent.pincode[index];
+    var pairing = this.pairingEvent.pairing;
+    if (pairing == PairingEventType.DISPLAY_PINCODE &&
+        this.pairingEvent.pincode && index < this.pairingEvent.pincode.length) {
+      digit = this.pairingEvent.pincode[index];
     } else if (
-        pairingEvent.passkey && (pairing == PairingEventType.DISPLAY_PASSKEY ||
-                                 pairing == PairingEventType.KEYS_ENTERED ||
-                                 pairing == PairingEventType.CONFIRM_PASSKEY)) {
-      var passkeyString = String(pairingEvent.passkey);
+        this.pairingEvent.passkey &&
+        (pairing == PairingEventType.DISPLAY_PASSKEY ||
+         pairing == PairingEventType.KEYS_ENTERED ||
+         pairing == PairingEventType.CONFIRM_PASSKEY)) {
+      var passkeyString = String(this.pairingEvent.passkey);
       if (index < passkeyString.length)
         digit = passkeyString[index];
     }
@@ -293,27 +287,26 @@ settings.BluetoothPairDeviceBehavior = {
   },
 
   /**
-   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
    * @param {number} index
    * @return {string}
    * @private
    */
-  getPinClass_: function(pairingEvent, index) {
-    if (!pairingEvent)
+  getPinClass_: function(index) {
+    if (!this.pairingEvent)
       return '';
-    if (pairingEvent.pairing == PairingEventType.CONFIRM_PASSKEY)
+    if (this.pairingEvent.pairing == PairingEventType.CONFIRM_PASSKEY)
       return 'confirm';
     var cssClass = 'display';
-    if (pairingEvent.pairing == PairingEventType.DISPLAY_PASSKEY) {
+    if (this.pairingEvent.pairing == PairingEventType.DISPLAY_PASSKEY) {
       if (index == 0)
         cssClass += ' next';
       else
         cssClass += ' untyped';
     } else if (
-        pairingEvent.pairing == PairingEventType.KEYS_ENTERED &&
-        pairingEvent.enteredKey) {
-      var enteredKey = pairingEvent.enteredKey;  // 1-7
-      var lastKey = this.digits.length;          // 6
+        this.pairingEvent.pairing == PairingEventType.KEYS_ENTERED &&
+        this.pairingEvent.enteredKey) {
+      var enteredKey = this.pairingEvent.enteredKey;  // 1-7
+      var lastKey = this.digits.length;               // 6
       if ((index == -1 && enteredKey > lastKey) || (index + 1 == enteredKey))
         cssClass += ' next';
       else if (index > enteredKey)
@@ -337,6 +330,10 @@ Polymer({
     dialogId: String,
   },
 
+  observers: [
+    'dialogUpdated_(dialogId, pairingEvent)',
+  ],
+
   open: function() {
     this.pinOrPass = '';
     this.getDialog_().showModal();
@@ -346,6 +343,14 @@ Polymer({
     var dialog = this.getDialog_();
     if (dialog.open)
       dialog.close();
+  },
+
+  /** @private */
+  dialogUpdated_: function() {
+    if (this.showEnterPincode_())
+      this.$$('#pincode').focus();
+    else if (this.showEnterPasskey_())
+      this.$$('#passkey').focus();
   },
 
   /**
@@ -368,13 +373,12 @@ Polymer({
   },
 
   /**
-   * @param {string} currentDialogType
-   * @param {string} wantedDialogType
+   * @param {string} desiredDialogType
    * @return {boolean}
    * @private
    */
-  isDialogType_: function(currentDialogType, wantedDialogType) {
-    return currentDialogType == wantedDialogType;
+  isDialogType_: function(desiredDialogType, currentDialogType) {
+    return currentDialogType == desiredDialogType;
   },
 
   /** @private */

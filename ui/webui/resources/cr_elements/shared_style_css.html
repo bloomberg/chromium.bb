@@ -6,6 +6,14 @@
 <dom-module id="cr-shared-style">
   <template>
     <style>
+      /* Chrome spinners should be blue. */
+      paper-spinner {
+        --paper-spinner-layer-1-color: var(--google-blue-500);
+        --paper-spinner-layer-2-color: var(--google-blue-500);
+        --paper-spinner-layer-3-color: var(--google-blue-500);
+        --paper-spinner-layer-4-color: var(--google-blue-500);
+      }
+
       .action-button {
         background: var(--google-blue-500);
         color: white;
