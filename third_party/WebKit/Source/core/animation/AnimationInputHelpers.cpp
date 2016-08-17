@@ -213,7 +213,6 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const Stri
     const CSSValue* value = CSSParser::parseSingleValue(CSSPropertyTransitionTimingFunction, string);
     if (!value || !value->isValueList()) {
         DCHECK(!value || value->isCSSWideKeyword());
-        bool throwTypeError = true;
         if (document) {
             if (string.startsWith("function")) {
                 // Due to a bug in old versions of the web-animations-next
@@ -227,23 +226,12 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const Stri
                 // linear case is special because 'linear' is the default value
                 // for easing. See http://crbug.com/601672
                 if (string == "function (a){return a}") {
-                    Deprecation::countDeprecation(*document, UseCounter::WebAnimationsEasingAsFunctionLinear);
-                    throwTypeError = false;
+                    UseCounter::count(*document, UseCounter::WebAnimationsEasingAsFunctionLinear);
                 } else {
                     UseCounter::count(*document, UseCounter::WebAnimationsEasingAsFunctionOther);
                 }
             }
         }
-
-        // TODO(suzyh): This return clause exists so that the special linear
-        // function case above is exempted from causing TypeErrors. The
-        // throwTypeError bool and this if-statement should be removed after the
-        // M53 branch point in July 2016, so that this case will also throw
-        // TypeErrors from M54 onward.
-        if (!throwTypeError) {
-            return Timing::defaults().timingFunction;
-        }
-
         exceptionState.throwTypeError("'" + string + "' is not a valid value for easing");
         return nullptr;
     }

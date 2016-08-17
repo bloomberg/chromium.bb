@@ -1,8 +1,0 @@
-CONSOLE WARNING: line 9: Specifying animation easing as a function is deprecated and all support will be removed in M54, around October 2016, at which point this will throw a TypeError. This warning may have been triggered by the Web Animations or Polymer polyfills. See http://crbug.com/601672 for details.
-This is a testharness.js-based test.
-PASS Valid easing functions should come out the same as they went in 
-PASS steps easing second parameter defaults to end 
-PASS Should accept arbitrary casing and escape chararcters 
-FAIL Invalid easing values should throw a TypeError assert_throws: with inputEasing='function (a){return a}' function "function () { animate_with_easing(inputEasing); }" did not throw
-Harness: the test ran to completion.
-

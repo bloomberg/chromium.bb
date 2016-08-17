@@ -27,7 +27,9 @@ test(() => {
   // This linear function value is the one expected from uses of the unpatched
   // Web Animations polyfill (i.e. old versions lacking
   // https://github.com/web-animations/web-animations-next/pull/423).
-  document.documentElement.animate([], { easing: 'function (a){return a}' });
+  assert_throws(
+      {name: 'TypeError'},
+      function() { document.documentElement.animate([], { easing: 'function (a){return a}' }) });
   assert_true(internals.isUseCounted(document, WebAnimationsEasingAsFunctionLinear));
   assert_false(internals.isUseCounted(document, WebAnimationsEasingAsFunctionOther));
 }, 'A specific linear function for easing is counted in WebAnimationsEasingAsFunctionLinear.');
