@@ -43,7 +43,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
     grand_child->SetBounds(gfx::Size(5, 5));
     child->AddChild(grand_child);
 
-    layer_tree_host()->SetRootLayer(root);
+    layer_tree()->SetRootLayer(root);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root->bounds());
   }
@@ -204,7 +204,7 @@ class LayerTreeHostCopyRequestCompletionCausesCommit
     layer_->SetBounds(gfx::Size(15, 15));
     root_->AddChild(layer_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -259,7 +259,7 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
     impl_destroyed_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(impl_destroyed_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -291,7 +291,7 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
         EXPECT_EQ(1, callback_count_);
 
         // Prevent drawing so we can't make a copy of the impl_destroyed layer.
-        layer_tree_host()->SetViewportSize(gfx::Size());
+        layer_tree()->SetViewportSize(gfx::Size());
         break;
       case 2:
         // Flush the message loops and make sure the callbacks run.
@@ -358,7 +358,7 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
     copy_layer_->SetBounds(gfx::Size(10, 10));
     parent_layer_->AddChild(copy_layer_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -458,7 +458,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
     copy_layer_->SetBounds(gfx::Size(10, 10));
     parent_layer_->AddChild(copy_layer_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -562,7 +562,7 @@ class LayerTreeHostCopyRequestTestClippedOut
     copy_layer_->SetBounds(gfx::Size(10, 10));
     parent_layer_->AddChild(copy_layer_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -612,7 +612,7 @@ class LayerTreeHostCopyRequestTestScaledLayer
     child_layer_->SetBounds(gfx::Size(10, 10));
     copy_layer_->AddChild(child_layer_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -656,7 +656,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
     copy_layer_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(copy_layer_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -674,7 +674,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
     PostSetNeedsCommitToMainThread();
 
     // Prevent drawing.
-    layer_tree_host()->SetViewportSize(gfx::Size(0, 0));
+    layer_tree()->SetViewportSize(gfx::Size(0, 0));
 
     AddCopyRequest(copy_layer_.get());
   }
@@ -689,7 +689,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
   void DidCommit() override {
     if (layer_tree_host()->source_frame_number() == 1) {
       // Allow drawing.
-      layer_tree_host()->SetViewportSize(gfx::Size(root_->bounds()));
+      layer_tree()->SetViewportSize(gfx::Size(root_->bounds()));
 
       AddCopyRequest(copy_layer_.get());
     }
@@ -745,7 +745,7 @@ class LayerTreeHostCopyRequestTestDeleteTexture
     copy_layer_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(copy_layer_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -876,7 +876,7 @@ class LayerTreeHostCopyRequestTestCountTextures
     copy_layer_->SetForceRenderSurfaceForTesting(true);
     root_->AddChild(copy_layer_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
   }
 
@@ -1037,7 +1037,7 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
     copy_layer_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(copy_layer_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -1072,7 +1072,7 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
                            base::Unretained(this)));
         copy_layer_->RequestCopyOfOutput(std::move(request));
 
-        layer_tree_host()->SetViewportSize(gfx::Size());
+        layer_tree()->SetViewportSize(gfx::Size());
         break;
       }
       case 2:
@@ -1083,8 +1083,7 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
       case 3:
         EXPECT_EQ(1, callback_count_);
         // Allow us to draw now.
-        layer_tree_host()->SetViewportSize(
-            layer_tree_host()->root_layer()->bounds());
+        layer_tree()->SetViewportSize(layer_tree()->root_layer()->bounds());
         break;
       case 4:
         EXPECT_EQ(1, callback_count_);
@@ -1114,7 +1113,7 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
     copy_layer_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(copy_layer_);
 
-    layer_tree_host()->SetRootLayer(root_);
+    layer_tree()->SetRootLayer(root_);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
@@ -1149,7 +1148,7 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
                            base::Unretained(this)));
         copy_layer_->RequestCopyOfOutput(std::move(request));
 
-        layer_tree_host()->SetViewportSize(gfx::Size());
+        layer_tree()->SetViewportSize(gfx::Size());
         break;
       }
       case 2:
@@ -1186,7 +1185,7 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
     root->AddChild(child_);
     child_->SetHideLayerAndSubtree(true);
 
-    layer_tree_host()->SetRootLayer(root);
+    layer_tree()->SetRootLayer(root);
     LayerTreeHostCopyRequestTest::SetupTree();
     client_.set_bounds(root->bounds());
   }

@@ -503,11 +503,12 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.animation_host = cc::AnimationHost::CreateMainInstance();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   DCHECK(!host_->visible());
-  host_->SetRootLayer(root_window_->GetLayer());
+  host_->GetLayerTree()->SetRootLayer(root_window_->GetLayer());
   host_->set_surface_client_id(surface_id_allocator_->client_id());
-  host_->SetViewportSize(size_);
-  host_->set_has_transparent_background(has_transparent_background_);
-  host_->SetDeviceScaleFactor(device_scale_factor_);
+  host_->GetLayerTree()->SetViewportSize(size_);
+  host_->GetLayerTree()->set_has_transparent_background(
+      has_transparent_background_);
+  host_->GetLayerTree()->SetDeviceScaleFactor(device_scale_factor_);
 
   if (needs_animate_)
     host_->SetNeedsAnimate();
@@ -539,7 +540,7 @@ void CompositorImpl::SetVisible(bool visible) {
 void CompositorImpl::setDeviceScaleFactor(float factor) {
   device_scale_factor_ = factor;
   if (host_)
-    host_->SetDeviceScaleFactor(factor);
+    host_->GetLayerTree()->SetDeviceScaleFactor(factor);
 }
 
 void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
@@ -548,7 +549,7 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
 
   size_ = size;
   if (host_)
-    host_->SetViewportSize(size);
+    host_->GetLayerTree()->SetViewportSize(size);
   if (display_)
     display_->Resize(size);
   root_window_->GetLayer()->SetBounds(size);
@@ -557,7 +558,7 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
 void CompositorImpl::SetHasTransparentBackground(bool flag) {
   has_transparent_background_ = flag;
   if (host_)
-    host_->set_has_transparent_background(flag);
+    host_->GetLayerTree()->set_has_transparent_background(flag);
 }
 
 void CompositorImpl::SetNeedsComposite() {

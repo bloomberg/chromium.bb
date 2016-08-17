@@ -49,10 +49,14 @@ class FakeLayerTreeHost : public LayerTreeHost {
   const RendererCapabilities& GetRendererCapabilities() const override;
   void SetNeedsCommit() override;
   void SetNeedsUpdateLayers() override {}
-  void SetNeedsFullTreeSync() override {}
 
-  using LayerTreeHost::SetRootLayer;
-  using LayerTreeHost::root_layer;
+  void SetRootLayer(scoped_refptr<Layer> root_layer) {
+    layer_tree_->SetRootLayer(root_layer);
+  }
+  Layer* root_layer() const { return layer_tree_->root_layer(); }
+  PropertyTrees* property_trees() const {
+    return layer_tree_->property_trees();
+  }
 
   LayerImpl* CommitAndCreateLayerImplTree();
   LayerImpl* CommitAndCreatePendingTree();

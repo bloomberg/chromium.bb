@@ -442,8 +442,8 @@ void RemoteChannelImpl::DidInitializeOutputSurfaceOnMain(
 
   // The commit after a new output surface can early out, in which case we will
   // never redraw. Schedule one just to be safe.
-  PostSetNeedsRedrawToImpl(
-      gfx::Rect(main().layer_tree_host->device_viewport_size()));
+  PostSetNeedsRedrawToImpl(gfx::Rect(
+      main().layer_tree_host->GetLayerTree()->device_viewport_size()));
 }
 
 void RemoteChannelImpl::SendMessageProtoOnMain(

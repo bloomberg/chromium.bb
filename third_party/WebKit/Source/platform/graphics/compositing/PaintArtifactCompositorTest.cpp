@@ -415,7 +415,7 @@ protected:
 
     const cc::PropertyTrees& propertyTrees()
     {
-        return *m_webLayerTreeView->layerTreeHost()->property_trees();
+        return *m_webLayerTreeView->layerTreeHost()->GetLayerTree()->property_trees();
     }
 
     const cc::TransformNode& transformNode(const cc::Layer* layer)

@@ -47,7 +47,7 @@ void TreeSynchronizer::SynchronizeTrees(Layer* layer_root,
     tree_impl->DetachLayers();
   } else {
     SynchronizeTreesInternal(layer_root->layer_tree_host(), tree_impl,
-                             layer_root->layer_tree_host()->property_trees());
+                             layer_root->GetLayerTree()->property_trees());
   }
 }
 

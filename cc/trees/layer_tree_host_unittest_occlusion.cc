@@ -41,7 +41,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnLayer
     child_->SetIsDrawable(true);
     root->AddChild(child_);
 
-    layer_tree_host()->SetRootLayer(root);
+    layer_tree()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
   }
 
@@ -97,7 +97,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
     child2->SetIsDrawable(true);
     root->AddChild(child2);
 
-    layer_tree_host()->SetRootLayer(root);
+    layer_tree()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
   }
 
@@ -163,7 +163,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     child2->SetIsDrawable(true);
     root->AddChild(child2);
 
-    layer_tree_host()->SetRootLayer(root);
+    layer_tree()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
     client_.set_bounds(root->bounds());
   }
@@ -236,7 +236,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
     child2->SetIsDrawable(true);
     root->AddChild(child2);
 
-    layer_tree_host()->SetRootLayer(root);
+    layer_tree()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
     client_.set_bounds(root->bounds());
   }
@@ -304,7 +304,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesInsideReplica
     child2->SetIsDrawable(true);
     root->AddChild(child2);
 
-    layer_tree_host()->SetRootLayer(root);
+    layer_tree()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
     client_.set_bounds(root->bounds());
   }

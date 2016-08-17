@@ -9,12 +9,31 @@
 #include "cc/layers/layer.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree.h"
 
 namespace cc {
+
+namespace {
+
+class FakeLayerTree : public LayerTree {
+ public:
+  FakeLayerTree(std::unique_ptr<AnimationHost> animation_host,
+                LayerTreeHost* layer_tree_host)
+      : LayerTree(std::move(animation_host), layer_tree_host) {}
+
+  void SetNeedsFullTreeSync() override {}
+};
+
+}  // namespace
+
 FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                                      LayerTreeHost::InitParams* params,
                                      CompositorMode mode)
-    : LayerTreeHost(params, mode),
+    : LayerTreeHost(
+          params,
+          mode,
+          base::MakeUnique<FakeLayerTree>(std::move(params->animation_host),
+                                          this)),
       client_(client),
       host_impl_(*params->settings,
                  &task_runner_provider_,
@@ -96,13 +115,17 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
 
   active_tree()->UpdatePropertyTreeScrollOffset(property_trees());
 
-  if (page_scale_layer() && inner_viewport_scroll_layer()) {
+  if (layer_tree_->page_scale_layer() &&
+      layer_tree_->inner_viewport_scroll_layer()) {
     active_tree()->SetViewportLayersFromIds(
-        overscroll_elasticity_layer() ? overscroll_elasticity_layer()->id()
-                                      : Layer::INVALID_ID,
-        page_scale_layer()->id(), inner_viewport_scroll_layer()->id(),
-        outer_viewport_scroll_layer() ? outer_viewport_scroll_layer()->id()
-                                      : Layer::INVALID_ID);
+        layer_tree_->overscroll_elasticity_layer()
+            ? layer_tree_->overscroll_elasticity_layer()->id()
+            : Layer::INVALID_ID,
+        layer_tree_->page_scale_layer()->id(),
+        layer_tree_->inner_viewport_scroll_layer()->id(),
+        layer_tree_->outer_viewport_scroll_layer()
+            ? layer_tree_->outer_viewport_scroll_layer()->id()
+            : Layer::INVALID_ID);
   }
 
   active_tree()->UpdatePropertyTreesForBoundsDelta();

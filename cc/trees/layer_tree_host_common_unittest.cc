@@ -172,28 +172,28 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   const LayerList* GetUpdateLayerList() { return &update_layer_list_; }
 
   void ExecuteCalculateDrawPropertiesWithPropertyTrees(Layer* root_layer) {
-    DCHECK(root_layer->layer_tree_host());
+    DCHECK(root_layer->GetLayerTree());
     PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
 
     bool can_render_to_separate_surface = true;
 
     const Layer* page_scale_layer =
-        root_layer->layer_tree_host()->page_scale_layer();
+        root_layer->GetLayerTree()->page_scale_layer();
     Layer* inner_viewport_scroll_layer =
-        root_layer->layer_tree_host()->inner_viewport_scroll_layer();
+        root_layer->GetLayerTree()->inner_viewport_scroll_layer();
     Layer* outer_viewport_scroll_layer =
-        root_layer->layer_tree_host()->outer_viewport_scroll_layer();
+        root_layer->GetLayerTree()->outer_viewport_scroll_layer();
     const Layer* overscroll_elasticity_layer =
-        root_layer->layer_tree_host()->overscroll_elasticity_layer();
+        root_layer->GetLayerTree()->overscroll_elasticity_layer();
     gfx::Vector2dF elastic_overscroll =
-        root_layer->layer_tree_host()->elastic_overscroll();
+        root_layer->GetLayerTree()->elastic_overscroll();
     float page_scale_factor = 1.f;
     float device_scale_factor = 1.f;
     gfx::Size device_viewport_size =
         gfx::Size(root_layer->bounds().width() * device_scale_factor,
                   root_layer->bounds().height() * device_scale_factor);
     PropertyTrees* property_trees =
-        root_layer->layer_tree_host()->property_trees();
+        root_layer->GetLayerTree()->property_trees();
     update_layer_list_.clear();
     PropertyTreeBuilder::BuildPropertyTrees(
         root_layer, page_scale_layer, inner_viewport_scroll_layer,
@@ -6929,8 +6929,7 @@ TEST_F(LayerTreeHostCommonTest, NonFlatContainerForFixedPosLayer) {
   container->SetTransform(rotate);
 
   ExecuteCalculateDrawProperties(root.get());
-  TransformTree& tree =
-      root->layer_tree_host()->property_trees()->transform_tree;
+  TransformTree& tree = root->GetLayerTree()->property_trees()->transform_tree;
   gfx::Transform transform;
   tree.ComputeTranslation(fixed_pos->transform_tree_index(),
                           container->transform_tree_index(), &transform);
@@ -7852,8 +7851,8 @@ TEST_F(LayerTreeHostCommonTest, NodesAffectedByBoundsDeltaGetUpdated) {
   outer_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
 
   host()->SetRootLayer(root);
-  host()->RegisterViewportLayers(nullptr, root, inner_viewport_scroll_layer,
-                                 outer_viewport_scroll_layer);
+  host()->GetLayerTree()->RegisterViewportLayers(
+      nullptr, root, inner_viewport_scroll_layer, outer_viewport_scroll_layer);
 
   scoped_refptr<Layer> fixed_to_inner = Layer::Create();
   scoped_refptr<Layer> fixed_to_outer = Layer::Create();
@@ -9459,7 +9458,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
 
-  EffectTree& tree = root->layer_tree_host()->property_trees()->effect_tree;
+  EffectTree& tree = root->GetLayerTree()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(animated->effect_tree_index());
   EXPECT_FALSE(node->is_currently_animating_opacity);
   EXPECT_TRUE(node->has_potential_opacity_animation);
@@ -9516,8 +9515,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
 
-  TransformTree& tree =
-      root->layer_tree_host()->property_trees()->transform_tree;
+  TransformTree& tree = root->GetLayerTree()->property_trees()->transform_tree;
   TransformNode* node = tree.Node(animated->transform_tree_index());
   EXPECT_FALSE(node->is_currently_animating);
   EXPECT_TRUE(node->has_potential_animation);
@@ -9654,7 +9652,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   parent5->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
   parent5->SetBounds(gfx::Size(10, 10));
 
-  host()->RegisterViewportLayers(nullptr, page_scale_layer, parent2, nullptr);
+  host()->GetLayerTree()->RegisterViewportLayers(nullptr, page_scale_layer,
+                                                 parent2, nullptr);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root1.get());
 
   const int kInvalidPropertyTreeNodeId = -1;
