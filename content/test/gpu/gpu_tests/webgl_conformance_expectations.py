@@ -549,23 +549,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
-    self.Fail('conformance/glsl/bugs/' +
-              'invariant-does-not-leak-across-shaders.html',
-              bug=634813)
-
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=570453)
-
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        bug=625365)
-    # self.Fail('conformance/extensions/webgl-draw-buffers.html',
-    #     ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
-    # self.Fail('conformance/extensions/webgl-draw-buffers.html',
-    #     ['mavericks', ('nvidia', 0xfe9)], bug=586536)
-    # self.Fail('conformance/extensions/webgl-draw-buffers.html',
-    #     ['linux', ('intel', 0x412), 'opengl'], bug=586536)
 
     # OpenGL / NVIDIA failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
@@ -657,6 +644,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Mac Retina AMD failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['mac', ('amd', 0x6821)], bug=599272)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['mac', ('amd', 0x6821)], bug=625365)
 
     # Linux failures
     self.Flaky('conformance/textures/video/' +

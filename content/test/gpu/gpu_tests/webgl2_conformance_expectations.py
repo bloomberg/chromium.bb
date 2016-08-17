@@ -39,10 +39,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html', bug=634519)
 
     # All platforms.
-    self.Fail('conformance/glsl/bugs/' +
-              'invariant-does-not-leak-across-shaders.html',
-              bug=634813)
-
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
     # All platforms with AMD GPU.
@@ -203,8 +199,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     #     ['mac', ('nvidia', 0xfe9)], bug=616562)
     self.Fail('deqp/data/gles3/shaders/linkage.html',
         ['mac'], bug=601821)
-    self.Fail('conformance2/programs/gl-get-frag-data-location.html',
-        ['mac'], bug=638340)
 
     # This one's flaky on AMD, NVIDIA and Intel GPUs, but the
     # GPU-specific expectations aren't working properly.
