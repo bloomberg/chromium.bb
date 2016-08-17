@@ -689,8 +689,8 @@ void MediaControls::computeWhichControlsFit()
     // Controls that we'll hide / show, in order of decreasing priority.
     MediaControlElement* elements[] = {
         // Exclude m_playButton; we handle it specially.
-        m_toggleClosedCaptionsButton.get(),
         m_fullScreenButton.get(),
+        m_toggleClosedCaptionsButton.get(),
         m_timeline.get(),
         m_currentTimeDisplay.get(),
         m_volumeSlider.get(),
