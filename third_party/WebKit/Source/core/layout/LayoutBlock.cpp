@@ -380,7 +380,10 @@ void LayoutBlock::layout()
 
     invalidateBackgroundObscurationStatus();
 
-    if (needsScrollAnchoring)
+    // If clamping is delayed, we will restore in PaintLayerScrollableArea::clampScrollPositionsAfterLayout.
+    // Restoring during the intermediate layout may clamp the scroller to the wrong bounds.
+    bool clampingDelayed = PaintLayerScrollableArea::DelayScrollPositionClampScope::clampingIsDelayed();
+    if (needsScrollAnchoring && !clampingDelayed)
         getScrollableArea()->scrollAnchor().restore();
 
     m_heightAvailableToChildrenChanged = false;
