@@ -14,8 +14,6 @@
 
 class GURL;
 class Profile;
-class TemplateURL;
-class TemplateURLRef;
 
 namespace content {
 class BrowserContext;
@@ -39,30 +37,13 @@ enum CacheableNTPLoad {
 // Returns whether the suggest is enabled for the given |profile|.
 bool IsSuggestPrefEnabled(Profile* profile);
 
-// Extracts and returns search terms from |url|. Does not consider Instant
-// support state of the page and does not check for a privileged process, so
-// most callers should use GetSearchTerms() below instead.
+// Extracts and returns search terms from |url|.
 base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url);
 
 // Returns true if it is okay to extract search terms from |url|. |url| must
 // have a secure scheme and must contain the search terms replacement key for
 // the default search provider.
 bool IsQueryExtractionAllowedForURL(Profile* profile, const GURL& url);
-
-// Returns the search terms attached to a specific NavigationEntry, or empty
-// string otherwise. Does not check Instant support, so most callers should use
-// GetSearchTerms() below instead.
-base::string16 GetSearchTermsFromNavigationEntry(
-    const content::NavigationEntry* entry);
-
-// Returns search terms if this WebContents is a search results page. It looks
-// in the visible NavigationEntry first, to see if search terms have already
-// been extracted. Failing that, it tries to extract search terms from the URL.
-//
-// Returns a blank string if search terms were not found, or if search terms
-// extraction is disabled for this WebContents or profile, or if |contents|
-// does not support Instant.
-base::string16 GetSearchTerms(const content::WebContents* contents);
 
 // Returns true if |url| should be rendered in the Instant renderer process.
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile);
@@ -147,15 +128,6 @@ bool HandleNewTabURLRewrite(GURL* url,
 // Reverses the operation from HandleNewTabURLRewrite.
 bool HandleNewTabURLReverseRewrite(GURL* url,
                                    content::BrowserContext* browser_context);
-
-// Sets the Instant support |state| in the navigation |entry|.
-void SetInstantSupportStateInNavigationEntry(InstantSupportState state,
-                                             content::NavigationEntry* entry);
-
-// Returns the Instant support state attached to the NavigationEntry, or
-// INSTANT_SUPPORT_UNKNOWN otherwise.
-InstantSupportState GetInstantSupportStateFromNavigationEntry(
-    const content::NavigationEntry& entry);
 
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.

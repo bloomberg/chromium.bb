@@ -280,57 +280,45 @@ TEST_F(OmniboxEditTest, AdjustTextForCopy) {
     const char* expected_output;
     const bool write_url;
     const char* expected_url;
-    const bool extracted_search_terms;
   } input[] = {
     // Test that http:// is inserted if all text is selected.
-    { "a.de/b", 0, true, "a.de/b", "http://a.de/b", true, "http://a.de/b",
-      false },
+    { "a.de/b", 0, true, "a.de/b", "http://a.de/b", true, "http://a.de/b", },
 
     // Test that http:// is inserted if the host is selected.
-    { "a.de/b", 0, false, "a.de/", "http://a.de/", true, "http://a.de/",
-      false },
+    { "a.de/b", 0, false, "a.de/", "http://a.de/", true, "http://a.de/" },
 
     // Tests that http:// is inserted if the path is modified.
-    { "a.de/b", 0, false, "a.de/c", "http://a.de/c", true, "http://a.de/c",
-      false },
+    { "a.de/b", 0, false, "a.de/c", "http://a.de/c", true, "http://a.de/c" },
 
     // Tests that http:// isn't inserted if the host is modified.
-    { "a.de/b", 0, false, "a.com/b", "a.com/b", false, "", false },
+    { "a.de/b", 0, false, "a.com/b", "a.com/b", false, "" },
 
     // Tests that http:// isn't inserted if the start of the selection is 1.
-    { "a.de/b", 1, false, "a.de/b", "a.de/b", false, "", false },
+    { "a.de/b", 1, false, "a.de/b", "a.de/b", false, "" },
 
     // Tests that http:// isn't inserted if a portion of the host is selected.
-    { "a.de/", 0, false, "a.d", "a.d", false, "", false },
+    { "a.de/", 0, false, "a.d", "a.d", false, "" },
 
     // Tests that http:// isn't inserted for an https url after the user nukes
     // https.
-    { "https://a.com/", 0, false, "a.com/", "a.com/", false, "", false },
+    { "https://a.com/", 0, false, "a.com/", "a.com/", false, "" },
 
     // Tests that http:// isn't inserted if the user adds to the host.
-    { "a.de/", 0, false, "a.de.com/", "a.de.com/", false, "", false },
+    { "a.de/", 0, false, "a.de.com/", "a.de.com/", false, "" },
 
     // Tests that we don't get double http if the user manually inserts http.
-    { "a.de/", 0, false, "http://a.de/", "http://a.de/", true, "http://a.de/",
-      false },
+    { "a.de/", 0, false, "http://a.de/", "http://a.de/", true, "http://a.de/" },
 
     // Makes sure intranet urls get 'http://' prefixed to them.
-    { "b/foo", 0, true, "b/foo", "http://b/foo", true, "http://b/foo", false },
+    { "b/foo", 0, true, "b/foo", "http://b/foo", true, "http://b/foo" },
 
     // Verifies a search term 'foo' doesn't end up with http.
-    { "www.google.com/search?", 0, false, "foo", "foo", false, "", false },
-
-    // Makes sure extracted search terms are not modified.
-    { "www.google.com/webhp?", 0, true, "hello world", "hello world", false,
-      "", true },
+    { "www.google.com/search?", 0, false, "foo", "foo", false, "" },
   };
 
   for (size_t i = 0; i < arraysize(input); ++i) {
     toolbar_model()->set_text(base::ASCIIToUTF16(input[i].perm_text));
     model()->UpdatePermanentText();
-
-    toolbar_model()->set_perform_search_term_replacement(
-        input[i].extracted_search_terms);
 
     base::string16 result = base::ASCIIToUTF16(input[i].input);
     GURL url;

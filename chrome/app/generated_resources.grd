@@ -12162,9 +12162,6 @@ Tell us what happened exactly before you got the profile error message:
         <message name="IDS_EDIT_SELECT_ALL_MAC" desc="The Mac menu item select all in the edit menu.">
           Select All
         </message>
-        <message name="IDS_SHOW_URL_MAC" desc="The Mac menu item for Show URL in the omnibox context menu, when the omnibox is showing search terms instead of the underlying search URL.">
-          Show URL
-        </message>
         <!-- Edit::Find submenu -->
         <message name="IDS_EDIT_FIND_SUBMENU_MAC" desc="The Mac menu item for the find submenu in the edit menu.">
           Find

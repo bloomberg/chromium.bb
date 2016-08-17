@@ -101,8 +101,6 @@ class OmniboxViewMac : public OmniboxView,
   bool CanCopy() override;
   base::scoped_nsobject<NSPasteboardItem> CreatePasteboardItem() override;
   void CopyToPasteboard(NSPasteboard* pboard) override;
-  bool ShouldEnableShowURL() override;
-  void ShowURL() override;
   void OnPaste() override;
   bool CanPasteAndGo() override;
   int GetPasteActionStringId() override;
@@ -119,7 +117,6 @@ class OmniboxViewMac : public OmniboxView,
   void OnSetFocus(bool control_down) override;
   void OnKillFocus() override;
   void OnMouseDown(NSInteger button_number) override;
-  bool ShouldSelectAllOnMouseDown() override;
 
   // Helper for LocationBarViewMac.  Optionally selects all in |field_|.
   void FocusLocation(bool select_all);

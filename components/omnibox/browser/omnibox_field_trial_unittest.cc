@@ -363,10 +363,6 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
                     OmniboxEventProto::HOME_PAGE);         // exact match
     ExpectRuleValue("rule1-4-*-value",
                     "rule1", OmniboxEventProto::OTHER);    // partial fallback
-    ExpectRuleValue("rule1-*-*-value",
-                    "rule1",
-                    OmniboxEventProto::                    // fallback to global
-                    SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT);
     // Tests for rule 2.
     ExpectRuleValue("rule2-*-0-value",
                     "rule2",

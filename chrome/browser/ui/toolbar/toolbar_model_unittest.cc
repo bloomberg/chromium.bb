@@ -102,14 +102,12 @@ void ToolbarModelTest::NavigateAndCheckText(
   controller->LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
                       std::string());
   ToolbarModel* toolbar_model = browser()->toolbar_model();
-  EXPECT_EQ(expected_text, toolbar_model->GetText());
-  EXPECT_FALSE(toolbar_model->WouldPerformSearchTermReplacement(false));
+  EXPECT_EQ(expected_text, toolbar_model->GetFormattedURL(nullptr));
   EXPECT_TRUE(toolbar_model->ShouldDisplayURL());
 
   // Check after commit.
   CommitPendingLoad(controller);
-  EXPECT_EQ(expected_text, toolbar_model->GetText());
-  EXPECT_FALSE(toolbar_model->WouldPerformSearchTermReplacement(false));
+  EXPECT_EQ(expected_text, toolbar_model->GetFormattedURL(nullptr));
   EXPECT_TRUE(toolbar_model->ShouldDisplayURL());
 }
 
@@ -120,14 +118,16 @@ void ToolbarModelTest::NavigateAndCheckElided(const GURL& url) {
   controller->LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
                       std::string());
   ToolbarModel* toolbar_model = browser()->toolbar_model();
-  const base::string16 toolbar_text_before(toolbar_model->GetText());
+  const base::string16 toolbar_text_before(
+      toolbar_model->GetFormattedURL(nullptr));
   EXPECT_LT(toolbar_text_before.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(toolbar_text_before,
                              base::string16(gfx::kEllipsisUTF16),
                              base::CompareCase::SENSITIVE));
   // Check after commit.
   CommitPendingLoad(controller);
-  const base::string16 toolbar_text_after(toolbar_model->GetText());
+  const base::string16 toolbar_text_after(
+      toolbar_model->GetFormattedURL(nullptr));
   EXPECT_LT(toolbar_text_after.size(), url.spec().size());
   EXPECT_TRUE(base::EndsWith(toolbar_text_after,
                              base::string16(gfx::kEllipsisUTF16),

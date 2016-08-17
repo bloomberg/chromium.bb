@@ -11,8 +11,3 @@ ToolbarModel::ToolbarModel()
 
 ToolbarModel::~ToolbarModel() {
 }
-
-bool ToolbarModel::WouldReplaceURL() const {
-  return WouldPerformSearchTermReplacement(false);
-}
-

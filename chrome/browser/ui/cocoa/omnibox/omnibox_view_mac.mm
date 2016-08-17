@@ -934,11 +934,6 @@ void OmniboxViewMac::OnMouseDown(NSInteger button_number) {
     model()->SetCaretVisibility(true);
 }
 
-bool OmniboxViewMac::ShouldSelectAllOnMouseDown() {
-  return !controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
-      false);
-}
-
 bool OmniboxViewMac::CanCopy() {
   const NSRange selection = GetSelectedRange();
   return selection.length > 0;
@@ -951,15 +946,11 @@ base::scoped_nsobject<NSPasteboardItem> OmniboxViewMac::CreatePasteboardItem() {
   base::string16 text = base::SysNSStringToUTF16(
       [[field_ stringValue] substringWithRange:selection]);
 
-  // Copy the URL unless this is the search URL and it's being replaced by the
-  // Extended Instant API.
+  // Copy the URL.
   GURL url;
   bool write_url = false;
-  if (!controller()->GetToolbarModel()->WouldPerformSearchTermReplacement(
-      false)) {
-    model()->AdjustTextForCopy(selection.location, IsSelectAll(), &text, &url,
-                               &write_url);
-  }
+  model()->AdjustTextForCopy(selection.location, IsSelectAll(), &text, &url,
+                             &write_url);
 
   if (IsSelectAll())
     UMA_HISTOGRAM_COUNTS(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
@@ -977,11 +968,6 @@ void OmniboxViewMac::CopyToPasteboard(NSPasteboard* pboard) {
   [pboard clearContents];
   base::scoped_nsobject<NSPasteboardItem> item(CreatePasteboardItem());
   [pboard writeObjects:@[ item.get() ]];
-}
-
-void OmniboxViewMac::ShowURL() {
-  DCHECK(ShouldEnableShowURL());
-  OmniboxView::ShowURL();
 }
 
 void OmniboxViewMac::OnPaste() {
@@ -1014,14 +1000,6 @@ void OmniboxViewMac::OnPaste() {
     [editor replaceCharactersInRange:selectedRange withString:s];
     [editor didChangeText];
   }
-}
-
-// TODO(dominich): Move to OmniboxView base class? Currently this is defined on
-// the AutocompleteTextFieldObserver but the logic is shared between all
-// platforms. Some refactor might be necessary to simplify this. Or at least
-// this method could call the OmniboxView version.
-bool OmniboxViewMac::ShouldEnableShowURL() {
-  return controller()->GetToolbarModel()->WouldReplaceURL();
 }
 
 bool OmniboxViewMac::CanPasteAndGo() {

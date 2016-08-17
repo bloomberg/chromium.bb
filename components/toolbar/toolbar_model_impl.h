@@ -17,10 +17,6 @@
 
 class ToolbarModelDelegate;
 
-namespace net {
-class X509Certificate;
-}
-
 // This class is the model used by the toolbar, location bar and autocomplete
 // edit.  It populates its states from the current navigation entry retrieved
 // from the navigation controller returned by GetNavigationController().
@@ -32,22 +28,14 @@ class ToolbarModelImpl : public ToolbarModel {
 
  private:
   // ToolbarModel:
-  base::string16 GetText() const override;
   base::string16 GetFormattedURL(size_t* prefix_end) const override;
   GURL GetURL() const override;
-  bool WouldPerformSearchTermReplacement(bool ignore_editing) const override;
   security_state::SecurityStateModel::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
   int GetIcon() const override;
   gfx::VectorIconId GetVectorIcon() const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
-
-  // Returns search terms as in search::GetSearchTerms() if such terms should
-  // appear in the omnibox (i.e. the page is sufficiently secure, search term
-  // replacement is enabled, editing is not in progress, etc.).  If
-  // |ignore_editing| is true, the "editing not in progress" check is skipped.
-  base::string16 GetSearchTerms(bool ignore_editing) const;
 
   ToolbarModelDelegate* delegate_;
   const size_t max_url_display_chars_;

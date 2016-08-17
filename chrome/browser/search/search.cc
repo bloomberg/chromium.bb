@@ -80,37 +80,9 @@ enum NewTabURLState {
   NEW_TAB_URL_MAX
 };
 
-// Used to set the Instant support state of the Navigation entry.
-const char kInstantSupportStateKey[] = "instant_support_state";
-
-const char kInstantSupportEnabled[] = "Instant support enabled";
-const char kInstantSupportDisabled[] = "Instant support disabled";
-const char kInstantSupportUnknown[] = "Instant support unknown";
-
 base::Feature kUseGoogleLocalNtp {
   "UseGoogleLocalNtp", base::FEATURE_DISABLED_BY_DEFAULT
 };
-
-InstantSupportState StringToInstantSupportState(const base::string16& value) {
-  if (value == base::ASCIIToUTF16(kInstantSupportEnabled))
-    return INSTANT_SUPPORT_YES;
-  else if (value == base::ASCIIToUTF16(kInstantSupportDisabled))
-    return INSTANT_SUPPORT_NO;
-  else
-    return INSTANT_SUPPORT_UNKNOWN;
-}
-
-base::string16 InstantSupportStateToString(InstantSupportState state) {
-  switch (state) {
-    case INSTANT_SUPPORT_NO:
-      return base::ASCIIToUTF16(kInstantSupportDisabled);
-    case INSTANT_SUPPORT_YES:
-      return base::ASCIIToUTF16(kInstantSupportEnabled);
-    case INSTANT_SUPPORT_UNKNOWN:
-      return base::ASCIIToUTF16(kInstantSupportUnknown);
-  }
-  return base::ASCIIToUTF16(kInstantSupportUnknown);
-}
 
 TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
   if (profile) {
@@ -174,12 +146,6 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
     return false;
 
   return MatchesOriginAndPath(url, instant_url);
-}
-
-base::string16 GetSearchTermsImpl(const content::WebContents* contents,
-                                  const content::NavigationEntry* entry) {
-  // TODO(treib): Remove this and update callers accordingly. crbug.com/627747
-  return base::string16();
 }
 
 bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
@@ -297,33 +263,6 @@ base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url) {
 bool IsQueryExtractionAllowedForURL(Profile* profile, const GURL& url) {
   TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
   return template_url && IsSuitableURLForInstant(url, template_url);
-}
-
-base::string16 GetSearchTermsFromNavigationEntry(
-    const content::NavigationEntry* entry) {
-  base::string16 search_terms;
-  if (entry)
-    entry->GetExtraData(sessions::kSearchTermsKey, &search_terms);
-  return search_terms;
-}
-
-base::string16 GetSearchTerms(const content::WebContents* contents) {
-  if (!contents)
-    return base::string16();
-
-  const content::NavigationEntry* entry =
-      contents->GetController().GetVisibleEntry();
-  if (!entry)
-    return base::string16();
-
-  if (IsInstantExtendedAPIEnabled()) {
-    InstantSupportState state =
-        GetInstantSupportStateFromNavigationEntry(*entry);
-    if (state == INSTANT_SUPPORT_NO)
-      return base::string16();
-  }
-
-  return GetSearchTermsImpl(contents, entry);
 }
 
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
@@ -520,24 +459,6 @@ bool HandleNewTabURLReverseRewrite(GURL* url,
   }
 
   return false;
-}
-
-void SetInstantSupportStateInNavigationEntry(InstantSupportState state,
-                                             content::NavigationEntry* entry) {
-  if (!entry)
-    return;
-
-  entry->SetExtraData(kInstantSupportStateKey,
-                      InstantSupportStateToString(state));
-}
-
-InstantSupportState GetInstantSupportStateFromNavigationEntry(
-    const content::NavigationEntry& entry) {
-  base::string16 value;
-  if (!entry.GetExtraData(kInstantSupportStateKey, &value))
-    return INSTANT_SUPPORT_UNKNOWN;
-
-  return StringToInstantSupportState(value);
 }
 
 }  // namespace search

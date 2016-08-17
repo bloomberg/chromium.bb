@@ -36,8 +36,8 @@ void ToolbarModelAndroid::Destroy(JNIEnv* env,
 ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetText(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return base::android::ConvertUTF16ToJavaString(env,
-                                                 toolbar_model_->GetText());
+  return base::android::ConvertUTF16ToJavaString(
+      env, toolbar_model_->GetFormattedURL(nullptr));
 }
 
 content::WebContents* ToolbarModelAndroid::GetActiveWebContents() const {

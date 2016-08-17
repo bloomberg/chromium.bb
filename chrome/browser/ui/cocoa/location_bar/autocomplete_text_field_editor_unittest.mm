@@ -219,12 +219,6 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, Copy) {
   [editor_ copy:nil];
 }
 
-// Test that -showURL: is correctly delegated to the observer.
-TEST_F(AutocompleteTextFieldEditorObserverTest, ShowURL) {
-  EXPECT_CALL(field_observer_, ShowURL()).Times(1);
-  [editor_ showURL:nil];
-}
-
 // Test that -cut: is correctly delegated to the observer and clears
 // the text field.
 TEST_F(AutocompleteTextFieldEditorObserverTest, Cut) {
@@ -259,12 +253,10 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, PasteAndGo) {
 TEST_F(AutocompleteTextFieldEditorObserverTest, Menu) {
   EXPECT_CALL(field_observer_, GetPasteActionStringId()).
       WillOnce(Return(IDS_PASTE_AND_GO));
-  EXPECT_CALL(field_observer_, ShouldEnableShowURL()).
-      WillOnce(Return(true));
 
   NSMenu* menu = MenuFromRightClick(editor_);
   NSArray* items = [menu itemArray];
-  ASSERT_EQ([items count], 7U);
+  ASSERT_EQ([items count], 6U);
   // TODO(shess): Check the titles, too?
   NSUInteger i = 0;  // Use an index to make future changes easier.
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
@@ -272,7 +264,6 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, Menu) {
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(pasteAndGo:));
   EXPECT_TRUE([[items objectAtIndex:i++] isSeparatorItem]);
-  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(showURL:));
   EXPECT_EQ([[items objectAtIndex:i] tag], IDC_EDIT_SEARCH_ENGINES);
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(commandDispatch:));
 }
@@ -301,8 +292,6 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoValidate) {
   EXPECT_CALL(field_observer_, GetPasteActionStringId())
       .WillOnce(Return(IDS_PASTE_AND_GO));
   EXPECT_CALL(field_observer_, CanPasteAndGo()).WillOnce(Return(true));
-  EXPECT_CALL(field_observer_, ShouldEnableShowURL())
-      .WillOnce(Return(false));
 
   NSMenu* menu = MenuFromRightClick(editor_);
   NSArray* items = [menu itemArray];
@@ -321,8 +310,6 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CannotPasteAndGoValidate) {
   EXPECT_CALL(field_observer_, GetPasteActionStringId())
       .WillOnce(Return(IDS_PASTE_AND_GO));
   EXPECT_CALL(field_observer_, CanPasteAndGo()).WillOnce(Return(false));
-  EXPECT_CALL(field_observer_, ShouldEnableShowURL())
-      .WillOnce(Return(false));
 
   NSMenu* menu = MenuFromRightClick(editor_);
   NSArray* items = [menu itemArray];
@@ -331,25 +318,6 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CannotPasteAndGoValidate) {
     NSMenuItem* item = [items objectAtIndex:i];
     if ([item action] == @selector(pasteAndGo:)) {
       EXPECT_FALSE([editor_ validateMenuItem:item]);
-      break;
-    }
-  }
-}
-
-// Test that the menu validation works as expected when ShouldEnableShowURL().
-TEST_F(AutocompleteTextFieldEditorObserverTest, ShouldEnableShowURLValidate) {
-  EXPECT_CALL(field_observer_, GetPasteActionStringId())
-      .WillOnce(Return(IDS_PASTE_AND_GO));
-  EXPECT_CALL(field_observer_, ShouldEnableShowURL())
-      .WillRepeatedly(Return(true));
-
-  NSMenu* menu = MenuFromRightClick(editor_);
-  NSArray* items = [menu itemArray];
-  ASSERT_EQ([items count], 7U);
-  for (NSUInteger i = 0; i < [items count]; ++i) {
-    NSMenuItem* item = [items objectAtIndex:i];
-    if ([item action] == @selector(showURL:)) {
-      EXPECT_TRUE([editor_ validateMenuItem:item]);
       break;
     }
   }

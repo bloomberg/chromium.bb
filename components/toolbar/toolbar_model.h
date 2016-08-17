@@ -18,24 +18,12 @@ namespace gfx {
 enum class VectorIconId;
 }
 
-namespace net {
-class X509Certificate;
-}
-
 // This class is the model used by the toolbar, location bar and autocomplete
 // edit.  It populates its states from the current navigation entry retrieved
 // from the navigation controller returned by GetNavigationController().
 class ToolbarModel {
  public:
   virtual ~ToolbarModel();
-
-  // Returns the text to be displayed in the toolbar for the current page.
-  // This will have been formatted for display to the user.
-  //   - If the current page's URL is a search URL for the user's default search
-  //     engine, the query will be extracted and returned for display instead
-  //     of the URL.
-  //   - Otherwise, the text will contain the URL returned by GetFormattedURL().
-  virtual base::string16 GetText() const = 0;
 
   // Returns a formatted URL for display in the toolbar. The formatting
   // includes:
@@ -48,22 +36,12 @@ class ToolbarModel {
   // Returns the URL of the current navigation entry.
   virtual GURL GetURL() const = 0;
 
-  // Returns true if a call to GetText() would successfully replace the URL
-  // with search terms.  If |ignore_editing| is true, the result reflects the
-  // underlying state of the page without regard to any user edits that may be
-  // in progress in the omnibox.
-  virtual bool WouldPerformSearchTermReplacement(bool ignore_editing) const = 0;
-
   // Returns the security level that the toolbar should display.  If
   // |ignore_editing| is true, the result reflects the underlying state of the
   // page without regard to any user edits that may be in progress in the
   // omnibox.
   virtual security_state::SecurityStateModel::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const = 0;
-
-  // Returns true if a call to GetText() would return something other than the
-  // URL because of search term replacement.
-  bool WouldReplaceURL() const;
 
   // Returns the resource_id of the icon to show to the left of the address,
   // based on the current URL.  When search term replacement is active, this
@@ -89,6 +67,7 @@ class ToolbarModel {
   bool input_in_progress() const { return input_in_progress_; }
 
   // Whether URL replacement should be enabled.
+  // TODO(treib,pkasting): Remove this. crbug.com/627747
   void set_url_replacement_enabled(bool enabled) {
     url_replacement_enabled_ = enabled;
   }

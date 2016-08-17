@@ -328,8 +328,8 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
   std::string search_url("https://www.google.com/?q=flowers");
   AutocompleteInput srp_input(
       base::ASCIIToUTF16(search_url), base::string16::npos, std::string(),
-      GURL(search_url), metrics::OmniboxEventProto::
-                            SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT,
+      GURL(search_url),
+      metrics::OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT,
       false, false, true, true, true, TestSchemeClassifier());
 
   provider_->Start(srp_input, false);

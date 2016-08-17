@@ -34,7 +34,6 @@ class ChromeToolbarModelDelegate : public ToolbarModelDelegate {
   bool GetURL(GURL* url) const override;
   bool ShouldDisplayURL() const override;
   SecurityLevel GetSecurityLevel() const override;
-  base::string16 GetSearchTerms(SecurityLevel security_level) const override;
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
 
   // Returns the navigation controller used to retrieve the navigation entry

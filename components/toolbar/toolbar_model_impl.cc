@@ -34,14 +34,6 @@ ToolbarModelImpl::~ToolbarModelImpl() {
 }
 
 // ToolbarModelImpl Implementation.
-base::string16 ToolbarModelImpl::GetText() const {
-  base::string16 search_terms(GetSearchTerms(false));
-  if (!search_terms.empty())
-    return search_terms;
-
-  return GetFormattedURL(NULL);
-}
-
 base::string16 ToolbarModelImpl::GetFormattedURL(size_t* prefix_end) const {
   GURL url(GetURL());
   // Note that we can't unescape spaces here, because if the user copies this
@@ -68,11 +60,6 @@ base::string16 ToolbarModelImpl::GetFormattedURL(size_t* prefix_end) const {
 GURL ToolbarModelImpl::GetURL() const {
   GURL url;
   return delegate_->GetURL(&url) ? url : GURL(url::kAboutBlankURL);
-}
-
-bool ToolbarModelImpl::WouldPerformSearchTermReplacement(
-    bool ignore_editing) const {
-  return !GetSearchTerms(ignore_editing).empty();
 }
 
 SecurityStateModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
@@ -144,11 +131,4 @@ base::string16 ToolbarModelImpl::GetEVCertName() const {
 
 bool ToolbarModelImpl::ShouldDisplayURL() const {
   return delegate_->ShouldDisplayURL();
-}
-
-base::string16 ToolbarModelImpl::GetSearchTerms(bool ignore_editing) const {
-  if (!url_replacement_enabled() || (input_in_progress() && !ignore_editing))
-    return base::string16();
-
-  return delegate_->GetSearchTerms(GetSecurityLevel(ignore_editing));
 }

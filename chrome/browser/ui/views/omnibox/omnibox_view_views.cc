@@ -697,16 +697,12 @@ bool OmniboxViewViews::OnMouseDragged(const ui::MouseEvent& event) {
 
 void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   views::Textfield::OnMouseReleased(event);
-  if (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) {
-    // When the user has clicked and released to give us focus, select all
-    // unless we're omitting the URL (in which case refining an existing query
-    // is common enough that we do click-to-place-cursor).
-    if (select_all_on_mouse_release_ &&
-        !controller()->GetToolbarModel()->WouldReplaceURL()) {
-      // Select all in the reverse direction so as not to scroll the caret
-      // into view and shift the contents jarringly.
-      SelectAll(true);
-    }
+  // When the user has clicked and released to give us focus, select all.
+  if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
+      select_all_on_mouse_release_) {
+    // Select all in the reverse direction so as not to scroll the caret
+    // into view and shift the contents jarringly.
+    SelectAll(true);
   }
   select_all_on_mouse_release_ = false;
 }
@@ -884,8 +880,9 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
     return !read_only() && !GetClipboardText().empty();
   if (command_id == IDS_PASTE_AND_GO)
     return !read_only() && model()->CanPasteAndGo(GetClipboardText());
+  // TODO(treib): Completely remove IDS_SHOW_URL. crbug.com/627747
   if (command_id == IDS_SHOW_URL)
-    return controller()->GetToolbarModel()->WouldReplaceURL();
+    return false;
   return Textfield::IsCommandIdEnabled(command_id) ||
          location_bar_view_->command_updater()->IsCommandEnabled(command_id);
 }

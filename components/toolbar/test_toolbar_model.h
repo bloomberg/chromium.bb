@@ -23,10 +23,8 @@ class TestToolbarModel : public ToolbarModel {
  public:
   TestToolbarModel();
   ~TestToolbarModel() override;
-  base::string16 GetText() const override;
   base::string16 GetFormattedURL(size_t* prefix_end) const override;
   GURL GetURL() const override;
-  bool WouldPerformSearchTermReplacement(bool ignore_editing) const override;
   security_state::SecurityStateModel::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
   int GetIcon() const override;
@@ -36,10 +34,6 @@ class TestToolbarModel : public ToolbarModel {
 
   void set_text(const base::string16& text) { text_ = text; }
   void set_url(const GURL& url) { url_ = url;}
-  void set_perform_search_term_replacement(
-      bool perform_search_term_replacement) {
-    perform_search_term_replacement_ = perform_search_term_replacement;
-  }
   void set_security_level(
       security_state::SecurityStateModel::SecurityLevel security_level) {
     security_level_ = security_level;
@@ -55,7 +49,6 @@ class TestToolbarModel : public ToolbarModel {
  private:
   base::string16 text_;
   GURL url_;
-  bool perform_search_term_replacement_;
   security_state::SecurityStateModel::SecurityLevel security_level_;
   gfx::VectorIconId icon_;
   base::string16 ev_cert_name_;

@@ -55,5 +55,4 @@ class AutocompleteTextFieldObserver;
 @interface AutocompleteTextFieldEditor(PrivateTestMethods)
 - (AutocompleteTextFieldObserver*)observer;
 - (void)pasteAndGo:sender;
-- (void)showURL:sender;
 @end

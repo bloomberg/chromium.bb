@@ -20,6 +20,7 @@ struct SearchMode {
     MODE_SEARCH_SUGGESTIONS,
 
     // On a search results page.
+    // TODO(treib): Remove this; it's not used anymore. crbug.com/627747
     MODE_SEARCH_RESULTS,
   };
 
@@ -32,6 +33,7 @@ struct SearchMode {
     ORIGIN_NTP,
 
     // The user is searching from a search results page.
+    // TODO(treib): Remove this; it's not used anymore. crbug.com/627747
     ORIGIN_SEARCH,
   };
 

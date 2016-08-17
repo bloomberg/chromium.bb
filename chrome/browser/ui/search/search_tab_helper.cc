@@ -74,10 +74,6 @@ bool IsNTP(const content::WebContents* contents) {
   return search::IsInstantNTP(contents);
 }
 
-bool IsSearchResults(const content::WebContents* contents) {
-  return !search::GetSearchTerms(contents).empty();
-}
-
 bool IsLocal(const content::WebContents* contents) {
   if (!contents)
     return false;
@@ -297,16 +293,12 @@ void SearchTabHelper::NavigationEntryCommitted(
     // support for the navigated page. So, copy over the Instant support from
     // the previous entry. If the page does not support Instant, update the
     // location bar from here to turn off search terms replacement.
-    search::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
-                                                    entry);
     if (delegate_ && model_.instant_support() == INSTANT_SUPPORT_NO)
       delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
     return;
   }
 
   model_.SetInstantSupportState(INSTANT_SUPPORT_UNKNOWN);
-  search::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
-                                                  entry);
 
   if (InInstantProcess(profile(), web_contents_))
     ipc_router_.OnNavigationEntryCommitted();
@@ -461,12 +453,9 @@ void SearchTabHelper::InstantSupportChanged(bool instant_support) {
 
   model_.SetInstantSupportState(new_state);
 
-  content::NavigationEntry* entry =
-      web_contents_->GetController().GetLastCommittedEntry();
-  if (entry) {
-    search::SetInstantSupportStateInNavigationEntry(new_state, entry);
-    if (delegate_ && !instant_support)
-      delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
+  if (web_contents_->GetController().GetLastCommittedEntry() && delegate_ &&
+      !instant_support) {
+    delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
   }
 }
 
@@ -476,9 +465,6 @@ void SearchTabHelper::UpdateMode(bool update_origin) {
   if (IsNTP(web_contents_)) {
     type = SearchMode::MODE_NTP;
     origin = SearchMode::ORIGIN_NTP;
-  } else if (IsSearchResults(web_contents_)) {
-    type = SearchMode::MODE_SEARCH_RESULTS;
-    origin = SearchMode::ORIGIN_SEARCH;
   }
   if (!update_origin)
     origin = model_.mode().origin;

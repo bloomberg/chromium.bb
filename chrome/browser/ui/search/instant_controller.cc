@@ -34,16 +34,15 @@ bool IsContentsFrom(const InstantTab* page,
 
 // Adds a transient NavigationEntry to the supplied |contents|'s
 // NavigationController if the page's URL has not already been updated with the
-// supplied |search_terms|. Sets the |search_terms| on the transient entry for
-// search terms extraction to work correctly.
+// supplied |search_terms|.
+// TODO(treib): Is it safe to completely remove this? crbug.com/627747
 void EnsureSearchTermsAreSet(content::WebContents* contents,
                              const base::string16& search_terms) {
   content::NavigationController* controller = &contents->GetController();
 
   // If search terms are already correct or there is already a transient entry
   // (there shouldn't be), bail out early.
-  if (search::GetSearchTerms(contents) == search_terms ||
-      controller->GetTransientEntry())
+  if (search_terms.empty() || controller->GetTransientEntry())
     return;
 
   const content::NavigationEntry* entry = controller->GetLastCommittedEntry();
@@ -51,7 +50,6 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
       controller->CreateNavigationEntry(
           entry->GetURL(), entry->GetReferrer(), entry->GetTransitionType(),
           false, std::string(), contents->GetBrowserContext());
-  transient->SetExtraData(sessions::kSearchTermsKey, search_terms);
   controller->SetTransientEntry(std::move(transient));
 
   SearchTabHelper::FromWebContents(contents)->NavigationEntryUpdated();

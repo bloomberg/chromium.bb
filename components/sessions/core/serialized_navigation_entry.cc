@@ -14,6 +14,7 @@
 
 namespace sessions {
 
+// TODO(treib): Remove, not needed anymore. crbug.com/627747
 const char kSearchTermsKey[] = "search_terms";
 
 SerializedNavigationEntry::SerializedNavigationEntry()

@@ -40,12 +40,6 @@ class ToolbarModelDelegate {
   // user edits that may be in progress.
   virtual SecurityLevel GetSecurityLevel() const = 0;
 
-  // Returns search terms as in search::GetSearchTerms() if such terms should
-  // appear in the omnibox (i.e. the page is sufficiently secure, search term
-  // replacement is enabled, editing is not in progress, etc.) given that the
-  // page has a security level of |security_level|.
-  virtual base::string16 GetSearchTerms(SecurityLevel security_level) const = 0;
-
   // Returns the certificate for the current navigation entry.
   virtual scoped_refptr<net::X509Certificate> GetCertificate() const = 0;
 

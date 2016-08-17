@@ -89,7 +89,6 @@ const int kPercentageMatchHistogramWidthBuckets[] = { 400, 700, 1200 };
 
 void RecordPercentageMatchHistogram(const base::string16& old_text,
                                     const base::string16& new_text,
-                                    bool url_replacement_active,
                                     ui::PageTransition transition,
                                     int omnibox_width) {
   size_t avg_length = (old_text.length() + new_text.length()) / 2;
@@ -104,25 +103,16 @@ void RecordPercentageMatchHistogram(const base::string16& old_text,
     percent = static_cast<float>(matching_characters) / avg_length * 100;
   }
 
+  // TODO(treib,mpearson): Do we want to keep these histograms? Most of the
+  // previously-logged cases don't exist anymore. crbug.com/627747
   std::string histogram_name;
-  if (url_replacement_active) {
-    if (ui::PageTransitionTypeIncludingQualifiersIs(
-            transition, ui::PAGE_TRANSITION_TYPED)) {
-      histogram_name = "InstantExtended.PercentageMatchV2_QuerytoURL";
-      UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
-    } else {
-      histogram_name = "InstantExtended.PercentageMatchV2_QuerytoQuery";
-      UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
-    }
+  if (ui::PageTransitionTypeIncludingQualifiersIs(
+          transition, ui::PAGE_TRANSITION_TYPED)) {
+    histogram_name = "InstantExtended.PercentageMatchV2_URLtoURL";
+    UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
   } else {
-    if (ui::PageTransitionTypeIncludingQualifiersIs(
-            transition, ui::PAGE_TRANSITION_TYPED)) {
-      histogram_name = "InstantExtended.PercentageMatchV2_URLtoURL";
-      UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
-    } else {
-      histogram_name = "InstantExtended.PercentageMatchV2_URLtoQuery";
-      UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
-    }
+    histogram_name = "InstantExtended.PercentageMatchV2_URLtoQuery";
+    UMA_HISTOGRAM_PERCENTAGE(histogram_name, percent);
   }
 
   std::string suffix = "large";
@@ -233,7 +223,7 @@ void OmniboxEditModel::RestoreState(const State* state) {
   bool url_replacement_enabled = !state || state->url_replacement_enabled;
   controller_->GetToolbarModel()->set_url_replacement_enabled(
       url_replacement_enabled);
-  permanent_text_ = controller_->GetToolbarModel()->GetText();
+  permanent_text_ = controller_->GetToolbarModel()->GetFormattedURL(nullptr);
   // Don't muck with the search term replacement state, as we've just set it
   // correctly.
   view_->RevertWithoutResettingSearchTermReplacement();
@@ -291,7 +281,8 @@ bool OmniboxEditModel::UpdatePermanentText() {
   // process -- before and after the auto-commit, the omnibox should show the
   // same user text and the same instant suggestion, even if the auto-commit
   // happens while the edit doesn't have focus.
-  base::string16 new_permanent_text = controller_->GetToolbarModel()->GetText();
+  base::string16 new_permanent_text =
+      controller_->GetToolbarModel()->GetFormattedURL(nullptr);
   base::string16 gray_text = view_->GetGrayTextAutocompletion();
   const bool visibly_changed_permanent_text =
       (permanent_text_ != new_permanent_text) &&
@@ -359,11 +350,7 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
 }
 
 bool OmniboxEditModel::CurrentTextIsURL() const {
-  if (controller_->GetToolbarModel()->WouldReplaceURL())
-    return false;
-
-  // If current text is not composed of replaced search terms and
-  // !user_input_in_progress_, then permanent text is showing and should be a
+  // If !user_input_in_progress_, then permanent text is showing and should be a
   // URL, so no further checking is needed.  By avoiding checking in this case,
   // we avoid calling into the autocomplete providers, and thus initializing the
   // history system, as long as possible, which speeds startup.
@@ -384,9 +371,8 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
                                          bool* write_url) {
   *write_url = false;
 
-  // Do not adjust if selection did not start at the beginning of the field, or
-  // if the URL was omitted.
-  if ((sel_min != 0) || controller_->GetToolbarModel()->WouldReplaceURL())
+  // Do not adjust if selection did not start at the beginning of the field.
+  if (sel_min != 0)
     return;
 
   // Check whether the user is trying to copy the current page's URL by
@@ -780,9 +766,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   }
 
   RecordPercentageMatchHistogram(
-      permanent_text_, current_text,
-      controller_->GetToolbarModel()->WouldReplaceURL(),
-      match.transition, view_->GetWidth());
+      permanent_text_, current_text, match.transition, view_->GetWidth());
 
   // Track whether the destination URL sends us to a search results page
   // using the default search provider.
@@ -1384,23 +1368,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
                                              GURL* alternate_nav_url) const {
   DCHECK(match);
 
-  if (controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(
-      false)) {
-    // Any time the user hits enter on the unchanged omnibox, we should reload.
-    // When we're not extracting search terms, AcceptInput() will take care of
-    // this (see code referring to PAGE_TRANSITION_RELOAD there), but when we're
-    // extracting search terms, the conditionals there won't fire, so we
-    // explicitly set up a match that will reload here.
-
-    // It's important that we fetch the current visible URL to reload instead of
-    // just getting a "search what you typed" URL from
-    // SearchProvider::CreateSearchSuggestion(), since the user may be in a
-    // non-default search mode such as image search.
-    match->type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
-    match->provider = autocomplete_controller()->search_provider();
-    match->destination_url = client_->GetURL();
-    match->transition = ui::PAGE_TRANSITION_RELOAD;
-  } else if (query_in_progress() || PopupIsOpen()) {
+  if (query_in_progress() || PopupIsOpen()) {
     if (query_in_progress()) {
       // It's technically possible for |result| to be empty if no provider
       // returns a synchronous result but the query has not completed
@@ -1512,8 +1480,6 @@ OmniboxEventProto::PageClassification OmniboxEditModel::ClassifyPage() const {
     return OmniboxEventProto::BLANK;
   if (client_->IsHomePage(url))
     return OmniboxEventProto::HOME_PAGE;
-  if (controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(true))
-    return OmniboxEventProto::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
   if (client_->IsSearchResultsPage())
     return OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
   return OmniboxEventProto::OTHER;
