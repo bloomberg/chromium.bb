@@ -111,7 +111,7 @@ bool RunGLES2ConformTest(const char* path) {
   cmd_line.AppendArg(std::string("-run=") + path);
 
   std::string output;
-  bool success = base::GetAppOutput(cmd_line, &output);
+  bool success = base::GetAppOutputAndError(cmd_line, &output);
   if (success) {
     size_t success_index = output.find("Conformance PASSED all");
     size_t failed_index = output.find("FAILED");

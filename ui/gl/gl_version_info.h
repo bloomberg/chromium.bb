@@ -39,6 +39,10 @@ struct GL_EXPORT GLVersionInfo {
     return is_es || is_desktop_core_profile;
   }
 
+  bool SupportsFixedType() const {
+    return is_es || IsAtLeastGL(4, 1);
+  }
+
   static void ParseVersionString(const char* version_str,
                                  unsigned* major_version,
                                  unsigned* minor_version,

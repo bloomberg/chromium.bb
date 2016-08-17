@@ -899,6 +899,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // or regular back buffer).
   gfx::Size GetBoundReadFrameBufferSize();
 
+  // Get the service side ID for the bound read frame buffer.
+  // If it's back buffer, 0 is returned.
+  GLuint GetBoundReadFrameBufferServiceId();
+
   // Get the format/type of the currently bound frame buffer (either FBO or
   // regular back buffer).
   // If the color image is a renderbuffer, returns 0 for type.
@@ -4312,6 +4316,24 @@ gfx::Size GLES2DecoderImpl::GetBoundReadFrameBufferSize() {
   } else {
     return surface_->GetSize();
   }
+}
+
+GLuint GLES2DecoderImpl::GetBoundReadFrameBufferServiceId() {
+  Framebuffer* framebuffer =
+    GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
+  if (framebuffer) {
+    return framebuffer->service_id();
+  }
+  if (offscreen_resolved_frame_buffer_.get()) {
+    return offscreen_resolved_frame_buffer_->id();
+  }
+  if (offscreen_target_frame_buffer_.get()) {
+    return offscreen_target_frame_buffer_->id();
+  }
+  if (surface_.get()) {
+    return surface_->GetBackingFrameBufferObject();
+  }
+  return 0;
 }
 
 GLenum GLES2DecoderImpl::GetBoundReadFrameBufferTextureType() {
@@ -9038,7 +9060,7 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
     GLuint max_vertex_accessed, bool* simulated, GLsizei primcount) {
   DCHECK(simulated);
   *simulated = false;
-  if (gl_version_info().BehavesLikeGLES())
+  if (gl_version_info().SupportsFixedType())
     return true;
 
   if (!state_.vertex_attrib_manager->HaveFixedAttribs()) {
@@ -10266,8 +10288,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
                       stride != 0 ? stride : group_size,
                       offset,
                       GL_FALSE);
-  // We support GL_FIXED natively on EGL/GLES2 implementations
-  if (type != GL_FIXED || gl_version_info().is_es) {
+  if (type != GL_FIXED || gl_version_info().SupportsFixedType()) {
     glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
   }
   return error::kNoError;
@@ -13023,12 +13044,11 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       GLint destX = dx;
       GLint destY = dy;
       if (requires_luma_blit) {
-        copy_tex_image_blit_->DoCopyTexSubImage2DToLUMAComatabilityTexture(
+        copy_tex_image_blit_->DoCopyTexSubImage2DToLUMACompatibilityTexture(
             this, texture->service_id(), texture->target(), target, format,
             type, level, destX, destY, copyX, copyY, copyWidth, copyHeight,
-            framebuffer_state_.bound_read_framebuffer->service_id(),
-            framebuffer_state_.bound_read_framebuffer
-                ->GetReadBufferInternalFormat());
+            GetBoundReadFrameBufferServiceId(),
+            GetBoundReadFrameBufferInternalFormat());
       } else {
         glCopyTexSubImage2D(target, level, destX, destY, copyX, copyY,
                             copyWidth, copyHeight);
@@ -13046,12 +13066,11 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         final_internal_format, channels_exist, &source_texture_service_id,
         &source_texture_target);
     if (requires_luma_blit) {
-      copy_tex_image_blit_->DoCopyTexImage2DToLUMAComatabilityTexture(
+      copy_tex_image_blit_->DoCopyTexImage2DToLUMACompatibilityTexture(
           this, texture->service_id(), texture->target(), target, format,
           type, level, internal_format, copyX, copyY, copyWidth, copyHeight,
-          framebuffer_state_.bound_read_framebuffer->service_id(),
-          framebuffer_state_.bound_read_framebuffer
-              ->GetReadBufferInternalFormat());
+          GetBoundReadFrameBufferServiceId(),
+          GetBoundReadFrameBufferInternalFormat());
     } else if (use_workaround) {
       GLenum dest_texture_target = target;
       GLenum framebuffer_target = features().chromium_framebuffer_multisample
@@ -13199,12 +13218,11 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
       if (!InitializeCopyTexImageBlitter("glCopyTexSubImage2D")) {
         return;
       }
-      copy_tex_image_blit_->DoCopyTexSubImage2DToLUMAComatabilityTexture(
+      copy_tex_image_blit_->DoCopyTexSubImage2DToLUMACompatibilityTexture(
           this, texture->service_id(), texture->target(), target,
           internal_format, type, level, xoffset, yoffset, x, y, width, height,
-          framebuffer_state_.bound_read_framebuffer->service_id(),
-          framebuffer_state_.bound_read_framebuffer
-              ->GetReadBufferInternalFormat());
+          GetBoundReadFrameBufferServiceId(),
+          GetBoundReadFrameBufferInternalFormat());
     } else {
       glCopyTexSubImage2D(target, level, destX, destY, copyX, copyY, copyWidth,
                           copyHeight);

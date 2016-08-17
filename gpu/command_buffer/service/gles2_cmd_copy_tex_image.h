@@ -31,7 +31,7 @@ class GPU_EXPORT CopyTexImageResourceManager {
   void Initialize(const gles2::GLES2Decoder* decoder);
   void Destroy();
 
-  void DoCopyTexImage2DToLUMAComatabilityTexture(
+  void DoCopyTexImage2DToLUMACompatibilityTexture(
       const gles2::GLES2Decoder* decoder,
       GLuint dest_texture,
       GLenum dest_texture_target,
@@ -47,7 +47,7 @@ class GPU_EXPORT CopyTexImageResourceManager {
       GLuint source_framebuffer,
       GLenum source_framebuffer_internal_format);
 
-  void DoCopyTexSubImage2DToLUMAComatabilityTexture(
+  void DoCopyTexSubImage2DToLUMACompatibilityTexture(
       const gles2::GLES2Decoder* decoder,
       GLuint dest_texture,
       GLenum dest_texture_target,

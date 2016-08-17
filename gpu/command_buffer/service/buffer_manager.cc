@@ -360,7 +360,7 @@ bool BufferManager::UseShadowBuffer(GLenum target, GLenum usage) {
   const bool is_client_side_array = IsUsageClientSideArray(usage);
   // feature_info_ can be null in some unit tests.
   const bool support_fixed_attribs =
-      !feature_info_ || feature_info_->gl_version_info().is_es;
+      !feature_info_ || feature_info_->gl_version_info().SupportsFixedType();
 
   // TODO(zmo): Don't shadow buffer data on ES3. crbug.com/491002.
   return (

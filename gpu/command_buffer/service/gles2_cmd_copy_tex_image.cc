@@ -139,7 +139,7 @@ void CopyTexImageResourceManager::Destroy() {
   initialized_ = false;
 }
 
-void CopyTexImageResourceManager::DoCopyTexImage2DToLUMAComatabilityTexture(
+void CopyTexImageResourceManager::DoCopyTexImage2DToLUMACompatibilityTexture(
     const gles2::GLES2Decoder* decoder,
     GLuint dest_texture,
     GLenum dest_texture_target,
@@ -162,13 +162,13 @@ void CopyTexImageResourceManager::DoCopyTexImage2DToLUMAComatabilityTexture(
       feature_info_.get(), internal_format);
   glTexImage2D(dest_target, level, adjusted_internal_format, width, height, 0,
                adjusted_format, luma_type, nullptr);
-  DoCopyTexSubImage2DToLUMAComatabilityTexture(
+  DoCopyTexSubImage2DToLUMACompatibilityTexture(
       decoder, dest_texture, dest_texture_target, dest_target, luma_format,
       luma_type, level, 0, 0, x, y, width, height, source_framebuffer,
       source_framebuffer_internal_format);
 }
 
-void CopyTexImageResourceManager::DoCopyTexSubImage2DToLUMAComatabilityTexture(
+void CopyTexImageResourceManager::DoCopyTexSubImage2DToLUMACompatibilityTexture(
     const gles2::GLES2Decoder* decoder,
     GLuint dest_texture,
     GLenum dest_texture_target,
