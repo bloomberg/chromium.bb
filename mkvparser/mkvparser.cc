@@ -6698,8 +6698,10 @@ Cluster::Cluster(Segment* pSegment, long idx, long long element_start
 {}
 
 Cluster::~Cluster() {
-  if (m_entries_count <= 0)
+  if (m_entries_count <= 0) {
+    delete[] m_entries;
     return;
+  }
 
   BlockEntry** i = m_entries;
   BlockEntry** const j = m_entries + m_entries_count;

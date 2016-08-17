@@ -1,0 +1,6 @@
+Why the files in this directory are considered invalid:
+
+fixed_lacing_bad_lace_size.mkv - File containing a BlockGroup with fixed
+                                 lacing, but reports a total laced size that is
+                                 not evenly divisible by the number of laced
+                                 frames.

@@ -759,6 +759,19 @@ TEST_F(ParserTest, Vp9CodecPrivateBadTest) {
                                              kCodecPrivateLength, NULL));
 }
 
+TEST_F(ParserTest, InvalidFixedLacingSize) {
+  filename_ = GetTestFilePath("invalid/fixed_lacing_bad_lace_size.mkv");
+  ASSERT_NE(0u, filename_.length());
+  ASSERT_EQ(0, reader_.Open(filename_.c_str()));
+  mkvparser::EBMLHeader ebml_header;
+  ASSERT_EQ(0, ebml_header.Parse(&reader_, pos_));
+  ASSERT_EQ(0, mkvparser::Segment::CreateInstance(&reader_, pos_, segment_));
+  ASSERT_EQ(0, segment_->Load());
+  const mkvparser::BlockEntry* block_entry = NULL;
+  EXPECT_EQ(mkvparser::E_FILE_FORMAT_INVALID,
+            segment_->GetFirst()->GetFirst(block_entry));
+}
+
 }  // namespace test
 
 int main(int argc, char* argv[]) {
