@@ -1400,17 +1400,15 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
+            "run_gce_tests": false,
             "trybot_list": true,
             "useflags": [
                 "-cros-debug",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
-            ]
+            "vm_tests": [],
+            "vm_tests_override": null
         },
         "tot-asan-informational": {
             "_template": "tot-asan-informational",
