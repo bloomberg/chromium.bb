@@ -24,8 +24,8 @@ class GpuServiceImpl : public mojom::GpuService {
   void CreateGpuMemoryBuffer(
       mojom::GpuMemoryBufferIdPtr id,
       const gfx::Size& size,
-      mojom::BufferFormat format,
-      mojom::BufferUsage usage,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       uint64_t surface_id,
       const mojom::GpuService::CreateGpuMemoryBufferCallback& callback)
       override;
