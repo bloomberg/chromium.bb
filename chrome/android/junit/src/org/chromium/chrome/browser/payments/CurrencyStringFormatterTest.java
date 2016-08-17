@@ -48,6 +48,11 @@ public class CurrencyStringFormatterTest {
             {"55.00", "CAD", "fr-CA", "55,00", ExpectedValidity.VALID_AMOUNT},
             {"55.00", "CAD", "fr-FR", "55,00", ExpectedValidity.VALID_AMOUNT},
 
+            {"55.12", "JPY", "ja-JP", "55.12", ExpectedValidity.VALID_AMOUNT},
+            {"55.00", "JPY", "ja-JP", "55.00", ExpectedValidity.VALID_AMOUNT},
+            {"55.0", "JPY", "ja-JP", "55.0", ExpectedValidity.VALID_AMOUNT},
+            {"55", "JPY", "ja-JP", "55", ExpectedValidity.VALID_AMOUNT},
+
             // Unofficial ISO 4217 currency code.
             {"55.00", "BTX", "en-US", "55.00", ExpectedValidity.VALID_AMOUNT},
             {"-55.00", "BTX", "en-US", "-55.00", ExpectedValidity.VALID_AMOUNT},
