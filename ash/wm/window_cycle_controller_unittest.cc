@@ -14,6 +14,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_cycle_list.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -571,6 +572,43 @@ TEST_F(WindowCycleControllerTest, TabKeyNotLeaked) {
   generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsActive());
   EXPECT_EQ(0u, key_count.GetCountAndReset());
+}
+
+// Tests that we can cycle past fullscreen windows: https://crbug.com/622396.
+// Fullscreen windows are special in that they are allowed to handle alt+tab
+// keypresses, which means the window cycle event filter should not handle
+// the tab press else it prevents cycling past that window.
+TEST_F(WindowCycleControllerTest, TabPastFullscreenWindow) {
+  std::unique_ptr<Window> w0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> w1(CreateTestWindowInShellWithId(1));
+  wm::WMEvent maximize_event(wm::WM_EVENT_FULLSCREEN);
+
+  // To make this test work with or without the new alt+tab selector we make
+  // both the initial window and the second window fullscreen.
+  wm::GetWindowState(w0.get())->OnWMEvent(&maximize_event);
+  wm::GetWindowState(w1.get())->Activate();
+  wm::GetWindowState(w1.get())->OnWMEvent(&maximize_event);
+  EXPECT_TRUE(wm::GetWindowState(w0.get())->IsFullscreen());
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->IsFullscreen());
+  wm::GetWindowState(w0.get())->Activate();
+  EXPECT_TRUE(wm::GetWindowState(w0.get())->IsActive());
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.PressKey(ui::VKEY_MENU, ui::EF_NONE);
+
+  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  generator.ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+
+  // Because w0 and w1 are full-screen, the event should be passed to the
+  // browser window to handle it (which if the browser doesn't handle it will
+  // pass on the alt+tab to continue cycling). To make this test work with or
+  // without the new alt+tab selector we check for the event on either
+  // fullscreen window.
+  KeyEventCounter key_count;
+  w0->AddPreTargetHandler(&key_count);
+  w1->AddPreTargetHandler(&key_count);
+  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  EXPECT_EQ(1u, key_count.GetCountAndReset());
 }
 
 }  // namespace ash

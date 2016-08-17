@@ -20,9 +20,13 @@ WindowCycleEventFilterAura::~WindowCycleEventFilterAura() {
 }
 
 void WindowCycleEventFilterAura::OnKeyEvent(ui::KeyEvent* event) {
-  // Until the alt key is released, all key events are handled by this window
-  // cycle controller: https://crbug.com/340339.
-  event->StopPropagation();
+  // Until the alt key is released, all key events except the tab press (which
+  // is handled by the accelerator controller to call Step) are handled by this
+  // window cycle controller: https://crbug.com/340339.
+  if (event->key_code() != ui::VKEY_TAB ||
+      event->type() != ui::ET_KEY_PRESSED) {
+    event->StopPropagation();
+  }
   // Views uses VKEY_MENU for both left and right Alt keys.
   if (event->key_code() == ui::VKEY_MENU &&
       event->type() == ui::ET_KEY_RELEASED) {
