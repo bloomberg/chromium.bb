@@ -17,7 +17,7 @@ VP9Decoder::VP9Accelerator::VP9Accelerator() {}
 VP9Decoder::VP9Accelerator::~VP9Accelerator() {}
 
 VP9Decoder::VP9Decoder(VP9Accelerator* accelerator)
-    : state_(kNeedStreamMetadata), accelerator_(accelerator) {
+    : state_(kNeedStreamMetadata), parser_(false), accelerator_(accelerator) {
   DCHECK(accelerator_);
   ref_frames_.resize(kVp9NumRefFrames);
 }
@@ -54,7 +54,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     // Read a new frame header if one is not awaiting decoding already.
     if (!curr_frame_hdr_) {
       std::unique_ptr<Vp9FrameHeader> hdr(new Vp9FrameHeader());
-      Vp9Parser::Result res = parser_.ParseNextFrame(hdr.get());
+      Vp9Parser::Result res = parser_.ParseNextFrame(hdr.get(), nullptr);
       switch (res) {
         case Vp9Parser::kOk:
           curr_frame_hdr_.reset(hdr.release());
@@ -67,6 +67,9 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
           DVLOG(1) << "Error parsing stream";
           SetError();
           return kDecodeError;
+
+        case Vp9Parser::kAwaitingRefresh:
+          NOTREACHED();
       }
     }
 
@@ -86,7 +89,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       // This frame header only instructs us to display one of the
       // previously-decoded frames, but has no frame data otherwise. Display
       // and continue decoding subsequent frames.
-      size_t frame_to_show = curr_frame_hdr_->frame_to_show;
+      size_t frame_to_show = curr_frame_hdr_->frame_to_show_map_idx;
       if (frame_to_show >= ref_frames_.size() || !ref_frames_[frame_to_show]) {
         DVLOG(1) << "Request to show an invalid frame";
         SetError();
@@ -102,7 +105,8 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       continue;
     }
 
-    gfx::Size new_pic_size(curr_frame_hdr_->width, curr_frame_hdr_->height);
+    gfx::Size new_pic_size(curr_frame_hdr_->frame_width,
+                           curr_frame_hdr_->frame_height);
     DCHECK(!new_pic_size.IsEmpty());
 
     if (new_pic_size != pic_size_) {

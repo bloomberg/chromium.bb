@@ -52,4 +52,10 @@ size_t Vp9RawBitsReader::GetBytesRead() const {
   return (reader_->bits_read() + 7) / 8;
 }
 
+bool Vp9RawBitsReader::ConsumeTrailingBits() {
+  DCHECK(reader_);
+  int bits_left = GetBytesRead() * 8 - reader_->bits_read();
+  return ReadLiteral(bits_left) == 0;
+}
+
 }  // namespace media

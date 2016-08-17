@@ -21,10 +21,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Parse until the end of stream/unsupported stream/error in stream is found.
   while (ivf_parser.ParseNextFrame(&ivf_frame_header, &ivf_payload)) {
-    media::Vp9Parser vp9_parser;
+    // TODO(kcwu): fuzzing with parsing_compressed_header=true.
+    media::Vp9Parser vp9_parser(false);
     media::Vp9FrameHeader vp9_frame_header;
     vp9_parser.SetStream(ivf_payload, ivf_frame_header.frame_size);
-    while (vp9_parser.ParseNextFrame(&vp9_frame_header) ==
+    while (vp9_parser.ParseNextFrame(&vp9_frame_header, nullptr) ==
            media::Vp9Parser::kOk) {
       // Repeat until all frames processed.
     }

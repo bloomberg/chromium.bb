@@ -59,8 +59,8 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
     // Return true when successful, false otherwise.
     virtual bool SubmitDecode(
         const scoped_refptr<VP9Picture>& pic,
-        const Vp9Segmentation& seg,
-        const Vp9LoopFilter& lf,
+        const Vp9SegmentationParams& seg,
+        const Vp9LoopFilterParams& lf,
         const std::vector<scoped_refptr<VP9Picture>>& ref_pictures) = 0;
 
     // Schedule output (display) of |pic|.

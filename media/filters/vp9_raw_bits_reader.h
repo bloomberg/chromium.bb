@@ -48,6 +48,10 @@ class MEDIA_EXPORT Vp9RawBitsReader {
   // If the read goes beyond the end of buffer, the return value is undefined.
   int ReadSignedLiteral(int bits);
 
+  // Consumes trailing bits up to next byte boundary. Returns true if no
+  // trailing bits or they are all zero.
+  bool ConsumeTrailingBits();
+
  private:
   std::unique_ptr<BitReader> reader_;
 

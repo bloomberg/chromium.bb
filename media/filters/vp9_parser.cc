@@ -3,40 +3,22 @@
 // found in the LICENSE file.
 //
 // This file contains an implementation of a VP9 bitstream parser.
+//
+// VERBOSE level:
+//  1 something wrong in bitstream
+//  2 parsing steps
+//  3 parsed values (selected)
 
 #include "media/filters/vp9_parser.h"
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
-
-namespace {
-
-const int kMaxLoopFilterLevel = 63;
-
-// Helper function for Vp9Parser::ReadTiles. Defined as get_min_log2_tile_cols
-// in spec.
-int GetMinLog2TileCols(int sb64_cols) {
-  const int kMaxTileWidthB64 = 64;
-  int min_log2 = 0;
-  while ((kMaxTileWidthB64 << min_log2) < sb64_cols)
-    min_log2++;
-  return min_log2;
-}
-
-// Helper function for Vp9Parser::ReadTiles. Defined as get_max_log2_tile_cols
-// in spec.
-int GetMaxLog2TileCols(int sb64_cols) {
-  const int kMinTileWidthB64 = 4;
-  int max_log2 = 1;
-  while ((sb64_cols >> max_log2) >= kMinTileWidthB64)
-    max_log2++;
-  return max_log2 - 1;
-}
-
-}  // namespace
+#include "media/filters/vp9_compressed_header_parser.h"
+#include "media/filters/vp9_uncompressed_header_parser.h"
 
 namespace media {
 
@@ -47,10 +29,148 @@ bool Vp9FrameHeader::IsKeyframe() const {
   return !show_existing_frame && frame_type == KEYFRAME;
 }
 
+bool Vp9FrameHeader::IsIntra() const {
+  return !show_existing_frame && (frame_type == KEYFRAME || intra_only);
+}
+
 Vp9Parser::FrameInfo::FrameInfo(const uint8_t* ptr, off_t size)
     : ptr(ptr), size(size) {}
 
-Vp9Parser::Vp9Parser() {
+Vp9FrameContextManager::Vp9FrameContextManager() : weak_ptr_factory_(this) {}
+
+Vp9FrameContextManager::~Vp9FrameContextManager() {}
+
+bool Vp9FrameContextManager::IsValidFrameContext(
+    const Vp9FrameContext& context) {
+  // probs should be in [1, 255] range.
+  static_assert(sizeof(Vp9Prob) == 1,
+                "following checks assuming Vp9Prob is single byte");
+  if (memchr(context.tx_probs_8x8, 0, sizeof(context.tx_probs_8x8)))
+    return false;
+  if (memchr(context.tx_probs_16x16, 0, sizeof(context.tx_probs_16x16)))
+    return false;
+  if (memchr(context.tx_probs_32x32, 0, sizeof(context.tx_probs_32x32)))
+    return false;
+
+  for (auto& a : context.coef_probs) {
+    for (auto& ai : a) {
+      for (auto& aj : ai) {
+        for (auto& ak : aj) {
+          int max_l = (ak == aj[0]) ? 3 : 6;
+          for (int l = 0; l < max_l; l++) {
+            for (auto& x : ak[l]) {
+              if (x == 0)
+                return false;
+            }
+          }
+        }
+      }
+    }
+  }
+  if (memchr(context.skip_prob, 0, sizeof(context.skip_prob)))
+    return false;
+  if (memchr(context.inter_mode_probs, 0, sizeof(context.inter_mode_probs)))
+    return false;
+  if (memchr(context.interp_filter_probs, 0,
+             sizeof(context.interp_filter_probs)))
+    return false;
+  if (memchr(context.is_inter_prob, 0, sizeof(context.is_inter_prob)))
+    return false;
+  if (memchr(context.comp_mode_prob, 0, sizeof(context.comp_mode_prob)))
+    return false;
+  if (memchr(context.single_ref_prob, 0, sizeof(context.single_ref_prob)))
+    return false;
+  if (memchr(context.comp_ref_prob, 0, sizeof(context.comp_ref_prob)))
+    return false;
+  if (memchr(context.y_mode_probs, 0, sizeof(context.y_mode_probs)))
+    return false;
+  if (memchr(context.uv_mode_probs, 0, sizeof(context.uv_mode_probs)))
+    return false;
+  if (memchr(context.partition_probs, 0, sizeof(context.partition_probs)))
+    return false;
+  if (memchr(context.mv_joint_probs, 0, sizeof(context.mv_joint_probs)))
+    return false;
+  if (memchr(context.mv_sign_prob, 0, sizeof(context.mv_sign_prob)))
+    return false;
+  if (memchr(context.mv_class_probs, 0, sizeof(context.mv_class_probs)))
+    return false;
+  if (memchr(context.mv_class0_bit_prob, 0, sizeof(context.mv_class0_bit_prob)))
+    return false;
+  if (memchr(context.mv_bits_prob, 0, sizeof(context.mv_bits_prob)))
+    return false;
+  if (memchr(context.mv_class0_fr_probs, 0, sizeof(context.mv_class0_fr_probs)))
+    return false;
+  if (memchr(context.mv_fr_probs, 0, sizeof(context.mv_fr_probs)))
+    return false;
+  if (memchr(context.mv_class0_hp_prob, 0, sizeof(context.mv_class0_hp_prob)))
+    return false;
+  if (memchr(context.mv_hp_prob, 0, sizeof(context.mv_hp_prob)))
+    return false;
+
+  return true;
+}
+
+const Vp9FrameContext& Vp9FrameContextManager::frame_context() const {
+  DCHECK(initialized_);
+  DCHECK(!needs_client_update_);
+  return frame_context_;
+}
+
+void Vp9FrameContextManager::Reset() {
+  initialized_ = false;
+  needs_client_update_ = false;
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+Vp9FrameContextManager::ContextRefreshCallback
+Vp9FrameContextManager::SetNeedsClientUpdate() {
+  DCHECK(!needs_client_update_);
+  initialized_ = true;
+  needs_client_update_ = true;
+
+  return base::Bind(&Vp9FrameContextManager::UpdateFromClient,
+                    weak_ptr_factory_.GetWeakPtr());
+}
+
+void Vp9FrameContextManager::Update(const Vp9FrameContext& frame_context) {
+  // DCHECK because we can trust values from our parser.
+  DCHECK(IsValidFrameContext(frame_context));
+  initialized_ = true;
+  frame_context_ = frame_context;
+
+  // For frame context we are updating, it may be still awaiting previous
+  // ContextRefreshCallback. Because we overwrite the value of context here and
+  // previous ContextRefreshCallback no longer matters, invalidate the weak ptr
+  // to prevent previous ContextRefreshCallback run.
+  // With this optimization, we may be able to parse more frames while previous
+  // are still decoding.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  needs_client_update_ = false;
+}
+
+void Vp9FrameContextManager::UpdateFromClient(
+    const Vp9FrameContext& frame_context) {
+  DVLOG(2) << "Got external frame_context update";
+  DCHECK(needs_client_update_);
+  if (!IsValidFrameContext(frame_context)) {
+    DLOG(ERROR) << "Invalid prob value in frame_context";
+    return;
+  }
+  needs_client_update_ = false;
+  initialized_ = true;
+  frame_context_ = frame_context;
+}
+
+void Vp9Parser::Context::Reset() {
+  memset(&segmentation, 0, sizeof(segmentation));
+  memset(&loop_filter, 0, sizeof(loop_filter));
+  memset(&ref_slots, 0, sizeof(ref_slots));
+  for (auto& manager : frame_context_managers)
+    manager.Reset();
+}
+
+Vp9Parser::Vp9Parser(bool parsing_compressed_header)
+    : parsing_compressed_header_(parsing_compressed_header) {
   Reset();
 }
 
@@ -67,412 +187,136 @@ void Vp9Parser::Reset() {
   stream_ = nullptr;
   bytes_left_ = 0;
   frames_.clear();
+  curr_frame_info_.Reset();
 
-  memset(&segmentation_, 0, sizeof(segmentation_));
-  memset(&loop_filter_, 0, sizeof(loop_filter_));
-  memset(&ref_slots_, 0, sizeof(ref_slots_));
+  context_.Reset();
 }
 
-uint8_t Vp9Parser::ReadProfile() {
-  uint8_t profile = 0;
+Vp9Parser::Result Vp9Parser::ParseNextFrame(
+    Vp9FrameHeader* fhdr,
+    Vp9FrameContextManager::ContextRefreshCallback* context_refresh_cb) {
+  DCHECK(fhdr);
+  DCHECK(!parsing_compressed_header_ || context_refresh_cb);
+  DVLOG(2) << "ParseNextFrame";
 
-  // LSB first.
-  if (reader_.ReadBool())
-    profile |= 1;
-  if (reader_.ReadBool())
-    profile |= 2;
-  if (profile > 2 && reader_.ReadBool())
-    profile += 1;
-  return profile;
-}
+  // If |curr_frame_info_| is valid, uncompressed header was parsed into
+  // |curr_frame_header_| and we are awaiting context update to proceed with
+  // compressed header parsing.
+  if (!curr_frame_info_.IsValid()) {
+    if (frames_.empty()) {
+      // No frames to be decoded, if there is no more stream, request more.
+      if (!stream_)
+        return kEOStream;
 
-bool Vp9Parser::VerifySyncCode() {
-  const int kSyncCode = 0x498342;
-  if (reader_.ReadLiteral(8 * 3) != kSyncCode) {
-    DVLOG(1) << "Invalid frame sync code";
-    return false;
-  }
-  return true;
-}
-
-bool Vp9Parser::ReadBitDepthColorSpaceSampling(Vp9FrameHeader* fhdr) {
-  if (fhdr->profile == 2 || fhdr->profile == 3) {
-    fhdr->bit_depth = reader_.ReadBool() ? 12 : 10;
-  } else {
-    fhdr->bit_depth = 8;
-  }
-
-  fhdr->color_space = static_cast<Vp9ColorSpace>(reader_.ReadLiteral(3));
-  if (fhdr->color_space != Vp9ColorSpace::SRGB) {
-    fhdr->yuv_range = reader_.ReadBool();
-    if (fhdr->profile == 1 || fhdr->profile == 3) {
-      fhdr->subsampling_x = reader_.ReadBool() ? 1 : 0;
-      fhdr->subsampling_y = reader_.ReadBool() ? 1 : 0;
-      if (fhdr->subsampling_x == 1 && fhdr->subsampling_y == 1) {
-        DVLOG(1) << "4:2:0 color not supported in profile 1 or 3";
-        return false;
-      }
-      bool reserved = reader_.ReadBool();
-      if (reserved) {
-        DVLOG(1) << "reserved bit set";
-        return false;
-      }
-    } else {
-      fhdr->subsampling_x = fhdr->subsampling_y = 1;
-    }
-  } else {
-    if (fhdr->profile == 1 || fhdr->profile == 3) {
-      fhdr->subsampling_x = fhdr->subsampling_y = 0;
-
-      bool reserved = reader_.ReadBool();
-      if (reserved) {
-        DVLOG(1) << "reserved bit set";
-        return false;
-      }
-    } else {
-      DVLOG(1) << "4:4:4 color not supported in profile 0 or 2";
-      return false;
-    }
-  }
-
-  return true;
-}
-
-void Vp9Parser::ReadFrameSize(Vp9FrameHeader* fhdr) {
-  fhdr->width = reader_.ReadLiteral(16) + 1;
-  fhdr->height = reader_.ReadLiteral(16) + 1;
-}
-
-bool Vp9Parser::ReadFrameSizeFromRefs(Vp9FrameHeader* fhdr) {
-  for (size_t i = 0; i < kVp9NumRefsPerFrame; i++) {
-    if (reader_.ReadBool()) {
-      fhdr->width = ref_slots_[i].width;
-      fhdr->height = ref_slots_[i].height;
-
-      const int kMaxDimension = 1 << 16;
-      if (fhdr->width == 0 || fhdr->width > kMaxDimension ||
-          fhdr->height == 0 || fhdr->height > kMaxDimension) {
-        DVLOG(1) << "The size of reference frame is out of range: "
-                 << ref_slots_[i].width << "," << ref_slots_[i].height;
-        return false;
-      }
-      return true;
-    }
-  }
-
-  fhdr->width = reader_.ReadLiteral(16) + 1;
-  fhdr->height = reader_.ReadLiteral(16) + 1;
-  return true;
-}
-
-void Vp9Parser::ReadDisplayFrameSize(Vp9FrameHeader* fhdr) {
-  if (reader_.ReadBool()) {
-    fhdr->display_width = reader_.ReadLiteral(16) + 1;
-    fhdr->display_height = reader_.ReadLiteral(16) + 1;
-  } else {
-    fhdr->display_width = fhdr->width;
-    fhdr->display_height = fhdr->height;
-  }
-}
-
-Vp9InterpFilter Vp9Parser::ReadInterpFilter() {
-  if (reader_.ReadBool())
-    return Vp9InterpFilter::SWICHABLE;
-
-  // The mapping table for next two bits.
-  const Vp9InterpFilter table[] = {
-      Vp9InterpFilter::EIGHTTAP_SMOOTH, Vp9InterpFilter::EIGHTTAP,
-      Vp9InterpFilter::EIGHTTAP_SHARP, Vp9InterpFilter::BILINEAR,
-  };
-  return table[reader_.ReadLiteral(2)];
-}
-
-void Vp9Parser::ReadLoopFilter() {
-  loop_filter_.filter_level = reader_.ReadLiteral(6);
-  loop_filter_.sharpness_level = reader_.ReadLiteral(3);
-  loop_filter_.mode_ref_delta_update = false;
-
-  loop_filter_.mode_ref_delta_enabled = reader_.ReadBool();
-  if (loop_filter_.mode_ref_delta_enabled) {
-    loop_filter_.mode_ref_delta_update = reader_.ReadBool();
-    if (loop_filter_.mode_ref_delta_update) {
-      for (size_t i = 0; i < Vp9LoopFilter::VP9_FRAME_MAX; i++) {
-        loop_filter_.update_ref_deltas[i] = reader_.ReadBool();
-        if (loop_filter_.update_ref_deltas[i])
-          loop_filter_.ref_deltas[i] = reader_.ReadSignedLiteral(6);
-      }
-
-      for (size_t i = 0; i < Vp9LoopFilter::kNumModeDeltas; i++) {
-        loop_filter_.update_mode_deltas[i] = reader_.ReadBool();
-        if (loop_filter_.update_mode_deltas[i])
-          loop_filter_.mode_deltas[i] = reader_.ReadLiteral(6);
+      // New stream to be parsed, parse it and fill frames_.
+      frames_ = ParseSuperframe();
+      if (frames_.empty()) {
+        DVLOG(1) << "Failed parsing superframes";
+        return kInvalidStream;
       }
     }
-  }
-}
 
-void Vp9Parser::ReadQuantization(Vp9QuantizationParams* quants) {
-  quants->base_qindex = reader_.ReadLiteral(8);
+    curr_frame_info_ = frames_.front();
+    frames_.pop_front();
 
-  if (reader_.ReadBool())
-    quants->y_dc_delta = reader_.ReadSignedLiteral(4);
+    memset(&curr_frame_header_, 0, sizeof(curr_frame_header_));
 
-  if (reader_.ReadBool())
-    quants->uv_dc_delta = reader_.ReadSignedLiteral(4);
+    Vp9UncompressedHeaderParser uncompressed_parser(&context_);
+    if (!uncompressed_parser.Parse(curr_frame_info_.ptr, curr_frame_info_.size,
+                                   &curr_frame_header_))
+      return kInvalidStream;
 
-  if (reader_.ReadBool())
-    quants->uv_ac_delta = reader_.ReadSignedLiteral(4);
-}
-
-void Vp9Parser::ReadSegmentationMap() {
-  for (size_t i = 0; i < Vp9Segmentation::kNumTreeProbs; i++) {
-    segmentation_.tree_probs[i] =
-        reader_.ReadBool() ? reader_.ReadLiteral(8) : kVp9MaxProb;
-  }
-
-  for (size_t i = 0; i < Vp9Segmentation::kNumPredictionProbs; i++)
-    segmentation_.pred_probs[i] = kVp9MaxProb;
-
-  segmentation_.temporal_update = reader_.ReadBool();
-  if (segmentation_.temporal_update) {
-    for (size_t i = 0; i < Vp9Segmentation::kNumPredictionProbs; i++) {
-      if (reader_.ReadBool())
-        segmentation_.pred_probs[i] = reader_.ReadLiteral(8);
-    }
-  }
-}
-
-void Vp9Parser::ReadSegmentationData() {
-  segmentation_.abs_delta = reader_.ReadBool();
-
-  const int kFeatureDataBits[] = {8, 6, 2, 0};
-  const bool kFeatureDataSigned[] = {true, true, false, false};
-
-  for (size_t i = 0; i < Vp9Segmentation::kNumSegments; i++) {
-    for (size_t j = 0; j < Vp9Segmentation::SEG_LVL_MAX; j++) {
-      int16_t data = 0;
-      segmentation_.feature_enabled[i][j] = reader_.ReadBool();
-      if (segmentation_.feature_enabled[i][j]) {
-        data = reader_.ReadLiteral(kFeatureDataBits[j]);
-        if (kFeatureDataSigned[j])
-          if (reader_.ReadBool())
-            data = -data;
+    if (curr_frame_header_.header_size_in_bytes == 0) {
+      // Verify padding bits are zero.
+      for (off_t i = curr_frame_header_.uncompressed_header_size;
+           i < curr_frame_info_.size; i++) {
+        if (curr_frame_info_.ptr[i] != 0) {
+          DVLOG(1) << "Padding bits are not zeros.";
+          return kInvalidStream;
+        }
       }
-      segmentation_.feature_data[i][j] = data;
+      *fhdr = curr_frame_header_;
+      curr_frame_info_.Reset();
+      return kOk;
     }
-  }
-}
-
-void Vp9Parser::ReadSegmentation() {
-  segmentation_.update_map = false;
-  segmentation_.update_data = false;
-
-  segmentation_.enabled = reader_.ReadBool();
-  if (!segmentation_.enabled)
-    return;
-
-  segmentation_.update_map = reader_.ReadBool();
-  if (segmentation_.update_map)
-    ReadSegmentationMap();
-
-  segmentation_.update_data = reader_.ReadBool();
-  if (segmentation_.update_data)
-    ReadSegmentationData();
-}
-
-void Vp9Parser::ReadTiles(Vp9FrameHeader* fhdr) {
-  int sb64_cols = (fhdr->width + 63) / 64;
-
-  int min_log2_tile_cols = GetMinLog2TileCols(sb64_cols);
-  int max_log2_tile_cols = GetMaxLog2TileCols(sb64_cols);
-
-  int max_ones = max_log2_tile_cols - min_log2_tile_cols;
-  fhdr->log2_tile_cols = min_log2_tile_cols;
-  while (max_ones-- && reader_.ReadBool())
-    fhdr->log2_tile_cols++;
-
-  fhdr->log2_tile_rows = reader_.ReadBool() ? 1 : 0;
-  if (fhdr->log2_tile_rows > 0 && reader_.ReadBool())
-    fhdr->log2_tile_rows++;
-}
-
-bool Vp9Parser::ParseUncompressedHeader(const uint8_t* stream,
-                                        off_t frame_size,
-                                        Vp9FrameHeader* fhdr) {
-  reader_.Initialize(stream, frame_size);
-
-  fhdr->data = stream;
-  fhdr->frame_size = frame_size;
-
-  // frame marker
-  if (reader_.ReadLiteral(2) != 0x2)
-    return false;
-
-  fhdr->profile = ReadProfile();
-  if (fhdr->profile >= kVp9MaxProfile) {
-    DVLOG(1) << "Unsupported bitstream profile";
-    return false;
-  }
-
-  fhdr->show_existing_frame = reader_.ReadBool();
-  if (fhdr->show_existing_frame) {
-    fhdr->frame_to_show = reader_.ReadLiteral(3);
-    fhdr->show_frame = true;
-
-    if (!reader_.IsValid()) {
-      DVLOG(1) << "parser reads beyond the end of buffer";
-      return false;
-    }
-    fhdr->uncompressed_header_size = reader_.GetBytesRead();
-    return true;
-  }
-
-  fhdr->frame_type = static_cast<Vp9FrameHeader::FrameType>(reader_.ReadBool());
-  fhdr->show_frame = reader_.ReadBool();
-  fhdr->error_resilient_mode = reader_.ReadBool();
-
-  if (fhdr->IsKeyframe()) {
-    if (!VerifySyncCode())
-      return false;
-
-    if (!ReadBitDepthColorSpaceSampling(fhdr))
-      return false;
-
-    fhdr->refresh_flags = 0xff;
-
-    ReadFrameSize(fhdr);
-    ReadDisplayFrameSize(fhdr);
-  } else {
-    if (!fhdr->show_frame)
-      fhdr->intra_only = reader_.ReadBool();
-
-    if (!fhdr->error_resilient_mode)
-      fhdr->reset_context = reader_.ReadLiteral(2);
-
-    if (fhdr->intra_only) {
-      if (!VerifySyncCode())
-        return false;
-
-      if (fhdr->profile > 0) {
-        if (!ReadBitDepthColorSpaceSampling(fhdr))
-          return false;
-      } else {
-        fhdr->bit_depth = 8;
-        fhdr->color_space = Vp9ColorSpace::BT_601;
-        fhdr->subsampling_x = fhdr->subsampling_y = 1;
-      }
-
-      fhdr->refresh_flags = reader_.ReadLiteral(8);
-
-      ReadFrameSize(fhdr);
-      ReadDisplayFrameSize(fhdr);
-    } else {
-      fhdr->refresh_flags = reader_.ReadLiteral(8);
-
-      for (size_t i = 0; i < kVp9NumRefsPerFrame; i++) {
-        fhdr->frame_refs[i] = reader_.ReadLiteral(kVp9NumRefFramesLog2);
-        fhdr->ref_sign_biases[i] = reader_.ReadBool();
-      }
-
-      if (!ReadFrameSizeFromRefs(fhdr))
-        return false;
-      ReadDisplayFrameSize(fhdr);
-
-      fhdr->allow_high_precision_mv = reader_.ReadBool();
-      fhdr->interp_filter = ReadInterpFilter();
-    }
-  }
-
-  if (fhdr->error_resilient_mode) {
-    fhdr->frame_parallel_decoding_mode = true;
-  } else {
-    fhdr->refresh_frame_context = reader_.ReadBool();
-    fhdr->frame_parallel_decoding_mode = reader_.ReadBool();
-  }
-
-  fhdr->frame_context_idx = reader_.ReadLiteral(2);
-
-  if (fhdr->IsKeyframe() || fhdr->intra_only)
-    SetupPastIndependence();
-
-  ReadLoopFilter();
-  ReadQuantization(&fhdr->quant_params);
-  ReadSegmentation();
-
-  ReadTiles(fhdr);
-
-  fhdr->first_partition_size = reader_.ReadLiteral(16);
-  if (fhdr->first_partition_size == 0) {
-    DVLOG(1) << "invalid header size";
-    return false;
-  }
-
-  if (!reader_.IsValid()) {
-    DVLOG(1) << "parser reads beyond the end of buffer";
-    return false;
-  }
-  fhdr->uncompressed_header_size = reader_.GetBytesRead();
-
-  SetupSegmentationDequant(fhdr->quant_params);
-  SetupLoopFilter();
-
-  UpdateSlots(fhdr);
-
-  return true;
-}
-
-void Vp9Parser::UpdateSlots(const Vp9FrameHeader* fhdr) {
-  for (size_t i = 0; i < kVp9NumRefFrames; i++) {
-    if (fhdr->RefreshFlag(i)) {
-      ref_slots_[i].width = fhdr->width;
-      ref_slots_[i].height = fhdr->height;
-    }
-  }
-}
-
-Vp9Parser::Result Vp9Parser::ParseNextFrame(Vp9FrameHeader* fhdr) {
-  if (frames_.empty()) {
-    // No frames to be decoded, if there is no more stream, request more.
-    if (!stream_)
-      return kEOStream;
-
-    // New stream to be parsed, parse it and fill frames_.
-    if (!ParseSuperframe()) {
-      DVLOG(1) << "Failed parsing superframes";
+    if (curr_frame_header_.uncompressed_header_size +
+            curr_frame_header_.header_size_in_bytes >
+        base::checked_cast<size_t>(curr_frame_info_.size)) {
+      DVLOG(1) << "header_size_in_bytes="
+               << curr_frame_header_.header_size_in_bytes
+               << " is larger than bytes left in buffer: "
+               << curr_frame_info_.size -
+                      curr_frame_header_.uncompressed_header_size;
       return kInvalidStream;
     }
   }
 
-  DCHECK(!frames_.empty());
-  FrameInfo frame_info = frames_.front();
-  frames_.pop_front();
+  if (parsing_compressed_header_) {
+    Vp9FrameContextManager& context_to_load =
+        context_.frame_context_managers[curr_frame_header_.frame_context_idx];
+    if (!context_to_load.initialized()) {
+      // 8.2 Frame order constraints
+      // must load an initialized set of probabilities.
+      DVLOG(1) << "loading uninitialized frame context, index="
+               << curr_frame_header_.frame_context_idx;
+      return kInvalidStream;
+    }
+    if (context_to_load.needs_client_update()) {
+      DVLOG(3) << "waiting frame_context_idx="
+               << static_cast<int>(curr_frame_header_.frame_context_idx)
+               << " to update";
+      return kAwaitingRefresh;
+    }
+    curr_frame_header_.initial_frame_context =
+        curr_frame_header_.frame_context = context_to_load.frame_context();
 
-  memset(fhdr, 0, sizeof(*fhdr));
-  if (!ParseUncompressedHeader(frame_info.ptr, frame_info.size, fhdr))
-    return kInvalidStream;
+    Vp9CompressedHeaderParser compressed_parser;
+    if (!compressed_parser.Parse(
+            curr_frame_info_.ptr + curr_frame_header_.uncompressed_header_size,
+            curr_frame_header_.header_size_in_bytes, &curr_frame_header_)) {
+      return kInvalidStream;
+    }
 
+    if (curr_frame_header_.refresh_frame_context) {
+      Vp9FrameContextManager& frame_context_manager =
+          context_.frame_context_managers[curr_frame_header_.frame_context_idx];
+
+      // In frame parallel mode, we can refresh the context without decoding
+      // tile data.
+      if (curr_frame_header_.frame_parallel_decoding_mode) {
+        frame_context_manager.Update(curr_frame_header_.frame_context);
+      } else {
+        *context_refresh_cb = frame_context_manager.SetNeedsClientUpdate();
+      }
+    }
+  }
+
+  SetupSegmentationDequant();
+  SetupLoopFilter();
+  UpdateSlots();
+
+  *fhdr = curr_frame_header_;
+  curr_frame_info_.Reset();
   return kOk;
 }
 
-bool Vp9Parser::ParseSuperframe() {
+// Annex B Superframes
+std::deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
   const uint8_t* stream = stream_;
   off_t bytes_left = bytes_left_;
-
-  DCHECK(frames_.empty());
 
   // Make sure we don't parse stream_ more than once.
   stream_ = nullptr;
   bytes_left_ = 0;
 
   if (bytes_left < 1)
-    return false;
+    return std::deque<FrameInfo>();
 
   // If this is a superframe, the last byte in the stream will contain the
   // superframe marker. If not, the whole buffer contains a single frame.
   uint8_t marker = *(stream + bytes_left - 1);
   if ((marker & 0xe0) != 0xc0) {
-    frames_.push_back(FrameInfo(stream, bytes_left));
-    return true;
+    return {FrameInfo(stream, bytes_left)};
   }
 
   DVLOG(1) << "Parsing a superframe";
@@ -485,17 +329,18 @@ bool Vp9Parser::ParseSuperframe() {
   off_t index_size = 2 + mag * num_frames;
 
   if (bytes_left < index_size)
-    return false;
+    return std::deque<FrameInfo>();
 
   const uint8_t* index_ptr = stream + bytes_left - index_size;
   if (marker != *index_ptr)
-    return false;
+    return std::deque<FrameInfo>();
 
   ++index_ptr;
   bytes_left -= index_size;
 
   // Parse frame information contained in the index and add a pointer to and
-  // size of each frame to frames_.
+  // size of each frame to frames.
+  std::deque<FrameInfo> frames;
   for (size_t i = 0; i < num_frames; ++i) {
     uint32_t size = 0;
     for (size_t j = 0; j < mag; ++j) {
@@ -505,38 +350,20 @@ bool Vp9Parser::ParseSuperframe() {
 
     if (base::checked_cast<off_t>(size) > bytes_left) {
       DVLOG(1) << "Not enough data in the buffer for frame " << i;
-      return false;
+      return std::deque<FrameInfo>();
     }
 
-    frames_.push_back(FrameInfo(stream, size));
+    frames.push_back(FrameInfo(stream, size));
     stream += size;
     bytes_left -= size;
 
     DVLOG(1) << "Frame " << i << ", size: " << size;
   }
 
-  return true;
+  return frames;
 }
 
-void Vp9Parser::ResetLoopfilter() {
-  loop_filter_.mode_ref_delta_enabled = true;
-  loop_filter_.mode_ref_delta_update = true;
-
-  const int8_t default_ref_deltas[] = {1, 0, -1, -1};
-  static_assert(
-      arraysize(default_ref_deltas) == arraysize(loop_filter_.ref_deltas),
-      "ref_deltas arrays of incorrect size");
-  for (size_t i = 0; i < arraysize(loop_filter_.ref_deltas); ++i)
-    loop_filter_.ref_deltas[i] = default_ref_deltas[i];
-
-  memset(loop_filter_.mode_deltas, 0, sizeof(loop_filter_.mode_deltas));
-}
-
-void Vp9Parser::SetupPastIndependence() {
-  memset(&segmentation_, 0, sizeof(segmentation_));
-  ResetLoopfilter();
-}
-
+// 8.6.1
 const size_t QINDEX_RANGE = 256;
 const int16_t kDcQLookup[QINDEX_RANGE] = {
   4,       8,    8,    9,   10,   11,   12,   12,
@@ -611,83 +438,122 @@ const int16_t kAcQLookup[QINDEX_RANGE] = {
 static_assert(arraysize(kDcQLookup) == arraysize(kAcQLookup),
               "quantizer lookup arrays of incorrect size");
 
-#define CLAMP_Q(q) \
-    std::min(std::max(static_cast<size_t>(0), q), arraysize(kDcQLookup) - 1)
+static size_t ClampQ(size_t q) {
+  return std::min(std::max(static_cast<size_t>(0), q),
+                  arraysize(kDcQLookup) - 1);
+}
 
+// 8.6.1 Dequantization functions
 size_t Vp9Parser::GetQIndex(const Vp9QuantizationParams& quant,
                             size_t segid) const {
-  if (segmentation_.FeatureEnabled(segid, Vp9Segmentation::SEG_LVL_ALT_Q)) {
+  const Vp9SegmentationParams& segmentation = context_.segmentation;
+
+  if (segmentation.FeatureEnabled(segid,
+                                  Vp9SegmentationParams::SEG_LVL_ALT_Q)) {
     int16_t feature_data =
-        segmentation_.FeatureData(segid, Vp9Segmentation::SEG_LVL_ALT_Q);
-    size_t q_index = segmentation_.abs_delta ? feature_data
-                                             : quant.base_qindex + feature_data;
-    return CLAMP_Q(q_index);
+        segmentation.FeatureData(segid, Vp9SegmentationParams::SEG_LVL_ALT_Q);
+    size_t q_index = segmentation.abs_or_delta_update
+                         ? feature_data
+                         : quant.base_q_idx + feature_data;
+    return ClampQ(q_index);
   }
 
-  return quant.base_qindex;
+  return quant.base_q_idx;
 }
 
-void Vp9Parser::SetupSegmentationDequant(const Vp9QuantizationParams& quant) {
-  if (segmentation_.enabled) {
-    for (size_t i = 0; i < Vp9Segmentation::kNumSegments; ++i) {
+// 8.6.1 Dequantization functions
+void Vp9Parser::SetupSegmentationDequant() {
+  const Vp9QuantizationParams& quant = curr_frame_header_.quant_params;
+  Vp9SegmentationParams& segmentation = context_.segmentation;
+
+  DLOG_IF(ERROR, curr_frame_header_.bit_depth > 8)
+      << "bit_depth > 8 is not supported "
+         "yet, kDcQLookup and kAcQLookup "
+         "need extended";
+  if (segmentation.enabled) {
+    for (size_t i = 0; i < Vp9SegmentationParams::kNumSegments; ++i) {
       const size_t q_index = GetQIndex(quant, i);
-      segmentation_.y_dequant[i][0] =
-          kDcQLookup[CLAMP_Q(q_index + quant.y_dc_delta)];
-      segmentation_.y_dequant[i][1] = kAcQLookup[CLAMP_Q(q_index)];
-      segmentation_.uv_dequant[i][0] =
-          kDcQLookup[CLAMP_Q(q_index + quant.uv_dc_delta)];
-      segmentation_.uv_dequant[i][1] =
-          kAcQLookup[CLAMP_Q(q_index + quant.uv_ac_delta)];
+      segmentation.y_dequant[i][0] =
+          kDcQLookup[ClampQ(q_index + quant.delta_q_y_dc)];
+      segmentation.y_dequant[i][1] = kAcQLookup[ClampQ(q_index)];
+      segmentation.uv_dequant[i][0] =
+          kDcQLookup[ClampQ(q_index + quant.delta_q_uv_dc)];
+      segmentation.uv_dequant[i][1] =
+          kAcQLookup[ClampQ(q_index + quant.delta_q_uv_ac)];
     }
   } else {
-    const size_t q_index = quant.base_qindex;
-    segmentation_.y_dequant[0][0] =
-        kDcQLookup[CLAMP_Q(q_index + quant.y_dc_delta)];
-    segmentation_.y_dequant[0][1] = kAcQLookup[CLAMP_Q(q_index)];
-    segmentation_.uv_dequant[0][0] =
-        kDcQLookup[CLAMP_Q(q_index + quant.uv_dc_delta)];
-    segmentation_.uv_dequant[0][1] =
-        kAcQLookup[CLAMP_Q(q_index + quant.uv_ac_delta)];
+    const size_t q_index = quant.base_q_idx;
+    segmentation.y_dequant[0][0] =
+        kDcQLookup[ClampQ(q_index + quant.delta_q_y_dc)];
+    segmentation.y_dequant[0][1] = kAcQLookup[ClampQ(q_index)];
+    segmentation.uv_dequant[0][0] =
+        kDcQLookup[ClampQ(q_index + quant.delta_q_uv_dc)];
+    segmentation.uv_dequant[0][1] =
+        kAcQLookup[ClampQ(q_index + quant.delta_q_uv_ac)];
   }
 }
-#undef CLAMP_Q
 
-#define CLAMP_LF(l) std::min(std::max(0, l), kMaxLoopFilterLevel)
+static int ClampLf(int lf) {
+  const int kMaxLoopFilterLevel = 63;
+  return std::min(std::max(0, lf), kMaxLoopFilterLevel);
+}
+
+// 8.8.1 Loop filter frame init process
 void Vp9Parser::SetupLoopFilter() {
-  if (!loop_filter_.filter_level)
+  Vp9LoopFilterParams& loop_filter = context_.loop_filter;
+  if (!loop_filter.level)
     return;
 
-  int scale = loop_filter_.filter_level < 32 ? 1 : 2;
+  int scale = loop_filter.level < 32 ? 1 : 2;
 
-  for (size_t i = 0; i < Vp9Segmentation::kNumSegments; ++i) {
-    int level = loop_filter_.filter_level;
+  for (size_t i = 0; i < Vp9SegmentationParams::kNumSegments; ++i) {
+    int level = loop_filter.level;
+    Vp9SegmentationParams& segmentation = context_.segmentation;
 
-    if (segmentation_.FeatureEnabled(i, Vp9Segmentation::SEG_LVL_ALT_LF)) {
+    if (segmentation.FeatureEnabled(i, Vp9SegmentationParams::SEG_LVL_ALT_LF)) {
       int feature_data =
-          segmentation_.FeatureData(i, Vp9Segmentation::SEG_LVL_ALT_LF);
-      level = CLAMP_LF(segmentation_.abs_delta ? feature_data
-                                               : level + feature_data);
+          segmentation.FeatureData(i, Vp9SegmentationParams::SEG_LVL_ALT_LF);
+      level = ClampLf(segmentation.abs_or_delta_update ? feature_data
+                                                       : level + feature_data);
     }
 
-    if (!loop_filter_.mode_ref_delta_enabled) {
-      memset(loop_filter_.lvl[i], level, sizeof(loop_filter_.lvl[i]));
+    if (!loop_filter.delta_enabled) {
+      memset(loop_filter.lvl[i], level, sizeof(loop_filter.lvl[i]));
     } else {
-      loop_filter_.lvl[i][Vp9LoopFilter::VP9_FRAME_INTRA][0] = CLAMP_LF(
-          level +
-          loop_filter_.ref_deltas[Vp9LoopFilter::VP9_FRAME_INTRA] * scale);
-      loop_filter_.lvl[i][Vp9LoopFilter::VP9_FRAME_INTRA][1] = 0;
+      loop_filter.lvl[i][Vp9RefType::VP9_FRAME_INTRA][0] = ClampLf(
+          level + loop_filter.ref_deltas[Vp9RefType::VP9_FRAME_INTRA] * scale);
+      loop_filter.lvl[i][Vp9RefType::VP9_FRAME_INTRA][1] = 0;
 
-      for (size_t type = Vp9LoopFilter::VP9_FRAME_LAST;
-           type < Vp9LoopFilter::VP9_FRAME_MAX; ++type) {
-        for (size_t mode = 0; mode < Vp9LoopFilter::kNumModeDeltas; ++mode) {
-          loop_filter_.lvl[i][type][mode] =
-              CLAMP_LF(level + loop_filter_.ref_deltas[type] * scale +
-                       loop_filter_.mode_deltas[mode] * scale);
+      for (size_t type = Vp9RefType::VP9_FRAME_LAST;
+           type < Vp9RefType::VP9_FRAME_MAX; ++type) {
+        for (size_t mode = 0; mode < Vp9LoopFilterParams::kNumModeDeltas;
+             ++mode) {
+          loop_filter.lvl[i][type][mode] =
+              ClampLf(level + loop_filter.ref_deltas[type] * scale +
+                      loop_filter.mode_deltas[mode] * scale);
         }
       }
     }
   }
 }
-#undef CLAMP_LF
+
+void Vp9Parser::UpdateSlots() {
+  // 8.10 Reference frame update process
+  for (size_t i = 0; i < kVp9NumRefFrames; i++) {
+    if (curr_frame_header_.RefreshFlag(i)) {
+      ReferenceSlot& ref = context_.ref_slots[i];
+      ref.initialized = true;
+
+      ref.frame_width = curr_frame_header_.frame_width;
+      ref.frame_height = curr_frame_header_.frame_height;
+      ref.subsampling_x = curr_frame_header_.subsampling_x;
+      ref.subsampling_y = curr_frame_header_.subsampling_y;
+      ref.bit_depth = curr_frame_header_.bit_depth;
+
+      ref.profile = curr_frame_header_.profile;
+      ref.color_space = curr_frame_header_.color_space;
+    }
+  }
+}
 
 }  // namespace media

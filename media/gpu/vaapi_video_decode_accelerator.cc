@@ -247,8 +247,8 @@ class VaapiVideoDecodeAccelerator::VaapiVP9Accelerator
 
   bool SubmitDecode(
       const scoped_refptr<VP9Picture>& pic,
-      const Vp9Segmentation& seg,
-      const Vp9LoopFilter& lf,
+      const Vp9SegmentationParams& seg,
+      const Vp9LoopFilterParams& lf,
       const std::vector<scoped_refptr<VP9Picture>>& ref_pictures) override;
 
   bool OutputPicture(const scoped_refptr<VP9Picture>& pic) override;
@@ -1717,8 +1717,8 @@ VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::CreateVP9Picture() {
 
 bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
     const scoped_refptr<VP9Picture>& pic,
-    const Vp9Segmentation& seg,
-    const Vp9LoopFilter& lf,
+    const Vp9SegmentationParams& seg,
+    const Vp9LoopFilterParams& lf,
     const std::vector<scoped_refptr<VP9Picture>>& ref_pictures) {
   VADecPictureParameterBufferVP9 pic_param;
   memset(&pic_param, 0, sizeof(pic_param));
@@ -1731,8 +1731,9 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
     return false;
   }
 
-  pic_param.frame_width = base::checked_cast<uint16_t>(frame_hdr->width);
-  pic_param.frame_height = base::checked_cast<uint16_t>(frame_hdr->height);
+  pic_param.frame_width = base::checked_cast<uint16_t>(frame_hdr->frame_width);
+  pic_param.frame_height =
+      base::checked_cast<uint16_t>(frame_hdr->frame_height);
 
   CHECK_EQ(ref_pictures.size(), arraysize(pic_param.reference_frames));
   for (size_t i = 0; i < arraysize(pic_param.reference_frames); ++i) {
@@ -1757,30 +1758,33 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
   FHDR_TO_PP_PF1(error_resilient_mode);
   FHDR_TO_PP_PF1(intra_only);
   FHDR_TO_PP_PF1(allow_high_precision_mv);
-  FHDR_TO_PP_PF2(mcomp_filter_type, frame_hdr->interp_filter);
+  FHDR_TO_PP_PF2(mcomp_filter_type, frame_hdr->interpolation_filter);
   FHDR_TO_PP_PF1(frame_parallel_decoding_mode);
-  FHDR_TO_PP_PF2(reset_frame_context, frame_hdr->reset_context);
+  FHDR_TO_PP_PF1(reset_frame_context);
   FHDR_TO_PP_PF1(refresh_frame_context);
-  FHDR_TO_PP_PF1(frame_context_idx);
+  FHDR_TO_PP_PF2(frame_context_idx, frame_hdr->frame_context_idx_to_save_probs);
   FHDR_TO_PP_PF2(segmentation_enabled, seg.enabled);
   FHDR_TO_PP_PF2(segmentation_temporal_update, seg.temporal_update);
   FHDR_TO_PP_PF2(segmentation_update_map, seg.update_map);
-  FHDR_TO_PP_PF2(last_ref_frame, frame_hdr->frame_refs[0]);
-  FHDR_TO_PP_PF2(last_ref_frame_sign_bias, frame_hdr->ref_sign_biases[0]);
-  FHDR_TO_PP_PF2(golden_ref_frame, frame_hdr->frame_refs[1]);
-  FHDR_TO_PP_PF2(golden_ref_frame_sign_bias, frame_hdr->ref_sign_biases[1]);
-  FHDR_TO_PP_PF2(alt_ref_frame, frame_hdr->frame_refs[2]);
-  FHDR_TO_PP_PF2(alt_ref_frame_sign_bias, frame_hdr->ref_sign_biases[2]);
+  FHDR_TO_PP_PF2(last_ref_frame, frame_hdr->ref_frame_idx[0]);
+  FHDR_TO_PP_PF2(last_ref_frame_sign_bias,
+                 frame_hdr->ref_frame_sign_bias[Vp9RefType::VP9_FRAME_LAST]);
+  FHDR_TO_PP_PF2(golden_ref_frame, frame_hdr->ref_frame_idx[1]);
+  FHDR_TO_PP_PF2(golden_ref_frame_sign_bias,
+                 frame_hdr->ref_frame_sign_bias[Vp9RefType::VP9_FRAME_GOLDEN]);
+  FHDR_TO_PP_PF2(alt_ref_frame, frame_hdr->ref_frame_idx[2]);
+  FHDR_TO_PP_PF2(alt_ref_frame_sign_bias,
+                 frame_hdr->ref_frame_sign_bias[Vp9RefType::VP9_FRAME_ALTREF]);
   FHDR_TO_PP_PF2(lossless_flag, frame_hdr->quant_params.IsLossless());
 #undef FHDR_TO_PP_PF2
 #undef FHDR_TO_PP_PF1
 
-  pic_param.filter_level = lf.filter_level;
-  pic_param.sharpness_level = lf.sharpness_level;
-  pic_param.log2_tile_rows = frame_hdr->log2_tile_rows;
-  pic_param.log2_tile_columns = frame_hdr->log2_tile_cols;
+  pic_param.filter_level = lf.level;
+  pic_param.sharpness_level = lf.sharpness;
+  pic_param.log2_tile_rows = frame_hdr->tile_rows_log2;
+  pic_param.log2_tile_columns = frame_hdr->tile_cols_log2;
   pic_param.frame_header_length_in_bytes = frame_hdr->uncompressed_header_size;
-  pic_param.first_partition_size = frame_hdr->first_partition_size;
+  pic_param.first_partition_size = frame_hdr->header_size_in_bytes;
 
   ARRAY_MEMCPY_CHECKED(pic_param.mb_segment_tree_probs, seg.tree_probs);
   ARRAY_MEMCPY_CHECKED(pic_param.segment_pred_probs, seg.pred_probs);
@@ -1797,18 +1801,19 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
   slice_param.slice_data_offset = 0;
   slice_param.slice_data_flag = VA_SLICE_DATA_FLAG_ALL;
 
-  static_assert(arraysize(Vp9Segmentation::feature_enabled) ==
+  static_assert(arraysize(Vp9SegmentationParams::feature_enabled) ==
                     arraysize(slice_param.seg_param),
                 "seg_param array of incorrect size");
   for (size_t i = 0; i < arraysize(slice_param.seg_param); ++i) {
     VASegmentParameterVP9& seg_param = slice_param.seg_param[i];
 #define SEG_TO_SP_SF(a, b) seg_param.segment_flags.fields.a = b
-    SEG_TO_SP_SF(segment_reference_enabled,
-                 seg.FeatureEnabled(i, Vp9Segmentation::SEG_LVL_REF_FRAME));
+    SEG_TO_SP_SF(
+        segment_reference_enabled,
+        seg.FeatureEnabled(i, Vp9SegmentationParams::SEG_LVL_REF_FRAME));
     SEG_TO_SP_SF(segment_reference,
-                 seg.FeatureData(i, Vp9Segmentation::SEG_LVL_REF_FRAME));
+                 seg.FeatureData(i, Vp9SegmentationParams::SEG_LVL_REF_FRAME));
     SEG_TO_SP_SF(segment_reference_skipped,
-                 seg.FeatureEnabled(i, Vp9Segmentation::SEG_LVL_SKIP));
+                 seg.FeatureEnabled(i, Vp9SegmentationParams::SEG_LVL_SKIP));
 #undef SEG_TO_SP_SF
 
     ARRAY_MEMCPY_CHECKED(seg_param.filter_level, lf.lvl[i]);
