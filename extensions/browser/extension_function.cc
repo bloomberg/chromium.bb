@@ -518,11 +518,6 @@ void UIThreadExtensionFunction::Destruct() const {
   BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
-content::RenderViewHost*
-UIThreadExtensionFunction::render_view_host_do_not_use() const {
-  return render_frame_host_ ? render_frame_host_->GetRenderViewHost() : nullptr;
-}
-
 void UIThreadExtensionFunction::SetRenderFrameHost(
     content::RenderFrameHost* render_frame_host) {
   // An extension function from Service Worker does not have a RenderFrameHost.

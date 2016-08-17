@@ -47,7 +47,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/render_view_host.h"
+#include "components/zoom/page_zoom.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -302,7 +302,7 @@ bool FileManagerPrivateZoomFunction::RunSync() {
       NOTREACHED();
       return false;
   }
-  render_view_host_do_not_use()->Zoom(zoom_type);
+  zoom::PageZoom::Zoom(GetSenderWebContents(), zoom_type);
   return true;
 }
 

@@ -88,9 +88,10 @@ class FileManagerPrivateInternalZipSelectionFunction
 };
 
 // Implements the chrome.fileManagerPrivate.zoom method.
-// Changes the zoom level of the file manager by internally calling
-// RenderViewHost::Zoom(). TODO(hirono): Remove this function once the zoom
-// level change is supported for all apps. crbug.com/227175.
+// Changes the zoom level of the file manager by modifying the zoom level of the
+// WebContents.
+// TODO(hirono): Remove this function once the zoom level change is supported
+// for all apps. crbug.com/227175.
 class FileManagerPrivateZoomFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.zoom",
