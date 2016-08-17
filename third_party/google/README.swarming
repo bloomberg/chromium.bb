@@ -1,8 +1,8 @@
 Name: Protocol Buffers
 Short Name: protobuf
-Version: 2.6.0
-Revision: 361:629a556879cc
-Home-page: https://chromium.googlesource.com/external/github.com/google/protobuf
+Version: 3.0.0
+Revision: e8ae137c96444ea313485ed1118c5e43b2099cf1
+Home-page: https://github.com/google/protobuf
 License: New BSD License
 
 Description:
@@ -11,4 +11,5 @@ Protocol Buffers are Google's data interchange format.
 Local Modifications:
 - Installed using glyco (see ../README.txt for more info)
   - run 'python setup.py build' before 'glyco pack ...', to build *_pb.py files.
+- Removed protobuf/internal/*_test.py
 - Added README.swarming

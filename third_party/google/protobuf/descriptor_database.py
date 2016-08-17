@@ -1,6 +1,6 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# http://code.google.com/p/protobuf/
+# https://developers.google.com/protocol-buffers/
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -65,6 +65,7 @@ class DescriptorDatabase(object):
       raise DescriptorDatabaseConflictingDefinitionError(
           '%s already added, but with different descriptor.' % proto_name)
 
+    # Add the top-level Message, Enum and Extension descriptors to the index.
     package = file_desc_proto.package
     for message in file_desc_proto.message_type:
       self._file_desc_protos_by_symbol.update(
@@ -72,6 +73,9 @@ class DescriptorDatabase(object):
     for enum in file_desc_proto.enum_type:
       self._file_desc_protos_by_symbol[
           '.'.join((package, enum.name))] = file_desc_proto
+    for extension in file_desc_proto.extension:
+      self._file_desc_protos_by_symbol[
+          '.'.join((package, extension.name))] = file_desc_proto
 
   def FindFileByName(self, name):
     """Finds the file descriptor proto by file name.
@@ -133,5 +137,5 @@ def _ExtractSymbols(desc_proto, package):
   for nested_type in desc_proto.nested_type:
     for symbol in _ExtractSymbols(nested_type, message_name):
       yield symbol
-    for enum_type in desc_proto.enum_type:
-      yield '.'.join((message_name, enum_type.name))
+  for enum_type in desc_proto.enum_type:
+    yield '.'.join((message_name, enum_type.name))
