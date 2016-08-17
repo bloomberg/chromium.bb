@@ -172,6 +172,7 @@ const int8 kUnknownPower = 127;
 [Extensible]
 enum BluetoothAdvertisingDataType {
   DATA_TYPE_FLAGS = 0x01,
+  DATA_TYPE_SERVICE_UUIDS_16_BIT_COMPLETE = 0x03,
   DATA_TYPE_SERVICE_UUIDS_128_BIT_COMPLETE = 0x07,
   DATA_TYPE_LOCAL_NAME_COMPLETE = 0x09,
   DATA_TYPE_TX_POWER_LEVEL = 0x0A,
@@ -184,6 +185,7 @@ enum BluetoothAdvertisingDataType {
 // https://www.bluetooth.com/specifications/adopted-specifications
 union BluetoothAdvertisingData {
   uint8 flags;
+  array<uint16> service_uuids_16;
   array<BluetoothUUID> service_uuids;
   string local_name;
   uint8 tx_power_level;

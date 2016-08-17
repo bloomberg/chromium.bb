@@ -177,6 +177,12 @@ bool IsGattOffsetValid(int offset) {
   return 0 <= offset && offset < kMaxGattAttributeLength;
 }
 
+// This is needed because Android only support UUID 16 bits in advertising data.
+uint16_t GetUUID16(const BluetoothUUID& uuid) {
+  // Convert xxxxyyyy-xxxx-xxxx-xxxx-xxxxxxxxxxxx to int16 yyyy
+  return std::stoi(uuid.canonical_value().substr(4, 4), nullptr, 16);
+}
+
 }  // namespace
 
 namespace arc {
@@ -1553,6 +1559,8 @@ ArcBluetoothBridge::GetAdapterProperties(
 // Android support 5 types of Advertising Data.
 // However Chrome didn't expose AdvertiseFlag and ManufacturerData.
 // So we will only expose local_name, service_uuids and service_data.
+// Note that we need to use UUID 16 bits because Android does not support
+// UUID 128 bits.
 // TODO(crbug.com/618442) Make Chrome expose missing data.
 mojo::Array<mojom::BluetoothAdvertisingDataPtr>
 ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
@@ -1568,11 +1576,14 @@ ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
   // ServiceUuid
   BluetoothDevice::UUIDList uuid_list = device->GetUUIDs();
   if (uuid_list.size() > 0) {
-    mojom::BluetoothAdvertisingDataPtr service_uuids =
+    mojom::BluetoothAdvertisingDataPtr service_uuids_16 =
         mojom::BluetoothAdvertisingData::New();
-    service_uuids->set_service_uuids(
-        mojo::Array<mojom::BluetoothUUIDPtr>::From(uuid_list));
-    advertising_data.push_back(std::move(service_uuids));
+    mojo::Array<uint16_t> uuid16s;
+    for (auto& uuid : uuid_list) {
+      uuid16s.push_back(GetUUID16(uuid));
+    }
+    service_uuids_16->set_service_uuids_16(std::move(uuid16s));
+    advertising_data.push_back(std::move(service_uuids_16));
   }
 
   // Service data
@@ -1589,9 +1600,7 @@ ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
     mojom::BluetoothServiceDataPtr service_data =
         mojom::BluetoothServiceData::New();
 
-    std::string uuid_str = uuid.canonical_value();
-    // Convert xxxxyyyy-xxxx-xxxx-xxxx-xxxxxxxxxxxx to int16 yyyy
-    service_data->uuid_16bit = std::stoi(uuid_str.substr(4, 4), nullptr, 16);
+    service_data->uuid_16bit = GetUUID16(uuid);
     for (auto& c : data_str) {
       service_data->data.push_back(c);
     }
