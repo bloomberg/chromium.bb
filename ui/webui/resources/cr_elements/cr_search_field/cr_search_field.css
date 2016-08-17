@@ -25,7 +25,6 @@ paper-input-container {
   --paper-input-container-focus-color: rgb(192, 199, 205);
   --paper-input-container-input: {
     color: inherit;
-    font-family: inherit;
     font-size: inherit;
   };
   --paper-input-container-input-color: rgb(192, 199, 205);
