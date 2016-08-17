@@ -87,19 +87,28 @@ which step is failing, and paste any relevant info from the logs into the bug. A
 
 ### Android Device failures
 
-There are two types of device failures:
+There are three types of device failures:
 
-1.  A device is blacklisted in the `device_status_check` step. You can look at
-    the buildbot status page to see how many devices were listed as online
-    during this step. You should always see 7 devices online. If you see fewer
-    than 7 devices online, there is a problem in the lab.
-2.  A device is passing `device_status_check` but still in poor health. The
+1.  A device is blacklisted in the `device_status` step. Device failures of this
+    type are expected to be purple. You can look at the buildbot status page to
+    see how many devices were listed as online during this step. You should
+    always see 7 devices online. If you see fewer than 7 devices online, there
+    is a problem in the lab.
+2.  A device is passing `device_status` but still in poor health. The
     symptom of this is that all the tests are failing on it. You can see that on
     the buildbot status page by looking at the `Device Affinity`. If all tests
     with the same device affinity number are failing, it's probably a device
     failure.
+3.  A device has completely disappeared from `device_status` step. You should
+    always see 7 total devices on a bot in one of three statuses: online,
+    misisng, or blacklisted. If you see fewer than 7 devices it means there is
+    a problem with the known devices persistent file and the device is
+    unreachable via adb. This usually means the known devices file was cleared
+    while a device was unreachable. A bug should be filed saying that there is a
+    missing device. Going through previous logs will usually yield a device ID
+    for the missing device.
 
-For both types of failures, please file a bug with
+For these types of failures, please file a bug with
 [this template](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra%3ELabs&labels=Pri-1,Performance-Sheriff-BotHealth,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
 which will add an issue to the infra labs queue.
 
