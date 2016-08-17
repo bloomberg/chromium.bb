@@ -376,20 +376,22 @@ inline void BreakingContext::handleOutOfFlowPositioned(Vector<LineLayoutBox>& po
     if (!isInlineType) {
         m_block.setStaticInlinePositionForChild(box, m_block.startOffsetForContent());
     } else {
-        // If our original display was an INLINE type, then we can go ahead
-        // and determine our static y position now.
+        // If our original display was an INLINE type, then we can determine our static y position
+        // now. Note, however, that if we're paginated, we may have to update this position after
+        // the line has been laid out, since the line may be pushed by a pagination strut.
         box.layer()->setStaticBlockPosition(m_block.logicalHeight());
     }
 
     // If we're ignoring spaces, we have to stop and include this object and
     // then start ignoring spaces again.
-    if (isInlineType || box.container().isLayoutInline()) {
+    bool containerIsInline = box.container().isLayoutInline();
+    if (isInlineType || containerIsInline) {
         if (m_ignoringSpaces)
             ensureLineBoxInsideIgnoredSpaces(&m_lineMidpointState, box);
         m_trailingObjects.appendObjectIfNeeded(box);
-    } else {
-        positionedObjects.append(box);
     }
+    if (!containerIsInline)
+        positionedObjects.append(box);
     m_width.addUncommittedWidth(inlineLogicalWidthFromAncestorsIfNeeded(box).toFloat());
     // Reset prior line break context characters.
     m_layoutTextInfo.m_lineBreakIterator.resetPriorContext();

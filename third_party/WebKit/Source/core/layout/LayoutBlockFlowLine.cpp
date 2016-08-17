@@ -873,6 +873,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
         }
 
         ASSERT(endOfLine != resolver.position());
+        RootInlineBox* lineBox = nullptr;
 
         // This is a short-cut for empty lines.
         if (layoutState.lineInfo().isEmpty()) {
@@ -901,7 +902,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
             // inline flow boxes.
 
             LayoutUnit oldLogicalHeight = logicalHeight();
-            RootInlineBox* lineBox = createLineBoxesFromBidiRuns(resolver.status().context->level(), bidiRuns, endOfLine, layoutState.lineInfo(), verticalPositionCache, trailingSpaceRun, wordMeasurements);
+            lineBox = createLineBoxesFromBidiRuns(resolver.status().context->level(), bidiRuns, endOfLine, layoutState.lineInfo(), verticalPositionCache, trailingSpaceRun, wordMeasurements);
 
             bidiRuns.deleteRuns();
             resolver.markCurrentRunEmpty(); // FIXME: This can probably be replaced by an ASSERT (or just removed).
@@ -946,8 +947,17 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
         }
 
         if (!paginationStrutFromDeletedLine) {
-            for (size_t i = 0; i < lineBreaker.positionedObjects().size(); ++i)
-                setStaticPositions(LineLayoutBlockFlow(this), LineLayoutBox(lineBreaker.positionedObjects()[i]), DoNotIndentText);
+            for (const auto& positionedObject : lineBreaker.positionedObjects()) {
+                if (positionedObject.style()->isOriginalDisplayInlineType()) {
+                    // Auto-positioend "inline" out-of-flow objects have already been positioned,
+                    // but if we're paginated, we need to update their position now, since the line
+                    // they "belong" to may have been pushed by a pagination strut.
+                    if (paginated && lineBox)
+                        positionedObject.layer()->setStaticBlockPosition(lineBox->lineTopWithLeading());
+                    continue;
+                }
+                setStaticPositions(LineLayoutBlockFlow(this), positionedObject, DoNotIndentText);
+            }
 
             if (!layoutState.lineInfo().isEmpty())
                 layoutState.lineInfo().setFirstLine(false);
