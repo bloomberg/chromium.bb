@@ -42,7 +42,7 @@ public class AccountSigninActivity extends AppCompatActivity
 
     @IntDef({SigninAccessPoint.SETTINGS, SigninAccessPoint.BOOKMARK_MANAGER,
             SigninAccessPoint.RECENT_TABS, SigninAccessPoint.SIGNIN_PROMO,
-            SigninAccessPoint.NTP_LINK, SigninAccessPoint.AUTOFILL_DROPDOWN})
+            SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, SigninAccessPoint.AUTOFILL_DROPDOWN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface AccessPoint {}
     @AccessPoint private int mAccessPoint;
@@ -98,6 +98,7 @@ public class AccountSigninActivity extends AppCompatActivity
                 || mAccessPoint == SigninAccessPoint.RECENT_TABS
                 || mAccessPoint == SigninAccessPoint.SETTINGS
                 || mAccessPoint == SigninAccessPoint.SIGNIN_PROMO
+                || mAccessPoint == SigninAccessPoint.NTP_CONTENT_SUGGESTIONS
                 || mAccessPoint == SigninAccessPoint.AUTOFILL_DROPDOWN
                 : "invalid access point: " + mAccessPoint;
 
@@ -189,6 +190,9 @@ public class AccountSigninActivity extends AppCompatActivity
                 break;
             case SigninAccessPoint.SIGNIN_PROMO:
                 RecordUserAction.record("Signin_Signin_FromSigninPromo");
+                break;
+            case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
+                RecordUserAction.record("Signin_Signin_FromNTPContentSuggestions");
                 break;
             default:
                 assert false : "Invalid access point.";

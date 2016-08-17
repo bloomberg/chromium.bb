@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -86,12 +87,14 @@ public abstract class StatusItem implements NewTabPageItem {
             super(R.string.snippets_disabled_generic_prompt,
                     R.string.snippets_disabled_signed_out_instructions,
                     R.string.sign_in_button);
+            RecordUserAction.record("Signin_Impression_FromNTPContentSuggestions");
             Log.d(TAG, "Registering card for status: User Signed out");
         }
 
         @Override
         protected void performAction(Context context) {
-            AccountSigninActivity.startIfAllowed(context, SigninAccessPoint.NTP_LINK);
+            AccountSigninActivity.startIfAllowed(context,
+                    SigninAccessPoint.NTP_CONTENT_SUGGESTIONS);
         }
     }
 

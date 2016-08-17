@@ -139,6 +139,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_UNKNOWN,  // This should never have been used to get signin URL.
   ACCESS_POINT_PASSWORD_BUBBLE,
   ACCESS_POINT_AUTOFILL_DROPDOWN,
+  ACCESS_POINT_NTP_CONTENT_SUGGESTIONS,
   ACCESS_POINT_MAX,  // This must be last.
 };
 

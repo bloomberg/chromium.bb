@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -181,6 +182,7 @@ public class NewTabPageAdapterTest {
     @Before
     public void setUp() {
         RecordHistogram.disableForTests();
+        RecordUserAction.disableForTests();
 
         mSnippetsSource = new FakeSnippetsSource();
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.INITIALIZING);
