@@ -4,15 +4,28 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-config("dependent_config") {
-  include_dirs = [ "//third_party/dom_distiller_js/dist/proto_gen" ]
-}
-
 group("proto") {
   public_deps = [
     ":dom_distiller_proto",
   ]
-  public_configs = [ ":dependent_config" ]
+  deps = [
+    ":json_values_converter_tests",
+  ]
+}
+
+protoc_plugin_files = [
+  "protoc_plugins/json_values_converter.bat",
+  "protoc_plugins/util/__init__.py",
+  "protoc_plugins/util/plugin.py",
+  "protoc_plugins/util/plugin_protos.py",
+  "protoc_plugins/util/types.py",
+  "protoc_plugins/util/writer.py",
+]
+
+if (is_win) {
+  json_converter = "protoc_plugins/json_values_converter.bat"
+} else {
+  json_converter = "protoc_plugins/json_values_converter.py"
 }
 
 proto_library("dom_distiller_proto") {
@@ -21,4 +34,43 @@ proto_library("dom_distiller_proto") {
     "dist/proto/dom_distiller.proto",
   ]
   proto_out_dir = "third_party/dom_distiller_js"
+  json_converter = json_converter
+
+  # Depends on protoc_plugins properly
+  inputs = protoc_plugin_files
+}
+
+# The purpose of json_values_converter_test_proto is to test the
+# protoc_plugins by generating the json_converter.h file.
+proto_library("json_values_converter_test_proto") {
+  visibility = [ ":*" ]
+  sources = [
+    "test_sample.proto",
+  ]
+  proto_out_dir = "third_party/dom_distiller_js"
+  json_converter = json_converter
+
+  # Depends on protoc_plugins properly
+  inputs = protoc_plugin_files
+}
+
+action("json_values_converter_tests") {
+  _stamp = "$target_gen_dir/json_values_converter_tests.stamp"
+  deps = [
+    ":json_values_converter_test_proto",
+  ]
+  inputs = [
+    "test_sample_json_converter.h.golden",
+  ]
+  outputs = [
+    _stamp,
+  ]
+
+  script = "protoc_plugins/json_values_converter_tests.py"
+  args = [
+    "--stamp",
+    rebase_path(_stamp, root_build_dir),
+    rebase_path("$target_gen_dir/test_sample_json_converter.h", root_build_dir),
+    rebase_path("test_sample_json_converter.h.golden", root_build_dir),
+  ]
 }

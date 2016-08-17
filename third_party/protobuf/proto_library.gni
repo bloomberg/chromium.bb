@@ -41,12 +41,18 @@
 #   generator_plugin_options (optional)
 #       Extra flags passed to the plugin. See cc_generator_options.
 #
+#   json_converter (optional)
+#       The plugin executable to generate JSON converter.
+#
 #   cc_include (optional)
 #       String listing an extra include that should be passed.
 #       Example: cc_include = "foo/bar.h"
 #
 #   deps (optional)
 #       Additional dependencies.
+#
+#   inputs (optional)
+#       Additional inputs for dependency checking.
 #
 # Parameters for compiling the generated code:
 #
@@ -102,6 +108,11 @@ template("proto_library") {
     rel_out_dir = rebase_path(out_dir, root_build_dir)
 
     outputs = []
+
+    inputs = []
+    if (defined(invoker.inputs)) {
+      inputs += invoker.inputs
+    }
 
     args = []
     if (defined(invoker.cc_include)) {
@@ -209,11 +220,21 @@ template("proto_library") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
+
+    if (defined(invoker.json_converter)) {
+      args += [
+        "--plugin=protoc-gen-json_converter=" +
+            # It is required to use backslash on Windows for .bat files.
+            rebase_path(invoker.json_converter),
+        "--json_converter_out=output_dir=:$rel_out_dir",
+      ]
+      inputs += [ invoker.json_converter ]
+      outputs += [ "$out_dir/{{source_name_part}}_json_converter.h" ]
+    }
   }
 
   if (defined(invoker.component_build_force_source_set) &&
-      invoker.component_build_force_source_set &&
-      is_component_build) {
+      invoker.component_build_force_source_set && is_component_build) {
     link_target_type = "source_set"
   } else {
     link_target_type = "static_library"
