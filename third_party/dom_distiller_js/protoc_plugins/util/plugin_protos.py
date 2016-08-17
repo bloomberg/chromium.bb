@@ -12,14 +12,20 @@ and https://developers.google.com/protocol-buffers/docs/reference/cpp/google.pro
 import os
 import sys
 
+SCRIPT_DIR = os.path.dirname(__file__)
+SRC_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..', '..'))
+
+sys.path.insert(
+    1, os.path.join(SRC_DIR, 'third_party', 'protobuf', 'python'))
+sys.path.insert(
+    1, os.path.join(SRC_DIR, 'third_party', 'protobuf', 'third_party', 'six'))
 from google.protobuf.descriptor_pb2 import FieldDescriptorProto
 
 import plugin
 import types
 
 sys.path.insert(
-    1, os.path.join(os.path.dirname(__file__), '..', '..',
-                    'dist', 'python'))
+    1, os.path.join(SRC_DIR, 'third_party', 'dom_distiller_js', 'dist', 'python'))
 import plugin_pb2
 
 
