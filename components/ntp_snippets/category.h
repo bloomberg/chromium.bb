@@ -28,6 +28,9 @@ enum class KnownCategories {
   // Recently used bookmarks.
   BOOKMARKS,
 
+  // Physical Web page available in the vicinity.
+  PHYSICAL_WEB_PAGES,
+
   // Follows the last local category.
   LOCAL_CATEGORIES_COUNT,
 

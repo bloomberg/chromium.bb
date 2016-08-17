@@ -45,9 +45,11 @@
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "components/ntp_snippets/offline_pages/offline_page_suggestions_provider.h"
+#include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 #include "components/offline_pages/offline_page_model.h"
 
 using ntp_snippets::OfflinePageSuggestionsProvider;
+using ntp_snippets::PhysicalWebPageSuggestionsProvider;
 using offline_pages::OfflinePageModel;
 using offline_pages::OfflinePageModelFactory;
 #endif  // OS_ANDROID
@@ -157,6 +159,19 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
             service, service->category_factory(), bookmark_model);
     service->RegisterProvider(std::move(bookmark_suggestions_provider));
   }
+
+#if defined(OS_ANDROID)
+  // Create the PhysicalWebPageSuggestionsProvider.
+  if (base::FeatureList::IsEnabled(
+          ntp_snippets::kPhysicalWebPageSuggestionsFeature)) {
+    std::unique_ptr<PhysicalWebPageSuggestionsProvider>
+        physical_web_page_suggestions_provider =
+            base::MakeUnique<PhysicalWebPageSuggestionsProvider>(
+                service, service->category_factory());
+    service->RegisterProvider(
+        std::move(physical_web_page_suggestions_provider));
+  }
+#endif  // OS_ANDROID
 
   if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
     // Create the NTPSnippetsService (articles provider).

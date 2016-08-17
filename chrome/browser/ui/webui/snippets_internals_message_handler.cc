@@ -201,6 +201,10 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
       "flag-bookmark-suggestions",
       base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature));
 
+  SendBoolean("flag-physical-web-page-suggestions",
+              base::FeatureList::IsEnabled(
+                  ntp_snippets::kPhysicalWebPageSuggestionsFeature));
+
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.setHostRestricted",
       base::FundamentalValue(

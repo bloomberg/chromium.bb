@@ -1906,8 +1906,7 @@ const FeatureEntry kFeatureEntries[] = {
          ntp_snippets::kContentSuggestionsFeature,
          kNTPSnippetsFeatureVariations,
          ntp_snippets::kStudyName)},
-    {"enable-ntp-save-to-offline",
-     IDS_FLAGS_ENABLE_NTP_SAVE_TO_OFFLINE_NAME,
+    {"enable-ntp-save-to-offline", IDS_FLAGS_ENABLE_NTP_SAVE_TO_OFFLINE_NAME,
      IDS_FLAGS_ENABLE_NTP_SAVE_TO_OFFLINE_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(ntp_snippets::kSaveToOfflineFeature)},
     {"enable-ntp-recent-offline-tab-suggestions",
@@ -1923,6 +1922,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_NTP_BOOKMARK_SUGGESTIONS_NAME,
      IDS_FLAGS_ENABLE_NTP_BOOKMARK_SUGGESTIONS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(ntp_snippets::kBookmarkSuggestionsFeature)},
+    {"enable-ntp-physical-web-page-suggestions",
+     IDS_FLAGS_ENABLE_NTP_PHYSICAL_WEB_PAGE_SUGGESTIONS_NAME,
+     IDS_FLAGS_ENABLE_NTP_PHYSICAL_WEB_PAGE_SUGGESTIONS_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(ntp_snippets::kPhysicalWebPageSuggestionsFeature)},
 #endif  // defined(OS_ANDROID)
 #if defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264)
     {"enable-webrtc-h264-with-openh264-ffmpeg",

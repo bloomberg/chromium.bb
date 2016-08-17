@@ -15076,6 +15076,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_NTP_BOOKMARK_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable bookmark suggestions on the New Tab page." translateable="false">
         If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain recently visited bookmarks.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_PHYSICAL_WEB_PAGE_SUGGESTIONS_NAME" desc="Name for the flag to enable physical web page suggestions on the New Tab page." translateable="false">
+        Show Physical Web pages on the New Tab page
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_PHYSICAL_WEB_PAGE_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable physical web page suggestions on the New Tab page." translateable="false">
+        If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain pages that are available through Physical Web (see #enable-physical-web)
+      </message>
     </if>
 
     <if expr="is_android">

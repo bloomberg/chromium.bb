@@ -15,6 +15,7 @@ CategoryFactory::CategoryFactory() {
   AddKnownCategory(KnownCategories::DOWNLOADS);
   AddKnownCategory(KnownCategories::RECENT_TABS);
   AddKnownCategory(KnownCategories::BOOKMARKS);
+  AddKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES);
 }
 
 CategoryFactory::~CategoryFactory() {}

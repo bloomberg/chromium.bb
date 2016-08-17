@@ -24,6 +24,7 @@
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_database.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
@@ -226,20 +227,10 @@ class MockScheduler : public NTPSnippetsScheduler {
   MOCK_METHOD0(Unschedule, bool());
 };
 
-class MockProviderObserver : public ContentSuggestionsProvider::Observer {
- public:
-  void OnNewSuggestions(ContentSuggestionsProvider* provider,
-                        Category category,
-                        std::vector<ContentSuggestion> suggestions) override {}
-  MOCK_METHOD3(OnCategoryStatusChanged,
-               void(ContentSuggestionsProvider* provider,
-                    Category category,
-                    CategoryStatus new_status));
-};
-
 class WaitForDBLoad {
  public:
-  WaitForDBLoad(MockProviderObserver* observer, NTPSnippetsService* service)
+  WaitForDBLoad(MockContentSuggestionsProviderObserver* observer,
+                NTPSnippetsService* service)
       : observer_(observer) {
     EXPECT_CALL(*observer_, OnCategoryStatusChanged(_, _, _))
         .WillOnce(Invoke(this, &WaitForDBLoad::OnCategoryStatusChanged));
@@ -257,7 +248,7 @@ class WaitForDBLoad {
     run_loop_.Quit();
   }
 
-  MockProviderObserver* observer_;
+  MockContentSuggestionsProviderObserver* observer_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitForDBLoad);
@@ -351,7 +342,7 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
  protected:
   const GURL& test_url() { return test_url_; }
   NTPSnippetsService* service() { return service_.get(); }
-  MockProviderObserver& observer() { return observer_; }
+  MockContentSuggestionsProviderObserver& observer() { return observer_; }
   MockScheduler& mock_scheduler() { return scheduler_; }
 
   // Provide the json to be returned by the fake fetcher.
@@ -374,7 +365,7 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
   const GURL test_url_;
   std::unique_ptr<OAuth2TokenService> fake_token_service_;
   MockScheduler scheduler_;
-  MockProviderObserver observer_;
+  MockContentSuggestionsProviderObserver observer_;
   CategoryFactory category_factory_;
   // Last so that the dependencies are deleted after the service.
   std::unique_ptr<NTPSnippetsService> service_;
