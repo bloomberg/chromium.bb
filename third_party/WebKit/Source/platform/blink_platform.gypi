@@ -1340,6 +1340,7 @@
       'text/HyphenationTest.cpp',
       'text/SegmentedStringTest.cpp',
       'text/TextBreakIteratorTest.cpp',
+      'text/TextEncodingDetectorTest.cpp',
       'text/UnicodeUtilitiesTest.cpp',
       'threading/BackgroundTaskRunnerTest.cpp',
       'transforms/TransformOperationsTest.cpp',
