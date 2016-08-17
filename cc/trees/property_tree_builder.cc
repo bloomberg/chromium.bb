@@ -10,6 +10,7 @@
 #include <set>
 
 #include "cc/animation/animation_host.h"
+#include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
@@ -498,6 +499,9 @@ bool AddTransformNodeIfNeeded(
   const bool has_any_transform_animation =
       HasAnyAnimationTargetingProperty(layer, TargetProperty::TRANSFORM);
 
+  const bool has_proxied_transform_related_property =
+      !!(layer->mutable_properties() & MutableProperty::kTransformRelated);
+
   const bool has_surface = created_render_surface;
 
   // A transform node is needed to change the render target for subtree when
@@ -514,6 +518,7 @@ bool AddTransformNodeIfNeeded(
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
                        has_any_transform_animation || has_surface || is_fixed ||
                        is_page_scale_layer || is_overscroll_elasticity_layer ||
+                       has_proxied_transform_related_property ||
                        scroll_child_has_different_target ||
                        is_at_boundary_of_3d_rendering_context;
 
@@ -941,6 +946,8 @@ bool AddEffectNodeIfNeeded(
       HasPotentialOpacityAnimation(layer);
   const bool has_potential_filter_animation =
       HasPotentiallyRunningFilterAnimation(layer);
+  const bool has_proxied_opacity =
+      !!(layer->mutable_properties() & MutableProperty::kOpacity);
   const bool should_create_render_surface = ShouldCreateRenderSurface(
       layer, data_from_ancestor.compound_transform_since_render_target,
       data_from_ancestor.axis_align_since_render_target);
@@ -948,7 +955,7 @@ bool AddEffectNodeIfNeeded(
       AnimationsPreserveAxisAlignment(layer);
 
   bool requires_node = is_root || has_transparency ||
-                       has_potential_opacity_animation ||
+                       has_potential_opacity_animation || has_proxied_opacity ||
                        should_create_render_surface;
 
   int parent_id = data_from_ancestor.effect_tree_parent;
