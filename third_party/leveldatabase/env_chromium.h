@@ -97,6 +97,15 @@ int GetNumCorruptionCodes();
 std::string GetCorruptionMessage(const leveldb::Status& status);
 bool IndicatesDiskFull(const leveldb::Status& status);
 
+// Determine the appropriate leveldb write buffer size to use. The default size
+// (4MB) may result in a log file too large to be compacted given the available
+// storage space. This function will return smaller values for smaller disks,
+// and the default leveldb value for larger disks.
+//
+// |disk_space| is the logical partition size (in bytes), and *not* available
+// space. A value of -1 will return leveldb's default write buffer size.
+extern size_t WriteBufferSize(int64_t disk_space);
+
 class UMALogger {
  public:
   virtual void RecordErrorAt(MethodID method) const = 0;

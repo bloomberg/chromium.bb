@@ -23,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/leveldatabase/chromium_logger.h"
+#include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/re2/src/re2/re2.h"
 
 using base::FilePath;
@@ -489,6 +490,37 @@ bool IndicatesDiskFull(const leveldb::Status& status) {
   return (result == leveldb_env::METHOD_AND_BFE &&
           static_cast<base::File::Error>(error) ==
               base::File::FILE_ERROR_NO_SPACE);
+}
+
+// Given the size of the disk, identified by |disk_size| in bytes, determine the
+// appropriate write_buffer_size. Ignoring snapshots, if the current set of
+// tables in a database contains a set of key/value pairs identified by {A}, and
+// a set of key/value pairs identified by {B} has been written and is in the log
+// file, then during compaction you will have {A} + {B} + {A, B} = 2A + 2B.
+// There is no way to know the size of A, so minimizing the size of B will
+// maximize the likelihood of a successful compaction.
+size_t WriteBufferSize(int64_t disk_size) {
+  const leveldb::Options default_options;
+  const int64_t kMinBufferSize = 1024 * 1024;
+  const int64_t kMaxBufferSize = default_options.write_buffer_size;
+  const int64_t kDiskMinBuffSize = 10 * 1024 * 1024;
+  const int64_t kDiskMaxBuffSize = 40 * 1024 * 1024;
+
+  if (disk_size == -1)
+    return default_options.write_buffer_size;
+
+  if (disk_size <= kDiskMinBuffSize)
+    return kMinBufferSize;
+
+  if (disk_size >= kDiskMaxBuffSize)
+    return kMaxBufferSize;
+
+  // A linear equation to intersect (kDiskMinBuffSize, kMinBufferSize) and
+  // (kDiskMaxBuffSize, kMaxBufferSize).
+  return static_cast<size_t>(
+      kMinBufferSize +
+      ((kMaxBufferSize - kMinBufferSize) * (disk_size - kDiskMinBuffSize)) /
+          (kDiskMaxBuffSize - kDiskMinBuffSize));
 }
 
 ChromiumEnv::ChromiumEnv() : ChromiumEnv("LevelDBEnv") {}

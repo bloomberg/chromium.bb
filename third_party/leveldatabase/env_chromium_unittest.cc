@@ -169,4 +169,25 @@ TEST(ChromiumEnv, GetChildrenPriorResults) {
   EXPECT_EQ(1U, result.size());
 }
 
+TEST(ChromiumEnv, TestWriteBufferSize) {
+  // If can't get disk size, use leveldb defaults.
+  const int64_t MB = 1024 * 1024;
+  EXPECT_EQ(size_t(4 * MB), leveldb_env::WriteBufferSize(-1));
+
+  // A very small disk (check lower clamp value).
+  EXPECT_EQ(size_t(1 * MB), leveldb_env::WriteBufferSize(1 * MB));
+
+  // Some value on the linear equation between min and max.
+  EXPECT_EQ(size_t(2.5 * MB), leveldb_env::WriteBufferSize(25 * MB));
+
+  // The disk size equating to the max buffer size
+  EXPECT_EQ(size_t(4 * MB), leveldb_env::WriteBufferSize(40 * MB));
+
+  // Make sure sizes larger than 40MB are clamped to max buffer size.
+  EXPECT_EQ(size_t(4 * MB), leveldb_env::WriteBufferSize(80 * MB));
+
+  // Check for very large disk size (catch overflow).
+  EXPECT_EQ(size_t(4 * MB), leveldb_env::WriteBufferSize(100 * MB * MB));
+}
+
 int main(int argc, char** argv) { return base::TestSuite(argc, argv).Run(); }
