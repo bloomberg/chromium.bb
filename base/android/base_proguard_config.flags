@@ -56,5 +56,4 @@
 # for the reason for this. Also, see http://crbug.com/248037.
 -keepclassmembers enum * {
     public static **[] values();
-    public static ** valueOf(java.lang.String);
 }
