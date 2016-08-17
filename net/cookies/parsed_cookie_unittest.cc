@@ -18,19 +18,29 @@ TEST(ParsedCookieTest, TestBasic) {
   EXPECT_EQ("b", pc.Value());
 }
 
+// De facto standard behavior, per https://crbug.com/601786.
 TEST(ParsedCookieTest, TestEmpty) {
-  ParsedCookie pc1("=; path=/; secure;");
-  EXPECT_FALSE(pc1.IsValid());
-  ParsedCookie pc2("= ; path=/; secure;");
-  EXPECT_FALSE(pc2.IsValid());
-  ParsedCookie pc3(" =; path=/; secure;");
-  EXPECT_FALSE(pc3.IsValid());
-  ParsedCookie pc4(" = ; path=/; secure;");
-  EXPECT_FALSE(pc4.IsValid());
-  ParsedCookie pc5(" ; path=/; secure;");
-  EXPECT_FALSE(pc5.IsValid());
-  ParsedCookie pc6("; path=/; secure;");
-  EXPECT_FALSE(pc6.IsValid());
+  const struct {
+    const char* cookie;
+    const char* expected_path;
+    bool expect_secure;
+  } kTestCookieLines[]{{"", "", false},     {"     ", "", false},
+                       {"=;", "", false},   {"=; path=/; secure;", "/", true},
+                       {"= ;", "", false},  {"= ; path=/; secure;", "/", true},
+                       {" =;", "", false},  {" =; path=/; secure;", "/", true},
+                       {" = ;", "", false}, {" = ; path=/; secure;", "/", true},
+                       {" ;", "", false},   {" ; path=/; secure;", "/", true},
+                       {";", "", false},    {"; path=/; secure;", "/", true},
+                       {"\t;", "", false},  {"\t; path=/; secure;", "/", true}};
+
+  for (const auto& test : kTestCookieLines) {
+    ParsedCookie pc(test.cookie);
+    EXPECT_TRUE(pc.IsValid());
+    EXPECT_EQ("", pc.Name());
+    EXPECT_EQ("", pc.Value());
+    EXPECT_EQ(test.expected_path, pc.Path());
+    EXPECT_EQ(test.expect_secure, pc.IsSecure());
+  }
 }
 
 TEST(ParsedCookieTest, TestQuoted) {
@@ -221,11 +231,6 @@ TEST(ParsedCookieTest, TooManyPairs) {
 }
 
 // TODO(erikwright): some better test cases for invalid cookies.
-TEST(ParsedCookieTest, InvalidWhitespace) {
-  ParsedCookie pc("    ");
-  EXPECT_FALSE(pc.IsValid());
-}
-
 TEST(ParsedCookieTest, InvalidTooLong) {
   std::string maxstr;
   maxstr.resize(ParsedCookie::kMaxCookieSize, 'a');
@@ -235,11 +240,6 @@ TEST(ParsedCookieTest, InvalidTooLong) {
 
   ParsedCookie pc2(maxstr + "A");
   EXPECT_FALSE(pc2.IsValid());
-}
-
-TEST(ParsedCookieTest, InvalidEmpty) {
-  ParsedCookie pc((std::string()));
-  EXPECT_FALSE(pc.IsValid());
 }
 
 TEST(ParsedCookieTest, EmbeddedTerminator) {
@@ -285,11 +285,11 @@ TEST(ParsedCookieTest, SerializeCookieLine) {
 
 TEST(ParsedCookieTest, SetNameAndValue) {
   ParsedCookie empty((std::string()));
-  EXPECT_FALSE(empty.IsValid());
-  EXPECT_FALSE(empty.SetDomain("foobar.com"));
+  EXPECT_TRUE(empty.IsValid());
+  EXPECT_TRUE(empty.SetDomain("foobar.com"));
   EXPECT_TRUE(empty.SetName("name"));
   EXPECT_TRUE(empty.SetValue("value"));
-  EXPECT_EQ("name=value", empty.ToCookieLine());
+  EXPECT_EQ("name=value; domain=foobar.com", empty.ToCookieLine());
   EXPECT_TRUE(empty.IsValid());
 
   // We don't test
@@ -307,10 +307,6 @@ TEST(ParsedCookieTest, SetNameAndValue) {
   EXPECT_EQ("name=value", pc.ToCookieLine());
   EXPECT_TRUE(pc.IsValid());
 
-  EXPECT_FALSE(pc.SetName(std::string()));
-  EXPECT_EQ("name=value", pc.ToCookieLine());
-  EXPECT_TRUE(pc.IsValid());
-
   EXPECT_FALSE(pc.SetValue("foo bar"));
   EXPECT_EQ("name=value", pc.ToCookieLine());
   EXPECT_TRUE(pc.IsValid());
@@ -320,6 +316,10 @@ TEST(ParsedCookieTest, SetNameAndValue) {
   EXPECT_TRUE(pc.IsValid());
 
   // Set valid name / value
+  EXPECT_TRUE(pc.SetName(std::string()));
+  EXPECT_EQ("=value", pc.ToCookieLine());
+  EXPECT_TRUE(pc.IsValid());
+
   EXPECT_TRUE(pc.SetName("test"));
   EXPECT_EQ("test=value", pc.ToCookieLine());
   EXPECT_TRUE(pc.IsValid());
@@ -413,6 +413,17 @@ TEST(ParsedCookieTest, SetAttributes) {
   EXPECT_FALSE(pc.IsHttpOnly());
   EXPECT_EQ(CookieSameSite::NO_RESTRICTION, pc.SameSite());
   EXPECT_EQ("name2=value2", pc.ToCookieLine());
+}
+
+// Set the domain attribute twice in a cookie line. If the second attribute's
+// value is empty, it shoud be ignored.
+//
+// This is de facto standard behavior, per https://crbug.com/601786.
+TEST(ParsedCookieTest, MultipleDomainAttributes) {
+  ParsedCookie pc1("name=value; domain=foo.com; domain=bar.com");
+  EXPECT_EQ("bar.com", pc1.Domain());
+  ParsedCookie pc2("name=value; domain=foo.com; domain=");
+  EXPECT_EQ("foo.com", pc2.Domain());
 }
 
 TEST(ParsedCookieTest, SetPriority) {
