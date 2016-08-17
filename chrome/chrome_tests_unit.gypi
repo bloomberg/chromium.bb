@@ -1125,6 +1125,7 @@
       'browser/metrics/perf/cpu_identity_unittest.cc',
       'browser/metrics/perf/random_selector_unittest.cc',
       'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',
+      'browser/policy/default_geolocation_policy_handler_unittest.cc',
       'browser/ui/browser_finder_chromeos_unittest.cc',
       # TODO(zturner): Enable this on Windows. See
       # BrowserWithTestWindowTest::SetUp() for a comment explaining why this is

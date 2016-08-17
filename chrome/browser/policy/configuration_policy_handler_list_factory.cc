@@ -58,6 +58,7 @@
 #include "ash/common/accessibility_types.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions_policy_handler.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
+#include "chrome/browser/policy/default_geolocation_policy_handler.h"
 #include "chromeos/chromeos_pref_names.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/drive/drive_pref_names.h"
@@ -876,6 +877,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED)));
   handlers->AddHandler(base::WrapUnique(
       new chromeos::KeyPermissionsPolicyHandler(chrome_schema)));
+  handlers->AddHandler(base::WrapUnique(new DefaultGeolocationPolicyHandler()));
 #endif  // defined(OS_CHROMEOS)
 
   return handlers;

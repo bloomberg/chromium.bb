@@ -1133,6 +1133,8 @@
       'browser/metrics/perf/random_selector.h',
       'browser/metrics/perf/windowed_incognito_observer.cc',
       'browser/metrics/perf/windowed_incognito_observer.h',
+      'browser/policy/default_geolocation_policy_handler.cc',
+      'browser/policy/default_geolocation_policy_handler.h',
       # This is technically also dependent on enable_plugins but we don't
       # support ChromeOS with enable_plugins==0.
       'browser/renderer_host/pepper/pepper_platform_verification_message_filter.cc',

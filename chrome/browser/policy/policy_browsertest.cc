@@ -3941,6 +3941,45 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreEnabled) {
   TearDownTest();
 }
 
+// Test ArcLocationServiceEnabled policy.
+IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
+  SetUpTest();
+
+  const PrefService* const pref = browser()->profile()->GetPrefs();
+
+  // ARC Location Service is switched on by default.
+  EXPECT_TRUE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
+  EXPECT_FALSE(pref->IsManagedPreference(prefs::kArcLocationServiceEnabled));
+
+  // Managed Location Service.
+  PolicyMap policies;
+  // AllowGeolocation
+  policies.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::FundamentalValue>(1), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
+  EXPECT_FALSE(pref->IsManagedPreference(prefs::kArcLocationServiceEnabled));
+
+  // BlockGeolocation
+  policies.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::FundamentalValue>(2), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
+  EXPECT_TRUE(pref->IsManagedPreference(prefs::kArcLocationServiceEnabled));
+
+  // AskGeolocation
+  policies.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::FundamentalValue>(3), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));
+  EXPECT_FALSE(pref->IsManagedPreference(prefs::kArcLocationServiceEnabled));
+
+  TearDownTest();
+}
+
 namespace {
 const char kTestUser1[] = "test1@domain.com";
 }  // anonymous namespace
