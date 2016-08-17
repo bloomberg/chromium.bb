@@ -299,7 +299,6 @@ class DepsUpdater(object):
             return False
         return True
 
-
     def get_directory_owners_to_cc(self):
         """Returns a list of email addresses to CC for the current import."""
         self.print_('## Gathering directory owners emails to CC.')
@@ -401,5 +400,7 @@ class DepsUpdater(object):
         self.run([self.host.executable, script_path])
         message = '\'Modifies TestExpectations and/or downloads new baselines for tests\''
         self.check_run(['git', 'commit', '-a', '-m', message])
-        self.check_run(['git', 'cl', 'upload', '-m', message, '--rietveld'
-                        '--auth-refresh-token-json', self.auth_refresh_token_json])
+        command = ['git', 'cl', 'upload', '-m', message, '--rietveld']
+        if self.auth_refresh_token_json:
+            command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
+        self.check_run(command)
