@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 from core import perf_benchmark
 from telemetry.web_perf import timeline_based_measurement
 import page_sets
@@ -29,7 +31,17 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
     # Galaxy S5s have problems with running system health metrics.
     # http://crbug.com/600463
     galaxy_s5_type_name = 'SM-G900H'
-    return possible_browser.platform.GetDeviceTypeName() == galaxy_s5_type_name
+    if possible_browser.platform.GetDeviceTypeName() == galaxy_s5_type_name:
+      return True
+
+    # TODO(charliea): The BattOr agent is failing intermittently on Mac. We
+    # still want it running on the FYI waterfall to track the flakiness, but
+    # want it disabled on the main perf waterfall until we can make things
+    # stable.
+    # http://crbug.com/634188
+    return (possible_browser.platform.GetOSName() == 'mac' and
+            'BUILDBOT_MASTERNAME' in os.environ and
+            os.environ['BUILDBOT_MASTERNAME'] == 'chromium.perf')
 
   @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
@@ -59,8 +71,10 @@ class BattOrSystemHealthLoadingDesktop(_BattOrBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    return (possible_browser.platform.GetDeviceTypeName() != 'Desktop' or
-            not possible_browser.platform.HasBattOrConnected())
+    return (
+        super(BattOrSystemHealthLoadingDesktop, cls).ShouldDisable(
+            possible_browser) or
+        possible_browser.platform.GetDeviceTypeName() != 'Desktop')
 
   @classmethod
   def Name(cls):
@@ -80,7 +94,9 @@ class BattOrSystemHealthLoadingMobile(_BattOrBenchmark):
     if (possible_browser.browser_type == 'reference' and
         possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'):
       return True
-    return not possible_browser.platform.HasBattOrConnected()
+
+    return super(BattOrSystemHealthLoadingMobile, cls).ShouldDisable(
+        possible_browser)
 
   @classmethod
   def Name(cls):
