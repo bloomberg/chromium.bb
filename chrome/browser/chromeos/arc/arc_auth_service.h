@@ -118,6 +118,7 @@ class ArcAuthService : public ArcService,
   void Shutdown();
 
   Profile* profile() { return profile_; }
+  const Profile* profile() const { return profile_; }
 
   State state() const { return state_; }
 

@@ -66,6 +66,18 @@ var currentDeviceId = null;
 var termsAccepted = false;
 
 /**
+ * Indicates that current user has managed Arc.
+ * @type {boolean}
+ */
+var arcManaged = false;
+
+/**
+ * Tooltip text used in 'controlled by policy' indicator.
+ * @type {boolean}
+ */
+var controlledByPolicyText = '';
+
+/**
  * Host window inner default width.
  * @const {number}
  */
@@ -99,6 +111,31 @@ function sendNativeMessage(code, opt_Props) {
 }
 
 /**
+ * Helper function that sets inner content for an option which includes text,
+ * link to 'learn more' section. This also creates an indicator showing that
+ * option is controlled by policy and inserts it before link element.
+ * @param {string} textId Id of the label element to process.
+ * @param {string} learnMoreLinkId Id inner link to 'learn more' element.
+ * @param {string} indicatorId Id of indicator to create.
+ * @param {string} text Inner text to set. Includes link declaration.
+ */
+function createConsentOption(textId, learnMoreLinkId, indicatorId, text) {
+  var doc = appWindow.contentWindow.document;
+  var textElement = doc.getElementById(textId);
+  textElement.innerHTML = text;
+  var linkLearnMoreElement = doc.getElementById(learnMoreLinkId);
+  linkLearnMoreElement.addEventListener('click', onLearnMore);
+
+  // Create controlled by policy indicator.
+  var policyIndicator = new appWindow.contentWindow.cr.ui.ControlledIndicator();
+  policyIndicator.id = indicatorId;
+  policyIndicator.getBubbleText = function() {
+    return controlledByPolicyText;
+  };
+  textElement.insertBefore(policyIndicator, linkLearnMoreElement);
+}
+
+/**
  * Applies localization for html content and sets terms webview.
  * @param {!Object} data Localized strings and relevant information.
  * @param {string} deviceId Current device id.
@@ -110,8 +147,18 @@ function initialize(data, deviceId) {
   loadTimeData.data = data;
   appWindow.contentWindow.i18nTemplate.process(doc, loadTimeData);
   var countryCode = data.countryCode.toLowerCase();
-  setBackupRestoreMode(data.textBackupRestore, data.backupRestoreEnabled);
-  setLocationServiceMode(data.textLocationService, data.locationServiceEnabled);
+  controlledByPolicyText = data.controlledByPolicy;
+  arcManaged = data.arcManaged;
+  setTermsVisible(!arcManaged);
+
+  createConsentOption('text-backup-restore',
+                      'learn-more-link-backup-restore',
+                      'policy-indicator-backup-restore',
+                      data.textBackupRestore);
+  createConsentOption('text-location-service',
+                      'learn-more-link-location-service',
+                      'policy-indicator-location-service',
+                      data.textLocationService);
 
   var scriptSetCountryCode = 'document.countryCode = \'' + countryCode + '\';';
   termsView.addContentScripts([
@@ -169,32 +216,50 @@ function setMetricsMode(text, canEnable, on) {
 
 /**
  * Sets current backup and restore mode.
- * @param {string} text String used to display next to checkbox.
- * @param {boolean} defaultCheckValue Defines the default value for backup and
- *     restore checkbox.
+ * @param {boolean} enabled Defines the value for backup and restore checkbox.
+ * @param {boolean} managed Defines whether this setting is set by policy.
  */
-function setBackupRestoreMode(text, defaultCheckValue) {
+function setBackupRestoreMode(enabled, managed) {
   var doc = appWindow.contentWindow.document;
-  doc.getElementById('enable-backup-restore').checked = defaultCheckValue;
-
-  doc.getElementById('text-backup-restore').innerHTML = text;
-  doc.getElementById('learn-more-link-backup-restore').addEventListener('click',
-      onLearnMore);
+  doc.getElementById('enable-backup-restore').checked = enabled;
+  doc.getElementById('enable-backup-restore').disabled = managed;
+  doc.getElementById('text-backup-restore').disabled = managed;
+  var policyIconElement = doc.getElementById('policy-indicator-backup-restore');
+  if (managed) {
+    policyIconElement.setAttribute('controlled-by', 'policy');
+  } else {
+    policyIconElement.removeAttribute('controlled-by');
+  }
 }
 
 /**
  * Sets current usage of location service opt in mode.
- * @param {string} text String used to display next to checkbox.
- * @param {boolean} defaultCheckValue Defines the default value for location
- *     service opt in.
+ * @param {boolean} enabled Defines the value for location service opt in.
+ * @param {boolean} managed Defines whether this setting is set by policy.
  */
-function setLocationServiceMode(text, defaultCheckValue) {
+function setLocationServiceMode(enabled, managed) {
   var doc = appWindow.contentWindow.document;
-  doc.getElementById('enable-location-service').checked = defaultCheckValue;
+  doc.getElementById('enable-location-service').checked = enabled;
+  doc.getElementById('enable-location-service').disabled = managed;
+  doc.getElementById('text-location-service').disabled = managed;
+  var policyIconElement = doc.getElementById(
+      'policy-indicator-location-service');
+  if (managed) {
+    policyIconElement.setAttribute('controlled-by', 'policy');
+  } else {
+    policyIconElement.removeAttribute('controlled-by');
+  }
+}
 
-  doc.getElementById('text-location-service').innerHTML = text;
-  doc.getElementById('learn-more-link-location-service').
-      addEventListener('click', onLearnMore);
+/**
+ * Sets visibility of Terms of Service.
+ * @param {boolean} visible Whether the Terms of Service visible or not.
+ */
+function setTermsVisible(visible) {
+  var doc = appWindow.contentWindow.document;
+  var styleVisibility = visible ? 'visible' : 'hidden';
+  doc.getElementById('terms-title').style.visibility = styleVisibility;
+  doc.getElementById('terms-container').style.visibility = styleVisibility;
 }
 
 /**
@@ -233,6 +298,10 @@ function onNativeMessage(message) {
     initialize(message.data, message.deviceId);
   } else if (message.action == 'setMetricsMode') {
     setMetricsMode(message.text, message.canEnable, message.on);
+  } else if (message.action == 'setBackupAndRestoreMode') {
+    setBackupRestoreMode(message.enabled, message.managed);
+  } else if (message.action == 'setLocationServiceMode') {
+    setLocationServiceMode(message.enabled, message.managed);
   } else if (message.action == 'closeUI') {
     closeWindowInternally();
   } else if (message.action == 'showPage') {
@@ -289,6 +358,9 @@ function showPage(pageDivId) {
                   '&hl=' + navigator.language;
   }
   appWindow.show();
+  if (pageDivId == 'terms') {
+    updateTermsHeight();
+  }
 }
 
 /**
@@ -317,7 +389,11 @@ function showPageWithStatus(pageId, status) {
   }
 
   if (UI_PAGES[pageId] == 'terms-loading') {
-    termsAccepted = false;
+    termsAccepted = arcManaged;
+    if (termsAccepted) {
+      showPage('terms');
+      return;
+    }
     loadInitialTerms();
   } else {
     // Explicit request to start not from start page. Assume terms are
@@ -461,7 +537,6 @@ chrome.app.runtime.onLaunched.addListener(function() {
         return;
       }
       showPage('terms');
-      updateTermsHeight();
     };
 
     termsView.request.onBeforeRequest.addListener(onTermsViewBeforeRequest,

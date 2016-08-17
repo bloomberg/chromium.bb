@@ -206,6 +206,13 @@ void ArcSettingsServiceImpl::SyncRuntimeSettings() const {
   SyncSpokenFeedbackEnabled();
   SyncTimeZone();
   SyncUse24HourClock();
+
+  const PrefService* const prefs =
+      ProfileManager::GetActiveUserProfile()->GetPrefs();
+  if (prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled))
+    SyncBackupEnabled();
+  if (prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled))
+    SyncLocationServiceEnabled();
 }
 
 void ArcSettingsServiceImpl::SyncInitialSettings() const {

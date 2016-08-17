@@ -30,19 +30,21 @@
 
 namespace {
 const char kAction[] = "action";
-const char kBackupRestoreEnabled[] = "backupRestoreEnabled";
-const char kLocationServiceEnabled[] = "locationServiceEnabled";
+const char kArcManaged[] = "arcManaged";
 const char kCanEnable[] = "canEnable";
 const char kCode[] = "code";
 const char kData[] = "data";
 const char kDeviceId[] = "deviceId";
 const char kEnabled[] = "enabled";
+const char kManaged[] = "managed";
 const char kOn[] = "on";
 const char kPage[] = "page";
 const char kStatus[] = "status";
 const char kText[] = "text";
 const char kActionInitialize[] = "initialize";
 const char kActionSetMetricsMode[] = "setMetricsMode";
+const char kActionBackupAndRestoreMode[] = "setBackupAndRestoreMode";
+const char kActionLocationServiceMode[] = "setLocationServiceMode";
 const char kActionSetWindowBounds[] = "setWindowBounds";
 const char kActionStartLso[] = "startLso";
 const char kActionCancelAuthCode[] = "cancelAuthCode";
@@ -83,10 +85,20 @@ ArcSupportHost::ArcSupportHost() {
   arc_auth_service->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 
-  pref_change_registrar_.Init(g_browser_process->local_state());
-  pref_change_registrar_.Add(
+  pref_local_change_registrar_.Init(g_browser_process->local_state());
+  pref_local_change_registrar_.Add(
       metrics::prefs::kMetricsReportingEnabled,
       base::Bind(&ArcSupportHost::OnMetricsPreferenceChanged,
+                 base::Unretained(this)));
+
+  pref_change_registrar_.Init(arc_auth_service->profile()->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kArcBackupRestoreEnabled,
+      base::Bind(&ArcSupportHost::OnBackupAndRestorePreferenceChanged,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kArcLocationServiceEnabled,
+      base::Bind(&ArcSupportHost::OnLocationServicePreferenceChanged,
                  base::Unretained(this)));
 }
 
@@ -107,6 +119,8 @@ void ArcSupportHost::Start(Client* client) {
   }
 
   SendMetricsMode();
+  SendBackupAndRestoreMode();
+  SendLocationServicesMode();
 
   arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
   DCHECK(arc_auth_service);
@@ -162,17 +176,14 @@ bool ArcSupportHost::Initialize() {
   loadtime_data->SetString(
       "serverError",
       l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
+  loadtime_data->SetString(
+      "controlledByPolicy",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   const std::string& country_code = base::CountryCodeForCurrentTimezone();
   loadtime_data->SetString("countryCode", country_code);
-
-  loadtime_data->SetBoolean(kBackupRestoreEnabled,
-                            arc_auth_service->profile()->GetPrefs()->GetBoolean(
-                                prefs::kArcBackupRestoreEnabled));
-  loadtime_data->SetBoolean(kLocationServiceEnabled,
-                            arc_auth_service->profile()->GetPrefs()->GetBoolean(
-                                prefs::kArcLocationServiceEnabled));
+  loadtime_data->SetBoolean(kArcManaged, arc_auth_service->IsArcManaged());
 
   webui::SetLoadTimeDataDefaults(app_locale, loadtime_data.get());
   DCHECK(arc_auth_service);
@@ -208,6 +219,14 @@ void ArcSupportHost::OnMetricsPreferenceChanged() {
   SendMetricsMode();
 }
 
+void ArcSupportHost::OnBackupAndRestorePreferenceChanged() {
+  SendBackupAndRestoreMode();
+}
+
+void ArcSupportHost::OnLocationServicePreferenceChanged() {
+  SendLocationServicesMode();
+}
+
 void ArcSupportHost::SendMetricsMode() {
   arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
   DCHECK(arc_auth_service && arc_auth_service->IsAllowed());
@@ -237,6 +256,32 @@ void ArcSupportHost::SendMetricsMode() {
   request.SetBoolean(kOn, metrics_on);
   base::JSONWriter::Write(request, &request_string);
   client_->PostMessageFromNativeHost(request_string);
+}
+
+void ArcSupportHost::SendOptionMode(const std::string& action_name,
+                                    const std::string& pref_name) {
+  const arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+  DCHECK(arc_auth_service);
+  const bool enabled =
+      arc_auth_service->profile()->GetPrefs()->GetBoolean(pref_name);
+  const bool managed =
+      arc_auth_service->profile()->GetPrefs()->IsManagedPreference(pref_name);
+
+  base::DictionaryValue request;
+  std::string request_string;
+  request.SetString(kAction, action_name);
+  request.SetBoolean(kEnabled, enabled);
+  request.SetBoolean(kManaged, managed);
+  base::JSONWriter::Write(request, &request_string);
+  client_->PostMessageFromNativeHost(request_string);
+}
+
+void ArcSupportHost::SendBackupAndRestoreMode() {
+  SendOptionMode(kActionBackupAndRestoreMode, prefs::kArcBackupRestoreEnabled);
+}
+
+void ArcSupportHost::SendLocationServicesMode() {
+  SendOptionMode(kActionLocationServiceMode, prefs::kArcLocationServiceEnabled);
 }
 
 void ArcSupportHost::OnOptInUIClose() {

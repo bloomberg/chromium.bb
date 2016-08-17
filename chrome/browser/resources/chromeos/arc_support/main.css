@@ -38,6 +38,12 @@ webview,
   width: 640px;
 }
 
+.bubble-button > div {
+  height: 12px;
+  top: -8px;
+  width: 12px;
+}
+
 .button-separator {
   width: 1px;
 }
@@ -68,6 +74,15 @@ webview,
   height: 388px;
   margin: 0;
   padding: 0;
+}
+
+.controlled-setting-indicator {
+  -webkit-margin-end: 3px;
+  -webkit-margin-start: 2px;
+}
+
+.controlled-setting-indicator[controlled-by] > div {
+  background-size: 16px;
 }
 
 .image-header {

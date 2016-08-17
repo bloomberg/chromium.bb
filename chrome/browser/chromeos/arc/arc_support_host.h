@@ -46,7 +46,13 @@ class ArcSupportHost : public extensions::NativeMessageHost,
 
   bool Initialize();
   void OnMetricsPreferenceChanged();
+  void OnBackupAndRestorePreferenceChanged();
+  void OnLocationServicePreferenceChanged();
   void SendMetricsMode();
+  void SendBackupAndRestoreMode();
+  void SendLocationServicesMode();
+  void SendOptionMode(const std::string& action_name,
+                      const std::string& pref_name);
   void EnableMetrics(bool is_enabled);
   void EnableBackupRestore(bool is_enabled);
   void EnableLocationService(bool is_enabled);
@@ -55,6 +61,8 @@ class ArcSupportHost : public extensions::NativeMessageHost,
   Client* client_ = nullptr;
 
   // Used to track metrics preference.
+  PrefChangeRegistrar pref_local_change_registrar_;
+  // Used to track backup&restore and location service preference.
   PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSupportHost);

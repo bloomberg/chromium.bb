@@ -2,6 +2,9 @@
 <html>
 <head>
   <link rel="stylesheet" href="chrome://resources/css/roboto.css">
+  <link rel="stylesheet" href="chrome://resources/css/bubble.css">
+  <link rel="stylesheet" href="chrome://resources/css/bubble_button.css">
+  <link rel="stylesheet" href="chrome://resources/css/controlled_indicator.css">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
@@ -40,6 +43,12 @@
   <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://resources/js/i18n_template_no_process.js"></script>
+  <script src="chrome://resources/js/cr.js"></script>
+  <script src="chrome://resources/js/event_tracker.js"></script>
+  <script src="chrome://resources/js/cr/ui.js"></script>
+  <script src="chrome://resources/js/cr/ui/bubble.js"></script>
+  <script src="chrome://resources/js/cr/ui/bubble_button.js"></script>
+  <script src="chrome://resources/js/cr/ui/controlled_indicator.js"></script>
 </head>
 <body>
   <div id="terms-loading" class="section">
@@ -58,7 +67,8 @@
       <div class="content section-flex">
         <p class="text-title" i18n-content="greetingHeader"></p>
         <p class="text-desc" i18n-content="greetingDescription"></p>
-        <p class="text-terms-title" i18n-content="termsOfService"></p>
+        <p class="text-terms-title" id="terms-title"
+            i18n-content="termsOfService"></p>
         <div class="section-terms" id ="terms-container">
           <webview id="terms-view" partition="persist:arc_support"></webview>
         </div>
