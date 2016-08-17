@@ -392,7 +392,11 @@ class CreateSessionDescriptionRequest
 
  protected:
   ~CreateSessionDescriptionRequest() override {
-    DCHECK(main_thread_->BelongsToCurrentThread());
+    // This object is reference counted and its callback methods |OnSuccess| and
+    // |OnFailure| will be invoked on libjingle's signaling thread and posted to
+    // the main thread. Since the main thread may complete before the signaling
+    // thread has deferenced this object there is no guarantee that this object
+    // is destructed on the main thread.
     DLOG_IF(ERROR, !webkit_request_.isNull())
         << "CreateSessionDescriptionRequest not completed. Shutting down?";
   }
@@ -441,7 +445,11 @@ class SetSessionDescriptionRequest
 
  protected:
   ~SetSessionDescriptionRequest() override {
-    DCHECK(main_thread_->BelongsToCurrentThread());
+    // This object is reference counted and its callback methods |OnSuccess| and
+    // |OnFailure| will be invoked on libjingle's signaling thread and posted to
+    // the main thread. Since the main thread may complete before the signaling
+    // thread has deferenced this object there is no guarantee that this object
+    // is destructed on the main thread.
     DLOG_IF(ERROR, !webkit_request_.isNull())
         << "SetSessionDescriptionRequest not completed. Shutting down?";
   }
