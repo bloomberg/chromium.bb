@@ -1469,6 +1469,9 @@
     "gtest_tests": [
       {
         "test": "blimp_browsertests"
+      },
+      {
+        "test": "blimp_unittests"
       }
     ]
   },
