@@ -21,6 +21,12 @@ Polymer({
   is: 'passwords-section',
 
   properties: {
+    /** Preferences state. */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
     /**
      * An array of passwords to display.
      * @type {!Array<!chrome.passwordsPrivate.PasswordUiEntry>}
