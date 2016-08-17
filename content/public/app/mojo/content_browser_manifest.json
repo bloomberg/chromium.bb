@@ -29,7 +29,8 @@
           "leveldb::mojom::LevelDBService",
           "user_service::UserService"
         ]
-      }
+      },
+      "mojo:media": { "classes": [ "all_interfaces" ] }
     }
   }
 }
