@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/spellcheck/TextCheckingHelper.h"
+#include "core/editing/spellcheck/TextCheckingParagraph.h"
 
 #include "core/dom/Range.h"
 #include "core/editing/VisiblePosition.h"

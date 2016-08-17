@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef TextCheckingHelper_h
-#define TextCheckingHelper_h
+#ifndef TextCheckingParagraph_h
+#define TextCheckingParagraph_h
 
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
@@ -77,4 +77,4 @@ private:
 
 } // namespace blink
 
-#endif // TextCheckingHelper_h
+#endif // TextCheckingParagraph_h

@@ -39,7 +39,7 @@
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
-#include "core/editing/spellcheck/TextCheckingHelper.h"
+#include "core/editing/spellcheck/TextCheckingParagraph.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"
