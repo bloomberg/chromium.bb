@@ -2155,13 +2155,10 @@ def GetConfig():
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
-      images=['base', 'recovery', 'test', 'factory_install'],
       git_sync=False,
       hw_tests=HWTestList.ToolchainTest(),
       trybot_list=False,
       description="Toolchain Builds (internal)",
-      chrome_sdk=True,
-      image_test=True,
   )
 
   _grouped_config = config_lib.BuildConfig(
