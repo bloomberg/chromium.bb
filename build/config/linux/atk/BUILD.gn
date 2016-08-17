@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/linux/pkg_config.gni")
+import("//build/config/ui.gni")
 
 # CrOS doesn't install GTK, gconf or any gnome packages.
 assert(!is_chromeos)
@@ -13,7 +14,11 @@ assert(!is_chromeos)
 # tools for a CrOS build.
 assert(current_toolchain == default_toolchain)
 
-pkg_config("atk") {
+if (use_atk) {
+  assert(use_glib, "use_atk=true requires that use_glib=true")
+}
+
+pkg_config("atk_base") {
   packages = [ "atk" ]
   atk_lib_dir = exec_script(pkg_config_script,
                             pkg_config_args + [
@@ -27,7 +32,9 @@ pkg_config("atk") {
 # gn orders flags on a target before flags from configs. The default config
 # adds -Wall, and these flags have to be after -Wall -- so they need to
 # come from a config and can't be on the target directly.
-config("warnings") {
+config("atk") {
+  configs = [ ":atk_base" ]
+
   cflags = [
     # glib uses the pre-c++11 typedef-as-static_assert hack.
     "-Wno-unused-local-typedef",

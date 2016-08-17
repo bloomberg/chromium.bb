@@ -277,10 +277,7 @@ source_set("browser") {
                     ".",
                     "//content")
 
-    configs += [
-      "//build/config/linux/atk",
-      "//build/config/linux/atk:warnings",
-    ]
+    configs += [ "//build/config/linux/atk" ]
 
     if (use_gconf) {
       configs += [ "//build/config/linux/gconf" ]
