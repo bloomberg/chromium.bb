@@ -64,11 +64,11 @@ class GLRendererTest : public testing::Test {
   RenderPass* root_render_pass() {
     return render_passes_in_draw_order_.back().get();
   }
-  void DrawFrame(Renderer* renderer, const gfx::Rect& viewport_rect) {
+  void DrawFrame(GLRenderer* renderer, const gfx::Rect& viewport_rect) {
     renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, gfx::ColorSpace(),
                         viewport_rect, viewport_rect);
   }
-  void DrawFrame(Renderer* renderer,
+  void DrawFrame(GLRenderer* renderer,
                  const gfx::Rect& viewport_rect,
                  const gfx::Rect& clip_rect) {
     renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, gfx::ColorSpace(),
@@ -2109,7 +2109,7 @@ class GLRendererWithMockContextTest : public ::testing::Test {
   scoped_refptr<MockContextProvider> context_provider_;
   std::unique_ptr<OutputSurface> output_surface_;
   std::unique_ptr<ResourceProvider> resource_provider_;
-  std::unique_ptr<Renderer> renderer_;
+  std::unique_ptr<GLRenderer> renderer_;
 };
 
 TEST_F(GLRendererWithMockContextTest,
@@ -2124,8 +2124,6 @@ TEST_F(GLRendererWithMockContextTest,
   renderer_->SetVisible(true);
   Mock::VerifyAndClearExpectations(context_support_ptr_);
 
-  EXPECT_TRUE(renderer_->visible());
-
   EXPECT_CALL(*context_support_ptr_, SetClientVisible(0, false));
   EXPECT_CALL(*context_support_ptr_, AnyClientsVisible())
       .WillOnce(Return(false));
@@ -2133,8 +2131,6 @@ TEST_F(GLRendererWithMockContextTest,
   EXPECT_CALL(*context_support_ptr_, SetAggressivelyFreeResources(true));
   renderer_->SetVisible(false);
   Mock::VerifyAndClearExpectations(context_support_ptr_);
-
-  EXPECT_FALSE(renderer_->visible());
 }
 
 }  // namespace

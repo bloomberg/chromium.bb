@@ -1034,7 +1034,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   }
 
   RemoveRenderPasses(frame);
-  renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
+  // If we're making a frame to draw, it better have at least one render pass.
+  DCHECK(!frame->render_passes.empty());
 
   if (have_copy_request) {
     // Any copy requests left in the tree are not going to get serviced, and
@@ -1044,9 +1045,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     // Draw properties depend on copy requests.
     active_tree()->set_needs_update_draw_properties();
   }
-
-  // If we're making a frame to draw, it better have at least one render pass.
-  DCHECK(!frame->render_passes.empty());
 
   if (active_tree_->has_ever_been_drawn()) {
     UMA_HISTOGRAM_COUNTS_100(
@@ -1542,8 +1540,8 @@ void LayerTreeHostImpl::ReclaimResources(
     const ReturnedResourceArray& resources) {
   // TODO(piman): We may need to do some validation on this ack before
   // processing it.
-  if (renderer_)
-    renderer_->ReclaimResources(resources);
+  if (resource_provider_)
+    resource_provider_->ReceiveReturnsFromParent(resources);
 
   // In OOM, we now might be able to release more resources that were held
   // because they were exported.
@@ -1719,9 +1717,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
                                                 resource_provider_.get());
   }
 
-  renderer_->DrawFrame(&frame->render_passes,
-                       active_tree_->device_scale_factor(), gfx::ColorSpace(),
-                       DeviceViewport(), DeviceViewport());
+  renderer_->DrawFrame(&frame->render_passes);
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
 
@@ -2158,9 +2154,8 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
   DCHECK(resource_provider_);
 
   DCHECK(output_surface_->capabilities().delegated_rendering);
-  renderer_ = base::MakeUnique<DelegatingRenderer>(
-      &settings_.renderer_settings, output_surface_, resource_provider_.get());
-  renderer_->SetVisible(visible_);
+  renderer_ = base::MakeUnique<DelegatingRenderer>(output_surface_,
+                                                   resource_provider_.get());
   SetFullViewportDamage();
 
   // See note in LayerTreeImpl::UpdateDrawProperties.  Renderer needs to be

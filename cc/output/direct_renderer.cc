@@ -17,7 +17,9 @@
 #include "cc/output/bsp_tree.h"
 #include "cc/output/bsp_walk_action.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/output/renderer_settings.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/resources/scoped_resource.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -61,13 +63,22 @@ static gfx::Transform window_matrix(int x, int y, int width, int height) {
 
 namespace cc {
 
-DirectRenderer::DrawingFrame::DrawingFrame()
-    : root_render_pass(NULL), current_render_pass(NULL), current_texture(NULL) {
+DirectRenderer::DrawingFrame::DrawingFrame() = default;
+DirectRenderer::DrawingFrame::~DrawingFrame() = default;
+
+DirectRenderer::DirectRenderer(const RendererSettings* settings,
+                               OutputSurface* output_surface,
+                               ResourceProvider* resource_provider)
+    : settings_(settings),
+      output_surface_(output_surface),
+      resource_provider_(resource_provider),
+      overlay_processor_(new OverlayProcessor(output_surface)) {
+  // TODO(danakj): This should not be happening in the constructor.
+  overlay_processor_->Initialize();
 }
 
-DirectRenderer::DrawingFrame::~DrawingFrame() {}
+DirectRenderer::~DirectRenderer() = default;
 
-//
 // static
 gfx::RectF DirectRenderer::QuadVertexRect() {
   return gfx::RectF(-0.5f, -0.5f, 1.f, 1.f);
@@ -128,21 +139,16 @@ gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
   return window_rect;
 }
 
-DirectRenderer::DirectRenderer(const RendererSettings* settings,
-                               OutputSurface* output_surface,
-                               ResourceProvider* resource_provider)
-    : Renderer(settings),
-      output_surface_(output_surface),
-      resource_provider_(resource_provider),
-      overlay_processor_(new OverlayProcessor(output_surface)) {
-  overlay_processor_->Initialize();
-}
-
-DirectRenderer::~DirectRenderer() {}
-
 const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
     const RenderPass* pass) {
   return nullptr;
+}
+
+void DirectRenderer::SetVisible(bool visible) {
+  if (visible_ == visible)
+    return;
+  visible_ = visible;
+  DidChangeVisibility();
 }
 
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
@@ -200,7 +206,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                const gfx::ColorSpace& device_color_space,
                                const gfx::Rect& device_viewport_rect,
                                const gfx::Rect& device_clip_rect) {
-  DCHECK(visible());
+  DCHECK(visible_);
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS(
       "Renderer4.renderPassCount",
@@ -371,8 +377,6 @@ void DirectRenderer::SetScissorTestRectInDrawSpace(
       MoveFromDrawToWindowSpace(frame, draw_space_rect);
   SetScissorTestRect(window_space_rect);
 }
-
-void DirectRenderer::FinishDrawingQuadList() {}
 
 void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
                                    DrawingFrame* frame,

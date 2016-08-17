@@ -35,6 +35,7 @@
 #include "cc/output/layer_quad.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/render_surface_filters.h"
+#include "cc/output/renderer_settings.h"
 #include "cc/output/static_geometry_binding.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/draw_polygon.h"
@@ -447,7 +448,7 @@ const RendererCapabilitiesImpl& GLRenderer::Capabilities() const {
 }
 
 void GLRenderer::DidChangeVisibility() {
-  if (visible()) {
+  if (visible_) {
     output_surface_->EnsureBackbuffer();
   } else {
     TRACE_EVENT0("cc", "GLRenderer::DidChangeVisibility dropping resources");
@@ -461,7 +462,7 @@ void GLRenderer::DidChangeVisibility() {
   // ContextProvider is not shared, so always pass 0 for the client_id.
   // TODO(crbug.com/487471): Update this when we share compositor
   // ContextProviders.
-  context_support_->SetClientVisible(0 /* client_id */, visible());
+  context_support_->SetClientVisible(0 /* client_id */, visible_);
   bool aggressively_free_resources = !context_support_->AnyClientsVisible();
   if (aggressively_free_resources)
     output_surface_->context_provider()->DeleteCachedResources();
@@ -2898,7 +2899,7 @@ void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
 }
 
 void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
-  DCHECK(visible());
+  DCHECK(visible_);
 
   TRACE_EVENT0("cc,benchmark", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!

@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "cc/output/output_surface_client.h"
-#include "cc/output/renderer.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display_scheduler.h"
@@ -106,11 +105,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   // SurfaceDamageObserver implementation.
   void OnSurfaceDamaged(const SurfaceId& surface, bool* changed) override;
 
-  void SetEnlargePassTextureAmountForTesting(
-      const gfx::Size& enlarge_texture_amount) {
-    enlarge_texture_amount_ = enlarge_texture_amount;
-  }
-
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
 
@@ -135,7 +129,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   bool swapped_since_resize_ = false;
   gfx::Rect external_clip_;
   gfx::Rect external_viewport_;
-  gfx::Size enlarge_texture_amount_;
   bool output_is_secure_ = false;
 
   // The begin_frame_source_ is often known by the output_surface_ and

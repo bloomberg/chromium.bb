@@ -9,6 +9,7 @@
 
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/output/direct_renderer.h"
 #include "cc/output/texture_mailbox_deleter.h"
 
 static constexpr uint32_t kCompositorClientId = 1;
@@ -92,6 +93,8 @@ bool TestDelegatingOutputSurface::BindToClient(OutputSurfaceClient* client) {
       surface_id_allocator_->client_id(), this);
   display_->Initialize(this, surface_manager_.get(),
                        surface_id_allocator_->client_id());
+  display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
+      enlarge_pass_texture_amount_);
   display_->SetVisible(true);
   bound_ = true;
   return true;

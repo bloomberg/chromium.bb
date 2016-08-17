@@ -15,7 +15,7 @@
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer_draw_cache.h"
 #include "cc/output/program_binding.h"
-#include "cc/output/renderer.h"
+#include "cc/output/renderer_capabilities_impl.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -32,10 +32,10 @@ class GLES2Interface;
 }
 
 namespace cc {
-
 class GLRendererShaderTest;
 class OutputSurface;
 class PictureDrawQuad;
+class Resource;
 class ResourcePool;
 class ScopedResource;
 class StreamVideoDrawQuad;

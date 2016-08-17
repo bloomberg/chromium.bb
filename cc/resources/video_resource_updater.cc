@@ -15,6 +15,7 @@
 #include "cc/base/math_util.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/resources/resource_util.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"

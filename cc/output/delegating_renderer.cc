@@ -20,12 +20,9 @@
 
 namespace cc {
 
-DelegatingRenderer::DelegatingRenderer(const RendererSettings* settings,
-                                       OutputSurface* output_surface,
+DelegatingRenderer::DelegatingRenderer(OutputSurface* output_surface,
                                        ResourceProvider* resource_provider)
-    : Renderer(settings),
-      output_surface_(output_surface),
-      resource_provider_(resource_provider) {
+    : output_surface_(output_surface), resource_provider_(resource_provider) {
   DCHECK(resource_provider_);
 
   capabilities_.using_partial_swap = false;
@@ -56,20 +53,11 @@ DelegatingRenderer::DelegatingRenderer(const RendererSettings* settings,
   }
 }
 
-DelegatingRenderer::~DelegatingRenderer() {}
+DelegatingRenderer::~DelegatingRenderer() = default;
 
-const RendererCapabilitiesImpl& DelegatingRenderer::Capabilities() const {
-  return capabilities_;
-}
-
-void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
-                                   float device_scale_factor,
-                                   const gfx::ColorSpace& device_color_space,
-                                   const gfx::Rect& device_viewport_rect,
-                                   const gfx::Rect& device_clip_rect) {
+void DelegatingRenderer::DrawFrame(
+    RenderPassList* render_passes_in_draw_order) {
   TRACE_EVENT0("cc", "DelegatingRenderer::DrawFrame");
-
-  DCHECK(!delegated_frame_data_);
 
   delegated_frame_data_ = base::WrapUnique(new DelegatedFrameData);
   DelegatedFrameData& out_data = *delegated_frame_data_;
@@ -93,11 +81,6 @@ void DelegatingRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
   compositor_frame.metadata = std::move(metadata);
   compositor_frame.delegated_frame_data = std::move(delegated_frame_data_);
   output_surface_->SwapBuffers(std::move(compositor_frame));
-}
-
-void DelegatingRenderer::ReclaimResources(
-    const ReturnedResourceArray& resources) {
-  resource_provider_->ReceiveReturnsFromParent(resources);
 }
 
 }  // namespace cc

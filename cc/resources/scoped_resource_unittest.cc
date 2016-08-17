@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "cc/output/renderer.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"

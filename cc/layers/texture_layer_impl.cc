@@ -11,7 +11,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "cc/output/output_surface.h"
-#include "cc/output/renderer.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/platform_color.h"

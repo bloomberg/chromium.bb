@@ -15,8 +15,7 @@ class TextureMailboxDeleter;
 
 class CC_EXPORT VulkanRenderer : public DirectRenderer {
  public:
-  VulkanRenderer(RendererClient* client,
-                 const RendererSettings* settings,
+  VulkanRenderer(const RendererSettings* settings,
                  OutputSurface* output_surface,
                  ResourceProvider* resource_provider,
                  TextureMailboxDeleter* texture_mailbox_deleter,
@@ -25,7 +24,6 @@ class CC_EXPORT VulkanRenderer : public DirectRenderer {
 
   // Implementation of public Renderer functions.
   const RendererCapabilitiesImpl& Capabilities() const override;
-  void Finish() override;
   void SwapBuffers(const CompositorFrameMetadata& metadata) override;
   void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) override;
 

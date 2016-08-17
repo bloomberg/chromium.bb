@@ -9,17 +9,15 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/direct_renderer.h"
+#include "cc/output/renderer_capabilities_impl.h"
 
 namespace cc {
-
-class OutputSurface;
-class RendererClient;
-class ResourceProvider;
-class SoftwareOutputDevice;
-
 class DebugBorderDrawQuad;
+class OutputSurface;
 class PictureDrawQuad;
 class RenderPassDrawQuad;
+class ResourceProvider;
+class SoftwareOutputDevice;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;

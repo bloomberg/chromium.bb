@@ -5,56 +5,78 @@
 #ifndef CC_OUTPUT_DIRECT_RENDERER_H_
 #define CC_OUTPUT_DIRECT_RENDERER_H_
 
+#include <memory>
 #include <unordered_map>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"
+#include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/overlay_processor.h"
-#include "cc/output/renderer.h"
+#include "cc/output/renderer_capabilities_impl.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/resources/scoped_resource.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect.h"
+
+namespace gfx {
+class ColorSpace;
+}
 
 namespace cc {
 class DrawPolygon;
+class OutputSurface;
+class RenderPass;
+class RenderPassId;
+class RendererSettings;
 class ResourceProvider;
+class ScopedResource;
 
 // This is the base class for code shared between the GL and software
-// renderer implementations.  "Direct" refers to the fact that it does not
-// delegate rendering to another compositor.
-class CC_EXPORT DirectRenderer : public Renderer {
+// renderer implementations. "Direct" refers to the fact that it does not
+// delegate rendering to another compositor (see historical DelegatingRenderer
+// for reference).
+class CC_EXPORT DirectRenderer {
  public:
-  ~DirectRenderer() override;
+  DirectRenderer(const RendererSettings* settings,
+                 OutputSurface* output_surface,
+                 ResourceProvider* resource_provider);
+  virtual ~DirectRenderer();
 
+  void SetVisible(bool visible);
   void DecideRenderPassAllocationsForFrame(
-      const RenderPassList& render_passes_in_draw_order) override;
-  bool HasAllocatedResourcesForTesting(RenderPassId id) const override;
+      const RenderPassList& render_passes_in_draw_order);
+  bool HasAllocatedResourcesForTesting(RenderPassId id) const;
   void DrawFrame(RenderPassList* render_passes_in_draw_order,
                  float device_scale_factor,
                  const gfx::ColorSpace& device_color_space,
                  const gfx::Rect& device_viewport_rect,
-                 const gfx::Rect& device_clip_rect) override;
+                 const gfx::Rect& device_clip_rect);
+
+  // Public interface implemented by subclasses.
+  virtual const RendererCapabilitiesImpl& Capabilities() const = 0;
+  virtual void SwapBuffers(CompositorFrameMetadata metadata) = 0;
   virtual void SwapBuffersComplete() {}
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) {}
 
-  // If a pass contains a single tile draw quad and can be drawn without
-  // a render pass (e.g. applying a filter directly to the tile quad)
-  // return that quad, otherwise return null.
-  virtual const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass);
+  // Allow tests to enlarge the texture size of non-root render passes to
+  // verify cases where the texture doesn't match the render pass size.
+  void SetEnlargePassTextureAmountForTesting(const gfx::Size& amount) {
+    enlarge_pass_texture_amount_ = amount;
+  }
 
+  // Public for tests that poke at internals.
   struct CC_EXPORT DrawingFrame {
     DrawingFrame();
     ~DrawingFrame();
 
-    const RenderPassList* render_passes_in_draw_order;
-    const RenderPass* root_render_pass;
-    const RenderPass* current_render_pass;
-    const ScopedResource* current_texture;
+    const RenderPassList* render_passes_in_draw_order = nullptr;
+    const RenderPass* root_render_pass = nullptr;
+    const RenderPass* current_render_pass = nullptr;
+    const ScopedResource* current_texture = nullptr;
 
     gfx::Rect root_damage_rect;
     gfx::Rect device_viewport_rect;
@@ -67,27 +89,14 @@ class CC_EXPORT DirectRenderer : public Renderer {
     CALayerOverlayList ca_layer_overlay_list;
   };
 
-  // Allow tests to enlarge the texture size of non-root render passes to
-  // verify cases where the texture doesn't match the render pass size.
-  void SetEnlargePassTextureAmount(const gfx::Size& amount) {
-    enlarge_pass_texture_amount_ = amount;
-  }
-
-  void DoDrawPolygon(const DrawPolygon& poly,
-                     DrawingFrame* frame,
-                     const gfx::Rect& render_pass_scissor,
-                     bool use_render_pass_scissor);
-
  protected:
+  friend class BspWalkActionDrawPolygon;
+
   enum SurfaceInitializationMode {
     SURFACE_INITIALIZATION_MODE_PRESERVE,
     SURFACE_INITIALIZATION_MODE_SCISSORED_CLEAR,
     SURFACE_INITIALIZATION_MODE_FULL_SURFACE_CLEAR,
   };
-
-  DirectRenderer(const RendererSettings* settings,
-                 OutputSurface* output_surface,
-                 ResourceProvider* resource_provider);
 
   static gfx::RectF QuadVertexRect();
   static void QuadRectTransform(gfx::Transform* quad_rect_transform,
@@ -125,6 +134,12 @@ class CC_EXPORT DirectRenderer : public Renderer {
   void DrawRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
   bool UseRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
 
+  void DoDrawPolygon(const DrawPolygon& poly,
+                     DrawingFrame* frame,
+                     const gfx::Rect& render_pass_scissor,
+                     bool use_render_pass_scissor);
+
+  // Private interface implemented by subclasses for use by DirectRenderer.
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) = 0;
   virtual bool BindFramebufferToTexture(DrawingFrame* frame,
                                         const ScopedResource* resource) = 0;
@@ -133,7 +148,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
       DrawingFrame* frame,
       SurfaceInitializationMode initialization_mode,
       const gfx::Rect& render_pass_scissor) = 0;
-  // clip_region is a (possibly null) pointer to a quad in the same
+  // |clip_region| is a (possibly null) pointer to a quad in the same
   // space as the quad. When non-null only the area of the quad that overlaps
   // with clip_region will be drawn.
   virtual void DoDrawQuad(DrawingFrame* frame,
@@ -141,14 +156,24 @@ class CC_EXPORT DirectRenderer : public Renderer {
                           const gfx::QuadF* clip_region) = 0;
   virtual void BeginDrawingFrame(DrawingFrame* frame) = 0;
   virtual void FinishDrawingFrame(DrawingFrame* frame) = 0;
-  virtual void FinishDrawingQuadList();
+  // If a pass contains a single tile draw quad and can be drawn without
+  // a render pass (e.g. applying a filter directly to the tile quad)
+  // return that quad, otherwise return null.
+  virtual const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass);
+  virtual void FinishDrawingQuadList() {}
   virtual bool FlippedFramebuffer(const DrawingFrame* frame) const = 0;
   virtual void EnsureScissorTestEnabled() = 0;
   virtual void EnsureScissorTestDisabled() = 0;
-
+  virtual void DidChangeVisibility() = 0;
   virtual void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
       std::unique_ptr<CopyOutputRequest> request) = 0;
+
+  const RendererSettings* const settings_;
+  OutputSurface* const output_surface_;
+  ResourceProvider* const resource_provider_;
+  // This can be replaced by test implementations.
+  std::unique_ptr<OverlayProcessor> overlay_processor_;
 
   // TODO(danakj): Just use a vector of pairs here? Hash map is way overkill.
   std::unordered_map<RenderPassId,
@@ -157,9 +182,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
       render_pass_textures_;
   std::unordered_map<RenderPassId, TileDrawQuad, RenderPassIdHash>
       render_pass_bypass_quads_;
-  OutputSurface* output_surface_;
-  ResourceProvider* resource_provider_;
-  std::unique_ptr<OverlayProcessor> overlay_processor_;
+
+  bool visible_;
 
   // For use in coordinate conversion, this stores the output rect, viewport
   // rect (= unflipped version of glViewport rect), the size of target

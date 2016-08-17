@@ -61,7 +61,7 @@ std::unique_ptr<TestDelegatingOutputSurface>
           shared_bitmap_manager(), gpu_memory_buffer_manager(),
           RendererSettings(), ImplThreadTaskRunner(), synchronous_composite,
           force_disable_reclaim_resources);
-  delegating_output_surface->display()->SetEnlargePassTextureAmountForTesting(
+  delegating_output_surface->SetEnlargePassTextureAmount(
       enlarge_texture_amount_);
   return delegating_output_surface;
 }

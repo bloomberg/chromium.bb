@@ -12,6 +12,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/render_surface_filters.h"
+#include "cc/output/renderer_settings.h"
 #include "cc/output/software_output_device.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
@@ -19,6 +20,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "cc/resources/scoped_resource.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -92,7 +94,7 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
 }
 
 void SoftwareRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
-  DCHECK(visible());
+  DCHECK(visible_);
   TRACE_EVENT0("cc,benchmark", "SoftwareRenderer::SwapBuffers");
   CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);
@@ -595,7 +597,7 @@ void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
 }
 
 void SoftwareRenderer::DidChangeVisibility() {
-  if (visible())
+  if (visible_)
     output_surface_->EnsureBackbuffer();
   else
     output_surface_->DiscardBackbuffer();

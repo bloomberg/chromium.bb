@@ -27,9 +27,9 @@
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/render_pass_sink.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/output/delegating_renderer.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
-#include "cc/output/renderer.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/ui_resource_client.h"
@@ -424,7 +424,7 @@ class CC_EXPORT LayerTreeHostImpl
     return settings_.create_low_res_tiling && !use_gpu_rasterization_;
   }
   ResourcePool* resource_pool() { return resource_pool_.get(); }
-  Renderer* renderer() { return renderer_.get(); }
+  DelegatingRenderer* renderer() { return renderer_.get(); }
   ImageDecodeController* image_decode_controller() {
     return image_decode_controller_.get();
   }
@@ -736,7 +736,7 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   std::unique_ptr<TileTaskManager> tile_task_manager_;
   std::unique_ptr<ResourcePool> resource_pool_;
-  std::unique_ptr<Renderer> renderer_;
+  std::unique_ptr<DelegatingRenderer> renderer_;
   std::unique_ptr<ImageDecodeController> image_decode_controller_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;

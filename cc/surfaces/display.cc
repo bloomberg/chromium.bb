@@ -197,7 +197,6 @@ void Display::InitializeRenderer() {
     renderer_ = std::move(renderer);
   }
 
-  renderer_->SetEnlargePassTextureAmount(enlarge_texture_amount_);
   renderer_->SetVisible(visible_);
 
   // TODO(jbauman): Outputting an incomplete quad list doesn't work when using

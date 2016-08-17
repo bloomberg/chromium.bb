@@ -10,34 +10,27 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/renderer.h"
+#include "cc/output/renderer_capabilities_impl.h"
 
 namespace cc {
-
 class OutputSurface;
 class ResourceProvider;
 
-class CC_EXPORT DelegatingRenderer : public Renderer {
+class CC_EXPORT DelegatingRenderer {
  public:
-  DelegatingRenderer(const RendererSettings* settings,
-                     OutputSurface* output_surface,
+  DelegatingRenderer(OutputSurface* output_surface,
                      ResourceProvider* resource_provider);
-  ~DelegatingRenderer() override;
+  ~DelegatingRenderer();
 
-  const RendererCapabilitiesImpl& Capabilities() const override;
+  const RendererCapabilitiesImpl& Capabilities() const { return capabilities_; }
 
-  void DrawFrame(RenderPassList* render_passes_in_draw_order,
-                 float device_scale_factor,
-                 const gfx::ColorSpace& device_color_space,
-                 const gfx::Rect& device_viewport_rect,
-                 const gfx::Rect& device_clip_rect) override;
+  void DrawFrame(RenderPassList* render_passes_in_draw_order);
 
-  void SwapBuffers(CompositorFrameMetadata metadata) override;
-  void ReclaimResources(const ReturnedResourceArray&) override;
+  void SwapBuffers(CompositorFrameMetadata metadata);
 
  private:
-  OutputSurface* output_surface_;
-  ResourceProvider* resource_provider_;
+  OutputSurface* const output_surface_;
+  ResourceProvider* const resource_provider_;
   RendererCapabilitiesImpl capabilities_;
   std::unique_ptr<DelegatedFrameData> delegated_frame_data_;
 

@@ -51,6 +51,9 @@ class TestDelegatingOutputSurface : public OutputSurface,
   void SetClient(TestDelegatingOutputSurfaceClient* client) {
     test_client_ = client;
   }
+  void SetEnlargePassTextureAmount(const gfx::Size& s) {
+    enlarge_pass_texture_amount_ = s;
+  }
 
   Display* display() const { return display_.get(); }
 
@@ -93,6 +96,7 @@ class TestDelegatingOutputSurface : public OutputSurface,
 
   bool bound_ = false;
   TestDelegatingOutputSurfaceClient* test_client_ = nullptr;
+  gfx::Size enlarge_pass_texture_amount_;
 
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
 
