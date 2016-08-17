@@ -377,17 +377,8 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 };
 
 // Does not link on Android
-#if defined(OS_ANDROID)
-#define MAYBE_CaptureScreenshot DISABLED_CaptureScreenshot
-#elif defined(OS_MACOSX)  // Fails on 10.9. http://crbug.com/430620
-#define MAYBE_CaptureScreenshot DISABLED_CaptureScreenshot
-#elif defined(MEMORY_SANITIZER)
-// Also fails under MSAN. http://crbug.com/423583
-#define MAYBE_CaptureScreenshot DISABLED_CaptureScreenshot
-#else
-#define MAYBE_CaptureScreenshot CaptureScreenshot
-#endif
-IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, MAYBE_CaptureScreenshot) {
+#if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, CaptureScreenshot) {
   shell()->LoadURL(GURL("about:blank"));
   Attach();
   EXPECT_TRUE(content::ExecuteScript(
@@ -402,10 +393,15 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, MAYBE_CaptureScreenshot) {
   gfx::PNGCodec::Decode(reinterpret_cast<const unsigned char*>(png.data()),
                         png.size(), &bitmap);
   SkColor color(bitmap.getColor(0, 0));
-  EXPECT_TRUE(std::abs(0x12-(int)SkColorGetR(color)) <= 1);
-  EXPECT_TRUE(std::abs(0x34-(int)SkColorGetG(color)) <= 1);
-  EXPECT_TRUE(std::abs(0x56-(int)SkColorGetB(color)) <= 1);
+  EXPECT_GE(1, std::abs(0x12-(int)SkColorGetR(color)));
+  EXPECT_GE(1, std::abs(0x34-(int)SkColorGetG(color)));
+  EXPECT_GE(1, std::abs(0x56-(int)SkColorGetB(color)));
+  color = bitmap.getColor(1, 1);
+  EXPECT_GE(1, std::abs(0x12-(int)SkColorGetR(color)));
+  EXPECT_GE(1, std::abs(0x34-(int)SkColorGetG(color)));
+  EXPECT_GE(1, std::abs(0x56-(int)SkColorGetB(color)));
 }
+#endif
 
 #if defined(OS_ANDROID)
 // Disabled, see http://crbug.com/469947.
