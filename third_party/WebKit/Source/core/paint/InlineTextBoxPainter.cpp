@@ -106,6 +106,15 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     boxOrigin.move(adjustedPaintOffset.x(), adjustedPaintOffset.y());
     LayoutRect boxRect(boxOrigin, LayoutSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
 
+    int length = m_inlineTextBox.len();
+    StringView string = StringView(m_inlineTextBox.getLineLayoutItem().text(), m_inlineTextBox.start(), length);
+    int maximumLength = m_inlineTextBox.getLineLayoutItem().textLength() - m_inlineTextBox.start();
+
+    StringBuilder charactersWithHyphen;
+    TextRun textRun = m_inlineTextBox.constructTextRun(styleToUse, styleToUse.font(), string, maximumLength, m_inlineTextBox.hasHyphen() ? &charactersWithHyphen : 0);
+    if (m_inlineTextBox.hasHyphen())
+        length = textRun.length();
+
     bool shouldRotate = false;
     LayoutTextCombine* combinedText = nullptr;
     if (!m_inlineTextBox.isHorizontal()) {
@@ -117,6 +126,19 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         if (combinedText) {
             combinedText->updateFont();
             boxRect.setWidth(combinedText->inlineWidthForLayout());
+            // Justfication applies to before and after the combined text as if
+            // it is an ideographic character, and is prohibited inside the
+            // combined text.
+            if (float expansion = textRun.expansion()) {
+                textRun.setExpansion(0);
+                if (textRun.allowsLeadingExpansion()) {
+                    if (textRun.allowsTrailingExpansion())
+                        expansion /= 2;
+                    LayoutSize offset = LayoutSize(LayoutUnit(), LayoutUnit::fromFloatRound(expansion));
+                    boxOrigin.move(offset);
+                    boxRect.move(offset);
+                }
+            }
         } else {
             shouldRotate = true;
             context.concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
@@ -149,15 +171,6 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     }
 
     // 2. Now paint the foreground, including text and decorations like underline/overline (in quirks mode only).
-    int length = m_inlineTextBox.len();
-    StringView string = StringView(m_inlineTextBox.getLineLayoutItem().text(), m_inlineTextBox.start(), length);
-    int maximumLength = m_inlineTextBox.getLineLayoutItem().textLength() - m_inlineTextBox.start();
-
-    StringBuilder charactersWithHyphen;
-    TextRun textRun = m_inlineTextBox.constructTextRun(styleToUse, font, string, maximumLength, m_inlineTextBox.hasHyphen() ? &charactersWithHyphen : 0);
-    if (m_inlineTextBox.hasHyphen())
-        length = textRun.length();
-
     int selectionStart = 0;
     int selectionEnd = 0;
     if (paintSelectedTextOnly || paintSelectedTextSeparately)

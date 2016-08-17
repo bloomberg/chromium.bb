@@ -59,6 +59,12 @@ public:
         if (text.is8Bit()) {
             opportunitiesInRun = Character::expansionOpportunityCount(text.characters8() + run.m_start,
                 run.m_stop - run.m_start, run.m_box->direction(), isAfterExpansion, textJustify);
+        } else if (run.m_lineLayoutItem.isCombineText()) {
+            // Justfication applies to before and after the combined text as if
+            // it is an ideographic character, and is prohibited inside the
+            // combined text.
+            opportunitiesInRun = isAfterExpansion ? 1 : 2;
+            isAfterExpansion = true;
         } else {
             opportunitiesInRun = Character::expansionOpportunityCount(text.characters16() + run.m_start,
                 run.m_stop - run.m_start, run.m_box->direction(), isAfterExpansion, textJustify);

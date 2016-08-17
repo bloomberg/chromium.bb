@@ -173,6 +173,7 @@ public:
     float xPos() const { return m_xpos; }
     void setXPos(float xPos) { m_xpos = xPos; }
     float expansion() const { return m_expansion; }
+    void setExpansion(float expansion) { m_expansion = expansion; }
     bool allowsLeadingExpansion() const { return m_expansionBehavior & AllowLeadingExpansion; }
     bool allowsTrailingExpansion() const { return m_expansionBehavior & AllowTrailingExpansion; }
     TextDirection direction() const { return static_cast<TextDirection>(m_direction); }
