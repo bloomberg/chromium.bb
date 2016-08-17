@@ -102,10 +102,6 @@ void ContentTestSuiteBase::Initialize() {
 #endif
 #endif
 
-#if defined(USE_OZONE)
-  ui::OzonePlatform::InitializeForUI();
-#endif
-
   testing::UnitTest::GetInstance()->listeners().Append(
       new ContentTestSuiteBaseListener);
   ui::MaterialDesignController::Initialize();
