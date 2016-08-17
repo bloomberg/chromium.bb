@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_verifier.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -642,8 +643,14 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
         extension->id(), *update.error_collection);
   }
   if (update.run_on_all_urls) {
-    util::SetAllowedScriptingOnAllUrls(
-        extension->id(), browser_context(), *update.run_on_all_urls);
+    ScriptingPermissionsModifier modifier(browser_context(), extension);
+    if (!modifier.CanAffectExtension(
+            extension->permissions_data()->active_permissions()) &&
+        !modifier.HasAffectedExtension()) {
+      return RespondNow(
+          Error("Cannot modify all urls of extension: " + extension->id()));
+    }
+    modifier.SetAllowedOnAllUrls(*update.run_on_all_urls);
   }
   if (update.show_action_button) {
     ExtensionActionAPI::Get(browser_context())->SetBrowserActionVisibility(

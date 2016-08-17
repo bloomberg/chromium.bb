@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/pref_names.h"
@@ -395,7 +396,9 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   EXPECT_FALSE(info->run_on_all_urls.is_active);
 
   // Give the extension all urls.
-  util::SetAllowedScriptingOnAllUrls(all_urls_extension->id(), profile(), true);
+  ScriptingPermissionsModifier permissions_modifier(profile(),
+                                                    all_urls_extension);
+  permissions_modifier.SetAllowedOnAllUrls(true);
 
   // Now the extension should both want and have all urls.
   info = GenerateExtensionInfo(all_urls_extension->id());
@@ -408,8 +411,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   EXPECT_FALSE(info->run_on_all_urls.is_active);
 
   // Revoke the first extension's permissions.
-  util::SetAllowedScriptingOnAllUrls(
-      all_urls_extension->id(), profile(), false);
+  permissions_modifier.SetAllowedOnAllUrls(false);
 
   // Turn off the switch and load another extension (so permissions are
   // re-initialized).
@@ -423,7 +425,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
 
   // If we grant the extension all urls, then the checkbox should still be
   // there, since it has an explicitly-set user preference.
-  util::SetAllowedScriptingOnAllUrls(all_urls_extension->id(), profile(), true);
+  permissions_modifier.SetAllowedOnAllUrls(true);
   info = GenerateExtensionInfo(all_urls_extension->id());
   EXPECT_TRUE(info->run_on_all_urls.is_enabled);
   EXPECT_TRUE(info->run_on_all_urls.is_active);

@@ -77,31 +77,6 @@ void SetWasInstalledByCustodian(const std::string& extension_id,
                                 content::BrowserContext* context,
                                 bool installed_by_custodian);
 
-// Returns true if the extension with |extension_id| is allowed to execute
-// scripts on all urls (exempting chrome:// urls, etc) without explicit
-// user consent.
-// This should only be used with FeatureSwitch::scripts_require_action()
-// enabled.
-bool AllowedScriptingOnAllUrls(const std::string& extension_id,
-                               content::BrowserContext* context);
-
-// Returns the default value for being allowed to script on all urls.
-bool DefaultAllowedScriptingOnAllUrls();
-
-// Sets whether the extension with |extension_id| is allowed to execute scripts
-// on all urls (exempting chrome:// urls, etc) without explicit user consent.
-// This should only be used with FeatureSwitch::scripts_require_action()
-// enabled.
-void SetAllowedScriptingOnAllUrls(const std::string& extension_id,
-                                  content::BrowserContext* context,
-                                  bool allowed);
-
-// Returns true if the user has set an explicit preference for the specified
-// extension being allowed to script on all urls; this is set to be true
-// whenever SetAllowedScriptingOnAllUrls() is called.
-bool HasSetAllowedScriptingOnAllUrls(const std::string& extension_id,
-                                     content::BrowserContext* context);
-
 // Returns true if |extension_id| can be launched (possibly only after being
 // enabled).
 bool IsAppLaunchable(const std::string& extension_id,

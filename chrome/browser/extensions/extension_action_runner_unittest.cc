@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_sync_service_factory.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -351,7 +350,8 @@ TEST_F(ExtensionActionRunnerUnitTest, ActiveScriptsCanHaveAllUrlsPref) {
   EXPECT_TRUE(RequiresUserConsent(extension));
 
   // Enable the extension on all urls.
-  util::SetAllowedScriptingOnAllUrls(extension->id(), profile(), true);
+  ScriptingPermissionsModifier permissions_modifier(profile(), extension);
+  permissions_modifier.SetAllowedOnAllUrls(true);
 
   EXPECT_FALSE(RequiresUserConsent(extension));
   // This should carry across navigations, and websites.
@@ -359,7 +359,7 @@ TEST_F(ExtensionActionRunnerUnitTest, ActiveScriptsCanHaveAllUrlsPref) {
   EXPECT_FALSE(RequiresUserConsent(extension));
 
   // Turning off the preference should have instant effect.
-  util::SetAllowedScriptingOnAllUrls(extension->id(), profile(), false);
+  permissions_modifier.SetAllowedOnAllUrls(false);
   EXPECT_TRUE(RequiresUserConsent(extension));
 
   // And should also persist across navigations and websites.

@@ -16,7 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/browser.h"
@@ -425,7 +425,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
   EXPECT_FALSE(inject_success_listener.was_satisfied());
 
   // Enable the extension to run on all urls.
-  util::SetAllowedScriptingOnAllUrls(extension->id(), profile(), true);
+  ScriptingPermissionsModifier modifier(profile(), extension);
+  modifier.SetAllowedOnAllUrls(true);
   EXPECT_TRUE(RunAllPendingInRenderer(web_contents));
 
   // Navigate again - this time, the extension should execute immediately (and
@@ -437,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
 
   // Revoke all urls permissions.
   inject_success_listener.Reset();
-  util::SetAllowedScriptingOnAllUrls(extension->id(), profile(), false);
+  modifier.SetAllowedOnAllUrls(false);
   EXPECT_TRUE(RunAllPendingInRenderer(web_contents));
 
   // Re-navigate; the extension should again need permission to run.

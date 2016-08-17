@@ -378,7 +378,7 @@ ExtensionContextMenuModel::GetCurrentPageAccess(
     content::WebContents* web_contents) const {
   ScriptingPermissionsModifier modifier(profile_, extension);
   DCHECK(modifier.HasAffectedExtension());
-  if (util::AllowedScriptingOnAllUrls(extension->id(), profile_))
+  if (modifier.IsAllowedOnAllUrls())
     return PAGE_ACCESS_RUN_ON_ALL_SITES;
   if (modifier.HasGrantedHostPermission(
           GetActiveWebContents()->GetLastCommittedURL()))
@@ -428,21 +428,22 @@ void ExtensionContextMenuModel::HandlePageAccessCommand(
 
   const GURL& url = web_contents->GetLastCommittedURL();
   ScriptingPermissionsModifier modifier(profile_, extension);
+  DCHECK(modifier.HasAffectedExtension());
   switch (command_id) {
     case PAGE_ACCESS_RUN_ON_CLICK:
       if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)
-        util::SetAllowedScriptingOnAllUrls(extension->id(), profile_, false);
+        modifier.SetAllowedOnAllUrls(false);
       if (modifier.HasGrantedHostPermission(url))
         modifier.RemoveGrantedHostPermission(url);
       break;
     case PAGE_ACCESS_RUN_ON_SITE:
       if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)
-        util::SetAllowedScriptingOnAllUrls(extension->id(), profile_, false);
+        modifier.SetAllowedOnAllUrls(false);
       if (!modifier.HasGrantedHostPermission(url))
         modifier.GrantHostPermission(url);
       break;
     case PAGE_ACCESS_RUN_ON_ALL_SITES:
-      util::SetAllowedScriptingOnAllUrls(extension->id(), profile_, true);
+      modifier.SetAllowedOnAllUrls(true);
       break;
     default:
       NOTREACHED();

@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"
+#include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/api/management/management_api_constants.h"
 #include "extensions/browser/event_router_factory.h"
@@ -280,6 +281,8 @@ TEST_F(ManagementApiUnitTest, ManagementEnableOrDisableBlacklisted) {
 // permission increase.
 TEST_F(ManagementApiUnitTest, SetEnabledAfterIncreasedPermissions) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
 
   base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
   base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
@@ -309,7 +312,7 @@ TEST_F(ManagementApiUnitTest, SetEnabledAfterIncreasedPermissions) {
   // Due to a permission increase, prefs will contain escalation information.
   EXPECT_TRUE(prefs->DidExtensionEscalatePermissions(extension_id));
 
-  auto enable_extension_via_management_api = [this](
+  auto enable_extension_via_management_api = [this, &web_contents](
       const std::string& extension_id, bool use_user_gesture,
       bool accept_dialog, bool expect_success) {
     ScopedTestDialogAutoConfirm auto_confirm(
@@ -320,6 +323,8 @@ TEST_F(ManagementApiUnitTest, SetEnabledAfterIncreasedPermissions) {
       gesture.reset(new ExtensionFunction::ScopedUserGestureForTests);
     scoped_refptr<ManagementSetEnabledFunction> function(
         new ManagementSetEnabledFunction());
+    function->set_browser_context(profile());
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
     base::ListValue args;
     args.AppendString(extension_id);
     args.AppendBoolean(true);

@@ -526,8 +526,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
        permissions_modifier.CanAffectExtension(
            extension.permissions_data()->active_permissions())) ||
       permissions_modifier.HasAffectedExtension();
-  info->run_on_all_urls.is_active =
-      util::AllowedScriptingOnAllUrls(extension.id(), browser_context_);
+  info->run_on_all_urls.is_active = permissions_modifier.IsAllowedOnAllUrls();
 
   // Runtime warnings.
   std::vector<std::string> warnings =

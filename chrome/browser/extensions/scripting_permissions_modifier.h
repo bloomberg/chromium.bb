@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_SCRIPTING_PERMISSIONS_MODIFIER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -18,6 +19,7 @@ class BrowserContext;
 
 namespace extensions {
 class Extension;
+class ExtensionPrefs;
 class PermissionSet;
 
 // Responsible for managing the majority of click-to-script features, including
@@ -28,6 +30,30 @@ class ScriptingPermissionsModifier {
   ScriptingPermissionsModifier(content::BrowserContext* browser_context,
                                const scoped_refptr<const Extension>& extension);
   ~ScriptingPermissionsModifier();
+
+  // Sets whether or not the extension is allowed on all urls and handles the
+  // case of the extension not being present in the registry (which can happen
+  // if we sync the data before downloading the extension). For cases other than
+  // sync, SetAllowedOnAllUrls() should be used.
+  static void SetAllowedOnAllUrlsForSync(bool allowed,
+                                         content::BrowserContext* context,
+                                         const std::string& id);
+
+  // Returns the default value for being allowed to script on all urls.
+  static bool DefaultAllowedOnAllUrls();
+
+  // Sets whether the extension should be allowed to execute on all urls without
+  // explicit user consent. Used when the FeatureSwitch::scripts_require_action
+  // switch is enabled.
+  void SetAllowedOnAllUrls(bool allowed);
+
+  // Returns whether the extension is allowed to execute scripts on all urls
+  // without user consent.
+  bool IsAllowedOnAllUrls();
+
+  // Returns whether the user has set an explicit preference for the extension's
+  // ability to execute scripts without consent.
+  bool HasSetAllowedOnAllUrls() const;
 
   // Returns true if the --scripts-require-action flag would possibly affect
   // the given extension and |permissions|. We pass in the |permissions|
@@ -40,15 +66,15 @@ class ScriptingPermissionsModifier {
   bool HasAffectedExtension() const;
 
   // Grants the extension permission to run on the origin of |url|.
-  void GrantHostPermission(const GURL& url) const;
+  void GrantHostPermission(const GURL& url);
 
   // Returns true if the extension has been explicitly granted permission to run
   // on the origin of |url|.
-  bool HasGrantedHostPermission(const GURL& url) const;
+  bool HasGrantedHostPermission(const GURL& url);
 
   // Revokes permission to run on the origin of |url|. DCHECKs if |url| has not
   // been granted.
-  void RemoveGrantedHostPermission(const GURL& url) const;
+  void RemoveGrantedHostPermission(const GURL& url);
 
   // Takes in a set of permissions and withholds any permissions that should not
   // be granted, populating |granted_permissions_out| with the set of all
@@ -60,18 +86,24 @@ class ScriptingPermissionsModifier {
       const PermissionSet& permissions,
       std::unique_ptr<const PermissionSet>* granted_permissions_out,
       std::unique_ptr<const PermissionSet>* withheld_permissions_out,
-      bool use_initial_state) const;
-
-  // Grants any withheld all-hosts (or all-hosts-like) permissions.
-  void GrantWithheldImpliedAllHosts() const;
-
-  // Revokes any granted all-hosts (or all-hosts-like) permissions.
-  void WithholdImpliedAllHosts() const;
+      bool use_initial_state);
 
  private:
+  // Grants any withheld all-hosts (or all-hosts-like) permissions.
+  void GrantWithheldImpliedAllHosts();
+
+  // Revokes any granted all-hosts (or all-hosts-like) permissions.
+  void WithholdImpliedAllHosts();
+
+  // Updates extension prefs in the case of improper values being found for
+  // an extension.
+  void CleanUpPrefsIfNecessary();
+
   content::BrowserContext* browser_context_;
 
   scoped_refptr<const Extension> extension_;
+
+  ExtensionPrefs* extension_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptingPermissionsModifier);
 };

@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -53,6 +54,18 @@ std::unique_ptr<KeyedService> BuildEventRouter(
       new EventRouter(profile, ExtensionPrefs::Get(profile)));
 }
 
+bool HasAllUrlsPermission(const Extension* extension,
+                          content::BrowserContext* context) {
+  return ScriptingPermissionsModifier(context, extension).IsAllowedOnAllUrls();
+}
+
+bool HasPrefsPermission(bool (*has_pref)(const std::string&,
+                                         content::BrowserContext*),
+                        content::BrowserContext* context,
+                        const std::string& id) {
+  return has_pref(id, context);
+}
+
 }  // namespace
 
 class DeveloperPrivateApiUnitTest : public ExtensionServiceTestBase {
@@ -74,10 +87,9 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestBase {
   const Extension* LoadSimpleExtension();
 
   // Tests modifying the extension's configuration.
-  void TestExtensionPrefSetting(
-      bool (*has_pref)(const std::string&, content::BrowserContext*),
-      const std::string& key,
-      const std::string& extension_id);
+  void TestExtensionPrefSetting(const base::Callback<bool()>& has_pref,
+                                const std::string& key,
+                                const std::string& extension_id);
 
   testing::AssertionResult TestPackExtensionFunction(
       const base::ListValue& args,
@@ -161,7 +173,7 @@ const Extension* DeveloperPrivateApiUnitTest::LoadSimpleExtension() {
 }
 
 void DeveloperPrivateApiUnitTest::TestExtensionPrefSetting(
-    bool (*has_pref)(const std::string&, content::BrowserContext*),
+    const base::Callback<bool()>& has_pref,
     const std::string& key,
     const std::string& extension_id) {
   scoped_refptr<UIThreadExtensionFunction> function(
@@ -173,7 +185,7 @@ void DeveloperPrivateApiUnitTest::TestExtensionPrefSetting(
   parameters->SetBoolean(key, true);
   args.Append(parameters);
 
-  EXPECT_FALSE(has_pref(extension_id, profile())) << key;
+  EXPECT_FALSE(has_pref.Run()) << key;
 
   EXPECT_FALSE(RunFunction(function, args)) << key;
   EXPECT_EQ(std::string("This action requires a user gesture."),
@@ -182,12 +194,12 @@ void DeveloperPrivateApiUnitTest::TestExtensionPrefSetting(
   ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
   function = new api::DeveloperPrivateUpdateExtensionConfigurationFunction();
   EXPECT_TRUE(RunFunction(function, args)) << key;
-  EXPECT_TRUE(has_pref(extension_id, profile())) << key;
+  EXPECT_TRUE(has_pref.Run()) << key;
 
   parameters->SetBoolean(key, false);
   function = new api::DeveloperPrivateUpdateExtensionConfigurationFunction();
   EXPECT_TRUE(RunFunction(function, args)) << key;
-  EXPECT_FALSE(has_pref(extension_id, profile())) << key;
+  EXPECT_FALSE(has_pref.Run()) << key;
 }
 
 testing::AssertionResult DeveloperPrivateApiUnitTest::TestPackExtensionFunction(
@@ -253,12 +265,18 @@ TEST_F(DeveloperPrivateApiUnitTest,
       FeatureSwitch::scripts_require_action(), true);
   // Sadly, we need a "real" directory here, because toggling prefs causes
   // a reload (which needs a path).
-  std::string id = LoadUnpackedExtension()->id();
+  const Extension* extension = LoadUnpackedExtension();
+  const std::string& id = extension->id();
 
-  TestExtensionPrefSetting(&util::IsIncognitoEnabled, "incognitoAccess", id);
-  TestExtensionPrefSetting(&util::AllowFileAccess, "fileAccess", id);
   TestExtensionPrefSetting(
-      &util::AllowedScriptingOnAllUrls, "runOnAllUrls", id);
+      base::Bind(&HasPrefsPermission, &util::IsIncognitoEnabled, profile(), id),
+      "incognitoAccess", id);
+  TestExtensionPrefSetting(
+      base::Bind(&HasPrefsPermission, &util::AllowFileAccess, profile(), id),
+      "fileAccess", id);
+  TestExtensionPrefSetting(
+      base::Bind(&HasAllUrlsPermission, extension, profile()), "runOnAllUrls",
+      id);
 }
 
 // Test developerPrivate.reload.

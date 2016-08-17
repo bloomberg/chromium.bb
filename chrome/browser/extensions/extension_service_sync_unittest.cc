@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -71,6 +72,7 @@ using extensions::ExtensionSyncData;
 using extensions::ExtensionSystem;
 using extensions::Manifest;
 using extensions::PermissionSet;
+using extensions::ScriptingPermissionsModifier;
 using extensions::WebstorePrivateIsPendingCustodianApprovalFunction;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
@@ -670,8 +672,10 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
   }
 
   extensions::util::SetIsIncognitoEnabled(good_crx, profile(), true);
-  extensions::util::SetAllowedScriptingOnAllUrls(
-      good_crx, profile(), false);
+  ScriptingPermissionsModifier permissions_modifier(
+      profile(), registry()->GetExtensionById(
+                     good_crx, extensions::ExtensionRegistry::EVERYTHING));
+  permissions_modifier.SetAllowedOnAllUrls(false);
   {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
@@ -685,8 +689,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
   }
 
   service()->EnableExtension(good_crx);
-  extensions::util::SetAllowedScriptingOnAllUrls(
-      good_crx, profile(), true);
+  permissions_modifier.SetAllowedOnAllUrls(true);
   {
     syncer::SyncDataList list =
         extension_sync_service()->GetAllSyncData(syncer::EXTENSIONS);
@@ -945,12 +948,19 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataSettings) {
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(service()->IsExtensionEnabled(good_crx));
   EXPECT_FALSE(extensions::util::IsIncognitoEnabled(good_crx, profile()));
-  EXPECT_FALSE(extensions::util::HasSetAllowedScriptingOnAllUrls(
-      good_crx, profile()));
+  // Returns a ScriptingPermissionsModifier for the extension. We use this
+  // because various parts of this test reload the extension, making keeping a
+  // ptr to it inviable.
+  auto get_permissions_modifier = [this]() {
+    const Extension* extension = registry()->GetExtensionById(
+        good_crx, extensions::ExtensionRegistry::EVERYTHING);
+    return base::MakeUnique<ScriptingPermissionsModifier>(profile(), extension);
+  };
+  EXPECT_FALSE(get_permissions_modifier()->HasSetAllowedOnAllUrls());
   const bool kDefaultAllowedScripting =
-      extensions::util::DefaultAllowedScriptingOnAllUrls();
+      ScriptingPermissionsModifier::DefaultAllowedOnAllUrls();
   EXPECT_EQ(kDefaultAllowedScripting,
-            extensions::util::AllowedScriptingOnAllUrls(good_crx, profile()));
+            get_permissions_modifier()->IsAllowedOnAllUrls());
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
@@ -966,10 +976,9 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataSettings) {
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_FALSE(service()->IsExtensionEnabled(good_crx));
     EXPECT_FALSE(extensions::util::IsIncognitoEnabled(good_crx, profile()));
-    EXPECT_FALSE(extensions::util::HasSetAllowedScriptingOnAllUrls(
-        good_crx, profile()));
+    EXPECT_FALSE(get_permissions_modifier()->HasSetAllowedOnAllUrls());
     EXPECT_EQ(kDefaultAllowedScripting,
-              extensions::util::AllowedScriptingOnAllUrls(good_crx, profile()));
+              get_permissions_modifier()->IsAllowedOnAllUrls());
   }
 
   {
@@ -1005,10 +1014,9 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataSettings) {
 
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_TRUE(service()->IsExtensionEnabled(good_crx));
-    EXPECT_TRUE(extensions::util::HasSetAllowedScriptingOnAllUrls(
-        good_crx, profile()));
+    EXPECT_TRUE(get_permissions_modifier()->HasSetAllowedOnAllUrls());
     EXPECT_EQ(!kDefaultAllowedScripting,
-              extensions::util::AllowedScriptingOnAllUrls(good_crx, profile()));
+              get_permissions_modifier()->IsAllowedOnAllUrls());
   }
 
   {
@@ -1019,10 +1027,9 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataSettings) {
 
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_TRUE(service()->IsExtensionEnabled(good_crx));
-    EXPECT_TRUE(extensions::util::HasSetAllowedScriptingOnAllUrls(
-        good_crx, profile()));
+    EXPECT_TRUE(get_permissions_modifier()->HasSetAllowedOnAllUrls());
     EXPECT_EQ(kDefaultAllowedScripting,
-              extensions::util::AllowedScriptingOnAllUrls(good_crx, profile()));
+              get_permissions_modifier()->IsAllowedOnAllUrls());
   }
 
   EXPECT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
@@ -2409,10 +2416,12 @@ TEST_F(ExtensionServiceSyncTest, SyncExtensionHasAllhostsWithheld) {
 
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
 
-  EXPECT_TRUE(registry()->enabled_extensions().GetByID(id));
-  EXPECT_FALSE(extensions::util::AllowedScriptingOnAllUrls(id, profile()));
-  EXPECT_TRUE(extensions::util::HasSetAllowedScriptingOnAllUrls(id, profile()));
-  EXPECT_FALSE(extensions::util::AllowedScriptingOnAllUrls(id, profile()));
+  const Extension* enabled_extension =
+      registry()->enabled_extensions().GetByID(id);
+  ASSERT_TRUE(enabled_extension);
+  ScriptingPermissionsModifier modifier(profile(), enabled_extension);
+  EXPECT_FALSE(modifier.IsAllowedOnAllUrls());
+  EXPECT_TRUE(modifier.HasSetAllowedOnAllUrls());
 }
 
 #endif  // defined(ENABLE_SUPERVISED_USERS)
