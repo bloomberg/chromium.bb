@@ -403,16 +403,9 @@ class CC_EXPORT LayerTreeHostImpl
   virtual bool InitializeRenderer(OutputSurface* output_surface);
   TileManager* tile_manager() { return &tile_manager_; }
 
-  void SetHasGpuRasterizationTrigger(bool flag) {
-    has_gpu_rasterization_trigger_ = flag;
-    UpdateGpuRasterizationStatus();
-  }
-  void SetContentIsSuitableForGpuRasterization(bool flag) {
-    content_is_suitable_for_gpu_rasterization_ = flag;
-    UpdateGpuRasterizationStatus();
-  }
+  void SetHasGpuRasterizationTrigger(bool flag);
+  void SetContentIsSuitableForGpuRasterization(bool flag);
   bool CanUseGpuRasterization();
-  void UpdateTreeResourcesForGpuRasterizationIfNeeded();
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
   bool use_msaa() const { return use_msaa_; }
 
@@ -657,7 +650,9 @@ class CC_EXPORT LayerTreeHostImpl
 
   void AnimateInternal(bool active_tree);
 
-  void UpdateGpuRasterizationStatus();
+  // Returns true if status changed.
+  bool UpdateGpuRasterizationStatus();
+  void UpdateTreeResourcesForGpuRasterizationIfNeeded();
 
   Viewport* viewport() { return viewport_.get(); }
 
@@ -727,12 +722,12 @@ class CC_EXPORT LayerTreeHostImpl
   OutputSurface* output_surface_;
 
   std::unique_ptr<ResourceProvider> resource_provider_;
+  bool need_update_gpu_rasterization_status_;
   bool content_is_suitable_for_gpu_rasterization_;
   bool has_gpu_rasterization_trigger_;
   bool use_gpu_rasterization_;
   bool use_msaa_;
   GpuRasterizationStatus gpu_rasterization_status_;
-  bool tree_resources_for_gpu_rasterization_dirty_;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   std::unique_ptr<TileTaskManager> tile_task_manager_;
   std::unique_ptr<ResourcePool> resource_pool_;

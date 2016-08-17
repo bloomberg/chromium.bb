@@ -145,7 +145,7 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
   void TestShadersWithPrecision(TexCoordPrecision precision) {
     // This program uses external textures and sampler, so it won't compile
     // everywhere.
-    if (renderer()->Capabilities().using_egl_image)
+    if (context_provider()->ContextCapabilities().egl_image_external)
       EXPECT_PROGRAM_VALID(renderer()->GetVideoStreamTextureProgram(precision));
   }
 
@@ -159,7 +159,7 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
 
   void TestShadersWithPrecisionAndSampler(TexCoordPrecision precision,
                                           SamplerType sampler) {
-    if (!renderer()->Capabilities().using_egl_image &&
+    if (!context_provider()->ContextCapabilities().egl_image_external &&
         sampler == SAMPLER_TYPE_EXTERNAL_OES) {
       // This will likely be hit in tests due to usage of osmesa.
       return;
@@ -196,7 +196,7 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
                             SamplerType sampler,
                             BlendMode blend_mode,
                             bool mask_for_background) {
-    if (!renderer()->Capabilities().using_egl_image &&
+    if (!context_provider()->ContextCapabilities().egl_image_external &&
         sampler == SAMPLER_TYPE_EXTERNAL_OES) {
       // This will likely be hit in tests due to usage of osmesa.
       return;
@@ -354,6 +354,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
         output_surface_.get(), shared_bitmap_manager_.get());
     renderer_ = base::WrapUnique(new FakeRendererGL(
         &settings_, output_surface_.get(), resource_provider_.get()));
+    renderer_->Initialize();
     renderer_->SetVisible(true);
   }
 
@@ -383,6 +384,7 @@ class GLRendererShaderTest : public GLRendererTest {
         output_surface_.get(), shared_bitmap_manager_.get());
     renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
                                        resource_provider_.get()));
+    renderer_->Initialize();
     renderer_->SetVisible(true);
   }
 
@@ -681,6 +683,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
+  renderer.Initialize();
   renderer.SetVisible(true);
 
   gfx::Rect viewport_rect(1, 1);
@@ -721,6 +724,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
+  renderer.Initialize();
   renderer.SetVisible(true);
 
   gfx::Rect viewport_rect(1, 1);
@@ -754,6 +758,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
+  renderer.Initialize();
   renderer.SetVisible(true);
 
   gfx::Rect viewport_rect(1, 1);
@@ -811,6 +816,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
+  renderer.Initialize();
   renderer.SetVisible(true);
 
   // During initialization we are allowed to set any texture parameters.
@@ -893,6 +899,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
 
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
+  renderer.Initialize();
   renderer.SetVisible(true);
 
   gfx::Rect viewport_rect(10, 10);
@@ -976,7 +983,8 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
-  EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
+  renderer.Initialize();
+  EXPECT_FALSE(renderer.use_partial_swap());
   renderer.SetVisible(true);
 
   gfx::Rect viewport_rect(1, 1);
@@ -1065,7 +1073,8 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   settings.partial_swap_enabled = true;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
-  EXPECT_TRUE(renderer.Capabilities().using_partial_swap);
+  renderer.Initialize();
+  EXPECT_TRUE(renderer.use_partial_swap());
   renderer.SetVisible(true);
 
   gfx::Rect viewport_rect(100, 100);
@@ -1197,7 +1206,8 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
-  EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
+  renderer.Initialize();
+  EXPECT_FALSE(renderer.use_partial_swap());
   renderer.SetVisible(true);
 
   gfx::Rect device_viewport_rect(10, 10, 100, 100);
@@ -1234,7 +1244,8 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
-  EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
+  renderer.Initialize();
+  EXPECT_FALSE(renderer.use_partial_swap());
   renderer.SetVisible(true);
 
   gfx::Rect device_viewport_rect(0, 0, 100, 100);
@@ -1617,6 +1628,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
 
     renderer_.reset(new FakeRendererGL(&settings_, &output_surface_,
                                        resource_provider_.get()));
+    renderer_->Initialize();
 
     EXPECT_CALL(output_surface_, EnsureBackbuffer()).Times(1);
     renderer_->SetVisible(true);
@@ -1776,6 +1788,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get(), mailbox_deleter.get());
+  renderer.Initialize();
   renderer.SetVisible(true);
 
   TestOverlayProcessor* processor =
@@ -1934,6 +1947,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get(), mailbox_deleter.get());
+  renderer.Initialize();
   renderer.SetVisible(true);
 
   SingleOverlayOnTopProcessor* processor =
@@ -2012,7 +2026,8 @@ class GLRendererPartialSwapTest : public GLRendererTest {
     settings.partial_swap_enabled = partial_swap;
     FakeRendererGL renderer(&settings, output_surface.get(),
                             resource_provider.get());
-    EXPECT_EQ(partial_swap, renderer.Capabilities().using_partial_swap);
+    renderer.Initialize();
+    EXPECT_EQ(partial_swap, renderer.use_partial_swap());
     renderer.SetVisible(true);
 
     gfx::Rect viewport_rect(100, 100);
@@ -2101,6 +2116,7 @@ class GLRendererWithMockContextTest : public ::testing::Test {
     renderer_ =
         base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
                                      resource_provider_.get(), nullptr, 0);
+    renderer_->Initialize();
   }
 
   RendererSettings settings_;

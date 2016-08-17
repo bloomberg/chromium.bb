@@ -17,6 +17,7 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -96,6 +97,8 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
     settings.create_low_res_tiling = true;
     settings.verify_clip_tree_calculations = true;
     settings.verify_transform_tree_calculations = true;
+    settings.renderer_settings.buffer_to_texture_target_map =
+        DefaultBufferToTextureTargetMapForTesting();
     return settings;
   }
 
@@ -2326,19 +2329,18 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
 
   // Gpu rasterization is disabled by default.
   EXPECT_FALSE(host_impl()->use_gpu_rasterization());
+  EXPECT_EQ(0u, pending_layer()->release_resources_count());
+  EXPECT_EQ(0u, active_layer()->release_resources_count());
   // Toggling the gpu rasterization clears all tilings on both trees.
   host_impl()->SetHasGpuRasterizationTrigger(true);
   host_impl()->SetContentIsSuitableForGpuRasterization(true);
-  host_impl()->UpdateTreeResourcesForGpuRasterizationIfNeeded();
-  EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
-  EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
+  host_impl()->CommitComplete();
+  EXPECT_EQ(1u, pending_layer()->release_resources_count());
+  EXPECT_EQ(1u, active_layer()->release_resources_count());
 
-  // Make sure that we can still add tiling to the pending layer,
-  // that gets synced to the active layer.
-  host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-  bool update_lcd_text = false;
-  host_impl()->pending_tree()->UpdateDrawProperties(update_lcd_text);
+  // But the pending layer gets a tiling back, and can activate it.
   EXPECT_TRUE(pending_layer()->tilings()->FindTilingWithScale(1.f));
+  EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
 
   ActivateTree();
   EXPECT_TRUE(active_layer()->tilings()->FindTilingWithScale(1.f));
@@ -2349,14 +2351,15 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
   // Toggling the gpu rasterization clears all tilings on both trees.
   EXPECT_TRUE(host_impl()->use_gpu_rasterization());
   host_impl()->SetHasGpuRasterizationTrigger(false);
-  host_impl()->UpdateTreeResourcesForGpuRasterizationIfNeeded();
+  host_impl()->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::OFF_VIEWPORT,
             host_impl()->gpu_rasterization_status());
-  EXPECT_EQ(0u, pending_layer()->tilings()->num_tilings());
-  EXPECT_EQ(0u, active_layer()->tilings()->num_tilings());
+  EXPECT_EQ(2u, pending_layer()->release_resources_count());
+  EXPECT_EQ(2u, active_layer()->release_resources_count());
 
   host_impl()->SetHasGpuRasterizationTrigger(true);
   host_impl()->SetContentIsSuitableForGpuRasterization(false);
+  host_impl()->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
             host_impl()->gpu_rasterization_status());
 }
@@ -2414,6 +2417,7 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
 
   host_impl()->SetHasGpuRasterizationTrigger(true);
   host_impl()->SetContentIsSuitableForGpuRasterization(true);
+  host_impl()->CommitComplete();
 
   SetupDefaultTrees(layer_bounds);
   EXPECT_TRUE(host_impl()->use_gpu_rasterization());
@@ -2427,6 +2431,7 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
 TEST_F(PictureLayerImplTest, RequiredTilesWithGpuRasterization) {
   host_impl()->SetHasGpuRasterizationTrigger(true);
   host_impl()->SetContentIsSuitableForGpuRasterization(true);
+  host_impl()->CommitComplete();
 
   gfx::Size viewport_size(1000, 1000);
   host_impl()->SetViewportSize(viewport_size);
@@ -2730,7 +2735,7 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
   host_impl()->SetViewportSize(viewport_size);
   host_impl()->SetHasGpuRasterizationTrigger(true);
   host_impl()->SetContentIsSuitableForGpuRasterization(true);
-  host_impl()->UpdateTreeResourcesForGpuRasterizationIfNeeded();
+  host_impl()->CommitComplete();
 
   float contents_scale = 1.f;
   float device_scale = 1.3f;
@@ -4741,6 +4746,7 @@ TEST_F(TileSizeTest, TileSizes) {
 
   host_impl()->SetContentIsSuitableForGpuRasterization(true);
   host_impl()->SetHasGpuRasterizationTrigger(false);
+  host_impl()->CommitComplete();
   EXPECT_EQ(host_impl()->gpu_rasterization_status(),
             GpuRasterizationStatus::OFF_VIEWPORT);
 
@@ -4762,6 +4768,7 @@ TEST_F(TileSizeTest, TileSizes) {
   // Gpu-rasterization uses 25% viewport-height tiles.
   // The +2's below are for border texels.
   host_impl()->SetHasGpuRasterizationTrigger(true);
+  host_impl()->CommitComplete();
   EXPECT_EQ(host_impl()->gpu_rasterization_status(),
             GpuRasterizationStatus::ON);
   host_impl()->SetViewportSize(gfx::Size(2000, 2000));

@@ -46,6 +46,10 @@ class PixelTest : public testing::Test {
                                              const PixelComparator& comparator,
                                              const gfx::Rect* copy_rect);
 
+  ContextProvider* context_provider() const {
+    return output_surface_->context_provider();
+  }
+
   LayerTreeSettings settings_;
   gfx::Size device_viewport_size_;
   bool disable_picture_quad_image_filtering_;

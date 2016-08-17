@@ -89,6 +89,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void SetBlendEnabled(bool enabled);
   bool blend_enabled() const { return blend_shadow_; }
 
+  bool CanPartialSwap() override;
   void BindFramebufferToOutputSurface(DrawingFrame* frame) override;
   bool BindFramebufferToTexture(DrawingFrame* frame,
                                 const ScopedResource* resource) override;
@@ -522,6 +523,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   std::deque<std::unique_ptr<SyncQuery>> pending_sync_queries_;
   std::deque<std::unique_ptr<SyncQuery>> available_sync_queries_;
   std::unique_ptr<SyncQuery> current_sync_query_;
+  bool use_discard_framebuffer_;
   bool use_sync_query_;
   bool use_blend_equation_advanced_;
   bool use_blend_equation_advanced_coherent_;

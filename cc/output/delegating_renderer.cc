@@ -25,32 +25,10 @@ DelegatingRenderer::DelegatingRenderer(OutputSurface* output_surface,
     : output_surface_(output_surface), resource_provider_(resource_provider) {
   DCHECK(resource_provider_);
 
-  capabilities_.using_partial_swap = false;
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
-  capabilities_.allow_partial_texture_updates =
-      output_surface->capabilities().can_force_reclaim_resources;
-
-  if (!output_surface_->context_provider()) {
-    capabilities_.using_shared_memory_resources = true;
-  } else {
-    const auto& caps =
-        output_surface_->context_provider()->ContextCapabilities();
-
-    DCHECK(!caps.iosurface || caps.texture_rectangle);
-
-    capabilities_.using_egl_image = caps.egl_image_external;
-    capabilities_.using_image = caps.image;
-
-    capabilities_.allow_rasterize_on_demand = false;
-
-    // If MSAA is slow, we want this renderer to behave as though MSAA is not
-    // available. Set samples to 0 to achieve this.
-    if (caps.msaa_is_slow)
-      capabilities_.max_msaa_samples = 0;
-    else
-      capabilities_.max_msaa_samples = caps.max_samples;
-  }
+  capabilities_.using_shared_memory_resources =
+      !output_surface_->context_provider();
 }
 
 DelegatingRenderer::~DelegatingRenderer() = default;

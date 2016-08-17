@@ -228,12 +228,12 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       task_runner_provider_(task_runner_provider),
       current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
       output_surface_(nullptr),
+      need_update_gpu_rasterization_status_(false),
       content_is_suitable_for_gpu_rasterization_(true),
       has_gpu_rasterization_trigger_(false),
       use_gpu_rasterization_(false),
       use_msaa_(false),
       gpu_rasterization_status_(GpuRasterizationStatus::OFF_DEVICE),
-      tree_resources_for_gpu_rasterization_dirty_(false),
       input_handler_client_(NULL),
       did_lock_scrolling_layer_(false),
       wheel_scrolling_(false),
@@ -1760,6 +1760,20 @@ int LayerTreeHostImpl::RequestedMSAASampleCount() const {
   return settings_.gpu_rasterization_msaa_sample_count;
 }
 
+void LayerTreeHostImpl::SetHasGpuRasterizationTrigger(bool flag) {
+  if (has_gpu_rasterization_trigger_ != flag) {
+    has_gpu_rasterization_trigger_ = flag;
+    need_update_gpu_rasterization_status_ = true;
+  }
+}
+
+void LayerTreeHostImpl::SetContentIsSuitableForGpuRasterization(bool flag) {
+  if (content_is_suitable_for_gpu_rasterization_ != flag) {
+    content_is_suitable_for_gpu_rasterization_ = flag;
+    need_update_gpu_rasterization_status_ = true;
+  }
+}
+
 bool LayerTreeHostImpl::CanUseGpuRasterization() {
   if (!(output_surface_ && output_surface_->context_provider() &&
         output_surface_->worker_context_provider()))
@@ -1774,12 +1788,27 @@ bool LayerTreeHostImpl::CanUseGpuRasterization() {
   return true;
 }
 
-void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
+bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
+  // TODO(danakj): Can we avoid having this run when there's no output surface?
+  // For now just early out and leave things unchanged, we'll come back here
+  // when we get an output surface.
+  if (!output_surface_)
+    return false;
+
+  int requested_msaa_samples = RequestedMSAASampleCount();
+  int max_msaa_samples = 0;
+  ContextProvider* compositor_context_provider =
+      output_surface_->context_provider();
+  if (compositor_context_provider) {
+    const auto& caps = compositor_context_provider->ContextCapabilities();
+    if (!caps.msaa_is_slow)
+      max_msaa_samples = caps.max_samples;
+  }
+
   bool use_gpu = false;
   bool use_msaa = false;
   bool using_msaa_for_complex_content =
-      renderer() && RequestedMSAASampleCount() > 0 &&
-      GetRendererCapabilities().max_msaa_samples >= RequestedMSAASampleCount();
+      requested_msaa_samples > 0 && max_msaa_samples >= requested_msaa_samples;
   if (settings_.gpu_rasterization_forced) {
     use_gpu = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::ON_FORCED;
@@ -1814,18 +1843,19 @@ void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   }
 
   if (use_gpu == use_gpu_rasterization_ && use_msaa == use_msaa_)
-    return;
+    return false;
 
   // Note that this must happen first, in case the rest of the calls want to
   // query the new state of |use_gpu_rasterization_|.
   use_gpu_rasterization_ = use_gpu;
   use_msaa_ = use_msaa;
-
-  tree_resources_for_gpu_rasterization_dirty_ = true;
+  return true;
 }
 
 void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
-  if (!tree_resources_for_gpu_rasterization_dirty_)
+  if (!need_update_gpu_rasterization_status_)
+    return;
+  if (!UpdateGpuRasterizationStatus())
     return;
 
   // Clean up and replace existing tile manager with another one that uses
@@ -1844,8 +1874,6 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
   // Prevent the active tree from drawing until activation.
   // TODO(crbug.com/469175): Replace with RequiresHighResToDraw.
   SetRequiresHighResToDraw();
-
-  tree_resources_for_gpu_rasterization_dirty_ = false;
 }
 
 const RendererCapabilitiesImpl& LayerTreeHostImpl::GetRendererCapabilities()
@@ -2241,7 +2269,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     return;
   }
 
-  DCHECK(GetRendererCapabilities().using_image);
+  DCHECK(compositor_context_provider->ContextCapabilities().image);
 
   bool use_zero_copy = settings_.use_zero_copy;
   // TODO(reveman): Remove this when mojo supports worker contexts.
@@ -2345,10 +2373,12 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.renderer_settings.buffer_to_texture_target_map);
 
-  CreateAndSetRenderer();
-
-  // Since the new renderer may be capable of MSAA, update status here.
+  // Since the new context may be capable of MSAA, update status here. We don't
+  // need to check the return value since we are recreating all resources
+  // already.
   UpdateGpuRasterizationStatus();
+
+  CreateAndSetRenderer();
 
   CreateTileManagerResources();
   RecreateTreeResources();

@@ -395,35 +395,12 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
 
   const auto& context_caps =
       output_surface_->context_provider()->ContextCapabilities();
-
-  capabilities_.using_partial_swap =
-      settings_->partial_swap_enabled && context_caps.post_sub_buffer;
-  capabilities_.allow_empty_swap =
-      capabilities_.using_partial_swap || context_caps.commit_overlay_planes;
-
   DCHECK(!context_caps.iosurface || context_caps.texture_rectangle);
-
-  capabilities_.using_egl_image = context_caps.egl_image_external;
 
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
 
-  // The updater can access textures while the GLRenderer is using them.
-  capabilities_.allow_partial_texture_updates = true;
-
-  capabilities_.using_image = context_caps.image;
-
-  capabilities_.using_discard_framebuffer = context_caps.discard_framebuffer;
-
-  capabilities_.allow_rasterize_on_demand = true;
-
-  // If MSAA is slow, we want this renderer to behave as though MSAA is not
-  // available. Set samples to 0 to achieve this.
-  if (context_caps.msaa_is_slow)
-    capabilities_.max_msaa_samples = 0;
-  else
-    capabilities_.max_msaa_samples = context_caps.max_samples;
-
+  use_discard_framebuffer_ = context_caps.discard_framebuffer;
   use_sync_query_ = context_caps.sync_query;
   use_blend_equation_advanced_ = context_caps.blend_equation_advanced;
   use_blend_equation_advanced_coherent_ =
@@ -445,6 +422,11 @@ GLRenderer::~GLRenderer() {
 
 const RendererCapabilitiesImpl& GLRenderer::Capabilities() const {
   return capabilities_;
+}
+
+bool GLRenderer::CanPartialSwap() {
+  auto* context_provider = output_surface_->context_provider();
+  return context_provider->ContextCapabilities().post_sub_buffer;
 }
 
 void GLRenderer::DidChangeVisibility() {
@@ -472,7 +454,7 @@ void GLRenderer::DidChangeVisibility() {
 void GLRenderer::ReleaseRenderPassTextures() { render_pass_textures_.clear(); }
 
 void GLRenderer::DiscardPixels() {
-  if (!capabilities_.using_discard_framebuffer)
+  if (!use_discard_framebuffer_)
     return;
   bool using_default_framebuffer =
       !current_framebuffer_lock_ &&
@@ -2466,7 +2448,9 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
 
   static float gl_matrix[16];
 
-  DCHECK(capabilities_.using_egl_image);
+  DCHECK(output_surface_->context_provider()
+             ->ContextCapabilities()
+             .egl_image_external);
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, highp_threshold_min_,
@@ -2910,7 +2894,7 @@ void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
   compositor_frame.metadata = std::move(metadata);
   compositor_frame.gl_frame_data = base::WrapUnique(new GLFrameData);
   compositor_frame.gl_frame_data->size = surface_size;
-  if (capabilities_.using_partial_swap) {
+  if (use_partial_swap_) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport).
     swap_buffer_rect_.Intersect(gfx::Rect(surface_size));
@@ -2925,7 +2909,7 @@ void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
   } else {
     // Expand the swap rect to the full surface unless it's empty, and empty
     // swap is allowed.
-    if (!swap_buffer_rect_.IsEmpty() || !capabilities_.allow_empty_swap) {
+    if (!swap_buffer_rect_.IsEmpty() || !allow_empty_swap_) {
       swap_buffer_rect_ = gfx::Rect(surface_size);
     }
     compositor_frame.gl_frame_data->sub_buffer_rect = swap_buffer_rect_;

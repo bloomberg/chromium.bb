@@ -72,12 +72,23 @@ DirectRenderer::DirectRenderer(const RendererSettings* settings,
     : settings_(settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),
-      overlay_processor_(new OverlayProcessor(output_surface)) {
-  // TODO(danakj): This should not be happening in the constructor.
-  overlay_processor_->Initialize();
-}
+      overlay_processor_(new OverlayProcessor(output_surface)) {}
 
 DirectRenderer::~DirectRenderer() = default;
+
+void DirectRenderer::Initialize() {
+  overlay_processor_->Initialize();
+
+  auto* context_provider = output_surface_->context_provider();
+
+  use_partial_swap_ = settings_->partial_swap_enabled && CanPartialSwap();
+  allow_empty_swap_ = use_partial_swap_;
+  if (context_provider &&
+      context_provider->ContextCapabilities().commit_overlay_planes)
+    allow_empty_swap_ = true;
+
+  initialized_ = true;
+}
 
 // static
 gfx::RectF DirectRenderer::QuadVertexRect() {
@@ -145,6 +156,7 @@ const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
 }
 
 void DirectRenderer::SetVisible(bool visible) {
+  DCHECK(initialized_);
   if (visible_ == visible)
     return;
   visible_ = visible;
@@ -261,11 +273,11 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   // We can skip all drawing if the damage rect is now empty.
   bool skip_drawing_root_render_pass =
-      frame.root_damage_rect.IsEmpty() && Capabilities().allow_empty_swap;
+      frame.root_damage_rect.IsEmpty() && allow_empty_swap_;
 
   // If we have to draw but don't support partial swap, the whole output should
   // be considered damaged.
-  if (!skip_drawing_root_render_pass && !Capabilities().using_partial_swap)
+  if (!skip_drawing_root_render_pass && !use_partial_swap_)
     frame.root_damage_rect = root_render_pass->output_rect;
 
   if (skip_drawing_root_render_pass) {
@@ -451,7 +463,7 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
         DeviceViewportRectInDrawSpace(frame));
   }
 
-  if (Capabilities().using_partial_swap) {
+  if (use_partial_swap_) {
     render_pass_scissor_in_draw_space.Intersect(
         ComputeScissorRectForRenderPass(frame));
   }

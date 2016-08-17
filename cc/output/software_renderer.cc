@@ -63,19 +63,17 @@ SoftwareRenderer::SoftwareRenderer(const RendererSettings* settings,
     capabilities_.best_texture_format =
         resource_provider_->best_texture_format();
   }
-  // The updater can access bitmaps while the SoftwareRenderer is using them.
-  capabilities_.allow_partial_texture_updates = true;
-  capabilities_.using_partial_swap = true;
-
   capabilities_.using_shared_memory_resources = true;
-
-  capabilities_.allow_rasterize_on_demand = true;
 }
 
 SoftwareRenderer::~SoftwareRenderer() {}
 
 const RendererCapabilitiesImpl& SoftwareRenderer::Capabilities() const {
   return capabilities_;
+}
+
+bool SoftwareRenderer::CanPartialSwap() {
+  return true;
 }
 
 void SoftwareRenderer::BeginDrawingFrame(DrawingFrame* frame) {

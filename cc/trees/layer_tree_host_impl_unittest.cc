@@ -7572,14 +7572,6 @@ TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect) {
   DrawFrameAndTestDamage(no_damage);
 }
 
-// TODO(reveman): Remove this test and the ability to prevent on demand raster
-// when delegating renderer supports PictureDrawQuads. crbug.com/342121
-TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, PreventRasterizeOnDemand) {
-  LayerTreeSettings settings = DefaultSettings();
-  CreateHostImpl(settings, CreateOutputSurface());
-  EXPECT_FALSE(host_impl_->GetRendererCapabilities().allow_rasterize_on_demand);
-}
-
 class GLRendererWithSetupQuadForAntialiasing : public GLRenderer {
  public:
   using GLRenderer::ShouldAntialiasQuad;
@@ -7789,20 +7781,20 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
 
   host_impl_->SetContentIsSuitableForGpuRasterization(true);
   host_impl_->SetHasGpuRasterizationTrigger(false);
-  host_impl_->UpdateTreeResourcesForGpuRasterizationIfNeeded();
+  host_impl_->CommitComplete();
   EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
   host_impl_->SetHasGpuRasterizationTrigger(true);
-  host_impl_->UpdateTreeResourcesForGpuRasterizationIfNeeded();
+  host_impl_->CommitComplete();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
   host_impl_->SetHasGpuRasterizationTrigger(false);
-  host_impl_->UpdateTreeResourcesForGpuRasterizationIfNeeded();
+  host_impl_->CommitComplete();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 
   host_impl_->ResetRequiresHighResToDraw();
 
   EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
   host_impl_->SetHasGpuRasterizationTrigger(true);
-  host_impl_->UpdateTreeResourcesForGpuRasterizationIfNeeded();
+  host_impl_->CommitComplete();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 }
 
@@ -10615,17 +10607,20 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
 
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentIsSuitableForGpuRasterization(true);
+  host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
 
   host_impl_->SetHasGpuRasterizationTrigger(false);
   host_impl_->SetContentIsSuitableForGpuRasterization(true);
+  host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::OFF_VIEWPORT,
             host_impl_->gpu_rasterization_status());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
 
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentIsSuitableForGpuRasterization(false);
+  host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
             host_impl_->gpu_rasterization_status());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
@@ -10642,6 +10637,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
       FakeOutputSurface::CreateDelegating3d(std::move(context_with_msaa))));
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentIsSuitableForGpuRasterization(false);
+  host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
             host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
@@ -10653,6 +10649,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
       CreateHostImpl(settings, FakeOutputSurface::CreateDelegating3d()));
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentIsSuitableForGpuRasterization(true);
+  host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::OFF_DEVICE,
             host_impl_->gpu_rasterization_status());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
@@ -10663,6 +10660,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
 
   host_impl_->SetHasGpuRasterizationTrigger(false);
   host_impl_->SetContentIsSuitableForGpuRasterization(false);
+  host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON_FORCED,
             host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
@@ -10690,6 +10688,7 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
   CreateHostImplWithMsaaIsSlow(false);
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentIsSuitableForGpuRasterization(false);
+  host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
             host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
@@ -10699,6 +10698,7 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
   CreateHostImplWithMsaaIsSlow(true);
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentIsSuitableForGpuRasterization(false);
+  host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
             host_impl_->gpu_rasterization_status());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());

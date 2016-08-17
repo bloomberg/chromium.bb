@@ -10,8 +10,7 @@ RendererCapabilitiesImpl::RendererCapabilitiesImpl() = default;
 RendererCapabilitiesImpl::~RendererCapabilitiesImpl() = default;
 
 RendererCapabilities RendererCapabilitiesImpl::MainThreadCapabilities() const {
-  return RendererCapabilities(best_texture_format,
-                              allow_partial_texture_updates, max_texture_size,
+  return RendererCapabilities(best_texture_format, max_texture_size,
                               using_shared_memory_resources);
 }
 

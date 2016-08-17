@@ -1296,6 +1296,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
 
     renderer_ = base::WrapUnique(new OverlayInfoRendererGL(
         &settings_, output_surface_.get(), resource_provider_.get()));
+    renderer_->Initialize();
     renderer_->SetVisible(true);
   }
 

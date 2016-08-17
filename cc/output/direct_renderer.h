@@ -45,6 +45,10 @@ class CC_EXPORT DirectRenderer {
                  ResourceProvider* resource_provider);
   virtual ~DirectRenderer();
 
+  void Initialize();
+
+  bool use_partial_swap() const { return use_partial_swap_; }
+
   void SetVisible(bool visible);
   void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order);
@@ -140,6 +144,7 @@ class CC_EXPORT DirectRenderer {
                      bool use_render_pass_scissor);
 
   // Private interface implemented by subclasses for use by DirectRenderer.
+  virtual bool CanPartialSwap() = 0;
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) = 0;
   virtual bool BindFramebufferToTexture(DrawingFrame* frame,
                                         const ScopedResource* resource) = 0;
@@ -175,6 +180,12 @@ class CC_EXPORT DirectRenderer {
   // This can be replaced by test implementations.
   std::unique_ptr<OverlayProcessor> overlay_processor_;
 
+  // Whether it's valid to SwapBuffers with an empty rect. Trivially true when
+  // using partial swap.
+  bool allow_empty_swap_;
+  // Whether partial swap can be used.
+  bool use_partial_swap_;
+
   // TODO(danakj): Just use a vector of pairs here? Hash map is way overkill.
   std::unordered_map<RenderPassId,
                      std::unique_ptr<ScopedResource>,
@@ -196,6 +207,7 @@ class CC_EXPORT DirectRenderer {
   gfx::Rect current_window_space_viewport_;
 
  private:
+  bool initialized_ = false;
   gfx::Size enlarge_pass_texture_amount_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectRenderer);

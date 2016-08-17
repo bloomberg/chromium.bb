@@ -44,6 +44,7 @@ class SoftwareRendererTest : public testing::Test {
         output_surface_.get(), shared_bitmap_manager_.get());
     renderer_ = base::MakeUnique<SoftwareRenderer>(
         &settings_, output_surface_.get(), resource_provider());
+    renderer_->Initialize();
     renderer_->SetVisible(true);
   }
 
@@ -424,6 +425,8 @@ class PartialSwapSoftwareOutputDevice : public SoftwareOutputDevice {
 TEST_F(SoftwareRendererTest, PartialSwap) {
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(0, 0, 100, 100);
+
+  settings_.partial_swap_enabled = true;
 
   auto device_owned = base::MakeUnique<PartialSwapSoftwareOutputDevice>();
   auto* device = device_owned.get();
