@@ -390,16 +390,20 @@ void vpx_lpf_horizontal_8_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0, 
 #define vpx_lpf_horizontal_8_dual vpx_lpf_horizontal_8_dual_c
 
 void vpx_lpf_horizontal_edge_16_c(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
-#define vpx_lpf_horizontal_edge_16 vpx_lpf_horizontal_edge_16_c
+void vpx_lpf_horizontal_edge_16_neon(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
+#define vpx_lpf_horizontal_edge_16 vpx_lpf_horizontal_edge_16_neon
 
 void vpx_lpf_horizontal_edge_8_c(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
-#define vpx_lpf_horizontal_edge_8 vpx_lpf_horizontal_edge_8_c
+void vpx_lpf_horizontal_edge_8_neon(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
+#define vpx_lpf_horizontal_edge_8 vpx_lpf_horizontal_edge_8_neon
 
 void vpx_lpf_vertical_16_c(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
-#define vpx_lpf_vertical_16 vpx_lpf_vertical_16_c
+void vpx_lpf_vertical_16_neon(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
+#define vpx_lpf_vertical_16 vpx_lpf_vertical_16_neon
 
 void vpx_lpf_vertical_16_dual_c(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
-#define vpx_lpf_vertical_16_dual vpx_lpf_vertical_16_dual_c
+void vpx_lpf_vertical_16_dual_neon(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
+#define vpx_lpf_vertical_16_dual vpx_lpf_vertical_16_dual_neon
 
 void vpx_lpf_vertical_4_c(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
 void vpx_lpf_vertical_4_neon(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);

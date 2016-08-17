@@ -316,6 +316,7 @@
     '<(libvpx_source)/vpx_dsp/arm/loopfilter_16_neon.c',
     '<(libvpx_source)/vpx_dsp/arm/loopfilter_4_neon.c',
     '<(libvpx_source)/vpx_dsp/arm/loopfilter_8_neon.c',
+    '<(libvpx_source)/vpx_dsp/arm/loopfilter_mb_neon.c',
     '<(libvpx_source)/vpx_dsp/arm/loopfilter_neon.c',
     '<(libvpx_source)/vpx_dsp/arm/sad4d_neon.c',
     '<(libvpx_source)/vpx_dsp/arm/sad_neon.c',

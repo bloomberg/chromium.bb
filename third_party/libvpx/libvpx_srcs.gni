@@ -2290,6 +2290,7 @@ libvpx_srcs_arm64 = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/loopfilter_16_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/loopfilter_4_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/loopfilter_8_neon.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/arm/loopfilter_mb_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/loopfilter_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/sad4d_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/sad_neon.c",
