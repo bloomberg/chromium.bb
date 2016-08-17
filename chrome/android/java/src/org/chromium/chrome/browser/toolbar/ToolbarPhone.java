@@ -94,6 +94,19 @@ public class ToolbarPhone extends ToolbarLayout
 
     private static final float UNINITIALIZED_PERCENT = -1f;
 
+    /** States that the toolbar can be in regarding the tab switcher. */
+    private static final int STATIC_TAB = 0;
+    private static final int TAB_SWITCHER = 1;
+    private static final int ENTERING_TAB_SWITCHER = 2;
+    private static final int EXITING_TAB_SWITCHER = 3;
+
+    @ViewDebug.ExportedProperty(category = "chrome", mapping = {
+            @ViewDebug.IntToString(from = STATIC_TAB, to = "STATIC_TAB"),
+            @ViewDebug.IntToString(from = TAB_SWITCHER, to = "TAB_SWITCHER"),
+            @ViewDebug.IntToString(from = ENTERING_TAB_SWITCHER, to = "ENTERING_TAB_SWITCHER"),
+            @ViewDebug.IntToString(from = EXITING_TAB_SWITCHER, to = "EXITING_TAB_SWITCHER")
+            })
+
     static final int LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA = 51;
 
     private static final Interpolator NTP_SEARCH_BOX_EXPANSION_INTERPOLATOR =
@@ -118,7 +131,7 @@ public class ToolbarPhone extends ToolbarLayout
     private final List<View> mTabSwitcherModeViews = new ArrayList<>();
     private final Set<View> mBrowsingModeViews = new HashSet<>();
     @ViewDebug.ExportedProperty(category = "chrome")
-    private boolean mIsInTabSwitcherMode;
+    private int mTabSwitcherState;
 
     // This determines whether or not the toolbar draws as expected (false) or whether it always
     // draws as if it's showing the non-tabswitcher, non-animating toolbar. This is used in grabbing
@@ -144,8 +157,6 @@ public class ToolbarPhone extends ToolbarLayout
     // can be used for animating between the two view modes.
     @ViewDebug.ExportedProperty(category = "chrome")
     private float mTabSwitcherModePercent = 0;
-    @ViewDebug.ExportedProperty(category = "chrome")
-    private boolean mUIAnimatingTabSwitcherTransition;
 
     // Used to clip the toolbar during the fade transition into and out of TabSwitcher mode.  Only
     // used when |mAnimateNormalToolbar| is false.
@@ -487,7 +498,7 @@ public class ToolbarPhone extends ToolbarLayout
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
             boolean changed = layoutLocationBar(MeasureSpec.getSize(widthMeasureSpec));
-            if (!mIsInTabSwitcherMode) updateUrlExpansionAnimation();
+            if (mTabSwitcherState == STATIC_TAB) updateUrlExpansionAnimation();
             if (!changed) return;
         } else {
             updateUnfocusedLocationBarLayoutParams();
@@ -774,7 +785,7 @@ public class ToolbarPhone extends ToolbarLayout
      * focus change or scrolling the New Tab Page.
      */
     private void updateUrlExpansionAnimation() {
-        if (mIsInTabSwitcherMode || isTabSwitcherAnimationRunning()) {
+        if (mTabSwitcherState != STATIC_TAB) {
             mToolbarButtonsContainer.setVisibility(VISIBLE);
             return;
         }
@@ -890,7 +901,8 @@ public class ToolbarPhone extends ToolbarLayout
      * as a result of scrolling the New Tab Page).
      */
     private void updateNtpTransitionAnimation() {
-        if (mIsInTabSwitcherMode) return;
+        // Skip if in or entering tab switcher mode.
+        if (mTabSwitcherState == TAB_SWITCHER || mTabSwitcherState == ENTERING_TAB_SWITCHER) return;
 
         setAncestorsShouldClipChildren(mUrlExpansionPercent == 0f);
         mToolbarShadow.setAlpha(0f);
@@ -1106,8 +1118,9 @@ public class ToolbarPhone extends ToolbarLayout
         boolean clipped = false;
 
         if (mLocationBarBackground != null
-                && ((!mIsInTabSwitcherMode && !mTabSwitcherModeViews.contains(child))
-                        || (mIsInTabSwitcherMode && mBrowsingModeViews.contains(child)))) {
+                && ((mTabSwitcherState == STATIC_TAB && !mTabSwitcherModeViews.contains(child))
+                        || (mTabSwitcherState != STATIC_TAB
+                                && mBrowsingModeViews.contains(child)))) {
             canvas.save();
 
             int translationY = (int) mLocationBar.getTranslationY();
@@ -1152,7 +1165,8 @@ public class ToolbarPhone extends ToolbarLayout
     private boolean drawLocationBar(Canvas canvas, long drawingTime) {
         boolean clipped = false;
 
-        if (mLocationBarBackground != null && (!mIsInTabSwitcherMode || mTextureCaptureMode)) {
+        if (mLocationBarBackground != null
+                && (mTabSwitcherState == STATIC_TAB || mTextureCaptureMode)) {
             canvas.save();
             int backgroundAlpha;
             if (mTabSwitcherModeAnimation != null) {
@@ -1275,7 +1289,7 @@ public class ToolbarPhone extends ToolbarLayout
         if (mForceTextureCapture) {
             return true;
         }
-        return !(mIsInTabSwitcherMode || mTabSwitcherModeAnimation != null
+        return !(mTabSwitcherState == TAB_SWITCHER || mTabSwitcherModeAnimation != null
                 || urlHasFocus() || mUrlFocusChangeInProgress);
     }
 
@@ -1337,7 +1351,7 @@ public class ToolbarPhone extends ToolbarLayout
     public void updateButtonVisibility() {
         if (isReturnButtonVisible()) {
             mReturnButton.setVisibility(
-                    urlHasFocus() || mIsInTabSwitcherMode ? INVISIBLE : VISIBLE);
+                    urlHasFocus() || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
             mBrowsingModeViews.add(mReturnButton);
         } else {
             mReturnButton.setVisibility(GONE);
@@ -1346,7 +1360,8 @@ public class ToolbarPhone extends ToolbarLayout
 
         boolean isHomeButtonVisible = mIsHomeButtonEnabled && !isReturnButtonVisible();
         if (isHomeButtonVisible) {
-            mHomeButton.setVisibility(urlHasFocus() || mIsInTabSwitcherMode ? INVISIBLE : VISIBLE);
+            mHomeButton.setVisibility(urlHasFocus() || isTabSwitcherAnimationRunning()
+                    ? INVISIBLE : VISIBLE);
             mBrowsingModeViews.add(mHomeButton);
         } else {
             mHomeButton.setVisibility(GONE);
@@ -1433,15 +1448,13 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private boolean isTabSwitcherAnimationRunning() {
-        return mUIAnimatingTabSwitcherTransition
-                || (mTabSwitcherModeAnimation != null && mTabSwitcherModeAnimation.isRunning())
-                        || (mDelayedTabSwitcherModeAnimation != null
-                                && mDelayedTabSwitcherModeAnimation.isRunning());
+        return mTabSwitcherState == ENTERING_TAB_SWITCHER
+                || mTabSwitcherState == EXITING_TAB_SWITCHER;
     }
 
     private void updateViewsForTabSwitcherMode() {
-        int tabSwitcherViewsVisibility = mIsInTabSwitcherMode ? VISIBLE : INVISIBLE;
-        int browsingViewsVisibility = mIsInTabSwitcherMode ? INVISIBLE : VISIBLE;
+        int tabSwitcherViewsVisibility = mTabSwitcherState != STATIC_TAB  ? VISIBLE : INVISIBLE;
+        int browsingViewsVisibility = mTabSwitcherState != STATIC_TAB ? INVISIBLE : VISIBLE;
 
         for (View view : mTabSwitcherModeViews) {
             view.setVisibility(tabSwitcherViewsVisibility);
@@ -1450,7 +1463,7 @@ public class ToolbarPhone extends ToolbarLayout
             view.setVisibility(browsingViewsVisibility);
         }
         if (mShowMenuBadge) {
-            setMenuButtonContentDescription(!mIsInTabSwitcherMode);
+            setMenuButtonContentDescription(mTabSwitcherState == STATIC_TAB);
         }
 
         updateProgressBarVisibility();
@@ -1458,8 +1471,7 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateProgressBarVisibility() {
-        getProgressBar().setVisibility(
-                mIsInTabSwitcherMode || isTabSwitcherAnimationRunning() ? INVISIBLE : VISIBLE);
+        getProgressBar().setVisibility(mTabSwitcherState != STATIC_TAB ? INVISIBLE : VISIBLE);
     }
 
     @Override
@@ -1470,8 +1482,19 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     protected void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
-        if (mIsInTabSwitcherMode == inTabSwitcherMode) return;
-        mIsInTabSwitcherMode = inTabSwitcherMode;
+        // If setting tab switcher mode to true and the browser is already animating or in the tab
+        // switcher skip.
+        if (inTabSwitcherMode && (mTabSwitcherState == TAB_SWITCHER
+                || mTabSwitcherState == ENTERING_TAB_SWITCHER)) {
+            return;
+        }
+
+        // Likewise if exiting the tab switcher.
+        if (!inTabSwitcherMode && (mTabSwitcherState == STATIC_TAB
+                || mTabSwitcherState == EXITING_TAB_SWITCHER)) {
+            return;
+        }
+        mTabSwitcherState = inTabSwitcherMode ? ENTERING_TAB_SWITCHER : EXITING_TAB_SWITCHER;
 
         finishAnimations();
 
@@ -1494,7 +1517,6 @@ public class ToolbarPhone extends ToolbarLayout
             if (!mDelayingTabSwitcherAnimation) {
                 mTabSwitcherModeAnimation = createExitTabSwitcherAnimation(showToolbar);
             }
-            mUIAnimatingTabSwitcherTransition = true;
         }
 
         mAnimateNormalToolbar = showToolbar;
@@ -1509,8 +1531,12 @@ public class ToolbarPhone extends ToolbarLayout
     protected void onTabSwitcherTransitionFinished() {
         setAlpha(1.f);
         mClipRect = null;
-        mUIAnimatingTabSwitcherTransition = false;
-        mTabSwitcherModePercent = mIsInTabSwitcherMode ? 1.0f : 0.0f;
+
+        // Detect what was being transitioned from and set the new state appropriately.
+        if (mTabSwitcherState == EXITING_TAB_SWITCHER) mTabSwitcherState = STATIC_TAB;
+        if (mTabSwitcherState == ENTERING_TAB_SWITCHER) mTabSwitcherState = TAB_SWITCHER;
+
+        mTabSwitcherModePercent = mTabSwitcherState != STATIC_TAB ? 1.0f : 0.0f;
 
         if (!mAnimateNormalToolbar) {
             finishAnimations();
@@ -1546,7 +1572,7 @@ public class ToolbarPhone extends ToolbarLayout
         setTabSwitcherAnimationMenuDrawable();
         setUseLightDrawablesForTextureCapture();
 
-        if (!mIsInTabSwitcherMode && !mTextureCaptureMode && mLayoutUpdateHost != null) {
+        if (mTabSwitcherState == STATIC_TAB && !mTextureCaptureMode && mLayoutUpdateHost != null) {
             // Request a layout update to trigger a texture capture if the tint color is changing
             // and we're not already in texture capture mode. This is necessary if the tab switcher
             // is entered immediately after a change to the tint color without any user interactions
@@ -1923,7 +1949,7 @@ public class ToolbarPhone extends ToolbarLayout
             // Convert the previous NTP scroll percentage to URL focus percentage because that
             // will give a nicer transition animation from the expanded NTP omnibox to the
             // collapsed normal omnibox on other non-NTP pages.
-            if (!mIsInTabSwitcherMode && previousNtpScrollPercent > 0f) {
+            if (mTabSwitcherState == STATIC_TAB && previousNtpScrollPercent > 0f) {
                 mUrlFocusChangePercent =
                         Math.max(previousNtpScrollPercent, mUrlFocusChangePercent);
                 triggerUrlFocusAnimation(false);
@@ -1967,7 +1993,7 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateShadowVisibility() {
-        boolean shouldDrawShadow = !mIsInTabSwitcherMode && !isTabSwitcherAnimationRunning();
+        boolean shouldDrawShadow = mTabSwitcherState == STATIC_TAB;
         int shadowVisibility = shouldDrawShadow ? View.VISIBLE : View.INVISIBLE;
 
         if (mToolbarShadow.getVisibility() != shadowVisibility) {
@@ -1987,7 +2013,13 @@ public class ToolbarPhone extends ToolbarLayout
     private void updateVisualsForToolbarState() {
         final boolean isIncognito = isIncognito();
 
-        VisualState newVisualState = computeVisualState(mIsInTabSwitcherMode);
+        // These are important for setting visual state while the entering or leaving the tab
+        // switcher.
+        boolean inOrEnteringStaticTab = mTabSwitcherState == STATIC_TAB
+                || mTabSwitcherState == EXITING_TAB_SWITCHER;
+        boolean inOrEnteringTabSwitcher = !inOrEnteringStaticTab;
+
+        VisualState newVisualState = computeVisualState(inOrEnteringTabSwitcher);
 
         // If we are navigating to or from a brand color, allow the transition animation
         // to run to completion as it will handle the triggering this path again and committing
@@ -2048,7 +2080,7 @@ public class ToolbarPhone extends ToolbarLayout
         updateToolbarBackground(mVisualState);
         getProgressBar().setThemeColor(themeColorForProgressBar, isIncognito());
 
-        if (mIsInTabSwitcherMode) {
+        if (inOrEnteringTabSwitcher) {
             mUseLightToolbarDrawables = true;
             mLocationBarBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
             getProgressBar().setBackgroundColor(mProgressBackBackgroundColorWhite);
@@ -2078,7 +2110,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         mMenuButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
 
-        if (mShowMenuBadge && !mIsInTabSwitcherMode) {
+        if (mShowMenuBadge && inOrEnteringStaticTab) {
             setAppMenuUpdateBadgeDrawable(mUseLightToolbarDrawables);
         }
         ColorStateList tint = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
@@ -2099,11 +2131,11 @@ public class ToolbarPhone extends ToolbarLayout
 
         // We update the alpha before comparing the visual state as we need to change
         // its value when entering and exiting TabSwitcher mode.
-        if (isLocationBarShownInNTP() && !mIsInTabSwitcherMode) {
+        if (isLocationBarShownInNTP() && inOrEnteringStaticTab) {
             updateNtpTransitionAnimation();
         }
 
-        if (mIsInTabSwitcherMode) mNewTabButton.setIsIncognito(isIncognito);
+        if (inOrEnteringTabSwitcher) mNewTabButton.setIsIncognito(isIncognito);
 
         CharSequence newTabContentDescription = getResources().getText(
                 isIncognito ? R.string.accessibility_toolbar_btn_new_incognito_tab :
@@ -2135,7 +2167,7 @@ public class ToolbarPhone extends ToolbarLayout
         setTabSwitcherAnimationMenuBadgeDrawable();
 
         // Show the badge.
-        if (!mIsInTabSwitcherMode) {
+        if (mTabSwitcherState == STATIC_TAB) {
             if (mUseLightToolbarDrawables) {
                 setAppMenuUpdateBadgeDrawable(mUseLightToolbarDrawables);
             }
