@@ -38,12 +38,10 @@ void WriteResultInfo(bool system_level, const ResultInfo& result_info) {
                  static_cast<uint32_t>(result_info.installer_result));
   key.WriteValue(kInstallerError,
                  static_cast<uint32_t>(result_info.installer_error));
-  if (result_info.installer_extra_code1) {
-    key.WriteValue(kInstallerExtraCode1,
-                   static_cast<uint32_t>(result_info.installer_error));
-  } else {
+  if (result_info.installer_extra_code1)
+    key.WriteValue(kInstallerExtraCode1, result_info.installer_extra_code1);
+  else
     key.DeleteValue(kInstallerExtraCode1);
-  }
 }
 
 // Copied from chrome/browser/google/google_brand.cc.

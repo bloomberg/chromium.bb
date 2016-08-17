@@ -48,7 +48,8 @@ class DisableOutdatedBuildDetectorTest
     base::string16 uninstall_arguments(L"--uninstall");
     if (multi_install)
       uninstall_arguments += L"--chrome --multi-install";
-    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"brand", brand));
+    if (brand)
+      ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"brand", brand));
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"UninstallArguments",
                                             uninstall_arguments.c_str()));
     if (!multi_install)
@@ -57,7 +58,8 @@ class DisableOutdatedBuildDetectorTest
     ASSERT_EQ(ERROR_SUCCESS,
               key.Create(root_, binaries_distribution_->GetStateKey().c_str(),
                          KEY_ALL_ACCESS | KEY_WOW64_32KEY));
-    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"brand", brand));
+    if (brand)
+      ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"brand", brand));
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"UninstallArguments",
                                             uninstall_arguments.c_str()));
   }
@@ -77,9 +79,12 @@ class DisableOutdatedBuildDetectorTest
     return brand;
   }
 
-  // Verifies that |result| and |exit_code| are found in Chrome's ClientStateKey
-  // in the InstallerResult and InstallerError values, respectively.
-  void ExpectResult(InstallerResult result, ExitCode exit_code) {
+  // Verifies that |result|, |exit_code|, and |detail| are found in Chrome's
+  // ClientStateKey in the InstallerResult, InstallerError, and
+  // InstallerExtraCode1 values, respectively.
+  void ExpectResult(InstallerResult result,
+                    ExitCode exit_code,
+                    uint32_t detail) {
     base::win::RegKey key(root_, chrome_distribution_->GetStateKey().c_str(),
                           KEY_QUERY_VALUE | KEY_WOW64_32KEY);
     ASSERT_TRUE(key.Valid());
@@ -90,6 +95,13 @@ class DisableOutdatedBuildDetectorTest
     ASSERT_EQ(ERROR_SUCCESS,
               key.ReadValueDW(installer::kInstallerError, &value));
     EXPECT_EQ(exit_code, static_cast<ExitCode>(value));
+    if (detail) {
+      ASSERT_EQ(ERROR_SUCCESS,
+                key.ReadValueDW(installer::kInstallerExtraCode1, &value));
+      EXPECT_EQ(detail, value);
+    } else {
+      EXPECT_FALSE(key.HasValue(installer::kInstallerExtraCode1));
+    }
   }
 
   base::CommandLine command_line_;
@@ -106,6 +118,23 @@ TEST_P(DisableOutdatedBuildDetectorTest, NoChrome) {
   EXPECT_EQ(ExitCode::NO_CHROME, DisableOutdatedBuildDetector(command_line_));
 }
 
+TEST_P(DisableOutdatedBuildDetectorTest, SingleUnbrandedChrome) {
+  // Fake single-install Chrome's ClientState key with no brand.
+  FakeChrome(false /* single-install */, nullptr);
+
+  // Switch the brand.
+  EXPECT_EQ(ExitCode::NON_ORGANIC_BRAND,
+            DisableOutdatedBuildDetector(command_line_));
+  ExpectResult(InstallerResult::FAILED_CUSTOM_ERROR,
+               ExitCode::NON_ORGANIC_BRAND, ERROR_FILE_NOT_FOUND);
+
+  // Verify that there is still no brand.
+  EXPECT_FALSE(HasBrand(chrome_distribution_));
+
+  // And the binaries' ClientState key should not have been created.
+  EXPECT_FALSE(HasBrand(binaries_distribution_));
+}
+
 TEST_P(DisableOutdatedBuildDetectorTest, SingleOrganicChrome) {
   // Fake single-install Chrome's ClientState key with an organic brand.
   FakeChrome(false /* single-install */, L"GGLS");
@@ -114,7 +143,7 @@ TEST_P(DisableOutdatedBuildDetectorTest, SingleOrganicChrome) {
   EXPECT_EQ(ExitCode::CHROME_BRAND_UPDATED,
             DisableOutdatedBuildDetector(command_line_));
   ExpectResult(InstallerResult::FAILED_CUSTOM_ERROR,
-               ExitCode::CHROME_BRAND_UPDATED);
+               ExitCode::CHROME_BRAND_UPDATED, 0);
 
   // Verify the new brand.
   EXPECT_STREQ(L"AOHY", ReadBrand(chrome_distribution_).c_str());
@@ -133,7 +162,7 @@ TEST_P(DisableOutdatedBuildDetectorTest, SingleInOrganicChrome) {
   EXPECT_EQ(ExitCode::NON_ORGANIC_BRAND,
             DisableOutdatedBuildDetector(command_line_));
   ExpectResult(InstallerResult::FAILED_CUSTOM_ERROR,
-               ExitCode::NON_ORGANIC_BRAND);
+               ExitCode::NON_ORGANIC_BRAND, 0);
 
   // Verify that the brand is unchanged.
   EXPECT_STREQ(kBlorBrand, ReadBrand(chrome_distribution_).c_str());
@@ -150,7 +179,7 @@ TEST_P(DisableOutdatedBuildDetectorTest, MultiOrganicChrome) {
   EXPECT_EQ(ExitCode::BOTH_BRANDS_UPDATED,
             DisableOutdatedBuildDetector(command_line_));
   ExpectResult(InstallerResult::FAILED_CUSTOM_ERROR,
-               ExitCode::BOTH_BRANDS_UPDATED);
+               ExitCode::BOTH_BRANDS_UPDATED, 0);
 
   // Verify the new brand in Chrome and the binaries.
   EXPECT_STREQ(L"AOHY", ReadBrand(chrome_distribution_).c_str());
@@ -167,7 +196,7 @@ TEST_P(DisableOutdatedBuildDetectorTest, MultiInOrganicChrome) {
   EXPECT_EQ(ExitCode::NON_ORGANIC_BRAND,
             DisableOutdatedBuildDetector(command_line_));
   ExpectResult(InstallerResult::FAILED_CUSTOM_ERROR,
-               ExitCode::NON_ORGANIC_BRAND);
+               ExitCode::NON_ORGANIC_BRAND, 0);
 
   // Verify that the brand is unchanged in both apps.
   EXPECT_STREQ(kBlorBrand, ReadBrand(chrome_distribution_).c_str());
