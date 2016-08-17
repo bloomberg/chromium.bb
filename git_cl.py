@@ -2517,10 +2517,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
     refspec_opts = []
     if options.title:
+      if not re.match(r'^[\w ]+$', options.title):
+        options.title = re.sub(r'[^\w ]', '', options.title)
+        print('WARNING: Patchset title may only contain alphanumeric chars '
+              'and spaces. Cleaned up title:\n%s' % options.title)
+        if not options.force:
+          ask_for_data('Press enter to continue, Ctrl+C to abort')
       # Per doc, spaces must be converted to underscores, and Gerrit will do the
       # reverse on its side.
-      if '_' in options.title:
-        print('WARNING: underscores in title will be converted to spaces.')
       refspec_opts.append('m=' + options.title.replace(' ', '_'))
 
     if options.send_mail:

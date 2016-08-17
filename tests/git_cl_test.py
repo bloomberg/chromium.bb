@@ -974,13 +974,18 @@ class TestGitCl(TestCase):
         squash=False,
         squash_mode='override_nosquash')
 
-  def test_gerrit_patch_title(self):
+  def test_gerrit_patch_bad_chars(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self._run_gerrit_upload_test(
-        ['-t', 'Don\'t put under_scores as they become spaces'],
+        ['-f', '-t', 'Don\'t put bad cha,.rs'],
         'desc\n\nBUG=\n\nChange-Id: I123456789',
         squash=False,
         squash_mode='override_nosquash',
-        ref_suffix='%m=Don\'t_put_under_scores_as_they_become_spaces')
+        ref_suffix='%m=Dont_put_bad_chars')
+    self.assertIn(
+        'WARNING: Patchset title may only contain alphanumeric chars '
+        'and spaces. Cleaned up title:\nDont put bad chars\n',
+        git_cl.sys.stdout.getvalue())
 
   def test_gerrit_reviewers_cmd_line(self):
     self._run_gerrit_upload_test(
