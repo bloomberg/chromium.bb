@@ -6,7 +6,6 @@ partial interface Internals {
     [CallWith=ScriptState, RaisesException] readonly attribute boolean frobulate;
     readonly attribute boolean frobulateNoEnabledCheck;
     [OriginTrialEnabled=OriginTrialsSampleAPI, ImplementedAs=frobulateNoEnabledCheck] readonly attribute boolean frobulateBindings;
-    [OriginTrialEnabled=OriginTrialsSampleAPI] static readonly attribute boolean frobulateStatic;
     [OriginTrialEnabled=OriginTrialsSampleAPI] const unsigned short FROBULATE_CONST = 1;
 };
 

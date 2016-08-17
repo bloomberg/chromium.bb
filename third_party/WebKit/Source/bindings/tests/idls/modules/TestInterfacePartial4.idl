@@ -14,7 +14,6 @@
     attribute long partial4LongAttribute;
     static attribute long partial4StaticLongAttribute;
 
-    // TODO(chasej): Uncomment when methods are supported for origin trials (crbug.com/621641)
     void partial4VoidMethod();
     static void partial4StaticVoidMethod();
 };

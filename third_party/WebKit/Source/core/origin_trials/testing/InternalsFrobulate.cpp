@@ -27,10 +27,4 @@ bool InternalsFrobulate::frobulateNoEnabledCheck(Internals& internals)
     return true;
 }
 
-// static
-bool InternalsFrobulate::frobulateStatic()
-{
-    return true;
-}
-
 } // namespace blink

@@ -8,6 +8,7 @@
 partial interface Internals {
     const unsigned short FROBULATE_CONST_PARTIAL = 2;
     readonly attribute boolean frobulatePartial;
+    static readonly attribute boolean frobulateStaticPartial;
     boolean frobulateMethodPartial();
     static boolean frobulateStaticMethodPartial();
 };

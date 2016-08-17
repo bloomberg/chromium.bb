@@ -15,6 +15,7 @@ class InternalsFrobulateInterfaceBindings final {
     STATIC_ONLY(InternalsFrobulateInterfaceBindings);
 public:
     static bool frobulatePartial(Internals&) { return true; }
+    static bool frobulateStaticPartial() { return true; }
     static bool frobulateMethodPartial(Internals&) { return true; }
     static bool frobulateStaticMethodPartial() { return true; }
 };

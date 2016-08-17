@@ -18,7 +18,6 @@ class InternalsFrobulate final {
 public:
     static bool frobulate(ScriptState*, Internals&, ExceptionState&);
     static bool frobulateNoEnabledCheck(Internals&);
-    static bool frobulateStatic();
 };
 
 } // namespace blink
