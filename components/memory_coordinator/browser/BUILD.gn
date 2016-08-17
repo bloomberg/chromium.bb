@@ -6,6 +6,9 @@ static_library("browser") {
   sources = [
     "memory_coordinator.cc",
     "memory_coordinator.h",
+    "memory_monitor.h",
+    "memory_monitor_win.cc",
+    "memory_monitor_win.h",
   ]
 
   deps = [
@@ -23,6 +26,7 @@ source_set("unit_tests") {
 
   sources = [
     "memory_coordinator_unittest.cc",
+    "memory_monitor_win_unittest.cc",
   ]
 
   deps = [

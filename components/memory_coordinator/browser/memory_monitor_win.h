@@ -1,0 +1,80 @@
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_WIN_H_
+#define COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_WIN_H_
+
+#include "components/memory_coordinator/browser/memory_monitor.h"
+
+namespace base {
+struct SystemMemoryInfoKB;
+}  // namespace base
+
+namespace memory_coordinator {
+
+class MemoryMonitorWinDelegate;
+
+// A memory monitor for the Windows platform. After much experimentation this
+// class uses a very simple heuristic to anticipate paging (critical memory
+// pressure). When the amount of memory available dips below a provided
+// threshold, it is assumed that paging is inevitable.
+class MemoryMonitorWin : public MemoryMonitor {
+ public:
+  // Default constants governing the amount of free memory that the memory
+  // manager attempts to maintain.
+  static const int kLargeMemoryThresholdMB;
+  static const int kSmallMemoryTargetFreeMB;
+  static const int kLargeMemoryTargetFreeMB;
+
+  MemoryMonitorWin(MemoryMonitorWinDelegate* delegate, int target_free_mb);
+  ~MemoryMonitorWin() override {}
+
+  // MemoryMonitor:
+  int GetFreeMemoryUntilCriticalMB() override;
+
+  // Returns the current free memory target.
+  int target_free_mb() const { return target_free_mb_; }
+
+  // Factory function. Automatically sizes |target_free_mb| based on the
+  // system.
+  static std::unique_ptr<MemoryMonitorWin> Create(
+      MemoryMonitorWinDelegate* delegate);
+
+ protected:
+  // Determines if the system is in large memory mode. Exposed so that this
+  // function can be tested.
+  static bool IsLargeMemory(MemoryMonitorWinDelegate* delegate);
+
+  // Determines the default target free MB value. Exposed so that this function
+  // can be tested.
+  static int GetTargetFreeMB(MemoryMonitorWinDelegate* delegate);
+
+ private:
+  // The delegate to be used for retrieving system memory information. Used as a
+  // testing seam.
+  MemoryMonitorWinDelegate* delegate_;
+
+  // The amount of memory that the memory manager (MM) attempts to keep in a
+  // free state. When less than this amount of physical memory is free, it is
+  // assumed that the MM will start paging things out.
+  int target_free_mb_;
+};
+
+// A delegate that wraps functions used by MemoryMonitorWin. Used as a testing
+// seam.
+class MemoryMonitorWinDelegate {
+ public:
+  MemoryMonitorWinDelegate() {}
+  virtual ~MemoryMonitorWinDelegate() {}
+
+  // Returns system memory information.
+  virtual void GetSystemMemoryInfo(base::SystemMemoryInfoKB* mem_info) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MemoryMonitorWinDelegate);
+};
+
+}  // namespace memory_coordinator
+
+#endif  // COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_WIN_H_
