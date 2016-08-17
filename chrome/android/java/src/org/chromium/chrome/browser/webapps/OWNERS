@@ -3,6 +3,8 @@ mlamouri@chromium.org
 changwan@chromium.org
 
 per-file AddToHomescreen*=dominickn@chromium.org
+per-file ManifestUpgradeDetector.java=dominickn@chromium.org
+per-file ManifestUpgradeDetectorFetcher.java=dominickn@chromium.org
 per-file WebappActivity.java=dominickn@chromium.org
 per-file WebappDataStorage.java=dominickn@chromium.org
 per-file WebappInfo.java=dominickn@chromium.org
