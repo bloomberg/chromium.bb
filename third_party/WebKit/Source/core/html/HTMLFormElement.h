@@ -150,17 +150,16 @@ private:
     // Do not access m_imageElements directly. Use imageElements() instead.
     HeapVector<Member<HTMLImageElement>> m_imageElements;
 
+    bool m_isSubmitting = false;
+    bool m_inUserJSSubmitEvent = false;
+
     bool m_associatedElementsAreDirty : 1;
     bool m_imageElementsAreDirty : 1;
     bool m_hasElementsAssociatedByParser : 1;
     bool m_hasElementsAssociatedByFormAttribute : 1;
     bool m_didFinishParsingChildren : 1;
-
-    bool m_isSubmittingOrInUserJSSubmitEvent : 1;
     bool m_shouldSubmit : 1;
-
     bool m_isInResetFunction : 1;
-
     bool m_wasDemoted : 1;
 };
 

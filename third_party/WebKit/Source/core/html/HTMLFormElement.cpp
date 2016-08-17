@@ -55,6 +55,7 @@
 #include "core/loader/NavigationScheduler.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
+#include "wtf/AutoReset.h"
 #include "wtf/text/AtomicString.h"
 #include <limits>
 
@@ -69,7 +70,6 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_hasElementsAssociatedByParser(false)
     , m_hasElementsAssociatedByFormAttribute(false)
     , m_didFinishParsingChildren(false)
-    , m_isSubmittingOrInUserJSSubmitEvent(false)
     , m_shouldSubmit(false)
     , m_isInResetFunction(false)
     , m_wasDemoted(false)
@@ -293,7 +293,7 @@ bool HTMLFormElement::validateInteractively()
 void HTMLFormElement::prepareForSubmission(Event* event)
 {
     LocalFrame* frame = document().frame();
-    if (!frame || m_isSubmittingOrInUserJSSubmitEvent)
+    if (!frame || m_isSubmitting || m_inUserJSSubmitEvent)
         return;
 
     if (document().isSandboxed(SandboxForms)) {
@@ -312,15 +312,13 @@ void HTMLFormElement::prepareForSubmission(Event* event)
     if (!skipValidation && !validateInteractively())
         return;
 
-    m_isSubmittingOrInUserJSSubmitEvent = true;
-    m_shouldSubmit = false;
-
-    frame->loader().client()->dispatchWillSendSubmitEvent(this);
-
-    if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)) == DispatchEventResult::NotCanceled)
-        m_shouldSubmit = true;
-
-    m_isSubmittingOrInUserJSSubmitEvent = false;
+    {
+        AutoReset<bool> submitEventHandlerScope(&m_inUserJSSubmitEvent, true);
+        m_shouldSubmit = false;
+        frame->loader().client()->dispatchWillSendSubmitEvent(this);
+        if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)) == DispatchEventResult::NotCanceled)
+            m_shouldSubmit = true;
+    }
 
     if (m_shouldSubmit)
         submit(event, true);
@@ -351,12 +349,14 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton)
     if (!isConnected())
         UseCounter::count(document(), UseCounter::FormSubmissionNotInDocumentTree);
 
-    if (m_isSubmittingOrInUserJSSubmitEvent) {
+    if (m_isSubmitting || m_inUserJSSubmitEvent) {
         m_shouldSubmit = true;
         return;
     }
 
-    m_isSubmittingOrInUserJSSubmitEvent = true;
+    // Delay dispatching 'close' to dialog until done submitting.
+    EventQueueScope scopeForDialogClose;
+    AutoReset<bool> submitScope(&m_isSubmitting, true);
 
     HTMLFormControlElement* firstSuccessfulSubmitButton = nullptr;
     bool needButtonActivation = activateSubmitButton; // do we need to activate a submit button?
@@ -379,17 +379,18 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(true);
 
     FormSubmission* formSubmission = FormSubmission::create(this, m_attributes, event);
-    EventQueueScope scopeForDialogClose; // Delay dispatching 'close' to dialog until done submitting.
-    if (formSubmission->method() == FormSubmission::DialogMethod)
+    if (formSubmission->method() == FormSubmission::DialogMethod) {
         submitDialog(formSubmission);
-    else
+    } else {
+        // This runs JavaScript code if action attribute value is javascript:
+        // protocol.
         scheduleFormSubmission(formSubmission);
+    }
 
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(false);
 
     m_shouldSubmit = false;
-    m_isSubmittingOrInUserJSSubmitEvent = false;
 }
 
 void HTMLFormElement::scheduleFormSubmission(FormSubmission* submission)
