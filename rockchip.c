@@ -18,9 +18,8 @@
 #include "helpers.h"
 #include "util.h"
 
-static int drv_rockchip_bo_create(struct bo *bo,
-				  uint32_t width, uint32_t height,
-				  uint32_t format, uint32_t flags)
+static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height,
+			      uint32_t format, uint32_t flags)
 {
 	size_t plane;
 
@@ -74,7 +73,7 @@ static int drv_rockchip_bo_create(struct bo *bo,
 	return ret;
 }
 
-static void *drv_rockchip_bo_map(struct bo *bo)
+static void *rockchip_bo_map(struct bo *bo)
 {
 	int ret;
 	struct drm_rockchip_gem_map_off gem_map;
@@ -97,9 +96,9 @@ static void *drv_rockchip_bo_map(struct bo *bo)
 const struct backend backend_rockchip =
 {
 	.name = "rockchip",
-	.bo_create = drv_rockchip_bo_create,
+	.bo_create = rockchip_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
-	.bo_map = drv_rockchip_bo_map,
+	.bo_map = rockchip_bo_map,
 	.format_list = {
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},

@@ -87,8 +87,8 @@ static void compute_layout_linear(int width, int height, int format,
 	*size = *stride * height;
 }
 
-static int drv_tegra_bo_create(struct bo *bo, uint32_t width,
-			       uint32_t height, uint32_t format, uint32_t flags)
+static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height,
+			   uint32_t format, uint32_t flags)
 {
 	uint32_t size, stride, block_height_log2 = 0;
 	enum nv_mem_kind kind = NV_MEM_KIND_PITCH;
@@ -141,7 +141,7 @@ static int drv_tegra_bo_create(struct bo *bo, uint32_t width,
 	return 0;
 }
 
-static void *drv_tegra_bo_map(struct bo *bo)
+static void *tegra_bo_map(struct bo *bo)
 {
 	int ret;
 	struct drm_tegra_gem_mmap gem_map;
@@ -163,9 +163,9 @@ static void *drv_tegra_bo_map(struct bo *bo)
 const struct backend backend_tegra =
 {
 	.name = "tegra",
-	.bo_create = drv_tegra_bo_create,
+	.bo_create = tegra_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
-	.bo_map = drv_tegra_bo_map,
+	.bo_map = tegra_bo_map,
 	.format_list = {
 		/* Linear support */
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},

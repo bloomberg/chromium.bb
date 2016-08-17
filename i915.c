@@ -35,7 +35,7 @@ static int get_gen(int device_id)
 	return 4;
 }
 
-static int drv_i915_init(struct driver *drv)
+static int i915_init(struct driver *drv)
 {
 	struct i915_device *i915_drv;
 	drm_i915_getparam_t get_param;
@@ -63,7 +63,7 @@ static int drv_i915_init(struct driver *drv)
 	return 0;
 }
 
-static void drv_i915_close(struct driver *drv)
+static void i915_close(struct driver *drv)
 {
 	free(drv->priv);
 	drv->priv = NULL;
@@ -119,9 +119,8 @@ static int i915_verify_dimensions(struct driver *drv, uint32_t stride,
 	return 1;
 }
 
-static int drv_i915_bo_create(struct bo *bo,
-			      uint32_t width, uint32_t height,
-			      uint32_t format, uint32_t flags)
+static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
+			  uint32_t format, uint32_t flags)
 {
 	struct driver *drv = bo->drv;
 	int bpp = drv_stride_from_format(format, 1);
@@ -184,7 +183,7 @@ static int drv_i915_bo_create(struct bo *bo,
 	return 0;
 }
 
-static void *drv_i915_bo_map(struct bo *bo)
+static void *i915_bo_map(struct bo *bo)
 {
 	int ret;
 	struct drm_i915_gem_mmap_gtt gem_map;
@@ -205,11 +204,11 @@ static void *drv_i915_bo_map(struct bo *bo)
 const struct backend backend_i915 =
 {
 	.name = "i915",
-	.init = drv_i915_init,
-	.close = drv_i915_close,
-	.bo_create = drv_i915_bo_create,
+	.init = i915_init,
+	.close = i915_close,
+	.bo_create = i915_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
-	.bo_map = drv_i915_bo_map,
+	.bo_map = i915_bo_map,
 	.format_list = {
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},

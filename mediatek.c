@@ -15,9 +15,8 @@
 #include "drv_priv.h"
 #include "helpers.h"
 
-static int drv_mediatek_bo_create(struct bo *bo,
-				  uint32_t width, uint32_t height,
-				  uint32_t format, uint32_t flags)
+static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height,
+			      uint32_t format, uint32_t flags)
 {
 	size_t size;
 	struct drm_mtk_gem_create gem_create;
@@ -43,7 +42,7 @@ static int drv_mediatek_bo_create(struct bo *bo,
 	return 0;
 }
 
-static void *drv_mediatek_bo_map(struct bo *bo)
+static void *mediatek_bo_map(struct bo *bo)
 {
 	int ret;
 	struct drm_mtk_gem_map_off gem_map;
@@ -64,9 +63,9 @@ static void *drv_mediatek_bo_map(struct bo *bo)
 const struct backend backend_mediatek =
 {
 	.name = "mediatek",
-	.bo_create = drv_mediatek_bo_create,
+	.bo_create = mediatek_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
-	.bo_map = drv_mediatek_bo_map,
+	.bo_map = mediatek_bo_map,
 	.format_list = {
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_RENDERING},
 		{DRV_FORMAT_XRGB8888, DRV_BO_USE_SCANOUT | DRV_BO_USE_CURSOR | DRV_BO_USE_LINEAR},

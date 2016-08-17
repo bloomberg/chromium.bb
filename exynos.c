@@ -17,9 +17,8 @@
 #include "helpers.h"
 #include "util.h"
 
-static int drv_exynos_bo_create(struct bo *bo,
-				uint32_t width, uint32_t height,
-				uint32_t format, uint32_t flags)
+static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height,
+			    uint32_t format, uint32_t flags)
 {
 	size_t plane;
 
@@ -89,7 +88,7 @@ cleanup_planes:
 const struct backend backend_exynos =
 {
 	.name = "exynos",
-	.bo_create = drv_exynos_bo_create,
+	.bo_create = exynos_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_map = drv_dumb_bo_map,
 	.format_list = {
