@@ -11,7 +11,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -145,8 +144,8 @@ class ExtensionAPI {
   UnloadedSchemaMap unloaded_schemas_;
 
   // Schemas for each namespace.
-  typedef std::map<std::string, linked_ptr<const base::DictionaryValue> >
-        SchemaMap;
+  using SchemaMap =
+      std::map<std::string, std::unique_ptr<const base::DictionaryValue>>;
   SchemaMap schemas_;
 
   // FeatureProviders used for resolving dependencies.

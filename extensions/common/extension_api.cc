@@ -219,16 +219,16 @@ void ExtensionAPI::LoadSchema(const std::string& name,
       extensions::ExtensionsClient::Get();
   DCHECK(extensions_client);
   while (!schema_list->empty()) {
-    base::DictionaryValue* schema = NULL;
+    std::unique_ptr<base::DictionaryValue> schema;
     {
-      std::unique_ptr<base::Value> value;
-      schema_list->Remove(schema_list->GetSize() - 1, &value);
-      CHECK(value.release()->GetAsDictionary(&schema));
+      std::unique_ptr<base::Value> val;
+      schema_list->Erase(schema_list->begin(), &val);
+      schema = base::DictionaryValue::From(std::move(val));
+      CHECK(schema);
     }
-
     CHECK(schema->GetString("namespace", &schema_namespace));
-    PrefixWithNamespace(schema_namespace, schema);
-    schemas_[schema_namespace] = make_linked_ptr(schema);
+    PrefixWithNamespace(schema_namespace, schema.get());
+    schemas_[schema_namespace] = std::move(schema);
     if (!extensions_client->IsAPISchemaGenerated(schema_namespace))
       CHECK_EQ(1u, unloaded_schemas_.erase(schema_namespace));
   }
