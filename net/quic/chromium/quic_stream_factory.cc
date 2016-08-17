@@ -348,7 +348,6 @@ class QuicStreamFactory::Job {
   QuicChromiumClientSession* session_;
   CompletionCallback callback_;
   AddressList address_list_;
-  base::TimeTicks dns_resolution_start_time_;
   base::TimeTicks dns_resolution_end_time_;
   base::WeakPtrFactory<Job> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(Job);
@@ -480,7 +479,6 @@ int QuicStreamFactory::Job::DoResolveHost() {
     server_info_->Start();
 
   io_state_ = STATE_RESOLVE_HOST_COMPLETE;
-  dns_resolution_start_time_ = base::TimeTicks::Now();
   return host_resolver_->Resolve(
       HostResolver::RequestInfo(key_.destination()), DEFAULT_PRIORITY,
       &address_list_,
@@ -489,9 +487,6 @@ int QuicStreamFactory::Job::DoResolveHost() {
 }
 
 int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
-  dns_resolution_end_time_ = base::TimeTicks::Now();
-  UMA_HISTOGRAM_TIMES("Net.QuicSession.HostResolutionTime",
-                      dns_resolution_end_time_ - dns_resolution_start_time_);
   if (rv != OK)
     return rv;
 

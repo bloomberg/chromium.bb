@@ -30628,6 +30628,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.QuicSession.HostResolutionTime" units="ms">
   <owner>rch@chromium.org</owner>
+  <obsolete>
+    Deprecated 08/2016. No longer tracked.
+  </obsolete>
   <summary>
     Time spent resolving the DNS name of the server for a QUIC connection.
   </summary>
