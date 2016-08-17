@@ -10,6 +10,7 @@
 #include <X11/X.h>
 
 #include "base/memory/singleton.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace libgtk2ui {
@@ -70,7 +71,12 @@ void Gtk2EventLoop::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   x_event.xkey.keycode = gdk_event_key.hardware_keycode;
   x_event.xkey.same_screen = true;
 
-  XPutBackEvent(x_event.xkey.display, &x_event);
+  // We want to process the gtk2 event; mapped to an X11 event immediately
+  // otherwise if we put it back on the queue we may get items out of order.
+  if (ui::X11EventSource* x11_source = ui::X11EventSource::GetInstance())
+    x11_source->DispatchXEventNow(&x_event);
+  else
+    XPutBackEvent(x_event.xkey.display, &x_event);
 }
 
 }  // namespace libgtk2ui

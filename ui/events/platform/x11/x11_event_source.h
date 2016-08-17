@@ -51,6 +51,11 @@ class EVENTS_EXPORT X11EventSource {
   // available X events.
   void DispatchXEvents();
 
+  // Dispatches a given event immediately. This is to facilitate sequential
+  // interaction between the gtk event loop (used for IME) and the
+  // main X11 event loop.
+  void DispatchXEventNow(XEvent* event);
+
   // Blocks on the X11 event queue until we receive notification from the
   // xserver that |w| has been mapped; StructureNotifyMask events on |w| are
   // pulled out from the queue and dispatched out of order.

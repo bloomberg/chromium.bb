@@ -29,6 +29,7 @@
         '../../../../ui/events/events.gyp:events',
         '../../../../ui/events/events.gyp:events_base',
         '../../../../ui/events/keycodes/events_keycodes.gyp:keycodes_x11',
+        '../../../../ui/events/platform/x11/x11_events_platform.gyp:x11_events_platform',
         '../../../../ui/gfx/gfx.gyp:gfx',
         '../../../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../../../ui/gfx/x/gfx_x11.gyp:gfx_x11',

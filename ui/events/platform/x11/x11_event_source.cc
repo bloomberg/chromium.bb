@@ -140,6 +140,10 @@ void X11EventSource::DispatchXEvents() {
   }
 }
 
+void X11EventSource::DispatchXEventNow(XEvent* event) {
+  ExtractCookieDataDispatchEvent(event);
+}
+
 void X11EventSource::BlockUntilWindowMapped(XID window) {
   BlockOnWindowStructureEvent(window, MapNotify);
 }

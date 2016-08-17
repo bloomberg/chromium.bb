@@ -108,6 +108,7 @@ component("libgtk2ui") {
     "//ui/display",
     "//ui/events",
     "//ui/events:events_base",
+    "//ui/events/platform/x11",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/x",
