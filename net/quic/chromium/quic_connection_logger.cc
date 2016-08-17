@@ -324,8 +324,6 @@ QuicConnectionLogger::~QuicConnectionLogger() {
                        num_blocked_frames_received_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.BlockedFrames.Sent",
                        num_blocked_frames_sent_);
-  UMA_HISTOGRAM_COUNTS("Net.QuicSession.HeadersStream.EarlyFramesReceived",
-                       session_->headers_stream()->num_early_frames_received());
 
   const QuicConnectionStats& stats = session_->connection()->GetStats();
   UMA_HISTOGRAM_TIMES("Net.QuicSession.MinRTT",

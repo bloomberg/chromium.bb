@@ -30607,6 +30607,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.QuicSession.HeadersStream.EarlyFramesReceived">
+  <obsolete>
+    Deprecated 08/2016.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>
     The frames received on the headers stream which arrived early.
