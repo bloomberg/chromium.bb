@@ -21,6 +21,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "tools/gn/command_format.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/input_file.h"
@@ -261,6 +262,7 @@ Setup::Setup()
       dotfile_scope_(&dotfile_settings_),
       fill_arguments_(true) {
   dotfile_settings_.set_toolchain_label(Label());
+
   build_settings_.set_item_defined_callback(
       base::Bind(&ItemDefinedCallback, scheduler_.task_runner(), &builder_));
 
@@ -440,6 +442,10 @@ bool Setup::FillArgsFromArgsInputFile() {
   }
 
   Scope arg_scope(&dotfile_settings_);
+  // Set soure dir so relative imports in args work.
+  SourceDir root_source_dir =
+      SourceDirForCurrentDirectory(build_settings_.root_path());
+  arg_scope.set_source_dir(root_source_dir);
   args_root_->Execute(&arg_scope, &err);
   if (err.has_error()) {
     err.PrintToStdout();
@@ -456,12 +462,6 @@ bool Setup::FillArgsFromArgsInputFile() {
 bool Setup::SaveArgsToFile() {
   ScopedTrace setup_trace(TraceItem::TRACE_SETUP, "Save args file");
 
-  std::ostringstream stream;
-  for (const auto& pair : build_settings_.build_args().GetAllOverrides()) {
-    stream << pair.first.as_string() << " = " << pair.second.ToString(true);
-    stream << std::endl;
-  }
-
   // For the first run, the build output dir might not be created yet, so do
   // that so we can write a file into it. Ignore errors, we'll catch the error
   // when we try to write a file to it below.
@@ -469,7 +469,8 @@ bool Setup::SaveArgsToFile() {
       build_settings_.GetFullPath(GetBuildArgFile());
   base::CreateDirectory(build_arg_file.DirName());
 
-  std::string contents = stream.str();
+  std::string contents = args_input_file_->contents();
+  commands::FormatStringToString(contents, false, &contents);
 #if defined(OS_WIN)
   // Use Windows lineendings for this file since it will often open in
   // Notepad which can't handle Unix ones.

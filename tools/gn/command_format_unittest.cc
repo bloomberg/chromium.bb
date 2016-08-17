@@ -6,15 +6,9 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "tools/gn/command_format.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/setup.h"
-
-namespace commands {
-bool FormatFileToString(Setup* setup,
-                        const SourceFile& file,
-                        bool dump_tree,
-                        std::string* output);
-}  // namespace commands
 
 #define FORMAT_TEST(n)                                                      \
   TEST(Format, n) {                                                         \
