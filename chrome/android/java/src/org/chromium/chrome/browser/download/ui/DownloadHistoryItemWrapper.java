@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
@@ -62,8 +63,17 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
     /** Called when the user wants to open the file. */
     abstract void open();
 
-    /** Called when the user wants to delete the file. */
-    abstract void delete();
+    /**
+     * Called when the user wants to delete the file.
+     * @param callback The Callback to be notified when the item is finished being deleted.
+     */
+    abstract void delete(Callback<Void> callback);
+
+    /**
+     * @return Whether the file associated with this item has been removed through an external
+     *         action.
+     */
+    abstract boolean hasBeenExternallyRemoved();
 
     /** Wraps a {@link DownloadItem}. */
     static class DownloadItemWrapper extends DownloadHistoryItemWrapper {
@@ -169,7 +179,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public void delete() {
+        public void delete(final Callback<Void> callback) {
             // Tell the DownloadManager to remove the file from history.
             DownloadManagerService service = DownloadManagerService.getDownloadManagerService(
                     ContextUtils.getApplicationContext());
@@ -184,6 +194,11 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
                         Log.e(TAG, "Failed to delete: " + getFilePath());
                     }
                     return null;
+                }
+
+                @Override
+                public void onPostExecute(Void unused) {
+                    callback.onResult(unused);
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
@@ -206,6 +221,11 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
             } else {
                 return DownloadFilter.FILTER_OTHER;
             }
+        }
+
+        @Override
+        boolean hasBeenExternallyRemoved() {
+            return mItem.hasBeenExternallyRemoved();
         }
     }
 
@@ -281,8 +301,15 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public void delete() {
+        public void delete(Callback<Void> callback) {
             mBridge.deleteItem(getId());
+            callback.onResult(null);
+        }
+
+        @Override
+        boolean hasBeenExternallyRemoved() {
+            // We don't currently detect when offline pages have been removed externally.
+            return false;
         }
     }
 }

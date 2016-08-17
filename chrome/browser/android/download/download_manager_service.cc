@@ -161,13 +161,23 @@ void DownloadManagerService::GetAllDownloadsInternal(bool is_off_the_record) {
         ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
         ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
         ConvertUTF8ToJavaString(env, item->GetMimeType()),
-        item->GetStartTime().ToJavaTime(), item->GetTotalBytes());
+        item->GetStartTime().ToJavaTime(), item->GetTotalBytes(),
+        item->GetFileExternallyRemoved());
   }
 
   Java_DownloadManagerService_onAllDownloadsRetrieved(
       env, java_ref_, j_download_item_list, is_off_the_record);
 }
 
+void DownloadManagerService::CheckForExternallyRemovedDownloads(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    bool is_off_the_record) {
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
+  if (!manager)
+    return;
+  manager->CheckForHistoryFilesRemoval();
+}
 
 void DownloadManagerService::CancelDownload(
     JNIEnv* env,
@@ -239,7 +249,8 @@ void DownloadManagerService::OnDownloadUpdated(
       ConvertUTF8ToJavaString(env, item->GetMimeType()).obj(),
       item->GetStartTime().ToJavaTime(),
       item->GetTotalBytes(),
-      item->GetBrowserContext()->IsOffTheRecord());
+      item->GetBrowserContext()->IsOffTheRecord(),
+      item->GetFileExternallyRemoved());
 }
 
 void DownloadManagerService::OnDownloadRemoved(

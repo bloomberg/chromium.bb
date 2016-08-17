@@ -22,19 +22,23 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
+import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflinePageItemWrapper;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Displays and manages the UI for the download manager.
@@ -72,6 +76,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private final ObserverList<DownloadUiObserver> mObservers = new ObserverList<>();
 
     private final Activity mActivity;
+    private final boolean mIsOffTheRecord;
     private final ViewGroup mMainView;
     private final DownloadManagerToolbar mToolbar;
     private final SpaceDisplay mSpaceDisplay;
@@ -79,12 +84,13 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private final RecyclerView mRecyclerView;
 
     private BasicNativePage mNativePage;
-
     private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
+    private final AtomicInteger mNumberOfFilesBeingDeleted = new AtomicInteger();
 
     public DownloadManagerUi(
             Activity activity, boolean isOffTheRecord, ComponentName parentComponent) {
         mActivity = activity;
+        mIsOffTheRecord = isOffTheRecord;
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
 
         mSelectionDelegate = new SelectionDelegate<DownloadHistoryItemWrapper>();
@@ -259,24 +265,23 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         ArrayList<Uri> itemUris = new ArrayList<Uri>();
         StringBuilder offlinePagesString = new StringBuilder();
 
-        String intentMimeType = Intent.normalizeMimeType(selectedItems.get(0).getMimeType());
+        String intentMimeType = "";
         String[] intentMimeParts = {"", ""};
-        if (!TextUtils.isEmpty(intentMimeType)) {
-            intentMimeParts = intentMimeType.split(MIME_TYPE_DELIMITER);
-            if (intentMimeParts.length != 2) intentMimeType = DEFAULT_MIME_TYPE;
-        }
 
-        for (DownloadHistoryItemWrapper itemWrapper : mSelectionDelegate.getSelectedItems()) {
-            if (itemWrapper instanceof OfflinePageItemWrapper) {
+        for (int i = 0; i < selectedItems.size(); i++) {
+            DownloadHistoryItemWrapper wrappedItem  = selectedItems.get(i);
+            if (wrappedItem.hasBeenExternallyRemoved()) continue;
+
+            if (wrappedItem instanceof OfflinePageItemWrapper) {
                 if (offlinePagesString.length() != 0) {
                     offlinePagesString.append("\n");
                 }
-                offlinePagesString.append(itemWrapper.getUrl());
+                offlinePagesString.append(wrappedItem.getUrl());
             } else {
-                itemUris.add(getUriForItem(itemWrapper));
+                itemUris.add(getUriForItem(wrappedItem));
             }
 
-            String mimeType = Intent.normalizeMimeType(itemWrapper.getMimeType());
+            String mimeType = Intent.normalizeMimeType(wrappedItem.getMimeType());
 
             // If a mime type was not retrieved from the backend or could not be normalized,
             // set the mime type to the default.
@@ -285,8 +290,19 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                 continue;
             }
 
-            // Either the mime type is already the default or it matches the current intent
-            // mime type. In either case, intentMimeType is already the correct value.
+            // If the intent mime type has not been set yet, set it to the mime type for this item.
+            if (TextUtils.isEmpty(intentMimeType)) {
+                intentMimeType = mimeType;
+                if (!TextUtils.isEmpty(intentMimeType)) {
+                    intentMimeParts = intentMimeType.split(MIME_TYPE_DELIMITER);
+                    // Guard against invalid mime types.
+                    if (intentMimeParts.length != 2) intentMimeType = DEFAULT_MIME_TYPE;
+                }
+                continue;
+            }
+
+            // Either the mime type is already the default or it matches the current item's mime
+            // type. In either case, intentMimeType is already the correct value.
             if (TextUtils.equals(intentMimeType, DEFAULT_MIME_TYPE)
                     || TextUtils.equals(intentMimeType, mimeType)) {
                 continue;
@@ -300,6 +316,13 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                 // The mime type should be {top-level type}/*
                 intentMimeType = intentMimeParts[0] + MIME_TYPE_DELIMITER + "*";
             }
+        }
+
+        // If there are no non-deleted items to share, return early.
+        if (itemUris.size() == 0 && offlinePagesString.length() == 0) {
+            Toast.makeText(mActivity, mActivity.getString(R.string.download_cant_share_deleted),
+                    Toast.LENGTH_SHORT).show();
+            return;
         }
 
         // Use Action_SEND if there is only one downloaded item or only text to share.
@@ -351,8 +374,27 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     }
 
     private void deleteSelectedItems() {
-        for (DownloadHistoryItemWrapper wrappedItem : mSelectionDelegate.getSelectedItems()) {
-            wrappedItem.delete();
+        List<DownloadHistoryItemWrapper> selectedItems = mSelectionDelegate.getSelectedItems();
+        mNumberOfFilesBeingDeleted.addAndGet(selectedItems.size());
+
+        for (int i = 0; i < selectedItems.size(); i++) {
+            DownloadHistoryItemWrapper wrappedItem  = selectedItems.get(i);
+
+            // More than one download item may be associated with the same file path. After all
+            // files have been deleted, initiate a check for removed download files so that any
+            // download items associated with the same path as a deleted item are updated.
+            wrappedItem.delete(new Callback<Void>() {
+                @Override
+                public void onResult(Void unused) {
+                    int remaining = mNumberOfFilesBeingDeleted.decrementAndGet();
+                    if (remaining != 0) return;
+
+                    DownloadManagerService service =
+                            DownloadManagerService.getDownloadManagerService(
+                                    mActivity.getApplicationContext());
+                    service.checkForExternallyRemovedDownloads(mIsOffTheRecord);
+                }
+            });
         }
         mSelectionDelegate.clearSelection();
     }

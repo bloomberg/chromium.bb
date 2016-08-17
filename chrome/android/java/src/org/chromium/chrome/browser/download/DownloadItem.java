@@ -14,6 +14,7 @@ public class DownloadItem {
     private DownloadInfo mDownloadInfo;
     private long mDownloadId = INVALID_DOWNLOAD_ID;
     private long mStartTime;
+    private boolean mHasBeenExternallyRemoved;
 
     public DownloadItem(boolean useAndroidDownloadManager, DownloadInfo info) {
         mUseAndroidDownloadManager = useAndroidDownloadManager;
@@ -85,5 +86,25 @@ public class DownloadItem {
      */
     public long getStartTime() {
         return mStartTime;
+    }
+
+    /**
+     * Sets whether the file associated with this item has been removed through an external
+     * action.
+     *
+     * @param hasBeenExternallyRemoved Whether the file associated with this item has been removed
+     *                                 from the file system through a means other than the browser
+     *                                 download ui.
+     */
+    public void setHasBeenExternallyRemoved(boolean hasBeenExternallyRemoved) {
+        mHasBeenExternallyRemoved = hasBeenExternallyRemoved;
+    }
+
+    /**
+     * @return Whether the file associated with this item has been removed from the file system
+     *         through a means other than the browser download ui.
+     */
+    public boolean hasBeenExternallyRemoved() {
+        return mHasBeenExternallyRemoved;
     }
 }

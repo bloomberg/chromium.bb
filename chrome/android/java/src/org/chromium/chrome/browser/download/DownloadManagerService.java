@@ -1481,6 +1481,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
         nativeGetAllDownloads(getNativeDownloadManagerService(), isOffTheRecord);
     }
 
+    /**
+     * Checks if the files associated with any downloads have been removed by an external action.
+     * @param isOffTheRecord Whether or not to check downloads for the off the record profile.
+     */
+    public void checkForExternallyRemovedDownloads(boolean isOffTheRecord) {
+        nativeCheckForExternallyRemovedDownloads(getNativeDownloadManagerService(), isOffTheRecord);
+    }
+
     @CalledByNative
     private List<DownloadItem> createDownloadItemList() {
         return new ArrayList<DownloadItem>();
@@ -1488,9 +1496,11 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     @CalledByNative
     private void addDownloadItemToList(List<DownloadItem> list, String guid, String displayName,
-            String filepath, String url, String mimeType, long startTimestamp, long totalBytes) {
+            String filepath, String url, String mimeType, long startTimestamp, long totalBytes,
+            boolean hasBeenExternallyRemoved) {
         list.add(createDownloadItem(
-                guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes));
+                guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes,
+                hasBeenExternallyRemoved));
     }
 
     @CalledByNative
@@ -1502,9 +1512,11 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     @CalledByNative
     private void onDownloadItemUpdated(String guid, String displayName, String filepath, String url,
-            String mimeType, long startTimestamp, long totalBytes, boolean isOffTheRecord) {
+            String mimeType, long startTimestamp, long totalBytes, boolean isOffTheRecord,
+            boolean hasBeenExternallyRemoved) {
         DownloadItem item = createDownloadItem(
-                guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes);
+                guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes,
+                hasBeenExternallyRemoved);
         for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
             adapter.onDownloadItemUpdated(item, isOffTheRecord);
         }
@@ -1583,7 +1595,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
     public void purgeActiveNetworkList(long[] activeNetIds) {}
 
     private static DownloadItem createDownloadItem(String guid, String displayName,
-            String filepath, String url, String mimeType, long startTimestamp, long totalBytes) {
+            String filepath, String url, String mimeType, long startTimestamp, long totalBytes,
+            boolean hasBeenExternallyRemoved) {
         DownloadInfo.Builder builder = new DownloadInfo.Builder()
                 .setDownloadGuid(guid)
                 .setFileName(displayName)
@@ -1593,6 +1606,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 .setContentLength(totalBytes);
         DownloadItem downloadItem = new DownloadItem(false, builder.build());
         downloadItem.setStartTime(startTimestamp);
+        downloadItem.setHasBeenExternallyRemoved(hasBeenExternallyRemoved);
         return downloadItem;
     }
 
@@ -1607,5 +1621,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private native void nativeRemoveDownload(long nativeDownloadManagerService, String downloadGuid,
             boolean isOffTheRecord);
     private native void nativeGetAllDownloads(
+            long nativeDownloadManagerService, boolean isOffTheRecord);
+    private native void nativeCheckForExternallyRemovedDownloads(
             long nativeDownloadManagerService, boolean isOffTheRecord);
 }

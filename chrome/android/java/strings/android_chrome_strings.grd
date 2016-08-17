@@ -1669,6 +1669,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_CANT_OPEN_FILE" desc="Toast that appears when a downloaded file can't be opened.">
         Can't open file
       </message>
+      <message name="IDS_DOWNLOAD_CANT_SHARE_DELETED" desc="Toast that appears when the user attempts to share downloaded files that have been deleted.">
+        Can't share deleted files
+      </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_PAUSE_BUTTON" desc="Text on the button that pauses a download.">
         Pause
       </message>
@@ -1788,6 +1791,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_DOWNLOAD_PAGE" desc="Download this page.">
         Download page
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_DELETED" desc="Indicates that a downloaded file has been deleted.">
+        Deleted
       </message>
 
       <!-- Document mode messages -->

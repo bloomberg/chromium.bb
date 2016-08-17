@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.download.ui;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Paint;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
@@ -16,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
@@ -69,6 +72,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private int mFilter = DownloadFilter.FILTER_ALL;
     private DownloadManagerUi mManager;
     private OfflinePageDownloadBridge mOfflinePageBridge;
+    private int mFilenameViewTextColor;
 
     DownloadHistoryAdapter(boolean showOffTheRecord, ComponentName parentComponent) {
         mShowOffTheRecord = showOffTheRecord;
@@ -143,6 +147,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         final DownloadHistoryItemWrapper item = (DownloadHistoryItemWrapper) timedItem;
 
         ItemViewHolder holder = (ItemViewHolder) current;
+        DownloadHistoryItemWrapper previousItem = holder.mItemView.mItem;
         Context context = holder.mFilesizeView.getContext();
         holder.mFilenameView.setText(item.getDisplayFileName());
         holder.mHostnameView.setText(
@@ -174,6 +179,12 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         }
 
         holder.mIconView.setImageResource(iconResource);
+
+        // Externally removed items have a different style. Update the item's style if necessary.
+        if (previousItem == null
+                || previousItem.hasBeenExternallyRemoved() != item.hasBeenExternallyRemoved()) {
+            setItemViewStyle(holder, item);
+        }
     }
 
     /**
@@ -324,6 +335,36 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private static DownloadManagerService getDownloadManagerService() {
         return DownloadManagerService.getDownloadManagerService(
                 ContextUtils.getApplicationContext());
+    }
+
+    private void setItemViewStyle(ItemViewHolder holder, DownloadHistoryItemWrapper item) {
+        if (mFilenameViewTextColor == 0) {
+            // The color is not explicitly set in the XML. Programmatically retrieve the original
+            // color so that the color can be reset if it's changed due to the contained item
+            // being externally removed.
+            mFilenameViewTextColor = holder.mFilenameView.getTextColors().getDefaultColor();
+        }
+
+        Context context = holder.itemView.getContext();
+        Resources res = context.getResources();
+        if (item.hasBeenExternallyRemoved()) {
+            int disabledColor = ApiCompatibilityUtils.getColor(res, R.color.google_grey_300);
+
+            holder.mHostnameView.setTextColor(disabledColor);
+            holder.mIconView.setBackgroundColor(disabledColor);
+            holder.mFilenameView.setTextColor(disabledColor);
+            holder.mFilenameView.setPaintFlags(holder.mFilenameView.getPaintFlags()
+                    | Paint.STRIKE_THRU_TEXT_FLAG);
+            holder.mFilesizeView.setText(context.getString(R.string.download_manager_ui_deleted));
+        } else {
+            holder.mHostnameView.setTextColor(mFilenameViewTextColor);
+            holder.mIconView.setBackgroundColor(ApiCompatibilityUtils.getColor(res,
+                    R.color.light_active_color));
+            holder.mFilenameView.setTextColor(ApiCompatibilityUtils.getColor(res,
+                    R.color.default_text_color));
+            holder.mFilenameView.setPaintFlags(holder.mFilenameView.getPaintFlags()
+                    & ~Paint.STRIKE_THRU_TEXT_FLAG);
+        }
     }
 
 }

@@ -73,6 +73,12 @@ class DownloadManagerService : public AllDownloadItemNotifier::Observer,
                        const JavaParamRef<jobject>& obj,
                        bool is_off_the_record);
 
+  // Called to check if the files associated with any downloads have been
+  // removed by an external action.
+  void CheckForExternallyRemovedDownloads(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj,
+                                          bool is_off_the_record);
+
   // DownloadHistory::Observer methods.
   void OnHistoryQueryComplete() override;
 
