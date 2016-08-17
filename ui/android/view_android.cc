@@ -126,8 +126,8 @@ void ViewAndroid::SetAnchorRect(const JavaRef<jobject>& anchor,
   int left_margin = std::round(bounds.x() * scale);
   // TODO(jinsukkim): Move content_offset() to ViewAndroid, since it's
   //                  specific to a given web contents/render widget.
-  float content_offset_y_pix = GetWindowAndroid()->content_offset().y();
-  int top_margin = std::round(content_offset_y_pix + bounds.y() * scale);
+  int top_margin = std::round(
+      (GetWindowAndroid()->content_offset().y() + bounds.y()) * scale);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ViewAndroidDelegate_setViewPosition(
       env, delegate, anchor, bounds.x(), bounds.y(), bounds.width(),

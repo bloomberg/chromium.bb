@@ -49,10 +49,12 @@ static void MakeAsyncCopyRequest(
       gfx::ScaleToEnclosingRect(source_rect, device_scale_factor);
 
   // Account for the toolbar offset.
-  gfx::Vector2dF offset = window->content_offset();
-  gfx::Rect adjusted_source_rect(gfx::ToRoundedPoint(
-      gfx::PointF(source_rect_in_pixel.x() + offset.x(),
-                  source_rect_in_pixel.y() + offset.y())),
+  gfx::Vector2dF offset_in_pixel =
+      gfx::ScaleVector2d(window->content_offset(), device_scale_factor);
+  gfx::Rect adjusted_source_rect(
+      gfx::ToRoundedPoint(
+          gfx::PointF(source_rect_in_pixel.x() + offset_in_pixel.x(),
+                      source_rect_in_pixel.y() + offset_in_pixel.y())),
       source_rect_in_pixel.size());
 
   request->set_area(adjusted_source_rect);

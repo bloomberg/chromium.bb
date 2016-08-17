@@ -35,8 +35,8 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
   static bool RegisterWindowAndroid(JNIEnv* env);
 
-  // The content offset is used to translate snapshots to the correct part of
-  // the window.
+  // The content offset in CSS pixels. It is used together with device scale
+  // factor to translate snapshots to the correct part of the window.
   void set_content_offset(const gfx::Vector2dF& content_offset) {
     content_offset_ = content_offset;
   }
