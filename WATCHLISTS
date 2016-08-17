@@ -835,9 +835,6 @@
     'syncfs': {
       'filepath': 'sync_file_system',
     },
-    'sync_proto': {
-      'filepath': 'sync/protocol/',
-    },
     'tab_capture': {
       'filepath': 'cc/output/copy_output_request'\
         '|chrome/browser/extensions/api/tab_capture/'\
@@ -1893,7 +1890,6 @@
                    'jbroman+cpp@chromium.org'],
     'supervised_users': ['pam+watch@chromium.org'],
     'sync': ['sync-reviews@chromium.org'],
-    'sync_proto': ['albertb+watch@chromium.org'],
     'syncfs': ['kinuko+fileapi@chromium.org',
                'nhiroki@chromium.org',
                'tzik@chromium.org'],
