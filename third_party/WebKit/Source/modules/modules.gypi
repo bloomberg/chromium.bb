@@ -1369,8 +1369,6 @@
       'notifications/NotificationManager.cpp',
       'notifications/NotificationManager.h',
       'notifications/NotificationPermissionCallback.h',
-      'notifications/NotificationPermissionClient.cpp',
-      'notifications/NotificationPermissionClient.h',
       'notifications/NotificationResourcesLoader.cpp',
       'notifications/NotificationResourcesLoader.h',
       'notifications/ServiceWorkerGlobalScopeNotifications.h',

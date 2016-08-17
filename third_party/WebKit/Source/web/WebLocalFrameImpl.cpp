@@ -156,7 +156,6 @@
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/installedapp/InstalledAppController.h"
-#include "modules/notifications/NotificationPermissionClient.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
@@ -221,7 +220,6 @@
 #include "web/IndexedDBClientImpl.h"
 #include "web/LocalFileSystemClient.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
-#include "web/NotificationPermissionClientImpl.h"
 #include "web/RemoteFrameOwner.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/SuspendableScriptExecutor.h"
@@ -1494,7 +1492,6 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
         provideUserMediaTo(*m_frame, UserMediaClientImpl::create(m_client->userMediaClient()));
     }
 
-    provideNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());
     provideIndexedDBClientTo(*m_frame, IndexedDBClientImpl::create());
     provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
     provideNavigatorContentUtilsTo(*m_frame, NavigatorContentUtilsClientImpl::create(this));

@@ -8,6 +8,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "public/platform/modules/notifications/notification_service.mojom-blink.h"
+#include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
@@ -18,6 +19,11 @@ namespace blink {
 enum class PermissionStatus;
 }
 }
+
+class NotificationPermissionCallback;
+class ScriptPromise;
+class ScriptPromiseResolver;
+class ScriptState;
 
 // The notification manager, unique to the execution context, is responsible for
 // connecting and communicating with the Mojo notification service.
@@ -37,7 +43,9 @@ public:
 
     // Returns the notification permission status of the current origin. This
     // method is synchronous to support the Notification.permission getter.
-    mojom::blink::PermissionStatus permissionStatus() const;
+    mojom::blink::PermissionStatus permissionStatus();
+
+    ScriptPromise requestPermission(ScriptState*, NotificationPermissionCallback* deprecatedCallback);
 
     // ContextLifecycleObserver implementation.
     void contextDestroyed() override;
@@ -47,7 +55,10 @@ public:
 private:
     explicit NotificationManager(ExecutionContext*);
 
-    mojom::blink::NotificationServicePtr m_service;
+    void onPermissionRequestComplete(ScriptPromiseResolver*, NotificationPermissionCallback*, mojom::blink::PermissionStatus);
+
+    mojom::blink::NotificationServicePtr m_notificationService;
+    mojom::blink::PermissionServicePtr m_permissionService;
 };
 
 } // namespace blink
