@@ -24,3 +24,9 @@ per-file settings*strings*=dschuyler@chromium.org
 per-file settings*strings*=michaelpg@chromium.org
 per-file settings*strings*=stevenjb@chromium.org
 per-file settings*strings*=tommycli@chromium.org
+
+per-file main_dll_loader_win.cc=ananta@chromium.org
+per-file main_dll_loader_win.cc=scottmg@chromium.org
+
+per-file chrome_crash_reporter_client*=ananta@chromium.org
+per-file chrome_crash_reporter_client*=scottmg@chromium.org

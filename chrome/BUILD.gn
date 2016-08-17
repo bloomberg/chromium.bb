@@ -134,8 +134,6 @@ if (!is_android && !is_mac) {
 
     if (is_win) {
       sources += [
-        "app/chrome_crash_reporter_client_win.cc",
-        "app/chrome_crash_reporter_client_win.h",
         "app/chrome_exe.rc",
         "app/chrome_exe_load_config_win.cc",
         "app/chrome_exe_main_win.cc",
@@ -170,8 +168,7 @@ if (!is_android && !is_mac) {
         "//chrome/installer/util:with_no_strings",
         "//chrome_elf",
         "//components/browser_watcher:browser_watcher_client",
-        "//components/crash/content/app",
-        "//components/crash/core/common",
+        "//components/crash/content/app:run_as_crashpad_handler",
         "//components/flags_ui:switches",
         "//components/startup_metric_utils/common",
         "//content:sandbox_helper_win",

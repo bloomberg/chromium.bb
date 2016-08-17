@@ -43,8 +43,6 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/module_util_win.h"
 #include "chrome/installer/util/util_constants.h"
-#include "components/crash/content/app/crash_reporter_client.h"
-#include "components/crash/content/app/crashpad.h"
 #include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "content/public/app/sandbox_helper_win.h"
 #include "content/public/common/content_switches.h"
@@ -224,8 +222,17 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
   if (process_type.empty()) {
     RecordDidRun(dll_path);
 
+    typedef bool (*GetUploadsEnabledFunction)(void);
+    static GetUploadsEnabledFunction get_uploads_enabled = nullptr;
+    if (!get_uploads_enabled) {
+      get_uploads_enabled = reinterpret_cast<GetUploadsEnabledFunction>(
+          GetProcAddress(GetModuleHandle(chrome::kChromeElfDllName),
+                         "GetUploadsEnabled"));
+      CHECK(get_uploads_enabled);
+    }
+
     // Launch the watcher process if stats collection consent has been granted.
-    if (crash_reporter::GetUploadsEnabled()) {
+    if (get_uploads_enabled()) {
       base::FilePath exe_path;
       if (PathService::Get(base::FILE_EXE, &exe_path)) {
         chrome_watcher_client_.reset(new ChromeWatcherClient(
