@@ -175,6 +175,9 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_VOICE_SEARCH_TODAY_EXTENSION_TITLE" desc="The title for Voice Search button in today extension [Length: 20em]">
         Voice Search
       </message>
+      <message name="IDS_IOS_EMPTY_TODAY_EXTENSION_TEXT" desc="The text to display if today extension is empty. Refer to the possibility to open copied links from there. [Length: 26em]">
+        No Copied Link
+      </message>
     </messages>
   </release>
 </grit>
