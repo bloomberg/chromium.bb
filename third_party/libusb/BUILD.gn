@@ -80,7 +80,12 @@ static_library("libusb") {
   }
 
   if (is_mac) {
-    defines += [ "OS_DARWIN=1" ]
+    defines += [
+      "OS_DARWIN=1",
+
+      # Needed on OSX 10.12 to silence a deprecation warning.
+      "OBJC_SILENCE_GC_DEPRECATIONS=1",
+    ]
   } else {
     sources -= [
       "src/libusb/os/darwin_usb.c",
