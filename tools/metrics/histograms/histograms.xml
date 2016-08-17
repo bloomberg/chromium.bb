@@ -78920,6 +78920,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1501" label="WebShareShare"/>
   <int value="1502" label="AuxclickAddListenerCount"/>
   <int value="1503" label="HTMLCanvasElement"/>
+  <int value="1504" label="SVGSMILAnimationElementTiming"/>
+  <int value="1505" label="SVGSMILBeginEndAnimationElement"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
