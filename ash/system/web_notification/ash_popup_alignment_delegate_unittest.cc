@@ -304,12 +304,12 @@ TEST_F(AshPopupAlignmentDelegateTest, MAYBE_KeyboardShowing) {
 
   WmShelf* shelf = GetPrimaryShelf();
   gfx::Rect keyboard_bounds(0, 300, 600, 300);
-  shelf->SetKeyboardBoundsForTesting(keyboard_bounds);
+  shelf->SetVirtualKeyboardBoundsForTesting(keyboard_bounds);
   int keyboard_baseline = alignment_delegate()->GetBaseLine();
   EXPECT_NE(baseline, keyboard_baseline);
   EXPECT_GT(keyboard_bounds.y(), keyboard_baseline);
 
-  shelf->SetKeyboardBoundsForTesting(gfx::Rect());
+  shelf->SetVirtualKeyboardBoundsForTesting(gfx::Rect());
   EXPECT_EQ(baseline, alignment_delegate()->GetBaseLine());
 }
 

@@ -44,7 +44,7 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter
   // ui::WindowTreeClientObserver:
   void OnWindowTreeCaptureChanged(ui::Window* gained_capture,
                                   ui::Window* lost_capture) override;
-  void OnWillDestroyClient(ui::WindowTreeClient* client) override;
+  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
 
   ui::WindowTreeClient* window_tree_client_;
   base::ObserverList<PointerWatcher, true> pointer_watchers_;

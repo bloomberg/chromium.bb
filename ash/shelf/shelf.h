@@ -34,7 +34,6 @@ namespace ash {
 class AppListButton;
 class FocusCycler;
 class ShelfDelegate;
-class ShelfIconObserver;
 class ShelfView;
 class WmShelf;
 
@@ -89,9 +88,6 @@ class ASH_EXPORT Shelf {
 
   // Cycles the window focus linearly over the current shelf items.
   void CycleWindowLinear(CycleDirection direction);
-
-  void AddIconObserver(ShelfIconObserver* observer);
-  void RemoveIconObserver(ShelfIconObserver* observer);
 
   // Returns true if the shelf is showing a context menu.
   bool IsShowingMenu() const;

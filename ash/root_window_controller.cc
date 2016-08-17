@@ -575,8 +575,6 @@ void RootWindowController::CloseChildWindows() {
   if (shelf_widget_)
     shelf_widget_->Shutdown();
 
-  wm_shelf_aura_->Shutdown();
-
   // Close background widget first as it depends on tooltip.
   wallpaper_controller_.reset();
   animating_wallpaper_controller_.reset();
@@ -616,6 +614,10 @@ void RootWindowController::CloseChildWindows() {
   }
 
   shelf_widget_.reset();
+  // CloseChildWindows may be called twice during the shutdown of ash unittests.
+  // Avoid notifying WmShelf that the Shelf instance has been destroyed twice.
+  if (wm_shelf_aura_->shelf())
+    wm_shelf_aura_->ClearShelf();
   shelf_.reset();
 }
 

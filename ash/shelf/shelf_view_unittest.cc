@@ -14,14 +14,15 @@
 #include "ash/common/shelf/overflow_bubble_view.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_icon_observer.h"
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_tooltip_manager.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/test/material_design_controller_test_api.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shelf/shelf_widget.h"
@@ -71,46 +72,41 @@ namespace ash {
 namespace test {
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShelfIconObserver tests.
+// WmShelfObserver::OnShelfIconPositionsChanged tests.
 
-class TestShelfIconObserver : public ShelfIconObserver {
+class TestWmShelfObserver : public WmShelfObserver {
  public:
-  explicit TestShelfIconObserver(Shelf* shelf)
-      : shelf_(shelf), change_notified_(false) {
-    if (shelf_)
-      shelf_->AddIconObserver(this);
+  explicit TestWmShelfObserver(WmShelf* shelf) : shelf_(shelf) {
+    shelf_->AddObserver(this);
   }
 
-  ~TestShelfIconObserver() override {
-    if (shelf_)
-      shelf_->RemoveIconObserver(this);
+  ~TestWmShelfObserver() override { shelf_->RemoveObserver(this); }
+
+  // WmShelfObserver implementation.
+  void OnShelfIconPositionsChanged() override {
+    icon_positions_changed_ = true;
   }
 
-  // ShelfIconObserver implementation.
-  void OnShelfIconPositionsChanged() override { change_notified_ = true; }
-
-  int change_notified() const { return change_notified_; }
-  void Reset() { change_notified_ = false; }
+  bool icon_positions_changed() const { return icon_positions_changed_; }
+  void Reset() { icon_positions_changed_ = false; }
 
  private:
-  Shelf* shelf_;
-  bool change_notified_;
+  WmShelf* shelf_;
+  bool icon_positions_changed_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TestShelfIconObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestWmShelfObserver);
 };
 
-class ShelfViewIconObserverTest : public AshTestBase {
+class WmShelfObserverIconTest : public AshTestBase {
  public:
-  ShelfViewIconObserverTest() {}
-  ~ShelfViewIconObserverTest() override {}
+  WmShelfObserverIconTest() {}
+  ~WmShelfObserverIconTest() override {}
 
   void SetUp() override {
     AshTestBase::SetUp();
-    Shelf* shelf = Shelf::ForPrimaryDisplay();
-    observer_.reset(new TestShelfIconObserver(shelf));
-
+    observer_.reset(new TestWmShelfObserver(GetPrimaryShelf()));
     shelf_view_test_.reset(
-        new ShelfViewTestAPI(ShelfTestAPI(shelf).shelf_view()));
+        new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
     shelf_view_test_->SetAnimationDuration(1);
   }
 
@@ -119,19 +115,15 @@ class ShelfViewIconObserverTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
-  TestShelfIconObserver* observer() { return observer_.get(); }
+  TestWmShelfObserver* observer() { return observer_.get(); }
 
   ShelfViewTestAPI* shelf_view_test() { return shelf_view_test_.get(); }
 
-  Shelf* ShelfForSecondaryDisplay() {
-    return Shelf::ForWindow(WmShell::Get()->GetAllRootWindows()[1]);
-  }
-
  private:
-  std::unique_ptr<TestShelfIconObserver> observer_;
+  std::unique_ptr<TestWmShelfObserver> observer_;
   std::unique_ptr<ShelfViewTestAPI> shelf_view_test_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShelfViewIconObserverTest);
+  DISALLOW_COPY_AND_ASSIGN(WmShelfObserverIconTest);
 };
 
 // TestShelfItemDelegate which tracks whether it gets selected.
@@ -171,7 +163,7 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
   DISALLOW_COPY_AND_ASSIGN(ShelfItemSelectionTracker);
 };
 
-TEST_F(ShelfViewIconObserverTest, AddRemove) {
+TEST_F(WmShelfObserverIconTest, AddRemove) {
   TestShelfDelegate* shelf_delegate = TestShelfDelegate::instance();
   ASSERT_TRUE(shelf_delegate);
 
@@ -184,24 +176,26 @@ TEST_F(ShelfViewIconObserverTest, AddRemove) {
   widget->Init(params);
   shelf_delegate->AddShelfItem(widget->GetNativeWindow());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
-  EXPECT_TRUE(observer()->change_notified());
+  EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
 
   widget->Show();
   widget->GetNativeWindow()->parent()->RemoveChild(widget->GetNativeWindow());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
-  EXPECT_TRUE(observer()->change_notified());
+  EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
 }
 
 // Make sure creating/deleting an window on one displays notifies a
 // shelf on external display as well as one on primary.
-TEST_F(ShelfViewIconObserverTest, AddRemoveWithMultipleDisplays) {
+TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   if (!SupportsMultipleDisplays())
     return;
 
   UpdateDisplay("400x400,400x400");
-  TestShelfIconObserver second_observer(ShelfForSecondaryDisplay());
+  WmWindow* second_root = WmShell::Get()->GetAllRootWindows()[1];
+  WmShelf* second_shelf = second_root->GetRootWindowController()->GetShelf();
+  TestWmShelfObserver second_observer(second_shelf);
 
   TestShelfDelegate* shelf_delegate = TestShelfDelegate::instance();
   ASSERT_TRUE(shelf_delegate);
@@ -215,21 +209,21 @@ TEST_F(ShelfViewIconObserverTest, AddRemoveWithMultipleDisplays) {
   widget->Init(params);
   shelf_delegate->AddShelfItem(widget->GetNativeWindow());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
-  EXPECT_TRUE(observer()->change_notified());
-  EXPECT_TRUE(second_observer.change_notified());
+  EXPECT_TRUE(observer()->icon_positions_changed());
+  EXPECT_TRUE(second_observer.icon_positions_changed());
   observer()->Reset();
   second_observer.Reset();
 
   widget->GetNativeWindow()->parent()->RemoveChild(widget->GetNativeWindow());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
-  EXPECT_TRUE(observer()->change_notified());
-  EXPECT_TRUE(second_observer.change_notified());
+  EXPECT_TRUE(observer()->icon_positions_changed());
+  EXPECT_TRUE(second_observer.icon_positions_changed());
 
   observer()->Reset();
   second_observer.Reset();
 }
 
-TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
+TEST_F(WmShelfObserverIconTest, BoundsChanged) {
   views::Widget* widget =
       GetPrimaryShelf()->GetShelfViewForTesting()->GetWidget();
   gfx::Rect shelf_bounds = widget->GetWindowBoundsInScreen();
@@ -237,7 +231,7 @@ TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
   ASSERT_GT(shelf_bounds.width(), 0);
   widget->SetBounds(shelf_bounds);
   // No animation happens for ShelfView bounds change.
-  EXPECT_TRUE(observer()->change_notified());
+  EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
 }
 

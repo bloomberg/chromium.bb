@@ -18,7 +18,6 @@
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_icon_observer.h"
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -1053,14 +1052,6 @@ int ShelfView::DetermineFirstVisiblePanelIndex(int min_value) const {
   return index;
 }
 
-void ShelfView::AddIconObserver(ShelfIconObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ShelfView::RemoveIconObserver(ShelfIconObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void ShelfView::AnimateToIdealBounds() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
@@ -1598,8 +1589,7 @@ void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // immediately.
   BoundsAnimatorDisabler disabler(bounds_animator_.get());
   LayoutToIdealBounds();
-  FOR_EACH_OBSERVER(ShelfIconObserver, observers_,
-                    OnShelfIconPositionsChanged());
+  wm_shelf_->NotifyShelfIconPositionsChanged();
 
   if (IsShowingOverflowBubble())
     overflow_bubble_->Hide();
@@ -1882,8 +1872,7 @@ void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
 }
 
 void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
-  FOR_EACH_OBSERVER(ShelfIconObserver, observers_,
-                    OnShelfIconPositionsChanged());
+  wm_shelf_->NotifyShelfIconPositionsChanged();
   PreferredSizeChanged();
 }
 

@@ -90,6 +90,19 @@ void WmShell::Shutdown() {
   views::FocusManagerFactory::Install(nullptr);
 }
 
+void WmShell::CreateShelfDelegate() {
+  // May be called multiple times as shelves are created and destroyed.
+  if (shelf_delegate_)
+    return;
+  // Must occur after SessionStateDelegate creation and user login because
+  // Chrome's implementation of ShelfDelegate assumes it can get information
+  // about multi-profile login state.
+  DCHECK(GetSessionStateDelegate());
+  DCHECK_GT(GetSessionStateDelegate()->NumberOfLoggedInUsers(), 0);
+  shelf_delegate_.reset(delegate_->CreateShelfDelegate(shelf_model_.get()));
+  shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model_.get()));
+}
+
 void WmShell::OnMaximizeModeStarted() {
   FOR_EACH_OBSERVER(ShellObserver, shell_observers_, OnMaximizeModeStarted());
 }
@@ -246,19 +259,6 @@ void WmShell::DeleteSystemTrayDelegate() {
   logout_confirmation_controller_.reset();
 #endif
   system_tray_delegate_.reset();
-}
-
-void WmShell::CreateShelfDelegate() {
-  // May be called multiple times as shelves are created and destroyed.
-  if (shelf_delegate_)
-    return;
-  // Must occur after SessionStateDelegate creation and user login because
-  // Chrome's implementation of ShelfDelegate assumes it can get information
-  // about multi-profile login state.
-  DCHECK(GetSessionStateDelegate());
-  DCHECK_GT(GetSessionStateDelegate()->NumberOfLoggedInUsers(), 0);
-  shelf_delegate_.reset(delegate_->CreateShelfDelegate(shelf_model_.get()));
-  shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model_.get()));
 }
 
 void WmShell::DeleteWindowCycleController() {

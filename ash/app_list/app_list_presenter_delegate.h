@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_icon_observer.h"
+#include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/shell_observer.h"
 #include "base/macros.h"
 #include "ui/app_list/presenter/app_list_presenter_delegate.h"
@@ -42,7 +42,7 @@ class ASH_EXPORT AppListPresenterDelegate
       public ui::EventHandler,
       public keyboard::KeyboardControllerObserver,
       public ShellObserver,
-      public ShelfIconObserver {
+      public WmShelfObserver {
  public:
   AppListPresenterDelegate(
       app_list::AppListPresenter* presenter,
@@ -76,7 +76,7 @@ class ASH_EXPORT AppListPresenterDelegate
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
 
-  // ShelfIconObserver overrides:
+  // WmShelfObserver overrides:
   void OnShelfIconPositionsChanged() override;
 
   // Whether the app list is visible (or in the process of being shown).

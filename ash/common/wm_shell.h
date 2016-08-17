@@ -272,6 +272,8 @@ class ASH_EXPORT WmShell {
   virtual std::unique_ptr<WmImmersiveFullscreenController>
   CreateImmersiveFullscreenController() = 0;
 
+  void CreateShelfDelegate();
+
   // Called after maximize mode has started, windows might still animate though.
   void OnMaximizeModeStarted();
 
@@ -358,8 +360,6 @@ class ASH_EXPORT WmShell {
   // TODO(msw|jamescook): Remove these once ShellDelegate, etc. are ported.
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
   void DeleteSystemTrayDelegate();
-
-  void CreateShelfDelegate();
 
   void DeleteWindowCycleController();
 

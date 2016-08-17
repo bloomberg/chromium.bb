@@ -83,9 +83,6 @@ class RootWindowController : public ShelfLayoutManagerDelegate {
   // Creates the necessary set of layout managers in the shell windows.
   void CreateLayoutManagers();
 
-  // Creates the status area widget that contains the system tray menu.
-  void CreateStatusArea();
-
   WindowManager* window_manager_;
   ui::Window* root_;
   int window_count_ = 0;

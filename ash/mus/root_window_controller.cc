@@ -14,9 +14,7 @@
 #include <vector>
 
 #include "ash/common/root_window_controller_common.h"
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
@@ -66,7 +64,6 @@ RootWindowController::RootWindowController(WindowManager* window_manager,
   root_window_controller_common_->CreateContainers();
   root_window_controller_common_->CreateLayoutManagers();
   CreateLayoutManagers();
-  CreateStatusArea();
 
   disconnected_app_handler_.reset(new DisconnectedAppHandler(root));
 
@@ -213,22 +210,6 @@ void RootWindowController::CreateLayoutManagers() {
       GetWindowByShellWindowId(kShellWindowId_PanelContainer);
   panel_container->SetLayoutManager(
       base::WrapUnique(new PanelLayoutManager(panel_container)));
-}
-
-void RootWindowController::CreateStatusArea() {
-  WmWindowMus* status_container =
-      GetWindowByShellWindowId(kShellWindowId_StatusContainer);
-  // Owned by native widget.
-  StatusAreaWidget* status_area_widget =
-      new StatusAreaWidget(status_container, wm_shelf_.get());
-  status_area_widget->CreateTrayViews();
-  // TODO(jamescook): Remove this when ash::StatusAreaLayoutManager and
-  // ash::ShelfLayoutManager are working in mash. http://crbug.com/621112
-  gfx::Size display_size = display_.bounds().size();
-  status_area_widget->SetBounds(gfx::Rect(display_size.width() - 179,
-                                          display_size.height() - 48, 120, 40));
-  if (WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted())
-    status_area_widget->Show();
 }
 
 }  // namespace mus

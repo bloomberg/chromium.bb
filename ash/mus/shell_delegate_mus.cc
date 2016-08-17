@@ -11,11 +11,13 @@
 #include "ash/common/palette_delegate.h"
 #include "ash/common/pointer_watcher_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/mus/accessibility_delegate_mus.h"
 #include "ash/mus/new_window_delegate_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "components/user_manager/user_info_impl.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/gfx/image/image.h"
@@ -97,6 +99,31 @@ class MediaDelegateStub : public MediaDelegate {
   DISALLOW_COPY_AND_ASSIGN(MediaDelegateStub);
 };
 
+class ShelfDelegateStub : public ShelfDelegate {
+ public:
+  ShelfDelegateStub() {}
+  ~ShelfDelegateStub() override {}
+
+  // ShelfDelegate overrides:
+  void OnShelfCreated(Shelf* shelf) override {}
+  void OnShelfDestroyed(Shelf* shelf) override {}
+  void OnShelfAlignmentChanged(Shelf* shelf) override {}
+  void OnShelfAutoHideBehaviorChanged(Shelf* shelf) override {}
+  void OnShelfAutoHideStateChanged(Shelf* shelf) override {}
+  void OnShelfVisibilityStateChanged(Shelf* shelf) override {}
+  ShelfID GetShelfIDForAppID(const std::string& app_id) override { return 0; }
+  bool HasShelfIDToAppIDMapping(ShelfID id) const override { return false; }
+  const std::string& GetAppIDForShelfID(ShelfID id) override {
+    return base::EmptyString();
+  }
+  void PinAppWithID(const std::string& app_id) override {}
+  bool IsAppPinned(const std::string& app_id) override { return false; }
+  void UnpinAppWithID(const std::string& app_id) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShelfDelegateStub);
+};
+
 }  // namespace
 
 ShellDelegateMus::ShellDelegateMus(
@@ -165,8 +192,8 @@ app_list::AppListPresenter* ShellDelegateMus::GetAppListPresenter() {
 }
 
 ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  // TODO(mash): Implement a real shelf delegate; maybe port ShelfDelegateMus?
+  return new ShelfDelegateStub;
 }
 
 SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {

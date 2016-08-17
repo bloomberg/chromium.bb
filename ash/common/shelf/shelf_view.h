@@ -16,7 +16,6 @@
 #include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/common/shelf/shelf_tooltip_manager.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -44,7 +43,6 @@ class OverflowButton;
 class ScopedRootWindowForNewWindows;
 class ShelfButton;
 class ShelfDelegate;
-class ShelfIconObserver;
 class ShelfModel;
 struct ShelfItem;
 class ShelfWidget;
@@ -88,9 +86,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Repositions the icon for the specified item by the midpoint of the window.
   void UpdatePanelIconPosition(ShelfID id, const gfx::Point& midpoint);
-
-  void AddIconObserver(ShelfIconObserver* observer);
-  void RemoveIconObserver(ShelfIconObserver* observer);
 
   // Returns true if we're showing a menu.
   bool IsShowingMenu() const;
@@ -401,8 +396,6 @@ class ASH_EXPORT ShelfView : public views::View,
   std::unique_ptr<views::MenuRunner> launcher_menu_runner_;
   std::unique_ptr<ScopedRootWindowForNewWindows>
       scoped_root_window_for_new_windows_;
-
-  base::ObserverList<ShelfIconObserver> observers_;
 
   // Amount content is inset on the left edge (or top edge for vertical
   // alignment).

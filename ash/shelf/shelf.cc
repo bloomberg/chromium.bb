@@ -136,14 +136,6 @@ void Shelf::CycleWindowLinear(CycleDirection direction) {
     ActivateShelfItem(item_index);
 }
 
-void Shelf::AddIconObserver(ShelfIconObserver* observer) {
-  shelf_view_->AddIconObserver(observer);
-}
-
-void Shelf::RemoveIconObserver(ShelfIconObserver* observer) {
-  shelf_view_->RemoveIconObserver(observer);
-}
-
 bool Shelf::IsShowingMenu() const {
   return shelf_view_->IsShowingMenu();
 }

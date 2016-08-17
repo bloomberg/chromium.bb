@@ -44,6 +44,7 @@ void PointerWatcherEventRouter::AddPointerWatcher(PointerWatcher* watcher,
 }
 
 void PointerWatcherEventRouter::RemovePointerWatcher(PointerWatcher* watcher) {
+  DCHECK(pointer_watchers_.HasObserver(watcher));
   pointer_watchers_.RemoveObserver(watcher);
   if (!HasPointerWatcher()) {
     // Last PointerWatcher removed, stop the watcher on the window server.
@@ -87,8 +88,9 @@ void PointerWatcherEventRouter::OnWindowTreeCaptureChanged(
   FOR_EACH_OBSERVER(PointerWatcher, pointer_watchers_, OnMouseCaptureChanged());
 }
 
-void PointerWatcherEventRouter::OnWillDestroyClient(
+void PointerWatcherEventRouter::OnDidDestroyClient(
     ui::WindowTreeClient* client) {
+  DCHECK(!pointer_watchers_.might_have_observers());
   DCHECK_EQ(client, window_tree_client_);
   window_tree_client_->RemoveObserver(this);
   window_tree_client_ = nullptr;

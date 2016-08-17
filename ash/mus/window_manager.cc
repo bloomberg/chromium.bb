@@ -215,6 +215,7 @@ void WindowManager::OnDidDestroyClient(ui::WindowTreeClient* client) {
   DCHECK(root_window_controllers_.empty());
 
   lookup_.reset();
+  shell_->Shutdown();
   shell_.reset();
   shadow_controller_.reset();
 

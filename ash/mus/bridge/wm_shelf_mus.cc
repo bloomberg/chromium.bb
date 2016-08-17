@@ -4,142 +4,43 @@
 
 #include "ash/mus/bridge/wm_shelf_mus.h"
 
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_root_window_controller.h"
-#include "ash/mus/bridge/wm_window_mus.h"
-#include "services/ui/public/cpp/window.h"
-#include "ui/views/widget/widget.h"
-
-// TODO(sky): fully implement this http://crbug.com/612631 .
-#undef NOTIMPLEMENTED
-#define NOTIMPLEMENTED() DVLOG(1) << "notimplemented"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 
 namespace ash {
 namespace mus {
 
 WmShelfMus::WmShelfMus(WmRootWindowController* root_window_controller) {
   DCHECK(root_window_controller);
-  // Create a placeholder shelf widget, because the status area code assumes it
-  // can access one.
-  // TODO(jamescook): Create a real shelf widget. http://crbug.com/615155
-  shelf_widget_ = new views::Widget;
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  root_window_controller->ConfigureWidgetInitParamsForContainer(
-      shelf_widget_, kShellWindowId_ShelfContainer, &params);
-  shelf_widget_->Init(params);
+  WmShell::Get()->CreateShelfDelegate();
+  WmWindow* root = root_window_controller->GetWindow();
+  shelf_widget_.reset(new ShelfWidget(
+      root->GetChildByShellWindowId(kShellWindowId_ShelfContainer),
+      root->GetChildByShellWindowId(kShellWindowId_StatusContainer), this));
+  shelf_.reset(
+      new Shelf(this, shelf_widget_->CreateShelfView(), shelf_widget_.get()));
+  shelf_widget_->set_shelf(shelf_.get());
+  // Must be initialized before the delegate is notified because the delegate
+  // may try to access the WmShelf.
+  SetShelf(shelf_.get());
+  WmShell::Get()->shelf_delegate()->OnShelfCreated(shelf_.get());
+  WmShell::Get()->NotifyShelfCreatedForRootWindow(root);
+  shelf_widget_->PostCreateShelf();
 }
 
-WmShelfMus::~WmShelfMus() {}
-
-WmWindow* WmShelfMus::GetWindow() {
-  return WmWindowMus::Get(shelf_widget_);
+WmShelfMus::~WmShelfMus() {
+  shelf_widget_.reset();
+  WmShelf::ClearShelf();
 }
 
-ShelfAlignment WmShelfMus::GetAlignment() const {
-  NOTIMPLEMENTED();
-  return SHELF_ALIGNMENT_BOTTOM;
-}
-
-void WmShelfMus::SetAlignment(ShelfAlignment alignment) {
-  NOTIMPLEMENTED();
-}
-
-ShelfAutoHideBehavior WmShelfMus::GetAutoHideBehavior() const {
-  NOTIMPLEMENTED();
-  return SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
-}
-
-void WmShelfMus::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
-  NOTIMPLEMENTED();
-}
-
-ShelfAutoHideState WmShelfMus::GetAutoHideState() const {
-  NOTIMPLEMENTED();
-  return SHELF_AUTO_HIDE_HIDDEN;
-}
-
-void WmShelfMus::UpdateAutoHideState() {
-  NOTIMPLEMENTED();
-}
-
-ShelfBackgroundType WmShelfMus::GetBackgroundType() const {
-  NOTIMPLEMENTED();
-  return SHELF_BACKGROUND_DEFAULT;
-}
-
-WmDimmerView* WmShelfMus::CreateDimmerView(bool disable_animations_for_test) {
-  // mus does not dim shelf items.
-  return nullptr;
-}
-
-bool WmShelfMus::IsDimmed() const {
-  // mus does not dim shelf items.
-  return false;
-}
-
-void WmShelfMus::SchedulePaint() {
-  NOTIMPLEMENTED();
-}
-
-bool WmShelfMus::IsVisible() const {
-  NOTIMPLEMENTED();
-  return true;
-}
-
-void WmShelfMus::UpdateVisibilityState() {
-  NOTIMPLEMENTED();
-}
-
-ShelfVisibilityState WmShelfMus::GetVisibilityState() const {
-  NOTIMPLEMENTED();
-  return SHELF_VISIBLE;
-}
-
-gfx::Rect WmShelfMus::GetUserWorkAreaBounds() const {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
-}
-
-void WmShelfMus::UpdateIconPositionForWindow(WmWindow* window) {
-  NOTIMPLEMENTED();
-}
-
-gfx::Rect WmShelfMus::GetIdealBounds() {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
-}
-
-gfx::Rect WmShelfMus::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
-}
-
-bool WmShelfMus::ProcessGestureEvent(const ui::GestureEvent& event) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void WmShelfMus::AddObserver(WmShelfObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void WmShelfMus::RemoveObserver(WmShelfObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void WmShelfMus::SetKeyboardBoundsForTesting(const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
-}
-
-ShelfLockingManager* WmShelfMus::GetShelfLockingManagerForTesting() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-ShelfView* WmShelfMus::GetShelfViewForTesting() {
-  NOTIMPLEMENTED();
-  return nullptr;
+void WmShelfMus::WillDeleteShelfLayoutManager() {
+  shelf_widget_->Shutdown();
+  WmShelf::WillDeleteShelfLayoutManager();
 }
 
 }  // namespace mus

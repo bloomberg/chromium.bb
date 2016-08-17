@@ -8,10 +8,12 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -142,7 +144,7 @@ AppListPresenterDelegate::~AppListPresenterDelegate() {
     keyboard_controller->RemoveObserver(this);
   Shell::GetInstance()->RemovePreTargetHandler(this);
   WmWindow* window = WmLookup::Get()->GetWindowForWidget(view_->GetWidget());
-  Shelf::ForWindow(window)->RemoveIconObserver(this);
+  window->GetRootWindowController()->GetShelf()->RemoveObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
 }
 
@@ -204,7 +206,8 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   if (keyboard_controller)
     keyboard_controller->AddObserver(this);
   Shell::GetInstance()->AddPreTargetHandler(this);
-  shelf->AddIconObserver(this);
+  WmWindow* window = WmShell::Get()->GetRootWindowForDisplayId(display_id);
+  window->GetRootWindowController()->GetShelf()->AddObserver(this);
 
   // By setting us as DnD recipient, the app list knows that we can
   // handle items.
@@ -352,7 +355,7 @@ void AppListPresenterDelegate::OnMaximizeModeEnded() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListPresenterDelegate, ShelfIconObserver implementation:
+// AppListPresenterDelegate, WmShelfObserver implementation:
 
 void AppListPresenterDelegate::OnShelfIconPositionsChanged() {
   UpdateBounds();

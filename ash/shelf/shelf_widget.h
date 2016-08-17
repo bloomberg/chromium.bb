@@ -22,7 +22,7 @@ class Shelf;
 class ShelfLayoutManager;
 class ShelfView;
 class StatusAreaWidget;
-class WmShelfAura;
+class WmShelf;
 class WmWindow;
 
 class ASH_EXPORT ShelfWidget : public views::Widget,
@@ -32,7 +32,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
  public:
   ShelfWidget(WmWindow* shelf_container,
               WmWindow* status_container,
-              WmShelfAura* wm_shelf_aura);
+              WmShelf* wm_shelf);
   ~ShelfWidget() override;
 
   // Returns if shelf alignment option is enabled, and the user is able to
@@ -110,9 +110,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   class DelegateView;
   friend class DelegateView;
 
-  WmShelfAura* wm_shelf_aura_;
+  WmShelf* wm_shelf_;
 
-  // Owned by the shelf container's aura::Window.
+  // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;
   // Owned by the root window controller.
   Shelf* shelf_;

@@ -4,7 +4,6 @@
 
 #include "ash/shelf/shelf_widget.h"
 
-#include "ash/aura/wm_shelf_aura.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -155,10 +154,8 @@ void ShelfWidget::DelegateView::SetDimmed(bool dimmed) {
   // When starting dimming, attempt to create a dimmer view.
   if (dimmed) {
     if (!dimmer_view_) {
-      // The WmShelf interface is private in WmShelfAura.
-      WmShelf* shelf = static_cast<WmShelf*>(shelf_widget_->wm_shelf_aura_);
       dimmer_view_ =
-          shelf->CreateDimmerView(disable_dimming_animations_for_test_);
+          wm_shelf_->CreateDimmerView(disable_dimming_animations_for_test_);
     }
     return;
   }
@@ -290,12 +287,12 @@ void ShelfWidget::DelegateView::UpdateShelfAssetBackground(int alpha) {
 
 ShelfWidget::ShelfWidget(WmWindow* shelf_container,
                          WmWindow* status_container,
-                         WmShelfAura* wm_shelf_aura)
-    : wm_shelf_aura_(wm_shelf_aura),
+                         WmShelf* wm_shelf)
+    : wm_shelf_(wm_shelf),
       shelf_(nullptr),
-      delegate_view_(new DelegateView(wm_shelf_aura, this)),
+      delegate_view_(new DelegateView(wm_shelf, this)),
       shelf_view_(nullptr),
-      background_animator_(SHELF_BACKGROUND_DEFAULT, wm_shelf_aura_),
+      background_animator_(SHELF_BACKGROUND_DEFAULT, wm_shelf_),
       activating_as_fallback_(false) {
   background_animator_.AddObserver(this);
   background_animator_.AddObserver(delegate_view_);
@@ -322,10 +319,10 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container,
   background_animator_.PaintBackground(
       shelf_layout_manager_->GetShelfBackgroundType(),
       BACKGROUND_CHANGE_IMMEDIATE);
-  wm_shelf_aura_->SetShelfLayoutManager(shelf_layout_manager_);
+  wm_shelf_->SetShelfLayoutManager(shelf_layout_manager_);
 
   // TODO(jamescook): Move ownership to RootWindowController.
-  status_area_widget_ = new StatusAreaWidget(status_container, wm_shelf_aura_);
+  status_area_widget_ = new StatusAreaWidget(status_container, wm_shelf_);
   status_area_widget_->CreateTrayViews();
   if (WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted())
     status_area_widget_->Show();
@@ -406,8 +403,7 @@ bool ShelfWidget::ShelfAlignmentAllowed() {
 }
 
 ShelfAlignment ShelfWidget::GetAlignment() const {
-  WmShelf* wm_shelf = static_cast<WmShelf*>(wm_shelf_aura_);
-  return wm_shelf->GetAlignment();
+  return wm_shelf_->GetAlignment();
 }
 
 void ShelfWidget::OnShelfAlignmentChanged() {
@@ -434,7 +430,7 @@ ShelfView* ShelfWidget::CreateShelfView() {
 
   shelf_view_ =
       new ShelfView(WmShell::Get()->shelf_model(),
-                    WmShell::Get()->shelf_delegate(), wm_shelf_aura_, this);
+                    WmShell::Get()->shelf_delegate(), wm_shelf_, this);
   shelf_view_->Init();
   GetContentsView()->AddChildView(shelf_view_);
   return shelf_view_;
@@ -474,7 +470,7 @@ FocusCycler* ShelfWidget::GetFocusCycler() {
 
 void ShelfWidget::Shutdown() {
   // Tear down the dimmer before |shelf_layout_manager_|, since the dimmer uses
-  // |shelf_layout_manager_| to get the shelf's WmWindow, via WmShelfAura.
+  // |shelf_layout_manager_| to get the shelf's WmWindow, via WmShelf.
   delegate_view_->SetDimmed(false);
 
   // Shutting down the status area widget may cause some widgets (e.g. bubbles)

@@ -141,7 +141,6 @@
       'common/shelf/shelf_constants.cc',
       'common/shelf/shelf_constants.h',
       'common/shelf/shelf_delegate.h',
-      'common/shelf/shelf_icon_observer.h',
       'common/shelf/shelf_item_delegate.h',
       'common/shelf/shelf_item_types.cc',
       'common/shelf/shelf_item_types.h',

@@ -7,13 +7,11 @@
 
 #include "ash/common/shelf/wm_shelf.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
-
-namespace views {
-class Widget;
-}
 
 namespace ash {
+
+class Shelf;
+class ShelfWidget;
 class WmRootWindowController;
 
 namespace mus {
@@ -25,36 +23,14 @@ class WmShelfMus : public WmShelf {
   ~WmShelfMus() override;
 
   // WmShelf:
-  WmWindow* GetWindow() override;
-  ShelfAlignment GetAlignment() const override;
-  void SetAlignment(ShelfAlignment alignment) override;
-  ShelfAutoHideBehavior GetAutoHideBehavior() const override;
-  void SetAutoHideBehavior(ShelfAutoHideBehavior behavior) override;
-  ShelfAutoHideState GetAutoHideState() const override;
-  void UpdateAutoHideState() override;
-  ShelfBackgroundType GetBackgroundType() const override;
-  WmDimmerView* CreateDimmerView(bool disable_animations_for_test) override;
-  bool IsDimmed() const override;
-  void SchedulePaint() override;
-  bool IsVisible() const override;
-  void UpdateVisibilityState() override;
-  ShelfVisibilityState GetVisibilityState() const override;
-  gfx::Rect GetIdealBounds() override;
-  gfx::Rect GetUserWorkAreaBounds() const override;
-  void UpdateIconPositionForWindow(WmWindow* window) override;
-  gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window) override;
-  bool ProcessGestureEvent(const ui::GestureEvent& event) override;
-  void AddObserver(WmShelfObserver* observer) override;
-  void RemoveObserver(WmShelfObserver* observer) override;
-  void SetKeyboardBoundsForTesting(const gfx::Rect& bounds) override;
-  ShelfLockingManager* GetShelfLockingManagerForTesting() override;
-  ShelfView* GetShelfViewForTesting() override;
+  void WillDeleteShelfLayoutManager() override;
 
  private:
-  base::ObserverList<WmShelfObserver> observers_;
+  // Legacy shelf controller. Only present after shelf is created (post-login).
+  std::unique_ptr<Shelf> shelf_;
 
-  // Owned by native widget.
-  views::Widget* shelf_widget_;
+  // The shelf widget for this shelf.
+  std::unique_ptr<ShelfWidget> shelf_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShelfMus);
 };
