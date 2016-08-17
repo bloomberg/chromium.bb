@@ -6,11 +6,15 @@
 <img style="max-width: 100%" src="../replaced/resources/1x1-blue.png">
 </div>
 <script>
-//TODO(siva.gunturi): Use async_test and use asserts on image.onload and window.onload.
-test(function() {
-    document.documentElement.offsetTop;
-    var img = document.querySelector("img");
-    img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAMAAAAoyzS7AAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAGUExURf8AAAAAAEGjEgMAAAAMSURBVHjaYmAACDAAAAIAAU9tWeEAAAAASUVORK5CYII=";
-    assert_equals(internals.needsLayoutCount(), 0);
+async_test(function(t) {
+    window.onload = t.step_func(function() {
+        document.documentElement.offsetTop;
+        var img = document.querySelector("img");
+        img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAMAAAAoyzS7AAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAGUExURf8AAAAAAEGjEgMAAAAMSURBVHjaYmAACDAAAAIAAU9tWeEAAAAASUVORK5CYII=";
+        assert_equals(internals.needsLayoutCount(), 0);
+        img.onload = t.step_func_done(function() {
+            assert_equals(internals.needsLayoutCount(), 0);
+        });
+    });
 });
 </script>
