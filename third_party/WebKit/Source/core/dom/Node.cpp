@@ -2096,7 +2096,7 @@ void Node::defaultEventHandler(Event* event)
 #if OS(WIN)
     } else if (eventType == EventTypeNames::mousedown && event->isMouseEvent()) {
         MouseEvent* mouseEvent = toMouseEvent(event);
-        if (mouseEvent->button() == static_cast<short>(WebPointerProperties::Button::Middle)) {
+        if (mouseEvent->button() == MiddleButton) {
             if (enclosingLinkEventParentOrSelf())
                 return;
 

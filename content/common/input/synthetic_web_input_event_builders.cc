@@ -40,9 +40,9 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
   result.modifiers = modifiers;
 
   if (type == WebInputEvent::MouseDown || type == WebInputEvent::MouseUp)
-    result.button = WebMouseEvent::Button::Left;
+    result.button = WebMouseEvent::ButtonLeft;
   else
-    result.button = WebMouseEvent::Button::NoButton;
+    result.button = WebMouseEvent::ButtonNone;
 
   return result;
 }

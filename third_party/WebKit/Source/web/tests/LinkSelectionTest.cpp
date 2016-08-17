@@ -52,7 +52,7 @@ protected:
 void LinkSelectionTestBase::emulateMouseDrag(const IntPoint& downPoint, const IntPoint& upPoint, int modifiers, DragFlags dragFlags)
 {
     if (dragFlags & SendDownEvent) {
-        const auto& downEvent = FrameTestHelpers::createMouseEvent(WebMouseEvent::MouseDown, WebMouseEvent::Button::Left, downPoint, modifiers);
+        const auto& downEvent = FrameTestHelpers::createMouseEvent(WebMouseEvent::MouseDown, WebMouseEvent::ButtonLeft, downPoint, modifiers);
         m_webView->handleInputEvent(downEvent);
     }
 
@@ -61,12 +61,12 @@ void LinkSelectionTestBase::emulateMouseDrag(const IntPoint& downPoint, const In
     const auto& upDownVector = upPoint - downPoint;
     for (int i = 0; i < kMoveEventsNumber; ++i) {
         const auto& movePoint = downPoint + scaled(upDownVector, i * kMoveIncrementFraction);
-        const auto& moveEvent = FrameTestHelpers::createMouseEvent(WebMouseEvent::MouseMove, WebMouseEvent::Button::Left, movePoint, modifiers);
+        const auto& moveEvent = FrameTestHelpers::createMouseEvent(WebMouseEvent::MouseMove, WebMouseEvent::ButtonLeft, movePoint, modifiers);
         m_webView->handleInputEvent(moveEvent);
     }
 
     if (dragFlags & SendUpEvent) {
-        const auto& upEvent = FrameTestHelpers::createMouseEvent(WebMouseEvent::MouseUp, WebMouseEvent::Button::Left, upPoint, modifiers);
+        const auto& upEvent = FrameTestHelpers::createMouseEvent(WebMouseEvent::MouseUp, WebMouseEvent::ButtonLeft, upPoint, modifiers);
         m_webView->handleInputEvent(upEvent);
     }
 }
@@ -175,7 +175,7 @@ TEST_F(LinkSelectionTest, HandCursorOverLinkAfterContextMenu)
 
     // Show context menu. We don't send mouseup event here since in browser it doesn't reach
     // blink because of shown context menu.
-    emulateMouseDown(m_leftPointInLink, WebMouseEvent::Button::Right, 0, 1);
+    emulateMouseDown(m_leftPointInLink, WebMouseEvent::ButtonRight, 0, 1);
 
     LocalFrame* frame = m_mainFrame->frame();
     // Hide context menu.
@@ -190,7 +190,7 @@ TEST_F(LinkSelectionTest, HandCursorOverLinkAfterContextMenu)
 TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownload)
 {
     EXPECT_CALL(m_testFrameClient, loadURLExternally(_, WebNavigationPolicy::WebNavigationPolicyDownload, WebString(), _));
-    emulateMouseClick(m_leftPointInLink, WebMouseEvent::Button::Left, WebInputEvent::AltKey);
+    emulateMouseClick(m_leftPointInLink, WebMouseEvent::ButtonLeft, WebInputEvent::AltKey);
 }
 
 TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownloadWhenTextSelected)
@@ -206,7 +206,7 @@ TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownloadWhenTextSelected)
     EXPECT_FALSE(getSelectionText().isEmpty());
 
     EXPECT_CALL(m_testFrameClient, loadURLExternally(_, WebNavigationPolicy::WebNavigationPolicyDownload, WebString(), _));
-    emulateMouseClick(m_leftPointInLink, WebMouseEvent::Button::Left, WebInputEvent::AltKey);
+    emulateMouseClick(m_leftPointInLink, WebMouseEvent::ButtonLeft, WebInputEvent::AltKey);
 }
 
 class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
@@ -275,7 +275,7 @@ protected:
 
         const auto& elemBounds = element.boundsInViewport();
         const int clickCount = doubleClickEvent ? 2 : 1;
-        emulateMouseClick(elemBounds.center(), WebMouseEvent::Button::Left, 0, clickCount);
+        emulateMouseClick(elemBounds.center(), WebMouseEvent::ButtonLeft, 0, clickCount);
 
         if (doubleClickEvent) {
             EXPECT_EQ(element.innerText().isEmpty(), getSelectionText().isEmpty());

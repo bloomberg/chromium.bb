@@ -101,20 +101,20 @@ WebMouseEvent WebMouseEventBuilder::Build(
   case WM_MOUSEMOVE:
     result.type = WebInputEvent::MouseMove;
     if (wparam & MK_LBUTTON)
-      result.button = WebMouseEvent::Button::Left;
+      result.button = WebMouseEvent::ButtonLeft;
     else if (wparam & MK_MBUTTON)
-      result.button = WebMouseEvent::Button::Middle;
+      result.button = WebMouseEvent::ButtonMiddle;
     else if (wparam & MK_RBUTTON)
-      result.button = WebMouseEvent::Button::Right;
+      result.button = WebMouseEvent::ButtonRight;
     else
-      result.button = WebMouseEvent::Button::NoButton;
+      result.button = WebMouseEvent::ButtonNone;
     break;
   case WM_MOUSELEAVE:
   case WM_NCMOUSELEAVE:
     // TODO(rbyers): This should be MouseLeave but is disabled temporarily.
     // See http://crbug.com/450631
     result.type = WebInputEvent::MouseMove;
-    result.button = WebMouseEvent::Button::NoButton;
+    result.button = WebMouseEvent::ButtonNone;
     // set the current mouse position (relative to the client area of the
     // current window) since none is specified for this event
     lparam = GetRelativeCursorPos(hwnd);
@@ -122,29 +122,29 @@ WebMouseEvent WebMouseEventBuilder::Build(
   case WM_LBUTTONDOWN:
   case WM_LBUTTONDBLCLK:
     result.type = WebInputEvent::MouseDown;
-    result.button = WebMouseEvent::Button::Left;
+    result.button = WebMouseEvent::ButtonLeft;
     break;
   case WM_MBUTTONDOWN:
   case WM_MBUTTONDBLCLK:
     result.type = WebInputEvent::MouseDown;
-    result.button = WebMouseEvent::Button::Middle;
+    result.button = WebMouseEvent::ButtonMiddle;
     break;
   case WM_RBUTTONDOWN:
   case WM_RBUTTONDBLCLK:
     result.type = WebInputEvent::MouseDown;
-    result.button = WebMouseEvent::Button::Right;
+    result.button = WebMouseEvent::ButtonRight;
     break;
   case WM_LBUTTONUP:
     result.type = WebInputEvent::MouseUp;
-    result.button = WebMouseEvent::Button::Left;
+    result.button = WebMouseEvent::ButtonLeft;
     break;
   case WM_MBUTTONUP:
     result.type = WebInputEvent::MouseUp;
-    result.button = WebMouseEvent::Button::Middle;
+    result.button = WebMouseEvent::ButtonMiddle;
     break;
   case WM_RBUTTONUP:
     result.type = WebInputEvent::MouseUp;
-    result.button = WebMouseEvent::Button::Right;
+    result.button = WebMouseEvent::ButtonRight;
     break;
   default:
     NOTREACHED();
@@ -176,7 +176,7 @@ WebMouseEvent WebMouseEventBuilder::Build(
   // where their original code looks buggy.
   static int last_click_position_x;
   static int last_click_position_y;
-  static WebMouseEvent::Button last_click_button = WebMouseEvent::Button::Left;
+  static WebMouseEvent::Button last_click_button = WebMouseEvent::ButtonLeft;
 
   double current_time = result.timeStampSeconds;
   bool cancel_previous_click =
@@ -239,7 +239,7 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
 
   result.timeStampSeconds = time_stamp;
 
-  result.button = WebMouseEvent::Button::NoButton;
+  result.button = WebMouseEvent::ButtonNone;
 
   result.pointerType = pointer_type;
 

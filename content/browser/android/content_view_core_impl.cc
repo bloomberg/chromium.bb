@@ -972,7 +972,7 @@ jboolean ContentViewCoreImpl::SendMouseMoveEvent(
 
   blink::WebMouseEvent event = WebMouseEventBuilder::Build(
       WebInputEvent::MouseMove,
-      blink::WebMouseEvent::Button::NoButton,
+      blink::WebMouseEvent::ButtonNone,
       time_ms / 1000.0, x / dpi_scale(), y / dpi_scale(), 0, 1,
       ui::ToWebPointerType(static_cast<ui::MotionEvent::ToolType>(tool_type)));
 

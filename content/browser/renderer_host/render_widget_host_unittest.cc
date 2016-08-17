@@ -582,7 +582,7 @@ class RenderWidgetHostTest : public testing::Test {
     WebMouseEvent event =
         SyntheticWebMouseEventBuilder::Build(type, x, y, modifiers);
     if (pressed)
-      event.button = WebMouseEvent::Button::Left;
+      event.button = WebMouseEvent::ButtonLeft;
     event.timeStampSeconds = GetNextSimulatedEventTimeSeconds();
     host_->ForwardMouseEvent(event);
   }

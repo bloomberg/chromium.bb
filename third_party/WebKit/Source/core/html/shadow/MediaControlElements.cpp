@@ -572,7 +572,7 @@ MediaControlTimelineElement* MediaControlTimelineElement::create(MediaControls& 
 
 void MediaControlTimelineElement::defaultEventHandler(Event* event)
 {
-    if (event->isMouseEvent() && toMouseEvent(event)->button() != static_cast<short>(WebPointerProperties::Button::Left))
+    if (event->isMouseEvent() && toMouseEvent(event)->button() != LeftButton)
         return;
 
     if (!isConnected() || !document().isActive())
@@ -652,7 +652,7 @@ MediaControlVolumeSliderElement* MediaControlVolumeSliderElement::create(MediaCo
 
 void MediaControlVolumeSliderElement::defaultEventHandler(Event* event)
 {
-    if (event->isMouseEvent() && toMouseEvent(event)->button() != static_cast<short>(WebPointerProperties::Button::Left))
+    if (event->isMouseEvent() && toMouseEvent(event)->button() != LeftButton)
         return;
 
     if (!isConnected() || !document().isActive())

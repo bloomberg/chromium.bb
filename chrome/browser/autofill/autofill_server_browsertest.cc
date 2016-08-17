@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::SimulateMouseClick(
-      web_contents, 0, blink::WebMouseEvent::Button::Left);
+      web_contents, 0, blink::WebMouseEvent::ButtonLeft);
   upload_network_observer.Wait();
 }
 

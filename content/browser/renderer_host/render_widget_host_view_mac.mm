@@ -1773,7 +1773,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     if (!mouseEventWasIgnored_ && renderWidgetHostView_->render_widget_host_) {
       WebMouseEvent exitEvent = WebMouseEventBuilder::Build(theEvent, self);
       exitEvent.type = WebInputEvent::MouseLeave;
-      exitEvent.button = WebMouseEvent::Button::NoButton;
+      exitEvent.button = WebMouseEvent::ButtonNone;
       renderWidgetHostView_->ForwardMouseEvent(exitEvent);
     }
     mouseEventWasIgnored_ = YES;
@@ -1786,7 +1786,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     if (renderWidgetHostView_->render_widget_host_) {
       WebMouseEvent enterEvent = WebMouseEventBuilder::Build(theEvent, self);
       enterEvent.type = WebInputEvent::MouseMove;
-      enterEvent.button = WebMouseEvent::Button::NoButton;
+      enterEvent.button = WebMouseEvent::ButtonNone;
       if (renderWidgetHostView_->ShouldRouteEvent(enterEvent)) {
         renderWidgetHostView_->render_widget_host_->delegate()
             ->GetInputEventRouter()
@@ -3057,7 +3057,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   if (hasOpenMouseDown_) {
     WebMouseEvent event;
     event.type = WebInputEvent::MouseUp;
-    event.button = WebMouseEvent::Button::Left;
+    event.button = WebMouseEvent::ButtonLeft;
     renderWidgetHostView_->ForwardMouseEvent(event);
 
     hasOpenMouseDown_ = NO;

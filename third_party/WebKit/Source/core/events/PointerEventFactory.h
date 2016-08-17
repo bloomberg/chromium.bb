@@ -31,6 +31,7 @@ public:
 
     PointerEvent* create(
         const AtomicString& mouseEventName, const PlatformMouseEvent&,
+        EventTarget* relatedTarget,
         LocalDOMWindow*);
 
     PointerEvent* create(const AtomicString& type,

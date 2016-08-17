@@ -283,13 +283,13 @@ void updatePolicyForEvent(const WebInputEvent* inputEvent, NavigationPolicy* pol
         const WebMouseEvent* mouseEvent = static_cast<const WebMouseEvent*>(inputEvent);
 
         switch (mouseEvent->button) {
-        case WebMouseEvent::Button::Left:
+        case WebMouseEvent::ButtonLeft:
             buttonNumber = 0;
             break;
-        case WebMouseEvent::Button::Middle:
+        case WebMouseEvent::ButtonMiddle:
             buttonNumber = 1;
             break;
-        case WebMouseEvent::Button::Right:
+        case WebMouseEvent::ButtonRight:
             buttonNumber = 2;
             break;
         default:

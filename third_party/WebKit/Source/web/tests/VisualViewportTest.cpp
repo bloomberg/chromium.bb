@@ -1041,7 +1041,7 @@ TEST_P(ParameterizedVisualViewportTest, TestContextMenuShownInCorrectLocation)
     mouseDownEvent.globalX = 110;
     mouseDownEvent.globalY = 210;
     mouseDownEvent.clickCount = 1;
-    mouseDownEvent.button = WebMouseEvent::Button::Right;
+    mouseDownEvent.button = WebMouseEvent::ButtonRight;
 
     // Corresponding release event (Windows shows context menu on release).
     WebMouseEvent mouseUpEvent(mouseDownEvent);
@@ -1057,7 +1057,7 @@ TEST_P(ParameterizedVisualViewportTest, TestContextMenuShownInCorrectLocation)
     webViewImpl()->handleInputEvent(mouseUpEvent);
 
     Mock::VerifyAndClearExpectations(&mockWebFrameClient);
-    mouseDownEvent.button = WebMouseEvent::Button::Left;
+    mouseDownEvent.button = WebMouseEvent::ButtonLeft;
     webViewImpl()->handleInputEvent(mouseDownEvent);
 
     // Now pinch zoom into the page and move the visual viewport. The context
@@ -1068,7 +1068,7 @@ TEST_P(ParameterizedVisualViewportTest, TestContextMenuShownInCorrectLocation)
     visualViewport.setLocation(FloatPoint(60, 80));
     EXPECT_CALL(mockWebFrameClient, showContextMenu(ContextMenuAtLocation(mouseDownEvent.x, mouseDownEvent.y)));
 
-    mouseDownEvent.button = WebMouseEvent::Button::Right;
+    mouseDownEvent.button = WebMouseEvent::ButtonRight;
     webViewImpl()->handleInputEvent(mouseDownEvent);
     webViewImpl()->handleInputEvent(mouseUpEvent);
 

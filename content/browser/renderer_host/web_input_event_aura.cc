@@ -124,7 +124,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   blink::WebMouseWheelEvent webkit_event;
 
   webkit_event.type = blink::WebInputEvent::MouseWheel;
-  webkit_event.button = blink::WebMouseEvent::Button::NoButton;
+  webkit_event.button = blink::WebMouseEvent::ButtonNone;
   webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds =
       ui::EventTimeStampToSeconds(event.time_stamp());
@@ -378,7 +378,7 @@ blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(
   webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds =
       ui::EventTimeStampToSeconds(event.time_stamp());
-  webkit_event.button = blink::WebMouseEvent::Button::NoButton;
+  webkit_event.button = blink::WebMouseEvent::ButtonNone;
   int button_flags = event.flags();
   if (event.type() == ui::ET_MOUSE_PRESSED ||
       event.type() == ui::ET_MOUSE_RELEASED) {
@@ -389,11 +389,11 @@ blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(
       button_flags = event.changed_button_flags();
   }
   if (button_flags & ui::EF_LEFT_MOUSE_BUTTON)
-    webkit_event.button = blink::WebMouseEvent::Button::Left;
+    webkit_event.button = blink::WebMouseEvent::ButtonLeft;
   if (button_flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-    webkit_event.button = blink::WebMouseEvent::Button::Middle;
+    webkit_event.button = blink::WebMouseEvent::ButtonMiddle;
   if (button_flags & ui::EF_RIGHT_MOUSE_BUTTON)
-    webkit_event.button = blink::WebMouseEvent::Button::Right;
+    webkit_event.button = blink::WebMouseEvent::ButtonRight;
 
   switch (event.type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -429,7 +429,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   blink::WebMouseWheelEvent webkit_event;
 
   webkit_event.type = blink::WebInputEvent::MouseWheel;
-  webkit_event.button = blink::WebMouseEvent::Button::NoButton;
+  webkit_event.button = blink::WebMouseEvent::ButtonNone;
   webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds =
       ui::EventTimeStampToSeconds(event.time_stamp());

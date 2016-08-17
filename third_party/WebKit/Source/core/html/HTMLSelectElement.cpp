@@ -1335,7 +1335,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
         }
     }
 
-    if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == static_cast<short>(WebPointerProperties::Button::Left)) {
+    if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         InputDeviceCapabilities* sourceCapabilities = toMouseEvent(event)->fromTouch() ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities() : InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities();
         focus(FocusParams(SelectionBehaviorOnFocus::Restore, WebFocusTypeNone, sourceCapabilities));
         if (layoutObject() && layoutObject()->isMenuList() && !isDisabledFormControl()) {
@@ -1463,7 +1463,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
             event->setDefaultHandled();
         }
 
-    } else if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == static_cast<short>(WebPointerProperties::Button::Left)) {
+    } else if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         focus();
         // Calling focus() may cause us to lose our layoutObject, in which case
         // do not want to handle the event.
@@ -1488,7 +1488,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
 
     } else if (event->type() == EventTypeNames::mousemove && event->isMouseEvent()) {
         MouseEvent* mouseEvent = toMouseEvent(event);
-        if (mouseEvent->button() != static_cast<short>(WebPointerProperties::Button::Left) || !mouseEvent->buttonDown())
+        if (mouseEvent->button() != LeftButton || !mouseEvent->buttonDown())
             return;
 
         if (Page* page = document().page())
@@ -1514,7 +1514,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
             }
         }
 
-    } else if (event->type() == EventTypeNames::mouseup && event->isMouseEvent() && toMouseEvent(event)->button() == static_cast<short>(WebPointerProperties::Button::Left) && layoutObject()) {
+    } else if (event->type() == EventTypeNames::mouseup && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton && layoutObject()) {
         if (document().page() && document().page()->autoscrollController().autoscrollInProgress(toLayoutBox(layoutObject())))
             document().page()->autoscrollController().stopAutoscroll();
         else

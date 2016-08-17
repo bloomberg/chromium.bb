@@ -27,7 +27,6 @@
 #include "core/dom/Element.h"
 #include "core/events/EventDispatcher.h"
 #include "platform/PlatformMouseEvent.h"
-#include "public/platform/WebPointerProperties.h"
 
 namespace blink {
 
@@ -40,7 +39,7 @@ MouseEvent* MouseEvent::create(ScriptState* scriptState, const AtomicString& typ
 
 MouseEvent* MouseEvent::create(const AtomicString& eventType, AbstractView* view, const PlatformMouseEvent& event, int detail, Node* relatedTarget)
 {
-    DCHECK(event.type() == PlatformEvent::MouseMoved || event.pointerProperties().button != WebPointerProperties::Button::NoButton);
+    ASSERT(event.type() == PlatformEvent::MouseMoved || event.button() != NoButton);
 
     bool isMouseEnterOrLeave = eventType == EventTypeNames::mouseenter || eventType == EventTypeNames::mouseleave;
     bool isCancelable = !isMouseEnterOrLeave;
@@ -50,7 +49,7 @@ MouseEvent* MouseEvent::create(const AtomicString& eventType, AbstractView* view
         eventType, isBubbling, isCancelable, view,
         detail, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
-        event.getModifiers(), static_cast<short>(event.pointerProperties().button),
+        event.getModifiers(), event.button(),
         platformModifiersToButtons(event.getModifiers()),
         relatedTarget, event.timestamp(), event.getSyntheticEventType(), event.region());
 }
@@ -161,6 +160,22 @@ unsigned short MouseEvent::platformModifiersToButtons(unsigned modifiers)
     return buttons;
 }
 
+unsigned short MouseEvent::buttonToButtons(short button)
+{
+    switch (button) {
+    case NoButton:
+        return static_cast<unsigned short>(Buttons::None);
+    case LeftButton:
+        return static_cast<unsigned short>(Buttons::Left);
+    case RightButton:
+        return static_cast<unsigned short>(Buttons::Right);
+    case MiddleButton:
+        return static_cast<unsigned short>(Buttons::Middle);
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
 void MouseEvent::initMouseEvent(ScriptState* scriptState, const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
                                 int detail, int screenX, int screenY, int clientX, int clientY,
                                 bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
@@ -269,7 +284,7 @@ DispatchEventResult MouseEventDispatchMediator::dispatchEvent(EventDispatcher& d
     if (mouseEvent.type().isEmpty())
         return DispatchEventResult::NotCanceled; // Shouldn't happen.
 
-    DCHECK(!mouseEvent.target() || mouseEvent.target() != mouseEvent.relatedTarget());
+    ASSERT(!mouseEvent.target() || mouseEvent.target() != mouseEvent.relatedTarget());
 
     EventTarget* relatedTarget = mouseEvent.relatedTarget();
 

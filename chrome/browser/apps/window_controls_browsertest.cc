@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(WindowControlsTest, CloseControlWorks) {
   int y = controlOffset;
   content::SimulateMouseClickAt(web_contents,
                                 0,
-                                blink::WebMouseEvent::Button::Left,
+                                blink::WebMouseEvent::ButtonLeft,
                                 gfx::Point(x, y));
 
   ASSERT_TRUE(window_closed.WaitUntilSatisfied());

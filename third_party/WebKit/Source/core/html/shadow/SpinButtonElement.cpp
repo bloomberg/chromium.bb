@@ -88,7 +88,7 @@ void SpinButtonElement::defaultEventHandler(Event* event)
 
     MouseEvent* mouseEvent = toMouseEvent(event);
     IntPoint local = roundedIntPoint(box->absoluteToLocal(FloatPoint(mouseEvent->absoluteLocation()), UseTransforms));
-    if (mouseEvent->type() == EventTypeNames::mousedown && mouseEvent->button() == static_cast<short>(WebPointerProperties::Button::Left)) {
+    if (mouseEvent->type() == EventTypeNames::mousedown && mouseEvent->button() == LeftButton) {
         if (box->pixelSnappedBorderBoxRect().contains(local)) {
             if (m_spinButtonOwner)
                 m_spinButtonOwner->focusAndSelectSpinButtonOwner();
@@ -105,7 +105,7 @@ void SpinButtonElement::defaultEventHandler(Event* event)
             }
             event->setDefaultHandled();
         }
-    } else if (mouseEvent->type() == EventTypeNames::mouseup && mouseEvent->button() == static_cast<short>(WebPointerProperties::Button::Left)) {
+    } else if (mouseEvent->type() == EventTypeNames::mouseup && mouseEvent->button() == LeftButton) {
         releaseCapture();
     } else if (event->type() == EventTypeNames::mousemove) {
         if (box->pixelSnappedBorderBoxRect().contains(local)) {

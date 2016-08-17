@@ -1853,7 +1853,7 @@ TEST_F(WebViewTest, BlinkCaretOnClosingContextMenu)
     // Note that we do not send MouseUp event here since it will be consumed
     // by the context menu once it shows up.
     WebMouseEvent mouseEvent;
-    mouseEvent.button = WebMouseEvent::Button::Right;
+    mouseEvent.button = WebMouseEvent::ButtonRight;
     mouseEvent.x = 1;
     mouseEvent.y = 1;
     mouseEvent.clickCount = 1;
@@ -2855,7 +2855,7 @@ TEST_F(WebViewTest, FirstUserGestureObservedMouseEvent)
     EXPECT_EQ(0, client.getUserGestureNotificationsCount());
 
     WebMouseEvent mouseEvent;
-    mouseEvent.button = WebMouseEvent::Button::Left;
+    mouseEvent.button = WebMouseEvent::ButtonLeft;
     mouseEvent.x = 1;
     mouseEvent.y = 1;
     mouseEvent.clickCount = 1;

@@ -737,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
   content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
-      blink::WebMouseEvent::Button::Left, link_position);
+      blink::WebMouseEvent::ButtonLeft, link_position);
   observer.Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
@@ -774,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
   content::SimulateMouseClickAt(web_contents, 0,
-      blink::WebMouseEvent::Button::Middle, link_position);
+      blink::WebMouseEvent::ButtonMiddle, link_position);
   observer.Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
@@ -813,7 +813,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlShiftLeftClick) {
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
   content::SimulateMouseClickAt(web_contents, modifiers,
-      blink::WebMouseEvent::Button::Left, link_position);
+      blink::WebMouseEvent::ButtonLeft, link_position);
   observer.Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
@@ -845,7 +845,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftMiddleClick) {
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
   content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::ShiftKey,
-      blink::WebMouseEvent::Button::Middle, link_position);
+      blink::WebMouseEvent::ButtonMiddle, link_position);
   observer.Wait();
 
   int tab_count = browser()->tab_strip_model()->count();

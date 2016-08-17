@@ -109,13 +109,13 @@ WebMouseEventTypeToEventType(blink::WebInputEvent::Type web_type) {
 
 int WebMouseEventButtonToFlags(blink::WebMouseEvent::Button button) {
   switch (button) {
-    case blink::WebMouseEvent::Button::Left:
+    case blink::WebMouseEvent::ButtonLeft:
       return ui::EF_LEFT_MOUSE_BUTTON;
 
-    case blink::WebMouseEvent::Button::Middle:
+    case blink::WebMouseEvent::ButtonMiddle:
       return ui::EF_MIDDLE_MOUSE_BUTTON;
 
-    case blink::WebMouseEvent::Button::Right:
+    case blink::WebMouseEvent::ButtonRight:
       return ui::EF_RIGHT_MOUSE_BUTTON;
 
     default:

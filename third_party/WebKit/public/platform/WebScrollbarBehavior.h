@@ -5,8 +5,6 @@
 #ifndef WebScrollbarBehavior_h
 #define WebScrollbarBehavior_h
 
-#include "WebPointerProperties.h"
-
 namespace blink {
 
 struct WebPoint;
@@ -14,8 +12,14 @@ struct WebRect;
 
 class WebScrollbarBehavior {
 public:
+    enum Button {
+        ButtonNone = -1,
+        ButtonLeft,
+        ButtonMiddle,
+        ButtonRight
+    };
     virtual ~WebScrollbarBehavior() { }
-    virtual bool shouldCenterOnThumb(WebPointerProperties::Button, bool shiftKeyPressed, bool altKeyPressed) { return false; }
+    virtual bool shouldCenterOnThumb(Button, bool shiftKeyPressed, bool altKeyPressed) { return false; }
     virtual bool shouldSnapBackToDragOrigin(const WebPoint& eventPoint, const WebRect& scrollbarRect, bool isHorizontal) { return false; }
 };
 

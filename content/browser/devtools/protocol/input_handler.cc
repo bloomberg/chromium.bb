@@ -97,15 +97,15 @@ bool SetMouseEventButton(blink::WebMouseEvent* event,
     return true;
 
   if (*button == dispatch_mouse_event::kButtonNone) {
-    event->button = blink::WebMouseEvent::Button::NoButton;
+    event->button = blink::WebMouseEvent::ButtonNone;
   } else if (*button == dispatch_mouse_event::kButtonLeft) {
-    event->button = blink::WebMouseEvent::Button::Left;
+    event->button = blink::WebMouseEvent::ButtonLeft;
     event->modifiers |= blink::WebInputEvent::LeftButtonDown;
   } else if (*button == dispatch_mouse_event::kButtonMiddle) {
-    event->button = blink::WebMouseEvent::Button::Middle;
+    event->button = blink::WebMouseEvent::ButtonMiddle;
     event->modifiers |= blink::WebInputEvent::MiddleButtonDown;
   } else if (*button == dispatch_mouse_event::kButtonRight) {
-    event->button = blink::WebMouseEvent::Button::Right;
+    event->button = blink::WebMouseEvent::ButtonRight;
     event->modifiers |= blink::WebInputEvent::RightButtonDown;
   } else {
     return false;

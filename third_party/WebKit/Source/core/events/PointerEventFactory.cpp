@@ -51,23 +51,6 @@ const AtomicString& pointerEventNameForMouseEventName(
     return emptyAtom;
 }
 
-
-unsigned short buttonToButtonsBitfield(WebPointerProperties::Button button)
-{
-    switch (button) {
-    case WebPointerProperties::Button::NoButton:
-        return static_cast<unsigned short>(MouseEvent::Buttons::None);
-    case WebPointerProperties::Button::Left:
-        return static_cast<unsigned short>(MouseEvent::Buttons::Left);
-    case WebPointerProperties::Button::Right:
-        return static_cast<unsigned short>(MouseEvent::Buttons::Right);
-    case WebPointerProperties::Button::Middle:
-        return static_cast<unsigned short>(MouseEvent::Buttons::Middle);
-    }
-    NOTREACHED();
-    return 0;
-}
-
 } // namespace
 
 const int PointerEventFactory::s_invalidId = 0;
@@ -108,8 +91,8 @@ void PointerEventFactory::setBubblesAndCancelable(
 }
 
 PointerEvent* PointerEventFactory::create(
-    const AtomicString& mouseEventName,
-    const PlatformMouseEvent& mouseEvent,
+    const AtomicString& mouseEventName, const PlatformMouseEvent& mouseEvent,
+    EventTarget* relatedTarget,
     LocalDOMWindow* view)
 {
     DCHECK(mouseEventName == EventTypeNames::mousemove
@@ -142,10 +125,9 @@ PointerEvent* PointerEventFactory::create(
 
     if (pointerEventName == EventTypeNames::pointerdown
         || pointerEventName == EventTypeNames::pointerup) {
-        pointerEventInit.setButton(static_cast<int>(mouseEvent.pointerProperties().button));
-    } else {
-        DCHECK(pointerEventName == EventTypeNames::pointermove);
-        pointerEventInit.setButton(static_cast<int>(WebPointerProperties::Button::NoButton));
+        pointerEventInit.setButton(mouseEvent.button());
+    } else { // Only when pointerEventName == EventTypeNames::pointermove
+        pointerEventInit.setButton(NoButton);
     }
     pointerEventInit.setPressure(getPointerEventPressure(
         mouseEvent.pointerProperties().force, pointerEventInit.buttons()));
@@ -156,12 +138,14 @@ PointerEvent* PointerEventFactory::create(
 
     // Make sure chorded buttons fire pointermove instead of pointerup/down.
     if ((pointerEventName == EventTypeNames::pointerdown
-        && (buttons & ~buttonToButtonsBitfield(mouseEvent.pointerProperties().button)) != 0)
+        && (buttons & ~MouseEvent::buttonToButtons(mouseEvent.button())) != 0)
         || (pointerEventName == EventTypeNames::pointerup && buttons != 0))
         pointerEventName = EventTypeNames::pointermove;
 
 
     pointerEventInit.setView(view);
+    if (relatedTarget)
+        pointerEventInit.setRelatedTarget(relatedTarget);
 
     return PointerEvent::create(pointerEventName, pointerEventInit);
 }
@@ -194,7 +178,7 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
     pointerEventInit.setScreenY(touchPoint.screenPos().y());
     pointerEventInit.setClientX(clientPoint.x());
     pointerEventInit.setClientY(clientPoint.y());
-    pointerEventInit.setButton(static_cast<int>(pointerPressedOrReleased ? WebPointerProperties::Button::Left : WebPointerProperties::Button::NoButton));
+    pointerEventInit.setButton(pointerPressedOrReleased ? LeftButton: NoButton);
     pointerEventInit.setPressure(getPointerEventPressure(
         touchPoint.force(), pointerEventInit.buttons()));
     pointerEventInit.setTiltX(touchPoint.pointerProperties().tiltX);

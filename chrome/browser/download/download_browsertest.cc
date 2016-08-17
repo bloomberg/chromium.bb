@@ -2601,7 +2601,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   blink::WebMouseEvent mouse_event;
   mouse_event.type = blink::WebInputEvent::MouseDown;
-  mouse_event.button = blink::WebMouseEvent::Button::Left;
+  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
   mouse_event.x = 15;
   mouse_event.y = 15;
   mouse_event.clickCount = 1;
@@ -2658,7 +2658,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   blink::WebMouseEvent mouse_event;
   mouse_event.type = blink::WebInputEvent::MouseDown;
-  mouse_event.button = blink::WebMouseEvent::Button::Right;
+  mouse_event.button = blink::WebMouseEvent::ButtonRight;
   mouse_event.x = 15;
   mouse_event.y = 15;
   mouse_event.clickCount = 1;

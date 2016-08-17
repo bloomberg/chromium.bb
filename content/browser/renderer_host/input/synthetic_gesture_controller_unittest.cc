@@ -206,14 +206,14 @@ class MockDragMouseTarget : public MockMoveGestureTarget {
     ASSERT_TRUE(WebInputEvent::isMouseEventType(event.type));
     const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
     if (!started_) {
-      EXPECT_EQ(mouse_event.button, WebMouseEvent::Button::Left);
+      EXPECT_EQ(mouse_event.button, WebMouseEvent::ButtonLeft);
       EXPECT_EQ(mouse_event.clickCount, 1);
       EXPECT_EQ(mouse_event.type, WebInputEvent::MouseDown);
       start_.SetPoint(mouse_event.x, mouse_event.y);
       last_mouse_point_ = start_;
       started_ = true;
     } else {
-      EXPECT_EQ(mouse_event.button, WebMouseEvent::Button::Left);
+      EXPECT_EQ(mouse_event.button, WebMouseEvent::ButtonLeft);
       ASSERT_NE(mouse_event.type, WebInputEvent::MouseDown);
 
       gfx::PointF mouse_point(mouse_event.x, mouse_event.y);
@@ -450,7 +450,7 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
     switch (state_) {
       case NOT_STARTED:
         EXPECT_EQ(mouse_event.type, WebInputEvent::MouseDown);
-        EXPECT_EQ(mouse_event.button, WebMouseEvent::Button::Left);
+        EXPECT_EQ(mouse_event.button, WebMouseEvent::ButtonLeft);
         EXPECT_EQ(mouse_event.clickCount, 1);
         position_ = gfx::PointF(mouse_event.x, mouse_event.y);
         start_time_ = base::TimeDelta::FromMilliseconds(
@@ -459,7 +459,7 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
         break;
       case STARTED:
         EXPECT_EQ(mouse_event.type, WebInputEvent::MouseUp);
-        EXPECT_EQ(mouse_event.button, WebMouseEvent::Button::Left);
+        EXPECT_EQ(mouse_event.button, WebMouseEvent::ButtonLeft);
         EXPECT_EQ(mouse_event.clickCount, 1);
         EXPECT_EQ(position_, gfx::PointF(mouse_event.x, mouse_event.y));
         stop_time_ = base::TimeDelta::FromMilliseconds(

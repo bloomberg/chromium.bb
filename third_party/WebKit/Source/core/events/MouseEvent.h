@@ -61,6 +61,7 @@ public:
     ~MouseEvent() override;
 
     static unsigned short platformModifiersToButtons(unsigned modifiers);
+    static unsigned short buttonToButtons(short button);
 
     void initMouseEvent(ScriptState*, const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
         int detail, int screenX, int screenY, int clientX, int clientY,

@@ -331,7 +331,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu)
     webView->updateAllLifecyclePhases();
     runPendingTasks();
 
-    auto event = FrameTestHelpers::createMouseEvent(WebMouseEvent::MouseDown, WebMouseEvent::Button::Right, WebPoint(30, 30), 0);
+    auto event = FrameTestHelpers::createMouseEvent(WebMouseEvent::MouseDown, WebMouseEvent::ButtonRight, WebPoint(30, 30), 0);
     event.clickCount = 1;
 
     // Make sure the right-click + Copy works in common scenario.

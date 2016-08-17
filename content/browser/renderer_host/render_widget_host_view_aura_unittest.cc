@@ -756,7 +756,7 @@ class RenderWidgetHostViewAuraOverscrollTest
     WebMouseEvent event =
         SyntheticWebMouseEventBuilder::Build(type, x, y, modifiers);
     if (pressed)
-      event.button = WebMouseEvent::Button::Left;
+      event.button = WebMouseEvent::ButtonLeft;
     widget_host_->ForwardMouseEvent(event);
   }
 

@@ -119,7 +119,7 @@ static bool dragTypeIsValid(DragSourceAction action)
 static PlatformMouseEvent createMouseEvent(DragData* dragData)
 {
     return PlatformMouseEvent(dragData->clientPosition(), dragData->globalPosition(),
-        WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 0,
+        LeftButton, PlatformEvent::MouseMoved, 0,
         static_cast<PlatformEvent::Modifiers>(dragData->modifiers()),
         PlatformMouseEvent::RealOrIndistinguishable, monotonicallyIncreasingTime());
 }

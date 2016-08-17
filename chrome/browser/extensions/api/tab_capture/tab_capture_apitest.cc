@@ -56,7 +56,7 @@ class TabCaptureApiTest : public ExtensionApiTest {
     content::SimulateMouseClick(
         browser()->tab_strip_model()->GetActiveWebContents(),
         0,
-        blink::WebMouseEvent::Button::Left);
+        blink::WebMouseEvent::ButtonLeft);
   }
 };
 

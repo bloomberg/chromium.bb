@@ -398,7 +398,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
         &y));
     content::SimulateMouseClickAt(GetWebContents(),
                                   0,
-                                  blink::WebMouseEvent::Button::Left,
+                                  blink::WebMouseEvent::ButtonLeft,
                                   gfx::Point(x, y));
   }
 

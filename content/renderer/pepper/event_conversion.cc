@@ -171,16 +171,16 @@ void AppendCharEvent(const WebInputEvent& event,
 
 void AppendMouseEvent(const WebInputEvent& event,
                       std::vector<InputEventData>* result_events) {
-  static_assert(static_cast<int>(WebMouseEvent::Button::NoButton) ==
+  static_assert(static_cast<int>(WebMouseEvent::ButtonNone) ==
                     static_cast<int>(PP_INPUTEVENT_MOUSEBUTTON_NONE),
                 "MouseNone should match");
-  static_assert(static_cast<int>(WebMouseEvent::Button::Left) ==
+  static_assert(static_cast<int>(WebMouseEvent::ButtonLeft) ==
                     static_cast<int>(PP_INPUTEVENT_MOUSEBUTTON_LEFT),
                 "MouseLeft should match");
-  static_assert(static_cast<int>(WebMouseEvent::Button::Right) ==
+  static_assert(static_cast<int>(WebMouseEvent::ButtonRight) ==
                     static_cast<int>(PP_INPUTEVENT_MOUSEBUTTON_RIGHT),
                 "MouseRight should match");
-  static_assert(static_cast<int>(WebMouseEvent::Button::Middle) ==
+  static_assert(static_cast<int>(WebMouseEvent::ButtonMiddle) ==
                     static_cast<int>(PP_INPUTEVENT_MOUSEBUTTON_MIDDLE),
                 "MouseMiddle should match");
 
@@ -432,11 +432,11 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
   mouse_event->button = static_cast<WebMouseEvent::Button>(event.mouse_button);
   if (mouse_event->type == WebInputEvent::MouseMove) {
     if (mouse_event->modifiers & WebInputEvent::LeftButtonDown)
-      mouse_event->button = WebMouseEvent::Button::Left;
+      mouse_event->button = WebMouseEvent::ButtonLeft;
     else if (mouse_event->modifiers & WebInputEvent::MiddleButtonDown)
-      mouse_event->button = WebMouseEvent::Button::Middle;
+      mouse_event->button = WebMouseEvent::ButtonMiddle;
     else if (mouse_event->modifiers & WebInputEvent::RightButtonDown)
-      mouse_event->button = WebMouseEvent::Button::Right;
+      mouse_event->button = WebMouseEvent::ButtonRight;
   }
   mouse_event->x = event.mouse_position.x;
   mouse_event->y = event.mouse_position.y;

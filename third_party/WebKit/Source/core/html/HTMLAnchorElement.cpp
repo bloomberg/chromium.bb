@@ -64,7 +64,7 @@ private:
 
 void HTMLAnchorElement::NavigationHintSender::handleEvent(Event* event)
 {
-    if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == static_cast<short>(WebPointerProperties::Button::Left))
+    if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton)
         maybeSendNavigationHint(WebNavigationHintType::LinkMouseDown);
     else if (event->type() == EventTypeNames::gesturetapunconfirmed)
         maybeSendNavigationHint(WebNavigationHintType::LinkTapUnconfirmed);
@@ -455,7 +455,7 @@ bool isEnterKeyKeydownEvent(Event* event)
 bool isLinkClick(Event* event)
 {
     // Allow detail <= 1 so that synthetic clicks work. They may have detail == 0.
-    return (event->type() == EventTypeNames::click || event->type() == EventTypeNames::auxclick) && (!event->isMouseEvent() || (toMouseEvent(event)->button() != static_cast<short>(WebPointerProperties::Button::Right) && toMouseEvent(event)->detail() <= 1));
+    return (event->type() == EventTypeNames::click || event->type() == EventTypeNames::auxclick) && (!event->isMouseEvent() || (toMouseEvent(event)->button() != RightButton && toMouseEvent(event)->detail() <= 1));
 }
 
 bool HTMLAnchorElement::willRespondToMouseClickEvents()

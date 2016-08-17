@@ -113,7 +113,7 @@ PointerEvent* PointerEventFactoryTest::createAndCheckMouseEvent(
     PlatformEvent::Modifiers modifiers)
 {
     PointerEvent* pointerEvent = m_pointerEventFactory.create(
-        EventTypeNames::mousedown, PlatformMouseEventBuilder(pointerType, rawId, modifiers), nullptr);
+        EventTypeNames::mousedown, PlatformMouseEventBuilder(pointerType, rawId, modifiers), nullptr, nullptr);
     EXPECT_EQ(uniqueId, pointerEvent->pointerId());
     EXPECT_EQ(isPrimary, pointerEvent->isPrimary());
     return pointerEvent;
