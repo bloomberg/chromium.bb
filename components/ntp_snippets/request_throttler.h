@@ -40,7 +40,8 @@ class RequestThrottler {
  public:
   // Enumeration listing all current applications of the request counter.
   enum class RequestType {
-    CONTENT_SUGGESTION_FETCHER
+    CONTENT_SUGGESTION_FETCHER,
+    CONTENT_SUGGESTION_THUMBNAIL,
   };
 
   RequestThrottler(PrefService* pref_service, RequestType type);
@@ -49,10 +50,11 @@ class RequestThrottler {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Returns whether quota is available for another request and reports this
-  // information to UMA. Forced requests always return true -- should be only
-  // used for requests initiated by the user (if it is safe to assume that all
-  // users cannot generate an amount of requests we cannot handle).
-  bool DemandQuotaForRequest(bool force_request);
+  // information to UMA. Interactive requests should be always granted (upon
+  // standard conditions) and should be only used for requests initiated by the
+  // user (if it is safe to assume that all users cannot generate an amount of
+  // requests we cannot handle).
+  bool DemandQuotaForRequest(bool interactive_request);
 
  private:
   friend class RequestThrottlerTest;
@@ -65,10 +67,11 @@ class RequestThrottler {
   // Also emits the PerDay histogram if the day changed.
   void ResetCounterIfDayChanged();
 
-  const char* GetRequestTypeAsString() const;
+  const char* GetRequestTypeName() const;
 
-  int GetCount() const;
-  void SetCount(int count);
+  int GetQuota(bool interactive_request) const;
+  int GetCount(bool interactive_request) const;
+  void SetCount(bool interactive_request, int count);
   int GetDay() const;
   void SetDay(int day);
   bool HasDay() const;
@@ -76,12 +79,14 @@ class RequestThrottler {
   PrefService* pref_service_;
   const RequestTypeInfo& type_info_;
 
-  // It comes from a variation parameter or |default_quota| as a fallback.
+  // The quotas are hardcoded, but can be overridden by variation params.
   int quota_;
+  int interactive_quota_;
 
   // The histograms for reporting the requests of the given |type_|.
   base::HistogramBase* histogram_request_status_;
-  base::HistogramBase* histogram_per_day_;
+  base::HistogramBase* histogram_per_day_background_;
+  base::HistogramBase* histogram_per_day_interactive_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestThrottler);
 };

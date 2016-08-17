@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/request_throttler.h"
 
+#include <limits.h>
 #include <vector>
 
 #include "base/metrics/histogram.h"
@@ -25,27 +26,38 @@ namespace {
 // histogram, so do not change existing values. Insert new values at the end,
 // and update the histogram definition.
 enum class RequestStatus {
-  FORCED,
-  QUOTA_GRANTED,
-  QUOTA_EXCEEDED,
+  INTERACTIVE_QUOTA_GRANTED,
+  BACKGROUND_QUOTA_GRANTED,
+  BACKGROUND_QUOTA_EXCEEDED,
+  INTERACTIVE_QUOTA_EXCEEDED,
   REQUEST_STATUS_COUNT
 };
+
+// Quota value to use if no quota should be applied (by default).
+const int kUnlimitedQuota = INT_MAX;
 
 }  // namespace
 
 struct RequestThrottler::RequestTypeInfo {
     const char* name;
     const char* count_pref;
+    const char* interactive_count_pref;
     const char* day_pref;
     const int default_quota;
+    const int default_interactive_quota;
 };
 
-// When adding a new type here, extend also the "RequestCounterTypes"
+// When adding a new type here, extend also the "RequestThrottlerTypes"
 // <histogram_suffixes> in histograms.xml with the |name| string.
 const RequestThrottler::RequestTypeInfo RequestThrottler::kRequestTypeInfo[] = {
     // RequestCounter::RequestType::CONTENT_SUGGESTION_FETCHER,
-    {"SuggestionFetcher", prefs::kSnippetFetcherQuotaCount,
-     prefs::kSnippetFetcherQuotaDay, 50}};
+    {"SuggestionFetcher", prefs::kSnippetFetcherRequestCount,
+     prefs::kSnippetFetcherInteractiveRequestCount,
+     prefs::kSnippetFetcherRequestsDay, 50, kUnlimitedQuota},
+     // RequestCounter::RequestType::CONTENT_SUGGESTION_THUMBNAIL,
+    {"SuggestionThumbnailFetcher", prefs::kSnippetThumbnailsRequestCount,
+     prefs::kSnippetThumbnailsInteractiveRequestCount,
+     prefs::kSnippetThumbnailsRequestsDay, kUnlimitedQuota, kUnlimitedQuota}};
 
 RequestThrottler::RequestThrottler(PrefService* pref_service, RequestType type)
     : pref_service_(pref_service),
@@ -54,12 +66,22 @@ RequestThrottler::RequestThrottler(PrefService* pref_service, RequestType type)
 
   std::string quota = variations::GetVariationParamValue(
       ntp_snippets::kStudyName,
-      base::StringPrintf("quota_%s", GetRequestTypeAsString()));
+      base::StringPrintf("quota_%s", GetRequestTypeName()));
   if (!base::StringToInt(quota, &quota_)) {
     LOG_IF(WARNING, !quota.empty())
         << "Invalid variation parameter for quota for "
-        << GetRequestTypeAsString();
+        << GetRequestTypeName();
     quota_ = type_info_.default_quota;
+  }
+
+  std::string interactive_quota = variations::GetVariationParamValue(
+      ntp_snippets::kStudyName,
+      base::StringPrintf("interactive_quota_%s", GetRequestTypeName()));
+  if (!base::StringToInt(interactive_quota, &interactive_quota_)) {
+    LOG_IF(WARNING, !interactive_quota.empty())
+        << "Invalid variation parameter for interactive quota for "
+        << GetRequestTypeName();
+    interactive_quota_ = type_info_.default_interactive_quota;
   }
 
   // Since the histogram names are dynamic, we cannot use the standard macros
@@ -68,13 +90,18 @@ RequestThrottler::RequestThrottler(PrefService* pref_service, RequestType type)
   // Corresponds to UMA_HISTOGRAM_ENUMERATION(name, sample, |status_count|).
   histogram_request_status_ = base::LinearHistogram::FactoryGet(
       base::StringPrintf("NewTabPage.RequestThrottler.RequestStatus_%s",
-                         GetRequestTypeAsString()),
+                         GetRequestTypeName()),
       1, status_count, status_count + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   // Corresponds to UMA_HISTOGRAM_COUNTS_100(name, sample).
-  histogram_per_day_ = base::Histogram::FactoryGet(
+  histogram_per_day_background_ = base::Histogram::FactoryGet(
       base::StringPrintf("NewTabPage.RequestThrottler.PerDay_%s",
-                         GetRequestTypeAsString()),
+                         GetRequestTypeName()),
+      1, 100, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
+  // Corresponds to UMA_HISTOGRAM_COUNTS_100(name, sample).
+  histogram_per_day_interactive_ = base::Histogram::FactoryGet(
+      base::StringPrintf("NewTabPage.RequestThrottler.PerDayInteractive_%s",
+                         GetRequestTypeName()),
       1, 100, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
@@ -82,25 +109,27 @@ RequestThrottler::RequestThrottler(PrefService* pref_service, RequestType type)
 void RequestThrottler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   for (const RequestTypeInfo& info : kRequestTypeInfo) {
     registry->RegisterIntegerPref(info.count_pref, 0);
+    registry->RegisterIntegerPref(info.interactive_count_pref, 0);
     registry->RegisterIntegerPref(info.day_pref, 0);
   }
 }
 
-bool RequestThrottler::DemandQuotaForRequest(bool forced_request) {
+bool RequestThrottler::DemandQuotaForRequest(bool interactive_request) {
   ResetCounterIfDayChanged();
 
-  if (forced_request) {
-    histogram_request_status_->Add(static_cast<int>(RequestStatus::FORCED));
-    return true;
+  int new_count = GetCount(interactive_request) + 1;
+  SetCount(interactive_request, new_count);
+  bool available = (new_count <= GetQuota(interactive_request));
+
+  if (interactive_request) {
+    histogram_request_status_->Add(static_cast<int>(
+        available ? RequestStatus::INTERACTIVE_QUOTA_GRANTED
+                  : RequestStatus::INTERACTIVE_QUOTA_EXCEEDED));
+  } else {
+    histogram_request_status_->Add(
+        static_cast<int>(available ? RequestStatus::BACKGROUND_QUOTA_GRANTED
+                                   : RequestStatus::BACKGROUND_QUOTA_EXCEEDED));
   }
-
-  int new_count = GetCount() + 1;
-  SetCount(new_count);
-  bool available = (new_count <= quota_);
-
-  histogram_request_status_->Add(
-      static_cast<int>(available ? RequestStatus::QUOTA_GRANTED
-                                 : RequestStatus::QUOTA_EXCEEDED));
   return available;
 }
 
@@ -113,23 +142,36 @@ void RequestThrottler::ResetCounterIfDayChanged() {
     SetDay(now_day);
   } else if (now_day != GetDay()) {
     // Day has changed - report the number of requests from the previous day.
-    histogram_per_day_->Add(GetCount());
-    // Reset the counter.
-    SetCount(0);
+    histogram_per_day_background_->Add(GetCount(/*interactive_request=*/false));
+    histogram_per_day_interactive_->Add(GetCount(/*interactive_request=*/true));
+    // Reset the counters.
+    SetCount(/*interactive_request=*/false, 0);
+    SetCount(/*interactive_request=*/true, 0);
     SetDay(now_day);
   }
 }
 
-const char* RequestThrottler::GetRequestTypeAsString() const {
+const char* RequestThrottler::GetRequestTypeName() const {
   return type_info_.name;
 }
 
-int RequestThrottler::GetCount() const {
-  return pref_service_->GetInteger(type_info_.count_pref);
+// TODO(jkrcal): turn RequestTypeInfo into a proper class, move those methods
+// onto the class and hide the members.
+int RequestThrottler::GetQuota(bool interactive_request) const {
+  return interactive_request ? interactive_quota_ : quota_;
 }
 
-void RequestThrottler::SetCount(int count) {
-  pref_service_->SetInteger(type_info_.count_pref, count);
+int RequestThrottler::GetCount(bool interactive_request) const {
+  return pref_service_->GetInteger(interactive_request
+                                       ? type_info_.interactive_count_pref
+                                       : type_info_.count_pref);
+}
+
+void RequestThrottler::SetCount(bool interactive_request, int count) {
+  pref_service_->SetInteger(interactive_request
+                                ? type_info_.interactive_count_pref
+                                : type_info_.count_pref,
+                            count);
 }
 
 int RequestThrottler::GetDay() const {

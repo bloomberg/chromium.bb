@@ -212,7 +212,10 @@ NTPSnippetsService::NTPSnippetsService(
       snippets_status_service_(std::move(status_service)),
       fetch_after_load_(false),
       provided_category_(
-          category_factory->FromKnownCategory(KnownCategories::ARTICLES)) {
+          category_factory->FromKnownCategory(KnownCategories::ARTICLES)),
+      thumbnail_requests_throttler_(
+          pref_service,
+          RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL) {
   if (database_->IsErrorState()) {
     EnterState(State::ERROR_OCCURRED, CategoryStatus::LOADING_ERROR);
     return;
@@ -237,24 +240,24 @@ void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   NTPSnippetsStatusService::RegisterProfilePrefs(registry);
 }
 
-void NTPSnippetsService::FetchSnippets(bool force_request) {
+void NTPSnippetsService::FetchSnippets(bool interactive_request) {
   if (ready())
-    FetchSnippetsFromHosts(GetSuggestionsHosts(), force_request);
+    FetchSnippetsFromHosts(GetSuggestionsHosts(), interactive_request);
   else
     fetch_after_load_ = true;
 }
 
 void NTPSnippetsService::FetchSnippetsFromHosts(
     const std::set<std::string>& hosts,
-    bool force_request) {
+    bool interactive_request) {
   if (!ready())
     return;
 
   if (snippets_.empty())
     UpdateCategoryStatus(CategoryStatus::AVAILABLE_LOADING);
 
-  snippets_fetcher_->FetchSnippetsFromHosts(hosts, application_language_code_,
-                                            kMaxSnippetCount, force_request);
+  snippets_fetcher_->FetchSnippetsFromHosts(
+      hosts, application_language_code_, kMaxSnippetCount, interactive_request);
 }
 
 void NTPSnippetsService::RescheduleFetching() {
@@ -317,7 +320,7 @@ void NTPSnippetsService::FetchSuggestionImage(
   database_->LoadImage(
       snippet_id,
       base::Bind(&NTPSnippetsService::OnSnippetImageFetchedFromDatabase,
-                 base::Unretained(this), snippet_id, callback));
+                 base::Unretained(this), callback, snippet_id));
 }
 
 void NTPSnippetsService::ClearCachedSuggestionsForDebugging(Category category) {
@@ -628,15 +631,15 @@ void NTPSnippetsService::ClearExpiredSnippets() {
 }
 
 void NTPSnippetsService::OnSnippetImageFetchedFromDatabase(
-    const std::string& snippet_id,
     const ImageFetchedCallback& callback,
+    const std::string& snippet_id,
     std::string data) {
   // |image_decoder_| is null in tests.
   if (image_decoder_ && !data.empty()) {
     image_decoder_->DecodeImage(
         std::move(data),
-        base::Bind(&NTPSnippetsService::OnSnippetImageDecoded,
-                   base::Unretained(this), snippet_id, callback));
+        base::Bind(&NTPSnippetsService::OnSnippetImageDecodedFromDatabase,
+                   base::Unretained(this), callback, snippet_id));
     return;
   }
 
@@ -644,9 +647,9 @@ void NTPSnippetsService::OnSnippetImageFetchedFromDatabase(
   FetchSnippetImageFromNetwork(snippet_id, callback);
 }
 
-void NTPSnippetsService::OnSnippetImageDecoded(
-    const std::string& snippet_id,
+void NTPSnippetsService::OnSnippetImageDecodedFromDatabase(
     const ImageFetchedCallback& callback,
+    const std::string& snippet_id,
     const gfx::Image& image) {
   if (!image.IsEmpty()) {
     callback.Run(MakeUniqueID(provided_category_, snippet_id), image);
@@ -667,14 +670,36 @@ void NTPSnippetsService::FetchSnippetImageFromNetwork(
                    [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
                      return snippet->id() == snippet_id;
                    });
-  if (it == snippets_.end()) {
-    callback.Run(MakeUniqueID(provided_category_, snippet_id), gfx::Image());
+
+  if (it == snippets_.end() ||
+      !thumbnail_requests_throttler_.DemandQuotaForRequest(
+          /*interactive_request=*/true)) {
+    // Return an empty image. Directly, this is never synchronous with the
+    // original FetchSuggestionImage() call - an asynchronous database query has
+    // happened in the meantime.
+    OnSnippetImageDecodedFromNetwork(callback, snippet_id, gfx::Image());
     return;
   }
 
   const NTPSnippet& snippet = *it->get();
+
+  // TODO(jkrcal): We probably should rename OnImageDataFetched() to
+  // CacheImageData(). This would document that this is actually independent
+  // from the individual fetch-flow.
+  // The image fetcher calls OnImageDataFetched() with the raw data (this object
+  // is an ImageFetcherDelegate) and then also
+  // OnSnippetImageDecodedFromNetwork() after the raw data gets decoded.
   image_fetcher_->StartOrQueueNetworkRequest(
-      snippet.id(), snippet.salient_image_url(), callback);
+      snippet.id(), snippet.salient_image_url(),
+      base::Bind(&NTPSnippetsService::OnSnippetImageDecodedFromNetwork,
+                 base::Unretained(this), callback));
+}
+
+void NTPSnippetsService::OnSnippetImageDecodedFromNetwork(
+    const ImageFetchedCallback& callback,
+    const std::string& snippet_id,
+    const gfx::Image& image) {
+  callback.Run(MakeUniqueID(provided_category_, snippet_id), image);
 }
 
 void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {

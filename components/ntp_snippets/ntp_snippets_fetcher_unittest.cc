@@ -379,7 +379,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfully) {
   EXPECT_CALL(mock_callback(), Run(IsSingleArticle("http://localhost/foobar")));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(), Eq("OK"));
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
@@ -414,7 +414,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ShouldFetchSuccessfully) {
   EXPECT_CALL(mock_callback(), Run(IsSingleArticle("http://localhost/foobar")));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(), Eq("OK"));
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
@@ -506,7 +506,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
   EXPECT_CALL(mock_callback(), Run(IsEmptyArticleList()));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(), Eq("OK"));
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
@@ -523,7 +523,7 @@ TEST_F(NTPSnippetsFetcherHostRestrictedTest, ShouldReportEmptyHostsError) {
   snippets_fetcher().FetchSnippetsFromHosts(/*hosts=*/std::set<std::string>(),
                                             /*language_code=*/"en-US",
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(),
               Eq("Cannot fetch for empty hosts list."));
@@ -544,7 +544,7 @@ TEST_F(NTPSnippetsFetcherHostRestrictedTest, ShouldRestrictToHosts) {
   net::TestURLFetcherFactory test_url_fetcher_factory;
   snippets_fetcher().FetchSnippetsFromHosts(
       {"www.somehost1.com", "www.somehost2.com"}, test_lang(), /*count=*/17,
-      /*force_request=*/true);
+      /*interactive_request=*/true);
   net::TestURLFetcher* fetcher = test_url_fetcher_factory.GetFetcherByID(0);
   ASSERT_THAT(fetcher, NotNull());
   std::unique_ptr<base::Value> value =
@@ -576,7 +576,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(),
               Eq("URLRequestStatus error -2"));
@@ -597,7 +597,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
   EXPECT_THAT(
@@ -617,7 +617,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(),
               StartsWith("Received invalid JSON (error "));
@@ -639,7 +639,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_json(), std::string());
   EXPECT_THAT(
@@ -658,7 +658,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportInvalidListError) {
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
   EXPECT_THAT(
@@ -678,7 +678,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpErrorForMissingBakedResponse) {
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
 }
 
@@ -689,12 +689,12 @@ TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
   EXPECT_CALL(mock_callback(), Run(IsEmptyArticleList()));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   // Second call to FetchSnippetsFromHosts() overrides/cancels the previous.
   // Callback is expected to be called once.
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(
       histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),

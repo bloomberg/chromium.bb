@@ -216,8 +216,8 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
     const std::set<std::string>& hosts,
     const std::string& language_code,
     int count,
-    bool force_request) {
-  if (!request_throttler_.DemandQuotaForRequest(force_request))
+    bool interactive_request) {
+  if (!request_throttler_.DemandQuotaForRequest(interactive_request))
     return;
 
   hosts_ = hosts;

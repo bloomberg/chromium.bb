@@ -62,7 +62,7 @@ TEST_F(RequestThrottlerTest, QuotaIsPerDay) {
   // Now fake the day pref so that the counter believes the count comes from
   // yesterday.
   int now_day = (base::Time::Now() - base::Time::UnixEpoch()).InDays();
-  test_prefs_.SetInteger(ntp_snippets::prefs::kSnippetFetcherQuotaDay,
+  test_prefs_.SetInteger(ntp_snippets::prefs::kSnippetFetcherRequestsDay,
                          now_day - 1);
 
   // The quota should get reset as the day has changed.

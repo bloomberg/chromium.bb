@@ -26,6 +26,7 @@
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/ntp_snippets_status_service.h"
+#include "components/ntp_snippets/request_throttler.h"
 #include "components/suggestions/suggestions_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 
@@ -64,6 +65,12 @@ class NTPSnippetsServiceObserver;
 // provides them as content suggestions.
 // TODO(pke): Rename this service to ArticleSuggestionsProvider and move to
 // a subdirectory.
+// TODO(jkrcal): this class grows really, really large. The fact that
+// NTPSnippetService also implements ImageFetcherDelegate adds unnecssary
+// complexity (and after all the Service is conceptually not an
+// ImagerFetcherDeletage ;-)). Instead, the cleaner solution would  be to define
+// a CachedImageFetcher class that handles the caching aspects and looks like an
+// image fetcher to the NTPSnippetService.
 class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
                            public ContentSuggestionsProvider {
  public:
@@ -97,17 +104,17 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
   bool initialized() const { return ready() || state_ == State::DISABLED; }
 
   // Fetches snippets from the server and adds them to the current ones.
-  // Requests can be marked more important by setting |force_request| to true
-  // (such request might circumvent the daily quota for requests, etc.) Useful
-  // for requests triggered by the user.
-  void FetchSnippets(bool force_request);
+  // Requests can be marked more important by setting |interactive_request| to
+  // true (such request might circumvent the daily quota for requests, etc.)
+  // Useful for requests triggered by the user.
+  void FetchSnippets(bool interactive_request);
 
   // Fetches snippets from the server for specified hosts (overriding
   // suggestions from the suggestion service) and adds them to the current ones.
   // Only called from chrome://snippets-internals, DO NOT USE otherwise!
   // Ignored while |loaded()| is false.
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
-                              bool force_request);
+                              bool interactive_request);
 
   const NTPSnippetsFetcher* snippets_fetcher() const {
     return snippets_fetcher_.get();
@@ -215,16 +222,20 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
   // observers. This is done after construction, once the database is loaded.
   void FinishInitialization();
 
-  void OnSnippetImageFetchedFromDatabase(const std::string& snippet_id,
-                                         const ImageFetchedCallback& callback,
+  void OnSnippetImageFetchedFromDatabase(const ImageFetchedCallback& callback,
+                                         const std::string& snippet_id,
                                          std::string data);
 
-  void OnSnippetImageDecoded(const std::string& snippet_id,
-                             const ImageFetchedCallback& callback,
-                             const gfx::Image& image);
+  void OnSnippetImageDecodedFromDatabase(const ImageFetchedCallback& callback,
+                                         const std::string& snippet_id,
+                                         const gfx::Image& image);
 
   void FetchSnippetImageFromNetwork(const std::string& snippet_id,
                                     const ImageFetchedCallback& callback);
+
+  void OnSnippetImageDecodedFromNetwork(const ImageFetchedCallback& callback,
+                                        const std::string& snippet_id,
+                                        const gfx::Image& image);
 
   // Triggers a state transition depending on the provided reason to be
   // disabled (or lack thereof). This method is called when a change is detected
@@ -303,6 +314,9 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
   bool fetch_after_load_;
 
   const Category provided_category_;
+
+  // Request throttler for limiting requests to thumbnail images.
+  RequestThrottler thumbnail_requests_throttler_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsService);
 };

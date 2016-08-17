@@ -11,10 +11,19 @@ const char kEnableSnippets[] = "ntp_snippets.enable";
 
 const char kSnippetHosts[] = "ntp_snippets.hosts";
 
-const char kSnippetFetcherQuotaDay[] =
-    "ntp.request_throttler.suggestion_fetcher.day";
-const char kSnippetFetcherQuotaCount[] =
+const char kSnippetFetcherRequestCount[] =
     "ntp.request_throttler.suggestion_fetcher.count";
+const char kSnippetFetcherInteractiveRequestCount[] =
+    "ntp.request_throttler.suggestion_fetcher.interactive_count";
+const char kSnippetFetcherRequestsDay[] =
+    "ntp.request_throttler.suggestion_fetcher.day";
+
+const char kSnippetThumbnailsRequestCount[] =
+    "ntp.request_throttler.suggestion_thumbnails.count";
+const char kSnippetThumbnailsInteractiveRequestCount[] =
+    "ntp.request_throttler.suggestion_thumbnails.interactive_count";
+const char kSnippetThumbnailsRequestsDay[] =
+    "ntp.request_throttler.suggestion_thumbnails.day";
 
 const char kDismissedRecentOfflineTabSuggestions[] =
     "ntp_suggestions.offline_pages.recent_tabs.dismissed_ids";

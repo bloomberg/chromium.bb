@@ -5,6 +5,7 @@
 #include "components/ntp_snippets/ntp_snippets_service.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -23,6 +24,7 @@
 #include "base/time/time.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
+#include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
 #include "components/ntp_snippets/ntp_snippet.h"
@@ -39,7 +41,11 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
+using image_fetcher::ImageFetcher;
+using image_fetcher::ImageFetcherDelegate;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::Invoke;
@@ -69,6 +75,8 @@ const char kSnippetSalientImage[] = "http://localhost/salient_image";
 const char kSnippetPublisherName[] = "Foo News";
 const char kSnippetAmpUrl[] = "http://localhost/amp";
 const float kSnippetScore = 5.0;
+
+const char kSnippetUrl2[] = "http://foo.com/bar";
 
 base::Time GetDefaultCreationTime() {
   base::Time out_time;
@@ -192,6 +200,13 @@ std::string GetIncompleteSnippet() {
   return json_str;
 }
 
+void ServeOneByOneImage(
+    const std::string& id,
+    base::Callback<void(const std::string&, const gfx::Image&)> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, id, gfx::test::CreateImage(1, 1)));
+}
+
 void ParseJson(
     const std::string& json,
     const ntp_snippets::NTPSnippetsFetcher::SuccessCallback& success_callback,
@@ -252,6 +267,17 @@ class WaitForDBLoad {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitForDBLoad);
+};
+
+class MockImageFetcher : public ImageFetcher {
+ public:
+  MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
+  MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
+  MOCK_METHOD3(
+      StartOrQueueNetworkRequest,
+      void(const std::string&,
+           const GURL&,
+           base::Callback<void(const std::string&, const gfx::Image&)>));
 };
 
 }  // namespace
@@ -316,15 +342,20 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
     snippets_fetcher->SetPersonalizationForTesting(
         NTPSnippetsFetcher::Personalization::kNonPersonal);
 
+    auto image_fetcher =
+        base::MakeUnique<testing::NiceMock<MockImageFetcher>>();
+    image_fetcher_ = image_fetcher.get();
+
     // Add an initial fetch response, as the service tries to fetch when there
     // is nothing in the DB.
     SetUpFetchResponse(GetTestJson({GetSnippet()}));
 
     service_.reset(new NTPSnippetsService(
         &observer_, &category_factory_, pref_service(), nullptr, "fr",
-        &scheduler_, std::move(snippets_fetcher), /*image_fetcher=*/nullptr,
-        /*image_fetcher=*/nullptr, base::MakeUnique<NTPSnippetsDatabase>(
-                                       database_dir_.path(), task_runner),
+        &scheduler_, std::move(snippets_fetcher),
+        std::move(image_fetcher), /*image_decoder=*/nullptr,
+        base::MakeUnique<NTPSnippetsDatabase>(database_dir_.path(),
+                                              task_runner),
         base::MakeUnique<NTPSnippetsStatusService>(fake_signin_manager(),
                                                    pref_service())));
 
@@ -344,6 +375,9 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
   NTPSnippetsService* service() { return service_.get(); }
   MockContentSuggestionsProviderObserver& observer() { return observer_; }
   MockScheduler& mock_scheduler() { return scheduler_; }
+  testing::NiceMock<MockImageFetcher>* image_fetcher() {
+    return image_fetcher_;
+  }
 
   // Provide the json to be returned by the fake fetcher.
   void SetUpFetchResponse(const std::string& json) {
@@ -367,6 +401,7 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
   MockScheduler scheduler_;
   MockContentSuggestionsProviderObserver observer_;
   CategoryFactory category_factory_;
+  testing::NiceMock<MockImageFetcher>* image_fetcher_;
   // Last so that the dependencies are deleted after the service.
   std::unique_ptr<NTPSnippetsService> service_;
 
@@ -875,6 +910,46 @@ TEST_F(NTPSnippetsServiceTest, StatusChanges) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(NTPSnippetsService::State::READY, service()->state_);
   EXPECT_FALSE(service()->GetSnippetsForTesting().empty());
+}
+
+TEST_F(NTPSnippetsServiceTest, ImageReturnedWithTheSameId) {
+  LoadFromJSONString(GetTestJson({GetSnippet()}));
+
+  gfx::Image image;
+  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
+      .WillOnce(testing::WithArgs<0, 2>(Invoke(ServeOneByOneImage)));
+  testing::MockFunction<void(const std::string&, const gfx::Image&)>
+      image_fetched;
+  EXPECT_CALL(image_fetched, Call(MakeUniqueID(kSnippetUrl), _))
+      .WillOnce(testing::SaveArg<1>(&image));
+
+  service()->FetchSuggestionImage(
+      MakeUniqueID(kSnippetUrl),
+      base::Bind(&testing::MockFunction<void(const std::string&,
+                                              const gfx::Image&)>::Call,
+                 base::Unretained(&image_fetched)));
+  base::RunLoop().RunUntilIdle();
+  // Check that the image by ServeOneByOneImage is really served.
+  EXPECT_EQ(1, image.Width());
+}
+
+TEST_F(NTPSnippetsServiceTest, EmptyImageReturnedForNonExistentId) {
+  // Create a non-empty image so that we can test the image gets updated.
+  gfx::Image image = gfx::test::CreateImage(1, 1);
+  testing::MockFunction<void(const std::string&, const gfx::Image&)>
+      image_fetched;
+  EXPECT_CALL(image_fetched,
+              Call(MakeUniqueID(kSnippetUrl2), _))
+      .WillOnce(testing::SaveArg<1>(&image));
+
+  service()->FetchSuggestionImage(
+      MakeUniqueID(kSnippetUrl2),
+      base::Bind(&testing::MockFunction<void(const std::string&,
+                                              const gfx::Image&)>::Call,
+                 base::Unretained(&image_fetched)));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(image.IsEmpty());
 }
 
 }  // namespace ntp_snippets

@@ -35657,13 +35657,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="NewTabPage.RequestThrottler.PerDay" units="requests">
   <owner>jkrcal@chromium.org</owner>
   <summary>
-    Records how many requests of the given type the browser tried to perform
-    each day where the type is specified by the _suffix of the histogram. The
-    histogram is emitted only after midnight of the given day passes - right
-    before the first following request (which can be several days later if the
-    user does not use Chrome in the meantime). The histogram counts requests
-    with both QUOTA_GRANTED and QUOTA_EXCEEDED status, i.e. the count can easily
-    exceed the daily quota. Forced requests are not counted here.
+    Records how many background requests of the given type the browser tried to
+    perform each day where the type is specified by the _suffix of the
+    histogram. The histogram is emitted only after midnight of the given day
+    passes - right before the first following request (which can be several days
+    later if the user does not use Chrome in the meantime). The histogram counts
+    requests with both QUOTA_GRANTED and QUOTA_EXCEEDED status, i.e. the count
+    can easily exceed the daily quota.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.RequestThrottler.PerDayInteractive"
+    units="requests">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Records how many interactive requests of the given type the browser tried to
+    perform each day where the type is specified by the _suffix of the
+    histogram. The histogram is emitted only after midnight of the given day
+    passes - right before the first following request (which can be several days
+    later if the user does not use Chrome in the meantime). The histogram counts
+    requests with both QUOTA_GRANTED and QUOTA_EXCEEDED status, i.e. the count
+    can easily exceed the daily quota.
   </summary>
 </histogram>
 
@@ -86855,9 +86869,10 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="NtpRequestThrottlerStatus" type="int">
-  <int value="0" label="Forced request"/>
-  <int value="1" label="Quota granted"/>
-  <int value="2" label="Quota exceeded"/>
+  <int value="0" label="Interactive request - quota granted"/>
+  <int value="1" label="Background request - quota granted"/>
+  <int value="2" label="Background request - quota exceeded"/>
+  <int value="3" label="Interactive request - quota exceeded"/>
 </enum>
 
 <enum name="NtpSnippetsFetchResult" type="int">
@@ -102246,7 +102261,10 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="RequestThrottlerTypes">
   <suffix name="SuggestionFetcher"
       label="Fetcher for content suggestions on mobile NTP"/>
+  <suffix name="SuggestionThumbnailFetcher"
+      label="Fetcher for article thumbnails on mobile NTP"/>
   <affected-histogram name="NewTabPage.RequestThrottler.PerDay"/>
+  <affected-histogram name="NewTabPage.RequestThrottler.PerDayInteractive"/>
   <affected-histogram name="NewTabPage.RequestThrottler.RequestStatus"/>
 </histogram_suffixes>
 

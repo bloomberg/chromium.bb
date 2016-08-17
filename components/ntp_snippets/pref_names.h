@@ -13,10 +13,21 @@ extern const char kEnableSnippets[];
 extern const char kSnippetHosts[];
 
 // The pref name for today's count of NTPSnippetsFetcher requests, so far.
-extern const char kSnippetFetcherQuotaCount[];
+extern const char kSnippetFetcherRequestCount[];
+// The pref name for today's count of NTPSnippetsFetcher interactive requests.
+extern const char kSnippetFetcherInteractiveRequestCount[];
 // The pref name for the current day for the counter of NTPSnippetsFetcher
 // requests.
-extern const char kSnippetFetcherQuotaDay[];
+extern const char kSnippetFetcherRequestsDay[];
+
+// The pref name for today's count of requests for article thumbnails, so far.
+extern const char kSnippetThumbnailsRequestCount[];
+// The pref name for today's count of interactive requests for article
+// thumbnails, so far.
+extern const char kSnippetThumbnailsInteractiveRequestCount[];
+// The pref name for the current day for the counter of requests for article
+// thumbnails.
+extern const char kSnippetThumbnailsRequestsDay[];
 
 extern const char kDismissedRecentOfflineTabSuggestions[];
 extern const char kDismissedDownloadSuggestions[];

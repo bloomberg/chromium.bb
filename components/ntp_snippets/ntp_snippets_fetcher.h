@@ -97,11 +97,11 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // subscriber of SetCallback()).
   //
   // Fetches snippets only if the daily quota not exceeded, unless
-  // |force_request| is set to true. Use force only for user-initiated fetches.
+  // |interactive_request| is set to true (use only for user-initiated fetches).
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
                               const std::string& language_code,
                               int count,
-                              bool force_request);
+                              bool interactive_request);
 
   // Debug string representing the status/result of the last fetch attempt.
   const std::string& last_status() const { return last_status_; }
