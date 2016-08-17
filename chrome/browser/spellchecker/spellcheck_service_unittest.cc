@@ -16,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -90,7 +91,8 @@ class SpellcheckServiceUnitTest : public testing::TestWithParam<TestCase> {
   ~SpellcheckServiceUnitTest() override {}
 
   void SetUp() override {
-    prefs()->registry()->RegisterListPref(prefs::kSpellCheckDictionaries);
+    prefs()->registry()->RegisterListPref(
+        spellcheck::prefs::kSpellCheckDictionaries);
     prefs()->registry()->RegisterStringPref(prefs::kAcceptLanguages,
                                             std::string());
   }
@@ -128,7 +130,8 @@ TEST_P(SpellcheckServiceUnitTest, GetDictionaries) {
   prefs()->SetString(prefs::kAcceptLanguages, GetParam().accept_languages);
   base::ListValue spellcheck_dictionaries;
   spellcheck_dictionaries.AppendStrings(GetParam().spellcheck_dictionaries);
-  prefs()->Set(prefs::kSpellCheckDictionaries, spellcheck_dictionaries);
+  prefs()->Set(spellcheck::prefs::kSpellCheckDictionaries,
+               spellcheck_dictionaries);
 
   std::vector<SpellcheckService::Dictionary> dictionaries;
   SpellcheckService::GetDictionaries(context(), &dictionaries);

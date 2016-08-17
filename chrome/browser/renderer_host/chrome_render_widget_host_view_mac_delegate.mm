@@ -10,14 +10,14 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper.h"
-#include "chrome/browser/spellchecker/spellcheck_platform.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/spellcheck/browser/pref_names.h"
+#include "components/spellcheck/browser/spellcheck_platform.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -123,8 +123,10 @@ using content::RenderViewHost;
       Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
       DCHECK(profile);
       NSCellStateValue checkedState =
-          profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck) ?
-              NSOnState : NSOffState;
+          profile->GetPrefs()->GetBoolean(
+              spellcheck::prefs::kEnableContinuousSpellcheck)
+              ? NSOnState
+              : NSOffState;
       [(id)item setState:checkedState];
     }
     *valid = YES;
@@ -196,8 +198,9 @@ using content::RenderViewHost;
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   DCHECK(profile);
   PrefService* pref = profile->GetPrefs();
-  pref->SetBoolean(prefs::kEnableContinuousSpellcheck,
-                   !pref->GetBoolean(prefs::kEnableContinuousSpellcheck));
+  pref->SetBoolean(
+      spellcheck::prefs::kEnableContinuousSpellcheck,
+      !pref->GetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck));
 }
 
 // END Spellchecking methods

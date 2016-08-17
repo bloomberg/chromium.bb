@@ -26,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/user_prefs/user_prefs.h"
@@ -89,13 +90,15 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
   void InitSpellcheck(bool enable_spellcheck,
                       const std::string& single_dictionary,
                       const std::string& multiple_dictionaries) {
-    prefs_->SetBoolean(prefs::kEnableContinuousSpellcheck, enable_spellcheck);
-    prefs_->SetString(prefs::kSpellCheckDictionary, single_dictionary);
+    prefs_->SetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck,
+                       enable_spellcheck);
+    prefs_->SetString(spellcheck::prefs::kSpellCheckDictionary,
+                      single_dictionary);
     base::ListValue dictionaries_value;
     dictionaries_value.AppendStrings(
         base::SplitString(multiple_dictionaries, ",", base::TRIM_WHITESPACE,
                           base::SPLIT_WANT_NONEMPTY));
-    prefs_->Set(prefs::kSpellCheckDictionaries, dictionaries_value);
+    prefs_->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries_value);
     SpellcheckService* spellcheck =
         SpellcheckServiceFactory::GetForRenderProcessId(renderer_->GetID());
     ASSERT_NE(nullptr, spellcheck);
@@ -104,12 +107,14 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
 
   void EnableSpellcheck(bool enable_spellcheck) {
     ScopedPreferenceChange scope(&renderer_->sink());
-    prefs_->SetBoolean(prefs::kEnableContinuousSpellcheck, enable_spellcheck);
+    prefs_->SetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck,
+                       enable_spellcheck);
   }
 
   void SetSingleLanguageDictionary(const std::string& single_dictionary) {
     ScopedPreferenceChange scope(&renderer_->sink());
-    prefs_->SetString(prefs::kSpellCheckDictionary, single_dictionary);
+    prefs_->SetString(spellcheck::prefs::kSpellCheckDictionary,
+                      single_dictionary);
   }
 
   void SetMultiLingualDictionaries(const std::string& multiple_dictionaries) {
@@ -118,12 +123,12 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
     dictionaries_value.AppendStrings(
         base::SplitString(multiple_dictionaries, ",", base::TRIM_WHITESPACE,
                           base::SPLIT_WANT_NONEMPTY));
-    prefs_->Set(prefs::kSpellCheckDictionaries, dictionaries_value);
+    prefs_->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries_value);
   }
 
   std::string GetMultilingualDictionaries() {
     const base::ListValue* list_value =
-        prefs_->GetList(prefs::kSpellCheckDictionaries);
+        prefs_->GetList(spellcheck::prefs::kSpellCheckDictionaries);
     std::vector<std::string> dictionaries;
     for (const auto& item_value : *list_value) {
       std::string dictionary;
@@ -311,8 +316,9 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
 
 // Checks that preferences migrate correctly.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesMigrated) {
-  GetPrefs()->Set(prefs::kSpellCheckDictionaries, base::ListValue());
-  GetPrefs()->SetString(prefs::kSpellCheckDictionary, "en-US");
+  GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries,
+                  base::ListValue());
+  GetPrefs()->SetString(spellcheck::prefs::kSpellCheckDictionary, "en-US");
 
   // Create a SpellcheckService which will migrate the preferences.
   SpellcheckServiceFactory::GetForContext(GetContext());
@@ -320,18 +326,19 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesMigrated) {
   // Make sure the preferences have been migrated.
   std::string new_pref;
   EXPECT_TRUE(GetPrefs()
-                  ->GetList(prefs::kSpellCheckDictionaries)
+                  ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
                   ->GetString(0, &new_pref));
   EXPECT_EQ("en-US", new_pref);
-  EXPECT_TRUE(GetPrefs()->GetString(prefs::kSpellCheckDictionary).empty());
+  EXPECT_TRUE(
+      GetPrefs()->GetString(spellcheck::prefs::kSpellCheckDictionary).empty());
 }
 
 // Checks that preferences are not migrated when they shouldn't be.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesNotMigrated) {
   base::ListValue dictionaries;
   dictionaries.AppendString("en-US");
-  GetPrefs()->Set(prefs::kSpellCheckDictionaries, dictionaries);
-  GetPrefs()->SetString(prefs::kSpellCheckDictionary, "fr");
+  GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries);
+  GetPrefs()->SetString(spellcheck::prefs::kSpellCheckDictionary, "fr");
 
   // Create a SpellcheckService which will migrate the preferences.
   SpellcheckServiceFactory::GetForContext(GetContext());
@@ -339,10 +346,11 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesNotMigrated) {
   // Make sure the preferences have not been migrated.
   std::string new_pref;
   EXPECT_TRUE(GetPrefs()
-                  ->GetList(prefs::kSpellCheckDictionaries)
+                  ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
                   ->GetString(0, &new_pref));
   EXPECT_EQ("en-US", new_pref);
-  EXPECT_TRUE(GetPrefs()->GetString(prefs::kSpellCheckDictionary).empty());
+  EXPECT_TRUE(
+      GetPrefs()->GetString(spellcheck::prefs::kSpellCheckDictionary).empty());
 }
 
 // Checks that, if a user has spellchecking disabled, nothing changes
@@ -351,14 +359,17 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        SpellcheckingDisabledPreferenceMigration) {
   base::ListValue dictionaries;
   dictionaries.AppendString("en-US");
-  GetPrefs()->Set(prefs::kSpellCheckDictionaries, dictionaries);
-  GetPrefs()->SetBoolean(prefs::kEnableContinuousSpellcheck, false);
+  GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries);
+  GetPrefs()->SetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck, false);
 
   // Migrate the preferences.
   SpellcheckServiceFactory::GetForContext(GetContext());
 
-  EXPECT_FALSE(GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck));
-  EXPECT_EQ(1U, GetPrefs()->GetList(prefs::kSpellCheckDictionaries)->GetSize());
+  EXPECT_FALSE(
+      GetPrefs()->GetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck));
+  EXPECT_EQ(1U, GetPrefs()
+                    ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                    ->GetSize());
 }
 
 // Make sure preferences get preserved and spellchecking stays enabled.
@@ -367,19 +378,24 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
   base::ListValue dictionaries;
   dictionaries.AppendString("en-US");
   dictionaries.AppendString("fr");
-  GetPrefs()->Set(prefs::kSpellCheckDictionaries, dictionaries);
-  GetPrefs()->SetBoolean(prefs::kEnableContinuousSpellcheck, true);
+  GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries, dictionaries);
+  GetPrefs()->SetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck, true);
 
   // Should not migrate any preferences.
   SpellcheckServiceFactory::GetForContext(GetContext());
 
-  EXPECT_TRUE(GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck));
-  EXPECT_EQ(2U, GetPrefs()->GetList(prefs::kSpellCheckDictionaries)->GetSize());
+  EXPECT_TRUE(
+      GetPrefs()->GetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck));
+  EXPECT_EQ(2U, GetPrefs()
+                    ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                    ->GetSize());
   std::string pref;
-  ASSERT_TRUE(
-      GetPrefs()->GetList(prefs::kSpellCheckDictionaries)->GetString(0, &pref));
+  ASSERT_TRUE(GetPrefs()
+                  ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                  ->GetString(0, &pref));
   EXPECT_EQ("en-US", pref);
-  ASSERT_TRUE(
-      GetPrefs()->GetList(prefs::kSpellCheckDictionaries)->GetString(1, &pref));
+  ASSERT_TRUE(GetPrefs()
+                  ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                  ->GetString(1, &pref));
   EXPECT_EQ("fr", pref);
 }

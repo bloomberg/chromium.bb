@@ -6,11 +6,11 @@
 
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
@@ -61,28 +61,29 @@ KeyedService* SpellcheckServiceFactory::BuildServiceInstanceFor(
 
   // Instantiates Metrics object for spellchecking for use.
   spellcheck->StartRecordingMetrics(
-      prefs->GetBoolean(prefs::kEnableContinuousSpellcheck));
+      prefs->GetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck));
 
   return spellcheck;
 }
 
 void SpellcheckServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterListPref(prefs::kSpellCheckDictionaries,
+  user_prefs->RegisterListPref(spellcheck::prefs::kSpellCheckDictionaries,
                                new base::ListValue);
   // Continue registering kSpellCheckDictionary for preference migration.
   // TODO(estade): IDS_SPELLCHECK_DICTIONARY should be an ASCII string.
   user_prefs->RegisterStringPref(
-      prefs::kSpellCheckDictionary,
+      spellcheck::prefs::kSpellCheckDictionary,
       l10n_util::GetStringUTF8(IDS_SPELLCHECK_DICTIONARY));
-  user_prefs->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService, false);
+  user_prefs->RegisterBooleanPref(
+      spellcheck::prefs::kSpellCheckUseSpellingService, false);
 #if defined(OS_IOS) || defined(OS_ANDROID)
   uint32_t flags = PrefRegistry::NO_REGISTRATION_FLAGS;
 #else
   uint32_t flags = user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
 #endif
-  user_prefs->RegisterBooleanPref(prefs::kEnableContinuousSpellcheck, true,
-                                  flags);
+  user_prefs->RegisterBooleanPref(
+      spellcheck::prefs::kEnableContinuousSpellcheck, true, flags);
 }
 
 content::BrowserContext* SpellcheckServiceFactory::GetBrowserContextToUse(

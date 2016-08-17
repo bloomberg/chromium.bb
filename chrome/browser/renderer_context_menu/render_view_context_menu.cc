@@ -51,7 +51,6 @@
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -80,6 +79,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/spellcheck/browser/pref_names.h"
+#include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -1442,7 +1443,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   // Allow Spell Check language items on sub menu for text area context menu.
   if ((id >= IDC_SPELLCHECK_LANGUAGES_FIRST) &&
       (id < IDC_SPELLCHECK_LANGUAGES_LAST)) {
-    return prefs->GetBoolean(prefs::kEnableContinuousSpellcheck);
+    return prefs->GetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck);
   }
 
   // Extension items.
@@ -1593,7 +1594,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
       return true;
     case IDC_CHECK_SPELLING_WHILE_TYPING:
-      return prefs->GetBoolean(prefs::kEnableContinuousSpellcheck);
+      return prefs->GetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck);
 
 #if !defined(OS_MACOSX) && defined(OS_POSIX)
     // TODO(suzhe): this should not be enabled for password fields.

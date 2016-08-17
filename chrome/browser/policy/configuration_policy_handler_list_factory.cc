@@ -77,6 +77,10 @@
 #include "extensions/common/manifest.h"
 #endif
 
+#if defined(ENABLE_SPELLCHECK)
+#include "components/spellcheck/browser/pref_names.h"
+#endif
+
 namespace policy {
 
 namespace {
@@ -360,7 +364,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 
 #if defined(ENABLE_SPELLCHECK)
   { key::kSpellCheckServiceEnabled,
-    prefs::kSpellCheckUseSpellingService,
+    spellcheck::prefs::kSpellCheckUseSpellingService,
     base::Value::TYPE_BOOLEAN },
 #endif  // defined(ENABLE_SPELLCHECK)
 

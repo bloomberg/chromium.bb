@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/spellchecker/spellcheck_dictionary.h"
+#include "components/spellcheck/browser/spellcheck_dictionary.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;

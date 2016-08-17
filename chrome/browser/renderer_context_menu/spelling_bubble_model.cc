@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
@@ -68,5 +68,5 @@ void SpellingBubbleModel::LinkClicked() {
 void SpellingBubbleModel::SetPref(bool enabled) {
   PrefService* pref = profile_->GetPrefs();
   DCHECK(pref);
-  pref->SetBoolean(prefs::kSpellCheckUseSpellingService, enabled);
+  pref->SetBoolean(spellcheck::prefs::kSpellCheckUseSpellingService, enabled);
 }

@@ -5,6 +5,7 @@ include_rules = [
   "+components/devtools_discovery",
   "+components/devtools_http_handler",
   "+components/ntp_snippets",
+  "+components/spellcheck/browser",
   "+components/sync/android",
   "+components/sync/test/fake_server/android",
   "+components/toolbar",

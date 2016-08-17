@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 
 MultilanguageOptionsBrowserTest::MultilanguageOptionsBrowserTest() {
 }
@@ -31,15 +32,17 @@ void MultilanguageOptionsBrowserTest::SetUpOnMainThread() {
   std::string setting_name = prefs::kAcceptLanguages;
 #endif
 
-  browser()->profile()->GetPrefs()->SetString(setting_name, "fr,es,de,en");
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  pref_service->SetString(setting_name, "fr,es,de,en");
   base::ListValue dictionaries;
   dictionaries.AppendString("fr");
   SetDictionariesPref(dictionaries);
-  browser()->profile()->GetPrefs()->SetString(prefs::kSpellCheckDictionary,
-                                              std::string());
+  pref_service->SetString(spellcheck::prefs::kSpellCheckDictionary,
+                          std::string());
 }
 
 void MultilanguageOptionsBrowserTest::SetDictionariesPref(
     const base::ListValue& value) {
-  browser()->profile()->GetPrefs()->Set(prefs::kSpellCheckDictionaries, value);
+  browser()->profile()->GetPrefs()->Set(
+      spellcheck::prefs::kSpellCheckDictionaries, value);
 }

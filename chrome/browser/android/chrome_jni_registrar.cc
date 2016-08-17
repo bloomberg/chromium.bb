@@ -118,7 +118,6 @@
 #include "chrome/browser/search_engines/template_url_service_android.h"
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #include "chrome/browser/speech/tts_android.h"
-#include "chrome/browser/spellchecker/spellchecker_session_bridge_android.h"
 #include "chrome/browser/ssl/security_state_model_android.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
 #include "chrome/browser/supervised_user/supervised_user_content_provider_android.h"
@@ -158,6 +157,7 @@
 #include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_json/android/component_jni_registrar.h"
 #include "components/signin/core/browser/android/component_jni_registrar.h"
+#include "components/spellcheck/browser/android/component_jni_registrar.h"
 #include "components/sync/android/sync_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
@@ -325,7 +325,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"SigninInvestigator", SigninInvestigatorAndroid::Register},
     {"SigninManager", SigninManagerAndroid::Register},
     {"SingleTabModel", RegisterSingleTabModel},
-    {"SpellCheckerSessionBridge", SpellCheckerSessionBridge::RegisterJNI},
+#if defined(ENABLE_SPELLCHECK)
+    {"SpellCheckerSessionBridge", spellcheck::android::RegisterSpellcheckJni},
+#endif
     {"SqliteCursor", SQLiteCursor::RegisterSqliteCursor},
     {"SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid},
     {"StartupMetricUtils", RegisterStartupMetricUtils},

@@ -303,7 +303,6 @@ extern const char kQuickUnlockFeatureNotificationShown[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kRecentlySelectedEncoding[];
-extern const char kEnableContinuousSpellcheck[];
 extern const char kSpeechRecognitionFilterProfanities[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kAllowDeletingBrowserHistory[];
@@ -504,10 +503,6 @@ extern const char kDefaultTasksByMimeType[];
 extern const char kDefaultTasksBySuffix[];
 
 extern const char kSelectFileLastDirectory[];
-
-extern const char kSpellCheckDictionaries[];
-extern const char kSpellCheckDictionary[];
-extern const char kSpellCheckUseSpellingService[];
 
 extern const char kExcludedSchemes[];
 

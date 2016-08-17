@@ -843,7 +843,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/snackbar/TemplatePreservingTextView.java",
   "java/src/org/chromium/chrome/browser/snackbar/smartlockautosignin/AutoSigninSnackbarController.java",
   "java/src/org/chromium/chrome/browser/snackbar/undo/UndoBarController.java",
-  "java/src/org/chromium/chrome/browser/spellchecker/SpellCheckerSessionBridge.java",
   "java/src/org/chromium/chrome/browser/ssl/SecurityStateModel.java",
   "java/src/org/chromium/chrome/browser/superviseduser/SupervisedUserContentProvider.java",
   "java/src/org/chromium/chrome/browser/sync/GmsCoreSyncListener.java",

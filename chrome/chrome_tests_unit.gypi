@@ -377,18 +377,11 @@
       'browser/ui/passwords/manage_passwords_ui_controller_unittest.cc',
     ],
     'chrome_unit_tests_spellchecker_sources': [
-      'browser/spellchecker/feedback_sender_unittest.cc',
-      'browser/spellchecker/feedback_unittest.cc',
-      'browser/spellchecker/misspelling_unittest.cc',
-      'browser/spellchecker/spellcheck_action_unittest.cc',
       'browser/spellchecker/spellcheck_custom_dictionary_unittest.cc',
-      'browser/spellchecker/spellcheck_host_metrics_unittest.cc',
       'browser/spellchecker/spellcheck_message_filter_platform_mac_unittest.cc',
       'browser/spellchecker/spellcheck_message_filter_unittest.cc',
-      'browser/spellchecker/spellcheck_platform_mac_unittest.cc',
       'browser/spellchecker/spellcheck_service_unittest.cc',
       'browser/spellchecker/spelling_service_client_unittest.cc',
-      'browser/spellchecker/word_trimmer_unittest.cc',
       'tools/convert_dict/convert_dict_unittest.cc',
     ],
     'chrome_unit_tests_background_sources': [

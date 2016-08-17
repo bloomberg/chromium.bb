@@ -918,9 +918,6 @@ const char kLastClearBrowsingDataTime[] =
 const char kClearBrowsingDataHistoryNoticeShownTimes[] =
     "browser.clear_data.history_notice_shown_times";
 
-// Boolean pref to define the default values for using spellchecker.
-const char kEnableContinuousSpellcheck[] = "browser.enable_spellchecking";
-
 // Boolean pref to define the default setting for "block offensive words".
 // The old key value is kept to avoid unnecessary migration code.
 const char kSpeechRecognitionFilterProfanities[] =
@@ -1428,16 +1425,6 @@ const char kDefaultTasksBySuffix[] =
 
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
-
-// String which represents the dictionary name for our spell-checker.
-// This is an old preference that is being migrated to kSpellCheckDictionaries.
-const char kSpellCheckDictionary[] = "spellcheck.dictionary";
-
-// List of strings representing the dictionary names for our spell-checker.
-const char kSpellCheckDictionaries[] = "spellcheck.dictionaries";
-
-// String which represents whether we use the spelling service.
-const char kSpellCheckUseSpellingService[] = "spellcheck.use_spelling_service";
 
 // Dictionary of schemes used by the external protocol handler.
 // The value is true if the scheme must be ignored.

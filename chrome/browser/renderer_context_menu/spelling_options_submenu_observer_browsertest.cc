@@ -12,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 #include "content/public/common/context_menu_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,23 +43,25 @@ class SpellingOptionsSubMenuObserverTest : public InProcessBrowserTest {
   void InitMenu(bool enable_spellcheck,
                 const std::string& accept_languages,
                 const std::vector<std::string>& dictionaries) {
-    menu()->GetPrefs()->SetBoolean(prefs::kEnableContinuousSpellcheck,
-                                   enable_spellcheck);
+    menu()->GetPrefs()->SetBoolean(
+        spellcheck::prefs::kEnableContinuousSpellcheck, enable_spellcheck);
     menu()->GetPrefs()->SetString(prefs::kAcceptLanguages, accept_languages);
     base::ListValue dictionaries_value;
     dictionaries_value.AppendStrings(dictionaries);
-    menu()->GetPrefs()->Set(prefs::kSpellCheckDictionaries, dictionaries_value);
+    menu()->GetPrefs()->Set(spellcheck::prefs::kSpellCheckDictionaries,
+                            dictionaries_value);
     observer()->InitMenu(content::ContextMenuParams());
   }
 
   void ExpectPreferences(bool spellcheck_enabled,
                          const std::vector<std::string>& dictionaries) {
-    EXPECT_EQ(spellcheck_enabled, menu()->GetPrefs()->GetBoolean(
-                                      prefs::kEnableContinuousSpellcheck));
+    EXPECT_EQ(spellcheck_enabled,
+              menu()->GetPrefs()->GetBoolean(
+                  spellcheck::prefs::kEnableContinuousSpellcheck));
     base::ListValue dictionaries_value;
     dictionaries_value.AppendStrings(dictionaries);
-    EXPECT_TRUE(dictionaries_value.Equals(
-        menu()->GetPrefs()->GetList(prefs::kSpellCheckDictionaries)));
+    EXPECT_TRUE(dictionaries_value.Equals(menu()->GetPrefs()->GetList(
+        spellcheck::prefs::kSpellCheckDictionaries)));
   }
 
   MockRenderViewContextMenu* menu() { return menu_.get(); }

@@ -19,8 +19,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_source.h"
 
@@ -210,9 +210,11 @@ void LanguageSettingsPrivateDelegate::
     // Update and observe the hunspell dictionaries.
     RefreshDictionaries(listening_spellcheck_, should_listen);
     // Observe the dictionaries preference.
-    pref_change_registrar_.Add(prefs::kSpellCheckDictionaries, base::Bind(
-        &LanguageSettingsPrivateDelegate::OnSpellcheckDictionariesChanged,
-        base::Unretained(this)));
+    pref_change_registrar_.Add(
+        spellcheck::prefs::kSpellCheckDictionaries,
+        base::Bind(
+            &LanguageSettingsPrivateDelegate::OnSpellcheckDictionariesChanged,
+            base::Unretained(this)));
     // Observe the dictionary of custom words.
     if (custom_dictionary_)
       custom_dictionary_->AddObserver(this);
@@ -220,7 +222,7 @@ void LanguageSettingsPrivateDelegate::
     // Stop observing any dictionaries that still exist.
     RemoveDictionaryObservers();
     hunspell_dictionaries_.clear();
-    pref_change_registrar_.Remove(prefs::kSpellCheckDictionaries);
+    pref_change_registrar_.Remove(spellcheck::prefs::kSpellCheckDictionaries);
     if (custom_dictionary_)
       custom_dictionary_->RemoveObserver(this);
   }

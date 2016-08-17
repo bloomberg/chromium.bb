@@ -18,7 +18,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-//#include "chrome/common/channel_info.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/common/spellcheck_result.h"

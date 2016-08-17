@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
+#include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
 
 #include <algorithm>
 #include <functional>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
-#include "chrome/browser/spellchecker/spellcheck_platform.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/browser/spellchecker/spelling_service_client.h"
+#include "components/spellcheck/browser/feedback_sender.h"
+#include "components/spellcheck/browser/spellcheck_platform.h"
+#include "components/spellcheck/browser/spelling_service_client.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "content/public/browser/browser_context.h"

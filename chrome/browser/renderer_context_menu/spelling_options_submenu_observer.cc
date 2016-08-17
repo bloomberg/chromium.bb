@@ -12,11 +12,11 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
+#include "components/spellcheck/browser/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,7 +34,7 @@ SpellingOptionsSubMenuObserver::SpellingOptionsSubMenuObserver(
       num_selected_dictionaries_(0) {
   if (proxy_ && proxy_->GetBrowserContext()) {
     Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
-    use_spelling_service_.Init(prefs::kSpellCheckUseSpellingService,
+    use_spelling_service_.Init(spellcheck::prefs::kSpellCheckUseSpellingService,
                                profile->GetPrefs());
   }
   DCHECK(proxy_);
@@ -135,7 +135,8 @@ bool SpellingOptionsSubMenuObserver::IsCommandIdChecked(int command_id) {
   // Check box for 'Check Spelling while typing'.
   if (command_id == IDC_CHECK_SPELLING_WHILE_TYPING) {
     Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
-    return profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck);
+    return profile->GetPrefs()->GetBoolean(
+        spellcheck::prefs::kEnableContinuousSpellcheck);
   }
 
   return false;
@@ -150,7 +151,7 @@ bool SpellingOptionsSubMenuObserver::IsCommandIdEnabled(int command_id) {
   if ((command_id >= IDC_SPELLCHECK_LANGUAGES_FIRST &&
        command_id < IDC_SPELLCHECK_LANGUAGES_LAST) ||
       command_id == IDC_SPELLCHECK_MULTI_LINGUAL) {
-    return pref->GetBoolean(prefs::kEnableContinuousSpellcheck);
+    return pref->GetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck);
   }
 
   switch (command_id) {
@@ -175,7 +176,8 @@ void SpellingOptionsSubMenuObserver::ExecuteCommand(int command_id) {
     size_t dictionary_index =
         static_cast<size_t>(command_id - IDC_SPELLCHECK_LANGUAGES_FIRST);
     StringListPrefMember dictionaries_pref;
-    dictionaries_pref.Init(prefs::kSpellCheckDictionaries, profile->GetPrefs());
+    dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries,
+                           profile->GetPrefs());
     dictionaries_pref.SetValue({dictionaries_[dictionary_index].language});
     return;
   }
@@ -183,13 +185,14 @@ void SpellingOptionsSubMenuObserver::ExecuteCommand(int command_id) {
   switch (command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       profile->GetPrefs()->SetBoolean(
-          prefs::kEnableContinuousSpellcheck,
-          !profile->GetPrefs()->GetBoolean(prefs::kEnableContinuousSpellcheck));
+          spellcheck::prefs::kEnableContinuousSpellcheck,
+          !profile->GetPrefs()->GetBoolean(
+              spellcheck::prefs::kEnableContinuousSpellcheck));
       break;
 
     case IDC_SPELLCHECK_MULTI_LINGUAL:
       StringListPrefMember dictionaries_pref;
-      dictionaries_pref.Init(prefs::kSpellCheckDictionaries,
+      dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries,
                              profile->GetPrefs());
       std::vector<std::string> all_languages;
       for (const auto& dictionary : dictionaries_)

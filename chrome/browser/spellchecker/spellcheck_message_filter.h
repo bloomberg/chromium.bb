@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/spellchecker/spelling_service_client.h"
+#include "components/spellcheck/browser/spelling_service_client.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class SpellCheckMarker;

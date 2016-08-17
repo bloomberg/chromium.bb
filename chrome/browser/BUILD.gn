@@ -471,7 +471,10 @@ split_static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_spellchecker_sources,
                            ".",
                            "//chrome")
-    deps += [ "//components/spellcheck/common:common" ]
+    deps += [
+      "//components/spellcheck/browser",
+      "//components/spellcheck/common:common",
+    ]
 
     if (!is_android) {
       deps += [ "//third_party/hunspell" ]

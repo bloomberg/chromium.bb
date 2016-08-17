@@ -304,7 +304,7 @@
 #endif
 
 #if defined(USE_BROWSER_SPELLCHECKER)
-#include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
+#include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)

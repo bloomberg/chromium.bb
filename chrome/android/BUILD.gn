@@ -151,6 +151,7 @@ android_library("chrome_java") {
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
     "//components/safe_json/android:safe_json_java",
+    "//components/spellcheck/browser/android:java",
     "//components/variations/android:variations_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_restrictions:web_restrictions_java",

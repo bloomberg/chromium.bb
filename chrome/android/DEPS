@@ -1,6 +1,7 @@
 include_rules = [
   "+components/invalidation",
   "+components/policy",
+  "+components/spellcheck/browser",
   "+jni",
   "+media/base/android/java",
 ]
