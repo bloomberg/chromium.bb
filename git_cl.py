@@ -2608,6 +2608,22 @@ _CODEREVIEW_IMPLEMENTATIONS = {
 }
 
 
+def _add_codereview_issue_select_options(parser, extra=""):
+  _add_codereview_select_options(parser)
+
+  text = ('Operate on this issue number instead of the current branch\'s '
+          'implicit issue.')
+  if extra:
+    text += ' '+extra
+  parser.add_option('-i', '--issue', type=int, help=text)
+
+
+def _process_codereview_issue_select_options(parser, options):
+  _process_codereview_select_options(parser, options)
+  if options.issue is not None and not options.forced_codereview:
+    parser.error('--issue must be specified with either --rietveld or --gerrit')
+
+
 def _add_codereview_select_options(parser):
   """Appends --gerrit and --rietveld options to force specific codereview."""
   parser.codereview_group = optparse.OptionGroup(
@@ -3290,25 +3306,21 @@ def CMDstatus(parser, args):
                     help='print only specific field (desc|id|patch|status|url)')
   parser.add_option('-f', '--fast', action='store_true',
                     help='Do not retrieve review status')
-  parser.add_option('-i', '--issue', type=int,
-                    help='Operate on this issue number instead of the current'
-                      ' branch\'s implicit issue. Only valid with --field.')
   parser.add_option(
       '-j', '--maxjobs', action='store', type=int,
       help='The maximum number of jobs to use when retrieving review status')
 
   auth.add_auth_options(parser)
-  _add_codereview_select_options(parser)
+  _add_codereview_issue_select_options(
+    parser, 'Must be in conjunction with --field.')
   options, args = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
+  _process_codereview_issue_select_options(parser, options)
   if args:
     parser.error('Unsupported args: %s' % args)
   auth_config = auth.extract_auth_config_from_options(options)
 
-  if options.issue is not None:
-    if not options.field or not options.forced_codereview:
-      parser.error('--issue may only be specified in conjunction with --field'
-                   ' and either --rietveld or --gerrit')
+  if options.issue is not None and not options.field:
+    parser.error('--field must be specified with --issue')
 
   if options.field:
     cl = Changelist(auth_config=auth_config, issue=options.issue,
@@ -4751,16 +4763,17 @@ def CMDset_commit(parser, args):
   parser.add_option('-c', '--clear', action='store_true',
                     help='stop CQ run, if any')
   auth.add_auth_options(parser)
-  _add_codereview_select_options(parser)
+  _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
-  _process_codereview_select_options(parser, options)
+  _process_codereview_issue_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
   if options.dry_run and options.clear:
     parser.error('Make up your mind: both --dry-run and --clear not allowed')
 
-  cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
+  cl = Changelist(auth_config=auth_config, issue=options.issue,
+                  codereview=options.forced_codereview)
   if options.clear:
     state = _CQState.NONE
   elif options.dry_run:
@@ -4775,12 +4788,15 @@ def CMDset_commit(parser, args):
 
 def CMDset_close(parser, args):
   """Closes the issue."""
+  _add_codereview_issue_select_options(parser)
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
+  _process_codereview_issue_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist(auth_config=auth_config, issue=options.issue,
+                  codereview=options.forced_codereview)
   # Ensure there actually is an issue to close.
   cl.GetDescription()
   cl.CloseIssue()

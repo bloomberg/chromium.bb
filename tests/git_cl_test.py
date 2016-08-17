@@ -62,6 +62,10 @@ class RietveldMock(object):
       ],
     }
 
+  @staticmethod
+  def close_issue(_issue):
+    return 'Closed'
+
 
 class WatchlistsMock(object):
   def __init__(self, _):
@@ -1543,7 +1547,7 @@ class TestGitCl(TestCase):
       self.assertEqual(git_cl.main(['status', '--issue', '1']), 0)
     except SystemExit as ex:
       self.assertEqual(ex.code, 2)
-      self.assertRegexpMatches(out.getvalue(), r'--issue may only be specified')
+      self.assertRegexpMatches(out.getvalue(), r'--issue must be specified')
 
     out = StringIO.StringIO()
     self.mock(git_cl.sys, 'stderr', out)
@@ -1552,7 +1556,7 @@ class TestGitCl(TestCase):
       self.assertEqual(git_cl.main(['status', '--issue', '1', '--rietveld']), 0)
     except SystemExit as ex:
       self.assertEqual(ex.code, 2)
-      self.assertRegexpMatches(out.getvalue(), r'--issue may only be specified')
+      self.assertRegexpMatches(out.getvalue(), r'--field must be specified')
 
   def test_StatusFieldOverrideIssue(self):
     out = StringIO.StringIO()
@@ -1568,8 +1572,43 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'rietveld.server'],), ''),
       ((['git', 'config', 'rietveld.server'],), ''),
     ]
-    git_cl.main(['status', '--issue', '1', '--rietveld', '--field', 'desc'])
+    self.assertEqual(
+      git_cl.main(['status', '--issue', '1', '--rietveld', '--field', 'desc']),
+      0)
     self.assertEqual(out.getvalue(), 'foobar\n')
+
+  def test_SetCloseOverrideIssue(self):
+    def assertIssue(cl_self, *_args):
+      self.assertEquals(cl_self.issue, 1)
+      return 'foobar'
+
+    self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
+    self.mock(git_cl.Changelist, 'CloseIssue', lambda *_: None)
+    self.calls = [
+      ((['git', 'config', 'rietveld.autoupdate'],), ''),
+      ((['git', 'config', 'rietveld.server'],), ''),
+      ((['git', 'config', 'rietveld.server'],), ''),
+    ]
+    self.assertEqual(
+      git_cl.main(['set-close', '--issue', '1', '--rietveld']), 0)
+
+  def test_SetCommitOverrideIssue(self):
+    def assertIssue(cl_self, *_args):
+      self.assertEquals(cl_self.issue, 1)
+      return 'foobar'
+
+    self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
+    self.mock(git_cl.Changelist, 'SetCQState', lambda *_: None)
+    self.calls = [
+      ((['git', 'config', 'rietveld.autoupdate'],), ''),
+      ((['git', 'config', 'rietveld.server'],), ''),
+      ((['git', 'config', 'rietveld.server'],), ''),
+      ((['git', 'symbolic-ref', 'HEAD'],), ''),
+      ((['git', 'config', 'rietveld.server'],), ''),
+      ((['git', 'config', 'rietveld.server'],), ''),
+    ]
+    self.assertEqual(
+      git_cl.main(['set-close', '--issue', '1', '--rietveld']), 0)
 
   def test_description_gerrit(self):
     out = StringIO.StringIO()
