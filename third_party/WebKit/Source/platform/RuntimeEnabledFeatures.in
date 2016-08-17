@@ -92,6 +92,7 @@ ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
 ExperimentalV8Extras status=experimental
 FastMobileScrolling
+FeaturePolicy status=experimental
 FileAPIBlobClose status=experimental
 FileSystem status=stable
 ForeignFetch status=experimental, origin_trial_feature_name=ForeignFetch

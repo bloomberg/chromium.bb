@@ -83818,6 +83818,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-288316828" label="enable-delegated-renderer"/>
   <int value="-278347667" label="default-tile-height"/>
   <int value="-277144896" label="enable-viewport-meta"/>
+  <int value="-268357961" label="enable-feature-policy"/>
   <int value="-254887599" label="google-profile-info"/>
   <int value="-231922000" label="enable-renderer-mojo-channel"/>
   <int value="-206393363" label="enable-scroll-prediction"/>

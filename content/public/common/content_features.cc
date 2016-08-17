@@ -39,6 +39,11 @@ const base::Feature kDoNotUnlockSharedBuffer{"DoNotUnlockSharedBuffer",
 const base::Feature kDocumentWriteEvaluator{"DocumentWriteEvaluator",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the Feature Policy framework for granting and removing access to
+// other features through HTTP headers.
+const base::Feature kFeaturePolicy{"FeaturePolicy",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a blink::FontCache optimization that reuses a font to serve different
 // size of font.
 const base::Feature kFontCacheScaling{"FontCacheScaling",

@@ -64,6 +64,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::enableOriginTrials(
       base::FeatureList::IsEnabled(features::kOriginTrials));
 
+  WebRuntimeFeatures::enableFeaturePolicy(
+      base::FeatureList::IsEnabled(features::kFeaturePolicy));
+
   if (command_line.HasSwitch(switches::kEnableWebBluetooth))
     WebRuntimeFeatures::enableWebBluetooth(true);
 

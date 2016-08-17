@@ -78,6 +78,7 @@ public:
     BLINK_EXPORT static void enableDocumentWriteEvaluator(bool);
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
     BLINK_EXPORT static void enableFastMobileScrolling(bool);
+    BLINK_EXPORT static void enableFeaturePolicy(bool);
     BLINK_EXPORT static void enableFileSystem(bool);
     BLINK_EXPORT static void enableInputMultipleFieldsUI(bool);
     BLINK_EXPORT static void enableMediaCapture(bool);

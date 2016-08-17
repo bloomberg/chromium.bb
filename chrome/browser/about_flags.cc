@@ -2074,6 +2074,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_WEBAPK_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableWebApk)},
 #endif
+    {"enable-feature-policy", IDS_FLAGS_FEATURE_POLICY_NAME,
+     IDS_FLAGS_FEATURE_POLICY_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFeaturePolicy)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -140,6 +140,11 @@ void WebRuntimeFeatures::enableFastMobileScrolling(bool enable)
     RuntimeEnabledFeatures::setFastMobileScrollingEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableFeaturePolicy(bool enable)
+{
+    RuntimeEnabledFeatures::setFeaturePolicyEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableFileSystem(bool enable)
 {
     RuntimeEnabledFeatures::setFileSystemEnabled(enable);
