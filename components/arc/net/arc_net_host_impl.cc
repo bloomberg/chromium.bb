@@ -604,6 +604,10 @@ void ArcNetHostImpl::GetDefaultNetwork(
 void ArcNetHostImpl::DefaultNetworkSuccessCallback(
     const std::string& service_path,
     const base::DictionaryValue& dictionary) {
+  if (!arc_bridge_service()->net()->instance()) {
+    VLOG(2) << "NetInstance is null.";
+    return;
+  }
   arc_bridge_service()->net()->instance()->DefaultNetworkChanged(
       TranslateONCConfiguration(&dictionary),
       TranslateONCConfiguration(&dictionary));
