@@ -48,7 +48,7 @@ Polymer({
         assert(settings.getRouteForPath(
             /** @type {string} */ (window.history.state)));
 
-    if (previousRoute && previousRoute.contains(settings.getCurrentRoute()))
+    if (previousRoute)
       window.history.back();
     else
       settings.navigateTo(assert(settings.getCurrentRoute().parent));

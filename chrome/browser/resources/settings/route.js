@@ -15,6 +15,9 @@ cr.define('settings', function() {
     /** @type {?settings.Route} */
     this.parent = null;
 
+    /** @type {number} */
+    this.depth = 0;
+
     // Below are all legacy properties to provide compatibility with the old
     // routing system. TODO(tommycli): Remove once routing refactor complete.
     this.section = '';
@@ -38,6 +41,7 @@ cr.define('settings', function() {
       var route = new Route(newUrl);
       route.parent = this;
       route.section = this.section;
+      route.depth = this.depth + 1;
 
       return route;
     },
@@ -131,7 +135,8 @@ cr.define('settings', function() {
 
   r.SITE_SETTINGS = r.PRIVACY.createChild('/siteSettings');
   r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');
-  r.SITE_SETTINGS_ALL_DETAILS = r.SITE_SETTINGS_ALL.createChild('details');
+  r.SITE_SETTINGS_SITE_DETAILS =
+      r.SITE_SETTINGS_ALL.createChild('/siteSettings/siteDetails');
 
   r.SITE_SETTINGS_HANDLERS = r.SITE_SETTINGS.createChild('handlers');
 
@@ -153,33 +158,6 @@ cr.define('settings', function() {
   r.SITE_SETTINGS_UNSANDBOXED_PLUGINS =
       r.SITE_SETTINGS.createChild('unsandboxedPlugins');
   r.SITE_SETTINGS_USB_DEVICES = r.SITE_SETTINGS.createChild('usbDevices');
-
-  r.SITE_SETTINGS_AUTOMATIC_DOWNLOADS_DETAILS =
-      r.SITE_SETTINGS_AUTOMATIC_DOWNLOADS.createChild('details');
-  r.SITE_SETTINGS_BACKGROUND_SYNC_DETAILS =
-      r.SITE_SETTINGS_BACKGROUND_SYNC.createChild('details');
-  r.SITE_SETTINGS_CAMERA_DETAILS =
-      r.SITE_SETTINGS_CAMERA.createChild('details');
-  r.SITE_SETTINGS_COOKIES_DETAILS =
-      r.SITE_SETTINGS_COOKIES.createChild('details');
-  r.SITE_SETTINGS_IMAGES_DETAILS =
-      r.SITE_SETTINGS_IMAGES.createChild('details');
-  r.SITE_SETTINGS_JAVASCRIPT_DETAILS =
-      r.SITE_SETTINGS_JAVASCRIPT.createChild('details');
-  r.SITE_SETTINGS_KEYGEN_DETAILS =
-      r.SITE_SETTINGS_KEYGEN.createChild('details');
-  r.SITE_SETTINGS_LOCATION_DETAILS =
-      r.SITE_SETTINGS_LOCATION.createChild('details');
-  r.SITE_SETTINGS_MICROPHONE_DETAILS =
-      r.SITE_SETTINGS_MICROPHONE.createChild('details');
-  r.SITE_SETTINGS_NOTIFICATIONS_DETAILS =
-      r.SITE_SETTINGS_NOTIFICATIONS.createChild('details');
-  r.SITE_SETTINGS_PLUGINS_DETAILS =
-      r.SITE_SETTINGS_PLUGINS.createChild('details');
-  r.SITE_SETTINGS_POPUPS_DETAILS =
-      r.SITE_SETTINGS_POPUPS.createChild('details');
-  r.SITE_SETTINGS_UNSANDBOXED_PLUGINS_DETAILS =
-      r.SITE_SETTINGS_UNSANDBOXED_PLUGINS.createChild('details');
 
 <if expr="chromeos">
   r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');

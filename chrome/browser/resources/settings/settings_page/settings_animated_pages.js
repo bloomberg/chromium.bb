@@ -92,12 +92,12 @@ Polymer({
     this.ensureSubpageInstance_();
 
     if (oldRoute) {
-      if (oldRoute.isSubpage() && oldRoute.contains(newRoute)) {
-        // Slide left for a descendant subpage.
+      if (oldRoute.isSubpage() && newRoute.depth > oldRoute.depth) {
+        // Slide left for a deeper subpage.
         this.$.animatedPages.exitAnimation = 'slide-left-animation';
         this.$.animatedPages.entryAnimation = 'slide-from-right-animation';
-      } else if (newRoute.contains(oldRoute)) {
-        // Slide right for an ancestor subpage.
+      } else if (oldRoute.depth > newRoute.depth) {
+        // Slide right for a shallower subpage.
         this.$.animatedPages.exitAnimation = 'slide-right-animation';
         this.$.animatedPages.entryAnimation = 'slide-from-left-animation';
       } else {

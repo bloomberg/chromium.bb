@@ -402,10 +402,7 @@ Polymer({
     if (this.isPolicyControlled_(this.selectedSite.source))
       return;
 
-    if (this.allSites)
-      settings.navigateTo(settings.Route.SITE_SETTINGS_ALL_DETAILS);
-    else
-      settings.navigateTo(this.computeCategoryDetailsRoute(this.category));
+    settings.navigateTo(settings.Route.SITE_SETTINGS_SITE_DETAILS);
   },
 
   /**
