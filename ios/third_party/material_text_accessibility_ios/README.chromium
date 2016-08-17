@@ -1,0 +1,12 @@
+Name: Material Text Acessibility iOS
+URL: None
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+MDFTextAccessibility assists in selecting text colors that will meet the W3C
+standards for accessibility.
+
+Local Modifications:
+None
