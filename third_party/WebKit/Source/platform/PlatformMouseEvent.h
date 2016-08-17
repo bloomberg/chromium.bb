@@ -33,10 +33,6 @@
 
 namespace blink {
 
-// These button numbers match the ones used in the DOM API, 0 through 2, except for NoButton which is specified in PointerEvent
-// spec but not in MouseEvent spec.
-enum MouseButton { NoButton = -1, LeftButton, MiddleButton, RightButton };
-
 class PlatformMouseEvent : public PlatformEvent {
 public:
     enum SyntheticEventType {
@@ -51,31 +47,30 @@ public:
 
     PlatformMouseEvent()
         : PlatformEvent(PlatformEvent::MouseMoved)
-        , m_button(NoButton)
         , m_clickCount(0)
         , m_synthesized(RealOrIndistinguishable)
     {
     }
 
-    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, EventType type, int clickCount, Modifiers modifiers, double timestamp)
+    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, WebPointerProperties::Button button, EventType type, int clickCount, Modifiers modifiers, double timestamp)
         : PlatformEvent(type, modifiers, timestamp)
         , m_position(position)
         , m_globalPosition(globalPosition)
-        , m_button(button)
         , m_clickCount(clickCount)
         , m_synthesized(RealOrIndistinguishable)
     {
+        m_pointerProperties.button = button;
     }
 
-    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, EventType type, int clickCount, Modifiers modifiers, SyntheticEventType synthesized, double timestamp, WebPointerProperties::PointerType pointerType = WebPointerProperties::PointerType::Unknown)
+    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, WebPointerProperties::Button button, EventType type, int clickCount, Modifiers modifiers, SyntheticEventType synthesized, double timestamp, WebPointerProperties::PointerType pointerType = WebPointerProperties::PointerType::Unknown)
         : PlatformEvent(type, modifiers, timestamp)
         , m_position(position)
         , m_globalPosition(globalPosition)
-        , m_button(button)
         , m_clickCount(clickCount)
         , m_synthesized(synthesized)
     {
         m_pointerProperties.pointerType = pointerType;
+        m_pointerProperties.button = button;
     }
 
     const WebPointerProperties& pointerProperties() const { return m_pointerProperties; }
@@ -83,7 +78,6 @@ public:
     const IntPoint& globalPosition() const { return m_globalPosition; }
     const IntPoint& movementDelta() const { return m_movementDelta; }
 
-    MouseButton button() const { return m_button; }
     int clickCount() const { return m_clickCount; }
     bool fromTouch() const { return m_synthesized == FromTouch; }
     SyntheticEventType getSyntheticEventType() const { return m_synthesized; }
@@ -102,7 +96,6 @@ protected:
     IntPoint m_globalPosition;
 
     IntPoint m_movementDelta;
-    MouseButton m_button;
     int m_clickCount;
     SyntheticEventType m_synthesized;
 

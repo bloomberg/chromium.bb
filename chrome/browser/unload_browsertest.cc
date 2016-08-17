@@ -402,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
       content::NotificationService::AllSources());
   content::SimulateMouseClick(
       browser()->tab_strip_model()->GetActiveWebContents(), 0,
-      blink::WebMouseEvent::ButtonLeft);
+      blink::WebMouseEvent::Button::Left);
   observer.Wait();
   load_stop_observer.Wait();
   CheckTitle("popup");

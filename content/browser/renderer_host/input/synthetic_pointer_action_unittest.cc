@@ -386,7 +386,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseAction) {
   EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseMove);
   EXPECT_EQ(pointer_mouse_target->position(), params.position());
   EXPECT_EQ(pointer_mouse_target->clickCount(), 0);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::ButtonNone);
+  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::NoButton);
 
   // Send a mouse down.
   action_param_list_.reset(new std::vector<SyntheticPointerActionParams>());
@@ -401,7 +401,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseAction) {
   EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseDown);
   EXPECT_EQ(pointer_mouse_target->position(), params.position());
   EXPECT_EQ(pointer_mouse_target->clickCount(), 1);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::ButtonLeft);
+  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::Left);
 
   // Send a mouse drag.
   action_param_list_.reset(new std::vector<SyntheticPointerActionParams>());
@@ -416,7 +416,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseAction) {
   EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseMove);
   EXPECT_EQ(pointer_mouse_target->position(), params.position());
   EXPECT_EQ(pointer_mouse_target->clickCount(), 1);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::ButtonLeft);
+  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::Left);
 
   // Send a mouse up.
   action_param_list_.reset(new std::vector<SyntheticPointerActionParams>());
@@ -429,7 +429,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseAction) {
   EXPECT_EQ(0, num_failure_);
   EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseUp);
   EXPECT_EQ(pointer_mouse_target->clickCount(), 1);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::ButtonLeft);
+  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::Left);
 }
 
 TEST_F(SyntheticPointerActionTest, PointerMouseActionSourceTypeInvalid) {
@@ -459,7 +459,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionSourceTypeInvalid) {
   EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseDown);
   EXPECT_EQ(pointer_mouse_target->position(), params.position());
   EXPECT_EQ(pointer_mouse_target->clickCount(), 1);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::ButtonLeft);
+  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::Left);
 }
 
 TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
@@ -481,7 +481,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
   EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseMove);
   EXPECT_EQ(pointer_mouse_target->position(), params.position());
   EXPECT_EQ(pointer_mouse_target->clickCount(), 0);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::ButtonNone);
+  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::NoButton);
 
   // Cannot send a mouse up without sending a mouse down first.
   action_param_list_.reset(new std::vector<SyntheticPointerActionParams>());
@@ -505,7 +505,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
   EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseDown);
   EXPECT_EQ(pointer_mouse_target->position(), params.position());
   EXPECT_EQ(pointer_mouse_target->clickCount(), 1);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::ButtonLeft);
+  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::Left);
 
   // Cannot send a mouse down again without releasing the mouse button.
   action_param_list_.reset(new std::vector<SyntheticPointerActionParams>());

@@ -532,7 +532,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
     // (outside of the popup). We also save it so we can prevent a click on an
     // element from immediately reopening the same popup.
     RefPtr<WebPagePopupImpl> pagePopup;
-    if (event.button == WebMouseEvent::ButtonLeft) {
+    if (event.button == WebMouseEvent::Button::Left) {
         pagePopup = m_pagePopup;
         hidePopups();
         DCHECK(!m_pagePopup);
@@ -542,7 +542,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
     // If the hit node is a plugin but a scrollbar is over it don't start mouse
     // capture because it will interfere with the scrollbar receiving events.
     IntPoint point(event.x, event.y);
-    if (event.button == WebMouseEvent::ButtonLeft && m_page->mainFrame()->isLocalFrame()) {
+    if (event.button == WebMouseEvent::Button::Left && m_page->mainFrame()->isLocalFrame()) {
         point = m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(point);
         HitTestResult result(m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(point));
         result.setToShadowHostIfInUserAgentShadowRoot();
@@ -556,7 +556,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
 
     PageWidgetEventHandler::handleMouseDown(mainFrame, event);
 
-    if (event.button == WebMouseEvent::ButtonLeft && m_mouseCaptureNode)
+    if (event.button == WebMouseEvent::Button::Left && m_mouseCaptureNode)
         m_mouseCaptureGestureToken = mainFrame.eventHandler().takeLastMouseDownGestureToken();
 
     if (m_pagePopup && pagePopup && m_pagePopup->hasSamePopupClient(pagePopup.get())) {
@@ -568,12 +568,12 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
     // Dispatch the contextmenu event regardless of if the click was swallowed.
     if (!page()->settings().showContextMenuOnMouseUp()) {
 #if OS(MACOSX)
-        if (event.button == WebMouseEvent::ButtonRight
-            || (event.button == WebMouseEvent::ButtonLeft
+        if (event.button == WebMouseEvent::Button::Right
+            || (event.button == WebMouseEvent::Button::Left
                 && event.modifiers & WebMouseEvent::ControlKey))
             mouseContextMenu(event);
 #else
-        if (event.button == WebMouseEvent::ButtonRight)
+        if (event.button == WebMouseEvent::Button::Right)
             mouseContextMenu(event);
 #endif
     }
@@ -629,7 +629,7 @@ void WebViewImpl::handleMouseUp(LocalFrame& mainFrame, const WebMouseEvent& even
     if (page()->settings().showContextMenuOnMouseUp()) {
         // Dispatch the contextmenu event regardless of if the click was swallowed.
         // On Mac/Linux, we handle it on mouse down, not up.
-        if (event.button == WebMouseEvent::ButtonRight)
+        if (event.button == WebMouseEvent::Button::Right)
             mouseContextMenu(event);
     }
 }
@@ -3647,7 +3647,7 @@ void WebViewImpl::dragSourceEndedAt(
     const WebPoint& screenPoint,
     WebDragOperation operation)
 {
-    PlatformMouseEvent pme(clientPoint, screenPoint, LeftButton, PlatformEvent::MouseMoved,
+    PlatformMouseEvent pme(clientPoint, screenPoint, WebPointerProperties::Button::Left, PlatformEvent::MouseMoved,
         0, PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable, WTF::monotonicallyIncreasingTime());
     m_page->deprecatedLocalMainFrame()->eventHandler().dragSourceEndedAt(pme,
         static_cast<DragOperation>(operation));

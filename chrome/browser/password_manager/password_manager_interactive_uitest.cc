@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, MAYBE_UsernameChanged) {
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
 
   WaitForElementValue("username_field", "temp");
   WaitForElementValue("password_field", "random");
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, MAYBE_UsernameChanged) {
   SimulateUserTypingInField(RenderViewHost(), WebContents(), "username_field");
   // TODO(gcasto): Not sure why this click is required.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
   WaitForElementValue("username_field", "tempORARY");
 
   NavigationObserver second_observer(WebContents());

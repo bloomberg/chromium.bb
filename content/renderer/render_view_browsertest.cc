@@ -1469,7 +1469,7 @@ TEST_F(RenderViewImplTest, ContextMenu) {
   // make this a bit more robust in case of some other formatting or other bug.)
   WebMouseEvent mouse_event;
   mouse_event.type = WebInputEvent::MouseDown;
-  mouse_event.button = WebMouseEvent::ButtonRight;
+  mouse_event.button = WebMouseEvent::Button::Right;
   mouse_event.x = 250;
   mouse_event.y = 250;
   mouse_event.globalX = 250;

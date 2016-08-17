@@ -111,7 +111,7 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
     // Send a click event to cause some jankiness. This is done via a click
     // event as ExecuteScript is synchronous.
     SimulateMouseClick(shell()->web_contents(), 0,
-                       blink::WebPointerProperties::ButtonLeft);
+                       blink::WebPointerProperties::Button::Left);
     scoped_refptr<InputMsgWatcher> input_msg_watcher(
         new InputMsgWatcher(GetWidgetHost(), blink::WebInputEvent::MouseMove));
     GetWidgetHost()->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(
@@ -150,7 +150,7 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
     // Send a click event to cause some jankiness. This is done via a click
     // event as ExecuteScript is synchronous.
     SimulateMouseClick(shell()->web_contents(), 0,
-                       blink::WebPointerProperties::ButtonLeft);
+                       blink::WebPointerProperties::Button::Left);
     scoped_refptr<InputMsgWatcher> input_msg_watcher(
         new InputMsgWatcher(GetWidgetHost(), blink::WebInputEvent::TouchMove));
 

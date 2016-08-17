@@ -408,7 +408,7 @@ bool SelectionController::handleMousePressEventDoubleClick(const MouseEventWithH
     if (!m_mouseDownAllowsMultiClick)
         return handleMousePressEventSingleClick(event);
 
-    if (event.event().button() != LeftButton)
+    if (event.event().pointerProperties().button != WebPointerProperties::Button::Left)
         return false;
 
     if (selection().isRange()) {
@@ -436,7 +436,7 @@ bool SelectionController::handleMousePressEventTripleClick(const MouseEventWithH
     if (!m_mouseDownAllowsMultiClick)
         return handleMousePressEventSingleClick(event);
 
-    if (event.event().button() != LeftButton)
+    if (event.event().pointerProperties().button != WebPointerProperties::Button::Left)
         return false;
 
     Node* innerNode = event.innerNode();
@@ -514,7 +514,7 @@ bool SelectionController::handleMouseReleaseEvent(const MouseEventWithHitTestRes
     if (m_mouseDownWasSingleClickInSelection && m_selectionState != SelectionState::ExtendedSelection
         && dragStartPos == event.event().position()
         && selection().isRange()
-        && event.event().button() != RightButton) {
+        && event.event().pointerProperties().button != WebPointerProperties::Button::Right) {
         VisibleSelectionInFlatTree newSelection;
         Node* node = event.innerNode();
         bool caretBrowsing = m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
@@ -532,7 +532,7 @@ bool SelectionController::handleMouseReleaseEvent(const MouseEventWithHitTestRes
 
     selection().selectFrameElementInParentIfFullySelected();
 
-    if (event.event().button() == MiddleButton && !event.isOverLink()) {
+    if (event.event().pointerProperties().button == WebPointerProperties::Button::Middle && !event.isOverLink()) {
         // Ignore handled, since we want to paste to where the caret was placed anyway.
         handled = handlePasteGlobalSelection(event.event()) || handled;
     }

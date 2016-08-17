@@ -858,7 +858,7 @@ class PolicyTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     blink::WebMouseEvent click_event;
     click_event.type = blink::WebInputEvent::MouseDown;
-    click_event.button = blink::WebMouseEvent::ButtonLeft;
+    click_event.button = blink::WebMouseEvent::Button::Left;
     click_event.clickCount = 1;
     click_event.x = x;
     click_event.y = y;

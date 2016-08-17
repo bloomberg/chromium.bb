@@ -5,6 +5,7 @@
 #ifndef WebPointerProperties_h
 #define WebPointerProperties_h
 
+#include <cstdint>
 #include <limits>
 
 namespace blink {
@@ -17,7 +18,7 @@ namespace blink {
 class WebPointerProperties {
 public:
     WebPointerProperties()
-        : button(ButtonNone)
+        : button(Button::NoButton)
         , id(0)
         , force(std::numeric_limits<float>::quiet_NaN())
         , tiltX(0)
@@ -26,14 +27,14 @@ public:
     {
     }
 
-    enum Button {
-        ButtonNone = -1,
-        ButtonLeft,
-        ButtonMiddle,
-        ButtonRight
+    enum class Button : std::int8_t {
+        NoButton = -1,
+        Left,
+        Middle,
+        Right
     };
 
-    enum class PointerType : int {
+    enum class PointerType : std::int8_t {
         Unknown,
         Mouse,
         Pen,

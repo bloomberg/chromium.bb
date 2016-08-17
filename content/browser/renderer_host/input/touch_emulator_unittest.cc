@@ -135,8 +135,8 @@ class TouchEmulatorTest : public testing::Test,
     WebMouseEvent event;
     event.timeStampSeconds = GetNextEventTimeSeconds();
     event.type = type;
-    event.button = mouse_pressed_ ? WebMouseEvent::ButtonLeft :
-        WebMouseEvent::ButtonNone;
+    event.button = mouse_pressed_ ? WebMouseEvent::Button::Left :
+        WebMouseEvent::Button::NoButton;
     event.modifiers = modifiers();
     last_mouse_x_ = x;
     last_mouse_y_ = y;

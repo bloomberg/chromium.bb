@@ -385,7 +385,7 @@ WebInputEventResult EventHandler::handleMouseDraggedEvent(const MouseEventWithHi
     //    that ends as a result of a mouse release does not send a mouse release
     //    event. As a result, m_mousePressed also ends up remaining true until
     //    the next mouse release event seen by the EventHandler.
-    if (event.event().button() != LeftButton)
+    if (event.event().pointerProperties().button != WebPointerProperties::Button::Left)
         m_mousePressed = false;
 
     if (!m_mousePressed)
@@ -778,7 +778,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
     // For 4th/5th button in the mouse since Chrome does not yet send
     // button value to Blink but in some cases it does send the event.
     // This check is needed to suppress such an event (crbug.com/574959)
-    if (mouseEvent.button() == NoButton)
+    if (mouseEvent.pointerProperties().button == WebPointerProperties::Button::NoButton)
         return WebInputEventResult::HandledSuppressed;
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
@@ -900,7 +900,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
             eventResult = handleMousePressEvent(mev);
     }
 
-    if (mev.hitTestResult().innerNode() && mouseEvent.button() == LeftButton) {
+    if (mev.hitTestResult().innerNode() && mouseEvent.pointerProperties().button == WebPointerProperties::Button::Left) {
         ASSERT(mouseEvent.type() == PlatformEvent::MousePressed);
         HitTestResult result = mev.hitTestResult();
         result.setToShadowHostIfInUserAgentShadowRoot();
@@ -1100,7 +1100,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
     // For 4th/5th button in the mouse since Chrome does not yet send
     // button value to Blink but in some cases it does send the event.
     // This check is needed to suppress such an event (crbug.com/574959)
-    if (mouseEvent.button() == NoButton)
+    if (mouseEvent.pointerProperties().button == WebPointerProperties::Button::NoButton)
         return WebInputEventResult::HandledSuppressed;
 
     if (!mouseEvent.fromTouch())
@@ -1152,10 +1152,12 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
 
     // We only prevent click event when the click may cause contextmenu to popup.
     // However, we always send auxclick.
-    bool contextMenuEvent = !RuntimeEnabledFeatures::auxclickEnabled() && mouseEvent.button() == RightButton;
+    bool contextMenuEvent = !RuntimeEnabledFeatures::auxclickEnabled()
+        && mouseEvent.pointerProperties().button == WebPointerProperties::Button::Right;
 #if OS(MACOSX)
     // FIXME: The Mac port achieves the same behavior by checking whether the context menu is currently open in WebPage::mouseEvent(). Consider merging the implementations.
-    if (mouseEvent.button() == LeftButton && mouseEvent.getModifiers() & PlatformEvent::CtrlKey)
+    if (mouseEvent.pointerProperties().button == WebPointerProperties::Button::Left
+        && mouseEvent.getModifiers() & PlatformEvent::CtrlKey)
         contextMenuEvent = true;
 #endif
 
@@ -1185,7 +1187,8 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
             // correctly. Moreover, clickTargetNode is different from
             // mev.innerNode at drag-release.
             clickEventResult = toWebInputEventResult(clickTargetNode->dispatchMouseEvent(mev.event(),
-                !RuntimeEnabledFeatures::auxclickEnabled() || (mev.event().button() == MouseButton::LeftButton)
+                !RuntimeEnabledFeatures::auxclickEnabled()
+                || (mev.event().pointerProperties().button == WebPointerProperties::Button::Left)
                     ? EventTypeNames::click
                     : EventTypeNames::auxclick,
                 m_clickCount));
@@ -1520,7 +1523,7 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const Ato
 
     Node* newNodeUnderMouse = nullptr;
     const auto& eventResult = m_pointerEventManager.sendMousePointerEvent(
-        m_nodeUnderMouse, mouseEventType, clickCount, mouseEvent, nullptr,
+        m_nodeUnderMouse, mouseEventType, clickCount, mouseEvent,
         lastNodeUnderMouse, &newNodeUnderMouse);
     m_nodeUnderMouse = newNodeUnderMouse;
     return eventResult;
@@ -1898,7 +1901,7 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(const GestureEventWithHi
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
     unsigned modifiers = gestureEvent.getModifiers();
     PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
-        NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
+        WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
         static_cast<PlatformEvent::Modifiers>(modifiers),
         PlatformMouseEvent::FromTouch, gestureEvent.timestamp(), WebPointerProperties::PointerType::Mouse);
 
@@ -2106,7 +2109,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(Element* overrideTa
         eventType = PlatformEvent::MouseReleased;
 
     PlatformMouseEvent mouseEvent(locationInRootFrame, globalPosition,
-        RightButton, eventType, 1,
+        WebPointerProperties::Button::Right, eventType, 1,
         PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable,
         WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
 
@@ -2186,7 +2189,7 @@ void EventHandler::fakeMouseMoveEventTimerFired(TimerBase* timer)
     if (!isCursorVisible())
         return;
 
-    PlatformMouseEvent fakeMouseMoveEvent(m_lastKnownMousePosition, m_lastKnownMouseGlobalPosition, NoButton, PlatformEvent::MouseMoved, 0, PlatformKeyboardEvent::getCurrentModifierState(), PlatformMouseEvent::RealOrIndistinguishable, monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
+    PlatformMouseEvent fakeMouseMoveEvent(m_lastKnownMousePosition, m_lastKnownMouseGlobalPosition, WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0, PlatformKeyboardEvent::getCurrentModifierState(), PlatformMouseEvent::RealOrIndistinguishable, monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
     handleMouseMoveEvent(fakeMouseMoveEvent);
 }
 
@@ -2343,12 +2346,12 @@ bool EventHandler::handleDragDropIfPossible(const GestureEventWithHitTestResults
 
         // TODO(mustaq): Suppressing long-tap MouseEvents could break
         // drag-drop. Will do separately because of the risk. crbug.com/606938.
-        PlatformMouseEvent mouseDownEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MousePressed, 1,
+        PlatformMouseEvent mouseDownEvent(adjustedPoint, gestureEvent.globalPosition(), WebPointerProperties::Button::Left, PlatformEvent::MousePressed, 1,
             static_cast<PlatformEvent::Modifiers>(modifiers | PlatformEvent::LeftButtonDown),
             PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
         m_mouseDown = mouseDownEvent;
 
-        PlatformMouseEvent mouseDragEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MouseMoved, 1,
+        PlatformMouseEvent mouseDragEvent(adjustedPoint, gestureEvent.globalPosition(), WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 1,
             static_cast<PlatformEvent::Modifiers>(modifiers | PlatformEvent::LeftButtonDown),
             PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
         HitTestRequest request(HitTestRequest::ReadOnly);

@@ -92,7 +92,7 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
 
   mouse.timeStampSeconds = gesture.timeStampSeconds;
   mouse.modifiers = gesture.modifiers | WebInputEvent::LeftButtonDown;
-  mouse.button = WebMouseEvent::ButtonLeft;
+  mouse.button = WebMouseEvent::Button::Left;
   mouse.clickCount = (mouse.type == WebInputEvent::MouseDown ||
                       mouse.type == WebInputEvent::MouseUp);
 
@@ -185,7 +185,7 @@ class PepperWidget : public WebWidget {
           result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);
 
           mouse.type = WebInputEvent::MouseDown;
-          mouse.button = WebMouseEvent::ButtonLeft;
+          mouse.button = WebMouseEvent::Button::Left;
           mouse.clickCount = gesture_event->data.tap.tapCount;
           result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);
 
@@ -219,17 +219,17 @@ class PepperWidget : public WebWidget {
 #if defined(OS_WIN)
       send_context_menu_event =
           mouse_event.type == WebInputEvent::MouseUp &&
-          mouse_event.button == WebMouseEvent::ButtonRight;
+          mouse_event.button == WebMouseEvent::Button::Right;
 #elif defined(OS_MACOSX)
       send_context_menu_event =
           mouse_event.type == WebInputEvent::MouseDown &&
-          (mouse_event.button == WebMouseEvent::ButtonRight ||
-           (mouse_event.button == WebMouseEvent::ButtonLeft &&
+          (mouse_event.button == WebMouseEvent::Button::Right ||
+           (mouse_event.button == WebMouseEvent::Button::Left &&
             mouse_event.modifiers & WebMouseEvent::ControlKey));
 #else
       send_context_menu_event =
           mouse_event.type == WebInputEvent::MouseDown &&
-          mouse_event.button == WebMouseEvent::ButtonRight;
+          mouse_event.button == WebMouseEvent::Button::Right;
 #endif
       if (send_context_menu_event) {
         WebMouseEvent context_menu_event(mouse_event);

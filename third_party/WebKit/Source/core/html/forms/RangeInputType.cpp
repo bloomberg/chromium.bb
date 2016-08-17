@@ -157,7 +157,7 @@ void RangeInputType::handleMouseDownEvent(MouseEvent* event)
         return;
 
     Node* targetNode = event->target()->toNode();
-    if (event->button() != LeftButton || !targetNode)
+    if (event->button() != static_cast<short>(WebPointerProperties::Button::Left) || !targetNode)
         return;
     DCHECK(element().shadow());
     if (targetNode != element() && !targetNode->isDescendantOf(element().userAgentShadowRoot()))

@@ -198,7 +198,7 @@ bool TextInputTestHelper::ClickElement(const std::string& id,
 
   blink::WebMouseEvent mouse_event;
   mouse_event.type = blink::WebInputEvent::MouseDown;
-  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
+  mouse_event.button = blink::WebMouseEvent::Button::Left;
   mouse_event.x = rect.CenterPoint().x();
   mouse_event.y = rect.CenterPoint().y();
   mouse_event.clickCount = 1;

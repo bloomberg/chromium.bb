@@ -435,7 +435,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     // Reverse builders should *not* go back to physical pixels, as they are used for plugins
     // which expect CSS pixel coordinates.
     {
-        PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), LeftButton, PlatformEvent::MouseMoved, 1, PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable, 0);
+        PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 1, PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable, 0);
         MouseEvent* mouseEvent = MouseEvent::create(EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
         WebMouseEventBuilder webMouseBuilder(view, documentLayoutView, *mouseEvent);
 
@@ -448,10 +448,10 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     }
 
     {
-        PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), NoButton, PlatformEvent::MouseMoved, 1, PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable, 0);
+        PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 1, PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable, 0);
         MouseEvent* mouseEvent = MouseEvent::create(EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
         WebMouseEventBuilder webMouseBuilder(view, documentLayoutView, *mouseEvent);
-        EXPECT_EQ(WebMouseEvent::ButtonNone, webMouseBuilder.button);
+        EXPECT_EQ(WebMouseEvent::Button::NoButton, webMouseBuilder.button);
     }
 
     {

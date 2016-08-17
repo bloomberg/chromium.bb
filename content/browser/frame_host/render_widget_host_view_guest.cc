@@ -609,7 +609,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
         static_cast<const blink::WebMouseEvent&>(*event);
     // A MouseDown on the ButtonRight could suggest a ContextMenu.
     if (guest_ && mouse_event.type == blink::WebInputEvent::MouseDown &&
-        mouse_event.button == blink::WebPointerProperties::ButtonRight)
+        mouse_event.button == blink::WebPointerProperties::Button::Right)
       guest_->SetContextMenuPosition(
           gfx::Point(mouse_event.globalX - GetViewBounds().x(),
                      mouse_event.globalY - GetViewBounds().y()));
