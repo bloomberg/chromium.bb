@@ -98,6 +98,10 @@ public class DownloadManagerDelegate {
                     (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
             Cursor c = manager.query(
                     new DownloadManager.Query().setFilterById(mDownloadItem.getSystemDownloadId()));
+            if (c == null) {
+                return new DownloadQueryResult(mDownloadItem,
+                        DownloadManagerService.DOWNLOAD_STATUS_CANCELLED, 0, 0, false, 0);
+            }
             long bytesDownloaded = 0;
             boolean canResolve = false;
             int downloadStatus = DownloadManagerService.DOWNLOAD_STATUS_IN_PROGRESS;
