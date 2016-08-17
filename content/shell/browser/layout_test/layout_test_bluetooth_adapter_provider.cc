@@ -1124,7 +1124,7 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
       .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
           [adapter, measurement_ptr]() {
             std::unique_ptr<NiceMockBluetoothGattNotifySession> notify_session(
-                GetBaseGATTNotifySession(measurement_ptr->GetIdentifier()));
+                GetBaseGATTNotifySession(measurement_ptr->GetWeakPtr()));
 
             std::vector<uint8_t> rate(1 /* size */);
             rate[0] = 60;
@@ -1253,9 +1253,9 @@ LayoutTestBluetoothAdapterProvider::GetErrorCharacteristic(
 // static
 std::unique_ptr<NiceMockBluetoothGattNotifySession>
 LayoutTestBluetoothAdapterProvider::GetBaseGATTNotifySession(
-    const std::string& characteristic_identifier) {
+    base::WeakPtr<device::BluetoothRemoteGattCharacteristic> characteristic) {
   std::unique_ptr<NiceMockBluetoothGattNotifySession> session(
-      new NiceMockBluetoothGattNotifySession(characteristic_identifier));
+      new NiceMockBluetoothGattNotifySession(characteristic));
 
   ON_CALL(*session, Stop(_))
       .WillByDefault(testing::DoAll(

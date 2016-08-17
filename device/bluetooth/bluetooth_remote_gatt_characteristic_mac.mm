@@ -10,7 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
-#include "device/bluetooth/bluetooth_gatt_notify_session_mac.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_mac.h"
 
 namespace device {
@@ -134,8 +134,8 @@ void BluetoothRemoteGattCharacteristicMac::StartNotifySession(
     const ErrorCallback& error_callback) {
   if (IsNotifying()) {
     VLOG(2) << "Already notifying. Creating notify session.";
-    std::unique_ptr<BluetoothGattNotifySessionMac> notify_session(
-        new BluetoothGattNotifySessionMac(weak_ptr_factory_.GetWeakPtr()));
+    std::unique_ptr<BluetoothGattNotifySession> notify_session(
+        new BluetoothGattNotifySession(weak_ptr_factory_.GetWeakPtr()));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, base::Passed(std::move(notify_session))));
@@ -223,6 +223,22 @@ void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
   }
 }
 
+void BluetoothRemoteGattCharacteristicMac::SubscribeToNotifications(
+    BluetoothRemoteGattDescriptor* ccc_descriptor,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  // TODO(http://crbug.com/633191): Implement this method
+  NOTIMPLEMENTED();
+}
+
+void BluetoothRemoteGattCharacteristicMac::UnsubscribeFromNotifications(
+    BluetoothRemoteGattDescriptor* ccc_descriptor,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  // TODO(http://crbug.com/633191): Implement this method
+  NOTIMPLEMENTED();
+}
+
 void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
   // This method is called when the characteristic is read and when a
   // notification is received.
@@ -306,7 +322,7 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
     return;
   }
   for (const auto& callback : reentrant_safe_callbacks) {
-    callback.first.Run(base::MakeUnique<BluetoothGattNotifySessionMac>(
+    callback.first.Run(base::MakeUnique<BluetoothGattNotifySession>(
         weak_ptr_factory_.GetWeakPtr()));
   }
 }

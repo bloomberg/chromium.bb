@@ -6,14 +6,19 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_H_
 
 #include <stdint.h>
+
+#include <queue>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
@@ -52,10 +57,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // Returns a pointer to the GATT service this characteristic belongs to.
   virtual BluetoothRemoteGattService* GetService() const = 0;
 
-  // Returns whether or not this characteristic is currently sending value
-  // updates in the form of a notification or indication.
-  virtual bool IsNotifying() const = 0;
-
   // Returns the list of GATT characteristic descriptors that provide more
   // information about this characteristic.
   virtual std::vector<BluetoothRemoteGattDescriptor*> GetDescriptors()
@@ -70,20 +71,50 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // multiple, as illustrated by Core Bluetooth Specification [V4.2 Vol 3 Part G
   // 3.3.3.5 Characteristic Presentation Format].
   std::vector<BluetoothRemoteGattDescriptor*> GetDescriptorsByUUID(
-      const BluetoothUUID& uuid);
+      const BluetoothUUID& uuid) const;
+
+  // Get a weak pointer to the characteristic.
+  base::WeakPtr<BluetoothRemoteGattCharacteristic> GetWeakPtr();
+
+  // Returns whether or not this characteristic is currently sending value
+  // updates in the form of a notification or indication.
+  //
+  // If your code wants to receive notifications, you MUST call
+  // StartNotifySession and hold on to the resulting session object for as long
+  // as you want to keep receiving notifications. Even if this method returns
+  // true, and you are able to see the notifications coming in, you have no
+  // guarantee that the notifications will keep flowing for as long as you
+  // need, unless you open your own session.
+  virtual bool IsNotifying() const;
 
   // Starts a notify session for the remote characteristic, if it supports
   // notifications/indications. On success, the characteristic starts sending
   // value notifications and |callback| is called with a session object whose
   // ownership belongs to the caller. |error_callback| is called on errors.
   //
-  // Writes to the Client Characteristic Configuration descriptor to enable
-  // notifications/indications. Core Bluetooth Specification [V4.2 Vol 3 Part G
-  // Section 3.3.1.1. Characteristic Properties] requires this descriptor to be
-  // present when notifications/indications are supported. If the descriptor is
-  // not present |error_callback| will be run.
+  // This method handles all logic regarding multiple sessions so that
+  // specific platform implementations of the remote characteristic class
+  // do not have to. Rather than overriding this method, it is recommended
+  // to override the SubscribeToNotifications method below.
+  //
+  // The code in SubscribeToNotifications writes to the Client Characteristic
+  // Configuration descriptor to enable notifications/indications. Core
+  // Bluetooth Specification [V4.2 Vol 3 Part G Section 3.3.1.1. Characteristic
+  // Properties] requires this descriptor to be present when
+  // notifications/indications are supported. If the descriptor is not present
+  // |error_callback| will be run.
+  //
+  // Writing a non-zero value to the remote characteristic's Client
+  // Characteristic Configuration descriptor, causes the remote characteristic
+  // to start sending us notifications whenever the characteristic's value
+  // changes. When a new notification is received,
+  // BluetoothAdapterObserver::GattCharacteristicValueChanged is called with
+  // the characteristic's new value.
+  //
+  // To stop the flow of notifications, simply call the Stop method on the
+  // BluetoothGattNotifySession object that you received in |callback|.
   virtual void StartNotifySession(const NotifySessionCallback& callback,
-                                  const ErrorCallback& error_callback) = 0;
+                                  const ErrorCallback& error_callback);
 
   // Sends a read request to a remote characteristic to read its value.
   // |callback| is called to return the read value on success and
@@ -106,7 +137,101 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   BluetoothRemoteGattCharacteristic();
   ~BluetoothRemoteGattCharacteristic() override;
 
+  // Writes to the Client Characteristic Configuration descriptor to enable
+  // notifications/indications. This method is meant to be called from
+  // StartNotifySession and should contain only the code necessary to start
+  // listening to characteristic notifications on a particular platform.
+  virtual void SubscribeToNotifications(
+      BluetoothRemoteGattDescriptor* ccc_descriptor,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // Writes to the Client Characteristic Configuration descriptor to disable
+  // notifications/indications. This method is meant to be called from
+  // StopNotifySession and should contain only the code necessary to stop
+  // listening to characteristic notifications on a particular platform.
+  virtual void UnsubscribeFromNotifications(
+      BluetoothRemoteGattDescriptor* ccc_descriptor,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+
  private:
+  friend class BluetoothGattNotifySession;
+
+  // Stops an active notify session for the remote characteristic. On success,
+  // the characteristic removes this session from the list of active sessions.
+  // If there are no more active sessions, notifications/indications are
+  // turned off.
+  //
+  // This method is, and should only be, called from
+  // BluetoothGattNotifySession::Stop().
+  //
+  // The code in UnsubscribeFromNotifications writes to the Client
+  // Characteristic Configuration descriptor to disable
+  // notifications/indications. Core Bluetooth Specification [V4.2 Vol 3 Part G
+  // Section 3.3.1.1. Characteristic Properties] requires this descriptor to be
+  // present when notifications/indications are supported.
+  virtual void StopNotifySession(BluetoothGattNotifySession* session,
+                                 const base::Closure& callback);
+
+  class NotifySessionCommand {
+   public:
+    enum Type { COMMAND_NONE, COMMAND_START, COMMAND_STOP };
+    enum Result { RESULT_SUCCESS, RESULT_ERROR };
+
+    typedef base::Callback<
+        void(Type, Result, BluetoothRemoteGattService::GattErrorCode)>
+        ExecuteCallback;
+
+    ExecuteCallback execute_callback_;
+    base::Closure cancel_callback_;
+
+    NotifySessionCommand(const ExecuteCallback& execute_callback,
+                         const base::Closure& cancel_callback);
+    ~NotifySessionCommand();
+
+    void Execute();
+    void Execute(
+        Type previous_command_type,
+        Result previous_command_result,
+        BluetoothRemoteGattService::GattErrorCode previous_command_error_code);
+    void Cancel();
+  };
+
+  void ExecuteStartNotifySession(
+      NotifySessionCallback callback,
+      ErrorCallback error_callback,
+      NotifySessionCommand::Type previous_command_type,
+      NotifySessionCommand::Result previous_command_result,
+      BluetoothRemoteGattService::GattErrorCode previous_command_error_code);
+  void CancelStartNotifySession(base::Closure callback);
+  void OnStartNotifySessionSuccess(NotifySessionCallback callback);
+  void OnStartNotifySessionError(
+      ErrorCallback error_callback,
+      BluetoothRemoteGattService::GattErrorCode error);
+
+  void ExecuteStopNotifySession(
+      BluetoothGattNotifySession* session,
+      base::Closure callback,
+      NotifySessionCommand::Type previous_command_type,
+      NotifySessionCommand::Result previous_command_result,
+      BluetoothRemoteGattService::GattErrorCode previous_command_error_code);
+  void CancelStopNotifySession(base::Closure callback);
+  void OnStopNotifySessionSuccess(BluetoothGattNotifySession* session,
+                                  base::Closure callback);
+  void OnStopNotifySessionError(
+      BluetoothGattNotifySession* session,
+      base::Closure callback,
+      BluetoothRemoteGattService::GattErrorCode error);
+
+  // Pending StartNotifySession / StopNotifySession calls.
+  std::queue<std::unique_ptr<NotifySessionCommand>> pending_notify_commands_;
+
+  // Set of active notify sessions.
+  std::set<BluetoothGattNotifySession*> notify_sessions_;
+
+  base::WeakPtrFactory<BluetoothRemoteGattCharacteristic> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristic);
 };
 

@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/object_path.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_characteristic_bluez.h"
@@ -59,17 +59,27 @@ class BluetoothRemoteGattCharacteristicBlueZ
       const std::string& identifier) const override;
   void StartNotifySession(const NotifySessionCallback& callback,
                           const ErrorCallback& error_callback) override;
+  // Removes one value update session and invokes |callback| on completion. This
+  // decrements the session reference count by 1 and if the number reaches 0,
+  // makes a call to the subsystem to stop notifications from this
+  // characteristic.
+  void StopNotifySession(device::BluetoothGattNotifySession* session,
+                         const base::Closure& callback) override;
   void ReadRemoteCharacteristic(const ValueCallback& callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& new_value,
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) override;
 
-  // Removes one value update session and invokes |callback| on completion. This
-  // decrements the session reference count by 1 and if the number reaches 0,
-  // makes a call to the subsystem to stop notifications from this
-  // characteristic.
-  void RemoveNotifySession(const base::Closure& callback);
+ protected:
+  void SubscribeToNotifications(
+      device::BluetoothRemoteGattDescriptor* ccc_descriptor,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+  void UnsubscribeFromNotifications(
+      device::BluetoothRemoteGattDescriptor* ccc_descriptor,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
 
  private:
   friend class BluetoothRemoteGattServiceBlueZ;

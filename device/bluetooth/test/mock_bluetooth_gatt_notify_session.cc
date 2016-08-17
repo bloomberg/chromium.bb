@@ -11,9 +11,8 @@ using testing::Return;
 namespace device {
 
 MockBluetoothGattNotifySession::MockBluetoothGattNotifySession(
-    const std::string& characteristic_identifier) {
-  ON_CALL(*this, GetCharacteristicIdentifier())
-      .WillByDefault(Return(characteristic_identifier));
+    base::WeakPtr<BluetoothRemoteGattCharacteristic> characteristic)
+    : BluetoothGattNotifySession(characteristic) {
   ON_CALL(*this, IsActive()).WillByDefault(Return(true));
 }
 

@@ -187,6 +187,21 @@ class BluetoothTestBase : public testing::Test {
       BluetoothRemoteGattCharacteristic* characteristic,
       BluetoothRemoteGattService::GattErrorCode error_code) {}
 
+  // Simulates a Characteristic Stop Notify completed.
+  // If |characteristic| is null, acts upon the characteristic & CCC
+  // descriptor provided to RememberCharacteristicForSubsequentAction &
+  // RememberCCCDescriptorForSubsequentAction.
+  virtual void SimulateGattNotifySessionStopped(
+      BluetoothRemoteGattCharacteristic* characteristic) {}
+
+  // Simulates a Characteristic Stop Notify error.
+  // If |characteristic| is null, acts upon the characteristic & CCC
+  // descriptor provided to RememberCharacteristicForSubsequentAction &
+  // RememberCCCDescriptorForSubsequentAction.
+  virtual void SimulateGattNotifySessionStopError(
+      BluetoothRemoteGattCharacteristic* characteristic,
+      BluetoothRemoteGattService::GattErrorCode error_code) {}
+
   // Simulates a Characteristic Set Notify operation failing synchronously once
   // for an unknown reason.
   virtual void SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(
@@ -338,6 +353,11 @@ class BluetoothTestBase : public testing::Test {
                               std::unique_ptr<BluetoothGattConnection>);
   void NotifyCallback(Call expected,
                       std::unique_ptr<BluetoothGattNotifySession>);
+  void NotifyCheckForPrecedingCalls(
+      int num_of_preceding_calls,
+      std::unique_ptr<BluetoothGattNotifySession>);
+  void StopNotifyCallback(Call expected);
+  void StopNotifyCheckForPrecedingCalls(int num_of_preceding_calls);
   void ReadValueCallback(Call expected, const std::vector<uint8_t>& value);
   void ErrorCallback(Call expected);
   void ConnectErrorCallback(Call expected,
@@ -362,6 +382,10 @@ class BluetoothTestBase : public testing::Test {
       Call expected);
   BluetoothRemoteGattCharacteristic::NotifySessionCallback GetNotifyCallback(
       Call expected);
+  BluetoothRemoteGattCharacteristic::NotifySessionCallback
+  GetNotifyCheckForPrecedingCalls(int num_of_preceding_calls);
+  base::Closure GetStopNotifyCallback(Call expected);
+  base::Closure GetStopNotifyCheckForPrecedingCalls(int num_of_preceding_calls);
   BluetoothRemoteGattCharacteristic::ValueCallback GetReadValueCallback(
       Call expected);
   BluetoothAdapter::ErrorCallback GetErrorCallback(Call expected);
