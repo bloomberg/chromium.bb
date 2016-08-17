@@ -106,8 +106,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         if (!DeviceFormFactor.isLargeTablet(activity)) {
             drawerLayout = (DrawerLayout) mMainView;
         }
-        mToolbar.initialize(mSelectionDelegate, R.string.menu_downloads, drawerLayout,
-                R.id.normal_menu_group, R.id.selection_mode_menu_group);
+        mToolbar.initialize(mSelectionDelegate, 0, drawerLayout, R.id.normal_menu_group,
+                R.id.selection_mode_menu_group);
 
         mFilterView = (ListView) mMainView.findViewById(R.id.section_list);
         mFilterView.setAdapter(mFilterAdapter);
@@ -224,9 +224,12 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
     /** Called when the filter has been changed by the user. */
     void onFilterChanged(int filter) {
+        mSelectionDelegate.clearSelection();
+
         for (DownloadUiObserver observer : mObservers) {
             observer.onFilterChanged(filter);
         }
+
         if (mNativePage != null) {
             mNativePage.onStateChange(DownloadFilter.getUrlForFilter(filter));
         }

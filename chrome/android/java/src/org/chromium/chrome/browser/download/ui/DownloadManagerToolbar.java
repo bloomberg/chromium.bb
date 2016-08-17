@@ -12,11 +12,15 @@ import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObser
 import org.chromium.chrome.browser.widget.selection.SelectionToolbar;
 import org.chromium.ui.base.DeviceFormFactor;
 
+import java.util.List;
+
 /**
  * Handles toolbar functionality for the {@link DownloadManagerUi}.
  */
 public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItemWrapper>
         implements DownloadUiObserver {
+    private int mFilter = DownloadFilter.FILTER_ALL;
+
     public DownloadManagerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
         inflateMenu(R.menu.download_manager_menu);
@@ -24,6 +28,7 @@ public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItem
 
     @Override
     public void initialize(DownloadManagerUi manager) {
+        manager.addObserver(this);
         if (DeviceFormFactor.isTablet(getContext())) {
             getMenu().findItem(R.id.close_menu_id).setVisible(false);
         }
@@ -31,14 +36,25 @@ public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItem
 
     @Override
     public void onFilterChanged(int filter) {
-        if (filter == DownloadFilter.FILTER_ALL) {
-            setTitle(R.string.menu_downloads);
-        } else {
-            setTitle(DownloadFilter.getStringIdForFilter(filter));
-        }
+        mFilter = filter;
+        if (!mIsSelectionEnabled) updateTitle();
+    }
+
+    @Override
+    public void onSelectionStateChange(List<DownloadHistoryItemWrapper> selectedItems) {
+        super.onSelectionStateChange(selectedItems);
+        if (!mIsSelectionEnabled) updateTitle();
     }
 
     @Override
     public void onManagerDestroyed(DownloadManagerUi manager) {
+    }
+
+    private void updateTitle() {
+        if (mFilter == DownloadFilter.FILTER_ALL) {
+            setTitle(R.string.menu_downloads);
+        } else {
+            setTitle(DownloadFilter.getStringIdForFilter(mFilter));
+        }
     }
 }
