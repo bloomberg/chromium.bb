@@ -35,6 +35,8 @@ DEBIAN_PACKAGES="\
   libattr1
   libavahi-client3
   libavahi-common3
+  libbluetooth3
+  libbluetooth-dev
   libbrlapi0.6
   libbrlapi-dev
   libc6

@@ -5,6 +5,8 @@ main/a/atk1.0/libatk1.0-dev_2.14.0-1_arm64.deb
 main/a/attr/libattr1_2.4.47-2_arm64.deb
 main/a/avahi/libavahi-client3_0.6.31-5_arm64.deb
 main/a/avahi/libavahi-common3_0.6.31-5_arm64.deb
+main/b/bluez/libbluetooth3_5.23-2+b1_arm64.deb
+main/b/bluez/libbluetooth-dev_5.23-2+b1_arm64.deb
 main/b/brltty/libbrlapi0.6_5.2~20141018-5_arm64.deb
 main/b/brltty/libbrlapi-dev_5.2~20141018-5_arm64.deb
 main/c/cairo/libcairo2_1.14.0-2.1+deb8u1_arm64.deb

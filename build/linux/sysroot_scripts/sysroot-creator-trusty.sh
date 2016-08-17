@@ -34,6 +34,8 @@ DEBIAN_PACKAGES="\
   libatk1.0-dev
   libavahi-client3
   libavahi-common3
+  libbluetooth3
+  libbluetooth-dev
   libc6
   libc6-dev
   libcairo2
