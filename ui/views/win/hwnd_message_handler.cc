@@ -2652,8 +2652,13 @@ bool HWNDMessageHandler::HandleMouseInputForCaption(unsigned int message,
       break;
     }
 
-    case WM_NCMOUSELEAVE:
+    case WM_NCMOUSELEAVE: {
+      // If the DWM is rendering the window controls, we need to give the DWM's
+      // default window procedure the chance to repaint the window border icons
+      if (HasSystemFrame())
+        handled = DwmDefWindowProc(hwnd(), WM_NCMOUSELEAVE, 0, 0, NULL) != 0;
       break;
+    }
 
     default:
       left_button_down_on_caption_ = false;
