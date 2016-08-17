@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/input/web_input_event_traits.h"
+#include "ui/events/blink/web_input_event_traits.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -14,7 +14,7 @@ using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 
-namespace content {
+namespace ui {
 namespace {
 
 using WebInputEventTraitsTest = testing::Test;
@@ -46,4 +46,4 @@ TEST_F(WebInputEventTraitsTest, ToString) {
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace ui

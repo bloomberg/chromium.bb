@@ -385,6 +385,7 @@ test("events_unittests") {
       "blink/blink_event_util_unittest.cc",
       "blink/input_handler_proxy_unittest.cc",
       "blink/input_scroll_elasticity_controller_unittest.cc",
+      "blink/web_input_event_traits_unittest.cc",
       "devices/mojo/device_struct_traits_unittest.cc",
       "gestures/blink/web_gesture_curve_impl_unittest.cc",
       "ipc/latency_info_param_traits_unittest.cc",

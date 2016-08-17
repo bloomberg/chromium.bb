@@ -1,22 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INPUT_WEB_INPUT_EVENT_TRAITS_H_
-#define CONTENT_COMMON_INPUT_WEB_INPUT_EVENT_TRAITS_H_
+#ifndef UI_EVENTS_BLINK_WEB_INPUT_EVENT_TRAITS_H_
+#define UI_EVENTS_BLINK_WEB_INPUT_EVENT_TRAITS_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include <string>
-
-#include "content/common/input/scoped_web_input_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/scoped_web_input_event.h"
 
-namespace content {
+namespace ui {
 
 // Utility class for performing operations on and with WebInputEvents.
-class CONTENT_EXPORT WebInputEventTraits {
+class WebInputEventTraits {
  public:
   static const char* GetName(blink::WebInputEvent::Type type);
   static std::string ToString(const blink::WebInputEvent& event);
@@ -31,6 +26,6 @@ class CONTENT_EXPORT WebInputEventTraits {
   static uint32_t GetUniqueTouchEventId(const blink::WebInputEvent& event);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_COMMON_INPUT_WEB_INPUT_EVENT_TRAITS_H_
+#endif  // UI_EVENTS_BLINK_WEB_INPUT_EVENT_TRAITS_H_

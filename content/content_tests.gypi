@@ -689,7 +689,6 @@
       'common/input/gesture_event_stream_validator_unittest.cc',
       'common/input/input_param_traits_unittest.cc',
       'common/input/touch_event_stream_validator_unittest.cc',
-      'common/input/web_input_event_traits_unittest.cc',
       'common/inter_process_time_ticks_converter_unittest.cc',
       'common/mac/attributed_string_coder_unittest.mm',
       'common/mac/font_descriptor_unittest.mm',

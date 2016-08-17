@@ -46,7 +46,6 @@
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
@@ -82,6 +81,7 @@
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -102,6 +102,7 @@ using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
+using ui::WebInputEventTraits;
 
 namespace content {
 namespace {

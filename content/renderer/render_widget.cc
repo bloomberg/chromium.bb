@@ -28,7 +28,6 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/input/synthetic_gesture_packet.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/text_input_state.h"

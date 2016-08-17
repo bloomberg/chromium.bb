@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/input/input_event_filter.h"
@@ -23,6 +22,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/blink/web_input_event_traits.h"
 
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -128,7 +128,7 @@ void AddEventsToFilter(IPC::MessageFilter* message_filter,
   for (size_t i = 0; i < count; ++i) {
     messages.push_back(InputMsg_HandleInputEvent(
         kTestRoutingID, &events[i], ui::LatencyInfo(),
-        WebInputEventTraits::ShouldBlockEventStream(events[i])
+        ui::WebInputEventTraits::ShouldBlockEventStream(events[i])
             ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
             : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING));
   }
@@ -268,7 +268,7 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
   std::vector<IPC::Message> messages;
   messages.push_back(InputMsg_HandleInputEvent(
       kTestRoutingID, &mouse_down, ui::LatencyInfo(),
-      WebInputEventTraits::ShouldBlockEventStream(mouse_down)
+      ui::WebInputEventTraits::ShouldBlockEventStream(mouse_down)
           ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
           : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING));
   // Control where input events are delivered.
@@ -298,7 +298,7 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
 
   messages.push_back(InputMsg_HandleInputEvent(
       kTestRoutingID, &mouse_up, ui::LatencyInfo(),
-      WebInputEventTraits::ShouldBlockEventStream(mouse_up)
+      ui::WebInputEventTraits::ShouldBlockEventStream(mouse_up)
           ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
           : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING));
   AddMessagesToFilter(filter_.get(), messages);

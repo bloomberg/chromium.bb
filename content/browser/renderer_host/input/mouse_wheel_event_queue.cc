@@ -7,7 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/input/web_input_event_traits.h"
+#include "ui/events/blink/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -83,7 +83,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
 
   // If event wasn't consumed then generate a gesture scroll for it.
   if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED &&
-      WebInputEventTraits::CanCauseScroll(event_sent_for_gesture_ack_->event) &&
+      ui::WebInputEventTraits::CanCauseScroll(
+          event_sent_for_gesture_ack_->event) &&
       event_sent_for_gesture_ack_->event.resendingPluginId == -1 &&
       (scrolling_device_ == blink::WebGestureDeviceUninitialized ||
        scrolling_device_ == blink::WebGestureDeviceTouchpad)) {

@@ -6,9 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/web_input_event_traits.h"
 
 using blink::WebInputEvent;
 using blink::WebGestureEvent;
@@ -30,7 +30,7 @@ void InputEventStreamValidator::Validate(const WebInputEvent& event) {
 
   DCHECK(ValidateImpl(event, &error_msg_))
       << error_msg_
-      << "\nInvalid Event: " << WebInputEventTraits::ToString(event);
+      << "\nInvalid Event: " << ui::WebInputEventTraits::ToString(event);
 }
 
 bool InputEventStreamValidator::ValidateImpl(const blink::WebInputEvent& event,

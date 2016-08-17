@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "content/common/content_export.h"
-#include "content/common/input/scoped_web_input_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/scoped_web_input_event.h"
 #include "ui/events/latency_info.h"
 
 namespace content {
@@ -37,7 +37,7 @@ void CONTENT_EXPORT Coalesce(const blink::WebGestureEvent& event_to_coalesce,
 
 class ScopedWebInputEventWithLatencyInfo {
  public:
-  ScopedWebInputEventWithLatencyInfo(ScopedWebInputEvent,
+  ScopedWebInputEventWithLatencyInfo(ui::ScopedWebInputEvent,
                                      const ui::LatencyInfo&);
 
   ~ScopedWebInputEventWithLatencyInfo();
@@ -52,7 +52,7 @@ class ScopedWebInputEventWithLatencyInfo {
   void CoalesceWith(const ScopedWebInputEventWithLatencyInfo& other);
 
  private:
-  ScopedWebInputEvent event_;
+  ui::ScopedWebInputEvent event_;
   mutable ui::LatencyInfo latency_;
 };
 

@@ -36,7 +36,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/frame_messages.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/android/compositor.h"
@@ -61,6 +60,7 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -155,7 +155,7 @@ int ToGestureEventType(WebInputEvent::Type type) {
     case WebInputEvent::GestureTwoFingerTap:
     default:
       NOTREACHED() << "Invalid source gesture type: "
-                   << WebInputEventTraits::GetName(type);
+                   << ui::WebInputEventTraits::GetName(type);
       return -1;
   }
 }

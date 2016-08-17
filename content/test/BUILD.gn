@@ -888,6 +888,7 @@ test("content_perftests") {
     "//skia",
     "//testing/gtest",
     "//testing/perf",
+    "//ui/events/blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

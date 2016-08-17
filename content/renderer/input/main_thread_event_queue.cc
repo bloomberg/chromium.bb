@@ -9,7 +9,7 @@
 namespace content {
 
 EventWithDispatchType::EventWithDispatchType(
-    ScopedWebInputEvent event,
+    ui::ScopedWebInputEvent event,
     const ui::LatencyInfo& latency,
     InputEventDispatchType dispatch_type)
     : ScopedWebInputEventWithLatencyInfo(std::move(event), latency),
@@ -29,7 +29,7 @@ void EventWithDispatchType::CoalesceWith(const EventWithDispatchType& other) {
   if (dispatch_type_ == DISPATCH_TYPE_BLOCKING) {
     // We should only have blocking touch events that need coalescing.
     eventsToAck_.push_back(
-        WebInputEventTraits::GetUniqueTouchEventId(other.event()));
+        ui::WebInputEventTraits::GetUniqueTouchEventId(other.event()));
   }
   ScopedWebInputEventWithLatencyInfo::CoalesceWith(other);
 }
@@ -46,7 +46,7 @@ MainThreadEventQueue::MainThreadEventQueue(
 MainThreadEventQueue::~MainThreadEventQueue() {}
 
 bool MainThreadEventQueue::HandleEvent(
-    ScopedWebInputEvent event,
+    ui::ScopedWebInputEvent event,
     const ui::LatencyInfo& latency,
     InputEventDispatchType original_dispatch_type,
     InputEventAckState ack_result) {

@@ -12,8 +12,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/blink/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -96,7 +96,7 @@ class TouchEmulatorTest : public testing::Test,
     for (size_t i = 0; i < forwarded_events_.size(); ++i) {
       if (i != 0)
         result += " ";
-      result += WebInputEventTraits::GetName(forwarded_events_[i]);
+      result += ui::WebInputEventTraits::GetName(forwarded_events_[i]);
     }
     forwarded_events_.clear();
     return result;

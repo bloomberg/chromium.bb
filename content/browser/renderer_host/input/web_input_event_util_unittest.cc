@@ -13,9 +13,9 @@
 
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
@@ -78,8 +78,8 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
 
     WebTouchEvent actual_event =
         ui::CreateWebTouchEventFromMotionEvent(event, false);
-    EXPECT_EQ(WebInputEventTraits::ToString(expected_event),
-              WebInputEventTraits::ToString(actual_event));
+    EXPECT_EQ(ui::WebInputEventTraits::ToString(expected_event),
+              ui::WebInputEventTraits::ToString(actual_event));
   }
 }
 

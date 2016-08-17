@@ -16,7 +16,6 @@
 #include "cc/trees/swap_promise_monitor.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_ack_state.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
@@ -26,6 +25,7 @@
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
@@ -246,7 +246,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   TRACE_EVENT1("renderer,benchmark,rail",
                "RenderWidgetInputHandler::OnHandleInputEvent", "event",
-               WebInputEventTraits::GetName(input_event.type));
+               ui::WebInputEventTraits::GetName(input_event.type));
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
   TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                          TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
@@ -437,7 +437,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
     std::unique_ptr<InputEventAck> response(new InputEventAck(
         input_event.type, ack_result, swap_latency_info,
         std::move(event_overscroll),
-        WebInputEventTraits::GetUniqueTouchEventId(input_event)));
+        ui::WebInputEventTraits::GetUniqueTouchEventId(input_event)));
     if (rate_limiting_wanted && frame_pending && !widget_->is_hidden()) {
       // We want to rate limit the input events in this case, so we'll wait for
       // painting to finish before ACKing this message.

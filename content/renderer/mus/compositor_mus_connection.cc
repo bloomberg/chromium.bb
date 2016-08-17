@@ -5,11 +5,11 @@
 #include "content/renderer/mus/compositor_mus_connection.h"
 
 #include "base/single_thread_task_runner.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "mojo/converters/blink/blink_input_events_type_converters.h"
 #include "ui/events/blink/did_overscroll_params.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/latency_info.h"
 #include "ui/events/mojo/event.mojom.h"
 
@@ -138,7 +138,8 @@ void CompositorMusConnection::OnWindowInputEvent(
     return;
   base::Callback<void(EventResult)> ack =
       base::Bind(&::DoNothingWithEventResult);
-  const bool send_ack = WebInputEventTraits::ShouldBlockEventStream(*web_event);
+  const bool send_ack =
+      ui::WebInputEventTraits::ShouldBlockEventStream(*web_event);
   if (send_ack) {
     // Ultimately, this ACK needs to go back to the Mus client lib which is not
     // thread-safe and lives on the compositor thread. For ACKs that are passed

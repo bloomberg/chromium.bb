@@ -50,7 +50,7 @@ class MainThreadEventQueueTest : public testing::Test,
                                const ui::LatencyInfo& latency,
                                InputEventDispatchType type) override {
     EXPECT_EQ(kTestRoutingID, routing_id);
-    handled_events_.push_back(WebInputEventTraits::Clone(*event));
+    handled_events_.push_back(ui::WebInputEventTraits::Clone(*event));
     queue_->EventHandled(event->type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   }
 
@@ -62,9 +62,8 @@ class MainThreadEventQueueTest : public testing::Test,
   }
 
   void HandleEvent(WebInputEvent& event, InputEventAckState ack_result) {
-    queue_->HandleEvent(WebInputEventTraits::Clone(event), ui::LatencyInfo(),
-                        DISPATCH_TYPE_BLOCKING,
-                        ack_result);
+    queue_->HandleEvent(ui::WebInputEventTraits::Clone(event),
+                        ui::LatencyInfo(), DISPATCH_TYPE_BLOCKING, ack_result);
   }
 
   WebInputEventQueue<EventWithDispatchType>& event_queue() {
@@ -74,7 +73,7 @@ class MainThreadEventQueueTest : public testing::Test,
  protected:
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
   scoped_refptr<MainThreadEventQueue> queue_;
-  std::vector<ScopedWebInputEvent> handled_events_;
+  std::vector<ui::ScopedWebInputEvent> handled_events_;
   std::vector<uint32_t> additional_acked_events_;
 };
 

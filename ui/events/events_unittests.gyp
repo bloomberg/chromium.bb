@@ -124,6 +124,7 @@
             'blink/blink_event_util_unittest.cc',
             'blink/input_handler_proxy_unittest.cc',
             'blink/input_scroll_elasticity_controller_unittest.cc',
+            'blink/web_input_event_traits_unittest.cc',
           ],
           'dependencies': [
             'blink/events_blink.gyp:events_blink',

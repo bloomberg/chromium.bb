@@ -11,15 +11,15 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/web_input_event_queue.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/latency_info.h"
 
 namespace content {
 
 class EventWithDispatchType : public ScopedWebInputEventWithLatencyInfo {
  public:
-  EventWithDispatchType(ScopedWebInputEvent event,
+  EventWithDispatchType(ui::ScopedWebInputEvent event,
                         const ui::LatencyInfo& latency,
                         InputEventDispatchType dispatch_type);
   ~EventWithDispatchType();
@@ -103,7 +103,7 @@ class CONTENT_EXPORT MainThreadEventQueue
 
   // Called once the compositor has handled |event| and indicated that it is
   // a non-blocking event to be queued to the main thread.
-  bool HandleEvent(ScopedWebInputEvent event,
+  bool HandleEvent(ui::ScopedWebInputEvent event,
                    const ui::LatencyInfo& latency,
                    InputEventDispatchType dispatch_type,
                    InputEventAckState ack_result);

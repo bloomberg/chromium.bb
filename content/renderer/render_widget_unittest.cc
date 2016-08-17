@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/test/fake_compositor_dependencies.h"
@@ -19,6 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/rect.h"
 
 using testing::_;
@@ -69,7 +69,7 @@ class InteractiveRenderWidget : public RenderWidget {
   void SendInputEvent(const blink::WebInputEvent& event) {
     OnHandleInputEvent(
         &event, ui::LatencyInfo(),
-        WebInputEventTraits::ShouldBlockEventStream(event)
+        ui::WebInputEventTraits::ShouldBlockEventStream(event)
             ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING
             : InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING);
   }

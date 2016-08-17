@@ -11,8 +11,8 @@
 #include "content/common/input/synthetic_pointer_action_params.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
+#include "ui/events/blink/web_input_event_traits.h"
 
 namespace IPC {
 namespace {
@@ -28,7 +28,7 @@ std::unique_ptr<content::SyntheticGestureParams> ReadGestureParams(
 }
 }  // namespace
 
-void ParamTraits<content::ScopedWebInputEvent>::GetSize(base::PickleSizer* s,
+void ParamTraits<ui::ScopedWebInputEvent>::GetSize(base::PickleSizer* s,
                                                         const param_type& p) {
   bool valid_web_event = !!p;
   GetParamSize(s, valid_web_event);
@@ -36,7 +36,7 @@ void ParamTraits<content::ScopedWebInputEvent>::GetSize(base::PickleSizer* s,
     GetParamSize(s, static_cast<WebInputEventPointer>(p.get()));
 }
 
-void ParamTraits<content::ScopedWebInputEvent>::Write(base::Pickle* m,
+void ParamTraits<ui::ScopedWebInputEvent>::Write(base::Pickle* m,
                                                       const param_type& p) {
   bool valid_web_event = !!p;
   WriteParam(m, valid_web_event);
@@ -44,7 +44,7 @@ void ParamTraits<content::ScopedWebInputEvent>::Write(base::Pickle* m,
     WriteParam(m, static_cast<WebInputEventPointer>(p.get()));
 }
 
-bool ParamTraits<content::ScopedWebInputEvent>::Read(const base::Pickle* m,
+bool ParamTraits<ui::ScopedWebInputEvent>::Read(const base::Pickle* m,
                                                      base::PickleIterator* iter,
                                                      param_type* p) {
   bool valid_web_event = false;
@@ -55,11 +55,11 @@ bool ParamTraits<content::ScopedWebInputEvent>::Read(const base::Pickle* m,
       !web_event_pointer)
     return false;
 
-  (*p) = content::WebInputEventTraits::Clone(*web_event_pointer);
+  (*p) = ui::WebInputEventTraits::Clone(*web_event_pointer);
   return true;
 }
 
-void ParamTraits<content::ScopedWebInputEvent>::Log(const param_type& p,
+void ParamTraits<ui::ScopedWebInputEvent>::Log(const param_type& p,
                                                     std::string* l) {
   LogParam(static_cast<WebInputEventPointer>(p.get()), l);
 }

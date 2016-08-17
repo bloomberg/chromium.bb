@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/input/web_input_event_traits.h"
+#include "ui/events/blink/web_input_event_traits.h"
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -17,7 +17,7 @@ using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 
-namespace content {
+namespace ui {
 namespace {
 
 void ApppendEventDetails(const WebKeyboardEvent& event, std::string* result) {
@@ -301,4 +301,4 @@ uint32_t WebInputEventTraits::GetUniqueTouchEventId(
   return 0U;
 }
 
-}  // namespace content
+}  // namespace ui

@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include "base/strings/string_number_conversions.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "net/base/ip_endpoint.h"
+#include "ui/events/blink/web_input_event_traits.h"
 
 namespace IPC {
 
@@ -42,7 +42,7 @@ bool ParamTraits<WebInputEventPointer>::Read(const base::Pickle* m,
     return false;
   }
   const size_t expected_size_for_type =
-      content::WebInputEventTraits::GetSize(event->type);
+      ui::WebInputEventTraits::GetSize(event->type);
   if (data_length != static_cast<int>(expected_size_for_type)) {
     NOTREACHED();
     return false;

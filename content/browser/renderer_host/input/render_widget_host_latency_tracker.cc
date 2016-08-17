@@ -10,7 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/input/web_input_event_traits.h"
+#include "ui/events/blink/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -430,7 +430,7 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   latency->AddLatencyNumberWithTraceName(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
       latency_component_id_, ++last_event_id_,
-      WebInputEventTraits::GetName(event.type));
+      ui::WebInputEventTraits::GetName(event.type));
 
   UpdateLatencyCoordinates(event, device_scale_factor_, latency);
 

@@ -14,13 +14,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/events/blink/did_overscroll_params.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 using blink::WebInputEvent;
@@ -182,7 +182,8 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   InputMsg_HandleInputEvent::Param params;
   if (!InputMsg_HandleInputEvent::Read(&message, &params))
     return;
-  ScopedWebInputEvent event = WebInputEventTraits::Clone(*std::get<0>(params));
+  ui::ScopedWebInputEvent event =
+      ui::WebInputEventTraits::Clone(*std::get<0>(params));
   ui::LatencyInfo latency_info = std::get<1>(params);
   InputEventDispatchType dispatch_type = std::get<2>(params);
   DCHECK(event);
@@ -202,7 +203,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
       handler_.Run(routing_id, event.get(), &latency_info);
 
   uint32_t unique_touch_event_id =
-      WebInputEventTraits::GetUniqueTouchEventId(*event);
+      ui::WebInputEventTraits::GetUniqueTouchEventId(*event);
   WebInputEvent::Type type = event->type;
 
   if (ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||

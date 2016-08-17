@@ -6,7 +6,6 @@
 
 #include <bitset>
 #include <limits>
-#include "content/common/input/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -254,7 +253,7 @@ void Coalesce(const blink::WebInputEvent& event_to_coalesce,
 }  // namespace internal
 
 ScopedWebInputEventWithLatencyInfo::ScopedWebInputEventWithLatencyInfo(
-    ScopedWebInputEvent event,
+    ui::ScopedWebInputEvent event,
     const ui::LatencyInfo& latency_info)
     : event_(std::move(event)), latency_(latency_info) {
 }

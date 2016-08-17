@@ -12,13 +12,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/input/input_handler.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager_client.h"
 #include "content/renderer/input/input_handler_wrapper.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/input_handler_proxy.h"
+#include "ui/events/blink/web_input_event_traits.h"
 
 using blink::WebInputEvent;
 using ui::InputHandlerProxy;
@@ -199,7 +199,7 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
     ui::LatencyInfo* latency_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("input,benchmark,rail", "InputHandlerManager::HandleInputEvent",
-                 "type", WebInputEventTraits::GetName(input_event->type));
+                 "type", ui::WebInputEventTraits::GetName(input_event->type));
 
   auto it = input_handlers_.find(routing_id);
   if (it == input_handlers_.end()) {

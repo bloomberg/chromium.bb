@@ -7,9 +7,9 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event.h"
 #include "ui/events/latency_info.h"
 
@@ -46,7 +46,7 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
     const WebInputEvent& event) {
   TRACE_EVENT1("input",
                "SyntheticGestureTarget::DispatchInputEventToPlatform",
-               "type", WebInputEventTraits::GetName(event.type));
+               "type", ui::WebInputEventTraits::GetName(event.type));
 
   ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
