@@ -275,7 +275,7 @@ class RemoteAccess(object):
 
     cmd = (['ssh', '-p', str(self.port)] +
            connect_settings +
-           ['-i', self.private_key])
+           ['-oIdentitiesOnly=yes', '-i', self.private_key])
     if not self.interactive:
       cmd.append('-n')
 
