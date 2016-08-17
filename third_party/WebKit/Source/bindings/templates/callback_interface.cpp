@@ -40,19 +40,9 @@ DEFINE_TRACE({{v8_class}})
     ScriptState::Scope scope(m_scriptState.get());
     {% if method.call_with_this_handle %}
     v8::Local<v8::Value> thisHandle = thisValue.v8Value();
-    if (thisHandle.IsEmpty()) {
-        if (!isScriptControllerTerminating())
-            CRASH();
-        {{return_default}};
-    }
     {% endif %}
     {% for argument in method.arguments %}
     v8::Local<v8::Value> {{argument.handle}} = {{argument.cpp_value_to_v8_value}};
-    if ({{argument.handle}}.IsEmpty()) {
-        if (!isScriptControllerTerminating())
-            CRASH();
-        {{return_default}};
-    }
     {% endfor %}
     {% if method.arguments %}
     v8::Local<v8::Value> argv[] = { {{method.arguments | join(', ', 'handle')}} };

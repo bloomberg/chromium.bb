@@ -51,7 +51,6 @@ public:
     virtual ~ActiveDOMCallback();
 
     bool canInvokeCallback() const;
-    bool isScriptControllerTerminating() const;
 };
 
 } // namespace blink

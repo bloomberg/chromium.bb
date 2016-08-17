@@ -38,12 +38,6 @@ void V8IntersectionObserverCallback::handleEvent(const HeapVector<Member<Interse
     if (m_callback.isEmpty())
         return;
     v8::Local<v8::Value> observerHandle = toV8(&observer, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (observerHandle.IsEmpty()) {
-        if (!isScriptControllerTerminating())
-            CRASH();
-        return;
-    }
-
     if (!observerHandle->IsObject())
         return;
 

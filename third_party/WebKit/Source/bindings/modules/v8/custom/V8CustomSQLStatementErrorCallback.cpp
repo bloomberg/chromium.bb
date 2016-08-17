@@ -51,12 +51,6 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
 
     v8::Local<v8::Value> transactionHandle = toV8(transaction, m_scriptState->context()->Global(), isolate);
     v8::Local<v8::Value> errorHandle = toV8(error, m_scriptState->context()->Global(), isolate);
-    if (transactionHandle.IsEmpty() || errorHandle.IsEmpty()) {
-        if (!isScriptControllerTerminating())
-            CRASH();
-        return true;
-    }
-
     ASSERT(transactionHandle->IsObject());
 
     v8::Local<v8::Value> argv[] = {

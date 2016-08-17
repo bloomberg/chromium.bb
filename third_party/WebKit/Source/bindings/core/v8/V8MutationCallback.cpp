@@ -63,12 +63,6 @@ void V8MutationCallback::call(const HeapVector<Member<MutationRecord>>& mutation
     if (m_callback.isEmpty())
         return;
     v8::Local<v8::Value> observerHandle = toV8(observer, m_scriptState->context()->Global(), isolate);
-    if (observerHandle.IsEmpty()) {
-        if (!isScriptControllerTerminating())
-            CRASH();
-        return;
-    }
-
     if (!observerHandle->IsObject())
         return;
 
