@@ -608,6 +608,9 @@ void WindowGrid::PositionWindowsMD(bool animate) {
 }
 
 void WindowGrid::PositionWindows(bool animate) {
+  if (window_selector_->is_shut_down())
+    return;
+
   if (ash::MaterialDesignController::IsOverviewMaterial()) {
     DCHECK(shield_widget_.get());
     // Keep the background shield widget covering the whole screen.

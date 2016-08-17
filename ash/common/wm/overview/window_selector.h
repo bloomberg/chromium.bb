@@ -73,7 +73,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
     return restoring_minimized_windows_;
   }
 
-  int text_filter_bottom() { return text_filter_bottom_; }
+  int text_filter_bottom() const { return text_filter_bottom_; }
+
+  bool is_shut_down() const { return is_shut_down_; }
 
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& display) override;
@@ -180,6 +182,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // The distance between the top edge of the screen and the bottom edge of
   // the text filtering textfield.
   int text_filter_bottom_;
+
+  bool is_shut_down_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelector);
 };
