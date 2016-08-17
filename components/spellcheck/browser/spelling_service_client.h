@@ -97,9 +97,13 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
 
  private:
   struct TextCheckCallbackData {
-    TextCheckCallbackData(TextCheckCompleteCallback callback,
+    TextCheckCallbackData(std::unique_ptr<net::URLFetcher> fetcher,
+                          TextCheckCompleteCallback callback,
                           base::string16 text);
     ~TextCheckCallbackData();
+
+    // The fetcher used.
+    std::unique_ptr<net::URLFetcher> fetcher;
 
     // The callback function to be called when we receive a response from the
     // Spelling service and parse it.
@@ -118,7 +122,8 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   virtual std::unique_ptr<net::URLFetcher> CreateURLFetcher(const GURL& url);
 
   // The URLFetcher object used for sending a JSON-RPC request.
-  std::map<const net::URLFetcher*, TextCheckCallbackData*> spellcheck_fetchers_;
+  std::map<const net::URLFetcher*, std::unique_ptr<TextCheckCallbackData>>
+      spellcheck_fetchers_;
 };
 
 #endif  // COMPONENTS_SPELLCHECK_BROWSER_SPELLING_SERVICE_CLIENT_H_

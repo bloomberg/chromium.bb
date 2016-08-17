@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -48,10 +49,7 @@ const char* const kValidLanguages[] = {"en", "es", "fi", "da"};
 
 SpellingServiceClient::SpellingServiceClient() {}
 
-SpellingServiceClient::~SpellingServiceClient() {
-  base::STLDeleteContainerPairPointers(spellcheck_fetchers_.begin(),
-                                       spellcheck_fetchers_.end());
-}
+SpellingServiceClient::~SpellingServiceClient() {}
 
 bool SpellingServiceClient::RequestTextCheck(
     content::BrowserContext* context,
@@ -113,7 +111,8 @@ bool SpellingServiceClient::RequestTextCheck(
   fetcher->SetUploadData("application/json", request);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);
-  spellcheck_fetchers_[fetcher] = new TextCheckCallbackData(callback, text);
+  spellcheck_fetchers_[fetcher] = base::MakeUnique<TextCheckCallbackData>(
+      base::WrapUnique(fetcher), callback, text);
   fetcher->Start();
   return true;
 }
@@ -243,25 +242,26 @@ bool SpellingServiceClient::ParseResponse(
 }
 
 SpellingServiceClient::TextCheckCallbackData::TextCheckCallbackData(
+    std::unique_ptr<net::URLFetcher> fetcher,
     TextCheckCompleteCallback callback,
     base::string16 text)
-    : callback(callback), text(text) {}
+    : fetcher(std::move(fetcher)), callback(callback), text(text) {}
 
 SpellingServiceClient::TextCheckCallbackData::~TextCheckCallbackData() {}
 
 void SpellingServiceClient::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(spellcheck_fetchers_[source]);
-  std::unique_ptr<const net::URLFetcher> fetcher(source);
-  std::unique_ptr<TextCheckCallbackData> callback_data(
-      spellcheck_fetchers_[fetcher.get()]);
+  DCHECK(base::ContainsKey(spellcheck_fetchers_, source));
+  std::unique_ptr<TextCheckCallbackData> callback_data =
+      std::move(spellcheck_fetchers_[source]);
+  spellcheck_fetchers_.erase(source);
+
   bool success = false;
   std::vector<SpellCheckResult> results;
-  if (fetcher->GetResponseCode() / 100 == 2) {
+  if (source->GetResponseCode() / 100 == 2) {
     std::string data;
-    fetcher->GetResponseAsString(&data);
+    source->GetResponseAsString(&data);
     success = ParseResponse(data, &results);
   }
-  spellcheck_fetchers_.erase(fetcher.get());
 
   // The callback may release the last (transitive) dependency on |this|. It
   // MUST be the last function called.
