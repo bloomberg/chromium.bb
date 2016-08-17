@@ -213,7 +213,7 @@ void CSSAnimations::calculateUpdate(const Element* animatingElement, Element& el
     calculateTransitionActiveInterpolations(animationUpdate, animatingElement);
 }
 
-static const KeyframeEffectModelBase* getKeyframeEffectModelBase(const AnimationEffect* effect)
+static const KeyframeEffectModelBase* getKeyframeEffectModelBase(const AnimationEffectReadOnly* effect)
 {
     if (!effect)
         return nullptr;
@@ -360,7 +360,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
 
 void CSSAnimations::snapshotCompositorKeyframes(Element& element, CSSAnimationUpdate& update, const ComputedStyle& style, const ComputedStyle* parentStyle)
 {
-    const auto& snapshot = [&element, &style, parentStyle](const AnimationEffect* effect)
+    const auto& snapshot = [&element, &style, parentStyle](const AnimationEffectReadOnly* effect)
     {
         const KeyframeEffectModelBase* keyframeEffect = getKeyframeEffectModelBase(effect);
         if (keyframeEffect && keyframeEffect->needsCompositorKeyframesSnapshot())
@@ -779,25 +779,25 @@ void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType
     }
 }
 
-bool CSSAnimations::AnimationEventDelegate::requiresIterationEvents(const AnimationEffect& animationNode)
+bool CSSAnimations::AnimationEventDelegate::requiresIterationEvents(const AnimationEffectReadOnly& animationNode)
 {
     return document().hasListenerType(Document::ANIMATIONITERATION_LISTENER);
 }
 
-void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationEffect& animationNode)
+void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationEffectReadOnly& animationNode)
 {
-    const AnimationEffect::Phase currentPhase = animationNode.getPhase();
+    const AnimationEffectReadOnly::Phase currentPhase = animationNode.getPhase();
     const double currentIteration = animationNode.currentIteration();
 
     if (m_previousPhase != currentPhase
-        && (currentPhase == AnimationEffect::PhaseActive || currentPhase == AnimationEffect::PhaseAfter)
-        && (m_previousPhase == AnimationEffect::PhaseNone || m_previousPhase == AnimationEffect::PhaseBefore)) {
+        && (currentPhase == AnimationEffectReadOnly::PhaseActive || currentPhase == AnimationEffectReadOnly::PhaseAfter)
+        && (m_previousPhase == AnimationEffectReadOnly::PhaseNone || m_previousPhase == AnimationEffectReadOnly::PhaseBefore)) {
         const double startDelay = animationNode.specifiedTiming().startDelay;
         const double elapsedTime = startDelay < 0 ? -startDelay : 0;
         maybeDispatch(Document::ANIMATIONSTART_LISTENER, EventTypeNames::animationstart, elapsedTime);
     }
 
-    if (currentPhase == AnimationEffect::PhaseActive && m_previousPhase == currentPhase && m_previousIteration != currentIteration) {
+    if (currentPhase == AnimationEffectReadOnly::PhaseActive && m_previousPhase == currentPhase && m_previousIteration != currentIteration) {
         // We fire only a single event for all iterations thast terminate
         // between a single pair of samples. See http://crbug.com/275263. For
         // compatibility with the existing implementation, this event uses
@@ -807,7 +807,7 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationEffe
         maybeDispatch(Document::ANIMATIONITERATION_LISTENER, EventTypeNames::animationiteration, elapsedTime);
     }
 
-    if (currentPhase == AnimationEffect::PhaseAfter && m_previousPhase != AnimationEffect::PhaseAfter)
+    if (currentPhase == AnimationEffectReadOnly::PhaseAfter && m_previousPhase != AnimationEffectReadOnly::PhaseAfter)
         maybeDispatch(Document::ANIMATIONEND_LISTENER, EventTypeNames::animationend, animationNode.activeDurationInternal());
 
     m_previousPhase = currentPhase;
@@ -817,7 +817,7 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationEffe
 DEFINE_TRACE(CSSAnimations::AnimationEventDelegate)
 {
     visitor->trace(m_animationTarget);
-    AnimationEffect::EventDelegate::trace(visitor);
+    AnimationEffectReadOnly::EventDelegate::trace(visitor);
 }
 
 EventTarget* CSSAnimations::TransitionEventDelegate::eventTarget() const
@@ -825,10 +825,10 @@ EventTarget* CSSAnimations::TransitionEventDelegate::eventTarget() const
     return EventPath::eventTargetRespectingTargetRules(*m_transitionTarget);
 }
 
-void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationEffect& animationNode)
+void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationEffectReadOnly& animationNode)
 {
-    const AnimationEffect::Phase currentPhase = animationNode.getPhase();
-    if (currentPhase == AnimationEffect::PhaseAfter && currentPhase != m_previousPhase && document().hasListenerType(Document::TRANSITIONEND_LISTENER)) {
+    const AnimationEffectReadOnly::Phase currentPhase = animationNode.getPhase();
+    if (currentPhase == AnimationEffectReadOnly::PhaseAfter && currentPhase != m_previousPhase && document().hasListenerType(Document::TRANSITIONEND_LISTENER)) {
         String propertyName = getPropertyNameString(m_property);
         const Timing& timing = animationNode.specifiedTiming();
         double elapsedTime = timing.iterationDuration;
@@ -845,7 +845,7 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationEff
 DEFINE_TRACE(CSSAnimations::TransitionEventDelegate)
 {
     visitor->trace(m_transitionTarget);
-    AnimationEffect::EventDelegate::trace(visitor);
+    AnimationEffectReadOnly::EventDelegate::trace(visitor);
 }
 
 const StylePropertyShorthand& CSSAnimations::propertiesForTransitionAll()

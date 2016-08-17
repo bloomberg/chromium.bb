@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/animation/AnimationEffect.h"
+#include "core/animation/AnimationEffectReadOnly.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -18,7 +18,7 @@ class UnrestrictedDoubleOrString;
 class CORE_EXPORT AnimationEffectTiming : public GarbageCollected<AnimationEffectTiming>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AnimationEffectTiming* create(AnimationEffect* parent);
+    static AnimationEffectTiming* create(AnimationEffectReadOnly* parent);
     double delay();
     double endDelay();
     String fill();
@@ -42,8 +42,8 @@ public:
     DECLARE_TRACE();
 
 private:
-    Member<AnimationEffect> m_parent;
-    explicit AnimationEffectTiming(AnimationEffect*);
+    Member<AnimationEffectReadOnly> m_parent;
+    explicit AnimationEffectTiming(AnimationEffectReadOnly*);
 };
 
 } // namespace blink

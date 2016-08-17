@@ -31,7 +31,7 @@
 #include "core/animation/AnimationTimeline.h"
 
 #include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationEffect.h"
+#include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectModel.h"

@@ -85,7 +85,7 @@ AnimationStack::AnimationStack()
 bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) const
 {
     for (const auto& sampledEffect : m_sampledEffects) {
-        // TODO(dstockwell): move the playing check into AnimationEffect and expose both hasAnimations and hasActiveAnimations
+        // TODO(dstockwell): move the playing check into AnimationEffectReadOnly and expose both hasAnimations and hasActiveAnimations
         if (sampledEffect->effect() && sampledEffect->effect()->animation()->playing() && sampledEffect->effect()->hasActiveAnimationsOnCompositor(property))
             return true;
     }

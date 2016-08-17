@@ -85,7 +85,7 @@ KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Eleme
 }
 
 KeyframeEffect::KeyframeEffect(Element* target, EffectModel* model, const Timing& timing, Priority priority, EventDelegate* eventDelegate)
-    : AnimationEffect(timing, eventDelegate)
+    : AnimationEffectReadOnly(timing, eventDelegate)
     , m_target(target)
     , m_model(model)
     , m_sampledEffect(nullptr)
@@ -105,7 +105,7 @@ void KeyframeEffect::attach(Animation* animation)
         if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() && m_target->isSVGElement())
             toSVGElement(m_target)->setWebAnimationsPending();
     }
-    AnimationEffect::attach(animation);
+    AnimationEffectReadOnly::attach(animation);
 }
 
 void KeyframeEffect::detach()
@@ -114,7 +114,7 @@ void KeyframeEffect::detach()
         m_target->elementAnimations()->animations().remove(animation());
     if (m_sampledEffect)
         clearEffects();
-    AnimationEffect::detach();
+    AnimationEffectReadOnly::detach();
 }
 
 void KeyframeEffect::specifiedTimingChanged()
@@ -366,7 +366,7 @@ DEFINE_TRACE(KeyframeEffect)
     visitor->trace(m_target);
     visitor->trace(m_model);
     visitor->trace(m_sampledEffect);
-    AnimationEffect::trace(visitor);
+    AnimationEffectReadOnly::trace(visitor);
 }
 
 } // namespace blink

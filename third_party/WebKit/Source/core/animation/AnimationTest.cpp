@@ -571,8 +571,8 @@ TEST_F(AnimationAnimationTest, SetEffect)
 {
     animation = timeline->play(0);
     animation->setStartTime(0);
-    AnimationEffect* effect1 = makeAnimation();
-    AnimationEffect* effect2 = makeAnimation();
+    AnimationEffectReadOnly* effect1 = makeAnimation();
+    AnimationEffectReadOnly* effect2 = makeAnimation();
     animation->setEffect(effect1);
     EXPECT_EQ(effect1, animation->effect());
     EXPECT_EQ(0, animation->currentTimeInternal());
@@ -617,7 +617,7 @@ TEST_F(AnimationAnimationTest, EmptyAnimationsDontUpdateEffects)
 
 TEST_F(AnimationAnimationTest, AnimationsDisassociateFromEffect)
 {
-    AnimationEffect* animationNode = animation->effect();
+    AnimationEffectReadOnly* animationNode = animation->effect();
     Animation* animation2 = timeline->play(animationNode);
     EXPECT_EQ(0, animation->effect());
     animation->setEffect(animationNode);

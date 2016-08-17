@@ -146,17 +146,17 @@ private:
     static void calculateAnimationActiveInterpolations(CSSAnimationUpdate&, const Element* animatingElement);
     static void calculateTransitionActiveInterpolations(CSSAnimationUpdate&, const Element* animatingElement);
 
-    class AnimationEventDelegate final : public AnimationEffect::EventDelegate {
+    class AnimationEventDelegate final : public AnimationEffectReadOnly::EventDelegate {
     public:
         AnimationEventDelegate(Element* animationTarget, const AtomicString& name)
             : m_animationTarget(animationTarget)
             , m_name(name)
-            , m_previousPhase(AnimationEffect::PhaseNone)
+            , m_previousPhase(AnimationEffectReadOnly::PhaseNone)
             , m_previousIteration(nullValue())
         {
         }
-        bool requiresIterationEvents(const AnimationEffect&) override;
-        void onEventCondition(const AnimationEffect&) override;
+        bool requiresIterationEvents(const AnimationEffectReadOnly&) override;
+        void onEventCondition(const AnimationEffectReadOnly&) override;
         DECLARE_VIRTUAL_TRACE();
 
     private:
@@ -167,20 +167,20 @@ private:
         void maybeDispatch(Document::ListenerType, const AtomicString& eventName, double elapsedTime);
         Member<Element> m_animationTarget;
         const AtomicString m_name;
-        AnimationEffect::Phase m_previousPhase;
+        AnimationEffectReadOnly::Phase m_previousPhase;
         double m_previousIteration;
     };
 
-    class TransitionEventDelegate final : public AnimationEffect::EventDelegate {
+    class TransitionEventDelegate final : public AnimationEffectReadOnly::EventDelegate {
     public:
         TransitionEventDelegate(Element* transitionTarget, CSSPropertyID property)
             : m_transitionTarget(transitionTarget)
             , m_property(property)
-            , m_previousPhase(AnimationEffect::PhaseNone)
+            , m_previousPhase(AnimationEffectReadOnly::PhaseNone)
         {
         }
-        bool requiresIterationEvents(const AnimationEffect&) override { return false; }
-        void onEventCondition(const AnimationEffect&) override;
+        bool requiresIterationEvents(const AnimationEffectReadOnly&) override { return false; }
+        void onEventCondition(const AnimationEffectReadOnly&) override;
         DECLARE_VIRTUAL_TRACE();
 
     private:
@@ -191,7 +191,7 @@ private:
 
         Member<Element> m_transitionTarget;
         const CSSPropertyID m_property;
-        AnimationEffect::Phase m_previousPhase;
+        AnimationEffectReadOnly::Phase m_previousPhase;
     };
 };
 

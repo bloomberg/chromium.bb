@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationEffect_h
-#define AnimationEffect_h
+#ifndef AnimationEffectReadOnly_h
+#define AnimationEffectReadOnly_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
@@ -39,7 +39,7 @@
 namespace blink {
 
 class Animation;
-class AnimationEffect;
+class AnimationEffectReadOnly;
 class AnimationEffectTiming;
 class ComputedTimingProperties;
 
@@ -60,7 +60,7 @@ static inline double nullValue()
 
 // Represents the content of an Animation and its fractional timing state.
 // http://w3c.github.io/web-animations/#animation-effect
-class CORE_EXPORT AnimationEffect : public GarbageCollectedFinalized<AnimationEffect>, public ScriptWrappable {
+class CORE_EXPORT AnimationEffectReadOnly : public GarbageCollectedFinalized<AnimationEffectReadOnly>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     friend class Animation; // Calls attach/detach, updateInheritedTime.
 public:
@@ -75,12 +75,12 @@ public:
     class EventDelegate : public GarbageCollectedFinalized<EventDelegate> {
     public:
         virtual ~EventDelegate() { }
-        virtual bool requiresIterationEvents(const AnimationEffect&) = 0;
-        virtual void onEventCondition(const AnimationEffect&) = 0;
+        virtual bool requiresIterationEvents(const AnimationEffectReadOnly&) = 0;
+        virtual void onEventCondition(const AnimationEffectReadOnly&) = 0;
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
-    virtual ~AnimationEffect() { }
+    virtual ~AnimationEffectReadOnly() { }
 
     virtual bool isKeyframeEffect() const { return false; }
     virtual bool isInertEffect() const { return false; }
@@ -110,9 +110,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    explicit AnimationEffect(const Timing&, EventDelegate* = nullptr);
+    explicit AnimationEffectReadOnly(const Timing&, EventDelegate* = nullptr);
 
-    // When AnimationEffect receives a new inherited time via updateInheritedTime
+    // When AnimationEffectReadOnly receives a new inherited time via updateInheritedTime
     // it will (if necessary) recalculate timings and (if necessary) call
     // updateChildrenAndEffects.
     void updateInheritedTime(double inheritedTime, TimingUpdateReason) const;
@@ -163,4 +163,4 @@ protected:
 
 } // namespace blink
 
-#endif // AnimationEffect_h
+#endif // AnimationEffectReadOnly_h

@@ -96,7 +96,7 @@ void AnimationTimeline::animationAttached(Animation& animation)
     m_animations.add(&animation);
 }
 
-Animation* AnimationTimeline::play(AnimationEffect* child)
+Animation* AnimationTimeline::play(AnimationEffectReadOnly* child)
 {
     if (!m_document)
         return nullptr;

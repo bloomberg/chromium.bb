@@ -30,7 +30,7 @@
 
 #include "core/animation/KeyframeEffectModel.h"
 
-#include "core/animation/AnimationEffect.h"
+#include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSPropertyEquality.h"

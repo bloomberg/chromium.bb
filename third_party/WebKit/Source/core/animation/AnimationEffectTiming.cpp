@@ -6,18 +6,18 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/UnrestrictedDoubleOrString.h"
-#include "core/animation/AnimationEffect.h"
+#include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/KeyframeEffect.h"
 #include "platform/animation/TimingFunction.h"
 
 namespace blink {
 
-AnimationEffectTiming* AnimationEffectTiming::create(AnimationEffect* parent)
+AnimationEffectTiming* AnimationEffectTiming::create(AnimationEffectReadOnly* parent)
 {
     return new AnimationEffectTiming(parent);
 }
 
-AnimationEffectTiming::AnimationEffectTiming(AnimationEffect* parent)
+AnimationEffectTiming::AnimationEffectTiming(AnimationEffectReadOnly* parent)
     : m_parent(parent)
 {
 }

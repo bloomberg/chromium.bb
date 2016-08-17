@@ -839,7 +839,7 @@ std::unique_ptr<TracedValue> InspectorAnimationEvent::data(const Animation& anim
     std::unique_ptr<TracedValue> value = TracedValue::create();
     value->setString("id", String::number(animation.sequenceNumber()));
     value->setString("state", animation.playState());
-    if (const AnimationEffect* effect = animation.effect()) {
+    if (const AnimationEffectReadOnly* effect = animation.effect()) {
         value->setString("name", animation.id());
         if (effect->isKeyframeEffect()) {
             if (Element* target = toKeyframeEffect(effect)->target())

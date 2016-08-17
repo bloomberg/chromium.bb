@@ -60,7 +60,7 @@ static unsigned nextSequenceNumber()
 
 }
 
-Animation* Animation::create(AnimationEffect* effect, AnimationTimeline* timeline)
+Animation* Animation::create(AnimationEffectReadOnly* effect, AnimationTimeline* timeline)
 {
     if (!timeline) {
         // FIXME: Support creating animations without a timeline.
@@ -78,7 +78,7 @@ Animation* Animation::create(AnimationEffect* effect, AnimationTimeline* timelin
     return animation;
 }
 
-Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& timeline, AnimationEffect* content)
+Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& timeline, AnimationEffectReadOnly* content)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(executionContext)
     , m_playState(Idle)
@@ -450,7 +450,7 @@ void Animation::setStartTimeInternal(double newStartTime)
     }
 }
 
-void Animation::setEffect(AnimationEffect* newEffect)
+void Animation::setEffect(AnimationEffectReadOnly* newEffect)
 {
     if (m_content == newEffect)
         return;
@@ -869,7 +869,7 @@ double Animation::timeToEffectChange()
         ? m_content->timeToForwardsEffectChange() / m_playbackRate
         : m_content->timeToReverseEffectChange() / -m_playbackRate;
 
-    return !hasActiveAnimationsOnCompositor() && m_content->getPhase() == AnimationEffect::PhaseActive
+    return !hasActiveAnimationsOnCompositor() && m_content->getPhase() == AnimationEffectReadOnly::PhaseActive
         ? 0
         : result;
 }
