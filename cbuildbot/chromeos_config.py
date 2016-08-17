@@ -2145,6 +2145,7 @@ def GetConfig():
 
   _toolchain = site_config.AddTemplate(
       'toolchain',
+      # Make sure that we are doing a full build and that we are using AFDO.
       full,
       internal,
       official_chrome,
@@ -2157,6 +2158,7 @@ def GetConfig():
       manifest_version=True,
       git_sync=False,
       hw_tests=HWTestList.ToolchainTest(),
+      hw_tests_override=HWTestList.ToolchainTest(),
       trybot_list=False,
       description="Toolchain Builds (internal)",
   )
@@ -2191,16 +2193,10 @@ def GetConfig():
 
   llvm = site_config.AddTemplate(
       'llvm',
-      # Use release builder as a base. Make sure that we are doing a full
-      # build and that we are using AFDO.
       _toolchain,
-      no_vmtest_builder,
       profile='llvm',
-      hw_tests=HWTestList.ToolchainTest(),
-      hw_tests_override=HWTestList.ToolchainTest(),
       images=['base', 'test', 'recovery'],
       description='Full release build with LLVM toolchain',
-      signer_tests=False,
   )
 
   _grouped_toolchain_llvm = config_lib.BuildConfig(
@@ -2258,15 +2254,9 @@ def GetConfig():
 
   gcc = site_config.AddTemplate(
       'gcc',
-      # Use release builder as a base. Make sure that we are doing a full
-      # build and that we are using AFDO.
       _toolchain,
-      no_vmtest_builder,
-      hw_tests=HWTestList.ToolchainTest(),
-      hw_tests_override=HWTestList.ToolchainTest(),
       images=['base', 'test', 'recovery'],
       description='Full release build with next minor GCC toolchain revision.',
-      signer_tests=False,
       latest_toolchain=True,
       prebuilts=False,
       gcc_githash='svn-mirror/google/gcc-4_9',
