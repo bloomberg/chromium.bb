@@ -1,8 +1,10 @@
 importAutomationScript('/pointerevents/pointerevent_common_input.js');
 
 function inject_input() {
-  touchScrollUpInTarget('target0');
-  touchScrollLeftInTarget('target0');
-  touchTapInTarget('btnComplete');
+  touchScrollInTarget('target0', 'down').then(function() {
+    return touchScrollInTarget('target0', 'right');
+  }).then(function() {
+    return touchTapInTarget('btnComplete');
+  });
 }
 

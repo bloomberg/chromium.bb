@@ -58,13 +58,35 @@ function mouseScrollLeft() {
 const scrollOffset = 30;
 const boundaryOffset = 5;
 const touchSourceType = 1;
+
 function touchTapInTarget(targetId) {
-  if (window.chrome && chrome.gpuBenchmarking) {
-    var target = document.getElementById(targetId);
-    target.scrollIntoViewIfNeeded();
-    var targetRect = target.getBoundingClientRect();
-    chrome.gpuBenchmarking.tap(targetRect.left+boundaryOffset, targetRect.top+boundaryOffset);
-  }
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      var target = document.getElementById(targetId);
+      target.scrollIntoViewIfNeeded();
+      var targetRect = target.getBoundingClientRect();
+      chrome.gpuBenchmarking.tap(targetRect.left + boundaryOffset, targetRect.top + boundaryOffset, function() {
+        resolve();
+      });
+    } else {
+      reject();
+    }
+  });
+}
+
+function touchScrollInTarget(targetId, direction) {
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      var target = document.getElementById(targetId);
+      target.scrollIntoViewIfNeeded();
+      var targetRect = target.getBoundingClientRect();
+      chrome.gpuBenchmarking.smoothScrollBy(scrollOffset, function() {
+        resolve();
+      }, targetRect.left + boundaryOffset, targetRect.top + boundaryOffset, 1, direction);
+    } else {
+      reject();
+    }
+  });
 }
 
 function scrollPageIfNeeded(targetRect, startX, startY) {

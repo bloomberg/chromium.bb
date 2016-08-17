@@ -1,22 +1,15 @@
 importAutomationScript('/pointerevents/pointerevent_common_input.js');
 
-function callback_function() {
-  window.setTimeout(function() {
-    touchTapInTarget('btnComplete');}
-    , 2 * scrollReturnInterval);
-}
-
 function inject_input() {
-  touchScrollUpInTarget('row1');
+  touchScrollInTarget('row1', 'down');
   window.setTimeout(function() {
-    touchScrollLeftInTarget('row1');
-    } , 2*scrollReturnInterval);
-
-  window.setTimeout(function() {
-    touchScrollUpInTarget('cell3');
-    } , 2*scrollReturnInterval);
-
-  window.setTimeout(function() {
-    touchScrollLeftInTarget('cell3', callback_function);
-    } , 2*scrollReturnInterval);
+    touchScrollInTarget('row1', 'right');
+    window.setTimeout(function() {
+      touchScrollInTarget('cell3', 'down').then(function() {
+        return touchScrollInTarget('cell3', 'right');
+      }).then(function() {
+        touchTapInTarget('btnComplete');
+      });
+    } , 2 * scrollReturnInterval);
+  } , 2 * scrollReturnInterval);
 }

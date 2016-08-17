@@ -1,7 +1,7 @@
 importAutomationScript('/pointerevents/pointerevent_common_input.js');
 
 function inject_input() {
-  touchScrollUpInTarget('target0');
+  touchScrollInTarget('target0', 'down');
 }
 
 
