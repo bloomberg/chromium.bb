@@ -405,6 +405,7 @@ static_library("test_support") {
       "extensions/extension_test_util.cc",
       "extensions/extension_test_util.h",
     ]
+    deps += [ "//chrome/common/extensions:test_features" ]
   }
 }
 

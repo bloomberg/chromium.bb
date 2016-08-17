@@ -21,8 +21,6 @@ class ManifestFeature : public SimpleFeature {
       Feature::Context context,
       const GURL& url,
       Feature::Platform platform) const override;
-
-  bool Validate(std::string* error) override;
 };
 
 }  // namespace extensions

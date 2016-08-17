@@ -50,6 +50,13 @@ class FeatureCompilerTest(unittest.TestCase):
     })
     self.assertFalse(f.errors)
 
+  def testInvalidAll(self):
+    f = self._parseFeature({
+      'channel': 'stable',
+      'dependencies': 'all',
+    })
+    self._hasError(f, 'Illegal value: "all"')
+
   def testUnknownKeyError(self):
     f = self._parseFeature({
       'contexts': ['blessed_extension'],

@@ -5,12 +5,14 @@
   "alpha": {
     "channel": "stable",
     "contexts": ["blessed_extension"],
-    "dependencies": ["permission:alpha"]
+    "dependencies": ["permission:alpha"],
+    "max_manifest_version": 1
   },
   "beta": {
     "channel": "dev",
     "contexts": ["blessed_extension"],
     "extension_types": ["extension", "platform_app"],
+    "location": "component",
     "whitelist": ["aaa", "bbb"],
     "blacklist": ["zzz", "yyy"],
     "component_extensions_auto_granted": false
@@ -46,7 +48,8 @@
   "delta": {
     "channel": "dev",
     "contexts": ["blessed_extension", "webui"],
-    "matches": ["*://example.com/*"]
+    "matches": ["*://example.com/*"],
+    "min_manifest_version": 2
   },
   "complex": [{
     "channel": "beta",
@@ -62,6 +65,11 @@
   "complex.child": {
     "platforms": ["win"],
     "dependencies": ["permission:complex.child"]
+  },
+  "allEnum": {
+    "channel": "beta",
+    "extension_types": "all",
+    "contexts": "all"
   },
   "uncompiled": {
     "contexts": ["blessed_extension"],

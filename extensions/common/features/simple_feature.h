@@ -47,15 +47,6 @@ class SimpleFeature : public Feature {
   SimpleFeature();
   ~SimpleFeature() override;
 
-  // Parses the JSON representation of a feature into the fields of this object.
-  // Note: Validate() should be called after this.
-  void Parse(const base::DictionaryValue* dictionary);
-
-  // Checks whether the feature is valid. Invalid features should not be used.
-  // Subclasses can override to implement specific checking, but should always
-  // call this method as well.
-  virtual bool Validate(std::string* error);
-
   Availability IsAvailableToContext(const Extension* extension,
                                     Context context) const {
     return IsAvailableToContext(extension, context, GURL());

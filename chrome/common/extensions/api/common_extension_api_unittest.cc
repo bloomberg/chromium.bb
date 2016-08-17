@@ -13,18 +13,15 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_features_unittest.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/features/api_feature.h"
-#include "extensions/common/features/json_feature_provider.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -34,11 +31,17 @@
 
 namespace extensions {
 
-using test_util::BuildExtension;
+namespace {
 
-SimpleFeature* CreateAPIFeature() {
-  return new APIFeature();
+const char* const kTestFeatures[] = {
+    "test1", "test2", "test3",   "test4",   "test5",
+    "test6", "test7", "parent1", "parent2", "parent3",
+};
+
+UnittestFeatureProvider api_feature_provider;
 }
+
+using test_util::BuildExtension;
 
 TEST(ExtensionAPITest, Creation) {
   ExtensionAPI* shared_instance = ExtensionAPI::GetSharedInstance();
@@ -164,31 +167,15 @@ TEST(ExtensionAPITest, APIFeatures) {
         GURL() }
   };
 
-  base::FilePath api_features_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &api_features_path);
-  api_features_path = api_features_path.AppendASCII("extensions")
-      .AppendASCII("extension_api_unittest")
-      .AppendASCII("api_features.json");
-
-  std::string api_features_str;
-  ASSERT_TRUE(base::ReadFileToString(
-      api_features_path, &api_features_str)) << "api_features.json";
-
-  std::unique_ptr<base::DictionaryValue> value(
-      static_cast<base::DictionaryValue*>(
-          base::JSONReader::Read(api_features_str).release()));
-  JSONFeatureProvider api_feature_provider(*value, CreateAPIFeature);
+  UnittestFeatureProvider api_feature_provider;
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     ExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
-    for (base::DictionaryValue::Iterator iter(*value); !iter.IsAtEnd();
-         iter.Advance()) {
-      if (iter.key().find(".") == std::string::npos)
-        api.RegisterSchemaResource(iter.key(), 0);
-    }
-
+    for (const auto& key : kTestFeatures)
+      api.RegisterSchemaResource(key, 0);
     ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
+
     bool expected = test_data[i].expect_is_available;
     Feature::Availability availability =
         api.IsAvailable(test_data[i].api_full_name,
@@ -258,29 +245,14 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
     { "test7", false, Feature::WEB_PAGE_CONTEXT, NULL, GURL("http://bar.com") }
   };
 
-  base::FilePath api_features_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &api_features_path);
-  api_features_path = api_features_path.AppendASCII("extensions")
-      .AppendASCII("extension_api_unittest")
-      .AppendASCII("api_features.json");
-
-  std::string api_features_str;
-  ASSERT_TRUE(base::ReadFileToString(
-      api_features_path, &api_features_str)) << "api_features.json";
-
-  std::unique_ptr<base::DictionaryValue> value(
-      static_cast<base::DictionaryValue*>(
-          base::JSONReader::Read(api_features_str).release()));
-  JSONFeatureProvider api_feature_provider(*value, CreateAPIFeature);
+  UnittestFeatureProvider api_feature_provider;
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     ExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
-    for (base::DictionaryValue::Iterator iter(*value); !iter.IsAtEnd();
-         iter.Advance()) {
-      if (iter.key().find(".") == std::string::npos)
-        api.RegisterSchemaResource(iter.key(), 0);
-    }
+    for (const auto& key : kTestFeatures)
+      api.RegisterSchemaResource(key, 0);
+    ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
 
     Feature* test_feature =
         api_feature_provider.GetFeature(test_data[i].api_full_name);
@@ -674,18 +646,6 @@ TEST(ExtensionAPITest, DefaultConfigurationFeatures) {
     EXPECT_EQ(0, feature->min_manifest_version());
     EXPECT_EQ(0, feature->max_manifest_version());
   }
-}
-
-TEST(ExtensionAPITest, JSONFeatureProviderDoesNotStoreInvalidFeatures) {
-  base::DictionaryValue features;
-  std::unique_ptr<base::DictionaryValue> feature_value(
-      new base::DictionaryValue());
-  // This feature is invalid (it needs an extension context), so the
-  // JSONFeatureProvider should not store it.
-  feature_value->SetString("channel", "stable");
-  features.Set("test", std::move(feature_value));
-  JSONFeatureProvider api_feature_provider(features, CreateAPIFeature);
-  EXPECT_FALSE(api_feature_provider.GetFeature("test"));
 }
 
 static void GetDictionaryFromList(const base::DictionaryValue* schema,

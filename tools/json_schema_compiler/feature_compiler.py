@@ -460,8 +460,17 @@ class FeatureCompiler(object):
     sep = feature_name.rfind('.')
     if sep is -1 or no_parent:
       return None
+
     parent_name = feature_name[:sep]
-    if parent_name not in self._features:
+    while sep != -1 and parent_name not in self._features:
+      # This recursion allows for a feature to have a parent that isn't a direct
+      # ancestor. For instance, we could have feature 'alpha', and feature
+      # 'alpha.child.child', where 'alpha.child.child' inherits from 'alpha'.
+      # TODO(devlin): Is this useful? Or logical?
+      sep = feature_name.rfind('.', 0, sep)
+      parent_name = feature_name[:sep]
+
+    if sep == -1:
       # TODO(devlin): It'd be kind of nice to be able to assert that the
       # deduced parent name is in our features, but some dotted features don't
       # have parents and also don't have noparent, e.g. system.cpu. We should

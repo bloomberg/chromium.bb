@@ -12,7 +12,6 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/behavior_feature.h"
-#include "extensions/common/features/json_feature_provider.h"
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/features/manifest_feature.h"
 #include "extensions/common/features/permission_feature.h"
