@@ -131,7 +131,7 @@ class CONTENT_EXPORT RenderFrameProxy
                           blink::WebRemoteFrame* targetFrame,
                           blink::WebSecurityOrigin target,
                           blink::WebDOMMessageEvent event) override;
-  void initializeChildFrame(float scale_factor) override;
+  void initializeChildFrame() override;
   void navigate(const blink::WebURLRequest& request,
                 bool should_replace_current_entry) override;
   void forwardInputEvent(const blink::WebInputEvent* event) override;

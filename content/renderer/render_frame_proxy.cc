@@ -13,6 +13,7 @@
 #include "content/child/web_url_request_util.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/content_security_policy_header.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
@@ -438,10 +439,9 @@ void RenderFrameProxy::forwardPostMessage(
   Send(new FrameHostMsg_RouteMessageEvent(routing_id_, params));
 }
 
-void RenderFrameProxy::initializeChildFrame(
-    float scale_factor) {
+void RenderFrameProxy::initializeChildFrame() {
   Send(new FrameHostMsg_InitializeChildFrame(
-      routing_id_, scale_factor));
+      routing_id_, render_widget_->GetOriginalDeviceScaleFactor()));
 }
 
 void RenderFrameProxy::navigate(const blink::WebURLRequest& request,
@@ -467,7 +467,12 @@ void RenderFrameProxy::forwardInputEvent(const blink::WebInputEvent* event) {
 }
 
 void RenderFrameProxy::frameRectsChanged(const blink::WebRect& frame_rect) {
-  Send(new FrameHostMsg_FrameRectChanged(routing_id_, frame_rect));
+  gfx::Rect rect = frame_rect;
+  if (IsUseZoomForDSFEnabled()) {
+    rect = gfx::ScaleToEnclosingRect(
+        rect, 1.f / render_widget_->GetOriginalDeviceScaleFactor());
+  }
+  Send(new FrameHostMsg_FrameRectChanged(routing_id_, rect));
 }
 
 void RenderFrameProxy::visibilityChanged(bool visible) {

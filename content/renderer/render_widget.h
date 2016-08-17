@@ -379,6 +379,9 @@ class CONTENT_EXPORT RenderWidget
     focused_pepper_plugin_ = plugin;
   }
 
+  // When emulated, this returns original device scale factor.
+  float GetOriginalDeviceScaleFactor() const;
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -784,9 +787,6 @@ class CONTENT_EXPORT RenderWidget
   std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
  private:
-  // When emulated, this returns original device scale factor.
-  float GetOriginalDeviceScaleFactor() const;
-
   // Indicates whether this widget has focus.
   bool has_focus_;
 

@@ -34,7 +34,7 @@ public:
 
     // Send initial drawing parameters to a child frame that is being rendered
     // out of process.
-    virtual void initializeChildFrame(float deviceScaleFactor) { }
+    virtual void initializeChildFrame() {}
 
     // A remote frame was asked to start a navigation.
     virtual void navigate(const WebURLRequest& request, bool shouldReplaceCurrentEntry) { }
