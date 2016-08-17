@@ -13,6 +13,8 @@
 
 typedef unsigned long XAtom;
 typedef unsigned long XID;
+typedef struct _XcursorImage XcursorImage;
+typedef union _XEvent XEvent;
 typedef struct _XImage XImage;
 typedef struct _XGC *GC;
 typedef struct _XDisplay XDisplay;

@@ -28,7 +28,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
-#include "ui/gfx/x/x11_types.h"
 
 namespace {
 

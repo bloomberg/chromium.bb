@@ -14,8 +14,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11_types.h"
 
-typedef union _XEvent XEvent;
-
 namespace ui {
 
 struct Valuator {

@@ -24,7 +24,6 @@
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/event_switches.h"
-#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
@@ -87,7 +86,7 @@ void TouchFactory::SetTouchDeviceListFromCommandLine() {
   }
 }
 
-void TouchFactory::UpdateDeviceList(Display* display) {
+void TouchFactory::UpdateDeviceList(XDisplay* display) {
   // Detect touch devices.
   touch_device_lookup_.reset();
   touch_device_list_.clear();

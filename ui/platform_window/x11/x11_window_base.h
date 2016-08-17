@@ -11,13 +11,10 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/x11/x11_window_export.h"
-
-typedef struct _XDisplay XDisplay;
-typedef unsigned long XID;
-typedef union _XEvent XEvent;
 
 namespace ui {
 

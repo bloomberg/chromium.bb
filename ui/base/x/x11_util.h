@@ -26,8 +26,6 @@
 
 typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef unsigned long Cursor;
-typedef struct _XcursorImage XcursorImage;
-typedef union _XEvent XEvent;
 
 namespace gfx {
 class Canvas;
