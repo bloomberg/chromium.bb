@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
+import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
@@ -95,10 +96,12 @@ public class CustomTabActivity extends ChromeActivity {
 
     private boolean mHasCreatedTabEarly;
     private boolean mIsInitialStart = true;
+    // Whether there is any prerender associated with the session.
     private boolean mHasPrerender;
     private CustomTabObserver mTabObserver;
 
     private String mPrerenderedUrl;
+    // Whether a prerender is being used.
     private boolean mHasPrerendered;
 
     private static class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
@@ -252,7 +255,8 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public boolean shouldAllocateChildConnection() {
-        return !mHasCreatedTabEarly && !mHasPrerender;
+        return !mHasCreatedTabEarly && !mHasPrerender
+                && !WarmupManager.getInstance().hasSpareWebContents();
     }
 
     @Override
@@ -419,7 +423,9 @@ public class CustomTabActivity extends ChromeActivity {
         WebContents webContents =
                 customTabsConnection.takePrerenderedUrl(mSession, url, referrerUrl);
         mHasPrerendered = webContents != null;
-        if (webContents == null) webContents = customTabsConnection.takeSpareWebContents();
+        if (!mHasPrerendered) {
+            webContents = WarmupManager.getInstance().takeSpareWebContents(false, false);
+        }
         if (webContents == null) webContents = WebContentsFactory.createWebContents(false, false);
         tab.initialize(webContents, getTabContentManager(),
                 new CustomTabDelegateFactory(mIntentDataProvider.shouldEnableUrlBarHiding()), false,

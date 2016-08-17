@@ -15,11 +15,13 @@ import android.view.ViewStub;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Log;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.WebContents;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -46,6 +48,7 @@ public final class WarmupManager {
 
     private int mToolbarContainerId;
     private ViewGroup mMainView;
+    private WebContents mSpareWebContents;
 
     /**
      * @return The singleton instance for the WarmupManager, creating one if necessary.
@@ -190,6 +193,51 @@ public final class WarmupManager {
                 nativePreconnectUrlAndSubresources(profile, url);
             }
         }
+    }
+
+    /**
+     * Creates and initializes a spare WebContents, to be used in a subsequent navigation.
+     *
+     * This creates a renderer that is suitable for any navigation. It can be picked up by any tab.
+     * Can be called multiple times, and must be called from the UI thread.
+     * Note that this is a no-op on low-end devices.
+     */
+    public void createSpareWebContents() {
+        ThreadUtils.assertOnUiThread();
+        if (mSpareWebContents != null || SysUtils.isLowEndDevice()) return;
+        mSpareWebContents = WebContentsFactory.createWebContentsWithWarmRenderer(false, false);
+    }
+
+    /**
+     * Destroys the spare WebContents if there is one.
+     */
+    public void destroySpareWebContents() {
+        ThreadUtils.assertOnUiThread();
+        if (mSpareWebContents == null) return;
+        mSpareWebContents.destroy();
+        mSpareWebContents = null;
+    }
+
+    /**
+     * Returns a spare WebContents or null, depending on the availability of one.
+     *
+     * The parameters are the same as for {@link WebContentsFactory#createWebContents()}.
+     *
+     * @return a WebContents, or null.
+     */
+    public WebContents takeSpareWebContents(boolean incognito, boolean initiallyHidden) {
+        ThreadUtils.assertOnUiThread();
+        if (incognito || initiallyHidden) return null;
+        WebContents result = mSpareWebContents;
+        mSpareWebContents = null;
+        return result;
+    }
+
+    /**
+     * @return Whether a spare renderer is available.
+     */
+    public boolean hasSpareWebContents() {
+        return mSpareWebContents != null;
     }
 
     private static native void nativePreconnectUrlAndSubresources(Profile profile, String url);
