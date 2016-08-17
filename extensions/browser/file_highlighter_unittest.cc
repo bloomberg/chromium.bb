@@ -93,6 +93,11 @@ TEST(ManifestHighlighterUnitTest, ManifestHighlighterUnitTest) {
   ManifestHighlighter international_feature(
       kManifest, "international_key", std::string());
   EXPECT_EQ(kInternationalFeature, international_feature.GetFeature());
+
+  // Empty manifest. Check that there is no crash.
+  const char kEmptyManifest[] = "";
+  ManifestHighlighter no_feature(kEmptyManifest, std::string(), std::string());
+  EXPECT_EQ(std::string(), no_feature.GetFeature());
 }
 
 TEST(SouceHighlighterUnitTest, SourceHighlighterUnitTest) {

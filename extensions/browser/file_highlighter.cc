@@ -113,8 +113,10 @@ ManifestHighlighter::ManifestHighlighter(const std::string& manifest,
                                          const std::string& key,
                                          const std::string& specific)
     : FileHighlighter(manifest) {
-  start_ = contents_.find('{') + 1;
+  start_ = contents_.find('{');
+  start_ = start_ == std::string::npos ? contents_.size() : start_ + 1;
   end_ = contents_.rfind('}');
+  end_ = end_ == std::string::npos ? contents_.size() : end_;
   Parse(key, specific);
 }
 
@@ -125,11 +127,11 @@ ManifestHighlighter::~ManifestHighlighter() {
 void ManifestHighlighter::Parse(const std::string& key,
                                 const std::string& specific) {
   // First, try to find the bounds of the full key.
-  if (FindBounds(key, true) /* enforce at top level */ ) {
+  if (FindBounds(key, true) /* enforce at top level */) {
     // If we succeed, and we have a specific location, find the bounds of the
     // specific.
     if (!specific.empty())
-      FindBounds(specific, false /* don't enforce at top level */ );
+      FindBounds(specific, false /* don't enforce at top level */);
 
     // We may have found trailing whitespace. Don't use base::TrimWhitespace,
     // because we want to keep any whitespace we find - just not highlight it.
