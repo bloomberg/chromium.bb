@@ -190,8 +190,9 @@ TEST_F(PathBuilderMultiRootTest, TargetHasNameAndSpkiOfTrustAnchor) {
   EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
 
   EXPECT_EQ(OK, result.error());
+  ASSERT_FALSE(result.paths.empty());
   const auto& path = result.paths[result.best_result_index]->path;
-  EXPECT_EQ(1U, path.certs.size());
+  ASSERT_EQ(1U, path.certs.size());
   EXPECT_EQ(a_by_b_, path.certs[0]);
   EXPECT_EQ(b_by_f_, path.trust_anchor->cert());
 }
@@ -273,8 +274,9 @@ TEST_F(PathBuilderMultiRootTest, TargetIsSelfSignedTrustAnchor) {
   EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
 
   EXPECT_EQ(OK, result.error());
+  ASSERT_FALSE(result.paths.empty());
   const auto& path = result.paths[result.best_result_index]->path;
-  EXPECT_EQ(1U, path.certs.size());
+  ASSERT_EQ(1U, path.certs.size());
   EXPECT_EQ(e_by_e_, path.certs[0]);
   EXPECT_EQ(e_by_e_, path.trust_anchor->cert());
 }
@@ -292,8 +294,9 @@ TEST_F(PathBuilderMultiRootTest, TargetDirectlySignedByTrustAnchor) {
   EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
 
   ASSERT_EQ(OK, result.error());
+  ASSERT_FALSE(result.paths.empty());
   const auto& path = result.paths[result.best_result_index]->path;
-  EXPECT_EQ(1U, path.certs.size());
+  ASSERT_EQ(1U, path.certs.size());
   EXPECT_EQ(a_by_b_, path.certs[0]);
   EXPECT_EQ(b_by_f_, path.trust_anchor->cert());
 }
@@ -401,6 +404,7 @@ TEST_F(PathBuilderMultiRootTest, TestLongChain) {
 
   // The result path should be A(B) <- B(C) <- C(D)
   // not the longer but also valid A(B) <- B(C) <- C(D) <- D(D)
+  ASSERT_FALSE(result.paths.empty());
   const auto& path = result.paths[result.best_result_index]->path;
   EXPECT_EQ(2U, path.certs.size());
 }
@@ -435,6 +439,7 @@ TEST_F(PathBuilderMultiRootTest, TestBacktracking) {
   EXPECT_EQ(OK, result.error());
 
   // The result path should be A(B) <- B(C) <- C(D) <- D(D)
+  ASSERT_FALSE(result.paths.empty());
   const auto& path = result.paths[result.best_result_index]->path;
   ASSERT_EQ(3U, path.certs.size());
   EXPECT_EQ(a_by_b_, path.certs[0]);
@@ -473,6 +478,7 @@ TEST_F(PathBuilderMultiRootTest, TestCertIssuerOrdering) {
     EXPECT_EQ(OK, result.error());
 
     // The result path should be A(B) <- B(C) <- C(D) <- D(D)
+    ASSERT_FALSE(result.paths.empty());
     const auto& path = result.paths[result.best_result_index]->path;
     ASSERT_EQ(3U, path.certs.size());
     EXPECT_EQ(a_by_b_, path.certs[0]);
