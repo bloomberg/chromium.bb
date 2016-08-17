@@ -80,4 +80,36 @@ TEST(DeferredImageDecoderTestWoPlatform, mixImagesIco)
     mixImages("/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico", 1376u, 1u);
 }
 
+TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature)
+{
+    struct {
+        const char* m_file;
+        ImageDecoder::SniffResult m_expectedResult;
+    } tests[] = {
+        { "/LayoutTests/fast/images/resources/animated.gif", ImageDecoder::SniffResult::GIF },
+        { "/LayoutTests/fast/images/resources/mu.png", ImageDecoder::SniffResult::PNG },
+        { "/LayoutTests/fast/images/resources/2-dht.jpg", ImageDecoder::SniffResult::JPEG },
+        { "/LayoutTests/fast/images/resources/webp-animated.webp", ImageDecoder::SniffResult::WEBP },
+        { "/LayoutTests/fast/images/resources/lenna.bmp", ImageDecoder::SniffResult::BMP },
+        { "/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico", ImageDecoder::SniffResult::ICO },
+    };
+
+    for (size_t i = 0; i < SK_ARRAY_COUNT(tests); ++i) {
+        RefPtr<SharedBuffer> fileBuffer = readFile(tests[i].m_file);
+        ASSERT_NE(fileBuffer, nullptr);
+        // We need contiguous data, which SharedBuffer doesn't guarantee.
+        sk_sp<SkData> skData = fileBuffer->getAsSkData();
+        ASSERT_EQ(skData->size(), fileBuffer->size());
+        const char* data = reinterpret_cast<const char*>(skData->bytes());
+
+        // Truncated signature (only 1 byte)
+        RefPtr<SharedBuffer> buffer = SharedBuffer::create<size_t>(data, 1u);
+        ASSERT_EQ(ImageDecoder::determineImageType(*buffer), ImageDecoder::SniffResult::InsufficientData);
+
+        // Append the rest of the data.  We should be able to sniff the signature now, even if segmented.
+        buffer->append<size_t>(data + 1, skData->size() - 1);
+        ASSERT_EQ(ImageDecoder::determineImageType(*buffer), tests[i].m_expectedResult);
+    }
+}
+
 } // namespace blink

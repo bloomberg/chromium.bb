@@ -23,6 +23,7 @@
 #include "platform/PlatformInstrumentation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/BitmapImageMetrics.h"
+#include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 #include "platform/image-decoders/ico/ICOImageDecoder.h"
@@ -107,12 +108,16 @@ std::unique_ptr<ImageDecoder> ImageDecoder::create(SniffResult sniffResult, Alph
     return nullptr;
 }
 
+namespace {
+
+// This needs to be updated if we ever add a matches*Signature() which requires more characters.
+constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
+
+} // anonymous ns
+
 ImageDecoder::SniffResult ImageDecoder::determineImageType(const char* contents, size_t length)
 {
-    const size_t longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
-    DCHECK_EQ(14u, longestSignatureLength);
-
-    if (length < longestSignatureLength)
+    if (length < kLongestSignatureLength)
         return SniffResult::InsufficientData;
     if (matchesJPEGSignature(contents))
         return SniffResult::JPEG;
@@ -131,16 +136,20 @@ ImageDecoder::SniffResult ImageDecoder::determineImageType(const char* contents,
 
 ImageDecoder::SniffResult ImageDecoder::determineImageType(const SharedBuffer& data)
 {
-    const char* contents;
-    const size_t length = data.getSomeData<size_t>(contents);
-    return determineImageType(contents, length);
+    // TODO(fmalita): refactor the method signature to avoid casting.
+    RefPtr<SegmentReader> reader = SegmentReader::createFromSharedBuffer(const_cast<SharedBuffer*>(&data));
+
+    return determineImageType(*reader);
 }
 
 ImageDecoder::SniffResult ImageDecoder::determineImageType(const SegmentReader& data)
 {
-    const char* contents;
-    const size_t length = data.getSomeData(contents, 0);
-    return determineImageType(contents, length);
+    // TODO(fmalita): refactor the method signature to avoid casting.
+    const FastSharedBufferReader fastReader(const_cast<SegmentReader*>(&data));
+    char buffer[kLongestSignatureLength];
+    const size_t len = std::min(kLongestSignatureLength, data.size());
+
+    return determineImageType(fastReader.getConsecutiveData(0, len, buffer), len);
 }
 
 size_t ImageDecoder::frameCount()
