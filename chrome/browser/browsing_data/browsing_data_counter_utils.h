@@ -18,10 +18,4 @@ bool AreCountersEnabled();
 base::string16 GetChromeCounterTextFromResult(
     const browsing_data::BrowsingDataCounter::Result* result);
 
-// Copies the name of the deletion preference corresponding to the given
-// |data_type| to |out_pref|. Returns false if no such preference exists.
-bool GetDeletionPreferenceFromDataType(
-    browsing_data::BrowsingDataType data_type,
-    std::string* out_pref);
-
 #endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COUNTER_UTILS_H_

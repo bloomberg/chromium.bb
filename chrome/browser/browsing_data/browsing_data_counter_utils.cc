@@ -137,35 +137,3 @@ base::string16 GetChromeCounterTextFromResult(
 
   return browsing_data::GetCounterTextFromResult(result);
 }
-
-bool GetDeletionPreferenceFromDataType(
-    browsing_data::BrowsingDataType data_type,
-    std::string* out_pref) {
-  switch (data_type) {
-    case browsing_data::HISTORY:
-      *out_pref = browsing_data::prefs::kDeleteBrowsingHistory;
-      return true;
-    case browsing_data::CACHE:
-      *out_pref = browsing_data::prefs::kDeleteCache;
-      return true;
-    case browsing_data::COOKIES:
-      *out_pref = browsing_data::prefs::kDeleteCookies;
-      return true;
-    case browsing_data::PASSWORDS:
-      *out_pref = browsing_data::prefs::kDeletePasswords;
-      return true;
-    case browsing_data::FORM_DATA:
-      *out_pref = browsing_data::prefs::kDeleteFormData;
-      return true;
-    case browsing_data::BOOKMARKS:
-      // Bookmarks are deleted on the Android side. No corresponding deletion
-      // preference.
-      return false;
-    case browsing_data::NUM_TYPES:
-      // This is not an actual type.
-      NOTREACHED();
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}

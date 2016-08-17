@@ -23,7 +23,7 @@ BrowsingDataCounterBridge::BrowsingDataCounterBridge(
   DCHECK_LT(data_type, browsing_data::NUM_TYPES);
 
   std::string pref;
-  if (!GetDeletionPreferenceFromDataType(
+  if (!browsing_data::GetDeletionPreferenceFromDataType(
           static_cast<browsing_data::BrowsingDataType>(data_type), &pref)) {
     return;
   }

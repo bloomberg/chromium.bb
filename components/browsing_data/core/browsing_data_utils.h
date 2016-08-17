@@ -49,6 +49,12 @@ base::Time CalculateBeginDeleteTime(TimePeriod time_period);
 base::string16 GetCounterTextFromResult(
     const browsing_data::BrowsingDataCounter::Result* result);
 
+// Copies the name of the deletion preference corresponding to the given
+// |data_type| to |out_pref|. Returns false if no such preference exists.
+bool GetDeletionPreferenceFromDataType(
+    BrowsingDataType data_type,
+    std::string* out_pref);
+
 }  // namespace browsing_data
 
 #endif  // COMPONENTS_BROWSING_DATA_CORE_BROWSING_DATA_UTILS_H_

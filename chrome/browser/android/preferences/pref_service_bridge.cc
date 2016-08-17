@@ -24,7 +24,6 @@
 #include "base/values.h"
 #include "chrome/browser/android/preferences/important_sites_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -563,7 +562,7 @@ static jboolean GetBrowsingDataDeletionPreference(
   // TODO(msramek): Consider defining native-side preferences for all Java UI
   // data types for consistency.
   std::string pref;
-  if (!GetDeletionPreferenceFromDataType(
+  if (!browsing_data::GetDeletionPreferenceFromDataType(
           static_cast<browsing_data::BrowsingDataType>(data_type), &pref)) {
     return false;
   }
@@ -580,7 +579,7 @@ static void SetBrowsingDataDeletionPreference(
   DCHECK_LT(data_type, browsing_data::NUM_TYPES);
 
   std::string pref;
-  if (!GetDeletionPreferenceFromDataType(
+  if (!browsing_data::GetDeletionPreferenceFromDataType(
           static_cast<browsing_data::BrowsingDataType>(data_type), &pref)) {
     return;
   }
