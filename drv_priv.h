@@ -47,6 +47,7 @@ struct backend
 			 drv_format_t format, uint32_t flags);
 	void* (*bo_map)(struct bo *bo);
 	int (*bo_destroy)(struct bo *bo);
+	drv_format_t (*resolve_format)(drv_format_t format);
 	struct format_supported {
 		drv_format_t format;
 		uint64_t usage;

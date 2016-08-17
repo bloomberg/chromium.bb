@@ -373,3 +373,11 @@ uint64_t drv_bo_get_plane_format_modifier(struct bo *bo, size_t plane)
         assert(plane < bo->num_planes);
 	return bo->format_modifiers[plane];
 }
+
+drv_format_t drv_resolve_format(struct driver *drv, drv_format_t format)
+{
+	if (drv->backend->resolve_format)
+		return drv->backend->resolve_format(format);
+
+	return format;
+}
