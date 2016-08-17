@@ -34,34 +34,29 @@ class DepsUpdater(object):
         self.fs = host.filesystem
         self.finder = WebKitFinder(self.fs)
         self.verbose = False
-        self.allow_local_commits = False
-        self.keep_w3c_repos_around = False
-        self.target = None
-        self.auto_update = False
-        self.auth_refresh_token_json = None
 
     def main(self, argv=None):
-        self.parse_args(argv)
+        options = self.parse_args(argv)
+        self.verbose = options.verbose
 
-        if not self.checkout_is_okay():
+        if not self.checkout_is_okay(options.allow_local_commits):
             return 1
 
         self.print_('## Noting the current Chromium commit.')
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
         chromium_commitish = show_ref_output.split()[0]
 
-        if self.target == 'wpt':
-            import_commitish = self.update(WPT_DEST_NAME, WPT_REPO_URL)
+        if options.target == 'wpt':
+            import_commitish = self.update(WPT_DEST_NAME, WPT_REPO_URL, options.keep_w3c_repos_around)
             self._copy_resources_to_wpt()
-        elif self.target == 'css':
-            import_commitish = self.update(CSS_DEST_NAME, WPT_REPO_URL)
+        elif options.target == 'css':
+            import_commitish = self.update(CSS_DEST_NAME, CSS_REPO_URL, options.keep_w3c_repos_around)
         else:
-            raise AssertionError("Unsupported target %s" % self.target)
+            raise AssertionError("Unsupported target %s" % options.target)
 
         has_changes = self.commit_changes_if_needed(chromium_commitish, import_commitish)
-
-        if self.auto_update and has_changes:
-            commit_successful = self.do_auto_update()
+        if options.auto_update and has_changes:
+            commit_successful = self.do_auto_update(options.auth_refresh_token_json)
             if not commit_successful:
                 return 1
         return 0
@@ -81,23 +76,16 @@ class DepsUpdater(object):
                             help='uploads CL and initiates commit queue.')
         parser.add_argument('--auth-refresh-token-json',
                             help='Rietveld auth refresh JSON token.')
+        return parser.parse_args(argv)
 
-        args = parser.parse_args(argv)
-        self.allow_local_commits = args.allow_local_commits
-        self.keep_w3c_repos_around = args.keep_w3c_repos_around
-        self.verbose = args.verbose
-        self.target = args.target
-        self.auto_update = args.auto_update
-        self.auth_refresh_token_json = args.auth_refresh_token_json
-
-    def checkout_is_okay(self):
+    def checkout_is_okay(self, allow_local_commits):
         git_diff_retcode, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
         if git_diff_retcode:
             self.print_('## Checkout is dirty; aborting.')
             return False
 
         local_commits = self.run(['git', 'log', '--oneline', 'origin/master..HEAD'])[1]
-        if local_commits and not self.allow_local_commits:
+        if local_commits and not allow_local_commits:
             self.print_('## Checkout has local commits; aborting. Use --allow-local-commits to allow this.')
             return False
 
@@ -128,7 +116,7 @@ class DepsUpdater(object):
             self.copyfile(source, destination)
             self.run(['git', 'add', destination])
 
-    def update(self, dest_dir_name, url):
+    def update(self, dest_dir_name, url, keep_w3c_repos_around):
         """Updates an imported repository.
 
         Args:
@@ -173,7 +161,7 @@ class DepsUpdater(object):
             if self.fs.glob(full_path.replace('-expected.txt', '*')) == [full_path]:
                 self.fs.remove(full_path)
 
-        if not self.keep_w3c_repos_around:
+        if not keep_w3c_repos_around:
             self.print_('## Deleting temp repo directory %s.' % temp_repo_path)
             self.rmtree(temp_repo_path)
 
@@ -269,7 +257,7 @@ class DepsUpdater(object):
     def print_(self, msg):
         self.host.print_(msg)
 
-    def do_auto_update(self):
+    def do_auto_update(self, auth_refresh_token_json):
         """Attempts to upload a CL, make any required adjustments, and commit.
 
         This function assumes that the imported repo has already been updated,
@@ -282,19 +270,19 @@ class DepsUpdater(object):
         """
         email_list = self.get_directory_owners_to_cc()
         self.print_('## Uploading change list.')
-        self.check_run(self.generate_upload_command(email_list))
-        self.trigger_try_jobs()
+        self.check_run(self.generate_upload_command(email_list, auth_refresh_token_json))
+        self.trigger_try_jobs(auth_refresh_token_json)
         if self.has_failing_results():
-            self.write_test_expectations()
+            self.write_test_expectations(auth_refresh_token_json)
         command = ['git', 'cl', 'set-commit', '--rietveld']
-        if self.auth_refresh_token_json:
-            command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
+        if auth_refresh_token_json:
+            command += ['--auth-refresh-token-json', auth_refresh_token_json]
         self.run(command)
         if self.has_failing_results():
             self.print_('## CL has failing results when trying to land; aborting.')
             command = ['git', 'cl', 'set-close']
-            if self.auth_refresh_token_json:
-                command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
+            if auth_refresh_token_json:
+                command += ['--auth-refresh-token-json', auth_refresh_token_json]
             self.run(command)
             return False
         return True
@@ -338,20 +326,20 @@ class DepsUpdater(object):
                 email_addresses.add(directory_to_owner[test_dir])
         return sorted(email_addresses)
 
-    def generate_upload_command(self, email_list):
+    def generate_upload_command(self, email_list, auth_refresh_token_json):
         message = 'W3C auto test importer\n\nTBR=qyearsley@chromium.org'
         command = ['git', 'cl', 'upload', '-f', '-m', message, '--rietveld']
         command += ['--cc=' + email for email in email_list]
-        if self.auth_refresh_token_json:
-            command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
+        if auth_refresh_token_json:
+            command += ['--auth-refresh-token-json', auth_refresh_token_json]
         return command
 
-    def trigger_try_jobs(self):
+    def trigger_try_jobs(self, auth_refresh_token_json):
         """Triggers try jobs on all Blink layout test try bots."""
         self.print_('## Triggering try jobs.')
         for try_bot in self.host.builders.all_try_builder_names():
             self.run(['git', 'cl', 'try', '-b', try_bot,
-                      '--auth-refresh-token-json', self.auth_refresh_token_json])
+                      '--auth-refresh-token-json', auth_refresh_token_json])
 
     def has_failing_results(self):
         """Waits for try job results and checks whether there are failing results."""
@@ -394,13 +382,13 @@ class DepsUpdater(object):
                 sets[result_type].add(line.split()[0])
         return sets
 
-    def write_test_expectations(self):
+    def write_test_expectations(self, auth_refresh_token_json):
         self.print_('## Adding test expectations lines to LayoutTests/TestExpectations.')
         script_path = self.path_from_webkit_base('Tools', 'Scripts', 'update-w3c-test-expectations')
         self.run([self.host.executable, script_path])
         message = '\'Modifies TestExpectations and/or downloads new baselines for tests\''
         self.check_run(['git', 'commit', '-a', '-m', message])
         command = ['git', 'cl', 'upload', '-m', message, '--rietveld']
-        if self.auth_refresh_token_json:
-            command += ['--auth-refresh-token-json', self.auth_refresh_token_json]
+        if auth_refresh_token_json:
+            command += ['--auth-refresh-token-json', auth_refresh_token_json]
         self.check_run(command)
