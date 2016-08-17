@@ -5,7 +5,9 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
 #include "base/bind.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -94,6 +96,17 @@ std::string GetDriveUserAgent() {
                             os_cpu_info.c_str());
 }
 
+void DeleteDirectoryContents(const base::FilePath& dir) {
+  base::FileEnumerator content_enumerator(
+      dir, false, base::FileEnumerator::FILES |
+                      base::FileEnumerator::DIRECTORIES |
+                      base::FileEnumerator::SHOW_SYM_LINKS);
+  for (base::FilePath path = content_enumerator.Next(); !path.empty();
+       path = content_enumerator.Next()) {
+    base::DeleteFile(path, true);
+  }
+}
+
 // Initializes FileCache and ResourceMetadata.
 // Must be run on the same task runner used by |cache| and |resource_metadata|.
 FileError InitializeMetadata(
@@ -102,16 +115,26 @@ FileError InitializeMetadata(
     internal::FileCache* cache,
     internal::ResourceMetadata* resource_metadata,
     const base::FilePath& downloads_directory) {
+  if (!base::DirectoryExists(
+          cache_root_directory.Append(kTemporaryFileDirectory))) {
+    LOG(ERROR) << "/tmp should have been created as clear.";
+    // Create /tmp directory as encrypted. Cryptohome will re-create /tmp
+    // direcotry at the next login.
+    if (!base::CreateDirectory(
+            cache_root_directory.Append(kTemporaryFileDirectory))) {
+      LOG(WARNING) << "Failed to create directories.";
+      return FILE_ERROR_FAILED;
+    }
+  }
   // Files in temporary directory need not persist across sessions. Clean up
-  // the directory content while initialization.
-  base::DeleteFile(cache_root_directory.Append(kTemporaryFileDirectory),
-                   true);  // recursive
+  // the directory content while initialization. The directory itself should not
+  // be deleted because it's created by cryptohome in clear and shouldn't be
+  // re-created as encrypted.
+  DeleteDirectoryContents(cache_root_directory.Append(kTemporaryFileDirectory));
   if (!base::CreateDirectory(cache_root_directory.Append(
           kMetadataDirectory)) ||
       !base::CreateDirectory(cache_root_directory.Append(
-          kCacheFileDirectory)) ||
-      !base::CreateDirectory(cache_root_directory.Append(
-          kTemporaryFileDirectory))) {
+          kCacheFileDirectory))) {
     LOG(WARNING) << "Failed to create directories.";
     return FILE_ERROR_FAILED;
   }
