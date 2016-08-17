@@ -22,6 +22,7 @@
 #include "components/data_reduction_proxy/core/browser/data_use_group.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "net/base/mime_util.h"
@@ -200,32 +201,6 @@ void RecordDailyContentLengthHistograms(
       percent_savings_via_data_reduction_proxy);
 }
 
-// Given a |net::NetworkChangeNotifier::ConnectionType|, returns the
-// corresponding |data_reduction_proxy::ConnectionType|.
-ConnectionType StoredConnectionType(
-    net::NetworkChangeNotifier::ConnectionType networkType) {
-  switch (networkType) {
-    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-    case net::NetworkChangeNotifier::CONNECTION_NONE:
-      return ConnectionType::CONNECTION_UNKNOWN;
-    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-      return ConnectionType::CONNECTION_ETHERNET;
-    case net::NetworkChangeNotifier::CONNECTION_WIFI:
-      return ConnectionType::CONNECTION_WIFI;
-    case net::NetworkChangeNotifier::CONNECTION_2G:
-      return ConnectionType::CONNECTION_2G;
-    case net::NetworkChangeNotifier::CONNECTION_3G:
-      return ConnectionType::CONNECTION_3G;
-    case net::NetworkChangeNotifier::CONNECTION_4G:
-      return ConnectionType::CONNECTION_4G;
-    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-      return ConnectionType::CONNECTION_BLUETOOTH;
-    default:
-      NOTREACHED();
-      return ConnectionType::CONNECTION_UNKNOWN;
-  }
-}
-
 }  // namespace
 
 class DataReductionProxyCompressionStats::DailyContentLengthUpdate {
@@ -372,8 +347,6 @@ DataReductionProxyCompressionStats::~DataReductionProxyCompressionStats() {
   if (current_data_usage_load_status_ == LOADED)
     PersistDataUsage();
 
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-
   WritePrefs();
 }
 
@@ -391,10 +364,6 @@ void DataReductionProxyCompressionStats::Init() {
         &DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded,
         weak_factory_.GetWeakPtr()));
   }
-
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  connection_type_ =
-      StoredConnectionType(net::NetworkChangeNotifier::GetConnectionType());
 
   if (delay_.is_zero())
     return;
@@ -637,11 +606,6 @@ void DataReductionProxyCompressionStats::DeleteBrowsingHistory(
   }
 
   service_->DeleteBrowsingHistory(start, end);
-}
-
-void DataReductionProxyCompressionStats::OnConnectionTypeChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  connection_type_ = StoredConnectionType(type);
 }
 
 void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(

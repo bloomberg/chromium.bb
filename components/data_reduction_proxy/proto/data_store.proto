@@ -10,16 +10,6 @@ option optimize_for = LITE_RUNTIME;
 
 package data_reduction_proxy;
 
-enum ConnectionType {
-  CONNECTION_UNKNOWN = 0;
-  CONNECTION_ETHERNET = 1;
-  CONNECTION_WIFI = 2;
-  CONNECTION_2G = 3;
-  CONNECTION_3G = 4;
-  CONNECTION_4G = 5;
-  CONNECTION_BLUETOOTH = 6;
-};
-
 // Contains data usage for an interval of time.
 message DataUsageBucket {
   repeated PerConnectionDataUsage connection_usage = 1;

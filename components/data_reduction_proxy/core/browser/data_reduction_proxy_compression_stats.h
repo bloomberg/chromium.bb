@@ -22,9 +22,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/prefs/pref_member.h"
-#include "net/base/network_change_notifier.h"
 
 class PrefService;
 
@@ -35,15 +33,16 @@ class Value;
 
 namespace data_reduction_proxy {
 class DataReductionProxyService;
+class DataUsageBucket;
 class DataUseGroup;
+class PerSiteDataUsage;
 
 // Data reduction proxy delayed pref service reduces the number calls to pref
 // service by storing prefs in memory and writing to the given PrefService after
 // |delay| amount of time. If |delay| is zero, the delayed pref service writes
 // directly to the PrefService and does not store the prefs in memory. All
 // prefs must be stored and read on the UI thread.
-class DataReductionProxyCompressionStats
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver {
+class DataReductionProxyCompressionStats {
  public:
   typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<PerSiteDataUsage>>
       SiteUsageMap;
@@ -60,7 +59,7 @@ class DataReductionProxyCompressionStats
   DataReductionProxyCompressionStats(DataReductionProxyService* service,
                                      PrefService* pref_service,
                                      const base::TimeDelta& delay);
-  ~DataReductionProxyCompressionStats() override;
+  ~DataReductionProxyCompressionStats();
 
   // Records detailed data usage broken down by connection type and domain. Also
   // records daily data savings statistics to prefs and reports data savings
@@ -108,12 +107,6 @@ class DataReductionProxyCompressionStats
   // Deletes browsing history from storage and memory for the given time
   // range. Currently, this method deletes all data usage for the given range.
   void DeleteBrowsingHistory(const base::Time& start, const base::Time& end);
-
-  // Called by |net::NetworkChangeNotifier| when network type changes. Used to
-  // keep track of connection type for reporting data usage breakdown by
-  // connection type.
-  void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Callback from loading detailed data usage. Initializes in memory data
   // structures used to collect data usage. |data_usage| contains the data usage
@@ -237,7 +230,6 @@ class DataReductionProxyCompressionStats
   DataReductionProxyPrefMap pref_map_;
   DataReductionProxyListPrefMap list_pref_map_;
   BooleanPrefMember data_usage_reporting_enabled_;
-  ConnectionType connection_type_;
 
   // Maintains detailed data usage for current interval.
   SiteUsageMap data_usage_map_;
