@@ -11,7 +11,6 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/notification_service_impl.h"
-#include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 
@@ -61,12 +60,6 @@ void BrowserProcessSubThread::CleanUp() {
 }
 
 void BrowserProcessSubThread::IOThreadPreCleanUp() {
-  // TODO(alokp): Remove after collecting crash data.
-  // Temporary checks to verify that all shared workers are terminated.
-  // It is suspected that shared workers prevent render process hosts
-  // from shutting down: crbug.com/608049
-  SharedWorkerServiceImpl::GetInstance()->CheckAllWorkersTerminated();
-
   // Kill all things that might be holding onto
   // net::URLRequest/net::URLRequestContexts.
 
