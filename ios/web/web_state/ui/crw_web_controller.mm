@@ -1612,7 +1612,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   for (UIGestureRecognizer* iRecognizer in [view gestureRecognizers]) {
     if (iRecognizer != recognizer) {
       NSString* description = [iRecognizer description];
-      if ([description rangeOfString:fragment].location != NSNotFound) {
+      if ([description rangeOfString:fragment].length) {
         [iRecognizer requireGestureRecognizerToFail:recognizer];
         // requireGestureRecognizerToFail: doesn't retain the recognizer, so it
         // is possible for |iRecognizer| to outlive |recognizer| and end up with
