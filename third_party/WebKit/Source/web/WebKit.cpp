@@ -40,7 +40,6 @@
 #include "gin/public/v8_platform.h"
 #include "modules/ModulesInitializer.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/Logging.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
@@ -157,15 +156,6 @@ void setAlwaysUseComplexTextForTest(bool value)
 bool alwaysUseComplexTextForTest()
 {
     return LayoutTestSupport::alwaysUseComplexTextForTest();
-}
-
-void enableLogChannel(const char* name)
-{
-#if !LOG_DISABLED
-    WTFLogChannel* channel = getChannelFromName(name);
-    if (channel)
-        channel->state = WTFLogChannelOn;
-#endif // !LOG_DISABLED
 }
 
 void resetPluginCache(bool reloadPages)

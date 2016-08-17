@@ -68,8 +68,6 @@
       'LifecycleObserver.h',
       'LinkHash.cpp',
       'LinkHash.h',
-      'Logging.cpp',
-      'Logging.h',
       'MIMETypeFromURL.cpp',
       'MIMETypeFromURL.h',
       'MIMETypeRegistry.cpp',

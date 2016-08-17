@@ -4,7 +4,6 @@
 
 #include "platform/fonts/ScriptRunIterator.h"
 
-#include "platform/Logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Assertions.h"
 #include "wtf/Threading.h"

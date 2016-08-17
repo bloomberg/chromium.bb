@@ -34,21 +34,6 @@ namespace content {
 
 namespace {
 
-void EnableBlinkPlatformLogChannels(const std::string& channels) {
-  if (channels.empty())
-    return;
-  base::StringTokenizer t(channels, ", ");
-  while (t.GetNext())
-    blink::enableLogChannel(t.token().c_str());
-}
-
-void ParseBlinkCommandLineArgumentsForUnitTests() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  EnableBlinkPlatformLogChannels(
-      command_line.GetSwitchValueASCII(switches::kBlinkPlatformLogChannels));
-}
-
 class TestEnvironment {
  public:
 #if defined(OS_ANDROID)
@@ -88,8 +73,6 @@ TestEnvironment* test_environment;
 }  // namespace
 
 void SetUpBlinkTestEnvironment() {
-  ParseBlinkCommandLineArgumentsForUnitTests();
-
   blink::WebRuntimeFeatures::enableExperimentalFeatures(true);
   blink::WebRuntimeFeatures::enableTestOnlyFeatures(true);
 

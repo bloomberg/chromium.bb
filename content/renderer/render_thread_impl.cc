@@ -26,7 +26,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_tokenizer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/simple_thread.h"
@@ -322,14 +321,6 @@ std::unique_ptr<cc::SharedBitmap> AllocateSharedBitmapFunction(
     const gfx::Size& size) {
   return ChildThreadImpl::current()->shared_bitmap_manager()->
       AllocateSharedBitmap(size);
-}
-
-void EnableBlinkPlatformLogChannels(const std::string& channels) {
-  if (channels.empty())
-    return;
-  base::StringTokenizer t(channels, ", ");
-  while (t.GetNext())
-    blink::enableLogChannel(t.token().c_str());
 }
 
 void NotifyTimezoneChangeOnThisThread() {
@@ -1246,9 +1237,6 @@ void RenderThreadImpl::InitializeWebKit(
   AddFilter(compositor_message_filter_.get());
 
   RenderThreadImpl::RegisterSchemes();
-
-  EnableBlinkPlatformLogChannels(
-      command_line.GetSwitchValueASCII(switches::kBlinkPlatformLogChannels));
 
   RenderMediaClient::Initialize();
 

@@ -220,8 +220,6 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // GPU shader disk cache disabling is largely to conserve disk space.
   { switches::kDisableGpuShaderDiskCache, "" },
 #endif
-  // Always enable HTMLMediaElement logs.
-  { switches::kBlinkPlatformLogChannels, "Media"},
 #if BUILDFLAG(DISABLE_DISPLAY)
   { switches::kDisableGpu, "" },
 #endif

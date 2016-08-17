@@ -17,8 +17,8 @@ declare_args() {
   # size of the binary and increasing the speed of gdb.
   remove_webcore_debug_symbols = false
 
-  # If true, enables blink logging macros (WTF_LOG and friends) unconditionally.
-  # When false, blink logging macros are enabled only if assertions are enabled.
+  # If true, enables WTF::ScopedLogger unconditionally.
+  # When false, WTF::ScopedLogger is enabled only if assertions are enabled.
   blink_logging_always_on = false
 
   # If true, defaults image interpolation to low quality.

@@ -50,10 +50,6 @@ const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 // This is used in blimp to emulate android fonts on linux.
 const char kAndroidFontsPath[]          = "android-fonts-path";
 
-// Choose which logging channels in blink platform to activate.  See
-// Logging.cpp in blink's Source/platform for a list of available channels.
-const char kBlinkPlatformLogChannels[]      = "blink-platform-log-channels";
-
 // Set blink settings. Format is <name>[=<value],<name>[=<value>],...
 // The names are declared in Settings.in. For boolean type, use "true", "false",
 // or omit '=<value>' part to set to true. For enum type, use the int value of

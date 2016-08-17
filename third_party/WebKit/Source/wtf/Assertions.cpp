@@ -338,17 +338,6 @@ void WTFPrintBacktrace(void** stack, int size)
     }
 }
 
-void WTFLog(WTFLogChannel* channel, const char* format, ...)
-{
-    if (channel->state != WTFLogChannelOn)
-        return;
-
-    va_list args;
-    va_start(args, format);
-    vprintf_stderr_with_trailing_newline(format, args);
-    va_end(args);
-}
-
 void WTFLogAlways(const char* format, ...)
 {
     va_list args;

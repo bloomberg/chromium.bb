@@ -79,14 +79,7 @@
 
 /* These helper functions are always declared, but not necessarily always defined if the corresponding function is disabled. */
 
-typedef enum { WTFLogChannelOff, WTFLogChannelOn } WTFLogChannelState;
-
-typedef struct {
-    WTFLogChannelState state;
-} WTFLogChannel;
-
 WTF_EXPORT void WTFReportAssertionFailure(const char* file, int line, const char* function, const char* assertion);
-WTF_EXPORT void WTFLog(WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
 WTF_EXPORT void WTFLogAlways(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
 
 WTF_EXPORT void WTFGetBacktrace(void** stack, int* size);
@@ -268,17 +261,6 @@ private:
 #else
 #define SECURITY_DCHECK(condition) ((void)0)
 #define SECURITY_CHECK(condition) CHECK(condition)
-#endif
-
-// WTF_LOG
-// This is deprecated.  Should be replaced with DVLOG(verboselevel), which works
-// only in debug build, or VLOG(verboselevel), which works in release build too.
-#if LOG_DISABLED
-#define WTF_LOG(channel, ...) ((void)0)
-#else
-#define WTF_LOG(channel, ...) WTFLog(&JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
-#define JOIN_LOG_CHANNEL_WITH_PREFIX(prefix, channel) JOIN_LOG_CHANNEL_WITH_PREFIX_LEVEL_2(prefix, channel)
-#define JOIN_LOG_CHANNEL_WITH_PREFIX_LEVEL_2(prefix, channel) prefix ## channel
 #endif
 
 /* RELEASE_ASSERT
