@@ -34,10 +34,18 @@
 // Available key systems.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
+
+// Variants of External Clear Key key system to test different scenarios.
+// To add a new variant, make sure you also update:
+// - media/test/data/eme_player_js/globals.js
+// - AddExternalClearKey() in chrome_key_systems.cc
+// - CreateCdmInstance() in clear_key_cdm.cc
 const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyInitializeFailKeySystem[] =
     "org.chromium.externalclearkey.initializefail";
+const char kExternalClearKeyOutputProtectionTestKeySystem[] =
+    "org.chromium.externalclearkey.outputprotectiontest";
 const char kExternalClearKeyCrashKeySystem[] =
     "org.chromium.externalclearkey.crash";
 
@@ -57,7 +65,7 @@ const char kLoadableSession[] = "LoadableSession";
 const char kUnknownSession[] = "UnknownSession";
 
 // EME-specific test results and errors.
-const char kFileIOTestSuccess[] = "FILE_IO_TEST_SUCCESS";
+const char kUnitTestSuccess[] = "UNIT_TEST_SUCCESS";
 const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
 const char kEmeGenerateRequestFailed[] = "EME_GENERATEREQUEST_FAILED";
 const char kEmeSessionNotFound[] = "EME_SESSION_NOT_FOUND";
@@ -625,8 +633,14 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMExpectedCrash) {
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {
-  TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem,
-                       kFileIOTestSuccess);
+  TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem, kUnitTestSuccess);
+}
+
+// TODO(xhwang): Investigate how to fake capturing activities to test the
+// network link detection logic in OutputProtectionProxy.
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, OutputProtectionTest) {
+  TestNonPlaybackCases(kExternalClearKeyOutputProtectionTestKeySystem,
+                       kUnitTestSuccess);
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {

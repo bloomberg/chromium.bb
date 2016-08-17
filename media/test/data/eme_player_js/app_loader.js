@@ -18,5 +18,5 @@ addScriptTag('media_source_utils.js');
 addScriptTag('player_utils.js');
 addScriptTag('clearkey_player.js');
 addScriptTag('widevine_player.js');
-addScriptTag('file_io_test_player.js');
+addScriptTag('unit_test_player.js');
 addScriptTag('eme_app.js');

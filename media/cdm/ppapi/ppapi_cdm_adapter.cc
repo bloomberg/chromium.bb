@@ -320,14 +320,14 @@ namespace media {
 PpapiCdmAdapter::PpapiCdmAdapter(PP_Instance instance, pp::Module* module)
     : pp::Instance(instance),
       pp::ContentDecryptor_Private(this),
-#if defined(OS_CHROMEOS)
       output_protection_(this),
-      platform_verification_(this),
       output_link_mask_(0),
       output_protection_mask_(0),
       query_output_protection_in_progress_(false),
       uma_for_output_protection_query_reported_(false),
       uma_for_output_protection_positive_result_reported_(false),
+#if defined(OS_CHROMEOS)
+      platform_verification_(this),
 #endif
       allocator_(this),
       cdm_(NULL),
@@ -1069,7 +1069,6 @@ void PpapiCdmAdapter::SendPlatformChallenge(const char* service_id,
 }
 
 void PpapiCdmAdapter::EnableOutputProtection(uint32_t desired_protection_mask) {
-#if defined(OS_CHROMEOS)
   int32_t result = output_protection_.EnableProtection(
       desired_protection_mask,
       callback_factory_.NewCallback(&PpapiCdmAdapter::EnableProtectionDone));
@@ -1079,11 +1078,9 @@ void PpapiCdmAdapter::EnableOutputProtection(uint32_t desired_protection_mask) {
 
   if (result != PP_OK && result != PP_OK_COMPLETIONPENDING)
     CDM_DLOG() << __FUNCTION__ << " failed!";
-#endif
 }
 
 void PpapiCdmAdapter::QueryOutputProtectionStatus() {
-#if defined(OS_CHROMEOS)
   PP_DCHECK(!query_output_protection_in_progress_);
 
   output_link_mask_ = output_protection_mask_ = 0;
@@ -1100,8 +1097,6 @@ void PpapiCdmAdapter::QueryOutputProtectionStatus() {
   // Fall through on error and issue an empty OnQueryOutputProtectionStatus().
   PP_DCHECK(result != PP_OK);
   CDM_DLOG() << __FUNCTION__ << " failed, result = " << result;
-#endif
-  cdm_->OnQueryOutputProtectionStatus(cdm::kQueryFailed, 0, 0);
 }
 
 void PpapiCdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
@@ -1139,7 +1134,6 @@ cdm::FileIO* PpapiCdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
       callback_factory_.NewCallback(&PpapiCdmAdapter::OnFirstFileRead));
 }
 
-#if defined(OS_CHROMEOS)
 void PpapiCdmAdapter::ReportOutputProtectionUMA(OutputProtectionStatus status) {
   pp::UMAPrivate uma_interface(this);
   uma_interface.HistogramEnumeration("Media.EME.OutputProtection", status,
@@ -1169,9 +1163,10 @@ void PpapiCdmAdapter::ReportOutputProtectionQueryResult() {
 
   const uint32_t kProtectableLinks =
       cdm::kLinkTypeHDMI | cdm::kLinkTypeDVI | cdm::kLinkTypeDisplayPort;
-  bool is_unprotectable_link_connected = external_links & ~kProtectableLinks;
+  bool is_unprotectable_link_connected =
+      (external_links & ~kProtectableLinks) != 0;
   bool is_hdcp_enabled_on_all_protectable_links =
-      output_protection_mask_ & cdm::kProtectionHDCP;
+      (output_protection_mask_ & cdm::kProtectionHDCP) != 0;
 
   if (!is_unprotectable_link_connected &&
       is_hdcp_enabled_on_all_protectable_links) {
@@ -1185,6 +1180,7 @@ void PpapiCdmAdapter::ReportOutputProtectionQueryResult() {
   // queries and success results.
 }
 
+#if defined(OS_CHROMEOS)
 void PpapiCdmAdapter::SendPlatformChallengeDone(
     int32_t result,
     const linked_ptr<PepperPlatformChallengeResponse>& response) {
@@ -1212,6 +1208,7 @@ void PpapiCdmAdapter::SendPlatformChallengeDone(
   signed_data_var.Unmap();
   signed_data_signature_var.Unmap();
 }
+#endif
 
 void PpapiCdmAdapter::EnableProtectionDone(int32_t result) {
   // Does nothing since clients must call QueryOutputProtectionStatus() to
@@ -1237,7 +1234,6 @@ void PpapiCdmAdapter::QueryOutputProtectionStatusDone(int32_t result) {
   cdm_->OnQueryOutputProtectionStatus(query_result, output_link_mask_,
                                       output_protection_mask_);
 }
-#endif
 
 PpapiCdmAdapter::SessionError::SessionError(
     cdm::Error error,

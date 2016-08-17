@@ -58,10 +58,14 @@ static bool g_ffmpeg_lib_initialized = InitializeFFmpegLibraries();
 
 const char kClearKeyCdmVersion[] = "0.1.0.1";
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
+
+// Variants of External Clear Key key system to test different scenarios.
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
 const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
+const char kExternalClearKeyOutputProtectionTestKeySystem[] =
+    "org.chromium.externalclearkey.outputprotectiontest";
 const char kExternalClearKeyCrashKeySystem[] =
     "org.chromium.externalclearkey.crash";
 
@@ -82,8 +86,10 @@ const int64_t kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
 // |kRenewalHeader|, it's a renewal message. Otherwise, it's a key request.
 // FIXME(jrummell): Remove this once prefixed EME goes away.
 const char kRenewalHeader[] = "RENEWAL";
-// CDM file IO test result header.
-const char kFileIOTestResultHeader[] = "FILEIOTESTRESULT";
+
+// CDM unit test result header. Must be in sync with UNIT_TEST_RESULT_HEADER in
+// media/test/data/eme_player_js/globals.js.
+const char kUnitTestResultHeader[] = "UNIT_TEST_RESULT";
 
 // Copies |input_buffer| into a media::DecoderBuffer. If the |input_buffer| is
 // empty, an empty (end-of-stream) media::DecoderBuffer is returned.
@@ -119,8 +125,8 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
   return output_buffer;
 }
 
-static std::string GetFileIOTestResultMessage(bool success) {
-  std::string message(kFileIOTestResultHeader);
+static std::string GetUnitTestResultMessage(bool success) {
+  std::string message(kUnitTestResultHeader);
   message += success ? '1' : '0';
   return message;
 }
@@ -232,6 +238,7 @@ void* CreateCdmInstance(int cdm_interface_version,
   if (key_system_string != kExternalClearKeyKeySystem &&
       key_system_string != kExternalClearKeyDecryptOnlyKeySystem &&
       key_system_string != kExternalClearKeyFileIOTestKeySystem &&
+      key_system_string != kExternalClearKeyOutputProtectionTestKeySystem &&
       key_system_string != kExternalClearKeyCrashKeySystem) {
     DVLOG(1) << "Unsupported key system:" << key_system_string;
     return NULL;
@@ -269,7 +276,8 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host,
       key_system_(key_system),
       has_received_keys_change_event_for_emulated_loadsession_(false),
       timer_delay_ms_(kInitialTimerDelayMs),
-      renewal_timer_set_(false) {
+      renewal_timer_set_(false),
+      is_running_output_protection_test_(false) {
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   channel_count_ = 0;
   bits_per_channel_ = 0;
@@ -306,8 +314,11 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
       std::vector<uint8_t>(init_data, init_data + init_data_size),
       std::move(promise));
 
-  if (key_system_ == kExternalClearKeyFileIOTestKeySystem)
+  if (key_system_ == kExternalClearKeyFileIOTestKeySystem) {
     StartFileIOTest();
+  } else if (key_system_ == kExternalClearKeyOutputProtectionTestKeySystem) {
+    StartOutputProtectionTest();
+  }
 }
 
 // Loads a emulated stored session. Currently only |kLoadableSessionId|
@@ -694,7 +705,25 @@ void ClearKeyCdm::OnQueryOutputProtectionStatus(
     cdm::QueryResult result,
     uint32_t link_mask,
     uint32_t output_protection_mask) {
-  NOTIMPLEMENTED();
+  if (!is_running_output_protection_test_) {
+    NOTREACHED() << "OnQueryOutputProtectionStatus() called unexpectedly.";
+    return;
+  }
+
+  is_running_output_protection_test_ = false;
+
+// On Chrome OS, status query will fail on Linux Chrome OS build. So we ignore
+// the query result. On all other platforms, status query should succeed.
+// TODO(xhwang): Improve the check on Chrome OS builds. For example, use
+// base::SysInfo::IsRunningOnChromeOS() to differentiate between real Chrome OS
+// build and Linux Chrome OS build.
+#if !defined(OS_CHROMEOS)
+  if (result != cdm::kQuerySucceeded || link_mask != 0) {
+    OnUnitTestComplete(false);
+    return;
+  }
+#endif
+  OnUnitTestComplete(true);
 };
 
 void ClearKeyCdm::LoadLoadableSession() {
@@ -903,6 +932,13 @@ cdm::Status ClearKeyCdm::GenerateFakeAudioFrames(
 }
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
+void ClearKeyCdm::OnUnitTestComplete(bool success) {
+  std::string message = GetUnitTestResultMessage(success);
+  host_->OnSessionMessage(last_session_id_.data(), last_session_id_.length(),
+                          cdm::kLicenseRequest, message.data(),
+                          message.length(), NULL, 0);
+}
+
 void ClearKeyCdm::StartFileIOTest() {
   file_io_test_runner_.reset(new FileIOTestRunner(
       base::Bind(&ClearKeyCdmHost::CreateFileIO, base::Unretained(host_))));
@@ -912,11 +948,13 @@ void ClearKeyCdm::StartFileIOTest() {
 
 void ClearKeyCdm::OnFileIOTestComplete(bool success) {
   DVLOG(1) << __FUNCTION__ << ": " << success;
-  std::string message = GetFileIOTestResultMessage(success);
-  host_->OnSessionMessage(last_session_id_.data(), last_session_id_.length(),
-                          cdm::kLicenseRequest, message.data(),
-                          message.length(), NULL, 0);
+  OnUnitTestComplete(success);
   file_io_test_runner_.reset();
+}
+
+void ClearKeyCdm::StartOutputProtectionTest() {
+  is_running_output_protection_test_ = true;
+  host_->QueryOutputProtectionStatus();
 }
 
 }  // namespace media
