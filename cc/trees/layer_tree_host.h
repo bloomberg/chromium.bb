@@ -128,7 +128,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   virtual ~LayerTreeHost();
 
-  // LayerTreeHost interface to Proxy.
+  // LayerTreeHost interface to Proxy
   void WillBeginMainFrame();
   void DidBeginMainFrame();
   void BeginMainFrame(const BeginFrameArgs& args);
@@ -151,14 +151,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   bool UpdateLayers();
+  // Called when the compositor completed page scale animation.
+  void DidCompletePageScaleAnimation();
 
   LayerListIterator<Layer> begin() const;
   LayerListIterator<Layer> end() const;
   LayerListReverseIterator<Layer> rbegin();
   LayerListReverseIterator<Layer> rend();
-
-  // Called when the compositor completed page scale animation.
-  void DidCompletePageScaleAnimation();
 
   LayerTreeHostClient* client() { return client_; }
   const base::WeakPtr<InputHandler>& GetInputHandler() {
@@ -191,9 +190,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetNeedsAnimate();
   virtual void SetNeedsUpdateLayers();
   virtual void SetNeedsCommit();
-  virtual void SetNeedsFullTreeSync();
-  virtual void SetNeedsMetaInfoRecomputation(
-      bool needs_meta_info_recomputation);
   void SetNeedsRedraw();
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
   bool CommitRequested() const;
@@ -205,38 +201,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
 
-  void SetRootLayer(scoped_refptr<Layer> root_layer);
-  Layer* root_layer() { return root_layer_.get(); }
-  const Layer* root_layer() const { return root_layer_.get(); }
-  const Layer* overscroll_elasticity_layer() const {
-    return overscroll_elasticity_layer_.get();
-  }
-  const Layer* page_scale_layer() const { return page_scale_layer_.get(); }
-  void RegisterViewportLayers(scoped_refptr<Layer> overscroll_elasticity_layer,
-                              scoped_refptr<Layer> page_scale_layer,
-                              scoped_refptr<Layer> inner_viewport_scroll_layer,
-                              scoped_refptr<Layer> outer_viewport_scroll_layer);
-  Layer* inner_viewport_scroll_layer() const {
-    return inner_viewport_scroll_layer_.get();
-  }
-  Layer* outer_viewport_scroll_layer() const {
-    return outer_viewport_scroll_layer_.get();
-  }
-
-  void RegisterSelection(const LayerSelection& selection);
-
-  bool have_scroll_event_handlers() const {
-    return have_scroll_event_handlers_;
-  }
-  void SetHaveScrollEventHandlers(bool have_event_handlers);
-
-  void SetEventListenerProperties(EventListenerClass event_class,
-                                  EventListenerProperties event_properties);
-  EventListenerProperties event_listener_properties(
-      EventListenerClass event_class) const {
-    return event_listener_properties_[static_cast<size_t>(event_class)];
-  }
-
   const LayerTreeSettings& settings() const { return settings_; }
 
   void SetDebugState(const LayerTreeDebugState& debug_state);
@@ -247,48 +211,16 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   }
   void SetHasGpuRasterizationTrigger(bool has_trigger);
 
-  void SetViewportSize(const gfx::Size& device_viewport_size);
-  void SetTopControlsHeight(float height, bool shrink);
-  void SetTopControlsShownRatio(float ratio);
-
-  gfx::Size device_viewport_size() const { return device_viewport_size_; }
-
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
-  void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                   float min_page_scale_factor,
-                                   float max_page_scale_factor);
-  float page_scale_factor() const { return page_scale_factor_; }
-  gfx::Vector2dF elastic_overscroll() const { return elastic_overscroll_; }
-
-  SkColor background_color() const { return background_color_; }
-  void set_background_color(SkColor color) { background_color_ = color; }
-
-  void set_has_transparent_background(bool transparent) {
-    has_transparent_background_ = transparent;
-  }
 
   void SetVisible(bool visible);
   bool visible() const { return visible_; }
 
-  void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
-                               bool use_anchor,
-                               float scale,
-                               base::TimeDelta duration);
-  bool HasPendingPageScaleAnimation() const;
-
   void ApplyScrollAndScale(ScrollAndScaleSet* info);
-  void SetImplTransform(const gfx::Transform& transform);
-
-  void SetDeviceScaleFactor(float device_scale_factor);
-  void SetPaintedDeviceScaleFactor(float painted_device_scale_factor);
-
-  float device_scale_factor() const { return device_scale_factor_; }
 
   void UpdateTopControlsState(TopControlsState constraints,
                               TopControlsState current,
                               bool animate);
-
-  HeadsUpDisplayLayer* hud_layer() const { return hud_layer_.get(); }
 
   Proxy* proxy() const { return proxy_.get(); }
   TaskRunnerProvider* task_runner_provider() const {
@@ -340,11 +272,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void set_surface_client_id(uint32_t client_id);
   SurfaceSequence CreateSurfaceSequence();
-
-  PropertyTrees* property_trees() { return &property_trees_; }
-  bool needs_meta_info_recomputation() {
-    return needs_meta_info_recomputation_;
-  }
 
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
 
@@ -422,11 +349,18 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return client_picture_cache_ ? client_picture_cache_.get() : nullptr;
   }
 
-  LayerTree* GetLayerTree() { return &layer_tree_; }
-  const LayerTree* GetLayerTree() const { return &layer_tree_; }
+  LayerTree* GetLayerTree() { return layer_tree_.get(); }
+  const LayerTree* GetLayerTree() const { return layer_tree_.get(); }
+
+  void ResetGpuRasterizationTracking();
 
  protected:
+  // Allow tests to inject the LayerTree.
+  LayerTreeHost(InitParams* params,
+                CompositorMode mode,
+                std::unique_ptr<LayerTree> layer_tree);
   LayerTreeHost(InitParams* params, CompositorMode mode);
+
   void InitializeThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
@@ -464,11 +398,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   }
   TaskGraphRunner* task_graph_runner() const { return task_graph_runner_; }
 
-  MicroBenchmarkController micro_benchmark_controller_;
-
   void OnCommitForSwapPromises();
 
   void RecordGpuRasterizationHistogram();
+
+  MicroBenchmarkController micro_benchmark_controller_;
+
+  std::unique_ptr<LayerTree> layer_tree_;
 
  private:
   friend class LayerTreeHostSerializationTest;
@@ -508,9 +444,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   const CompositorMode compositor_mode_;
 
-  bool needs_full_tree_sync_;
-  bool needs_meta_info_recomputation_;
-
   LayerTreeHostClient* client_;
   std::unique_ptr<Proxy> proxy_;
   std::unique_ptr<TaskRunnerProvider> task_runner_provider_;
@@ -528,39 +461,18 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   std::unique_ptr<OutputSurface> current_output_surface_;
   bool output_surface_lost_;
 
-  scoped_refptr<Layer> root_layer_;
-  scoped_refptr<HeadsUpDisplayLayer> hud_layer_;
-
   base::WeakPtr<InputHandler> input_handler_weak_ptr_;
 
   const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;
 
-  gfx::Size device_viewport_size_;
-  bool top_controls_shrink_blink_size_;
-  float top_controls_height_;
-  float top_controls_shown_ratio_;
-  float device_scale_factor_;
-  float painted_device_scale_factor_;
-
   bool visible_;
 
-  float page_scale_factor_;
-  float min_page_scale_factor_;
-  float max_page_scale_factor_;
-  gfx::Vector2dF elastic_overscroll_;
   bool has_gpu_rasterization_trigger_;
   bool content_is_suitable_for_gpu_rasterization_;
   bool gpu_rasterization_histogram_recorded_;
 
-  SkColor background_color_;
-  bool has_transparent_background_;
-
-  bool have_scroll_event_handlers_;
-  EventListenerProperties event_listener_properties_[static_cast<size_t>(
-      EventListenerClass::kNumClasses)];
-
-  std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
+  gfx::Vector2dF elastic_overscroll_;
 
   // If set, then page scale animation has completed, but the client hasn't been
   // notified about it yet.
@@ -568,13 +480,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   int id_;
   bool next_commit_forces_redraw_;
-
-  scoped_refptr<Layer> overscroll_elasticity_layer_;
-  scoped_refptr<Layer> page_scale_layer_;
-  scoped_refptr<Layer> inner_viewport_scroll_layer_;
-  scoped_refptr<Layer> outer_viewport_scroll_layer_;
-
-  LayerSelection selection_;
 
   SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
@@ -587,17 +492,12 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   std::vector<std::unique_ptr<SwapPromise>> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
 
-  PropertyTrees property_trees_;
-
   using ElementLayersMap = std::unordered_map<ElementId, Layer*, ElementIdHash>;
   ElementLayersMap element_layers_map_;
 
   uint32_t surface_client_id_;
   uint32_t next_surface_sequence_;
   uint32_t num_consecutive_frames_suitable_for_gpu_ = 0;
-
-  // Layer tree that hold layers.
-  LayerTree layer_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

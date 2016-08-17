@@ -34,7 +34,7 @@ class CC_EXPORT LayerProtoConverter {
   static scoped_refptr<Layer> DeserializeLayerHierarchy(
       const scoped_refptr<Layer> existing_root,
       const proto::LayerNode& root_node,
-      LayerTreeHost* layer_tree_host);
+      LayerTreeHost* layer_tree);
 
   // Serializes the properties of all the dirty nodes in the Layer hierarchy.
   // The proto::LayerUpdate will contain all nodes that are dirty. These nodes

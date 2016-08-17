@@ -63,7 +63,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   scoped_refptr<RasterSource> raster_source =
       recording_source_->CreateRasterSource(can_use_lcd_text);
   layer_impl->set_gpu_raster_max_texture_size(
-      layer_tree_host()->device_viewport_size());
+      GetLayerTree()->device_viewport_size());
   layer_impl->UpdateRasterSource(raster_source, &last_updated_invalidation_,
                                  nullptr);
   DCHECK(last_updated_invalidation_.IsEmpty());
