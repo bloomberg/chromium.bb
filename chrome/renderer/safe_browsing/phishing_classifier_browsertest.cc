@@ -345,7 +345,8 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest,
 }
 
 // Test flakes with LSAN enabled. See http://crbug.com/373155.
-#if defined(LEAK_SANITIZER)
+// Flaky on Linux. See http://crbug.com/638557.
+#if defined(LEAK_SANITIZER) || defined(OS_LINUX)
 #define MAYBE_DisableDetection DISABLED_DisableDetection
 #else
 #define MAYBE_DisableDetection DisableDetection
