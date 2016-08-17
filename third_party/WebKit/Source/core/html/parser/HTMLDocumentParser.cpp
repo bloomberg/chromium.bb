@@ -113,7 +113,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document, ParserContentPolicy c
     , m_reentryPermit(HTMLParserReentryPermit::create())
     , m_token(syncPolicy == ForceSynchronousParsing ? wrapUnique(new HTMLToken) : nullptr)
     , m_tokenizer(syncPolicy == ForceSynchronousParsing ? HTMLTokenizer::create(m_options) : nullptr)
-    , m_loadingTaskRunner(TaskRunnerHelper::getLoadingTaskRunner(&document)->clone())
+    , m_loadingTaskRunner(TaskRunnerHelper::get(TaskType::Networking, &document)->clone())
     , m_parserScheduler(syncPolicy == AllowAsynchronousParsing ? HTMLParserScheduler::create(this, m_loadingTaskRunner.get()) : nullptr)
     , m_xssAuditorDelegate(&document)
     , m_weakFactory(this)
