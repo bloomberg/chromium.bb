@@ -6,15 +6,15 @@
 
 function test()
 {
-    var nodes = 1000;
-    function buildTree(count)
+    var nodesCount = 1000;
+    function buildTree(startId, count)
     {
         // Build a call tree of a chain form: foo1 -> foo2 -> foo3 -> ...
         // This should give a O(n^2) nodes in bottom-up tree.
-        var node = null;
-        for (var i = count; i > 0; --i) {
-            var child = node;
-            node = {
+        var nodes = [];
+        for (var i = 1; i <= count; ++i) {
+            nodes.push({
+                "id": startId + i - 1,
                 "callFrame":
                 {
                     "functionName": "foo" + i,
@@ -23,13 +23,10 @@ function test()
                     "lineNumber": i
                 },
                 "hitCount": 10,
-                "callUID": 10000 + i,
-                "children": []
-            };
-            if (child)
-                node.children.push(child);
+                "children": i < count ? [startId + i] : []
+            });
         }
-        return node;
+        return nodes;
     }
     var profileAndExpectations = {
         "title": "profile1",
@@ -37,18 +34,21 @@ function test()
             return WebInspector.targetManager.targets()[0];
         },
         "_profile": {
-            "head": {
-                "callFrame":
+            "nodes": [
                 {
-                    "functionName": "(root)",
-                    "scriptId": "0",
-                    "url": "a.js",
-                    "lineNumber": 0,
+                    "id": 0,
+                    "callFrame":
+                    {
+                        "functionName": "(root)",
+                        "scriptId": "0",
+                        "url": "a.js",
+                        "lineNumber": 0,
+                    },
+                    "hitCount": 1,
+                    "children": [1,2]
                 },
-                "hitCount": 1,
-                "callUID": 1000,
-                "children": [
                 {
+                    "id": 1,
                     "callFrame":
                     {
                         "functionName": "(idle)",
@@ -57,15 +57,12 @@ function test()
                         "lineNumber": 1
                     },
                     "hitCount": 2,
-                    "callUID": 2,
                     "children": []
-                },
-                buildTree(nodes)
-                ]
-            },
+                }
+            ].concat(buildTree(2, nodesCount)),
             "idleTime": 0.002,
             "startTime": 0,
-            "endTime": nodes * 0.01 + 0.003
+            "endTime": nodesCount * 0.01 + 0.003
         }
     };
     var view = new WebInspector.CPUProfileView(profileAndExpectations);

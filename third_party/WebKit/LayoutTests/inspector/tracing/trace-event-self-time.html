@@ -262,24 +262,28 @@ function test()
     var cpuProfile = {
         startTime: 420,
         endTime: 430,
-        head: {
-            callFrame: { functionName: "(root)" },
-            id: 1,
-            children: [{
+        nodes: [
+            {
+                callFrame: { functionName: "(root)" },
+                id: 1,
+                children: [2]
+            },
+            {
                 callFrame: { functionName: "foo" },
                 id: 2,
-                children: [{
-                    callFrame: { functionName: "bar" },
-                    id: 3,
-                    children: []
-                },
-                {
-                    callFrame: { functionName: "baz" },
-                    id: 4,
-                    children: []
-                }]
-            }]
-        },
+                children: [3, 4]
+            },
+            {
+                callFrame: { functionName: "bar" },
+                id: 3,
+                children: []
+            },
+            {
+                callFrame: { functionName: "baz" },
+                id: 4,
+                children: []
+            }
+        ],
         timestamps: [421000, 422000, 423000, 424000, 425000, 426000, 427000, 428000, 429000],
         samples: [2, 2, 3, 3, 3, 4, 4, 2, 2 ]
     };

@@ -12,18 +12,21 @@ function test()
           return WebInspector.targetManager.targets()[0];
         },
         "_profile": {
-            "head": {
-                "callFrame":
+            "nodes": [
                 {
-                    "functionName": "(root)",
-                    "scriptId": "0",
-                    "url": "a.js",
-                    "lineNumber": 0
+                    "id": 0,
+                    "callFrame":
+                    {
+                        "functionName": "(root)",
+                        "scriptId": "0",
+                        "url": "a.js",
+                        "lineNumber": 0
+                    },
+                    "hitCount": 350,
+                    "children": [1, 2, 5]
                 },
-                "hitCount": 350,
-                "callUID": 1000,
-                "children": [
                 {
+                    "id": 1,
                     "callFrame":
                     {
                         "functionName": "(idle)",
@@ -32,10 +35,10 @@ function test()
                         "lineNumber": 1
                     },
                     "hitCount": 1000,
-                    "callUID": 2,
                     "children": []
                 },
                 {
+                    "id": 2,
                     "callFrame":
                     {
                         "functionName": "A",
@@ -44,36 +47,34 @@ function test()
                         "lineNumber": 4642
                     },
                     "hitCount": 250,
-                    "callUID": 1001,
-                    "children": [
-                    {
-                        "callFrame":
-                        {
-                            "functionName": "C",
-                            "scriptId": "0",
-                            "url": "a.js",
-                            "lineNumber": 525
-                        },
-                        "hitCount": 100,
-                        "callUID": 2000,
-                        "children": [
-                        {
-                            "callFrame":
-                            {
-                                "functionName": "D",
-                                "scriptId": "0",
-                                "url": "a.js",
-                                "lineNumber": 425
-                            },
-                            "hitCount": 20,
-                            "callUID": 3000,
-                            "children": []
-                        }
-                        ]
-                    }
-                    ]
+                    "children": [3]
                 },
                 {
+                    "id": 3,
+                    "callFrame":
+                    {
+                        "functionName": "C",
+                        "scriptId": "0",
+                        "url": "a.js",
+                        "lineNumber": 525
+                    },
+                    "hitCount": 100,
+                    "children": [4]
+                },
+                {
+                    "id": 4,
+                    "callFrame":
+                    {
+                        "functionName": "D",
+                        "scriptId": "0",
+                        "url": "a.js",
+                        "lineNumber": 425
+                    },
+                    "hitCount": 20,
+                    "children": []
+                },
+                {
+                    "id": 5,
                     "callFrame":
                     {
                         "functionName": "B",
@@ -82,37 +83,33 @@ function test()
                         "lineNumber": 4662
                     },
                     "hitCount": 150,
-                    "callUID": 1002,
-                    "children": [
+                    "children": [6]
+                },
+                {
+                    "id": 6,
+                    "callFrame":
                     {
-                        "callFrame":
-                        {
-                            "functionName": "C",
-                            "scriptId": "0",
-                            "url": "a.js",
-                            "lineNumber": 525
-                        },
-                        "hitCount": 100,
-                        "callUID": 2000,
-                        "children": [
-                        {
-                            "callFrame":
-                            {
-                                "functionName": "D",
-                                "scriptId": "0",
-                                "url": "a.js",
-                                "lineNumber": 425
-                            },
-                            "hitCount": 30,
-                            "callUID": 3000,
-                            "children": []
-                        }
-                        ]
-                    }
-                    ]
+                        "functionName": "C",
+                        "scriptId": "0",
+                        "url": "a.js",
+                        "lineNumber": 525
+                    },
+                    "hitCount": 100,
+                    "children": [7]
+                },
+                {
+                    "id": 7,
+                    "callFrame":
+                    {
+                        "functionName": "D",
+                        "scriptId": "0",
+                        "url": "a.js",
+                        "lineNumber": 425
+                    },
+                    "hitCount": 30,
+                    "children": []
                 }
-                ]
-            },
+            ],
             "startTime": 0,
             "endTime": 1.000
         }

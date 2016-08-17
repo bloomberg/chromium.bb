@@ -50,12 +50,10 @@ std::unique_ptr<protocol::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::
 {
     v8::HandleScope handleScope(isolate);
 
-    std::unique_ptr<protocol::Array<protocol::Profiler::CPUProfileNode>> children = protocol::Array<protocol::Profiler::CPUProfileNode>::create();
+    std::unique_ptr<protocol::Array<int>> children = protocol::Array<int>::create();
     const int childrenCount = node->GetChildrenCount();
-    for (int i = 0; i < childrenCount; i++) {
-        const v8::CpuProfileNode* child = node->GetChild(i);
-        children->addItem(buildInspectorObjectFor(isolate, child));
-    }
+    for (int i = 0; i < childrenCount; i++)
+        children->addItem(node->GetChild(i)->GetNodeId());
 
     std::unique_ptr<protocol::Array<protocol::Profiler::PositionTickInfo>> positionTicks = buildInspectorObjectForPositionTicks(node);
 
@@ -94,10 +92,21 @@ std::unique_ptr<protocol::Array<double>> buildInspectorObjectForTimestamps(v8::C
     return array;
 }
 
+void flattenNodesTree(v8::Isolate* isolate, const v8::CpuProfileNode* node, protocol::Array<protocol::Profiler::CPUProfileNode>* list)
+{
+    list->addItem(buildInspectorObjectFor(isolate, node));
+    const int childrenCount = node->GetChildrenCount();
+    for (int i = 0; i < childrenCount; i++)
+        flattenNodesTree(isolate, node->GetChild(i), list);
+}
+
 std::unique_ptr<protocol::Profiler::CPUProfile> createCPUProfile(v8::Isolate* isolate, v8::CpuProfile* v8profile)
 {
+    std::unique_ptr<protocol::Array<protocol::Profiler::CPUProfileNode>> nodes = protocol::Array<protocol::Profiler::CPUProfileNode>::create();
+    flattenNodesTree(isolate, v8profile->GetTopDownRoot(), nodes.get());
+
     std::unique_ptr<protocol::Profiler::CPUProfile> profile = protocol::Profiler::CPUProfile::create()
-        .setHead(buildInspectorObjectFor(isolate, v8profile->GetTopDownRoot()))
+        .setNodes(std::move(nodes))
         .setStartTime(static_cast<double>(v8profile->GetStartTime()) / 1000000)
         .setEndTime(static_cast<double>(v8profile->GetEndTime()) / 1000000).build();
     profile->setSamples(buildInspectorObjectForSamples(v8profile));

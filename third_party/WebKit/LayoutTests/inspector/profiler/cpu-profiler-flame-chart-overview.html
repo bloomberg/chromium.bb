@@ -931,6 +931,7 @@ function test()
     var profile = profileAndExpectations._profile;
     var startTime = profile.startTime * 1000;
     var endTime = profile.endTime * 1000;
+    profile.nodes = flattenNodes(profile.head);
     profile.startTime /= 1000;
     profile.endTime /= 1000;
     var samplingInterval = (endTime - startTime) / (profile.samples.length - 1);
@@ -949,6 +950,14 @@ function test()
     console.log(Object.values(overviewPane._calculateDrawData(2)));
     console.log(Object.values(overviewPane._calculateDrawData(1)));
     InspectorTest.completeTest();
+
+    function flattenNodes(node)
+    {
+        var childrenIds = node.children.map(n => n.id);
+        var result = node.children.reduce((res, n) => res.concat(flattenNodes(n)), [node]);
+        node.children = childrenIds;
+        return result;
+    }
 }
 
 </script>

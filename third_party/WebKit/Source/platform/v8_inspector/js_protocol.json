@@ -777,12 +777,12 @@
                 "type": "object",
                 "description": "CPU Profile node. Holds callsite information, execution statistics and child nodes.",
                 "properties": [
+                    { "name": "id", "type": "integer", "description": "Unique id of the node." },
                     { "name": "callFrame", "$ref": "Runtime.CallFrame", "description": "Function location." },
                     { "name": "hitCount", "type": "integer", "description": "Number of samples where this node was on top of the call stack." },
-                    { "name": "children", "type": "array", "items": { "$ref": "CPUProfileNode" }, "description": "Child nodes." },
-                    { "name": "deoptReason", "type": "string", "description": "The reason of being not optimized. The function may be deoptimized or marked as don't optimize."},
-                    { "name": "id", "type": "integer", "description": "Unique id of the node." },
-                    { "name": "positionTicks", "type": "array", "items": { "$ref": "PositionTickInfo" }, "description": "An array of source position ticks." }
+                    { "name": "children", "type": "array", "items": { "type": "integer" }, "description": "Child node ids." },
+                    { "name": "deoptReason", "type": "string", "experimental": true, "description": "The reason of being not optimized. The function may be deoptimized or marked as don't optimize."},
+                    { "name": "positionTicks", "type": "array", "items": { "$ref": "PositionTickInfo" }, "experimental": true, "description": "An array of source position ticks." }
                 ]
             },
             {
@@ -790,7 +790,7 @@
                 "type": "object",
                 "description": "Profile.",
                 "properties": [
-                    { "name": "head", "$ref": "CPUProfileNode" },
+                    { "name": "nodes", "type": "array", "items": { "$ref": "CPUProfileNode" }, "description": "The list of profile nodes. First item is the root node." },
                     { "name": "startTime", "type": "number", "description": "Profiling start time in seconds." },
                     { "name": "endTime", "type": "number", "description": "Profiling end time in seconds." },
                     { "name": "samples", "optional": true, "type": "array", "items": { "type": "integer" }, "description": "Ids of samples top nodes." },
@@ -800,6 +800,7 @@
             {
                 "id": "PositionTickInfo",
                 "type": "object",
+                "experimental": true,
                 "description": "Specifies a number of samples attributed to a certain source position.",
                 "properties": [
                     { "name": "line", "type": "integer", "description": "Source line number (1-based)." },
@@ -837,7 +838,7 @@
                 "parameters": [
                     { "name": "id", "type": "string" },
                     { "name": "location", "$ref": "Debugger.Location", "description": "Location of console.profile()." },
-                    { "name": "title", "type": "string", "optional": true, "description": "Profile title passed as argument to console.profile()." }
+                    { "name": "title", "type": "string", "optional": true, "description": "Profile title passed as an argument to console.profile()." }
                 ],
                 "description": "Sent when new profile recodring is started using console.profile() call."
             },
@@ -847,7 +848,7 @@
                     { "name": "id", "type": "string" },
                     { "name": "location", "$ref": "Debugger.Location", "description": "Location of console.profileEnd()." },
                     { "name": "profile", "$ref": "CPUProfile" },
-                    { "name": "title", "type": "string", "optional": true, "description": "Profile title passed as argunet to console.profile()." }
+                    { "name": "title", "type": "string", "optional": true, "description": "Profile title passed as an argument to console.profile()." }
                 ]
             }
         ]
