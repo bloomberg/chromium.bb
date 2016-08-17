@@ -44,9 +44,6 @@ crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-re
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
-crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Failure ]
-crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Failure ]
-
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ Failure ]
 
 # Significant Slimming Paint failure.
