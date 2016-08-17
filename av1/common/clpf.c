@@ -12,11 +12,11 @@
 #include "aom_dsp/aom_dsp_common.h"
 
 int av1_clpf_maxbits(const AV1_COMMON *cm) {
-  return get_msb(ALIGN_POWER_OF_TWO(cm->mi_cols * MAX_MIB_SIZE,
-                                    cm->clpf_size + 4) *
-                     ALIGN_POWER_OF_TWO(cm->mi_rows * MAX_MIB_SIZE,
-                                        cm->clpf_size + 4) >>
-                 (cm->clpf_size * 2 + 8)) +
+  return get_msb(
+             ALIGN_POWER_OF_TWO(cm->mi_cols * MAX_MIB_SIZE, cm->clpf_size + 4) *
+                 ALIGN_POWER_OF_TWO(cm->mi_rows * MAX_MIB_SIZE,
+                                    cm->clpf_size + 4) >>
+             (cm->clpf_size * 2 + 8)) +
          1;
 }
 
