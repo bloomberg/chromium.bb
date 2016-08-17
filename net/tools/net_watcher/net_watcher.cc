@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 
 // This is a small utility that watches for and logs network changes.
+// It prints out the current network connection type and proxy configuration
+// upon startup and then prints out changes as they happen.
+// It's useful for testing NetworkChangeNotifier and ProxyConfigService.
+// The only command line option supported is --ignore-netif which is followed
+// by a comma seperated list of network interfaces to ignore when computing
+// connection type; this option is only supported on linux.
 
 #include <memory>
 #include <string>
