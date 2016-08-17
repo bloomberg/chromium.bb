@@ -59,11 +59,8 @@ void RenderCdmFactory::Create(
   }
 
   if (media::CanUseAesDecryptor(key_system)) {
-    // TODO(sandersd): Address this now that prefixed EME has been removed.
-    // http://crbug.com/249976. The prefixed API always allowed distinctive
-    // identifiers and persistent state. Once that changes we can sanity check
-    // here that neither is allowed for AesDecryptor, since it does not support
-    // them and should never be configured that way. http://crbug.com/455271
+    DCHECK(!cdm_config.allow_distinctive_identifier);
+    DCHECK(!cdm_config.allow_persistent_state);
     scoped_refptr<media::MediaKeys> cdm(
         new media::AesDecryptor(security_origin, session_message_cb,
                                 session_closed_cb, session_keys_change_cb));

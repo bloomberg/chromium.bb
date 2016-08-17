@@ -752,9 +752,8 @@ public class MediaDrmBridge {
             return;
         }
 
-        // TODO(xhwang): DCHECK this now that prefixed EME is deprecated.
-        // https://crbug.com/249976
         if (!sessionExists(sessionId)) {
+            assert false; // Should never happen.
             onPromiseRejected(
                     promiseId, "Invalid session in updateSession: " + bytesToHexString(sessionId));
             return;

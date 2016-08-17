@@ -346,9 +346,14 @@ void ClearKeyCdm::LoadSession(uint32_t promise_id,
                      promise_id),
           base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                      promise_id)));
-  decryptor_->CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
-      std::vector<uint8_t>(), std::move(promise));
+  // AesDecryptor does not support loading, so create a temporary session to
+  // represent it in other session-related methods.
+  std::vector<uint8_t> key_id(
+      kLoadableSessionKeyId,
+      kLoadableSessionKeyId + arraysize(kLoadableSessionKeyId) - 1);
+  decryptor_->CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
+                                              EmeInitDataType::WEBM, key_id,
+                                              std::move(promise));
 }
 
 void ClearKeyCdm::UpdateSession(uint32_t promise_id,

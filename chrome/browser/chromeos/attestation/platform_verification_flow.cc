@@ -200,8 +200,14 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     return;
   }
 
-  // Note: The following two checks are also checked in GetPermissionStatus.
-  // Checking them here explicitly to report the correct error type.
+  // Note: The following checks are performed when use of the protected media
+  // identifier is indicated. The first two in GetPermissionStatus and the third
+  // in DecidePermission.
+  // In Chrome, the result of the first and third could have changed in the
+  // interim, but the mode cannot change.
+  // TODO(ddorwin): Share more code for the first two checks with
+  // ProtectedMediaIdentifierPermissionContext::
+  // IsProtectedMediaIdentifierEnabled().
 
   if (!IsAttestationAllowedByPolicy()) {
     VLOG(1) << "Platform verification not allowed by device policy.";
@@ -209,11 +215,8 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     return;
   }
 
-  // TODO(xhwang): Change to DCHECK when prefixed EME support is removed.
-  // See http://crbug.com/249976
   if (!delegate_->IsInSupportedMode(web_contents)) {
-    VLOG(1) << "Platform verification denied because it's not supported in the "
-            << "current mode.";
+    LOG(ERROR) << "Platform verification not supported in the current mode.";
     ReportError(callback, PLATFORM_NOT_VERIFIED);
     return;
   }

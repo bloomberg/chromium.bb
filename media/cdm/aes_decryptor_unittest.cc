@@ -341,19 +341,10 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
     cdm_->CloseSession(session_id, CreatePromise(RESOLVED));
   }
 
-  // Removes the session specified by |session_id|. This should simply do a
-  // CloseSession().
-  // TODO(jrummell): Clean this up when the prefixed API is removed.
-  // http://crbug.com/249976.
+  // Only persistent sessions can be removed.
   void RemoveSession(const std::string& session_id) {
-    if (GetParam() == "AesDecryptor") {
-      EXPECT_CALL(*this, OnSessionClosed(session_id));
-      EXPECT_CALL(*this, OnSessionKeysChangeCalled(session_id, false));
-      cdm_->RemoveSession(session_id, CreatePromise(RESOLVED));
-    } else {
-      // CdmAdapter fails as only persistent sessions can be removed.
-      cdm_->RemoveSession(session_id, CreatePromise(REJECTED));
-    }
+    // TODO(ddorwin): This should be RESOLVED after https://crbug.com/616166.
+    cdm_->RemoveSession(session_id, CreatePromise(REJECTED));
   }
 
   MOCK_METHOD2(OnSessionKeysChangeCalled,
@@ -500,32 +491,59 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
   const std::vector<SubsampleEntry> no_subsample_entries_;
 };
 
-TEST_P(AesDecryptorTest, CreateSessionWithNullInitData) {
-  EXPECT_CALL(*this,
-              OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
+TEST_P(AesDecryptorTest, CreateSessionWithEmptyInitData) {
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
-      std::vector<uint8_t>(), CreateSessionPromise(RESOLVED));
+      std::vector<uint8_t>(), CreateSessionPromise(REJECTED));
+  cdm_->CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
+      std::vector<uint8_t>(), CreateSessionPromise(REJECTED));
+  cdm_->CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::KEYIDS,
+      std::vector<uint8_t>(), CreateSessionPromise(REJECTED));
+}
+
+TEST_P(AesDecryptorTest, CreateSessionWithVariousLengthInitData_WebM) {
+  std::vector<uint8_t> init_data;
+  init_data.resize(1);
+  cdm_->CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      std::vector<uint8_t>(init_data), CreateSessionPromise(RESOLVED));
+
+  init_data.resize(16);  // The expected size.
+  cdm_->CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      std::vector<uint8_t>(init_data), CreateSessionPromise(RESOLVED));
+
+  init_data.resize(512);
+  cdm_->CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      std::vector<uint8_t>(init_data), CreateSessionPromise(RESOLVED));
+
+  init_data.resize(513);
+  cdm_->CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      std::vector<uint8_t>(init_data), CreateSessionPromise(REJECTED));
 }
 
 TEST_P(AesDecryptorTest, MultipleCreateSession) {
-  EXPECT_CALL(*this,
-              OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
+  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsNotEmpty(),
+                                      GURL::EmptyGURL()));
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
-      std::vector<uint8_t>(), CreateSessionPromise(RESOLVED));
+      std::vector<uint8_t>(1), CreateSessionPromise(RESOLVED));
 
-  EXPECT_CALL(*this,
-              OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
+  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsNotEmpty(),
+                                      GURL::EmptyGURL()));
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
-      std::vector<uint8_t>(), CreateSessionPromise(RESOLVED));
+      std::vector<uint8_t>(1), CreateSessionPromise(RESOLVED));
 
-  EXPECT_CALL(*this,
-              OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
+  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsNotEmpty(),
+                                      GURL::EmptyGURL()));
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
-      std::vector<uint8_t>(), CreateSessionPromise(RESOLVED));
+      std::vector<uint8_t>(1), CreateSessionPromise(RESOLVED));
 }
 
 TEST_P(AesDecryptorTest, CreateSessionWithCencInitData) {
@@ -769,8 +787,6 @@ TEST_P(AesDecryptorTest, CloseSession) {
 }
 
 TEST_P(AesDecryptorTest, RemoveSession) {
-  // TODO(jrummell): Clean this up when the prefixed API is removed.
-  // http://crbug.com/249976.
   std::string session_id = CreateSession(key_id_);
   scoped_refptr<DecoderBuffer> encrypted_buffer = CreateEncryptedBuffer(
       encrypted_data_, key_id_, iv_, no_subsample_entries_);
