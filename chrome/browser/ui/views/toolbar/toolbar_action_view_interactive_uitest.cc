@@ -169,8 +169,9 @@ void ToolbarActionViewInteractiveUITest::TearDownOnMainThread() {
   ToolbarActionsBar::disable_animations_for_testing_ = false;
 }
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_WIN)
 // ozone bringup - http://crbug.com/401304
+// flaky on Windows - http://crbug.com/638692
 #define MAYBE_TestClickingOnOverflowedAction DISABLED_TestClickingOnOverflowedAction
 #else
 #define MAYBE_TestClickingOnOverflowedAction TestClickingOnOverflowedAction
