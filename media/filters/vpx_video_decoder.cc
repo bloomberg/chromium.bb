@@ -585,6 +585,59 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   (*video_frame)
       ->metadata()
       ->SetInteger(VideoFrameMetadata::COLOR_SPACE, color_space);
+
+  gfx::ColorSpace::PrimaryID primaries =
+      gfx::ColorSpace::PrimaryID::UNSPECIFIED;
+  gfx::ColorSpace::TransferID transfer =
+      gfx::ColorSpace::TransferID::UNSPECIFIED;
+  gfx::ColorSpace::MatrixID matrix = gfx::ColorSpace::MatrixID::UNSPECIFIED;
+  gfx::ColorSpace::RangeID range = vpx_image->range == VPX_CR_FULL_RANGE
+                                       ? gfx::ColorSpace::RangeID::FULL
+                                       : gfx::ColorSpace::RangeID::LIMITED;
+
+  switch (vpx_image->cs) {
+    case VPX_CS_BT_601:
+    case VPX_CS_SMPTE_170:
+      primaries = gfx::ColorSpace::PrimaryID::SMPTE170M;
+      transfer = gfx::ColorSpace::TransferID::SMPTE170M;
+      matrix = gfx::ColorSpace::MatrixID::SMPTE170M;
+      break;
+    case VPX_CS_SMPTE_240:
+      primaries = gfx::ColorSpace::PrimaryID::SMPTE240M;
+      transfer = gfx::ColorSpace::TransferID::SMPTE240M;
+      matrix = gfx::ColorSpace::MatrixID::SMPTE240M;
+      break;
+    case VPX_CS_BT_709:
+      primaries = gfx::ColorSpace::PrimaryID::BT709;
+      transfer = gfx::ColorSpace::TransferID::BT709;
+      matrix = gfx::ColorSpace::MatrixID::BT709;
+      break;
+    case VPX_CS_BT_2020:
+      primaries = gfx::ColorSpace::PrimaryID::BT2020;
+      if (vpx_image->bit_depth >= 12) {
+        transfer = gfx::ColorSpace::TransferID::BT2020_12;
+      } else if (vpx_image->bit_depth >= 10) {
+        transfer = gfx::ColorSpace::TransferID::BT2020_10;
+      } else {
+        transfer = gfx::ColorSpace::TransferID::BT709;
+      }
+      matrix = gfx::ColorSpace::MatrixID::BT2020_NCL;  // is this right?
+      break;
+    case VPX_CS_SRGB:
+      primaries = gfx::ColorSpace::PrimaryID::BT709;
+      transfer = gfx::ColorSpace::TransferID::IEC61966_2_1;
+      matrix = gfx::ColorSpace::MatrixID::BT709;
+      break;
+
+    default:
+      break;
+  }
+
+  if (primaries != gfx::ColorSpace::PrimaryID::UNSPECIFIED) {
+    (*video_frame)
+        ->set_color_space(gfx::ColorSpace(primaries, transfer, matrix, range));
+  }
+
   return true;
 }
 
