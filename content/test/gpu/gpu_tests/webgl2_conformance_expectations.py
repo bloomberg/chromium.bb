@@ -63,6 +63,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia'], bug=631317)
 
     # Win / AMD
+
+    # Fail on all AMD configurations
+    self.Fail('deqp/functional/gles3/textureshadow/2d*',
+        ['win', 'amd'], bug=638323)
+    self.Fail('deqp/functional/gles3/textureshadow/cube*',
+        ['win', 'amd'], bug=638323)
+
+    # Failing on old R5 230 configuration.
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage2d_format_depth_stencil.html',
         ['win', ('amd', 0x6779)], bug=614178)
@@ -75,11 +83,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texelfetchoffset.html',
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
-        ['win', ('amd', 0x6779)], bug=483282)
-
-    self.Fail('deqp/functional/gles3/textureshadow/2d*',
-        ['win', ('amd', 0x6779)], bug=483282)
-    self.Fail('deqp/functional/gles3/textureshadow/cube*',
         ['win', ('amd', 0x6779)], bug=483282)
 
     self.Fail('deqp/functional/gles3/transformfeedback/*',
@@ -101,15 +104,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturefiltering/2d_array*',
         ['win', ('amd', 0x6613)], bug=638323)
     self.Fail('deqp/functional/gles3/texturefiltering/cube*',
-        ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/texturefiltering/'
-        'textureshadow_2d_array_nearest_mipmap_nearest_*',
-        ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/texturefiltering/'
-        'textureshadow_2d_linear_mipmap*',
-        ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/texturefiltering/'
-        'textureshadow_2d_nearest_mipmap_nearest*',
         ['win', ('amd', 0x6613)], bug=638323)
     self.Fail('deqp/functional/gles3/texturespecification/'
         'teximage2d_depth.html',
