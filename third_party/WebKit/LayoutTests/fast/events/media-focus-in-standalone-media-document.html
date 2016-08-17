@@ -1,58 +1,30 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src="../../media/media-file.js"></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="../../media/video-test.js"></script>
-        <script type="text/javascript">
-            var videoElement;
-            var standaloneMediaDocument;
-            var skipOnFirstEmptyLoad = 0;
+<title>This tests that  media element in a standalone media document cannot be focused directly using focus() method or by mouse click.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../media/media-file.js"></script>
+<iframe width="380" height="330"></iframe>
+<script>
+async_test(function(t) {
+    var iframe = document.querySelector("iframe");
+    iframe.src = "../../media/" + findMediaFile("video", "content/test");
 
-            function frameLoaded()
-            {
-                if (++skipOnFirstEmptyLoad == 1)
-                    return;
+    iframe.onload = t.step_func(function() {
+        var standaloneMediaDocument = iframe.contentDocument;
+        var video = standaloneMediaDocument.querySelector("video");
 
-                standaloneMediaDocument = document.getElementById("videoframe").contentDocument;
-                videoElement = standaloneMediaDocument.querySelector("video");
+        video.onclick = t.step_func_done(function() {
+            // Should not focus video element by mouse click.
+            assert_not_equals(standaloneMediaDocument.activeElement, video);
+        });
 
-                videoElement.addEventListener('click',function(){
-                    consoleWrite("*** Video element clicked.");
-                },false);
+        // Should not focus video element by calling focus() method.
+        video.focus();
+        assert_not_equals(standaloneMediaDocument.activeElement, video);
 
-                testFocus();
-                testFocusbyMouseClick();
-                consoleWrite("");
-                endTest();
-            }
-
-            function testFocus()
-            {
-                consoleWrite("<br>*** Should not focus video element by calling focus() method.");
-                videoElement.focus();
-                testExpected("standaloneMediaDocument.activeElement", videoElement, "!=");
-            }
-
-            function testFocusbyMouseClick()
-            {
-                // Simulate click event to try focus video element.
-                consoleWrite("<br>*** Should not focus video element by mouse click.");
-                var click = document.createEvent("MouseEvents");
-                click.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, document);
-                videoElement.dispatchEvent(click);
-                testExpected("standaloneMediaDocument.activeElement", videoElement, "!=");
-            }
-        </script>
-    </head>
-    <body>
-        <p>
-            This tests that  media element in a standalone media document cannot be focused directly using focus() method or by mouse click.
-        </p>
-        <iframe id="videoframe" width=380 height=330 onload="frameLoaded()"></iframe>
-        <script type="text/javascript">
-            document.getElementById("videoframe").src = "../../media/" + findMediaFile("video", "content/test");
-        </script>
-    </body>
-</html>
+        // Simulate click event to try focus video element.
+        var mouseEvent = new MouseEvent("click");
+        video.dispatchEvent(mouseEvent);
+    });
+});
+</script>
