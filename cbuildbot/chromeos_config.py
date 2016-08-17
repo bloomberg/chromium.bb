@@ -2158,7 +2158,7 @@ def GetConfig():
       images=['base', 'recovery', 'test', 'factory_install'],
       git_sync=False,
       hw_tests=HWTestList.ToolchainTest(),
-      trybot_list=True,
+      trybot_list=False,
       hwqual=True,
       description="Toolchain Builds (internal)",
       chrome_sdk=True,
@@ -2207,9 +2207,6 @@ def GetConfig():
       images=['base', 'test', 'recovery'],
       description='Full release build with LLVM toolchain',
       signer_tests=False,
-      # This config is only for toolchain use. No need to list with general
-      # configs.
-      trybot_list=False,
   )
 
   _grouped_toolchain_llvm = config_lib.BuildConfig(
@@ -2276,9 +2273,6 @@ def GetConfig():
       images=['base', 'test', 'recovery'],
       description='Full release build with next minor GCC toolchain revision.',
       signer_tests=False,
-      # This config is only for toolchain use. No need to list with general
-      # configs.
-      trybot_list=False,
       latest_toolchain=True,
       prebuilts=False,
       gcc_githash='svn-mirror/google/gcc-4_9',

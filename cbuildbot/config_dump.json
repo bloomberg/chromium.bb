@@ -1401,7 +1401,7 @@
             "manifest_version": true,
             "overlays": "both",
             "run_gce_tests": false,
-            "trybot_list": true,
+            "trybot_list": false,
             "useflags": [
                 "-cros-debug",
                 "chrome_internal"
