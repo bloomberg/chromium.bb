@@ -59,7 +59,7 @@ void StereoPannerHandler::process(size_t framesToProcess)
 
     if (m_pan->hasSampleAccurateValues()) {
         // Apply sample-accurate panning specified by AudioParam automation.
-        ASSERT(framesToProcess <= m_sampleAccuratePanValues.size());
+        DCHECK_LE(framesToProcess, m_sampleAccuratePanValues.size());
         if (framesToProcess <= m_sampleAccuratePanValues.size()) {
             float* panValues = m_sampleAccuratePanValues.data();
             m_pan->calculateSampleAccurateValues(panValues, framesToProcess);
@@ -82,7 +82,7 @@ void StereoPannerHandler::initialize()
 
 void StereoPannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
     // A PannerNode only supports 1 or 2 channels
@@ -107,7 +107,7 @@ void StereoPannerHandler::setChannelCount(unsigned long channelCount, ExceptionS
 
 void StereoPannerHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
     if (mode == "clamped-max") {

@@ -44,7 +44,7 @@ MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(AudioNode& node, 
     , m_maybePrintCORSMessage(!m_passesCurrentSrcCORSAccessCheck)
     , m_currentSrcString(mediaElement.currentSrc().getString())
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     // Default to stereo. This could change depending on what the media element
     // .src is set to.
     addOutput(2);
@@ -108,7 +108,7 @@ void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels, float so
 
 bool MediaElementAudioSourceHandler::passesCORSAccessCheck()
 {
-    ASSERT(mediaElement());
+    DCHECK(mediaElement());
 
     return (mediaElement()->webMediaPlayer() && mediaElement()->webMediaPlayer()->didPassCORSAccessCheck())
         || m_passesCurrentSrcCORSAccessCheck;
@@ -116,7 +116,7 @@ bool MediaElementAudioSourceHandler::passesCORSAccessCheck()
 
 void MediaElementAudioSourceHandler::onCurrentSrcChanged(const KURL& currentSrc)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // Synchronize with process().
     Locker<MediaElementAudioSourceHandler> locker(*this);
@@ -132,7 +132,7 @@ void MediaElementAudioSourceHandler::onCurrentSrcChanged(const KURL& currentSrc)
 
 bool MediaElementAudioSourceHandler::passesCurrentSrcCORSAccessCheck(const KURL& currentSrc)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     return context()->getSecurityOrigin() && context()->getSecurityOrigin()->canRequest(currentSrc);
 }
 
@@ -162,11 +162,11 @@ void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
         // Grab data from the provider so that the element continues to make progress, even if
         // we're going to output silence anyway.
         if (m_multiChannelResampler.get()) {
-            ASSERT(m_sourceSampleRate != sampleRate());
+            DCHECK_NE(m_sourceSampleRate, sampleRate());
             m_multiChannelResampler->process(&provider, outputBus, numberOfFrames);
         } else {
             // Bypass the resampler completely if the source is at the context's sample-rate.
-            ASSERT(m_sourceSampleRate == sampleRate());
+            DCHECK_EQ(m_sourceSampleRate, sampleRate());
             provider.provideInput(outputBus, numberOfFrames);
         }
         // Output silence if we don't have access to the element.

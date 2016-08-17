@@ -53,7 +53,7 @@ void GainHandler::process(size_t framesToProcess)
     // Then we can avoid all of the following:
 
     AudioBus* outputBus = output(0).bus();
-    ASSERT(outputBus);
+    DCHECK(outputBus);
 
     if (!isInitialized() || !input(0).isConnected()) {
         outputBus->zero();
@@ -62,7 +62,7 @@ void GainHandler::process(size_t framesToProcess)
 
         if (m_gain->hasSampleAccurateValues()) {
             // Apply sample-accurate gain scaling for precise envelopes, grain windows, etc.
-            ASSERT(framesToProcess <= m_sampleAccurateGainValues.size());
+            DCHECK_LE(framesToProcess, m_sampleAccurateGainValues.size());
             if (framesToProcess <= m_sampleAccurateGainValues.size()) {
                 float* gainValues = m_sampleAccurateGainValues.data();
                 m_gain->calculateSampleAccurateValues(gainValues, framesToProcess);
@@ -93,11 +93,11 @@ void GainHandler::process(size_t framesToProcess)
 // uninitialize and then re-initialize with the new channel count.
 void GainHandler::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
-    ASSERT(context()->isAudioThread());
+    DCHECK(context()->isAudioThread());
     ASSERT(context()->isGraphOwner());
 
-    ASSERT(input);
-    ASSERT(input == &this->input(0));
+    DCHECK(input);
+    DCHECK_EQ(input, &this->input(0));
     if (input != &this->input(0))
         return;
 

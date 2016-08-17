@@ -81,7 +81,7 @@ DynamicsCompressorHandler::~DynamicsCompressorHandler()
 void DynamicsCompressorHandler::process(size_t framesToProcess)
 {
     AudioBus* outputBus = output(0).bus();
-    ASSERT(outputBus);
+    DCHECK(outputBus);
 
     float threshold = m_threshold->value();
     float knee = m_knee->value();

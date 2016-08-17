@@ -217,7 +217,7 @@ float AudioParamHandler::finalValue()
 void AudioParamHandler::calculateSampleAccurateValues(float* values, unsigned numberOfValues)
 {
     bool isSafe = deferredTaskHandler().isAudioThread() && values && numberOfValues;
-    ASSERT(isSafe);
+    DCHECK(isSafe);
     if (!isSafe)
         return;
 
@@ -227,7 +227,7 @@ void AudioParamHandler::calculateSampleAccurateValues(float* values, unsigned nu
 void AudioParamHandler::calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate)
 {
     bool isGood = deferredTaskHandler().isAudioThread() && values && numberOfValues;
-    ASSERT(isGood);
+    DCHECK(isGood);
     if (!isGood)
         return;
 
@@ -256,7 +256,7 @@ void AudioParamHandler::calculateFinalValues(float* values, unsigned numberOfVal
 
     for (unsigned i = 0; i < numberOfRenderingConnections(); ++i) {
         AudioNodeOutput* output = renderingOutput(i);
-        ASSERT(output);
+        DCHECK(output);
 
         // Render audio from this output.
         AudioBus* connectionBus = output->pull(0, AudioHandler::ProcessingSizeInFrames);

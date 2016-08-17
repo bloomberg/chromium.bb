@@ -48,7 +48,7 @@ void AudioBasicInspectorHandler::pullInputs(size_t framesToProcess)
 
 AudioNode* AudioBasicInspectorNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     BaseAudioContext::AutoLocker locker(context());
 
@@ -60,7 +60,7 @@ AudioNode* AudioBasicInspectorNode::connect(AudioNode* destination, unsigned out
 
 void AudioBasicInspectorNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     BaseAudioContext::AutoLocker locker(context());
 
@@ -70,10 +70,10 @@ void AudioBasicInspectorNode::disconnect(unsigned outputIndex, ExceptionState& e
 
 void AudioBasicInspectorHandler::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
-    ASSERT(context()->isAudioThread());
+    DCHECK(context()->isAudioThread());
     ASSERT(context()->isGraphOwner());
 
-    ASSERT(input == &this->input(0));
+    DCHECK_EQ(input, &this->input(0));
     if (input != &this->input(0))
         return;
 

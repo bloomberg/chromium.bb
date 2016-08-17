@@ -34,14 +34,14 @@ const float SmoothingTimeConstant = 0.020f; // 20ms
 DelayDSPKernel::DelayDSPKernel(DelayProcessor* processor)
     : AudioDelayDSPKernel(processor, AudioHandler::ProcessingSizeInFrames)
 {
-    ASSERT(processor);
-    ASSERT(processor->sampleRate() > 0);
+    DCHECK(processor);
+    DCHECK_GT(processor->sampleRate(), 0);
     if (!(processor && processor->sampleRate() > 0))
         return;
 
     m_maxDelayTime = processor->maxDelayTime();
-    ASSERT(m_maxDelayTime >= 0);
-    ASSERT(!std::isnan(m_maxDelayTime));
+    DCHECK_GE(m_maxDelayTime, 0);
+    DCHECK(!std::isnan(m_maxDelayTime));
     if (m_maxDelayTime < 0 || std::isnan(m_maxDelayTime))
         return;
 

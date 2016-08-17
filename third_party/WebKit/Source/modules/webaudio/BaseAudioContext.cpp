@@ -595,7 +595,7 @@ void BaseAudioContext::setContextState(AudioContextState newState)
     }
 
     if (newState == m_contextState) {
-        // ASSERTs above failed; just return.
+        // DCHECKs above failed; just return.
         return;
     }
 

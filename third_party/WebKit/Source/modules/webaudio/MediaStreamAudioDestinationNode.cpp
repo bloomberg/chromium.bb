@@ -76,7 +76,7 @@ void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames)
 
 void MediaStreamAudioDestinationHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // Currently the maximum channel count supported for this node is 8,
     // which is constrained by m_source (WebAudioCapturereSource). Although

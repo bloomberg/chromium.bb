@@ -514,7 +514,7 @@ float PannerHandler::calculateDistanceConeGain(
 
 void PannerHandler::azimuthElevation(double* outAzimuth, double* outElevation)
 {
-    ASSERT(context()->isAudioThread());
+    DCHECK(context()->isAudioThread());
 
     // Calculate new azimuth and elevation if the panner or the listener changed
     // position or orientation in any way.
@@ -535,7 +535,7 @@ void PannerHandler::azimuthElevation(double* outAzimuth, double* outElevation)
 
 float PannerHandler::distanceConeGain()
 {
-    ASSERT(context()->isAudioThread());
+    DCHECK(context()->isAudioThread());
 
     // Calculate new distance and cone gain if the panner or the listener
     // changed position or orientation in any way.
@@ -558,7 +558,7 @@ void PannerHandler::markPannerAsDirty(unsigned dirty)
 
 void PannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
     // A PannerNode only supports 1 or 2 channels
@@ -583,7 +583,7 @@ void PannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& 
 
 void PannerHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
     if (mode == "clamped-max") {

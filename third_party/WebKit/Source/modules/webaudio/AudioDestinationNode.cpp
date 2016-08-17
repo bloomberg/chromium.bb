@@ -41,7 +41,7 @@ AudioDestinationHandler::AudioDestinationHandler(AudioNode& node, float sampleRa
 
 AudioDestinationHandler::~AudioDestinationHandler()
 {
-    ASSERT(!isInitialized());
+    DCHECK(!isInitialized());
 }
 
 void AudioDestinationHandler::render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames)
@@ -57,7 +57,7 @@ void AudioDestinationHandler::render(AudioBus* sourceBus, AudioBus* destinationB
     //
     // TODO(hongchan): because the context can go away while rendering, so this
     // check cannot guarantee the safe execution of the following steps.
-    ASSERT(context());
+    DCHECK(context());
     if (!context())
         return;
 
@@ -78,7 +78,7 @@ void AudioDestinationHandler::render(AudioBus* sourceBus, AudioBus* destinationB
     if (sourceBus)
         m_localAudioInputProvider.set(sourceBus);
 
-    ASSERT(numberOfInputs() >= 1);
+    DCHECK_GE(numberOfInputs(), 1u);
     if (numberOfInputs() < 1) {
         destinationBus->zero();
         return;

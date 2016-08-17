@@ -105,7 +105,7 @@ void ScriptProcessorHandler::process(size_t framesToProcess)
     // Get input and output buffers. We double-buffer both the input and output sides.
     unsigned doubleBufferIndex = this->doubleBufferIndex();
     bool isDoubleBufferIndexGood = doubleBufferIndex < 2 && doubleBufferIndex < m_inputBuffers.size() && doubleBufferIndex < m_outputBuffers.size();
-    ASSERT(isDoubleBufferIndexGood);
+    DCHECK(isDoubleBufferIndexGood);
     if (!isDoubleBufferIndexGood)
         return;
 
@@ -120,20 +120,20 @@ void ScriptProcessorHandler::process(size_t framesToProcess)
     if (m_internalInputBus->numberOfChannels())
         buffersAreGood = buffersAreGood && inputBuffer && bufferSize() == inputBuffer->length();
 
-    ASSERT(buffersAreGood);
+    DCHECK(buffersAreGood);
     if (!buffersAreGood)
         return;
 
     // We assume that bufferSize() is evenly divisible by framesToProcess - should always be true, but we should still check.
     bool isFramesToProcessGood = framesToProcess && bufferSize() >= framesToProcess && !(bufferSize() % framesToProcess);
-    ASSERT(isFramesToProcessGood);
+    DCHECK(isFramesToProcessGood);
     if (!isFramesToProcessGood)
         return;
 
     unsigned numberOfOutputChannels = outputBus->numberOfChannels();
 
     bool channelsAreGood = (numberOfInputChannels == m_numberOfInputChannels) && (numberOfOutputChannels == m_numberOfOutputChannels);
-    ASSERT(channelsAreGood);
+    DCHECK(channelsAreGood);
     if (!channelsAreGood)
         return;
 
@@ -174,15 +174,15 @@ void ScriptProcessorHandler::process(size_t framesToProcess)
 
 void ScriptProcessorHandler::fireProcessEvent(unsigned doubleBufferIndex)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
-    ASSERT(doubleBufferIndex < 2);
+    DCHECK_LT(doubleBufferIndex, 2u);
     if (doubleBufferIndex > 1)
         return;
 
     AudioBuffer* inputBuffer = m_inputBuffers[doubleBufferIndex].get();
     AudioBuffer* outputBuffer = m_outputBuffers[doubleBufferIndex].get();
-    ASSERT(outputBuffer);
+    DCHECK(outputBuffer);
     if (!outputBuffer)
         return;
 
@@ -212,7 +212,7 @@ double ScriptProcessorHandler::latencyTime() const
 
 void ScriptProcessorHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
     if (channelCount != m_channelCount) {
@@ -224,7 +224,7 @@ void ScriptProcessorHandler::setChannelCount(unsigned long channelCount, Excepti
 
 void ScriptProcessorHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
     if ((mode == "max") || (mode == "clamped-max")) {

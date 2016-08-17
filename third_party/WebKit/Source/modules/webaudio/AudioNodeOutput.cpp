@@ -37,9 +37,7 @@ inline AudioNodeOutput::AudioNodeOutput(AudioHandler* handler, unsigned numberOf
     , m_desiredNumberOfChannels(numberOfChannels)
     , m_isInPlace(false)
     , m_isEnabled(true)
-#if ENABLE_ASSERT
     , m_didCallDispose(false)
-#endif
     , m_renderingFanOutCount(0)
     , m_renderingParamFanOutCount(0)
 {
@@ -55,13 +53,12 @@ std::unique_ptr<AudioNodeOutput> AudioNodeOutput::create(AudioHandler* handler, 
 
 void AudioNodeOutput::dispose()
 {
-#if ENABLE_ASSERT
     m_didCallDispose = true;
-#endif
+
     deferredTaskHandler().removeMarkedAudioNodeOutput(this);
     disconnectAll();
-    ASSERT(m_inputs.isEmpty());
-    ASSERT(m_params.isEmpty());
+    DCHECK(m_inputs.isEmpty());
+    DCHECK(m_params.isEmpty());
 }
 
 void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
@@ -75,7 +72,7 @@ void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
         // If we're in the audio thread then we can take care of it right away (we should be at the very start or end of a rendering quantum).
         updateNumberOfChannels();
     } else {
-        ASSERT(!m_didCallDispose);
+        DCHECK(!m_didCallDispose);
         // Let the context take care of it in the audio thread in the pre and post render tasks.
         deferredTaskHandler().markAudioNodeOutputDirty(this);
     }
@@ -98,7 +95,7 @@ void AudioNodeOutput::updateRenderingState()
 
 void AudioNodeOutput::updateNumberOfChannels()
 {
-    ASSERT(deferredTaskHandler().isAudioThread());
+    DCHECK(deferredTaskHandler().isAudioThread());
     ASSERT(deferredTaskHandler().isGraphOwner());
 
     if (m_numberOfChannels != m_desiredNumberOfChannels) {
@@ -110,7 +107,7 @@ void AudioNodeOutput::updateNumberOfChannels()
 
 void AudioNodeOutput::propagateChannelCount()
 {
-    ASSERT(deferredTaskHandler().isAudioThread());
+    DCHECK(deferredTaskHandler().isAudioThread());
     ASSERT(deferredTaskHandler().isGraphOwner());
 
     if (isChannelCountKnown()) {
@@ -122,8 +119,8 @@ void AudioNodeOutput::propagateChannelCount()
 
 AudioBus* AudioNodeOutput::pull(AudioBus* inPlaceBus, size_t framesToProcess)
 {
-    ASSERT(deferredTaskHandler().isAudioThread());
-    ASSERT(m_renderingFanOutCount > 0 || m_renderingParamFanOutCount > 0);
+    DCHECK(deferredTaskHandler().isAudioThread());
+    DCHECK(m_renderingFanOutCount > 0 || m_renderingParamFanOutCount > 0);
 
     // Causes our AudioNode to process if it hasn't already for this render quantum.
     // We try to do in-place processing (using inPlaceBus) if at all possible,
@@ -141,7 +138,7 @@ AudioBus* AudioNodeOutput::pull(AudioBus* inPlaceBus, size_t framesToProcess)
 
 AudioBus* AudioNodeOutput::bus() const
 {
-    ASSERT(deferredTaskHandler().isAudioThread());
+    DCHECK(deferredTaskHandler().isAudioThread());
     return m_isInPlace ? m_inPlaceBus.get() : m_internalBus.get();
 }
 
@@ -188,14 +185,14 @@ void AudioNodeOutput::disconnectAllInputs()
 void AudioNodeOutput::disconnectInput(AudioNodeInput& input)
 {
     ASSERT(deferredTaskHandler().isGraphOwner());
-    ASSERT(isConnectedToInput(input));
+    DCHECK(isConnectedToInput(input));
     input.disconnect(*this);
 }
 
 void AudioNodeOutput::disconnectAudioParam(AudioParamHandler& param)
 {
     ASSERT(deferredTaskHandler().isGraphOwner());
-    ASSERT(isConnectedToAudioParam(param));
+    DCHECK(isConnectedToAudioParam(param));
     param.disconnect(*this);
 }
 

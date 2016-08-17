@@ -64,7 +64,7 @@ PassRefPtr<OfflineAudioDestinationHandler> OfflineAudioDestinationHandler::creat
 
 OfflineAudioDestinationHandler::~OfflineAudioDestinationHandler()
 {
-    ASSERT(!isInitialized());
+    DCHECK(!isInitialized());
 }
 
 void OfflineAudioDestinationHandler::dispose()
@@ -104,9 +104,9 @@ unsigned long OfflineAudioDestinationHandler::maxChannelCount() const
 
 void OfflineAudioDestinationHandler::startRendering()
 {
-    ASSERT(isMainThread());
-    ASSERT(m_renderThread);
-    ASSERT(m_renderTarget);
+    DCHECK(isMainThread());
+    DCHECK(m_renderThread);
+    DCHECK(m_renderTarget);
 
     if (!m_renderTarget)
         return;
@@ -133,31 +133,31 @@ void OfflineAudioDestinationHandler::stopRendering()
 
 WebThread* OfflineAudioDestinationHandler::offlineRenderThread()
 {
-    ASSERT(m_renderThread);
+    DCHECK(m_renderThread);
 
     return m_renderThread.get();
 }
 
 void OfflineAudioDestinationHandler::startOfflineRendering()
 {
-    ASSERT(!isMainThread());
+    DCHECK(!isMainThread());
 
-    ASSERT(m_renderBus);
+    DCHECK(m_renderBus);
     if (!m_renderBus)
         return;
 
     bool isAudioContextInitialized = context()->isDestinationInitialized();
-    ASSERT(isAudioContextInitialized);
+    DCHECK(isAudioContextInitialized);
     if (!isAudioContextInitialized)
         return;
 
     bool channelsMatch = m_renderBus->numberOfChannels() == m_renderTarget->numberOfChannels();
-    ASSERT(channelsMatch);
+    DCHECK(channelsMatch);
     if (!channelsMatch)
         return;
 
     bool isRenderBusAllocated = m_renderBus->length() >= renderQuantumSize;
-    ASSERT(isRenderBusAllocated);
+    DCHECK(isRenderBusAllocated);
     if (!isRenderBusAllocated)
         return;
 
@@ -167,7 +167,7 @@ void OfflineAudioDestinationHandler::startOfflineRendering()
 
 void OfflineAudioDestinationHandler::doOfflineRendering()
 {
-    ASSERT(!isMainThread());
+    DCHECK(!isMainThread());
 
     unsigned numberOfChannels = m_renderTarget->numberOfChannels();
 
@@ -197,7 +197,7 @@ void OfflineAudioDestinationHandler::doOfflineRendering()
 
         m_framesProcessed += framesAvailableToCopy;
 
-        ASSERT(m_framesToProcess >= framesAvailableToCopy);
+        DCHECK_GE(m_framesToProcess, framesAvailableToCopy);
         m_framesToProcess -= framesAvailableToCopy;
     }
 
@@ -208,7 +208,7 @@ void OfflineAudioDestinationHandler::doOfflineRendering()
 
 void OfflineAudioDestinationHandler::suspendOfflineRendering()
 {
-    ASSERT(!isMainThread());
+    DCHECK(!isMainThread());
 
     // The actual rendering has been suspended. Notify the context.
     if (context()->getExecutionContext()) {
@@ -220,7 +220,7 @@ void OfflineAudioDestinationHandler::suspendOfflineRendering()
 
 void OfflineAudioDestinationHandler::finishOfflineRendering()
 {
-    ASSERT(!isMainThread());
+    DCHECK(!isMainThread());
 
     // The actual rendering has been completed. Notify the context.
     if (context()->getExecutionContext()) {
@@ -231,7 +231,7 @@ void OfflineAudioDestinationHandler::finishOfflineRendering()
 
 void OfflineAudioDestinationHandler::notifySuspend(size_t frame)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (context())
         context()->resolveSuspendOnMainThread(frame);
@@ -257,7 +257,7 @@ bool OfflineAudioDestinationHandler::renderIfNotSuspended(AudioBus* sourceBus, A
     //
     // TODO(hongchan): because the context can go away while rendering, so this
     // check cannot guarantee the safe execution of the following steps.
-    ASSERT(context());
+    DCHECK(context());
     if (!context())
         return false;
 
@@ -283,7 +283,7 @@ bool OfflineAudioDestinationHandler::renderIfNotSuspended(AudioBus* sourceBus, A
     if (sourceBus)
         m_localAudioInputProvider.set(sourceBus);
 
-    ASSERT(numberOfInputs() >= 1);
+    DCHECK_GE(numberOfInputs(), 1u);
     if (numberOfInputs() < 1) {
         destinationBus->zero();
         return false;

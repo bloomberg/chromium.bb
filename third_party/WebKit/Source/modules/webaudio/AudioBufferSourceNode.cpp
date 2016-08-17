@@ -154,11 +154,11 @@ bool AudioBufferSourceHandler::renderSilenceAndFinishIfNotLooping(AudioBus*, uns
 
 bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinationFrameOffset, size_t numberOfFrames)
 {
-    ASSERT(context()->isAudioThread());
+    DCHECK(context()->isAudioThread());
 
     // Basic sanity checking
-    ASSERT(bus);
-    ASSERT(buffer());
+    DCHECK(bus);
+    DCHECK(buffer());
     if (!bus || !buffer())
         return false;
 
@@ -166,7 +166,7 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
     unsigned busNumberOfChannels = bus->numberOfChannels();
 
     bool channelCountGood = numberOfChannels && numberOfChannels == busNumberOfChannels;
-    ASSERT(channelCountGood);
+    DCHECK(channelCountGood);
     if (!channelCountGood)
         return false;
 
@@ -175,12 +175,12 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
 
     bool isLengthGood = destinationLength <= AudioUtilities::kRenderQuantumFrames
         && numberOfFrames <= AudioUtilities::kRenderQuantumFrames;
-    ASSERT(isLengthGood);
+    DCHECK(isLengthGood);
     if (!isLengthGood)
         return false;
 
     bool isOffsetGood = destinationFrameOffset <= destinationLength && destinationFrameOffset + numberOfFrames <= destinationLength;
-    ASSERT(isOffsetGood);
+    DCHECK(isOffsetGood);
     if (!isOffsetGood)
         return false;
 
@@ -244,9 +244,9 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
     const float** sourceChannels = m_sourceChannels.get();
     float** destinationChannels = m_destinationChannels.get();
 
-    ASSERT(virtualReadIndex >= 0);
-    ASSERT(virtualDeltaFrames >= 0);
-    ASSERT(virtualEndFrame >= 0);
+    DCHECK_GE(virtualReadIndex, 0);
+    DCHECK_GE(virtualDeltaFrames, 0);
+    DCHECK_GE(virtualEndFrame, 0);
 
     // Optimize for the very common case of playing back with computedPlaybackRate == 1.
     // We can avoid the linear interpolation.
@@ -268,9 +268,9 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
             readIndex += framesThisTime;
             framesToProcess -= framesThisTime;
 
-            // It can happen that framesThisTime is 0. Assert that we will actually exit the loop in
+            // It can happen that framesThisTime is 0. DCHECK that we will actually exit the loop in
             // this case.  framesThisTime is 0 only if readIndex >= endFrame;
-            ASSERT(framesThisTime ? true : readIndex >= endFrame);
+            DCHECK(framesThisTime ? true : readIndex >= endFrame);
 
             // Wrap-around.
             if (readIndex >= endFrame) {
@@ -335,7 +335,7 @@ bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinat
 
 void AudioBufferSourceHandler::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (m_buffer) {
         exceptionState.throwDOMException(
@@ -394,7 +394,7 @@ unsigned AudioBufferSourceHandler::numberOfChannels()
 
 void AudioBufferSourceHandler::clampGrainParameters(const AudioBuffer* buffer)
 {
-    ASSERT(buffer);
+    DCHECK(buffer);
 
     // We have a buffer so we can clip the offset and duration to lie within the buffer.
     double bufferDuration = buffer->duration();
@@ -441,7 +441,7 @@ void AudioBufferSourceHandler::start(double when, double grainOffset, double gra
 
 void AudioBufferSourceHandler::startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     context()->recordUserGestureState();
 
@@ -532,7 +532,7 @@ double AudioBufferSourceHandler::computePlaybackRate()
     finalPlaybackRate = clampTo(finalPlaybackRate, 0.0, MaxRate);
 
     bool isPlaybackRateValid = !std::isnan(finalPlaybackRate) && !std::isinf(finalPlaybackRate);
-    ASSERT(isPlaybackRateValid);
+    DCHECK(isPlaybackRateValid);
 
     if (!isPlaybackRateValid)
         finalPlaybackRate = 1.0;

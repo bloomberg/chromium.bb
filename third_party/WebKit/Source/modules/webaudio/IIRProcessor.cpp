@@ -15,8 +15,8 @@ IIRProcessor::IIRProcessor(float sampleRate, size_t numberOfChannels, const Vect
 {
     unsigned feedbackLength = feedbackCoef.size();
     unsigned feedforwardLength = feedforwardCoef.size();
-    ASSERT(feedbackLength > 0);
-    ASSERT(feedforwardLength > 0);
+    DCHECK_GT(feedbackLength, 0u);
+    DCHECK_GT(feedforwardLength, 0u);
 
     m_feedforward.allocate(feedforwardLength);
     m_feedback.allocate(feedbackLength);
@@ -25,7 +25,7 @@ IIRProcessor::IIRProcessor(float sampleRate, size_t numberOfChannels, const Vect
 
     // Need to scale the feedback and feedforward coefficients appropriately. (It's up to the caller
     // to ensure feedbackCoef[0] is not 0!)
-    ASSERT(feedbackCoef[0] != 0);
+    DCHECK_NE(feedbackCoef[0], 0);
 
     if (feedbackCoef[0] != 1) {
         // The provided filter is:

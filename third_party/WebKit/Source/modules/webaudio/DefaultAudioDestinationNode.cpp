@@ -47,7 +47,7 @@ PassRefPtr<DefaultAudioDestinationHandler> DefaultAudioDestinationHandler::creat
 
 DefaultAudioDestinationHandler::~DefaultAudioDestinationHandler()
 {
-    ASSERT(!isInitialized());
+    DCHECK(!isInitialized());
 }
 
 void DefaultAudioDestinationHandler::dispose()
@@ -58,7 +58,7 @@ void DefaultAudioDestinationHandler::dispose()
 
 void DefaultAudioDestinationHandler::initialize()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (isInitialized())
         return;
 
@@ -68,7 +68,7 @@ void DefaultAudioDestinationHandler::initialize()
 
 void DefaultAudioDestinationHandler::uninitialize()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (!isInitialized())
         return;
 
@@ -88,18 +88,18 @@ void DefaultAudioDestinationHandler::createDestination()
 
 void DefaultAudioDestinationHandler::startRendering()
 {
-    ASSERT(isInitialized());
+    DCHECK(isInitialized());
     if (isInitialized()) {
-        ASSERT(!m_destination->isPlaying());
+        DCHECK(!m_destination->isPlaying());
         m_destination->start();
     }
 }
 
 void DefaultAudioDestinationHandler::stopRendering()
 {
-    ASSERT(isInitialized());
+    DCHECK(isInitialized());
     if (isInitialized()) {
-        ASSERT(m_destination->isPlaying());
+        DCHECK(m_destination->isPlaying());
         m_destination->stop();
     }
 }
@@ -115,7 +115,7 @@ void DefaultAudioDestinationHandler::setChannelCount(unsigned long channelCount,
     // send to the audio hardware. It can only be set depending on the maximum number of
     // channels supported by the hardware.
 
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (!maxChannelCount() || channelCount > maxChannelCount()) {
         exceptionState.throwDOMException(

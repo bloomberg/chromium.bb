@@ -52,14 +52,14 @@ PassRefPtr<ChannelSplitterHandler> ChannelSplitterHandler::create(AudioNode& nod
 void ChannelSplitterHandler::process(size_t framesToProcess)
 {
     AudioBus* source = input(0).bus();
-    ASSERT(source);
-    ASSERT_UNUSED(framesToProcess, framesToProcess == source->length());
+    DCHECK(source);
+    DCHECK_EQ(framesToProcess, source->length());
 
     unsigned numberOfSourceChannels = source->numberOfChannels();
 
     for (unsigned i = 0; i < numberOfOutputs(); ++i) {
         AudioBus* destination = output(i).bus();
-        ASSERT(destination);
+        DCHECK(destination);
 
         if (i < numberOfSourceChannels) {
             // Split the channel out if it exists in the source.

@@ -150,9 +150,7 @@ private:
     HashSet<AudioNodeInput*> m_inputs;
     bool m_isEnabled;
 
-#if ENABLE(ASSERT)
     bool m_didCallDispose;
-#endif
 
     // For the purposes of rendering, keeps track of the number of inputs and AudioParams we're connected to.
     // These value should only be changed at the very start or end of the rendering quantum.

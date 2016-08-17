@@ -50,7 +50,7 @@ void AudioSummingJunction::changedOutputs()
 
 void AudioSummingJunction::updateRenderingState()
 {
-    ASSERT(deferredTaskHandler().isAudioThread());
+    DCHECK(deferredTaskHandler().isAudioThread());
     ASSERT(deferredTaskHandler().isGraphOwner());
     if (m_renderingStateNeedUpdating) {
         // Copy from m_outputs to m_renderingOutputs.

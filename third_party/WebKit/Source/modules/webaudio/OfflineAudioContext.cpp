@@ -155,7 +155,7 @@ DEFINE_TRACE(OfflineAudioContext)
 
 ScriptPromise OfflineAudioContext::startOfflineRendering(ScriptState* scriptState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // Calling close() on an OfflineAudioContext is not supported/allowed,
     // but it might well have been stopped by its execution context.
@@ -187,7 +187,7 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(ScriptState* scriptStat
                 "cannot call startRendering more than once"));
     }
 
-    ASSERT(!m_isRenderingStarted);
+    DCHECK(!m_isRenderingStarted);
 
     m_completeResolver = ScriptPromiseResolver::create(scriptState);
 
@@ -219,7 +219,7 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* scriptState)
 
 ScriptPromise OfflineAudioContext::suspendContext(ScriptState* scriptState, double when)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -286,7 +286,7 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* scriptState, doub
 
 ScriptPromise OfflineAudioContext::resumeContext(ScriptState* scriptState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -312,7 +312,7 @@ ScriptPromise OfflineAudioContext::resumeContext(ScriptState* scriptState)
         return promise;
     }
 
-    ASSERT(contextState() == AudioContextState::Suspended);
+    DCHECK_EQ(contextState(), AudioContextState::Suspended);
 
     // If the context is suspended, resume rendering by setting the state to
     // "Running". and calling startRendering(). Note that resuming is possible
@@ -328,7 +328,7 @@ ScriptPromise OfflineAudioContext::resumeContext(ScriptState* scriptState)
 
 void OfflineAudioContext::fireCompletionEvent()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // We set the state to closed here so that the oncomplete event handler sees
     // that the context has been closed.
@@ -336,7 +336,7 @@ void OfflineAudioContext::fireCompletionEvent()
 
     AudioBuffer* renderedBuffer = renderTarget();
 
-    ASSERT(renderedBuffer);
+    DCHECK(renderedBuffer);
     if (!renderedBuffer)
         return;
 
@@ -355,7 +355,7 @@ void OfflineAudioContext::fireCompletionEvent()
 
 bool OfflineAudioContext::handlePreOfflineRenderTasks()
 {
-    ASSERT(isAudioThread());
+    DCHECK(isAudioThread());
 
     // OfflineGraphAutoLocker here locks the audio graph for this scope. Note
     // that this locker does not use tryLock() inside because the timing of
@@ -373,7 +373,7 @@ bool OfflineAudioContext::handlePreOfflineRenderTasks()
 
 void OfflineAudioContext::handlePostOfflineRenderTasks()
 {
-    ASSERT(isAudioThread());
+    DCHECK(isAudioThread());
 
     // OfflineGraphAutoLocker here locks the audio graph for the same reason
     // above in |handlePreOfflineRenderTasks|.
@@ -393,7 +393,7 @@ OfflineAudioDestinationHandler& OfflineAudioContext::destinationHandler()
 
 void OfflineAudioContext::resolveSuspendOnMainThread(size_t frame)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // Suspend the context first. This will fire onstatechange event.
     setContextState(Suspended);
@@ -416,7 +416,7 @@ void OfflineAudioContext::resolveSuspendOnMainThread(size_t frame)
 
 void OfflineAudioContext::rejectPendingResolvers()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // Wait until the suspend map is available for removal.
     AutoLocker locker(this);
@@ -429,14 +429,14 @@ void OfflineAudioContext::rejectPendingResolvers()
     }
 
     m_scheduledSuspends.clear();
-    ASSERT(m_resumeResolvers.size() == 0);
+    DCHECK_EQ(m_resumeResolvers.size(), 0u);
 
     rejectPendingDecodeAudioDataResolvers();
 }
 
 bool OfflineAudioContext::shouldSuspend()
 {
-    ASSERT(isAudioThread());
+    DCHECK(isAudioThread());
 
     // Note that the GraphLock is required before this check. Since this needs
     // to run on the audio thread, OfflineGraphAutoLocker must be used.

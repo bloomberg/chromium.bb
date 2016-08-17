@@ -55,7 +55,7 @@ void AudioBasicProcessorHandler::initialize()
     if (isInitialized())
         return;
 
-    ASSERT(processor());
+    DCHECK(processor());
     processor()->initialize();
 
     AudioHandler::initialize();
@@ -66,7 +66,7 @@ void AudioBasicProcessorHandler::uninitialize()
     if (!isInitialized())
         return;
 
-    ASSERT(processor());
+    DCHECK(processor());
     processor()->uninitialize();
 
     AudioHandler::uninitialize();
@@ -101,14 +101,14 @@ void AudioBasicProcessorHandler::pullInputs(size_t framesToProcess)
 // uninitialize and then re-initialize with the new channel count.
 void AudioBasicProcessorHandler::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
-    ASSERT(context()->isAudioThread());
+    DCHECK(context()->isAudioThread());
     ASSERT(context()->isGraphOwner());
 
-    ASSERT(input == &this->input(0));
+    DCHECK_EQ(input, &this->input(0));
     if (input != &this->input(0))
         return;
 
-    ASSERT(processor());
+    DCHECK(processor());
     if (!processor())
         return;
 

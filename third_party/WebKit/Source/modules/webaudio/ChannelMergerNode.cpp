@@ -63,15 +63,15 @@ PassRefPtr<ChannelMergerHandler> ChannelMergerHandler::create(AudioNode& node, f
 void ChannelMergerHandler::process(size_t framesToProcess)
 {
     AudioNodeOutput& output = this->output(0);
-    ASSERT_UNUSED(framesToProcess, framesToProcess == output.bus()->length());
+    DCHECK_EQ(framesToProcess, output.bus()->length());
 
     unsigned numberOfOutputChannels = output.numberOfChannels();
-    ASSERT(numberOfInputs() == numberOfOutputChannels);
+    DCHECK_EQ(numberOfInputs(), numberOfOutputChannels);
 
     // Merge multiple inputs into one output.
     for (unsigned i = 0; i < numberOfOutputChannels; ++i) {
         AudioNodeInput& input = this->input(i);
-        ASSERT(input.numberOfChannels() == 1);
+        DCHECK_EQ(input.numberOfChannels(), 1u);
         AudioChannel* outputChannel = output.bus()->channel(i);
         if (input.isConnected()) {
 
@@ -93,7 +93,7 @@ void ChannelMergerHandler::process(size_t framesToProcess)
 
 void ChannelMergerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
     // channelCount must be 1.
@@ -106,7 +106,7 @@ void ChannelMergerHandler::setChannelCount(unsigned long channelCount, Exception
 
 void ChannelMergerHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
     // channcelCountMode must be 'explicit'.

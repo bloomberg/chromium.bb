@@ -239,8 +239,8 @@ void AudioBuffer::copyFromChannel(DOMFloat32Array* destination, long channelNumb
     const float* src = channelData->data();
     float* dst = destination->data();
 
-    ASSERT(src);
-    ASSERT(dst);
+    DCHECK(src);
+    DCHECK(dst);
 
     memcpy(dst, src + startInChannel, count * sizeof(*src));
 }
@@ -287,8 +287,8 @@ void AudioBuffer::copyToChannel(DOMFloat32Array* source, long channelNumber, uns
     const float* src = source->data();
     float* dst = channelData->data();
 
-    ASSERT(src);
-    ASSERT(dst);
+    DCHECK(src);
+    DCHECK(dst);
 
     memcpy(dst + startInChannel, src, count * sizeof(*dst));
 }

@@ -59,7 +59,7 @@ WaveShaperProcessor* WaveShaperNode::getWaveShaperProcessor() const
 
 void WaveShaperNode::setCurve(DOMFloat32Array* curve, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (curve && curve->length() < 2) {
         exceptionState.throwDOMException(
@@ -90,7 +90,7 @@ DOMFloat32Array* WaveShaperNode::curve()
 
 void WaveShaperNode::setOversample(const String& type)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // This is to synchronize with the changes made in
     // AudioBasicProcessorNode::checkNumberOfChannelsForInput() where we can

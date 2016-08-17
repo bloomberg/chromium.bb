@@ -47,8 +47,8 @@ AsyncAudioDecoder::~AsyncAudioDecoder()
 
 void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver* resolver, BaseAudioContext* context)
 {
-    ASSERT(isMainThread());
-    ASSERT(audioData);
+    DCHECK(isMainThread());
+    DCHECK(audioData);
     if (!audioData)
         return;
 
@@ -66,7 +66,7 @@ void AsyncAudioDecoder::decode(DOMArrayBuffer* audioData, float sampleRate, Audi
 
 void AsyncAudioDecoder::notifyComplete(DOMArrayBuffer*, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus* audioBus, ScriptPromiseResolver* resolver, BaseAudioContext* context)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     AudioBuffer* audioBuffer = AudioBuffer::createFromAudioBus(audioBus);
 

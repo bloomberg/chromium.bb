@@ -84,7 +84,7 @@ void WaveShaperProcessor::process(const AudioBus* source, AudioBus* destination,
     }
 
     bool channelCountMatches = source->numberOfChannels() == destination->numberOfChannels() && source->numberOfChannels() == m_kernels.size();
-    ASSERT(channelCountMatches);
+    DCHECK(channelCountMatches);
     if (!channelCountMatches)
         return;
 

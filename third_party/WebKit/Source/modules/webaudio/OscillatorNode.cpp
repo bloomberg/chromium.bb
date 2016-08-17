@@ -136,7 +136,7 @@ bool OscillatorHandler::setType(unsigned type)
 bool OscillatorHandler::calculateSampleAccuratePhaseIncrements(size_t framesToProcess)
 {
     bool isGood = framesToProcess <= m_phaseIncrements.size() && framesToProcess <= m_detuneValues.size();
-    ASSERT(isGood);
+    DCHECK(isGood);
     if (!isGood)
         return false;
 
@@ -208,7 +208,7 @@ void OscillatorHandler::process(size_t framesToProcess)
         return;
     }
 
-    ASSERT(framesToProcess <= m_phaseIncrements.size());
+    DCHECK_LE(framesToProcess, m_phaseIncrements.size());
     if (framesToProcess > m_phaseIncrements.size())
         return;
 
@@ -241,7 +241,7 @@ void OscillatorHandler::process(size_t framesToProcess)
 
     float* destP = outputBus->channel(0)->mutableData();
 
-    ASSERT(quantumFrameOffset <= framesToProcess);
+    DCHECK_LE(quantumFrameOffset, framesToProcess);
 
     // We keep virtualReadIndex double-precision since we're accumulating values.
     double virtualReadIndex = m_virtualReadIndex;
@@ -314,8 +314,8 @@ void OscillatorHandler::process(size_t framesToProcess)
 
 void OscillatorHandler::setPeriodicWave(PeriodicWave* periodicWave)
 {
-    ASSERT(isMainThread());
-    ASSERT(periodicWave);
+    DCHECK(isMainThread());
+    DCHECK(periodicWave);
 
     // This synchronizes with process().
     MutexLocker processLocker(m_processLock);

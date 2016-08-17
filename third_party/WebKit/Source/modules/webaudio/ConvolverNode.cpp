@@ -70,7 +70,7 @@ ConvolverHandler::~ConvolverHandler()
 void ConvolverHandler::process(size_t framesToProcess)
 {
     AudioBus* outputBus = output(0).bus();
-    ASSERT(outputBus);
+    DCHECK(outputBus);
 
     // Synchronize with possible dynamic changes to the impulse response.
     MutexTryLocker tryLocker(m_processLock);
@@ -92,7 +92,7 @@ void ConvolverHandler::process(size_t framesToProcess)
 
 void ConvolverHandler::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (!buffer)
         return;
@@ -141,7 +141,7 @@ void ConvolverHandler::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionS
 
 AudioBuffer* ConvolverHandler::buffer()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     return m_buffer.get();
 }
 

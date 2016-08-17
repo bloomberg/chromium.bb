@@ -60,7 +60,7 @@ RealtimeAnalyser::RealtimeAnalyser()
 
 bool RealtimeAnalyser::setFftSize(size_t size)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // Only allow powers of two.
     unsigned log2size = static_cast<unsigned>(log2(size));
@@ -82,13 +82,13 @@ bool RealtimeAnalyser::setFftSize(size_t size)
 void RealtimeAnalyser::writeInput(AudioBus* bus, size_t framesToProcess)
 {
     bool isBusGood = bus && bus->numberOfChannels() > 0 && bus->channel(0)->length() >= framesToProcess;
-    ASSERT(isBusGood);
+    DCHECK(isBusGood);
     if (!isBusGood)
         return;
 
     // FIXME : allow to work with non-FFTSize divisible chunking
     bool isDestinationGood = m_writeIndex < m_inputBuffer.size() && m_writeIndex + framesToProcess <= m_inputBuffer.size();
-    ASSERT(isDestinationGood);
+    DCHECK(isDestinationGood);
     if (!isDestinationGood)
         return;
 
@@ -110,7 +110,7 @@ namespace {
 
 void applyWindow(float* p, size_t n)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // Blackman window
     double alpha = 0.16;
@@ -129,7 +129,7 @@ void applyWindow(float* p, size_t n)
 
 void RealtimeAnalyser::doFFTAnalysis()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // Unroll the input buffer into a temporary buffer, where we'll apply an analysis window followed by an FFT.
     size_t fftSize = this->fftSize();
@@ -196,8 +196,8 @@ void RealtimeAnalyser::convertFloatToDb(DOMFloat32Array* destinationArray)
 
 void RealtimeAnalyser::getFloatFrequencyData(DOMFloat32Array* destinationArray, double currentTime)
 {
-    ASSERT(isMainThread());
-    ASSERT(destinationArray);
+    DCHECK(isMainThread());
+    DCHECK(destinationArray);
 
     if (currentTime <= m_lastAnalysisTime) {
         convertFloatToDb(destinationArray);
@@ -243,8 +243,8 @@ void RealtimeAnalyser::convertToByteData(DOMUint8Array* destinationArray)
 
 void RealtimeAnalyser::getByteFrequencyData(DOMUint8Array* destinationArray, double currentTime)
 {
-    ASSERT(isMainThread());
-    ASSERT(destinationArray);
+    DCHECK(isMainThread());
+    DCHECK(destinationArray);
 
     if (currentTime <= m_lastAnalysisTime) {
         // FIXME: Is it worth caching the data so we don't have to do the conversion every time?
@@ -262,14 +262,14 @@ void RealtimeAnalyser::getByteFrequencyData(DOMUint8Array* destinationArray, dou
 
 void RealtimeAnalyser::getFloatTimeDomainData(DOMFloat32Array* destinationArray)
 {
-    ASSERT(isMainThread());
-    ASSERT(destinationArray);
+    DCHECK(isMainThread());
+    DCHECK(destinationArray);
 
     unsigned fftSize = this->fftSize();
     size_t len = std::min(fftSize, destinationArray->length());
     if (len > 0) {
         bool isInputBufferGood = m_inputBuffer.size() == InputBufferSize && m_inputBuffer.size() > fftSize;
-        ASSERT(isInputBufferGood);
+        DCHECK(isInputBufferGood);
         if (!isInputBufferGood)
             return;
 
@@ -289,14 +289,14 @@ void RealtimeAnalyser::getFloatTimeDomainData(DOMFloat32Array* destinationArray)
 
 void RealtimeAnalyser::getByteTimeDomainData(DOMUint8Array* destinationArray)
 {
-    ASSERT(isMainThread());
-    ASSERT(destinationArray);
+    DCHECK(isMainThread());
+    DCHECK(destinationArray);
 
     unsigned fftSize = this->fftSize();
     size_t len = std::min(fftSize, destinationArray->length());
     if (len > 0) {
         bool isInputBufferGood = m_inputBuffer.size() == InputBufferSize && m_inputBuffer.size() > fftSize;
-        ASSERT(isInputBufferGood);
+        DCHECK(isInputBufferGood);
         if (!isInputBufferGood)
             return;
 

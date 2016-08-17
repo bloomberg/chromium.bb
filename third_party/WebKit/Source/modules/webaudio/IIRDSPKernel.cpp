@@ -10,8 +10,8 @@ namespace blink {
 
 void IIRDSPKernel::process(const float* source, float* destination, size_t framesToProcess)
 {
-    ASSERT(source);
-    ASSERT(destination);
+    DCHECK(source);
+    DCHECK(destination);
 
     m_iir.process(source, destination, framesToProcess);
 }
@@ -19,7 +19,7 @@ void IIRDSPKernel::process(const float* source, float* destination, size_t frame
 void IIRDSPKernel::getFrequencyResponse(int nFrequencies, const float* frequencyHz, float* magResponse, float* phaseResponse)
 {
     bool isGood = nFrequencies > 0 && frequencyHz && magResponse && phaseResponse;
-    ASSERT(isGood);
+    DCHECK(isGood);
     if (!isGood)
         return;
 

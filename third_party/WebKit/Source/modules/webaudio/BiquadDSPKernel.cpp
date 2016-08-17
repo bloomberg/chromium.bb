@@ -115,9 +115,9 @@ void BiquadDSPKernel::updateCoefficients(int numberOfFrames, const float* cutoff
 
 void BiquadDSPKernel::process(const float* source, float* destination, size_t framesToProcess)
 {
-    ASSERT(source);
-    ASSERT(destination);
-    ASSERT(getBiquadProcessor());
+    DCHECK(source);
+    DCHECK(destination);
+    DCHECK(getBiquadProcessor());
 
     // Recompute filter coefficients if any of the parameters have changed.
     // FIXME: as an optimization, implement a way that a Biquad object can simply copy its internal filter coefficients from another Biquad object.
@@ -138,7 +138,7 @@ void BiquadDSPKernel::process(const float* source, float* destination, size_t fr
 void BiquadDSPKernel::getFrequencyResponse(int nFrequencies, const float* frequencyHz, float* magResponse, float* phaseResponse)
 {
     bool isGood = nFrequencies > 0 && frequencyHz && magResponse && phaseResponse;
-    ASSERT(isGood);
+    DCHECK(isGood);
     if (!isGood)
         return;
 

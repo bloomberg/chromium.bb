@@ -76,7 +76,7 @@ protected:
         void provideInput(AudioBus* destinationBus, size_t numberOfFrames) override
         {
             bool isGood = destinationBus && destinationBus->length() == numberOfFrames && m_sourceBus->length() == numberOfFrames;
-            ASSERT(isGood);
+            DCHECK(isGood);
             if (isGood)
                 destinationBus->copyFrom(*m_sourceBus);
         }

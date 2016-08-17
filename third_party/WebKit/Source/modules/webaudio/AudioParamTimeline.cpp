@@ -156,7 +156,7 @@ AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createSetValueCur
 
 void AudioParamTimeline::setValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (!isNonNegativeAudioParamTime(time, exceptionState))
         return;
@@ -166,7 +166,7 @@ void AudioParamTimeline::setValueAtTime(float value, double time, ExceptionState
 
 void AudioParamTimeline::linearRampToValueAtTime(float value, double time, float initialValue, double callTime, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (!isNonNegativeAudioParamTime(time, exceptionState))
         return;
@@ -176,7 +176,7 @@ void AudioParamTimeline::linearRampToValueAtTime(float value, double time, float
 
 void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, float initialValue, double callTime, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (!isNonNegativeAudioParamTime(time, exceptionState))
         return;
@@ -196,7 +196,7 @@ void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, 
 
 void AudioParamTimeline::setTargetAtTime(float target, double time, double timeConstant, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (!isNonNegativeAudioParamTime(time, exceptionState)
         || !isPositiveAudioParamTime(timeConstant, exceptionState, "Time constant"))
@@ -207,8 +207,8 @@ void AudioParamTimeline::setTargetAtTime(float target, double time, double timeC
 
 void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
-    ASSERT(curve);
+    DCHECK(isMainThread());
+    DCHECK(curve);
 
     if (!isNonNegativeAudioParamTime(time, exceptionState)
         || !isPositiveAudioParamTime(duration, exceptionState, "Duration"))
@@ -234,7 +234,7 @@ void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve, double time
 
 void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // Sanity check the event. Be super careful we're not getting infected with NaN or Inf. These
     // should have been handled by the caller.
@@ -245,7 +245,7 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event, ExceptionState& ex
         && std::isfinite(event.duration())
         && event.duration() >= 0;
 
-    ASSERT(isValid);
+    DCHECK(isValid);
     if (!isValid)
         return;
 
@@ -324,7 +324,7 @@ bool AudioParamTimeline::hasValues() const
 
 void AudioParamTimeline::cancelScheduledValues(double startTime, ExceptionState& exceptionState)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     MutexLocker locker(m_eventsLock);
 
@@ -397,8 +397,8 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
     double sampleRate,
     double controlRate)
 {
-    ASSERT(values);
-    ASSERT(numberOfValues >= 1);
+    DCHECK(values);
+    DCHECK_GE(numberOfValues, 1u);
     if (!values || !(numberOfValues >= 1))
         return defaultValue;
 
@@ -448,7 +448,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
         double firstEventFrame = ceil(firstEventTime * sampleRate);
         if (endFrame > firstEventFrame)
             fillToFrame = static_cast<size_t>(firstEventFrame);
-        ASSERT(fillToFrame >= startFrame);
+        DCHECK_GE(fillToFrame, startFrame);
 
         fillToFrame -= startFrame;
         fillToFrame = std::min(fillToFrame, static_cast<size_t>(numberOfValues));
@@ -568,7 +568,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
         if (endFrame > time2 * sampleRate)
             fillToEndFrame = static_cast<size_t>(ceil(time2 * sampleRate));
 
-        ASSERT(fillToEndFrame >= startFrame);
+        DCHECK_GE(fillToEndFrame, startFrame);
         size_t fillToFrame = fillToEndFrame - startFrame;
         fillToFrame = std::min(fillToFrame, static_cast<size_t>(numberOfValues));
 
@@ -907,8 +907,8 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
                         // clamped to 1 because currentVirtualIndex can exceed curveIndex0 by more
                         // than one.  This can happen when we reached the end of the curve but still
                         // need values to fill out the current rendering quantum.
-                        ASSERT(curveIndex0 < numberOfCurvePoints);
-                        ASSERT(curveIndex1 < numberOfCurvePoints);
+                        DCHECK_LT(curveIndex0, numberOfCurvePoints);
+                        DCHECK_LT(curveIndex1, numberOfCurvePoints);
                         float c0 = curveData[curveIndex0];
                         float c1 = curveData[curveIndex1];
                         double delta = std::min(currentVirtualIndex - curveIndex0, 1.0);
