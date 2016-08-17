@@ -1,0 +1,64 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+    test(() => assert_selection(
+        [
+            '<div contenteditable style="word-wrap: break-word;">',
+                '<div><b>a</b>^b|</div>',
+            '</div>'
+        ].join(''),
+        'bold',
+        [
+            '<div contenteditable style="word-wrap: break-word;">',
+                '<div><b>a^b|</b></div>',
+            '</div>'
+        ].join('')),
+        'Extend previous B');
+
+    test(() => assert_selection(
+        [
+            '<div contenteditable style="word-wrap: break-word;">',
+                '<div><b>a|</b>c</div>',
+            '</div>'
+        ].join(''),
+        'insertText b',
+        [
+            '<div contenteditable style="word-wrap: break-word;">',
+                '<div><b>ab|</b>c</div>',
+            '</div>'
+        ].join('')),
+        'Insert a character into existing B');
+
+    test(() => assert_selection(
+        [
+            '<div contenteditable style="word-wrap: break-word;">',
+                '<div><b>a|</b>c</div>',
+            '</div>'
+        ].join(''),
+        selection => {
+            selection.document.execCommand('bold'); // disable bold
+            selection.document.execCommand('insertText', false, 'b');
+        },
+        [
+            '<div contenteditable style="word-wrap: break-word;">',
+                '<div><b>a</b>b|c</div>',
+            '</div>'
+        ].join('')),
+        'Simulate Ctrl+B then typing a character');
+
+    test(() => assert_selection(
+        [
+            '<div contenteditable style="word-wrap: break-word;">',
+                '<div><div><b>a^</b></div><div>b|</div></div>',
+            '</div>'
+        ].join(''),
+        'bold',
+        [
+            '<div contenteditable style="word-wrap: break-word;">',
+                '<div><div><b>a^</b></div><div><b>b|</b></div></div>',
+            '</div>'
+        ].join('')),
+        'B element should not spread beyond DIV');
+</script>
