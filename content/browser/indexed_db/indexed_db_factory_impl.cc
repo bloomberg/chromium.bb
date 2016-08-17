@@ -172,15 +172,16 @@ void IndexedDBFactoryImpl::GetDatabaseNames(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const Origin& origin,
     const base::FilePath& data_directory,
-    net::URLRequestContext* request_context) {
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
   IDB_TRACE("IndexedDBFactoryImpl::GetDatabaseNames");
   // TODO(dgrogan): Plumb data_loss back to script eventually?
   IndexedDBDataLossInfo data_loss_info;
   bool disk_full;
   leveldb::Status s;
   // TODO(cmumford): Handle this error
-  scoped_refptr<IndexedDBBackingStore> backing_store = OpenBackingStore(
-      origin, data_directory, request_context, &data_loss_info, &disk_full, &s);
+  scoped_refptr<IndexedDBBackingStore> backing_store =
+      OpenBackingStore(origin, data_directory, request_context_getter,
+                       &data_loss_info, &disk_full, &s);
   if (!backing_store.get()) {
     callbacks->OnError(
         IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
@@ -208,7 +209,7 @@ void IndexedDBFactoryImpl::GetDatabaseNames(
 
 void IndexedDBFactoryImpl::DeleteDatabase(
     const base::string16& name,
-    net::URLRequestContext* request_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const Origin& origin,
     const base::FilePath& data_directory) {
@@ -226,8 +227,9 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   IndexedDBDataLossInfo data_loss_info;
   bool disk_full = false;
   leveldb::Status s;
-  scoped_refptr<IndexedDBBackingStore> backing_store = OpenBackingStore(
-      origin, data_directory, request_context, &data_loss_info, &disk_full, &s);
+  scoped_refptr<IndexedDBBackingStore> backing_store =
+      OpenBackingStore(origin, data_directory, request_context_getter,
+                       &data_loss_info, &disk_full, &s);
   if (!backing_store.get()) {
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  ASCIIToUTF16(
@@ -341,20 +343,20 @@ scoped_refptr<IndexedDBBackingStore>
 IndexedDBFactoryImpl::OpenBackingStoreHelper(
     const Origin& origin,
     const base::FilePath& data_directory,
-    net::URLRequestContext* request_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     IndexedDBDataLossInfo* data_loss_info,
     bool* disk_full,
     bool first_time,
     leveldb::Status* status) {
   return IndexedDBBackingStore::Open(
-      this, origin, data_directory, request_context, data_loss_info, disk_full,
-      context_->TaskRunner(), first_time, status);
+      this, origin, data_directory, request_context_getter, data_loss_info,
+      disk_full, context_->TaskRunner(), first_time, status);
 }
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
     const Origin& origin,
     const base::FilePath& data_directory,
-    net::URLRequestContext* request_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     IndexedDBDataLossInfo* data_loss_info,
     bool* disk_full,
     leveldb::Status* status) {
@@ -375,7 +377,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
     first_time = !backends_opened_since_boot_.count(origin);
 
     backing_store =
-        OpenBackingStoreHelper(origin, data_directory, request_context,
+        OpenBackingStoreHelper(origin, data_directory, request_context_getter,
                                data_loss_info, disk_full, first_time, status);
   }
 
@@ -400,7 +402,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
 void IndexedDBFactoryImpl::Open(
     const base::string16& name,
     std::unique_ptr<IndexedDBPendingConnection> connection,
-    net::URLRequestContext* request_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     const Origin& origin,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactoryImpl::Open");
@@ -413,7 +415,7 @@ void IndexedDBFactoryImpl::Open(
   if (!was_open) {
     leveldb::Status s;
     scoped_refptr<IndexedDBBackingStore> backing_store =
-        OpenBackingStore(origin, data_directory, request_context,
+        OpenBackingStore(origin, data_directory, request_context_getter,
                          &data_loss_info, &disk_full, &s);
     if (!backing_store.get()) {
       if (disk_full) {

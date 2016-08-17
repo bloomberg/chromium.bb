@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -66,10 +67,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                           net::URLRequestContextGetter* request_context_getter,
                           IndexedDBContextImpl* indexed_db_context,
                           ChromeBlobStorageContext* blob_storage_context);
-  IndexedDBDispatcherHost(int ipc_process_id,
-                          net::URLRequestContext* request_context,
-                          IndexedDBContextImpl* indexed_db_context,
-                          ChromeBlobStorageContext* blob_storage_context);
 
   static ::IndexedDBDatabaseMetadata ConvertMetadata(
       const content::IndexedDBDatabaseMetadata& metadata);
@@ -79,7 +76,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
       const IndexedDBObservation* observation);
 
   // BrowserMessageFilter implementation.
-  void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelClosing() override;
   void OnDestruct() const override;
   base::TaskRunner* OverrideTaskRunnerForMessage(
@@ -298,10 +294,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   void ResetDispatcherHosts();
   void DropBlobData(const std::string& uuid);
 
-  // The getter holds the context until OnChannelConnected() can be called from
-  // the IO thread, which will extract the net::URLRequestContext from it.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  net::URLRequestContext* request_context_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 

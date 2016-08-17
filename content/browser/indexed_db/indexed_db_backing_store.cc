@@ -749,7 +749,7 @@ IndexedDBBackingStore::IndexedDBBackingStore(
     IndexedDBFactory* indexed_db_factory,
     const Origin& origin,
     const base::FilePath& blob_path,
-    net::URLRequestContext* request_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     std::unique_ptr<LevelDBDatabase> db,
     std::unique_ptr<LevelDBComparator> comparator,
     base::SequencedTaskRunner* task_runner)
@@ -757,7 +757,7 @@ IndexedDBBackingStore::IndexedDBBackingStore(
       origin_(origin),
       blob_path_(blob_path),
       origin_identifier_(ComputeOriginIdentifier(origin)),
-      request_context_(request_context),
+      request_context_getter_(request_context_getter),
       task_runner_(task_runner),
       db_(std::move(db)),
       comparator_(std::move(comparator)),
@@ -817,7 +817,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     IndexedDBFactory* indexed_db_factory,
     const Origin& origin,
     const base::FilePath& path_base,
-    net::URLRequestContext* request_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context,
     IndexedDBDataLossInfo* data_loss_info,
     bool* disk_full,
     base::SequencedTaskRunner* task_runner,
@@ -958,7 +958,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     IndexedDBFactory* indexed_db_factory,
     const Origin& origin,
     const base::FilePath& path_base,
-    net::URLRequestContext* request_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     IndexedDBDataLossInfo* data_loss_info,
     bool* is_disk_full,
     LevelDBFactory* leveldb_factory,
@@ -1085,7 +1085,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
           base::trace_event::MemoryDumpProvider::Options());
 
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      Create(indexed_db_factory, origin, blob_path, request_context,
+      Create(indexed_db_factory, origin, blob_path, request_context_getter,
              std::move(db), std::move(comparator), task_runner, status);
 
   if (clean_journal && backing_store.get()) {
@@ -1141,7 +1141,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
     IndexedDBFactory* indexed_db_factory,
     const Origin& origin,
     const base::FilePath& blob_path,
-    net::URLRequestContext* request_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context,
     std::unique_ptr<LevelDBDatabase> db,
     std::unique_ptr<LevelDBComparator> comparator,
     base::SequencedTaskRunner* task_runner,
@@ -2323,10 +2323,11 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     }
   }
 
-  void WriteBlobToFileOnIOThread(const FilePath& file_path,
-                                 const GURL& blob_url,
-                                 const base::Time& last_modified,
-                                 net::URLRequestContext* request_context) {
+  void WriteBlobToFileOnIOThread(
+      const FilePath& file_path,
+      const GURL& blob_url,
+      const base::Time& last_modified,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     std::unique_ptr<storage::FileStreamWriter> writer(
         storage::FileStreamWriter::CreateForLocalFile(
@@ -2337,6 +2338,8 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
             std::move(writer), storage::FlushPolicy::FLUSH_ON_COMPLETION));
 
     DCHECK(blob_url.is_valid());
+    net::URLRequestContext* request_context =
+        request_context_getter->GetURLRequestContext();
     std::unique_ptr<net::URLRequest> blob_request(
         request_context->CreateRequest(blob_url, net::DEFAULT_PRIORITY,
                                        delegate.get()));
@@ -2439,14 +2442,10 @@ bool IndexedDBBackingStore::WriteBlobFile(
     scoped_refptr<LocalWriteClosure> write_closure(
         new LocalWriteClosure(chained_blob_writer, task_runner_.get()));
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
+        content::BrowserThread::IO, FROM_HERE,
         base::Bind(&LocalWriteClosure::WriteBlobToFileOnIOThread,
-                   write_closure.get(),
-                   path,
-                   descriptor.url(),
-                   descriptor.last_modified(),
-                   request_context_));
+                   write_closure.get(), path, descriptor.url(),
+                   descriptor.last_modified(), request_context_getter_));
   }
   return true;
 }

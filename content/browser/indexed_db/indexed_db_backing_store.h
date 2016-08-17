@@ -47,7 +47,7 @@ class FileWriterDelegate;
 }
 
 namespace net {
-class URLRequestContext;
+class URLRequestContextGetter;
 }
 
 namespace content {
@@ -375,7 +375,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       IndexedDBFactory* indexed_db_factory,
       const url::Origin& origin,
       const base::FilePath& path_base,
-      net::URLRequestContext* request_context,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       base::SequencedTaskRunner* task_runner,
@@ -385,7 +385,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       IndexedDBFactory* indexed_db_factory,
       const url::Origin& origin,
       const base::FilePath& path_base,
-      net::URLRequestContext* request_context,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       LevelDBFactory* leveldb_factory,
@@ -565,13 +565,14 @@ class CONTENT_EXPORT IndexedDBBackingStore
  protected:
   friend class base::RefCounted<IndexedDBBackingStore>;
 
-  IndexedDBBackingStore(IndexedDBFactory* indexed_db_factory,
-                        const url::Origin& origin,
-                        const base::FilePath& blob_path,
-                        net::URLRequestContext* request_context,
-                        std::unique_ptr<LevelDBDatabase> db,
-                        std::unique_ptr<LevelDBComparator> comparator,
-                        base::SequencedTaskRunner* task_runner);
+  IndexedDBBackingStore(
+      IndexedDBFactory* indexed_db_factory,
+      const url::Origin& origin,
+      const base::FilePath& blob_path,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      std::unique_ptr<LevelDBDatabase> db,
+      std::unique_ptr<LevelDBComparator> comparator,
+      base::SequencedTaskRunner* task_runner);
   virtual ~IndexedDBBackingStore();
 
   bool is_incognito() const { return !indexed_db_factory_; }
@@ -602,7 +603,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       IndexedDBFactory* indexed_db_factory,
       const url::Origin& origin,
       const base::FilePath& blob_path,
-      net::URLRequestContext* request_context,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       std::unique_ptr<LevelDBDatabase> db,
       std::unique_ptr<LevelDBComparator> comparator,
       base::SequencedTaskRunner* task_runner,
@@ -652,7 +653,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // provides for future flexibility.
   const std::string origin_identifier_;
 
-  net::URLRequestContext* request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::set<int> child_process_ids_granted_;
   std::map<std::string, std::unique_ptr<BlobChangeRecord>> incognito_blob_map_;

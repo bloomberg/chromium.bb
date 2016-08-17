@@ -71,7 +71,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
       IndexedDBFactory* indexed_db_factory,
       const Origin& origin,
       const base::FilePath& path_base,
-      net::URLRequestContext* request_context,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       LevelDBFactory* leveldb_factory,
       base::SequencedTaskRunner* task_runner,
       leveldb::Status* status) {
@@ -98,7 +98,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
 
     scoped_refptr<TestableIndexedDBBackingStore> backing_store(
         new TestableIndexedDBBackingStore(indexed_db_factory, origin, blob_path,
-                                          request_context, std::move(db),
+                                          request_context_getter, std::move(db),
                                           std::move(comparator), task_runner));
 
     *status = backing_store->SetUpMetadata();
@@ -155,17 +155,18 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   }
 
  private:
-  TestableIndexedDBBackingStore(IndexedDBFactory* indexed_db_factory,
-                                const Origin& origin,
-                                const base::FilePath& blob_path,
-                                net::URLRequestContext* request_context,
-                                std::unique_ptr<LevelDBDatabase> db,
-                                std::unique_ptr<LevelDBComparator> comparator,
-                                base::SequencedTaskRunner* task_runner)
+  TestableIndexedDBBackingStore(
+      IndexedDBFactory* indexed_db_factory,
+      const Origin& origin,
+      const base::FilePath& blob_path,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      std::unique_ptr<LevelDBDatabase> db,
+      std::unique_ptr<LevelDBComparator> comparator,
+      base::SequencedTaskRunner* task_runner)
       : IndexedDBBackingStore(indexed_db_factory,
                               origin,
                               blob_path,
-                              request_context,
+                              request_context_getter,
                               std::move(db),
                               std::move(comparator),
                               task_runner),
@@ -188,13 +189,13 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
 
   scoped_refptr<TestableIndexedDBBackingStore> OpenBackingStoreForTest(
       const Origin& origin,
-      net::URLRequestContext* url_request_context) {
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
     IndexedDBDataLossInfo data_loss_info;
     bool disk_full;
     leveldb::Status status;
-    scoped_refptr<IndexedDBBackingStore> backing_store =
-        OpenBackingStore(origin, context()->data_path(), url_request_context,
-                         &data_loss_info, &disk_full, &status);
+    scoped_refptr<IndexedDBBackingStore> backing_store = OpenBackingStore(
+        origin, context()->data_path(), url_request_context_getter,
+        &data_loss_info, &disk_full, &status);
     scoped_refptr<TestableIndexedDBBackingStore> testable_store =
         static_cast<TestableIndexedDBBackingStore*>(backing_store.get());
     return testable_store;
@@ -206,14 +207,14 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
   scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
       const Origin& origin,
       const base::FilePath& data_directory,
-      net::URLRequestContext* request_context,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       bool first_time,
       leveldb::Status* status) override {
     DefaultLevelDBFactory leveldb_factory;
     return TestableIndexedDBBackingStore::Open(
-        this, origin, data_directory, request_context, &leveldb_factory,
+        this, origin, data_directory, request_context_getter, &leveldb_factory,
         context()->TaskRunner(), status);
   }
 
@@ -227,6 +228,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
   void SetUp() override {
     const Origin origin(GURL("http://localhost:81"));
     task_runner_ = new base::TestSimpleTaskRunner();
+    url_request_context_getter_ =
+        new net::TestURLRequestContextGetter(task_runner_);
     special_storage_policy_ = new MockSpecialStoragePolicy();
     quota_manager_proxy_ = new MockQuotaManagerProxy(nullptr, nullptr);
     special_storage_policy_->SetAllUnlimited(true);
@@ -235,8 +238,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
         temp_dir_.path(), special_storage_policy_.get(),
         quota_manager_proxy_.get(), task_runner_.get());
     idb_factory_ = new TestIDBFactory(idb_context_.get());
-    backing_store_ =
-        idb_factory_->OpenBackingStoreForTest(origin, &url_request_context_);
+    backing_store_ = idb_factory_->OpenBackingStoreForTest(
+        origin, url_request_context_getter_);
 
     // useful keys and values during tests
     m_value1 = IndexedDBValue("value1", std::vector<IndexedDBBlobInfo>());
@@ -336,7 +339,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   }
 
  protected:
-  // Must be initialized before url_request_context_
+  // Must be initialized before url_request_context_getter_
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir temp_dir_;
@@ -345,7 +348,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   scoped_refptr<TestIDBFactory> idb_factory_;
-  net::TestURLRequestContext url_request_context_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   scoped_refptr<TestableIndexedDBBackingStore> backing_store_;
 

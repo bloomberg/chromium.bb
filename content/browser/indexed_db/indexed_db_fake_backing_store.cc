@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace content {
 
@@ -14,7 +15,7 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
     : IndexedDBBackingStore(NULL /* indexed_db_factory */,
                             url::Origin(GURL("http://localhost:81")),
                             base::FilePath(),
-                            NULL /* request_context */,
+                            scoped_refptr<net::URLRequestContextGetter>(),
                             std::unique_ptr<LevelDBDatabase>(),
                             std::unique_ptr<LevelDBComparator>(),
                             NULL /* task_runner */) {}

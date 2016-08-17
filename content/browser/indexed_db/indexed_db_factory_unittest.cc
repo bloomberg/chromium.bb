@@ -213,7 +213,7 @@ class DiskFullFactory : public IndexedDBFactoryImpl {
   scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const Origin& origin,
       const base::FilePath& data_directory,
-      net::URLRequestContext* request_context,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       leveldb::Status* s) override {

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -34,18 +35,20 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
                         const url::Origin& origin,
                         const base::FilePath& data_directory,
-                        net::URLRequestContext* request_context) override;
+                        scoped_refptr<net::URLRequestContextGetter>
+                            request_context_getter) override;
   void Open(const base::string16& name,
             std::unique_ptr<IndexedDBPendingConnection> connection,
-            net::URLRequestContext* request_context,
+            scoped_refptr<net::URLRequestContextGetter> request_context_getter,
             const url::Origin& origin,
             const base::FilePath& data_directory) override;
 
-  void DeleteDatabase(const base::string16& name,
-                      net::URLRequestContext* request_context,
-                      scoped_refptr<IndexedDBCallbacks> callbacks,
-                      const url::Origin& origin,
-                      const base::FilePath& data_directory) override;
+  void DeleteDatabase(
+      const base::string16& name,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
+      const url::Origin& origin,
+      const base::FilePath& data_directory) override;
 
   void HandleBackingStoreFailure(const url::Origin& origin) override;
   void HandleBackingStoreCorruption(
@@ -75,7 +78,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const url::Origin& origin,
       const base::FilePath& data_directory,
-      net::URLRequestContext* request_context,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       leveldb::Status* s) override;
@@ -83,7 +86,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
       const url::Origin& origin,
       const base::FilePath& data_directory,
-      net::URLRequestContext* request_context,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       bool first_time,

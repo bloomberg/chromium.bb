@@ -24,7 +24,6 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_observation.h"
-#include "content/browser/indexed_db/indexed_db_observation.h"
 #include "content/browser/indexed_db/indexed_db_observer_changes.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
@@ -62,22 +61,6 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     ChromeBlobStorageContext* blob_storage_context)
     : BrowserMessageFilter(IndexedDBMsgStart),
       request_context_getter_(request_context_getter),
-      request_context_(NULL),
-      indexed_db_context_(indexed_db_context),
-      blob_storage_context_(blob_storage_context),
-      database_dispatcher_host_(base::MakeUnique<DatabaseDispatcherHost>(this)),
-      cursor_dispatcher_host_(base::MakeUnique<CursorDispatcherHost>(this)),
-      ipc_process_id_(ipc_process_id) {
-  DCHECK(indexed_db_context_.get());
-}
-
-IndexedDBDispatcherHost::IndexedDBDispatcherHost(
-    int ipc_process_id,
-    net::URLRequestContext* request_context,
-    IndexedDBContextImpl* indexed_db_context,
-    ChromeBlobStorageContext* blob_storage_context)
-    : BrowserMessageFilter(IndexedDBMsgStart),
-      request_context_(request_context),
       indexed_db_context_(indexed_db_context),
       blob_storage_context_(blob_storage_context),
       database_dispatcher_host_(base::MakeUnique<DatabaseDispatcherHost>(this)),
@@ -87,17 +70,6 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
 }
 
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {}
-
-void IndexedDBDispatcherHost::OnChannelConnected(int32_t peer_pid) {
-  BrowserMessageFilter::OnChannelConnected(peer_pid);
-
-  if (request_context_getter_.get()) {
-    DCHECK(!request_context_);
-    request_context_ = request_context_getter_->GetURLRequestContext();
-    request_context_getter_ = NULL;
-    DCHECK(request_context_);
-  }
-}
 
 void IndexedDBDispatcherHost::OnChannelClosing() {
   bool success = indexed_db_context_->TaskRunner()->PostTask(
@@ -349,7 +321,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   context()->GetIDBFactory()->GetDatabaseNames(
       new IndexedDBCallbacks(this, params.ipc_thread_id,
                              params.ipc_callbacks_id),
-      params.origin, indexed_db_path, request_context_);
+      params.origin, indexed_db_path, request_context_getter_);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
@@ -379,9 +351,9 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
       base::MakeUnique<IndexedDBPendingConnection>(
           callbacks, database_callbacks, ipc_process_id_, host_transaction_id,
           params.version);
-  DCHECK(request_context_);
+  DCHECK(request_context_getter_);
   context()->GetIDBFactory()->Open(params.name, std::move(connection),
-                                   request_context_, params.origin,
+                                   request_context_getter_, params.origin,
                                    indexed_db_path);
 }
 
@@ -395,9 +367,9 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
   }
 
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
-  DCHECK(request_context_);
+  DCHECK(request_context_getter_);
   context()->GetIDBFactory()->DeleteDatabase(
-      params.name, request_context_,
+      params.name, request_context_getter_,
       new IndexedDBCallbacks(this, params.ipc_thread_id,
                              params.ipc_callbacks_id),
       params.origin, indexed_db_path);
