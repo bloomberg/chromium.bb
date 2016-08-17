@@ -1450,7 +1450,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* cli
     , m_autofillClient(0)
     , m_contentSettingsClient(0)
     , m_inputEventsScaleFactorForEmulation(1)
-    , m_userMediaClientImpl(this)
     , m_webDevToolsFrontend(0)
     , m_selfKeepAlive(this)
 {
@@ -1490,11 +1489,12 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
     if (!m_frame)
         return;
 
-    if (m_client)
+    if (m_client) {
         providePushControllerTo(*m_frame, m_client->pushClient());
+        provideUserMediaTo(*m_frame, UserMediaClientImpl::create(m_client->userMediaClient()));
+    }
 
     provideNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());
-    provideUserMediaTo(*m_frame, &m_userMediaClientImpl);
     provideIndexedDBClientTo(*m_frame, IndexedDBClientImpl::create());
     provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
     provideNavigatorContentUtilsTo(*m_frame, NavigatorContentUtilsClientImpl::create(this));

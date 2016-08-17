@@ -51,12 +51,10 @@ public:
     virtual void cancelMediaDevicesRequest(MediaDevicesRequest*) = 0;
     virtual void requestSources(MediaStreamTrackSourcesRequest*) = 0;
     virtual void setMediaDeviceChangeObserver(MediaDevices*) = 0;
-
-protected:
     virtual ~UserMediaClient() { }
 };
 
-MODULES_EXPORT void provideUserMediaTo(LocalFrame&, UserMediaClient*);
+MODULES_EXPORT void provideUserMediaTo(LocalFrame&, std::unique_ptr<UserMediaClient>);
 
 } // namespace blink
 

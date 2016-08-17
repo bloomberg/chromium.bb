@@ -385,8 +385,6 @@ private:
     IntSize m_inputEventsOffsetForEmulation;
     float m_inputEventsScaleFactorForEmulation;
 
-    UserMediaClientImpl m_userMediaClientImpl;
-
     WebDevToolsFrontendImpl* m_webDevToolsFrontend;
 
     Member<Node> m_contextMenuNode;

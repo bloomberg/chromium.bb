@@ -41,8 +41,8 @@
 
 namespace blink {
 
-UserMediaClientImpl::UserMediaClientImpl(WebLocalFrameImpl* webFrame)
-    : m_client(webFrame->client() ? webFrame->client()->userMediaClient() : 0)
+UserMediaClientImpl::UserMediaClientImpl(WebUserMediaClient* client)
+    : m_client(client)
 {
 }
 

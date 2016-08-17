@@ -44,7 +44,10 @@ class WebLocalFrameImpl;
 
 class UserMediaClientImpl final : public UserMediaClient {
 public:
-    explicit UserMediaClientImpl(WebLocalFrameImpl*);
+    static std::unique_ptr<UserMediaClientImpl> create(WebUserMediaClient* client)
+    {
+        return wrapUnique(new UserMediaClientImpl(client));
+    }
 
     // UserMediaClient ----------------------------------------------
     void requestUserMedia(UserMediaRequest*) override;
@@ -54,7 +57,7 @@ public:
     void requestSources(MediaStreamTrackSourcesRequest*) override;
     void setMediaDeviceChangeObserver(MediaDevices*) override;
 private:
-    UserMediaClientImpl();
+    explicit UserMediaClientImpl(WebUserMediaClient*);
 
     WebUserMediaClient* m_client;
 };

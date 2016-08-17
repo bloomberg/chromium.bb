@@ -31,8 +31,8 @@ const char* UserMediaController::supplementName()
     return "UserMediaController";
 }
 
-UserMediaController::UserMediaController(UserMediaClient* client)
-    : m_client(client)
+UserMediaController::UserMediaController(std::unique_ptr<UserMediaClient> client)
+    : m_client(std::move(client))
 {
 }
 
@@ -41,14 +41,14 @@ DEFINE_TRACE(UserMediaController)
     Supplement<LocalFrame>::trace(visitor);
 }
 
-UserMediaController* UserMediaController::create(UserMediaClient* client)
+UserMediaController* UserMediaController::create(std::unique_ptr<UserMediaClient> client)
 {
-    return new UserMediaController(client);
+    return new UserMediaController(std::move(client));
 }
 
-void provideUserMediaTo(LocalFrame& frame, UserMediaClient* client)
+void provideUserMediaTo(LocalFrame& frame, std::unique_ptr<UserMediaClient> client)
 {
-    UserMediaController::provideTo(frame, UserMediaController::supplementName(), UserMediaController::create(client));
+    UserMediaController::provideTo(frame, UserMediaController::supplementName(), UserMediaController::create(std::move(client)));
 }
 
 } // namespace blink
