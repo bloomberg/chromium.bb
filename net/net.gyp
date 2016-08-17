@@ -1141,15 +1141,6 @@
             'net',
             'net_with_v8',
           ],
-          'conditions': [
-            [ 'use_glib == 1', {
-                'dependencies': [
-                  '../build/linux/system.gyp:gconf',
-                  '../build/linux/system.gyp:gio',
-                ],
-              },
-            ],
-          ],
           'sources': [
             'tools/net_watcher/net_watcher.cc',
           ],
