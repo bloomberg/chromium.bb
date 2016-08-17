@@ -893,6 +893,25 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'bypass', 'count', bypass_count))
 
+  def AddResultsForBadHTTPSFallback(self, tab, results):
+    via_count = 0
+    tab.WaitForDocumentReadyStateToBeComplete(timeout=30)
+    for resp in self.IterResponses(tab):
+      if resp.HasChromeProxyViaHeader() and (resp.remote_port == 80
+          or resp.remote_port == None):
+        via_count += 1
+      else:
+        r = resp.response
+        raise ChromeProxyMetricException, (
+            'Response for %s should have via header and be on port 80 after '
+            'bad proxy HTTPS response.\nReponse: status=(%d)\nport=(%d)\n'
+            'Headers:\n %s' % (
+                r.url, r.status, resp.remote_port, r.headers))
+    if via_count == 0:
+      raise ChromeProxyMetricException('No pages were tested!')
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'via', 'count', via_count))
+
 PROXIED = 'proxied'
 DIRECT = 'direct'
 
