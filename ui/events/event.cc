@@ -1047,8 +1047,6 @@ KeyEvent::KeyEvent(const KeyEvent& rhs)
       code_(rhs.code_),
       is_char_(rhs.is_char_),
       key_(rhs.key_) {
-  if (rhs.extended_key_event_data_)
-    extended_key_event_data_.reset(rhs.extended_key_event_data_->Clone());
 }
 
 KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
@@ -1058,19 +1056,11 @@ KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
     code_ = rhs.code_;
     key_ = rhs.key_;
     is_char_ = rhs.is_char_;
-
-    if (rhs.extended_key_event_data_)
-      extended_key_event_data_.reset(rhs.extended_key_event_data_->Clone());
   }
   return *this;
 }
 
 KeyEvent::~KeyEvent() {}
-
-void KeyEvent::SetExtendedKeyEventData(
-    std::unique_ptr<ExtendedKeyEventData> data) {
-  extended_key_event_data_ = std::move(data);
-}
 
 void KeyEvent::ApplyLayout() const {
   ui::DomCode code = code_;
