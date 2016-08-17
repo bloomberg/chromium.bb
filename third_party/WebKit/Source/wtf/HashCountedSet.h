@@ -135,23 +135,6 @@ inline void HashCountedSet<T, U, V, W>::removeAll(iterator it)
     m_impl.remove(it);
 }
 
-template <typename T, typename U, typename V, typename W, typename VectorType>
-inline void copyToVector(const HashCountedSet<T, U, V, W>& collection, VectorType& vector)
-{
-    typedef typename HashCountedSet<T, U, V, W>::const_iterator iterator;
-
-    {
-        // Disallow GC across resize allocation, see crbug.com/568173
-        typename VectorType::GCForbiddenScope scope;
-        vector.resize(collection.size());
-    }
-
-    iterator it = collection.begin();
-    iterator end = collection.end();
-    for (unsigned i = 0; it != end; ++it, ++i)
-        vector[i] = *it;
-}
-
 template <typename Value, typename HashFunctions, typename Traits, typename Allocator, size_t inlineCapacity, typename VectorAllocator>
 inline void copyToVector(const HashCountedSet<Value, HashFunctions, Traits, Allocator>& collection, Vector<Value, inlineCapacity, VectorAllocator>& vector)
 {
