@@ -18,6 +18,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "gpu/config/gpu_switches.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -204,6 +205,20 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
       reinterpret_cast<const char*>(glGetStringFn(GL_RENDERER));
   gpu_info->gl_extensions =
       reinterpret_cast<const char*>(glGetStringFn(GL_EXTENSIONS));
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kGpuTestingGLVendor)) {
+    gpu_info->gl_vendor =
+        command_line->GetSwitchValueASCII(switches::kGpuTestingGLVendor);
+  }
+  if (command_line->HasSwitch(switches::kGpuTestingGLRenderer)) {
+    gpu_info->gl_renderer =
+        command_line->GetSwitchValueASCII(switches::kGpuTestingGLRenderer);
+  }
+  if (command_line->HasSwitch(switches::kGpuTestingGLVersion)) {
+    gpu_info->gl_version =
+        command_line->GetSwitchValueASCII(switches::kGpuTestingGLVersion);
+  }
 
   GLint max_samples = 0;
   glGetIntegervFn(GL_MAX_SAMPLES, &max_samples);

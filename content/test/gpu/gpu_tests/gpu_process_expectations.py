@@ -13,22 +13,6 @@ class GpuProcessExpectations(GpuTestExpectations):
 
     self.Fail('GpuProcess.video', ['linux'], bug=257109)
 
-    # Android
-    self.Fail('GpuProcess.no_gpu_process',
-              ['android'], bug=611930)
-    self.Fail('GpuProcess.identify_active_gpu1',
-              ['android'], bug=611930)
-    self.Fail('GpuProcess.identify_active_gpu2',
-              ['android'], bug=611930)
-    self.Fail('GpuProcess.identify_active_gpu3',
-              ['android'], bug=611930)
-    self.Fail('GpuProcess.identify_active_gpu4',
-              ['android'], bug=611930)
-    self.Fail('GpuProcess.readback_webgl_gpu_process',
-              ['android'], bug=611930)
-    self.Fail('GpuProcess.driver_bug_workarounds_upon_gl_renderer',
-              ['android'], bug=611930)
-
     # Nexus 5X
     # Skip this test because expecting it to fail will still run it.
     self.Skip('GpuProcess.skip_gpu_process',
