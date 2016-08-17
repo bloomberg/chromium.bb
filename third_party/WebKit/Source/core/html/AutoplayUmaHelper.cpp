@@ -73,8 +73,10 @@ void AutoplayUmaHelper::didMoveToNewDocument(Document& oldDocument)
     if (!m_videoMutedPlayMethodVisibilityObserver)
         return;
 
-    oldDocument.domWindow()->removeEventListener(EventTypeNames::unload, this, false);
-    m_element->document().domWindow()->addEventListener(EventTypeNames::unload, this, false);
+    if (oldDocument.domWindow())
+        oldDocument.domWindow()->removeEventListener(EventTypeNames::unload, this, false);
+    if (m_element && m_element->document().domWindow())
+        m_element->document().domWindow()->addEventListener(EventTypeNames::unload, this, false);
 }
 
 void AutoplayUmaHelper::onVisibilityChangedForVideoMutedPlayMethod(bool isVisible)
@@ -85,7 +87,8 @@ void AutoplayUmaHelper::onVisibilityChangedForVideoMutedPlayMethod(bool isVisibl
     recordVideoAutoplayMutedPlayMethodBecomesVisibleUma(true);
     m_videoMutedPlayMethodVisibilityObserver->stop();
     m_videoMutedPlayMethodVisibilityObserver = nullptr;
-    m_element->document().domWindow()->removeEventListener(EventTypeNames::unload, this, false);
+    if (m_element && m_element->document().domWindow())
+        m_element->document().domWindow()->removeEventListener(EventTypeNames::unload, this, false);
 }
 
 void AutoplayUmaHelper::handleEvent(ExecutionContext* executionContext, Event* event)
