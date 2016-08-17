@@ -504,6 +504,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.StrictMode.CheckGoogleSignedTime" units="ms">
+  <owner>estevenson@chromium.org</owner>
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from checking for
+    whether a package is Google signed.
+  </summary>
+</histogram>
+
 <histogram name="Android.StrictMode.DocumentModeSharedPrefs" units="ms">
   <obsolete>
     Deprecated 05/2016 in Issue 582539 with the removal of document mode.
