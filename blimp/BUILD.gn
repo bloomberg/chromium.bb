@@ -102,6 +102,10 @@ if (is_linux) {
     data_deps = [
       ":blimp_unittests",
       "//base:base_unittests",
+      "//content/test:content_unittests",
+      "//ipc:ipc_tests",
+      "//net:net_unittests",
+      "//sandbox/linux:sandbox_linux_unittests",
     ]
 
     write_runtime_deps = _blimp_engine_env_tests_runtime_deps
