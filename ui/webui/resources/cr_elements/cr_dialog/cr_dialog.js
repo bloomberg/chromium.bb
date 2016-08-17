@@ -15,6 +15,16 @@ Polymer({
   is: 'cr-dialog',
   extends: 'dialog',
 
+  /** @override */
+  created: function() {
+    // If the active history entry changes (i.e. user clicks back button),
+    // all open dialogs should be cancelled.
+    window.addEventListener('popstate', function() {
+      if (this.open)
+        this.cancel();
+    }.bind(this));
+  },
+
   cancel: function() {
     this.fire('cancel');
     HTMLDialogElement.prototype.close.call(this, '');
