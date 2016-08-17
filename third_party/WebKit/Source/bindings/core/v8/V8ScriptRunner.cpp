@@ -35,6 +35,7 @@
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/Histogram.h"
@@ -411,9 +412,11 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate
             return v8::MaybeLocal<v8::Value>();
         }
         v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
+        InspectorInstrumentation::willExecuteScript(context);
         ThreadDebugger::willExecuteScript(isolate, script->GetUnboundScript()->GetId());
         result = script->Run(isolate->GetCurrentContext());
         ThreadDebugger::didExecuteScript(isolate);
+        InspectorInstrumentation::didExecuteScript(context);
     }
 
     crashIfIsolateIsDead(isolate);
@@ -502,15 +505,18 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> f
     }
     if (!depth)
         TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data", InspectorFunctionCallEvent::data(context, function));
+
     v8::MaybeLocal<v8::Value> result;
     {
         // Create an extra block so FunctionCall trace event end phase is recorded after
         // v8::MicrotasksScope destructor, as the latter is running microtasks.
         v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
+        InspectorInstrumentation::willExecuteScript(context);
         ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
         result = function->Call(isolate->GetCurrentContext(), receiver, argc, args);
         crashIfIsolateIsDead(isolate);
         ThreadDebugger::didExecuteScript(isolate);
+        InspectorInstrumentation::didExecuteScript(context);
     }
     if (!depth)
         TRACE_EVENT_END0("devtools.timeline", "FunctionCall");

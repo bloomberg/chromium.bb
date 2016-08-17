@@ -1910,6 +1910,8 @@
             'inspector/InspectorTraceEvents.h',
             'inspector/InspectorTracingAgent.cpp',
             'inspector/InspectorTracingAgent.h',
+            'inspector/InspectorWebPerfAgent.cpp',
+            'inspector/InspectorWebPerfAgent.h',
             'inspector/InspectorWorkerAgent.cpp',
             'inspector/InspectorWorkerAgent.h',
             'inspector/InstanceCounters.cpp',
