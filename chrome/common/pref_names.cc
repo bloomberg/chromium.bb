@@ -1538,6 +1538,10 @@ const char kDevToolsPortForwardingDefaultSet[] =
 // A dictionary of port->location pairs for port forwarding.
 const char kDevToolsPortForwardingConfig[] = "devtools.port_forwarding_config";
 
+// A list of strings representing devtools target discovery servers.
+const char kDevToolsTargetDiscoveryConfig[] =
+    "devtools.target_discovery_config";
+
 // A dictionary with generic DevTools settings.
 const char kDevToolsPreferences[] = "devtools.preferences";
 

@@ -33,6 +33,8 @@ class TCPDeviceProvider : public AndroidDeviceManager::DeviceProvider {
 
   void set_release_callback_for_test(const base::Closure& callback);
 
+  HostPortSet get_targets_for_test() { return targets_; }
+
  private:
   ~TCPDeviceProvider() override;
 

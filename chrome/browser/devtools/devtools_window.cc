@@ -374,6 +374,7 @@ void DevToolsWindow::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kDevToolsPortForwardingDefaultSet,
                                 false);
   registry->RegisterDictionaryPref(prefs::kDevToolsPortForwardingConfig);
+  registry->RegisterListPref(prefs::kDevToolsTargetDiscoveryConfig);
   registry->RegisterDictionaryPref(prefs::kDevToolsPreferences);
 }
 

@@ -110,6 +110,7 @@
       'browser/devtools/device/adb/adb_client_socket_browsertest.cc',
       'browser/devtools/device/adb/mock_adb_server.cc',
       'browser/devtools/device/adb/mock_adb_server.h',
+      'browser/devtools/device/devtools_android_bridge_browsertest.cc',
       'browser/devtools/device/port_forwarding_browsertest.cc',
       'browser/devtools/device/usb/android_usb_browsertest.cc',
       'browser/devtools/devtools_sanity_browsertest.cc',
