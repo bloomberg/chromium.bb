@@ -94,6 +94,8 @@ class WindowManagerState : public EventDispatcherDelegate {
   };
 
   struct DebugAccelerator {
+    bool Matches(const ui::KeyEvent& event) const;
+
     DebugAcceleratorType type;
     ui::KeyboardCode key_code;
     int event_flags;

@@ -7,10 +7,12 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <tuple>
 
 #include "base/containers/hash_tables.h"
 #include "base/hash.h"
+#include "base/strings/stringprintf.h"
 #include "services/ui/common/types.h"
 #include "services/ui/common/util.h"
 
@@ -49,6 +51,10 @@ struct WindowId {
   bool operator<(const WindowId& other) const {
     return std::tie(client_id, window_id) <
            std::tie(other.client_id, other.window_id);
+  }
+
+  std::string ToString() const {
+    return base::StringPrintf("%u:%u", client_id, window_id);
   }
 
   ClientSpecificId client_id;

@@ -182,8 +182,9 @@ class ServerWindow {
 
   ServerWindowDelegate* delegate() { return delegate_; }
 
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   std::string GetDebugWindowHierarchy() const;
+  std::string GetDebugWindowInfo() const;
   void BuildDebugInfo(const std::string& depth, std::string* result) const;
 #endif
 

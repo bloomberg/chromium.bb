@@ -381,21 +381,25 @@ void ServerWindow::SetUnderlayOffset(const gfx::Vector2d& offset) {
   delegate_->OnScheduleWindowPaint(this);
 }
 
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 std::string ServerWindow::GetDebugWindowHierarchy() const {
   std::string result;
   BuildDebugInfo(std::string(), &result);
   return result;
 }
 
-void ServerWindow::BuildDebugInfo(const std::string& depth,
-                                  std::string* result) const {
+std::string ServerWindow::GetDebugWindowInfo() const {
   std::string name = GetName();
-  *result += base::StringPrintf(
-      "%sid=%d,%d visible=%s bounds=%d,%d %dx%d %s\n", depth.c_str(),
-      static_cast<int>(id_.client_id), static_cast<int>(id_.window_id),
+  return base::StringPrintf(
+      "id=%s visible=%s bounds=%d,%d %dx%d %s", id_.ToString().c_str(),
       visible_ ? "true" : "false", bounds_.x(), bounds_.y(), bounds_.width(),
       bounds_.height(), !name.empty() ? name.c_str() : "(no name)");
+}
+
+void ServerWindow::BuildDebugInfo(const std::string& depth,
+                                  std::string* result) const {
+  *result +=
+      base::StringPrintf("%s%s\n", depth.c_str(), GetDebugWindowInfo().c_str());
   for (const ServerWindow* child : children_)
     child->BuildDebugInfo(depth + "  ", result);
 }

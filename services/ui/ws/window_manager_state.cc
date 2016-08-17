@@ -24,6 +24,10 @@ namespace ui {
 namespace ws {
 namespace {
 
+// Flags that matter when checking if a key event matches an accelerator.
+const int kAcceleratorEventFlags =
+    EF_SHIFT_DOWN | EF_CONTROL_DOWN | EF_ALT_DOWN | EF_COMMAND_DOWN;
+
 base::TimeDelta GetDefaultAckTimerDelay() {
 #if defined(NDEBUG)
   return base::TimeDelta::FromMilliseconds(100);
@@ -95,6 +99,12 @@ class WindowManagerState::ProcessedEventTarget {
 
   DISALLOW_COPY_AND_ASSIGN(ProcessedEventTarget);
 };
+
+bool WindowManagerState::DebugAccelerator::Matches(
+    const ui::KeyEvent& event) const {
+  return key_code == event.key_code() &&
+         event_flags == (kAcceleratorEventFlags & event.flags());
+}
 
 WindowManagerState::QueuedEvent::QueuedEvent() {}
 WindowManagerState::QueuedEvent::~QueuedEvent() {}
@@ -379,8 +389,7 @@ void WindowManagerState::ProcessDebugAccelerator(const ui::Event& event) {
 
   const ui::KeyEvent& key_event = *event.AsKeyEvent();
   for (const DebugAccelerator& accelerator : debug_accelerators_) {
-    if (accelerator.key_code == key_event.key_code() &&
-        accelerator.event_flags == key_event.flags()) {
+    if (accelerator.Matches(key_event)) {
       HandleDebugAccelerator(accelerator.type);
       break;
     }
@@ -388,7 +397,7 @@ void WindowManagerState::ProcessDebugAccelerator(const ui::Event& event) {
 }
 
 void WindowManagerState::HandleDebugAccelerator(DebugAcceleratorType type) {
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   // Error so it will be collected in system logs.
   for (Display* display : display_manager()->displays()) {
     WindowManagerDisplayRoot* display_root =
