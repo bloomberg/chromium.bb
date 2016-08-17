@@ -5,10 +5,14 @@
 package org.chromium.chrome.browser;
 
 import android.os.Environment;
+import android.support.v7.widget.SwitchCompat;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -17,9 +21,14 @@ import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.device.geolocation.LocationProviderFactory;
 import org.chromium.device.geolocation.MockLocationProvider;
 import org.chromium.net.test.EmbeddedTestServer;
+
+import java.util.concurrent.Callable;
 
 /**
  * Test suite for Geo-Location functionality.
@@ -133,6 +142,124 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
         updateWaiter.waitForNumUpdates(2);
 
         tab.removeObserver(updateWaiter);
+    }
+
+    /**
+     * Verify Geolocation prompts with a persistence toggle if that feature is enabled. Check the
+     * switch appears and that permission is granted with it toggled on.
+     * @throws Exception
+     */
+    @MediumTest
+    @CommandLineFlags.Add("enable-features=DisplayPersistenceToggleInPermissionPrompts")
+    @Feature({"Location"})
+    public void testGeolocationPersistence() throws Exception {
+        final String url = mTestServer.getURL(TEST_FILE);
+
+        Tab tab = getActivity().getActivityTab();
+        GeolocationUpdateWaiter updateWaiter = new GeolocationUpdateWaiter();
+        tab.addObserver(updateWaiter);
+
+        loadUrl(url);
+        runJavaScriptCodeInCurrentTab("initiate_getCurrentPosition()");
+        assertTrue("InfoBar not added.", mListener.addInfoBarAnimationFinished());
+        InfoBar infobar = getInfoBars().get(0);
+        SwitchCompat persistSwitch = (SwitchCompat) infobar.getView().findViewById(
+                R.id.permission_infobar_persist_toggle);
+        assertNotNull(persistSwitch);
+        assertTrue(persistSwitch.isChecked());
+
+        assertTrue("OK button wasn't found", InfoBarUtil.clickPrimaryButton(infobar));
+        updateWaiter.waitForNumUpdates(1);
+
+        tab.removeObserver(updateWaiter);
+    }
+
+    /**
+     * Verify Geolocation prompts with a persistence toggle if that feature is enabled. Check the
+     * switch toggled off.
+     * @throws Exception
+     */
+    @MediumTest
+    @CommandLineFlags.Add("enable-features=DisplayPersistenceToggleInPermissionPrompts")
+    @Feature({"Location"})
+    public void testGeolocationPersistenceOff() throws Exception {
+        final String url = mTestServer.getURL(TEST_FILE);
+
+        Tab tab = getActivity().getActivityTab();
+        GeolocationUpdateWaiter updateWaiter = new GeolocationUpdateWaiter();
+        tab.addObserver(updateWaiter);
+
+        loadUrl(url);
+        runJavaScriptCodeInCurrentTab("initiate_getCurrentPosition()");
+        assertTrue("InfoBar not added.", mListener.addInfoBarAnimationFinished());
+        InfoBar infobar = getInfoBars().get(0);
+        SwitchCompat persistSwitch = (SwitchCompat) infobar.getView().findViewById(
+                R.id.permission_infobar_persist_toggle);
+        assertNotNull(persistSwitch);
+        assertTrue(persistSwitch.isChecked());
+
+        // Uncheck the switch
+        TouchCommon.singleClickView(persistSwitch);
+        waitForCheckedState(persistSwitch, false);
+
+        assertTrue("OK button wasn't found", InfoBarUtil.clickPrimaryButton(infobar));
+        updateWaiter.waitForNumUpdates(1);
+
+        // Ask for permission again and make sure it doesn't prompt again (grant is cached in the
+        // blink layer).
+        runJavaScriptCodeInCurrentTab("initiate_getCurrentPosition()");
+        updateWaiter.waitForNumUpdates(2);
+
+        // Ask for permission a third time and make sure it doesn't prompt again.
+        runJavaScriptCodeInCurrentTab("initiate_getCurrentPosition()");
+        updateWaiter.waitForNumUpdates(3);
+
+        tab.removeObserver(updateWaiter);
+    }
+
+    /**
+     * Verify Geolocation prompts once and sends multiple locations with a persistence toggle if
+     * that feature is enabled.
+     * @throws Exception
+     */
+    @MediumTest
+    @CommandLineFlags.Add("enable-features=DisplayPersistenceToggleInPermissionPrompts")
+    @Feature({"Location"})
+    public void testGeolocationWatchPersistenceOff() throws Exception {
+        final String url = mTestServer.getURL(TEST_FILE);
+
+        Tab tab = getActivity().getActivityTab();
+        GeolocationUpdateWaiter updateWaiter = new GeolocationUpdateWaiter();
+        tab.addObserver(updateWaiter);
+
+        loadUrl(url);
+        runJavaScriptCodeInCurrentTab("initiate_watchPosition()");
+        assertTrue("InfoBar not added.", mListener.addInfoBarAnimationFinished());
+        InfoBar infobar = getInfoBars().get(0);
+        SwitchCompat persistSwitch = (SwitchCompat) infobar.getView().findViewById(
+                R.id.permission_infobar_persist_toggle);
+        assertNotNull(persistSwitch);
+        assertTrue(persistSwitch.isChecked());
+
+        // Uncheck the switch
+        TouchCommon.singleClickView(persistSwitch);
+        waitForCheckedState(persistSwitch, false);
+
+        // Make sure we get multiple updates without another prompt.
+        assertTrue("OK button wasn't found", InfoBarUtil.clickPrimaryButton(infobar));
+        updateWaiter.waitForNumUpdates(4);
+
+        tab.removeObserver(updateWaiter);
+    }
+
+    private void waitForCheckedState(final SwitchCompat persistSwitch, boolean isChecked)
+            throws InterruptedException {
+        CriteriaHelper.pollUiThread(Criteria.equals(isChecked, new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return persistSwitch.isChecked();
+            }
+        }));
     }
 
     @Override
