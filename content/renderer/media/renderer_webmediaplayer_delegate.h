@@ -18,6 +18,10 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "media/blink/webmediaplayer_delegate.h"
 
+#if defined(OS_ANDROID)
+#include "base/time/time.h"
+#endif  // OS_ANDROID
+
 namespace blink {
 class WebMediaPlayer;
 }
@@ -83,6 +87,9 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // Runs periodically to suspend idle delegates in |idle_delegate_map_|.
   void CleanupIdleDelegates();
 
+  // Setter for |is_playing_background_video_| that updates the metrics.
+  void SetIsPlayingBackgroundVideo(bool is_playing);
+
   bool has_played_media_ = false;
   IDMap<Observer> id_map_;
 
@@ -109,6 +116,11 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // allowing it to play and reset when either user pauses it or it goes
   // foreground.
   bool is_playing_background_video_ = false;
+
+#if defined(OS_ANDROID)
+  // Keeps track of when the background video playback started for metrics.
+  base::TimeTicks background_video_playing_start_time_;
+#endif  // OS_ANDROID
 
   // The currently playing local videos. Used to determine whether
   // OnMediaDelegatePlay() should allow the videos to play in the background or

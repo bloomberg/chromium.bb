@@ -21426,6 +21426,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Android.BackgroundVideoTime" units="ms">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <owner>zhiqiang@chromium.org</owner>
+  <summary>
+    Android-specific metric. The time between the moment the backgrounded video
+    playback is started (meaning the user just resumed the backgrounded video
+    allowing playback) and the moment it stops being background playback by the
+    current playing video either going foreground or being paused by the user.
+    Note: on Android, videos are suspended when backgrounded.
+  </summary>
+</histogram>
+
 <histogram name="Media.Android.IsHttpLiveStreamingMedia" enum="MediaUrlType">
   <owner>qinmin@chromium.org</owner>
   <summary>

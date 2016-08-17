@@ -7,9 +7,20 @@
 #include <stdint.h>
 
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics_action.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+
+namespace {
+
+void RecordAction(const base::UserMetricsAction& action) {
+  content::RenderThread::Get()->RecordAction(action);
+}
+
+}  // namespace
 
 namespace media {
 
@@ -80,12 +91,16 @@ bool RendererWebMediaPlayerDelegate::IsPlayingBackgroundVideo() {
 void RendererWebMediaPlayerDelegate::WasHidden() {
   for (IDMap<Observer>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
     it.GetCurrentValue()->OnHidden();
+
+  RecordAction(base::UserMetricsAction("Media.Hidden"));
 }
 
 void RendererWebMediaPlayerDelegate::WasShown() {
-  is_playing_background_video_ = false;
+  SetIsPlayingBackgroundVideo(false);
   for (IDMap<Observer>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
     it.GetCurrentValue()->OnShown();
+
+  RecordAction(base::UserMetricsAction("Media.Shown"));
 }
 
 bool RendererWebMediaPlayerDelegate::OnMessageReceived(
@@ -115,18 +130,22 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(int delegate_id) {
   Observer* observer = id_map_.Lookup(delegate_id);
   if (observer) {
     if (playing_videos_.find(delegate_id) != playing_videos_.end())
-      is_playing_background_video_ = false;
+      SetIsPlayingBackgroundVideo(false);
     observer->OnPause();
   }
+
+  RecordAction(base::UserMetricsAction("Media.Controls.RemotePause"));
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int delegate_id) {
   Observer* observer = id_map_.Lookup(delegate_id);
   if (observer) {
     if (playing_videos_.find(delegate_id) != playing_videos_.end())
-      is_playing_background_video_ = IsHidden();
+      SetIsPlayingBackgroundVideo(IsHidden());
     observer->OnPlay();
   }
+
+  RecordAction(base::UserMetricsAction("Media.Controls.RemotePlay"));
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegateSuspendAllMediaPlayers() {
@@ -191,6 +210,28 @@ void RendererWebMediaPlayerDelegate::CleanupIdleDelegates() {
   // Shutdown the timer if no delegates are left.
   if (idle_delegate_map_.empty())
     idle_cleanup_timer_.Stop();
+}
+
+void RendererWebMediaPlayerDelegate::SetIsPlayingBackgroundVideo(
+    bool is_playing) {
+  if (is_playing_background_video_ == is_playing) return;
+
+// TODO(avayvod): This would be useful to collect on desktop too and express in
+// actual media watch time vs. just elapsed time. See https://crbug.com/638726.
+#if defined(OS_ANDROID)
+  if (is_playing_background_video_) {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Media.Android.BackgroundVideoTime",
+        base::TimeTicks::Now() - background_video_playing_start_time_,
+        base::TimeDelta::FromSeconds(7), base::TimeDelta::FromHours(10), 50);
+    RecordAction(base::UserMetricsAction("Media.Session.BackgroundSuspend"));
+  } else {
+    background_video_playing_start_time_ = base::TimeTicks::Now();
+    RecordAction(base::UserMetricsAction("Media.Session.BackgroundResume"));
+  }
+#endif  // OS_ANDROID
+
+  is_playing_background_video_ = is_playing;
 }
 
 void RendererWebMediaPlayerDelegate::OnDestruct() {

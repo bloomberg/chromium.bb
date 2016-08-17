@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/media/media_player_delegate_messages.h"
@@ -366,5 +367,41 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IsPlayingBackgroundVideo) {
   EXPECT_NE(old_value, delegate_manager_->IsPlayingBackgroundVideo());
 }
 
+#if defined(OS_ANDROID)
+
+TEST_F(RendererWebMediaPlayerDelegateTest, Histograms) {
+  MockWebMediaPlayerDelegateObserver observer;
+  int delegate_id = delegate_manager_->AddObserver(&observer);
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 0);
+
+  // Pausing or showing doesn't record anything as background playback
+  // hasn't started yet.
+  delegate_manager_->DidPlay(
+      delegate_id, true, true, false, base::TimeDelta());
+  CallOnMediaDelegatePause(delegate_id);
+  histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 0);
+
+  delegate_manager_->DidPlay(
+      delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->WasShown();
+  histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 0);
+
+  // Doing this things after the background playback has started should record
+  // the time.
+  delegate_manager_->DidPlay(
+      delegate_id, true, true, false, base::TimeDelta());
+  SetPlayingBackgroundVideo(true);
+  CallOnMediaDelegatePause(delegate_id);
+  histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 1);
+
+  delegate_manager_->DidPlay(
+      delegate_id, true, true, false, base::TimeDelta());
+  SetPlayingBackgroundVideo(true);
+  delegate_manager_->WasShown();
+  histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 2);
+}
+
+#endif  // OS_ANDROID
 
 }  // namespace media
