@@ -12,7 +12,18 @@
                 selection.document.execCommand('insertText', false, 'x');
         },
         '<div contenteditable>here isxxxx|\u{00A0}text</div>'),
-        'Delete all styled characters then typing character does not keep style');
+        'Delete all styled characters and previous character then typing character does not keep style');
+
+    test(() => assert_selection(
+        '<div contenteditable>here is <i>some|</i> text</div>',
+        selection => {
+            for (var i = 0; i < 4; ++i)
+                selection.document.execCommand('delete');
+            for (var i = 0; i < 4; ++i)
+                selection.document.execCommand('insertText', false, 'x');
+        },
+        '<div contenteditable>here is <i>xxxx|</i>\u{00A0}text</div>'),
+        'Delete all styled characters then typing character keeps style');
 
     test(() => assert_selection(
         '<div contenteditable>here is <i>some|</i> text</div>',
