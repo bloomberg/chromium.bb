@@ -30,6 +30,10 @@ NSString* const kFindBarTextFieldDidResignFirstResponderNotification =
 namespace {
 // The delay (in secs) after which the find in page string will be pumped again.
 const NSTimeInterval kRecurringPumpDelay = .01;
+
+// Keeps find in page search term to be shared between different tabs. Never
+// reset, not stored on disk.
+static NSString* gSearchTerm;
 }
 
 @interface FindInPageController () <DOMAltering, CRWWebStateObserver>
@@ -38,8 +42,11 @@ const NSTimeInterval kRecurringPumpDelay = .01;
 // The web view's scroll view.
 @property(nonatomic, readonly) CRWWebViewScrollViewProxy* webViewScrollView;
 
-// Convenience method to obtain UIPasteboardNameFind from UIPasteBoard.
-- (UIPasteboard*)findPasteboard;
+// Sets the search term to |string|. Stored until the application quit.
++ (void)setSearchTerm:(NSString*)string;
+// The search term, stored until the application quit.
++ (NSString*)searchTerm;
+
 // Find in Page text field listeners.
 - (void)findBarTextFieldWillBecomeFirstResponder:(NSNotification*)note;
 - (void)findBarTextFieldDidResignFirstResponder:(NSNotification*)note;
@@ -86,6 +93,15 @@ const NSTimeInterval kRecurringPumpDelay = .01;
 }
 
 @synthesize delegate = _delegate;
+
++ (void)setSearchTerm:(NSString*)string {
+  [gSearchTerm release];
+  gSearchTerm = [string copy];
+}
+
++ (NSString*)searchTerm {
+  return gSearchTerm;
+}
 
 - (id)initWithWebState:(web::WebState*)webState
               delegate:(id<FindInPageControllerDelegate>)delegate {
@@ -288,7 +304,7 @@ const NSTimeInterval kRecurringPumpDelay = .01;
 }
 
 - (void)saveSearchTerm {
-  [self findPasteboard].string = [[self findInPageModel] text];
+  [[self class] setSearchTerm:[[self findInPageModel] text]];
 }
 
 - (void)restoreSearchTerm {
@@ -298,12 +314,8 @@ const NSTimeInterval kRecurringPumpDelay = .01;
     return;
   }
 
-  NSString* term = [self findPasteboard].string;
+  NSString* term = [[self class] searchTerm];
   [[self findInPageModel] updateQuery:(term ? term : @"") matches:0];
-}
-
-- (UIPasteboard*)findPasteboard {
-  return [UIPasteboard pasteboardWithName:UIPasteboardNameFind create:NO];
 }
 
 - (web::WebState*)webState {
