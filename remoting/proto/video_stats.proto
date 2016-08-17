@@ -13,7 +13,7 @@ package remoting;
 
 message FrameStatsMessage {
   // Frame ID.
-  optional int32 frame_id = 1;
+  optional uint32 frame_id = 1;
 
   // Frame size.
   optional int32 frame_size = 2;
