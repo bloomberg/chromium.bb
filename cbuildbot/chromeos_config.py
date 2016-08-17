@@ -2147,7 +2147,6 @@ def GetConfig():
       'toolchain',
       full,
       internal,
-      chromeos_official=False,
       build_type=constants.TOOLCHAIN_TYPE,
       build_timeout=(15 * 60 + 50) * 60,
       useflags=append_useflags(['-cros-debug', 'chrome_internal']),
