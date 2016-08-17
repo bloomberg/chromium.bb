@@ -55,6 +55,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
         ['win'], bug=1246) # ANGLE bug.
 
+    # TODO(jmadill): Remove once we re-land the ANGLE CL.
+    self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
+        ['win'], bug=638313)
+
     # Windows 8 only.
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win8'], bug=587601)
 
