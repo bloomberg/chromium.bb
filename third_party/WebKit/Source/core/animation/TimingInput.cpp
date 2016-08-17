@@ -29,13 +29,13 @@ void TimingInput::setEndDelay(Timing& timing, double endDelay)
 void TimingInput::setFillMode(Timing& timing, const String& fillMode)
 {
     if (fillMode == "none") {
-        timing.fillMode = Timing::FillModeNone;
+        timing.fillMode = Timing::FillMode::NONE;
     } else if (fillMode == "backwards") {
-        timing.fillMode = Timing::FillModeBackwards;
+        timing.fillMode = Timing::FillMode::BACKWARDS;
     } else if (fillMode == "both") {
-        timing.fillMode = Timing::FillModeBoth;
+        timing.fillMode = Timing::FillMode::BOTH;
     } else if (fillMode == "forwards") {
-        timing.fillMode = Timing::FillModeForwards;
+        timing.fillMode = Timing::FillMode::FORWARDS;
     } else {
         timing.fillMode = Timing::defaults().fillMode;
     }
@@ -96,11 +96,11 @@ void TimingInput::setPlaybackRate(Timing& timing, double playbackRate)
 void TimingInput::setPlaybackDirection(Timing& timing, const String& direction)
 {
     if (direction == "reverse") {
-        timing.direction = Timing::PlaybackDirectionReverse;
+        timing.direction = Timing::PlaybackDirection::REVERSE;
     } else if (direction == "alternate") {
-        timing.direction = Timing::PlaybackDirectionAlternate;
+        timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
     } else if (direction == "alternate-reverse") {
-        timing.direction = Timing::PlaybackDirectionAlternateReverse;
+        timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
     } else {
         timing.direction = Timing::defaults().direction;
     }

@@ -146,12 +146,12 @@ public:
     {
         Timing timing;
         timing.startDelay = 0;
-        timing.fillMode = Timing::FillModeNone;
+        timing.fillMode = Timing::FillMode::NONE;
         timing.iterationStart = 0;
         timing.iterationCount = 1;
         timing.iterationDuration = 1.0;
         timing.playbackRate = 1.0;
-        timing.direction = Timing::PlaybackDirectionNormal;
+        timing.direction = Timing::PlaybackDirection::NORMAL;
         ASSERT(m_linearTimingFunction);
         timing.timingFunction = m_linearTimingFunction;
         return timing;
@@ -451,60 +451,60 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorPlaybackRate
 
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirection)
 {
-    m_timing.direction = Timing::PlaybackDirectionNormal;
+    m_timing.direction = Timing::PlaybackDirection::NORMAL;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirectionNormal);
+    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirection::NORMAL);
 
-    m_timing.direction = Timing::PlaybackDirectionAlternate;
+    m_timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirectionAlternate);
+    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirection::ALTERNATE_NORMAL);
 
-    m_timing.direction = Timing::PlaybackDirectionAlternateReverse;
+    m_timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirectionAlternateReverse);
+    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirection::ALTERNATE_REVERSE);
 
-    m_timing.direction = Timing::PlaybackDirectionReverse;
+    m_timing.direction = Timing::PlaybackDirection::REVERSE;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirectionReverse);
+    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirection::REVERSE);
 }
 
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirectionIterationsAndStartDelay)
 {
-    m_timing.direction = Timing::PlaybackDirectionAlternate;
+    m_timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
     m_timing.iterationCount = 4.0;
     m_timing.iterationDuration = 5.0;
     m_timing.startDelay = -6.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
     EXPECT_DOUBLE_EQ(6.0, m_compositorTiming.scaledTimeOffset);
     EXPECT_EQ(4, m_compositorTiming.adjustedIterationCount);
-    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirectionAlternate);
+    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirection::ALTERNATE_NORMAL);
 
-    m_timing.direction = Timing::PlaybackDirectionAlternate;
+    m_timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
     m_timing.iterationCount = 4.0;
     m_timing.iterationDuration = 5.0;
     m_timing.startDelay = -11.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
     EXPECT_DOUBLE_EQ(11.0, m_compositorTiming.scaledTimeOffset);
     EXPECT_EQ(4, m_compositorTiming.adjustedIterationCount);
-    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirectionAlternate);
+    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirection::ALTERNATE_NORMAL);
 
-    m_timing.direction = Timing::PlaybackDirectionAlternateReverse;
+    m_timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
     m_timing.iterationCount = 4.0;
     m_timing.iterationDuration = 5.0;
     m_timing.startDelay = -6.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
     EXPECT_DOUBLE_EQ(6.0, m_compositorTiming.scaledTimeOffset);
     EXPECT_EQ(4, m_compositorTiming.adjustedIterationCount);
-    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirectionAlternateReverse);
+    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirection::ALTERNATE_REVERSE);
 
-    m_timing.direction = Timing::PlaybackDirectionAlternateReverse;
+    m_timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
     m_timing.iterationCount = 4.0;
     m_timing.iterationDuration = 5.0;
     m_timing.startDelay = -11.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
     EXPECT_DOUBLE_EQ(11.0, m_compositorTiming.scaledTimeOffset);
     EXPECT_EQ(4, m_compositorTiming.adjustedIterationCount);
-    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirectionAlternateReverse);
+    EXPECT_EQ(m_compositorTiming.direction, Timing::PlaybackDirection::ALTERNATE_REVERSE);
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionLinear)
@@ -698,7 +698,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
     m_timing.iterationCount = 5;
-    m_timing.direction = Timing::PlaybackDirectionAlternate;
+    m_timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
     m_timing.playbackRate = 2.0;
 
     std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
@@ -774,7 +774,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     m_timing.timingFunction = m_linearTimingFunction.get();
     m_timing.iterationDuration = 2.0;
     m_timing.iterationCount = 10;
-    m_timing.direction = Timing::PlaybackDirectionAlternate;
+    m_timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
 
     std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
@@ -822,7 +822,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 
     m_timing.timingFunction = m_linearTimingFunction.get();
     m_timing.iterationCount = 10;
-    m_timing.direction = Timing::PlaybackDirectionAlternateReverse;
+    m_timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
 
     std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
@@ -867,7 +867,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
     m_timing.iterationCount = 5.0;
     m_timing.iterationDuration = 1.5;
     m_timing.startDelay = negativeStartDelay;
-    m_timing.direction = Timing::PlaybackDirectionAlternateReverse;
+    m_timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
 
     std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());
@@ -914,7 +914,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNo
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
-    m_timing.fillMode = Timing::FillModeNone;
+    m_timing.fillMode = Timing::FillMode::NONE;
 
     std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorAnimation::FillMode::NONE, animation->getFillMode());
@@ -927,7 +927,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAu
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
-    m_timing.fillMode = Timing::FillModeAuto;
+    m_timing.fillMode = Timing::FillMode::AUTO;
 
     std::unique_ptr<CompositorAnimation> animation = convertToCompositorAnimation(*effect);
     EXPECT_EQ(CompositorTargetProperty::OPACITY, animation->targetProperty());

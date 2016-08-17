@@ -179,7 +179,7 @@ TEST(AnimationAnimationEffectTest, FillForwards)
 {
     Timing timing;
     timing.iterationDuration = 1;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
@@ -193,7 +193,7 @@ TEST(AnimationAnimationEffectTest, FillBackwards)
 {
     Timing timing;
     timing.iterationDuration = 1;
-    timing.fillMode = Timing::FillModeBackwards;
+    timing.fillMode = Timing::FillMode::BACKWARDS;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
@@ -207,7 +207,7 @@ TEST(AnimationAnimationEffectTest, FillBoth)
 {
     Timing timing;
     timing.iterationDuration = 1;
-    timing.fillMode = Timing::FillModeBoth;
+    timing.fillMode = Timing::FillMode::BOTH;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
@@ -221,7 +221,7 @@ TEST(AnimationAnimationEffectTest, StartDelay)
 {
     Timing timing;
     timing.iterationDuration = 1;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     timing.startDelay = 0.5;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
@@ -239,7 +239,7 @@ TEST(AnimationAnimationEffectTest, ZeroIteration)
 {
     Timing timing;
     timing.iterationDuration = 1;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     timing.iterationCount = 0;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
@@ -258,7 +258,7 @@ TEST(AnimationAnimationEffectTest, InfiniteIteration)
 {
     Timing timing;
     timing.iterationDuration = 1;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     timing.iterationCount = std::numeric_limits<double>::infinity();
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
@@ -307,7 +307,7 @@ TEST(AnimationAnimationEffectTest, IterationStart)
     timing.iterationStart = 1.2;
     timing.iterationCount = 2.2;
     timing.iterationDuration = 1;
-    timing.fillMode = Timing::FillModeBoth;
+    timing.fillMode = Timing::FillMode::BOTH;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
@@ -328,7 +328,7 @@ TEST(AnimationAnimationEffectTest, IterationAlternate)
     Timing timing;
     timing.iterationCount = 10;
     timing.iterationDuration = 1;
-    timing.direction = Timing::PlaybackDirectionAlternate;
+    timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0.75);
@@ -349,7 +349,7 @@ TEST(AnimationAnimationEffectTest, IterationAlternateReverse)
     Timing timing;
     timing.iterationCount = 10;
     timing.iterationDuration = 1;
-    timing.direction = Timing::PlaybackDirectionAlternateReverse;
+    timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0.75);
@@ -394,7 +394,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationSanity)
 TEST(AnimationAnimationEffectTest, ZeroDurationFillForwards)
 {
     Timing timing;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
@@ -410,7 +410,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationFillForwards)
 TEST(AnimationAnimationEffectTest, ZeroDurationFillBackwards)
 {
     Timing timing;
-    timing.fillMode = Timing::FillModeBackwards;
+    timing.fillMode = Timing::FillMode::BACKWARDS;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
@@ -426,7 +426,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationFillBackwards)
 TEST(AnimationAnimationEffectTest, ZeroDurationFillBoth)
 {
     Timing timing;
-    timing.fillMode = Timing::FillModeBoth;
+    timing.fillMode = Timing::FillMode::BOTH;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
@@ -442,7 +442,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationFillBoth)
 TEST(AnimationAnimationEffectTest, ZeroDurationStartDelay)
 {
     Timing timing;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     timing.startDelay = 0.5;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
@@ -461,7 +461,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationStartAndCount)
     Timing timing;
     timing.iterationStart = 0.1;
     timing.iterationCount = 0.2;
-    timing.fillMode = Timing::FillModeBoth;
+    timing.fillMode = Timing::FillMode::BOTH;
     timing.startDelay = 0.3;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
@@ -479,7 +479,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationStartAndCount)
 TEST(AnimationAnimationEffectTest, ZeroDurationInfiniteIteration)
 {
     Timing timing;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     timing.iterationCount = std::numeric_limits<double>::infinity();
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
@@ -497,7 +497,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationInfiniteIteration)
 TEST(AnimationAnimationEffectTest, ZeroDurationIteration)
 {
     Timing timing;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     timing.iterationCount = 2;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
@@ -519,7 +519,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationStart)
     Timing timing;
     timing.iterationStart = 1.2;
     timing.iterationCount = 2.2;
-    timing.fillMode = Timing::FillModeBoth;
+    timing.fillMode = Timing::FillMode::BOTH;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
@@ -538,9 +538,9 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationStart)
 TEST(AnimationAnimationEffectTest, ZeroDurationIterationAlternate)
 {
     Timing timing;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     timing.iterationCount = 2;
-    timing.direction = Timing::PlaybackDirectionAlternate;
+    timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
@@ -559,9 +559,9 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationAlternate)
 TEST(AnimationAnimationEffectTest, ZeroDurationIterationAlternateReverse)
 {
     Timing timing;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     timing.iterationCount = 2;
-    timing.direction = Timing::PlaybackDirectionAlternateReverse;
+    timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(-1);
@@ -705,7 +705,7 @@ TEST(AnimationAnimationEffectTest, Events)
 {
     Timing timing;
     timing.iterationDuration = 1;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     timing.iterationCount = 2;
     timing.startDelay = 1;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
@@ -728,11 +728,11 @@ TEST(AnimationAnimationEffectTest, TimeToEffectChange)
 {
     Timing timing;
     timing.iterationDuration = 1;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     timing.iterationStart = 0.2;
     timing.iterationCount = 2.5;
     timing.startDelay = 1;
-    timing.direction = Timing::PlaybackDirectionAlternate;
+    timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
     TestAnimationEffect* animationNode = TestAnimationEffect::create(timing);
 
     animationNode->updateInheritedTime(0);

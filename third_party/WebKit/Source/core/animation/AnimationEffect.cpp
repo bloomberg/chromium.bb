@@ -41,11 +41,11 @@ namespace {
 
 Timing::FillMode resolvedFillMode(Timing::FillMode fillMode, bool isAnimation)
 {
-    if (fillMode != Timing::FillModeAuto)
+    if (fillMode != Timing::FillMode::AUTO)
         return fillMode;
     if (isAnimation)
-        return Timing::FillModeNone;
-    return Timing::FillModeBoth;
+        return Timing::FillMode::NONE;
+    return Timing::FillMode::BOTH;
 }
 
 } // namespace

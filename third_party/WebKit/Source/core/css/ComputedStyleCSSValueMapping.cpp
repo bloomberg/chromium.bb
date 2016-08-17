@@ -1002,13 +1002,13 @@ static CSSValue* valueForAnimationDelay(const CSSTimingData* timingData)
 static CSSValue* valueForAnimationDirection(Timing::PlaybackDirection direction)
 {
     switch (direction) {
-    case Timing::PlaybackDirectionNormal:
+    case Timing::PlaybackDirection::NORMAL:
         return CSSPrimitiveValue::createIdentifier(CSSValueNormal);
-    case Timing::PlaybackDirectionAlternate:
+    case Timing::PlaybackDirection::ALTERNATE_NORMAL:
         return CSSPrimitiveValue::createIdentifier(CSSValueAlternate);
-    case Timing::PlaybackDirectionReverse:
+    case Timing::PlaybackDirection::REVERSE:
         return CSSPrimitiveValue::createIdentifier(CSSValueReverse);
-    case Timing::PlaybackDirectionAlternateReverse:
+    case Timing::PlaybackDirection::ALTERNATE_REVERSE:
         return CSSPrimitiveValue::createIdentifier(CSSValueAlternateReverse);
     default:
         ASSERT_NOT_REACHED();
@@ -1031,13 +1031,13 @@ static CSSValue* valueForAnimationDuration(const CSSTimingData* timingData)
 static CSSValue* valueForAnimationFillMode(Timing::FillMode fillMode)
 {
     switch (fillMode) {
-    case Timing::FillModeNone:
+    case Timing::FillMode::NONE:
         return CSSPrimitiveValue::createIdentifier(CSSValueNone);
-    case Timing::FillModeForwards:
+    case Timing::FillMode::FORWARDS:
         return CSSPrimitiveValue::createIdentifier(CSSValueForwards);
-    case Timing::FillModeBackwards:
+    case Timing::FillMode::BACKWARDS:
         return CSSPrimitiveValue::createIdentifier(CSSValueBackwards);
-    case Timing::FillModeBoth:
+    case Timing::FillMode::BOTH:
         return CSSPrimitiveValue::createIdentifier(CSSValueBoth);
     default:
         ASSERT_NOT_REACHED();

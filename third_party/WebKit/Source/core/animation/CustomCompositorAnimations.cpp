@@ -37,7 +37,7 @@ static KeyframeEffect* createInfiniteKeyFrameEffect(Element& element, CSSPropert
 
     Timing timing;
     timing.iterationDuration = 0;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
 
     AnimatableValueKeyframeEffectModel* effectModel = AnimatableValueKeyframeEffectModel::create(keyframes);
     return KeyframeEffect::create(&element, effectModel, timing);

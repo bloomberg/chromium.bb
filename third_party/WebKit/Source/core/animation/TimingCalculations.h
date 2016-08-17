@@ -62,11 +62,11 @@ static inline bool isActiveInParentPhase(AnimationEffect::Phase parentPhase, Tim
 {
     switch (parentPhase) {
     case AnimationEffect::PhaseBefore:
-        return fillMode == Timing::FillModeBackwards || fillMode == Timing::FillModeBoth;
+        return fillMode == Timing::FillMode::BACKWARDS || fillMode == Timing::FillMode::BOTH;
     case AnimationEffect::PhaseActive:
         return true;
     case AnimationEffect::PhaseAfter:
-        return fillMode == Timing::FillModeForwards || fillMode == Timing::FillModeBoth;
+        return fillMode == Timing::FillMode::FORWARDS || fillMode == Timing::FillMode::BOTH;
     default:
         NOTREACHED();
         return false;
@@ -80,7 +80,7 @@ static inline double calculateActiveTime(double activeDuration, Timing::FillMode
 
     switch (phase) {
     case AnimationEffect::PhaseBefore:
-        if (fillMode == Timing::FillModeBackwards || fillMode == Timing::FillModeBoth)
+        if (fillMode == Timing::FillMode::BACKWARDS || fillMode == Timing::FillMode::BOTH)
             return 0;
         return nullValue();
     case AnimationEffect::PhaseActive:
@@ -88,7 +88,7 @@ static inline double calculateActiveTime(double activeDuration, Timing::FillMode
             return localTime - specified.startDelay;
         return nullValue();
     case AnimationEffect::PhaseAfter:
-        if (fillMode == Timing::FillModeForwards || fillMode == Timing::FillModeBoth)
+        if (fillMode == Timing::FillMode::FORWARDS || fillMode == Timing::FillMode::BOTH)
             return std::max(0.0, std::min(activeDuration, activeDuration + specified.endDelay));
         return nullValue();
     case AnimationEffect::PhaseNone:
@@ -189,9 +189,9 @@ static inline double calculateDirectedTime(double currentIteration, double itera
     DCHECK_LE(iterationTime, iterationDuration);
 
     const bool currentIterationIsOdd = fmod(currentIteration, 2) >= 1;
-    const bool currentDirectionIsForwards = specified.direction == Timing::PlaybackDirectionNormal
-        || (specified.direction == Timing::PlaybackDirectionAlternate && !currentIterationIsOdd)
-        || (specified.direction == Timing::PlaybackDirectionAlternateReverse && currentIterationIsOdd);
+    const bool currentDirectionIsForwards = specified.direction == Timing::PlaybackDirection::NORMAL
+        || (specified.direction == Timing::PlaybackDirection::ALTERNATE_NORMAL && !currentIterationIsOdd)
+        || (specified.direction == Timing::PlaybackDirection::ALTERNATE_REVERSE && currentIterationIsOdd);
 
     return currentDirectionIsForwards ? iterationTime : iterationDuration - iterationTime;
 }

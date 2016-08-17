@@ -62,14 +62,14 @@ protected:
     InertEffect* makeInertEffect(EffectModel* effect)
     {
         Timing timing;
-        timing.fillMode = Timing::FillModeBoth;
+        timing.fillMode = Timing::FillMode::BOTH;
         return InertEffect::create(effect, timing, false, 0);
     }
 
     KeyframeEffect* makeKeyframeEffect(EffectModel* effect, double duration = 10)
     {
         Timing timing;
-        timing.fillMode = Timing::FillModeBoth;
+        timing.fillMode = Timing::FillMode::BOTH;
         timing.iterationDuration = duration;
         return KeyframeEffect::create(element.get(), effect, timing);
     }

@@ -32,6 +32,7 @@
 #define Timing_h
 
 #include "core/style/DataEquivalency.h"
+#include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
@@ -42,23 +43,10 @@ namespace blink {
 struct Timing {
     USING_FAST_MALLOC(Timing);
 public:
-    enum FillMode {
-        FillModeAuto,
-        FillModeNone,
-        FillModeForwards,
-        FillModeBackwards,
-        FillModeBoth
-    };
+    using FillMode = CompositorAnimation::FillMode;
+    using PlaybackDirection = CompositorAnimation::Direction;
 
     static String fillModeString(FillMode);
-
-    enum PlaybackDirection {
-        PlaybackDirectionNormal,
-        PlaybackDirectionReverse,
-        PlaybackDirectionAlternate,
-        PlaybackDirectionAlternateReverse
-    };
-
     static String playbackDirectionString(PlaybackDirection);
 
     static const Timing& defaults()
@@ -70,12 +58,12 @@ public:
     Timing()
         : startDelay(0)
         , endDelay(0)
-        , fillMode(FillModeAuto)
+        , fillMode(FillMode::AUTO)
         , iterationStart(0)
         , iterationCount(1)
         , iterationDuration(std::numeric_limits<double>::quiet_NaN())
         , playbackRate(1)
-        , direction(PlaybackDirectionNormal)
+        , direction(PlaybackDirection::NORMAL)
         , timingFunction(LinearTimingFunction::shared())
     {
     }

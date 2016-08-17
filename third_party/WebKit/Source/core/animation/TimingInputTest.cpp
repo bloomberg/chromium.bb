@@ -63,14 +63,14 @@ TEST(AnimationTimingInputTest, TimingInputEndDelay)
 TEST(AnimationTimingInputTest, TimingInputFillMode)
 {
     V8TestingScope scope;
-    Timing::FillMode defaultFillMode = Timing::FillModeAuto;
+    Timing::FillMode defaultFillMode = Timing::FillMode::AUTO;
     bool ignoredSuccess;
 
-    EXPECT_EQ(Timing::FillModeAuto, applyTimingInputString(scope.isolate(), "fill", "auto", ignoredSuccess).fillMode);
-    EXPECT_EQ(Timing::FillModeForwards, applyTimingInputString(scope.isolate(), "fill", "forwards", ignoredSuccess).fillMode);
-    EXPECT_EQ(Timing::FillModeNone, applyTimingInputString(scope.isolate(), "fill", "none", ignoredSuccess).fillMode);
-    EXPECT_EQ(Timing::FillModeBackwards, applyTimingInputString(scope.isolate(), "fill", "backwards", ignoredSuccess).fillMode);
-    EXPECT_EQ(Timing::FillModeBoth, applyTimingInputString(scope.isolate(), "fill", "both", ignoredSuccess).fillMode);
+    EXPECT_EQ(Timing::FillMode::AUTO, applyTimingInputString(scope.isolate(), "fill", "auto", ignoredSuccess).fillMode);
+    EXPECT_EQ(Timing::FillMode::FORWARDS, applyTimingInputString(scope.isolate(), "fill", "forwards", ignoredSuccess).fillMode);
+    EXPECT_EQ(Timing::FillMode::NONE, applyTimingInputString(scope.isolate(), "fill", "none", ignoredSuccess).fillMode);
+    EXPECT_EQ(Timing::FillMode::BACKWARDS, applyTimingInputString(scope.isolate(), "fill", "backwards", ignoredSuccess).fillMode);
+    EXPECT_EQ(Timing::FillMode::BOTH, applyTimingInputString(scope.isolate(), "fill", "both", ignoredSuccess).fillMode);
     EXPECT_EQ(defaultFillMode, applyTimingInputString(scope.isolate(), "fill", "everything!", ignoredSuccess).fillMode);
     EXPECT_EQ(defaultFillMode, applyTimingInputString(scope.isolate(), "fill", "backwardsandforwards", ignoredSuccess).fillMode);
     EXPECT_EQ(defaultFillMode, applyTimingInputNumber(scope.isolate(), "fill", 2, ignoredSuccess).fillMode);
@@ -158,13 +158,13 @@ TEST(AnimationTimingInputTest, TimingInputIterationDuration)
 TEST(AnimationTimingInputTest, TimingInputDirection)
 {
     V8TestingScope scope;
-    Timing::PlaybackDirection defaultPlaybackDirection = Timing::PlaybackDirectionNormal;
+    Timing::PlaybackDirection defaultPlaybackDirection = Timing::PlaybackDirection::NORMAL;
     bool ignoredSuccess;
 
-    EXPECT_EQ(Timing::PlaybackDirectionNormal, applyTimingInputString(scope.isolate(), "direction", "normal", ignoredSuccess).direction);
-    EXPECT_EQ(Timing::PlaybackDirectionReverse, applyTimingInputString(scope.isolate(), "direction", "reverse", ignoredSuccess).direction);
-    EXPECT_EQ(Timing::PlaybackDirectionAlternate, applyTimingInputString(scope.isolate(), "direction", "alternate", ignoredSuccess).direction);
-    EXPECT_EQ(Timing::PlaybackDirectionAlternateReverse, applyTimingInputString(scope.isolate(), "direction", "alternate-reverse", ignoredSuccess).direction);
+    EXPECT_EQ(Timing::PlaybackDirection::NORMAL, applyTimingInputString(scope.isolate(), "direction", "normal", ignoredSuccess).direction);
+    EXPECT_EQ(Timing::PlaybackDirection::REVERSE, applyTimingInputString(scope.isolate(), "direction", "reverse", ignoredSuccess).direction);
+    EXPECT_EQ(Timing::PlaybackDirection::ALTERNATE_NORMAL, applyTimingInputString(scope.isolate(), "direction", "alternate", ignoredSuccess).direction);
+    EXPECT_EQ(Timing::PlaybackDirection::ALTERNATE_REVERSE, applyTimingInputString(scope.isolate(), "direction", "alternate-reverse", ignoredSuccess).direction);
     EXPECT_EQ(defaultPlaybackDirection, applyTimingInputString(scope.isolate(), "direction", "rubbish", ignoredSuccess).direction);
     EXPECT_EQ(defaultPlaybackDirection, applyTimingInputNumber(scope.isolate(), "direction", 2, ignoredSuccess).direction);
 }

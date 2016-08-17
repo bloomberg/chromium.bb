@@ -259,7 +259,7 @@ TEST_F(KeyframeEffectTest, TimeToEffectChange)
     timing.iterationDuration = 100;
     timing.startDelay = 100;
     timing.endDelay = 100;
-    timing.fillMode = Timing::FillModeNone;
+    timing.fillMode = Timing::FillMode::NONE;
     KeyframeEffect* animation = KeyframeEffect::create(0, nullptr, timing);
     Animation* player = document().timeline().play(animation);
     double inf = std::numeric_limits<double>::infinity();
@@ -292,7 +292,7 @@ TEST_F(KeyframeEffectTest, TimeToEffectChangeWithPlaybackRate)
     timing.startDelay = 100;
     timing.endDelay = 100;
     timing.playbackRate = 2;
-    timing.fillMode = Timing::FillModeNone;
+    timing.fillMode = Timing::FillMode::NONE;
     KeyframeEffect* animation = KeyframeEffect::create(0, nullptr, timing);
     Animation* player = document().timeline().play(animation);
     double inf = std::numeric_limits<double>::infinity();
@@ -325,7 +325,7 @@ TEST_F(KeyframeEffectTest, TimeToEffectChangeWithNegativePlaybackRate)
     timing.startDelay = 100;
     timing.endDelay = 100;
     timing.playbackRate = -2;
-    timing.fillMode = Timing::FillModeNone;
+    timing.fillMode = Timing::FillMode::NONE;
     KeyframeEffect* animation = KeyframeEffect::create(0, nullptr, timing);
     Animation* player = document().timeline().play(animation);
     double inf = std::numeric_limits<double>::infinity();

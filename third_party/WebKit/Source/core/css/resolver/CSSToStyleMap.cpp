@@ -291,13 +291,13 @@ Timing::PlaybackDirection CSSToStyleMap::mapAnimationDirection(const CSSValue& v
 
     switch (toCSSPrimitiveValue(value).getValueID()) {
     case CSSValueNormal:
-        return Timing::PlaybackDirectionNormal;
+        return Timing::PlaybackDirection::NORMAL;
     case CSSValueAlternate:
-        return Timing::PlaybackDirectionAlternate;
+        return Timing::PlaybackDirection::ALTERNATE_NORMAL;
     case CSSValueReverse:
-        return Timing::PlaybackDirectionReverse;
+        return Timing::PlaybackDirection::REVERSE;
     case CSSValueAlternateReverse:
-        return Timing::PlaybackDirectionAlternateReverse;
+        return Timing::PlaybackDirection::ALTERNATE_REVERSE;
     default:
         ASSERT_NOT_REACHED();
         return CSSAnimationData::initialDirection();
@@ -318,13 +318,13 @@ Timing::FillMode CSSToStyleMap::mapAnimationFillMode(const CSSValue& value)
 
     switch (toCSSPrimitiveValue(value).getValueID()) {
     case CSSValueNone:
-        return Timing::FillModeNone;
+        return Timing::FillMode::NONE;
     case CSSValueForwards:
-        return Timing::FillModeForwards;
+        return Timing::FillMode::FORWARDS;
     case CSSValueBackwards:
-        return Timing::FillModeBackwards;
+        return Timing::FillMode::BACKWARDS;
     case CSSValueBoth:
-        return Timing::FillModeBoth;
+        return Timing::FillMode::BOTH;
     default:
         ASSERT_NOT_REACHED();
         return CSSAnimationData::initialFillMode();

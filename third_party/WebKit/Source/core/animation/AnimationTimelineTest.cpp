@@ -124,7 +124,7 @@ TEST_F(AnimationAnimationTimelineTest, EmptyKeyframeAnimation)
 TEST_F(AnimationAnimationTimelineTest, EmptyForwardsKeyframeAnimation)
 {
     AnimatableValueKeyframeEffectModel* effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     KeyframeEffect* keyframeEffect = KeyframeEffect::create(element.get(), effect, timing);
 
     timeline->play(keyframeEffect);
@@ -305,7 +305,7 @@ TEST_F(AnimationAnimationTimelineTest, SetCurrentTime)
 TEST_F(AnimationAnimationTimelineTest, PauseForTesting)
 {
     float seekTime = 1;
-    timing.fillMode = Timing::FillModeForwards;
+    timing.fillMode = Timing::FillMode::FORWARDS;
     KeyframeEffect* anim1 = KeyframeEffect::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
     KeyframeEffect* anim2  = KeyframeEffect::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
     Animation* animation1 = timeline->play(anim1);

@@ -412,7 +412,7 @@ bool CompositorAnimations::convertTimingForCompositor(const Timing& timing, doub
     // Compositor's time offset is positive for seeking into the animation.
     out.scaledTimeOffset = -timing.startDelay / animationPlaybackRate + timeOffset;
     out.playbackRate = timing.playbackRate * animationPlaybackRate;
-    out.fillMode = timing.fillMode == Timing::FillModeAuto ? Timing::FillModeNone : timing.fillMode;
+    out.fillMode = timing.fillMode == Timing::FillMode::AUTO ? Timing::FillMode::NONE : timing.fillMode;
     out.iterationStart = timing.iterationStart;
 
     DCHECK_GT(out.scaledDuration, 0);
@@ -542,41 +542,9 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
         animation->setIterations(compositorTiming.adjustedIterationCount);
         animation->setIterationStart(compositorTiming.iterationStart);
         animation->setTimeOffset(compositorTiming.scaledTimeOffset);
-
-        switch (compositorTiming.direction) {
-        case Timing::PlaybackDirectionNormal:
-            animation->setDirection(CompositorAnimation::Direction::NORMAL);
-            break;
-        case Timing::PlaybackDirectionReverse:
-            animation->setDirection(CompositorAnimation::Direction::REVERSE);
-            break;
-        case Timing::PlaybackDirectionAlternate:
-            animation->setDirection(CompositorAnimation::Direction::ALTERNATE_NORMAL);
-            break;
-        case Timing::PlaybackDirectionAlternateReverse:
-            animation->setDirection(CompositorAnimation::Direction::ALTERNATE_REVERSE);
-            break;
-        default:
-            NOTREACHED();
-        }
+        animation->setDirection(compositorTiming.direction);
         animation->setPlaybackRate(compositorTiming.playbackRate);
-
-        switch (compositorTiming.fillMode) {
-        case Timing::FillModeNone:
-            animation->setFillMode(CompositorAnimation::FillMode::NONE);
-            break;
-        case Timing::FillModeForwards:
-            animation->setFillMode(CompositorAnimation::FillMode::FORWARDS);
-            break;
-        case Timing::FillModeBackwards:
-            animation->setFillMode(CompositorAnimation::FillMode::BACKWARDS);
-            break;
-        case Timing::FillModeBoth:
-            animation->setFillMode(CompositorAnimation::FillMode::BOTH);
-            break;
-        default:
-            NOTREACHED();
-        }
+        animation->setFillMode(compositorTiming.fillMode);
         animations.append(std::move(animation));
     }
     DCHECK(!animations.isEmpty());

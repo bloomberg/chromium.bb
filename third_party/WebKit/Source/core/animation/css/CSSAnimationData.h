@@ -42,8 +42,8 @@ public:
     Vector<EAnimPlayState>& playStateList() { return m_playStateList; }
 
     static const AtomicString& initialName();
-    static Timing::PlaybackDirection initialDirection() { return Timing::PlaybackDirectionNormal; }
-    static Timing::FillMode initialFillMode() { return Timing::FillModeNone; }
+    static Timing::PlaybackDirection initialDirection() { return Timing::PlaybackDirection::NORMAL; }
+    static Timing::FillMode initialFillMode() { return Timing::FillMode::NONE; }
     static double initialIterationCount() { return 1.0; }
     static EAnimPlayState initialPlayState() { return AnimPlayStatePlaying; }
 
