@@ -242,8 +242,6 @@ class ASH_EXPORT WmShell {
   virtual void UnlockCursor() = 0;
   virtual bool IsMouseEventsEnabled() = 0;
 
-  virtual gfx::Point GetLastMouseLocation() = 0;
-
   virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
 
   virtual void RecordGestureAction(GestureActionType action) = 0;

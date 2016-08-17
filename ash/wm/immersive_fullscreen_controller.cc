@@ -17,10 +17,7 @@
 #include "ash/wm/immersive_focus_watcher.h"
 #include "ash/wm/immersive_gesture_handler.h"
 #include "base/metrics/histogram.h"
-#include "ui/aura/client/capture_client.h"
-#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -291,7 +288,8 @@ void ImmersiveFullscreenController::OnPointerEventObserved(
 void ImmersiveFullscreenController::OnMouseCaptureChanged() {
   const ui::MouseEvent event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
                              gfx::Point(), ui::EventTimeForNow(), 0, 0);
-  OnMouseEvent(event, aura::Env::GetInstance()->last_mouse_location(), nullptr);
+  OnMouseEvent(event, display::Screen::GetScreen()->GetCursorScreenPoint(),
+               nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -385,7 +383,7 @@ void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
 
   // Mouse hover should not initiate revealing the top-of-window views while a
   // window has mouse capture.
-  if (aura::client::GetCaptureWindow(widget_->GetNativeWindow()))
+  if (WmShell::Get()->GetCaptureWindow())
     return;
 
   if (ShouldIgnoreMouseEventAtLocation(location_in_screen))
@@ -442,7 +440,7 @@ void ImmersiveFullscreenController::UpdateLocatedEventRevealedLock(
 
   // Ignore all events while a window has capture. This keeps the top-of-window
   // views revealed during a drag.
-  if (aura::client::GetCaptureWindow(widget_->GetNativeWindow()))
+  if (WmShell::Get()->GetCaptureWindow())
     return;
 
   if ((!event || event->IsMouseEvent()) &&
@@ -478,16 +476,14 @@ void ImmersiveFullscreenController::UpdateLocatedEventRevealedLock(
 }
 
 void ImmersiveFullscreenController::UpdateLocatedEventRevealedLock() {
-  aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
-      widget_->GetNativeWindow()->GetRootWindow());
-  if (!cursor_client->IsMouseEventsEnabled()) {
+  if (!WmShell::Get()->IsMouseEventsEnabled()) {
     // If mouse events are disabled, the user's last interaction was probably
     // via touch. Do no do further processing in this case as there is no easy
     // way of retrieving the position of the user's last touch.
     return;
   }
   UpdateLocatedEventRevealedLock(
-      nullptr, aura::Env::GetInstance()->last_mouse_location());
+      nullptr, display::Screen::GetScreen()->GetCursorScreenPoint());
 }
 
 void ImmersiveFullscreenController::AcquireLocatedEventRevealedLock() {

@@ -80,7 +80,6 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   void LockCursor() override;
   void UnlockCursor() override;
   bool IsMouseEventsEnabled() override;
-  gfx::Point GetLastMouseLocation() override;
   std::vector<WmWindow*> GetAllRootWindows() override;
   void RecordGestureAction(GestureActionType action) override;
   void RecordUserMetricsAction(UserMetricsAction action) override;

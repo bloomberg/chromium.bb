@@ -47,7 +47,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void LockCursor() override;
   void UnlockCursor() override;
   bool IsMouseEventsEnabled() override;
-  gfx::Point GetLastMouseLocation() override;
   std::vector<WmWindow*> GetAllRootWindows() override;
   void RecordGestureAction(GestureActionType action) override;
   void RecordUserMetricsAction(UserMetricsAction action) override;

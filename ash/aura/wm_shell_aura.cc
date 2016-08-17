@@ -151,10 +151,6 @@ bool WmShellAura::IsMouseEventsEnabled() {
   return Shell::GetInstance()->cursor_manager()->IsMouseEventsEnabled();
 }
 
-gfx::Point WmShellAura::GetLastMouseLocation() {
-  return aura::Env::GetInstance()->last_mouse_location();
-}
-
 std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::vector<WmWindow*> wm_windows(root_windows.size());

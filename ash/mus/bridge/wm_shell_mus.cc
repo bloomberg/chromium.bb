@@ -283,10 +283,6 @@ bool WmShellMus::IsMouseEventsEnabled() {
   return true;
 }
 
-gfx::Point WmShellMus::GetLastMouseLocation() {
-  return window_tree_client()->GetCursorScreenPoint();
-}
-
 std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
   std::vector<WmWindow*> wm_windows(root_window_controllers_.size());
   for (size_t i = 0; i < root_window_controllers_.size(); ++i)
