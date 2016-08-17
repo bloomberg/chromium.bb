@@ -35,6 +35,7 @@ class Scheduler;
 class RequestCoordinator : public KeyedService {
  public:
   // Status to return for failed notifications.
+  // TODO(petewil): Can we find a better name for this enum?
   enum class SavePageStatus {
     SUCCESS,
     PRERENDER_FAILURE,
@@ -42,7 +43,7 @@ class RequestCoordinator : public KeyedService {
     SAVE_FAILED,
     EXPIRED,
     RETRY_COUNT_EXCEEDED,
-    REMOVED_BY_CLIENT,
+    REMOVED,
   };
 
   // Nested observer class.  To make sure that no events are missed, the client
@@ -52,14 +53,9 @@ class RequestCoordinator : public KeyedService {
   class Observer {
    public:
     virtual void OnAdded(const SavePageRequest& request) = 0;
-    virtual void OnSucceeded(const SavePageRequest& request) = 0;
-    virtual void OnFailed(const SavePageRequest& request,
-                          SavePageStatus status) = 0;
+    virtual void OnCompleted(const SavePageRequest& request,
+                             SavePageStatus status) = 0;
     virtual void OnChanged(const SavePageRequest& request) = 0;
-    virtual void OnRemoved(const SavePageRequest& request,
-                           SavePageStatus status) = 0;
-    // TODO(petewil): Merge OnSucceeded, OnFailed, and OnRemoved into a single
-    // call.
   };
 
   // Callback to report when the processing of a triggered task is complete.
@@ -192,10 +188,8 @@ class RequestCoordinator : public KeyedService {
   void TryNextRequest();
 
   void NotifyAdded(const SavePageRequest& request);
-  void NotifySucceeded(const SavePageRequest& request);
-  void NotifyFailed(const SavePageRequest& request, SavePageStatus status);
+  void NotifyCompleted(const SavePageRequest& request, SavePageStatus status);
   void NotifyChanged(const SavePageRequest& request);
-  void NotifyRemoved(const SavePageRequest& request);
 
   // Returns the appropriate offliner to use, getting a new one from the factory
   // if needed.

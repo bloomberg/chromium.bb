@@ -168,7 +168,7 @@ void RequestCoordinator::RemoveRequestsCallback(
     const RequestQueue::UpdateMultipleRequestResults& results,
     const std::vector<SavePageRequest>& requests) {
   for (SavePageRequest request : requests)
-    NotifyRemoved(request);
+    NotifyCompleted(request, SavePageStatus::REMOVED);
 }
 
 void RequestCoordinator::StopProcessing() {
@@ -316,7 +316,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
                           base::Bind(&RequestCoordinator::UpdateRequestCallback,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      updated_request.client_id()));
-    NotifyFailed(updated_request, SavePageStatus::FOREGROUND_CANCELED);
+    NotifyCompleted(updated_request, SavePageStatus::FOREGROUND_CANCELED);
 
   } else if (status == Offliner::RequestStatus::SAVED) {
     // Remove the request from the queue if it succeeded.
@@ -325,7 +325,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     queue_->RemoveRequests(
         remove_requests, base::Bind(&RequestCoordinator::RemoveRequestsCallback,
                                     weak_ptr_factory_.GetWeakPtr()));
-    NotifySucceeded(request);
+    NotifyCompleted(request, SavePageStatus::SUCCESS);
   } else if (request.completed_attempt_count() + 1 >=
              policy_->GetMaxCompletedTries()) {
     // Remove from the request queue if we exceeeded max retries. The +1
@@ -337,7 +337,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     queue_->RemoveRequests(
         remove_requests, base::Bind(&RequestCoordinator::RemoveRequestsCallback,
                                     weak_ptr_factory_.GetWeakPtr()));
-    NotifyFailed(request, SavePageStatus::RETRY_COUNT_EXCEEDED);
+    NotifyCompleted(request, SavePageStatus::RETRY_COUNT_EXCEEDED);
   } else {
     // If we failed, but are not over the limit, update the request in the
     // queue.
@@ -396,22 +396,13 @@ void RequestCoordinator::NotifyAdded(const SavePageRequest& request) {
   FOR_EACH_OBSERVER(Observer, observers_, OnAdded(request));
 }
 
-void RequestCoordinator::NotifySucceeded(const SavePageRequest& request) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnSucceeded(request));
-}
-
-void RequestCoordinator::NotifyFailed(const SavePageRequest& request,
-                                      SavePageStatus status) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnFailed(request, status));
+void RequestCoordinator::NotifyCompleted(const SavePageRequest& request,
+                                         SavePageStatus status) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnCompleted(request, status));
 }
 
 void RequestCoordinator::NotifyChanged(const SavePageRequest& request) {
   FOR_EACH_OBSERVER(Observer, observers_, OnChanged(request));
-}
-
-void RequestCoordinator::NotifyRemoved(const SavePageRequest& request) {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnRemoved(request, SavePageStatus::REMOVED_BY_CLIENT));
 }
 
 void RequestCoordinator::GetOffliner() {
