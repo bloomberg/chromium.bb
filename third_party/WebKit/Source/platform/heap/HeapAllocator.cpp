@@ -54,6 +54,7 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
         return false;
     ASSERT(!state->isInGC());
     ASSERT(state->isAllocationAllowed());
+    DCHECK_EQ(&state->heap(), &ThreadState::fromObject(address)->heap());
 
     // FIXME: Support expand for large objects.
     // Don't expand backings allocated on other threads.
@@ -97,6 +98,7 @@ bool HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
         return false;
     ASSERT(!state->isInGC());
     ASSERT(state->isAllocationAllowed());
+    DCHECK_EQ(&state->heap(), &ThreadState::fromObject(address)->heap());
 
     // FIXME: Support shrink for large objects.
     // Don't shrink backings allocated on other threads.
