@@ -1102,7 +1102,7 @@ const char kWebApkServerUrl[] = "webapk-server-url";
 #if defined(OS_CHROMEOS)
 // Enables native cups integration
 const char kEnableNativeCups[] = "enable-native-cups";
-#endif // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_ASH)
 const char kOpenAsh[]                       = "open-ash";
@@ -1114,7 +1114,8 @@ const char kOpenAsh[]                       = "open-ash";
 const char kHelp[]                          = "help";
 const char kHelpShort[]                     = "h";
 
-// Specifies which password store to use (detect, default, gnome, kwallet).
+// Specifies which password store to use
+// (detect, default, gnome-keyring, gnome-libsecret, kwallet).
 const char kPasswordStore[]                 = "password-store";
 
 // The same as the --class argument in X applications.  Overrides the WM_CLASS

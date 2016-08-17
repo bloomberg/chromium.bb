@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
+#include "components/os_crypt/key_storage_util_linux.h"
 
 #if defined(USE_LIBSECRET)
 #include "components/os_crypt/key_storage_libsecret.h"
@@ -41,25 +42,17 @@ void KeyStorageLinux::SetProductName(const std::string& product_name) {
 
 // static
 std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
-  base::nix::DesktopEnvironment used_desktop_env;
-  if (g_store.Get() == "kwallet") {
-    used_desktop_env = base::nix::DESKTOP_ENVIRONMENT_KDE4;
-  } else if (g_store.Get() == "kwallet5") {
-    used_desktop_env = base::nix::DESKTOP_ENVIRONMENT_KDE5;
-  } else if (g_store.Get() == "gnome") {
-    used_desktop_env = base::nix::DESKTOP_ENVIRONMENT_GNOME;
-  } else if (g_store.Get() == "basic") {
-    used_desktop_env = base::nix::DESKTOP_ENVIRONMENT_OTHER;
-  } else {
-    std::unique_ptr<base::Environment> env(base::Environment::Create());
-    used_desktop_env = base::nix::GetDesktopEnvironment(env.get());
-  }
+  // Select a backend.
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  base::nix::DesktopEnvironment desktop_env =
+      base::nix::GetDesktopEnvironment(env.get());
+  os_crypt::SelectedLinuxBackend selected_backend =
+      os_crypt::SelectBackend(g_store.Get(), desktop_env);
 
-  // Try initializing the appropriate store for our environment.
+  // Try initializing the selected backend.
   std::unique_ptr<KeyStorageLinux> key_storage;
-  if (used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_GNOME ||
-      used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_UNITY ||
-      used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
+  if (selected_backend == os_crypt::SelectedLinuxBackend::GNOME_ANY ||
+      selected_backend == os_crypt::SelectedLinuxBackend::GNOME_LIBSECRET) {
 #if defined(USE_LIBSECRET)
     key_storage.reset(new KeyStorageLibsecret());
     if (key_storage->Init()) {
@@ -67,10 +60,14 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
       return key_storage;
     }
 #endif
-  } else if (used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
-             used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
+  } else if (selected_backend == os_crypt::SelectedLinuxBackend::KWALLET ||
+             selected_backend == os_crypt::SelectedLinuxBackend::KWALLET5) {
 #if defined(USE_KWALLET)
     DCHECK(!g_product_name.Get().empty());
+    base::nix::DesktopEnvironment used_desktop_env =
+        selected_backend == os_crypt::SelectedLinuxBackend::KWALLET
+            ? base::nix::DESKTOP_ENVIRONMENT_KDE4
+            : base::nix::DESKTOP_ENVIRONMENT_KDE5;
     key_storage.reset(
         new KeyStorageKWallet(used_desktop_env, g_product_name.Get()));
     if (key_storage->Init()) {

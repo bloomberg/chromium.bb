@@ -73,6 +73,8 @@ static_library("os_crypt") {
     sources += [
       "key_storage_linux.cc",
       "key_storage_linux.h",
+      "key_storage_util_linux.cc",
+      "key_storage_util_linux.h",
       "os_crypt_linux.cc",
     ]
     defines = []
