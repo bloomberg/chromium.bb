@@ -180,9 +180,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_GENERIC(
         ViewHostMsg_UpdateRect,
         ResizeHelperPostMsgToUIThread(render_process_id_, message))
-    IPC_MESSAGE_HANDLER_GENERIC(
-        ViewHostMsg_SetNeedsBeginFrames,
-        ResizeHelperPostMsgToUIThread(render_process_id_, message))
 #endif
     // NB: The SyncAllocateSharedMemory, SyncAllocateGpuMemoryBuffer, and
     // DeletedGpuMemoryBuffer IPCs are handled here for renderer processes. For
