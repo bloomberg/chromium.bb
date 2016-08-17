@@ -531,33 +531,28 @@ void SVGSVGElement::removedFrom(ContainerNode* rootParent)
 
 void SVGSVGElement::pauseAnimations()
 {
-    ASSERT(RuntimeEnabledFeatures::smilEnabled());
     if (!m_timeContainer->isPaused())
         m_timeContainer->pause();
 }
 
 void SVGSVGElement::unpauseAnimations()
 {
-    ASSERT(RuntimeEnabledFeatures::smilEnabled());
     if (m_timeContainer->isPaused())
         m_timeContainer->resume();
 }
 
 bool SVGSVGElement::animationsPaused() const
 {
-    ASSERT(RuntimeEnabledFeatures::smilEnabled());
     return m_timeContainer->isPaused();
 }
 
 float SVGSVGElement::getCurrentTime() const
 {
-    ASSERT(RuntimeEnabledFeatures::smilEnabled());
     return narrowPrecisionToFloat(m_timeContainer->elapsed().value());
 }
 
 void SVGSVGElement::setCurrentTime(float seconds)
 {
-    ASSERT(RuntimeEnabledFeatures::smilEnabled());
     ASSERT(std::isfinite(seconds));
     seconds = max(seconds, 0.0f);
     m_timeContainer->setElapsed(seconds);

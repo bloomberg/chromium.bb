@@ -42,11 +42,11 @@ interface SVGSVGElement : SVGGraphicsElement {
     [MeasureAs=SVGSVGElementUnsuspendRedrawAll] void unsuspendRedrawAll();
     [MeasureAs=SVGSVGElementForceRedraw] void forceRedraw();
 
-    [RuntimeEnabled=smil] void pauseAnimations();
-    [RuntimeEnabled=smil] void unpauseAnimations();
-    [RuntimeEnabled=smil] boolean animationsPaused();
-    [RuntimeEnabled=smil] float getCurrentTime();
-    [RuntimeEnabled=smil] void setCurrentTime(float seconds);
+    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] void pauseAnimations();
+    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] void unpauseAnimations();
+    [MeasureAs=SVGSMILPausing, RuntimeEnabled=smil] boolean animationsPaused();
+    [MeasureAs=SVGSMILCurrentTime, RuntimeEnabled=smil] float getCurrentTime();
+    [MeasureAs=SVGSMILCurrentTime, RuntimeEnabled=smil] void setCurrentTime(float seconds);
 
     // TODO(foolip): The rect arguments should be DOMRectReadOnly.
     NodeList getIntersectionList(SVGRect rect, SVGElement? referenceElement);
