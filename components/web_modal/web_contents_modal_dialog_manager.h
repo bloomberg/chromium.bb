@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/web_modal/single_web_contents_dialog_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -29,13 +30,13 @@ class WebContentsModalDialogManager
   WebContentsModalDialogManagerDelegate* delegate() const { return delegate_; }
   void SetDelegate(WebContentsModalDialogManagerDelegate* d);
 
+#if defined(OS_MACOSX)
+  // Note: This method is not defined inside components/web_modal/ as its
+  // definition (needed for Cocoa builds) depends on chrome/browser/ui/cocoa/.
   static SingleWebContentsDialogManager* CreateNativeWebModalManager(
       gfx::NativeWindow dialog,
       SingleWebContentsDialogManagerDelegate* native_delegate);
-
-  // Shows the dialog as a web contents modal dialog. The dialog will notify via
-  // WillClose() when it is being destroyed.
-  void ShowModalDialog(gfx::NativeWindow dialog);
+#endif
 
   // Allow clients to supply their own native dialog manager. Suitable for
   // bubble clients.

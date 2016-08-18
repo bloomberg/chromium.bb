@@ -141,8 +141,7 @@ views::Widget* ShowWebModalDialogViews(
   content::WebContents* web_contents =
       guest_view::GuestViewBase::GetTopLevelWebContents(initiator_web_contents);
   views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
-  web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)
-      ->ShowModalDialog(widget->GetNativeWindow());
+  ShowModalDialog(widget->GetNativeWindow(), web_contents);
   return widget;
 }
 

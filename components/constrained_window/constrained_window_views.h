@@ -42,6 +42,11 @@ void UpdateWidgetModalDialogPosition(
     views::Widget* widget,
     web_modal::ModalDialogHost* dialog_host);
 
+// Shows the dialog with a new SingleWebContentsDialogManager. The dialog will
+// notify via WillClose() when it is being destroyed.
+void ShowModalDialog(gfx::NativeWindow dialog,
+                     content::WebContents* web_contents);
+
 // Calls CreateWebModalDialogViews, shows the dialog, and returns its widget.
 views::Widget* ShowWebModalDialogViews(
     views::WidgetDelegate* dialog,
@@ -59,6 +64,6 @@ views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
                                              gfx::NativeWindow parent);
 
-}  // namespace constrained window
+}  // namespace constrained_window
 
 #endif  // COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_H_

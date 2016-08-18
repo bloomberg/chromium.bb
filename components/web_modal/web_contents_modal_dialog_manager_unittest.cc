@@ -123,17 +123,6 @@ class WebContentsModalDialogManagerTest
   DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogManagerTest);
 };
 
-SingleWebContentsDialogManager*
-WebContentsModalDialogManager::CreateNativeWebModalManager(
-    gfx::NativeWindow dialog,
-    SingleWebContentsDialogManagerDelegate* native_delegate) {
-  NOTREACHED();
-  return new TestNativeWebContentsModalDialogManager(
-      dialog,
-      native_delegate,
-      &unused_tracker);
-}
-
 // Test that the dialog is shown immediately when the delegate indicates the web
 // contents is visible.
 TEST_F(WebContentsModalDialogManagerTest, WebContentsVisible) {

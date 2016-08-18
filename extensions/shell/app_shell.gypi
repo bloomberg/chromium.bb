@@ -79,7 +79,6 @@
       'browser/shell_update_query_params_delegate.h',
       'browser/shell_url_request_context_getter.cc',
       'browser/shell_url_request_context_getter.h',
-      'browser/shell_web_contents_modal_dialog_manager.cc',
       'common/shell_content_client.cc',
       'common/shell_content_client.h',
       'common/shell_extensions_client.cc',

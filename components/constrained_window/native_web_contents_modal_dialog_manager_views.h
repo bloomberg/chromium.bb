@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_H_
+#ifndef COMPONENTS_CONSTRAINED_WINDOW_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_H_
+#define COMPONENTS_CONSTRAINED_WINDOW_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_H_
 
 #include <set>
 
@@ -16,6 +16,8 @@
 namespace views {
 class Widget;
 }
+
+namespace constrained_window {
 
 // Class for parenting a tab-modal views dialog off of a views browser.
 class NativeWebContentsModalDialogManagerViews
@@ -73,4 +75,6 @@ class NativeWebContentsModalDialogManagerViews
   DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManagerViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_H_
+}  // namespace constrained_window
+
+#endif  // COMPONENTS_CONSTRAINED_WINDOW_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_VIEWS_H_

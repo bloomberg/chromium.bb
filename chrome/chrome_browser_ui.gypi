@@ -803,7 +803,7 @@
       'browser/ui/webui/chromeos/emulator/device_emulator_ui.cc',
       'browser/ui/webui/chromeos/emulator/device_emulator_ui.h',
     ],
-    # Mac sources, except when mac_views_browser==1
+    # Mac sources, except when mac_views_browser==1.
     'chrome_browser_ui_cocoa_sources': [
       'browser/ui/cocoa/animatable_image.h',
       'browser/ui/cocoa/animatable_image.mm',
@@ -2432,8 +2432,6 @@
       'browser/ui/views/location_bar/zoom_bubble_view.h',
       'browser/ui/views/location_bar/zoom_view.cc',
       'browser/ui/views/location_bar/zoom_view.h',
-      'browser/ui/views/native_web_contents_modal_dialog_manager_views.cc',
-      'browser/ui/views/native_web_contents_modal_dialog_manager_views.h',
       'browser/ui/views/omnibox/omnibox_popup_contents_view.cc',
       'browser/ui/views/omnibox/omnibox_popup_contents_view.h',
       'browser/ui/views/omnibox/omnibox_result_view.cc',
@@ -2551,7 +2549,6 @@
       'browser/ui/views/update_recommended_message_box.h',
       'browser/ui/views/validation_message_bubble_view.cc',
       'browser/ui/views/validation_message_bubble_view.h',
-      'browser/ui/views/web_contents_modal_dialog_manager_views.cc',
       'browser/ui/views/website_settings/chooser_bubble_ui_view.cc',
       'browser/ui/views/website_settings/chooser_bubble_ui_view.h',
       'browser/ui/views/website_settings/permission_prompt_impl_views.cc',

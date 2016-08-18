@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -39,18 +39,10 @@ class WebContentsModalDialogManagerViewsMacTest : public InProcessBrowserTest,
 
     DCHECK(web_contents);
 
-    // Toolkit-views dialogs would use constrained_window::
-    // ShowWebModalDialogViews(new TestDialog, web_contents), but the
-    // constrained_window component is not used in Cocoa code (disallowed via
-    // DEPS). It does basically the following anyway.
-    Widget* widget = views::DialogDelegate::CreateDialogWidget(
-        new TestDialog,
-        nullptr, [browser()->window()->GetNativeWindow() contentView]);
+    // Show a dialog as a constrained window modal to the current tab.
+    Widget* widget = constrained_window::ShowWebModalDialogViews(new TestDialog,
+                                                                 web_contents);
     widget->AddObserver(this);
-    web_modal::WebContentsModalDialogManager* manager =
-        web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
-    manager->ShowModalDialog(widget->GetNativeWindow());
-
     return widget;
   }
 

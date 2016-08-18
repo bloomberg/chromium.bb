@@ -35,12 +35,6 @@ void WebContentsModalDialogManager::SetDelegate(
   }
 }
 
-void WebContentsModalDialogManager::ShowModalDialog(gfx::NativeWindow dialog) {
-  std::unique_ptr<SingleWebContentsDialogManager> mgr(
-      CreateNativeWebModalManager(dialog, this));
-  ShowDialogWithManager(dialog, std::move(mgr));
-}
-
 // TODO(gbillock): Maybe "ShowBubbleWithManager"?
 void WebContentsModalDialogManager::ShowDialogWithManager(
     gfx::NativeWindow dialog,

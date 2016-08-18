@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/native_web_contents_modal_dialog_manager_views.h"
+#include "components/constrained_window/native_web_contents_modal_dialog_manager_views.h"
 
 #include <memory>
 
-#include "chrome/browser/platform_util.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -30,6 +29,8 @@ using web_modal::SingleWebContentsDialogManager;
 using web_modal::SingleWebContentsDialogManagerDelegate;
 using web_modal::WebContentsModalDialogHost;
 using web_modal::ModalDialogHostObserver;
+
+namespace constrained_window {
 
 NativeWebContentsModalDialogManagerViews::
     NativeWebContentsModalDialogManagerViews(
@@ -67,7 +68,7 @@ void NativeWebContentsModalDialogManagerViews::ManageDialog() {
   wm::SetWindowVisibilityAnimationType(
       widget->GetNativeWindow(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
 
-  gfx::NativeView parent = platform_util::GetParent(widget->GetNativeView());
+  gfx::NativeView parent = widget->GetNativeView()->parent();
   wm::SetChildWindowVisibilityChangesAnimated(parent);
   // No animations should get performed on the window since that will re-order
   // the window stack which will then cause many problems.
@@ -203,7 +204,7 @@ views::Widget* NativeWebContentsModalDialogManagerViews::GetWidget(
 void NativeWebContentsModalDialogManagerViews::WidgetClosing(
     views::Widget* widget) {
 #if defined(USE_AURA)
-  gfx::NativeView view = platform_util::GetParent(widget->GetNativeView());
+  gfx::NativeView view = widget->GetNativeView()->parent();
   // Allow the parent to animate again.
   if (view && view->parent())
     view->parent()->ClearProperty(aura::client::kAnimationsDisabledKey);
@@ -218,3 +219,5 @@ void NativeWebContentsModalDialogManagerViews::WidgetClosing(
   // Will cause this object to be deleted.
   native_delegate_->WillClose(widget->GetNativeWindow());
 }
+
+}  // namespace constrained_window

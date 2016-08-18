@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,8 @@ namespace web_modal {
 SingleWebContentsDialogManager*
 WebContentsModalDialogManager::CreateNativeWebModalManager(
     gfx::NativeWindow dialog,
-    SingleWebContentsDialogManagerDelegate* native_delegate) {
-  // TODO(oshima): Investigate if we need to implement this.
-  NOTREACHED();
-  return NULL;
+    web_modal::SingleWebContentsDialogManagerDelegate* delegate) {
+  return nullptr;
 }
 
 }  // namespace web_modal

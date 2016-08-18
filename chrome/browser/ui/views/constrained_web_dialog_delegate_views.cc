@@ -238,9 +238,8 @@ class ConstrainedWebDialogDelegateViewViews
   }
   void DocumentOnLoadCompletedInMainFrame() override {
     if (!max_size_.IsEmpty() && initiator_observer_.web_contents()) {
-      web_modal::WebContentsModalDialogManager::FromWebContents(
-          initiator_observer_.web_contents())
-          ->ShowModalDialog(GetWidget()->GetNativeWindow());
+      constrained_window::ShowModalDialog(GetWidget()->GetNativeWindow(),
+                                          initiator_observer_.web_contents());
     }
   }
 
