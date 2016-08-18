@@ -324,6 +324,21 @@ device::BluetoothGattCharacteristic::Permissions GetBluetoothPermissions(
   return permissions;
 }
 
+bool IsAutoLaunchedKioskApp(const ExtensionId& id) {
+#if defined(OS_CHROMEOS)
+  chromeos::KioskAppManager::App app_info;
+  return chromeos::KioskAppManager::Get()->GetApp(id, &app_info) &&
+         app_info.was_auto_launched_with_zero_delay;
+#else
+  return false;
+#endif
+}
+
+bool IsPeripheralFlagEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBLEAdvertising);
+}
+
 }  // namespace
 
 
@@ -439,6 +454,11 @@ BLEPeripheralExtensionFunction<Params>::Run() {
   // Check permissions in manifest.
   if (!BluetoothManifestData::CheckPeripheralPermitted(extension()))
     return RespondNow(Error(kErrorPermissionDenied));
+
+  if (!(IsAutoLaunchedKioskApp(extension()->id()) ||
+        IsPeripheralFlagEnabled())) {
+    return RespondNow(Error(kErrorPermissionDenied));
+  }
 
 // Causes link error on Windows. API will never be on Windows, so #ifdefing.
 #if !defined(OS_WIN)
@@ -1108,21 +1128,6 @@ bool BluetoothLowEnergyAdvertisementFunction::RunAsync() {
 void BluetoothLowEnergyAdvertisementFunction::Initialize() {
   advertisements_manager_ =
       ApiResourceManager<BluetoothApiAdvertisement>::Get(browser_context());
-}
-
-static bool IsAutoLaunchedKioskApp(const ExtensionId& id) {
-#if defined(OS_CHROMEOS)
-  chromeos::KioskAppManager::App app_info;
-  return chromeos::KioskAppManager::Get()->GetApp(id, &app_info) &&
-         app_info.was_auto_launched_with_zero_delay;
-#else
-  return false;
-#endif
-}
-
-static bool IsPeripheralFlagEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBLEAdvertising);
 }
 
 // RegisterAdvertisement:
