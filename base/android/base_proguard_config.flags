@@ -37,6 +37,11 @@
   native <methods>;
 }
 
+# Keep all Parcelables as they might be marshalled outside Chrome.
+-keepclassmembers class * implements android.os.Parcelable {
+  public static *** CREATOR;
+}
+
 # Remove methods annotated with this if their return value is unused
 -assumenosideeffects class ** {
   @org.chromium.base.annotations.RemovableInRelease <methods>;
@@ -48,3 +53,4 @@
 -keepclassmembers enum * {
     public static **[] values();
 }
+

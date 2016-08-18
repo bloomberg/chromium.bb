@@ -53,11 +53,6 @@
 -keep class org.chromium.content.app.SandboxedProcessService
 -keep class org.chromium.content.app.PrivilegedProcessService
 
-# Keep all Parcelables as they might be marshalled outside Chrome.
--keepnames class * implements android.os.Parcelable {
-   public static final ** CREATOR;
-}
-
 # SearchView is used in website_preferences_menu.xml and is constructed by
 # Android using reflection.
 -keep class android.support.v7.widget.SearchView {
