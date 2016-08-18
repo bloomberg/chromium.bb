@@ -208,6 +208,7 @@ void MakeHandle(uint32_t chunk_seq,
   DCHECK(chunk_seq);
   DCHECK(chunk_index <= TraceBufferChunk::kMaxChunkIndex);
   DCHECK(event_index < TraceBufferChunk::kTraceBufferChunkSize);
+  DCHECK(chunk_index <= std::numeric_limits<uint16_t>::max());
   handle->chunk_seq = chunk_seq;
   handle->chunk_index = static_cast<uint16_t>(chunk_index);
   handle->event_index = static_cast<uint16_t>(event_index);
@@ -1712,6 +1713,10 @@ TraceEvent* TraceLog::GetEventByHandleInternal(TraceEventHandle handle,
                                                OptionalAutoLock* lock) {
   if (!handle.chunk_seq)
     return NULL;
+
+  DCHECK(handle.chunk_seq);
+  DCHECK(handle.chunk_index <= TraceBufferChunk::kMaxChunkIndex);
+  DCHECK(handle.event_index < TraceBufferChunk::kTraceBufferChunkSize);
 
   if (thread_local_event_buffer_.Get()) {
     TraceEvent* trace_event =
