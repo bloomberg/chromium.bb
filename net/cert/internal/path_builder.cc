@@ -419,7 +419,6 @@ class CertPathIter {
   // The CertIssuerSources for retrieving candidate issuers.
   CertIssuerSources cert_issuer_sources_;
   // The TrustStore for checking if a path ends in a trust anchor.
-  // TODO: is this comment correct anymore?
   const TrustStore* trust_store_;
   // The output variable for storing the next candidate path, which the client
   // passes in to GetNextPath. Only used for a single path output.
