@@ -30,6 +30,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/public/interfaces/service.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
@@ -301,6 +302,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
  private:
   friend class ChildProcessLauncherBrowserTest_ChildSpawnFail_Test;
   friend class VisitRelayingRenderProcessHost;
+  class ConnectionFilterController;
   class ConnectionFilterImpl;
 
   std::unique_ptr<IPC::ChannelProxy> CreateChannelProxy(
@@ -367,10 +369,42 @@ class CONTENT_EXPORT RenderProcessHostImpl
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const std::string& error);
 
+  template <typename InterfaceType>
+  using AddInterfaceCallback =
+      base::Callback<void(mojo::InterfaceRequest<InterfaceType>)>;
+
+  template <typename CallbackType>
+  struct InterfaceGetter;
+
+  template <typename InterfaceType>
+  struct InterfaceGetter<AddInterfaceCallback<InterfaceType>> {
+    static void GetInterfaceOnUIThread(
+        base::WeakPtr<RenderProcessHostImpl> weak_host,
+        const AddInterfaceCallback<InterfaceType>& callback,
+        mojo::InterfaceRequest<InterfaceType> request) {
+      if (!weak_host)
+        return;
+      callback.Run(std::move(request));
+    }
+  };
+
+  // Helper to bind an interface callback whose lifetime is limited to that of
+  // the render process currently hosted by the RPHI. Callbacks added by this
+  // method will never run beyond the next invocation of Cleanup().
+  template <typename CallbackType>
+  void AddUIThreadInterface(shell::InterfaceRegistry* registry,
+                            const CallbackType& callback) {
+    registry->AddInterface(
+        base::Bind(&InterfaceGetter<CallbackType>::GetInterfaceOnUIThread,
+                   instance_weak_factory_->GetWeakPtr(), callback),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
+  }
+
   std::string child_token_;
 
   std::unique_ptr<MojoChildConnection> mojo_child_connection_;
-  int connection_filter_ = MojoShellConnection::kInvalidConnectionFilterId;
+  int connection_filter_id_ = MojoShellConnection::kInvalidConnectionFilterId;
+  scoped_refptr<ConnectionFilterController> connection_filter_controller_;
   shell::mojom::ServicePtr test_service_;
 #if defined(OS_ANDROID)
   std::unique_ptr<InterfaceRegistryAndroid> interface_registry_android_;
@@ -526,6 +560,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
 
   scoped_refptr<ResourceMessageFilter> resource_message_filter_;
+
+  // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend
+  // WeakPtrs which are invalidated any time the RPHI is recycled.
+  std::unique_ptr<base::WeakPtrFactory<RenderProcessHostImpl>>
+      instance_weak_factory_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

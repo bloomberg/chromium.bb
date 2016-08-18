@@ -24,6 +24,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/metrics/histogram.h"
@@ -36,6 +37,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
+#include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -463,6 +465,32 @@ static size_t g_max_renderer_count_override = 0;
 // static
 bool g_run_renderer_in_process_ = false;
 
+// Held by the RPH and used to control an (unowned) ConnectionFilterImpl from
+// any thread.
+class RenderProcessHostImpl::ConnectionFilterController
+    : public base::RefCountedThreadSafe<ConnectionFilterController> {
+ public:
+  // |filter| is not owned by this object.
+  explicit ConnectionFilterController(ConnectionFilterImpl* filter)
+      : filter_(filter) {}
+
+  void DisableFilter();
+
+ private:
+  friend class base::RefCountedThreadSafe<ConnectionFilterController>;
+  friend class ConnectionFilterImpl;
+
+  ~ConnectionFilterController() {}
+
+  void Detach() {
+    base::AutoLock lock(lock_);
+    filter_ = nullptr;
+  }
+
+  base::Lock lock_;
+  ConnectionFilterImpl* filter_;
+};
+
 // Held by the RPH's BrowserContext's MojoShellConnection, ownership transferred
 // back to RPH upon RPH destruction.
 class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
@@ -472,6 +500,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
       std::unique_ptr<shell::InterfaceRegistry> registry)
       : child_identity_(child_identity),
         registry_(std::move(registry)),
+        controller_(new ConnectionFilterController(this)),
         weak_factory_(this) {
     // Registration of this filter may race with browser shutdown, in which case
     // it's possible for this filter to be destroyed on the main thread. This
@@ -483,6 +512,14 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
 
   ~ConnectionFilterImpl() override {
     DCHECK(thread_checker_.CalledOnValidThread());
+    controller_->Detach();
+  }
+
+  scoped_refptr<ConnectionFilterController> controller() { return controller_; }
+
+  void Disable() {
+    base::AutoLock lock(enabled_lock_);
+    enabled_ = false;
   }
 
  private:
@@ -497,6 +534,10 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
         child_identity_.instance() != remote_identity.instance()) {
       return false;
     }
+
+    base::AutoLock lock(enabled_lock_);
+    if (!enabled_)
+      return false;
 
     std::set<std::string> interface_names;
     registry_->GetInterfaceNames(&interface_names);
@@ -516,16 +557,31 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     shell::mojom::InterfaceProvider* provider = registry_.get();
-    provider->GetInterface(interface_name, std::move(handle));
+
+    base::AutoLock lock(enabled_lock_);
+    if (enabled_)
+      provider->GetInterface(interface_name, std::move(handle));
   }
 
   base::ThreadChecker thread_checker_;
   shell::Identity child_identity_;
   std::unique_ptr<shell::InterfaceRegistry> registry_;
+  scoped_refptr<ConnectionFilterController> controller_;
+
+  // Guards |enabled_|.
+  base::Lock enabled_lock_;
+  bool enabled_ = true;
+
   base::WeakPtrFactory<ConnectionFilterImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
 };
+
+void RenderProcessHostImpl::ConnectionFilterController::DisableFilter() {
+  base::AutoLock lock(lock_);
+  if (filter_)
+    filter_->Disable();
+}
 
 base::MessageLoop*
 RenderProcessHostImpl::GetInProcessRendererThreadForTesting() {
@@ -631,6 +687,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       never_signaled_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
 #endif
+      instance_weak_factory_(
+          new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
       weak_factory_(this) {
   widget_helper_ = new RenderWidgetHelper();
 
@@ -1116,44 +1174,41 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       interface_registry_android_.get());
 #endif
 
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
 #if !defined(OS_ANDROID)
-  registry->AddInterface(base::Bind(&device::BatteryMonitorImpl::Create),
-                         ui_task_runner);
+  AddUIThreadInterface(
+      registry.get(), base::Bind(&device::BatteryMonitorImpl::Create));
 #endif
-  registry->AddInterface(
+  AddUIThreadInterface(
+      registry.get(),
       base::Bind(&PermissionServiceContext::CreateService,
-                 base::Unretained(permission_service_context_.get())),
-      ui_task_runner);
+                 base::Unretained(permission_service_context_.get())));
   // TODO(mcasas): finalize arguments.
-  registry->AddInterface(base::Bind(&ImageCaptureImpl::Create),
-                         ui_task_runner);
-  registry->AddInterface(base::Bind(&OffscreenCanvasSurfaceImpl::Create),
-                         ui_task_runner);
-  registry->AddInterface(
+  AddUIThreadInterface(registry.get(), base::Bind(&ImageCaptureImpl::Create));
+  AddUIThreadInterface(registry.get(),
+                       base::Bind(&OffscreenCanvasSurfaceImpl::Create));
+  AddUIThreadInterface(
+      registry.get(),
       base::Bind(&BackgroundSyncContext::CreateService,
                  base::Unretained(
-                     storage_partition_impl_->GetBackgroundSyncContext())),
-      ui_task_runner);
-  registry->AddInterface(
+                     storage_partition_impl_->GetBackgroundSyncContext())));
+  AddUIThreadInterface(
+      registry.get(),
       base::Bind(&PlatformNotificationContextImpl::CreateService,
                  base::Unretained(
                      storage_partition_impl_->GetPlatformNotificationContext()),
-                 GetID()),
-      ui_task_runner);
-  registry->AddInterface(
+                 GetID()));
+  AddUIThreadInterface(
+      registry.get(),
       base::Bind(&RenderProcessHostImpl::CreateStoragePartitionService,
-                 base::Unretained(this)),
-      ui_task_runner);
-  registry->AddInterface(
+                 base::Unretained(this)));
+  AddUIThreadInterface(
+      registry.get(),
       base::Bind(&BroadcastChannelProvider::Connect,
                  base::Unretained(
-                     storage_partition_impl_->GetBroadcastChannelProvider())),
-      ui_task_runner);
+                     storage_partition_impl_->GetBroadcastChannelProvider())));
   if (memory_coordinator::IsEnabled()) {
-    registry->AddInterface(base::Bind(&CreateMemoryCoordinatorHandle, GetID()),
-                           ui_task_runner);
+    AddUIThreadInterface(
+        registry.get(), base::Bind(&CreateMemoryCoordinatorHandle, GetID()));
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
@@ -1175,9 +1230,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   // This is to support usage of WebSockets in cases in which there is no
   // associated RenderFrame (e.g., Shared Workers).
-  registry->AddInterface(
-      base::Bind(&WebSocketManager::CreateWebSocket, GetID(), MSG_ROUTING_NONE),
-      ui_task_runner);
+  AddUIThreadInterface(
+      registry.get(), base::Bind(&WebSocketManager::CreateWebSocket, GetID(),
+                                 MSG_ROUTING_NONE));
 
   GetContentClient()->browser()->ExposeInterfacesToRenderer(registry.get(),
                                                             this);
@@ -1187,7 +1242,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   std::unique_ptr<ConnectionFilterImpl> connection_filter(
       new ConnectionFilterImpl(mojo_child_connection_->child_identity(),
                                std::move(registry)));
-  connection_filter_ =
+  connection_filter_controller_ = connection_filter->controller();
+  connection_filter_id_ =
       mojo_shell_connection->AddConnectionFilter(std::move(connection_filter));
 }
 
@@ -1987,11 +2043,13 @@ void RenderProcessHostImpl::Cleanup() {
         NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
 
-    if (connection_filter_ != MojoShellConnection::kInvalidConnectionFilterId) {
+    if (connection_filter_id_ !=
+          MojoShellConnection::kInvalidConnectionFilterId) {
       MojoShellConnection* mojo_shell_connection =
           BrowserContext::GetMojoShellConnectionFor(browser_context_);
-      mojo_shell_connection->RemoveConnectionFilter(connection_filter_);
-      connection_filter_ = MojoShellConnection::kInvalidConnectionFilterId;
+      connection_filter_controller_->DisableFilter();
+      mojo_shell_connection->RemoveConnectionFilter(connection_filter_id_);
+      connection_filter_id_ = MojoShellConnection::kInvalidConnectionFilterId;
     }
 
 #ifndef NDEBUG
@@ -2020,6 +2078,9 @@ void RenderProcessHostImpl::Cleanup() {
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
     UnregisterHost(GetID());
+
+    instance_weak_factory_.reset(
+        new base::WeakPtrFactory<RenderProcessHostImpl>(this));
   }
 }
 
