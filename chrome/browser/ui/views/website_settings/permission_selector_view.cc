@@ -101,19 +101,15 @@ void PermissionMenuButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 void PermissionMenuButton::OnMenuButtonClicked(views::MenuButton* source,
                                                const gfx::Point& point,
                                                const ui::Event* event) {
-  menu_runner_.reset(
-      new views::MenuRunner(menu_model_, views::MenuRunner::HAS_MNEMONICS));
+  menu_runner_.reset(new views::MenuRunner(
+      menu_model_,
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC));
 
   gfx::Point p(point);
   p.Offset(is_rtl_display_ ? source->width() : -source->width(), 0);
-  if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
-                              this,
-                              gfx::Rect(p, gfx::Size()),
-                              views::MENU_ANCHOR_TOPLEFT,
-                              ui::MENU_SOURCE_NONE) ==
-      views::MenuRunner::MENU_DELETED) {
-    return;
-  }
+  menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(), this,
+                          gfx::Rect(p, gfx::Size()), views::MENU_ANCHOR_TOPLEFT,
+                          ui::MENU_SOURCE_NONE);
 }
 
 // This class adapts a |PermissionMenuModel| into a |ui::ComboboxModel| so that
