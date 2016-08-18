@@ -882,7 +882,8 @@ class ReportStage(generic_stages.BuilderStage,
       duration = self._GetBuildDuration()
 
       mon_fields = {'status': status_for_db,
-                    'build_config': self._run.config.name}
+                    'build_config': self._run.config.name,
+                    'important': self._run.config.important}
       metrics.Counter(constants.MON_BUILD_COMP_COUNT).increment(
           fields=mon_fields)
       metrics.SecondsDistribution(constants.MON_BUILD_DURATION).add(
