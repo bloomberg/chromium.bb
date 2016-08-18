@@ -91,10 +91,10 @@ void DOMStorageMessageFilter::OnOpenStorageArea(int connection_id,
                                                 int64_t namespace_id,
                                                 const GURL& origin) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!host_->OpenStorageArea(connection_id, namespace_id, origin)) {
-    bad_message::ReceivedBadMessage(this, bad_message::DSMF_OPEN_STORAGE);
-    return;
-  }
+  base::Optional<bad_message::BadMessageReason>
+      error = host_->OpenStorageArea(connection_id, namespace_id, origin);
+  if (error)
+    bad_message::ReceivedBadMessage(this, error.value());
 }
 
 void DOMStorageMessageFilter::OnCloseStorageArea(int connection_id) {

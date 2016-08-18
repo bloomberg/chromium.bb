@@ -7,18 +7,21 @@
 
 #include <stdint.h>
 
+#include <deque>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/atomic_sequence_num.h"
+#include "base/atomicops.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "content/browser/bad_message.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -175,6 +178,10 @@ class CONTENT_EXPORT DOMStorageContextImpl
   std::string AllocatePersistentSessionId();
 
   // Must be called on the background thread.
+  base::Optional<bad_message::BadMessageReason>
+      DiagnoseSessionNamespaceId(int64_t namespace_id);
+
+  // Must be called on the background thread.
   void CreateSessionNamespace(int64_t namespace_id,
                               const std::string& persistent_namespace_id);
   void DeleteSessionNamespace(int64_t namespace_id, bool should_persist_data);
@@ -233,12 +240,16 @@ class CONTENT_EXPORT DOMStorageContextImpl
   // List of objects observing local storage events.
   base::ObserverList<EventObserver> event_observers_;
 
-  // We use a 32 bit identifier for per tab storage sessions.
+  // We use 32 bit values for per tab storage session ids.
   // At a tab per second, this range is large enough for 68 years.
   // The offset is to more quickly detect the error condition where
   // an id related to one context is mistakenly used in another.
-  base::AtomicSequenceNumber session_id_sequence_;
+  // We don't use a AtomicSequenceNumber so we can read the current value
+  // without having to increment it.
   const int session_id_offset_;
+  base::subtle::Atomic32 session_id_sequence_;
+  // For diagnoostic purposes.
+  std::deque<int64_t> recently_deleted_session_ids_;
 
   bool is_shutdown_;
   bool force_keep_session_state_;

@@ -16,29 +16,30 @@ DOMStorageHost::DOMStorageHost(DOMStorageContextImpl* context)
 }
 
 DOMStorageHost::~DOMStorageHost() {
-  AreaMap::const_iterator it = connections_.begin();
-  for (; it != connections_.end(); ++it)
-    it->second.namespace_->CloseStorageArea(it->second.area_.get());
+  for (const auto& it : connections_)
+    it.second.namespace_->CloseStorageArea(it.second.area_.get());
   connections_.clear();  // Clear prior to releasing the context_
 }
 
-bool DOMStorageHost::OpenStorageArea(int connection_id, int namespace_id,
-                                     const GURL& origin) {
-  DCHECK(!GetOpenArea(connection_id));
-  if (GetOpenArea(connection_id))
-    return false;  // Indicates the renderer gave us very bad data.
+base::Optional<bad_message::BadMessageReason>
+DOMStorageHost::OpenStorageArea(
+    int connection_id,
+    int namespace_id,
+    const GURL& origin) {
+  if (HasConnection(connection_id))
+    return bad_message::DSH_DUPLICATE_CONNECTION_ID;
   NamespaceAndArea references;
   references.namespace_ = context_->GetStorageNamespace(namespace_id);
   if (!references.namespace_.get())
-    return false;
+    return context_->DiagnoseSessionNamespaceId(namespace_id);
   references.area_ = references.namespace_->OpenStorageArea(origin);
   DCHECK(references.area_.get());
   connections_[connection_id] = references;
-  return true;
+  return base::nullopt;
 }
 
 void DOMStorageHost::CloseStorageArea(int connection_id) {
-  AreaMap::iterator found = connections_.find(connection_id);
+  const auto found = connections_.find(connection_id);
   if (found == connections_.end())
     return;
   found->second.namespace_->CloseStorageArea(found->second.area_.get());
@@ -121,25 +122,24 @@ bool DOMStorageHost::ClearArea(int connection_id, const GURL& page_url) {
 
 bool DOMStorageHost::HasAreaOpen(
     int namespace_id, const GURL& origin) const {
-  AreaMap::const_iterator it = connections_.begin();
-  for (; it != connections_.end(); ++it) {
-    if (namespace_id == it->second.namespace_->namespace_id() &&
-        origin == it->second.area_->origin()) {
+  for (const auto& it : connections_) {
+    if (namespace_id == it.second.namespace_->namespace_id() &&
+        origin == it.second.area_->origin()) {
       return true;
     }
   }
   return false;
 }
 
-DOMStorageArea* DOMStorageHost::GetOpenArea(int connection_id) {
-  AreaMap::iterator found = connections_.find(connection_id);
+DOMStorageArea* DOMStorageHost::GetOpenArea(int connection_id) const {
+  const auto found = connections_.find(connection_id);
   if (found == connections_.end())
     return NULL;
   return found->second.area_.get();
 }
 
-DOMStorageNamespace* DOMStorageHost::GetNamespace(int connection_id) {
-  AreaMap::iterator found = connections_.find(connection_id);
+DOMStorageNamespace* DOMStorageHost::GetNamespace(int connection_id) const {
+  const auto found = connections_.find(connection_id);
   if (found == connections_.end())
     return NULL;
   return found->second.namespace_.get();

@@ -69045,6 +69045,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="131" label="SDH_INVALID_PORT_RANGE"/>
   <int value="132" label="SCO_INVALID_ARGUMENT"/>
   <int value="133" label="RFH_INCONSISTENT_DEVTOOLS_MESSAGE"/>
+  <int value="134" label="DSH_DUPLICATE_CONNECTION_ID"/>
+  <int value="135" label="DSH_NOT_CREATED_SESSION_ID"/>
+  <int value="136" label="DSH_NOT_ALLOCATED_SESSION_ID"/>
+  <int value="137" label="DSH_DELETED_SESSION_ID"/>
+  <int value="138" label="DSH_WRONG_STORAGE_PARTITION"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
