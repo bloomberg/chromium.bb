@@ -1,0 +1,33 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../security-test.js"></script>
+<script>
+function test()
+{
+    var request1 = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "https://foo.test/", "https://foo.test", 0, 0, null);
+    request1.setSecurityState(SecurityAgent.SecurityState.Secure);
+    InspectorTest.dispatchRequestFinished(request1);
+
+    InspectorTest.addResult("Before selecting origin view:");
+    InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._visibleView.contentElement);
+
+    WebInspector.SecurityPanel._instance()._sidebarTree._elementsByOrigin.get("https://foo.test").select();
+
+    InspectorTest.addResult("Panel on origin view before interstitial:");
+    InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._visibleView.contentElement);
+
+    // Test that the panel transitions to an origin view when an interstitial is shown. https://crbug.com/559150
+    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.InterstitialShown);
+    InspectorTest.addResult("After interstitial is shown:");
+    InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._visibleView.contentElement);
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that the panel transitions to the overview view when navigating
+to an interstitial. Regression test for https://crbug.com/638601</p>
+</body>
+</html>
