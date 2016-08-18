@@ -14,6 +14,7 @@ import getpass
 import hashlib
 import os
 import re
+import shutil
 import tempfile
 import urlparse
 
@@ -282,6 +283,7 @@ class GSContext(object):
         ref = tar_cache.Lookup(key)
         ref.SetDefault(cls.GSUTIL_URL)
         cls.DEFAULT_GSUTIL_BIN = os.path.join(ref.path, 'gsutil', 'gsutil')
+        cls._CompileCrcmod(ref.path)
       else:
         # Check if the default gsutil path for builders exists. If
         # not, try locating gsutil. If none exists, simply use 'gsutil'.
@@ -293,6 +295,58 @@ class GSContext(object):
         cls.DEFAULT_GSUTIL_BIN = gsutil_bin
 
     return cls.DEFAULT_GSUTIL_BIN
+
+  @classmethod
+  def _CompileCrcmod(cls, path):
+    """Try to setup a compiled crcmod for gsutil.
+
+    The native crcmod code is much faster than the python implementation, and
+    enables some more features (otherwise gsutil internally disables them).
+    Try to compile the module on demand in the crcmod tree bundled with gsutil.
+
+    For more details, see:
+    https://cloud.google.com/storage/docs/gsutil/addlhelp/CRC32CandInstallingcrcmod
+    """
+    src_root = os.path.join(path, 'gsutil', 'third_party', 'crcmod')
+
+    # Try to build it once.
+    flag = os.path.join(src_root, '.chromite.tried.build')
+    if os.path.exists(flag):
+      return False
+    # Flag things now regardless of how the attempt below works out.
+    osutils.Touch(flag)
+
+    # See if the system includes one in which case we're done.
+    try:
+      import crcmod
+      if (getattr(crcmod, 'crcmod', None) and
+          getattr(crcmod.crcmod, '_usingExtension', None)):
+        return True
+    except ImportError:
+      pass
+
+    # See if the local copy has one.
+    mod_path = os.path.join(src_root, 'python2', 'crcmod', '_crcfunext.so')
+    if os.path.exists(mod_path):
+      return True
+
+    logging.debug('Attempting to compile local crcmod for gsutil')
+    with osutils.TempDir(prefix='chromite.gsutil.crcmod') as tempdir:
+      result = cros_build_lib.RunCommand(
+          ['python', './setup.py', 'build', '--build-base', tempdir,
+           '--build-platlib', tempdir],
+          cwd=src_root, capture_output=True, error_code_ok=True,
+          debug_level=logging.DEBUG)
+      if result.returncode:
+        return False
+
+      # Locate the module in the build dir.
+      temp_mod_path = os.path.join(tempdir, 'crcmod', '_crcfunext.so')
+      try:
+        shutil.copy2(temp_mod_path, mod_path)
+        return True
+      except shutil.Error:
+        return False
 
   def __init__(self, boto_file=None, cache_dir=None, acl=None,
                dry_run=False, gsutil_bin=None, init_boto=False, retries=None,
