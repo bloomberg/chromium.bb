@@ -31,6 +31,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
 import org.chromium.chrome.browser.crash.CrashFileManager;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
@@ -74,6 +75,7 @@ public class DeferredStartupHandler {
     private long mDeferredStartupDuration;
     private long mMaxTaskDuration;
     private final Context mAppContext;
+    private final LocaleManager mLocaleManager;
 
     private final Queue<Runnable> mDeferredTasks;
 
@@ -88,6 +90,7 @@ public class DeferredStartupHandler {
     private DeferredStartupHandler() {
         mAppContext = ContextUtils.getApplicationContext();
         mDeferredTasks = new LinkedList<>();
+        mLocaleManager = ((ChromeApplication) mAppContext).createLocaleManager();
     }
 
     /**
@@ -134,6 +137,7 @@ public class DeferredStartupHandler {
                 "UMA.Debug.EnableCrashUpload.DeferredStartUpCompleteTime",
                 SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
                 TimeUnit.MILLISECONDS);
+        mLocaleManager.recordStartupMetrics();
     }
 
     /**
