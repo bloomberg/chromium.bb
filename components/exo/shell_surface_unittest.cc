@@ -647,5 +647,41 @@ TEST_F(ShellSurfaceTest, ToggleFullscreen) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
+TEST_F(ShellSurfaceTest, ImmersiveFullscreenBackground) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(
+      new ShellSurface(surface.get(), nullptr, gfx::Rect(640, 480), true,
+                       ash::kShellWindowId_DefaultContainer));
+
+  surface->Attach(buffer.get());
+
+  gfx::Rect shadow_bounds(10, 10, 100, 100);
+  shell_surface->SetRectangularShadow(shadow_bounds);
+  surface->Commit();
+  ASSERT_EQ(shadow_bounds, shell_surface->shadow_underlay_for_test()->bounds());
+
+  ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  ash::WmWindow* window =
+      ash::WmWindowAura::Get(shell_surface->GetWidget()->GetNativeWindow());
+
+  // Enter immersive fullscreen mode. Shadow underlay is fullscreen.
+  window->GetWindowState()->OnWMEvent(&event);
+
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+            shell_surface->shadow_underlay_for_test()->bounds());
+  EXPECT_TRUE(shell_surface->shadow_underlay_for_test()->IsVisible());
+  EXPECT_EQ(1.f, shell_surface->shadow_underlay_for_test()->layer()->opacity());
+  EXPECT_NE(shell_surface->GetWidget()->GetWindowBoundsInScreen(),
+            shell_surface->shadow_underlay_for_test()->bounds());
+
+  // Leave fullscreen mode. Shadow underlay is restored.
+  window->GetWindowState()->OnWMEvent(&event);
+  EXPECT_TRUE(shell_surface->shadow_underlay_for_test()->IsVisible());
+  EXPECT_EQ(shadow_bounds, shell_surface->shadow_underlay_for_test()->bounds());
+}
+
 }  // namespace
 }  // namespace exo

@@ -1250,9 +1250,26 @@ void ShellSurface::UpdateShadow() {
       window->AddChild(shadow_underlay_);
       window->StackChildAtBottom(shadow_underlay_);
     }
-    shadow_underlay_->layer()->SetOpacity(
-        rectangular_shadow_background_opacity_);
-    shadow_underlay_->SetBounds(shadow_bounds);
+
+    // Put the black background layer behind the window if
+    // 1) the window is in immersive fullscreen.
+    // 2) the window can control the bounds of the window in fullscreen (
+    //    thus the background can be visible).
+    // 3) the window has no transform (the transformed background may
+    //    not cover the entire background, e.g. overview mode).
+    if (widget_->IsFullscreen() &&
+        ash::wm::GetWindowState(window)->allow_set_bounds_in_maximized() &&
+        window->layer()->transform().IsIdentity()) {
+      gfx::Point origin;
+      origin -= window->bounds().origin().OffsetFromOrigin();
+      gfx::Rect background_bounds(origin, window->parent()->bounds().size());
+      shadow_underlay_->SetBounds(background_bounds);
+      shadow_underlay_->layer()->SetOpacity(1.f);
+    } else {
+      shadow_underlay_->SetBounds(shadow_bounds);
+      shadow_underlay_->layer()->SetOpacity(
+          rectangular_shadow_background_opacity_);
+    }
     shadow_underlay_->Show();
 
     wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
