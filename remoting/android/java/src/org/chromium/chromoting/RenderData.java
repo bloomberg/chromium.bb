@@ -5,7 +5,7 @@
 package org.chromium.chromoting;
 
 import android.graphics.Matrix;
-import android.graphics.Point;
+import android.graphics.PointF;
 
 /**
  * This class stores data that needs to be accessed on both the display thread and the
@@ -27,15 +27,15 @@ public class RenderData {
      * Specifies the position, in image coordinates, at which the cursor image will be drawn.
      * This will normally be at the location of the most recently injected motion event.
      */
-    private Point mCursorPosition = new Point();
+    private PointF mCursorPosition = new PointF();
 
     /**
      * Returns the position of the rendered cursor.
      *
      * @return A point representing the current position.
      */
-    public Point getCursorPosition() {
-        return new Point(mCursorPosition);
+    public PointF getCursorPosition() {
+        return new PointF(mCursorPosition.x, mCursorPosition.y);
     }
 
     /**
@@ -45,7 +45,7 @@ public class RenderData {
      * @param newY The new value of the y coordinate
      * @return True if the cursor position has changed.
      */
-    public boolean setCursorPosition(int newX, int newY) {
+    public boolean setCursorPosition(float newX, float newY) {
         boolean cursorMoved = false;
         if (newX != mCursorPosition.x) {
             mCursorPosition.x = newX;

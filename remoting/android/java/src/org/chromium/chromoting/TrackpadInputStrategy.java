@@ -4,7 +4,7 @@
 
 package org.chromium.chromoting;
 
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.view.MotionEvent;
 
 /**
@@ -76,7 +76,7 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
         return true;
     }
 
-    private Point getCursorPosition() {
+    private PointF getCursorPosition() {
         synchronized (mRenderData) {
             return mRenderData.getCursorPosition();
         }

@@ -62,9 +62,9 @@ class GlRenderer {
   // and the top-left corner will be (m2, m5) in pixel coordinates.
   void OnPixelTransformationChanged(const std::array<float, 9>& matrix);
 
-  void OnCursorMoved(int x, int y);
+  void OnCursorMoved(float x, float y);
 
-  void OnCursorInputFeedback(int x, int y, float diameter);
+  void OnCursorInputFeedback(float x, float y, float diameter);
 
   void OnCursorVisibilityChanged(bool visible);
 

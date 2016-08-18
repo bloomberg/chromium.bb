@@ -49,7 +49,7 @@ void GlCursor::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
   SetCursorPosition(cursor_x_, cursor_y_);
 }
 
-void GlCursor::SetCursorPosition(int x, int y) {
+void GlCursor::SetCursorPosition(float x, float y) {
   cursor_x_ = x;
   cursor_y_ = y;
   if (!current_cursor_data_) {

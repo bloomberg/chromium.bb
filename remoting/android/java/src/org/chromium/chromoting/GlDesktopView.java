@@ -4,7 +4,7 @@
 
 package org.chromium.chromoting;
 
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.view.SurfaceHolder;
 
 import org.chromium.chromoting.jni.Client;
@@ -38,7 +38,7 @@ public class GlDesktopView extends AbstractDesktopView implements SurfaceHolder.
     }
 
     @Override
-    public void showInputFeedback(InputFeedbackType feedbackToShow, Point pos) {
+    public void showInputFeedback(InputFeedbackType feedbackToShow, PointF pos) {
         float diameter = getFeedbackRadius(feedbackToShow) * 2.0f;
         if (diameter <= 0.0f) {
             return;
@@ -60,7 +60,7 @@ public class GlDesktopView extends AbstractDesktopView implements SurfaceHolder.
 
     @Override
     public void cursorMoved() {
-        Point cursorPosition = mRenderData.getCursorPosition();
+        PointF cursorPosition = mRenderData.getCursorPosition();
         mDisplay.cursorPixelPositionChanged(cursorPosition.x, cursorPosition.y);
     }
 

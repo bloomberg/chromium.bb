@@ -5,7 +5,7 @@
 package org.chromium.chromoting;
 
 import android.graphics.Matrix;
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.view.MotionEvent;
 
 import java.util.LinkedList;
@@ -80,7 +80,7 @@ public class TouchInputStrategy implements InputStrategyInterface {
                 MotionEvent downEvent = mQueuedEvents.peek();
                 assert downEvent.getActionMasked() == MotionEvent.ACTION_DOWN;
 
-                mInjector.sendMouseClick(new Point((int) downEvent.getX(), (int) downEvent.getY()),
+                mInjector.sendMouseClick(new PointF(downEvent.getX(), downEvent.getY()),
                         InputStub.BUTTON_RIGHT);
                 clearQueuedEvents();
                 return true;

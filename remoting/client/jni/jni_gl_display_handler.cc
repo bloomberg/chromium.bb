@@ -115,8 +115,8 @@ void JniGlDisplayHandler::OnPixelTransformationChanged(
 void JniGlDisplayHandler::OnCursorPixelPositionChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller,
-    int x,
-    int y) {
+    float x,
+    float y) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   ui_task_poster_->AddTask(base::Bind(&GlRenderer::OnCursorMoved,
                                       renderer_.GetWeakPtr(), x, y));
@@ -134,8 +134,8 @@ void JniGlDisplayHandler::OnCursorVisibilityChanged(
 void JniGlDisplayHandler::OnCursorInputFeedback(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller,
-    int x,
-    int y,
+    float x,
+    float y,
     float diameter) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   ui_task_poster_->AddTask(base::Bind(&GlRenderer::OnCursorInputFeedback,

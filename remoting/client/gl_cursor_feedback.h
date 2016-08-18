@@ -28,7 +28,7 @@ class GlCursorFeedback {
   // If |canvas| is nullptr, nothing will happen when calling Draw().
   void SetCanvas(GlCanvas* canvas);
 
-  void StartAnimation(int x, int y, float diameter);
+  void StartAnimation(float x, float y, float diameter);
 
   // Returns true if animation is not finished, false otherwise. Does nothing
   // if the animation has stopped.

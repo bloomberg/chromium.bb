@@ -36,7 +36,7 @@ void GlCursorFeedback::SetCanvas(GlCanvas* canvas) {
                      GlCursorFeedbackTexture::kTextureWidth, 0);
 }
 
-void GlCursorFeedback::StartAnimation(int x, int y, float diameter) {
+void GlCursorFeedback::StartAnimation(float x, float y, float diameter) {
   cursor_x_ = x;
   cursor_y_ = y;
   max_diameter_ = diameter;

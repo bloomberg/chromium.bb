@@ -6,7 +6,6 @@ package org.chromium.chromoting;
 
 import android.content.Context;
 import android.graphics.Matrix;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.view.GestureDetector;
@@ -397,7 +396,7 @@ public class TouchInputHandler {
         // If we are in an indirect mode, then we want to keep the cursor centered, if possible, as
         // the viewport moves.
         if (mInputStrategy.isIndirectInputMode()) {
-            moveCursor((int) newPos.x, (int) newPos.y);
+            moveCursor(newPos.x, newPos.y);
         }
 
         mDesktopCanvas.repositionImage(true);
@@ -406,15 +405,15 @@ public class TouchInputHandler {
     /** Moves the cursor to the specified position on the screen. */
     private void moveCursorToScreenPoint(float screenX, float screenY) {
         float[] imagePoint = mapScreenPointToImagePoint(screenX, screenY);
-        moveCursor((int) imagePoint[0], (int) imagePoint[1]);
+        moveCursor(imagePoint[0], imagePoint[1]);
     }
 
     /** Moves the cursor to the specified position on the remote host. */
-    private void moveCursor(int newX, int newY) {
+    private void moveCursor(float newX, float newY) {
         synchronized (mRenderData) {
             boolean cursorMoved = mRenderData.setCursorPosition(newX, newY);
             if (cursorMoved) {
-                mInputStrategy.injectCursorMoveEvent(newX, newY);
+                mInputStrategy.injectCursorMoveEvent((int) newX, (int) newY);
             }
         }
         mViewer.cursorMoved();
@@ -595,7 +594,7 @@ public class TouchInputHandler {
             }
 
             if (mInputStrategy.onTap(button)) {
-                Point pos;
+                PointF pos;
                 synchronized (mRenderData) {
                     pos = mRenderData.getCursorPosition();
                 }
@@ -620,7 +619,7 @@ public class TouchInputHandler {
             }
 
             if (mInputStrategy.onPressAndHold(button)) {
-                Point pos;
+                PointF pos;
                 synchronized (mRenderData) {
                     pos = mRenderData.getCursorPosition();
                 }

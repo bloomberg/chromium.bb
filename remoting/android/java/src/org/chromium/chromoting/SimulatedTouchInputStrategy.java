@@ -5,7 +5,7 @@
 package org.chromium.chromoting;
 
 import android.content.Context;
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
@@ -30,7 +30,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     /**
      * Stores the position of the last left button single tap processed.
      */
-    private Point mLastTapPoint;
+    private PointF mLastTapPoint;
 
     /**
      * The maximum distance, in pixels, between two points in order for them to be considered a
@@ -84,7 +84,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
 
     @Override
     public boolean onTap(int button) {
-        Point currentTapPoint = getCursorPosition();
+        PointF currentTapPoint = getCursorPosition();
         if (button == InputStub.BUTTON_LEFT) {
             // Left clicks are handled a little differently than the events for other buttons.
             // This is needed because translating touch events to mouse events has a problem with
@@ -96,7 +96,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
             // attempting a double tap, we use the original event's location for that second tap.
             long tapInterval = SystemClock.uptimeMillis() - mLastTapTimeInMs;
             if (isDoubleTap(currentTapPoint.x, currentTapPoint.y, tapInterval)) {
-                currentTapPoint = new Point(mLastTapPoint);
+                currentTapPoint = new PointF(mLastTapPoint.x, mLastTapPoint.y);
                 mLastTapPoint = null;
                 mLastTapTimeInMs = 0;
             } else {
@@ -153,13 +153,13 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
         return false;
     }
 
-    private Point getCursorPosition() {
+    private PointF getCursorPosition() {
         synchronized (mRenderData) {
             return mRenderData.getCursorPosition();
         }
     }
 
-    private boolean isDoubleTap(int currentX, int currentY, long tapInterval) {
+    private boolean isDoubleTap(float currentX, float currentY, long tapInterval) {
         if (tapInterval > mDoubleTapDurationInMs || mLastTapPoint == null) {
             return false;
         }

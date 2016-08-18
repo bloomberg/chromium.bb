@@ -43,13 +43,13 @@ void GlRenderer::OnPixelTransformationChanged(
   RequestRender();
 }
 
-void GlRenderer::OnCursorMoved(int x, int y) {
+void GlRenderer::OnCursorMoved(float x, float y) {
   DCHECK(thread_checker_.CalledOnValidThread());
   cursor_.SetCursorPosition(x, y);
   RequestRender();
 }
 
-void GlRenderer::OnCursorInputFeedback(int x, int y, float diameter) {
+void GlRenderer::OnCursorInputFeedback(float x, float y, float diameter) {
   DCHECK(thread_checker_.CalledOnValidThread());
   cursor_feedback_.StartAnimation(x, y, diameter);
   RequestRender();

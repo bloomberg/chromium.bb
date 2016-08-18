@@ -86,7 +86,7 @@ public class GlDisplay {
     }
 
     /** Moves the cursor to the corresponding location on the desktop. */
-    public void cursorPixelPositionChanged(int x, int y) {
+    public void cursorPixelPositionChanged(float x, float y) {
         if (mNativeJniGlDisplay != 0) {
             nativeOnCursorPixelPositionChanged(mNativeJniGlDisplay, x, y);
         }
@@ -140,7 +140,7 @@ public class GlDisplay {
      * Shows the cursor input feedback animation with the given diameter at the given desktop
      * location.
      */
-    public void showCursorInputFeedback(int x, int y, float diameter) {
+    public void showCursorInputFeedback(float x, float y, float diameter) {
         if (mNativeJniGlDisplay != 0) {
             nativeOnCursorInputFeedback(mNativeJniGlDisplay, x, y, diameter);
         }
@@ -168,9 +168,9 @@ public class GlDisplay {
     private native void nativeOnPixelTransformationChanged(long nativeJniGlDisplayHandler,
                                                            float[] matrix);
     private native void nativeOnCursorPixelPositionChanged(long nativeJniGlDisplayHandler,
-                                                           int x, int y);
+                                                           float x, float y);
     private native void nativeOnCursorInputFeedback(long nativeJniGlDisplayHandler,
-                                                    int x, int y, float diameter);
+                                                    float x, float y, float diameter);
     private native void nativeOnCursorVisibilityChanged(long nativeJniGlDisplayHandler,
                                                         boolean visible);
 }

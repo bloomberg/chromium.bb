@@ -30,7 +30,7 @@ class GlCursor {
 
   // Sets the cursor hotspot positions. Does nothing if the cursor shape or the
   // canvas size has not been set.
-  void SetCursorPosition(int x, int y);
+  void SetCursorPosition(float x, float y);
 
   // Draw() will do nothing if cursor is not visible.
   void SetCursorVisible(bool visible);
@@ -56,8 +56,8 @@ class GlCursor {
   int current_cursor_hotspot_x_ = 0;
   int current_cursor_hotspot_y_ = 0;
 
-  int cursor_x_ = 0;
-  int cursor_y_ = 0;
+  float cursor_x_ = 0;
+  float cursor_y_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GlCursor);
 };

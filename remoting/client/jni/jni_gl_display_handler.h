@@ -68,8 +68,8 @@ class JniGlDisplayHandler : public DisplayUpdaterFactory,
   void OnCursorPixelPositionChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller,
-      int x,
-      int y);
+      float x,
+      float y);
 
   void OnCursorVisibilityChanged(
       JNIEnv* env,
@@ -79,8 +79,8 @@ class JniGlDisplayHandler : public DisplayUpdaterFactory,
   void OnCursorInputFeedback(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller,
-      int x,
-      int y,
+      float x,
+      float y,
       float diameter);
 
  private:

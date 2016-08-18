@@ -4,7 +4,7 @@
 
 package org.chromium.chromoting;
 
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -35,35 +35,35 @@ public final class InputEventSender {
         mPressedTextKeys = new TreeSet<>();
     }
 
-    public void sendMouseEvent(Point pos, int button, boolean down) {
+    public void sendMouseEvent(PointF pos, int button, boolean down) {
         Preconditions.isTrue(button == InputStub.BUTTON_UNDEFINED
                 || button == InputStub.BUTTON_LEFT
                 || button == InputStub.BUTTON_MIDDLE
                 || button == InputStub.BUTTON_RIGHT);
-        mInjector.sendMouseEvent(pos.x, pos.y, button, down);
+        mInjector.sendMouseEvent((int) pos.x, (int) pos.y, button, down);
     }
 
-    public void sendMouseDown(Point pos, int button) {
+    public void sendMouseDown(PointF pos, int button) {
         sendMouseEvent(pos, button, true);
     }
 
-    public void sendMouseUp(Point pos, int button) {
+    public void sendMouseUp(PointF pos, int button) {
         sendMouseEvent(pos, button, false);
     }
 
-    public void sendMouseClick(Point pos, int button) {
+    public void sendMouseClick(PointF pos, int button) {
         sendMouseDown(pos, button);
         sendMouseUp(pos, button);
     }
 
-    public void sendCursorMove(Point pos) {
+    public void sendCursorMove(PointF pos) {
         sendMouseUp(pos, InputStub.BUTTON_UNDEFINED);
     }
 
     // TODO(zijiehe): This function will be eventually removed after {@link InputStrategyInterface}
     // has been deprecated.
-    public void sendCursorMove(int x, int y) {
-        sendCursorMove(new Point(x, y));
+    public void sendCursorMove(float x, float y) {
+        sendCursorMove(new PointF(x, y));
     }
 
     public void sendMouseWheelEvent(float distanceX, float distanceY) {

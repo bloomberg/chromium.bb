@@ -5,7 +5,7 @@
 package org.chromium.chromoting;
 
 import android.content.Context;
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.text.InputType;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -140,7 +140,7 @@ public abstract class AbstractDesktopView extends SurfaceView {
     }
 
     /** Triggers a brief animation to indicate the existence and location of an input event. */
-    public abstract void showInputFeedback(InputFeedbackType feedbackToShow, Point pos);
+    public abstract void showInputFeedback(InputFeedbackType feedbackToShow, PointF pos);
 
     /**
      * Informs the view that its transformation matrix (for rendering the remote desktop bitmap)
