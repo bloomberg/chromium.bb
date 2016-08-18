@@ -234,7 +234,7 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
 
     HttpNetworkTransaction* trans() { return trans_.get(); }
     void ResetTrans() { trans_.reset(); }
-    TransactionHelperResult& output() { return output_; }
+    const TransactionHelperResult& output() { return output_; }
     const HttpRequestInfo& request() const { return request_; }
     HttpNetworkSession* session() const { return session_.get(); }
     SpdySessionDependencies* session_deps() { return session_deps_.get(); }
@@ -248,13 +248,10 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
     std::unique_ptr<SpdySessionDependencies> session_deps_;
     std::unique_ptr<HttpNetworkSession> session_;
     TransactionHelperResult output_;
-    std::unique_ptr<SocketDataProvider> first_transaction_;
     SSLVector ssl_vector_;
     TestCompletionCallback callback_;
     std::unique_ptr<HttpNetworkTransaction> trans_;
-    std::unique_ptr<HttpNetworkTransaction> trans_http_;
     DataVector data_vector_;
-    AlternateVector alternate_vector_;
     const BoundNetLog log_;
   };
 
@@ -1776,12 +1773,11 @@ TEST_F(SpdyNetworkTransactionTest, SocketWriteReturnsZero) {
                                      BoundNetLog(), NULL);
   helper.RunPreTestSetup();
   helper.AddData(&data);
-  HttpNetworkTransaction* trans = helper.trans();
+  helper.StartDefaultTest();
+  EXPECT_THAT(helper.output().rv, IsError(ERR_IO_PENDING));
 
-  TestCompletionCallback callback;
-  int rv = trans->Start(
-      &CreateGetRequest(), callback.callback(), BoundNetLog());
-  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  helper.WaitForCallbackToComplete();
+  EXPECT_THAT(helper.output().rv, IsOk());
 
   helper.ResetTrans();
   base::RunLoop().RunUntilIdle();
@@ -3752,26 +3748,20 @@ TEST_F(SpdyNetworkTransactionTest, CloseWithActiveStream) {
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  BoundNetLog log;
-  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY, log,
-                                     NULL);
+
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     BoundNetLog(), NULL);
   helper.RunPreTestSetup();
   helper.AddData(&data);
-  HttpNetworkTransaction* trans = helper.trans();
+  helper.StartDefaultTest();
+  EXPECT_THAT(helper.output().rv, IsError(ERR_IO_PENDING));
 
-  TestCompletionCallback callback;
-  TransactionHelperResult out;
-  out.rv = trans->Start(&CreateGetRequest(), callback.callback(), log);
+  helper.WaitForCallbackToComplete();
+  EXPECT_THAT(helper.output().rv, IsError(ERR_CONNECTION_CLOSED));
 
-  EXPECT_EQ(out.rv, ERR_IO_PENDING);
-  out.rv = callback.WaitForResult();
-  EXPECT_EQ(out.rv, ERR_CONNECTION_CLOSED);
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
+  const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
   EXPECT_TRUE(response->headers);
   EXPECT_TRUE(response->was_fetched_via_spdy);
-  out.rv = ReadTransaction(trans, &out.response_data);
-  EXPECT_THAT(out.rv, IsError(ERR_CONNECTION_CLOSED));
 
   // Verify that we consumed all test data.
   helper.VerifyDataConsumed();
@@ -4256,19 +4246,19 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   SequencedSocketData data(spdy_reads, arraysize(spdy_reads), spdy_writes,
                            arraysize(spdy_writes));
   HttpRequestInfo request(CreateGetRequest());
-  BoundNetLog net_log;
-  NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, net_log, NULL);
+  NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
+                                     NULL);
 
   helper.RunPreTestSetup();
   helper.AddData(&data);
-  HttpNetworkTransaction* trans = helper.trans();
-  TestCompletionCallback callback;
-  const int rv_start = trans->Start(&request, callback.callback(), net_log);
-  EXPECT_THAT(rv_start, IsError(ERR_IO_PENDING));
-  const int rv_start_complete = callback.WaitForResult();
-  EXPECT_THAT(rv_start_complete, IsOk());
+  helper.StartDefaultTest();
+  EXPECT_THAT(helper.output().rv, IsError(ERR_IO_PENDING));
+
+  helper.WaitForCallbackToComplete();
+  EXPECT_THAT(helper.output().rv, IsOk());
 
   // Make sure the response has an auth challenge.
+  HttpNetworkTransaction* trans = helper.trans();
   const HttpResponseInfo* const response_start = trans->GetResponseInfo();
   ASSERT_TRUE(response_start);
   ASSERT_TRUE(response_start->headers);

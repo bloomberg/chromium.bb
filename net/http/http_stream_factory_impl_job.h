@@ -397,11 +397,11 @@ class HttpStreamFactoryImpl::Job {
 
   // The server we are trying to reach, could be that of the origin or of the
   // alternative service (after applying host mapping rules).
-  HostPortPair destination_;
+  const HostPortPair destination_;
 
   // The origin url we're trying to reach. This url may be different from the
   // original request when host mapping rules are set-up.
-  GURL origin_url_;
+  const GURL origin_url_;
 
   // AlternativeService for this Job if this is an alternative Job.
   const AlternativeService alternative_service_;
