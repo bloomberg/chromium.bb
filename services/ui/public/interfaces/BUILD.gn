@@ -10,7 +10,6 @@ mojom("interfaces") {
     "accelerator_registrar.mojom",
     "accessibility_manager.mojom",
     "animations.mojom",
-    "channel_handle.mojom",
     "clipboard.mojom",
     "cursor.mojom",
     "display.mojom",

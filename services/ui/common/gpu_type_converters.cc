@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "gpu/config/gpu_info.h"
-#include "ipc/ipc_channel_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -15,48 +14,6 @@
 #endif
 
 namespace mojo {
-
-// static
-ui::mojom::ChannelHandlePtr
-TypeConverter<ui::mojom::ChannelHandlePtr, IPC::ChannelHandle>::Convert(
-    const IPC::ChannelHandle& handle) {
-  ui::mojom::ChannelHandlePtr result = ui::mojom::ChannelHandle::New();
-  result->name = handle.name;
-#if defined(OS_WIN)
-  // On windows, a pipe handle Will NOT be marshalled over IPC.
-  DCHECK(handle.pipe.handle == NULL);
-#else
-  DCHECK(handle.socket.auto_close || handle.socket.fd == -1);
-  base::PlatformFile platform_file = handle.socket.fd;
-  if (platform_file != -1)
-    result->socket = mojo::WrapPlatformFile(platform_file);
-#endif
-  result->mojo_handle.reset(handle.mojo_handle);
-  return result;
-}
-
-// static
-IPC::ChannelHandle
-TypeConverter<IPC::ChannelHandle, ui::mojom::ChannelHandlePtr>::Convert(
-    const ui::mojom::ChannelHandlePtr& handle) {
-  if (handle.is_null())
-    return IPC::ChannelHandle();
-  if (handle->mojo_handle.is_valid()) {
-    IPC::ChannelHandle channel_handle(handle->mojo_handle.release());
-    channel_handle.name = handle->name;
-    return channel_handle;
-  }
-#if defined(OS_WIN)
-  // On windows, a pipe handle Will NOT be marshalled over IPC.
-  DCHECK(!handle->socket.is_valid());
-  return IPC::ChannelHandle(handle->name);
-#else
-  base::PlatformFile platform_file = -1;
-  mojo::UnwrapPlatformFile(std::move(handle->socket), &platform_file);
-  return IPC::ChannelHandle(handle->name,
-                            base::FileDescriptor(platform_file, true));
-#endif
-}
 
 #if defined(USE_OZONE)
 // static

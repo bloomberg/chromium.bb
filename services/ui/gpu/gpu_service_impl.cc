@@ -15,10 +15,9 @@ namespace {
 void EstablishGpuChannelDone(
     const mojom::GpuService::EstablishGpuChannelCallback& callback,
     int32_t client_id,
-    const IPC::ChannelHandle& channel_handle) {
+    mojo::ScopedMessagePipeHandle handle) {
   // TODO(penghuang): Send the real GPUInfo to the client.
-  callback.Run(client_id, mojom::ChannelHandle::From(channel_handle),
-               gpu::GPUInfo());
+  callback.Run(client_id, std::move(handle), gpu::GPUInfo());
 }
 }
 

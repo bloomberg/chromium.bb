@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ui/common/mus_common_export.h"
-#include "services/ui/public/interfaces/channel_handle.mojom.h"
 #include "services/ui/public/interfaces/gpu_memory_buffer.mojom.h"
 
 namespace gfx {
@@ -18,27 +17,7 @@ using GpuMemoryBufferId = GenericSharedMemoryId;
 struct NativePixmapHandle;
 }
 
-namespace gpu {
-struct GPUInfo;
-}
-
-namespace IPC {
-struct ChannelHandle;
-}
-
 namespace mojo {
-
-template <>
-struct MUS_COMMON_EXPORT
-    TypeConverter<ui::mojom::ChannelHandlePtr, IPC::ChannelHandle> {
-  static ui::mojom::ChannelHandlePtr Convert(const IPC::ChannelHandle& handle);
-};
-
-template <>
-struct MUS_COMMON_EXPORT
-    TypeConverter<IPC::ChannelHandle, ui::mojom::ChannelHandlePtr> {
-  static IPC::ChannelHandle Convert(const ui::mojom::ChannelHandlePtr& handle);
-};
 
 #if defined(USE_OZONE)
 template <>

@@ -151,7 +151,7 @@ void GpuService::EstablishGpuChannelOnMainThreadSyncLocked() {
   DCHECK(!gpu_service_);
 
   int client_id = 0;
-  mojom::ChannelHandlePtr channel_handle;
+  mojo::ScopedMessagePipeHandle channel_handle;
   gpu::GPUInfo gpu_info;
   connector_->ConnectToInterface("mojo:ui", &gpu_service_);
   {
@@ -172,7 +172,7 @@ void GpuService::EstablishGpuChannelOnMainThreadSyncLocked() {
 void GpuService::EstablishGpuChannelOnMainThreadDone(
     bool locked,
     int client_id,
-    mojom::ChannelHandlePtr channel_handle,
+    mojo::ScopedMessagePipeHandle channel_handle,
     const gpu::GPUInfo& gpu_info) {
   DCHECK(IsMainThread());
   scoped_refptr<gpu::GpuChannelHost> gpu_channel;
@@ -180,7 +180,7 @@ void GpuService::EstablishGpuChannelOnMainThreadDone(
     // TODO(penghuang): Get the real gpu info from mus.
     gpu_channel = gpu::GpuChannelHost::Create(
         this, client_id, gpu::GPUInfo(),
-        channel_handle.To<IPC::ChannelHandle>(), &shutdown_event_,
+        IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,
         gpu_memory_buffer_manager_.get());
   }
 

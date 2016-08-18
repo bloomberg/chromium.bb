@@ -42,9 +42,9 @@ const uint64_t kLocalGpuChannelClientTracingId = 1;
 
 void EstablishGpuChannelDone(
     int client_id,
-    const IPC::ChannelHandle* channel_handle,
+    mojo::ScopedMessagePipeHandle* channel_handle,
     const GpuServiceMus::EstablishGpuChannelCallback& callback) {
-  callback.Run(channel_handle ? client_id : -1, *channel_handle);
+  callback.Run(client_id, std::move(*channel_handle));
 }
 }
 
@@ -76,12 +76,12 @@ void GpuServiceMus::EstablishGpuChannel(
   DCHECK(CalledOnValidThread());
 
   if (!gpu_channel_manager_) {
-    callback.Run(-1, IPC::ChannelHandle());
+    callback.Run(-1, mojo::ScopedMessagePipeHandle());
     return;
   }
 
   const int client_id = ++next_client_id_;
-  IPC::ChannelHandle* channel_handle = new IPC::ChannelHandle;
+  auto* channel_handle = new mojo::ScopedMessagePipeHandle;
   gpu_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GpuServiceMus::EstablishGpuChannelOnGpuThread,
@@ -169,7 +169,7 @@ void GpuServiceMus::Initialize() {
 #endif
   CHECK(io_thread_.StartWithOptions(thread_options));
 
-  IPC::ChannelHandle channel_handle;
+  mojo::ScopedMessagePipeHandle channel_handle;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_thread_.task_runner()->PostTask(
@@ -180,12 +180,14 @@ void GpuServiceMus::Initialize() {
   gpu_memory_buffer_manager_local_.reset(
       new MusGpuMemoryBufferManager(this, kLocalGpuChannelClientId));
   gpu_channel_local_ = gpu::GpuChannelHost::Create(
-      this, kLocalGpuChannelClientId, gpu_info_, channel_handle,
-      &shutdown_event_, gpu_memory_buffer_manager_local_.get());
+      this, kLocalGpuChannelClientId, gpu_info_,
+      IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,
+      gpu_memory_buffer_manager_local_.get());
 }
 
-void GpuServiceMus::InitializeOnGpuThread(IPC::ChannelHandle* channel_handle,
-                                          base::WaitableEvent* event) {
+void GpuServiceMus::InitializeOnGpuThread(
+    mojo::ScopedMessagePipeHandle* channel_handle,
+    base::WaitableEvent* event) {
   gpu_info_.video_decode_accelerator_capabilities =
       media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_);
   gpu_info_.video_encode_accelerator_supported_profiles =
@@ -240,11 +242,12 @@ void GpuServiceMus::EstablishGpuChannelOnGpuThread(
     bool preempts,
     bool allow_view_command_buffers,
     bool allow_real_time_streams,
-    IPC::ChannelHandle* channel_handle) {
+    mojo::ScopedMessagePipeHandle* channel_handle) {
   if (gpu_channel_manager_) {
-    *channel_handle = gpu_channel_manager_->EstablishChannel(
+    auto handle = gpu_channel_manager_->EstablishChannel(
         client_id, client_tracing_id, preempts, allow_view_command_buffers,
         allow_real_time_streams);
+    channel_handle->reset(handle.mojo_handle);
     media_service_->AddChannel(client_id);
   }
 }

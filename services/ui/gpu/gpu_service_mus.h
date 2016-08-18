@@ -26,10 +26,6 @@ template <typename T>
 struct DefaultSingletonTraits;
 }
 
-namespace IPC {
-struct ChannelHandle;
-}
-
 namespace gpu {
 class GpuChannelHost;
 class GpuMemoryBufferFactory;
@@ -51,7 +47,7 @@ class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
                       public gpu::GpuChannelHostFactory,
                       public base::NonThreadSafe {
  public:
-  typedef base::Callback<void(int client_id, const IPC::ChannelHandle&)>
+  typedef base::Callback<void(int client_id, mojo::ScopedMessagePipeHandle)>
       EstablishGpuChannelCallback;
   void EstablishGpuChannel(uint64_t client_tracing_id,
                            bool preempts,
@@ -122,14 +118,15 @@ class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
   ~GpuServiceMus() override;
 
   void Initialize();
-  void InitializeOnGpuThread(IPC::ChannelHandle* channel_handle,
+  void InitializeOnGpuThread(mojo::ScopedMessagePipeHandle* channel_handle,
                              base::WaitableEvent* event);
-  void EstablishGpuChannelOnGpuThread(int client_id,
-                                      uint64_t client_tracing_id,
-                                      bool preempts,
-                                      bool allow_view_command_buffers,
-                                      bool allow_real_time_streams,
-                                      IPC::ChannelHandle* channel_handle);
+  void EstablishGpuChannelOnGpuThread(
+      int client_id,
+      uint64_t client_tracing_id,
+      bool preempts,
+      bool allow_view_command_buffers,
+      bool allow_real_time_streams,
+      mojo::ScopedMessagePipeHandle* channel_handle);
 
   // The next client id.
   int next_client_id_;

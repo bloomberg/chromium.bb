@@ -55,7 +55,7 @@ class GpuService : public gpu::GpuChannelHostFactory,
   void EstablishGpuChannelOnMainThreadDone(
       bool locked,
       int client_id,
-      mojom::ChannelHandlePtr channel_handle,
+      mojo::ScopedMessagePipeHandle channel_handle,
       const gpu::GPUInfo& gpu_info);
 
   // gpu::GpuChannelHostFactory overrides:
