@@ -83,9 +83,9 @@ class MockLayer : public Layer {
 void ExpectTreesAreIdentical(Layer* root_layer,
                              LayerImpl* root_layer_impl,
                              LayerTreeImpl* tree_impl) {
-  auto layer_iter = root_layer->layer_tree_host()->begin();
+  auto layer_iter = root_layer->GetLayerTree()->begin();
   auto layer_impl_iter = tree_impl->begin();
-  for (; layer_iter != root_layer->layer_tree_host()->end();
+  for (; layer_iter != root_layer->GetLayerTree()->end();
        ++layer_iter, ++layer_impl_iter) {
     Layer* layer = *layer_iter;
     LayerImpl* layer_impl = *layer_impl_iter;

@@ -14,7 +14,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/property_tree_builder.h"
@@ -705,11 +705,11 @@ bool LayerShouldBeSkipped(Layer* layer,
                                       effect_tree);
 }
 
-void FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
+void FindLayersThatNeedUpdates(LayerTree* layer_tree,
                                const TransformTree& transform_tree,
                                const EffectTree& effect_tree,
                                LayerList* update_layer_list) {
-  for (auto* layer : *layer_tree_host) {
+  for (auto* layer : *layer_tree) {
     bool layer_is_drawn =
         effect_tree.Node(layer->effect_tree_index())->is_drawn;
 

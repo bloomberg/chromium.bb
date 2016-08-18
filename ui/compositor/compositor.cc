@@ -218,7 +218,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
 
   animation_timeline_ =
       cc::AnimationTimeline::Create(cc::AnimationIdProvider::NextTimelineId());
-  host_->animation_host()->AddAnimationTimeline(animation_timeline_.get());
+  host_->GetLayerTree()->animation_host()->AddAnimationTimeline(
+      animation_timeline_.get());
 
   host_->GetLayerTree()->SetRootLayer(root_web_layer_);
   host_->set_surface_client_id(surface_id_allocator_->client_id());
@@ -241,7 +242,8 @@ Compositor::~Compositor() {
     root_layer_->ResetCompositor();
 
   if (animation_timeline_)
-    host_->animation_host()->RemoveAnimationTimeline(animation_timeline_.get());
+    host_->GetLayerTree()->animation_host()->RemoveAnimationTimeline(
+        animation_timeline_.get());
 
   // Stop all outstanding draws before telling the ContextFactory to tear
   // down any contexts that the |host_| may rely upon.

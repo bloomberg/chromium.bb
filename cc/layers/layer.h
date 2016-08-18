@@ -554,6 +554,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   friend class LayerSerializationTest;
   friend class LayerTreeHostCommon;
   friend class LayerTreeHost;
+  friend class LayerTree;
   friend class LayerInternalsForTest;
 
   // Interactions with attached animations.

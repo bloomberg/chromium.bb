@@ -615,7 +615,7 @@ bool RenderWidgetCompositor::BeginMainFrameRequested() const {
 }
 
 void RenderWidgetCompositor::SetNeedsDisplayOnAllLayers() {
-  layer_tree_host_->SetNeedsDisplayOnAllLayers();
+  layer_tree_host_->GetLayerTree()->SetNeedsDisplayOnAllLayers();
 }
 
 void RenderWidgetCompositor::SetRasterizeOnlyVisibleContent() {
@@ -691,15 +691,18 @@ void RenderWidgetCompositor::clearRootLayer() {
 
 void RenderWidgetCompositor::attachCompositorAnimationTimeline(
     cc::AnimationTimeline* compositor_timeline) {
-  DCHECK(layer_tree_host_->animation_host());
-  layer_tree_host_->animation_host()->AddAnimationTimeline(compositor_timeline);
+  cc::AnimationHost* animation_host =
+      layer_tree_host_->GetLayerTree()->animation_host();
+  DCHECK(animation_host);
+  animation_host->AddAnimationTimeline(compositor_timeline);
 }
 
 void RenderWidgetCompositor::detachCompositorAnimationTimeline(
     cc::AnimationTimeline* compositor_timeline) {
-  DCHECK(layer_tree_host_->animation_host());
-  layer_tree_host_->animation_host()->RemoveAnimationTimeline(
-      compositor_timeline);
+  cc::AnimationHost* animation_host =
+      layer_tree_host_->GetLayerTree()->animation_host();
+  DCHECK(animation_host);
+  animation_host->RemoveAnimationTimeline(compositor_timeline);
 }
 
 void RenderWidgetCompositor::setViewportSize(

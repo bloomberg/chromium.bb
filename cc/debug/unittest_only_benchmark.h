@@ -16,7 +16,7 @@ class CC_EXPORT UnittestOnlyBenchmark : public MicroBenchmark {
                         const DoneCallback& callback);
   ~UnittestOnlyBenchmark() override;
 
-  void DidUpdateLayers(LayerTreeHost* host) override;
+  void DidUpdateLayers(LayerTree* layer_tree) override;
   bool ProcessMessage(std::unique_ptr<base::Value> value) override;
 
  protected:

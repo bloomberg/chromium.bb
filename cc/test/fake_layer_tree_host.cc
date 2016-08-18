@@ -111,7 +111,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
   active_tree()->SetPropertyTrees(property_trees());
   TreeSynchronizer::PushLayerProperties(root_layer()->GetLayerTree(),
                                         active_tree());
-  animation_host()->PushPropertiesTo(host_impl_.animation_host());
+  layer_tree_->animation_host()->PushPropertiesTo(host_impl_.animation_host());
 
   active_tree()->UpdatePropertyTreeScrollOffset(property_trees());
 
@@ -137,7 +137,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
   pending_tree()->SetPropertyTrees(property_trees());
   TreeSynchronizer::PushLayerProperties(root_layer()->GetLayerTree(),
                                         pending_tree());
-  animation_host()->PushPropertiesTo(host_impl_.animation_host());
+  layer_tree_->animation_host()->PushPropertiesTo(host_impl_.animation_host());
 
   pending_tree()->UpdatePropertyTreeScrollOffset(property_trees());
   return pending_tree()->root_layer_for_testing();

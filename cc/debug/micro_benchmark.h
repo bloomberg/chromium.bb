@@ -17,7 +17,7 @@ class Value;
 
 namespace cc {
 
-class LayerTreeHost;
+class LayerTree;
 class Layer;
 class PictureLayer;
 class MicroBenchmarkImpl;
@@ -29,7 +29,7 @@ class CC_EXPORT MicroBenchmark {
   virtual ~MicroBenchmark();
 
   bool IsDone() const;
-  virtual void DidUpdateLayers(LayerTreeHost* host);
+  virtual void DidUpdateLayers(LayerTree* layer_tree);
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
 

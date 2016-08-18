@@ -105,7 +105,7 @@ void MicroBenchmarkController::ScheduleImplBenchmarks(
 void MicroBenchmarkController::DidUpdateLayers() {
   for (const auto& benchmark : benchmarks_) {
     if (!benchmark->IsDone())
-      benchmark->DidUpdateLayers(host_);
+      benchmark->DidUpdateLayers(host_->GetLayerTree());
   }
 
   CleanUpFinishedBenchmarks();

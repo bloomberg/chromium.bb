@@ -18,7 +18,6 @@
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
@@ -26,8 +25,6 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
-
-class LayerTreeHost;
 
 namespace {
 
@@ -1435,7 +1432,7 @@ void PropertyTreeBuilder::BuildPropertyTrees(
       elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
       device_transform, property_trees, color);
 #if DCHECK_IS_ON()
-  for (auto* layer : *root_layer->layer_tree_host())
+  for (auto* layer : *root_layer->GetLayerTree())
     CheckScrollAndClipPointersForLayer(layer);
 #endif
   property_trees->ResetCachedData();

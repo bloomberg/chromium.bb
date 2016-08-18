@@ -44,7 +44,9 @@ class AnimationHostPerfTest : public testing::Test {
     layer_tree_host_ = nullptr;
   }
 
-  AnimationHost* host() const { return layer_tree_host_->animation_host(); }
+  AnimationHost* host() const {
+    return layer_tree_host_->GetLayerTree()->animation_host();
+  }
   AnimationHost* host_impl() const {
     return layer_tree_host_->host_impl()->animation_host();
   }

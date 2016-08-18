@@ -5586,7 +5586,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     std::unique_ptr<SwapPromise> swap_promise2(
         new TestSwapPromise(&swap_promise_result_[2]));
     layer_tree_host()->QueueSwapPromise(std::move(swap_promise2));
-    layer_tree_host()->SetNeedsDisplayOnAllLayers();
+    layer_tree()->SetNeedsDisplayOnAllLayers();
     layer_tree_host()->SetVisible(false);
     layer_tree_host()->Composite(base::TimeTicks::Now());
 

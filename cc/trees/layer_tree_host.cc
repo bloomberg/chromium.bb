@@ -232,8 +232,6 @@ LayerTreeHost::LayerTreeHost(InitParams* params,
   DCHECK(task_graph_runner_);
   DCHECK(layer_tree_);
 
-  layer_tree_->animation_host()->SetMutatorHostClient(this);
-
   rendering_stats_instrumentation_->set_record_rendering_stats(
       debug_state_.RecordRenderingStats());
 }
@@ -407,7 +405,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
       frame_viewer_instrumentation::IsTracingLayerTreeSnapshots() &&
       layer_tree_->root_layer()) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](Layer* layer) { layer->DidBeginTracing(); });
+        layer_tree_.get(), [](Layer* layer) { layer->DidBeginTracing(); });
   }
 
   LayerTreeImpl* sync_tree = host_impl->sync_tree();
@@ -569,11 +567,6 @@ void LayerTreeHost::SetDeferCommits(bool defer_commits) {
   proxy_->SetDeferCommits(defer_commits);
 }
 
-void LayerTreeHost::SetNeedsDisplayOnAllLayers() {
-  for (auto* layer : *this)
-    layer->SetNeedsDisplay();
-}
-
 const RendererCapabilities& LayerTreeHost::GetRendererCapabilities() const {
   return proxy_->GetRendererCapabilities();
 }
@@ -712,22 +705,6 @@ bool LayerTreeHost::UpdateLayers() {
   return result || next_commit_forces_redraw_;
 }
 
-LayerListIterator<Layer> LayerTreeHost::begin() const {
-  return LayerListIterator<Layer>(layer_tree_->root_layer());
-}
-
-LayerListIterator<Layer> LayerTreeHost::end() const {
-  return LayerListIterator<Layer>(nullptr);
-}
-
-LayerListReverseIterator<Layer> LayerTreeHost::rbegin() {
-  return LayerListReverseIterator<Layer>(layer_tree_->root_layer());
-}
-
-LayerListReverseIterator<Layer> LayerTreeHost::rend() {
-  return LayerListReverseIterator<Layer>(nullptr);
-}
-
 void LayerTreeHost::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
 }
@@ -769,14 +746,6 @@ void LayerTreeHost::BuildPropertyTreesForTesting() {
       layer_tree_->page_scale_factor(), layer_tree_->device_scale_factor(),
       gfx::Rect(layer_tree_->device_viewport_size()), identity_transform,
       layer_tree_->property_trees());
-}
-
-static void SetElementIdForTesting(Layer* layer) {
-  layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
-}
-
-void LayerTreeHost::SetElementIdsForTesting() {
-  LayerTreeHostCommon::CallFunctionForEveryLayer(this, SetElementIdForTesting);
 }
 
 bool LayerTreeHost::UsingSharedMemoryResources() {
@@ -836,8 +805,8 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     draw_property_utils::UpdatePropertyTrees(property_trees,
                                              can_render_to_separate_surface);
     draw_property_utils::FindLayersThatNeedUpdates(
-        this, property_trees->transform_tree, property_trees->effect_tree,
-        &update_layer_list);
+        layer_tree_.get(), property_trees->transform_tree,
+        property_trees->effect_tree, &update_layer_list);
   }
 
   for (const auto& layer : update_layer_list)
@@ -902,7 +871,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
 
   if (layer_tree_->root_layer()) {
     for (size_t i = 0; i < info->scrolls.size(); ++i) {
-      Layer* layer = LayerById(info->scrolls[i].layer_id);
+      Layer* layer = layer_tree_->LayerById(info->scrolls[i].layer_id);
       if (!layer)
         continue;
       layer->SetScrollOffsetFromImplSide(gfx::ScrollOffsetWithDelta(
@@ -1052,149 +1021,6 @@ SurfaceSequence LayerTreeHost::CreateSurfaceSequence() {
 void LayerTreeHost::SetLayerTreeMutator(
     std::unique_ptr<LayerTreeMutator> mutator) {
   proxy_->SetMutator(std::move(mutator));
-}
-
-Layer* LayerTreeHost::LayerById(int id) const {
-  return layer_tree_->LayerById(id);
-}
-
-Layer* LayerTreeHost::LayerByElementId(ElementId element_id) const {
-  ElementLayersMap::const_iterator iter = element_layers_map_.find(element_id);
-  return iter != element_layers_map_.end() ? iter->second : nullptr;
-}
-
-void LayerTreeHost::AddToElementMap(Layer* layer) {
-  if (!layer->element_id())
-    return;
-
-  element_layers_map_[layer->element_id()] = layer;
-}
-
-void LayerTreeHost::RemoveFromElementMap(Layer* layer) {
-  if (!layer->element_id())
-    return;
-
-  element_layers_map_.erase(layer->element_id());
-}
-
-bool LayerTreeHost::IsElementInList(ElementId element_id,
-                                    ElementListType list_type) const {
-  return list_type == ElementListType::ACTIVE && LayerByElementId(element_id);
-}
-
-void LayerTreeHost::SetMutatorsNeedCommit() {
-  SetNeedsCommit();
-}
-
-void LayerTreeHost::SetMutatorsNeedRebuildPropertyTrees() {
-  layer_tree_->property_trees()->needs_rebuild = true;
-}
-
-void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
-                                            ElementListType list_type,
-                                            const FilterOperations& filters) {
-  Layer* layer = LayerByElementId(element_id);
-  DCHECK(layer);
-  layer->OnFilterAnimated(filters);
-}
-
-void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
-                                             ElementListType list_type,
-                                             float opacity) {
-  Layer* layer = LayerByElementId(element_id);
-  DCHECK(layer);
-  layer->OnOpacityAnimated(opacity);
-}
-
-void LayerTreeHost::SetElementTransformMutated(
-    ElementId element_id,
-    ElementListType list_type,
-    const gfx::Transform& transform) {
-  Layer* layer = LayerByElementId(element_id);
-  DCHECK(layer);
-  layer->OnTransformAnimated(transform);
-}
-
-void LayerTreeHost::SetElementScrollOffsetMutated(
-    ElementId element_id,
-    ElementListType list_type,
-    const gfx::ScrollOffset& scroll_offset) {
-  Layer* layer = LayerByElementId(element_id);
-  DCHECK(layer);
-  layer->OnScrollOffsetAnimated(scroll_offset);
-}
-
-void LayerTreeHost::ElementTransformIsAnimatingChanged(
-    ElementId element_id,
-    ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
-  Layer* layer = LayerByElementId(element_id);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
-        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
-        break;
-    }
-  }
-}
-
-void LayerTreeHost::ElementOpacityIsAnimatingChanged(
-    ElementId element_id,
-    ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
-  Layer* layer = LayerByElementId(element_id);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
-        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
-        break;
-    }
-  }
-}
-
-void LayerTreeHost::ElementFilterIsAnimatingChanged(
-    ElementId element_id,
-    ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
-  Layer* layer = LayerByElementId(element_id);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->OnFilterIsPotentiallyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->OnFilterIsCurrentlyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->OnFilterIsPotentiallyAnimatingChanged(is_animating);
-        layer->OnFilterIsCurrentlyAnimatingChanged(is_animating);
-        break;
-    }
-  }
-}
-
-gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
-    ElementId element_id) const {
-  Layer* layer = LayerByElementId(element_id);
-  DCHECK(layer);
-  return layer->ScrollOffsetForAnimation();
 }
 
 bool LayerTreeHost::IsSingleThreaded() const {

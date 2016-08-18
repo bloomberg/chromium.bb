@@ -66,6 +66,7 @@ LayerTree::LayerTree(std::unique_ptr<AnimationHost> animation_host,
       layer_tree_host_(layer_tree_host) {
   DCHECK(animation_host_);
   DCHECK(layer_tree_host_);
+  animation_host_->SetMutatorHostClient(this);
 }
 
 LayerTree::~LayerTree() {
@@ -530,10 +531,181 @@ void LayerTree::FromProtobuf(const proto::LayerTree& proto) {
   // updated for other reasons. All layers that at this point are part of the
   // layer tree are valid, so it is OK that they have a valid sequence number.
   int seq_num = property_trees_.sequence_number;
-  LayerTreeHostCommon::CallFunctionForEveryLayer(
-      layer_tree_host_, [seq_num](Layer* layer) {
-        layer->set_property_tree_sequence_number(seq_num);
-      });
+  LayerTreeHostCommon::CallFunctionForEveryLayer(this, [seq_num](Layer* layer) {
+    layer->set_property_tree_sequence_number(seq_num);
+  });
+}
+
+Layer* LayerTree::LayerByElementId(ElementId element_id) const {
+  ElementLayersMap::const_iterator iter = element_layers_map_.find(element_id);
+  return iter != element_layers_map_.end() ? iter->second : nullptr;
+}
+
+void LayerTree::RegisterElement(ElementId element_id,
+                                ElementListType list_type,
+                                Layer* layer) {
+  if (layer->element_id()) {
+    element_layers_map_[layer->element_id()] = layer;
+  }
+
+  animation_host_->RegisterElement(element_id, list_type);
+}
+
+void LayerTree::UnregisterElement(ElementId element_id,
+                                  ElementListType list_type,
+                                  Layer* layer) {
+  animation_host_->UnregisterElement(element_id, list_type);
+
+  if (layer->element_id()) {
+    element_layers_map_.erase(layer->element_id());
+  }
+}
+
+static void SetElementIdForTesting(Layer* layer) {
+  layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
+}
+
+void LayerTree::SetElementIdsForTesting() {
+  LayerTreeHostCommon::CallFunctionForEveryLayer(this, SetElementIdForTesting);
+}
+
+bool LayerTree::IsElementInList(ElementId element_id,
+                                ElementListType list_type) const {
+  return list_type == ElementListType::ACTIVE && LayerByElementId(element_id);
+}
+
+void LayerTree::SetMutatorsNeedCommit() {
+  layer_tree_host_->SetNeedsCommit();
+}
+
+void LayerTree::SetMutatorsNeedRebuildPropertyTrees() {
+  property_trees_.needs_rebuild = true;
+}
+
+void LayerTree::SetElementFilterMutated(ElementId element_id,
+                                        ElementListType list_type,
+                                        const FilterOperations& filters) {
+  Layer* layer = LayerByElementId(element_id);
+  DCHECK(layer);
+  layer->OnFilterAnimated(filters);
+}
+
+void LayerTree::SetElementOpacityMutated(ElementId element_id,
+                                         ElementListType list_type,
+                                         float opacity) {
+  Layer* layer = LayerByElementId(element_id);
+  DCHECK(layer);
+  layer->OnOpacityAnimated(opacity);
+}
+
+void LayerTree::SetElementTransformMutated(ElementId element_id,
+                                           ElementListType list_type,
+                                           const gfx::Transform& transform) {
+  Layer* layer = LayerByElementId(element_id);
+  DCHECK(layer);
+  layer->OnTransformAnimated(transform);
+}
+
+void LayerTree::SetElementScrollOffsetMutated(
+    ElementId element_id,
+    ElementListType list_type,
+    const gfx::ScrollOffset& scroll_offset) {
+  Layer* layer = LayerByElementId(element_id);
+  DCHECK(layer);
+  layer->OnScrollOffsetAnimated(scroll_offset);
+}
+
+void LayerTree::ElementTransformIsAnimatingChanged(
+    ElementId element_id,
+    ElementListType list_type,
+    AnimationChangeType change_type,
+    bool is_animating) {
+  Layer* layer = LayerByElementId(element_id);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
+        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
+        break;
+    }
+  }
+}
+
+void LayerTree::ElementOpacityIsAnimatingChanged(
+    ElementId element_id,
+    ElementListType list_type,
+    AnimationChangeType change_type,
+    bool is_animating) {
+  Layer* layer = LayerByElementId(element_id);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
+        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
+        break;
+    }
+  }
+}
+
+void LayerTree::ElementFilterIsAnimatingChanged(ElementId element_id,
+                                                ElementListType list_type,
+                                                AnimationChangeType change_type,
+                                                bool is_animating) {
+  Layer* layer = LayerByElementId(element_id);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->OnFilterIsPotentiallyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->OnFilterIsCurrentlyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->OnFilterIsPotentiallyAnimatingChanged(is_animating);
+        layer->OnFilterIsCurrentlyAnimatingChanged(is_animating);
+        break;
+    }
+  }
+}
+
+gfx::ScrollOffset LayerTree::GetScrollOffsetForAnimation(
+    ElementId element_id) const {
+  Layer* layer = LayerByElementId(element_id);
+  DCHECK(layer);
+  return layer->ScrollOffsetForAnimation();
+}
+
+LayerListIterator<Layer> LayerTree::begin() const {
+  return LayerListIterator<Layer>(inputs_.root_layer.get());
+}
+
+LayerListIterator<Layer> LayerTree::end() const {
+  return LayerListIterator<Layer>(nullptr);
+}
+
+LayerListReverseIterator<Layer> LayerTree::rbegin() {
+  return LayerListReverseIterator<Layer>(inputs_.root_layer.get());
+}
+
+LayerListReverseIterator<Layer> LayerTree::rend() {
+  return LayerListReverseIterator<Layer>(nullptr);
+}
+
+void LayerTree::SetNeedsDisplayOnAllLayers() {
+  for (auto* layer : *this)
+    layer->SetNeedsDisplay();
 }
 
 }  // namespace cc

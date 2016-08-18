@@ -132,7 +132,7 @@ class CC_EXPORT LayerTreeHostCommon {
       CalcDrawPropsImplInputsForTesting* inputs);
 
   template <typename Function>
-  static void CallFunctionForEveryLayer(LayerTreeHost* layer,
+  static void CallFunctionForEveryLayer(LayerTree* layer,
                                         const Function& function);
 
   template <typename Function>
@@ -179,7 +179,7 @@ struct CC_EXPORT ScrollAndScaleSet {
 };
 
 template <typename Function>
-void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeHost* host,
+void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTree* host,
                                                     const Function& function) {
   for (auto* layer : *host) {
     function(layer);

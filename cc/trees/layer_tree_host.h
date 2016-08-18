@@ -43,7 +43,6 @@
 #include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "cc/trees/mutator_host_client.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -83,7 +82,7 @@ namespace proto {
 class LayerTreeHost;
 }
 
-class CC_EXPORT LayerTreeHost : public MutatorHostClient {
+class CC_EXPORT LayerTreeHost {
  public:
   // TODO(sad): InitParams should be a movable type so that it can be
   // std::move()d to the Create* functions.
@@ -128,7 +127,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   virtual ~LayerTreeHost();
 
-  // LayerTreeHost interface to Proxy
+  // LayerTreeHost interface to Proxy.
   void WillBeginMainFrame();
   void DidBeginMainFrame();
   void BeginMainFrame(const BeginFrameArgs& args);
@@ -154,11 +153,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
 
-  LayerListIterator<Layer> begin() const;
-  LayerListIterator<Layer> end() const;
-  LayerListReverseIterator<Layer> rbegin();
-  LayerListReverseIterator<Layer> rend();
-
   LayerTreeHostClient* client() { return client_; }
   const base::WeakPtr<InputHandler>& GetInputHandler() {
     return input_handler_weak_ptr_;
@@ -176,8 +170,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool gpu_rasterization_histogram_recorded() const {
     return gpu_rasterization_histogram_recorded_;
   }
-
-  void SetNeedsDisplayOnAllLayers();
 
   void CollectRenderingStats(RenderingStats* stats) const;
 
@@ -275,46 +267,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
 
-  Layer* LayerById(int id) const;
-
-  Layer* LayerByElementId(ElementId element_id) const;
-  void AddToElementMap(Layer* layer);
-  void RemoveFromElementMap(Layer* layer);
-
-  // MutatorHostClient implementation.
-  bool IsElementInList(ElementId element_id,
-                       ElementListType list_type) const override;
-  void SetMutatorsNeedCommit() override;
-  void SetMutatorsNeedRebuildPropertyTrees() override;
-  void SetElementFilterMutated(ElementId element_id,
-                               ElementListType list_type,
-                               const FilterOperations& filters) override;
-  void SetElementOpacityMutated(ElementId element_id,
-                                ElementListType list_type,
-                                float opacity) override;
-  void SetElementTransformMutated(ElementId element_id,
-                                  ElementListType list_type,
-                                  const gfx::Transform& transform) override;
-  void SetElementScrollOffsetMutated(
-      ElementId element_id,
-      ElementListType list_type,
-      const gfx::ScrollOffset& scroll_offset) override;
-  void ElementTransformIsAnimatingChanged(ElementId element_id,
-                                          ElementListType list_type,
-                                          AnimationChangeType change_type,
-                                          bool is_animating) override;
-  void ElementOpacityIsAnimatingChanged(ElementId element_id,
-                                        ElementListType list_type,
-                                        AnimationChangeType change_type,
-                                        bool is_animating) override;
-  void ElementFilterIsAnimatingChanged(ElementId element_id,
-                                       ElementListType list_type,
-                                       AnimationChangeType change_type,
-                                       bool is_animating) override;
-  void ScrollOffsetAnimationFinished() override {}
-  gfx::ScrollOffset GetScrollOffsetForAnimation(
-      ElementId element_id) const override;
-
   // Serializes the parts of this LayerTreeHost that is needed for a commit to a
   // protobuf message. Not all members are serialized as they are not helpful
   // for remote usage.
@@ -334,8 +286,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool IsRemoteServer() const;
   bool IsRemoteClient() const;
   void BuildPropertyTreesForTesting();
-
-  void SetElementIdsForTesting();
 
   ImageSerializationProcessor* image_serialization_processor() const {
     return image_serialization_processor_;
@@ -491,9 +441,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   std::vector<std::unique_ptr<SwapPromise>> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
-
-  using ElementLayersMap = std::unordered_map<ElementId, Layer*, ElementIdHash>;
-  ElementLayersMap element_layers_map_;
 
   uint32_t surface_client_id_;
   uint32_t next_surface_sequence_;

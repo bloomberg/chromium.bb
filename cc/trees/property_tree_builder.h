@@ -12,8 +12,6 @@
 
 namespace cc {
 
-class LayerTreeHost;
-
 class PropertyTreeBuilder {
  public:
   static Layer* FindFirstScrollableLayer(Layer* root_layer);

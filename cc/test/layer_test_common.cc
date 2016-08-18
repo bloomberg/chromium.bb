@@ -132,16 +132,16 @@ LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   timeline_ = AnimationTimeline::Create(timeline_id);
-  host_->animation_host()->AddAnimationTimeline(timeline_);
+  host_->GetLayerTree()->animation_host()->AddAnimationTimeline(timeline_);
   // Create impl-side instance.
-  host_->animation_host()->PushPropertiesTo(
+  host_->GetLayerTree()->animation_host()->PushPropertiesTo(
       host_->host_impl()->animation_host());
   timeline_impl_ =
       host_->host_impl()->animation_host()->GetTimelineById(timeline_id);
 }
 
 LayerTestCommon::LayerImplTest::~LayerImplTest() {
-  host_->animation_host()->RemoveAnimationTimeline(timeline_);
+  host_->GetLayerTree()->animation_host()->RemoveAnimationTimeline(timeline_);
   timeline_ = nullptr;
   host_->host_impl()->ReleaseOutputSurface();
 }

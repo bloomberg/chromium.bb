@@ -92,9 +92,9 @@ class LayerTreeHostSerializationTest : public testing::Test {
 
   void VerifyHostHasAllExpectedLayersInTree(Layer* root_layer) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        root_layer->layer_tree_host(), [root_layer](Layer* layer) {
+        root_layer->GetLayerTree(), [root_layer](Layer* layer) {
           DCHECK(layer->layer_tree_host());
-          EXPECT_EQ(layer, layer->layer_tree_host()->LayerById(layer->id()));
+          EXPECT_EQ(layer, layer->GetLayerTree()->LayerById(layer->id()));
         });
   }
 
@@ -218,7 +218,7 @@ class LayerTreeHostSerializationTest : public testing::Test {
     if (layer_tree_dst->property_trees_.sequence_number) {
       int seq_num = layer_tree_dst->property_trees_.sequence_number;
       LayerTreeHostCommon::CallFunctionForEveryLayer(
-          layer_tree_host_dst_.get(), [seq_num](Layer* layer) {
+          layer_tree_host_dst_->GetLayerTree(), [seq_num](Layer* layer) {
             EXPECT_EQ(seq_num, layer->property_tree_sequence_number());
           });
     }

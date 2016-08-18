@@ -77,14 +77,14 @@ void WebLayerTreeViewImplForTesting::clearRootLayer()
 
 void WebLayerTreeViewImplForTesting::attachCompositorAnimationTimeline(cc::AnimationTimeline* compositorTimeline)
 {
-    ASSERT(m_layerTreeHost->animation_host());
-    m_layerTreeHost->animation_host()->AddAnimationTimeline(compositorTimeline);
+    DCHECK(m_layerTreeHost->GetLayerTree()->animation_host());
+    m_layerTreeHost->GetLayerTree()->animation_host()->AddAnimationTimeline(compositorTimeline);
 }
 
 void WebLayerTreeViewImplForTesting::detachCompositorAnimationTimeline(cc::AnimationTimeline* compositorTimeline)
 {
-    ASSERT(m_layerTreeHost->animation_host());
-    m_layerTreeHost->animation_host()->RemoveAnimationTimeline(compositorTimeline);
+    DCHECK(m_layerTreeHost->GetLayerTree()->animation_host());
+    m_layerTreeHost->GetLayerTree()->animation_host()->RemoveAnimationTimeline(compositorTimeline);
 }
 
 void WebLayerTreeViewImplForTesting::setViewportSize(const WebSize& unusedDeprecated, const WebSize& deviceViewportSize)

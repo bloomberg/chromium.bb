@@ -133,18 +133,16 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     layer_tree_->property_trees()->needs_rebuild = true;
     layer_tree_->UnregisterLayer(this);
     if (inputs_.element_id) {
-      layer_tree_->animation_host()->UnregisterElement(inputs_.element_id,
-                                                       ElementListType::ACTIVE);
-      layer_tree_host_->RemoveFromElementMap(this);
+      layer_tree_->UnregisterElement(inputs_.element_id,
+                                     ElementListType::ACTIVE, this);
     }
   }
   if (host) {
     host->GetLayerTree()->property_trees()->needs_rebuild = true;
     host->GetLayerTree()->RegisterLayer(this);
     if (inputs_.element_id) {
-      host->AddToElementMap(this);
-      host->animation_host()->RegisterElement(inputs_.element_id,
-                                              ElementListType::ACTIVE);
+      host->GetLayerTree()->RegisterElement(inputs_.element_id,
+                                            ElementListType::ACTIVE, this);
     }
   }
 
@@ -852,7 +850,8 @@ void Layer::SetScrollClipLayerId(int clip_layer_id) {
 }
 
 Layer* Layer::scroll_clip_layer() const {
-  return layer_tree_host()->LayerById(inputs_.scroll_clip_layer_id);
+  DCHECK(layer_tree_);
+  return layer_tree_->LayerById(inputs_.scroll_clip_layer_id);
 }
 
 void Layer::SetUserScrollable(bool horizontal, bool vertical) {
@@ -1480,10 +1479,9 @@ void Layer::FromLayerSpecificPropertiesProto(
   inputs_.user_scrollable_horizontal = base.user_scrollable_horizontal();
   inputs_.user_scrollable_vertical = base.user_scrollable_vertical();
 
-  inputs_.scroll_parent =
-      base.scroll_parent_id() == INVALID_ID
-          ? nullptr
-          : layer_tree_host_->LayerById(base.scroll_parent_id());
+  inputs_.scroll_parent = base.scroll_parent_id() == INVALID_ID
+                              ? nullptr
+                              : layer_tree_->LayerById(base.scroll_parent_id());
 
   // If there have been scroll children entries in previous deserializations,
   // clear out the set. If there have been none, initialize the set of children.
@@ -1496,14 +1494,13 @@ void Layer::FromLayerSpecificPropertiesProto(
     scroll_children_.reset(new std::set<Layer*>);
   for (int i = 0; i < base.scroll_children_ids_size(); ++i) {
     int child_id = base.scroll_children_ids(i);
-    scoped_refptr<Layer> child = layer_tree_host_->LayerById(child_id);
+    scoped_refptr<Layer> child = layer_tree_->LayerById(child_id);
     scroll_children_->insert(child.get());
   }
 
-  inputs_.clip_parent =
-      base.clip_parent_id() == INVALID_ID
-          ? nullptr
-          : layer_tree_host_->LayerById(base.clip_parent_id());
+  inputs_.clip_parent = base.clip_parent_id() == INVALID_ID
+                            ? nullptr
+                            : layer_tree_->LayerById(base.clip_parent_id());
 
   // If there have been clip children entries in previous deserializations,
   // clear out the set. If there have been none, initialize the set of children.
@@ -1516,7 +1513,7 @@ void Layer::FromLayerSpecificPropertiesProto(
     clip_children_.reset(new std::set<Layer*>);
   for (int i = 0; i < base.clip_children_ids_size(); ++i) {
     int child_id = base.clip_children_ids(i);
-    scoped_refptr<Layer> child = layer_tree_host_->LayerById(child_id);
+    scoped_refptr<Layer> child = layer_tree_->LayerById(child_id);
     clip_children_->insert(child.get());
   }
 
@@ -1836,17 +1833,15 @@ void Layer::SetElementId(ElementId id) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "Layer::SetElementId", "element", id.AsValue().release());
   if (inputs_.element_id && layer_tree_host()) {
-    layer_tree_host()->animation_host()->UnregisterElement(
-        inputs_.element_id, ElementListType::ACTIVE);
-    layer_tree_host()->RemoveFromElementMap(this);
+    layer_tree_->UnregisterElement(inputs_.element_id, ElementListType::ACTIVE,
+                                   this);
   }
 
   inputs_.element_id = id;
 
   if (inputs_.element_id && layer_tree_host()) {
-    layer_tree_host()->animation_host()->RegisterElement(
-        inputs_.element_id, ElementListType::ACTIVE);
-    layer_tree_host()->AddToElementMap(this);
+    layer_tree_->RegisterElement(inputs_.element_id, ElementListType::ACTIVE,
+                                 this);
   }
 
   SetNeedsCommit();

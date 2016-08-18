@@ -6,15 +6,17 @@
 #define CC_TREES_LAYER_TREE_H_
 
 #include <memory>
-
 #include <unordered_map>
 #include <unordered_set>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/layers/layer_list_iterator.h"
+#include "cc/trees/mutator_host_client.h"
 #include "cc/trees/property_tree.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
@@ -37,7 +39,7 @@ class LayerTreeHost;
 class LayerTreeImpl;
 struct PendingPageScaleAnimation;
 
-class CC_EXPORT LayerTree {
+class CC_EXPORT LayerTree : public MutatorHostClient {
  public:
   using LayerSet = std::unordered_set<Layer*>;
   using LayerIdMap = std::unordered_map<int, Layer*>;
@@ -111,13 +113,13 @@ class CC_EXPORT LayerTree {
 
   void SetPaintedDeviceScaleFactor(float painted_device_scale_factor);
 
-  AnimationHost* animation_host() const { return animation_host_.get(); }
-
   gfx::Vector2dF elastic_overscroll() const { return elastic_overscroll_; }
 
   // Used externally by blink for setting the PropertyTrees when
   // |settings_.use_layer_lists| is true. This is a SPV2 setting.
   PropertyTrees* property_trees() { return &property_trees_; }
+
+  bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
   // Methods which should only be used internally in cc ------------------
   void RegisterLayer(Layer* layer);
@@ -154,11 +156,62 @@ class CC_EXPORT LayerTree {
   void ToProtobuf(proto::LayerTree* proto);
   void FromProtobuf(const proto::LayerTree& proto);
 
-  bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
+  AnimationHost* animation_host() const { return animation_host_.get(); }
+
+  Layer* LayerByElementId(ElementId element_id) const;
+  void RegisterElement(ElementId element_id,
+                       ElementListType list_type,
+                       Layer* layer);
+  void UnregisterElement(ElementId element_id,
+                         ElementListType list_type,
+                         Layer* layer);
+  void SetElementIdsForTesting();
+
+  // Layer iterators.
+  LayerListIterator<Layer> begin() const;
+  LayerListIterator<Layer> end() const;
+  LayerListReverseIterator<Layer> rbegin();
+  LayerListReverseIterator<Layer> rend();
+
+  void SetNeedsDisplayOnAllLayers();
   // ---------------------------------------------------------------------
 
  private:
   friend class LayerTreeHostSerializationTest;
+
+  // MutatorHostClient implementation.
+  bool IsElementInList(ElementId element_id,
+                       ElementListType list_type) const override;
+  void SetMutatorsNeedCommit() override;
+  void SetMutatorsNeedRebuildPropertyTrees() override;
+  void SetElementFilterMutated(ElementId element_id,
+                               ElementListType list_type,
+                               const FilterOperations& filters) override;
+  void SetElementOpacityMutated(ElementId element_id,
+                                ElementListType list_type,
+                                float opacity) override;
+  void SetElementTransformMutated(ElementId element_id,
+                                  ElementListType list_type,
+                                  const gfx::Transform& transform) override;
+  void SetElementScrollOffsetMutated(
+      ElementId element_id,
+      ElementListType list_type,
+      const gfx::ScrollOffset& scroll_offset) override;
+  void ElementTransformIsAnimatingChanged(ElementId element_id,
+                                          ElementListType list_type,
+                                          AnimationChangeType change_type,
+                                          bool is_animating) override;
+  void ElementOpacityIsAnimatingChanged(ElementId element_id,
+                                        ElementListType list_type,
+                                        AnimationChangeType change_type,
+                                        bool is_animating) override;
+  void ElementFilterIsAnimatingChanged(ElementId element_id,
+                                       ElementListType list_type,
+                                       AnimationChangeType change_type,
+                                       bool is_animating) override;
+  void ScrollOffsetAnimationFinished() override {}
+  gfx::ScrollOffset GetScrollOffsetForAnimation(
+      ElementId element_id) const override;
 
   // Encapsulates the data, callbacks, interfaces received from the embedder.
   struct Inputs {
@@ -212,6 +265,9 @@ class CC_EXPORT LayerTree {
 
   // Layer id to Layer map.
   LayerIdMap layer_id_map_;
+
+  using ElementLayersMap = std::unordered_map<ElementId, Layer*, ElementIdHash>;
+  ElementLayersMap element_layers_map_;
 
   bool in_paint_layer_contents_;
 

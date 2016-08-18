@@ -45,7 +45,7 @@ class LayerTreeHostAnimationTest : public LayerTreeTest {
 
   void AttachPlayersToTimeline() {
     layer_tree()->animation_host()->AddAnimationTimeline(timeline_.get());
-    layer_tree_host()->SetElementIdsForTesting();
+    layer_tree()->SetElementIdsForTesting();
     timeline_->AttachPlayer(player_.get());
     timeline_->AttachPlayer(player_child_.get());
   }
@@ -786,11 +786,11 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
     if (layer_tree_host()->source_frame_number() == 1) {
       // Add an update after the first commit to trigger the animation takeover
       // path.
-      layer_tree_host()
+      layer_tree()
           ->animation_host()
           ->scroll_offset_animations()
           .AddTakeoverUpdate(scroll_layer_->element_id());
-      EXPECT_TRUE(layer_tree_host()
+      EXPECT_TRUE(layer_tree()
                       ->animation_host()
                       ->scroll_offset_animations()
                       .HasUpdatesForTesting());
@@ -847,18 +847,18 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
     if (layer_tree_host()->source_frame_number() == 1) {
       // Add an update after the first commit to trigger the animation update
       // path.
-      layer_tree_host()
+      layer_tree()
           ->animation_host()
           ->scroll_offset_animations()
           .AddAdjustmentUpdate(scroll_layer_->element_id(),
                                gfx::Vector2dF(100.f, 100.f));
-      EXPECT_TRUE(layer_tree_host()
+      EXPECT_TRUE(layer_tree()
                       ->animation_host()
                       ->scroll_offset_animations()
                       .HasUpdatesForTesting());
     } else if (layer_tree_host()->source_frame_number() == 2) {
       // Verify that the update queue is cleared after the update is applied.
-      EXPECT_FALSE(layer_tree_host()
+      EXPECT_FALSE(layer_tree()
                        ->animation_host()
                        ->scroll_offset_animations()
                        .HasUpdatesForTesting());
@@ -1069,7 +1069,7 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
       scoped_refptr<Layer> layer = Layer::Create();
       layer_tree()->root_layer()->AddChild(layer);
 
-      layer_tree_host()->SetElementIdsForTesting();
+      layer_tree()->SetElementIdsForTesting();
       layer->SetBounds(gfx::Size(4, 4));
 
       player_child_->AttachElement(layer->element_id());
@@ -1160,7 +1160,7 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     layer_->SetTransform(start_transform);
 
     layer_tree()->root_layer()->AddChild(layer_);
-    layer_tree_host()->SetElementIdsForTesting();
+    layer_tree()->SetElementIdsForTesting();
 
     player_->AttachElement(layer_->element_id());
 
@@ -1232,9 +1232,9 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
     layer_->SetBounds(gfx::Size(4, 4));
     layer_tree()->root_layer()->AddChild(layer_);
 
-    layer_tree_host()->SetElementIdsForTesting();
+    layer_tree()->SetElementIdsForTesting();
 
-    layer_tree_host()->animation_host()->AddAnimationTimeline(timeline_.get());
+    layer_tree()->animation_host()->AddAnimationTimeline(timeline_.get());
     timeline_->AttachPlayer(player_.get());
     player_->AttachElement(layer_->element_id());
     DCHECK(player_->element_animations());
@@ -1251,7 +1251,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
             player_->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(
             player_->element_animations()->has_element_in_pending_list());
-        EXPECT_TRUE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
+        EXPECT_TRUE(layer_tree()->animation_host()->NeedsAnimateLayers());
         break;
       case 1:
         layer_->RemoveFromParent();
@@ -1259,7 +1259,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
             player_->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(
             player_->element_animations()->has_element_in_pending_list());
-        EXPECT_FALSE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
+        EXPECT_FALSE(layer_tree()->animation_host()->NeedsAnimateLayers());
         break;
       case 2:
         layer_tree()->root_layer()->AddChild(layer_);
@@ -1267,7 +1267,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
             player_->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(
             player_->element_animations()->has_element_in_pending_list());
-        EXPECT_TRUE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
+        EXPECT_TRUE(layer_tree()->animation_host()->NeedsAnimateLayers());
         break;
     }
   }

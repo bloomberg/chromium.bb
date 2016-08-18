@@ -654,7 +654,7 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
   draw_property_utils::UpdatePropertyTrees(property_trees,
                                            can_render_to_separate_surface);
   draw_property_utils::FindLayersThatNeedUpdates(
-      inputs->root_layer->layer_tree_host(), property_trees->transform_tree,
+      inputs->root_layer->GetLayerTree(), property_trees->transform_tree,
       property_trees->effect_tree, &update_layer_list);
 }
 

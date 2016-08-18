@@ -33,7 +33,7 @@ UnittestOnlyBenchmark::~UnittestOnlyBenchmark() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void UnittestOnlyBenchmark::DidUpdateLayers(LayerTreeHost* host) {
+void UnittestOnlyBenchmark::DidUpdateLayers(LayerTree* layer_tree) {
   NotifyDone(nullptr);
 }
 

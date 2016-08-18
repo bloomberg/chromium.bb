@@ -203,7 +203,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     draw_property_utils::UpdatePropertyTrees(property_trees,
                                              can_render_to_separate_surface);
     draw_property_utils::FindLayersThatNeedUpdates(
-        root_layer->layer_tree_host(), property_trees->transform_tree,
+        root_layer->GetLayerTree(), property_trees->transform_tree,
         property_trees->effect_tree, &update_layer_list_);
   }
 
@@ -4877,12 +4877,13 @@ TEST_F(LayerTreeHostCommonTest, LayerSearch) {
   host()->SetRootLayer(root);
 
   int nonexistent_id = -1;
-  EXPECT_EQ(root.get(), host()->LayerById(root->id()));
-  EXPECT_EQ(child.get(), host()->LayerById(child->id()));
-  EXPECT_EQ(grand_child.get(), host()->LayerById(grand_child->id()));
-  EXPECT_EQ(mask_layer.get(), host()->LayerById(mask_layer->id()));
-  EXPECT_EQ(replica_layer.get(), host()->LayerById(replica_layer->id()));
-  EXPECT_FALSE(host()->LayerById(nonexistent_id));
+  LayerTree* layer_tree = host()->GetLayerTree();
+  EXPECT_EQ(root.get(), layer_tree->LayerById(root->id()));
+  EXPECT_EQ(child.get(), layer_tree->LayerById(child->id()));
+  EXPECT_EQ(grand_child.get(), layer_tree->LayerById(grand_child->id()));
+  EXPECT_EQ(mask_layer.get(), layer_tree->LayerById(mask_layer->id()));
+  EXPECT_EQ(replica_layer.get(), layer_tree->LayerById(replica_layer->id()));
+  EXPECT_FALSE(layer_tree->LayerById(nonexistent_id));
 }
 
 TEST_F(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
@@ -8322,7 +8323,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   child->AddChild(grandchild);
   grandchild->AddChild(greatgrandchild);
   host()->SetRootLayer(root);
-  host()->SetElementIdsForTesting();
+  host()->GetLayerTree()->SetElementIdsForTesting();
 
   // Check the non-skipped case.
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
@@ -9433,7 +9434,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
       make_scoped_refptr(new LayerWithForcedDrawsContent());
   root->AddChild(animated);
   host()->SetRootLayer(root);
-  host()->SetElementIdsForTesting();
+  host()->GetLayerTree()->SetElementIdsForTesting();
 
   root->SetBounds(gfx::Size(100, 100));
   root->SetForceRenderSurfaceForTesting(true);
@@ -9482,7 +9483,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
       make_scoped_refptr(new LayerWithForcedDrawsContent());
   root->AddChild(animated);
   host()->SetRootLayer(root);
-  host()->SetElementIdsForTesting();
+  host()->GetLayerTree()->SetElementIdsForTesting();
 
   root->SetBounds(gfx::Size(100, 100));
   root->SetForceRenderSurfaceForTesting(true);

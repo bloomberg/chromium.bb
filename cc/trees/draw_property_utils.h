@@ -20,7 +20,7 @@ class ClipTree;
 struct DrawProperties;
 class Layer;
 class LayerImpl;
-class LayerTreeHost;
+class LayerTree;
 class RenderSurfaceImpl;
 class EffectTree;
 class TransformTree;
@@ -65,7 +65,7 @@ void CC_EXPORT BuildPropertyTreesAndComputeVisibleRects(
 void CC_EXPORT UpdatePropertyTrees(PropertyTrees* property_trees,
                                    bool can_render_to_separate_surface);
 
-void CC_EXPORT FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
+void CC_EXPORT FindLayersThatNeedUpdates(LayerTree* layer_tree,
                                          const TransformTree& transform_tree,
                                          const EffectTree& effect_tree,
                                          LayerList* update_layer_list);

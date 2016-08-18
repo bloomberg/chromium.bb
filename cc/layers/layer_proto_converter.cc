@@ -85,7 +85,7 @@ void LayerProtoConverter::DeserializeLayerProperties(
 void LayerProtoConverter::RecursivelyFindAllLayers(Layer* root_layer,
                                                    LayerIdMap* layer_id_map) {
   LayerTreeHostCommon::CallFunctionForEveryLayer(
-      root_layer->layer_tree_host(),
+      root_layer->GetLayerTree(),
       [layer_id_map](Layer* layer) { (*layer_id_map)[layer->id()] = layer; });
 }
 

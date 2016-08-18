@@ -14,7 +14,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/draw_property_utils.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -63,9 +63,9 @@ InvalidationBenchmark::InvalidationBenchmark(
 InvalidationBenchmark::~InvalidationBenchmark() {
 }
 
-void InvalidationBenchmark::DidUpdateLayers(LayerTreeHost* host) {
+void InvalidationBenchmark::DidUpdateLayers(LayerTree* layer_tree) {
   LayerTreeHostCommon::CallFunctionForEveryLayer(
-      host, [this](Layer* layer) { layer->RunMicroBenchmark(this); });
+      layer_tree, [this](Layer* layer) { layer->RunMicroBenchmark(this); });
 }
 
 void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {
