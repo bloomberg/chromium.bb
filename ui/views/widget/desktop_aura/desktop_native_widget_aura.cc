@@ -746,6 +746,7 @@ void DesktopNativeWidgetAura::Hide() {
 
 void DesktopNativeWidgetAura::ShowMaximizedWithBounds(
       const gfx::Rect& restored_bounds) {
+  // IsVisible() should check the same objects here for visibility.
   if (!content_window_)
     return;
   desktop_window_tree_host_->ShowMaximizedWithBounds(restored_bounds);
@@ -753,6 +754,7 @@ void DesktopNativeWidgetAura::ShowMaximizedWithBounds(
 }
 
 void DesktopNativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
+  // IsVisible() should check the same objects here for visibility.
   if (!content_window_)
     return;
   desktop_window_tree_host_->ShowWindowWithState(state);
@@ -760,7 +762,13 @@ void DesktopNativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
 }
 
 bool DesktopNativeWidgetAura::IsVisible() const {
-  return content_window_ && desktop_window_tree_host_->IsVisible();
+  // The objects checked here should be the same objects changed in
+  // ShowWithWindowState and ShowMaximizedWithBounds. For example, MS Windows
+  // platform code might show the desktop window tree host early, meaning we
+  // aren't fully visible as we haven't shown the content window. Callers may
+  // short-circuit a call to show this widget if they think its already visible.
+  return content_window_ && content_window_->IsVisible() &&
+      desktop_window_tree_host_->IsVisible();
 }
 
 void DesktopNativeWidgetAura::Activate() {

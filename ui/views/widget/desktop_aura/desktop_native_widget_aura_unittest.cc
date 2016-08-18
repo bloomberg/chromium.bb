@@ -101,6 +101,21 @@ TEST_F(DesktopNativeWidgetAuraTest, NativeViewInitiallyHidden) {
   EXPECT_FALSE(widget.GetNativeView()->IsVisible());
 }
 
+// Verifies that if the DesktopWindowTreeHost is already shown, the native view
+// still reports not visible as we haven't shown the content window.
+TEST_F(DesktopNativeWidgetAuraTest, WidgetNotVisibleOnlyWindowTreeHostShown) {
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = new DesktopNativeWidgetAura(&widget);
+  widget.Init(init_params);
+  DesktopNativeWidgetAura* desktop_native_widget_aura =
+      static_cast<DesktopNativeWidgetAura*>(widget.native_widget());
+  desktop_native_widget_aura->host()->Show();
+  EXPECT_FALSE(widget.IsVisible());
+}
+
 // Verify that the cursor state is shared between two native widgets.
 TEST_F(DesktopNativeWidgetAuraTest, GlobalCursorState) {
   // Create two native widgets, each owning different root windows.
