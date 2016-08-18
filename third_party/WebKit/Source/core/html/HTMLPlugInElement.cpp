@@ -575,9 +575,7 @@ bool HTMLPlugInElement::allowedToLoadObject(const KURL& url, const String& mimeT
         return false;
     }
 
-    AtomicString declaredMimeType = document().isPluginDocument() && document().localOwner() ?
-        document().localOwner()->fastGetAttribute(HTMLNames::typeAttr) :
-        fastGetAttribute(HTMLNames::typeAttr);
+    AtomicString declaredMimeType = fastGetAttribute(HTMLNames::typeAttr);
     if (!document().contentSecurityPolicy()->allowObjectFromSource(url)
         || !document().contentSecurityPolicy()->allowPluginTypeForDocument(document(), mimeType, declaredMimeType, url)) {
         if (LayoutEmbeddedItem layoutItem = layoutEmbeddedItem()) {

@@ -61,8 +61,9 @@ http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cro
 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_resource_request.html [ Timeout ]
 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_timing_allow_cross_origin_resource_request.html [ Timeout ]
 
-# https://crbug.com/585501 - csp directives are not replicated to OOPIFs
+# https://crbug.com/611232 - CSP checks from remote parent frame do not properly report violations
 http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Failure ]
+http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Failure ]
 
 # https://crbug.com/615156 - Need to make IntersectionObserver work with OOPIFs.
 http/tests/intersection-observer/iframe-cross-origin.html [ Timeout ]

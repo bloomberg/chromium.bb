@@ -541,8 +541,9 @@ bool ContentSecurityPolicy::allowPluginTypeForDocument(const Document& document,
     // FIXME: The plugin-types directive should be pushed down into the
     // current document instead of reaching up to the parent for it here.
     LocalFrame* frame = document.frame();
-    if (frame && frame->tree().parent() && frame->tree().parent()->isLocalFrame() && document.isPluginDocument()) {
-        ContentSecurityPolicy* parentCSP = toLocalFrame(frame->tree().parent())->document()->contentSecurityPolicy();
+    if (frame && frame->tree().parent() && document.isPluginDocument()) {
+        ContentSecurityPolicy* parentCSP =
+            frame->tree().parent()->securityContext()->contentSecurityPolicy();
         if (parentCSP && !parentCSP->allowPluginType(type, typeAttribute, url))
             return false;
     }
@@ -856,7 +857,8 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     // https://crbug.com/376522).
     if (!m_executionContext && !contextFrame) {
         DCHECK(equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::ChildSrc)
-            || equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::FrameSrc));
+            || equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::FrameSrc)
+            || equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::PluginTypes));
         return;
     }
 
