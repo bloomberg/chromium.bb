@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 340
+#   For your editing convenience: highest ID currently used: 341
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8830,6 +8830,21 @@
       'desc': '''If the policy is set, the UDP port range used by WebRTC is restricted to the specified port interval (endpoints included).
 
       If the policy is not set, or if it is set to the empty string or an invalid port range, WebRTC is allowed to use any available local UDP port.''',
+    },
+    {
+      'name': 'WebRestrictionsAuthority',
+      'id': 341,
+      'type': 'string',
+      'schema' : { 'type': 'string' },
+      'tags': ['filtering'],
+      'supported_on': ['webview_android:54-'],
+      'caption': '''Set an external source of URL restrictions''',
+      'desc' : '''When this policy is set to a non-empty string the WebView will read URL restrictions from the content provider with the given authority name.''',
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'com.android.chrome.SupervisedUserProvider'
     },
   ],
   'messages': {

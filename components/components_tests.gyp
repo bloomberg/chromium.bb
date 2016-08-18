@@ -1894,7 +1894,7 @@
             'components.gyp:invalidation_java',
             'components.gyp:policy_java',
             'components.gyp:policy_java_test_support',
-            'components.gyp:web_restrictions_java',
+            'components.gyp:web_restrictions_java_browser',
             '../base/base.gyp:base_java',
             '../base/base.gyp:base_java_test_support',
             '../testing/android/junit/junit_test.gyp:junit_test_support',

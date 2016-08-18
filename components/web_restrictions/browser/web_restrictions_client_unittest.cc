@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "components/web_restrictions/browser/mock_web_restrictions_client.h"
@@ -10,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using web_restrictions::WebRestrictionsClient;
+using web_restrictions::WebRestrictionsClientResult;
 using web_restrictions::MockWebRestrictionsClient;
 
 namespace {
@@ -23,8 +26,13 @@ void ResultCallback(const base::Closure& quit_closure, bool result) {
 
 }  // namespace
 
+namespace web_restrictions {
+
 class WebRestrictionsClientTest : public testing::Test {
  protected:
+  void SetAuthority(std::string authority) {
+    client_.SetAuthorityTask(authority);
+  }
   // Mock the Java WebRestrictionsClient. The real version
   // would need a content provider to do anything.
   MockWebRestrictionsClient mock_;
@@ -33,90 +41,90 @@ class WebRestrictionsClientTest : public testing::Test {
 };
 
 TEST_F(WebRestrictionsClientTest, ShouldProceed) {
-  client_.SetAuthority("Good");
+  SetAuthority("Good");
   // First call should go to Web Restrictions Content Provider, and return a
   // delayed result.
   {
     g_returned_result = false;
     base::RunLoop run_loop;
-    EXPECT_EQ(web_restrictions::PENDING,
+    ASSERT_EQ(web_restrictions::PENDING,
               client_.ShouldProceed(
-                  true, GURL("http://example.com"),
+                  true, "http://example.com",
                   base::Bind(&ResultCallback, run_loop.QuitClosure())));
     run_loop.Run();
     EXPECT_TRUE(g_returned_result);
-    EXPECT_EQ(1, client_.GetResultColumnCount(GURL("http://example.com")));
   }
   // A repeated call should go to the cache and return a result immediately.
   {
     base::RunLoop run_loop;
-    EXPECT_EQ(web_restrictions::ALLOW,
+    ASSERT_EQ(web_restrictions::ALLOW,
               client_.ShouldProceed(
-                  true, GURL("http://example.com"),
+                  true, "http://example.com",
                   base::Bind(&ResultCallback, run_loop.QuitClosure())));
   }
   // However a different url should miss the cache
   {
     g_returned_result = false;
     base::RunLoop run_loop;
-    EXPECT_EQ(web_restrictions::PENDING,
+    ASSERT_EQ(web_restrictions::PENDING,
               client_.ShouldProceed(
-                  true, GURL("http://example.com/2"),
+                  true, "http://example.com/2",
                   base::Bind(&ResultCallback, run_loop.QuitClosure())));
     run_loop.Run();
     EXPECT_TRUE(g_returned_result);
   }
   // Switching the authority should clear the cache.
   {
-    client_.SetAuthority("Good2");
+    SetAuthority("Good2");
     g_returned_result = false;
     base::RunLoop run_loop;
-    EXPECT_EQ(web_restrictions::PENDING,
+    ASSERT_EQ(web_restrictions::PENDING,
               client_.ShouldProceed(
-                  true, GURL("http://example.com/2"),
+                  true, "http://example.com/2",
                   base::Bind(&ResultCallback, run_loop.QuitClosure())));
     run_loop.Run();
     EXPECT_TRUE(g_returned_result);
   }
   // Try getting a bad result
   {
-    client_.SetAuthority("Bad");
+    SetAuthority("Bad");
     g_returned_result = true;
     base::RunLoop run_loop;
-    EXPECT_EQ(web_restrictions::PENDING,
+    ASSERT_EQ(web_restrictions::PENDING,
               client_.ShouldProceed(
-                  true, GURL("http://example.com/2"),
+                  true, "http://example.com/2",
                   base::Bind(&ResultCallback, run_loop.QuitClosure())));
     run_loop.Run();
     EXPECT_FALSE(g_returned_result);
-    EXPECT_EQ(3, client_.GetResultColumnCount(GURL("http://example.com/2")));
-    EXPECT_EQ(42, client_.GetResultIntValue(GURL("http://example.com/2"), 1));
-    EXPECT_EQ("Error string",
-              client_.GetResultColumnName(GURL("http://example.com/2"), 2));
-    EXPECT_EQ("http://example.com/2",
-              client_.GetResultStringValue(GURL("http://example.com/2"), 2));
+    std::unique_ptr<const WebRestrictionsClientResult> result =
+        client_.GetCachedWebRestrictionsResult("http://example.com/2");
+    ASSERT_NE(nullptr, result.get());
+    EXPECT_EQ(42, result->GetInt(1));
+    EXPECT_EQ("http://example.com/2", result->GetString(2));
   }
 }
 
 TEST_F(WebRestrictionsClientTest, RequestPermission) {
-  client_.SetAuthority("Good");
   {
+    SetAuthority("Good");
     base::RunLoop run_loop;
     g_returned_result = false;
     client_.RequestPermission(
-        GURL("http://example.com"),
+        "http://example.com",
         base::Bind(&ResultCallback, run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_TRUE(g_returned_result);
-    client_.SetAuthority("Bad");
   }
   {
+    SetAuthority("Bad");
     base::RunLoop run_loop;
     g_returned_result = true;
     client_.RequestPermission(
-        GURL("http://example.com"),
+        "http://example.com",
         base::Bind(&ResultCallback, run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_FALSE(g_returned_result);
   }
 }
+
+}  // namespace web_restrictions

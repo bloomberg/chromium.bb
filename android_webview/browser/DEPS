@@ -40,6 +40,8 @@ include_rules = [
 
   "+printing",
 
+  "+services/shell/public/cpp",
+
   "+ui/gfx",
   "+ui/gl",
 

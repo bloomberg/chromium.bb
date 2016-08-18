@@ -11,31 +11,37 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.os.UserManager;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.components.webrestrictions.WebRestrictionsContentProvider;
+import org.chromium.components.webrestrictions.browser.WebRestrictionsContentProvider;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Content provider for telling other apps (e.g. WebView apps) about the
- * supervised user URL filter.
+ * Content provider for telling other apps (e.g. WebView apps) about the supervised user URL filter.
  */
 public class SupervisedUserContentProvider extends WebRestrictionsContentProvider {
     private static final String SUPERVISED_USER_CONTENT_PROVIDER_ENABLED =
             "SupervisedUserContentProviderEnabled";
     private long mNativeSupervisedUserContentProvider = 0;
+    private boolean mChromeAlreadyStarted;
     private static Object sEnabledLock = new Object();
 
     // Three value "boolean" caching enabled state, null if not yet known.
     private static Boolean sEnabled = null;
 
     private long getSupervisedUserContentProvider() throws ProcessInitException {
+        mChromeAlreadyStarted = LibraryLoader.isInitialized();
         if (mNativeSupervisedUserContentProvider != 0) {
             return mNativeSupervisedUserContentProvider;
         }
@@ -50,25 +56,32 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         mNativeSupervisedUserContentProvider = nativeProvider;
     }
 
-    static class SupervisedUserQueryReply {
-        final CountDownLatch mLatch = new CountDownLatch(1);
-        private WebRestrictionsResult mResult;
+    static class SupervisedUserReply<T> {
+        private static final long RESULT_TIMEOUT_SECONDS = 10;
+        final BlockingQueue<T> mQueue = new ArrayBlockingQueue<>(1);
 
+        void onQueryFinished(T reply) {
+            // This must be called precisely once per query.
+            mQueue.add(reply);
+        }
+
+        T getResult() throws InterruptedException {
+            return mQueue.poll(RESULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        }
+    }
+
+    static class SupervisedUserQueryReply extends SupervisedUserReply<WebRestrictionsResult> {
         // One of the following three functions must be called precisely once per query.
 
         @CalledByNative("SupervisedUserQueryReply")
         void onQueryComplete() {
-            assert mResult == null;
-
-            mResult = new WebRestrictionsResult(true, null, null);
-            mLatch.countDown();
+            onQueryFinished(new WebRestrictionsResult(true, null, null));
         }
 
         @CalledByNative("SupervisedUserQueryReply")
         void onQueryFailed(int reason, int allowAccessRequests, int isChildAccount,
                 String profileImageUrl, String profileImageUrl2, String custodian,
                 String custodianEmail, String secondCustodian, String secondCustodianEmail) {
-            assert mResult == null;
             int errorInt[] = new int[] {reason, allowAccessRequests, isChildAccount};
             String errorString[] = new String[] {
                     profileImageUrl,
@@ -78,20 +91,11 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
                     secondCustodian,
                     secondCustodianEmail
             };
-            mResult = new WebRestrictionsResult(false, errorInt, errorString);
-            mLatch.countDown();
+            onQueryFinished(new WebRestrictionsResult(false, errorInt, errorString));
         }
 
         void onQueryFailedNoErrorData() {
-            assert mResult == null;
-
-            mResult = new WebRestrictionsResult(false, null, null);
-            mLatch.countDown();
-        }
-
-        WebRestrictionsResult getResult() throws InterruptedException {
-            mLatch.await();
-            return mResult;
+            onQueryFinished(new WebRestrictionsResult(false, null, null));
         }
     }
 
@@ -103,6 +107,7 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         // As such it needs to correctly match the replies to the calls. It does this by creating a
         // reply object for each query, and passing this through the callback structure. The reply
         // object also handles waiting for the reply.
+        long startTimeMs = SystemClock.elapsedRealtime();
         final SupervisedUserQueryReply queryReply = new SupervisedUserQueryReply();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -117,7 +122,16 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         try {
             // This will block until an onQueryComplete call on a different thread adds
             // something to the queue.
-            return queryReply.getResult();
+            WebRestrictionsResult result = queryReply.getResult();
+            String histogramName = mChromeAlreadyStarted
+                    ? "SupervisedUserContentProvider.ChromeStartedRequestTime"
+                    : "SupervisedUserContentProvider.ChromeNotStartedRequestTime";
+            RecordHistogram.recordTimesHistogram(histogramName,
+                    SystemClock.elapsedRealtime() - startTimeMs, TimeUnit.MILLISECONDS);
+            RecordHistogram.recordBooleanHistogram(
+                    "SupervisedUserContentProvider.RequestTimedOut", result == null);
+            if (result == null) return new WebRestrictionsResult(false, null, null);
+            return result;
         } catch (InterruptedException e) {
             return new WebRestrictionsResult(false, null, null);
         }
@@ -129,21 +143,10 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         return true;
     }
 
-    static class SupervisedUserInsertReply {
-        final CountDownLatch mLatch = new CountDownLatch(1);
-        boolean mResult;
-
+    static class SupervisedUserInsertReply extends SupervisedUserReply<Boolean> {
         @CalledByNative("SupervisedUserInsertReply")
         void onInsertRequestSendComplete(boolean result) {
-            // This must be called precisely once per query.
-            assert mLatch.getCount() == 1;
-            mResult = result;
-            mLatch.countDown();
-        }
-
-        boolean getResult() throws InterruptedException {
-            mLatch.await();
-            return mResult;
+            onQueryFinished(result);
         }
     }
 
@@ -167,7 +170,9 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
             }
         });
         try {
-            return insertReply.getResult();
+            Boolean result = insertReply.getResult();
+            if (result == null) return false;
+            return result;
         } catch (InterruptedException e) {
             return false;
         }

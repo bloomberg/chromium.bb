@@ -2811,6 +2811,9 @@
       { "pref": "cros.device.system_timezone_automatic_detection" }
     ]
   },
+  
+  "WebRestrictionsAuthority": {
+  },
 
   "TaskManagerEndProcessEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],

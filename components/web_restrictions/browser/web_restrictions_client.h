@@ -6,9 +6,10 @@
 #define COMPONENTS_WEB_RESTRICTION_WEB_RESTRICTIONS_CLIENT_H_
 
 #include <jni.h>
+
 #include <list>
-#include <map>
 #include <string>
+#include <unordered_map>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -17,7 +18,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "url/gurl.h"
+#include "base/synchronization/lock.h"
+#include "components/web_restrictions/browser/web_restrictions_client_result.h"
 
 namespace web_restrictions {
 
@@ -42,44 +44,67 @@ class WebRestrictionsClient {
 
   // WebRestrictionsProvider:
   UrlAccess ShouldProceed(bool is_main_frame,
-                          const GURL& url,
+                          const std::string& url,
                           const base::Callback<void(bool)>& callback);
 
   bool SupportsRequest() const;
 
-  int GetResultColumnCount(const GURL& url) const;
-
-  std::string GetResultColumnName(const GURL& url, int column) const;
-
-  int GetResultIntValue(const GURL& url, int column) const;
-
-  std::string GetResultStringValue(const GURL& url, int column) const;
-
-  void RequestPermission(const GURL& url,
+  void RequestPermission(const std::string& url,
                          const base::Callback<void(bool)>& callback);
 
-  void OnWebRestrictionsChanged();
+  void OnWebRestrictionsChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
+  // Get a cached WebRestrictionsResult synchronously, for use when building
+  // error pages etc.. May be called on any thread, and will return a fresh copy
+  // of the result (hence thread safe).
+  std::unique_ptr<WebRestrictionsClientResult> GetCachedWebRestrictionsResult(
+      const std::string& url);
 
  private:
+  // Make the test classes friends, so that they can set the authority
+  // synchronously
+  friend class WebRestrictionsResourceThrottleTest;
+  friend class WebRestrictionsClientTest;
 
-  void RecordURLAccess(const GURL& url);
+  class Cache {
+   public:
+    Cache();
+    ~Cache();
+    std::unique_ptr<WebRestrictionsClientResult> GetCacheEntry(
+        const std::string& url);
+    void SetCacheEntry(const std::string& url,
+                       const WebRestrictionsClientResult& entry);
+    void RemoveCacheEntry(const std::string& url);
+    void Clear();
 
-  void UpdateCache(std::string provider_authority,
-                   GURL url,
+   private:
+    base::Lock lock_;
+    std::unordered_map<std::string, WebRestrictionsClientResult> cache_data_;
+    DISALLOW_COPY_AND_ASSIGN(Cache);
+  };
+
+  void SetAuthorityTask(const std::string& content_provider_authority);
+
+  void RecordURLAccess(const std::string& url);
+
+  void UpdateCache(const std::string& provider_authority,
+                   const std::string& url,
                    base::android::ScopedJavaGlobalRef<jobject> result);
 
-  void RequestSupportKnown(std::string provider_authority,
+  void RequestSupportKnown(const std::string& provider_authority,
                            bool supports_request);
 
   void ClearCache();
 
   static base::android::ScopedJavaGlobalRef<jobject> ShouldProceedTask(
-      const GURL& url,
+      const std::string& url,
       const base::android::JavaRef<jobject>& java_provider);
 
   void OnShouldProceedComplete(
       std::string provider_authority,
-      const GURL& url,
+      const std::string& url,
       const base::Callback<void(bool)>& callback,
       const base::android::ScopedJavaGlobalRef<jobject>& result);
 
@@ -88,12 +113,10 @@ class WebRestrictionsClient {
   bool supports_request_;
   base::android::ScopedJavaGlobalRef<jobject> java_provider_;
   std::string provider_authority_;
+  Cache cache_;
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> single_thread_task_runner_;
-
-  std::map<GURL, base::android::ScopedJavaGlobalRef<jobject>> cache_;
-  std::list<GURL> recent_urls_;
+  std::list<std::string> recent_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRestrictionsClient);
 };

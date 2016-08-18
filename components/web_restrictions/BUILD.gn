@@ -3,14 +3,15 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 if (is_android) {
-  # GYP: components.gyp:web_restrictions_java
   android_library("web_restrictions_java") {
     java_files = [
-      "browser/java/src/org/chromium/components/webrestrictions/WebRestrictionsContentProvider.java",
-      "browser/java/src/org/chromium/components/webrestrictions/WebRestrictionsClient.java",
+      "browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsContentProvider.java",
+      "browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsClient.java",
+      "browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsClientResult.java",
     ]
     deps = [
       "//base:base_java",
@@ -20,8 +21,8 @@ if (is_android) {
   # GYP: //components/components_test.gyp:components_junit_tests
   junit_binary("components_web_restrictions_junit_tests") {
     java_files = [
-      "browser/junit/src/org/chromium/components/webrestrictions/WebRestrictionsContentProviderTest.java",
-      "browser/junit/src/org/chromium/components/webrestrictions/WebRestrictionsClientTest.java",
+      "browser/junit/src/org/chromium/components/webrestrictions/browser/WebRestrictionsContentProviderTest.java",
+      "browser/junit/src/org/chromium/components/webrestrictions/browser/WebRestrictionsClientTest.java",
     ]
     deps = [
       ":web_restrictions_java",
@@ -32,7 +33,8 @@ if (is_android) {
 
   generate_jni("web_restrictions_jni_headers") {
     sources = [
-      "browser/java/src/org/chromium/components/webrestrictions/WebRestrictionsClient.java",
+      "browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsClient.java",
+      "browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsClientResult.java",
     ]
     jni_package = "web_restrictions"
   }
@@ -42,34 +44,32 @@ if (is_android) {
     sources = [
       "browser/web_restrictions_client.cc",
       "browser/web_restrictions_client.h",
+      "browser/web_restrictions_client_result.cc",
+      "browser/web_restrictions_client_result.h",
+      "browser/web_restrictions_mojo_implementation.cc",
+      "browser/web_restrictions_mojo_implementation.h",
       "browser/web_restrictions_resource_throttle.cc",
       "browser/web_restrictions_resource_throttle.h",
     ]
     deps = [
+      ":interfaces",
       ":web_restrictions_jni_headers",
       "//base",
       "//content/public/browser",
-      "//net",
+      "//mojo/public/cpp/bindings:bindings",
+      "//net:net",
     ]
   }
 
-  # GYP: components.gyp:web_restrictions_renderer
-  static_library("renderer") {
+  mojom("interfaces") {
     sources = [
-      "renderer/web_restrictions_gin_wrapper.cc",
-      "renderer/web_restrictions_gin_wrapper.h",
-    ]
-    deps = [
-      "//base",
-      "//content/public/renderer",
-      "//gin",
-      "//third_party/WebKit/public:blink_headers",
+      "interfaces/web_restrictions.mojom",
     ]
   }
 
   generate_jni("test_support_jni_headers") {
     sources = [
-      "browser/javatest/src/org/chromium/components/webrestrictions/MockWebRestrictionsClient.java",
+      "browser/javatest/src/org/chromium/components/webrestrictions/browser/MockWebRestrictionsClient.java",
     ]
     jni_package = "web_restrictions"
     deps = [
@@ -78,7 +78,7 @@ if (is_android) {
   }
 
   android_library("test_support_java") {
-    java_files = [ "browser/javatest/src/org/chromium/components/webrestrictions/MockWebRestrictionsClient.java" ]
+    java_files = [ "browser/javatest/src/org/chromium/components/webrestrictions/browser/MockWebRestrictionsClient.java" ]
     deps = [
       ":web_restrictions_java",
       "//base:base_java",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.webrestrictions;
+package org.chromium.components.webrestrictions.browser;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -42,8 +42,8 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
         private final int mErrorInts[];
         private final String mErrorStrings[];
 
-        public WebRestrictionsResult(boolean shouldProceed, final int[] errorInts,
-                final String[] errorStrings) {
+        public WebRestrictionsResult(
+                boolean shouldProceed, final int[] errorInts, final String[] errorStrings) {
             assert !shouldProceed || errorInts == null;
             assert !shouldProceed || errorStrings == null;
             mShouldProceed = shouldProceed;
@@ -121,9 +121,11 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
             @Override
             public String[] getColumnNames() {
                 String errorNames[] = getErrorColumnNames();
-                String names[] = new String[errorNames.length + 1];
+                // The cursor in the client gets the column count from the number of column names
+                // so it is important to limit this array to the actual number of columns.
+                String names[] = new String[getColumnCount()];
                 names[0] = "Should Proceed";
-                for (int i = 0; i < errorNames.length; i++) {
+                for (int i = 0; i < getColumnCount() - 1; i++) {
                     names[i + 1] = errorNames[i];
                 }
                 return names;
@@ -145,11 +147,16 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
 
             @Override
             public short getShort(int column) {
-                return 0;
+                return (short) getLong(column);
             }
 
             @Override
             public int getInt(int column) {
+                return (int) getLong(column);
+            }
+
+            @Override
+            public long getLong(int column) {
                 if (column == 0) return result.shouldProceed() ? PROCEED : BLOCKED;
                 // The column order is:
                 //    result,
@@ -160,11 +167,6 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
                 if (errorIntNumber < result.errorIntCount()) {
                     return result.getErrorInt(errorIntNumber);
                 }
-                return 0;
-            }
-
-            @Override
-            public long getLong(int column) {
                 return 0;
             }
 
@@ -190,6 +192,11 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
                     return FIELD_TYPE_STRING;
                 }
                 return FIELD_TYPE_NULL;
+            }
+
+            @Override
+            public int getColumnCount() {
+                return result.errorIntCount() + result.errorStringCount() + 1;
             }
         };
     }

@@ -88,6 +88,7 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   void RenderViewCreated(content::RenderViewHost* view_host) override;
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
+  void RenderFrameCreated(content::RenderFrameHost* frame_host) override;
   void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
                            const content::LoadCommittedDetails& details,
                            const content::FrameNavigateParams& params) override;

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_resource_context.h"
@@ -14,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "components/auto_login_parser/auto_login_parser.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/web_restrictions/browser/web_restrictions_resource_throttle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -228,8 +230,12 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
   throttles->push_back(new IoThreadClientThrottle(
       request_info->GetChildID(), request_info->GetRenderFrameID(), request));
 
-  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
+  bool is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  if (!is_main_frame)
     InterceptNavigationDelegate::UpdateUserGestureCarryoverInfo(request);
+  throttles->push_back(new web_restrictions::WebRestrictionsResourceThrottle(
+      AwBrowserContext::GetDefault()->GetWebRestrictionProvider(),
+      request->url(), is_main_frame));
 }
 
 void AwResourceDispatcherHostDelegate::OnRequestRedirected(

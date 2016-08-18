@@ -15,7 +15,9 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
+#include "components/web_restrictions/browser/web_restrictions_client.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -51,6 +53,7 @@ namespace prefs {
 // Used for Kerberos authentication.
 extern const char kAuthAndroidNegotiateAccountType[];
 extern const char kAuthServerWhitelist[];
+extern const char kWebRestrictionsAuthority[];
 
 }  // namespace prefs
 
@@ -84,6 +87,7 @@ class AwBrowserContext : public content::BrowserContext,
   AwMessagePortService* GetMessagePortService();
 
   policy::URLBlacklistManager* GetURLBlacklistManager();
+  web_restrictions::WebRestrictionsClient* GetWebRestrictionProvider();
 
   // content::BrowserContext implementation.
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
@@ -116,6 +120,8 @@ class AwBrowserContext : public content::BrowserContext,
 
  private:
   void InitUserPrefService();
+  void OnWebRestrictionsAuthorityChanged();
+
 
   // Delay, in milliseconds, before removing the legacy cache dir.
   // This is non-const for testing purposes.
@@ -141,6 +147,9 @@ class AwBrowserContext : public content::BrowserContext,
 
   std::unique_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
   std::unique_ptr<content::PermissionManager> permission_manager_;
+  std::unique_ptr<web_restrictions::WebRestrictionsClient>
+      web_restriction_provider_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

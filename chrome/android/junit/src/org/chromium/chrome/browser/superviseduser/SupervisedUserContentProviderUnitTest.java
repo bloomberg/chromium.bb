@@ -14,7 +14,8 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.chromium.components.webrestrictions.WebRestrictionsContentProvider.WebRestrictionsResult;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.components.webrestrictions.browser.WebRestrictionsContentProvider.WebRestrictionsResult;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,7 @@ public class SupervisedUserContentProviderUnitTest {
 
     @Before
     public void setUp() {
+        RecordHistogram.disableForTests();
         mSupervisedUserContentProvider = Mockito.spy(new SupervisedUserContentProvider());
         mSupervisedUserContentProvider.setNativeSupervisedUserContentProviderForTesting(1234L);
     }

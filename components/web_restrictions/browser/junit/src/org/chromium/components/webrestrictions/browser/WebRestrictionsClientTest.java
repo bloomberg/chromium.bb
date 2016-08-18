@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.webrestrictions;
+package org.chromium.components.webrestrictions.browser;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -43,7 +43,7 @@ public class WebRestrictionsClientTest {
     public void setUp() {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         mTestClient = Mockito.spy(new WebRestrictionsClient());
-        Mockito.doNothing().when(mTestClient).nativeNotifyWebRestrictionsChanged(anyLong());
+        Mockito.doNothing().when(mTestClient).nativeOnWebRestrictionsChanged(anyLong());
         mProvider = Mockito.mock(ContentProvider.class);
 
         mTestClient.init(TEST_CONTENT_PROVIDER, 1234L);
@@ -69,17 +69,19 @@ public class WebRestrictionsClientTest {
         when(mProvider.query(any(Uri.class), any(String[].class), anyString(), any(String[].class),
                      anyString()))
                 .thenReturn(null);
-        WebRestrictionsClient.ShouldProceedResult result =
-                mTestClient.shouldProceed("http://example.com");
+        WebRestrictionsClientResult result = mTestClient.shouldProceed("http://example.com");
         verify(mProvider).query(Uri.parse("content://" + TEST_CONTENT_PROVIDER + "/authorized"),
                 null, "url = 'http://example.com'", null, null);
-        assertThat(result.shouldProceed(), is(true));
-        assertThat(result.getString(1), is(nullValue()));
+        assertThat(result.shouldProceed(), is(false));
+        assertThat(result.getString(2), is(nullValue()));
 
         Cursor cursor = Mockito.mock(Cursor.class);
         when(cursor.getInt(0)).thenReturn(1);
         when(cursor.getInt(1)).thenReturn(42);
         when(cursor.getString(2)).thenReturn("No error");
+        when(cursor.getColumnName(1)).thenReturn("Error Int");
+        when(cursor.getColumnName(2)).thenReturn("Error String");
+        when(cursor.getColumnCount()).thenReturn(3);
         when(mProvider.query(any(Uri.class), any(String[].class), anyString(), any(String[].class),
                      anyString()))
                 .thenReturn(cursor);
@@ -118,6 +120,6 @@ public class WebRestrictionsClientTest {
 
         ContentResolver resolver = RuntimeEnvironment.application.getContentResolver();
         resolver.notifyChange(Uri.parse("content://" + TEST_CONTENT_PROVIDER), null);
-        verify(mTestClient).nativeNotifyWebRestrictionsChanged(1234L);
+        verify(mTestClient).nativeOnWebRestrictionsChanged(1234L);
     }
 }

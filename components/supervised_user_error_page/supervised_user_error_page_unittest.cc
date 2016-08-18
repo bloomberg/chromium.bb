@@ -71,13 +71,11 @@ class SupervisedUserErrorPageTest_BuildHtml
 
 TEST_P(SupervisedUserErrorPageTest_BuildHtml, BuildHtml) {
   BuildHtmlTestParameter param = GetParam();
-  std::string result =
-      BuildHtml(param.allow_access_requests, param.profile_image_url,
-                param.profile_image_url2, base::UTF8ToUTF16(param.custodian),
-                base::UTF8ToUTF16(param.custodian_email),
-                base::UTF8ToUTF16(param.second_custodian),
-                base::UTF8ToUTF16(param.second_custodian_email),
-                param.is_child_account, param.reason, "");
+  std::string result = BuildHtml(
+      param.allow_access_requests, param.profile_image_url,
+      param.profile_image_url2, param.custodian, param.custodian_email,
+      param.second_custodian, param.second_custodian_email,
+      param.is_child_account, param.reason, "");
   // The result should contain the original HTML plus scripts that plug values
   // into it. The test can't easily check that the scripts are correct, but
   // can check that the output contains the expected values.

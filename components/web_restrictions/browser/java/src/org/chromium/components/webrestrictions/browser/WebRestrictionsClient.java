@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.webrestrictions;
+package org.chromium.components.webrestrictions.browser;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.ContentObserver;
-import android.database.Cursor;
 import android.net.Uri;
 import android.text.TextUtils;
 
@@ -21,44 +20,6 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("web_restrictions")
 public class WebRestrictionsClient {
-    static class ShouldProceedResult {
-        private final Cursor mCursor;
-
-        ShouldProceedResult(Cursor cursor) {
-            mCursor = cursor;
-        }
-
-        @CalledByNative("ShouldProceedResult")
-        boolean shouldProceed() {
-            if (mCursor == null) return true;
-            return mCursor.getInt(0) > 0;
-        }
-
-        @CalledByNative("ShouldProceedResult")
-        int getInt(int column) {
-            if (mCursor == null) return 0;
-            return mCursor.getInt(column);
-        }
-
-        @CalledByNative("ShouldProceedResult")
-        String getString(int column) {
-            if (mCursor == null) return null;
-            return mCursor.getString(column);
-        }
-
-        @CalledByNative("ShouldProceedResult")
-        String getColumnName(int column) {
-            if (mCursor == null) return null;
-            return mCursor.getColumnName(column);
-        }
-
-        @CalledByNative("ShouldProceedResult")
-        int getColumnCount() {
-            if (mCursor == null) return 0;
-            return mCursor.getColumnCount();
-        }
-    }
-
     // Handle to allow mocking for C++ unit testing
     private static WebRestrictionsClient sMock;
 
@@ -86,7 +47,7 @@ public class WebRestrictionsClient {
 
             @Override
             public void onChange(boolean selfChange, Uri uri) {
-                nativeNotifyWebRestrictionsChanged(nativeProvider);
+                nativeOnWebRestrictionsChanged(nativeProvider);
             }
         };
         mContentResolver.registerContentObserver(baseUri, true, mContentObserver);
@@ -125,9 +86,10 @@ public class WebRestrictionsClient {
      * error page to show instead.
      */
     @CalledByNative
-    ShouldProceedResult shouldProceed(final String url) {
+    WebRestrictionsClientResult shouldProceed(final String url) {
         String select = String.format("url = '%s'", url);
-        return new ShouldProceedResult(mContentResolver.query(mQueryUri, null, select, null, null));
+        return new WebRestrictionsClientResult(
+                mContentResolver.query(mQueryUri, null, select, null, null));
     }
 
     /**
@@ -142,7 +104,7 @@ public class WebRestrictionsClient {
         return mContentResolver.insert(mRequestUri, values) != null;
     }
 
-    native void nativeNotifyWebRestrictionsChanged(long ptrProvider);
+    native void nativeOnWebRestrictionsChanged(long nativeWebRestrictionsClient);
 
     /**
      * Allow a mock for of the class for C++ unit testing.

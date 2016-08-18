@@ -7,6 +7,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/WebRestrictionsClient_jni.h"
@@ -20,12 +21,12 @@ namespace {
 const size_t kMaxCacheSize = 100;
 
 bool RequestPermissionTask(
-    const GURL& url,
+    const std::string& url,
     const base::android::JavaRef<jobject>& java_provider) {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_WebRestrictionsClient_requestPermission(
       env, java_provider,
-      base::android::ConvertUTF8ToJavaString(env, url.spec()));
+      base::android::ConvertUTF8ToJavaString(env, url));
 }
 
 bool CheckSupportsRequestTask(
@@ -43,7 +44,6 @@ bool WebRestrictionsClient::Register(JNIEnv* env) {
 
 WebRestrictionsClient::WebRestrictionsClient()
     : initialized_(false), supports_request_(false) {
-  single_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   base::SequencedWorkerPool* worker_pool =
       content::BrowserThread::GetBlockingPool();
   background_task_runner_ =
@@ -62,7 +62,17 @@ WebRestrictionsClient::~WebRestrictionsClient() {
 
 void WebRestrictionsClient::SetAuthority(
     const std::string& content_provider_authority) {
-  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
+  // This is called from the UI thread, but class members should only be
+  // accessed from the IO thread.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&WebRestrictionsClient::SetAuthorityTask,
+                 base::Unretained(this), content_provider_authority));
+}
+
+void WebRestrictionsClient::SetAuthorityTask(
+    const std::string& content_provider_authority) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // Destroy any existing content resolver.
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_provider_.is_null()) {
@@ -90,17 +100,17 @@ void WebRestrictionsClient::SetAuthority(
 
 UrlAccess WebRestrictionsClient::ShouldProceed(
     bool is_main_frame,
-    const GURL& url,
+    const std::string& url,
     const base::Callback<void(bool)>& callback) {
-  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!initialized_)
     return ALLOW;
-  auto iter = cache_.find(url);
-  if (iter != cache_.end()) {
+
+  std::unique_ptr<const WebRestrictionsClientResult> result =
+      cache_.GetCacheEntry(url);
+  if (result) {
     RecordURLAccess(url);
-    JNIEnv* env = base::android::AttachCurrentThread();
-    return Java_ShouldProceedResult_shouldProceed(env, iter->second) ? ALLOW
-                                                                     : DISALLOW;
+    return result->ShouldProceed() ? ALLOW : DISALLOW;
   }
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
@@ -116,60 +126,8 @@ bool WebRestrictionsClient::SupportsRequest() const {
   return initialized_ && supports_request_;
 }
 
-int WebRestrictionsClient::GetResultColumnCount(const GURL& url) const {
-  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
-  if (!initialized_)
-    return 0;
-  auto iter = cache_.find(url);
-  if (iter == cache_.end())
-    return 0;
-  return Java_ShouldProceedResult_getColumnCount(
-      base::android::AttachCurrentThread(), iter->second);
-}
-
-std::string WebRestrictionsClient::GetResultColumnName(const GURL& url,
-                                                       int column) const {
-  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
-  if (!initialized_)
-    return std::string();
-  auto iter = cache_.find(url);
-  if (iter == cache_.end())
-    return std::string();
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return base::android::ConvertJavaStringToUTF8(
-      env,
-      Java_ShouldProceedResult_getColumnName(env, iter->second, column).obj());
-}
-
-int WebRestrictionsClient::GetResultIntValue(const GURL& url,
-                                             int column) const {
-  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
-  if (!initialized_)
-    return 0;
-  auto iter = cache_.find(url);
-  if (iter == cache_.end())
-    return 0;
-  return Java_ShouldProceedResult_getInt(base::android::AttachCurrentThread(),
-                                         iter->second, column);
-}
-
-std::string WebRestrictionsClient::GetResultStringValue(const GURL& url,
-                                                        int column) const {
-  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
-  if (!initialized_)
-    return std::string();
-  auto iter = cache_.find(url);
-  if (iter == cache_.end())
-    return std::string();
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return base::android::ConvertJavaStringToUTF8(
-      env, Java_ShouldProceedResult_getString(env, iter->second, column).obj());
-}
-
 void WebRestrictionsClient::RequestPermission(
-    const GURL& url,
+    const std::string& url,
     const base::Callback<void(bool)>& request_success) {
   if (!initialized_) {
     request_success.Run(false);
@@ -180,40 +138,43 @@ void WebRestrictionsClient::RequestPermission(
       base::Bind(&RequestPermissionTask, url, java_provider_), request_success);
 }
 
-void WebRestrictionsClient::OnWebRestrictionsChanged() {
-  single_thread_task_runner_->PostTask(
-      FROM_HERE,
+void WebRestrictionsClient::OnWebRestrictionsChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
       base::Bind(&WebRestrictionsClient::ClearCache, base::Unretained(this)));
 }
 
-void WebRestrictionsClient::RecordURLAccess(const GURL& url) {
-  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
+void WebRestrictionsClient::RecordURLAccess(const std::string& url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // Move the URL to the front of the cache.
   recent_urls_.remove(url);
   recent_urls_.push_front(url);
 }
 
-void WebRestrictionsClient::UpdateCache(std::string provider_authority,
-                                        GURL url,
+void WebRestrictionsClient::UpdateCache(const std::string& provider_authority,
+                                        const std::string& url,
                                         ScopedJavaGlobalRef<jobject> result) {
-  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // If the webrestrictions provider changed when the old one was being queried,
   // do not update the cache for the new provider.
   if (provider_authority != provider_authority_)
     return;
   RecordURLAccess(url);
   if (recent_urls_.size() >= kMaxCacheSize) {
-    cache_.erase(recent_urls_.back());
+    cache_.RemoveCacheEntry(recent_urls_.back());
     recent_urls_.pop_back();
   }
-  cache_[url] = result;
+  cache_.SetCacheEntry(url, WebRestrictionsClientResult(result));
 }
 
-void WebRestrictionsClient::RequestSupportKnown(std::string provider_authority,
-                                                bool supports_request) {
+void WebRestrictionsClient::RequestSupportKnown(
+    const std::string& provider_authority,
+    bool supports_request) {
   // |supports_request_| is initialized to false.
   DCHECK(!supports_request_);
-  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // If the webrestrictions provider changed when the old one was being queried,
   // ignore the result.
   if (provider_authority != provider_authority_)
@@ -223,40 +184,66 @@ void WebRestrictionsClient::RequestSupportKnown(std::string provider_authority,
 
 void WebRestrictionsClient::OnShouldProceedComplete(
     std::string provider_authority,
-    const GURL& url,
+    const std::string& url,
     const base::Callback<void(bool)>& callback,
     const ScopedJavaGlobalRef<jobject>& result) {
   UpdateCache(provider_authority, url, result);
-  JNIEnv* env = base::android::AttachCurrentThread();
-  callback.Run(Java_ShouldProceedResult_shouldProceed(env, result));
+  callback.Run(cache_.GetCacheEntry(url)->ShouldProceed());
 }
 
 void WebRestrictionsClient::ClearCache() {
-  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
-  cache_.clear();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  cache_.Clear();
   recent_urls_.clear();
+}
+
+std::unique_ptr<WebRestrictionsClientResult>
+WebRestrictionsClient::GetCachedWebRestrictionsResult(const std::string& url) {
+  return cache_.GetCacheEntry(url);
 }
 
 // static
 ScopedJavaGlobalRef<jobject> WebRestrictionsClient::ShouldProceedTask(
-    const GURL& url,
+    const std::string& url,
     const base::android::JavaRef<jobject>& java_provider) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> result(
       Java_WebRestrictionsClient_shouldProceed(
           env, java_provider,
-          base::android::ConvertUTF8ToJavaString(env, url.spec())));
+          base::android::ConvertUTF8ToJavaString(env, url)));
   return result;
 }
 
-void NotifyWebRestrictionsChanged(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& clazz,
-    jlong provider_ptr) {
-  WebRestrictionsClient* provider =
-      reinterpret_cast<WebRestrictionsClient*>(provider_ptr);
-  // TODO(knn): Also reload existing interstitials/error pages.
-  provider->OnWebRestrictionsChanged();
+WebRestrictionsClient::Cache::Cache() = default;
+
+WebRestrictionsClient::Cache::~Cache() = default;
+
+std::unique_ptr<WebRestrictionsClientResult>
+WebRestrictionsClient::Cache::GetCacheEntry(const std::string& url) {
+  base::AutoLock lock(lock_);
+  auto iter = cache_data_.find(url);
+  if (iter == cache_data_.end())
+    return nullptr;
+  // This has to be thread-safe, so copy the data.
+  return std::unique_ptr<WebRestrictionsClientResult>(
+      new WebRestrictionsClientResult(iter->second));
+}
+
+void WebRestrictionsClient::Cache::SetCacheEntry(
+    const std::string& url,
+    const WebRestrictionsClientResult& entry) {
+  base::AutoLock lock(lock_);
+  cache_data_.emplace(url, entry);
+}
+
+void WebRestrictionsClient::Cache::RemoveCacheEntry(const std::string& url) {
+  base::AutoLock lock(lock_);
+  cache_data_.erase(url);
+}
+
+void WebRestrictionsClient::Cache::Clear() {
+  base::AutoLock lock(lock_);
+  cache_data_.clear();
 }
 
 }  // namespace web_restrictions

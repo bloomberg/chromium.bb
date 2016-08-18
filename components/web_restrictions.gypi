@@ -7,8 +7,7 @@
     ['OS == "android"', {
       'targets': [
         {
-          # GN: //components/web_restrictions:web_restrictions_java
-          'target_name': 'web_restrictions_java',
+          'target_name': 'web_restrictions_java_browser',
           'type': 'none',
           'variables': {
             'java_in_dir': 'web_restrictions/browser/java',
@@ -23,7 +22,8 @@
           'target_name': 'web_restrictions_jni_headers',
           'type': 'none',
           'sources': [
-            'web_restrictions/browser/java/src/org/chromium/components/webrestrictions/WebRestrictionsClient.java',
+            'web_restrictions/browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsClient.java',
+            'web_restrictions/browser/java/src/org/chromium/components/webrestrictions/browser/WebRestrictionsClientResult.java',
           ],
           'variables': {
             'jni_gen_package': 'components/web_restrictions',
@@ -37,34 +37,25 @@
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/content/content.gyp:content_browser',
+            'web_restrictions_interfaces',
             'web_restrictions_jni_headers',
           ],
           'sources': [
             "web_restrictions/browser/web_restrictions_client.cc",
             "web_restrictions/browser/web_restrictions_client.h",
+            "web_restrictions/browser/web_restrictions_client_result.cc",
+            "web_restrictions/browser/web_restrictions_client_result.h",
+            "web_restrictions/browser/web_restrictions_mojo_implementation.cc",
+            "web_restrictions/browser/web_restrictions_mojo_implementation.h",
             "web_restrictions/browser/web_restrictions_resource_throttle.cc",
             "web_restrictions/browser/web_restrictions_resource_throttle.h",
-          ],
-        },
-        {
-          # GN: //components/web_restrictions:renderer
-          'target_name': 'web_restrictions_renderer',
-          'type': 'static_library',
-          'dependencies': [
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/content/content.gyp:content_browser',
-            'web_restrictions_jni_headers',
-          ],
-          'sources': [
-            "web_restrictions/renderer/web_restrictions_gin_wrapper.cc",
-            "web_restrictions/renderer/web_restrictions_gin_wrapper.h",
           ],
         },
         {
           'target_name': 'web_restrictions_test_support_jni_headers',
           'type': 'none',
           'sources': [
-            'web_restrictions/browser/javatest/src/org/chromium/components/webrestrictions/MockWebRestrictionsClient.java',
+            'web_restrictions/browser/javatest/src/org/chromium/components/webrestrictions/browser/MockWebRestrictionsClient.java',
           ],
           'variables': {
             'jni_gen_package': 'components/web_restrictions',
@@ -75,8 +66,8 @@
           'target_name': 'web_restrictions_test_support_java',
           'type': 'none',
           'dependencies': [
-           'components.gyp:web_restrictions_java',
-             '../base/base.gyp:base_java',
+           'components.gyp:web_restrictions_java_browser',
+           '../base/base.gyp:base_java',
           ],
           'variables': {
             'java_in_dir': [
@@ -112,6 +103,17 @@
            },
            'includes': [ '../build/host_jar.gypi' ],
          },
-      ],
-  }]]
+         {
+          'target_name': 'web_restrictions_interfaces',
+          'type': 'static_library',
+          'includes': [
+            '../mojo/mojom_bindings_generator.gypi',
+           ],
+           'sources': [
+             'web_restrictions/interfaces/web_restrictions.mojom'
+           ],
+          },
+        ],
+       }
+    ]]
 }

@@ -196,14 +196,13 @@ std::string SupervisedUserInterstitial::GetHTMLContents(
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
 
-  base::string16 custodian =
-      base::UTF8ToUTF16(supervised_user_service->GetCustodianName());
-  base::string16 second_custodian =
-      base::UTF8ToUTF16(supervised_user_service->GetSecondCustodianName());
-  base::string16 custodian_email =
-      base::UTF8ToUTF16(supervised_user_service->GetCustodianEmailAddress());
-  base::string16 second_custodian_email = base::UTF8ToUTF16(
-      supervised_user_service->GetSecondCustodianEmailAddress());
+  std::string custodian = supervised_user_service->GetCustodianName();
+  std::string second_custodian =
+      supervised_user_service->GetSecondCustodianName();
+  std::string custodian_email =
+      supervised_user_service->GetCustodianEmailAddress();
+  std::string second_custodian_email =
+      supervised_user_service->GetSecondCustodianEmailAddress();
   std::string profile_image_url = profile->GetPrefs()->GetString(
       prefs::kSupervisedUserCustodianProfileImageURL);
   std::string profile_image_url2 = profile->GetPrefs()->GetString(

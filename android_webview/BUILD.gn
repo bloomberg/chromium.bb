@@ -122,7 +122,6 @@ repack("repack_100_percent") {
   ]
   deps = [
     "//content/app/resources",
-    "//net:net_resources",
     "//third_party/WebKit/public:image_resources",
     "//ui/resources",
   ]
@@ -592,10 +591,13 @@ source_set("common") {
     "//components/printing/browser",
     "//components/printing/common",
     "//components/printing/renderer",
+    "//components/supervised_user_error_page",
+    "//components/supervised_user_error_page:gin",
     "//components/version_info",
     "//components/visitedlink/browser",
     "//components/visitedlink/renderer",
     "//components/web_contents_delegate_android:web_contents_delegate_android",
+    "//components/web_restrictions:browser",
     "//content",
     "//content/public/app:both",
     "//content/public/browser",
@@ -703,6 +705,7 @@ android_library("android_webview_java") {
     "//components/external_video_surface:java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
+    "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
     "//net/android:net_java",

@@ -60,8 +60,12 @@ class WebRestrictionsResourceThrottleTest : public testing::Test {
     throttle_.set_controller_for_testing(&controller_);
   }
 
+  void SetAuthority(std::string authority) {
+    provider_.SetAuthorityTask(authority);
+  }
+
   void StartProvider() {
-    provider_.SetAuthority("Good");
+    SetAuthority("Good");
     bool defer;
     throttle_.WillStartRequest(&defer);
     run_loop_.Run();
@@ -89,7 +93,7 @@ TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_NoAuthority) {
 TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_DeferredAllow) {
   // Test deferring with a resource provider, and that the correct results
   // are received.
-  provider_.SetAuthority("Good");
+  SetAuthority("Good");
   bool defer;
   throttle_.WillStartRequest(&defer);
   EXPECT_TRUE(defer);
@@ -99,7 +103,7 @@ TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_DeferredAllow) {
 }
 
 TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_DeferredForbid) {
-  provider_.SetAuthority("Bad");
+  SetAuthority("Bad");
   bool defer;
   throttle_.WillStartRequest(&defer);
   EXPECT_TRUE(defer);
@@ -123,7 +127,7 @@ TEST_F(WebRestrictionsResourceThrottleTest, WillStartRequest_Subresource) {
   throttle.set_controller_for_testing(&test_controller);
   bool defer;
   throttle.WillStartRequest(&defer);
-  EXPECT_FALSE(defer);
+  ASSERT_FALSE(defer);
 }
 
 TEST_F(WebRestrictionsResourceThrottleTest, WillRedirectRequest_KnownUrl) {
@@ -134,7 +138,7 @@ TEST_F(WebRestrictionsResourceThrottleTest, WillRedirectRequest_KnownUrl) {
   redirect.new_url = GURL("http://example.com");
   bool defer;
   throttle_.WillRedirectRequest(redirect, &defer);
-  EXPECT_FALSE(defer);
+  ASSERT_FALSE(defer);
 }
 
 TEST_F(WebRestrictionsResourceThrottleTest, WillRedirectRequest_NewUrl) {
@@ -148,7 +152,7 @@ TEST_F(WebRestrictionsResourceThrottleTest, WillRedirectRequest_NewUrl) {
   throttle_.set_controller_for_testing(&test_controller);
   bool defer;
   throttle_.WillRedirectRequest(redirect, &defer);
-  EXPECT_TRUE(defer);
+  ASSERT_TRUE(defer);
   // If we don't wait for the callback it may happen after the exit, which
   // results in accesses the redirect_url after the stack frame is freed.
   test_run_loop.Run();

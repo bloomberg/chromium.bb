@@ -5,7 +5,9 @@
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "grit/components_resources.h"
 #include "grit/components_strings.h"
@@ -83,10 +85,10 @@ int GetBlockMessageID(FilteringBehaviorReason reason,
 std::string BuildHtml(bool allow_access_requests,
                       const std::string& profile_image_url,
                       const std::string& profile_image_url2,
-                      const base::string16& custodian,
-                      const base::string16& custodian_email,
-                      const base::string16& second_custodian,
-                      const base::string16& second_custodian_email,
+                      const std::string& custodian,
+                      const std::string& custodian_email,
+                      const std::string& second_custodian,
+                      const std::string& second_custodian_email,
                       bool is_child_account,
                       FilteringBehaviorReason reason,
                       const std::string& app_locale) {
@@ -102,10 +104,12 @@ std::string BuildHtml(bool allow_access_requests,
                     BuildAvatarImageUrl(profile_image_url2, kAvatarSize1x));
   strings.SetString("secondAvatarURL2x",
                     BuildAvatarImageUrl(profile_image_url2, kAvatarSize2x));
-  strings.SetString("custodianName", custodian);
-  strings.SetString("custodianEmail", custodian_email);
-  strings.SetString("secondCustodianName", second_custodian);
-  strings.SetString("secondCustodianEmail", second_custodian_email);
+  base::string16 custodian16 = base::UTF8ToUTF16(custodian);
+  strings.SetString("custodianName", custodian16);
+  strings.SetString("custodianEmail", base::UTF8ToUTF16(custodian_email));
+  strings.SetString("secondCustodianName", base::UTF8ToUTF16(second_custodian));
+  strings.SetString("secondCustodianEmail",
+                    base::UTF8ToUTF16(second_custodian_email));
   base::string16 block_message;
   if (allow_access_requests) {
     if (is_child_account) {
@@ -114,8 +118,8 @@ std::string BuildHtml(bool allow_access_requests,
               ? IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_SINGLE_PARENT
               : IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_MULTI_PARENT);
     } else {
-      block_message =
-          l10n_util::GetStringFUTF16(IDS_BLOCK_INTERSTITIAL_MESSAGE, custodian);
+      block_message = l10n_util::GetStringFUTF16(IDS_BLOCK_INTERSTITIAL_MESSAGE,
+                                                 custodian16);
     }
   } else {
     block_message = l10n_util::GetStringUTF16(
@@ -160,9 +164,9 @@ std::string BuildHtml(bool allow_access_requests,
     }
   } else {
     request_sent_message = l10n_util::GetStringFUTF16(
-        IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE, custodian);
+        IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE, custodian16);
     request_failed_message = l10n_util::GetStringFUTF16(
-        IDS_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE, custodian);
+        IDS_BLOCK_INTERSTITIAL_REQUEST_FAILED_MESSAGE, custodian16);
   }
   strings.SetString("requestSentMessage", request_sent_message);
   strings.SetString("requestFailedMessage", request_failed_message);
@@ -172,7 +176,8 @@ std::string BuildHtml(bool allow_access_requests,
           .GetRawDataResource(IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML)
           .as_string();
   webui::AppendWebUiCssTextDefaults(&html);
-  return webui::GetI18nTemplateHtml(html, &strings);
+  std::string error_html = webui::GetI18nTemplateHtml(html, &strings);
+  return error_html;
 }
 
 }  //  namespace supervised_user_error_page

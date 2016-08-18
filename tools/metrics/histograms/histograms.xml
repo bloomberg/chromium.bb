@@ -57778,6 +57778,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SupervisedUserContentProvider.ChromeNotStartedRequestTime"
+    units="ms">
+  <owner>aberent@chromium.org</owner>
+  <summary>
+    Time to get the response to requesting whether a URL should be accessible to
+    the supervised user, when Chrome was not previously running.
+  </summary>
+</histogram>
+
+<histogram name="SupervisedUserContentProvider.ChromeStartedRequestTime"
+    units="ms">
+  <owner>aberent@chromium.org</owner>
+  <summary>
+    Time to get the response to requesting whether a URL should be accessible to
+    the supervised user, when Chrome was already running.
+  </summary>
+</histogram>
+
+<histogram name="SupervisedUserContentProvider.RequestTimedOut"
+    enum="BooleanTimedOut">
+  <owner>aberent@chromium.org</owner>
+  <summary>
+    True if a request to find out whether a URL should be accessible to a
+    supervised user timed out.
+  </summary>
+</histogram>
+
 <histogram name="Sync.AppAssociationTime" units="ms">
   <obsolete>
     Deprecated in M53.
@@ -74902,6 +74929,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Enable generated content suggestions on the New Tab page"/>
   <int value="339" label="Restrict the UDP port range used by WebRTC"/>
   <int value="340" label="Enable SHA-1 certificates from local trust anchors"/>
+  <int value="341" label="Set an external source of URL restrictions"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

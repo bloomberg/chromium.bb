@@ -15,7 +15,11 @@ function initialize() {
   if (loadTimeData.getBoolean('allowAccessRequests')) {
     $('request-access-button').onclick = function(event) {
       $('request-access-button').hidden = true;
-      sendCommand('request');
+      if (window.domAutomationController) {
+        sendCommand('request');
+      } else {
+        window.webRestrictions.requestPermission(setRequestStatus);
+      }
     };
   } else {
     $('request-access-button').hidden = true;
@@ -48,7 +52,7 @@ function initialize() {
   }
   var showDetailsLink = loadTimeData.getString('showDetailsLink');
   $('show-details-link').hidden = !showDetailsLink;
-  $('back-button').hidden = showDetailsLink;
+  $('back-button').hidden = showDetailsLink || !window.domAutomationController;
   $('back-button').onclick = function(event) {
     sendCommand('back');
   };
@@ -66,7 +70,8 @@ function initialize() {
     $('information-container').classList.remove('hidden-on-mobile');
     $('request-access-button').classList.remove('hidden-on-mobile');
   };
-  if (loadTimeData.getBoolean('showFeedbackLink')) {
+  if (window.domAutomationController &&
+        loadTimeData.getBoolean('showFeedbackLink')) {
     $('feedback-link').onclick = function(event) {
       sendCommand('feedback');
     };
@@ -80,6 +85,7 @@ function initialize() {
  * @param {boolean} isSuccessful Whether the request was successful or not.
  */
 function setRequestStatus(isSuccessful) {
+  console.log('setRequestStatus(' + isSuccessful +')');
   $('block-page-message').hidden = true;
   if (isSuccessful) {
     $('request-failed-message').hidden = true;
@@ -87,7 +93,7 @@ function setRequestStatus(isSuccessful) {
     $('show-details-link').hidden = true;
     $('hide-details-link').hidden = true;
     $('details').hidden = true;
-    $('back-button').hidden = false;
+    $('back-button').hidden = !window.domAutomationController;
     $('request-access-button').hidden = true;
   } else {
     $('request-failed-message').hidden = false;

@@ -11,6 +11,8 @@ include_rules = [
   "+components/metrics",
   "+components/prefs",
   "+components/version_info",
+  "+components/supervised_user_error_page",
+  "+components/web_restrictions",
   "+content/public/common",
   "+crypto",
   "+gpu",

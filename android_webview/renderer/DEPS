@@ -16,6 +16,8 @@ include_rules = [
   "+media/base",
 
   "+printing",
+  
+  "+services/shell/public/cpp",
 
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",

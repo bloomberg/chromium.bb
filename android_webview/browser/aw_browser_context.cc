@@ -52,6 +52,8 @@ const char kAuthAndroidNegotiateAccountType[] =
 // Whitelist containing servers for which Integrated Authentication is enabled.
 const char kAuthServerWhitelist[] = "auth.server_whitelist";
 
+const char kWebRestrictionsAuthority[] = "web_restrictions_authority";
+
 }  // namespace prefs
 
 namespace {
@@ -200,6 +202,19 @@ void AwBrowserContext::PreMainMessageLoopRun() {
       content::BrowserContext::GetDefaultStoragePartition(this)->
           GetURLRequestContext(),
       guid_file_path);
+  web_restriction_provider_.reset(
+      new web_restrictions::WebRestrictionsClient());
+  pref_change_registrar_.Add(
+      prefs::kWebRestrictionsAuthority,
+      base::Bind(&AwBrowserContext::OnWebRestrictionsAuthorityChanged,
+                 base::Unretained(this)));
+  web_restriction_provider_->SetAuthority(
+      user_pref_service_->GetString(prefs::kWebRestrictionsAuthority));
+}
+
+void AwBrowserContext::OnWebRestrictionsAuthorityChanged() {
+  web_restriction_provider_->SetAuthority(
+      user_pref_service_->GetString(prefs::kWebRestrictionsAuthority));
 }
 
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
@@ -243,6 +258,8 @@ void AwBrowserContext::InitUserPrefService() {
   pref_registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
   pref_registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
                                     std::string());
+  pref_registry->RegisterStringPref(prefs::kWebRestrictionsAuthority,
+                                    std::string());
 
   metrics::MetricsService::RegisterPrefs(pref_registry);
 
@@ -256,6 +273,7 @@ void AwBrowserContext::InitUserPrefService() {
           policy::POLICY_LEVEL_MANDATORY)));
   pref_service_factory.set_read_error_callback(base::Bind(&HandleReadError));
   user_pref_service_ = pref_service_factory.Create(pref_registry);
+  pref_change_registrar_.Init(user_pref_service_.get());
 
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 }
@@ -361,6 +379,12 @@ policy::URLBlacklistManager* AwBrowserContext::GetURLBlacklistManager() {
   // blacklist_manager_ is initialized.
   DCHECK(blacklist_manager_);
   return blacklist_manager_.get();
+}
+
+web_restrictions::WebRestrictionsClient*
+AwBrowserContext::GetWebRestrictionProvider() {
+  DCHECK(web_restriction_provider_);
+  return web_restriction_provider_.get();
 }
 
 void AwBrowserContext::RebuildTable(

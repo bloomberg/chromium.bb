@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.webrestrictions;
+package org.chromium.components.webrestrictions.browser;
 
 import android.database.AbstractCursor;
 
@@ -54,8 +54,8 @@ public class MockWebRestrictionsClient extends WebRestrictionsClient {
      * error page to show instead.
      */
     @Override
-    ShouldProceedResult shouldProceed(final String url) {
-        return new ShouldProceedResult(new AbstractCursor() {
+    WebRestrictionsClientResult shouldProceed(final String url) {
+        return new WebRestrictionsClientResult(new AbstractCursor() {
 
             @Override
             public int getCount() {

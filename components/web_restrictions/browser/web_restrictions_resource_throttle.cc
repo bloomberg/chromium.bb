@@ -43,7 +43,7 @@ bool WebRestrictionsResourceThrottle::ShouldDefer(const GURL& url) {
   if (provider_->SupportsRequest() && !is_main_frame_)
     return false;
   UrlAccess access = provider_->ShouldProceed(
-      is_main_frame_, url,
+      is_main_frame_, url.spec(),
       base::Bind(&WebRestrictionsResourceThrottle::OnCheckResult,
                  weak_ptr_factory_.GetWeakPtr()));
   if (access == DISALLOW)

@@ -35,10 +35,12 @@ template("_repack_one_locale") {
     sources = [
       "${root_gen_dir}/android_webview/components_strings_${locale}.pak",
       "${root_gen_dir}/content/app/strings/content_strings_${locale}.pak",
+      "${root_gen_dir}/ui/strings/app_locale_settings_${locale}.pak",
     ]
     deps = [
       "//android_webview:generate_components_strings",
       "//content/app/strings",
+      "//ui/strings:app_locale_settings",
     ]
     sources += process_file_template(webview_repack_locales_source_patterns,
                                      [ "{{source}}_${locale}.pak" ])

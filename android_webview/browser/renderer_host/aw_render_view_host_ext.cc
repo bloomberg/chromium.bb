@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "components/web_restrictions/browser/web_restrictions_mojo_implementation.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 namespace android_webview {
 
@@ -141,6 +143,13 @@ void AwRenderViewHostExt::ClearImageRequests() {
   }
 
   image_requests_callback_map_.clear();
+}
+
+void AwRenderViewHostExt::RenderFrameCreated(
+    content::RenderFrameHost* frame_host) {
+  frame_host->GetInterfaceRegistry()->AddInterface(
+      base::Bind(&web_restrictions::WebRestrictionsMojoImplementation::Create,
+                 AwBrowserContext::GetDefault()->GetWebRestrictionProvider()));
 }
 
 void AwRenderViewHostExt::DidNavigateAnyFrame(
