@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 source_set("blink") {
   sources = [
     "blink_event_util.cc",
@@ -16,6 +18,8 @@ source_set("blink") {
     "scoped_web_input_event.cc",
     "scoped_web_input_event.h",
     "synchronous_input_handler_proxy.h",
+    "web_input_event.cc",
+    "web_input_event.h",
     "web_input_event_traits.cc",
     "web_input_event_traits.h",
   ]
@@ -24,8 +28,17 @@ source_set("blink") {
     "//cc:cc",
     "//third_party/WebKit/public:blink_headers",
     "//ui/events",
+    "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/events:gesture_detection",
     "//ui/gfx/geometry",
   ]
+
+  if (is_win) {
+    sources += [
+      "web_input_event_builders_win.cc",
+      "web_input_event_builders_win.h",
+    ]
+    deps += [ "//ui/display" ]
+  }
 }

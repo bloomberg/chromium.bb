@@ -1,11 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/web_input_event_builders_win.h"
+#include "ui/events/blink/web_input_event_builders_win.h"
 
-#include "base/logging.h"
-#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event_utils.h"
@@ -15,7 +13,7 @@ using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 
-namespace content {
+namespace ui {
 
 static const unsigned long kDefaultScrollLinesPerWheelDelta = 3;
 static const unsigned long kDefaultScrollCharsPerWheelDelta = 1;
@@ -34,31 +32,33 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
   result.nativeKeyCode = static_cast<int>(lparam);
 
   switch (message) {
-  case WM_SYSKEYDOWN:
-    result.isSystemKey = true;
-  case WM_KEYDOWN:
-    result.type = WebInputEvent::RawKeyDown;
-    break;
-  case WM_SYSKEYUP:
-    result.isSystemKey = true;
-  case WM_KEYUP:
-    result.type = WebInputEvent::KeyUp;
-    break;
-  case WM_IME_CHAR:
-    result.type = WebInputEvent::Char;
-    break;
-  case WM_SYSCHAR:
-    result.isSystemKey = true;
-    result.type = WebInputEvent::Char;
-  case WM_CHAR:
-    result.type = WebInputEvent::Char;
-    break;
-  default:
-    NOTREACHED();
+    case WM_SYSKEYDOWN:
+      result.isSystemKey = true;
+    // fallthrough
+    case WM_KEYDOWN:
+      result.type = WebInputEvent::RawKeyDown;
+      break;
+    case WM_SYSKEYUP:
+      result.isSystemKey = true;
+    // fallthrough
+    case WM_KEYUP:
+      result.type = WebInputEvent::KeyUp;
+      break;
+    case WM_IME_CHAR:
+      result.type = WebInputEvent::Char;
+      break;
+    case WM_SYSCHAR:
+      result.isSystemKey = true;
+    // fallthrough
+    case WM_CHAR:
+      result.type = WebInputEvent::Char;
+      break;
+    default:
+      NOTREACHED();
   }
 
-  if (result.type == WebInputEvent::Char
-   || result.type == WebInputEvent::RawKeyDown) {
+  if (result.type == WebInputEvent::Char ||
+      result.type == WebInputEvent::RawKeyDown) {
     result.text[0] = result.windowsKeyCode;
     result.unmodifiedText[0] = result.windowsKeyCode;
   }
@@ -98,56 +98,56 @@ WebMouseEvent WebMouseEventBuilder::Build(
   WebMouseEvent result;
 
   switch (message) {
-  case WM_MOUSEMOVE:
-    result.type = WebInputEvent::MouseMove;
-    if (wparam & MK_LBUTTON)
-      result.button = WebMouseEvent::ButtonLeft;
-    else if (wparam & MK_MBUTTON)
-      result.button = WebMouseEvent::ButtonMiddle;
-    else if (wparam & MK_RBUTTON)
-      result.button = WebMouseEvent::ButtonRight;
-    else
+    case WM_MOUSEMOVE:
+      result.type = WebInputEvent::MouseMove;
+      if (wparam & MK_LBUTTON)
+        result.button = WebMouseEvent::ButtonLeft;
+      else if (wparam & MK_MBUTTON)
+        result.button = WebMouseEvent::ButtonMiddle;
+      else if (wparam & MK_RBUTTON)
+        result.button = WebMouseEvent::ButtonRight;
+      else
+        result.button = WebMouseEvent::ButtonNone;
+      break;
+    case WM_MOUSELEAVE:
+    case WM_NCMOUSELEAVE:
+      // TODO(rbyers): This should be MouseLeave but is disabled temporarily.
+      // See http://crbug.com/450631
+      result.type = WebInputEvent::MouseMove;
       result.button = WebMouseEvent::ButtonNone;
-    break;
-  case WM_MOUSELEAVE:
-  case WM_NCMOUSELEAVE:
-    // TODO(rbyers): This should be MouseLeave but is disabled temporarily.
-    // See http://crbug.com/450631
-    result.type = WebInputEvent::MouseMove;
-    result.button = WebMouseEvent::ButtonNone;
-    // set the current mouse position (relative to the client area of the
-    // current window) since none is specified for this event
-    lparam = GetRelativeCursorPos(hwnd);
-    break;
-  case WM_LBUTTONDOWN:
-  case WM_LBUTTONDBLCLK:
-    result.type = WebInputEvent::MouseDown;
-    result.button = WebMouseEvent::ButtonLeft;
-    break;
-  case WM_MBUTTONDOWN:
-  case WM_MBUTTONDBLCLK:
-    result.type = WebInputEvent::MouseDown;
-    result.button = WebMouseEvent::ButtonMiddle;
-    break;
-  case WM_RBUTTONDOWN:
-  case WM_RBUTTONDBLCLK:
-    result.type = WebInputEvent::MouseDown;
-    result.button = WebMouseEvent::ButtonRight;
-    break;
-  case WM_LBUTTONUP:
-    result.type = WebInputEvent::MouseUp;
-    result.button = WebMouseEvent::ButtonLeft;
-    break;
-  case WM_MBUTTONUP:
-    result.type = WebInputEvent::MouseUp;
-    result.button = WebMouseEvent::ButtonMiddle;
-    break;
-  case WM_RBUTTONUP:
-    result.type = WebInputEvent::MouseUp;
-    result.button = WebMouseEvent::ButtonRight;
-    break;
-  default:
-    NOTREACHED();
+      // set the current mouse position (relative to the client area of the
+      // current window) since none is specified for this event
+      lparam = GetRelativeCursorPos(hwnd);
+      break;
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONDBLCLK:
+      result.type = WebInputEvent::MouseDown;
+      result.button = WebMouseEvent::ButtonLeft;
+      break;
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONDBLCLK:
+      result.type = WebInputEvent::MouseDown;
+      result.button = WebMouseEvent::ButtonMiddle;
+      break;
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONDBLCLK:
+      result.type = WebInputEvent::MouseDown;
+      result.button = WebMouseEvent::ButtonRight;
+      break;
+    case WM_LBUTTONUP:
+      result.type = WebInputEvent::MouseUp;
+      result.button = WebMouseEvent::ButtonLeft;
+      break;
+    case WM_MBUTTONUP:
+      result.type = WebInputEvent::MouseUp;
+      result.button = WebMouseEvent::ButtonMiddle;
+      break;
+    case WM_RBUTTONUP:
+      result.type = WebInputEvent::MouseUp;
+      result.button = WebMouseEvent::ButtonRight;
+      break;
+    default:
+      NOTREACHED();
   }
 
   result.timeStampSeconds = time_stamp;
@@ -160,7 +160,7 @@ WebMouseEvent WebMouseEventBuilder::Build(
   result.windowX = result.x;
   result.windowY = result.y;
 
-  POINT global_point = { result.x, result.y };
+  POINT global_point = {result.x, result.y};
   ClientToScreen(hwnd, &global_point);
 
   // We need to convert the global point back to DIP before using it.
@@ -181,10 +181,10 @@ WebMouseEvent WebMouseEventBuilder::Build(
   double current_time = result.timeStampSeconds;
   bool cancel_previous_click =
       (abs(last_click_position_x - result.x) >
-          (::GetSystemMetrics(SM_CXDOUBLECLK) / 2))
-      || (abs(last_click_position_y - result.y) >
-          (::GetSystemMetrics(SM_CYDOUBLECLK) / 2))
-      || ((current_time - g_last_click_time) * 1000.0 > ::GetDoubleClickTime());
+       (::GetSystemMetrics(SM_CXDOUBLECLK) / 2)) ||
+      (abs(last_click_position_y - result.y) >
+       (::GetSystemMetrics(SM_CYDOUBLECLK) / 2)) ||
+      ((current_time - g_last_click_time) * 1000.0 > ::GetDoubleClickTime());
 
   if (result.type == WebInputEvent::MouseDown) {
     if (!cancel_previous_click && (result.button == last_click_button)) {
@@ -196,8 +196,8 @@ WebMouseEvent WebMouseEventBuilder::Build(
     }
     g_last_click_time = current_time;
     last_click_button = result.button;
-  } else if (result.type == WebInputEvent::MouseMove
-          || result.type == WebInputEvent::MouseLeave) {
+  } else if (result.type == WebInputEvent::MouseMove ||
+             result.type == WebInputEvent::MouseLeave) {
     if (cancel_previous_click) {
       g_last_click_count = 0;
       last_click_position_x = 0;
@@ -265,7 +265,7 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
     result.globalY = cursor_position.y;
 
     switch (LOWORD(wparam)) {
-      case SB_LINEUP:    // == SB_LINELEFT
+      case SB_LINEUP:  // == SB_LINELEFT
         wheel_delta = WHEEL_DELTA;
         break;
       case SB_LINEDOWN:  // == SB_LINERIGHT
@@ -321,7 +321,7 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
     result.modifiers |= WebInputEvent::RightButtonDown;
 
   // Set coordinates by translating event coordinates from screen to client.
-  POINT client_point = { result.globalX, result.globalY };
+  POINT client_point = {result.globalX, result.globalY};
   MapWindowPoints(0, hwnd, &client_point, 1);
   result.x = client_point.x;
   result.y = client_point.y;
@@ -373,4 +373,4 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   return result;
 }
 
-}  // namespace content
+}  // namespace ui

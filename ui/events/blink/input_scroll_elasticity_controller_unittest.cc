@@ -6,7 +6,7 @@
 
 #include "cc/input/input_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace ui {
 namespace {

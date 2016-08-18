@@ -163,7 +163,6 @@ source_set("browser") {
       "file_descriptor_info_impl.cc",
       "file_descriptor_info_impl.h",
     ]
-    sources -= [ "renderer_host/web_input_event_aurawin.cc" ]
   }
 
   if (enable_basic_printing || enable_print_preview) {
@@ -404,8 +403,6 @@ source_set("browser") {
       "renderer_host/render_widget_host_view_aura.h",
       "renderer_host/ui_events_helper.cc",
       "renderer_host/ui_events_helper.h",
-      "renderer_host/web_input_event_aura.cc",
-      "renderer_host/web_input_event_aura.h",
       "web_contents/aura/gesture_nav_simple.cc",
       "web_contents/aura/gesture_nav_simple.h",
       "web_contents/aura/overscroll_navigation_overlay.cc",

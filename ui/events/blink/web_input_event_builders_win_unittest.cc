@@ -1,26 +1,22 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
+#include "ui/events/blink/web_input_event_builders_win.h"
 #include "ui/events/event_constants.h"
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#include "content/browser/renderer_host/input/web_input_event_builders_win.h"
-#endif
 
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 
-namespace content {
+namespace ui {
 
-#if defined(OS_WIN)
 // This test validates that Pixel to DIP conversion occurs as needed in the
 // WebMouseEventBuilder::Build function.
 TEST(WebInputEventBuilderTest, TestMouseEventScale) {
@@ -33,7 +29,7 @@ TEST(WebInputEventBuilderTest, TestMouseEventScale) {
   command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "2");
 
   // Synthesize a mouse move with x = 300 and y = 200.
-  WebMouseEvent mouse_move = WebMouseEventBuilder::Build(
+  WebMouseEvent mouse_move = ui::WebMouseEventBuilder::Build(
       ::GetDesktopWindow(), WM_MOUSEMOVE, 0, MAKELPARAM(300, 200), 100,
       blink::WebPointerProperties::PointerType::Mouse);
 
@@ -57,6 +53,5 @@ TEST(WebInputEventBuilderTest, TestMouseEventScale) {
   command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1");
   display::Display::ResetForceDeviceScaleFactorForTesting();
 }
-#endif
 
-}  // namespace content
+}  // namespace ui

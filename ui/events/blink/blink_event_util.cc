@@ -14,12 +14,13 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/gesture_event_details.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 
 using blink::WebGestureEvent;
@@ -478,6 +479,49 @@ WebPointerProperties::PointerType ToWebPointerType(
   }
   NOTREACHED() << "Invalid MotionEvent::ToolType = " << tool_type;
   return WebPointerProperties::PointerType::Unknown;
+}
+
+int WebEventModifiersToEventFlags(int modifiers) {
+  int flags = 0;
+
+  if (modifiers & blink::WebInputEvent::ShiftKey)
+    flags |= EF_SHIFT_DOWN;
+  if (modifiers & blink::WebInputEvent::ControlKey)
+    flags |= EF_CONTROL_DOWN;
+  if (modifiers & blink::WebInputEvent::AltKey)
+    flags |= EF_ALT_DOWN;
+  if (modifiers & blink::WebInputEvent::MetaKey)
+    flags |= EF_COMMAND_DOWN;
+  if (modifiers & blink::WebInputEvent::CapsLockOn)
+    flags |= EF_CAPS_LOCK_ON;
+  if (modifiers & blink::WebInputEvent::NumLockOn)
+    flags |= EF_NUM_LOCK_ON;
+  if (modifiers & blink::WebInputEvent::ScrollLockOn)
+    flags |= EF_SCROLL_LOCK_ON;
+  if (modifiers & blink::WebInputEvent::LeftButtonDown)
+    flags |= EF_LEFT_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::MiddleButtonDown)
+    flags |= EF_MIDDLE_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::RightButtonDown)
+    flags |= EF_RIGHT_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::IsAutoRepeat)
+    flags |= EF_IS_REPEAT;
+
+  return flags;
+}
+
+blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(DomCode code) {
+  switch (KeycodeConverter::DomCodeToLocation(code)) {
+    case DomKeyLocation::LEFT:
+      return blink::WebInputEvent::IsLeft;
+    case DomKeyLocation::RIGHT:
+      return blink::WebInputEvent::IsRight;
+    case DomKeyLocation::NUMPAD:
+      return blink::WebInputEvent::IsKeyPad;
+    case DomKeyLocation::STANDARD:
+      break;
+  }
+  return static_cast<blink::WebInputEvent::Modifiers>(0);
 }
 
 }  // namespace ui

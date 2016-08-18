@@ -37,9 +37,9 @@
 
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/string_util.h"
-#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/events/blink/blink_event_util.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
@@ -287,7 +287,7 @@ blink::WebKeyboardEvent WebKeyboardEventBuilder::Build(NSEvent* event) {
   ui::DomCode dom_code = ui::DomCodeFromNSEvent(event);
   result.windowsKeyCode =
       ui::LocatedToNonLocatedKeyboardCode(ui::KeyboardCodeFromNSEvent(event));
-  result.modifiers |= DomCodeToWebInputEventModifiers(dom_code);
+  result.modifiers |= ui::DomCodeToWebInputEventModifiers(dom_code);
   result.nativeKeyCode = [event keyCode];
   result.domCode = static_cast<int>(dom_code);
   result.domKey = DomKeyFromEvent(event);

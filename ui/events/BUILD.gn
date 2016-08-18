@@ -386,6 +386,7 @@ test("events_unittests") {
       "blink/input_handler_proxy_unittest.cc",
       "blink/input_scroll_elasticity_controller_unittest.cc",
       "blink/web_input_event_traits_unittest.cc",
+      "blink/web_input_event_unittest.cc",
       "devices/mojo/device_struct_traits_unittest.cc",
       "gestures/blink/web_gesture_curve_impl_unittest.cc",
       "ipc/latency_info_param_traits_unittest.cc",
@@ -396,6 +397,7 @@ test("events_unittests") {
       "//ipc:test_support",
       "//mojo/public/cpp/bindings",
       "//third_party/WebKit/public:blink_headers",
+      "//ui/display",
       "//ui/events/blink",
       "//ui/events/devices/mojo:test_interfaces",
       "//ui/events/gestures/blink",
@@ -464,6 +466,10 @@ test("events_unittests") {
 
   if (is_ios) {
     assert_no_deps = ios_assert_no_deps
+  }
+
+  if (is_win) {
+    sources += [ "blink/web_input_event_builders_win_unittest.cc" ]
   }
 }
 

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/input/scroll_elasticity_helper.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 // InputScrollElasticityController is based on
 // WebKit/Source/platform/mac/ScrollElasticityController.h

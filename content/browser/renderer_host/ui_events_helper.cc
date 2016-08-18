@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
-#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
@@ -63,7 +63,7 @@ bool MakeUITouchEventsFromWebTouchEvents(
       return false;
   }
 
-  int flags = WebEventModifiersToEventFlags(touch.modifiers);
+  int flags = ui::WebEventModifiersToEventFlags(touch.modifiers);
   base::TimeTicks timestamp =
       ui::EventTimeStampFromSeconds(touch.timeStampSeconds);
   for (unsigned i = 0; i < touch.touchesLength; ++i) {

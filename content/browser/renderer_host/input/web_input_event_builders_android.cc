@@ -7,9 +7,9 @@
 #include <android/input.h>
 
 #include "base/logging.h"
-#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "ui/events/android/key_event_utils.h"
 #include "ui/events/android/motion_event_android.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
@@ -93,7 +93,7 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(
   result.timeStampSeconds = time_sec;
   result.windowsKeyCode = ui::LocatedToNonLocatedKeyboardCode(
       ui::KeyboardCodeFromAndroidKeyCode(keycode));
-  result.modifiers |= DomCodeToWebInputEventModifiers(dom_code);
+  result.modifiers |= ui::DomCodeToWebInputEventModifiers(dom_code);
   result.nativeKeyCode = keycode;
   result.domCode = static_cast<int>(dom_code);
   result.domKey = GetDomKeyFromEvent(env, android_key_event, keycode, modifiers,
