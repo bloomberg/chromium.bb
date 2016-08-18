@@ -28,19 +28,22 @@ enum AttestationChallengeOptions {
   CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY = 1,
 };
 
-// Available attestation certificate profiles.
+// Available attestation certificate profiles. These values are sent straight
+// to cryptohomed and therefore match the values of CertificateProfile in
+// platform2/cryptohome/attestation.proto for the right certificates to be
+// returned.
 enum AttestationCertificateProfile {
   // Uses the following certificate options:
   //   CERTIFICATE_INCLUDE_STABLE_ID
   //   CERTIFICATE_INCLUDE_DEVICE_STATE
-  PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
+  PROFILE_ENTERPRISE_MACHINE_CERTIFICATE = 0,
   // Uses the following certificate options:
   //   CERTIFICATE_INCLUDE_DEVICE_STATE
-  PROFILE_ENTERPRISE_USER_CERTIFICATE,
+  PROFILE_ENTERPRISE_USER_CERTIFICATE = 1,
   // A profile for certificates intended for protected content providers.
-  PROFILE_CONTENT_PROTECTION_CERTIFICATE,
+  PROFILE_CONTENT_PROTECTION_CERTIFICATE = 2,
   // A profile for certificates intended for enterprise registration.
-  PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE
+  PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE = 7
 };
 
 enum PrivacyCAType {
