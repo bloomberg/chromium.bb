@@ -48,8 +48,6 @@ public abstract class BidirectionalStream {
         // Priority of the stream. Default is medium.
         @StreamPriority private int mPriority = STREAM_PRIORITY_MEDIUM;
 
-        // TODO(xunjieli): Remove mDisableAutoFlush and make flush() required as part of th API.
-        private boolean mDisableAutoFlush;
         private boolean mDelayRequestHeadersUntilFirstFlush;
 
         /**
@@ -164,19 +162,6 @@ public abstract class BidirectionalStream {
         }
 
         /**
-         * Disables or enables auto flush. By default, data is flushed after
-         * every {@link #write write()}. If the auto flush is disabled, the
-         * client should explicitly call {@link #flush flush()} to flush the data.
-         *
-         * @param disableAutoFlush if true, auto flush will be disabled.
-         * @return the builder to facilitate chaining.
-         */
-        public Builder disableAutoFlush(boolean disableAutoFlush) {
-            mDisableAutoFlush = disableAutoFlush;
-            return this;
-        }
-
-        /**
          * Delays sending request headers until {@link BidirectionalStream#flush()}
          * is called. This flag is currently only respected when QUIC is negotiated.
          * When true, QUIC will send request header frame along with data frame(s)
@@ -203,8 +188,7 @@ public abstract class BidirectionalStream {
         @SuppressLint("WrongConstant") // TODO(jbudorick): Remove this after rolling to the N SDK.
         public BidirectionalStream build() {
             return mCronetEngine.createBidirectionalStream(mUrl, mCallback, mExecutor, mHttpMethod,
-                    mRequestHeaders, mPriority, mDisableAutoFlush,
-                    mDelayRequestHeadersUntilFirstFlush);
+                    mRequestHeaders, mPriority, mDelayRequestHeadersUntilFirstFlush);
         }
     }
 

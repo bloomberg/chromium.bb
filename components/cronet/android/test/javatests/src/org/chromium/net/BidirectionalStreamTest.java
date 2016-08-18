@@ -246,7 +246,6 @@ public class BidirectionalStreamTest extends CronetTestBase {
         BidirectionalStream stream = new BidirectionalStream
                                              .Builder(url, callback, callback.getExecutor(),
                                                      mTestFramework.mCronetEngine)
-                                             .disableAutoFlush(true)
                                              .addHeader("foo", "bar")
                                              .addHeader("empty", "")
                                              .addHeader("Content-Type", "zebra")
@@ -325,7 +324,6 @@ public class BidirectionalStreamTest extends CronetTestBase {
         CronetBidirectionalStream stream = (CronetBidirectionalStream) new BidirectionalStream
                                                    .Builder(url, callback, callback.getExecutor(),
                                                            mTestFramework.mCronetEngine)
-                                                   .disableAutoFlush(true)
                                                    .addHeader("foo", "bar")
                                                    .addHeader("empty", "")
                                                    .addHeader("Content-Type", "zebra")
@@ -386,7 +384,6 @@ public class BidirectionalStreamTest extends CronetTestBase {
                                                  .Builder(url, callback, callback.getExecutor(),
                                                          mTestFramework.mCronetEngine)
                                                  .setHttpMethod("GET")
-                                                 .disableAutoFlush(true)
                                                  .delayRequestHeadersUntilFirstFlush(i == 0)
                                                  .addHeader("foo", "bar")
                                                  .addHeader("empty", "")
@@ -421,7 +418,6 @@ public class BidirectionalStreamTest extends CronetTestBase {
             BidirectionalStream stream = new BidirectionalStream
                                                  .Builder(url, callback, callback.getExecutor(),
                                                          mTestFramework.mCronetEngine)
-                                                 .disableAutoFlush(true)
                                                  .delayRequestHeadersUntilFirstFlush(i == 0)
                                                  .addHeader("foo", "bar")
                                                  .addHeader("empty", "")
@@ -457,7 +453,6 @@ public class BidirectionalStreamTest extends CronetTestBase {
             BidirectionalStream stream = new BidirectionalStream
                                                  .Builder(url, callback, callback.getExecutor(),
                                                          mTestFramework.mCronetEngine)
-                                                 .disableAutoFlush(true)
                                                  .delayRequestHeadersUntilFirstFlush(i == 0)
                                                  .addHeader("foo", "bar")
                                                  .addHeader("empty", "")
@@ -540,7 +535,6 @@ public class BidirectionalStreamTest extends CronetTestBase {
         BidirectionalStream stream = new BidirectionalStream
                                              .Builder(url, callback, callback.getExecutor(),
                                                      mTestFramework.mCronetEngine)
-                                             .disableAutoFlush(true)
                                              .addHeader("foo", "bar")
                                              .addHeader("empty", "")
                                              .addHeader("Content-Type", "zebra")

@@ -870,7 +870,6 @@ public abstract class CronetEngine {
      * @param priority priority of the stream which should be one of the
      *         {@link BidirectionalStream.Builder#STREAM_PRIORITY_IDLE STREAM_PRIORITY_*}
      *         values.
-     * @param disableAutoFlush whether auto flush should be disabled
      * @param delayRequestHeadersUntilFirstFlush whether to delay sending request
      *         headers until flush() is called, and try to combine them
      *         with the next data frame.
@@ -880,7 +879,7 @@ public abstract class CronetEngine {
     public abstract BidirectionalStream createBidirectionalStream(String url,
             BidirectionalStream.Callback callback, Executor executor, String httpMethod,
             List<Map.Entry<String, String>> requestHeaders,
-            @BidirectionalStream.Builder.StreamPriority int priority, boolean disableAutoFlush,
+            @BidirectionalStream.Builder.StreamPriority int priority,
             boolean delayRequestHeadersUntilFirstFlush);
 
     /**

@@ -82,7 +82,6 @@ public class CronetBidirectionalStream extends BidirectionalStream {
     private final int mInitialPriority;
     private final String mInitialMethod;
     private final String mRequestHeaders[];
-    private final boolean mDisableAutoFlush;
     private final boolean mDelayRequestHeadersUntilFirstFlush;
 
     /*
@@ -219,7 +218,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
     CronetBidirectionalStream(CronetUrlRequestContext requestContext, String url,
             @BidirectionalStream.Builder.StreamPriority int priority, Callback callback,
             Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders,
-            boolean disableAutoFlush, boolean delayRequestHeadersUntilNextFlush) {
+            boolean delayRequestHeadersUntilNextFlush) {
         mRequestContext = requestContext;
         mInitialUrl = url;
         mInitialPriority = convertStreamPriority(priority);
@@ -227,7 +226,6 @@ public class CronetBidirectionalStream extends BidirectionalStream {
         mExecutor = executor;
         mInitialMethod = httpMethod;
         mRequestHeaders = stringsFromHeaderList(requestHeaders);
-        mDisableAutoFlush = disableAutoFlush;
         mDelayRequestHeadersUntilFirstFlush = delayRequestHeadersUntilNextFlush;
         mPendingData = new LinkedList<>();
         mFlushData = new LinkedList<>();
@@ -306,52 +304,44 @@ public class CronetBidirectionalStream extends BidirectionalStream {
             if (endOfStream) {
                 mEndOfStreamWritten = true;
             }
-            if (!mDisableAutoFlush) {
-                flushLocked();
-            }
         }
     }
 
     @Override
     public void flush() {
         synchronized (mNativeStreamLock) {
-            flushLocked();
-        }
-    }
-
-    @SuppressWarnings("GuardedByChecker")
-    private void flushLocked() {
-        if (isDoneLocked()
-                || (mWriteState != State.WAITING_FOR_FLUSH && mWriteState != State.WRITING)) {
-            return;
-        }
-        if (mPendingData.isEmpty() && mFlushData.isEmpty()) {
-            // If there is no pending write when flush() is called, see if
-            // request headers need to be flushed.
-            if (!mRequestHeadersSent) {
-                mRequestHeadersSent = true;
-                nativeSendRequestHeaders(mNativeStream);
-                if (!doesMethodAllowWriteData(mInitialMethod)) {
-                    mWriteState = State.WRITING_DONE;
-                }
+            if (isDoneLocked()
+                    || (mWriteState != State.WAITING_FOR_FLUSH && mWriteState != State.WRITING)) {
+                return;
             }
-            return;
-        }
+            if (mPendingData.isEmpty() && mFlushData.isEmpty()) {
+                // If there is no pending write when flush() is called, see if
+                // request headers need to be flushed.
+                if (!mRequestHeadersSent) {
+                    mRequestHeadersSent = true;
+                    nativeSendRequestHeaders(mNativeStream);
+                    if (!doesMethodAllowWriteData(mInitialMethod)) {
+                        mWriteState = State.WRITING_DONE;
+                    }
+                }
+                return;
+            }
 
-        assert !mPendingData.isEmpty() || !mFlushData.isEmpty();
+            assert !mPendingData.isEmpty() || !mFlushData.isEmpty();
 
-        // Move buffers from mPendingData to the flushing queue.
-        if (!mPendingData.isEmpty()) {
-            mFlushData.addAll(mPendingData);
-            mPendingData.clear();
-        }
+            // Move buffers from mPendingData to the flushing queue.
+            if (!mPendingData.isEmpty()) {
+                mFlushData.addAll(mPendingData);
+                mPendingData.clear();
+            }
 
-        if (mWriteState == State.WRITING) {
-            // If there is a write already pending, wait until onWritevCompleted is
-            // called before pushing data to the native stack.
-            return;
+            if (mWriteState == State.WRITING) {
+                // If there is a write already pending, wait until onWritevCompleted is
+                // called before pushing data to the native stack.
+                return;
+            }
+            sendFlushDataLocked();
         }
-        sendFlushDataLocked();
     }
 
     // Helper method to send buffers in mFlushData. Caller needs to acquire
@@ -373,6 +363,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
         assert mFlushData.isEmpty();
         assert buffers.length >= 1;
         mWriteState = State.WRITING;
+        mRequestHeadersSent = true;
         if (!nativeWritevData(mNativeStream, buffers, positions, limits,
                     mEndOfStreamWritten && mPendingData.isEmpty())) {
             // Still waiting on flush. This is just to have consistent
