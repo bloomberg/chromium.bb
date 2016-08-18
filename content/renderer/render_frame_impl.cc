@@ -4888,9 +4888,11 @@ void RenderFrameImpl::OnFailedNavigation(
       frame_->isViewSourceModeEnabled());
   SendFailedProvisionalLoad(failed_request, error, frame_);
 
-  // This check should have been done on the browser side already.
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
-    NOTREACHED();
+    // The browser expects this frame to be loading an error page. Inform it
+    // that the load stopped.
+    if (!frame_->isLoading())
+      Send(new FrameHostMsg_DidStopLoading(routing_id_));
     return;
   }
 
