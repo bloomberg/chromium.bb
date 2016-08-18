@@ -196,8 +196,7 @@ var onLearnMore = function(event) {
 function setMetricsMode(text, canEnable, on) {
   var doc = appWindow.contentWindow.document;
   var enableMetrics = doc.getElementById('enable-metrics');
-  var enableMetricsContainer = doc.getElementById('enable-metrics-container');
-  enableMetricsContainer.hidden = !canEnable;
+  enableMetrics.hidden = !canEnable;
   enableMetrics.checked = on;
 
   var onSettings = function(event) {
@@ -557,9 +556,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
       termsAccepted = true;
 
       var enableMetrics = doc.getElementById('enable-metrics');
-      var enableMetricsContainer =
-          doc.getElementById('enable-metrics-container');
-      if (!enableMetricsContainer.hidden) {
+      if (!enableMetrics.hidden) {
         sendNativeMessage('enableMetrics', {
           'enabled': enableMetrics.checked
         });
