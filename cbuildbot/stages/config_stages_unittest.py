@@ -13,8 +13,8 @@ from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 
-class CheckTemplateStageTest(
-    generic_stages_unittest.AbstractStageTestCase):
+
+class CheckTemplateStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for CheckTemplateStage."""
 
   TOT_PATH = (config_stages.GS_GE_TEMPLATE_BUCKET +
@@ -51,8 +51,8 @@ class CheckTemplateStageTest(
     # Only self.R54_PATH is qualified.
     self.assertTrue(len(paths) == 1)
 
-class UpdateConfigStageTest(
-    generic_stages_unittest.AbstractStageTestCase):
+
+class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for UpdateConfigStage."""
 
   def setUp(self):
