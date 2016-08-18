@@ -21,6 +21,11 @@ namespace ntp_snippets {
 
 namespace {
 
+struct RecentBookmark {
+  const bookmarks::BookmarkNode* node;
+  bool visited_recently;
+};
+
 const char kBookmarkLastVisitDateKey[] = "last_visited";
 const char kBookmarkDismissedFromNTP[] = "dismissed_from_ntp";
 
@@ -59,20 +64,26 @@ void UpdateBookmarkOnURLVisitedInMainFrame(BookmarkModel* bookmark_model,
   }
 }
 
-base::Time GetLastVisitDateForBookmark(const BookmarkNode* node) {
+base::Time GetLastVisitDateForBookmark(const BookmarkNode* node,
+                                       bool creation_date_fallback) {
   if (!node)
     return base::Time::UnixEpoch();
 
   std::string last_visit_date_string;
-  node->GetMetaInfo(kBookmarkLastVisitDateKey, &last_visit_date_string);
+  if (!node->GetMetaInfo(kBookmarkLastVisitDateKey, &last_visit_date_string) &&
+      creation_date_fallback)
+    return node->date_added();
+
   return ParseLastVisitDate(last_visit_date_string);
 }
 
-base::Time GetLastVisitDateForBookmarkIfNotDismissed(const BookmarkNode* node) {
+base::Time GetLastVisitDateForBookmarkIfNotDismissed(
+    const BookmarkNode* node,
+    bool creation_date_fallback) {
   if (IsDismissedFromNTPForBookmark(node))
     return base::Time::UnixEpoch();
 
-  return GetLastVisitDateForBookmark(node);
+  return GetLastVisitDateForBookmark(node, creation_date_fallback);
 }
 
 void MarkBookmarksDismissed(BookmarkModel* bookmark_model, const GURL& url) {
@@ -109,49 +120,64 @@ void MarkAllBookmarksUndismissed(BookmarkModel* bookmark_model) {
 
 std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
     BookmarkModel* bookmark_model,
+    int min_count,
     int max_count,
     const base::Time& min_visit_time) {
   // Get all the bookmark URLs.
-  std::vector<BookmarkModel::URLAndTitle> bookmarks;
-  bookmark_model->GetBookmarks(&bookmarks);
+  std::vector<BookmarkModel::URLAndTitle> bookmark_urls;
+  bookmark_model->GetBookmarks(&bookmark_urls);
 
-  // Remove the URLs for that no bookmark has a recent visit (more recent than
-  // |min_visit_time|). Recent visits to dismissed bookmarks are not considered.
-  bookmarks.erase(
-      std::remove_if(bookmarks.begin(), bookmarks.end(),
-                     [&bookmark_model, &min_visit_time](
-                         const BookmarkModel::URLAndTitle& bookmark) {
-                       // Get all bookmarks for the given URL.
-                       std::vector<const BookmarkNode*> bookmarks_for_url;
-                       bookmark_model->GetNodesByURL(bookmark.url,
-                                                     &bookmarks_for_url);
+  std::vector<RecentBookmark> bookmarks;
+  int recently_visited_count = 0;
+  // Find for each bookmark the most recently visited BookmarkNode and find out
+  // whether it is visited since |min_visit_time|.
+  for (const BookmarkModel::URLAndTitle& url_and_title : bookmark_urls) {
+    // Get all bookmarks for the given URL.
+    std::vector<const BookmarkNode*> bookmarks_for_url;
+    bookmark_model->GetNodesByURL(url_and_title.url, &bookmarks_for_url);
 
-                       // Keep if at least one (non-dismissed) bookmark has been
-                       // recently visited.
-                       for (const BookmarkNode* node : bookmarks_for_url) {
-                         if (GetLastVisitDateForBookmarkIfNotDismissed(node) >
-                             min_visit_time)
-                           return false;
-                       }
-                       // Otherwise erase this URL.
-                       return true;
-                     }),
-      bookmarks.end());
+    // Find the most recent node (minimal w.r.t.
+    // CompareBookmarksByLastVisitDate).
+    std::vector<const BookmarkNode*>::iterator most_recent =
+        std::min_element(bookmarks_for_url.begin(), bookmarks_for_url.end(),
+                         &CompareBookmarksByLastVisitDate);
+    if (most_recent == bookmarks_for_url.end())
+      continue;
+    const BookmarkNode* node = *most_recent;
 
-  // Sort the remaining bookmarks by date.
+    // Find out if it has been _visited_ recently enough.
+    if (GetLastVisitDateForBookmarkIfNotDismissed(
+            node, /*creation_date_fallback=*/false) > min_visit_time) {
+      recently_visited_count++;
+      bookmarks.push_back({node, true});
+    } else {
+      bookmarks.push_back({node, false});
+    }
+  }
+
+  if (recently_visited_count < min_count) {
+    // Fill the list up to |min_count| but do not display more.
+    max_count = min_count;
+  } else {
+    // Remove the bookmarks that are not recently visited; we do no need them.
+    bookmarks.erase(
+        std::remove_if(bookmarks.begin(), bookmarks.end(),
+                       [](const RecentBookmark& bookmark) {
+                         return !bookmark.visited_recently;
+                       }),
+        bookmarks.end());
+  }
+
+  // Sort the remaining entries by date.
   std::sort(bookmarks.begin(), bookmarks.end(),
-            [&bookmark_model](const BookmarkModel::URLAndTitle& a,
-                              const BookmarkModel::URLAndTitle& b) {
-              return CompareBookmarksByLastVisitDate(
-                  bookmark_model->GetMostRecentlyAddedUserNodeForURL(a.url),
-                  bookmark_model->GetMostRecentlyAddedUserNodeForURL(b.url));
+            [](const RecentBookmark& a, const RecentBookmark& b) {
+              return CompareBookmarksByLastVisitDate(a.node, b.node);
             });
 
   // Insert the first |max_count| items from |bookmarks| into |result|.
   std::vector<const BookmarkNode*> result;
-  for (const BookmarkModel::URLAndTitle& bookmark : bookmarks) {
-    result.push_back(
-        bookmark_model->GetMostRecentlyAddedUserNodeForURL(bookmark.url));
+  for (const RecentBookmark& bookmark : bookmarks) {
+    result.push_back(bookmark.node);
     if (result.size() >= static_cast<size_t>(max_count))
       break;
   }

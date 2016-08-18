@@ -28,9 +28,11 @@ using bookmarks::BookmarkNode;
 namespace {
 
 const int kMaxBookmarks = 10;
+const int kMinBookmarks = 3;
 const int kMaxBookmarkAgeInDays = 42;
 
 const char* kMaxBookmarksParamName = "max_count";
+const char* kMinBookmarksParamName = "min_count";
 const char* kMaxBookmarkAgeInDaysParamName = "max_age_in_days";
 
 base::Time GetThresholdTime() {
@@ -45,12 +47,22 @@ base::Time GetThresholdTime() {
 
 int GetMaxCount() {
   std::string max_count_string = variations::GetVariationParamValueByFeature(
-    ntp_snippets::kBookmarkSuggestionsFeature, kMaxBookmarksParamName);
+      ntp_snippets::kBookmarkSuggestionsFeature, kMaxBookmarksParamName);
   int max_count = 0;
   if (base::StringToInt(max_count_string, &max_count))
     return max_count;
 
   return kMaxBookmarks;
+}
+
+int GetMinCount() {
+  std::string min_count_string = variations::GetVariationParamValueByFeature(
+      ntp_snippets::kBookmarkSuggestionsFeature, kMinBookmarksParamName);
+  int min_count = 0;
+  if (base::StringToInt(min_count_string, &min_count))
+    return min_count;
+
+  return kMinBookmarks;
 }
 
 }  // namespace
@@ -201,7 +213,8 @@ void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
 
   base::Time threshold_time = GetThresholdTime();
   std::vector<const BookmarkNode*> bookmarks = GetRecentlyVisitedBookmarks(
-      bookmark_model_, GetMaxCount(), threshold_time);
+      bookmark_model_, GetMinCount(), GetMaxCount(),
+      threshold_time);
 
   std::vector<ContentSuggestion> suggestions;
   for (const BookmarkNode* bookmark : bookmarks)
