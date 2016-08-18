@@ -1461,7 +1461,12 @@ class Changelist(object):
     # This is because lots of untested code accesses Rietveld-specific stuff
     # directly, and it's hard to fix for sure. So, just let it work, and fix
     # on a case by case basis.
-    return getattr(self._codereview_impl, attr)
+    # Note that child method defines __getattr__ as well, and forwards it here,
+    # because _RietveldChangelistImpl is not cleaned up yet, and given
+    # deprecation of Rietveld, it should probably be just removed.
+    # Until that time, avoid infinite recursion by bypassing __getattr__
+    # of implementation class.
+    return self._codereview_impl.__getattribute__(attr)
 
 
 class _ChangelistCodereviewBase(object):
