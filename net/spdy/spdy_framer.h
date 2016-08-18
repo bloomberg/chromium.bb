@@ -535,12 +535,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     recv_frame_size_limit_ = recv_frame_size_limit;
   }
 
-  void SetDecoderHeaderTableDebugVisitor(
-      std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor);
-
-  void SetEncoderHeaderTableDebugVisitor(
-      std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor);
-
   // Returns the (minimum) size of frames (sans variable-length portions).
   size_t GetDataFrameMinimumSize() const;
   size_t GetFrameHeaderSize() const;
@@ -596,6 +590,12 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Returns the maximum size of the header encoder compression table.
   size_t header_encoder_table_size() const;
+
+  void SetDecoderHeaderTableDebugVisitor(
+      std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor);
+
+  void SetEncoderHeaderTableDebugVisitor(
+      std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor);
 
   // For testing support (i.e. for clients and backends),
   // allow overriding the flag on a per framer basis.
