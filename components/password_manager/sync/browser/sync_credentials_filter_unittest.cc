@@ -128,7 +128,6 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
         &password_manager_, &client_, driver_.AsWeakPtr(), pending,
         base::WrapUnique(new StubFormSaver)));
 
-    form_manager->FetchDataFromPasswordStore();
     ScopedVector<PasswordForm> saved_forms;
     if (login_state == LoginState::EXISTING) {
       saved_forms.push_back(new PasswordForm(pending));

@@ -121,7 +121,6 @@ ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
           &password_manager_, &stub_client_, driver_.AsWeakPtr(),
           test_local_form(),
           base::WrapUnique(new password_manager::StubFormSaver)));
-  test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   if (include_federated) {
     test_stored_forms_.push_back(
         new autofill::PasswordForm(test_local_federated_form()));

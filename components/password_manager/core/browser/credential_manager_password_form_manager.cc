@@ -32,7 +32,6 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
       delegate_(delegate),
       saved_form_(std::move(saved_form)) {
   DCHECK(saved_form_);
-  FetchDataFromPasswordStore();
 }
 
 CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() {

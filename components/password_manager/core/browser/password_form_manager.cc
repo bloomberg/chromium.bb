@@ -214,6 +214,7 @@ PasswordFormManager::PasswordFormManager(
             driver != nullptr);
   if (driver)
     drivers_.push_back(driver);
+  FetchDataFromPasswordStore();
 }
 
 PasswordFormManager::~PasswordFormManager() {
@@ -430,7 +431,9 @@ void PasswordFormManager::FetchDataFromPasswordStore() {
   if (!password_store) {
     if (logger)
       logger->LogMessage(Logger::STRING_NO_STORE);
-    NOTREACHED();
+    // TODO(crbug.com/621355): The store might be empty in some tests. Start
+    // enforcing the presence of a (non-null) PasswordStore once FormFetcher is
+    // fetching the credentials instead of PasswordFormManager.
     return;
   }
   password_store->GetLogins(PasswordStore::FormDigest(observed_form_), this);

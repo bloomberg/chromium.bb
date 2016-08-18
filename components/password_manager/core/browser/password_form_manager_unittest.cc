@@ -437,9 +437,12 @@ class PasswordFormManagerTest : public testing::Test {
         .WillByDefault(Return(std::vector<InteractionsStats*>()));
     client_.reset(new TestPasswordManagerClient(mock_store_.get()));
     password_manager_.reset(new PasswordManager(client_.get()));
+    EXPECT_CALL(*mock_store_,
+                GetLogins(PasswordStore::FormDigest(observed_form_), _));
     form_manager_.reset(new PasswordFormManager(
         password_manager_.get(), client_.get(), client_.get()->driver(),
         observed_form_, base::WrapUnique(new NiceMock<MockFormSaver>())));
+    Mock::VerifyAndClearExpectations(mock_store_.get());
   }
 
   void TearDown() override {
@@ -451,9 +454,6 @@ class PasswordFormManagerTest : public testing::Test {
 
   void SimulateMatchingPhase(PasswordFormManager* p,
                              ResultOfSimulatedMatchingMask result) {
-    EXPECT_CALL(*mock_store(),
-                GetLogins(PasswordStore::FormDigest(p->observed_form()), p));
-    p->FetchDataFromPasswordStore();
     if (result == RESULT_NO_MATCH) {
       p->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
       return;
@@ -502,7 +502,6 @@ class PasswordFormManagerTest : public testing::Test {
             ? result[0]->username_element
             : base::string16();
 
-    form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
     form_manager.OnGetPasswordStoreResults(std::move(result));
     std::string expected_login_signature;
     autofill::FormStructure observed_structure(observed_form_data);
@@ -693,7 +692,6 @@ class PasswordFormManagerTest : public testing::Test {
         base::WrapUnique(new NiceMock<MockFormSaver>()));
 
     ScopedVector<PasswordForm> result;
-    form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
     form_manager.OnGetPasswordStoreResults(std::move(result));
 
     autofill::ServerFieldTypeSet expected_available_field_types;
@@ -873,7 +871,6 @@ TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
   PasswordFormManager form_manager(password_manager(), client(),
                                    client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
-  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
 
   // Doesn't match because of PSL.
   PasswordForm blacklisted_psl = *observed_form();
@@ -933,8 +930,6 @@ TEST_F(PasswordFormManagerTest, AutofillBlacklisted) {
   ScopedVector<PasswordForm> result;
   result.push_back(new PasswordForm(saved_form));
   result.push_back(new PasswordForm(blacklisted));
-
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
 
   autofill::PasswordFormFillData fill_data;
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
@@ -1147,7 +1142,6 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult_Paths) {
   saved_form.action = GURL("https://accounts.google.com/a/OtherLogin");
   ScopedVector<PasswordForm> result;
   result.push_back(new PasswordForm(saved_form));
-  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager.OnGetPasswordStoreResults(std::move(result));
 
   // Different paths for action / origin are okay.
@@ -1168,7 +1162,6 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult_IgnoredCredentials) {
   PasswordForm saved_form = observed;
   ScopedVector<PasswordForm> result;
   result.push_back(new PasswordForm(saved_form));
-  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager.OnGetPasswordStoreResults(std::move(result));
 
   // Results should be ignored if the client requests it.
@@ -1231,7 +1224,6 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
 
   ScopedVector<PasswordForm> result;
   result.push_back(new PasswordForm(saved_form));
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager()->OnGetPasswordStoreResults(std::move(result));
 
   // The saved match has the right username already.
@@ -1268,7 +1260,6 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_OtherUsername) {
 
   ScopedVector<PasswordForm> result;
   result.push_back(new PasswordForm(saved_form));
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager()->OnGetPasswordStoreResults(std::move(result));
 
   // The saved match has the right username already.
@@ -1303,7 +1294,6 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage_NoCredentials) {
   // "not blacklisted" message.
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager()->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
 }
 
@@ -1313,7 +1303,6 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage_Credentials) {
   // should be called to send the "not blacklisted" message.
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<PasswordForm> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
@@ -1332,7 +1321,6 @@ TEST_F(PasswordFormManagerTest,
                                    base::WrapUnique(new MockFormSaver()));
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
-  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<PasswordForm> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
   form_manager.OnGetPasswordStoreResults(std::move(simulated_results));
@@ -1344,7 +1332,6 @@ TEST_F(PasswordFormManagerTest,
   // password store, but they are blacklisted. AllowPasswordGenerationForForm
   // is still called.
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<PasswordForm> simulated_results;
   simulated_results.push_back(CreateSavedMatch(true));
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
@@ -1375,8 +1362,6 @@ TEST_F(PasswordFormManagerTest, TestBestCredentialsByEachUsernameAreIncluded) {
   simulated_results.push_back(new PasswordForm(*psl_saved_match()));
   auto username2 = simulated_results[0]->username_value + ASCIIToUTF16("2");
   simulated_results[4]->username_value = username2;
-
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
 
   autofill::PasswordFormFillData fill_data;
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
@@ -1410,7 +1395,6 @@ TEST_F(PasswordFormManagerTest,
   simulated_results[0]->password_element = ASCIIToUTF16("signup_password");
   simulated_results[0]->username_element = ASCIIToUTF16("signup_username");
   simulated_results[0]->type = PasswordForm::TYPE_GENERATED;
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
 
   autofill::PasswordFormFillData fill_data;
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
@@ -1424,7 +1408,6 @@ TEST_F(PasswordFormManagerTest,
 TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   const base::string16 kUsernameOther = ASCIIToUTF16("other username");
 
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager()->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
 
   PasswordForm credentials(*observed_form());
@@ -1455,7 +1438,6 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernamesDuplicates) {
   const base::string16 kUsernameDuplicate = ASCIIToUTF16("duplicate");
   const base::string16 kUsernameRandom = ASCIIToUTF16("random");
 
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager()->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
 
   PasswordForm credentials(*observed_form());
@@ -1498,11 +1480,6 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   PasswordFormManager form_manager(password_manager(), client(),
                                    client()->driver(), encountered_form,
                                    base::WrapUnique(new MockFormSaver()));
-
-  EXPECT_CALL(
-      *mock_store(),
-      GetLogins(PasswordStore::FormDigest(encountered_form), &form_manager));
-  form_manager.FetchDataFromPasswordStore();
 
   // Password store only has these incomplete credentials.
   std::unique_ptr<PasswordForm> incomplete_form(new PasswordForm());
@@ -1559,7 +1536,6 @@ TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
       GURL("http://accounts.google.com/a/ServiceLoginAuth2");
   simulated_results[1]->action =
       GURL("http://accounts.google.com/a/ServiceLogin2");
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
 
   autofill::PasswordFormFillData fill_data;
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
@@ -1593,7 +1569,6 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreAutofilled) {
 
   ScopedVector<PasswordForm> simulated_results;
   simulated_results.push_back(new PasswordForm(android_login));
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
   EXPECT_TRUE(fill_data.additional_logins.empty());
   EXPECT_FALSE(fill_data.wait_for_username);
@@ -1661,7 +1636,6 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreProtected) {
   autofill::PasswordFormFillData fill_data;
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
       .WillOnce(SaveArg<0>(&fill_data));
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
 
   EXPECT_FALSE(fill_data.wait_for_username);
@@ -1802,7 +1776,6 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
   ScopedVector<PasswordForm> result;
   result.push_back(new PasswordForm(first));
   result.push_back(new PasswordForm(second));
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager()->OnGetPasswordStoreResults(std::move(result));
 
   // We always take the first credential with a particular username, regardless
@@ -1912,7 +1885,6 @@ TEST_F(PasswordFormManagerTest, UploadPasswordForm) {
 TEST_F(PasswordFormManagerTest, CorrectlySavePasswordWithoutUsernameFields) {
   EXPECT_CALL(*client()->mock_driver(), AllowPasswordGenerationForForm(_));
 
-  form_manager()->SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager()->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
 
   PasswordForm login(*observed_form());
@@ -1956,10 +1928,6 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
                                    client()->driver(), *form,
                                    base::WrapUnique(new MockFormSaver()));
 
-  EXPECT_CALL(*mock_store(),
-              GetLogins(PasswordStore::FormDigest(*form), &form_manager));
-  form_manager.FetchDataFromPasswordStore();
-
   // Suddenly, the frame and its driver disappear.
   client()->KillDriver();
 
@@ -1970,11 +1938,6 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
 
 TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
   // Check that preferred_match() is always a member of best_matches().
-  EXPECT_CALL(
-      *mock_store(),
-      GetLogins(PasswordStore::FormDigest(*observed_form()), form_manager()));
-  form_manager()->FetchDataFromPasswordStore();
-
   ScopedVector<PasswordForm> simulated_results;
   std::unique_ptr<PasswordForm> form(new PasswordForm(*observed_form()));
   form->username_value = ASCIIToUTF16("username");
@@ -2104,7 +2067,6 @@ TEST_F(PasswordFormManagerTest, TestSuggestingPasswordChangeForms) {
   PasswordFormManager manager_creds(
       password_manager(), client(), client()->driver(),
       observed_change_password_form, base::WrapUnique(new MockFormSaver()));
-  manager_creds.SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<PasswordForm> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
 
@@ -2254,10 +2216,8 @@ TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {
   PasswordFormManager form_manager(password_manager(), client(),
                                    client()->driver(), form,
                                    base::WrapUnique(new MockFormSaver()));
-
-  // Do not notify the store observer after this GetLogins call.
-  EXPECT_CALL(*mock_store(), GetLogins(_, _));
-  form_manager.FetchDataFromPasswordStore();
+  // The creation of |form_manager| caused a GetLogins call. This test does not
+  // provide the callback for that call back to |form_manager| on purpose.
 
   PasswordForm submitted_form(form);
   submitted_form.password_value += ASCIIToUTF16("add stuff, make it different");
@@ -2273,11 +2233,6 @@ TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {
 }
 
 TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
-  EXPECT_CALL(
-      *mock_store(),
-      GetLogins(PasswordStore::FormDigest(*observed_form()), form_manager()));
-  form_manager()->FetchDataFromPasswordStore();
-
   std::unique_ptr<PasswordForm> generated_form(
       new PasswordForm(*observed_form()));
   generated_form->type = PasswordForm::TYPE_GENERATED;
@@ -2305,11 +2260,6 @@ TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
 
 TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
   base::HistogramTester histogram_tester;
-
-  EXPECT_CALL(
-      *mock_store(),
-      GetLogins(PasswordStore::FormDigest(*observed_form()), form_manager()));
-  form_manager()->FetchDataFromPasswordStore();
 
   std::unique_ptr<PasswordForm> generated_form(
       new PasswordForm(*observed_form()));
@@ -2339,11 +2289,6 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
 
 TEST_F(PasswordFormManagerTest,
        FetchMatchingLoginsFromPasswordStore_Reentrance) {
-  EXPECT_CALL(
-      *mock_store(),
-      GetLogins(PasswordStore::FormDigest(form_manager()->observed_form()),
-                form_manager()))
-      .Times(2);
   form_manager()->FetchDataFromPasswordStore();
   form_manager()->FetchDataFromPasswordStore();
 
@@ -2352,6 +2297,11 @@ TEST_F(PasswordFormManagerTest,
   saved_form->username_value = ASCIIToUTF16("a@gmail.com");
   ScopedVector<PasswordForm> results;
   results.push_back(std::move(saved_form));
+  // Expect the additional call for GetLogins after the first response arrives.
+  EXPECT_CALL(
+      *mock_store(),
+      GetLogins(PasswordStore::FormDigest(form_manager()->observed_form()),
+                form_manager()));
   form_manager()->OnGetPasswordStoreResults(std::move(results));
   EXPECT_TRUE(form_manager()->best_matches().empty());
 
@@ -2391,12 +2341,8 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_DriverBeforeMatching) {
 
   EXPECT_CALL(extra_driver, FillPasswordForm(_));
 
-  // Ask store for logins, but store should not respond yet.
-  EXPECT_CALL(
-      *mock_store(),
-      GetLogins(PasswordStore::FormDigest(form_manager()->observed_form()),
-                form_manager()));
-  form_manager()->FetchDataFromPasswordStore();
+  // The PasswordStore was asked store for logins when |form_manager()| was
+  // created, but should not respond yet.
 
   // Now add the extra driver.
   form_manager()->ProcessFrame(extra_driver.AsWeakPtr());
@@ -2411,6 +2357,7 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_DriverBeforeMatching) {
 TEST_F(PasswordFormManagerTest, ProcessFrame_StoreUpdatesCausesAutofill) {
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_)).Times(2);
   SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
+  form_manager()->FetchDataFromPasswordStore();
   SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH);
 }
 
@@ -2620,9 +2567,6 @@ TEST_F(PasswordFormManagerTest, FetchStatistics) {
   stats.origin_domain = observed_form()->origin.GetOrigin();
   stats.username_value = saved_match()->username_value;
   stats.dismissal_count = 5;
-  EXPECT_CALL(
-      *mock_store(),
-      GetLogins(PasswordStore::FormDigest(*observed_form()), form_manager()));
   std::vector<InteractionsStats*> db_stats;
   db_stats.push_back(new InteractionsStats(stats));
   EXPECT_CALL(*mock_store(), GetSiteStatsMock(stats.origin_domain))
@@ -2635,6 +2579,10 @@ TEST_F(PasswordFormManagerTest, FetchStatistics) {
 }
 #else
 TEST_F(PasswordFormManagerTest, DontFetchStatistics) {
+  // Because |form_manager()| is currently waiting for a PasswordStore response,
+  // the response needs to be faked in order to be able to re-request another
+  // one below.
+  form_manager()->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
   EXPECT_CALL(
       *mock_store(),
       GetLogins(PasswordStore::FormDigest(*observed_form()), form_manager()));
@@ -2859,7 +2807,6 @@ TEST_F(PasswordFormManagerTest, FormClassifierVoteUpload) {
       form_manager.SaveGenerationFieldDetectedByClassifier(base::string16());
 
     ScopedVector<PasswordForm> result;
-    form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
     form_manager.OnGetPasswordStoreResults(std::move(result));
 
     autofill::FormStructure form_structure(submitted_form.form_data);
@@ -2890,7 +2837,6 @@ TEST_F(PasswordFormManagerTest, FieldPropertiesMasksUpload) {
       password_manager(), client(), client()->driver(), form,
       base::WrapUnique(new NiceMock<MockFormSaver>()));
   ScopedVector<PasswordForm> result;
-  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager.OnGetPasswordStoreResults(std::move(result));
 
   DCHECK_EQ(3U, form.form_data.fields.size());
@@ -2959,12 +2905,6 @@ TEST_F(PasswordFormManagerTest, FederatedCredentialsFiltered) {
   federated.federation_origin =
       url::Origin(GURL("https://accounts.google.com"));
 
-  EXPECT_CALL(
-      *mock_store(),
-      GetLogins(PasswordStore::FormDigest(form_manager()->observed_form()),
-                form_manager()));
-  form_manager()->FetchDataFromPasswordStore();
-
   ScopedVector<PasswordForm> results;
   results.push_back(new PasswordForm(federated));
   results.push_back(new PasswordForm(*saved_match()));
@@ -2991,7 +2931,6 @@ TEST_F(PasswordFormManagerTest, ProbablyAccountCreationUpload) {
   form_to_save.password_value = saved_match()->password_value;
   form_to_save.does_look_like_signup_form = true;
 
-  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<PasswordForm> result;
   form_manager.OnGetPasswordStoreResults(std::move(result));
 

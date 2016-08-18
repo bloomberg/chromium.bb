@@ -77,7 +77,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
   MatchResultMask DoesManage(const autofill::PasswordForm& form) const;
 
   // Retrieves potential matching logins from the database. In addition the
-  // statistics is retrived on platforms with the password bubble.
+  // statistics is retrived on platforms with the password bubble. This is
+  // called automatically during construction and can be called manually later
+  // as well to cause an update of the cached credentials.
   void FetchDataFromPasswordStore();
 
   // Simple state-check to verify whether this object as received a callback
@@ -223,13 +225,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   blacklisted_matches() const {
     return blacklisted_matches_;
   }
-
-#if defined(UNIT_TEST)
-  void SimulateFetchMatchingLoginsFromPasswordStore() {
-    // Just need to update the internal states.
-    state_ = MATCHING_PHASE;
-  }
-#endif
 
   const std::vector<std::unique_ptr<InteractionsStats>>& interactions_stats()
       const {
