@@ -66,6 +66,16 @@ public class NewTabPageAdapterTest {
             mCategoryInfo.put(category, info);
         }
 
+        public void fireSuggestionInvalidated(@CategoryInt int category, String suggestionId) {
+            for (SnippetArticle suggestion : mSuggestions.get(category)) {
+                if (suggestion.mId.equals(suggestionId)) {
+                    mSuggestions.get(category).remove(suggestion);
+                    break;
+                }
+            }
+            mObserver.onSuggestionInvalidated(category, suggestionId);
+        }
+
         public void silentlyRemoveCategory(int category) {
             mSuggestions.remove(category);
             mCategoryStatus.remove(category);
@@ -417,6 +427,9 @@ public class NewTabPageAdapterTest {
         assertItemsFor();
     }
 
+    /**
+     * Tests that the more button is shown for sections that declare it.
+     */
     @Test
     @Feature({"Ntp"})
     public void testMoreButton() {
@@ -432,6 +445,23 @@ public class NewTabPageAdapterTest {
         mSnippetsSource.setStatusForCategory(KnownCategories.BOOKMARKS, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.BOOKMARKS, bookmarks);
         assertItemsFor(sectionWithMoreButton(10), section(3));
+    }
+
+    /**
+     * Tests that invalidated suggestions are immediately removed.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testSuggestionInvalidated() {
+        List<SnippetArticle> articles = createDummySnippets(3);
+        mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
+        mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, articles);
+        assertItemsFor(section(3));
+        assertEquals(articles, mNtpAdapter.getItems().subList(2, 5));
+
+        SnippetArticle removed = articles.remove(1);
+        mSnippetsSource.fireSuggestionInvalidated(KnownCategories.ARTICLES, removed.mId);
+        assertEquals(articles, mNtpAdapter.getItems().subList(2, 4));
     }
 
     private List<SnippetArticle> createDummySnippets(int count) {

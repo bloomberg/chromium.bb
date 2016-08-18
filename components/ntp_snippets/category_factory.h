@@ -13,7 +13,7 @@
 
 namespace ntp_snippets {
 
-// Creates and orders Category instancesCategory.
+// Creates and orders Category instances.
 class CategoryFactory {
  public:
   CategoryFactory();

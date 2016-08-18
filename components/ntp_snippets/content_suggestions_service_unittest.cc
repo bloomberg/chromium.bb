@@ -87,6 +87,11 @@ class MockProvider : public ContentSuggestionsProvider {
     observer()->OnCategoryStatusChanged(this, category, new_status);
   }
 
+  void FireSuggestionInvalidated(Category category,
+                                 const std::string& suggestion_id) {
+    observer()->OnSuggestionInvalidated(this, category, suggestion_id);
+  }
+
   MOCK_METHOD1(ClearCachedSuggestionsForDebugging, void(Category category));
   MOCK_METHOD1(GetDismissedSuggestionsForDebugging,
                std::vector<ContentSuggestion>(Category category));
@@ -106,6 +111,8 @@ class MockServiceObserver : public ContentSuggestionsService::Observer {
   MOCK_METHOD1(OnNewSuggestions, void(Category category));
   MOCK_METHOD2(OnCategoryStatusChanged,
                void(Category changed_category, CategoryStatus new_status));
+  MOCK_METHOD2(OnSuggestionInvalidated,
+               void(Category category, const std::string& suggestion_id));
   MOCK_METHOD0(ContentSuggestionsServiceShutdown, void());
   ~MockServiceObserver() override {}
 };
@@ -261,7 +268,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectFetchSuggestionImage) {
   provider1->FireSuggestionsChanged(articles_category, {1});
   std::string suggestion_id = CreateSuggestion(1).id();
 
-  EXPECT_CALL(*provider1, FetchSuggestionImage(suggestion_id, _)).Times(1);
+  EXPECT_CALL(*provider1, FetchSuggestionImage(suggestion_id, _));
   EXPECT_CALL(*provider2, FetchSuggestionImage(_, _)).Times(0);
   service()->FetchSuggestionImage(
       suggestion_id, base::Bind(&ContentSuggestionsServiceTest::OnImageFetched,
@@ -295,8 +302,37 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDismissSuggestion) {
   std::string suggestion_id = CreateSuggestion(11).id();
 
   EXPECT_CALL(*provider1, DismissSuggestion(_)).Times(0);
-  EXPECT_CALL(*provider2, DismissSuggestion(suggestion_id)).Times(1);
+  EXPECT_CALL(*provider2, DismissSuggestion(suggestion_id));
   service()->DismissSuggestion(suggestion_id);
+}
+
+TEST_F(ContentSuggestionsServiceTest, ShouldRedirectSuggestionInvalidated) {
+  Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
+
+  MockProvider* provider = MakeProvider(articles_category);
+  MockServiceObserver observer;
+  service()->AddObserver(&observer);
+
+  provider->FireSuggestionsChanged(articles_category, {11, 12, 13});
+  ExpectThatSuggestionsAre(articles_category, {11, 12, 13});
+
+  std::string suggestion_id = CreateSuggestion(12).id();
+  EXPECT_CALL(observer,
+              OnSuggestionInvalidated(articles_category, suggestion_id));
+  provider->FireSuggestionInvalidated(articles_category, suggestion_id);
+  ExpectThatSuggestionsAre(articles_category, {11, 13});
+  Mock::VerifyAndClearExpectations(&observer);
+
+  // Unknown IDs must be forwarded (though no change happens to the service's
+  // internal data structures) because previously opened UIs, which can still
+  // show the invalidated suggestion, must be notified.
+  std::string unknown_id = CreateSuggestion(1234).id();
+  EXPECT_CALL(observer, OnSuggestionInvalidated(articles_category, unknown_id));
+  provider->FireSuggestionInvalidated(articles_category, unknown_id);
+  ExpectThatSuggestionsAre(articles_category, {11, 13});
+  Mock::VerifyAndClearExpectations(&observer);
+
+  service()->RemoveObserver(&observer);
 }
 
 TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
@@ -315,27 +351,27 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
   service()->AddObserver(&observer);
 
   // Send suggestions 1 and 2
-  EXPECT_CALL(observer, OnNewSuggestions(articles_category)).Times(1);
+  EXPECT_CALL(observer, OnNewSuggestions(articles_category));
   provider1->FireSuggestionsChanged(articles_category, {1, 2});
   ExpectThatSuggestionsAre(articles_category, {1, 2});
   Mock::VerifyAndClearExpectations(&observer);
 
   // Send them again, make sure they're not reported twice
-  EXPECT_CALL(observer, OnNewSuggestions(articles_category)).Times(1);
+  EXPECT_CALL(observer, OnNewSuggestions(articles_category));
   provider1->FireSuggestionsChanged(articles_category, {1, 2});
   ExpectThatSuggestionsAre(articles_category, {1, 2});
   ExpectThatSuggestionsAre(offline_pages_category, std::vector<int>());
   Mock::VerifyAndClearExpectations(&observer);
 
   // Send suggestions 13 and 14
-  EXPECT_CALL(observer, OnNewSuggestions(offline_pages_category)).Times(1);
+  EXPECT_CALL(observer, OnNewSuggestions(offline_pages_category));
   provider2->FireSuggestionsChanged(offline_pages_category, {13, 14});
   ExpectThatSuggestionsAre(articles_category, {1, 2});
   ExpectThatSuggestionsAre(offline_pages_category, {13, 14});
   Mock::VerifyAndClearExpectations(&observer);
 
   // Send suggestion 1 only
-  EXPECT_CALL(observer, OnNewSuggestions(articles_category)).Times(1);
+  EXPECT_CALL(observer, OnNewSuggestions(articles_category));
   provider1->FireSuggestionsChanged(articles_category, {1});
   ExpectThatSuggestionsAre(articles_category, {1});
   ExpectThatSuggestionsAre(offline_pages_category, {13, 14});
@@ -344,8 +380,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
   // provider2 reports BOOKMARKS as unavailable
   EXPECT_CALL(observer, OnCategoryStatusChanged(
                             offline_pages_category,
-                            CategoryStatus::CATEGORY_EXPLICITLY_DISABLED))
-      .Times(1);
+                            CategoryStatus::CATEGORY_EXPLICITLY_DISABLED));
   provider2->FireCategoryStatusChanged(
       offline_pages_category, CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),

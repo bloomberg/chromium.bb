@@ -21,10 +21,17 @@ public interface SuggestionsSource {
      */
     interface Observer {
         /** Called when a category has a new list of content suggestions. */
-        void onNewSuggestions(int category);
+        void onNewSuggestions(@CategoryInt int category);
 
         /** Called when a category changed its status. */
-        void onCategoryStatusChanged(int category, @CategoryStatusEnum int newStatus);
+        void onCategoryStatusChanged(@CategoryInt int category, @CategoryStatusEnum int newStatus);
+
+        /**
+         * Called when a suggestion is invalidated, which means it needs to be removed from the UI
+         * immediately. This event may be fired for a category or suggestion that does not
+         * currently exist or has never existed and should be ignored in that case.
+         */
+        void onSuggestionInvalidated(@CategoryInt int category, String suggestionId);
     }
 
     /**

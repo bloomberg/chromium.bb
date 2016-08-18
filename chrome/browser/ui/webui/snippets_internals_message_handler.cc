@@ -128,6 +128,14 @@ void SnippetsInternalsMessageHandler::OnCategoryStatusChanged(
   SendContentSuggestions();
 }
 
+void SnippetsInternalsMessageHandler::OnSuggestionInvalidated(
+    ntp_snippets::Category category,
+    const std::string& suggestion_id) {
+  if (!dom_loaded_)
+    return;
+  SendContentSuggestions();
+}
+
 void SnippetsInternalsMessageHandler::ContentSuggestionsServiceShutdown() {}
 
 void SnippetsInternalsMessageHandler::HandleRefreshContent(

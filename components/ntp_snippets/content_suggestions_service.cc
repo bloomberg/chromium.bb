@@ -135,19 +135,10 @@ void ContentSuggestionsService::DismissSuggestion(
   providers_by_category_[category]->DismissSuggestion(suggestion_id);
 
   // Remove the suggestion locally.
-  id_category_map_.erase(suggestion_id);
-  std::vector<ContentSuggestion>* suggestions =
-      &suggestions_by_category_[category];
-  auto position =
-      std::find_if(suggestions->begin(), suggestions->end(),
-                   [&suggestion_id](const ContentSuggestion& suggestion) {
-                     return suggestion_id == suggestion.id();
-                   });
-  DCHECK(position != suggestions->end())
-      << "The dismissed suggestion " << suggestion_id
-      << " has already been removed. Providers must not call OnNewSuggestions"
-         " in response to DismissSuggestion.";
-  suggestions->erase(position);
+  bool removed = RemoveSuggestionByID(category, suggestion_id);
+  DCHECK(removed) << "The dismissed suggestion " << suggestion_id
+                  << " has already been removed. Providers must not call"
+                  << " OnNewSuggestions in response to DismissSuggestion.";
 }
 
 void ContentSuggestionsService::AddObserver(Observer* observer) {
@@ -221,6 +212,15 @@ void ContentSuggestionsService::OnCategoryStatusChanged(
   NotifyCategoryStatusChanged(category);
 }
 
+void ContentSuggestionsService::OnSuggestionInvalidated(
+    ContentSuggestionsProvider* provider,
+    Category category,
+    const std::string& suggestion_id) {
+  RemoveSuggestionByID(category, suggestion_id);
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnSuggestionInvalidated(category, suggestion_id));
+}
+
 bool ContentSuggestionsService::RegisterCategoryIfRequired(
     ContentSuggestionsProvider* provider,
     Category category) {
@@ -240,6 +240,23 @@ bool ContentSuggestionsService::RegisterCategoryIfRequired(
     suggestions_by_category_.insert(
         std::make_pair(category, std::vector<ContentSuggestion>()));
   }
+  return true;
+}
+
+bool ContentSuggestionsService::RemoveSuggestionByID(
+    Category category,
+    const std::string& suggestion_id) {
+  id_category_map_.erase(suggestion_id);
+  std::vector<ContentSuggestion>* suggestions =
+      &suggestions_by_category_[category];
+  auto position =
+      std::find_if(suggestions->begin(), suggestions->end(),
+                   [&suggestion_id](const ContentSuggestion& suggestion) {
+                     return suggestion_id == suggestion.id();
+                   });
+  if (position == suggestions->end())
+    return false;
+  suggestions->erase(position);
   return true;
 }
 

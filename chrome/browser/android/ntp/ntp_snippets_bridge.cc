@@ -228,6 +228,18 @@ void NTPSnippetsBridge::OnCategoryStatusChanged(Category category,
                                               static_cast<int>(new_status));
 }
 
+void NTPSnippetsBridge::OnSuggestionInvalidated(
+    Category category,
+    const std::string& suggestion_id) {
+  if (observer_.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SnippetsBridge_onSuggestionInvalidated(
+      env, observer_.obj(), static_cast<int>(category.id()),
+      ConvertUTF8ToJavaString(env, suggestion_id).obj());
+}
+
 void NTPSnippetsBridge::ContentSuggestionsServiceShutdown() {
   observer_.Reset();
   content_suggestions_service_observer_.Remove(content_suggestions_service_);

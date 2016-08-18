@@ -57,8 +57,17 @@ public class SuggestionsSection implements ItemGroup {
         return Collections.unmodifiableList(items);
     }
 
-    public void dismissSuggestion(SnippetArticle suggestion) {
+    public void removeSuggestion(SnippetArticle suggestion) {
         mSuggestions.remove(suggestion);
+    }
+
+    public void removeSuggestionById(String suggestionId) {
+        for (SnippetArticle suggestion : mSuggestions) {
+            if (suggestion.mId.equals(suggestionId)) {
+                removeSuggestion(suggestion);
+                return;
+            }
+        }
     }
 
     public boolean hasSuggestions() {

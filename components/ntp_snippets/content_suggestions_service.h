@@ -50,6 +50,16 @@ class ContentSuggestionsService : public KeyedService,
     virtual void OnCategoryStatusChanged(Category category,
                                          CategoryStatus new_status) = 0;
 
+    // Fired when a suggestion has been invalidated. The UI must immediately
+    // clear the suggestion even from open NTPs. Invalidation happens, for
+    // example, when the content that the suggestion refers to is gone.
+    // Note that this event may be fired even if the corresponding |category| is
+    // not currently AVAILABLE, because open UIs may still be showing the
+    // suggestion that is to be removed. This event may also be fired for
+    // |suggestion_id|s that never existed and should be ignored in that case.
+    virtual void OnSuggestionInvalidated(Category category,
+                                         const std::string& suggestion_id) = 0;
+
     // Sent when the service is shutting down. After the service has shut down,
     // it will not provide any data anymore, though calling the getters is still
     // safe.
@@ -155,12 +165,21 @@ class ContentSuggestionsService : public KeyedService,
   void OnCategoryStatusChanged(ContentSuggestionsProvider* provider,
                                Category category,
                                CategoryStatus new_status) override;
+  void OnSuggestionInvalidated(ContentSuggestionsProvider* provider,
+                               Category category,
+                               const std::string& suggestion_id) override;
 
   // Registers the given |provider| for the given |category|, unless it is
   // already registered. Returns true if the category was newly registered or
   // false if it was present before.
   bool RegisterCategoryIfRequired(ContentSuggestionsProvider* provider,
                                   Category category);
+
+  // Removes a suggestion from the local stores |id_category_map_| and
+  // |suggestions_by_category_|, if it exists. Returns true if a suggestion was
+  // removed.
+  bool RemoveSuggestionByID(Category category,
+                            const std::string& suggestion_id);
 
   // Fires the OnCategoryStatusChanged event for the given |category|.
   void NotifyCategoryStatusChanged(Category category);

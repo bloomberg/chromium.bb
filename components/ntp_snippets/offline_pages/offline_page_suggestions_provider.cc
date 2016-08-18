@@ -216,7 +216,38 @@ void OfflinePageSuggestionsProvider::OfflinePageModelChanged(
 void OfflinePageSuggestionsProvider::OfflinePageDeleted(
     int64_t offline_id,
     const offline_pages::ClientId& client_id) {
-  // TODO(pke): Implement, suggestion has to be removed from UI immediately.
+  // Because we never switch to NOT_PROVIDED dynamically, there can be no open
+  // UI containing an invalidated suggestion unless the status is something
+  // other than NOT_PROVIDED, so only notify invalidation in that case.
+  std::string offline_page_id = base::IntToString(offline_id);
+  if (recent_tabs_status_ != CategoryStatus::NOT_PROVIDED &&
+      client_id.name_space == offline_pages::kLastNNamespace) {
+    auto it = std::find(dismissed_recent_tab_ids_.begin(),
+                        dismissed_recent_tab_ids_.end(), offline_page_id);
+    if (it == dismissed_recent_tab_ids_.end()) {
+      observer()->OnSuggestionInvalidated(
+          this, recent_tabs_category_,
+          MakeUniqueID(recent_tabs_category_, offline_page_id));
+    } else {
+      dismissed_recent_tab_ids_.erase(it);
+      StoreDismissedIDsToPrefs(prefs::kDismissedRecentOfflineTabSuggestions,
+                               dismissed_recent_tab_ids_);
+    }
+  } else if (downloads_status_ != CategoryStatus::NOT_PROVIDED &&
+             client_id.name_space == offline_pages::kAsyncNamespace &&
+             base::IsValidGUID(client_id.id)) {
+    auto it = std::find(dismissed_download_ids_.begin(),
+                        dismissed_download_ids_.end(), offline_page_id);
+    if (it == dismissed_download_ids_.end()) {
+      observer()->OnSuggestionInvalidated(
+          this, downloads_category_,
+          MakeUniqueID(downloads_category_, offline_page_id));
+    } else {
+      dismissed_download_ids_.erase(it);
+      StoreDismissedIDsToPrefs(prefs::kDismissedDownloadSuggestions,
+                               dismissed_download_ids_);
+    }
+  }
 }
 
 void OfflinePageSuggestionsProvider::FetchOfflinePages() {
@@ -245,6 +276,7 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
 
     // TODO(pke): Use kDownloadNamespace once the OfflinePageModel uses that.
     // The current logic is taken from DownloadUIAdapter::IsVisibleInUI.
+    // Note: This is also copied in OfflinePageDeleted above.
     if (need_downloads &&
         item.client_id.name_space == offline_pages::kAsyncNamespace &&
         base::IsValidGUID(item.client_id.id) &&

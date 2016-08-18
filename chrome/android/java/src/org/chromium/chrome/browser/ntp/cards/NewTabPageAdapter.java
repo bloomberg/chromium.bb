@@ -204,6 +204,13 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     @Override
+    public void onSuggestionInvalidated(@CategoryInt int category, String suggestionId) {
+        if (!mSections.containsKey(category)) return;
+        mSections.get(category).removeSuggestionById(suggestionId);
+        updateGroups();
+    }
+
+    @Override
     @NewTabPageItem.ViewType
     public int getItemViewType(int position) {
         return getItems().get(position).getType();
@@ -348,7 +355,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
         mSuggestionsSource.dismissSuggestion(suggestion);
         SuggestionsSection section = (SuggestionsSection) getGroup(position);
-        section.dismissSuggestion(suggestion);
+        section.removeSuggestion(suggestion);
 
         if (section.hasSuggestions()) {
             // If one of many suggestions was dismissed, it's a simple item removal, which can be
