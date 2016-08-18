@@ -938,6 +938,11 @@ html[dir='rtl'] #search-box .clear {
   z-index: 0;
 }
 
+.dialog-footer button[disabled] {
+  cursor: auto;
+  pointer-events: none;
+}
+
 .dialog-footer button {
   font-weight: 500;
 }
