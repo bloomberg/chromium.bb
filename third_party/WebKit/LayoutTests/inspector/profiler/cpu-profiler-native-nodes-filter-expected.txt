@@ -1,4 +1,5 @@
 Tests filtering of native nodes.
+Also tests loading of a legacy nodes format, where nodes were represented as a tree.
 
 (root) id:1 total:134330 self:100000 depth:-1
   C id:7 total:23000 self:22000 depth:0
