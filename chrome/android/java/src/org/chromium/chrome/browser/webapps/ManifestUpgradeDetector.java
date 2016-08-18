@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.webapps;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -27,6 +26,8 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
      * {@link WebappInfo}. The names must stay in sync with
      * {@linkorg.chromium.webapk.lib.runtime_library.HostBrowserLauncher}.
      */
+    public static final String META_DATA_WEB_MANIFEST_URL =
+            "org.chromium.webapk.shell_apk.webManifestUrl";
     public static final String META_DATA_START_URL = "org.chromium.webapk.shell_apk.startUrl";
     public static final String META_DATA_ICON_URL = "org.chromium.webapk.shell_apk.iconUrl";
     public static final String META_DATA_ICON_MURMUR2_HASH =
@@ -62,6 +63,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
      * Web Manifest data at time that the WebAPK was generated.
      */
     private WebappInfo mWebappInfo;
+    private String mManifestUrl;
     private String mStartUrl;
     private String mIconUrl;
     private long mIconMurmur2Hash;
@@ -99,16 +101,14 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
      * Starts fetching the web manifest resources.
      */
     public void start() {
-        if (mWebappInfo.webManifestUri() == null
-                || mWebappInfo.webManifestUri().equals(Uri.EMPTY)) {
-            return;
-        }
-
         if (mFetcher != null) return;
 
         getMetaDataFromAndroidManifest();
-        mFetcher = createFetcher(
-                mTab, mWebappInfo.scopeUri().toString(), mWebappInfo.webManifestUri().toString());
+        if (TextUtils.isEmpty(mManifestUrl)) {
+            return;
+        }
+
+        mFetcher = createFetcher(mTab, mWebappInfo.scopeUri().toString(), mManifestUrl);
         mFetcher.start(this);
     }
 
@@ -126,6 +126,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
                     ContextUtils.getApplicationContext().getPackageManager().getApplicationInfo(
                             mWebappInfo.webApkPackageName(), PackageManager.GET_META_DATA);
             Bundle metaData = appInfo.metaData;
+            mManifestUrl = metaData.getString(META_DATA_WEB_MANIFEST_URL);
             mStartUrl = metaData.getString(META_DATA_START_URL);
             mIconUrl = metaData.getString(META_DATA_ICON_URL);
             mIconMurmur2Hash = getLongFromBundle(metaData, META_DATA_ICON_MURMUR2_HASH);

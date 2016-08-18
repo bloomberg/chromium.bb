@@ -47,7 +47,7 @@ public class ManifestUpgradeDetectorTest {
     private static final int WEBAPK_ORIENTATION = ScreenOrientationValues.LANDSCAPE;
     private static final long WEBAPK_THEME_COLOR = 1L;
     private static final long WEBAPK_BACKGROUND_COLOR = 2L;
-    private static final String WEBAPK_MANIFEST_URL = "manifest.java";
+    private static final String WEBAPK_MANIFEST_URL = "manifest.json";
     private static final String WEBAPK_PACKAGE_NAME = "package_name";
 
     private RobolectricPackageManager mPackageManager;
@@ -149,16 +149,18 @@ public class ManifestUpgradeDetectorTest {
      * @param fetchedData Data fetched by ManifestUpgradeDetector.
      */
     private TestManifestUpgradeDetector createDetector(Data oldData, Data fetchedData) {
-        setMetaData(oldData.startUrl, oldData.iconUrl, oldData.iconMurmur2Hash);
+        setMetaData(
+                WEBAPK_MANIFEST_URL, oldData.startUrl, oldData.iconUrl, oldData.iconMurmur2Hash);
         WebappInfo webappInfo = WebappInfo.create("", oldData.startUrl, oldData.scopeUrl, null,
                 oldData.name, oldData.shortName, oldData.displayMode, oldData.orientation, 0,
-                oldData.themeColor, oldData.backgroundColor, false, WEBAPK_PACKAGE_NAME,
-                WEBAPK_MANIFEST_URL);
+                oldData.themeColor, oldData.backgroundColor, false, WEBAPK_PACKAGE_NAME);
         return new TestManifestUpgradeDetector(null, webappInfo, fetchedData);
     }
 
-    private void setMetaData(String startUrl, String iconUrl, long iconMurmur2Hash) {
+    private void setMetaData(
+            String manifestUrl, String startUrl, String iconUrl, long iconMurmur2Hash) {
         Bundle bundle = new Bundle();
+        bundle.putString(ManifestUpgradeDetector.META_DATA_WEB_MANIFEST_URL, manifestUrl);
         bundle.putString(ManifestUpgradeDetector.META_DATA_START_URL, startUrl);
         bundle.putString(ManifestUpgradeDetector.META_DATA_ICON_URL, iconUrl);
         bundle.putString(
@@ -226,6 +228,9 @@ public class ManifestUpgradeDetectorTest {
         fetchedData.scopeUrl = "";
 
         TestManifestUpgradeDetector detector = createDetector(oldData, fetchedData);
+        detector.start();
+        Assert.assertTrue(detector.mCompleted);
+        Assert.assertTrue(detector.mIsUpgraded);
     }
 
     /**

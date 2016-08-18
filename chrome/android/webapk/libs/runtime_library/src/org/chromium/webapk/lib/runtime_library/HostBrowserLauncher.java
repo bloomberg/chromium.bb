@@ -38,8 +38,6 @@ public class HostBrowserLauncher {
     private static final String META_DATA_BACKGROUND_COLOR =
             "org.chromium.webapk.shell_apk.backgroundColor";
     private static final String META_DATA_ICON_URL = "org.chromium.webapk.shell_apk.iconUrl";
-    private static final String META_DATA_WEB_MANIFEST_URL =
-            "org.chromium.webapk.shell_apk.webManifestUrl";
 
     // This value is equal to kInvalidOrMissingColor in the C++ content::Manifest struct.
     private static final long MANIFEST_COLOR_INVALID_OR_MISSING = ((long) Integer.MAX_VALUE) + 1;
@@ -93,7 +91,6 @@ public class HostBrowserLauncher {
         long themeColor = getColorFromBundle(metaBundle, META_DATA_THEME_COLOR);
         long backgroundColor = getColorFromBundle(metaBundle, META_DATA_BACKGROUND_COLOR);
         boolean isIconGenerated = TextUtils.isEmpty(metaBundle.getString(META_DATA_ICON_URL));
-        String webManifestUrl = metaBundle.getString(META_DATA_WEB_MANIFEST_URL);
         Log.v(TAG, "Url of the WebAPK: " + url);
         Log.v(TAG, "WebappId of the WebAPK: " + webappId);
         Log.v(TAG, "Name of the WebAPK:" + name);
@@ -118,8 +115,7 @@ public class HostBrowserLauncher {
                 .putExtra(WebApkConstants.EXTRA_IS_ICON_GENERATED, isIconGenerated)
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, packageName)
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_DISPLAY_MODE, displayMode)
-                .putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, orientation)
-                .putExtra(WebApkConstants.EXTRA_WEB_MANIFEST_URL, webManifestUrl);
+                .putExtra(WebApkConstants.EXTRA_WEBAPK_ORIENTATION, orientation);
 
         try {
             context.startActivity(newIntent);
