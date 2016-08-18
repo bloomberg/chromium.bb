@@ -1336,13 +1336,11 @@ void XMLHttpRequest::didFail(const ResourceError& error)
 
     if (error.isCancellation()) {
         handleDidCancel();
-        // Now the XMLHttpRequest instance may be dead.
         return;
     }
 
     if (error.isTimeout()) {
         handleDidTimeout();
-        // Now the XMLHttpRequest instance may be dead.
         return;
     }
 
@@ -1351,7 +1349,6 @@ void XMLHttpRequest::didFail(const ResourceError& error)
         logConsoleError(getExecutionContext(), "XMLHttpRequest cannot load " + error.failingURL() + ". " + error.localizedDescription());
 
     handleNetworkError();
-    // Now the XMLHttpRequest instance may be dead.
 }
 
 void XMLHttpRequest::didFailRedirectCheck()
@@ -1360,7 +1357,6 @@ void XMLHttpRequest::didFailRedirectCheck()
     ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
     handleNetworkError();
-    // Now the XMLHttpRequest instance may be dead.
 }
 
 void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)

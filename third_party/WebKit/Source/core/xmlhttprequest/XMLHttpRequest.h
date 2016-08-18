@@ -223,10 +223,6 @@ private:
     // Clears variables used only while the resource is being loaded.
     void clearVariablesForLoading();
     // Returns false iff reentry happened and a new load is started.
-    //
-    // This method may invoke V8 GC with m_loader unset. If you touch the
-    // XMLHttpRequest instance after internalAbort() call, you must hold a
-    // refcount on it to prevent it from destroyed.
     bool internalAbort();
     // Clears variables holding response header and body data.
     void clearResponse();
