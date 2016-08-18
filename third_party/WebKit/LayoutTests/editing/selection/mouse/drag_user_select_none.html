@@ -1,17 +1,24 @@
 <!doctype HTML>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
-<div><span id="start" style="-webkit-user-select:none;">0123</span><span id="anchor">45</span><span id="end">6789</span></div>
+<div><span id="start" style="-webkit-user-select:none;">0123</span><span id="anchor">45</span><span id="end" style="-webkit-user-select:none;">6789</span></div>
 <div id="log"></div>
 <script>
 test(function() {
-    assert_not_equals(window.eventSender, undefined, 'This test requireswindow.eventSender');
-
+    if (!window.eventSender)
+        reutrn;
+    var start = document.getElementById('start');
     x1 = start.offsetParent.offsetLeft + start.offsetLeft + start.offsetWidth / 2;
     y1 = start.offsetParent.offsetTop + start.offsetTop + start.offsetHeight / 2;
     eventSender.mouseMoveTo(x1, y1);
     eventSender.mouseDown();
 
+    eventSender.leapForward(100);
+    eventSender.mouseMoveTo(x1 + 5, y1);
+    eventSender.leapForward(100);
+    eventSender.mouseMoveTo(x1 + 10, y1);
+
+    end = document.getElementById('end');
     x2 = end.offsetParent.offsetLeft + end.offsetLeft + end.offsetWidth / 2;
     y2 = end.offsetParent.offsetTop + end.offsetTop + end.offsetHeight / 2;
 
@@ -20,10 +27,9 @@ test(function() {
 
     var selection = window.getSelection();
     var anchor = document.getElementById('anchor').firstChild;
-    assert_equals(selection.type, 'None', 'type');
-    assert_equals(selection.anchorNode, null, 'anchorNode');
+    assert_equals(selection.anchorNode, anchor, 'anchorNode');
     assert_equals(selection.anchorOffset, 0, 'anchorOffset');
-    assert_equals(selection.focusNode, null, 'focusNode');
-    assert_equals(selection.focusOffset, 0, 'focusOffset');
+    assert_equals(selection.focusNode, anchor, 'focusNode');
+    assert_equals(selection.focusOffset, 2, 'focusOffset');
 });
 </script>

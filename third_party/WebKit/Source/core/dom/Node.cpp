@@ -938,21 +938,15 @@ bool Node::canStartSelection() const
     if (hasEditableStyle(*this))
         return true;
 
-    // We don't allow selections to begin within an element that has
-    // -webkit-user-select: none set,
-    // https://drafts.csswg.org/css-ui-4/#valdef-user-select-none
-    if (usedValueOfUserSelect(*this) == SELECT_NONE)
-        return false;
-
-    if (isHTMLElement() && toHTMLElement(this)->draggable())
-        return false;
-
-    // TODO(yoichio): Implement FlatTreeTraversal::ancestorsOf() and use it.
-    for (const Node* parent = FlatTreeTraversal::parent(*this); parent; parent = FlatTreeTraversal::parent(*parent)) {
-        if (!parent->canStartSelection() && usedValueOfUserSelect(*parent) != SELECT_NONE)
+    if (layoutObject()) {
+        const ComputedStyle& style = layoutObject()->styleRef();
+        // We allow selections to begin within an element that has -webkit-user-select: none set,
+        // but if the element is draggable then dragging should take priority over selection.
+        if (style.userDrag() == DRAG_ELEMENT && style.userSelect() == SELECT_NONE)
             return false;
     }
-    return true;
+    ContainerNode* parent = FlatTreeTraversal::parent(*this);
+    return parent ? parent->canStartSelection() : true;
 }
 
 // StyledElements allow inline style (style="border: 1px"), presentational attributes (ex. color),
