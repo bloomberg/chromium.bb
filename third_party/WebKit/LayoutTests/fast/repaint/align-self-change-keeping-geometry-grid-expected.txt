@@ -6,7 +6,29 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='item2' class='item2'",
+          "rect": [100, 52, 100, 300],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='item1' class='item1'",
+          "rect": [0, 52, 100, 300],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='item1' class='item1'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='item2' class='item2'",
+      "reason": "style change"
     }
   ]
 }
