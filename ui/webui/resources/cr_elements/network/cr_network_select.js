@@ -15,10 +15,7 @@ Polymer({
      * Network state for the active network.
      * @type {?CrOnc.NetworkStateProperties}
      */
-    activeNetworkState: {
-      type: Object,
-      value: null
-    },
+    activeNetworkState: Object,
 
     /**
      * If true, the element includes an 'expand' button that toggles the
@@ -26,7 +23,7 @@ Polymer({
      */
     expandable: {
       type: Boolean,
-      value: false
+      value: false,
     },
 
     /**
@@ -34,7 +31,7 @@ Polymer({
      */
     maxHeight: {
       type: Number,
-      value: 1000
+      value: 1000,
     },
 
     /**
@@ -43,7 +40,7 @@ Polymer({
     networkListOpened: {
       type: Boolean,
       value: true,
-      observer: "networkListOpenedChanged_"
+      observer: 'networkListOpenedChanged_',
     },
 
     /**
@@ -51,29 +48,8 @@ Polymer({
      */
     showActive: {
       type: Boolean,
-      value: false
-    },
-
-    /**
-     * List of all network state data for all visible networks.
-     * See <cr-network-list-network-item/> for details.
-     *
-     * @type {!Array<!CrOnc.NetworkStateProperties>}
-     */
-    networkStateList: {
-      type: Array,
-      value: function() { return []; }
-    },
-
-    /**
-     * List of custom items to display at the end of networks list.
-     * See <cr-network-list-custom-item/> for details.
-     *
-     * @type {!Array<Object>}
-     */
-    customItems: {
-      type: Array,
-      value: function() { return []; },
+      value: false,
+      reflectToAttribute: true,
     },
 
     /**
@@ -82,6 +58,39 @@ Polymer({
     showButtons: {
       type: Boolean,
       value: false,
+      reflectToAttribute: true,
+    },
+
+    /**
+     * Show separators between all items.
+     */
+    showSeparators: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
+    /**
+     * List of all network state data for all visible networks.
+     * @type {!Array<!CrOnc.NetworkStateProperties>}
+     */
+    networkStateList: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    },
+
+    /**
+     * The list of custom items to display after the list of networks.
+     * See CrNetworkList for details.
+     * @type {!Array<CrNetworkList.CustomItemState>}
+     */
+    customItems: {
+      type: Array,
+      value: function() {
+        return [];
+      },
     },
 
     /**
@@ -94,6 +103,7 @@ Polymer({
     handleNetworkItemSelected: {
       type: Boolean,
       value: false,
+      reflectToAttribute: true,
     },
   },
 
@@ -162,12 +172,12 @@ Polymer({
    * @private
    */
   getNetworksCallback_: function(states) {
-    this.activeNetworkState = states[0] || null;
+    this.activeNetworkState = states[0] || undefined;
     this.networkStateList = states;
   },
 
   /**
-   * Event triggered when a cr-network-list-network-item is selected.
+   * Event triggered when a cr-network-list-item is selected.
    * @param {!{detail: !CrOnc.NetworkStateProperties}} event
    * @private
    */
@@ -175,7 +185,7 @@ Polymer({
     var state = event.detail;
 
     if (!this.handleNetworkItemSelected) {
-      this.fire("network-item-selected", state);
+      this.fire('network-item-selected', state);
       return;
     }
 

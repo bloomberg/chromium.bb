@@ -1,8 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_network_item.html">
-<link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_custom_item.html">
+<link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_item.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 
 <dom-module id="cr-network-list">
@@ -13,30 +12,17 @@
         min-height: 50px;
         overflow-y: auto;
       }
-
-      /* Note: the 'flex' attribute on core-list doesn't work as expected. */
-      #networkList {
-        flex: 1;
-      }
-
-      cr-network-list-network-item:not(:last-of-type) {
-        border-bottom: var(--cr-separator-line);
-      }
-
-      cr-network-list-custom-item {
+      cr-network-list-item[show-separator]:not(:first-of-type) {
         border-top: var(--cr-separator-line);
       }
     </style>
     <iron-collapse opened="{{opened}}">
       <div id="container" class="layout vertical flex">
-        <template is="dom-repeat" items="[[networks]]">
-          <cr-network-list-network-item network-state="[[item]]" list-item
-              on-tap="onTap_" show-buttons="[[showButtons]]">
-          </cr-network-list-network-item>
-        </template>
-        <template is="dom-repeat" items="[[customItems]]">
-          <cr-network-list-custom-item item-state="[[item]]">
-          </cr-network-list-custom-item>
+        <template is="dom-repeat" items="[[getItems_(networks, customItems)]]">
+          <cr-network-list-item item="[[item]]" is-list-item
+              on-tap="onTap_" show-buttons="[[showButtons]]"
+              show-separator$="[[showSeparators]]">
+          </cr-network-list-item>
         </template>
       </div>
     </iron-collapse>

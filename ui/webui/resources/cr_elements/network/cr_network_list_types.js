@@ -4,8 +4,8 @@
 
 /**
  * @fileoverview
- *
- * This file contains typedefs <cr-network-list/> properties.
+ * This file contains typedefs properties for CrNetworkList, shared by
+ * CrNetworkListItem.
  */
 
 var CrNetworkList = {};
@@ -14,9 +14,13 @@ var CrNetworkList = {};
  * Generic managed property type. This should match any of the basic managed
  * types in chrome.networkingPrivate, e.g. networkingPrivate.ManagedBoolean.
  * @typedef {{
- *   customItemName: (!String|undefined),
- *   polymerIcon: (!String|undefined),
+ *   customItemName: string,
+ *   polymerIcon: (string|undefined),
  *   customData: (!Object|undefined),
+ *   isFirstCustomItem: (boolean|undefined),
  * }}
  */
 CrNetworkList.CustomItemState;
+
+/** @typedef {CrOnc.NetworkStateProperties|CrNetworkList.CustomItemState} */
+CrNetworkList.CrNetworkListItemType;

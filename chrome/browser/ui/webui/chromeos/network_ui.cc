@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
@@ -78,6 +79,10 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
         "getShillProperties",
         base::Bind(&NetworkConfigMessageHandler::GetShillProperties,
                    base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "addNetwork",
+        base::Bind(&NetworkConfigMessageHandler::AddNetwork,
+                   base::Unretained(this)));
   }
 
  private:
@@ -130,6 +135,16 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     return_arg_list.Append(dictionary.release());
     web_ui()->CallJavascriptFunctionUnsafe("NetworkUI.getShillPropertiesResult",
                                            return_arg_list);
+  }
+
+  void AddNetwork(const base::ListValue* args) {
+    std::string onc_type;
+    args->GetString(0, &onc_type);
+    std::string shill_type = (onc_type == ::onc::network_type::kVPN)
+                                 ? shill::kTypeVPN
+                                 : shill::kTypeWifi;
+    NetworkConfigView::ShowForType(
+        shill_type, web_ui()->GetWebContents()->GetTopLevelNativeWindow());
   }
 
   base::WeakPtrFactory<NetworkConfigMessageHandler> weak_ptr_factory_;

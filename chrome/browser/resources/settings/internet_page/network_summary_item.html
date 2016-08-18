@@ -4,27 +4,12 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list.html">
-<link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_network_item.html">
+<link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_item.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module name="network-summary-item">
   <template>
     <style include="settings-shared">
-      :host {
-        --cr-network-icon-mixin: {
-          height: 24px;
-          left: -4px;
-          width: 24px;
-        }
-        --cr-network-name-mixin: {
-          font-size: inherit;
-        };
-        --cr-network-state-mixin: {
-          @apply(--settings-secondary);
-          font-size: inherit;
-        };
-      }
-
       paper-spinner {
         height: 20px;
         margin: 0 20px;
@@ -54,9 +39,8 @@
     <div class="settings-box two-line">
       <div id="details" actionable class="start layout horizontal center"
           on-tap="onDetailsTap_">
-        <cr-network-list-network-item class="flex"
-            network-state="[[activeNetworkState]]" show-buttons>
-        </cr-network-list-network-item>
+        <cr-network-list-item class="flex" item="[[activeNetworkState]]">
+        </cr-network-list-item>
         <paper-spinner active="[[showScanning_(deviceState, expanded)]]">
         </paper-spinner>
       </div>
@@ -78,11 +62,8 @@
     </div>
     <template is="dom-if" if="[[expanded]]">
       <div class="list-frame">
-        <cr-network-list id="networkList"
-            max-height="[[maxHeight]]"
-            networks="[[networkStateList]]"
-            opened="{{expanded}}"
-            show-buttons>
+        <cr-network-list id="networkList" max-height="[[maxHeight]]"
+            networks="[[networkStateList]]" opened="{{expanded}}" show-buttons>
         </cr-network-list>
         <template is="dom-if"
             if="[[knownNetworksIsVisible_(activeNetworkState)]]">

@@ -17,13 +17,16 @@
     {
       'target_name': 'cr_network_list',
       'dependencies': [
+        'cr_network_list_types',
         'cr_onc_types',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'cr_network_list_custom_item',
+      'target_name': 'cr_network_list_item',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'cr_network_list_types',
         'cr_onc_types',
@@ -31,21 +34,17 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'cr_network_list_network_item',
+      'target_name': 'cr_network_list_types',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'cr_onc_types',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'cr_network_list_types',
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'cr_network_select',
       'dependencies': [
         '<(EXTERNS_GYP):networking_private',
+        'cr_network_list_types',
         'cr_onc_types',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
