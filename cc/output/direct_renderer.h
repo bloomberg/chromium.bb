@@ -194,7 +194,7 @@ class CC_EXPORT DirectRenderer {
   std::unordered_map<RenderPassId, TileDrawQuad, RenderPassIdHash>
       render_pass_bypass_quads_;
 
-  bool visible_;
+  bool visible_ = false;
 
   // For use in coordinate conversion, this stores the output rect, viewport
   // rect (= unflipped version of glViewport rect), the size of target
