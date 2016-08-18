@@ -20,6 +20,7 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
     options.config.enable_chrome_trace = True
     options.config.enable_atrace_trace = True
     options.config.atrace_config.categories = ['sched']
+    options.config.enable_cpu_trace = True
     options.config.chrome_trace_config.SetDefaultOverheadFilter()
     options.SetTimelineBasedMetrics(['powerMetric', 'clockSyncLatencyMetric'])
     return options
