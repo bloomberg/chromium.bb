@@ -66,6 +66,20 @@ namespace {
   EXPECT_FALSE(child->LayerPropertyChanged());                               \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
+#define EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(  \
+    code_to_test)                                                           \
+  root->layer_tree_impl()->ResetAllChangeTracking();                        \
+  code_to_test;                                                             \
+  EXPECT_FALSE(                                                             \
+      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(root));   \
+  EXPECT_FALSE(                                                             \
+      root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting(child));  \
+  EXPECT_FALSE(root->layer_tree_impl()->LayerNeedsPushPropertiesForTesting( \
+      grand_child));                                                        \
+  EXPECT_TRUE(root->LayerPropertyChanged());                                \
+  EXPECT_TRUE(child->LayerPropertyChanged());                               \
+  EXPECT_TRUE(grand_child->LayerPropertyChanged());
+
 #define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)                 \
   root->layer_tree_impl()->ResetAllChangeTracking();                        \
   root->layer_tree_impl()->property_trees()->full_tree_damaged = false;     \
@@ -170,7 +184,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       root->OnFilterAnimated(FilterOperations()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->OnOpacityAnimated(arbitrary_number));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
+  EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
       root->OnTransformAnimated(arbitrary_transform));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d);
                                      root->SetNeedsPushProperties());
@@ -211,8 +225,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetPosition(arbitrary_point_f));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->Set3dSortingContextId(1));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetTransform(arbitrary_transform));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetContentsOpaque(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetDrawsContent(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetBounds(bounds_size));
@@ -327,8 +339,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetDrawsContent(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundColor(arbitrary_color));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetTransform(arbitrary_transform));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetElementId(ElementId(2, 0)));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(

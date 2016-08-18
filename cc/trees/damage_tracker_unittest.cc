@@ -505,7 +505,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForPerspectiveClippedLayer) {
   // Set up the child
   child->SetPosition(gfx::PointF(0.f, 0.f));
   child->SetBounds(gfx::Size(100, 100));
-  child->SetTransform(transform);
+  child->test_properties()->transform = transform;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 
@@ -626,7 +626,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
   transform.RotateAboutYAxis(60);
   ClearDamageForAllSurfaces(root);
   child->test_properties()->force_render_surface = true;
-  child->SetTransform(transform);
+  child->test_properties()->transform = transform;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
   child->OnFilterAnimated(filters);
@@ -1229,7 +1229,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
     grand_child1_replica->SetPosition(gfx::PointF());
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
-    grand_child1_replica->SetTransform(reflection);
+    grand_child1_replica->test_properties()->transform = reflection;
     grand_child1->test_properties()->SetReplicaLayer(
         std::move(grand_child1_replica));
     grand_child1->test_properties()->force_render_surface = true;
@@ -1417,7 +1417,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMask) {
     grand_child1_replica->SetPosition(gfx::PointF());
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
-    grand_child1_replica->SetTransform(reflection);
+    grand_child1_replica->test_properties()->transform = reflection;
     grand_child1->test_properties()->SetReplicaLayer(
         std::move(grand_child1_replica));
     grand_child1->test_properties()->force_render_surface = true;
@@ -1501,7 +1501,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
         gfx::Point3F(grand_child1->bounds().width(), 0.f, 0.f);
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
-    grand_child1_replica->SetTransform(reflection);
+    grand_child1_replica->test_properties()->transform = reflection;
     // We need to set parent on replica layer for property tree building.
     grand_child1_replica->test_properties()->parent = grand_child1;
     grand_child1->test_properties()->SetReplicaLayer(
@@ -1659,7 +1659,7 @@ TEST_F(DamageTrackerTest, HugeDamageRect) {
     // but has a huge negative position.
     child->SetPosition(gfx::PointF());
     child->SetBounds(gfx::Size(kBigNumber + i, kBigNumber + i));
-    child->SetTransform(transform);
+    child->test_properties()->transform = transform;
     root->layer_tree_impl()->property_trees()->needs_rebuild = true;
     EmulateDrawingOneFrame(root);
 

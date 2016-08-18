@@ -231,6 +231,14 @@ static LayerImpl* ReplicaLayer(LayerImpl* layer) {
   return layer->test_properties()->replica_layer;
 }
 
+static const gfx::Transform& Transform(Layer* layer) {
+  return layer->transform();
+}
+
+static const gfx::Transform& Transform(LayerImpl* layer) {
+  return layer->test_properties()->transform;
+}
+
 // Methods to query state from the AnimationHost ----------------------
 template <typename LayerType>
 bool OpacityIsAnimating(LayerType* layer) {
@@ -484,7 +492,7 @@ bool AddTransformNodeIfNeeded(
   const bool is_fixed = PositionConstraint(layer).is_fixed_position();
 
   const bool has_significant_transform =
-      !layer->transform().IsIdentityOr2DTranslation();
+      !Transform(layer).IsIdentityOr2DTranslation();
 
   const bool has_potentially_animated_transform =
       HasPotentiallyRunningTransformAnimation(layer);
@@ -551,7 +559,7 @@ bool AddTransformNodeIfNeeded(
         layer == data_from_ancestor.outer_viewport_scroll_layer;
     if (is_scrollable) {
       DCHECK(!is_root);
-      DCHECK(layer->transform().IsIdentity());
+      DCHECK(Transform(layer).IsIdentity());
       data_for_children->transform_fixed_parent = Parent(layer);
     } else {
       data_for_children->transform_fixed_parent = layer;
@@ -562,7 +570,7 @@ bool AddTransformNodeIfNeeded(
   if (!requires_node) {
     data_for_children->should_flatten |= ShouldFlattenTransform(layer);
     gfx::Vector2dF local_offset = layer->position().OffsetFromOrigin() +
-                                  layer->transform().To2dTranslation();
+                                  Transform(layer).To2dTranslation();
     gfx::Vector2dF source_to_parent;
     if (source_index != parent_index) {
       gfx::Transform to_parent;
@@ -680,7 +688,7 @@ bool AddTransformNodeIfNeeded(
     }
   }
 
-  node->local = layer->transform();
+  node->local = Transform(layer);
   node->update_pre_local_transform(TransformOrigin(layer));
 
   node->needs_local_transform_update = true;
@@ -815,7 +823,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
                                gfx::Transform current_transform,
                                bool axis_aligned) {
   const bool preserves_2d_axis_alignment =
-      (current_transform * layer->transform()).Preserves2dAxisAlignment() &&
+      (current_transform * Transform(layer)).Preserves2dAxisAlignment() &&
       axis_aligned && AnimationsPreserveAxisAlignment(layer);
   const bool is_root = !Parent(layer);
   if (is_root)
@@ -961,7 +969,7 @@ bool AddEffectNodeIfNeeded(
     layer->SetEffectTreeIndex(parent_id);
     data_for_children->effect_tree_parent = parent_id;
     data_for_children->compound_transform_since_render_target *=
-        layer->transform();
+        Transform(layer);
     return false;
   }
 

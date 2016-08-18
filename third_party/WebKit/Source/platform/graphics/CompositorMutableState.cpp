@@ -33,7 +33,7 @@ void CompositorMutableState::setOpacity(double opacity)
 
 const SkMatrix44& CompositorMutableState::transform() const
 {
-    return m_mainLayer ? m_mainLayer->transform().matrix() : SkMatrix44::I();
+    return m_mainLayer ? m_mainLayer->Transform().matrix() : SkMatrix44::I();
 }
 
 void CompositorMutableState::setTransform(const SkMatrix44& matrix)

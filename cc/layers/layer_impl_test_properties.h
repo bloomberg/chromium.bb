@@ -14,6 +14,7 @@
 #include "cc/output/filter_operations.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -44,6 +45,7 @@ struct CC_EXPORT LayerImplTestProperties {
   SkXfermode::Mode blend_mode;
   LayerPositionConstraint position_constraint;
   gfx::Point3F transform_origin;
+  gfx::Transform transform;
   LayerImpl* scroll_parent;
   std::unique_ptr<std::set<LayerImpl*>> scroll_children;
   LayerImpl* clip_parent;

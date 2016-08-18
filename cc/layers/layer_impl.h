@@ -140,7 +140,7 @@ class CC_EXPORT LayerImpl {
 
   bool is_clipped() const { return draw_properties_.is_clipped; }
 
-  void UpdatePropertyTreeTransform();
+  void UpdatePropertyTreeTransform(const gfx::Transform& transform);
   void UpdatePropertyTreeTransformIsAnimated(bool is_animated);
   void UpdatePropertyTreeOpacity(float opacity);
   void UpdatePropertyTreeScrollOffset();
@@ -205,6 +205,7 @@ class CC_EXPORT LayerImpl {
   bool contents_opaque() const { return contents_opaque_; }
 
   float Opacity() const;
+  const gfx::Transform& Transform() const;
 
   void SetElementId(ElementId element_id);
   ElementId element_id() const { return element_id_; }
@@ -356,8 +357,6 @@ class CC_EXPORT LayerImpl {
     return touch_event_handler_region_;
   }
 
-  void SetTransform(const gfx::Transform& transform);
-  const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
   bool HasPotentiallyRunningTransformAnimation() const;
 
@@ -542,7 +541,6 @@ class CC_EXPORT LayerImpl {
 
   SkXfermode::Mode draw_blend_mode_;
   gfx::PointF position_;
-  gfx::Transform transform_;
 
   gfx::Rect clip_rect_in_target_space_;
   int transform_tree_index_;

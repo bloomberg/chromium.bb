@@ -79,7 +79,7 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
 
   gfx::Transform scale;
   scale.Scale(2, 2);
-  surface->SetTransform(scale);
+  surface->test_properties()->transform = scale;
 
   surface->test_properties()->SetMaskLayer(
       FakeMaskLayerImpl::Create(impl.host_impl()->active_tree(), 4));

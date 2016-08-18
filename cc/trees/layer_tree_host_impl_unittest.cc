@@ -4971,7 +4971,7 @@ TEST_F(LayerTreeHostImplTest, ScrollMissesBackfacingChild) {
 
   gfx::Transform matrix;
   matrix.RotateAboutXAxis(180.0);
-  child->SetTransform(matrix);
+  child->test_properties()->transform = matrix;
   child->test_properties()->double_sided = false;
 
   root->test_properties()->AddChild(std::move(child));
@@ -5533,8 +5533,10 @@ TEST_F(LayerTreeHostImplTest, ScrollAxisAlignedRotatedLayer) {
   // Rotate the root layer 90 degrees counter-clockwise about its center.
   gfx::Transform rotate_transform;
   rotate_transform.Rotate(-90.0);
-  host_impl_->active_tree()->root_layer_for_testing()->SetTransform(
-      rotate_transform);
+  host_impl_->active_tree()
+      ->root_layer_for_testing()
+      ->test_properties()
+      ->transform = rotate_transform;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   gfx::Size surface_size(50, 50);
@@ -5588,7 +5590,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
   rotate_transform.Translate(-50.0, -50.0);
   rotate_transform.Rotate(child_layer_angle);
   rotate_transform.Translate(50.0, 50.0);
-  clip_layer->SetTransform(rotate_transform);
+  clip_layer->test_properties()->transform = rotate_transform;
 
   // Only allow vertical scrolling.
   clip_layer->SetBounds(
@@ -5675,7 +5677,7 @@ TEST_F(LayerTreeHostImplTest, ScrollPerspectiveTransformedLayer) {
   perspective_transform.ApplyPerspectiveDepth(20);
   perspective_transform.RotateAboutXAxis(45);
   perspective_transform.Translate(50.0, 50.0);
-  clip_layer->SetTransform(perspective_transform);
+  clip_layer->test_properties()->transform = perspective_transform;
 
   clip_layer->SetBounds(gfx::Size(child_ptr->bounds().width() / 2,
                                   child_ptr->bounds().height() / 2));
@@ -5745,7 +5747,8 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   int scale = 2;
   gfx::Transform scale_transform;
   scale_transform.Scale(scale, scale);
-  scroll_layer->test_properties()->parent->SetTransform(scale_transform);
+  scroll_layer->test_properties()->parent->test_properties()->transform =
+      scale_transform;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   gfx::Size surface_size(50, 50);
@@ -9696,7 +9699,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
   test_layer->SetBounds(layer_size);
   gfx::Transform perspective_transform;
   perspective_transform.ApplyPerspectiveDepth(2);
-  test_layer->SetTransform(perspective_transform);
+  test_layer->test_properties()->transform = perspective_transform;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   bool update_lcd_text = false;
@@ -10834,7 +10837,7 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
     // The scroll done on the active tree is undone on the pending tree.
     gfx::Transform translate;
     translate.Translate(0, accumulated_scroll);
-    content_layer->SetTransform(translate);
+    content_layer->test_properties()->transform = translate;
 
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
     pending_tree->PushPageScaleFromMainThread(1.f, 1.f, 1.f);

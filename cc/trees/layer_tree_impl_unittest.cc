@@ -74,7 +74,7 @@ class LayerTreeImplTest : public testing::Test {
     {
       gfx::Transform translate_z;
       translate_z.Translate3d(0, 0, root_depth);
-      root->SetTransform(translate_z);
+      root->test_properties()->transform = translate_z;
       root->SetBounds(bounds);
       root->SetDrawsContent(true);
       root->Set3dSortingContextId(root_sorting_context);
@@ -82,7 +82,7 @@ class LayerTreeImplTest : public testing::Test {
     {
       gfx::Transform translate_z;
       translate_z.Translate3d(0, 0, left_child_depth);
-      left_child->SetTransform(translate_z);
+      left_child->test_properties()->transform = translate_z;
       left_child->SetBounds(bounds);
       left_child->SetDrawsContent(true);
       left_child->Set3dSortingContextId(left_child_sorting_context);
@@ -91,7 +91,7 @@ class LayerTreeImplTest : public testing::Test {
     {
       gfx::Transform translate_z;
       translate_z.Translate3d(0, 0, right_child_depth);
-      right_child->SetTransform(translate_z);
+      right_child->test_properties()->transform = translate_z;
       right_child->SetBounds(bounds);
       right_child->SetDrawsContent(true);
       right_child->Set3dSortingContextId(right_child_sorting_context);
@@ -235,7 +235,7 @@ TEST_F(LayerTreeImplTest, HitTestingForUninvertibleTransform) {
   ASSERT_FALSE(uninvertible_transform.IsInvertible());
 
   LayerImpl* root = root_layer();
-  root->SetTransform(uninvertible_transform);
+  root->test_properties()->transform = uninvertible_transform;
   root->SetBounds(gfx::Size(100, 100));
   root->SetDrawsContent(true);
 
@@ -334,7 +334,7 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleRotatedLayer) {
   rotation45_degrees_about_center.Translate(-50.0, -50.0);
 
   LayerImpl* root = root_layer();
-  root->SetTransform(rotation45_degrees_about_center);
+  root->test_properties()->transform = rotation45_degrees_about_center;
   root->SetBounds(gfx::Size(100, 100));
   root->SetDrawsContent(true);
 
@@ -388,7 +388,7 @@ TEST_F(LayerTreeImplTest, HitTestingClipNodeDifferentTransformAndTargetIds) {
   translation.Translate(100, 100);
   std::unique_ptr<LayerImpl> render_surface =
       LayerImpl::Create(host_impl().active_tree(), 2);
-  render_surface->SetTransform(translation);
+  render_surface->test_properties()->transform = translation;
   render_surface->SetBounds(gfx::Size(100, 100));
   render_surface->test_properties()->force_render_surface = true;
 
@@ -396,7 +396,7 @@ TEST_F(LayerTreeImplTest, HitTestingClipNodeDifferentTransformAndTargetIds) {
   scale_matrix.Scale(2, 2);
   std::unique_ptr<LayerImpl> scale =
       LayerImpl::Create(host_impl().active_tree(), 3);
-  scale->SetTransform(scale_matrix);
+  scale->test_properties()->transform = scale_matrix;
   scale->SetBounds(gfx::Size(50, 50));
 
   std::unique_ptr<LayerImpl> clip =
@@ -505,7 +505,8 @@ TEST_F(LayerTreeImplTest, HitTestingForSinglePerspectiveLayer) {
   translation_by_z.Translate3d(0.0, 0.0, -1.0);
 
   LayerImpl* root = root_layer();
-  root->SetTransform(perspective_projection_about_center * translation_by_z);
+  root->test_properties()->transform =
+      (perspective_projection_about_center * translation_by_z);
   root->SetBounds(gfx::Size(100, 100));
   root->SetDrawsContent(true);
 
@@ -638,7 +639,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
     // position (10, 10).
     // The size is to ensure it covers at least sqrt(2) * 100.
     grand_child->SetBounds(gfx::Size(200, 200));
-    grand_child->SetTransform(rotation45_degrees_about_corner);
+    grand_child->test_properties()->transform = rotation45_degrees_about_corner;
     grand_child->SetMasksToBounds(true);
 
     // Rotates about the center of the layer
@@ -651,7 +652,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
     rotated_leaf_transform.RotateAboutZAxis(45.0);
     rotated_leaf_transform.Translate(-50.0, -50.0);
     rotated_leaf->SetBounds(gfx::Size(100, 100));
-    rotated_leaf->SetTransform(rotated_leaf_transform);
+    rotated_leaf->test_properties()->transform = rotated_leaf_transform;
     rotated_leaf->SetDrawsContent(true);
 
     grand_child->test_properties()->AddChild(std::move(rotated_leaf));
@@ -948,7 +949,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
     child2->SetBounds(gfx::Size(50, 50));
     gfx::Transform translate_z;
     translate_z.Translate3d(0, 0, 10.f);
-    child2->SetTransform(translate_z);
+    child2->test_properties()->transform = translate_z;
     child2->SetDrawsContent(true);
     child2->test_properties()->should_flatten_transform = false;
     child2->Set3dSortingContextId(1);
@@ -1317,7 +1318,7 @@ TEST_F(LayerTreeImplTest,
   Region touch_handler_region(gfx::Rect(10, 10, 50, 50));
 
   LayerImpl* root = root_layer();
-  root->SetTransform(uninvertible_transform);
+  root->test_properties()->transform = uninvertible_transform;
   root->SetBounds(gfx::Size(100, 100));
   root->SetDrawsContent(true);
   root->SetTouchEventHandlerRegion(touch_handler_region);
@@ -2154,12 +2155,12 @@ TEST_F(LayerTreeImplTest, SelectionBoundsWithLargeTransforms) {
   {
     std::unique_ptr<LayerImpl> child =
         LayerImpl::Create(host_impl().active_tree(), child_id);
-    child->SetTransform(large_transform);
+    child->test_properties()->transform = large_transform;
     child->SetBounds(gfx::Size(100, 100));
 
     std::unique_ptr<LayerImpl> grand_child =
         LayerImpl::Create(host_impl().active_tree(), grand_child_id);
-    grand_child->SetTransform(large_transform);
+    grand_child->test_properties()->transform = large_transform;
     grand_child->SetBounds(gfx::Size(100, 100));
     grand_child->SetDrawsContent(true);
 
@@ -2236,21 +2237,21 @@ TEST_F(LayerTreeImplTest, HitTestingCorrectLayerWheelListener) {
   {
     gfx::Transform translate_z;
     translate_z.Translate3d(0, 0, 10);
-    root->SetTransform(translate_z);
+    root->test_properties()->transform = translate_z;
     root->SetBounds(gfx::Size(100, 100));
     root->SetDrawsContent(true);
   }
   {
     gfx::Transform translate_z;
     translate_z.Translate3d(0, 0, 10);
-    left_child->SetTransform(translate_z);
+    left_child->test_properties()->transform = translate_z;
     left_child->SetBounds(gfx::Size(100, 100));
     left_child->SetDrawsContent(true);
   }
   {
     gfx::Transform translate_z;
     translate_z.Translate3d(0, 0, 10);
-    right_child->SetTransform(translate_z);
+    right_child->test_properties()->transform = translate_z;
     right_child->SetBounds(gfx::Size(100, 100));
   }
 

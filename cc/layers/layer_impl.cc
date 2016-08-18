@@ -340,7 +340,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->safe_opaque_background_color_ = safe_opaque_background_color_;
   layer->draw_blend_mode_ = draw_blend_mode_;
   layer->position_ = position_;
-  layer->transform_ = transform_;
   layer->transform_tree_index_ = transform_tree_index_;
   layer->effect_tree_index_ = effect_tree_index_;
   layer->clip_tree_index_ = clip_tree_index_;
@@ -412,7 +411,7 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
   list->AppendDouble(position_.y());
   result->Set("Position", list);
 
-  const gfx::Transform& gfx_transform = transform();
+  const gfx::Transform& gfx_transform = test_properties()->transform;
   double transform[16];
   gfx_transform.matrix().asColMajord(transform);
   list = new base::ListValue;
@@ -500,7 +499,7 @@ int LayerImpl::num_copy_requests_in_target_subtree() {
       ->num_copy_requests_in_subtree;
 }
 
-void LayerImpl::UpdatePropertyTreeTransform() {
+void LayerImpl::UpdatePropertyTreeTransform(const gfx::Transform& transform) {
   PropertyTrees* property_trees = layer_tree_impl()->property_trees();
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                        id())) {
@@ -512,12 +511,13 @@ void LayerImpl::UpdatePropertyTreeTransform() {
     // thread.
     TransformNode* node = property_trees->transform_tree.Node(
         property_trees->transform_id_to_index_map[id()]);
-    if (node->local != transform_) {
-      node->local = transform_;
+    if (node->local != transform) {
+      node->local = transform;
       node->needs_local_transform_update = true;
       node->transform_changed = true;
       property_trees->changed = true;
       property_trees->transform_tree.set_needs_update(true);
+      layer_tree_impl()->set_needs_update_draw_properties();
       // TODO(ajuma): The current criteria for creating clip nodes means that
       // property trees may need to be rebuilt when the new transform isn't
       // axis-aligned wrt the old transform (see Layer::SetTransform). Since
@@ -614,15 +614,9 @@ void LayerImpl::OnOpacityAnimated(float opacity) {
 }
 
 void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
-  gfx::Transform old_transform = transform_;
-  SetTransform(transform);
-  UpdatePropertyTreeTransform();
+  UpdatePropertyTreeTransform(transform);
   was_ever_ready_since_last_transform_animation_ = false;
   layer_tree_impl()->AddToTransformAnimationsMap(id(), transform);
-  if (old_transform != transform) {
-    SetNeedsPushProperties();
-    layer_tree_impl()->set_needs_update_draw_properties();
-  }
 }
 
 void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
@@ -822,6 +816,15 @@ float LayerImpl::Opacity() const {
   return node->opacity;
 }
 
+const gfx::Transform& LayerImpl::Transform() const {
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  DCHECK(property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
+                                          id()));
+  TransformNode* node = property_trees->transform_tree.Node(
+      property_trees->transform_id_to_index_map[id()]);
+  return node->local;
+}
+
 void LayerImpl::SetElementId(ElementId element_id) {
   if (element_id == element_id_)
     return;
@@ -855,10 +858,6 @@ void LayerImpl::SetPosition(const gfx::PointF& position) {
 
 void LayerImpl::Set3dSortingContextId(int id) {
   sorting_context_id_ = id;
-}
-
-void LayerImpl::SetTransform(const gfx::Transform& transform) {
-  transform_ = transform;
 }
 
 bool LayerImpl::TransformIsAnimating() const {
@@ -1013,8 +1012,9 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   MathUtil::AddToTracedValue("scroll_offset", CurrentScrollOffset(), state);
 
-  if (!transform().IsIdentity())
-    MathUtil::AddToTracedValue("transform", transform(), state);
+  if (!ScreenSpaceTransform().IsIdentity())
+    MathUtil::AddToTracedValue("screen_space_transform", ScreenSpaceTransform(),
+                               state);
 
   bool clipped;
   gfx::QuadF layer_quad =
