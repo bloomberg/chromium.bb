@@ -652,6 +652,8 @@ void FakeBluetoothDeviceClient::CreateDevice(
       new Properties(base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
                                 base::Unretained(this), device_path)));
   properties->adapter.ReplaceValue(adapter_path);
+  properties->type.ReplaceValue(BluetoothDeviceClient::kTypeBredr);
+  properties->type.set_valid(true);
 
   if (device_path == dbus::ObjectPath(kLegacyAutopairPath)) {
     properties->address.ReplaceValue(kLegacyAutopairAddress);
@@ -741,6 +743,7 @@ void FakeBluetoothDeviceClient::CreateDevice(
     properties->name.ReplaceValue("Heart Rate Monitor");
     properties->alias.ReplaceValue(kLowEnergyName);
     properties->services_resolved.ReplaceValue(false);
+    properties->type.ReplaceValue(BluetoothDeviceClient::kTypeLe);
 
     std::vector<std::string> uuids;
     uuids.push_back(FakeBluetoothGattServiceClient::kHeartRateServiceUUID);
