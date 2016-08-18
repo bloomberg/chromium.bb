@@ -202,11 +202,6 @@ template <typename T> PassRefPtr<T> adoptRef(T* p)
     return PassRefPtr<T>(p, PassRefPtr<T>::AdoptRef);
 }
 
-template <typename T, typename U> inline PassRefPtr<T> static_pointer_cast(const PassRefPtr<U>& p)
-{
-    return adoptRef(static_cast<T*>(p.leakRef()));
-}
-
 template <typename T> inline T* getPtr(const PassRefPtr<T>& p)
 {
     return p.get();
@@ -216,6 +211,5 @@ template <typename T> inline T* getPtr(const PassRefPtr<T>& p)
 
 using WTF::PassRefPtr;
 using WTF::adoptRef;
-using WTF::static_pointer_cast;
 
 #endif // WTF_PassRefPtr_h

@@ -37,7 +37,6 @@
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/properties/SVGPropertyHelper.h"
 #include "wtf/Allocator.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -171,14 +170,6 @@ private:
     size_t findItem(ItemPropertyType*);
 
     HeapVector<Member<ItemPropertyType>> m_values;
-
-    static Derived* toDerived(SVGPropertyBase* base)
-    {
-        if (!base)
-            return nullptr;
-        ASSERT(base->type() == Derived::classType());
-        return static_pointer_cast<Derived>(base);
-    }
 };
 
 template<typename Derived, typename ItemProperty>

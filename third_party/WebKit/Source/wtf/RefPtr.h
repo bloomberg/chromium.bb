@@ -166,11 +166,6 @@ template <typename T> inline bool operator!=(std::nullptr_t, const RefPtr<T>& b)
     return b.get();
 }
 
-template <typename T, typename U> inline RefPtr<T> static_pointer_cast(const RefPtr<U>& p)
-{
-    return RefPtr<T>(static_cast<T*>(p.get()));
-}
-
 template <typename T> inline T* getPtr(const RefPtr<T>& p)
 {
     return p.get();
@@ -192,6 +187,5 @@ private:
 } // namespace WTF
 
 using WTF::RefPtr;
-using WTF::static_pointer_cast;
 
 #endif // WTF_RefPtr_h
