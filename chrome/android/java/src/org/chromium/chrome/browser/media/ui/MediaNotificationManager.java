@@ -432,10 +432,12 @@ public class MediaNotificationManager {
     }
 
     private void onPlay(int actionSource) {
+        if (!mMediaNotificationInfo.isPaused) return;
         mMediaNotificationInfo.listener.onPlay(actionSource);
     }
 
     private void onPause(int actionSource) {
+        if (mMediaNotificationInfo.isPaused) return;
         mMediaNotificationInfo.listener.onPause(actionSource);
     }
 
@@ -515,6 +517,7 @@ public class MediaNotificationManager {
 
         if (mMediaNotificationInfo.supportsSwipeAway()) {
             mNotificationBuilder.setOngoing(!mMediaNotificationInfo.isPaused);
+            mNotificationBuilder.setDeleteIntent(createPendingIntent(ListenerService.ACTION_STOP));
         }
 
         // The intent will currently only be null when using a custom tab.
