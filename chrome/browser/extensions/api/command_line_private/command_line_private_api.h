@@ -9,14 +9,14 @@
 
 namespace extensions {
 
-class CommandLinePrivateHasSwitchFunction : public SyncExtensionFunction {
+class CommandLinePrivateHasSwitchFunction : public UIThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("commandLinePrivate.hasSwitch",
                              COMMANDLINEPRIVATE_HASSWITCH)
  protected:
   ~CommandLinePrivateHasSwitchFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

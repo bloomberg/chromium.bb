@@ -263,11 +263,12 @@ bool TtsExtensionEngine::LoadBuiltInTtsExtension(
 #endif
 }
 
-bool ExtensionTtsEngineSendTtsEventFunction::RunSync() {
-  int utterance_id;
+ExtensionFunction::ResponseAction
+ExtensionTtsEngineSendTtsEventFunction::Run() {
+  int utterance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &utterance_id));
 
-  base::DictionaryValue* event;
+  base::DictionaryValue* event = nullptr;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &event));
 
   std::string event_type;
@@ -284,10 +285,8 @@ bool ExtensionTtsEngineSendTtsEventFunction::RunSync() {
   bool event_type_allowed = false;
   const std::vector<extensions::TtsVoice>* tts_voices =
       extensions::TtsVoice::GetTtsVoices(extension());
-  if (!tts_voices) {
-    error_ = constants::kErrorUndeclaredEventType;
-    return false;
-  }
+  if (!tts_voices)
+    return RespondNow(Error(constants::kErrorUndeclaredEventType));
 
   for (size_t i = 0; i < tts_voices->size(); i++) {
     const extensions::TtsVoice& voice = tts_voices->at(i);
@@ -296,10 +295,8 @@ bool ExtensionTtsEngineSendTtsEventFunction::RunSync() {
       break;
     }
   }
-  if (!event_type_allowed) {
-    error_ = constants::kErrorUndeclaredEventType;
-    return false;
-  }
+  if (!event_type_allowed)
+    return RespondNow(Error(constants::kErrorUndeclaredEventType));
 
   TtsController* controller = TtsController::GetInstance();
   if (event_type == constants::kEventTypeStart) {
@@ -332,5 +329,5 @@ bool ExtensionTtsEngineSendTtsEventFunction::RunSync() {
     EXTENSION_FUNCTION_VALIDATE(false);
   }
 
-  return true;
+  return RespondNow(NoArguments());
 }

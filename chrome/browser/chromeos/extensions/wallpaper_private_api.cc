@@ -305,7 +305,7 @@ user_manager::User::WallpaperType getWallpaperType(
 
 }  // namespace
 
-bool WallpaperPrivateGetStringsFunction::RunSync() {
+ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
 #define SET_STRING(id, idr) \
@@ -361,19 +361,18 @@ bool WallpaperPrivateGetStringsFunction::RunSync() {
   dict->SetString("canceledWallpaper",
                   wallpaper_api_util::kCancelWallpaperMessage);
 
-  SetResult(std::move(dict));
-  return true;
+  return RespondNow(OneArgument(std::move(dict)));
 }
 
-bool WallpaperPrivateGetSyncSettingFunction::RunSync() {
+ExtensionFunction::ResponseAction
+WallpaperPrivateGetSyncSettingFunction::Run() {
   Profile* profile =  Profile::FromBrowserContext(browser_context());
   ProfileSyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean("syncThemes",
                    sync->GetActiveDataTypes().Has(syncer::THEMES));
-  SetResult(std::move(dict));
-  return true;
+  return RespondNow(OneArgument(std::move(dict)));
 }
 
 WallpaperPrivateSetWallpaperIfExistsFunction::
@@ -971,7 +970,8 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::OnComplete(
   SendResponse(true);
 }
 
-bool WallpaperPrivateRecordWallpaperUMAFunction::RunSync() {
+ExtensionFunction::ResponseAction
+WallpaperPrivateRecordWallpaperUMAFunction::Run() {
   std::unique_ptr<record_wallpaper_uma::Params> params(
       record_wallpaper_uma::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -979,5 +979,5 @@ bool WallpaperPrivateRecordWallpaperUMAFunction::RunSync() {
   user_manager::User::WallpaperType source = getWallpaperType(params->source);
   UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Source", source,
                             user_manager::User::WALLPAPER_TYPE_COUNT);
-  return true;
+  return RespondNow(NoArguments());
 }

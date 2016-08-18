@@ -24,7 +24,7 @@ class UserImage;
 }  // namespace chromeos
 
 // Wallpaper manager strings.
-class WallpaperPrivateGetStringsFunction : public SyncExtensionFunction {
+class WallpaperPrivateGetStringsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getStrings",
                              WALLPAPERPRIVATE_GETSTRINGS)
@@ -32,12 +32,13 @@ class WallpaperPrivateGetStringsFunction : public SyncExtensionFunction {
  protected:
   ~WallpaperPrivateGetStringsFunction() override {}
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 };
 
 // Check if sync themes setting is enabled.
-class WallpaperPrivateGetSyncSettingFunction : public SyncExtensionFunction {
+class WallpaperPrivateGetSyncSettingFunction
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getSyncSetting",
                              WALLPAPERPRIVATE_GETSYNCSETTING)
@@ -45,8 +46,8 @@ class WallpaperPrivateGetSyncSettingFunction : public SyncExtensionFunction {
  protected:
   ~WallpaperPrivateGetSyncSettingFunction() override {}
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 };
 
 class WallpaperPrivateSetWallpaperIfExistsFunction
@@ -309,7 +310,7 @@ class WallpaperPrivateGetOfflineWallpaperListFunction
 // The wallpaper UMA is recorded when a new wallpaper is set, either by the
 // built-in Wallpaper Picker App, or by a third party App.
 class WallpaperPrivateRecordWallpaperUMAFunction
-    : public SyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.recordWallpaperUMA",
                              WALLPAPERPRIVATE_RECORDWALLPAPERUMA)
@@ -317,8 +318,8 @@ class WallpaperPrivateRecordWallpaperUMAFunction
  protected:
   ~WallpaperPrivateRecordWallpaperUMAFunction() override {}
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_

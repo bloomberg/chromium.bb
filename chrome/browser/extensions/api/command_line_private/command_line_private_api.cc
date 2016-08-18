@@ -21,19 +21,17 @@ namespace extensions {
 
 namespace command_line_private = api::command_line_private;
 
-bool CommandLinePrivateHasSwitchFunction::RunSync() {
+ExtensionFunction::ResponseAction CommandLinePrivateHasSwitchFunction::Run() {
   std::unique_ptr<command_line_private::HasSwitch::Params> params(
       command_line_private::HasSwitch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (params->name.empty()) {
-    error_ = kEmptySwitchName;
-    return false;
-  }
+  if (params->name.empty())
+    return RespondNow(Error(kEmptySwitchName));
 
-  results_ = command_line_private::HasSwitch::Results::Create(
-      base::CommandLine::ForCurrentProcess()->HasSwitch(params->name));
-  return true;
+  return RespondNow(
+      ArgumentList(command_line_private::HasSwitch::Results::Create(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(params->name))));
 }
 
 }  // namespace extensions

@@ -238,7 +238,7 @@ ChromeosInfoPrivateSetFunction::ChromeosInfoPrivateSetFunction() {
 ChromeosInfoPrivateSetFunction::~ChromeosInfoPrivateSetFunction() {
 }
 
-bool ChromeosInfoPrivateSetFunction::RunSync() {
+ExtensionFunction::ResponseAction ChromeosInfoPrivateSetFunction::Run() {
   std::string param_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &param_name));
   if (param_name == kPropertyTimezone) {
@@ -255,12 +255,11 @@ bool ChromeosInfoPrivateSetFunction::RunSync() {
           pref_name,
           param_value);
     } else {
-      error_ = ErrorUtils::FormatErrorMessage(kPropertyNotFound, param_name);
-      return false;
+      return RespondNow(Error(kPropertyNotFound, param_name));
     }
   }
 
-  return true;
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

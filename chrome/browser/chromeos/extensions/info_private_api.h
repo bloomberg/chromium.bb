@@ -35,14 +35,14 @@ class ChromeosInfoPrivateGetFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("chromeosInfoPrivate.get", CHROMEOSINFOPRIVATE_GET)
 };
 
-class ChromeosInfoPrivateSetFunction : public SyncExtensionFunction {
+class ChromeosInfoPrivateSetFunction : public UIThreadExtensionFunction {
  public:
   ChromeosInfoPrivateSetFunction();
 
  protected:
   ~ChromeosInfoPrivateSetFunction() override;
 
-  bool RunSync() override;
+  ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("chromeosInfoPrivate.set", CHROMEOSINFOPRIVATE_SET)

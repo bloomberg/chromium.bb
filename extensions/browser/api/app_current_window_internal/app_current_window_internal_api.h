@@ -11,15 +11,19 @@ namespace extensions {
 
 class AppWindow;
 
-class AppCurrentWindowInternalExtensionFunction : public SyncExtensionFunction {
+class AppCurrentWindowInternalExtensionFunction
+    : public UIThreadExtensionFunction {
  protected:
   ~AppCurrentWindowInternalExtensionFunction() override {}
 
-  // Invoked with the current app window.
-  virtual bool RunWithWindow(AppWindow* window) = 0;
+  AppWindow* window() { return window_; }
 
  private:
-  bool RunSync() override;
+  // ExtensionFunction:
+  bool PreRunValidation(std::string* error) override;
+
+  // The current AppWindow.
+  AppWindow* window_ = nullptr;
 };
 
 class AppCurrentWindowInternalFocusFunction
@@ -30,7 +34,7 @@ class AppCurrentWindowInternalFocusFunction
 
  protected:
   ~AppCurrentWindowInternalFocusFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalFullscreenFunction
@@ -41,7 +45,7 @@ class AppCurrentWindowInternalFullscreenFunction
 
  protected:
   ~AppCurrentWindowInternalFullscreenFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalMaximizeFunction
@@ -52,7 +56,7 @@ class AppCurrentWindowInternalMaximizeFunction
 
  protected:
   ~AppCurrentWindowInternalMaximizeFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalMinimizeFunction
@@ -63,7 +67,7 @@ class AppCurrentWindowInternalMinimizeFunction
 
  protected:
   ~AppCurrentWindowInternalMinimizeFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalRestoreFunction
@@ -74,7 +78,7 @@ class AppCurrentWindowInternalRestoreFunction
 
  protected:
   ~AppCurrentWindowInternalRestoreFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalDrawAttentionFunction
@@ -85,7 +89,7 @@ class AppCurrentWindowInternalDrawAttentionFunction
 
  protected:
   ~AppCurrentWindowInternalDrawAttentionFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalClearAttentionFunction
@@ -96,7 +100,7 @@ class AppCurrentWindowInternalClearAttentionFunction
 
  protected:
   ~AppCurrentWindowInternalClearAttentionFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalShowFunction
@@ -107,7 +111,7 @@ class AppCurrentWindowInternalShowFunction
 
  protected:
   ~AppCurrentWindowInternalShowFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalHideFunction
@@ -118,7 +122,7 @@ class AppCurrentWindowInternalHideFunction
 
  protected:
   ~AppCurrentWindowInternalHideFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalSetBoundsFunction
@@ -128,7 +132,7 @@ class AppCurrentWindowInternalSetBoundsFunction
                              APP_CURRENTWINDOWINTERNAL_SETBOUNDS)
  protected:
   ~AppCurrentWindowInternalSetBoundsFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalSetSizeConstraintsFunction
@@ -138,7 +142,7 @@ class AppCurrentWindowInternalSetSizeConstraintsFunction
                              APP_CURRENTWINDOWINTERNAL_SETSIZECONSTRAINTS)
  protected:
   ~AppCurrentWindowInternalSetSizeConstraintsFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalSetIconFunction
@@ -149,7 +153,7 @@ class AppCurrentWindowInternalSetIconFunction
 
  protected:
   ~AppCurrentWindowInternalSetIconFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalSetShapeFunction
@@ -160,7 +164,7 @@ class AppCurrentWindowInternalSetShapeFunction
 
  protected:
   ~AppCurrentWindowInternalSetShapeFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalSetAlwaysOnTopFunction
@@ -171,7 +175,7 @@ class AppCurrentWindowInternalSetAlwaysOnTopFunction
 
  protected:
   ~AppCurrentWindowInternalSetAlwaysOnTopFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 class AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction
@@ -183,7 +187,7 @@ class AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction
 
  protected:
   ~AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

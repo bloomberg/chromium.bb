@@ -82,24 +82,24 @@ void AudioAPI::OnDevicesChanged(const DeviceInfoList& devices) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AudioGetInfoFunction::RunSync() {
+ExtensionFunction::ResponseAction AudioGetInfoFunction::Run() {
   AudioService* service =
       AudioAPI::GetFactoryInstance()->Get(browser_context())->GetService();
   DCHECK(service);
   OutputInfo output_info;
   InputInfo input_info;
   if (!service->GetInfo(&output_info, &input_info)) {
-    SetError("Error occurred when querying audio device information.");
-    return false;
+    return RespondNow(
+        Error("Error occurred when querying audio device information."));
   }
 
-  results_ = audio::GetInfo::Results::Create(output_info, input_info);
-  return true;
+  return RespondNow(
+      ArgumentList(audio::GetInfo::Results::Create(output_info, input_info)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AudioSetActiveDevicesFunction::RunSync() {
+ExtensionFunction::ResponseAction AudioSetActiveDevicesFunction::Run() {
   std::unique_ptr<audio::SetActiveDevices::Params> params(
       audio::SetActiveDevices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -109,12 +109,12 @@ bool AudioSetActiveDevicesFunction::RunSync() {
   DCHECK(service);
 
   service->SetActiveDevices(params->ids);
-  return true;
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AudioSetPropertiesFunction::RunSync() {
+ExtensionFunction::ResponseAction AudioSetPropertiesFunction::Run() {
   std::unique_ptr<audio::SetProperties::Params> params(
       audio::SetProperties::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -129,13 +129,11 @@ bool AudioSetPropertiesFunction::RunSync() {
   int gain_value = params->properties.gain.get() ?
       *params->properties.gain : -1;
 
-  if (!service->SetDeviceProperties(params->id,
-                                    params->properties.is_muted,
-                                    volume_value,
-                                    gain_value))
-    return false;
-  else
-    return true;
+  if (!service->SetDeviceProperties(params->id, params->properties.is_muted,
+                                    volume_value, gain_value)) {
+    return RespondNow(Error("Could not set properties"));
+  }
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
