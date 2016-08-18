@@ -559,12 +559,20 @@ PositionTemplate<Strategy> firstEditablePositionAfterPositionInRootAlgorithm(con
         editablePosition = PositionTemplate<Strategy>::afterNode(shadowAncestor);
     }
 
-    while (editablePosition.anchorNode() && !isEditablePosition(editablePosition) && editablePosition.anchorNode()->isDescendantOf(&highestRoot))
+    Node* nonEditableNode = nullptr;
+    while (editablePosition.anchorNode() && !isEditablePosition(editablePosition) && editablePosition.anchorNode()->isDescendantOf(&highestRoot)) {
+        nonEditableNode = editablePosition.anchorNode();
         editablePosition = isAtomicNode(editablePosition.anchorNode()) ? PositionTemplate<Strategy>::inParentAfterNode(*editablePosition.anchorNode()) : nextVisuallyDistinctCandidate(editablePosition);
+    }
 
     if (editablePosition.anchorNode() && editablePosition.anchorNode() != &highestRoot && !editablePosition.anchorNode()->isDescendantOf(&highestRoot))
         return PositionTemplate<Strategy>();
 
+    // If |editablePosition| has the non-editable child skipped, get the next sibling position.
+    // If not, we can't get the next paragraph in InsertListCommand::doApply's while loop.
+    // See http://crbug.com/571420
+    if (nonEditableNode && nonEditableNode->isDescendantOf(editablePosition.anchorNode()))
+        editablePosition = nextVisuallyDistinctCandidate(editablePosition);
     return editablePosition;
 }
 
