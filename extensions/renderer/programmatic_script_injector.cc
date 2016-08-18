@@ -104,12 +104,13 @@ std::vector<blink::WebScriptSource> ProgrammaticScriptInjector::GetJsSources(
           blink::WebString::fromUTF8(params_->code), params_->file_url));
 }
 
-std::vector<std::string> ProgrammaticScriptInjector::GetCssSources(
+std::vector<blink::WebString> ProgrammaticScriptInjector::GetCssSources(
     UserScript::RunLocation run_location) const {
   DCHECK_EQ(GetRunLocation(), run_location);
   DCHECK(!params_->is_javascript);
 
-  return std::vector<std::string>(1, params_->code);
+  return std::vector<blink::WebString>(
+      1, blink::WebString::fromUTF8(params_->code));
 }
 
 void ProgrammaticScriptInjector::GetRunInfo(

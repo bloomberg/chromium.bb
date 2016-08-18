@@ -312,11 +312,11 @@ void ScriptInjection::OnJsInjectionCompleted(
 }
 
 void ScriptInjection::InjectCss() {
-  std::vector<std::string> css_sources =
+  std::vector<blink::WebString> css_sources =
       injector_->GetCssSources(run_location_);
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
-  for (const std::string& css : css_sources)
-    web_frame->document().insertStyleSheet(blink::WebString::fromUTF8(css));
+  for (const blink::WebString& css : css_sources)
+    web_frame->document().insertStyleSheet(css);
 }
 
 }  // namespace extensions

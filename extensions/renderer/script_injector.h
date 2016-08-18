@@ -69,7 +69,7 @@ class ScriptInjector {
 
   // Returns the css to inject at the given |run_location|.
   // Only called if ShouldInjectCss() is true.
-  virtual std::vector<std::string> GetCssSources(
+  virtual std::vector<blink::WebString> GetCssSources(
       UserScript::RunLocation run_location) const = 0;
 
   // Fill scriptrs run info based on information about injection.

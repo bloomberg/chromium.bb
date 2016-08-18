@@ -582,10 +582,11 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
   if (extension && extension->is_extension() &&
       OptionsPageInfo::ShouldUseChromeStyle(extension) &&
       effective_document_url == OptionsPageInfo::GetOptionsPage(extension)) {
+    base::StringPiece extension_css =
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_EXTENSION_CSS);
     frame->document().insertStyleSheet(
-        WebString::fromUTF8(ResourceBundle::GetSharedInstance()
-                                .GetRawDataResource(IDR_EXTENSION_CSS)
-                                .as_string()));
+        WebString::fromUTF8(extension_css.data(), extension_css.length()));
   }
 
   // In testing, the document lifetime events can happen after the render

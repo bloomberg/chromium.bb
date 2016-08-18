@@ -203,20 +203,31 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
   DCHECK_EQ(script_->run_location(), run_location);
 
   const UserScript::FileList& js_scripts = script_->js_scripts();
-
+  sources.reserve(js_scripts.size());
   for (UserScript::FileList::const_iterator iter = js_scripts.begin();
        iter != js_scripts.end();
        ++iter) {
-    std::string content = iter->GetContent().as_string();
-
-    // We add this dumb function wrapper for user scripts to emulate what
-    // Greasemonkey does.
+    base::StringPiece script_content = iter->GetContent();
+    blink::WebString source;
     if (script_->emulate_greasemonkey()) {
-      content.insert(0, kUserScriptHead);
-      content += kUserScriptTail;
+      // We add this dumb function wrapper for user scripts to emulate what
+      // Greasemonkey does. |script_content| becomes:
+      // concat(kUserScriptHead, script_content, kUserScriptTail).
+      std::string content;
+      content.reserve(strlen(kUserScriptHead) + script_content.length() +
+                      strlen(kUserScriptTail));
+      content.append(kUserScriptHead);
+      script_content.AppendToString(&content);
+      content.append(kUserScriptTail);
+      // TODO(lazyboy): |content| is copied to |source|, should be avoided.
+      // Investigate if we can leverage WebString's cheap copying mechanism
+      // somehow.
+      source = blink::WebString::fromUTF8(content);
+    } else {
+      source = blink::WebString::fromUTF8(script_content.data(),
+                                          script_content.length());
     }
-    sources.push_back(blink::WebScriptSource(
-        blink::WebString::fromUTF8(content), iter->url()));
+    sources.push_back(blink::WebScriptSource(source, iter->url()));
   }
 
   // Emulate Greasemonkey API for scripts that were converted to extension
@@ -227,19 +238,22 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
   return sources;
 }
 
-std::vector<std::string> UserScriptInjector::GetCssSources(
+std::vector<blink::WebString> UserScriptInjector::GetCssSources(
     UserScript::RunLocation run_location) const {
   DCHECK_EQ(UserScript::DOCUMENT_START, run_location);
 
-  std::vector<std::string> sources;
+  std::vector<blink::WebString> sources;
   if (!script_)
     return sources;
 
   const UserScript::FileList& css_scripts = script_->css_scripts();
+  sources.reserve(css_scripts.size());
   for (UserScript::FileList::const_iterator iter = css_scripts.begin();
        iter != css_scripts.end();
        ++iter) {
-    sources.push_back(iter->GetContent().as_string());
+    base::StringPiece css_content = iter->GetContent();
+    sources.push_back(
+        blink::WebString::fromUTF8(css_content.data(), css_content.length()));
   }
   return sources;
 }

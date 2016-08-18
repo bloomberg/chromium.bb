@@ -50,7 +50,7 @@ class UserScriptInjector : public ScriptInjector,
       int tab_id) const override;
   std::vector<blink::WebScriptSource> GetJsSources(
       UserScript::RunLocation run_location) const override;
-  std::vector<std::string> GetCssSources(
+  std::vector<blink::WebString> GetCssSources(
       UserScript::RunLocation run_location) const override;
   void GetRunInfo(ScriptsRunInfo* scripts_run_info,
                   UserScript::RunLocation run_location) const override;
