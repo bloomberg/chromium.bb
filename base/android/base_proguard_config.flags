@@ -42,15 +42,6 @@
   @org.chromium.base.annotations.RemovableInRelease <methods>;
 }
 
-# Allows Proguard freedom in removing these log related calls. We ask for debug
-# and verbose logs to be stripped out in base.Log, so we are just ensuring we
-# get rid of all other debug/verbose logs.
--assumenosideeffects class android.util.Log {
-  static *** d(...);
-  static *** v(...);
-  static *** isLoggable(...);
-}
-
 # Keep all enum values and valueOf methods. See
 # http://proguard.sourceforge.net/index.html#manual/examples.html
 # for the reason for this. Also, see http://crbug.com/248037.

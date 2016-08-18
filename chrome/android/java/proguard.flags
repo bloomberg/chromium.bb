@@ -32,6 +32,15 @@
 # ~1.1%, and reduces the method count by ~4.3%.
 -allowaccessmodification
 
+# Allows Proguard freedom in removing these log related calls. We ask for debug
+# and verbose logs to be stripped out in base.Log, so we are just ensuring we
+# get rid of all other debug/verbose logs.
+-assumenosideeffects class android.util.Log {
+  static *** d(...);
+  static *** v(...);
+  static *** isLoggable(...);
+}
+
 # Fragments are loaded using reflection via Fragment.instantiate(Context,String)
 # This can be improved upon - see crbug.com/622023.
 -keep public class com.google.android.apps.chrome** extends android.app.Fragment

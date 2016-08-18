@@ -25,6 +25,15 @@
 # 3.7%.
 -allowaccessmodification
 
+# Allows Proguard freedom in removing these log related calls. We ask for debug
+# and verbose logs to be stripped out in base.Log, so we are just ensuring we
+# get rid of all other debug/verbose logs.
+-assumenosideeffects class android.util.Log {
+  static *** d(...);
+  static *** v(...);
+  static *** isLoggable(...);
+}
+
 # Keep the factory and its public members; it's the main entry point used by the
 # framework.
 -keep class com.android.webview.chromium.WebViewChromiumFactoryProvider {
