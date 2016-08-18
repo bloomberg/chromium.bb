@@ -209,7 +209,7 @@ class GeneratorJob {
         "// //components/tracing/tools/proto_zero_plugin.\n";
     std::string guard = package_ + "_" + source_->name() + "_H_";
     UpperString(&guard);
-    StripString(&guard, ".-", '_');
+    StripString(&guard, ".-/\\", '_');
 
     stub_h_->Print(
         "$greeting$\n"

@@ -7,10 +7,5 @@ option optimize_for = LITE_RUNTIME;
 
 package foo.bar;
 
-import public "upper_import.proto";
-
-enum Galaxy {
-  MILKY_WAY = 1;
-  ANDROMEDA = 2;
-  SUNFLOWER = 3;
+message TrickyPublicImport {
 }

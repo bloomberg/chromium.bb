@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 syntax = "proto2";
+option optimize_for = LITE_RUNTIME;
+
 package foo.bar;
 
 import public "library_internals/galaxies.proto";

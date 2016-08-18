@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/tracing/test/example_proto/library.pbzero.h"
 #include "components/tracing/test/example_proto/test_messages.pbzero.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,6 +13,10 @@ using foo::bar::CamelCaseFields;
 
 TEST(ProtoZeroTest, Simple) {
   // TODO(kraynov) Put tests in the next CL (crbug.com/608721).
+
+  // Test the includes for indirect public import: library.pbzero.h ->
+  // library_internals/galaxies.pbzero.h -> upper_import.pbzero.h .
+  EXPECT_LE(0u, sizeof(foo::bar::TrickyPublicImport));
 }
 
 TEST(ProtoZeroTest, FieldNumbers) {
