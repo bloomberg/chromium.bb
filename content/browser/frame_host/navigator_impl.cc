@@ -1044,13 +1044,24 @@ void NavigatorImpl::RequestNavigation(
           is_history_navigation_in_new_child, navigation_start, controller_);
   NavigationRequest* navigation_request = scoped_request.get();
 
-  // For Javascript navigations, do not assign the NavigationRequest to the
-  // FrameTreeNode, as navigating to a Javascript URL should not interrupt a
-  // previous navigation. BeginNavigation will have it commit, and the
-  // scoped_request will be destroyed at the end of this function.
-  if (!dest_url.SchemeIs(url::kJavaScriptScheme))
-    frame_tree_node->CreatedNavigationRequest(std::move(scoped_request));
+  // Navigation to a javascript URL is not a "real" navigation so there is no
+  // need to create a NavigationHandle. The navigation commits immediately and
+  // the NavigationRequest is not assigned to the FrameTreeNode as navigating to
+  // a Javascript URL should not interrupt a previous navigation.
+  // Note: The scoped_request will be destroyed at the end of this function.
+  if (dest_url.SchemeIs(url::kJavaScriptScheme)) {
+    RenderFrameHostImpl* render_frame_host =
+        frame_tree_node->render_manager()->GetFrameHostForNavigation(
+            *navigation_request);
+    render_frame_host->CommitNavigation(nullptr,  // response
+                                        nullptr,  // body
+                                        navigation_request->common_params(),
+                                        navigation_request->request_params(),
+                                        navigation_request->is_view_source());
+    return;
+  }
 
+  frame_tree_node->CreatedNavigationRequest(std::move(scoped_request));
   navigation_request->CreateNavigationHandle(entry.GetUniqueID());
 
   // Have the current renderer execute its beforeunload event if needed. If it

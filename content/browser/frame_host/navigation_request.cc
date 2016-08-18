@@ -447,6 +447,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
 
 void NavigationRequest::CommitNavigation() {
   DCHECK(response_ || !ShouldMakeNetworkRequestForURL(common_params_.url));
+  DCHECK(!common_params_.url.SchemeIs(url::kJavaScriptScheme));
 
   // Retrieve the RenderFrameHost that needs to commit the navigation.
   RenderFrameHostImpl* render_frame_host =
@@ -461,11 +462,7 @@ void NavigationRequest::CommitNavigation() {
                                       common_params_, request_params_,
                                       is_view_source_);
 
-  // When navigating to a Javascript url, the NavigationRequest is not stored
-  // in the FrameTreeNode. Therefore do not reset it, as this could cancel an
-  // existing pending navigation.
-  if (!common_params_.url.SchemeIs(url::kJavaScriptScheme))
-    frame_tree_node_->ResetNavigationRequest(true);
+  frame_tree_node_->ResetNavigationRequest(true);
 }
 
 }  // namespace content

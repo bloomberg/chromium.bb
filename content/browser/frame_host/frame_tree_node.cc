@@ -320,6 +320,12 @@ void FrameTreeNode::CreatedNavigationRequest(
     std::unique_ptr<NavigationRequest> navigation_request) {
   CHECK(IsBrowserSideNavigationEnabled());
 
+  // This is never called when navigating to a Javascript URL. For the loading
+  // state, this matches what Blink is doing: Blink doesn't send throbber
+  // notifications for Javascript URLS.
+  DCHECK(!navigation_request->common_params().url.SchemeIs(
+      url::kJavaScriptScheme));
+
   bool was_previously_loading = frame_tree()->IsLoading();
 
   // There's no need to reset the state: there's still an ongoing load, and the
@@ -331,15 +337,9 @@ void FrameTreeNode::CreatedNavigationRequest(
   navigation_request_ = std::move(navigation_request);
   render_manager()->DidCreateNavigationRequest(navigation_request_.get());
 
-  // Force the throbber to start to keep it in sync with what is happening in
-  // the UI. Blink doesn't send throb notifications for JavaScript URLs, so it
-  // is not done here either.
-  if (!navigation_request_->common_params().url.SchemeIs(
-          url::kJavaScriptScheme)) {
-    // TODO(fdegans): Check if this is a same-document navigation and set the
-    // proper argument.
-    DidStartLoading(true, was_previously_loading);
-  }
+  // TODO(fdegans): Check if this is a same-document navigation and set the
+  // proper argument.
+  DidStartLoading(true, was_previously_loading);
 }
 
 void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
