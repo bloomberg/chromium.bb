@@ -178,8 +178,10 @@ class MojoShellConnectionImpl::IOThreadContext
     // Note that this method may be invoked by MessageLoopObserver observing
     // MessageLoop destruction. In that case, this call to ShutDown is
     // effectively a no-op. In any case it's safe.
-    message_loop_observer_->ShutDown();
-    message_loop_observer_ = nullptr;
+    if (message_loop_observer_) {
+      message_loop_observer_->ShutDown();
+      message_loop_observer_ = nullptr;
+    }
 
     // Resetting the ServiceContext below may otherwise release the last
     // reference to this IOThreadContext. We keep it alive until the stack
