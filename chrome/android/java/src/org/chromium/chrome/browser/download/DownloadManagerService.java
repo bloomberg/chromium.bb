@@ -1115,6 +1115,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             boolean isNotificationDismissed) {
         nativeCancelDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord,
                 isNotificationDismissed);
+        removeDownloadProgress(downloadGuid);
         recordDownloadFinishedUMA(DOWNLOAD_STATUS_CANCELLED, downloadGuid, 0);
     }
 
@@ -1144,6 +1145,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      */
     public void removeDownload(String downloadGuid, boolean isOffTheRecord) {
         nativeRemoveDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
+        removeDownloadProgress(downloadGuid);
     }
 
     /**
@@ -1161,7 +1163,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     void onResumptionFailed(String downloadGuid) {
         mDownloadNotifier.notifyDownloadFailed(
                 new DownloadInfo.Builder().setDownloadGuid(downloadGuid).build());
-        mDownloadProgressMap.remove(downloadGuid);
+        removeDownloadProgress(downloadGuid);
         recordDownloadResumption(UMA_DOWNLOAD_RESUMPTION_FAILED);
         recordDownloadFinishedUMA(DOWNLOAD_STATUS_FAILED, downloadGuid, 0);
     }
@@ -1330,6 +1332,15 @@ public class DownloadManagerService extends BroadcastReceiver implements
         if (mAutoResumableDownloadIds.isEmpty()) return;
         mAutoResumableDownloadIds.remove(guid);
         stopListenToConnectionChangeIfNotNeeded();
+    }
+
+    /**
+     * Helper method to remove a download from |mDownloadProgressMap|.
+     * @param guid Id of the download item.
+     */
+    private void removeDownloadProgress(String guid) {
+        mDownloadProgressMap.remove(guid);
+        removeAutoResumableDownload(guid);
     }
 
     @Override
