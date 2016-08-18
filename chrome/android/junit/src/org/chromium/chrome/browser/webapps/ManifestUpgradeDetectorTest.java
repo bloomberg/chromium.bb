@@ -13,6 +13,7 @@ import android.os.Bundle;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.blink_public.platform.WebDisplayMode;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -188,6 +189,43 @@ public class ManifestUpgradeDetectorTest {
         detector.start();
         Assert.assertTrue(detector.mCompleted);
         Assert.assertTrue(detector.mIsUpgraded);
+    }
+
+    /**
+     * Test that an upgrade is not requested when the Web Manifest did not change and the Web
+     * Manifest scope is empty.
+     */
+    @Test
+    public void testManifestEmptyScopeShouldNotUpgrade() {
+        Data oldData = new Data();
+        // webapk_installer.cc sets the scope to the default scope if the scope is empty.
+        oldData.scopeUrl = ShortcutHelper.getScopeFromUrl(oldData.startUrl);
+        Data fetchedData = new Data();
+        fetchedData.scopeUrl = "";
+        Assert.assertTrue(!oldData.scopeUrl.equals(fetchedData.scopeUrl));
+
+        TestManifestUpgradeDetector detector = createDetector(oldData, fetchedData);
+        detector.start();
+        Assert.assertTrue(detector.mCompleted);
+        Assert.assertFalse(detector.mIsUpgraded);
+    }
+
+    /**
+     * Test that an upgrade is requested when the Web Manifest is updated from using a non-empty
+     * scope to an empty scope.
+     */
+    @Test
+    public void testManifestNonEmptyScopeToEmptyScopeShouldUpgrade() {
+        Data oldData = new Data();
+        oldData.startUrl = "/fancy/scope/special/snowflake.html";
+        oldData.scopeUrl = "/fancy/scope/";
+        Assert.assertTrue(
+                !oldData.scopeUrl.equals(ShortcutHelper.getScopeFromUrl(oldData.startUrl)));
+        Data fetchedData = new Data();
+        fetchedData.startUrl = "/fancy/scope/special/snowflake.html";
+        fetchedData.scopeUrl = "";
+
+        TestManifestUpgradeDetector detector = createDetector(oldData, fetchedData);
     }
 
     /**

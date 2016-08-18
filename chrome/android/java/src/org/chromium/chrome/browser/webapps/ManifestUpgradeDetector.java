@@ -13,6 +13,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
@@ -152,6 +153,10 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
             int orientation, long themeColor, long backgroundColor) {
         mFetcher.destroy();
         mFetcher = null;
+
+        if (TextUtils.isEmpty(scopeUrl)) {
+            scopeUrl = ShortcutHelper.getScopeFromUrl(startUrl);
+        }
 
         FetchedManifestData fetchedData = new FetchedManifestData();
         fetchedData.startUrl = startUrl;
