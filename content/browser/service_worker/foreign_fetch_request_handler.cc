@@ -13,6 +13,8 @@
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_trial_policy.h"
@@ -159,6 +161,7 @@ net::URLRequestJob* ForeignFetchRequestHandler::MaybeCreateJob(
       resource_type_, request_context_type_, frame_type_, body_,
       ServiceWorkerFetchType::FOREIGN_FETCH, this);
   job_ = job->GetWeakPtr();
+  resource_context_ = resource_context;
 
   context_->FindReadyRegistrationForDocument(
       request->url(),
@@ -227,6 +230,20 @@ void ForeignFetchRequestHandler::DidFindRegistration(
     return;
   }
 
+  int render_process_id;
+  int render_frame_id;
+  if (!ResourceRequestInfo::GetRenderFrameForRequest(
+          job->request(), &render_process_id, &render_frame_id)) {
+    render_process_id = -1;
+    render_frame_id = -1;
+  }
+  if (!GetContentClient()->browser()->AllowServiceWorker(
+          registration->pattern(), job->request()->first_party_for_cookies(),
+          resource_context_, render_process_id, render_frame_id)) {
+    job->FallbackToNetwork();
+    return;
+  }
+
   target_worker_ = active_version;
   job->ForwardToServiceWorker();
 }
@@ -250,6 +267,7 @@ ServiceWorkerVersion* ForeignFetchRequestHandler::GetServiceWorkerVersion(
 void ForeignFetchRequestHandler::ClearJob() {
   job_.reset();
   target_worker_ = nullptr;
+  resource_context_ = nullptr;
 }
 
 }  // namespace content

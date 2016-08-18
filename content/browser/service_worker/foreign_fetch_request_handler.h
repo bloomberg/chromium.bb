@@ -122,6 +122,7 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
   RequestContextType request_context_type_;
   RequestContextFrameType frame_type_;
   scoped_refptr<ResourceRequestBodyImpl> body_;
+  ResourceContext* resource_context_;
 
   base::WeakPtr<ServiceWorkerURLRequestJob> job_;
   scoped_refptr<ServiceWorkerVersion> target_worker_;
