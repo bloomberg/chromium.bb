@@ -53,6 +53,26 @@ const char kServerHostname[] = "test.example.com";
 const uint16_t kServerPort = 443;
 const size_t kMaxReadersPerQuicSession = 5;
 
+class MockStreamDelegate : public QuicChromiumClientStream::Delegate {
+ public:
+  MockStreamDelegate() {}
+
+  MOCK_METHOD0(OnSendData, int());
+  MOCK_METHOD2(OnSendDataComplete, int(int, bool*));
+  MOCK_METHOD2(OnHeadersAvailable,
+               void(const SpdyHeaderBlock& headers, size_t frame_len));
+  MOCK_METHOD2(OnHeadersAvailableMock,
+               void(const SpdyHeaderBlock& headers, size_t frame_len));
+  MOCK_METHOD2(OnDataReceived, int(const char*, int));
+  MOCK_METHOD0(OnDataAvailable, void());
+  MOCK_METHOD0(OnClose, void());
+  MOCK_METHOD1(OnError, void(int));
+  MOCK_METHOD0(HasSendHeadersComplete, bool());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockStreamDelegate);
+};
+
 class QuicChromiumClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
  protected:
@@ -192,6 +212,32 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   session_->OnRstStream(rst1);
   EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumOpenOutgoingStreams());
   EXPECT_TRUE(session_->CreateOutgoingDynamicStream(kDefaultPriority));
+}
+
+TEST_P(QuicChromiumClientSessionTest, Priority) {
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+      1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
+  MockWrite writes[] = {
+      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1)};
+  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
+                                             arraysize(writes)));
+
+  Initialize();
+  CompleteCryptoHandshake();
+  for (SpdyPriority priority : {kV3HighestPriority, kV3LowestPriority}) {
+    QuicChromiumClientStream* stream =
+        session_->CreateOutgoingDynamicStream(priority);
+    EXPECT_EQ(kV3HighestPriority, stream->priority());
+
+    MockStreamDelegate delegate;
+    EXPECT_CALL(delegate, HasSendHeadersComplete())
+        .WillOnce(testing::Return(true));
+    stream->SetDelegate(&delegate);
+    EXPECT_EQ(priority, stream->priority());
+    stream->SetDelegate(nullptr);
+    session_->CloseStream(stream->id());
+  }
 }
 
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {

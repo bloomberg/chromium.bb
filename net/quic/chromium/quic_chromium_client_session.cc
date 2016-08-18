@@ -491,7 +491,10 @@ QuicChromiumClientSession::CreateOutgoingDynamicStream(SpdyPriority priority) {
   if (!ShouldCreateOutgoingDynamicStream()) {
     return nullptr;
   }
-  return CreateOutgoingReliableStreamImpl();
+  QuicChromiumClientStream* stream = CreateOutgoingReliableStreamImpl();
+  if (stream != nullptr)
+    stream->SetPriority(priority);
+  return stream;
 }
 
 QuicChromiumClientStream*
