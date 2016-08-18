@@ -55,7 +55,7 @@ class ComponentLoader {
   //
   //   ssh-keygen -t rsa -b 1024 -N '' -f /tmp/key.pem
   //   openssl rsa -pubout -outform DER < /tmp/key.pem 2>/dev/null | base64 -w 0
-  std::string Add(const std::string& manifest_contents,
+  std::string Add(const base::StringPiece& manifest_contents,
                   const base::FilePath& root_directory);
 
   // Convenience method for registering a component extension by resource id.
@@ -133,7 +133,7 @@ class ComponentLoader {
   base::DictionaryValue* ParseManifest(
       base::StringPiece manifest_contents) const;
 
-  std::string Add(const std::string& manifest_contents,
+  std::string Add(const base::StringPiece& manifest_contents,
                   const base::FilePath& root_directory,
                   bool skip_whitelist);
   std::string Add(const base::DictionaryValue* parsed_manifest,

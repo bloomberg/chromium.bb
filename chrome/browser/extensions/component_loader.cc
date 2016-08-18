@@ -191,18 +191,18 @@ std::string ComponentLoader::Add(int manifest_resource_id,
       !IsComponentExtensionWhitelisted(manifest_resource_id))
     return std::string();
 
-  std::string manifest_contents =
+  base::StringPiece manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          manifest_resource_id).as_string();
+          manifest_resource_id);
   return Add(manifest_contents, root_directory, true);
 }
 
-std::string ComponentLoader::Add(const std::string& manifest_contents,
+std::string ComponentLoader::Add(const base::StringPiece& manifest_contents,
                                  const base::FilePath& root_directory) {
   return Add(manifest_contents, root_directory, false);
 }
 
-std::string ComponentLoader::Add(const std::string& manifest_contents,
+std::string ComponentLoader::Add(const base::StringPiece& manifest_contents,
                                  const base::FilePath& root_directory,
                                  bool skip_whitelist) {
   // The Value is kept for the lifetime of the ComponentLoader. This is
