@@ -155,6 +155,10 @@ static const DWORD g_IntelLegacyGPUList[] = {
     0x102, 0x106, 0x116, 0x126,
 };
 
+constexpr const wchar_t* const kMediaFoundationVideoDecoderDLLs[] = {
+    L"mf.dll", L"mfplat.dll", L"msmpeg2vdec.dll",
+};
+
 }  // namespace
 
 namespace media {
@@ -1040,6 +1044,15 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
 
   // TODO(henryhsu): Need to ensure the profiles are actually supported.
   SupportedProfiles profiles;
+
+  for (const wchar_t* mfdll : kMediaFoundationVideoDecoderDLLs) {
+    if (!::GetModuleHandle(mfdll)) {
+      // Windows N is missing the media foundation DLLs unless the media
+      // feature pack is installed.
+      DVLOG(ERROR) << mfdll << " is required for hardware video decoding";
+      return profiles;
+    }
+  }
   for (const auto& supported_profile : kSupportedProfiles) {
     if (!preferences.enable_accelerated_vpx_decode &&
         (supported_profile >= VP8PROFILE_MIN) &&
@@ -1060,9 +1073,8 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
 
 // static
 void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
-  ::LoadLibrary(L"MFPlat.dll");
-  ::LoadLibrary(L"msmpeg2vdec.dll");
-  ::LoadLibrary(L"mf.dll");
+  for (const wchar_t* mfdll : kMediaFoundationVideoDecoderDLLs)
+    ::LoadLibrary(mfdll);
   ::LoadLibrary(L"dxva2.dll");
 
   if (base::win::GetVersion() > base::win::VERSION_WIN7) {
