@@ -18,10 +18,9 @@ class FakeClipboardRecentContent : public ClipboardRecentContent {
   ~FakeClipboardRecentContent() override;
 
   // ClipboardRecentContent implementation.
-  bool GetRecentURLFromClipboard(GURL* url) const override;
+  bool GetRecentURLFromClipboard(GURL* url) override;
   base::TimeDelta GetClipboardContentAge() const override;
   void SuppressClipboardContent() override;
-  void RecentURLDisplayed() override;
 
   // Sets the URL and clipboard content age.
   void SetClipboardContent(const GURL& url, base::TimeDelta content_age);

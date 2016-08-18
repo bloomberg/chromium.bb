@@ -9,7 +9,7 @@ FakeClipboardRecentContent::FakeClipboardRecentContent()
 
 FakeClipboardRecentContent::~FakeClipboardRecentContent() {}
 
-bool FakeClipboardRecentContent::GetRecentURLFromClipboard(GURL* url) const {
+bool FakeClipboardRecentContent::GetRecentURLFromClipboard(GURL* url) {
   if (suppress_content_)
     return false;
 
@@ -27,8 +27,6 @@ base::TimeDelta FakeClipboardRecentContent::GetClipboardContentAge() const {
 void FakeClipboardRecentContent::SuppressClipboardContent() {
   suppress_content_ = true;
 }
-
-void FakeClipboardRecentContent::RecentURLDisplayed() {}
 
 void FakeClipboardRecentContent::SetClipboardContent(
     const GURL& url,

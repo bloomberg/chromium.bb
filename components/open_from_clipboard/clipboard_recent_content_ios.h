@@ -13,7 +13,7 @@
 
 @class NSDate;
 @class NSUserDefaults;
-@class PasteboardNotificationListenerBridge;
+@class ApplicationDidBecomeActiveNotificationListenerBridge;
 
 class ClipboardRecentContentIOSTest;
 
@@ -30,38 +30,28 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
                                      NSUserDefaults* group_user_defaults);
   ~ClipboardRecentContentIOS() override;
 
-  // Notifies that the content of the pasteboard may have changed.
-  void PasteboardChanged();
+  // If the content of the pasteboard has changed, updates the change count,
+  // change date, and md5 of the latest pasteboard entry if necessary.
+  void UpdateIfNeeded();
 
-  // Checks if pasteboard changed since last time a pasteboard change was
-  // registered.
-  bool HasPasteboardChanged(base::TimeDelta uptime);
-
-  // Gets the current URL in the clipboard. If the cache is out of date, updates
-  // it.
-  bool GetCurrentURLFromClipboard(GURL* url);
+  // Returns whether the pasteboard changed since the last time a pasteboard
+  // change was detected.
+  bool HasPasteboardChanged() const;
 
   // Loads information from the user defaults about the latest pasteboard entry.
   void LoadFromUserDefaults();
 
   // ClipboardRecentContent implementation.
-  bool GetRecentURLFromClipboard(GURL* url) const override;
-
+  bool GetRecentURLFromClipboard(GURL* url) override;
   base::TimeDelta GetClipboardContentAge() const override;
   void SuppressClipboardContent() override;
-  void RecentURLDisplayed() override;
+
+ protected:
+  // Returns the uptime. Override in tests to return custom value.
+  virtual base::TimeDelta Uptime() const;
 
  private:
   friend class ClipboardRecentContentIOSTest;
-
-  // Helper constructor for testing. |uptime| is how long ago the device has
-  // started, while |application_scheme| has the same meaning as the public
-  // constructor.
-  ClipboardRecentContentIOS(const std::string& application_scheme,
-                            base::TimeDelta uptime);
-
-  // Initializes the object. |uptime| is how long ago the device has started.
-  void Init(base::TimeDelta uptime);
 
   // Saves information to the user defaults about the latest pasteboard entry.
   void SaveToUserDefaults();
@@ -75,14 +65,10 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
   NSInteger last_pasteboard_change_count_;
   // Estimation of the date when the pasteboard changed.
   base::scoped_nsobject<NSDate> last_pasteboard_change_date_;
-  // Estimation of the copy date of the last displayed URL.
-  base::scoped_nsobject<NSDate> last_displayed_pasteboard_entry_;
   // MD5 hash of the last registered pasteboard entry.
   base::scoped_nsobject<NSData> last_pasteboard_entry_md5_;
-  // Cache of the GURL contained in the pasteboard (if any).
-  GURL url_from_pasteboard_cache_;
-  // Bridge to receive notification when the pasteboard changes.
-  base::scoped_nsobject<PasteboardNotificationListenerBridge>
+  // Bridge to receive notifications when the application becomes active.
+  base::scoped_nsobject<ApplicationDidBecomeActiveNotificationListenerBridge>
       notification_bridge_;
   // The user defaults from the app group used to optimize the pasteboard change
   // detection.

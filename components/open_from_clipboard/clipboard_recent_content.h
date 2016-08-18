@@ -31,10 +31,7 @@ class ClipboardRecentContent {
   // Returns true if the clipboard contains a recent URL that has not been
   // supressed, and copies it in |url|. Otherwise, returns false. |url| must not
   // be null.
-  virtual bool GetRecentURLFromClipboard(GURL* url) const = 0;
-
-  // Reports that the URL contained in the pasteboard was displayed.
-  virtual void RecentURLDisplayed() = 0;
+  virtual bool GetRecentURLFromClipboard(GURL* url) = 0;
 
   // Returns how old the content of the clipboard is.
   virtual base::TimeDelta GetClipboardContentAge() const = 0;

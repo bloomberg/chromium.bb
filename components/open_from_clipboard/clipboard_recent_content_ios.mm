@@ -18,11 +18,12 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-// Bridge that forwards pasteboard change notifications to its delegate.
-@interface PasteboardNotificationListenerBridge : NSObject
+// Bridge that forwards UIApplicationDidBecomeActiveNotification notifications
+// to its delegate.
+@interface ApplicationDidBecomeActiveNotificationListenerBridge : NSObject
 
-// Initialize the PasteboardNotificationListenerBridge with |delegate| which
-// must not be null.
+// Initialize the ApplicationDidBecomeActiveNotificationListenerBridge with
+// |delegate| which must not be null.
 - (instancetype)initWithDelegate:(ClipboardRecentContentIOS*)delegate
     NS_DESIGNATED_INITIALIZER;
 
@@ -30,7 +31,7 @@
 
 @end
 
-@implementation PasteboardNotificationListenerBridge {
+@implementation ApplicationDidBecomeActiveNotificationListenerBridge {
   ClipboardRecentContentIOS* _delegate;
 }
 
@@ -46,11 +47,6 @@
     _delegate = delegate;
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(pasteboardChangedNotification:)
-               name:UIPasteboardChangedNotification
-             object:[UIPasteboard generalPasteboard]];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
            selector:@selector(didBecomeActive:)
                name:UIApplicationDidBecomeActiveNotification
              object:nil];
@@ -63,18 +59,10 @@
   [super dealloc];
 }
 
-- (void)pasteboardChangedNotification:(NSNotification*)notification {
-  if (_delegate) {
-    _delegate->PasteboardChanged();
-  }
-}
-
 - (void)didBecomeActive:(NSNotification*)notification {
   if (_delegate) {
     _delegate->LoadFromUserDefaults();
-    if (_delegate->HasPasteboardChanged(base::SysInfo::Uptime())) {
-      _delegate->PasteboardChanged();
-    }
+    _delegate->UpdateIfNeeded();
   }
 }
 
@@ -95,9 +83,6 @@ NSString* kPasteboardChangeDateKey = @"PasteboardChangeDate";
 // Key used to store the hash of the content of the pasteboard. Whenever the
 // hash changed, the pasteboard content is considered to have changed.
 NSString* kPasteboardEntryMD5Key = @"PasteboardEntryMD5";
-// Key used to store the date of the latest pasteboard entry displayed in the
-// omnibox. This is used to report metrics on pasteboard change.
-NSString* kLastDisplayedPasteboardEntryKey = @"LastDisplayedPasteboardEntry";
 base::TimeDelta kMaximumAgeOfClipboard = base::TimeDelta::FromHours(3);
 // Schemes accepted by the ClipboardRecentContentIOS.
 const char* kAuthorizedSchemes[] = {
@@ -121,14 +106,16 @@ NSData* WeakMD5FromNSString(NSString* string) {
 
 }  // namespace
 
-bool ClipboardRecentContentIOS::GetRecentURLFromClipboard(GURL* url) const {
+bool ClipboardRecentContentIOS::GetRecentURLFromClipboard(GURL* url) {
   DCHECK(url);
+  UpdateIfNeeded();
   if (GetClipboardContentAge() > kMaximumAgeOfClipboard) {
     return false;
   }
 
-  if (url_from_pasteboard_cache_.is_valid()) {
-    *url = url_from_pasteboard_cache_;
+  GURL url_from_pasteboard = URLFromPasteboard();
+  if (url_from_pasteboard.is_valid()) {
+    *url = url_from_pasteboard;
     return true;
   }
   return false;
@@ -147,12 +134,13 @@ void ClipboardRecentContentIOS::SuppressClipboardContent() {
   SaveToUserDefaults();
 }
 
-void ClipboardRecentContentIOS::PasteboardChanged() {
-  url_from_pasteboard_cache_ = URLFromPasteboard();
-  if (!url_from_pasteboard_cache_.is_empty()) {
-    base::RecordAction(
-        base::UserMetricsAction("MobileOmniboxClipboardChanged"));
-  }
+void ClipboardRecentContentIOS::UpdateIfNeeded() {
+  if (!HasPasteboardChanged())
+    return;
+
+  base::RecordAction(base::UserMetricsAction("MobileOmniboxClipboardChanged"));
+
+  GURL url_from_pasteboard = URLFromPasteboard();
   last_pasteboard_change_date_.reset([[NSDate date] retain]);
   last_pasteboard_change_count_ = [UIPasteboard generalPasteboard].changeCount;
   NSString* pasteboard_string = [[UIPasteboard generalPasteboard] string];
@@ -169,18 +157,19 @@ ClipboardRecentContentIOS::ClipboardRecentContentIOS(
     NSUserDefaults* group_user_defaults)
     : application_scheme_(application_scheme),
       shared_user_defaults_([group_user_defaults retain]) {
-  Init(base::SysInfo::Uptime());
+  last_pasteboard_change_count_ = NSIntegerMax;
+  LoadFromUserDefaults();
+
+  UpdateIfNeeded();
+
+  // Makes sure |last_pasteboard_change_count_| was properly initialized.
+  DCHECK_NE(last_pasteboard_change_count_, NSIntegerMax);
+  notification_bridge_.reset(
+      [[ApplicationDidBecomeActiveNotificationListenerBridge alloc]
+          initWithDelegate:this]);
 }
 
-ClipboardRecentContentIOS::ClipboardRecentContentIOS(
-    const std::string& application_scheme,
-    base::TimeDelta uptime)
-    : application_scheme_(application_scheme),
-      shared_user_defaults_([[NSUserDefaults standardUserDefaults] retain]) {
-  Init(uptime);
-}
-
-bool ClipboardRecentContentIOS::HasPasteboardChanged(base::TimeDelta uptime) {
+bool ClipboardRecentContentIOS::HasPasteboardChanged() const {
   // If |MD5Changed|, we know for sure there has been at least one pasteboard
   // copy since last time it was checked.
   // If the pasteboard content is still the same but the device was not
@@ -192,7 +181,7 @@ bool ClipboardRecentContentIOS::HasPasteboardChanged(base::TimeDelta uptime) {
   NSInteger change_count = [UIPasteboard generalPasteboard].changeCount;
   bool change_count_changed = change_count != last_pasteboard_change_count_;
 
-  bool not_rebooted = uptime > GetClipboardContentAge();
+  bool not_rebooted = Uptime() > GetClipboardContentAge();
   if (not_rebooted)
     return change_count_changed;
 
@@ -204,27 +193,6 @@ bool ClipboardRecentContentIOS::HasPasteboardChanged(base::TimeDelta uptime) {
   BOOL md5_changed = ![md5 isEqualToData:last_pasteboard_entry_md5_];
 
   return md5_changed;
-}
-
-bool ClipboardRecentContentIOS::GetCurrentURLFromClipboard(GURL* url) {
-  if (HasPasteboardChanged(base::SysInfo::Uptime())) {
-    PasteboardChanged();
-  }
-  return GetRecentURLFromClipboard(url);
-}
-
-void ClipboardRecentContentIOS::Init(base::TimeDelta uptime) {
-  last_pasteboard_change_count_ = NSIntegerMax;
-  url_from_pasteboard_cache_ = URLFromPasteboard();
-  LoadFromUserDefaults();
-
-  if (HasPasteboardChanged(uptime))
-    PasteboardChanged();
-
-  // Makes sure |last_pasteboard_change_count_| was properly initialized.
-  DCHECK_NE(last_pasteboard_change_count_, NSIntegerMax);
-  notification_bridge_.reset(
-      [[PasteboardNotificationListenerBridge alloc] initWithDelegate:this]);
 }
 
 ClipboardRecentContentIOS::~ClipboardRecentContentIOS() {
@@ -252,16 +220,6 @@ GURL ClipboardRecentContentIOS::URLFromPasteboard() {
   return GURL::EmptyGURL();
 }
 
-void ClipboardRecentContentIOS::RecentURLDisplayed() {
-  if ([last_pasteboard_change_date_
-          isEqualToDate:last_displayed_pasteboard_entry_.get()]) {
-    return;
-  }
-  base::RecordAction(base::UserMetricsAction("MobileOmniboxClipboardChanged"));
-  last_pasteboard_change_date_ = last_displayed_pasteboard_entry_;
-  SaveToUserDefaults();
-}
-
 void ClipboardRecentContentIOS::LoadFromUserDefaults() {
   last_pasteboard_change_count_ =
       [shared_user_defaults_ integerForKey:kPasteboardChangeCountKey];
@@ -269,8 +227,6 @@ void ClipboardRecentContentIOS::LoadFromUserDefaults() {
       [[shared_user_defaults_ objectForKey:kPasteboardChangeDateKey] retain]);
   last_pasteboard_entry_md5_.reset(
       [[shared_user_defaults_ objectForKey:kPasteboardEntryMD5Key] retain]);
-  last_displayed_pasteboard_entry_.reset([[shared_user_defaults_
-      objectForKey:kLastDisplayedPasteboardEntryKey] retain]);
 
   DCHECK(!last_pasteboard_change_date_ ||
          [last_pasteboard_change_date_ isKindOfClass:[NSDate class]]);
@@ -283,6 +239,8 @@ void ClipboardRecentContentIOS::SaveToUserDefaults() {
                             forKey:kPasteboardChangeDateKey];
   [shared_user_defaults_ setObject:last_pasteboard_entry_md5_
                             forKey:kPasteboardEntryMD5Key];
-  [shared_user_defaults_ setObject:last_displayed_pasteboard_entry_
-                            forKey:kLastDisplayedPasteboardEntryKey];
+}
+
+base::TimeDelta ClipboardRecentContentIOS::Uptime() const {
+  return base::SysInfo::Uptime();
 }
