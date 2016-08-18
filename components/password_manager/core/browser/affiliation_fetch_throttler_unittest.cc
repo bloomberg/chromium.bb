@@ -73,8 +73,8 @@ class AffiliationFetchThrottlerTest : public testing::Test {
   ~AffiliationFetchThrottlerTest() override {}
 
   std::unique_ptr<AffiliationFetchThrottler> CreateThrottler() {
-    return base::WrapUnique(new AffiliationFetchThrottler(
-        &mock_delegate_, task_runner_, mock_tick_clock_.get()));
+    return base::MakeUnique<AffiliationFetchThrottler>(
+        &mock_delegate_, task_runner_, mock_tick_clock_.get());
   }
 
   void SimulateHasNetworkConnectivity(bool has_connectivity) {

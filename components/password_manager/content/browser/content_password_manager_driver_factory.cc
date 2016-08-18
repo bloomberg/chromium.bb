@@ -89,8 +89,8 @@ void ContentPasswordManagerDriverFactory::RenderFrameCreated(
   // This is called twice for the main frame.
   if (insertion_result.second) {  // This was the first time.
     insertion_result.first->second =
-        base::WrapUnique(new ContentPasswordManagerDriver(
-            render_frame_host, password_client_, autofill_client_));
+        base::MakeUnique<ContentPasswordManagerDriver>(
+            render_frame_host, password_client_, autofill_client_);
   }
 }
 

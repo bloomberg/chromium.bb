@@ -315,7 +315,7 @@ void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK(!client_->IsOffTheRecord());
 
   blacklisted_matches_.push_back(
-      base::WrapUnique(new autofill::PasswordForm(observed_form_)));
+      base::MakeUnique<autofill::PasswordForm>(observed_form_));
   form_saver_->PermanentlyBlacklist(blacklisted_matches_.back().get());
 }
 

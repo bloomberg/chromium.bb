@@ -106,7 +106,7 @@ class PasswordStoreDefaultTestDelegate {
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate() {
   SetupTempDir();
   store_ = CreateInitializedStore(
-      base::WrapUnique(new LoginDatabase(test_login_db_file_path())));
+      base::MakeUnique<LoginDatabase>(test_login_db_file_path()));
 }
 
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate(

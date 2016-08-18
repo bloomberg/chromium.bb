@@ -229,9 +229,9 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
   // ability to detect forms.
-  auto manager = base::WrapUnique(new PasswordFormManager(
+  auto manager = base::MakeUnique<PasswordFormManager>(
       this, client_, driver->AsWeakPtr(), form,
-      base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore()))));
+      base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())));
   pending_login_managers_.push_back(std::move(manager));
 }
 
@@ -519,11 +519,11 @@ void PasswordManager::CreatePendingLoginManagers(
 
     if (logger)
       logger->LogFormSignatures(Logger::STRING_ADDING_SIGNATURE, *iter);
-    auto manager = base::WrapUnique(new PasswordFormManager(
+    auto manager = base::MakeUnique<PasswordFormManager>(
         this, client_,
         (driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>()),
         *iter,
-        base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore()))));
+        base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())));
     pending_login_managers_.push_back(std::move(manager));
   }
 

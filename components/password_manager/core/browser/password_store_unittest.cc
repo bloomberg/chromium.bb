@@ -104,7 +104,7 @@ ACTION(STLDeleteElements0) {
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
+      base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
@@ -197,7 +197,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 TEST_F(PasswordStoreTest, StartSyncFlare) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
+      base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   StartSyncFlareMock mock;
   store->Init(
       base::Bind(&StartSyncFlareMock::StartSyncFlare, base::Unretained(&mock)));
@@ -226,7 +226,7 @@ TEST_F(PasswordStoreTest, GetLoginImpl) {
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
+      base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
   // For each attribute in the primary key, create one form that mismatches on
@@ -289,7 +289,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
+      base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
   std::unique_ptr<PasswordForm> old_form(
@@ -785,7 +785,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
     scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(),
-        base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
+        base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
     store->Init(syncer::SyncableService::StartSyncFlare());
     store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
                                       base::Closure());

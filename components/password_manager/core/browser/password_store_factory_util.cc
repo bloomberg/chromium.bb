@@ -91,7 +91,7 @@ void TrimOrDeleteAffiliationCacheForStoreAndPath(
 std::unique_ptr<LoginDatabase> CreateLoginDatabase(
     const base::FilePath& profile_path) {
   base::FilePath login_db_file_path = profile_path.Append(kLoginDataFileName);
-  return base::WrapUnique(new LoginDatabase(login_db_file_path));
+  return base::MakeUnique<LoginDatabase>(login_db_file_path);
 }
 
 }  // namespace password_manager

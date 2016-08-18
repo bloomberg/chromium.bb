@@ -124,9 +124,9 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   std::unique_ptr<PasswordFormManager> CreateFormManager(
       LoginState login_state,
       const PasswordForm& pending) {
-    auto form_manager = base::WrapUnique(new PasswordFormManager(
+    auto form_manager = base::MakeUnique<PasswordFormManager>(
         &password_manager_, &client_, driver_.AsWeakPtr(), pending,
-        base::WrapUnique(new StubFormSaver)));
+        base::MakeUnique<StubFormSaver>());
 
     ScopedVector<PasswordForm> saved_forms;
     if (login_state == LoginState::EXISTING) {

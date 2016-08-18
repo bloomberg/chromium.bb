@@ -48,11 +48,11 @@ std::unique_ptr<blink::WebCredential> CredentialInfoToWebCredential(
     const CredentialInfo& info) {
   switch (info.type) {
     case CredentialType::CREDENTIAL_TYPE_FEDERATED:
-      return base::WrapUnique(new blink::WebFederatedCredential(
-          info.id, info.federation, info.name, info.icon));
+      return base::MakeUnique<blink::WebFederatedCredential>(
+          info.id, info.federation, info.name, info.icon);
     case CredentialType::CREDENTIAL_TYPE_PASSWORD:
-      return base::WrapUnique(new blink::WebPasswordCredential(
-          info.id, info.password, info.name, info.icon));
+      return base::MakeUnique<blink::WebPasswordCredential>(
+          info.id, info.password, info.name, info.icon);
     case CredentialType::CREDENTIAL_TYPE_EMPTY:
       return nullptr;
   }

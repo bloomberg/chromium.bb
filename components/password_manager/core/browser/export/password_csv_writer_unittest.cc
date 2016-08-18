@@ -39,7 +39,7 @@ TEST(PasswordCSVWriterTest, SerializePasswords_SinglePassword) {
   form.origin = GURL("http://example.com");
   form.username_value = base::UTF8ToUTF16("Someone");
   form.password_value = base::UTF8ToUTF16("Secret");
-  passwords.push_back(base::WrapUnique(new PasswordForm(form)));
+  passwords.push_back(base::MakeUnique<PasswordForm>(form));
 
   std::vector<std::string> column_names;
   std::vector<std::map<std::string, std::string>> records;
@@ -60,11 +60,11 @@ TEST(PasswordCSVWriterTest, SerializePasswords_TwoPasswords) {
   form.origin = GURL("http://example.com");
   form.username_value = base::UTF8ToUTF16("Someone");
   form.password_value = base::UTF8ToUTF16("Secret");
-  passwords.push_back(base::WrapUnique(new PasswordForm(form)));
+  passwords.push_back(base::MakeUnique<PasswordForm>(form));
   form.origin = GURL("http://other.org");
   form.username_value = base::UTF8ToUTF16("Anyone");
   form.password_value = base::UTF8ToUTF16("None");
-  passwords.push_back(base::WrapUnique(new PasswordForm(form)));
+  passwords.push_back(base::MakeUnique<PasswordForm>(form));
 
   std::vector<std::string> column_names;
   std::vector<std::map<std::string, std::string>> records;

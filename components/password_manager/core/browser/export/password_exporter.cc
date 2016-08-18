@@ -33,8 +33,8 @@ void PasswordExporter::Export(
   blocking_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&WriteToFile, path,
-                 base::Passed(base::WrapUnique(new std::string(
-                     PasswordCSVWriter::SerializePasswords(passwords))))));
+                 base::Passed(base::MakeUnique<std::string>(
+                     PasswordCSVWriter::SerializePasswords(passwords)))));
 }
 
 // static
