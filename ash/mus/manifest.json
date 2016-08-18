@@ -8,6 +8,9 @@
     },
     "required": {
       "*": { "classes": [ "accessibility", "app" ] },
+      "mojo:mash_session": {
+        "interfaces": [ "mash::session::mojom::Session" ]
+      },
       "mojo:ui": {
         "interfaces": [
           "ui::mojom::AccessibilityManager",
