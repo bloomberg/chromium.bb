@@ -78,6 +78,7 @@
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "device/geolocation/geolocation_service_context.h"
@@ -799,9 +800,10 @@ void RenderFrameHostImpl::Create(
   registry->Bind(GetProxy(&interfaces));
   media_registries_.push_back(std::move(registry));
 
+  // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
   media::mojom::MediaServicePtr media_service;
   shell::Connector* connector =
-      BrowserContext::GetShellConnectorFor(GetProcess()->GetBrowserContext());
+      MojoShellConnection::GetForProcess()->GetConnector();
   connector->ConnectToInterface("mojo:media", &media_service);
   media_service->CreateServiceFactory(std::move(request),
                                       std::move(interfaces));
