@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "content/renderer/input/main_thread_event_queue.h"
+
 #include "content/common/input/event_with_latency_info.h"
 #include "content/common/input_messages.h"
+#include "content/renderer/render_thread_impl.h"
 
 namespace content {
 
@@ -116,9 +118,15 @@ void MainThreadEventQueue::PopEventOnMainThread() {
 void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
                                         InputEventAckState ack_result) {
   if (in_flight_event_) {
+    RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
     // Send acks for blocking touch events.
-    for (const auto id : in_flight_event_->eventsToAck())
+    for (const auto id : in_flight_event_->eventsToAck()) {
       client_->SendInputEventAck(routing_id_, type, ack_result, id);
+      if (render_thread_impl) {
+        render_thread_impl->GetRendererScheduler()
+            ->DidHandleInputEventOnMainThread(in_flight_event_->event());
+      }
+    }
   }
 }
 
