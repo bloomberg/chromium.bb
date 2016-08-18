@@ -120,7 +120,7 @@ class VIEWS_EXPORT TextfieldModel {
   // The current composition text will be confirmed.
   void MoveCursor(gfx::BreakType break_type,
                   gfx::VisualCursorDirection direction,
-                  bool select);
+                  gfx::SelectionBehavior selection_behavior);
 
   // Updates the cursor to the specified selection model. Any composition text
   // will be confirmed, which may alter the specified selection range start.

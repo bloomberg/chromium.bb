@@ -328,10 +328,11 @@ class GFX_EXPORT RenderText {
 
   // Moves the cursor left or right. Cursor movement is visual, meaning that
   // left and right are relative to screen, not the directionality of the text.
-  // If |select| is false, the selection start is moved to the same position.
+  // |selection_behavior| determines whether a selection is to be made and it's
+  // behavior.
   void MoveCursor(BreakType break_type,
                   VisualCursorDirection direction,
-                  bool select);
+                  SelectionBehavior selection_behavior);
 
   // Set the selection_model_ to the value of |selection|.
   // The selection range is clamped to text().length() if out of range.

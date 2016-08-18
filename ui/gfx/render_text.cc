@@ -613,10 +613,11 @@ void RenderText::SetCursorPosition(size_t position) {
 
 void RenderText::MoveCursor(BreakType break_type,
                             VisualCursorDirection direction,
-                            bool select) {
+                            SelectionBehavior selection_behavior) {
   SelectionModel cursor(cursor_position(), selection_model_.caret_affinity());
   // Cancelling a selection moves to the edge of the selection.
-  if (break_type != LINE_BREAK && !selection().is_empty() && !select) {
+  if (break_type != LINE_BREAK && !selection().is_empty() &&
+      selection_behavior == SELECTION_NONE) {
     SelectionModel selection_start = GetSelectionModelForSelectionStart();
     int start_x = GetCursorBounds(selection_start, true).x();
     int cursor_x = GetCursorBounds(cursor, true).x();
@@ -633,8 +634,41 @@ void RenderText::MoveCursor(BreakType break_type,
   } else {
     cursor = GetAdjacentSelectionModel(cursor, break_type, direction);
   }
-  if (select)
-    cursor.set_selection_start(selection().start());
+
+  // |cursor| corresponds to the tentative end point of the new selection. The
+  // selection direction is reversed iff the current selection is non-empty and
+  // the old selection end point and |cursor| are at the opposite ends of the
+  // old selection start point.
+  uint32_t min_end = std::min(selection().end(), cursor.selection().end());
+  uint32_t max_end = std::max(selection().end(), cursor.selection().end());
+  uint32_t current_start = selection().start();
+
+  bool selection_reversed = !selection().is_empty() &&
+                            min_end <= current_start &&
+                            current_start <= max_end;
+
+  // Take |selection_behavior| into account.
+  switch (selection_behavior) {
+    case SELECTION_RETAIN:
+      cursor.set_selection_start(current_start);
+      break;
+    case SELECTION_EXTEND:
+      cursor.set_selection_start(selection_reversed ? selection().end()
+                                                    : current_start);
+      break;
+    case SELECTION_CARET:
+      if (selection_reversed) {
+        cursor =
+            SelectionModel(current_start, selection_model_.caret_affinity());
+      } else {
+        cursor.set_selection_start(current_start);
+      }
+      break;
+    case SELECTION_NONE:
+      // Do nothing.
+      break;
+  }
+
   MoveCursorTo(cursor);
 }
 

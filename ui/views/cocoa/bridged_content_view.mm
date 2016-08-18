@@ -791,14 +791,14 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveUp:(id)sender {
-  [self handleAction:ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_UP
              keyCode:ui::VKEY_UP
              domCode:ui::DomCode::ARROW_UP
           eventFlags:0];
 }
 
 - (void)moveDown:(id)sender {
-  [self handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE
+  [self handleAction:ui::TextEditCommand::MOVE_DOWN
              keyCode:ui::VKEY_DOWN
              domCode:ui::DomCode::ARROW_DOWN
           eventFlags:0];
@@ -861,17 +861,20 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)pageDown:(id)sender {
-  [self handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE
+  // The pageDown: action message is bound to the key combination
+  // [Option+PageDown].
+  [self handleAction:ui::TextEditCommand::MOVE_PAGE_DOWN
              keyCode:ui::VKEY_NEXT
              domCode:ui::DomCode::PAGE_DOWN
-          eventFlags:0];
+          eventFlags:ui::EF_ALT_DOWN];
 }
 
 - (void)pageUp:(id)sender {
-  [self handleAction:ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE
+  // The pageUp: action message is bound to the key combination [Option+PageUp].
+  [self handleAction:ui::TextEditCommand::MOVE_PAGE_UP
              keyCode:ui::VKEY_PRIOR
              domCode:ui::DomCode::PAGE_UP
-          eventFlags:0];
+          eventFlags:ui::EF_ALT_DOWN];
 }
 
 - (void)moveBackwardAndModifySelection:(id)sender {
@@ -904,19 +907,17 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)moveUpAndModifySelection:(id)sender {
-  [self handleAction:ui::TextEditCommand::
-                         MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::MOVE_UP_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_UP
              domCode:ui::DomCode::ARROW_UP
           eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveDownAndModifySelection:(id)sender {
-  [self
-      handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
-           keyCode:ui::VKEY_DOWN
-           domCode:ui::DomCode::ARROW_DOWN
-        eventFlags:ui::EF_SHIFT_DOWN];
+  [self handleAction:ui::TextEditCommand::MOVE_DOWN_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_DOWN
+             domCode:ui::DomCode::ARROW_DOWN
+          eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveToBeginningOfLineAndModifySelection:(id)sender {
@@ -968,32 +969,30 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
 }
 
 - (void)pageDownAndModifySelection:(id)sender {
-  [self
-      handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
-           keyCode:ui::VKEY_NEXT
-           domCode:ui::DomCode::PAGE_DOWN
-        eventFlags:ui::EF_SHIFT_DOWN];
+  [self handleAction:ui::TextEditCommand::MOVE_PAGE_DOWN_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_NEXT
+             domCode:ui::DomCode::PAGE_DOWN
+          eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)pageUpAndModifySelection:(id)sender {
-  [self handleAction:ui::TextEditCommand::
-                         MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+  [self handleAction:ui::TextEditCommand::MOVE_PAGE_UP_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_PRIOR
              domCode:ui::DomCode::PAGE_UP
           eventFlags:ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveParagraphForwardAndModifySelection:(id)sender {
-  [self
-      handleAction:ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
-           keyCode:ui::VKEY_DOWN
-           domCode:ui::DomCode::ARROW_DOWN
-        eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+  [self handleAction:ui::TextEditCommand::
+                         MOVE_PARAGRAPH_FORWARD_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_DOWN
+             domCode:ui::DomCode::ARROW_DOWN
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveParagraphBackwardAndModifySelection:(id)sender {
   [self handleAction:ui::TextEditCommand::
-                         MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+                         MOVE_PARAGRAPH_BACKWARD_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_UP
              domCode:ui::DomCode::ARROW_UP
           eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];

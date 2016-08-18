@@ -15,6 +15,37 @@ enum BreakType {
   LINE_BREAK,          // Stop cursor movement on line ends as shown on screen.
 };
 
+// Specifies the selection behavior for a move/move-and-select command. For
+// example consider the state "ab|cd|e", i.e. cd is selected. Assume the
+// selection direction is from left to right. If we move to the beginning of the
+// line (LINE_BREAK, CURSOR_LEFT), the resultant state is:
+// "|ab|cde" for SELECTION_RETAIN, selection direction from right to left.
+// "|abcd|e" for SELECTION_EXTEND, selection direction from right to left.
+// "ab|cde" for SELECTION_CARET.
+// "|abcde" for SELECTION_NONE.
+enum SelectionBehavior {
+  // Default behavior for a move-and-select command. The selection start point
+  // remains the same. For example, this is the behavior of textfields on Mac
+  // for the command moveUpAndModifySelection (Shift + Up).
+  SELECTION_RETAIN,
+
+  // Use for move-and-select commands that want the existing selection to be
+  // extended in the opposite direction, when the selection direction is
+  // reversed. For example, this is the behavior for textfields on Mac for the
+  // command moveToLeftEndOfLineAndModifySelection (Command + Shift + Left).
+  SELECTION_EXTEND,
+
+  // Use for move-and-select commands that want the existing selection to reduce
+  // to a caret, when the selection direction is reversed. For example, this is
+  // the behavior for textfields on Mac for the command
+  // moveWordLeftAndModifySelection (Alt + Shift + Left).
+  SELECTION_CARET,
+
+  // No selection. To be used for move commands that don't want to cause a
+  // selection, and that want to collapse any pre-existing selection.
+  SELECTION_NONE,
+};
+
 // Specifies the word wrapping behavior when a word would exceed the available
 // display width. All words that are too wide will be put on a new line, and
 // then:

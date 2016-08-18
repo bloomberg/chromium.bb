@@ -27,6 +27,7 @@
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -832,7 +833,212 @@ TEST_F(TextfieldTest, ControlAndSelectTest) {
   SendEndEvent(true);
   EXPECT_STR_EQ("two three", textfield_->GetSelectedText());
   SendHomeEvent(true);
+
+// On Mac, the existing selection should be extended.
+#if defined(OS_MACOSX)
+  EXPECT_STR_EQ("ZERO two three", textfield_->GetSelectedText());
+#else
   EXPECT_STR_EQ("ZERO ", textfield_->GetSelectedText());
+#endif
+}
+
+TEST_F(TextfieldTest, WordSelection) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("12 34567 89"));
+
+  // Place the cursor after "5".
+  textfield_->SetSelectionRange(gfx::Range(6));
+
+  // Select word towards right.
+  SendWordEvent(ui::VKEY_RIGHT, true);
+  EXPECT_STR_EQ("67", textfield_->GetSelectedText());
+  SendWordEvent(ui::VKEY_RIGHT, true);
+  EXPECT_STR_EQ("67 89", textfield_->GetSelectedText());
+
+  // Select word towards left.
+  SendWordEvent(ui::VKEY_LEFT, true);
+  EXPECT_STR_EQ("67 ", textfield_->GetSelectedText());
+  SendWordEvent(ui::VKEY_LEFT, true);
+
+// On Mac, the selection should reduce to a caret when the selection direction
+// changes for a word selection.
+#if defined(OS_MACOSX)
+  EXPECT_EQ(gfx::Range(6), textfield_->GetSelectedRange());
+#else
+  EXPECT_STR_EQ("345", textfield_->GetSelectedText());
+  EXPECT_EQ(gfx::Range(6, 3), textfield_->GetSelectedRange());
+#endif
+
+  SendWordEvent(ui::VKEY_LEFT, true);
+#if defined(OS_MACOSX)
+  EXPECT_STR_EQ("345", textfield_->GetSelectedText());
+#else
+  EXPECT_STR_EQ("12 345", textfield_->GetSelectedText());
+#endif
+  EXPECT_TRUE(textfield_->GetSelectedRange().is_reversed());
+
+  SendWordEvent(ui::VKEY_LEFT, true);
+  EXPECT_STR_EQ("12 345", textfield_->GetSelectedText());
+}
+
+TEST_F(TextfieldTest, LineSelection) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("12 34567 89"));
+
+  // Place the cursor after "5".
+  textfield_->SetSelectionRange(gfx::Range(6));
+
+  // Select line towards right.
+  SendEndEvent(true);
+  EXPECT_STR_EQ("67 89", textfield_->GetSelectedText());
+
+  // Select line towards left. On Mac, the existing selection should be extended
+  // to cover the whole line.
+  SendHomeEvent(true);
+#if defined(OS_MACOSX)
+  EXPECT_EQ(textfield_->text(), textfield_->GetSelectedText());
+#else
+  EXPECT_STR_EQ("12 345", textfield_->GetSelectedText());
+#endif
+  EXPECT_TRUE(textfield_->GetSelectedRange().is_reversed());
+
+  // Select line towards right.
+  SendEndEvent(true);
+#if defined(OS_MACOSX)
+  EXPECT_EQ(textfield_->text(), textfield_->GetSelectedText());
+#else
+  EXPECT_STR_EQ("67 89", textfield_->GetSelectedText());
+#endif
+  EXPECT_FALSE(textfield_->GetSelectedRange().is_reversed());
+}
+
+TEST_F(TextfieldTest, MoveUpDownAndModifySelection) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("12 34567 89"));
+  textfield_->SetSelectionRange(gfx::Range(6));
+
+  // Up/Down keys won't be handled except on Mac where they map to move
+  // commands.
+  SendKeyEvent(ui::VKEY_UP);
+  EXPECT_TRUE(textfield_->key_received());
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(textfield_->key_handled());
+  EXPECT_EQ(gfx::Range(0), textfield_->GetSelectedRange());
+#else
+  EXPECT_FALSE(textfield_->key_handled());
+#endif
+  textfield_->clear();
+
+  SendKeyEvent(ui::VKEY_DOWN);
+  EXPECT_TRUE(textfield_->key_received());
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(textfield_->key_handled());
+  EXPECT_EQ(gfx::Range(11), textfield_->GetSelectedRange());
+#else
+  EXPECT_FALSE(textfield_->key_handled());
+#endif
+  textfield_->clear();
+
+  textfield_->SetSelectionRange(gfx::Range(6));
+
+  // Shift+[Up/Down] on Mac should execute the command
+  // MOVE_[UP/DOWN]_AND_MODIFY_SELECTION. On other platforms, textfield won't
+  // handle these events.
+  SendKeyEvent(ui::VKEY_UP, true /* shift */, false /* command */);
+  EXPECT_TRUE(textfield_->key_received());
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(textfield_->key_handled());
+  EXPECT_EQ(gfx::Range(6, 0), textfield_->GetSelectedRange());
+#else
+  EXPECT_FALSE(textfield_->key_handled());
+#endif
+  textfield_->clear();
+
+  SendKeyEvent(ui::VKEY_DOWN, true /* shift */, false /* command */);
+  EXPECT_TRUE(textfield_->key_received());
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(textfield_->key_handled());
+  EXPECT_EQ(gfx::Range(6, 11), textfield_->GetSelectedRange());
+#else
+  EXPECT_FALSE(textfield_->key_handled());
+#endif
+  textfield_->clear();
+}
+
+TEST_F(TextfieldTest, MovePageUpDownAndModifySelection) {
+  InitTextfield();
+
+// MOVE_PAGE_[UP/DOWN] and the associated selection commands should only be
+// enabled on Mac.
+#if defined(OS_MACOSX)
+  textfield_->SetText(ASCIIToUTF16("12 34567 89"));
+  textfield_->SetSelectionRange(gfx::Range(6));
+
+  EXPECT_TRUE(
+      textfield_->IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_PAGE_UP));
+  EXPECT_TRUE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::MOVE_PAGE_DOWN));
+  EXPECT_TRUE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::MOVE_PAGE_UP_AND_MODIFY_SELECTION));
+  EXPECT_TRUE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::MOVE_PAGE_DOWN_AND_MODIFY_SELECTION));
+
+  test_api_->ExecuteTextEditCommand(ui::TextEditCommand::MOVE_PAGE_UP);
+  EXPECT_EQ(gfx::Range(0), textfield_->GetSelectedRange());
+
+  test_api_->ExecuteTextEditCommand(ui::TextEditCommand::MOVE_PAGE_DOWN);
+  EXPECT_EQ(gfx::Range(11), textfield_->GetSelectedRange());
+
+  textfield_->SetSelectionRange(gfx::Range(6));
+  test_api_->ExecuteTextEditCommand(
+      ui::TextEditCommand::MOVE_PAGE_UP_AND_MODIFY_SELECTION);
+  EXPECT_EQ(gfx::Range(6, 0), textfield_->GetSelectedRange());
+
+  test_api_->ExecuteTextEditCommand(
+      ui::TextEditCommand::MOVE_PAGE_DOWN_AND_MODIFY_SELECTION);
+  EXPECT_EQ(gfx::Range(6, 11), textfield_->GetSelectedRange());
+#else
+  EXPECT_FALSE(
+      textfield_->IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_PAGE_UP));
+  EXPECT_FALSE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::MOVE_PAGE_DOWN));
+  EXPECT_FALSE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::MOVE_PAGE_UP_AND_MODIFY_SELECTION));
+  EXPECT_FALSE(textfield_->IsTextEditCommandEnabled(
+      ui::TextEditCommand::MOVE_PAGE_DOWN_AND_MODIFY_SELECTION));
+#endif
+}
+
+TEST_F(TextfieldTest, MoveParagraphForwardBackwardAndModifySelection) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("12 34567 89"));
+  textfield_->SetSelectionRange(gfx::Range(6));
+
+  test_api_->ExecuteTextEditCommand(
+      ui::TextEditCommand::MOVE_PARAGRAPH_FORWARD_AND_MODIFY_SELECTION);
+  EXPECT_EQ(gfx::Range(6, 11), textfield_->GetSelectedRange());
+
+  test_api_->ExecuteTextEditCommand(
+      ui::TextEditCommand::MOVE_PARAGRAPH_BACKWARD_AND_MODIFY_SELECTION);
+// On Mac, the selection should reduce to a caret when the selection direction
+// is reversed for MOVE_PARAGRAPH_[FORWARD/BACKWARD]_AND_MODIFY_SELECTION.
+#if defined(OS_MACOSX)
+  EXPECT_EQ(gfx::Range(6), textfield_->GetSelectedRange());
+#else
+  EXPECT_EQ(gfx::Range(6, 0), textfield_->GetSelectedRange());
+#endif
+
+  test_api_->ExecuteTextEditCommand(
+      ui::TextEditCommand::MOVE_PARAGRAPH_BACKWARD_AND_MODIFY_SELECTION);
+  EXPECT_EQ(gfx::Range(6, 0), textfield_->GetSelectedRange());
+
+  test_api_->ExecuteTextEditCommand(
+      ui::TextEditCommand::MOVE_PARAGRAPH_FORWARD_AND_MODIFY_SELECTION);
+#if defined(OS_MACOSX)
+  EXPECT_EQ(gfx::Range(6), textfield_->GetSelectedRange());
+#else
+  EXPECT_EQ(gfx::Range(6, 11), textfield_->GetSelectedRange());
+#endif
 }
 
 TEST_F(TextfieldTest, InsertionDeletionTest) {
@@ -1051,26 +1257,6 @@ TEST_F(TextfieldTest, OnKeyPress) {
   EXPECT_TRUE(textfield_->key_received());
 #endif
   EXPECT_FALSE(textfield_->key_handled());
-  textfield_->clear();
-
-  // Up/Down keys won't be handled except on Mac where they map to move
-  // commands.
-  SendKeyEvent(ui::VKEY_UP);
-  EXPECT_TRUE(textfield_->key_received());
-#if defined(OS_MACOSX)
-  EXPECT_TRUE(textfield_->key_handled());
-#else
-  EXPECT_FALSE(textfield_->key_handled());
-#endif
-  textfield_->clear();
-
-  SendKeyEvent(ui::VKEY_DOWN);
-  EXPECT_TRUE(textfield_->key_received());
-#if defined(OS_MACOSX)
-  EXPECT_TRUE(textfield_->key_handled());
-#else
-  EXPECT_FALSE(textfield_->key_handled());
-#endif
   textfield_->clear();
 }
 

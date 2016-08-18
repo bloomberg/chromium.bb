@@ -336,9 +336,8 @@ void TextfieldModel::Append(const base::string16& new_text) {
   if (HasCompositionText())
     ConfirmCompositionText();
   size_t save = GetCursorPosition();
-  MoveCursor(gfx::LINE_BREAK,
-             render_text_->GetVisualDirectionOfLogicalEnd(),
-             false);
+  MoveCursor(gfx::LINE_BREAK, render_text_->GetVisualDirectionOfLogicalEnd(),
+             gfx::SELECTION_NONE);
   InsertText(new_text);
   render_text_->SetCursorPosition(save);
   ClearSelection();
@@ -401,10 +400,10 @@ size_t TextfieldModel::GetCursorPosition() const {
 
 void TextfieldModel::MoveCursor(gfx::BreakType break_type,
                                 gfx::VisualCursorDirection direction,
-                                bool select) {
+                                gfx::SelectionBehavior selection_behavior) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  render_text_->MoveCursor(break_type, direction, select);
+  render_text_->MoveCursor(break_type, direction, selection_behavior);
 }
 
 bool TextfieldModel::MoveCursorTo(const gfx::SelectionModel& cursor) {

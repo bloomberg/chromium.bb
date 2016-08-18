@@ -25,6 +25,10 @@ class TextfieldTestApi {
 
   TextfieldModel* model() const { return textfield_->model_.get(); }
 
+  void ExecuteTextEditCommand(ui::TextEditCommand command) {
+    textfield_->ExecuteTextEditCommand(command);
+  }
+
   ui::MenuModel* context_menu_contents() const {
     return textfield_->context_menu_contents_.get();
   }

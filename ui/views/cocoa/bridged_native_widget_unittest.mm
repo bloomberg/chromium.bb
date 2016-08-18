@@ -61,6 +61,11 @@ using base::SysUTF8ToNSString;
 
 namespace {
 
+enum class TestCase {
+  ALL,       // Test all strings.
+  LTR_ONLY,  // Only test Left To Right strings.
+};
+
 // Implemented NSResponder action messages for use in tests.
 NSArray* const kMoveActions = @[
   @"moveForward:",
@@ -332,11 +337,12 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
 
   // Test editing commands in |selectors| against the expectations set by
   // |dummy_text_view_|. This is done by selecting every substring within a set
-  // of test strings (both RTL and non-RTL) and performing every selector on
-  // both the NSTextView and the BridgedContentView hosting a focused
-  // views::TextField to ensure the resulting text and selection ranges match.
-  // |selectors| is an NSArray of NSStrings.
-  void TestEditingCommands(NSArray* selectors);
+  // of test strings (both RTL and non-RTL by default) and performing every
+  // selector on both the NSTextView and the BridgedContentView hosting a
+  // focused views::TextField to ensure the resulting text and selection ranges
+  // match. |selectors| is an NSArray of NSStrings. |cases| determines whether
+  // RTL strings are to be tested.
+  void TestEditingCommands(NSArray* selectors, TestCase cases = TestCase::ALL);
 
   std::unique_ptr<views::View> view_;
 
@@ -545,11 +551,14 @@ void BridgedNativeWidgetTest::TestDeleteEnd(SEL sel) {
                     GetActualSelectionRange());
 }
 
-void BridgedNativeWidgetTest::TestEditingCommands(NSArray* selectors) {
-  const base::string16 test_strings[] = {
-      base::WideToUTF16(L"ab c"),
-      base::WideToUTF16(L"\x0634\x0632 \x064A")  // RTL string.
-  };
+void BridgedNativeWidgetTest::TestEditingCommands(NSArray* selectors,
+                                                  TestCase cases) {
+  std::vector<base::string16> test_strings;
+  test_strings.push_back(base::WideToUTF16(L"ab c"));
+  if (cases == TestCase::ALL) {
+    test_strings.push_back(
+        base::WideToUTF16(L"\x0634\x0632 \x064A"));  // RTL string.
+  }
 
   for (const base::string16& test_string : test_strings) {
     for (NSString* selector_string in selectors) {
@@ -1108,12 +1117,12 @@ TEST_F(BridgedNativeWidgetTest, TextInput_MoveEditingCommands) {
   TestEditingCommands(kMoveActions);
 }
 
-// Todo(karandeepb): Enable this test once the behavior of all move and select
-// commands are fixed.
 // Test move and select commands against expectations set by |dummy_text_view_|.
-TEST_F(BridgedNativeWidgetTest,
-       TextInput_MoveAndSelectEditingCommands_DISABLED) {
-  TestEditingCommands(kSelectActions);
+TEST_F(BridgedNativeWidgetTest, TextInput_MoveAndSelectEditingCommands) {
+  // The behavior of NSTextView for RTL strings is buggy for some move and
+  // select commands. Hence don't test against an RTL string. See
+  // rdar://27863290.
+  TestEditingCommands(kSelectActions, TestCase::LTR_ONLY);
 }
 
 // Test delete commands against expectations set by |dummy_text_view_|.
