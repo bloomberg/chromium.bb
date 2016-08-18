@@ -145,9 +145,9 @@ private:
     bool useChildAspectRatio(const LayoutBox& child) const;
     LayoutUnit computeMainSizeFromAspectRatioUsing(const LayoutBox& child, Length crossSizeLength) const;
     void setFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint&);
+    LayoutUnit computeInnerFlexBaseSizeForChild(LayoutBox& child, LayoutUnit mainAxisBorderAndPadding, ChildLayoutType = LayoutIfNeeded);
     void adjustAlignmentForChild(LayoutBox& child, LayoutUnit);
     ItemPosition alignmentForChild(const LayoutBox& child) const;
-    LayoutUnit computeInnerFlexBaseSizeForChild(LayoutBox& child, LayoutUnit mainAxisBorderAndPadding, ChildLayoutType = LayoutIfNeeded);
     bool mainAxisLengthIsDefinite(const LayoutBox& child, const Length& flexBasis) const;
     bool crossAxisLengthIsDefinite(const LayoutBox& child, const Length& flexBasis) const;
     bool childFlexBaseSizeRequiresLayout(const LayoutBox& child) const;

@@ -441,25 +441,15 @@ static CSSValue* valueForReflection(const StyleReflection* reflection, const Com
     return CSSReflectValue::create(direction, offset, valueForNinePieceImage(reflection->mask(), style));
 }
 
-static ItemPosition resolveAlignmentAuto(ItemPosition position, const ComputedStyle* style)
-{
-    if (position != ItemPositionAuto)
-        return position;
-
-    if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-        return ItemPositionStretch;
-
-    return isFlexOrGrid(style) ? ItemPositionStretch : ItemPositionStart;
-}
-
-static CSSValueList* valueForItemPositionWithOverflowAlignment(ItemPosition itemPosition, OverflowAlignment overflowAlignment, ItemPositionType positionType)
+static CSSValueList* valueForItemPositionWithOverflowAlignment(const StyleSelfAlignmentData& data)
 {
     CSSValueList* result = CSSValueList::createSpaceSeparated();
-    if (positionType == LegacyPosition)
+    if (data.positionType() == LegacyPosition)
         result->append(*CSSPrimitiveValue::createIdentifier(CSSValueLegacy));
-    result->append(*CSSPrimitiveValue::create(itemPosition));
-    if (itemPosition >= ItemPositionCenter && overflowAlignment != OverflowAlignmentDefault)
-        result->append(*CSSPrimitiveValue::create(overflowAlignment));
+    // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto' flag to not just mean 'auto' prior to running the StyleAdjuster but also mean 'normal' after running it.
+    result->append(*CSSPrimitiveValue::create(data.position() == ItemPositionAuto ? ItemPositionNormal : data.position()));
+    if (data.position() >= ItemPositionCenter && data.overflow() != OverflowAlignmentDefault)
+        result->append(*CSSPrimitiveValue::create(data.overflow()));
     ASSERT(result->length() <= 2);
     return result;
 }
@@ -1892,16 +1882,9 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
     case CSSPropertyAlignContent:
         return valueForContentPositionAndDistributionWithOverflowAlignment(style.alignContent());
     case CSSPropertyAlignItems:
-        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.alignItemsPosition(), &style), style.alignItemsOverflowAlignment(), NonLegacyPosition);
-    case CSSPropertyAlignSelf: {
-        ItemPosition position = style.alignSelfPosition();
-        if (position == ItemPositionAuto) {
-            // TODO(lajava): This code doesn't work for ShadowDOM (see Node::parentComputedStyle)
-            const ComputedStyle* parentStyle = styledNode->parentNode() ? styledNode->parentNode()->ensureComputedStyle() : nullptr;
-            position = parentStyle ? ComputedStyle::resolveAlignment(*parentStyle, style, resolveAlignmentAuto(parentStyle->alignItemsPosition(), parentStyle)) : ItemPositionStart;
-        }
-        return valueForItemPositionWithOverflowAlignment(position, style.alignSelfOverflowAlignment(), NonLegacyPosition);
-    }
+        return valueForItemPositionWithOverflowAlignment(style.alignItems());
+    case CSSPropertyAlignSelf:
+        return valueForItemPositionWithOverflowAlignment(style.alignSelf());
     case CSSPropertyFlex:
         return valuesForShorthandProperty(flexShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyFlexBasis:
@@ -2056,11 +2039,9 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
     case CSSPropertyIsolation:
         return CSSPrimitiveValue::create(style.isolation());
     case CSSPropertyJustifyItems:
-        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.justifyItemsPosition(), &style), style.justifyItemsOverflowAlignment(), style.justifyItemsPositionType());
-    case CSSPropertyJustifySelf: {
-        Node* parent = styledNode->parentNode();
-        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.justifySelfPosition(), parent ? parent->ensureComputedStyle() : nullptr), style.justifySelfOverflowAlignment(), NonLegacyPosition);
-    }
+        return valueForItemPositionWithOverflowAlignment(style.justifyItems());
+    case CSSPropertyJustifySelf:
+        return valueForItemPositionWithOverflowAlignment(style.justifySelf());
     case CSSPropertyLeft:
         return valueForPositionOffset(style, CSSPropertyLeft, layoutObject);
     case CSSPropertyLetterSpacing:

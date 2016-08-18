@@ -208,7 +208,7 @@ int LayoutFlexibleBox::baselinePosition(FontBaseline, bool, LineDirectionMode di
     return beforeMarginInLineDirection(direction) + baseline;
 }
 
-static const StyleContentAlignmentData& normalValueBehavior()
+static const StyleContentAlignmentData& contentAlignmentNormalBehavior()
 {
     // The justify-content property applies along the main axis, but since flexing
     // in the main axis is controlled by flex, stretch behaves as flex-start (ignoring
@@ -332,6 +332,8 @@ void LayoutFlexibleBox::removeChild(LayoutObject* child)
     m_intrinsicSizeAlongMainAxis.remove(child);
 }
 
+// TODO (lajava): Is this function still needed ? Every time the flex container's align-items value changes we
+// propagate the diff to its children (see ComputedStyle::stylePropagationDiff).
 void LayoutFlexibleBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutBlock::styleDidChange(diff, oldStyle);
@@ -340,8 +342,8 @@ void LayoutFlexibleBox::styleDidChange(StyleDifference diff, const ComputedStyle
         // Flex items that were previously stretching need to be relayed out so we can compute new available cross axis space.
         // This is only necessary for stretching since other alignment values don't change the size of the box.
         for (LayoutBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
-            ItemPosition previousAlignment = ComputedStyle::resolveAlignment(*oldStyle, child->styleRef(), ItemPositionStretch);
-            if (previousAlignment == ItemPositionStretch && previousAlignment != ComputedStyle::resolveAlignment(styleRef(), child->styleRef(), ItemPositionStretch))
+            ItemPosition previousAlignment = child->styleRef().resolvedAlignSelf(selfAlignmentNormalBehavior(), oldStyle).position();
+            if (previousAlignment == ItemPositionStretch && previousAlignment != child->styleRef().resolvedAlignSelf(selfAlignmentNormalBehavior(), style()).position())
                 child->setChildNeedsLayout(MarkOnlyThis);
         }
     }
@@ -1398,6 +1400,7 @@ static LayoutUnit alignmentOffset(LayoutUnit availableFreeSpace, ItemPosition po
 {
     switch (position) {
     case ItemPositionAuto:
+    case ItemPositionNormal:
         NOTREACHED();
         break;
     case ItemPositionStretch:
@@ -1446,8 +1449,8 @@ LayoutUnit LayoutFlexibleBox::staticMainAxisPositionForPositionedChild(const Lay
 {
     const LayoutUnit availableSpace = mainAxisContentExtent(contentLogicalHeight()) - mainAxisExtentForChild(child);
 
-    ContentPosition position = styleRef().resolvedJustifyContentPosition(normalValueBehavior());
-    ContentDistributionType distribution = styleRef().resolvedJustifyContentDistribution(normalValueBehavior());
+    ContentPosition position = styleRef().resolvedJustifyContentPosition(contentAlignmentNormalBehavior());
+    ContentDistributionType distribution = styleRef().resolvedJustifyContentDistribution(contentAlignmentNormalBehavior());
     LayoutUnit offset = initialJustifyContentOffset(availableSpace, position, distribution, 1);
     if (styleRef().flexDirection() == FlowRowReverse || styleRef().flexDirection() == FlowColumnReverse)
         offset = availableSpace - offset;
@@ -1517,7 +1520,8 @@ void LayoutFlexibleBox::prepareChildForPositionedLayout(LayoutBox& child)
 
 ItemPosition LayoutFlexibleBox::alignmentForChild(const LayoutBox& child) const
 {
-    ItemPosition align = ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch);
+    ItemPosition align = child.styleRef().resolvedAlignSelf(selfAlignmentNormalBehavior(), child.isAnonymous() ? style() : nullptr).position();
+    DCHECK(align != ItemPositionAuto && align != ItemPositionNormal);
 
     if (align == ItemPositionBaseline && hasOrthogonalFlow(child))
         align = ItemPositionFlexStart;
@@ -1607,8 +1611,8 @@ EOverflow LayoutFlexibleBox::crossAxisOverflowForChild(const LayoutBox& child) c
 
 void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, LayoutUnit availableFreeSpace, bool relayoutChildren, SubtreeLayoutScope& layoutScope, Vector<LineContext>& lineContexts)
 {
-    ContentPosition position = styleRef().resolvedJustifyContentPosition(normalValueBehavior());
-    ContentDistributionType distribution = styleRef().resolvedJustifyContentDistribution(normalValueBehavior());
+    ContentPosition position = styleRef().resolvedJustifyContentPosition(contentAlignmentNormalBehavior());
+    ContentDistributionType distribution = styleRef().resolvedJustifyContentDistribution(contentAlignmentNormalBehavior());
 
     size_t numberOfChildrenForJustifyContent = numberOfInFlowPositionedChildren(children);
     LayoutUnit autoMarginOffset = autoMarginOffsetInMainAxis(children, availableFreeSpace);
@@ -1709,8 +1713,8 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
 
 void LayoutFlexibleBox::layoutColumnReverse(const OrderedFlexItemList& children, LayoutUnit crossAxisOffset, LayoutUnit availableFreeSpace)
 {
-    ContentPosition position = styleRef().resolvedJustifyContentPosition(normalValueBehavior());
-    ContentDistributionType distribution = styleRef().resolvedJustifyContentDistribution(normalValueBehavior());
+    ContentPosition position = styleRef().resolvedJustifyContentPosition(contentAlignmentNormalBehavior());
+    ContentDistributionType distribution = styleRef().resolvedJustifyContentDistribution(contentAlignmentNormalBehavior());
 
     // This is similar to the logic in layoutAndPlaceChildren, except we place the children
     // starting from the end of the flexbox. We also don't need to layout anything since we're
@@ -1772,8 +1776,8 @@ void LayoutFlexibleBox::alignFlexLines(Vector<LineContext>& lineContexts)
     if (!lineContexts.size())
         return;
 
-    ContentPosition position = styleRef().resolvedAlignContentPosition(normalValueBehavior());
-    ContentDistributionType distribution = styleRef().resolvedAlignContentDistribution(normalValueBehavior());
+    ContentPosition position = styleRef().resolvedAlignContentPosition(contentAlignmentNormalBehavior());
+    ContentDistributionType distribution = styleRef().resolvedAlignContentDistribution(contentAlignmentNormalBehavior());
 
     // If we have a single line flexbox the line height is all the available space.
     // For flex-direction: row, this means we need to use the height, so we do this after calling updateLogicalHeight.

@@ -1,6 +1,6 @@
 CONSOLE MESSAGE: line 8: --bar: [null]
 CONSOLE MESSAGE: line 8: --foo:  bar
-CONSOLE MESSAGE: line 8: align-items: start
+CONSOLE MESSAGE: line 8: align-items: normal
 CONSOLE MESSAGE: line 8: border-radius: 2px
 This tests the style information in the paint callback.
 
@@ -8,5 +8,5 @@ See the devtools console for test output. The console should log:
 
 --bar: [null]
 --foo: bar
-align-items: start
+align-items: normal
 border-radius: 2px

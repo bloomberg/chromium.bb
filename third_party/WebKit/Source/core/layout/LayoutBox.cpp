@@ -2399,25 +2399,25 @@ LayoutUnit LayoutBox::computeLogicalWidthUsing(SizeType widthType, const Length&
     return logicalWidthResult;
 }
 
-static bool columnFlexItemHasStretchAlignment(const LayoutObject* flexitem)
+bool LayoutBox::columnFlexItemHasStretchAlignment() const
 {
-    LayoutObject* parent = flexitem->parent();
     // auto margins mean we don't stretch. Note that this function will only be used for
     // widths, so we don't have to check marginBefore/marginAfter.
-    ASSERT(parent->style()->isColumnFlexDirection());
-    if (flexitem->style()->marginStart().isAuto() || flexitem->style()->marginEnd().isAuto())
+    const auto& parentStyle = parent()->styleRef();
+    DCHECK(parentStyle.isColumnFlexDirection());
+    if (styleRef().marginStart().isAuto() || styleRef().marginEnd().isAuto())
         return false;
-    return flexitem->style()->alignSelfPosition() == ItemPositionStretch || (flexitem->style()->alignSelfPosition() == ItemPositionAuto && parent->style()->alignItemsPosition() == ItemPositionStretch);
+    return styleRef().resolvedAlignSelf(containingBlock()->selfAlignmentNormalBehavior(), isAnonymous() ? &parentStyle : nullptr).position() == ItemPositionStretch;
 }
 
-static bool isStretchingColumnFlexItem(const LayoutObject* flexitem)
+bool LayoutBox::isStretchingColumnFlexItem() const
 {
-    LayoutObject* parent = flexitem->parent();
+    LayoutObject* parent = this->parent();
     if (parent->isDeprecatedFlexibleBox() && parent->style()->boxOrient() == VERTICAL && parent->style()->boxAlign() == BSTRETCH)
         return true;
 
     // We don't stretch multiline flexboxes because they need to apply line spacing (align-content) first.
-    if (parent->isFlexibleBox() && parent->style()->flexWrap() == FlexNoWrap && parent->style()->isColumnFlexDirection() && columnFlexItemHasStretchAlignment(flexitem))
+    if (parent->isFlexibleBox() && parent->style()->flexWrap() == FlexNoWrap && parent->style()->isColumnFlexDirection() && columnFlexItemHasStretchAlignment())
         return true;
     return false;
 }
@@ -2434,9 +2434,10 @@ bool LayoutBox::hasStretchedLogicalWidth() const
         // The 'normal' value behaves like 'start' except for Flexbox Items, which obviously should have a container.
         return false;
     }
+    const ComputedStyle* parentStyle = isAnonymous() ? cb->style() : nullptr;
     if (cb->isHorizontalWritingMode() != isHorizontalWritingMode())
-        return ComputedStyle::resolveAlignment(cb->styleRef(), style, ItemPositionStretch) == ItemPositionStretch;
-    return ComputedStyle::resolveJustification(cb->styleRef(), style, ItemPositionStretch) == ItemPositionStretch;
+        return style.resolvedAlignSelf(cb->selfAlignmentNormalBehavior(), parentStyle).position() == ItemPositionStretch;
+    return style.resolvedJustifySelf(cb->selfAlignmentNormalBehavior(), parentStyle).position() == ItemPositionStretch;
 }
 
 bool LayoutBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
@@ -2454,7 +2455,7 @@ bool LayoutBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
         // For multiline columns, we need to apply align-content first, so we can't stretch now.
         if (!parent()->style()->isColumnFlexDirection() || parent()->style()->flexWrap() != FlexNoWrap)
             return true;
-        if (!columnFlexItemHasStretchAlignment(this))
+        if (!columnFlexItemHasStretchAlignment())
             return true;
     }
 
@@ -2469,7 +2470,7 @@ bool LayoutBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
     // stretching column flexbox.
     // FIXME: Think about writing-mode here.
     // https://bugs.webkit.org/show_bug.cgi?id=46473
-    if (logicalWidth.isAuto() && !isStretchingColumnFlexItem(this) && autoWidthShouldFitContent())
+    if (logicalWidth.isAuto() && !isStretchingColumnFlexItem() && autoWidthShouldFitContent())
         return true;
 
     if (isHorizontalWritingMode() != containingBlock()->isHorizontalWritingMode())

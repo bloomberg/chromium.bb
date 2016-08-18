@@ -175,7 +175,7 @@ debug("");
 debug("Test initial value of align-self through JS");
 element = document.createElement("div");
 document.body.appendChild(element);
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-self')", "'start'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('align-self')", "'normal'");
 
 debug("");
 debug("Test getting and setting align-self through JS");
@@ -202,18 +202,23 @@ element.style.alignSelf = "self-start";
 checkValues(element, "alignSelf", "align-self",  "self-start", "self-start");
 
 element.style.alignSelf = "auto";
-checkValues(element, "alignSelf", "align-self",  "auto", "start");
+checkValues(element, "alignSelf", "align-self",  "auto", "normal");
 
 container.style.display = "flex";
 element.style.alignSelf = "auto";
-checkValues(element, "alignSelf", "align-self",  "auto", "stretch");
+checkValues(element, "alignSelf", "align-self",  "auto", "normal");
 
 container.style.display = "grid";
 element.style.alignSelf = "auto";
-checkValues(element, "alignSelf", "align-self",  "auto", "stretch");
+checkValues(element, "alignSelf", "align-self",  "auto", "normal");
 
 element.style.alignSelf = "self-end";
 checkValues(element, "alignSelf", "align-self",  "self-end", "self-end");
+
+debug("");
+debug("Test 'auto' value resolution for the root node");
+document.documentElement.style.alignSelf = "auto";
+checkValues(document.documentElement, "alignSelf", "align-self",  "auto", "normal");
 
 debug("");
 debug("Test bad combinations of align-self");
@@ -250,35 +255,35 @@ checkBadValues(element, "alignSelf", "align-self",  "legacy left right");
 debug("");
 debug("Test the value 'initial'");
 container.style.display = "";
-checkInitialValues(element, "alignSelf", "align-self", "center", "start");
+checkInitialValues(element, "alignSelf", "align-self", "center", "normal");
 
 debug("");
 debug("Test the value 'initial' for grid containers");
 container.style.display = "grid";
-checkInitialValues(element, "alignSelf", "align-self", "left safe", "stretch");
+checkInitialValues(element, "alignSelf", "align-self", "left safe", "normal");
 
 debug("");
 debug("Test the value 'initial' for flex containers");
 container.style.display = "flex";
-checkInitialValues(element, "alignSelf", "align-self", "right unsafe", "stretch");
+checkInitialValues(element, "alignSelf", "align-self", "right unsafe", "normal");
 
 debug("");
 debug("Test the value 'initial' for positioned elements");
 container.style.display = "";
 element.style.position = "absolute";
-checkInitialValues(element, "alignSelf", "align-self", "left", "start");
+checkInitialValues(element, "alignSelf", "align-self", "left", "normal");
 
 debug("");
 debug("Test the value 'initial' for positioned elements in grid containers");
 container.style.display = "grid";
 element.style.position = "absolute";
-checkInitialValues(element, "alignSelf", "align-self", "right", "stretch");
+checkInitialValues(element, "alignSelf", "align-self", "right", "normal");
 
 debug("");
 debug("Test the value 'initial' for positioned elements in grid containers");
 container.style.display = "flex";
 element.style.position = "absolute";
-checkInitialValues(element, "alignSelf", "align-self", "end", "stretch");
+checkInitialValues(element, "alignSelf", "align-self", "end", "normal");
 
 debug("");
 debug("Test the value 'inherit'");

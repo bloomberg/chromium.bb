@@ -37,6 +37,7 @@ class StyleAdjuster {
 public:
     static void adjustComputedStyle(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Element*);
     static void adjustStyleForEditing(ComputedStyle&);
+    static void adjustStyleForAlignment(ComputedStyle&, const ComputedStyle& parentStyle);
 };
 
 } // namespace blink

@@ -983,6 +983,8 @@ protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     void updateFromStyle() override;
 
+    virtual ItemPosition selfAlignmentNormalBehavior() const { return ItemPositionStretch; }
+
     // Returns false if it could not cheaply compute the extent (e.g. fixed background), in which case the returned rect may be incorrect.
     // FIXME: make this a const method once the LayoutBox reference in BoxPainter is const.
     bool getBackgroundPaintedExtent(LayoutRect&) const;
@@ -1007,6 +1009,8 @@ protected:
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const override;
     void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState) override;
 
+    bool columnFlexItemHasStretchAlignment() const;
+    bool isStretchingColumnFlexItem() const;
     bool hasStretchedLogicalWidth() const;
 
     void excludeScrollbars(LayoutRect&, OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const;

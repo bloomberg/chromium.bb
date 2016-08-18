@@ -61,8 +61,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-user-select: text
 -webkit-writing-mode: horizontal-tb
 align-content: normal
-align-items: start
-align-self: start
+align-items: normal
+align-self: normal
 alignment-baseline: auto
 animation-delay: 0s
 animation-direction: normal
@@ -181,8 +181,8 @@ image-orientation: 0deg
 image-rendering: auto
 isolation: auto
 justify-content: normal
-justify-items: start
-justify-self: start
+justify-items: normal
+justify-self: normal
 left: auto
 letter-spacing: normal
 lighting-color: rgb(255, 255, 255)

@@ -184,6 +184,8 @@ private:
     LayoutUnit gridAreaBreadthForChildIncludingAlignmentOffsets(const LayoutBox&, GridTrackSizingDirection, const GridSizingData&) const;
     LayoutUnit assumedRowsSizeForOrthogonalChild(const LayoutBox&, SizingOperation) const;
 
+    StyleSelfAlignmentData justifySelfForChild(const LayoutBox&) const;
+    StyleSelfAlignmentData alignSelfForChild(const LayoutBox&) const;
     void applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection, GridSizingData&);
 
     void paintChildren(const PaintInfo&, const LayoutPoint&) const override;

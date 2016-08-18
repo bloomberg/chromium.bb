@@ -11,60 +11,33 @@
         {
           "object": "LayoutGrid DIV id='container'",
           "rect": [0, 52, 200, 300],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutGrid DIV id='container'",
-          "rect": [0, 52, 200, 300],
-          "reason": "layoutObject removal"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
           "rect": [150, 52, 50, 300],
-          "reason": "layoutObject removal"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
           "rect": [0, 52, 50, 300],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [150, 52, 50, 50],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [0, 52, 50, 50],
-          "reason": "layoutObject insertion"
+          "reason": "bounds change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "layoutObject removal"
+      "object": "LayoutGrid DIV id='container'",
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow DIV class='item'",
-      "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutGrid DIV id='container'",
-      "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutGrid DIV id='container'",
-      "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='item'",
-      "reason": "layoutObject insertion"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "layoutObject insertion"
+      "reason": "location change"
     }
   ]
 }

@@ -2678,7 +2678,7 @@ static CSSPrimitiveValue* consumeSelfPositionKeyword(CSSParserTokenRange& range)
 
 static CSSValue* consumeSelfPositionOverflowPosition(CSSParserTokenRange& range)
 {
-    if (identMatches<CSSValueAuto, CSSValueStretch, CSSValueBaseline, CSSValueLastBaseline>(range.peek().id()))
+    if (identMatches<CSSValueAuto, CSSValueNormal, CSSValueStretch, CSSValueBaseline, CSSValueLastBaseline>(range.peek().id()))
         return consumeIdent(range);
 
     CSSPrimitiveValue* overflowPosition = consumeIdent<CSSValueUnsafe, CSSValueSafe>(range);
@@ -2690,6 +2690,14 @@ static CSSValue* consumeSelfPositionOverflowPosition(CSSParserTokenRange& range)
     if (overflowPosition)
         return CSSValuePair::create(selfPosition, overflowPosition, CSSValuePair::DropIdenticalValues);
     return selfPosition;
+}
+
+static CSSValue* consumeAlignItems(CSSParserTokenRange& range)
+{
+    // align-items property does not allow the 'auto' value.
+    if (identMatches<CSSValueAuto>(range.peek().id()))
+        return nullptr;
+    return consumeSelfPositionOverflowPosition(range);
 }
 
 static CSSValue* consumeJustifyItems(CSSParserTokenRange& range)
@@ -3451,9 +3459,11 @@ const CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProp
     case CSSPropertyWebkitMaskRepeatX:
     case CSSPropertyWebkitMaskRepeatY:
         return nullptr;
+    case CSSPropertyAlignItems:
+        DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return consumeAlignItems(m_range);
     case CSSPropertyJustifySelf:
     case CSSPropertyAlignSelf:
-    case CSSPropertyAlignItems:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return consumeSelfPositionOverflowPosition(m_range);
     case CSSPropertyJustifyItems:

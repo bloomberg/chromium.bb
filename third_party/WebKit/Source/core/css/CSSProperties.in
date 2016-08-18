@@ -121,7 +121,7 @@ text-rendering inherited, font, type_name=TextRenderingMode
 zoom custom_all
 
 align-content initial=initialContentAlignment, converter=convertContentAlignmentData
-align-items initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
+align-items initial=initialDefaultAlignment, converter=convertSelfOrDefaultAlignmentData
 alignment-baseline svg
 align-self initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
 animation-delay custom_all

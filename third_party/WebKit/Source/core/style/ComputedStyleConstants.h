@@ -557,7 +557,8 @@ inline Containment operator| (Containment a, Containment b) { return Containment
 inline Containment& operator|= (Containment& a, Containment b) { return a = a | b; }
 
 enum ItemPosition {
-    ItemPositionAuto,
+    ItemPositionAuto, // It will mean 'normal' after running the StyleAdjuster to avoid resolving the initial values.
+    ItemPositionNormal,
     ItemPositionStretch,
     ItemPositionBaseline,
     ItemPositionLastBaseline,

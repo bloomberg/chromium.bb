@@ -76,6 +76,7 @@ void LayoutButton::updateAnonymousChildStyle(const LayoutObject& child, Computed
     childStyle.setFlexDirection(style()->flexDirection());
     childStyle.setJustifyContent(style()->justifyContent());
     childStyle.setFlexWrap(style()->flexWrap());
+    // TODO (lajava): An anonymous box must not be used to resolve children's auto values.
     childStyle.setAlignItems(style()->alignItems());
     childStyle.setAlignContent(style()->alignContent());
 }

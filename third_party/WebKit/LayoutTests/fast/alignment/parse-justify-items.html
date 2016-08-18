@@ -223,7 +223,7 @@ debug("");
 debug("Test initial value of justify-items through JS");
 element = document.createElement("div");
 document.body.appendChild(element);
-shouldBe("getComputedStyle(element, '').getPropertyValue('justify-items')", "'start'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('justify-items')", "'normal'");
 
 debug("");
 debug("Test getting and setting justify-items through JS");
@@ -248,18 +248,23 @@ element.style.justifyItems = "left legacy";
 checkValues(element, "justifyItems", "justify-items",  "legacy left", "legacy left");
 
 element.style.justifyItems = "auto";
-checkValues(element, "justifyItems", "justify-items",  "auto", "start");
+checkValues(element, "justifyItems", "justify-items",  "auto", "normal");
 
 element.style.display = "flex";
 element.style.justifyItems = "auto";
-checkValues(element, "justifyItems", "justify-items",  "auto", "stretch");
+checkValues(element, "justifyItems", "justify-items",  "auto", "normal");
 
 element.style.display = "grid";
 element.style.justifyItems = "auto";
-checkValues(element, "justifyItems", "justify-items",  "auto", "stretch");
+checkValues(element, "justifyItems", "justify-items",  "auto", "normal");
 
 element.style.justifyItems = "self-end";
 checkValues(element, "justifyItems", "justify-items",  "self-end", "self-end");
+
+debug("");
+debug("Test 'auto' value resolution for the root node");
+document.documentElement.style.justifyItems = "auto";
+checkValues(document.documentElement, "justifyItems", "justify-items",  "auto", "normal");
 
 debug("");
 debug("Test bad combinations of justify-items");
@@ -294,17 +299,17 @@ checkBadValues(element, "justifyItems", "justify-items",  "legacy left right");
 debug("");
 debug("Test the value 'initial'");
 element.style.display = "";
-checkInitialValues(element, "justifyItems", "justify-items", "legacy center", "start");
+checkInitialValues(element, "justifyItems", "justify-items", "legacy center", "normal");
 
 debug("");
 debug("Test the value 'initial' for grid containers");
 element.style.display = "grid";
-checkInitialValues(element, "justifyItems", "justify-items", "left safe", "stretch");
+checkInitialValues(element, "justifyItems", "justify-items", "left safe", "normal");
 
 debug("");
 debug("Test the value 'initial' for flex containers");
 element.style.display = "flex";
-checkInitialValues(element, "justifyItems", "justify-items", "right unsafe", "stretch");
+checkInitialValues(element, "justifyItems", "justify-items", "right unsafe", "normal");
 
 debug("");
 debug("Test the value 'inherit'");

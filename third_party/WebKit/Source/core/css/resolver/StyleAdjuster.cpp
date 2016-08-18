@@ -144,40 +144,33 @@ static void adjustStyleForFirstLetter(ComputedStyle& style)
     style.setPosition(StaticPosition);
 }
 
-static void adjustStyleForAlignment(ComputedStyle& style, const ComputedStyle& parentStyle)
+void StyleAdjuster::adjustStyleForAlignment(ComputedStyle& style, const ComputedStyle& parentStyle)
 {
-    bool isFlexOrGrid = style.isDisplayFlexibleOrGridBox();
-    bool absolutePositioned = style.position() == AbsolutePosition;
+    // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto' flag
+    // to not just mean 'auto' prior to running the StyleAdjuster but also mean 'normal'
+    // after running it.
 
-    // If the inherited value of justify-items includes the legacy keyword, 'auto'
+    // If the inherited value of justify-items includes the 'legacy' keyword, 'auto'
     // computes to the the inherited value.
-    // Otherwise, auto computes to:
-    //  - 'stretch' for flex containers and grid containers.
-    //  - 'start' for everything else.
+    // Otherwise, 'auto' computes to 'normal'.
     if (style.justifyItemsPosition() == ItemPositionAuto) {
         if (parentStyle.justifyItemsPositionType() == LegacyPosition)
             style.setJustifyItems(parentStyle.justifyItems());
-        else if (isFlexOrGrid)
-            style.setJustifyItemsPosition(ItemPositionStretch);
     }
 
-    // The 'auto' keyword computes to 'stretch' on absolutely-positioned elements,
-    // and to the computed value of justify-items on the parent (minus
-    // any legacy keywords) on all other boxes.
+    // The 'auto' keyword computes the computed value of justify-items on the parent (minus
+    // any legacy keywords), or 'normal' if the box has no parent.
     if (style.justifySelfPosition() == ItemPositionAuto) {
-        if (absolutePositioned)
-            style.setJustifySelfPosition(ItemPositionStretch);
-        else
+        if (parentStyle.justifyItemsPositionType() == LegacyPosition)
+            style.setJustifySelfPosition(parentStyle.justifyItemsPosition());
+        else if (parentStyle.justifyItemsPosition() != ItemPositionAuto)
             style.setJustifySelf(parentStyle.justifyItems());
     }
 
-    // The 'auto' keyword computes to:
-    //  - 'stretch' for flex containers and grid containers,
-    //  - 'start' for everything else.
-    if (style.alignItemsPosition() == ItemPositionAuto) {
-        if (isFlexOrGrid)
-            style.setAlignItemsPosition(ItemPositionStretch);
-    }
+    // The 'auto' keyword computes the computed value of align-items on the parent
+    // or 'normal' if the box has no parent.
+    if (style.alignSelfPosition() == ItemPositionAuto && parentStyle.alignItemsPosition() != ItemPositionNormal)
+        style.setAlignSelf(parentStyle.alignItems());
 }
 
 static void adjustStyleForHTMLElement(ComputedStyle& style, const ComputedStyle& parentStyle, HTMLElement& element)

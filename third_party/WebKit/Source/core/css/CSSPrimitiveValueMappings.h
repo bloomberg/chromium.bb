@@ -4373,7 +4373,12 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ItemPosition itemPosition
     init(UnitType::ValueID);
     switch (itemPosition) {
     case ItemPositionAuto:
-        m_value.valueID = CSSValueAuto;
+        // The 'auto' values might have been already resolved.
+        NOTREACHED();
+        m_value.valueID = CSSValueNormal;
+        break;
+    case ItemPositionNormal:
+        m_value.valueID = CSSValueNormal;
         break;
     case ItemPositionStretch:
         m_value.valueID = CSSValueStretch;
@@ -4419,6 +4424,8 @@ template<> inline ItemPosition CSSPrimitiveValue::convertTo() const
     switch (m_value.valueID) {
     case CSSValueAuto:
         return ItemPositionAuto;
+    case CSSValueNormal:
+        return ItemPositionNormal;
     case CSSValueStretch:
         return ItemPositionStretch;
     case CSSValueBaseline:

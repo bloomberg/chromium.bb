@@ -176,7 +176,7 @@ debug("");
 debug("Test initial value of align-items through JS");
 element = document.createElement("div");
 document.body.appendChild(element);
-shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'start'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'normal'");
 
 debug("");
 debug("Test getting and setting align-items through JS");
@@ -200,16 +200,18 @@ checkValues(element, "alignItems", "align-items",  "center", "center");
 element.style.alignItems = "self-start";
 checkValues(element, "alignItems", "align-items",  "self-start", "self-start");
 
+// The 'auto' value is not valid for the align-items property.
+element.style.alignItems = "";
 element.style.alignItems = "auto";
-checkValues(element, "alignItems", "align-items",  "auto", "start");
+checkValues(element, "alignItems", "align-items",  "", "normal");
 
 element.style.display = "flex";
 element.style.alignItems = "auto";
-checkValues(element, "alignItems", "align-items",  "auto", "stretch");
+checkValues(element, "alignItems", "align-items",  "", "normal");
 
 element.style.display = "grid";
 element.style.alignItems = "auto";
-checkValues(element, "alignItems", "align-items",  "auto", "stretch");
+checkValues(element, "alignItems", "align-items",  "", "normal");
 
 element.style.alignItems = "self-end";
 checkValues(element, "alignItems", "align-items",  "self-end", "self-end");
@@ -219,6 +221,7 @@ debug("Test bad combinations of align-items");
 element = document.createElement("div");
 document.body.appendChild(element);
 
+checkBadValues(element, "alignItems", "align-items",  "auto");
 checkBadValues(element, "alignItems", "align-items",  "unsafe auto");
 checkBadValues(element, "alignItems", "align-items",  "auto safe");
 checkBadValues(element, "alignItems", "align-items",  "auto left");
@@ -247,17 +250,17 @@ checkBadValues(element, "alignItems", "align-items",  "legacy left right");
 debug("");
 debug("Test the value 'initial'");
 element.style.display = "";
-checkInitialValues(element, "alignItems", "align-items", "center", "start");
+checkInitialValues(element, "alignItems", "align-items", "center", "normal");
 
 debug("");
 debug("Test the value 'initial' for grid containers");
 element.style.display = "grid";
-checkInitialValues(element, "alignItems", "align-items", "left safe", "stretch");
+checkInitialValues(element, "alignItems", "align-items", "left safe", "normal");
 
 debug("");
 debug("Test the value 'initial' for flex containers");
 element.style.display = "flex";
-checkInitialValues(element, "alignItems", "align-items", "right unsafe", "stretch");
+checkInitialValues(element, "alignItems", "align-items", "right unsafe", "normal");
 
 debug("");
 debug("Test the value 'inherit'");

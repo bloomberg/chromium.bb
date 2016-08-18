@@ -2,7 +2,8 @@
 <script src="resources/text-based-repaint.js"></script>
 <script>
 function repaintTest() {
-  document.getElementsByClassName('item')[0].style.alignSelf = 'stretch';
+  document.getElementsByClassName('item1')[0].style.alignSelf = 'stretch';
+  document.getElementsByClassName('item2')[0].style.alignSelf = 'stretch';
 }
 onload = runRepaintAndPixelTest;
 </script>
@@ -12,21 +13,27 @@ body {
 }
 #container {
   display: grid;
-  grid: 300px / 100px;
+  align-items: start;
+  grid: 300px / 100px 100px;
   width: 200px;
   height: 300px;
   background-color: red;
 }
-.item {
+.item1 {
   grid-row: 1;
   grid-column: 1;
-  align-self: start;
+  height: 300px;
+  background-color: green;
+}
+.item2 {
+  grid-row: 1;
+  grid-column: 2;
+  height: 300px;
   background-color: green;
 }
 </style>
 <p style="height: 20px">There should be no invalidations because align-self style change causes no visual change.</p>
 <div id="container">
-  <div class="item">
-    <div style="height: 300px"></div>
-  </div>
+  <div id="item1" class="item1"></div>
+  <div id="item2" class="item2"></div>
 </div>

@@ -81,16 +81,16 @@ shouldBeEqualToString('window.getComputedStyle(flexbox, null).justifyContent', '
 
 shouldBeEqualToString('flexbox.style.alignSelf', '');
 // The initial value is 'auto', which will be resolved depending on parent's style (except for the 'document' element).
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignSelf', 'start');
-shouldBeEqualToString('window.getComputedStyle(document.documentElement, null).alignSelf', 'start');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignSelf', 'normal');
+shouldBeEqualToString('window.getComputedStyle(document.documentElement, null).alignSelf', 'normal');
 
 flexbox.style.alignSelf = 'foo';
 shouldBeEqualToString('flexbox.style.alignSelf', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignSelf', 'start');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignSelf', 'normal');
 
 flexbox.style.alignSelf = 'auto';
 shouldBeEqualToString('flexbox.style.alignSelf', 'auto');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignSelf', 'start');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignSelf', 'normal');
 
 flexbox.style.alignSelf = 'flex-start';
 shouldBeEqualToString('flexbox.style.alignSelf', 'flex-start');
@@ -114,25 +114,26 @@ shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignSelf', 'basel
 
 flexbox.style.alignSelf = '';
 shouldBeEqualToString('flexbox.style.alignSelf', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignSelf', 'start');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignSelf', 'normal');
 
 shouldBeEqualToString('flexbox.style.alignItems', '');
 shouldBeEqualToString('flexitem.style.alignSelf', '');
-// The initial value is 'auto', which will be resolved to 'stretch' in case of flexbox containers.
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'stretch');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'stretch');
+// The initial value is 'auto', which will be resolved to 'normal' in case of flexbox containers.
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'normal');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'normal');
 
 flexbox.style.alignItems = 'foo';
 shouldBeEqualToString('flexbox.style.alignItems', '');
 shouldBeEqualToString('flexitem.style.alignSelf', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'stretch');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'stretch');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'normal');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'normal');
 
+// The 'auto' value is not valid for the align-items property.
 flexbox.style.alignItems = 'auto';
-shouldBeEqualToString('flexbox.style.alignItems', 'auto');
+shouldBeEqualToString('flexbox.style.alignItems', '');
 shouldBeEqualToString('flexitem.style.alignSelf', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'stretch');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'stretch');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'normal');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'normal');
 
 flexbox.style.alignItems = 'flex-start';
 shouldBeEqualToString('flexbox.style.alignItems', 'flex-start');
@@ -162,13 +163,13 @@ shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'base
 
 flexbox.style.alignItems = '';
 shouldBeEqualToString('flexbox.style.alignItems', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'stretch');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'stretch');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'normal');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'normal');
 
 flexbox.style.display = 'none';
 shouldBeEqualToString('flexbox.style.alignItems', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'start');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'start');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).alignItems', 'normal');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).alignSelf', 'normal');
 flexbox.style.display = 'flex';
 
 

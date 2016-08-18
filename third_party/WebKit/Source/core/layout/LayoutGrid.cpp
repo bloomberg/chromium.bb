@@ -1788,7 +1788,7 @@ Vector<LayoutUnit> LayoutGrid::trackSizesForComputedStyle(GridTrackSizingDirecti
     return tracks;
 }
 
-static const StyleContentAlignmentData& normalValueBehavior()
+static const StyleContentAlignmentData& contentAlignmentNormalBehavior()
 {
     static const StyleContentAlignmentData normalBehavior = {ContentPositionNormal, ContentDistributionStretch};
     return normalBehavior;
@@ -1798,8 +1798,8 @@ void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection 
 {
     LayoutUnit& availableSpace = sizingData.freeSpaceForDirection(direction);
     if (availableSpace <= 0
-        || (direction == ForColumns && styleRef().resolvedJustifyContentDistribution(normalValueBehavior()) != ContentDistributionStretch)
-        || (direction == ForRows && styleRef().resolvedAlignContentDistribution(normalValueBehavior()) != ContentDistributionStretch))
+        || (direction == ForColumns && styleRef().resolvedJustifyContentDistribution(contentAlignmentNormalBehavior()) != ContentDistributionStretch)
+        || (direction == ForRows && styleRef().resolvedAlignContentDistribution(contentAlignmentNormalBehavior()) != ContentDistributionStretch))
         return;
 
     // Spec defines auto-sized tracks as the ones with an 'auto' max-sizing function.
@@ -2172,6 +2172,24 @@ LayoutUnit LayoutGrid::availableAlignmentSpaceForChildBeforeStretching(LayoutUni
     return gridAreaBreadthForChild - (child.needsLayout() ? computeMarginLogicalSizeForChild(BlockDirection, child) : marginLogicalHeightForChild(child));
 }
 
+StyleSelfAlignmentData LayoutGrid::alignSelfForChild(const LayoutBox& child) const
+{
+    if (!child.isAnonymous())
+        return child.styleRef().resolvedAlignSelf(selfAlignmentNormalBehavior());
+    // All the 'auto' values has been solved by the StyleAdjuster, but it's possible that
+    // some grid items generate Anonymous boxes, which need to be solved during layout.
+    return child.styleRef().resolvedAlignSelf(selfAlignmentNormalBehavior(), style());
+}
+
+StyleSelfAlignmentData LayoutGrid::justifySelfForChild(const LayoutBox& child) const
+{
+    if (!child.isAnonymous())
+        return child.styleRef().resolvedJustifySelf(ItemPositionStretch);
+    // All the 'auto' values has been solved by the StyleAdjuster, but it's possible that
+    // some grid items generate Anonymous boxes, which need to be solved during layout.
+    return child.styleRef().resolvedJustifySelf(selfAlignmentNormalBehavior(), style());
+}
+
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
 {
@@ -2185,8 +2203,8 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
     bool childHasAutoSizeInRowAxis = isHorizontalMode ? childStyle.width().isAuto() : childStyle.height().isAuto();
     bool allowedToStretchChildAlongColumnAxis = childHasAutoSizeInColumnAxis && !hasAutoMarginsInColumnAxis(child);
     bool allowedToStretchChildAlongRowAxis = childHasAutoSizeInRowAxis && !hasAutoMarginsInRowAxis(child);
-    bool stretchingAlongRowAxis = ComputedStyle::resolveJustification(styleRef(), childStyle, ItemPositionStretch) == ItemPositionStretch;
-    bool stretchingAlongColumnAxis = ComputedStyle::resolveAlignment(styleRef(), childStyle, ItemPositionStretch) == ItemPositionStretch;
+    bool stretchingAlongRowAxis = justifySelfForChild(child).position() == ItemPositionStretch;
+    bool stretchingAlongColumnAxis = alignSelfForChild(child).position() == ItemPositionStretch;
 
     GridTrackSizingDirection childBlockDirection = flowAwareDirectionForChild(child, ForRows);
     bool allowedToStretchChildBlockSize = childBlockDirection == ForRows ? allowedToStretchChildAlongColumnAxis && stretchingAlongColumnAxis : allowedToStretchChildAlongRowAxis && stretchingAlongRowAxis;
@@ -2265,7 +2283,7 @@ GridAxisPosition LayoutGrid::columnAxisPositionForChild(const LayoutBox& child) 
     bool hasSameWritingMode = child.styleRef().getWritingMode() == styleRef().getWritingMode();
     bool childIsLTR = child.styleRef().isLeftToRightDirection();
 
-    switch (ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch)) {
+    switch (alignSelfForChild(child).position()) {
     case ItemPositionSelfStart:
         // TODO (lajava): Should we implement this logic in a generic utility function ?
         // Aligns the alignment subject to be flush with the edge of the alignment container
@@ -2318,6 +2336,7 @@ GridAxisPosition LayoutGrid::columnAxisPositionForChild(const LayoutBox& child) 
         // crbug.com/234191
         return GridAxisStart;
     case ItemPositionAuto:
+    case ItemPositionNormal:
         break;
     }
 
@@ -2330,7 +2349,7 @@ GridAxisPosition LayoutGrid::rowAxisPositionForChild(const LayoutBox& child) con
     bool hasSameDirection = child.styleRef().direction() == styleRef().direction();
     bool gridIsLTR = styleRef().isLeftToRightDirection();
 
-    switch (ComputedStyle::resolveJustification(styleRef(), child.styleRef(), ItemPositionStretch)) {
+    switch (justifySelfForChild(child).position()) {
     case ItemPositionSelfStart:
         // TODO (lajava): Should we implement this logic in a generic utility function ?
         // Aligns the alignment subject to be flush with the edge of the alignment container
@@ -2383,6 +2402,7 @@ GridAxisPosition LayoutGrid::rowAxisPositionForChild(const LayoutBox& child) con
         // crbug.com/234191
         return GridAxisStart;
     case ItemPositionAuto:
+    case ItemPositionNormal:
         break;
     }
 
@@ -2415,7 +2435,7 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child, GridSizi
             endOfRow -= m_offsetBetweenRows;
         }
         LayoutUnit columnAxisChildSize = isOrthogonalChild(child) ? child.logicalWidth() + child.marginLogicalWidth() : child.logicalHeight() + child.marginLogicalHeight();
-        OverflowAlignment overflow = child.styleRef().resolvedAlignment(styleRef(), ItemPositionStretch).overflow();
+        OverflowAlignment overflow = alignSelfForChild(child).overflow();
         LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(overflow, endOfRow - startOfRow, columnAxisChildSize);
         return startPosition + (axisPosition == GridAxisEnd ? offsetFromStartPosition : offsetFromStartPosition / 2);
     }
@@ -2450,7 +2470,8 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child, GridSizingD
             endOfColumn -= m_offsetBetweenColumns;
         }
         LayoutUnit rowAxisChildSize = isOrthogonalChild(child) ? child.logicalHeight() + child.marginLogicalHeight() : child.logicalWidth() + child.marginLogicalWidth();
-        LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(child.styleRef().justifySelfOverflowAlignment(), endOfColumn - startOfColumn, rowAxisChildSize);
+        OverflowAlignment overflow = justifySelfForChild(child).overflow();
+        LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(overflow, endOfColumn - startOfColumn, rowAxisChildSize);
         return startPosition + (axisPosition == GridAxisEnd ? offsetFromStartPosition : offsetFromStartPosition / 2);
     }
     }
@@ -2512,8 +2533,8 @@ static ContentAlignmentData contentDistributionOffset(const LayoutUnit& availabl
 ContentAlignmentData LayoutGrid::computeContentPositionAndDistributionOffset(GridTrackSizingDirection direction, const LayoutUnit& availableFreeSpace, unsigned numberOfGridTracks) const
 {
     bool isRowAxis = direction == ForColumns;
-    ContentPosition position = isRowAxis ? styleRef().resolvedJustifyContentPosition(normalValueBehavior()) : styleRef().resolvedAlignContentPosition(normalValueBehavior());
-    ContentDistributionType distribution = isRowAxis ? styleRef().resolvedJustifyContentDistribution(normalValueBehavior()) : styleRef().resolvedAlignContentDistribution(normalValueBehavior());
+    ContentPosition position = isRowAxis ? styleRef().resolvedJustifyContentPosition(contentAlignmentNormalBehavior()) : styleRef().resolvedAlignContentPosition(contentAlignmentNormalBehavior());
+    ContentDistributionType distribution = isRowAxis ? styleRef().resolvedJustifyContentDistribution(contentAlignmentNormalBehavior()) : styleRef().resolvedAlignContentDistribution(contentAlignmentNormalBehavior());
     // If <content-distribution> value can't be applied, 'position' will become the associated
     // <content-position> fallback value.
     ContentAlignmentData contentAlignment = contentDistributionOffset(availableFreeSpace, position, distribution, numberOfGridTracks);

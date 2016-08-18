@@ -94,6 +94,9 @@ PassRefPtr<ComputedStyle> EditingViewPortElement::customStyleForLayoutObject()
     style->setUserModify(READ_ONLY);
     style->setUnique();
 
+    if (const ComputedStyle* parentStyle = parentComputedStyle())
+        StyleAdjuster::adjustStyleForAlignment(*style, *parentStyle);
+
     return style.release();
 }
 
@@ -144,8 +147,10 @@ PassRefPtr<ComputedStyle> TextControlInnerEditorElement::customStyleForLayoutObj
     LayoutTextControlItem textControlLayoutItem = LayoutTextControlItem(toLayoutTextControl(parentLayoutObject));
     RefPtr<ComputedStyle> innerEditorStyle = textControlLayoutItem.createInnerEditorStyle(textControlLayoutItem.styleRef());
     // Using StyleAdjuster::adjustComputedStyle updates unwanted style. We'd like
-    // to apply only editing-related.
+    // to apply only editing-related and alignment-related.
     StyleAdjuster::adjustStyleForEditing(*innerEditorStyle);
+    if (const ComputedStyle* parentStyle = parentComputedStyle())
+        StyleAdjuster::adjustStyleForAlignment(*innerEditorStyle, *parentStyle);
     return innerEditorStyle.release();
 }
 

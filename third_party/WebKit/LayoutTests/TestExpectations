@@ -66,8 +66,6 @@ crbug.com/520166 compositing/overflow/do-not-repaint-if-scrolling-composited-lay
 
 crbug.com/520177 [ Android ] fast/images/style-access-during-imageChanged-crash.html [ Crash Failure Pass ]
 crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ Failure ]
-crbug.com/582230 fast/repaint/align-items-change.html [ Skip ]
-crbug.com/582230 fast/repaint/align-items-overflow-change.html [ Skip ]
 
 crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
 
@@ -986,8 +984,6 @@ crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
-
-crbug.com/582230 fast/css-grid-layout/relayout-align-items-changed.html [ Skip ]
 
 # Fails with leak detector.
 crbug.com/622915 [ Linux ] ietestcenter/css3/grid/grid-column-003.htm [ Skip ]

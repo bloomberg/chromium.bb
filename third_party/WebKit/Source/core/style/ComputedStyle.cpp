@@ -194,12 +194,13 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldSt
     if (oldStyle->display() != newStyle->display()
         || oldStyle->hasPseudoStyle(PseudoIdFirstLetter) != newStyle->hasPseudoStyle(PseudoIdFirstLetter)
         || !oldStyle->contentDataEquivalent(newStyle)
-        || oldStyle->hasTextCombine() != newStyle->hasTextCombine()
-        || oldStyle->justifyItems() != newStyle->justifyItems()) // TODO (lajava): We must avoid this Reattach.
+        || oldStyle->hasTextCombine() != newStyle->hasTextCombine())
         return Reattach;
 
     if (!oldStyle->inheritedEqual(*newStyle)
-        || !oldStyle->loadingCustomFontsEqual(*newStyle))
+        || !oldStyle->loadingCustomFontsEqual(*newStyle)
+        || oldStyle->alignItems() != newStyle->alignItems()
+        || oldStyle->justifyItems() != newStyle->justifyItems())
         return Inherit;
 
     if (*oldStyle == *newStyle)
@@ -211,30 +212,48 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldSt
     return NoInherit;
 }
 
-ItemPosition ComputedStyle::resolveAlignment(const ComputedStyle& parentStyle, const ComputedStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
+StyleSelfAlignmentData resolvedSelfAlignment(const StyleSelfAlignmentData& value, ItemPosition normalValueBehavior)
 {
-    // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
-    if (childStyle.alignSelfPosition() == ItemPositionAuto)
-        return (parentStyle.alignItemsPosition() == ItemPositionAuto) ? resolvedAutoPositionForLayoutObject : parentStyle.alignItemsPosition();
-    return childStyle.alignSelfPosition();
+    // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto' flag to not just mean 'auto' prior to running the StyleAdjuster but also mean 'normal' after running it.
+    if (value.position() == ItemPositionNormal || value.position() == ItemPositionAuto)
+        return {normalValueBehavior, OverflowAlignmentDefault};
+    return value;
 }
 
-const StyleSelfAlignmentData ComputedStyle::resolvedAlignment(const ComputedStyle& parentStyle, ItemPosition resolvedAutoPositionForLayoutObject) const
+StyleSelfAlignmentData ComputedStyle::resolvedAlignItems(ItemPosition normalValueBehaviour) const
 {
-    // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
-    if (alignSelfPosition() == ItemPositionAuto) {
-        if (parentStyle.alignItemsPosition() == ItemPositionAuto)
-            return {resolvedAutoPositionForLayoutObject, OverflowAlignmentDefault};
-        return parentStyle.alignItems();
-    }
-    return alignSelf();
+    // We will return the behaviour of 'normal' value if needed, which is specific of each layout model.
+    return resolvedSelfAlignment(alignItems(), normalValueBehaviour);
 }
 
-ItemPosition ComputedStyle::resolveJustification(const ComputedStyle& parentStyle, const ComputedStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
+StyleSelfAlignmentData ComputedStyle::resolvedAlignSelf(ItemPosition normalValueBehaviour, const ComputedStyle* parentStyle) const
 {
-    if (childStyle.justifySelfPosition() == ItemPositionAuto)
-        return (parentStyle.justifyItemsPosition() == ItemPositionAuto) ? resolvedAutoPositionForLayoutObject : parentStyle.justifyItemsPosition();
-    return childStyle.justifySelfPosition();
+    // We will return the behaviour of 'normal' value if needed, which is specific of each layout model.
+    if (!parentStyle || alignSelfPosition() != ItemPositionAuto)
+        return resolvedSelfAlignment(alignSelf(), normalValueBehaviour);
+
+    // We shouldn't need to resolve any 'auto' value in post-adjusment ComputedStyle, but some layout models
+    // can generate anonymous boxes that may need 'auto' value resolution during layout.
+    // The 'auto' keyword computes to the parent's align-items computed value.
+    return parentStyle->resolvedAlignItems(normalValueBehaviour);
+}
+
+StyleSelfAlignmentData ComputedStyle::resolvedJustifyItems(ItemPosition normalValueBehaviour) const
+{
+    // We will return the behaviour of 'normal' value if needed, which is specific of each layout model.
+    return resolvedSelfAlignment(justifyItems(), normalValueBehaviour);
+}
+
+StyleSelfAlignmentData ComputedStyle::resolvedJustifySelf(ItemPosition normalValueBehaviour, const ComputedStyle* parentStyle) const
+{
+    // We will return the behaviour of 'normal' value if needed, which is specific of each layout model.
+    if (!parentStyle || justifySelfPosition() != ItemPositionAuto)
+        return resolvedSelfAlignment(justifySelf(), normalValueBehaviour);
+
+    // We shouldn't need to resolve any 'auto' value in post-adjusment ComputedStyle, but some layout models
+    // can generate anonymous boxes that may need 'auto' value resolution during layout.
+    // The auto keyword computes to the parent's justify-items computed value.
+    return parentStyle->resolvedJustifyItems(normalValueBehaviour);
 }
 
 static inline ContentPosition resolvedContentAlignmentPosition(const StyleContentAlignmentData& value, const StyleContentAlignmentData& normalValueBehavior)

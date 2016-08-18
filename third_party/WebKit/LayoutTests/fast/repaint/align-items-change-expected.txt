@@ -1,34 +1,44 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [101, 53, 98, 150],
-        [101, 53, 98, 150],
-        [100, 52, 100, 300],
-        [100, 52, 100, 152],
-        [1, 53, 98, 100],
-        [1, 53, 98, 100],
-        [0, 52, 200, 300],
-        [0, 52, 200, 300],
-        [0, 52, 100, 300],
-        [0, 52, 100, 102]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV class='item'",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV class='item'",
-        "LayoutFlexibleBox DIV id='container'",
-        "LayoutFlexibleBox DIV id='container'",
-        "LayoutBlockFlow DIV class='item'",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV class='item'",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [0, 153, 100, 199],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [0, 154, 100, 198],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [100, 203, 100, 149],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [100, 204, 100, 148],
+          "reason": "incremental"
+        }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV class='item'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='item'",
+      "reason": "incremental"
     }
   ]
 }
