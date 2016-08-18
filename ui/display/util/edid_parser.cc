@@ -235,7 +235,7 @@ bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid,
       // - byte 3: the capability.
       unsigned char tag = edid[data_offset] >> 5;
       unsigned char payload_length = edid[data_offset] & 0x1f;
-      if (data_offset + payload_length > edid.size())
+      if (data_offset + payload_length + 1 > edid.size())
         break;
 
       if (tag != kExtendedTag || payload_length < 2 ||
