@@ -289,6 +289,31 @@ def hashHistogramName(name):
   return '0x' + hashlib.md5(name).hexdigest()[:16]
 
 
+def output_csv(unmapped_histograms, location_map):
+  for histogram in sorted(unmapped_histograms):
+    parts = location_map[histogram].split(':')
+    assert len(parts) == 2
+    (filename, line_number) = parts
+    print '%s,%s,%s,%s' % (filename, line_number, histogram,
+                           hashHistogramName(histogram))
+
+
+def output_log(unmapped_histograms, location_map, verbose):
+  if len(unmapped_histograms):
+    logging.info('')
+    logging.info('')
+    logging.info('Histograms in Chromium but not in XML files:')
+    logging.info('-------------------------------------------------')
+    for histogram in sorted(unmapped_histograms):
+      if verbose:
+        logging.info('%s: %s - %s', location_map[histogram], histogram,
+                     hashHistogramName(histogram))
+      else:
+        logging.info('  %s - %s', histogram, hashHistogramName(histogram))
+  else:
+    logging.info('Success!  No unmapped histograms found.')
+
+
 def main():
   # Find default paths.
   default_root = path_util.GetInputFile('/')
@@ -318,6 +343,11 @@ def main():
          default_extra_histograms_path,
     metavar='FILE')
   parser.add_option(
+      '--csv', action='store_true', dest='output_as_csv', default=False,
+      help=(
+          'output as csv for ease of parsing ' +
+          '[optional, defaults to %default]'))
+  parser.add_option(
       '--verbose', action='store_true', dest='verbose', default=False,
       help=(
           'print file position information with histograms ' +
@@ -345,19 +375,10 @@ def main():
   else:
     logging.warning('No such file: %s', options.extra_histograms_file_location)
 
-  if len(unmapped_histograms):
-    logging.info('')
-    logging.info('')
-    logging.info('Histograms in Chromium but not in XML files:')
-    logging.info('-------------------------------------------------')
-    for histogram in sorted(unmapped_histograms):
-      if options.verbose:
-        logging.info('%s: %s - %s', location_map[histogram], histogram,
-                     hashHistogramName(histogram))
-      else:
-        logging.info('  %s - %s', histogram, hashHistogramName(histogram))
+  if options.output_as_csv:
+    output_csv(unmapped_histograms, location_map)
   else:
-    logging.info('Success!  No unmapped histograms found.')
+    output_log(unmapped_histograms, location_map, options.verbose)
 
 
 if __name__ == '__main__':
