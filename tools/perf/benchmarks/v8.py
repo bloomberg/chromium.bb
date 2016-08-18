@@ -151,7 +151,8 @@ class V8TodoMVCIgnition(V8TodoMVC):
 
 # Disabled on reference builds because they don't support the new
 # Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
-@benchmark.Disabled('reference')
+# Windows: crbug.com/638724
+@benchmark.Disabled('win', 'reference')
 class V8InfiniteScroll(_InfiniteScrollBenchmark):
   """Measures V8 GC metrics and memory usage while scrolling the top web pages.
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
@@ -165,7 +166,8 @@ class V8InfiniteScroll(_InfiniteScrollBenchmark):
 
 # Disabled on reference builds because they don't support the new
 # Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
-@benchmark.Disabled('reference')  # crbug.com/579546
+# Windows: crbug.com/638724
+@benchmark.Disabled('win', 'reference')  # crbug.com/579546
 class V8InfiniteScrollIgnition(V8InfiniteScroll):
   """Measures V8 GC metrics using Ignition."""
 
