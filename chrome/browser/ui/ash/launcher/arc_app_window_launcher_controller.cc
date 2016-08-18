@@ -332,8 +332,10 @@ void ArcAppWindowLauncherController::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
 
   for (auto& it : task_id_to_app_window_) {
-    if (it.second->widget() == views::Widget::GetWidgetForNativeWindow(window))
-      it.second->set_widget(nullptr);
+    if (it.second->GetNativeWindow() == window) {
+      OnTaskDestroyed(it.second->task_id());
+      break;
+    }
   }
 }
 

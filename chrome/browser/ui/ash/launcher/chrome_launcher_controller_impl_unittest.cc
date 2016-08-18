@@ -846,10 +846,12 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     params.context = GetContext();
     views::Widget* widget = new views::Widget();
     widget->Init(params);
-    widget->Show();
-    widget->Activate();
+    // Set Arc id before showing the window to be recognized in
+    // ArcAppWindowLauncherController.
     exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
                                         &window_app_id);
+    widget->Show();
+    widget->Activate();
     return widget;
   }
 
@@ -1848,6 +1850,45 @@ TEST_F(ChromeLauncherControllerImplTest, ArcRunningApp) {
   arc_test_.StopArcInstance();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+}
+
+// Test race creation/deletion of Arc app.
+// TODO (khmel): Remove after moving everything to wayland protocol.
+TEST_F(ChromeLauncherControllerImplTest, ArcRaceCreateClose) {
+  arc_test_.SetUp(profile());
+  InitLauncherController();
+
+  const std::string arc_app_id1 =
+      ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
+  const std::string arc_app_id2 =
+      ArcAppTest::GetAppId(arc_test_.fake_apps()[1]);
+  SendListOfArcApps();
+
+  // Arc window created before and closed after mojom notification.
+  std::string window_app_id1("org.chromium.arc.1");
+  views::Widget* arc_window = CreateArcWindow(window_app_id1);
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  ASSERT_TRUE(arc_window);
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0]);
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  arc_test_.app_instance()->SendTaskDestroyed(1);
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  arc_window->Close();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+
+  // Arc window created after and closed before mojom notification.
+  std::string window_app_id2("org.chromium.arc.2");
+  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1]);
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  arc_window = CreateArcWindow(window_app_id2);
+  ASSERT_TRUE(arc_window);
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  arc_window->Close();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  arc_test_.app_instance()->SendTaskDestroyed(2);
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
 }
 
 // Validate that Arc app is pinned correctly and pin is removed automatically
