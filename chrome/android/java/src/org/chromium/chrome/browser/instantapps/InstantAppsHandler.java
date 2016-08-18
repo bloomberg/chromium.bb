@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.instantapps;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,9 @@ import android.provider.Browser;
 import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.metrics.LaunchMetrics.TimesHistogramSample;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.instantapps;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.IntentHandler;
 
 /**
  * Unit tests for {@link InstantAppsHandler}.
