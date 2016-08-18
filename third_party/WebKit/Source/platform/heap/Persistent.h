@@ -39,28 +39,33 @@ class PersistentBase {
 public:
     PersistentBase() : m_raw(nullptr)
     {
+        saveCreationThreadHeap();
         initialize();
     }
 
     PersistentBase(std::nullptr_t) : m_raw(nullptr)
     {
+        saveCreationThreadHeap();
         initialize();
     }
 
     PersistentBase(T* raw) : m_raw(raw)
     {
+        saveCreationThreadHeap();
         initialize();
         checkPointer();
     }
 
     PersistentBase(T& raw) : m_raw(&raw)
     {
+        saveCreationThreadHeap();
         initialize();
         checkPointer();
     }
 
     PersistentBase(const PersistentBase& other) : m_raw(other)
     {
+        saveCreationThreadHeap();
         initialize();
         checkPointer();
     }
@@ -68,6 +73,7 @@ public:
     template<typename U>
     PersistentBase(const PersistentBase<U, weaknessConfiguration, crossThreadnessConfiguration>& other) : m_raw(other)
     {
+        saveCreationThreadHeap();
         initialize();
         checkPointer();
     }
@@ -75,12 +81,14 @@ public:
     template<typename U>
     PersistentBase(const Member<U>& other) : m_raw(other)
     {
+        saveCreationThreadHeap();
         initialize();
         checkPointer();
     }
 
     PersistentBase(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1))
     {
+        saveCreationThreadHeap();
         initialize();
         checkPointer();
     }
@@ -234,10 +242,20 @@ private:
 
     void checkPointer()
     {
-#if ENABLE(ASSERT) && defined(ADDRESS_SANITIZER)
+#if DCHECK_IS_ON()
         if (!m_raw || isHashTableDeletedValue())
             return;
 
+        if (crossThreadnessConfiguration != CrossThreadPersistentConfiguration && m_creationThreadState) {
+            ThreadState* current = ThreadState::current();
+            DCHECK(current);
+                // Member should point to objects that belong in the same ThreadHeap.
+                DCHECK_EQ(&ThreadState::fromObject(m_raw)->heap(), &m_creationThreadState->heap());
+                // Member should point to objects that belong in the same ThreadHeap.
+                DCHECK_EQ(&current->heap(), &m_creationThreadState->heap());
+        }
+
+#if defined(ADDRESS_SANITIZER)
         // ThreadHeap::isHeapObjectAlive(m_raw) checks that m_raw is a traceable
         // object. In other words, it checks that the pointer is either of:
         //
@@ -247,6 +265,17 @@ private:
         // Otherwise, ThreadHeap::isHeapObjectAlive will crash when it calls
         // header->checkHeader().
         ThreadHeap::isHeapObjectAlive(m_raw);
+#endif
+#endif
+    }
+
+    void saveCreationThreadHeap()
+    {
+#if DCHECK_IS_ON()
+        if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration)
+            m_creationThreadState = nullptr;
+        else
+            m_creationThreadState = ThreadState::current();
 #endif
     }
 
@@ -264,6 +293,9 @@ private:
     PersistentNode* m_persistentNode = nullptr;
 #if ENABLE(ASSERT)
     ThreadState* m_state = nullptr;
+#endif
+#if DCHECK_IS_ON()
+    const ThreadState* m_creationThreadState;
 #endif
 };
 
