@@ -31,12 +31,6 @@ web::WebState* WebControllerProvider::GetWebState() const {
   return nullptr;
 }
 
-void WebControllerProvider::InjectScript(const std::string& script,
-                                         web::JavaScriptCompletion completion) {
-  if (completion)
-    completion(nil, nil);
-}
-
 void WebControllerProvider::InjectScript(
     const std::string& script,
     web::JavaScriptResultBlock completion) {

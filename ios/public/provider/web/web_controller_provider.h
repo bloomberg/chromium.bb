@@ -50,13 +50,6 @@ class WebControllerProvider {
   // Injects |script| into the previously loaded page, if any, and calls
   // |completion| with the result.  Calls |completion| with nil parameters
   // when there is no previously loaded page.
-  // DEPRECATED. TODO(crbug.com/595761): Remove this API.
-  virtual void InjectScript(const std::string& script,
-                            web::JavaScriptCompletion completion);
-
-  // Injects |script| into the previously loaded page, if any, and calls
-  // |completion| with the result.  Calls |completion| with nil parameters
-  // when there is no previously loaded page.
   virtual void InjectScript(const std::string& script,
                             web::JavaScriptResultBlock completion);
 };
