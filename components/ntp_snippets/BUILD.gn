@@ -99,6 +99,7 @@ if (is_android) {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "category_factory_unittest.cc",
     "content_suggestions_service_unittest.cc",
     "mock_content_suggestions_provider_observer.cc",
     "mock_content_suggestions_provider_observer.h",
