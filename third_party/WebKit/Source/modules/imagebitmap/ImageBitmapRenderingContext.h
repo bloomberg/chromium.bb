@@ -54,6 +54,10 @@ private:
     RefPtr<Image> m_image;
 };
 
+DEFINE_TYPE_CASTS(ImageBitmapRenderingContext, CanvasRenderingContext, context,
+    context->getContextType() == CanvasRenderingContext::ContextImageBitmap,
+    context.getContextType() == CanvasRenderingContext::ContextImageBitmap);
+
 } // blink
 
 #endif

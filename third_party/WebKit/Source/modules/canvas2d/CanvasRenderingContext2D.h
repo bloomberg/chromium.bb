@@ -226,7 +226,8 @@ private:
     ListHashSet<String> m_fontLRUList;
 };
 
-DEFINE_TYPE_CASTS(CanvasRenderingContext2D, CanvasRenderingContext, context, context->is2d(), context.is2d());
+DEFINE_TYPE_CASTS(CanvasRenderingContext2D, CanvasRenderingContext, context,
+    context->is2d() && context->canvas(), context.is2d() && context.canvas());
 
 } // namespace blink
 

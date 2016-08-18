@@ -84,6 +84,10 @@ private:
     std::unique_ptr<ImageBuffer> m_imageBuffer;
 };
 
+DEFINE_TYPE_CASTS(OffscreenCanvasRenderingContext2D, CanvasRenderingContext, context,
+    context->is2d() && context->getOffscreenCanvas(),
+    context.is2d() && context.getOffscreenCanvas());
+
 } // namespace blink
 
 #endif // OffscreenCanvasRenderingContext2D_h
