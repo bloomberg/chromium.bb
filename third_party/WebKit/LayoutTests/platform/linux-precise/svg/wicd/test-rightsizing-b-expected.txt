@@ -49,9 +49,35 @@ layer at (0,0) size 785x711 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               text run at (0,17) width 31: "Back"
 layer at (47,97) size 295x150
   LayoutEmbeddedObject {object} at (0,0) size 295.16x150 [bgcolor=#FF0000]
-layer at (346,97) size 148x150
-  LayoutEmbeddedObject {object} at (299.16,0) size 147.58x150 [bgcolor=#FF0000]
+    layer at (0,0) size 295x150
+      LayoutView at (0,0) size 295x150
+    layer at (0,0) size 295x150
+      LayoutBlockFlow {HTML} at (0,0) size 295x150
+        LayoutBlockFlow {BODY} at (8,8) size 279x134
+layer at (346,99) size 148x148
+  LayoutEmbeddedObject {object} at (299.16,2) size 147.58x147.58 [bgcolor=#FF0000]
+    layer at (0,0) size 148x148
+      LayoutView at (0,0) size 148x148
+    layer at (0,0) size 148x148
+      LayoutSVGRoot {svg} at (0,0) size 148x148
+        LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGRect {rect} at (0,0) size 148x148 [fill={[type=SOLID] [color=#5588FF]}] [x=-3000.00] [y=-1000.00] [width=6200.00] [height=2200.00]
+        LayoutSVGEllipse {circle} at (0,0) size 148x148 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
+        LayoutSVGContainer {g} at (21,45) size 105x61
+          LayoutSVGText {text} at (29,61) size 142x82 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 141x82
+              chunk 1 (middle anchor) text run 1 at (29.73,125.00) startOffset 0 endOffset 3 width 140.54: "SVG"
 layer at (498,97) size 74x150
   LayoutEmbeddedObject {object} at (450.73,0) size 73.78x150 [bgcolor=#FF0000]
+    layer at (0,0) size 74x150
+      LayoutView at (0,0) size 74x150
+    layer at (0,0) size 74x150
+      LayoutBlockFlow {HTML} at (0,0) size 74x150
+        LayoutBlockFlow {BODY} at (8,8) size 58x134
 layer at (576,97) size 36x150
   LayoutEmbeddedObject {object} at (528.52,0) size 36.89x150 [bgcolor=#FF0000]
+    layer at (0,0) size 37x150
+      LayoutView at (0,0) size 37x150
+    layer at (0,0) size 37x150
+      LayoutBlockFlow {HTML} at (0,0) size 37x150
+        LayoutBlockFlow {BODY} at (8,8) size 21x134

@@ -46,7 +46,6 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
-crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ NeedsRebaseline ]
 
 crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 
