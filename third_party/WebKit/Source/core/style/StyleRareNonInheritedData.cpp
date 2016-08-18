@@ -103,8 +103,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , marginAfterCollapse(MarginCollapseCollapse)
     , m_appearance(ComputedStyle::initialAppearance())
     , m_textDecorationStyle(ComputedStyle::initialTextDecorationStyle())
-    , m_wrapFlow(ComputedStyle::initialWrapFlow())
-    , m_wrapThrough(ComputedStyle::initialWrapThrough())
     , m_hasCurrentOpacityAnimation(false)
     , m_hasCurrentTransformAnimation(false)
     , m_hasCurrentFilterAnimation(false)
@@ -186,8 +184,6 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , marginAfterCollapse(o.marginAfterCollapse)
     , m_appearance(o.m_appearance)
     , m_textDecorationStyle(o.m_textDecorationStyle)
-    , m_wrapFlow(o.m_wrapFlow)
-    , m_wrapThrough(o.m_wrapThrough)
     , m_hasCurrentOpacityAnimation(o.m_hasCurrentOpacityAnimation)
     , m_hasCurrentTransformAnimation(o.m_hasCurrentTransformAnimation)
     , m_hasCurrentFilterAnimation(o.m_hasCurrentFilterAnimation)
@@ -273,8 +269,6 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && marginAfterCollapse == o.marginAfterCollapse
         && m_appearance == o.m_appearance
         && m_textDecorationStyle == o.m_textDecorationStyle
-        && m_wrapFlow == o.m_wrapFlow
-        && m_wrapThrough == o.m_wrapThrough
         && m_hasCurrentOpacityAnimation == o.m_hasCurrentOpacityAnimation
         && m_hasCurrentTransformAnimation == o.m_hasCurrentTransformAnimation
         && m_hasCurrentFilterAnimation == o.m_hasCurrentFilterAnimation

@@ -489,15 +489,7 @@ enum TextOverflow { TextOverflowClip = 0, TextOverflowEllipsis };
 
 enum EImageRendering { ImageRenderingAuto, ImageRenderingOptimizeSpeed, ImageRenderingOptimizeQuality, ImageRenderingOptimizeContrast, ImageRenderingPixelated };
 
-enum ImageResolutionSource { ImageResolutionSpecified = 0, ImageResolutionFromImage };
-
-enum ImageResolutionSnap { ImageResolutionNoSnap = 0, ImageResolutionSnapPixels };
-
 enum Order { LogicalOrder = 0, VisualOrder };
-
-enum WrapFlow { WrapFlowAuto, WrapFlowBoth, WrapFlowStart, WrapFlowEnd, WrapFlowMaximum, WrapFlowClear };
-
-enum WrapThrough { WrapThroughWrap, WrapThroughNone };
 
 enum RubyPosition { RubyPositionBefore, RubyPositionAfter };
 

@@ -1211,13 +1211,6 @@ public:
     void setVerticalAlign(EVerticalAlign v) { m_nonInheritedData.m_verticalAlign = v; }
     void setVerticalAlignLength(const Length& length) { setVerticalAlign(VerticalAlignLength); SET_VAR(m_box, m_verticalAlign, length); }
 
-    // Exclusions properties.
-    // wrap-flow
-    static WrapFlow initialWrapFlow() { return WrapFlowAuto; }
-
-    // wrap-through
-    static WrapThrough initialWrapThrough() { return WrapThroughWrap; }
-
     // will-change
     const Vector<CSSPropertyID>& willChangeProperties() const { return m_rareNonInheritedData->m_willChange->m_properties; }
     bool willChangeContents() const { return m_rareNonInheritedData->m_willChange->m_contents; }
@@ -2391,14 +2384,6 @@ public:
     // Other utility functions.
     bool isStyleAvailable() const;
     bool isSharable() const;
-
-    // TODO(sashab) Remove these.
-    static ImageOrientationEnum initialImageOrientation() { return OriginTopLeft; }
-    static ImageResolutionSource initialImageResolutionSource() { return ImageResolutionSpecified; }
-    static ImageResolutionSnap initialImageResolutionSnap() { return ImageResolutionNoSnap; }
-    static float initialImageResolution() { return 1; }
-    void setWrapFlow(WrapFlow wrapFlow) { SET_VAR(m_rareNonInheritedData, m_wrapFlow, wrapFlow); }
-    void setWrapThrough(WrapThrough wrapThrough) { SET_VAR(m_rareNonInheritedData, m_wrapThrough, wrapThrough); }
 
 private:
     void setVisitedLinkColor(const Color&);

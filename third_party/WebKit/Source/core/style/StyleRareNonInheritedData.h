@@ -174,8 +174,6 @@ public:
     unsigned m_appearance : 6; // EAppearance
 
     unsigned m_textDecorationStyle : 3; // TextDecorationStyle
-    unsigned m_wrapFlow: 3; // WrapFlow
-    unsigned m_wrapThrough: 1; // WrapThrough
 
     unsigned m_hasCurrentOpacityAnimation : 1;
     unsigned m_hasCurrentTransformAnimation : 1;

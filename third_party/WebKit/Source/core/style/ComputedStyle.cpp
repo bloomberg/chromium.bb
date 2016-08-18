@@ -554,8 +554,6 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             || m_rareNonInheritedData->marginAfterCollapse != other.m_rareNonInheritedData->marginAfterCollapse
             || m_rareNonInheritedData->lineClamp != other.m_rareNonInheritedData->lineClamp
             || m_rareNonInheritedData->textOverflow != other.m_rareNonInheritedData->textOverflow
-            || m_rareNonInheritedData->m_wrapFlow != other.m_rareNonInheritedData->m_wrapFlow
-            || m_rareNonInheritedData->m_wrapThrough != other.m_rareNonInheritedData->m_wrapThrough
             || m_rareNonInheritedData->m_shapeMargin != other.m_rareNonInheritedData->m_shapeMargin
             || m_rareNonInheritedData->m_order != other.m_rareNonInheritedData->m_order
             || m_rareNonInheritedData->m_grid.get() != other.m_rareNonInheritedData->m_grid.get()
