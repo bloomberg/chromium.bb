@@ -133,7 +133,8 @@ void FindSCTInReportList(
           found = true;
         break;
 
-      case net::ct::SCT_STATUS_INVALID: {
+      case net::ct::SCT_STATUS_INVALID_SIGNATURE:
+      case net::ct::SCT_STATUS_INVALID_TIMESTAMP: {
         // Invalid SCTs have a log id and an origin and nothing else.
         EXPECT_FALSE(report_sct->HasKey("sct"));
         std::string id_base64;
@@ -197,9 +198,15 @@ void CheckReportSCTs(
         ASSERT_NO_FATAL_FAILURE(FindSCTInReportList(
             expected_sct.sct, net::ct::SCT_STATUS_LOG_UNKNOWN, unknown_scts));
         break;
-      case net::ct::SCT_STATUS_INVALID:
+      case net::ct::SCT_STATUS_INVALID_SIGNATURE:
         ASSERT_NO_FATAL_FAILURE(FindSCTInReportList(
-            expected_sct.sct, net::ct::SCT_STATUS_INVALID, invalid_scts));
+            expected_sct.sct, net::ct::SCT_STATUS_INVALID_SIGNATURE,
+            invalid_scts));
+        break;
+      case net::ct::SCT_STATUS_INVALID_TIMESTAMP:
+        ASSERT_NO_FATAL_FAILURE(FindSCTInReportList(
+            expected_sct.sct, net::ct::SCT_STATUS_INVALID_TIMESTAMP,
+            invalid_scts));
         break;
       case net::ct::SCT_STATUS_OK:
         ASSERT_NO_FATAL_FAILURE(FindSCTInReportList(
@@ -441,10 +448,18 @@ TEST(ChromeExpectCTReporterTest, SendReport) {
   MakeTestSCTAndStatus(
       net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION,
       "invalid_log_id1", "extensions1", "signature1", now,
-      net::ct::SCT_STATUS_INVALID, &ssl_info.signed_certificate_timestamps);
+      net::ct::SCT_STATUS_INVALID_TIMESTAMP,
+      &ssl_info.signed_certificate_timestamps);
+
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION,
+      "invalid_log_id1", "extensions1", "signature1", now,
+      net::ct::SCT_STATUS_INVALID_SIGNATURE,
+      &ssl_info.signed_certificate_timestamps);
+
   MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
                        "invalid_log_id2", "extensions2", "signature2", now,
-                       net::ct::SCT_STATUS_INVALID,
+                       net::ct::SCT_STATUS_INVALID_SIGNATURE,
                        &ssl_info.signed_certificate_timestamps);
 
   MakeTestSCTAndStatus(

@@ -31,9 +31,9 @@ bool CheckSecurityStyle(int security_style) {
 bool CheckSCTStatus(uint32_t sct_status) {
   switch (sct_status) {
     case net::ct::SCT_STATUS_LOG_UNKNOWN:
-    case net::ct::SCT_STATUS_INVALID:
+    case net::ct::SCT_STATUS_INVALID_SIGNATURE:
     case net::ct::SCT_STATUS_OK:
-    case net::ct::SCT_STATUS_MAX:
+    case net::ct::SCT_STATUS_INVALID_TIMESTAMP:
       return true;
     case net::ct::SCT_STATUS_NONE:
       // SCT_STATUS_NONE should never happen, so it isn't valid to

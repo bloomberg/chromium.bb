@@ -617,8 +617,10 @@ TEST_F(WebsiteSettingsTest, InvalidSCTs) {
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
   security_info_.connection_status = status;
 
-  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_INVALID);
-  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_INVALID);
+  security_info_.sct_verify_statuses.push_back(
+      net::ct::SCT_STATUS_INVALID_TIMESTAMP);
+  security_info_.sct_verify_statuses.push_back(
+      net::ct::SCT_STATUS_INVALID_SIGNATURE);
 
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
@@ -705,7 +707,8 @@ TEST_F(WebsiteSettingsTest, UnknownAndInvalidSCTs) {
   security_info_.connection_status = status;
 
   security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_LOG_UNKNOWN);
-  security_info_.sct_verify_statuses.push_back(net::ct::SCT_STATUS_INVALID);
+  security_info_.sct_verify_statuses.push_back(
+      net::ct::SCT_STATUS_INVALID_SIGNATURE);
 
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));

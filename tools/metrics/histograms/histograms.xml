@@ -91753,8 +91753,10 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="SCTVerifyStatus" type="int">
   <int value="0" label="SCT_STATUS_NONE"/>
   <int value="1" label="SCT_STATUS_LOG_UNKNOWN"/>
-  <int value="2" label="SCT_STATUS_INVALID"/>
+  <int value="2" label="DEPRECATED: SCT_STATUS_INVALID"/>
   <int value="3" label="SCT_STATUS_OK"/>
+  <int value="4" label="SCT_STATUS_INVALID_SIGNATURE"/>
+  <int value="5" label="SCT_STATUS_INVALID_TIMESTAMP"/>
 </enum>
 
 <enum name="SdchDictionaryFate" type="int">

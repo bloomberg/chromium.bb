@@ -126,7 +126,8 @@ TEST(SSLStatusSerializationTest, DeserializeMultipleSCTStatuses) {
   status.sct_statuses.push_back(net::ct::SCT_STATUS_LOG_UNKNOWN);
   status.sct_statuses.push_back(net::ct::SCT_STATUS_LOG_UNKNOWN);
   status.sct_statuses.push_back(net::ct::SCT_STATUS_OK);
-  status.sct_statuses.push_back(net::ct::SCT_STATUS_INVALID);
+  status.sct_statuses.push_back(net::ct::SCT_STATUS_INVALID_SIGNATURE);
+  status.sct_statuses.push_back(net::ct::SCT_STATUS_INVALID_TIMESTAMP);
   std::string serialized = SerializeSecurityInfo(status);
 
   SSLStatus deserialized;
