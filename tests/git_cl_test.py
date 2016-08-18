@@ -1237,7 +1237,8 @@ class TestGitCl(TestCase):
     self.mock(git_common, 'is_dirty_git_tree', lambda x: True)
     self.assertNotEqual(git_cl.main(['diff']), 0)
 
-  def _patch_common(self, is_gerrit=False, force_codereview=False):
+  def _patch_common(self, is_gerrit=False, force_codereview=False,
+                    new_branch=False):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl._RietveldChangelistImpl, 'GetMostRecentPatchset',
               lambda x: '60001')
@@ -1267,7 +1268,10 @@ class TestGitCl(TestCase):
               lambda *args: 'Description')
     self.mock(git_cl, 'IsGitVersionAtLeast', lambda *args: True)
 
-    self.calls = self.calls or []
+    if new_branch:
+      self.calls = [((['git', 'new-branch', 'master'],), ''),]
+    else:
+      self.calls = [((['git', 'symbolic-ref', 'HEAD'],), 'master')]
     if not force_codereview:
       # These calls detect codereview to use.
       self.calls += [
@@ -1290,8 +1294,8 @@ class TestGitCl(TestCase):
         ((['sed', '-e', 's|^--- a/|--- |; s|^+++ b/|+++ |'],), ''),
       ]
 
-  def _common_patch_successful(self):
-    self._patch_common()
+  def _common_patch_successful(self, new_branch=False):
+    self._patch_common(new_branch=new_branch)
     self.calls += [
       ((['git', 'apply', '--index', '-p0', '--3way'],), ''),
       ((['git', 'commit', '-m',
@@ -1312,8 +1316,7 @@ class TestGitCl(TestCase):
     self.assertEqual(git_cl.main(['patch', '123456']), 0)
 
   def test_patch_successful_new_branch(self):
-    self.calls = [ ((['git', 'new-branch', 'master'],), ''), ]
-    self._common_patch_successful()
+    self._common_patch_successful(new_branch=True)
     self.assertEqual(git_cl.main(['patch', '-b', 'master', '123456']), 0)
 
   def test_patch_conflict(self):

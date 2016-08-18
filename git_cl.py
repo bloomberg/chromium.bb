@@ -4409,6 +4409,8 @@ def CMDpatch(parser, args):
       RunGit(['branch', '-D', options.newbranch],
              stderr=subprocess2.PIPE, error_ok=True)
     RunGit(['new-branch', options.newbranch])
+  elif not GetCurrentBranch():
+    DieWithError('A branch is required to apply patch. Hint: use -b option.')
 
   cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
 
