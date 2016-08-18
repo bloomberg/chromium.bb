@@ -9,12 +9,12 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
@@ -45,7 +45,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private static final String TAG = "Ntp";
 
     private final NewTabPageManager mNewTabPageManager;
-    private final NewTabPageLayout mNewTabPageLayout;
+    private final View mAboveTheFoldView;
     private SuggestionsSource mSuggestionsSource;
     private final UiConfig mUiConfig;
     private final ItemTouchCallbacks mItemTouchCallbacks = new ItemTouchCallbacks();
@@ -114,15 +114,15 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      * Constructor to create the manager for all the cards to display on the NTP
      *
      * @param manager the NewTabPageManager to use to interact with the rest of the system.
-     * @param newTabPageLayout the layout encapsulating all the above-the-fold elements
+     * @param aboveTheFoldView the layout encapsulating all the above-the-fold elements
      *                         (logo, search box, most visited tiles)
      * @param suggestionsSource the bridge to interact with the content suggestions service.
      * @param uiConfig the NTP UI configuration, to be passed to created views.
      */
-    public NewTabPageAdapter(NewTabPageManager manager, NewTabPageLayout newTabPageLayout,
+    public NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView,
             SuggestionsSource suggestionsSource, UiConfig uiConfig) {
         mNewTabPageManager = manager;
-        mNewTabPageLayout = newTabPageLayout;
+        mAboveTheFoldView = aboveTheFoldView;
         mSuggestionsSource = suggestionsSource;
         mUiConfig = uiConfig;
 
@@ -221,7 +221,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         assert parent == mRecyclerView;
 
         if (viewType == NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD) {
-            return new NewTabPageViewHolder(mNewTabPageLayout);
+            return new NewTabPageViewHolder(mAboveTheFoldView);
         }
 
         if (viewType == NewTabPageItem.VIEW_TYPE_HEADER) {

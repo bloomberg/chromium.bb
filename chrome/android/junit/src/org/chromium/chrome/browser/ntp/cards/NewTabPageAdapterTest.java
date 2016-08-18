@@ -8,20 +8,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import android.graphics.Bitmap;
-
-import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
-import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
+import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,11 +24,7 @@ import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Unit tests for {@link NewTabPageAdapter}.
@@ -43,98 +33,7 @@ import java.util.Set;
 @Config(manifest = Config.NONE)
 public class NewTabPageAdapterTest {
 
-    private static class FakeSnippetsSource implements SuggestionsSource {
-        private SuggestionsSource.Observer mObserver;
-        private final Map<Integer, List<SnippetArticle>> mSuggestions = new HashMap<>();
-        private final Map<Integer, Integer> mCategoryStatus = new HashMap<>();
-        private final Map<Integer, SuggestionsCategoryInfo> mCategoryInfo = new HashMap<>();
-
-        public void setStatusForCategory(@CategoryInt int category,
-                @CategoryStatusEnum int status) {
-            mCategoryStatus.put(category, status);
-            if (mObserver != null) mObserver.onCategoryStatusChanged(category, status);
-        }
-
-        public void setSuggestionsForCategory(
-                @CategoryInt int category, List<SnippetArticle> suggestions) {
-            // Copy the suggestions list so that it can't be modified anymore.
-            mSuggestions.put(category, new ArrayList<>(suggestions));
-            if (mObserver != null) mObserver.onNewSuggestions(category);
-        }
-
-        public void setInfoForCategory(@CategoryInt int category, SuggestionsCategoryInfo info) {
-            mCategoryInfo.put(category, info);
-        }
-
-        public void fireSuggestionInvalidated(@CategoryInt int category, String suggestionId) {
-            for (SnippetArticle suggestion : mSuggestions.get(category)) {
-                if (suggestion.mId.equals(suggestionId)) {
-                    mSuggestions.get(category).remove(suggestion);
-                    break;
-                }
-            }
-            mObserver.onSuggestionInvalidated(category, suggestionId);
-        }
-
-        public void silentlyRemoveCategory(int category) {
-            mSuggestions.remove(category);
-            mCategoryStatus.remove(category);
-            mCategoryInfo.remove(category);
-        }
-
-        @Override
-        public void dismissSuggestion(SnippetArticle suggestion) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void fetchSuggestionImage(
-                SnippetArticle suggestion, Callback<Bitmap> callback) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void getSuggestionVisited(
-                SnippetArticle suggestion, Callback<Boolean> callback) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setObserver(Observer observer) {
-            mObserver = observer;
-        }
-
-        @Override
-        public int[] getCategories() {
-            Set<Integer> ids = mCategoryStatus.keySet();
-            int[] result = new int[ids.size()];
-            int index = 0;
-            for (int id : ids) result[index++] = id;
-            return result;
-        }
-
-        @CategoryStatusEnum
-        @Override
-        public int getCategoryStatus(@CategoryInt int category) {
-            return mCategoryStatus.get(category);
-        }
-
-        @Override
-        public SuggestionsCategoryInfo getCategoryInfo(int category) {
-            return mCategoryInfo.get(category);
-        }
-
-        @Override
-        public List<SnippetArticle> getSuggestionsForCategory(int category) {
-            if (!SnippetsBridge.isCategoryStatusAvailable(mCategoryStatus.get(category))) {
-                return Collections.emptyList();
-            }
-            List<SnippetArticle> result = mSuggestions.get(category);
-            return result == null ? Collections.<SnippetArticle>emptyList() : result;
-        }
-    }
-
-    private FakeSnippetsSource mSnippetsSource = new FakeSnippetsSource();
+    private FakeSuggestionsSource mSnippetsSource = new FakeSuggestionsSource();
     private NewTabPageAdapter mNtpAdapter;
 
     /**
@@ -194,7 +93,7 @@ public class NewTabPageAdapterTest {
         RecordHistogram.disableForTests();
         RecordUserAction.disableForTests();
 
-        mSnippetsSource = new FakeSnippetsSource();
+        mSnippetsSource = new FakeSuggestionsSource();
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.INITIALIZING);
         mSnippetsSource.setInfoForCategory(
                 KnownCategories.ARTICLES, new SuggestionsCategoryInfo("Articles for you",
