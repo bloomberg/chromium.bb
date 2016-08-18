@@ -45,6 +45,7 @@ LayerTree::Inputs::Inputs()
     : top_controls_height(0.f),
       top_controls_shown_ratio(0.f),
       top_controls_shrink_blink_size(false),
+      bottom_controls_height(0.f),
       device_scale_factor(1.f),
       painted_device_scale_factor(1.f),
       page_scale_factor(1.f),
@@ -171,6 +172,14 @@ void LayerTree::SetTopControlsShownRatio(float ratio) {
     return;
 
   inputs_.top_controls_shown_ratio = ratio;
+  SetNeedsCommit();
+}
+
+void LayerTree::SetBottomControlsHeight(float height) {
+  if (inputs_.bottom_controls_height == height)
+    return;
+
+  inputs_.bottom_controls_height = height;
   SetNeedsCommit();
 }
 
@@ -385,6 +394,7 @@ void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->set_top_controls_shrink_blink_size(
       inputs_.top_controls_shrink_blink_size);
   tree_impl->set_top_controls_height(inputs_.top_controls_height);
+  tree_impl->set_bottom_controls_height(inputs_.bottom_controls_height);
   tree_impl->PushTopControlsFromMainThread(inputs_.top_controls_shown_ratio);
   tree_impl->elastic_overscroll()->PushFromMainThread(elastic_overscroll_);
   if (tree_impl->IsActiveTree())

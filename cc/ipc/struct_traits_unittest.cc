@@ -264,8 +264,10 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const bool root_overflow_y_hidden = true;
   const bool may_contain_video = true;
   const bool is_resourceless_software_draw_with_scroll_or_animation = true;
-  const gfx::Vector2dF location_bar_offset(1234.5f, 5432.1f);
-  const gfx::Vector2dF location_bar_content_translation(1234.5f, 5432.1f);
+  const float top_bar_height(1234.5f);
+  const float top_bar_shown_ratio(1.0f);
+  const float bottom_bar_height(1234.5f);
+  const float bottom_bar_shown_ratio(1.0f);
   const uint32_t root_background_color = 1337;
   Selection<gfx::SelectionBound> selection;
   selection.start.SetEdge(gfx::PointF(1234.5f, 67891.f),
@@ -300,8 +302,10 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.may_contain_video = may_contain_video;
   input.is_resourceless_software_draw_with_scroll_or_animation =
       is_resourceless_software_draw_with_scroll_or_animation;
-  input.location_bar_offset = location_bar_offset;
-  input.location_bar_content_translation = location_bar_content_translation;
+  input.top_controls_height = top_bar_height;
+  input.top_controls_shown_ratio = top_bar_shown_ratio;
+  input.bottom_controls_height = bottom_bar_height;
+  input.bottom_controls_shown_ratio = bottom_bar_shown_ratio;
   input.root_background_color = root_background_color;
   input.selection = selection;
   input.latency_info = latency_infos;
@@ -323,9 +327,10 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(may_contain_video, output.may_contain_video);
   EXPECT_EQ(is_resourceless_software_draw_with_scroll_or_animation,
             output.is_resourceless_software_draw_with_scroll_or_animation);
-  EXPECT_EQ(location_bar_offset, output.location_bar_offset);
-  EXPECT_EQ(location_bar_content_translation,
-            output.location_bar_content_translation);
+  EXPECT_EQ(top_bar_height, output.top_controls_height);
+  EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
+  EXPECT_EQ(bottom_bar_height, output.bottom_controls_height);
+  EXPECT_EQ(bottom_bar_shown_ratio, output.bottom_controls_shown_ratio);
   EXPECT_EQ(root_background_color, output.root_background_color);
   EXPECT_EQ(selection, output.selection);
   EXPECT_EQ(latency_infos.size(), output.latency_info.size());

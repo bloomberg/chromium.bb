@@ -66,14 +66,24 @@ struct StructTraits<cc::mojom::CompositorFrameMetadata,
     return metadata.is_resourceless_software_draw_with_scroll_or_animation;
   }
 
-  static gfx::Vector2dF location_bar_offset(
+  static float top_controls_height(
       const cc::CompositorFrameMetadata& metadata) {
-    return metadata.location_bar_offset;
+    return metadata.top_controls_height;
   }
 
-  static gfx::Vector2dF location_bar_content_translation(
+  static float top_controls_shown_ratio(
       const cc::CompositorFrameMetadata& metadata) {
-    return metadata.location_bar_content_translation;
+    return metadata.top_controls_shown_ratio;
+  }
+
+  static float bottom_controls_height(
+      const cc::CompositorFrameMetadata& metadata) {
+    return metadata.bottom_controls_height;
+  }
+
+  static float bottom_controls_shown_ratio(
+      const cc::CompositorFrameMetadata& metadata) {
+    return metadata.bottom_controls_shown_ratio;
   }
 
   static uint32_t root_background_color(

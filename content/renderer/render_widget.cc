@@ -1020,8 +1020,10 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (!webwidget_)
     return;
 
-  if (compositor_)
+  if (compositor_) {
     compositor_->setViewportSize(params.physical_backing_size);
+    compositor_->setBottomControlsHeight(params.bottom_controls_height);
+  }
 
   visible_viewport_size_ = params.visible_viewport_size;
   resizer_rect_ = params.resizer_rect;

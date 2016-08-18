@@ -110,6 +110,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   gfx::Size GetPhysicalBackingSize() const override;
   bool DoTopControlsShrinkBlinkSize() const override;
   float GetTopControlsHeight() const override;
+  float GetBottomControlsHeight() const override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
   void TextInputStateChanged(const TextInputState& params) override;

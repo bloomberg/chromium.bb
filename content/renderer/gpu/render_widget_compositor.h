@@ -161,6 +161,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
                               bool animate) override;
   void setTopControlsHeight(float height, bool shrink) override;
   void setTopControlsShownRatio(float) override;
+  // TODO(ianwen): Move this method to WebLayerTreeView and implement main
+  // thread scrolling.
+  virtual void setBottomControlsHeight(float height);
 
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override;

@@ -111,6 +111,10 @@ void RenderWidgetHostViewBase::SelectionBoundsChanged(
     GetTextInputManager()->SelectionBoundsChanged(this, params);
 }
 
+float RenderWidgetHostViewBase::GetBottomControlsHeight() const {
+  return 0.f;
+}
+
 void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
                                                 size_t offset,
                                                 const gfx::Range& range) {

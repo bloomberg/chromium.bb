@@ -12,6 +12,7 @@ class LayerTreeImpl;
 class CC_EXPORT TopControlsManagerClient {
  public:
   virtual float TopControlsHeight() const = 0;
+  virtual float BottomControlsHeight() const = 0;
   virtual void SetCurrentTopControlsShownRatio(float ratio) = 0;
   virtual float CurrentTopControlsShownRatio() const = 0;
   virtual void DidChangeTopControlsPosition() = 0;

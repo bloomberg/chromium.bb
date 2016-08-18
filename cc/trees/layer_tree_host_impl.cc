@@ -1623,10 +1623,13 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   metadata.root_layer_size = active_tree_->ScrollableSize();
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
-  metadata.location_bar_offset =
-      gfx::Vector2dF(0.f, top_controls_manager_->ControlsTopOffset());
-  metadata.location_bar_content_translation =
-      gfx::Vector2dF(0.f, top_controls_manager_->ContentTopOffset());
+  metadata.top_controls_height = top_controls_manager_->TopControlsHeight();
+  metadata.top_controls_shown_ratio =
+      top_controls_manager_->TopControlsShownRatio();
+  metadata.bottom_controls_height =
+      top_controls_manager_->BottomControlsHeight();
+  metadata.bottom_controls_shown_ratio =
+      top_controls_manager_->BottomControlsShownRatio();
   metadata.root_background_color = active_tree_->background_color();
 
   active_tree_->GetViewportSelection(&metadata.selection);
@@ -1943,6 +1946,12 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
           : 0.f;
   float delta_from_top_controls =
       top_controls_layout_height - top_controls_manager_->ContentTopOffset();
+  float bottom_controls_layout_height =
+      active_tree_->top_controls_shrink_blink_size()
+          ? active_tree_->bottom_controls_height()
+          : 0.f;
+  delta_from_top_controls += bottom_controls_layout_height -
+                             top_controls_manager_->ContentBottomOffset();
 
   // Adjust the viewport layers by shrinking/expanding the container to account
   // for changes in the size (e.g. top controls) since the last resize from
@@ -2470,6 +2479,10 @@ void LayerTreeHostImpl::DidChangeTopControlsPosition() {
 
 float LayerTreeHostImpl::TopControlsHeight() const {
   return active_tree_->top_controls_height();
+}
+
+float LayerTreeHostImpl::BottomControlsHeight() const {
+  return active_tree_->bottom_controls_height();
 }
 
 void LayerTreeHostImpl::SetCurrentTopControlsShownRatio(float ratio) {

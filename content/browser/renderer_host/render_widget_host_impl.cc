@@ -598,6 +598,7 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
     resize_params->top_controls_height = view_->GetTopControlsHeight();
     resize_params->top_controls_shrink_blink_size =
         view_->DoTopControlsShrinkBlinkSize();
+    resize_params->bottom_controls_height = view_->GetBottomControlsHeight();
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
   }
 
@@ -617,6 +618,8 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
           resize_params->top_controls_height ||
       old_resize_params_->top_controls_shrink_blink_size !=
           resize_params->top_controls_shrink_blink_size ||
+      old_resize_params_->bottom_controls_height !=
+          resize_params->bottom_controls_height ||
       old_resize_params_->visible_viewport_size !=
           resize_params->visible_viewport_size;
 

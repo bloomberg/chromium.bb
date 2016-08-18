@@ -113,8 +113,14 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
   gfx::Size surface_size = root_pass->output_rect.size();
 
   if (!current_frame_ || surface_size != current_frame_->surface_size ||
-      current_frame_->location_bar_content_translation !=
-          frame.metadata.location_bar_content_translation ||
+      current_frame_->top_controls_height !=
+          frame.metadata.top_controls_height ||
+      current_frame_->top_controls_shown_ratio !=
+          frame.metadata.top_controls_shown_ratio ||
+      current_frame_->bottom_controls_height !=
+          frame.metadata.bottom_controls_height ||
+      current_frame_->bottom_controls_shown_ratio !=
+          frame.metadata.bottom_controls_shown_ratio ||
       current_frame_->viewport_selection != frame.metadata.selection) {
     DestroyDelegatedContent();
     DCHECK(!content_layer_);
@@ -125,8 +131,14 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     surface_factory_->Create(current_frame_->surface_id);
 
     current_frame_->surface_size = surface_size;
-    current_frame_->location_bar_content_translation =
-        frame.metadata.location_bar_content_translation;
+    current_frame_->top_controls_height = frame.metadata.top_controls_height;
+    current_frame_->top_controls_shown_ratio =
+        frame.metadata.top_controls_shown_ratio;
+    current_frame_->bottom_controls_height =
+        frame.metadata.bottom_controls_height;
+    current_frame_->bottom_controls_shown_ratio =
+        frame.metadata.bottom_controls_shown_ratio;
+
     current_frame_->viewport_selection = frame.metadata.selection;
     content_layer_ =
         CreateSurfaceLayer(surface_manager_, current_frame_->surface_id,
@@ -229,9 +241,12 @@ void DelegatedFrameHostAndroid::UpdateBackgroundLayer() {
     float device_scale_factor = gfx::DeviceDisplayInfo().GetDIPScale();
     gfx::Size content_size_in_dip = gfx::ConvertSizeToDIP(
         device_scale_factor, current_frame_->surface_size);
+    float top_bar_shown = current_frame_->top_controls_height *
+                          current_frame_->top_controls_shown_ratio;
+    float bottom_bar_shown = current_frame_->bottom_controls_height *
+                             current_frame_->bottom_controls_shown_ratio;
     content_size_in_dip.set_height(
-        content_size_in_dip.height() +
-        current_frame_->location_bar_content_translation.y());
+        content_size_in_dip.height() - top_bar_shown - bottom_bar_shown);
     background_is_drawable =
         content_size_in_dip.width() < container_size_in_dip_.width() ||
         content_size_in_dip.height() < container_size_in_dip_.height();

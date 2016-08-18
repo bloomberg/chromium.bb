@@ -319,8 +319,10 @@ class ContentViewCoreImpl : public ContentViewCore,
                        const gfx::Vector2dF& page_scale_factor_limits,
                        const gfx::SizeF& content_size,
                        const gfx::SizeF& viewport_size,
-                       const gfx::Vector2dF& controls_offset,
-                       const gfx::Vector2dF& content_offset,
+                       const float top_controls_height,
+                       const float top_controls_shown_ratio,
+                       const float bottom_controls_height,
+                       const float bottom_controls_shown_ratio,
                        bool is_mobile_optimized_hint,
                        const gfx::SelectionBound& selection_start);
 
@@ -386,6 +388,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   gfx::Size GetViewportSizeDip() const;
   bool DoTopControlsShrinkBlinkSize() const;
   float GetTopControlsHeightDip() const;
+  float GetBottomControlsHeightDip() const;
 
   void MoveRangeSelectionExtent(const gfx::PointF& extent);
 
@@ -429,6 +432,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   gfx::Size GetViewportSizePix() const;
   int GetTopControlsHeightPix() const;
+  int GetBottomControlsHeightPix() const;
 
   void SendGestureEvent(const blink::WebGestureEvent& event);
 

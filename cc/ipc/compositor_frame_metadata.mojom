@@ -22,8 +22,10 @@ struct CompositorFrameMetadata {
   bool root_overflow_y_hidden;
   bool may_contain_video;
   bool is_resourceless_software_draw_with_scroll_or_animation;
-  gfx.mojom.Vector2dF location_bar_offset;
-  gfx.mojom.Vector2dF location_bar_content_translation;
+  float top_controls_height;
+  float top_controls_shown_ratio;
+  float bottom_controls_height;
+  float bottom_controls_shown_ratio;
   uint32 root_background_color;
   Selection selection;
   array<ui.mojom.LatencyInfo> latency_info;

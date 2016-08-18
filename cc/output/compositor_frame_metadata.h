@@ -56,8 +56,13 @@ class CC_EXPORT CompositorFrameMetadata {
 
   // Used to position the Android location top bar and page content, whose
   // precise position is computed by the renderer compositor.
-  gfx::Vector2dF location_bar_offset;
-  gfx::Vector2dF location_bar_content_translation;
+  float top_controls_height;
+  float top_controls_shown_ratio;
+
+  // Used to position Android bottom bar, whose position is computed by the
+  // renderer compositor.
+  float bottom_controls_height;
+  float bottom_controls_shown_ratio;
 
   // This color is usually obtained from the background color of the <body>
   // element. It can be used for filling in gutter areas around the frame when

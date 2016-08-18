@@ -68,6 +68,18 @@ float TopControlsManager::TopControlsHeight() const {
   return client_->TopControlsHeight();
 }
 
+float TopControlsManager::BottomControlsHeight() const {
+  return client_->BottomControlsHeight();
+}
+
+float TopControlsManager::ContentBottomOffset() const {
+  return TopControlsShownRatio() * BottomControlsHeight();
+}
+
+float TopControlsManager::BottomControlsShownRatio() const {
+  return TopControlsShownRatio();
+}
+
 void TopControlsManager::UpdateTopControlsState(TopControlsState constraints,
                                                 TopControlsState current,
                                                 bool animate) {

@@ -85,6 +85,7 @@ LayerTreeImpl::LayerTreeImpl(
       event_listener_properties_(),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0),
+      bottom_controls_height_(0),
       top_controls_shown_ratio_(top_controls_shown_ratio) {
   property_trees()->is_main_thread = false;
 }
@@ -431,6 +432,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_top_controls_shrink_blink_size(
       top_controls_shrink_blink_size_);
   target_tree->set_top_controls_height(top_controls_height_);
+  target_tree->set_bottom_controls_height(bottom_controls_height_);
   target_tree->PushTopControls(nullptr);
 
   // Active tree already shares the page_scale_factor object with pending
@@ -767,6 +769,15 @@ void LayerTreeImpl::set_top_controls_height(float top_controls_height) {
     return;
 
   top_controls_height_ = top_controls_height;
+  if (IsActiveTree())
+    layer_tree_host_impl_->UpdateViewportContainerSizes();
+}
+
+void LayerTreeImpl::set_bottom_controls_height(float bottom_controls_height) {
+  if (bottom_controls_height_ == bottom_controls_height)
+    return;
+
+  bottom_controls_height_ = bottom_controls_height;
   if (IsActiveTree())
     layer_tree_host_impl_->UpdateViewportContainerSizes();
 }

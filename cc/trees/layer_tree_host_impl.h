@@ -207,6 +207,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   // TopControlsManagerClient implementation.
   float TopControlsHeight() const override;
+  float BottomControlsHeight() const override;
   void SetCurrentTopControlsShownRatio(float offset) override;
   float CurrentTopControlsShownRatio() const override;
   void DidChangeTopControlsPosition() override;

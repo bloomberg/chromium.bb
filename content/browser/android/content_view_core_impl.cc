@@ -418,8 +418,10 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     const gfx::Vector2dF& page_scale_factor_limits,
     const gfx::SizeF& content_size,
     const gfx::SizeF& viewport_size,
-    const gfx::Vector2dF& controls_offset,
-    const gfx::Vector2dF& content_offset,
+    const float top_controls_height,
+    const float top_controls_shown_ratio,
+    const float bottom_controls_height,
+    const float bottom_controls_shown_ratio,
     bool is_mobile_optimized_hint,
     const gfx::SelectionBound& selection_start) {
   JNIEnv* env = AttachCurrentThread();
@@ -427,7 +429,8 @@ void ContentViewCoreImpl::UpdateFrameInfo(
   if (obj.is_null() || !view_.GetWindowAndroid())
     return;
 
-  view_.GetWindowAndroid()->set_content_offset(content_offset);
+  view_.GetWindowAndroid()->set_content_offset(
+      gfx::Vector2dF(0.0f, top_controls_height * top_controls_shown_ratio));
 
   page_scale_ = page_scale_factor;
 
@@ -447,7 +450,8 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       env, obj, scroll_offset.x(), scroll_offset.y(), page_scale_factor,
       page_scale_factor_limits.x(), page_scale_factor_limits.y(),
       content_size.width(), content_size.height(), viewport_size.width(),
-      viewport_size.height(), controls_offset.y(), content_offset.y(),
+      viewport_size.height(), top_controls_height, top_controls_shown_ratio,
+      bottom_controls_height, bottom_controls_shown_ratio,
       is_mobile_optimized_hint, has_insertion_marker,
       is_insertion_marker_visible, insertion_marker_horizontal,
       insertion_marker_top, insertion_marker_bottom);
@@ -757,7 +761,7 @@ gfx::Size ContentViewCoreImpl::GetViewSizeWithOSKHidden() const {
 gfx::Size ContentViewCoreImpl::GetViewSize() const {
   gfx::Size size = GetViewportSizeDip();
   if (DoTopControlsShrinkBlinkSize())
-    size.Enlarge(0, -GetTopControlsHeightDip());
+    size.Enlarge(0, -GetTopControlsHeightDip() - GetBottomControlsHeightDip());
   return size;
 }
 
@@ -788,6 +792,14 @@ int ContentViewCoreImpl::GetTopControlsHeightPix() const {
   return Java_ContentViewCore_getTopControlsHeightPix(env, j_obj);
 }
 
+int ContentViewCoreImpl::GetBottomControlsHeightPix() const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return 0;
+  return Java_ContentViewCore_getBottomControlsHeightPix(env, j_obj.obj());
+}
+
 gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
   return gfx::ScaleToCeiledSize(GetViewportSizePix(), 1.0f / dpi_scale());
 }
@@ -802,6 +814,10 @@ bool ContentViewCoreImpl::DoTopControlsShrinkBlinkSize() const {
 
 float ContentViewCoreImpl::GetTopControlsHeightDip() const {
   return GetTopControlsHeightPix() / dpi_scale();
+}
+
+float ContentViewCoreImpl::GetBottomControlsHeightDip() const {
+  return GetBottomControlsHeightPix() / dpi_scale();
 }
 
 void ContentViewCoreImpl::MoveRangeSelectionExtent(const gfx::PointF& extent) {

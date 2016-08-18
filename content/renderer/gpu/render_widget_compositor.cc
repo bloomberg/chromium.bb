@@ -1013,6 +1013,10 @@ void RenderWidgetCompositor::setTopControlsShownRatio(float ratio) {
   layer_tree_host_->GetLayerTree()->SetTopControlsShownRatio(ratio);
 }
 
+void RenderWidgetCompositor::setBottomControlsHeight(float height) {
+  layer_tree_host_->GetLayerTree()->SetBottomControlsHeight(height);
+}
+
 void RenderWidgetCompositor::WillBeginMainFrame() {
   delegate_->WillBeginCompositorFrame();
 }

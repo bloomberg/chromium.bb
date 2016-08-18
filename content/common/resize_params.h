@@ -34,6 +34,9 @@ struct CONTENT_EXPORT ResizeParams {
   // isn't supported).
   float top_controls_height;
 
+  // The height of the bottom controls.
+  float bottom_controls_height;
+
   // The size of the visible viewport, which may be smaller than the view if the
   // view is partially occluded (e.g. by a virtual keyboard).  The size is in
   // DPI-adjusted pixels.

@@ -36,7 +36,8 @@ public class RenderCoordinates {
     // Cached device density.
     private float mDeviceScaleFactor;
 
-    private float mContentOffsetYPix;
+    private float mTopContentOffsetYPix;
+    private float mBottomContentOffsetYPix;
 
     private boolean mHasFrameInfo;
 
@@ -61,13 +62,14 @@ public class RenderCoordinates {
             float contentWidthCss, float contentHeightCss,
             float viewportWidthCss, float viewportHeightCss,
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor,
-            float contentOffsetYPix) {
+            float contentOffsetYPix, float contentOffsetYPixBottom) {
         mScrollXCss = scrollXCss;
         mScrollYCss = scrollYCss;
         mPageScaleFactor = pageScaleFactor;
         mMinPageScaleFactor = minPageScaleFactor;
         mMaxPageScaleFactor = maxPageScaleFactor;
-        mContentOffsetYPix = contentOffsetYPix;
+        mTopContentOffsetYPix = contentOffsetYPix;
+        mBottomContentOffsetYPix = contentOffsetYPixBottom;
 
         updateContentSizeCss(contentWidthCss, contentHeightCss);
         mLastFrameViewportWidthCss = viewportWidthCss;
@@ -85,7 +87,7 @@ public class RenderCoordinates {
     public void setFrameInfoForTest(float deviceScaleFactor, float contentOffsetYPix) {
         reset();
         mDeviceScaleFactor = deviceScaleFactor;
-        mContentOffsetYPix = contentOffsetYPix;
+        mTopContentOffsetYPix = contentOffsetYPix;
     }
 
     /**
@@ -137,7 +139,7 @@ public class RenderCoordinates {
          * @return Physical (screen) Y coordinate of the point.
          */
         public float getYPix() {
-            return getYLocalDip() * mDeviceScaleFactor + mContentOffsetYPix;
+            return getYLocalDip() * mDeviceScaleFactor + mTopContentOffsetYPix;
         }
 
         /**
@@ -302,7 +304,14 @@ public class RenderCoordinates {
      * @return The Physical on-screen Y offset amount below the top controls.
      */
     public float getContentOffsetYPix() {
-        return mContentOffsetYPix;
+        return mTopContentOffsetYPix;
+    }
+
+    /**
+     * @return The Physical on-screen Y offset amount below the bottom controls.
+     */
+    public float getContentOffsetYPixBottom() {
+        return mBottomContentOffsetYPix;
     }
 
     /**

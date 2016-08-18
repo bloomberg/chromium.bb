@@ -415,6 +415,8 @@ class CC_EXPORT LayerTreeImpl {
   void set_top_controls_height(float top_controls_height);
   float top_controls_height() const { return top_controls_height_; }
   void PushTopControlsFromMainThread(float top_controls_shown_ratio);
+  void set_bottom_controls_height(float bottom_controls_height);
+  float bottom_controls_height() const { return bottom_controls_height_; }
 
   void SetPendingPageScaleAnimation(
       std::unique_ptr<PendingPageScaleAnimation> pending_animation);
@@ -545,6 +547,7 @@ class CC_EXPORT LayerTreeImpl {
   // controls at the time of the last layout.
   bool top_controls_shrink_blink_size_;
   float top_controls_height_;
+  float bottom_controls_height_;
 
   // The amount that the top controls are shown from 0 (hidden) to 1 (fully
   // shown).

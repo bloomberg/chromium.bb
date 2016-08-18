@@ -348,6 +348,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private int mPhysicalBackingWidthPix;
     private int mPhysicalBackingHeightPix;
     private int mTopControlsHeightPix;
+    private int mBottomControlsHeightPix;
     private boolean mTopControlsShrinkBlinkSize;
 
     // Cached copy of all positions and scales as reported by the renderer.
@@ -541,6 +542,15 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
         mTopControlsHeightPix = topControlsHeightPix;
         mTopControlsShrinkBlinkSize = topControlsShrinkBlinkSize;
+        if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
+    }
+
+    /**
+     * Sets the height of the bottom controls. If necessary, triggers a renderer resize.
+     */
+    public void setBottomControlsHeight(int bottomControlHeightPix) {
+        if (mBottomControlsHeightPix == bottomControlHeightPix) return;
+        mBottomControlsHeightPix = bottomControlHeightPix;
         if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
     }
 
@@ -909,6 +919,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     @CalledByNative
     public int getTopControlsHeightPix() {
         return mTopControlsHeightPix;
+    }
+
+    @CalledByNative
+    public int getBottomControlsHeightPix() {
+        return mBottomControlsHeightPix;
     }
 
     /**
@@ -2192,7 +2207,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor,
             float contentWidth, float contentHeight,
             float viewportWidth, float viewportHeight,
-            float controlsOffsetYCss, float contentOffsetYCss,
+            float topControlsHeightDp, float topControlsShownRatio,
+            float bottomControlsHeightDp, float bottomControlsShownRatio,
             boolean isMobileOptimizedHint,
             boolean hasInsertionMarker, boolean isInsertionMarkerVisible,
             float insertionMarkerHorizontal, float insertionMarkerTop,
@@ -2206,7 +2222,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 mViewportWidthPix / (deviceScale * pageScaleFactor));
         contentHeight = Math.max(contentHeight,
                 mViewportHeightPix / (deviceScale * pageScaleFactor));
-        final float contentOffsetYPix = mRenderCoordinates.fromDipToPix(contentOffsetYCss);
+        final float topBarShownPix = topControlsHeightDp * deviceScale * topControlsShownRatio;
+        final float bottomBarShownPix = bottomControlsHeightDp * deviceScale
+                * bottomControlsShownRatio;
 
         final boolean contentSizeChanged =
                 contentWidth != mRenderCoordinates.getContentWidthCss()
@@ -2220,8 +2238,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 pageScaleChanged
                 || scrollOffsetX != mRenderCoordinates.getScrollX()
                 || scrollOffsetY != mRenderCoordinates.getScrollY();
-        final boolean contentOffsetChanged =
-                contentOffsetYPix != mRenderCoordinates.getContentOffsetYPix();
+        final boolean topBarChanged = Float.compare(topBarShownPix,
+                mRenderCoordinates.getContentOffsetYPix()) != 0;
+        final boolean bottomBarChanged = Float.compare(bottomBarShownPix, mRenderCoordinates
+                .getContentOffsetYPixBottom()) != 0;
 
         final boolean needHidePopupZoomer = contentSizeChanged || scrollChanged;
         final boolean needUpdateZoomControls = scaleLimitsChanged || scrollChanged;
@@ -2241,9 +2261,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 contentWidth, contentHeight,
                 viewportWidth, viewportHeight,
                 pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
-                contentOffsetYPix);
+                topBarShownPix, bottomBarShownPix);
 
-        if (scrollChanged || contentOffsetChanged) {
+        if (scrollChanged || topBarChanged) {
             for (mGestureStateListenersIterator.rewind();
                     mGestureStateListenersIterator.hasNext();) {
                 mGestureStateListenersIterator.next().onScrollOffsetOrExtentChanged(
@@ -2254,11 +2274,14 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
         if (needUpdateZoomControls) mZoomControlsDelegate.updateZoomControls();
 
-        // Update offsets for fullscreen.
-        final float controlsOffsetPix = controlsOffsetYCss * deviceScale;
-        // TODO(aelias): Remove last argument after downstream removes it.
-        getContentViewClient().onOffsetsForFullscreenChanged(
-                controlsOffsetPix, contentOffsetYPix);
+        if (topBarChanged) {
+            float topBarTranslate = topBarShownPix - topControlsHeightDp * deviceScale;
+            getContentViewClient().onTopControlsChanged(topBarTranslate, topBarShownPix);
+        }
+        if (bottomBarChanged) {
+            float bottomBarTranslate = bottomControlsHeightDp * deviceScale - bottomBarShownPix;
+            getContentViewClient().onBottomControlsChanged(bottomBarTranslate, bottomBarShownPix);
+        }
 
         if (mBrowserAccessibilityManager != null) {
             mBrowserAccessibilityManager.notifyFrameInfoInitialized();
@@ -2470,11 +2493,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         }
 
         if (!mHasInsertion || !canPaste()) return false;
-        final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
+        final float topControlsShown = mRenderCoordinates.getContentOffsetYPix();
         PastePopupMenu pastePopupMenu = getPastePopup();
         if (pastePopupMenu == null) return false;
         try {
-            pastePopupMenu.show(x, (int) (y + contentOffsetYPix));
+            pastePopupMenu.show(x, (int) (y + topControlsShown));
         } catch (WindowManager.BadTokenException e) {
             return false;
         }

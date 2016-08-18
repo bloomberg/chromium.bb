@@ -548,7 +548,8 @@ void PageHandler::ScreencastFrameEncoded(cc::CompositorFrameMetadata metadata,
   scoped_refptr<ScreencastFrameMetadata> param_metadata =
       ScreencastFrameMetadata::Create()
           ->set_page_scale_factor(metadata.page_scale_factor)
-          ->set_offset_top(metadata.location_bar_content_translation.y())
+          ->set_offset_top(metadata.top_controls_height *
+                           metadata.top_controls_shown_ratio)
           ->set_device_width(screen_size_dip.width())
           ->set_device_height(screen_size_dip.height())
           ->set_scroll_offset_x(metadata.root_scroll_offset.x())

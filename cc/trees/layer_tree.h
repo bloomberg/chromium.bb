@@ -89,6 +89,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
 
   void SetTopControlsHeight(float height, bool shrink);
   void SetTopControlsShownRatio(float ratio);
+  void SetBottomControlsHeight(float height);
 
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float min_page_scale_factor,
@@ -228,6 +229,8 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
     float top_controls_height;
     float top_controls_shown_ratio;
     bool top_controls_shrink_blink_size;
+
+    float bottom_controls_height;
 
     float device_scale_factor;
     float painted_device_scale_factor;

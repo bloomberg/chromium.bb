@@ -87,7 +87,10 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
     cc::SurfaceId surface_id;
     gfx::Size surface_size;
-    gfx::Vector2dF location_bar_content_translation;
+    float top_controls_height;
+    float top_controls_shown_ratio;
+    float bottom_controls_height;
+    float bottom_controls_shown_ratio;
     cc::Selection<gfx::SelectionBound> viewport_selection;
   };
   std::unique_ptr<FrameData> current_frame_;

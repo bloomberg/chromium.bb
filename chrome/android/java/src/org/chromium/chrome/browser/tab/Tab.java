@@ -405,9 +405,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
-        public void onOffsetsForFullscreenChanged(
-                float topControlsOffsetY, float contentOffsetY) {
-            onOffsetsChanged(topControlsOffsetY, contentOffsetY, isShowingSadTab());
+        public void onTopControlsChanged(float topControlsOffsetY, float topContentOffsetY) {
+            super.onTopControlsChanged(topControlsOffsetY, topContentOffsetY);
+            onOffsetsChanged(topControlsOffsetY, topContentOffsetY, isShowingSadTab());
         }
 
         @Override

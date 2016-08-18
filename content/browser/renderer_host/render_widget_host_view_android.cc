@@ -588,6 +588,14 @@ float RenderWidgetHostViewAndroid::GetTopControlsHeight() const {
   return content_view_core_->GetTopControlsHeightDip();
 }
 
+float RenderWidgetHostViewAndroid::GetBottomControlsHeight() const {
+  if (!content_view_core_)
+    return 0.f;
+
+  // The height of the top controls.
+  return content_view_core_->GetBottomControlsHeightDip();
+}
+
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {
   // There are no cursors on Android.
 }
@@ -1147,10 +1155,9 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     // Set parameters for adaptive handle orientation.
     gfx::SizeF viewport_size(frame_metadata.scrollable_viewport_size);
     viewport_size.Scale(frame_metadata.page_scale_factor);
-    gfx::RectF viewport_rect(
-        frame_metadata.location_bar_content_translation.x(),
-        frame_metadata.location_bar_content_translation.y(),
-        viewport_size.width(), viewport_size.height());
+    gfx::RectF viewport_rect(0.0f, frame_metadata.top_controls_height *
+                                       frame_metadata.top_controls_shown_ratio,
+                             viewport_size.width(), viewport_size.height());
     selection_controller_->OnViewportChanged(viewport_rect);
   }
 
@@ -1164,8 +1171,10 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
                      frame_metadata.max_page_scale_factor),
       frame_metadata.root_layer_size,
       frame_metadata.scrollable_viewport_size,
-      frame_metadata.location_bar_offset,
-      frame_metadata.location_bar_content_translation,
+      frame_metadata.top_controls_height,
+      frame_metadata.top_controls_shown_ratio,
+      frame_metadata.bottom_controls_height,
+      frame_metadata.bottom_controls_shown_ratio,
       is_mobile_optimized,
       frame_metadata.selection.start);
 #if defined(VIDEO_HOLE)

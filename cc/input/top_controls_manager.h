@@ -36,10 +36,22 @@ class CC_EXPORT TopControlsManager
       float top_controls_hide_threshold);
   virtual ~TopControlsManager();
 
+  // The offset from the window top to the top edge of the controls. Runs from 0
+  // (controls fully shown) to negative values (down is positive).
   float ControlsTopOffset() const;
+  // The amount of offset of the web content area. Same as the current shown
+  // height of the top controls.
   float ContentTopOffset() const;
   float TopControlsShownRatio() const;
   float TopControlsHeight() const;
+
+  // The amount of offset of the web content area, calculating from the bottom.
+  // Same as the current shown height of the bottom controls.
+  float ContentBottomOffset() const;
+  // Similar to TopControlsHeight(), this method should return a static value.
+  // The current animated height should be acquired from ContentBottomOffset().
+  float BottomControlsHeight() const;
+  float BottomControlsShownRatio() const;
 
   bool has_animation() const { return animation_direction_ != NO_ANIMATION; }
   AnimationDirection animation_direction() { return animation_direction_; }
