@@ -50,9 +50,16 @@
 // Notifies the CRWNativeContent that it has been hidden.
 - (void)wasHidden;
 
+// Executes JavaScript on the native view. |handler| is called with the results
+// of the evaluation. If the native view cannot evaluate JS at the moment,
+// |handler| is called with an NSError.
+- (void)executeJavaScript:(NSString*)script
+        completionHandler:(web::JavaScriptResultBlock)handler;
+
 // Evaluates JavaScript on the native view. |handler| is called with the results
 // of the evaluation. If the native view cannot evaluate JS at the moment,
 // |handler| is called with an NSError.
+// DEPRECATED. TODO(crbug.com/595761): Remove this API.
 - (void)evaluateJavaScript:(NSString*)script
        stringResultHandler:(web::JavaScriptCompletion)handler;
 
