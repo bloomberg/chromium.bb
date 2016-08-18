@@ -8,8 +8,6 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
@@ -26,7 +24,6 @@ import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
 
 /** Wraps different classes that contain information about downloads. */
@@ -145,7 +142,12 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         @Override
         public void open() {
             Context context = ContextUtils.getApplicationContext();
-            boolean success = false;
+
+            if (mItem.hasBeenExternallyRemoved()) {
+                Toast.makeText(context, context.getString(R.string.download_cant_open_file),
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             String mimeType = Intent.normalizeMimeType(mItem.getDownloadInfo().getMimeType());
             Uri fileUri = Uri.fromFile(getFile());
@@ -159,20 +161,11 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
                 fileIntent.setDataAndType(fileUri, mimeType);
             }
             fileIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            List<ResolveInfo> handlers = context.getPackageManager()
-                    .queryIntentActivities(fileIntent, PackageManager.MATCH_DEFAULT_ONLY);
-            if (handlers.size() > 0) {
-                Intent chooserIntent = Intent.createChooser(fileIntent, null);
-                chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                try {
-                    context.startActivity(chooserIntent);
-                    success = true;
-                } catch (ActivityNotFoundException e) {
-                    // Can't launch the Intent.
-                }
-            }
 
-            if (!success) {
+            try {
+                context.startActivity(fileIntent);
+            } catch (ActivityNotFoundException e) {
+                // Can't launch the Intent.
                 Toast.makeText(context, context.getString(R.string.download_cant_open_file),
                         Toast.LENGTH_SHORT).show();
             }
