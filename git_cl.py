@@ -114,20 +114,19 @@ def RunGit(args, **kwargs):
 
 def RunGitWithCode(args, suppress_stderr=False):
   """Returns return code and stdout."""
+  if suppress_stderr:
+    stderr = subprocess2.VOID
+  else:
+    stderr = sys.stderr
   try:
-    if suppress_stderr:
-      stderr = subprocess2.VOID
-    else:
-      stderr = sys.stderr
-    out, code = subprocess2.communicate(['git'] + args,
-                                        env=GetNoGitPagerEnv(),
-                                        stdout=subprocess2.PIPE,
-                                        stderr=stderr)
-    return code, out[0]
-  except ValueError:
-    # When the subprocess fails, it returns None.  That triggers a ValueError
-    # when trying to unpack the return value into (out, code).
-    return 1, ''
+    (out, _), code = subprocess2.communicate(['git'] + args,
+                                             env=GetNoGitPagerEnv(),
+                                             stdout=subprocess2.PIPE,
+                                             stderr=stderr)
+    return code, out
+  except subprocess2.CalledProcessError as e:
+    logging.debug('Failed running %s', args)
+    return e.returncode, e.stdout
 
 
 def RunGitSilent(args):
@@ -157,33 +156,72 @@ def ask_for_data(prompt):
     sys.exit(1)
 
 
-def git_set_branch_value(key, value):
-  branch = GetCurrentBranch()
+def _git_branch_config_key(branch, key):
+  """Helper method to return Git config key for a branch."""
+  assert branch, 'branch name is required to set git config for it'
+  return 'branch.%s.%s' % (branch, key)
+
+
+def _git_get_branch_config_value(key, default=None, value_type=str,
+                                 branch=False):
+  """Returns git config value of given or current branch if any.
+
+  Returns default in all other cases.
+  """
+  assert value_type in (int, str, bool)
+  if branch is False:  # Distinguishing default arg value from None.
+    branch = GetCurrentBranch()
+
   if not branch:
-    return
+    return default
 
-  cmd = ['config']
-  if isinstance(value, int):
-    cmd.append('--int')
-  git_key = 'branch.%s.%s' % (branch, key)
-  RunGit(cmd + [git_key, str(value)])
-
-
-def git_get_branch_default(key, default):
-  branch = GetCurrentBranch()
-  if branch:
-    git_key = 'branch.%s.%s' % (branch, key)
-    (_, stdout) = RunGitWithCode(['config', '--int', '--get', git_key])
-    try:
-      return int(stdout.strip())
-    except ValueError:
-      pass
+  args = ['config']
+  if value_type == int:
+    args.append('--int')
+  elif value_type == bool:
+    args.append('--bool')
+  args.append(_git_branch_config_key(branch, key))
+  code, out = RunGitWithCode(args)
+  if code == 0:
+    value = out.strip()
+    if value_type == int:
+      return int(value)
+    if value_type == bool:
+      return bool(value.lower() == 'true')
+    return value
   return default
+
+
+def _git_set_branch_config_value(key, value, branch=None, **kwargs):
+  """Sets the value or unsets if it's None of a git branch config.
+
+  Valid, though not necessarily existing, branch must be provided,
+  otherwise currently checked out branch is used.
+  """
+  if not branch:
+    branch = GetCurrentBranch()
+    assert branch, 'a branch name OR currently checked out branch is required'
+  args = ['config']
+  # Check for boolean first, becuase bool is int, but int is not bool.
+  if value is None:
+    args.append('--unset')
+  elif isinstance(value, bool):
+    args.append('--bool')
+    value = str(value).lower()
+  elif isinstance(value, int):
+    args.append('--int')
+    value = str(value)
+  else:
+    value = str(value)
+  args.append(_git_branch_config_key(branch, key))
+  if value is not None:
+    args.append(value)
+  RunGit(args, **kwargs)
 
 
 def add_git_similarity(parser):
   parser.add_option(
-      '--similarity', metavar='SIM', type='int', action='store',
+      '--similarity', metavar='SIM', type=int, action='store',
       help='Sets the percentage that a pair of files need to match in order to'
            ' be considered copies (default 50)')
   parser.add_option(
@@ -198,19 +236,20 @@ def add_git_similarity(parser):
     options, args = old_parser_args(args)
 
     if options.similarity is None:
-      options.similarity = git_get_branch_default('git-cl-similarity', 50)
+      options.similarity = _git_get_branch_config_value(
+          'git-cl-similarity', default=50, value_type=int)
     else:
       print('Note: Saving similarity of %d%% in git config.'
             % options.similarity)
-      git_set_branch_value('git-cl-similarity', options.similarity)
+      _git_set_branch_config_value('git-cl-similarity', options.similarity)
 
     options.similarity = max(0, min(options.similarity, 100))
 
     if options.find_copies is None:
-      options.find_copies = bool(
-          git_get_branch_default('git-find-copies', True))
+      options.find_copies = _git_get_branch_config_value(
+          'git-find-copies', default=True, value_type=bool)
     else:
-      git_set_branch_value('git-find-copies', int(options.find_copies))
+      _git_set_branch_config_value('git-find-copies', bool(options.find_copies))
 
     print('Using %d%% similarity for rename/copy detection. '
           'Override with --similarity.' % options.similarity)
@@ -906,7 +945,7 @@ class Changelist(object):
   Notes:
     * Not safe for concurrent multi-{thread,process} use.
     * Caches values from current branch. Therefore, re-use after branch change
-      with care.
+      with great care.
   """
 
   def __init__(self, branchref=None, issue=None, codereview=None, **kwargs):
@@ -966,14 +1005,15 @@ class Changelist(object):
     assert not self.issue
     # Whether we find issue or not, we are doing the lookup.
     self.lookedup_issue = True
-    for codereview, cls in _CODEREVIEW_IMPLEMENTATIONS.iteritems():
-      setting = cls.IssueSetting(self.GetBranch())
-      issue = RunGit(['config', setting], error_ok=True).strip()
-      if issue:
-        self._codereview = codereview
-        self._codereview_impl = cls(self, **kwargs)
-        self.issue = int(issue)
-        return
+    if self.GetBranch():
+      for codereview, cls in _CODEREVIEW_IMPLEMENTATIONS.iteritems():
+        issue = _git_get_branch_config_value(
+            cls.IssueConfigKey(), value_type=int, branch=self.GetBranch())
+        if issue:
+          self._codereview = codereview
+          self._codereview_impl = cls(self, **kwargs)
+          self.issue = int(issue)
+          return
 
     # No issue is set for this branch, so decide based on repo-wide settings.
     return self._load_codereview_impl(
@@ -1025,16 +1065,31 @@ class Changelist(object):
     """Clears cached branch data of this object."""
     self.branch = self.branchref = None
 
+  def _GitGetBranchConfigValue(self, key, default=None, **kwargs):
+    assert 'branch' not in kwargs, 'this CL branch is used automatically'
+    kwargs['branch'] = self.GetBranch()
+    return _git_get_branch_config_value(key, default, **kwargs)
+
+  def _GitSetBranchConfigValue(self, key, value, **kwargs):
+    assert 'branch' not in kwargs, 'this CL branch is used automatically'
+    assert self.GetBranch(), (
+        'this CL must have an associated branch to %sset %s%s' %
+          ('un' if value is None else '',
+           key,
+           '' if value is None else ' to %r' % value))
+    kwargs['branch'] = self.GetBranch()
+    return _git_set_branch_config_value(key, value, **kwargs)
+
   @staticmethod
   def FetchUpstreamTuple(branch):
     """Returns a tuple containing remote and remote ref,
        e.g. 'origin', 'refs/heads/master'
     """
     remote = '.'
-    upstream_branch = RunGit(['config', 'branch.%s.merge' % branch],
-                             error_ok=True).strip()
+    upstream_branch = _git_get_branch_config_value('merge', branch=branch)
+
     if upstream_branch:
-      remote = RunGit(['config', 'branch.%s.remote' % branch]).strip()
+      remote = _git_get_branch_config_value('remote', branch=branch)
     else:
       upstream_branch = RunGit(['config', 'rietveld.upstream-branch'],
                                error_ok=True).strip()
@@ -1168,8 +1223,7 @@ class Changelist(object):
 
     Returns None if it is not set.
     """
-    return RunGit(['config', 'branch.%s.base-url' % self.GetBranch()],
-                  error_ok=True).strip()
+    return self._GitGetBranchConfigValue('base-url')
 
   def GetGitSvnRemoteUrl(self):
     """Return the configured git-svn remote URL parsed from git svn info.
@@ -1202,10 +1256,8 @@ class Changelist(object):
   def GetIssue(self):
     """Returns the issue number as a int or None if not set."""
     if self.issue is None and not self.lookedup_issue:
-      issue = RunGit(['config',
-                      self._codereview_impl.IssueSetting(self.GetBranch())],
-                     error_ok=True).strip()
-      self.issue = int(issue) or None if issue else None
+      self.issue = self._GitGetBranchConfigValue(
+          self._codereview_impl.IssueConfigKey(), value_type=int)
       self.lookedup_issue = True
     return self.issue
 
@@ -1230,41 +1282,44 @@ class Changelist(object):
   def GetPatchset(self):
     """Returns the patchset number as a int or None if not set."""
     if self.patchset is None and not self.lookedup_patchset:
-      patchset = RunGit(['config', self._codereview_impl.PatchsetSetting()],
-                        error_ok=True).strip()
-      self.patchset = int(patchset) or None if patchset else None
+      self.patchset = self._GitGetBranchConfigValue(
+          self._codereview_impl.PatchsetConfigKey(), value_type=int)
       self.lookedup_patchset = True
     return self.patchset
 
   def SetPatchset(self, patchset):
-    """Set this branch's patchset.  If patchset=0, clears the patchset."""
-    patchset_setting = self._codereview_impl.PatchsetSetting()
-    if patchset:
-      RunGit(['config', patchset_setting, str(patchset)])
-      self.patchset = patchset
-    else:
-      RunGit(['config', '--unset', patchset_setting],
-             stderr=subprocess2.PIPE, error_ok=True)
+    """Set this branch's patchset. If patchset=0, clears the patchset."""
+    assert self.GetBranch()
+    if not patchset:
       self.patchset = None
+    else:
+      self.patchset = int(patchset)
+    self._GitSetBranchConfigValue(
+        self._codereview_impl.PatchsetConfigKey(), self.patchset)
 
   def SetIssue(self, issue=None):
-    """Set this branch's issue.  If issue isn't given, clears the issue."""
-    issue_setting = self._codereview_impl.IssueSetting(self.GetBranch())
-    codereview_setting = self._codereview_impl.GetCodereviewServerSetting()
+    """Set this branch's issue. If issue isn't given, clears the issue."""
+    assert self.GetBranch()
     if issue:
+      issue = int(issue)
+      self._GitSetBranchConfigValue(
+          self._codereview_impl.IssueConfigKey(), issue)
       self.issue = issue
-      RunGit(['config', issue_setting, str(issue)])
       codereview_server = self._codereview_impl.GetCodereviewServer()
       if codereview_server:
-        RunGit(['config', codereview_setting, codereview_server])
+        self._GitSetBranchConfigValue(
+            self._codereview_impl.CodereviewServerConfigKey(),
+            codereview_server)
     else:
-      # Reset it regardless. It doesn't hurt.
-      config_settings = [issue_setting, self._codereview_impl.PatchsetSetting()]
-      for prop in (['last-upload-hash'] +
-                    self._codereview_impl._PostUnsetIssueProperties()):
-        config_settings.append('branch.%s.%s' % (self.GetBranch(), prop))
-      for setting in config_settings:
-        RunGit(['config', '--unset', setting], error_ok=True)
+      # Reset all of these just to be clean.
+      reset_suffixes = [
+          'last-upload-hash',
+          self._codereview_impl.IssueConfigKey(),
+          self._codereview_impl.PatchsetConfigKey(),
+          self._codereview_impl.CodereviewServerConfigKey(),
+      ] + self._PostUnsetIssueProperties()
+      for prop in reset_suffixes:
+        self._GitSetBranchConfigValue(prop, None, error_ok=True)
       self.issue = None
       self.patchset = None
 
@@ -1408,8 +1463,8 @@ class Changelist(object):
       elif options.cq_dry_run:
         self.SetCQState(_CQState.DRY_RUN)
 
-      git_set_branch_value('last-upload-hash',
-                           RunGit(['rev-parse', 'HEAD']).strip())
+      _git_set_branch_config_value('last-upload-hash',
+                                   RunGit(['rev-parse', 'HEAD']).strip())
       # Run post upload hooks, if specified.
       if settings.GetRunPostUploadHook():
         presubmit_support.DoPostUploadExecuter(
@@ -1496,27 +1551,24 @@ class _ChangelistCodereviewBase(object):
     """Fetches and returns description from the codereview server."""
     raise NotImplementedError()
 
-  def GetCodereviewServerSetting(self):
-    """Returns git config setting for the codereview server."""
+  @classmethod
+  def IssueConfigKey(cls):
+    """Returns branch setting storing issue number."""
     raise NotImplementedError()
 
   @classmethod
-  def IssueSetting(cls, branch):
-    return 'branch.%s.%s' % (branch, cls.IssueSettingSuffix())
-
-  @classmethod
-  def IssueSettingSuffix(cls):
-    """Returns name of git config setting which stores issue number for a given
-    branch."""
+  def PatchsetConfigKey(cls):
+    """Returns branch setting storing patchset number."""
     raise NotImplementedError()
 
-  def PatchsetSetting(self):
-    """Returns name of git config setting which stores issue number."""
+  @classmethod
+  def CodereviewServerConfigKey(cls):
+    """Returns branch setting storing codereview server."""
     raise NotImplementedError()
 
   def _PostUnsetIssueProperties(self):
     """Which branch-specific properties to erase when unsettin issue."""
-    raise NotImplementedError()
+    return []
 
   def GetRieveldObjForPresubmit(self):
     # This is an unfortunate Rietveld-embeddedness in presubmit.
@@ -1603,10 +1655,8 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       # If we're on a branch then get the server potentially associated
       # with that branch.
       if self.GetIssue():
-        rietveld_server_setting = self.GetCodereviewServerSetting()
-        if rietveld_server_setting:
-          self._rietveld_server = gclient_utils.UpgradeToHttps(RunGit(
-              ['config', rietveld_server_setting], error_ok=True).strip())
+        self._rietveld_server = gclient_utils.UpgradeToHttps(
+            self._GitGetBranchConfigValue(self.CodereviewServerConfigKey()))
       if not self._rietveld_server:
         self._rietveld_server = settings.GetDefaultServerUrl()
     return self._rietveld_server
@@ -1760,23 +1810,16 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     return self._rpc_server
 
   @classmethod
-  def IssueSettingSuffix(cls):
+  def IssueConfigKey(cls):
     return 'rietveldissue'
 
-  def PatchsetSetting(self):
-    """Return the git setting that stores this change's most recent patchset."""
-    return 'branch.%s.rietveldpatchset' % self.GetBranch()
+  @classmethod
+  def PatchsetConfigKey(cls):
+    return 'rietveldpatchset'
 
-  def GetCodereviewServerSetting(self):
-    """Returns the git setting that stores this change's rietveld server."""
-    branch = self.GetBranch()
-    if branch:
-      return 'branch.%s.rietveldserver' % branch
-    return None
-
-  def _PostUnsetIssueProperties(self):
-    """Which branch-specific properties to erase when unsetting issue."""
-    return ['rietveldserver']
+  @classmethod
+  def CodereviewServerConfigKey(cls):
+    return 'rietveldserver'
 
   def GetRieveldObjForPresubmit(self):
     return self.RpcServer()
@@ -2070,12 +2113,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       # If we're on a branch then get the server potentially associated
       # with that branch.
       if self.GetIssue():
-        gerrit_server_setting = self.GetCodereviewServerSetting()
-        if gerrit_server_setting:
-          self._gerrit_server = RunGit(['config', gerrit_server_setting],
-                                       error_ok=True).strip()
-          if self._gerrit_server:
-            self._gerrit_host = urlparse.urlparse(self._gerrit_server).netloc
+        self._gerrit_server = self._GitGetBranchConfigValue(
+            self.CodereviewServerConfigKey())
+        if self._gerrit_server:
+          self._gerrit_host = urlparse.urlparse(self._gerrit_server).netloc
       if not self._gerrit_server:
         # We assume repo to be hosted on Gerrit, and hence Gerrit server
         # has "-review" suffix for lowest level subdomain.
@@ -2086,8 +2127,16 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     return self._gerrit_server
 
   @classmethod
-  def IssueSettingSuffix(cls):
+  def IssueConfigKey(cls):
     return 'gerritissue'
+
+  @classmethod
+  def PatchsetConfigKey(cls):
+    return 'gerritpatchset'
+
+  @classmethod
+  def CodereviewServerConfigKey(cls):
+    return 'gerritserver'
 
   def EnsureAuthenticated(self, force):
     """Best effort check that user is authenticated with Gerrit server."""
@@ -2134,24 +2183,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                      cookie_auth.get_netrc_path(),
                      cookie_auth.get_new_password_message(git_host)))
 
-
-  def PatchsetSetting(self):
-    """Return the git setting that stores this change's most recent patchset."""
-    return 'branch.%s.gerritpatchset' % self.GetBranch()
-
-  def GetCodereviewServerSetting(self):
-    """Returns the git setting that stores this change's Gerrit server."""
-    branch = self.GetBranch()
-    if branch:
-      return 'branch.%s.gerritserver' % branch
-    return None
-
   def _PostUnsetIssueProperties(self):
     """Which branch-specific properties to erase when unsetting issue."""
-    return [
-        'gerritserver',
-        'gerritsquashhash',
-    ]
+    return ['gerritsquashhash']
 
   def GetRieveldObjForPresubmit(self):
     class ThisIsNotRietveldIssue(object):
@@ -2274,8 +2308,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                      'Press Enter to continue, Ctrl+C to abort.')
 
     differs = True
-    last_upload = RunGit(['config',
-                          'branch.%s.gerritsquashhash' % self.GetBranch()],
+    last_upload = RunGit(['config', self._GitBranchSetting('gerritsquashhash')],
                          error_ok=True).strip()
     # Note: git diff outputs nothing if there is no diff.
     if not last_upload or RunGit(['diff', last_upload]).strip():
@@ -2578,8 +2611,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           ('Created|Updated %d issues on Gerrit, but only 1 expected.\n'
            'Change-Id: %s') % (len(change_numbers), change_id))
       self.SetIssue(change_numbers[0])
-      RunGit(['config', 'branch.%s.gerritsquashhash' % self.GetBranch(),
-              ref_to_push])
+      self._GitSetBranchConfigValue('gerritsquashhash', ref_to_push)
     return 0
 
   def _AddChangeIdToCommitMessage(self, options, args):
@@ -5079,7 +5111,7 @@ def CMDcheckout(parser, args):
 
   branches = []
   for cls in _CODEREVIEW_IMPLEMENTATIONS.values():
-    branches.extend(find_issues(cls.IssueSettingSuffix()))
+    branches.extend(find_issues(cls.IssueConfigKey()))
   if len(branches) == 0:
     print('No branch found for issue %s.' % target_issue)
     return 1
