@@ -255,9 +255,11 @@
       'action': [
         'python',
         '<(bindings_scripts_dir)/aggregate_generated_bindings.py',
+        '--component-directory',
         'modules',
+        '--input-file',
         '<(core_idl_with_modules_dependency_files_list)',
-        '--',
+        '--partial',
         '<@(bindings_modules_v8_generated_partial_aggregate_files)',
       ],
       'message': 'Generating aggregate generated modules V8 partial bindings files',

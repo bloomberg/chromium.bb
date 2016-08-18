@@ -23,6 +23,7 @@ group("bindings_core_v8_generated") {
 aggregate_generated_bindings("bindings_core_v8_generated_aggregate") {
   sources = core_definition_idl_files
   component_dir = "core"
+  is_partial = false
   outputs = bindings_core_generated_aggregate_files
 }
 

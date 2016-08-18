@@ -266,6 +266,9 @@ template("aggregate_generated_bindings") {
       "--input-file",
       rebase_path(idl_files_list, root_build_dir),
     ]
+    if (invoker.is_partial) {
+      args += [ "--partial" ]
+    }
     args += rebase_path(invoker.outputs, root_build_dir)
   }
 }

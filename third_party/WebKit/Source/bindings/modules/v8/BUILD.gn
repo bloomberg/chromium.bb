@@ -24,6 +24,7 @@ group("bindings_modules_generated") {
 aggregate_generated_bindings("bindings_modules_v8_generated_aggregate") {
   sources = modules_definition_idl_files
   component_dir = "modules"
+  is_partial = false
   outputs = bindings_modules_generated_aggregate_files
 }
 
@@ -62,6 +63,7 @@ aggregate_generated_bindings(
     "bindings_modules_v8_generated_partial_aggregate") {
   sources = core_idl_with_modules_dependency_files
   component_dir = "modules"
+  is_partial = true
   outputs = bindings_modules_generated_partial_aggregate_files
 }
 

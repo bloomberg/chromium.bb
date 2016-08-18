@@ -54,7 +54,10 @@ import os
 import re
 import sys
 
-from utilities import should_generate_impl_file_from_idl, get_file_contents, idl_filename_to_component, idl_filename_to_interface_name, read_idl_files_list_from_file
+from utilities import (should_generate_impl_file_from_idl,
+                       get_file_contents,
+                       idl_filename_to_interface_name,
+                       read_idl_files_list_from_file)
 
 COPYRIGHT_TEMPLATE = """/*
  * THIS FILE WAS AUTOMATICALLY GENERATED, DO NOT EDIT.
@@ -121,11 +124,9 @@ def generate_content(component_dir, aggregate_partial_interfaces, files_meta_dat
 
     # List all includes.
     files_meta_data_this_partition.sort()
+    suffix = 'Partial' if aggregate_partial_interfaces else ''
     for meta_data in files_meta_data_this_partition:
-        if aggregate_partial_interfaces:
-            cpp_filename = 'V8%sPartial.cpp' % meta_data['name']
-        else:
-            cpp_filename = 'V8%s.cpp' % meta_data['name']
+        cpp_filename = 'V8%s%s.cpp' % (meta_data['name'], suffix)
 
         output.append('#include "bindings/%s/v8/%s"\n' %
                       (component_dir, cpp_filename))
@@ -148,6 +149,11 @@ def parse_options():
     parser.add_option('--input-file',
                       help='A file name which lists up target IDL file names.',
                       type='string')
+    parser.add_option('--partial',
+                      help='To parse partial IDLs, add this option.',
+                      action='store_true',
+                      dest='partial',
+                      default=False)
 
     options, output_file_names = parser.parse_args()
     if len(output_file_names) == 0:
@@ -162,14 +168,9 @@ def main():
     options, output_file_names = parse_options()
     component_dir = options.component_directory
     input_file_name = options.input_file
-
+    aggregate_partial_interfaces = options.partial
     idl_file_names = read_idl_files_list_from_file(input_file_name,
                                                    is_gyp_format=True)
-    components = set([idl_filename_to_component(filename)
-                      for filename in idl_file_names])
-    if len(components) != 1:
-        raise Exception('Cannot aggregate generated codes in different components')
-    aggregate_partial_interfaces = component_dir not in components
 
     files_meta_data = extract_meta_data(idl_file_names)
     total_partitions = len(output_file_names)
