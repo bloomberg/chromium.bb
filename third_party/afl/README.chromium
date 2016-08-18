@@ -1,8 +1,8 @@
 Name: American Fuzzy Lop
 Short Name: AFL
 URL: http://lcamtuf.coredump.cx/afl/
-Version: 2.30b
-Date: August 11, 2016
+Version: 2.31b
+Date: August 18, 2016
 License: Apache 2.0
 License File: src/docs/COPYING
 Security Critical: no
@@ -13,7 +13,7 @@ Tool for in-process and out-of-process (fork) coverage-guided fuzz testing
 
 Local Modifications:
 - Use update.py to roll forward.
-- Renamed afl-2.30b/ to src/.
+- Renamed afl-2.31b/ to src/.
 - Removed the following unneeded files/directories:
   - src/experimental/argv_fuzzing/
   - src/docs/vuln_samples/*.elf
