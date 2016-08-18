@@ -467,6 +467,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::overrideTimeout(unsigned lo
 void WorkerThreadableLoader::MainThreadLoaderHolder::cancel()
 {
     DCHECK(isMainThread());
+    m_workerLoader = nullptr;
     if (!m_mainThreadLoader)
         return;
     m_mainThreadLoader->cancel();
@@ -521,7 +522,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveCachedMetadata(co
 void WorkerThreadableLoader::MainThreadLoaderHolder::didFinishLoading(unsigned long identifier, double finishTime)
 {
     DCHECK(isMainThread());
-    CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
+    CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.release();
     if (!workerLoader || !m_forwarder)
         return;
     m_forwarder->forwardTaskWithDoneSignal(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didFinishLoading, workerLoader, identifier, finishTime));
@@ -531,7 +532,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didFinishLoading(unsigned l
 void WorkerThreadableLoader::MainThreadLoaderHolder::didFail(const ResourceError& error)
 {
     DCHECK(isMainThread());
-    CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
+    CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.release();
     if (!workerLoader || !m_forwarder)
         return;
     m_forwarder->forwardTaskWithDoneSignal(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didFail, workerLoader, error));
@@ -541,7 +542,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didFail(const ResourceError
 void WorkerThreadableLoader::MainThreadLoaderHolder::didFailAccessControlCheck(const ResourceError& error)
 {
     DCHECK(isMainThread());
-    CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
+    CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.release();
     if (!workerLoader || !m_forwarder)
         return;
     m_forwarder->forwardTaskWithDoneSignal(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didFailAccessControlCheck, workerLoader, error));
@@ -551,7 +552,7 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didFailAccessControlCheck(c
 void WorkerThreadableLoader::MainThreadLoaderHolder::didFailRedirectCheck()
 {
     DCHECK(isMainThread());
-    CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.get();
+    CrossThreadPersistent<WorkerThreadableLoader> workerLoader = m_workerLoader.release();
     if (!workerLoader || !m_forwarder)
         return;
     m_forwarder->forwardTaskWithDoneSignal(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didFailRedirectCheck, workerLoader));
@@ -574,7 +575,6 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::contextDestroyed()
         m_forwarder->abort();
         m_forwarder = nullptr;
     }
-    m_workerLoader = nullptr;
     cancel();
 }
 
