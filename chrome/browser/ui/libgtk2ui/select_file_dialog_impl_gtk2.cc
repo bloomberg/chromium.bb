@@ -276,7 +276,7 @@ GtkWidget* SelectFileDialogImplGTK::CreateFileOpenHelper(
                                   GTK_FILE_CHOOSER_ACTION_OPEN,
                                   "_Cancel", GTK_RESPONSE_CANCEL,
                                   "_Open", GTK_RESPONSE_ACCEPT,
-                                  NULL);
+                                  nullptr);
   SetGtkTransientForAura(dialog, parent);
   AddFilters(GTK_FILE_CHOOSER(dialog));
 
@@ -318,7 +318,7 @@ GtkWidget* SelectFileDialogImplGTK::CreateSelectFolderDialog(
                                   "_Cancel", GTK_RESPONSE_CANCEL,
                                   accept_button_label.c_str(),
                                   GTK_RESPONSE_ACCEPT,
-                                  NULL);
+                                  nullptr);
   SetGtkTransientForAura(dialog, parent);
 
   if (!default_path.empty()) {
@@ -372,7 +372,7 @@ GtkWidget* SelectFileDialogImplGTK::CreateSaveAsDialog(const std::string& title,
                                   GTK_FILE_CHOOSER_ACTION_SAVE,
                                   "_Cancel", GTK_RESPONSE_CANCEL,
                                   "_Save", GTK_RESPONSE_ACCEPT,
-                                  NULL);
+                                  nullptr);
   SetGtkTransientForAura(dialog, parent);
 
   AddFilters(GTK_FILE_CHOOSER(dialog));
