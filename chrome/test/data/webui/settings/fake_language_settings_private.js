@@ -85,6 +85,16 @@ cr.define('settings', function() {
       displayName: 'US Dvorak keyboard',
       languageCodes: ['en', 'en-US'],
       enabled: true,
+    }, {
+      id: '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:sw:sw',
+      displayName: 'Swahili keyboard',
+      languageCodes: ['sw', 'tk'],
+      enabled: false,
+    }, {
+      id: '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:us:sw',
+      displayName: 'US Swahili keyboard',
+      languageCodes: ['en', 'en-US', 'sw'],
+      enabled: false,
     }];
   }
 
@@ -179,7 +189,18 @@ cr.define('settings', function() {
      * methods, enabling the input method for the current user. Chrome OS only.
      * @param {string} inputMethodId
      */
-    addInputMethod: wrapAssertNotReached('addInputMethod'),
+    addInputMethod: function(inputMethodId) {
+      assert(cr.isChromeOS);
+      var inputMethod = this.componentExtensionImes.find(function(ime) {
+        return ime.id == inputMethodId;
+      });
+      assertTrue(!!inputMethod);
+      inputMethod.enabled = true;
+      var prefPath = 'prefs.settings.language.preload_engines.value';
+      var enabledInputMethods = this.settingsPrefs_.get(prefPath).split(',');
+      enabledInputMethods.push(inputMethodId);
+      this.settingsPrefs_.set(prefPath, enabledInputMethods.join(','))
+    },
 
     /**
      * Removes the input method from the current user's list of enabled input

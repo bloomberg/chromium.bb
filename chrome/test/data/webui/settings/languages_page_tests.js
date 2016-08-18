@@ -125,14 +125,35 @@ cr.define('settings_languages_page', function() {
       test('modifying input methods', function() {
         assertEquals(2, languageHelper.languages.inputMethods.enabled.length);
         var inputMethods = languageHelper.getInputMethodsForLanguage('en-US');
-        assertEquals(2, inputMethods.length);
+        assertEquals(3, inputMethods.length);
 
+        // We can remove one input method.
         var dvorak =
             '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng';
         languageHelper.removeInputMethod(dvorak);
         assertEquals(1, languageHelper.languages.inputMethods.enabled.length);
 
-        // TODO(michaelpg): Test other modifications.
+        // Enable Swahili.
+        languageHelper.enableLanguage('sw');
+        assertEquals(1, languageHelper.languages.inputMethods.enabled.length);
+
+        // Add input methods for Swahili.
+        var sw = '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:sw:sw';
+        var swUS = '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:us:sw';
+        languageHelper.addInputMethod(sw);
+        languageHelper.addInputMethod(swUS);
+        assertEquals(3, languageHelper.languages.inputMethods.enabled.length);
+
+        // Disable Swahili. The Swahili-only keyboard should be removed.
+        languageHelper.disableLanguage('sw');
+        assertEquals(2, languageHelper.languages.inputMethods.enabled.length);
+
+        // The US Swahili keyboard should still be enabled, because it supports
+        // English which is still enabled.
+        assertTrue(languageHelper.languages.inputMethods.enabled.some(
+              function(inputMethod) {
+                return inputMethod.id == swUS;
+              }));
       });
     }
   });

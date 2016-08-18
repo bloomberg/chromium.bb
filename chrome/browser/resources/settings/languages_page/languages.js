@@ -488,12 +488,13 @@ SettingsLanguagesSingletonElement = Polymer({
     this.deletePrefListItem('spellcheck.dictionaries', languageCode);
 
     if (cr.isChromeOS) {
+      // Remove input methods that don't support any other enabled language.
       var inputMethods = this.languageInputMethods_.get(languageCode) || [];
       for (var inputMethod of inputMethods) {
         var supportsOtherEnabledLanguages = inputMethod.languageCodes.some(
-            function(inputMethodLanguageCode) {
-              return inputMethodLanguageCode != languageCode &&
-                  this.isLanguageEnabled(languageCode);
+            function(otherLanguageCode) {
+              return otherLanguageCode != languageCode &&
+                  this.isLanguageEnabled(otherLanguageCode);
             }.bind(this));
         if (!supportsOtherEnabledLanguages)
           this.removeInputMethod(inputMethod.id);
