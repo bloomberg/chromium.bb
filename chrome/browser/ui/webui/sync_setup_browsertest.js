@@ -108,12 +108,13 @@ TEST_F('SyncSetupWebUITestAsync', 'MAYBE_VerifySignIn', function() {
   this.startSyncing();
 });
 
-// This test is flaky on Linux bot. See crbug.com/579666
-GEN('#if defined(OS_LINUX)');
+// This test is flaky on Linux and Windows bots. See crbug.com/579666 and
+// crbug.com/638884
+GEN('#if defined(OS_LINUX) || defined(OS_WIN)');
 GEN('#define MAYBE_RestoreSyncDataTypes DISABLED_RestoreSyncDataTypes');
 GEN('#else');
 GEN('#define MAYBE_RestoreSyncDataTypes RestoreSyncDataTypes');
-GEN('#endif  // defined(OS_LINUX)');
+GEN('#endif  // defined(OS_LINUX) || defined(OS_WIN)');
 // Test that switching to and from "Sync everything" saves and restores types.
 TEST_F('SyncSetupWebUITestAsync', 'MAYBE_RestoreSyncDataTypes', function() {
   this.mockHandler.expects(once()).SyncSetupStartSignIn(
