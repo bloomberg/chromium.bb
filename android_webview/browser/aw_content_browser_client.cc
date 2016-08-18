@@ -130,6 +130,8 @@ void AwContentsMessageFilter::OnShouldOverrideUrlLoading(
   if (client) {
     *ignore_navigation = client->ShouldOverrideUrlLoading(
         url, has_user_gesture, is_redirect, is_main_frame);
+    // If the shouldOverrideUrlLoading call caused a java exception we should
+    // always return immediately here!
   } else {
     LOG(WARNING) << "Failed to find the associated render view host for url: "
                  << url;

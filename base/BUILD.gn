@@ -177,6 +177,7 @@ component("base") {
     "android/important_file_writer_android.h",
     "android/java_handler_thread.cc",
     "android/java_handler_thread.h",
+    "android/java_message_handler_factory.h",
     "android/java_runtime.cc",
     "android/java_runtime.h",
     "android/jni_android.cc",
@@ -2018,7 +2019,7 @@ test("base_unittests") {
     ":i18n",
     ":message_loop_tests",
     "//base/allocator:features",
-    "//base/test:run_all_unittests",
+    "//base/test:run_all_base_unittests",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//testing/gmock",
@@ -2445,7 +2446,9 @@ if (is_android) {
     deps = [
       ":base_java",
     ]
-    java_files =
-        [ "test/android/java/src/org/chromium/base/ContentUriTestUtils.java" ]
+    java_files = [
+      "test/android/java/src/org/chromium/base/ContentUriTestUtils.java",
+      "test/android/java/src/org/chromium/base/TestSystemMessageHandler.java",
+    ]
   }
 }

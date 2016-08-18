@@ -12,6 +12,7 @@ import android.webkit.ValueCallback;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.security.Principal;
@@ -250,7 +251,7 @@ public class AwContentsClientBridge {
         mClient.handleJsBeforeUnload(url, message, handler);
     }
 
-    @CalledByNative
+    @CalledByNativeUnchecked
     private boolean shouldOverrideUrlLoading(
             String url, boolean hasUserGesture, boolean isRedirect, boolean isMainFrame) {
         return mClient.shouldIgnoreNavigation(

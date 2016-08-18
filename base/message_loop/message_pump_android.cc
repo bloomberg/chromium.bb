@@ -6,10 +6,12 @@
 
 #include <jni.h>
 
+#include "base/android/java_message_handler_factory.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "jni/SystemMessageHandler_jni.h"
@@ -25,10 +27,14 @@ using base::android::ScopedJavaLocalRef;
 static void DoRunLoopOnce(JNIEnv* env,
                           const JavaParamRef<jobject>& obj,
                           jlong native_delegate,
+                          jlong native_message_pump,
                           jlong delayed_scheduled_time_ticks) {
   base::MessagePump::Delegate* delegate =
       reinterpret_cast<base::MessagePump::Delegate*>(native_delegate);
   DCHECK(delegate);
+  base::MessagePumpForUI* pump =
+      reinterpret_cast<base::MessagePumpForUI*>(native_message_pump);
+  DCHECK(pump);
   // This is based on MessagePumpForUI::DoRunLoop() from desktop.
   // Note however that our system queue is handled in the java side.
   // In desktop we inspect and process a single system message and then
@@ -36,6 +42,11 @@ static void DoRunLoopOnce(JNIEnv* env,
   // On Android, the java message queue may contain messages for other handlers
   // that will be processed before calling here again.
   bool did_work = delegate->DoWork();
+  if (pump->ShouldAbort()) {
+    // There is a pending JNI exception, return to Java so that the exception is
+    // thrown correctly.
+    return;
+  }
 
   // In the java side, |SystemMessageHandler| keeps a single "delayed" message.
   // It's an expensive operation to |removeMessage| there, so this is optimized
@@ -61,6 +72,11 @@ static void DoRunLoopOnce(JNIEnv* env,
   // avoid comparisons with TimeDelta / Now() (expensive).
   base::TimeTicks next_delayed_work_time;
   did_work |= delegate->DoDelayedWork(&next_delayed_work_time);
+  if (pump->ShouldAbort()) {
+    // There is a pending JNI exception, return to Java so that the exception is
+    // thrown correctly
+    return;
+  }
 
   if (!next_delayed_work_time.is_null()) {
     // Schedule a new message if there's nothing already scheduled or there's a
@@ -82,13 +98,16 @@ static void DoRunLoopOnce(JNIEnv* env,
     return;
 
   delegate->DoIdleWork();
+  // Note that we do not check whether we should abort here since we are
+  // returning to the JVM anyway. If, in the future, we add any more code after
+  // the call to DoIdleWork() here, we should add an abort-check and return
+  // immediately if the check passes.
 }
 
 namespace base {
 
 MessagePumpForUI::MessagePumpForUI()
-    : run_loop_(NULL) {
-}
+    : run_loop_(nullptr), should_abort_(false) {}
 
 MessagePumpForUI::~MessagePumpForUI() {
 }
@@ -98,7 +117,7 @@ void MessagePumpForUI::Run(Delegate* delegate) {
       " test_stub_android.h";
 }
 
-void MessagePumpForUI::Start(Delegate* delegate) {
+JNIEnv* MessagePumpForUI::StartInternal() {
   run_loop_ = new RunLoop();
   // Since the RunLoop was just created above, BeforeRun should be guaranteed to
   // return true (it only returns false if the RunLoop has been Quit already).
@@ -109,10 +128,23 @@ void MessagePumpForUI::Start(Delegate* delegate) {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
+  return env;
+}
 
+void MessagePumpForUI::Start(Delegate* delegate) {
+  JNIEnv* env = StartInternal();
+  system_message_handler_obj_.Reset(Java_SystemMessageHandler_create(
+      env, reinterpret_cast<intptr_t>(delegate),
+      reinterpret_cast<intptr_t>(this)));
+}
+
+void MessagePumpForUI::StartForUnitTest(
+    Delegate* delegate,
+    base::android::JavaMessageHandlerFactory* factory,
+    WaitableEvent* test_done_event) {
+  JNIEnv* env = StartInternal();
   system_message_handler_obj_.Reset(
-      Java_SystemMessageHandler_create(
-          env, reinterpret_cast<intptr_t>(delegate)));
+      factory->CreateMessageHandler(env, delegate, this, test_done_event));
 }
 
 void MessagePumpForUI::Quit() {

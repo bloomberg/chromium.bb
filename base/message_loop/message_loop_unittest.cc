@@ -26,6 +26,11 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "base/test/android/java_handler_thread_for_testing.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/message_loop/message_pump_win.h"
 #include "base/process/memory.h"
@@ -74,6 +79,52 @@ class Foo : public RefCounted<Foo> {
   int test_count_;
   std::string result_;
 };
+
+#if defined(OS_ANDROID)
+void AbortMessagePump() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  jclass exception = env->FindClass(
+      "org/chromium/base/TestSystemMessageHandler$TestException");
+
+  env->ThrowNew(exception,
+                "This is a test exception that should be caught in "
+                "TestSystemMessageHandler.handleMessage");
+  static_cast<base::MessageLoopForUI*>(base::MessageLoop::current())->Abort();
+}
+
+void RunTest_AbortDontRunMoreTasks(bool delayed) {
+  MessageLoop loop(MessageLoop::TYPE_JAVA);
+
+  WaitableEvent test_done_event(WaitableEvent::ResetPolicy::MANUAL,
+                                WaitableEvent::InitialState::NOT_SIGNALED);
+
+  std::unique_ptr<android::JavaHandlerThreadForTesting> java_thread;
+  java_thread.reset(new android::JavaHandlerThreadForTesting(
+      "JavaHandlerThreadForTesting from AbortDontRunMoreTasks",
+      &test_done_event));
+  java_thread->Start();
+
+  if (delayed) {
+    java_thread->message_loop()->PostDelayedTask(
+        FROM_HERE, Bind(&AbortMessagePump), TimeDelta::FromMilliseconds(10));
+  } else {
+    java_thread->message_loop()->PostTask(FROM_HERE, Bind(&AbortMessagePump));
+  }
+
+  // Wait to ensure we catch the correct exception (and don't crash)
+  test_done_event.Wait();
+
+  java_thread->Stop();
+  java_thread.reset();
+}
+
+TEST(MessageLoopTest, JavaExceptionAbort) {
+  RunTest_AbortDontRunMoreTasks(false);
+}
+TEST(MessageLoopTest, DelayedJavaExceptionAbort) {
+  RunTest_AbortDontRunMoreTasks(true);
+}
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
 

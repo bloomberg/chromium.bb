@@ -27,6 +27,10 @@ static_library("test_support") {
   testonly = true
   sources = [
     "../trace_event/trace_config_memory_test_util.h",
+    "android/java_handler_thread_for_testing.cc",
+    "android/java_handler_thread_for_testing.h",
+    "android/test_system_message_handler_link_android.cc",
+    "android/test_system_message_handler_link_android.h",
     "gtest_util.cc",
     "gtest_util.h",
     "gtest_xml_unittest_result_printer.cc",
@@ -261,6 +265,19 @@ static_library("run_all_unittests") {
   ]
 }
 
+static_library("run_all_base_unittests") {
+  # Only targets in base should depend on this, targets outside base
+  # should depend on run_all_unittests above.
+  visibility = [ "//base/*" ]
+  testonly = true
+  sources = [
+    "run_all_base_unittests.cc",
+  ]
+  deps = [
+    ":test_support",
+  ]
+}
+
 if (is_linux) {
   shared_library("malloc_wrapper") {
     testonly = true
@@ -278,6 +295,7 @@ if (is_android) {
   generate_jni("base_unittests_jni_headers") {
     sources = [
       "android/java/src/org/chromium/base/ContentUriTestUtils.java",
+      "android/java/src/org/chromium/base/TestSystemMessageHandler.java",
       "android/java/src/org/chromium/base/TestUiThread.java",
     ]
     jni_package = "base"

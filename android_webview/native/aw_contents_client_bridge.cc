@@ -31,6 +31,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::HasException;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
@@ -346,8 +347,17 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(const base::string16& url,
   ScopedJavaLocalRef<jstring> jurl = ConvertUTF16ToJavaString(env, url);
   devtools_instrumentation::ScopedEmbedderCallbackTask(
       "shouldOverrideUrlLoading");
-  return Java_AwContentsClientBridge_shouldOverrideUrlLoading(
+  bool did_override = Java_AwContentsClientBridge_shouldOverrideUrlLoading(
       env, obj, jurl, has_user_gesture, is_redirect, is_main_frame);
+  if (HasException(env)) {
+    // Tell the chromium message loop to not perform any tasks after the current
+    // one - we want to make sure we return to Java cleanly without first making
+    // any new JNI calls.
+    static_cast<base::MessageLoopForUI*>(base::MessageLoop::current())->Abort();
+    // If we crashed we don't want to continue the navigation.
+    return true;
+  }
+  return did_override;
 }
 
 void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
