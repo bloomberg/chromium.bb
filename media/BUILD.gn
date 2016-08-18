@@ -11,7 +11,6 @@ import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
-import("//third_party/ffmpeg/ffmpeg_options.gni")
 
 buildflag_header("media_features") {
   header = "media_features.h"
@@ -21,12 +20,6 @@ buildflag_header("media_features") {
     "ENABLE_HEVC_DEMUXING=$enable_hevc_demuxing",
     "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
   ]
-}
-
-if (proprietary_codecs && media_use_ffmpeg) {
-  assert(
-      ffmpeg_branding != "Chromium",
-      "proprietary codecs and ffmpeg_branding set to Chromium are incompatible")
 }
 
 # Common configuration for targets in the media directory.
