@@ -73,7 +73,7 @@ public:
     void setCustomObjectFormatterEnabled(bool);
     v8::MaybeLocal<v8::Value> resolveCallArgument(ErrorString*, protocol::Runtime::CallArgument*);
 
-    std::unique_ptr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Local<v8::Message>);
+    std::unique_ptr<protocol::Runtime::ExceptionDetails> createExceptionDetails(ErrorString*, const v8::TryCatch&, const String16& groupName, bool generatePreview);
     void wrapEvaluateResult(ErrorString*,
         v8::MaybeLocal<v8::Value> maybeResultValue,
         const v8::TryCatch&,

@@ -3,9 +3,17 @@ Compiling script: foo1.js
 compilation result: {
     exceptionDetails : {
         columnNumber : 2
+        exception : {
+            className : SyntaxError
+            description : SyntaxError: Unexpected end of input
+            objectId : 0
+            subtype : error
+            type : object
+        }
+        exceptionId : 0
         lineNumber : 1
         scriptId : 0
-        text : Uncaught SyntaxError: Unexpected end of input
+        text : Uncaught
     }
 }
 -----
@@ -26,9 +34,17 @@ Compiling script: foo4.js
 compilation result: {
     exceptionDetails : {
         columnNumber : 13
+        exception : {
+            className : SyntaxError
+            description : SyntaxError: Unexpected identifier
+            objectId : 0
+            subtype : error
+            type : object
+        }
+        exceptionId : 0
         lineNumber : 0
         scriptId : 0
-        text : Uncaught SyntaxError: Unexpected identifier
+        text : Uncaught
     }
 }
 -----

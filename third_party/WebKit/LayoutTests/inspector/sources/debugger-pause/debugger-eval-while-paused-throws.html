@@ -65,13 +65,11 @@ var test = function()
 
     function dumpConsoleMessages()
     {
-        InspectorTest.addResult("Dumping console messages:\n");
-        InspectorTest.dumpConsoleMessages(false, false, formatter);
-        InspectorTest.completeDebuggerTest();
-    }
-
-    function formatter(element, message) {
-        return message.messageText;
+        InspectorTest.deprecatedRunAfterPendingDispatches(() => {
+            InspectorTest.addResult("Dumping console messages:\n");
+            InspectorTest.dumpConsoleMessages();
+            InspectorTest.completeDebuggerTest();
+        });
     }
 }
 

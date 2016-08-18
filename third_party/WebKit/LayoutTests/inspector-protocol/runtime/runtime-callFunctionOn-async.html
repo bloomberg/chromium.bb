@@ -135,6 +135,10 @@ function test()
             result.exceptionDetails.scriptId = 0;
         if (result.result && result.result.objectId)
             result.result.objectId = "[ObjectId]";
+        if (result.exceptionDetails) {
+            result.exceptionDetails.exceptionId = 0;
+            result.exceptionDetails.exception.objectId = 0;
+        }
         InspectorTest.logObject(result);
     }
 }

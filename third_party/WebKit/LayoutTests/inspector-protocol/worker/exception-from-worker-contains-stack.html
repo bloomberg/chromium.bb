@@ -53,7 +53,7 @@ function test()
     {
         var message = JSON.parse(messageObject["params"]["message"]);
         if (message["method"] === "Runtime.exceptionThrown") {
-            var callFrames = message.params.details.stackTrace ? message.params.details.stackTrace.callFrames : [];
+            var callFrames = message.params.exceptionDetails.stackTrace ? message.params.exceptionDetails.stackTrace.callFrames : [];
             InspectorTest.log(callFrames.length > 0 ? "Message with stack trace received." : "[FAIL] Message contains empty stack trace");
             messageReceived = true;
             if (messageReceived && workerTerminated)

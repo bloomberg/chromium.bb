@@ -118,6 +118,10 @@ function test()
             return;
         }
         result = result.result;
+        if (result.exceptionDetails) {
+            result.exceptionDetails.exceptionId = 0;
+            result.exceptionDetails.exception.objectId = 0;
+        }
         if (result.exceptionDetails && result.exceptionDetails.scriptId)
             result.exceptionDetails.scriptId = 0;
         if (result.exceptionDetails && result.exceptionDetails.stackTrace) {

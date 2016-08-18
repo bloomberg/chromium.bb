@@ -19,7 +19,7 @@ function test()
         failIfError(response);
         InspectorTest.log("second \"let a = 1;\" result: wasThrown = " + !!response.result.exceptionDetails);
         if (response.result.exceptionDetails)
-            InspectorTest.log("exception message: " + response.result.exceptionDetails.text);
+            InspectorTest.log("exception message: " + response.result.exceptionDetails.text + " " + response.result.exceptionDetails.exception.description);
         InspectorTest.sendCommand("Runtime.evaluate", { expression: "a" }, step4);
     }
 

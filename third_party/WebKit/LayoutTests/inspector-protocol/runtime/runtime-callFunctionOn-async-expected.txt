@@ -13,9 +13,17 @@ Running test: testSyntaxErrorInFunction
 {
     exceptionDetails : {
         columnNumber : 2
+        exception : {
+            className : SyntaxError
+            description : SyntaxError: Unexpected token }
+            objectId : 0
+            subtype : error
+            type : object
+        }
+        exceptionId : 0
         lineNumber : 1
         scriptId : 0
-        text : Uncaught SyntaxError: Unexpected token }
+        text : Uncaught
     }
     result : {
         className : SyntaxError
@@ -30,9 +38,17 @@ Running test: testExceptionInFunctionExpression
 {
     exceptionDetails : {
         columnNumber : 15
+        exception : {
+            className : Error
+            description : Error     at <anonymous>:1:22     at <anonymous>:1:36
+            objectId : 0
+            subtype : error
+            type : object
+        }
+        exceptionId : 0
         lineNumber : 0
         scriptId : 0
-        text : Uncaught Error
+        text : Uncaught
     }
     result : {
         className : Error
@@ -85,13 +101,20 @@ Running test: testFunctionReturnRejectedPromise
 {
     exceptionDetails : {
         columnNumber : 0
+        exception : {
+            objectId : 0
+            type : object
+            value : {
+                a : 3
+            }
+        }
+        exceptionId : 0
         lineNumber : 0
-        scriptId : 
         stackTrace : {
             callFrames : [
             ]
         }
-        text : Promise was rejected
+        text : Uncaught (in promise)
     }
     result : {
         type : object

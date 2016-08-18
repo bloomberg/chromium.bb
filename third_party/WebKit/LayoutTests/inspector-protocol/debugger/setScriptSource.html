@@ -140,11 +140,11 @@ function test()
         }
 
         function errorCallbackSetScriptSource2(result) {
-            var compileError = result.compileError;
-            logCheck("Has error reported", !!compileError);
-            logCheck("Reported error is a compile error", !!compileError);
-            if (compileError)
-                logEqualsCheck(compileError.lineNumber, 1);
+            var exceptionDetails = result.exceptionDetails;
+            logCheck("Has error reported", !!exceptionDetails);
+            logCheck("Reported error is a compile error", !!exceptionDetails);
+            if (exceptionDetails)
+                logEqualsCheck(exceptionDetails.lineNumber, 1);
             return next;
         }
     }

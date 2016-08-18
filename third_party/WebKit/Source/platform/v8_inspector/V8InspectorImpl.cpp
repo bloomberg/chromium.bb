@@ -271,7 +271,7 @@ unsigned V8InspectorImpl::exceptionThrown(v8::Local<v8::Context> context, const 
     if (!contextGroupId || m_muteExceptionsMap[contextGroupId])
         return 0;
     std::unique_ptr<V8StackTraceImpl> stackTraceImpl = wrapUnique(static_cast<V8StackTraceImpl*>(stackTrace.release()));
-    unsigned exceptionId = ++m_lastExceptionId;
+    unsigned exceptionId = nextExceptionId();
     std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), detailedMessage, url, lineNumber, columnNumber, std::move(stackTraceImpl), scriptId, m_isolate, message, V8Debugger::contextId(context), exception, exceptionId);
     ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
     return exceptionId;

@@ -4,9 +4,9 @@ Set timer for test function.
 Dumping console messages:
 
 injectedFunction()
-Uncaught Error: injectedObj.func
+VM:6 Uncaught Error: injectedObj.func(…)func @ VM:6injectedFunction @ VM:9(anonymous function) @ VM:1testFunction @ debugger-eval-while-paused-throws.html:23
 localObj.func()
-Uncaught Error: localObj.func
+debugger-eval-while-paused-throws.html:20 Uncaught Error: localObj.func(…)func @ debugger-eval-while-paused-throws.html:20(anonymous function) @ VM:1testFunction @ debugger-eval-while-paused-throws.html:23
 globalObj.func()
-Uncaught Error: globalObj.func
+debugger-eval-while-paused-throws.html:11 Uncaught Error: globalObj.func(…)func @ debugger-eval-while-paused-throws.html:11(anonymous function) @ VM:1testFunction @ debugger-eval-while-paused-throws.html:23
 

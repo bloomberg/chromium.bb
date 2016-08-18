@@ -262,22 +262,23 @@ void V8ConsoleMessage::reportToFrontend(protocol::Runtime::Frontend* frontend, V
 {
     if (m_origin == V8MessageOrigin::kException) {
         std::unique_ptr<protocol::Runtime::RemoteObject> exception = wrapException(session, generatePreview);
-        // TODO(dgozman): unify with InjectedScript::createExceptionDetails.
-        std::unique_ptr<protocol::Runtime::ExceptionDetails> details = protocol::Runtime::ExceptionDetails::create()
+        std::unique_ptr<protocol::Runtime::ExceptionDetails> exceptionDetails = protocol::Runtime::ExceptionDetails::create()
+            .setExceptionId(m_exceptionId)
             .setText(exception ? m_message : m_detailedMessage)
             .setLineNumber(m_lineNumber ? m_lineNumber - 1 : 0)
             .setColumnNumber(m_columnNumber ? m_columnNumber - 1 : 0)
-            .setScriptId(m_scriptId ? String16::fromInteger(m_scriptId) : String16())
             .build();
+        if (m_scriptId)
+            exceptionDetails->setScriptId(String16::fromInteger(m_scriptId));
         if (!m_url.isEmpty())
-            details->setUrl(m_url);
+            exceptionDetails->setUrl(m_url);
         if (m_stackTrace)
-            details->setStackTrace(m_stackTrace->buildInspectorObjectImpl());
-
+            exceptionDetails->setStackTrace(m_stackTrace->buildInspectorObjectImpl());
+        if (m_contextId)
+            exceptionDetails->setExecutionContextId(m_contextId);
         if (exception)
-            frontend->exceptionThrown(m_exceptionId, m_timestamp, std::move(details), std::move(exception), m_contextId);
-        else
-            frontend->exceptionThrown(m_exceptionId, m_timestamp, std::move(details));
+            exceptionDetails->setException(std::move(exception));
+        frontend->exceptionThrown(m_timestamp, std::move(exceptionDetails));
         return;
     }
     if (m_origin == V8MessageOrigin::kRevokedException) {

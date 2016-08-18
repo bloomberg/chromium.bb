@@ -364,8 +364,8 @@ bool V8Debugger::setScriptSource(const String16& sourceID, v8::Local<v8::String>
     case 1:
         {
             *exceptionDetails = protocol::Runtime::ExceptionDetails::create()
+                .setExceptionId(m_inspector->nextExceptionId())
                 .setText(toProtocolStringWithTypeCheck(resultTuple->Get(2)))
-                .setScriptId(String16("0"))
                 .setLineNumber(resultTuple->Get(3)->ToInteger(m_isolate)->Value() - 1)
                 .setColumnNumber(resultTuple->Get(4)->ToInteger(m_isolate)->Value() - 1).build();
             return false;

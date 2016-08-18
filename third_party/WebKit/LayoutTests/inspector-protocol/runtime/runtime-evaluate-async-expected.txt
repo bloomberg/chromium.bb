@@ -14,13 +14,20 @@ Running test: testRejectedPromise
 {
     exceptionDetails : {
         columnNumber : 0
+        exception : {
+            description : 239
+            objectId : 0
+            type : number
+            value : 239
+        }
+        exceptionId : 0
         lineNumber : 0
         scriptId : 
         stackTrace : {
             callFrames : [
             ]
         }
-        text : Promise was rejected
+        text : Uncaught (in promise)
     }
     result : {
         description : 239
@@ -55,9 +62,16 @@ Running test: testExceptionInEvaluate
 {
     exceptionDetails : {
         columnNumber : 0
+        exception : {
+            description : 239
+            objectId : 0
+            type : number
+            value : 239
+        }
+        exceptionId : 0
         lineNumber : 0
         scriptId : 
-        text : Uncaught 239
+        text : Uncaught
     }
     result : {
         description : 239

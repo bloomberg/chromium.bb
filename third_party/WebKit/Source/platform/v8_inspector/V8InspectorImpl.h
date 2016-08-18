@@ -85,6 +85,7 @@ public:
     void asyncTaskFinished(void* task) override;
     void allAsyncTasksCanceled() override;
 
+    unsigned nextExceptionId() { return ++m_lastExceptionId; }
     void enableStackCapturingIfNeeded();
     void disableStackCapturingIfNeeded();
     void muteExceptions(int contextGroupId);

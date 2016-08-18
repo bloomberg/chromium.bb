@@ -117,7 +117,7 @@ void InjectedScript::getProperties(ErrorString* errorString, v8::Local<v8::Objec
     v8::TryCatch tryCatch(m_context->isolate());
     v8::Local<v8::Value> resultValue = function.callWithoutExceptionHandling();
     if (tryCatch.HasCaught()) {
-        *exceptionDetails = createExceptionDetails(tryCatch.Message());
+        *exceptionDetails = createExceptionDetails(errorString, tryCatch, groupName, generatePreview);
         // FIXME: make properties optional
         *properties = Array<PropertyDescriptor>::create();
         return;
@@ -300,19 +300,32 @@ v8::MaybeLocal<v8::Value> InjectedScript::resolveCallArgument(ErrorString* error
     return v8::Undefined(m_context->isolate());
 }
 
-std::unique_ptr<protocol::Runtime::ExceptionDetails> InjectedScript::createExceptionDetails(v8::Local<v8::Message> message)
+std::unique_ptr<protocol::Runtime::ExceptionDetails> InjectedScript::createExceptionDetails(ErrorString* errorString, const v8::TryCatch& tryCatch, const String16& objectGroup, bool generatePreview)
 {
-    std::unique_ptr<protocol::Runtime::ExceptionDetails> exceptionDetailsObject = protocol::Runtime::ExceptionDetails::create()
-        .setText(toProtocolString(message->Get()))
-        .setScriptId(String16::fromInteger(message->GetScriptOrigin().ScriptID()->Value()))
-        .setLineNumber(message->GetLineNumber(m_context->context()).FromMaybe(1) - 1)
-        .setColumnNumber(message->GetStartColumn(m_context->context()).FromMaybe(0))
+    if (!tryCatch.HasCaught())
+        return nullptr;
+    v8::Local<v8::Message> message = tryCatch.Message();
+    v8::Local<v8::Value> exception = tryCatch.Exception();
+    String16 messageText = message.IsEmpty() ? String16() : toProtocolString(message->Get());
+    std::unique_ptr<protocol::Runtime::ExceptionDetails> exceptionDetails = protocol::Runtime::ExceptionDetails::create()
+        .setExceptionId(m_context->inspector()->nextExceptionId())
+        .setText(exception.IsEmpty() ? messageText : String16("Uncaught"))
+        .setLineNumber(message.IsEmpty() ? 0 : message->GetLineNumber(m_context->context()).FromMaybe(1) - 1)
+        .setColumnNumber(message.IsEmpty() ? 0 : message->GetStartColumn(m_context->context()).FromMaybe(0))
         .build();
-
-    v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
-    if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
-        exceptionDetailsObject->setStackTrace(m_context->inspector()->debugger()->createStackTrace(stackTrace)->buildInspectorObjectImpl());
-    return exceptionDetailsObject;
+    if (!message.IsEmpty()) {
+        exceptionDetails->setScriptId(String16::fromInteger(message->GetScriptOrigin().ScriptID()->Value()));
+        v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
+        if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
+            exceptionDetails->setStackTrace(m_context->inspector()->debugger()->createStackTrace(stackTrace)->buildInspectorObjectImpl());
+    }
+    if (!exception.IsEmpty()) {
+        std::unique_ptr<protocol::Runtime::RemoteObject> wrapped = wrapObject(errorString, exception, objectGroup, false /* forceValueType */, generatePreview && !exception->IsNativeError());
+        if (!wrapped)
+            return nullptr;
+        exceptionDetails->setException(std::move(wrapped));
+    }
+    return exceptionDetails;
 }
 
 void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal<v8::Value> maybeResultValue, const v8::TryCatch& tryCatch, const String16& objectGroup, bool returnByValue, bool generatePreview, std::unique_ptr<protocol::Runtime::RemoteObject>* result, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
@@ -332,8 +345,9 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
         std::unique_ptr<RemoteObject> remoteObject = wrapObject(errorString, exception, objectGroup, false, generatePreview && !exception->IsNativeError());
         if (!remoteObject)
             return;
+        // We send exception in result for compatibility reasons, even though it's accessible through exceptionDetails.exception.
         *result = std::move(remoteObject);
-        *exceptionDetails = createExceptionDetails(tryCatch.Message());
+        *exceptionDetails = createExceptionDetails(errorString, tryCatch, objectGroup, generatePreview);
     }
 }
 

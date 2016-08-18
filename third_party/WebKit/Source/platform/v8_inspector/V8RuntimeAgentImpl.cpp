@@ -50,7 +50,6 @@ static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled
 static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
-using protocol::Runtime::ExceptionDetails;
 using protocol::Runtime::RemoteObject;
 
 static bool hasInternalError(ErrorString* errorString, bool hasError)
@@ -106,17 +105,18 @@ private:
         DCHECK(handler);
         v8::Local<v8::Value> value = info.Length() > 0 ? info[0] : v8::Local<v8::Value>::Cast(v8::Undefined(info.GetIsolate()));
 
-        std::unique_ptr<protocol::Runtime::ExceptionDetails> exceptionDetails;
         std::unique_ptr<V8StackTraceImpl> stack = handler->m_inspector->debugger()->captureStackTrace(true);
-        if (stack) {
-            exceptionDetails = protocol::Runtime::ExceptionDetails::create()
-                .setText("Promise was rejected")
-                .setLineNumber(!stack->isEmpty() ? stack->topLineNumber() : 0)
-                .setColumnNumber(!stack->isEmpty() ? stack->topColumnNumber() : 0)
-                .setScriptId(!stack->isEmpty() ? stack->topScriptId() : String16())
-                .setStackTrace(stack->buildInspectorObjectImpl())
-                .build();
-        }
+        std::unique_ptr<protocol::Runtime::ExceptionDetails> exceptionDetails = protocol::Runtime::ExceptionDetails::create()
+            .setExceptionId(handler->m_inspector->nextExceptionId())
+            .setText("Uncaught (in promise)")
+            .setLineNumber(stack && !stack->isEmpty() ? stack->topLineNumber() : 0)
+            .setColumnNumber(stack && !stack->isEmpty() ? stack->topColumnNumber() : 0)
+            .setException(handler->wrapObject(value))
+            .build();
+        if (stack)
+            exceptionDetails->setStackTrace(stack->buildInspectorObjectImpl());
+        if (stack && !stack->isEmpty())
+            exceptionDetails->setScriptId(stack->topScriptId());
         handler->m_callback->sendSuccess(handler->wrapObject(value), std::move(exceptionDetails));
     }
 
@@ -411,7 +411,7 @@ void V8RuntimeAgentImpl::getProperties(
     const Maybe<bool>& generatePreview,
     std::unique_ptr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result,
     Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
-    Maybe<ExceptionDetails>* exceptionDetails)
+    Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     using protocol::Runtime::InternalPropertyDescriptor;
 
@@ -488,7 +488,7 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
     bool persistScript,
     const Maybe<int>& executionContextId,
     Maybe<String16>* scriptId,
-    Maybe<ExceptionDetails>* exceptionDetails)
+    Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     if (!m_enabled) {
         *errorString = "Runtime agent is not enabled";
@@ -507,9 +507,8 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
     if (!persistScript)
         m_inspector->debugger()->unmuteScriptParsedEvents();
     if (script.IsEmpty()) {
-        v8::Local<v8::Message> message = scope.tryCatch().Message();
-        if (!message.IsEmpty())
-            *exceptionDetails = scope.injectedScript()->createExceptionDetails(message);
+        if (scope.tryCatch().HasCaught())
+            *exceptionDetails = scope.injectedScript()->createExceptionDetails(errorString, scope.tryCatch(), String16(), false);
         else
             *errorString = "Script compilation failed";
         return;

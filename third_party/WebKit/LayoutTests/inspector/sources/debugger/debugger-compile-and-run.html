@@ -7,8 +7,11 @@ var test = function()
 {
     function printExceptionDetails(exceptionDetails)
     {
-        InspectorTest.addResult("exceptionDetails:")
-        InspectorTest.addResult("   " + exceptionDetails.text);
+        InspectorTest.addResult("exceptionDetails:");
+        var text = exceptionDetails.text;
+        if (exceptionDetails.exception)
+            text += " " + exceptionDetails.exception.description;
+        InspectorTest.addResult("   " + text);
         InspectorTest.addResult("   line: " + exceptionDetails.lineNumber + ", column: " + exceptionDetails.columnNumber);
 
         var stack = exceptionDetails.stackTrace ? exceptionDetails.stackTrace.callFrames : null;

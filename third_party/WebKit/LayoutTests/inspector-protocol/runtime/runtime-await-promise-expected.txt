@@ -16,13 +16,20 @@ Running test: testRejectedPromise
 {
     exceptionDetails : {
         columnNumber : 0
+        exception : {
+            objectId : 0
+            type : object
+            value : {
+                a : 1
+            }
+        }
+        exceptionId : 0
         lineNumber : 0
-        scriptId : 
         stackTrace : {
             callFrames : [
             ]
         }
-        text : Promise was rejected
+        text : Uncaught (in promise)
     }
     result : {
         type : object
@@ -36,8 +43,14 @@ Running test: testRejectedPromiseWithStack
 {
     exceptionDetails : {
         columnNumber : 0
+        exception : {
+            description : 239
+            objectId : 0
+            type : number
+            value : 239
+        }
+        exceptionId : 0
         lineNumber : 0
-        scriptId : 
         stackTrace : {
             callFrames : [
             ]
@@ -61,7 +74,7 @@ Running test: testRejectedPromiseWithStack
                 description : Promise.reject
             }
         }
-        text : Promise was rejected
+        text : Uncaught (in promise)
     }
     result : {
         description : 239

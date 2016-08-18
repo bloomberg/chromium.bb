@@ -12,6 +12,7 @@ Compiling script
 Running script
 exceptionDetails:
    Uncaught ReferenceError: c is not defined
+    at test.js:1:16
    line: 0, column: 15
    exceptionDetails stack trace:
        url: test.js

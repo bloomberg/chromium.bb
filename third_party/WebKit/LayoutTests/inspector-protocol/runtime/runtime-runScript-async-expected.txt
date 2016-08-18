@@ -15,9 +15,17 @@ Running test: testSyntaxErrorInScript
 {
     exceptionDetails : {
         columnNumber : 1
+        exception : {
+            className : SyntaxError
+            description : SyntaxError: Unexpected token }
+            objectId : 0
+            subtype : error
+            type : object
+        }
+        exceptionId : 0
         lineNumber : 1
         scriptId : 0
-        text : Uncaught SyntaxError: Unexpected token }
+        text : Uncaught
     }
 }
 
@@ -25,6 +33,14 @@ Running test: testSyntaxErrorInEvalInScript
 {
     exceptionDetails : {
         columnNumber : 0
+        exception : {
+            className : SyntaxError
+            description : SyntaxError: Unexpected token }     at boo.js:2:2
+            objectId : 0
+            subtype : error
+            type : object
+        }
+        exceptionId : 0
         lineNumber : 0
         scriptId : 0
         stackTrace : {
@@ -38,7 +54,7 @@ Running test: testSyntaxErrorInEvalInScript
                 }
             ]
         }
-        text : Uncaught SyntaxError: Unexpected token }
+        text : Uncaught
     }
     result : {
         className : SyntaxError
@@ -117,13 +133,20 @@ Running test: testAwaitRejectedPromise
 {
     exceptionDetails : {
         columnNumber : 0
+        exception : {
+            objectId : 0
+            type : object
+            value : {
+                a : 1
+            }
+        }
+        exceptionId : 0
         lineNumber : 0
-        scriptId : 
         stackTrace : {
             callFrames : [
             ]
         }
-        text : Promise was rejected
+        text : Uncaught (in promise)
     }
     result : {
         type : object

@@ -49,8 +49,11 @@ function test()
         function onCompiled(messageObject)
         {
             var result = messageObject.result;
-            if (result.exceptionDetails)
+            if (result.exceptionDetails) {
+                result.exceptionDetails.exceptionId = 0;
+                result.exceptionDetails.exception.objectId = 0;
                 result.exceptionDetails.scriptId = 0;
+            }
             if (result.scriptId)
                 result.scriptId = 0;
             InspectorTest.logObject(result, "compilation result: ");
