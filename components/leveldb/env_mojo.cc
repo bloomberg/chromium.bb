@@ -368,15 +368,15 @@ Status MojoEnv::GetTestDirectory(std::string* path) {
 
 Status MojoEnv::NewLogger(const std::string& fname, Logger** result) {
   TRACE_EVENT1("leveldb", "MojoEnv::NewLogger", "fname", fname);
-  std::unique_ptr<base::File> f(new base::File(thread_->OpenFileHandle(
+  base::File f(thread_->OpenFileHandle(
       dir_, mojo::String::From(fname),
-      filesystem::mojom::kCreateAlways | filesystem::mojom::kFlagWrite)));
-  if (!f->IsValid()) {
+      filesystem::mojom::kCreateAlways | filesystem::mojom::kFlagWrite));
+  if (!f.IsValid()) {
     *result = NULL;
     return MakeIOError(fname, "Unable to create log file",
-                       leveldb_env::kNewLogger, f->error_details());
+                       leveldb_env::kNewLogger, f.error_details());
   } else {
-    *result = new leveldb::ChromiumLogger(f.release());
+    *result = new leveldb::ChromiumLogger(std::move(f));
     return Status::OK();
   }
 }

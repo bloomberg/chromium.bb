@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include <memory>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/format_macros.h"
@@ -19,7 +19,7 @@ namespace leveldb {
 
 class ChromiumLogger : public Logger {
  public:
-  explicit ChromiumLogger(base::File* f) : file_(f) {}
+  explicit ChromiumLogger(base::File f) : file_(std::move(f)) {}
   virtual ~ChromiumLogger() {}
   virtual void Logv(const char* format, va_list ap) {
     const base::PlatformThreadId thread_id = base::PlatformThread::CurrentId();
@@ -77,7 +77,7 @@ class ChromiumLogger : public Logger {
       }
 
       assert(p <= limit);
-      file_->WriteAtCurrentPos(base, p - base);
+      file_.WriteAtCurrentPos(base, p - base);
       if (base != buffer) {
         delete[] base;
       }
@@ -86,7 +86,7 @@ class ChromiumLogger : public Logger {
   }
 
  private:
-  std::unique_ptr<base::File> file_;
+  base::File file_;
 };
 
 }  // namespace leveldb
