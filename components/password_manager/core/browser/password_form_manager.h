@@ -324,6 +324,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
     kFoundGenerationElement
   };
 
+  // State of waiting for a response from a PasswordStore.
+  enum class State { NOT_WAITING, WAITING };
+
   // The maximum number of combinations of the three preceding enums.
   // This is used when recording the actions taken by the form in UMA.
   static const int kMaxNumActionsTaken =
@@ -575,19 +578,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // local heuristics.
   bool does_look_like_signup_form_ = false;
 
-  typedef enum {
-    PRE_MATCHING_PHASE,  // Have not yet invoked a GetLogins query to find
-                         // matching login information from password store.
-    MATCHING_PHASE,      // We've made a GetLogins request, but
-                         // haven't received or finished processing result.
-    POST_MATCHING_PHASE  // We've queried the DB and processed matching
-                         // login results.
-  } PasswordFormManagerState;
-
   // State of matching process, used to verify that we don't call methods
   // assuming we've already processed the request for matching logins,
   // when we actually haven't.
-  PasswordFormManagerState state_;
+  State state_;
 
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;

@@ -202,7 +202,7 @@ PasswordFormManager::PasswordFormManager(
       is_ignorable_change_password_form_(false),
       is_possible_change_password_form_without_username_(
           observed_form.IsPossibleChangePasswordFormWithoutUsername()),
-      state_(PRE_MATCHING_PHASE),
+      state_(State::NOT_WAITING),
       client_(client),
       manager_action_(kManagerActionNone),
       user_action_(kUserActionNone),
@@ -306,12 +306,12 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
 }
 
 bool PasswordFormManager::IsBlacklisted() const {
-  DCHECK_EQ(state_, POST_MATCHING_PHASE);
+  DCHECK_EQ(State::NOT_WAITING, state_);
   return !blacklisted_matches_.empty();
 }
 
 void PasswordFormManager::PermanentlyBlacklist() {
-  DCHECK_EQ(state_, POST_MATCHING_PHASE);
+  DCHECK_EQ(State::NOT_WAITING, state_);
   DCHECK(!client_->IsOffTheRecord());
 
   blacklisted_matches_.push_back(
@@ -320,7 +320,7 @@ void PasswordFormManager::PermanentlyBlacklist() {
 }
 
 bool PasswordFormManager::IsNewLogin() const {
-  DCHECK_EQ(state_, POST_MATCHING_PHASE);
+  DCHECK_EQ(State::NOT_WAITING, state_);
   return is_new_login_;
 }
 
@@ -331,7 +331,6 @@ bool PasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
 void PasswordFormManager::ProvisionallySave(
     const PasswordForm& credentials,
     OtherPossibleUsernamesAction action) {
-  DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
   DCHECK_NE(RESULT_NO_MATCH, DoesManage(credentials));
 
   std::unique_ptr<autofill::PasswordForm> mutable_provisionally_saved_form(
@@ -352,7 +351,7 @@ void PasswordFormManager::ProvisionallySave(
 }
 
 void PasswordFormManager::Save() {
-  DCHECK_EQ(state_, POST_MATCHING_PHASE);
+  DCHECK_EQ(State::NOT_WAITING, state_);
   DCHECK(!client_->IsOffTheRecord());
 
   if ((user_action_ == kUserActionNone) &&
@@ -409,7 +408,7 @@ void PasswordFormManager::Update(
 }
 
 void PasswordFormManager::FetchDataFromPasswordStore() {
-  if (state_ == MATCHING_PHASE) {
+  if (state_ == State::WAITING) {
     // There is currently a password store query in progress, need to re-fetch
     // store results later.
     need_to_refetch_ = true;
@@ -421,11 +420,12 @@ void PasswordFormManager::FetchDataFromPasswordStore() {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_FETCH_LOGINS_METHOD);
-    logger->LogNumber(Logger::STRING_FORM_MANAGER_STATE, state_);
+    logger->LogNumber(Logger::STRING_FORM_MANAGER_STATE,
+                      static_cast<int>(state_));
   }
 
   provisionally_saved_form_.reset();
-  state_ = MATCHING_PHASE;
+  state_ = State::WAITING;
 
   PasswordStore* password_store = client_->GetPasswordStore();
   if (!password_store) {
@@ -447,7 +447,7 @@ void PasswordFormManager::FetchDataFromPasswordStore() {
 }
 
 bool PasswordFormManager::HasCompletedMatching() const {
-  return state_ == POST_MATCHING_PHASE;
+  return state_ == State::NOT_WAITING;
 }
 
 void PasswordFormManager::SetSubmittedForm(const autofill::PasswordForm& form) {
@@ -561,7 +561,7 @@ void PasswordFormManager::OnRequestDone(
 void PasswordFormManager::ProcessFrame(
     const base::WeakPtr<PasswordManagerDriver>& driver) {
   DCHECK_EQ(PasswordForm::SCHEME_HTML, observed_form_.scheme);
-  if (state_ == POST_MATCHING_PHASE)
+  if (state_ == State::NOT_WAITING)
     ProcessFrameInternal(driver);
 
   for (auto const& old_driver : drivers_) {
@@ -634,11 +634,11 @@ void PasswordFormManager::ProcessLoginPrompt() {
 
 void PasswordFormManager::OnGetPasswordStoreResults(
     ScopedVector<PasswordForm> results) {
-  DCHECK_EQ(state_, MATCHING_PHASE);
+  DCHECK_EQ(State::WAITING, state_);
 
   if (need_to_refetch_) {
     // The received results are no longer up to date, need to re-request.
-    state_ = PRE_MATCHING_PHASE;
+    state_ = State::NOT_WAITING;
     FetchDataFromPasswordStore();
     need_to_refetch_ = false;
     return;
@@ -655,7 +655,7 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   federated_matches_ = SplitFederatedMatches(&results);
   if (!results.empty())
     OnRequestDone(std::move(results));
-  state_ = POST_MATCHING_PHASE;
+  state_ = State::NOT_WAITING;
 
   // If password store was slow and provisionally saved form is already here
   // then create pending credentials (see http://crbug.com/470322).
@@ -672,12 +672,11 @@ void PasswordFormManager::OnGetSiteStatistics(
     std::unique_ptr<std::vector<std::unique_ptr<InteractionsStats>>> stats) {
   // On Windows the password request may be resolved after the statistics due to
   // importing from IE.
-  DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
   interactions_stats_.swap(*stats);
 }
 
 void PasswordFormManager::ProcessUpdate() {
-  DCHECK_EQ(state_, POST_MATCHING_PHASE);
+  DCHECK_EQ(State::NOT_WAITING, state_);
   DCHECK(preferred_match_ || !pending_credentials_.federation_origin.unique());
   // If we're doing an Update, we either autofilled correctly and need to
   // update the stats, or the user typed in a new password for autofilled
@@ -1118,7 +1117,7 @@ void PasswordFormManager::CreatePendingCredentials() {
 }
 
 uint32_t PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
-  DCHECK_EQ(state_, MATCHING_PHASE);
+  DCHECK_EQ(State::WAITING, state_);
   DCHECK(!candidate.blacklisted_by_user);
   // For scoring of candidate login data:
   // The most important element that should match is the signon_realm followed
@@ -1298,8 +1297,6 @@ void PasswordFormManager::LogSubmitFailed() {
 }
 
 void PasswordFormManager::WipeStoreCopyIfOutdated() {
-  DCHECK_NE(PRE_MATCHING_PHASE, state_);
-
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.StoreReadyWhenWiping",
                         HasCompletedMatching());
 
