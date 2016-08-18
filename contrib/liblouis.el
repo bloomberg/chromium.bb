@@ -81,7 +81,7 @@
 	       "lowword" "sufword" "prfword" "begword" "begmidword" "midword" "midendword"
 	       "endword" "prepunc" "postpunc" "begnum" "midnum" "endnum" "decpoint" "hyphen"
 	       "begemphword" "endemphword" "begemphphrase" "lenemphphrase") 'words)
-	    "\\s-+\\([^       ]+?\\)\\s-+\\([-0-9=@a]+\\)" liblouis-comment-regexp "$")
+	    "\\s-+\\([^       ]+?\\)\\s-+\\([-0-9=@a-f]+\\)" liblouis-comment-regexp "$")
     '(1 font-lock-keyword-face)
     '(2 font-lock-string-face)
     '(3 font-lock-constant-face)
@@ -92,7 +92,7 @@
     (concat "^"
 	    (regexp-opt
 	     '("endemphphrase") 'words)
-	    "\\s-+\\([^       ]+?\\)\\s-+\\([^       ]+?\\)\\s-+\\([-0-9=@a]+\\)" liblouis-comment-regexp "$")
+	    "\\s-+\\([^       ]+?\\)\\s-+\\([^       ]+?\\)\\s-+\\([-0-9=@a-f]+\\)" liblouis-comment-regexp "$")
     '(1 font-lock-keyword-face)
     '(2 font-lock-string-face)
     '(3 font-lock-string-face)
