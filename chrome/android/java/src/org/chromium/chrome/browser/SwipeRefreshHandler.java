@@ -11,7 +11,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.navigation.NavigationHandler;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.OverscrollRefreshHandler;
 import org.chromium.third_party.android.swiperefresh.SwipeRefreshLayout;
@@ -70,8 +69,7 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
      * the effect will be disabled.
      * @param contentViewCore The associated ContentViewCore instance.
      */
-    public void setContentViewCore(final ContentViewCore contentViewCore,
-            final NavigationHandler navigationHandler) {
+    public void setContentViewCore(final ContentViewCore contentViewCore) {
         if (mContentViewCore == contentViewCore) return;
 
         if (mContentViewCore != null) {
@@ -98,7 +96,8 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
                             contentViewCore.getContext().getResources().getString(resId);
                 }
                 mSwipeRefreshLayout.announceForAccessibility(mAccessibilityRefreshString);
-                navigationHandler.reloadToRefreshContent(true);
+                contentViewCore.getWebContents().getNavigationController().reloadToRefreshContent(
+                        true);
                 RecordUserAction.record("MobilePullGestureReload");
             }
         });

@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.components.variations.VariationsAssociatedData;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetworkChangeNotifier;
 
 /**
@@ -52,8 +53,9 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
     }
 
     private void recordPageLoadStats(Tab tab) {
-        boolean isDesktopUserAgent = tab.getNavigationHandler() != null
-                && tab.getNavigationHandler().getUseDesktopUserAgent();
+        WebContents webContents = tab.getWebContents();
+        boolean isDesktopUserAgent = webContents != null
+                && webContents.getNavigationController().getUseDesktopUserAgent();
         nativeRecordPageLoaded(isDesktopUserAgent);
         if (mKeyboardConnected) {
             nativeRecordPageLoadedWithKeyboard();
