@@ -15,7 +15,9 @@ iframe.onload = () => {
   let doc = iframe.contentDocument;
   let tmpl = doc.querySelector('#test');
   let element = tmpl.content.querySelector('a-a');
-  assert_equals(element.matches(':defined'), true, 'matches(":defined")');
+  test(function () {
+    assert_false(element.matches(':defined'));
+  }, 'Custom element state in template content should be "not defined"');
   done();
 };
 </script>

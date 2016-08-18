@@ -28,16 +28,16 @@ iframe.onload = () => {
     test_defined(data.defined, doc.getElementsByTagName(data.tag_name)[0], `<${data.tag_name}>`);
 
     // Test DOM createElement() methods.
-    test_defined_for_createElement(data.defined, doc, data.tag_name);
+    test_defined_for_createElement(data.defined, !data.defined, doc, data.tag_name);
 
-    // Documents without browsing context should be "uncustomized"; i.e., "defined".
-    test_defined_for_createElement(true, doc_without_browsing_context, data.tag_name, 'Without browsing context: ');
+    // Documents without browsing context should behave the same.
+    test_defined_for_createElement(data.defined, false, doc_without_browsing_context, data.tag_name, 'Without browsing context: ');
   }
 
   done();
 };
 
-function test_defined_for_createElement(defined, doc, tag_name, description = '') {
+function test_defined_for_createElement(defined, should_test_change, doc, tag_name, description = '') {
   // Test document.createElement().
   let element = doc.createElement(tag_name);
   doc.body.appendChild(element);
@@ -54,8 +54,9 @@ function test_defined_for_createElement(defined, doc, tag_name, description = ''
   test_defined(true, svg_element, `${description}createElementNS("http://www.w3.org/2000/svg", "${tag_name}")`);
 
   // Test ":defined" changes when the custom element was defined.
-  if (!defined) {
+  if (should_test_change) {
     let w = doc.defaultView;
+    assert_false(!w, 'defaultView required to test change');
     w.customElements.define(tag_name, class extends w.HTMLElement {
       constructor() { super(); }
     });

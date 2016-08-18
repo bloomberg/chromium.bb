@@ -81,7 +81,7 @@ bool CustomElement::isValidName(const AtomicString& name)
 bool CustomElement::shouldCreateCustomElement(Document& document, const AtomicString& localName)
 {
     return RuntimeEnabledFeatures::customElementsV1Enabled()
-        && document.frame() && isValidName(localName);
+        && isValidName(localName);
 }
 
 bool CustomElement::shouldCreateCustomElement(Document& document, const QualifiedName& tagName)
