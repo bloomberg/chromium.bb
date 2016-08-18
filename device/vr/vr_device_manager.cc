@@ -7,12 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
-#include "device/vr/android/gvr/gvr_device_provider.h"
+#include "device/vr/android/cardboard/cardboard_vr_device_provider.h"
 #endif
 
 namespace device {
@@ -25,7 +24,9 @@ VRDeviceManager::VRDeviceManager()
     : vr_initialized_(false), keep_alive_(false) {
 // Register VRDeviceProviders for the current platform
 #if defined(OS_ANDROID)
-  RegisterProvider(base::WrapUnique(new GvrDeviceProvider()));
+  std::unique_ptr<VRDeviceProvider> cardboard_provider(
+      new CardboardVRDeviceProvider());
+  RegisterProvider(std::move(cardboard_provider));
 #endif
 }
 

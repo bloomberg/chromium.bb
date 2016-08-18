@@ -34,23 +34,13 @@ component("vr") {
 
   if (is_android) {
     sources += [
-      "android/gvr/gvr_api_manager.cc",
-      "android/gvr/gvr_api_manager.h",
-      "android/gvr/gvr_device.cc",
-      "android/gvr/gvr_device.h",
-      "android/gvr/gvr_device_provider.cc",
-      "android/gvr/gvr_device_provider.h",
+      "android/cardboard/cardboard_vr_device.cc",
+      "android/cardboard/cardboard_vr_device.h",
+      "android/cardboard/cardboard_vr_device_provider.cc",
+      "android/cardboard/cardboard_vr_device_provider.h",
     ]
 
-    deps += [
-      ":jni_headers",
-      "//third_party/gvr-android-sdk:libgvr",
-      "//third_party/gvr-android-sdk:libgvr_shared_library",
-    ]
-    configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
-    data_deps = [
-      "//third_party/gvr-android-sdk:libgvr_shared_library",
-    ]
+    deps += [ ":jni_headers" ]
   }
 }
 
@@ -65,7 +55,6 @@ static_library("fakes") {
   ]
 
   public_deps = [
-    ":mojo_bindings",
     ":vr",
     "//base",
     "//mojo/public/cpp/bindings",
@@ -82,7 +71,7 @@ mojom("mojo_bindings") {
 
 if (is_android) {
   java_sources_needing_jni =
-      [ "android/java/src/org/chromium/device/vr/GvrDeviceProvider.java" ]
+      [ "android/java/src/org/chromium/device/vr/CardboardVRDevice.java" ]
 
   generate_jni("jni_headers") {
     sources = java_sources_needing_jni
@@ -93,8 +82,7 @@ if (is_android) {
     java_files = java_sources_needing_jni
     deps = [
       "//base:base_java",
-      "//third_party/android_protobuf:protobuf_nano_javalib",
-      "//third_party/gvr-android-sdk:gvr_common_java",
+      "//third_party/cardboard-java:cardboard-java",
     ]
   }
 }

@@ -40,6 +40,7 @@ android_library("content_java") {
     "//device/usb:java",
     "//device/vibration:mojo_bindings_java",
     "//device/vibration/android:vibration_manager_android",
+    "//device/vr:java",
     "//media/base/android:media_java",
     "//media/capture/content/android:screen_capture_java",
     "//media/capture/video/android:capture_java",
@@ -56,10 +57,6 @@ android_library("content_java") {
 
     #"//content:content_common",
   ]
-
-  if (enable_webvr) {
-    deps += [ "//device/vr:java" ]
-  }
 
   srcjar_deps = [
     ":common_aidl",
