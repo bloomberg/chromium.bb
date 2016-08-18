@@ -38,7 +38,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
-import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -106,7 +105,6 @@ public class CustomTabsConnection {
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
-    private WebContents mSpareWebContents;
     // TODO(lizeb): Remove once crbug.com/630303 is fixed.
     private boolean mPageLoadMetricsEnabled;
 
@@ -222,19 +220,12 @@ public class CustomTabsConnection {
             public void run() {
                 if (!initialized) initializeBrowser(mApplication);
                 if (mayCreateSpareWebContents && mPrerender == null && !SysUtils.isLowEndDevice()) {
-                    createSpareWebContents();
+                    WarmupManager.getInstance().createSpareWebContents();
                 }
                 mWarmupHasBeenFinished.set(true);
             }
         });
         return true;
-    }
-
-    /** Creates a spare {@link WebContents}, if none exists. */
-    private void createSpareWebContents() {
-        ThreadUtils.assertOnUiThread();
-        if (mSpareWebContents != null) return;
-        mSpareWebContents = WebContentsFactory.createWebContentsWithWarmRenderer(false, false);
     }
 
     /** @return the URL converted to string, or null if it's invalid. */
@@ -271,7 +262,7 @@ public class CustomTabsConnection {
             didStartPrerender = prerenderUrl(session, url, extras, uid);
         }
         preconnectUrls(otherLikelyBundles);
-        if (!didStartPrerender) createSpareWebContents();
+        if (!didStartPrerender) WarmupManager.getInstance().createSpareWebContents();
     }
 
     /**
@@ -283,7 +274,7 @@ public class CustomTabsConnection {
     boolean lowConfidenceMayLaunchUrl(List<Bundle> likelyBundles) {
         ThreadUtils.assertOnUiThread();
         if (!preconnectUrls(likelyBundles)) return false;
-        createSpareWebContents();
+        WarmupManager.getInstance().createSpareWebContents();
         return true;
     }
 
@@ -350,20 +341,6 @@ public class CustomTabsConnection {
 
     public Bundle extraCommand(String commandName, Bundle args) {
         return null;
-    }
-
-    /** @return a spare WebContents, or null. */
-    WebContents takeSpareWebContents() {
-        ThreadUtils.assertOnUiThread();
-        WebContents result = mSpareWebContents;
-        mSpareWebContents = null;
-        return result;
-    }
-
-    private void destroySpareWebContents() {
-        ThreadUtils.assertOnUiThread();
-        WebContents webContents = takeSpareWebContents();
-        if (webContents != null) webContents.destroy();
     }
 
     public boolean updateVisuals(final CustomTabsSessionToken session, Bundle bundle) {
@@ -758,7 +735,7 @@ public class CustomTabsConnection {
         if (throttle && !mClientManager.isPrerenderingAllowed(uid)) return false;
 
         // A prerender will be requested. Time to destroy the spare WebContents.
-        destroySpareWebContents();
+        WarmupManager.getInstance().destroySpareWebContents();
 
         Intent extrasIntent = new Intent();
         if (extras != null) extrasIntent.putExtras(extras);
@@ -785,8 +762,6 @@ public class CustomTabsConnection {
 
         return true;
     }
-
-
 
     @VisibleForTesting
     void resetThrottling(Context context, int uid) {

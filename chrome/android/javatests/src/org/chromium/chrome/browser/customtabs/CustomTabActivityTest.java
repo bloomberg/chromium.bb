@@ -1061,9 +1061,13 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         } catch (InterruptedException e) {
             fail();
         }
-        assertFalse(
-                "Warmup() should have allocated a child connection",
-                mActivity.shouldAllocateChildConnection());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertFalse("Warmup() should have allocated a child connection",
+                        mActivity.shouldAllocateChildConnection());
+            }
+        });
     }
 
     /**
@@ -1084,9 +1088,13 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         } catch (InterruptedException e) {
             fail();
         }
-        assertTrue(
-                "No spare renderer available, should allocate a child connection.",
-                mActivity.shouldAllocateChildConnection());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue("No spare renderer available, should allocate a child connection.",
+                        mActivity.shouldAllocateChildConnection());
+            }
+        });
     }
 
     /**
@@ -1106,9 +1114,13 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         } catch (InterruptedException e) {
             fail();
         }
-        assertFalse(
-                "Prerendering should have allocated a child connection",
-                mActivity.shouldAllocateChildConnection());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertFalse("Prerendering should have allocated a child connection",
+                        mActivity.shouldAllocateChildConnection());
+            }
+        });
     }
 
     /**
