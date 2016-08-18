@@ -17,6 +17,8 @@ class WebContents;
 }
 
 class GURL;
+class SkBitmap;
+struct InstallableData;
 struct ShortcutInfo;
 
 // ManifestUpgradeDetectorFetcher is the C++ counterpart of
@@ -53,11 +55,10 @@ class ManifestUpgradeDetectorFetcher : public content::WebContentsObserver {
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
 
-  // Called when the Manifest has been parsed, or if no Manifest was found.
-  void OnDidGetManifest(const GURL& manifest_url,
-                        const content::Manifest& manifest);
+  // Called once the installable data has been fetched.
+  void OnDidGetInstallableData(const InstallableData& installable_data);
 
-  void OnDataAvailable(const ShortcutInfo& info);
+  void OnDataAvailable(const ShortcutInfo& info, const SkBitmap& icon);
 
   // Points to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

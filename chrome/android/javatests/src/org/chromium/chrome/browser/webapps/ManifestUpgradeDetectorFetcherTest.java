@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
@@ -46,8 +47,8 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
 
         @Override
         public void onGotManifestData(String startUrl, String scopeUrl, String name,
-                String shortName, int displayMode, int orientation, long themeColor,
-                long backgroundColor) {
+                String shortName, String iconUrl, long iconMurmur2Hash, Bitmap iconBitmap,
+                int displayMode, int orientation, long themeColor, long backgroundColor) {
             assertNull(mName);
             mName = name;
             notifyCalled();

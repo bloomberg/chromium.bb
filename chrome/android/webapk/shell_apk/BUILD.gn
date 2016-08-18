@@ -28,6 +28,11 @@ declare_args() {
   # The URL of the app icon. Empty if the app icon is generated.
   webapk_icon_url = "http://www.template.com/icon.png"
 
+  # Murmur2 hash of the homescreen icon. The hash should be of the icon as it is
+  # available from the web. The icon bytes should not be transformed (e.g.
+  # decoded / encoded) prior to taking the hash.
+  webapk_icon_murmur2_hash = "0L"
+
   # Host part of |webapk_scope_url|.
   webapk_scope_url_host = "www.template.com"
 
@@ -59,6 +64,7 @@ jinja_template("shell_apk_manifest") {
     "theme_color=$webapk_theme_color",
     "background_color=$webapk_background_color",
     "icon_url=$webapk_icon_url",
+    "icon_murmur2_hash=$webapk_icon_murmur2_hash",
     "scope_url_host=$webapk_scope_url_host",
     "web_manifest_url=$webapk_web_manifest_url",
     "version_code=$webapk_version_code",

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.graphics.Bitmap;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -20,8 +22,8 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
      */
     public interface Callback {
         public void onGotManifestData(String startUrl, String scopeUrl, String name,
-                String shortName, int displayMode, int orientation, long themeColor,
-                long backgroundColor);
+                String shortName, String iconUrl, long iconMurmur2Hash, Bitmap iconBitmap,
+                int displayMode, int orientation, long themeColor, long backgroundColor);
     }
 
     /**
@@ -82,9 +84,10 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
      */
     @CalledByNative
     private void onDataAvailable(String startUrl, String scopeUrl, String name, String shortName,
-            int displayMode, int orientation, long themeColor, long backgroundColor) {
-        mCallback.onGotManifestData(startUrl, scopeUrl, name, shortName, displayMode, orientation,
-                themeColor, backgroundColor);
+            String iconUrl, long iconMurmur2Hash, Bitmap iconBitmap, int displayMode,
+            int orientation, long themeColor, long backgroundColor) {
+        mCallback.onGotManifestData(startUrl, scopeUrl, name, shortName, iconUrl, iconMurmur2Hash,
+                iconBitmap, displayMode, orientation, themeColor, backgroundColor);
     }
 
     private native long nativeInitialize(String scope, String webManifestUrl);
