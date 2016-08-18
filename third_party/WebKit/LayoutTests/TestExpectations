@@ -50,7 +50,7 @@ crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Fai
 crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
-crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
+crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ NeedsRebaseline ]
 
 crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 
