@@ -228,6 +228,8 @@ template("nacl_test_data") {
             arch = "x86-64"
           } else if (translate_cpu == "arm") {
             arch = "armv7"
+          } else if (translate_cpu == "mipsel") {
+            arch = "mipsel"
           }
         }
 

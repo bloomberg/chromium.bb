@@ -523,9 +523,12 @@ if (!is_android) {
       if (enable_nacl) {
         data_deps += [
           "//components/nacl/loader:nacl_helper",
-          "//components/nacl/loader:helper_nonsfi",
           "//ppapi/native_client:irt",
         ]
+
+        if (enable_nacl_nonsfi) {
+          data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
+        }
       }
 
       if (is_chrome_branded) {
@@ -1135,10 +1138,11 @@ test("browser_tests") {
             [ "//build/config/win:default_large_module_incremental_linking" ]
       }
       if (is_linux) {
-        data_deps += [
-          "//components/nacl/loader:nacl_helper",
-          "//components/nacl/loader:helper_nonsfi",
-        ]
+        data_deps += [ "//components/nacl/loader:nacl_helper" ]
+
+        if (enable_nacl_nonsfi) {
+          data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
+        }
       }
     }
 

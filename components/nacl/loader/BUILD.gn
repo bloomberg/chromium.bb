@@ -141,23 +141,25 @@ if (is_linux) {
     ]
   }
 
-  test("nacl_helper_nonsfi_unittests") {
-    sources = [
-      "nonsfi/nacl_helper_nonsfi_unittests.cc",
-    ]
-    deps = [
-      "//base",
-      "//base/test:test_launcher_nacl_nonsfi",
-    ]
-    data_deps = [
-      ":nacl_helper_nonsfi_unittests_main_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
-    ]
-  }
+  if (enable_nacl_nonsfi) {
+    test("nacl_helper_nonsfi_unittests") {
+      sources = [
+        "nonsfi/nacl_helper_nonsfi_unittests.cc",
+      ]
+      deps = [
+        "//base",
+        "//base/test:test_launcher_nacl_nonsfi",
+      ]
+      data_deps = [
+        ":nacl_helper_nonsfi_unittests_main_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
+      ]
+    }
 
-  group("helper_nonsfi") {
-    data_deps = [
-      ":nacl_helper_nonsfi_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
-    ]
+    group("helper_nonsfi") {
+      data_deps = [
+        ":nacl_helper_nonsfi_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
+      ]
+    }
   }
 }
 

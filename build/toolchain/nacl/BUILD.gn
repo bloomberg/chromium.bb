@@ -257,3 +257,7 @@ nacl_clang_toolchains("x64") {
 nacl_clang_toolchains("arm") {
   toolchain_tuple = "arm-nacl"
 }
+
+nacl_clang_toolchains("mipsel") {
+  toolchain_tuple = "mipsel-nacl"
+}

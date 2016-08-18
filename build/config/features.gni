@@ -34,6 +34,9 @@ declare_args() {
   enable_nacl = !is_ios && !is_android && !is_chromecast &&
                 current_cpu != "mipsel" && !(is_linux && target_cpu == "arm64")
 
+  # Non-SFI is not yet supported on mipsel
+  enable_nacl_nonsfi = current_cpu != "mipsel"
+
   # If debug_devtools is set to true, JavaScript files for DevTools are stored
   # as is and loaded from disk. Otherwise, a concatenated file is stored in
   # resources.pak. It is still possible to load JS files from disk by passing

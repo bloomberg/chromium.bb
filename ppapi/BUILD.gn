@@ -311,9 +311,17 @@ if (enable_nacl) {
     data_deps = [
       ":copy_test_files",
       ":ppapi_nacl_tests(//build/toolchain/nacl:clang_newlib_${target_cpu})",
-      ":ppapi_nacl_tests(//build/toolchain/nacl:glibc_${target_cpu})",
       ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl)",
-      ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
     ]
+
+    if (target_cpu != "mipsel") {
+      data_deps +=
+          [ ":ppapi_nacl_tests(//build/toolchain/nacl:glibc_${target_cpu})" ]
+    }
+
+    if (is_linux && enable_nacl_nonsfi) {
+      data_deps +=
+          [ ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl_nonsfi)" ]
+    }
   }
 }
