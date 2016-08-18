@@ -6,11 +6,7 @@
 import sys
 
 from webkitpy.common import host
-from webkitpy.common.checkout.scm.git import Git
 from webkitpy.w3c.update_w3c_test_expectations import main
 
 if __name__ == "__main__":
-    host = host.Host()
-    host.initialize_scm()
-    port = host.port_factory.get()
-    sys.exit(main(host, port))
+    sys.exit(main(host.Host()))

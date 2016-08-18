@@ -18,7 +18,9 @@ from webkitpy.w3c.test_parser import TestParser
 _log = logging.getLogger(__name__)
 
 
-def main(host, port):
+def main(host):
+    host.initialize_scm()
+    port = host.port_factory.get()
     expectations_file = port.path_to_generic_test_expectations_file()
     expectations_line_adder = W3CExpectationsLineAdder(host)
     issue_number = expectations_line_adder.get_issue_number()
