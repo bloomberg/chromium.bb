@@ -427,12 +427,11 @@ void WindowProxy::setSecurityToken(SecurityOrigin* origin)
     // If two tokens are not equal, then we have to call canAccess.
     // Note: we can't use the HTTPOrigin if it was set from the DOM.
     String token;
-    // There are several situations where v8 needs to do a full canAccess check,
+    // There are two situations where v8 needs to do a full canAccess check,
     // so set an empty security token instead:
     // - document.domain was modified
-    // - the frame is showing the initial empty document
     // - the frame is remote
-    bool delaySet = m_frame->isRemoteFrame() || (m_world->isMainWorld() && (origin->domainWasSetInDOM() || toLocalFrame(m_frame)->loader().stateMachine()->isDisplayingInitialEmptyDocument()));
+    bool delaySet = m_frame->isRemoteFrame() || (m_world->isMainWorld() && origin->domainWasSetInDOM());
     if (origin && !delaySet)
         token = origin->toString();
 
