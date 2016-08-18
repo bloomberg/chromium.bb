@@ -90,3 +90,9 @@ Running by 50:
 ,{"nested brackets with double quotes":{"":""}},{"etc":{"\\":"\""}}
 ,{"etc":{"\\\\":"\\"}},{"etc":{"\\\\\"":"\\\\\""}}
 
+Running: testGarbageAfterObject
+
+Parsing [{a: 'b'}], {'x': {a: 'b'}}
+[{a: 'b'}
+tokenizer.write() returned false, false expected
+

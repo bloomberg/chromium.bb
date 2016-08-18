@@ -13,6 +13,12 @@ TimelineLifecycleDelegate.loadingProgress()
 TimelineLifecycleDelegate.loadingComplete(true)
 Saved data is equal to restored data: true
 
+Running: testJSONObjectFormatWithMetadata
+TimelineLifecycleDelegate.loadingStarted()
+TimelineLifecycleDelegate.loadingProgress()
+TimelineLifecycleDelegate.loadingComplete(true)
+Saved data is equal to restored data: true
+
 Running: testBroken
 TimelineLifecycleDelegate.loadingStarted()
 TimelineLifecycleDelegate.loadingComplete(true)

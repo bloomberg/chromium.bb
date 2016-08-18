@@ -127,6 +127,13 @@ function test()
             runTestWithDataAndCheck(input, data, next);
         },
 
+        function testJSONObjectFormatWithMetadata(next)
+        {
+            var json = JSON.stringify(data);
+            var input = "{\"traceEvents\":" + json + ", metadata: {\"foo\": \"bar\", \"baz\": \"quz\"}";
+            runTestWithDataAndCheck(input, data, next);
+        },
+
         function testBroken(next)
         {
             var data = [{"args":{"number":32},"cat":"__metadata","name":"num_cpus","ph":"M","pid":32127,"tid":0,"ts":0,"t\"y}p}e\\":"UnknownRecordType"}];
