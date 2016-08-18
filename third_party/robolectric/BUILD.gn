@@ -570,6 +570,9 @@ template("shadows_core") {
   }
 
   java_library(target_name) {
+    # TODO(mikecase): Remove this once crbug.com/638875 is fixed.
+    enable_incremental_javac_override = false
+
     testonly = true
     processors_javac =
         [ "org.robolectric.annotation.processing.RobolectricProcessor" ]
