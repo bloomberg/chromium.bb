@@ -1085,6 +1085,34 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(1UL, result_list->GetSize());
 }
 
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadsShowFunction) {
+  ScopedCancellingItem item(CreateSlowTestDownload());
+  ASSERT_TRUE(item.get());
+
+  RunFunction(new DownloadsShowFunction(), DownloadItemIdAsArgList(item.get()));
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadsShowDefaultFolderFunction) {
+  ScopedCancellingItem item(CreateSlowTestDownload());
+  ASSERT_TRUE(item.get());
+
+  RunFunction(new DownloadsShowDefaultFolderFunction(),
+              DownloadItemIdAsArgList(item.get()));
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadsDragFunction) {
+  ScopedCancellingItem item(CreateSlowTestDownload());
+  ASSERT_TRUE(item.get());
+
+  RunFunction(new DownloadsDragFunction(), DownloadItemIdAsArgList(item.get()));
+}
+#endif
+
+
 // Test the |filenameRegex| parameter for search().
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     DownloadExtensionTest_SearchFilenameRegex) {

@@ -215,11 +215,11 @@ class DownloadsAcceptDangerFunction : public ChromeAsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);
 };
 
-class DownloadsShowFunction : public ChromeAsyncExtensionFunction {
+class DownloadsShowFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.show", DOWNLOADS_SHOW)
   DownloadsShowFunction();
-  bool RunAsync() override;
+  bool RunSync() override;
 
  protected:
   ~DownloadsShowFunction() override;
@@ -228,12 +228,12 @@ class DownloadsShowFunction : public ChromeAsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowFunction);
 };
 
-class DownloadsShowDefaultFolderFunction : public ChromeAsyncExtensionFunction {
+class DownloadsShowDefaultFolderFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "downloads.showDefaultFolder", DOWNLOADS_SHOWDEFAULTFOLDER)
   DownloadsShowDefaultFolderFunction();
-  bool RunAsync() override;
+  bool RunSync() override;
 
  protected:
   ~DownloadsShowDefaultFolderFunction() override;
@@ -269,11 +269,11 @@ class DownloadsSetShelfEnabledFunction : public ChromeSyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsSetShelfEnabledFunction);
 };
 
-class DownloadsDragFunction : public ChromeAsyncExtensionFunction {
+class DownloadsDragFunction : public ChromeSyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.drag", DOWNLOADS_DRAG)
   DownloadsDragFunction();
-  bool RunAsync() override;
+  bool RunSync() override;
 
  protected:
   ~DownloadsDragFunction() override;

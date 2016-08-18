@@ -1323,7 +1323,7 @@ DownloadsShowFunction::DownloadsShowFunction() {}
 
 DownloadsShowFunction::~DownloadsShowFunction() {}
 
-bool DownloadsShowFunction::RunAsync() {
+bool DownloadsShowFunction::RunSync() {
   std::unique_ptr<downloads::Show::Params> params(
       downloads::Show::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -1340,7 +1340,7 @@ DownloadsShowDefaultFolderFunction::DownloadsShowDefaultFolderFunction() {}
 
 DownloadsShowDefaultFolderFunction::~DownloadsShowDefaultFolderFunction() {}
 
-bool DownloadsShowDefaultFolderFunction::RunAsync() {
+bool DownloadsShowDefaultFolderFunction::RunSync() {
   DownloadManager* manager = NULL;
   DownloadManager* incognito_manager = NULL;
   GetManagers(GetProfile(), include_incognito(), &manager, &incognito_manager);
@@ -1380,7 +1380,7 @@ DownloadsDragFunction::DownloadsDragFunction() {}
 
 DownloadsDragFunction::~DownloadsDragFunction() {}
 
-bool DownloadsDragFunction::RunAsync() {
+bool DownloadsDragFunction::RunSync() {
   std::unique_ptr<downloads::Drag::Params> params(
       downloads::Drag::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
