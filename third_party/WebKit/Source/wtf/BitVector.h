@@ -201,8 +201,8 @@ private:
     public:
         size_t numBits() const { return m_numBits; }
         size_t numWords() const { return (m_numBits + bitsInPointer() - 1) / bitsInPointer(); }
-        uintptr_t* bits() { return bitwise_cast<uintptr_t*>(this + 1); }
-        const uintptr_t* bits() const { return bitwise_cast<const uintptr_t*>(this + 1); }
+        uintptr_t* bits() { return bitwiseCast<uintptr_t*>(this + 1); }
+        const uintptr_t* bits() const { return bitwiseCast<const uintptr_t*>(this + 1); }
 
         static OutOfLineBits* create(size_t numBits);
 
@@ -219,8 +219,8 @@ private:
 
     bool isInline() const { return m_bitsOrPointer >> maxInlineBits(); }
 
-    const OutOfLineBits* outOfLineBits() const { return bitwise_cast<const OutOfLineBits*>(m_bitsOrPointer << 1); }
-    OutOfLineBits* outOfLineBits() { return bitwise_cast<OutOfLineBits*>(m_bitsOrPointer << 1); }
+    const OutOfLineBits* outOfLineBits() const { return bitwiseCast<const OutOfLineBits*>(m_bitsOrPointer << 1); }
+    OutOfLineBits* outOfLineBits() { return bitwiseCast<OutOfLineBits*>(m_bitsOrPointer << 1); }
 
     void resizeOutOfLine(size_t numBits);
     void setSlow(const BitVector& other);

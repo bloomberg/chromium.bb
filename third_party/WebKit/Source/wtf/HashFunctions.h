@@ -111,11 +111,11 @@ template <typename T> struct FloatHash {
     typedef typename IntTypes<sizeof(T)>::UnsignedType Bits;
     static unsigned hash(T key)
     {
-        return hashInt(bitwise_cast<Bits>(key));
+        return hashInt(bitwiseCast<Bits>(key));
     }
     static bool equal(T a, T b)
     {
-        return bitwise_cast<Bits>(a) == bitwise_cast<Bits>(b);
+        return bitwiseCast<Bits>(a) == bitwiseCast<Bits>(b);
     }
     static const bool safeToCompareToEmptyOrDeleted = true;
 };

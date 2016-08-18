@@ -170,9 +170,9 @@ namespace WTF {
  * C++'s idea of a reinterpret_cast lacks sufficient cojones.
  */
 template<typename TO, typename FROM>
-inline TO bitwise_cast(FROM from)
+inline TO bitwiseCast(FROM from)
 {
-    static_assert(sizeof(TO) == sizeof(FROM), "WTF::bitwise_cast sizeof casted types should be equal");
+    static_assert(sizeof(TO) == sizeof(FROM), "WTF::bitwiseCast sizeof casted types should be equal");
     union {
         FROM from;
         TO to;
@@ -235,7 +235,7 @@ inline void* operator new(size_t, NotNullTag, void* location)
     return location;
 }
 
-using WTF::bitwise_cast;
+using WTF::bitwiseCast;
 using WTF::safeCast;
 
 #endif // WTF_StdLibExtras_h

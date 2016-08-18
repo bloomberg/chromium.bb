@@ -42,7 +42,7 @@ void BitVector::setSlow(const BitVector& other)
     } else {
         OutOfLineBits* newOutOfLineBits = OutOfLineBits::create(other.size());
         memcpy(newOutOfLineBits->bits(), other.bits(), byteCount(other.size()));
-        newBitsOrPointer = bitwise_cast<uintptr_t>(newOutOfLineBits) >> 1;
+        newBitsOrPointer = bitwiseCast<uintptr_t>(newOutOfLineBits) >> 1;
     }
     if (!isInline())
         OutOfLineBits::destroy(outOfLineBits());
@@ -108,7 +108,7 @@ void BitVector::resizeOutOfLine(size_t numBits)
         }
         OutOfLineBits::destroy(outOfLineBits());
     }
-    m_bitsOrPointer = bitwise_cast<uintptr_t>(newOutOfLineBits) >> 1;
+    m_bitsOrPointer = bitwiseCast<uintptr_t>(newOutOfLineBits) >> 1;
 }
 
 void BitVector::dump(PrintStream& out)
