@@ -42,7 +42,9 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
   // transforming windows which are currently in
   // overview: http://crbug.com/366605
   CancelOverview();
-
+  for (auto* window : added_windows_)
+    window->RemoveObserver(this);
+  added_windows_.clear();
   WmShell::Get()->RemoveShellObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
@@ -99,6 +101,10 @@ void MaximizeModeWindowManager::OnWindowDestroying(WmWindow* window) {
     // container window can be removed on display destruction.
     window->RemoveObserver(this);
     observed_container_windows_.erase(window);
+  } else if (base::ContainsValue(added_windows_, window)) {
+    // Added window was destroyed before being shown.
+    added_windows_.erase(window);
+    window->RemoveObserver(this);
   } else {
     // If a known window gets destroyed we need to remove all knowledge about
     // it.
@@ -112,6 +118,16 @@ void MaximizeModeWindowManager::OnWindowTreeChanged(
   // A window can get removed and then re-added by a drag and drop operation.
   if (params.new_parent && IsContainerWindow(params.new_parent) &&
       !base::ContainsKey(window_state_map_, params.target)) {
+    // Don't register the window if the window is invisible. Instead,
+    // wait until it becomes visible because the client may update the
+    // flag to control if the window should be added.
+    if (!params.target->IsVisible()) {
+      if (!base::ContainsValue(added_windows_, params.target)) {
+        added_windows_.insert(params.target);
+        params.target->AddObserver(this);
+      }
+      return;
+    }
     MaximizeAndTrackWindow(params.target);
     // When the state got added, the "WM_EVENT_ADDED_TO_WORKSPACE" event got
     // already sent and we have to notify our state again.
@@ -139,6 +155,26 @@ void MaximizeModeWindowManager::OnWindowBoundsChanged(
   // Reposition all non maximizeable windows.
   for (auto& pair : window_state_map_)
     pair.second->UpdateWindowPosition(pair.first->GetWindowState());
+}
+
+void MaximizeModeWindowManager::OnWindowVisibilityChanged(WmWindow* window,
+                                                          bool visible) {
+  // Skip if it's already managed.
+  if (base::ContainsKey(window_state_map_, window))
+    return;
+
+  if (IsContainerWindow(window->GetParent()) &&
+      base::ContainsValue(added_windows_, window) && visible) {
+    added_windows_.erase(window);
+    window->RemoveObserver(this);
+    MaximizeAndTrackWindow(window);
+    // When the state got added, the "WM_EVENT_ADDED_TO_WORKSPACE" event got
+    // already sent and we have to notify our state again.
+    if (base::ContainsKey(window_state_map_, window)) {
+      wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
+      window->GetWindowState()->OnWMEvent(&event);
+    }
+  }
 }
 
 void MaximizeModeWindowManager::OnDisplayAdded(

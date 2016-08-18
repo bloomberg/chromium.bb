@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include <map>
-#include <set>
+#include <unordered_set>
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
@@ -63,6 +63,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public WmWindowObserver,
   void OnWindowBoundsChanged(WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
+  void OnWindowVisibilityChanged(WmWindow* window, bool visible) override;
 
   // display::DisplayObserver overrides:
   void OnDisplayAdded(const display::Display& display) override;
@@ -122,7 +123,10 @@ class ASH_EXPORT MaximizeModeWindowManager : public WmWindowObserver,
   WindowToState window_state_map_;
 
   // All container windows which have to be tracked.
-  std::set<WmWindow*> observed_container_windows_;
+  std::unordered_set<WmWindow*> observed_container_windows_;
+
+  // Windows added to the container, but not yet shown.
+  std::unordered_set<WmWindow*> added_windows_;
 
   // True if all backdrops are hidden.
   bool backdrops_hidden_;
