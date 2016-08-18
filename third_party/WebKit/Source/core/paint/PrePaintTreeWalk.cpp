@@ -36,6 +36,9 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame)
 
 void PrePaintTreeWalk::walk(FrameView& frameView, const PrePaintTreeWalkContext& context)
 {
+    if (frameView.shouldThrottleRendering())
+        return;
+
     PrePaintTreeWalkContext localContext(context);
     m_propertyTreeBuilder.buildTreeNodes(frameView, localContext.treeBuilderContext);
 
@@ -49,10 +52,11 @@ void PrePaintTreeWalk::walk(FrameView& frameView, const PrePaintTreeWalkContext&
 void PrePaintTreeWalk::walk(const LayoutObject& object, const PrePaintTreeWalkContext& context)
 {
     PrePaintTreeWalkContext localContext(context);
-    m_propertyTreeBuilder.buildTreeNodes(object, localContext.treeBuilderContext);
 
+    m_propertyTreeBuilder.buildTreeNodesForSelf(object, localContext.treeBuilderContext);
     if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
         m_paintInvalidator.invalidatePaintIfNeeded(object, localContext.paintInvalidatorContext);
+    m_propertyTreeBuilder.buildTreeNodesForChildren(object, localContext.treeBuilderContext);
 
     for (const LayoutObject* child = object.slowFirstChild(); child; child = child->nextSibling()) {
         // Column spanners are walked through their placeholders. See below.

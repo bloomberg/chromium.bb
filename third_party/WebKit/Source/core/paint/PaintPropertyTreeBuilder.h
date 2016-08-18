@@ -73,7 +73,8 @@ class PaintPropertyTreeBuilder {
 public:
     void buildTreeRootNodes(FrameView&, PaintPropertyTreeBuilderContext&);
     void buildTreeNodes(FrameView&, PaintPropertyTreeBuilderContext&);
-    void buildTreeNodes(const LayoutObject&, PaintPropertyTreeBuilderContext&);
+    void buildTreeNodesForSelf(const LayoutObject&, PaintPropertyTreeBuilderContext&);
+    void buildTreeNodesForChildren(const LayoutObject&, PaintPropertyTreeBuilderContext&);
 
 private:
     static void updatePaintOffsetTranslation(const LayoutObject&, PaintPropertyTreeBuilderContext&);

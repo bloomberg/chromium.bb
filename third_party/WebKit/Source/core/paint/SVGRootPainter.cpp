@@ -28,9 +28,12 @@ AffineTransform SVGRootPainter::transformToPixelSnappedBorderBox(const LayoutPoi
     const IntRect snappedSize = pixelSnappedSize(paintOffset);
     AffineTransform paintOffsetToBorderBox =
         AffineTransform::translation(snappedSize.x(), snappedSize.y());
-    paintOffsetToBorderBox.scale(
-        snappedSize.width() / m_layoutSVGRoot.size().width().toFloat(),
-        snappedSize.height() / m_layoutSVGRoot.size().height().toFloat());
+    LayoutSize size = m_layoutSVGRoot.size();
+    if (!size.isEmpty()) {
+        paintOffsetToBorderBox.scale(
+            snappedSize.width() / size.width().toFloat(),
+            snappedSize.height() / size.height().toFloat());
+    }
     paintOffsetToBorderBox.multiply(m_layoutSVGRoot.localToBorderBoxTransform());
     return paintOffsetToBorderBox;
 }

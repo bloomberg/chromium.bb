@@ -417,7 +417,7 @@ static void deriveBorderBoxFromContainerContext(const LayoutObject& object, Pain
     }
 }
 
-void PaintPropertyTreeBuilder::buildTreeNodes(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
+void PaintPropertyTreeBuilder::buildTreeNodesForSelf(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
     if (!object.isBoxModelObject() && !object.isSVG())
         return;
@@ -430,6 +430,13 @@ void PaintPropertyTreeBuilder::buildTreeNodes(const LayoutObject& object, PaintP
     updateCssClip(object, context);
     updateLocalBorderBoxContext(object, context);
     updateScrollbarPaintOffset(object, context);
+}
+
+void PaintPropertyTreeBuilder::buildTreeNodesForChildren(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
+{
+    if (!object.isBoxModelObject() && !object.isSVG())
+        return;
+
     updateOverflowClip(object, context);
     updatePerspective(object, context);
     updateSvgLocalToBorderBoxTransform(object, context);

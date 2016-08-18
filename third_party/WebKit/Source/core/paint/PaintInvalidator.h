@@ -6,6 +6,7 @@
 #define PaintInvalidator_h
 
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/paint/GeometryMapper.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -72,7 +73,14 @@ public:
     void processPendingDelayedPaintInvalidations();
 
 private:
+    LayoutRect mapLocalRectToPaintInvalidationBacking(const LayoutObject&, const FloatRect&, const PaintInvalidatorContext&);
+    LayoutRect computePaintInvalidationRectInBacking(const LayoutObject&, const PaintInvalidatorContext&);
+    LayoutPoint computeLocationFromPaintInvalidationBacking(const LayoutObject&, const PaintInvalidatorContext&);
+    void updatePaintingLayer(const LayoutObject&, PaintInvalidatorContext&);
+    void updateContext(const LayoutObject&, PaintInvalidatorContext&);
+
     Vector<const LayoutObject*> m_pendingDelayedPaintInvalidations;
+    GeometryMapper m_geometryMapper;
 };
 
 } // namespace blink

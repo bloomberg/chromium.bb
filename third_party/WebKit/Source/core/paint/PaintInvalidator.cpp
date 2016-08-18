@@ -11,59 +11,76 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "core/paint/PaintPropertyTreeBuilder.h"
 
 namespace blink {
 
-void PaintInvalidatorContext::mapLocalRectToPaintInvalidationBacking(const LayoutObject& object, LayoutRect& rect) const
+// TODO(wangxianzhu): Combine this into PaintInvalidator::mapLocalRectToPaintInvalidationBacking() when removing PaintInvalidationState.
+static LayoutRect mapLocalRectToPaintInvalidationBacking(GeometryMapper& geometryMapper, const LayoutObject& object, const FloatRect& localRect, const PaintInvalidatorContext& context)
 {
-    // TODO(wangxianzhu): For now this is the same as the slow path in PaintInvalidationState.cpp
-    // (slowMapToVisualRectInAncestorSpace()). Should implement this with GeometryMapper.
+    // TODO(wkorman): The flip below is required because visual rects are
+    // currently in "physical coordinates with flipped block-flow direction"
+    // (see LayoutBoxModelObject.h) but we need them to be in physical
+    // coordinates.
+    FloatRect rect = localRect;
     if (object.isBox())
         toLayoutBox(object).flipForWritingMode(rect);
 
-    if (object.isLayoutView())
-        toLayoutView(object).mapToVisualRectInAncestorSpace(paintInvalidationContainer, rect, InputIsInFrameCoordinates, DefaultVisualRectFlags);
-    else
-        object.mapToVisualRectInAncestorSpace(paintInvalidationContainer, rect);
-}
+    LayoutRect result;
+    if (object == context.paintInvalidationContainer) {
+        result = LayoutRect(rect);
+    } else {
+        rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
 
-static LayoutRect computePaintInvalidationRectInBacking(const LayoutObject& object, const PaintInvalidatorContext& context)
-{
-    if (object.isSVG() && !object.isSVGRoot()) {
-        // TODO(wangxianzhu): For now this is the same as the slow path in PaintInvalidationState.cpp
-        // (PaintInvalidationState::computePaintInvalidationRectInBackingForSVG()). Should implement this with GeometryMapper.
-        LayoutRect rect = SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(object, *context.paintInvalidationContainer);
-        if (context.paintInvalidationContainer->layer()->groupedMapping())
-            PaintLayer::mapRectInPaintInvalidationContainerToBacking(*context.paintInvalidationContainer, rect);
-        return rect;
+        bool success = false;
+        PropertyTreeState currentTreeState(context.treeBuilderContext.current.transform, context.treeBuilderContext.current.clip, context.treeBuilderContext.currentEffect);
+        const PropertyTreeState& containerTreeState = context.paintInvalidationContainer->objectPaintProperties()->localBorderBoxProperties()->propertyTreeState;
+        result = LayoutRect(geometryMapper.mapToVisualRectInDestinationSpace(rect, currentTreeState, containerTreeState, success));
+        DCHECK(success);
     }
 
-    LayoutRect rect = object.localOverflowRectForPaintInvalidation();
-    context.mapLocalRectToPaintInvalidationBacking(object, rect);
-    return rect;
+    if (context.paintInvalidationContainer->layer()->groupedMapping())
+        PaintLayer::mapRectInPaintInvalidationContainerToBacking(*context.paintInvalidationContainer, result);
+    return result;
 }
 
-static LayoutPoint computeLocationFromPaintInvalidationBacking(const LayoutObject& object, const PaintInvalidatorContext& context)
+void PaintInvalidatorContext::mapLocalRectToPaintInvalidationBacking(const LayoutObject& object, LayoutRect& rect) const
 {
-    // TODO(wangxianzhu): For now this is the same as the slow path in PaintInvalidationState.cpp
-    // (slowLocalToAncestorPoint()). Should implement this with GeometryMapper.
+    GeometryMapper geometryMapper;
+    rect = blink::mapLocalRectToPaintInvalidationBacking(geometryMapper, object, FloatRect(rect), *this);
+}
+
+LayoutRect PaintInvalidator::mapLocalRectToPaintInvalidationBacking(const LayoutObject& object, const FloatRect& localRect, const PaintInvalidatorContext& context)
+{
+    return blink::mapLocalRectToPaintInvalidationBacking(m_geometryMapper, object, localRect, context);
+}
+
+LayoutRect PaintInvalidator::computePaintInvalidationRectInBacking(const LayoutObject& object, const PaintInvalidatorContext& context)
+{
+    FloatRect localRect;
+    if (object.isSVG() && !object.isSVGRoot())
+        localRect = SVGLayoutSupport::localOverflowRectForPaintInvalidation(object);
+    else
+        localRect = FloatRect(object.localOverflowRectForPaintInvalidation());
+
+    return mapLocalRectToPaintInvalidationBacking(object, localRect, context);
+}
+
+LayoutPoint PaintInvalidator::computeLocationFromPaintInvalidationBacking(const LayoutObject& object, const PaintInvalidatorContext& context)
+{
     FloatPoint point;
     if (object != context.paintInvalidationContainer) {
-        if (object.isLayoutView()) {
-            point = toLayoutView(object).localToAncestorPoint(point, context.paintInvalidationContainer, TraverseDocumentBoundaries | InputIsInFrameCoordinates);
-        } else {
-            point = object.localToAncestorPoint(point, context.paintInvalidationContainer, TraverseDocumentBoundaries);
-            // Paint invalidation does not include scroll of paintInvalidationContainer.
-            if (context.paintInvalidationContainer->isBox()) {
-                const LayoutBox* box = toLayoutBox(context.paintInvalidationContainer);
-                if (box->hasOverflowClip())
-                    point.move(box->scrolledContentOffset());
-            }
-        }
-    }
+        point.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
 
+        bool success = false;
+        PropertyTreeState currentTreeState(context.treeBuilderContext.current.transform, context.treeBuilderContext.current.clip, context.treeBuilderContext.currentEffect);
+        const PropertyTreeState& containerTreeState = context.paintInvalidationContainer->objectPaintProperties()->localBorderBoxProperties()->propertyTreeState;
+        point = m_geometryMapper.mapRectToDestinationSpace(FloatRect(point, FloatSize()), currentTreeState, containerTreeState, success).location();
+        DCHECK(success);
+    }
 
     if (context.paintInvalidationContainer->layer()->groupedMapping())
         PaintLayer::mapPointInPaintInvalidationContainerToBacking(*context.paintInvalidationContainer, point);
@@ -71,7 +88,7 @@ static LayoutPoint computeLocationFromPaintInvalidationBacking(const LayoutObjec
     return LayoutPoint(point);
 }
 
-static void updatePaintingLayer(const LayoutObject& object, PaintInvalidatorContext& context)
+void PaintInvalidator::updatePaintingLayer(const LayoutObject& object, PaintInvalidatorContext& context)
 {
     if (object.hasLayer() && toLayoutBoxModelObject(object).hasSelfPaintingLayer())
         context.paintingLayer = toLayoutBoxModelObject(object).layer();
@@ -98,7 +115,7 @@ static void updatePaintingLayer(const LayoutObject& object, PaintInvalidatorCont
     }
 }
 
-static void updateContext(const LayoutObject& object, PaintInvalidatorContext& context)
+void PaintInvalidator::updateContext(const LayoutObject& object, PaintInvalidatorContext& context)
 {
     if (object.isPaintInvalidationContainer()) {
         context.paintInvalidationContainer = toLayoutBoxModelObject(&object);

@@ -5,14 +5,13 @@
 #ifndef PropertyTreeState_h
 #define PropertyTreeState_h
 
+#include "platform/graphics/paint/ClipPaintPropertyNode.h"
+#include "platform/graphics/paint/EffectPaintPropertyNode.h"
+#include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/HashTraits.h"
 
 namespace blink {
-
-class TransformPaintPropertyNode;
-class ClipPaintPropertyNode;
-class EffectPaintPropertyNode;
 
 // Represents the combination of transform, clip and effect nodes for a particular coordinate space.
 // See GeometryMapper.
