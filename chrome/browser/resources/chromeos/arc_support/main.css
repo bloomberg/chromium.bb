@@ -48,11 +48,6 @@ webview,
   width: 1px;
 }
 
-.checkbox-container {
-  margin: 0;
-  padding: 0 8px 0 0;
-}
-
 .checkbox-option {
   height: 12px;
   margin: 0;
@@ -121,6 +116,11 @@ webview,
   padding: 8px 0 0 0;
   text-align: left;
   width: 640px;
+}
+
+.section-checkbox-container > input[type='checkbox'] {
+  flex-shrink: 0;
+  margin: 0 8px 0 0;
 }
 
 .section-terms {
