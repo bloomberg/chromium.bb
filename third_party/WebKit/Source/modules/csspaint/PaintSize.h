@@ -5,6 +5,10 @@
 #ifndef PaintSize_h
 #define PaintSize_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/geometry/IntSize.h"
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class PaintSize : public GarbageCollectedFinalized<PaintSize>, public ScriptWrappable {
