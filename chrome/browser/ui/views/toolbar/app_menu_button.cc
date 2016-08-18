@@ -140,19 +140,23 @@ void AppMenuButton::ScheduleAppMenuIconPaint() {
 void AppMenuButton::UpdateIcon() {
   DCHECK(ui::MaterialDesignController::IsModeMaterial());
   SkColor color = gfx::kPlaceholderColor;
+  const ui::NativeTheme* native_theme = GetNativeTheme();
   switch (severity_) {
     case AppMenuIconPainter::SEVERITY_NONE:
       color = GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
       break;
     case AppMenuIconPainter::SEVERITY_LOW:
-      color = gfx::kGoogleGreen700;
+      color = native_theme->GetSystemColor(
+          ui::NativeTheme::kColorId_AlertSeverityLow);
       break;
     case AppMenuIconPainter::SEVERITY_MEDIUM:
-      color = gfx::kGoogleYellow700;
+      color = native_theme->GetSystemColor(
+          ui::NativeTheme::kColorId_AlertSeverityMedium);
       break;
     case AppMenuIconPainter::SEVERITY_HIGH:
-      color = gfx::kGoogleRed700;
+      color = native_theme->GetSystemColor(
+          ui::NativeTheme::kColorId_AlertSeverityHigh);
       break;
   }
 

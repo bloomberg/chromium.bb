@@ -70,6 +70,14 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_FocusedBorderColor:
       return gfx::kGoogleBlue300;
 
+    // Alert icons
+    case kColorId_AlertSeverityLow:
+      return gfx::kGoogleGreen300;
+    case kColorId_AlertSeverityMedium:
+      return gfx::kGoogleYellow300;
+    case kColorId_AlertSeverityHigh:
+      return gfx::kGoogleRed300;
+
     // Intentional pass-throughs to NativeThemeAura.
     case kColorId_TextOnCallToActionColor:
     case kColorId_ResultsTableHoveredBackground:

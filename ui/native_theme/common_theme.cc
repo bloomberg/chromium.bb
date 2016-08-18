@@ -224,7 +224,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   static const SkColor kResultsTableNegativeSelectedText =
       color_utils::AlphaBlend(kNegativeTextColor,
                               kTextfieldSelectionBackgroundFocused, 0xDD);
-  // Material spinner/throbber:
+  // Material spinner/throbber
   static const SkColor kThrobberSpinningColor = gfx::kGoogleBlue500;
   static const SkColor kThrobberWaitingColor = SkColorSetRGB(0xA6, 0xA6, 0xA6);
   static const SkColor kThrobberLightColor = SkColorSetRGB(0xF4, 0xF8, 0xFD);
@@ -408,6 +408,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kThrobberWaitingColor;
     case NativeTheme::kColorId_ThrobberLightColor:
       return kThrobberLightColor;
+
+    // Alert icon colors
+    case NativeTheme::kColorId_AlertSeverityLow:
+      return gfx::kGoogleGreen700;
+    case NativeTheme::kColorId_AlertSeverityMedium:
+      return gfx::kGoogleYellow700;
+    case NativeTheme::kColorId_AlertSeverityHigh:
+      return gfx::kGoogleRed700;
 
     case NativeTheme::kColorId_NumColors:
       break;

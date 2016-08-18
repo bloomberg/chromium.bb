@@ -454,6 +454,12 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
           GetBGColor(GetWindow(), NORMAL),
           0x80);
 
+    // Alert icons
+    // These aren't yet used in any GTK NativeTheme context, so they don't have
+    // definitions.
+    case kColorId_AlertSeverityLow:
+    case kColorId_AlertSeverityMedium:
+    case kColorId_AlertSeverityHigh:
     case kColorId_NumColors:
       NOTREACHED();
       break;
