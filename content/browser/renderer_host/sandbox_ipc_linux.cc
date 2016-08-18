@@ -221,11 +221,7 @@ void SandboxIPCHandler::HandleFontOpenRequest(
   const int result_fd = open(paths_[index].c_str(), O_RDONLY);
 
   base::Pickle reply;
-  if (result_fd == -1) {
-    reply.WriteBool(false);
-  } else {
-    reply.WriteBool(true);
-  }
+  reply.WriteBool(result_fd != -1);
 
   // The receiver will have its own access to the file, so we will close it
   // after this send.
@@ -271,7 +267,8 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
     base::PickleIterator iter,
     const std::vector<base::ScopedFD>& fds) {
   std::string family;
-  bool bold, italic;
+  bool bold;
+  bool italic;
   uint16_t pixel_size;
 
   if (!iter.ReadString(&family) ||
@@ -286,7 +283,7 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
   query.pixel_size = pixel_size;
   query.style = italic ? gfx::Font::ITALIC : 0;
   query.weight = bold ? gfx::Font::Weight::BOLD : gfx::Font::Weight::NORMAL;
-  const gfx::FontRenderParams params = gfx::GetFontRenderParams(query, NULL);
+  const gfx::FontRenderParams params = gfx::GetFontRenderParams(query, nullptr);
 
   // These are passed as ints since they're interpreted as tri-state chars in
   // Blink.
@@ -320,7 +317,7 @@ void SandboxIPCHandler::HandleLocaltime(
 
   std::string result_string;
   const char* time_zone_string = "";
-  if (expanded_time != NULL) {
+  if (expanded_time) {
     result_string = std::string(reinterpret_cast<const char*>(expanded_time),
                                 sizeof(struct tm));
     time_zone_string = expanded_time->tm_zone;
@@ -356,8 +353,10 @@ void SandboxIPCHandler::HandleMatchWithFallback(
     base::PickleIterator iter,
     const std::vector<base::ScopedFD>& fds) {
   std::string face;
-  bool is_bold, is_italic;
-  uint32_t charset, fallback_family;
+  bool is_bold;
+  bool is_italic;
+  uint32_t charset;
+  uint32_t fallback_family;
 
   if (!iter.ReadString(&face) || face.empty() ||
       !iter.ReadBool(&is_bold) ||

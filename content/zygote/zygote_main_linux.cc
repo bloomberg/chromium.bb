@@ -223,16 +223,16 @@ struct tm* localtime_override(const time_t* timep) {
     ProxyLocaltimeCallToBrowser(*timep, &time_struct, timezone_string,
                                 sizeof(timezone_string));
     return &time_struct;
-  } else {
-    CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
-                             InitLibcLocaltimeFunctions));
-    struct tm* res = g_libc_localtime(timep);
-#if defined(MEMORY_SANITIZER)
-    if (res) __msan_unpoison(res, sizeof(*res));
-    if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
-#endif
-    return res;
   }
+
+  CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
+                           InitLibcLocaltimeFunctions));
+  struct tm* res = g_libc_localtime(timep);
+#if defined(MEMORY_SANITIZER)
+  if (res) __msan_unpoison(res, sizeof(*res));
+  if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
+#endif
+  return res;
 }
 
 // Use same trick to override localtime64(), localtime_r() and localtime64_r().
@@ -247,16 +247,16 @@ struct tm* localtime64_override(const time_t* timep) {
     ProxyLocaltimeCallToBrowser(*timep, &time_struct, timezone_string,
                                 sizeof(timezone_string));
     return &time_struct;
-  } else {
-    CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
-                             InitLibcLocaltimeFunctions));
-    struct tm* res = g_libc_localtime64(timep);
-#if defined(MEMORY_SANITIZER)
-    if (res) __msan_unpoison(res, sizeof(*res));
-    if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
-#endif
-    return res;
   }
+
+  CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
+                           InitLibcLocaltimeFunctions));
+  struct tm* res = g_libc_localtime64(timep);
+#if defined(MEMORY_SANITIZER)
+  if (res) __msan_unpoison(res, sizeof(*res));
+  if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
+#endif
+  return res;
 }
 
 __attribute__ ((__visibility__("default")))
@@ -268,16 +268,16 @@ struct tm* localtime_r_override(const time_t* timep, struct tm* result) {
   if (g_am_zygote_or_renderer) {
     ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
     return result;
-  } else {
-    CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
-                             InitLibcLocaltimeFunctions));
-    struct tm* res = g_libc_localtime_r(timep, result);
-#if defined(MEMORY_SANITIZER)
-    if (res) __msan_unpoison(res, sizeof(*res));
-    if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
-#endif
-    return res;
   }
+
+  CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
+                           InitLibcLocaltimeFunctions));
+  struct tm* res = g_libc_localtime_r(timep, result);
+#if defined(MEMORY_SANITIZER)
+  if (res) __msan_unpoison(res, sizeof(*res));
+  if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
+#endif
+  return res;
 }
 
 __attribute__ ((__visibility__("default")))
@@ -289,16 +289,16 @@ struct tm* localtime64_r_override(const time_t* timep, struct tm* result) {
   if (g_am_zygote_or_renderer) {
     ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
     return result;
-  } else {
-    CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
-                             InitLibcLocaltimeFunctions));
-    struct tm* res = g_libc_localtime64_r(timep, result);
-#if defined(MEMORY_SANITIZER)
-    if (res) __msan_unpoison(res, sizeof(*res));
-    if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
-#endif
-    return res;
   }
+
+  CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
+                           InitLibcLocaltimeFunctions));
+  struct tm* res = g_libc_localtime64_r(timep, result);
+#if defined(MEMORY_SANITIZER)
+  if (res) __msan_unpoison(res, sizeof(*res));
+  if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
+#endif
+  return res;
 }
 
 #if defined(ENABLE_PLUGINS)
@@ -308,13 +308,13 @@ struct tm* localtime64_r_override(const time_t* timep, struct tm* result) {
 void PreloadPepperPlugins() {
   std::vector<PepperPluginInfo> plugins;
   ComputePepperPluginList(&plugins);
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    if (!plugins[i].is_internal) {
+  for (const auto& plugin : plugins) {
+    if (!plugin.is_internal) {
       base::NativeLibraryLoadError error;
-      base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path,
+      base::NativeLibrary library = base::LoadNativeLibrary(plugin.path,
                                                             &error);
       VLOG_IF(1, !library) << "Unable to load plugin "
-                           << plugins[i].path.value() << " "
+                           << plugin.path.value() << " "
                            << error.ToString();
 
       (void)library;  // Prevent release-mode warning.
