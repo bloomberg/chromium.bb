@@ -68,6 +68,8 @@ source_set("lib") {
     "window_manager_observer.h",
   ]
 
+  defines = [ "NOTIMPLEMENTED_POLICY=5" ]
+
   deps = [
     "//components/user_manager",
     "//mash/shelf/public/interfaces",
