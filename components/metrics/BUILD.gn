@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 declare_args() {
   # Overrides os name in uma metrics log to "Blimp".
   metrics_use_blimp = false
@@ -85,6 +87,7 @@ static_library("metrics") {
   deps = [
     "//base",
     "//base:base_static",
+    "//components/metrics/public/interfaces:mojo_bindings",
     "//components/prefs",
     "//components/variations",
     "//third_party/zlib:compression_utils",
@@ -306,6 +309,7 @@ source_set("unit_tests") {
     ":test_support",
     ":ui",
     "//base/test:test_support",
+    "//components/metrics/public/cpp:unit_tests",
     "//components/prefs:test_support",
     "//components/variations",
     "//net:test_support",
