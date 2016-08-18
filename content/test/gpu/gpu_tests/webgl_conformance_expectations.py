@@ -641,11 +641,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('deqp/data/gles2/shaders/scoping.html',
         ['mac'], bug=478572)
 
+    # Mac AMD failures
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['mac', 'amd'], bug=625365)
+
     # Mac Retina AMD failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['mac', ('amd', 0x6821)], bug=599272)
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['mac', ('amd', 0x6821)], bug=625365)
 
     # Linux failures
     self.Flaky('conformance/textures/video/' +
