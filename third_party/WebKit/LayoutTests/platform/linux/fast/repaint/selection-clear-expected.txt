@@ -56,11 +56,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='root'",
-      "reason": "selection"
+      "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow DIV id='root'",
-      "reason": "incremental"
+      "reason": "selection"
     },
     {
       "object": "LayoutBlockFlow DIV id='firstLine'",

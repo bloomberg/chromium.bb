@@ -494,13 +494,13 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGPath path id='tabgroupRectRound__3'",
-          "rect": [506, 423, 52, 52],
+          "object": "LayoutSVGPath path id='tabgroupTriangle__2'",
+          "rect": [126, 257, 53, 29],
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGPath path id='tabgroupTriangle__2'",
-          "rect": [126, 257, 52, 29],
+          "object": "LayoutSVGPath path id='tabgroupRectRound__3'",
+          "rect": [506, 423, 52, 52],
           "reason": "layoutObject insertion"
         },
         {
@@ -585,32 +585,32 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [130, 257, 44, 29],
+          "rect": [129, 257, 45, 29],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [130, 257, 44, 29],
+          "rect": [129, 257, 45, 29],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [130, 257, 44, 29],
+          "rect": [129, 257, 45, 29],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [130, 257, 44, 29],
+          "rect": [129, 257, 45, 29],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [130, 257, 44, 29],
+          "rect": [129, 257, 45, 29],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupTriangle__3'",
-          "rect": [176, 257, 41, 29],
+          "rect": [177, 257, 41, 29],
           "reason": "layoutObject insertion"
         },
         {
@@ -705,27 +705,27 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [181, 257, 32, 29],
+          "rect": [182, 257, 32, 29],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [181, 257, 32, 29],
+          "rect": [182, 257, 32, 29],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [181, 257, 32, 29],
+          "rect": [182, 257, 32, 29],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [181, 257, 32, 29],
+          "rect": [182, 257, 32, 29],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [181, 257, 32, 29],
+          "rect": [182, 257, 32, 29],
           "reason": "layoutObject insertion"
         },
         {

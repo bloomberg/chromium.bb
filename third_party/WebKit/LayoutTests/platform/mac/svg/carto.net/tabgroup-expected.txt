@@ -11,7 +11,7 @@
         {
           "object": "LayoutSVGRoot svg",
           "rect": [7, 7, 736, 573],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGContainer g",
@@ -41,7 +41,7 @@
         {
           "object": "LayoutSVGContainer g id='tabgroupRound'",
           "rect": [390, 38, 314, 80],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGPath path",
@@ -91,7 +91,7 @@
         {
           "object": "LayoutSVGContainer g id='tabgroupRectRound'",
           "rect": [263, 279, 301, 301],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGPath path",
@@ -141,7 +141,7 @@
         {
           "object": "LayoutSVGContainer g id='tabgroupRectTriangle'",
           "rect": [507, 233, 236, 159],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGPath path",
@@ -191,7 +191,7 @@
         {
           "object": "LayoutSVGContainer g id='tabgroupTriangle'",
           "rect": [7, 257, 236, 158],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGPath path",
@@ -306,7 +306,7 @@
         {
           "object": "LayoutSVGContainer g id='tabgroupRect'",
           "rect": [38, 7, 158, 236],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGPath path",
@@ -994,11 +994,11 @@
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGContainer g id='tabgroupRect'",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGContainer g",
@@ -1166,7 +1166,7 @@
     },
     {
       "object": "LayoutSVGContainer g id='tabgroupTriangle'",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGContainer g",
@@ -1494,7 +1494,7 @@
     },
     {
       "object": "LayoutSVGContainer g id='tabgroupRectTriangle'",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGContainer g",
@@ -1662,7 +1662,7 @@
     },
     {
       "object": "LayoutSVGContainer g id='tabgroupRound'",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGContainer g",
@@ -1830,7 +1830,7 @@
     },
     {
       "object": "LayoutSVGContainer g id='tabgroupRectRound'",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGContainer g",

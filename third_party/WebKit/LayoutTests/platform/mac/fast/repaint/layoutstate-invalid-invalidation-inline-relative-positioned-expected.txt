@@ -78,7 +78,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV",
@@ -98,7 +98,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     }
   ]
 }

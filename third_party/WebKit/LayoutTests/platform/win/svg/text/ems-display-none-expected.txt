@@ -11,7 +11,7 @@
         {
           "object": "LayoutSVGContainer g",
           "rect": [50, 54, 571, 85],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGInlineText #text",
@@ -31,7 +31,7 @@
         {
           "object": "LayoutSVGRoot svg",
           "rect": [50, 54, 571, 85],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGTSpan tspan",
@@ -54,11 +54,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGContainer g",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGText text id='text'",

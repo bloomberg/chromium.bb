@@ -10,62 +10,42 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g id='content'",
-          "rect": [0, 15, 684, 362],
+          "rect": [0, 15, 756, 364],
           "reason": "became visible"
         },
         {
           "object": "LayoutSVGRoot svg id='svg-root'",
-          "rect": [0, 15, 684, 362],
+          "rect": [0, 15, 756, 364],
           "reason": "became visible"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 247, 684, 130],
+          "rect": [0, 247, 756, 132],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [0, 247, 684, 130],
+          "rect": [0, 247, 756, 132],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 130, 520, 130],
+          "rect": [0, 130, 595, 133],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [0, 130, 520, 130],
+          "rect": [0, 130, 595, 133],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 15, 374, 127],
+          "rect": [0, 15, 446, 129],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [0, 15, 374, 127],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [16, 16, 18, 18],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [16, 16, 18, 18],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [8, 8, 17, 17],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [8, 8, 17, 17],
+          "rect": [0, 15, 446, 129],
           "reason": "layoutObject insertion"
         }
       ]
@@ -73,27 +53,23 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGResourcePattern pattern id='fillPattern'",
+      "object": "LayoutSVGResourceLinearGradient linearGradient id='fillLinearGradient'",
       "reason": "layoutObject insertion"
     },
     {
-      "object": "LayoutSVGRect rect",
+      "object": "LayoutSVGGradientStop stop",
       "reason": "layoutObject insertion"
     },
     {
-      "object": "LayoutSVGRect rect",
+      "object": "LayoutSVGGradientStop stop",
       "reason": "layoutObject insertion"
     },
     {
-      "object": "LayoutSVGResourcePattern pattern id='strokePattern'",
+      "object": "LayoutSVGResourceLinearGradient linearGradient id='strokeLinearGradient'",
       "reason": "layoutObject insertion"
     },
     {
-      "object": "LayoutSVGRect rect",
-      "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutSVGRect rect",
+      "object": "LayoutSVGGradientStop stop",
       "reason": "layoutObject insertion"
     },
     {
@@ -117,7 +93,7 @@
       "reason": "layoutObject insertion"
     },
     {
-      "object": "InlineTextBox 'Pattern on fill'",
+      "object": "InlineTextBox 'Gradient on fill'",
       "reason": "layoutObject insertion"
     },
     {
@@ -133,7 +109,7 @@
       "reason": "layoutObject insertion"
     },
     {
-      "object": "InlineTextBox 'Pattern on stroke'",
+      "object": "InlineTextBox 'Gradient on stroke'",
       "reason": "layoutObject insertion"
     },
     {
@@ -149,7 +125,7 @@
       "reason": "layoutObject insertion"
     },
     {
-      "object": "InlineTextBox 'Pattern on fill/stroke'",
+      "object": "InlineTextBox 'Gradient on fill/stroke'",
       "reason": "layoutObject insertion"
     }
   ]

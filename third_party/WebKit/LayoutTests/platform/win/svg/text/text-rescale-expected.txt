@@ -71,7 +71,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [0, 14, 194, 45],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGTSpan tspan",
@@ -121,7 +121,7 @@
         {
           "object": "LayoutSVGViewportContainer svg",
           "rect": [310, 14, 92, 45],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutText #text",
@@ -249,7 +249,7 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGForeignObject foreignObject",
@@ -273,7 +273,7 @@
     },
     {
       "object": "LayoutSVGViewportContainer svg",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGText text",

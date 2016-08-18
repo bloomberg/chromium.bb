@@ -62,11 +62,11 @@
     },
     {
       "object": "LayoutListItem LI",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "RootInlineBox",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutListMarker (anonymous)",
