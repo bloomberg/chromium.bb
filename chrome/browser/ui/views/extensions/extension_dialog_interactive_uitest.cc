@@ -13,7 +13,13 @@
 
 using ExtensionDialogUiTest = ExtensionBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(ExtensionDialogUiTest, TabFocusLoop) {
+// Flaky on Windows: see https://crbug.com/639072
+#if defined(OS_WIN)
+#define MAYBE_TabFocusLoop DISABLED_TabFocusLoop
+#else
+#define MAYBE_TabFocusLoop TabFocusLoop
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionDialogUiTest, MAYBE_TabFocusLoop) {
   ExtensionTestMessageListener init_listener("ready", false /* will_reply */);
   ExtensionTestMessageListener button1_focus_listener("button1-focused", false);
   ExtensionTestMessageListener button2_focus_listener("button2-focused", false);
