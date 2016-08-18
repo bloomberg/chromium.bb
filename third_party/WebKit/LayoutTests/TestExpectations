@@ -1305,10 +1305,3 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 crbug.com/638850 [ Mac10.10 ] svg/custom/repaint-on-constant-size-change.svg [ Pass Failure ]
-
-# Failing on Linux Trusty
-crbug.com/638931 [ Linux ] svg/carto.net/tabgroup.svg [ Pass Failure ]
-crbug.com/638931 [ Linux ] svg/custom/js-late-clipPath-and-object-creation.svg [ Pass Failure ]
-crbug.com/638931 [ Linux ] svg/custom/js-late-gradient-and-object-creation.svg [ Pass Failure ]
-crbug.com/638931 [ Linux ] svg/custom/js-late-pattern-and-object-creation.svg [ Pass Failure ]
-
