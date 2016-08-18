@@ -609,8 +609,9 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
   frame.size.width = NSWidth([targetPopUpButton frame]);
   [sourcePopUpButton setFrame:frame];
 
-  [view setFrameSize:NSMakeSize(kContentWidth,
-                                NSMaxY([sourcePopUpButton frame]))];
+  [view
+      setFrameSize:NSMakeSize(kContentWidth, NSMaxY([sourcePopUpButton frame]) +
+                                                 kIconPadding)];
 
   [self updateAdvancedView];
 
