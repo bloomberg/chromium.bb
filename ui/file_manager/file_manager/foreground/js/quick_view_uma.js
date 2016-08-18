@@ -35,17 +35,28 @@ QuickViewUma.VolumeType = [
 ];
 
 /**
+ * Exports file type metric with the given |name|.
+ *
+ * @param {!FileEntry} entry
+ * @param {string} name The histogram name.
+ *
+ * @private
+ */
+QuickViewUma.prototype.exportFileType_ = function(entry, name) {
+  var extension = FileType.getExtension(entry).toLowerCase();
+  if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS.indexOf(extension) < 0) {
+    extension = 'other';
+  }
+  metrics.recordEnum(name, extension, FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
+};
+
+/**
  * Exports UMA based on the entry shown in Quick View.
  *
  * @param {!FileEntry} entry
  */
 QuickViewUma.prototype.onEntryChanged = function(entry) {
-  var extension = FileType.getExtension(entry).toLowerCase();
-  if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS.indexOf(extension) < 0) {
-    extension = 'other';
-  }
-  metrics.recordEnum(
-      'QuickView.FileType', extension, FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
+  this.exportFileType_(entry, 'QuickView.FileType');
 };
 
 /**
@@ -54,6 +65,7 @@ QuickViewUma.prototype.onEntryChanged = function(entry) {
  * @param {!FileEntry} entry
  */
 QuickViewUma.prototype.onOpened = function(entry) {
+  this.exportFileType_(entry, 'QuickView.FileTypeOnLaunch');
   var volumeType = this.volumeManager_.getVolumeInfo(entry).volumeType;
   if (QuickViewUma.VolumeType.includes(volumeType)) {
     metrics.recordEnum(
