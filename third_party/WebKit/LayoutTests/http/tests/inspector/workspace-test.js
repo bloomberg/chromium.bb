@@ -52,7 +52,7 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabili
         this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new WebInspector.DebuggerModel(this);
         this._modelByConstructor.set(WebInspector.DebuggerModel, this.debuggerModel);
         this.domModel = new WebInspector.DOMModel(this);
-        this.cssModel = new WebInspector.CSSModel(this);
+        this.cssModel = new WebInspector.CSSModel(this, this.domModel);
     }
 
     MockTarget.prototype = {
