@@ -12,7 +12,7 @@
 
 class InfoBarService;
 
-class NotificationPermissionInfobarDelegate : public PermissionInfobarDelegate {
+class NotificationPermissionInfoBarDelegate : public PermissionInfoBarDelegate {
  public:
   // Creates a Notification permission infobar and delegate and adds the
   // infobar to |infobar_service|.  Returns the infobar if it was successfully
@@ -24,20 +24,18 @@ class NotificationPermissionInfobarDelegate : public PermissionInfobarDelegate {
                                    const PermissionSetCallback& callback);
 
  private:
-  NotificationPermissionInfobarDelegate(const GURL& requesting_frame,
+  NotificationPermissionInfoBarDelegate(const GURL& requesting_frame,
                                         bool user_gesture,
                                         Profile* profile,
                                         const PermissionSetCallback& callback);
-  ~NotificationPermissionInfobarDelegate() override;
+  ~NotificationPermissionInfoBarDelegate() override;
 
   // PermissionInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   int GetMessageResourceId() const override;
 
-  GURL requesting_frame_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationPermissionInfobarDelegate);
+  DISALLOW_COPY_AND_ASSIGN(NotificationPermissionInfoBarDelegate);
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PERMISSION_INFOBAR_DELEGATE_H_

@@ -14,7 +14,7 @@ class ConfirmInfoBarDelegate;
 class HungRendererInfoBarDelegate;
 class InsecureContentInfoBarDelegate;
 class NativeAppInfoBarDelegate;
-class PermissionInfobarDelegate;
+class PermissionInfoBarDelegate;
 class PopupBlockedInfoBarDelegate;
 class RegisterProtocolHandlerInfoBarDelegate;
 class ScreenCaptureInfoBarDelegate;
@@ -206,7 +206,7 @@ class InfoBarDelegate {
   virtual HungRendererInfoBarDelegate* AsHungRendererInfoBarDelegate();
   virtual InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate();
   virtual NativeAppInfoBarDelegate* AsNativeAppInfoBarDelegate();
-  virtual PermissionInfobarDelegate* AsPermissionInfobarDelegate();
+  virtual PermissionInfoBarDelegate* AsPermissionInfoBarDelegate();
   virtual PopupBlockedInfoBarDelegate* AsPopupBlockedInfoBarDelegate();
   virtual RegisterProtocolHandlerInfoBarDelegate*
       AsRegisterProtocolHandlerInfoBarDelegate();

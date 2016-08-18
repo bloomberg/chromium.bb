@@ -4,9 +4,11 @@
 
 #include "chrome/browser/permissions/permission_util.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
+#include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/permission_type.h"
 
@@ -74,6 +76,11 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     return false;
   }
   return true;
+}
+
+bool PermissionUtil::ShouldShowPersistenceToggle() {
+  return base::FeatureList::IsEnabled(
+      features::kDisplayPersistenceToggleInPermissionPrompts);
 }
 
 PermissionUtil::ScopedRevocationReporter::ScopedRevocationReporter(

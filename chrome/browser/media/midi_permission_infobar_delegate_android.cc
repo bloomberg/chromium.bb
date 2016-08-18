@@ -17,7 +17,7 @@ infobars::InfoBar* MidiPermissionInfoBarDelegateAndroid::Create(
     Profile* profile,
     const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(
-      CreatePermissionInfoBar(std::unique_ptr<PermissionInfobarDelegate>(
+      CreatePermissionInfoBar(std::unique_ptr<PermissionInfoBarDelegate>(
           new MidiPermissionInfoBarDelegateAndroid(
               requesting_frame, user_gesture, profile, callback))));
 }
@@ -27,13 +27,12 @@ MidiPermissionInfoBarDelegateAndroid::MidiPermissionInfoBarDelegateAndroid(
     bool user_gesture,
     Profile* profile,
     const PermissionSetCallback& callback)
-    : PermissionInfobarDelegate(requesting_frame,
+    : PermissionInfoBarDelegate(requesting_frame,
                                 content::PermissionType::MIDI_SYSEX,
                                 CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                 user_gesture,
                                 profile,
-                                callback),
-      requesting_frame_(requesting_frame) {}
+                                callback) {}
 
 MidiPermissionInfoBarDelegateAndroid::~MidiPermissionInfoBarDelegateAndroid() {}
 

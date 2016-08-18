@@ -21,29 +21,29 @@
 using base::android::ScopedJavaLocalRef;
 
 std::unique_ptr<infobars::InfoBar> CreatePermissionInfoBar(
-    std::unique_ptr<PermissionInfobarDelegate> delegate) {
+    std::unique_ptr<PermissionInfoBarDelegate> delegate) {
   return base::WrapUnique(new PermissionInfoBar(std::move(delegate)));
 }
 
 PermissionInfoBar::PermissionInfoBar(
-    std::unique_ptr<PermissionInfobarDelegate> delegate)
+    std::unique_ptr<PermissionInfoBarDelegate> delegate)
     : ConfirmInfoBar(std::move(delegate)) {}
 
 PermissionInfoBar::~PermissionInfoBar() = default;
 
-PermissionInfobarDelegate* PermissionInfoBar::GetDelegate() {
-  return delegate()->AsPermissionInfobarDelegate();
+PermissionInfoBarDelegate* PermissionInfoBar::GetDelegate() {
+  return delegate()->AsPermissionInfoBarDelegate();
 }
 
 ScopedJavaLocalRef<jobject> PermissionInfoBar::CreateRenderInfoBar(
     JNIEnv* env) {
   ScopedJavaLocalRef<jstring> ok_button_text =
       base::android::ConvertUTF16ToJavaString(
-          env, GetTextFor(PermissionInfobarDelegate::BUTTON_OK));
+          env, GetTextFor(PermissionInfoBarDelegate::BUTTON_OK));
   ScopedJavaLocalRef<jstring> cancel_button_text =
       base::android::ConvertUTF16ToJavaString(
-          env, GetTextFor(PermissionInfobarDelegate::BUTTON_CANCEL));
-  PermissionInfobarDelegate* delegate = GetDelegate();
+          env, GetTextFor(PermissionInfoBarDelegate::BUTTON_CANCEL));
+  PermissionInfoBarDelegate* delegate = GetDelegate();
   ScopedJavaLocalRef<jstring> message_text =
       base::android::ConvertUTF16ToJavaString(env, delegate->GetMessageText());
   ScopedJavaLocalRef<jstring> link_text =
@@ -68,7 +68,7 @@ ScopedJavaLocalRef<jobject> PermissionInfoBar::CreateRenderInfoBar(
 void PermissionInfoBar::ProcessButton(int action) {
   // Check if the delegate asked us to display a persistence toggle. If so,
   // inform it of the toggle state.
-  PermissionInfobarDelegate* delegate = GetDelegate();
+  PermissionInfoBarDelegate* delegate = GetDelegate();
   if (delegate->ShouldShowPersistenceToggle()) {
     delegate->set_persist(Java_PermissionInfoBar_isPersistSwitchOn(
         base::android::AttachCurrentThread(), GetJavaInfoBar()));

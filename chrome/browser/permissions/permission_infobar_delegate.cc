@@ -4,29 +4,27 @@
 
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 
-#include "base/feature_list.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
 
-PermissionInfobarDelegate::~PermissionInfobarDelegate() {
+PermissionInfoBarDelegate::~PermissionInfoBarDelegate() {
   if (!action_taken_) {
-    PermissionDecisionAutoBlocker(profile_).RecordIgnore(requesting_origin_,
-                                                         permission_type_);
-
     PermissionUmaUtil::PermissionIgnored(
         permission_type_,
         user_gesture_ ? PermissionRequestGestureType::GESTURE
                       : PermissionRequestGestureType::NO_GESTURE,
         requesting_origin_, profile_);
+
+    PermissionDecisionAutoBlocker(profile_).RecordIgnore(requesting_origin_,
+                                                         permission_type_);
   }
 }
 
-PermissionInfobarDelegate::PermissionInfobarDelegate(
+PermissionInfoBarDelegate::PermissionInfoBarDelegate(
     const GURL& requesting_origin,
     content::PermissionType permission_type,
     ContentSettingsType content_settings_type,
@@ -42,16 +40,12 @@ PermissionInfobarDelegate::PermissionInfobarDelegate(
       user_gesture_(user_gesture),
       persist_(true) {}
 
-bool PermissionInfobarDelegate::ShouldShowPersistenceToggle() const {
-  // Only show the persistence toggle for geolocation.
-  if (permission_type_ == content::PermissionType::GEOLOCATION) {
-    return base::FeatureList::IsEnabled(
-        features::kDisplayPersistenceToggleInPermissionPrompts);
-  }
-  return false;
+bool PermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
+  return (permission_type_ == content::PermissionType::GEOLOCATION) &&
+         PermissionUtil::ShouldShowPersistenceToggle();
 }
 
-base::string16 PermissionInfobarDelegate::GetMessageText() const {
+base::string16 PermissionInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       GetMessageResourceId(),
       url_formatter::FormatUrlForSecurityDisplay(
@@ -59,27 +53,27 @@ base::string16 PermissionInfobarDelegate::GetMessageText() const {
           url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 
-infobars::InfoBarDelegate::Type PermissionInfobarDelegate::GetInfoBarType()
+infobars::InfoBarDelegate::Type PermissionInfoBarDelegate::GetInfoBarType()
     const {
   return PAGE_ACTION_TYPE;
 }
 
-void PermissionInfobarDelegate::InfoBarDismissed() {
+void PermissionInfoBarDelegate::InfoBarDismissed() {
   SetPermission(false, DISMISSED);
 }
 
-PermissionInfobarDelegate*
-PermissionInfobarDelegate::AsPermissionInfobarDelegate() {
+PermissionInfoBarDelegate*
+PermissionInfoBarDelegate::AsPermissionInfoBarDelegate() {
   return this;
 }
 
-base::string16 PermissionInfobarDelegate::GetButtonLabel(
+base::string16 PermissionInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_PERMISSION_ALLOW : IDS_PERMISSION_DENY);
 }
 
-bool PermissionInfobarDelegate::Accept() {
+bool PermissionInfoBarDelegate::Accept() {
   bool update_content_setting = true;
   if (ShouldShowPersistenceToggle()) {
     update_content_setting = persist_;
@@ -91,7 +85,7 @@ bool PermissionInfobarDelegate::Accept() {
   return true;
 }
 
-bool PermissionInfobarDelegate::Cancel() {
+bool PermissionInfoBarDelegate::Cancel() {
   bool update_content_setting = true;
   if (ShouldShowPersistenceToggle()) {
     update_content_setting = persist_;
@@ -103,7 +97,7 @@ bool PermissionInfobarDelegate::Cancel() {
   return true;
 }
 
-void PermissionInfobarDelegate::SetPermission(bool update_content_setting,
+void PermissionInfoBarDelegate::SetPermission(bool update_content_setting,
                                               PermissionAction decision) {
   action_taken_ = true;
   callback_.Run(update_content_setting, decision);

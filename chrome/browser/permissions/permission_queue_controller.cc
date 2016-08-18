@@ -11,6 +11,7 @@
 #include "chrome/browser/media/midi_permission_infobar_delegate_android.h"
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate_android.h"
 #include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
+#include "chrome/browser/permissions/permission_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -119,7 +120,7 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
   // is tied to that of the queue controller. Before QueueController
   // is destroyed, all requests will be cancelled and so all delegates
   // will be destroyed.
-  PermissionInfobarDelegate::PermissionSetCallback callback = base::Bind(
+  PermissionInfoBarDelegate::PermissionSetCallback callback = base::Bind(
       &PermissionQueueController::OnPermissionSet, base::Unretained(controller),
       id_, requesting_frame_, embedder_, user_gesture_);
   switch (type_) {
@@ -130,7 +131,7 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
       break;
 #if defined(ENABLE_NOTIFICATIONS)
     case content::PermissionType::NOTIFICATIONS:
-      infobar_ = NotificationPermissionInfobarDelegate::Create(
+      infobar_ = NotificationPermissionInfoBarDelegate::Create(
           GetInfoBarService(id_), requesting_frame_, user_gesture_, profile_,
           callback);
       break;

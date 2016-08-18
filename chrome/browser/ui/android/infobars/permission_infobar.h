@@ -9,16 +9,16 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 
-class PermissionInfobarDelegate;
+class PermissionInfoBarDelegate;
 
 class PermissionInfoBar : public ConfirmInfoBar {
  public:
   explicit PermissionInfoBar(
-      std::unique_ptr<PermissionInfobarDelegate> delegate);
+      std::unique_ptr<PermissionInfoBarDelegate> delegate);
   ~PermissionInfoBar() override;
 
  protected:
-  PermissionInfobarDelegate* GetDelegate();
+  PermissionInfoBarDelegate* GetDelegate();
 
   // InfoBarAndroid overrides.
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(

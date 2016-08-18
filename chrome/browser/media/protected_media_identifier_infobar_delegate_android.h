@@ -13,7 +13,7 @@
 class InfoBarService;
 
 class ProtectedMediaIdentifierInfoBarDelegateAndroid
-    : public PermissionInfobarDelegate {
+    : public PermissionInfoBarDelegate {
  public:
   // Creates a protected media identifier infobar and delegate and adds the
   // infobar to |infobar_service|.  Returns the infobar if it was successfully
@@ -33,14 +33,12 @@ class ProtectedMediaIdentifierInfoBarDelegateAndroid
   ~ProtectedMediaIdentifierInfoBarDelegateAndroid() override;
 
  private:
-  // ConfirmInfoBarDelegate:
+  // PermissionInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
-  int GetMessageResourceId() const override;
   base::string16 GetLinkText() const override;
   GURL GetLinkURL() const override;
-
-  GURL requesting_frame_;
+  int GetMessageResourceId() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ProtectedMediaIdentifierInfoBarDelegateAndroid);
 };

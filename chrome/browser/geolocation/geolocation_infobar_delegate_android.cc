@@ -18,7 +18,7 @@ infobars::InfoBar* GeolocationInfoBarDelegateAndroid::Create(
     Profile* profile,
     const PermissionSetCallback& callback) {
   return infobar_service->AddInfoBar(
-      CreatePermissionInfoBar(std::unique_ptr<PermissionInfobarDelegate>(
+      CreatePermissionInfoBar(std::unique_ptr<PermissionInfoBarDelegate>(
           new GeolocationInfoBarDelegateAndroid(requesting_frame, user_gesture,
                                                 profile, callback))));
 }
@@ -28,13 +28,12 @@ GeolocationInfoBarDelegateAndroid::GeolocationInfoBarDelegateAndroid(
     bool user_gesture,
     Profile* profile,
     const PermissionSetCallback& callback)
-    : PermissionInfobarDelegate(requesting_frame,
+    : PermissionInfoBarDelegate(requesting_frame,
                                 content::PermissionType::GEOLOCATION,
                                 CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                 user_gesture,
                                 profile,
-                                callback),
-      requesting_frame_(requesting_frame) {}
+                                callback) {}
 
 GeolocationInfoBarDelegateAndroid::~GeolocationInfoBarDelegateAndroid() {}
 

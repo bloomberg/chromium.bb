@@ -53,6 +53,8 @@ class PermissionUtil {
   static bool GetPermissionType(ContentSettingsType type,
                                 content::PermissionType* out);
 
+  static bool ShouldShowPersistenceToggle();
+
   // A scoped class that will check the current resolved content setting on
   // construction and report a revocation metric accordingly if the revocation
   // condition is met (from ALLOW to something else).

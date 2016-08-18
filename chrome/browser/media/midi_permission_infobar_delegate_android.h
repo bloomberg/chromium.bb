@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
-#include "components/content_settings/core/common/content_settings_types.h"
 
 class GURL;
 class InfoBarService;
@@ -17,7 +16,7 @@ class InfoBarService;
 // MidiPermissionInfoBarDelegateAndroids are created by the
 // MidiPermissionContext to control the display and handling of MIDI permission
 // infobars to the user.
-class MidiPermissionInfoBarDelegateAndroid : public PermissionInfobarDelegate {
+class MidiPermissionInfoBarDelegateAndroid : public PermissionInfoBarDelegate {
  public:
   // Creates a MIDI permission infobar and delegate and adds the infobar to
   // |infobar_service|.  Returns the infobar if it was successfully added.
@@ -38,8 +37,6 @@ class MidiPermissionInfoBarDelegateAndroid : public PermissionInfobarDelegate {
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   int GetMessageResourceId() const override;
-
-  GURL requesting_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiPermissionInfoBarDelegateAndroid);
 };
