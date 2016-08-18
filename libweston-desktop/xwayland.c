@@ -152,13 +152,11 @@ weston_desktop_xwayland_surface_destroy(struct weston_desktop_surface *dsurface,
 	wl_list_remove(&surface->resource_destroy_listener.link);
 
 	weston_desktop_surface_unset_relative_to(surface->surface);
-	if (surface->added) {
+	if (surface->added)
 		weston_desktop_api_surface_removed(surface->desktop,
 						   surface->surface);
-	} else if (surface->state == XWAYLAND) {
+	else if (surface->state == XWAYLAND)
 		weston_desktop_surface_unlink_view(surface->view);
-		weston_view_destroy(surface->view);
-	}
 
 	free(surface);
 }
