@@ -104,7 +104,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                     return networkInfo;
                 } catch (NullPointerException secondException) {
                     RecordHistogram.recordBooleanHistogram("NCN.getNetInfo2ndSuccess", false);
-                    throw secondException;
+                    return null;
                 }
             }
         }
@@ -282,7 +282,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                     return wifiInfo;
                 } catch (NullPointerException secondException) {
                     RecordHistogram.recordBooleanHistogram("NCN.getWifiInfo2ndSuccess", false);
-                    throw secondException;
+                    return null;
                 }
             }
         }
