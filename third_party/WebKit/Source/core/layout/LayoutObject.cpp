@@ -120,7 +120,8 @@ LayoutObject::SetLayoutNeededForbiddenScope::~SetLayoutNeededForbiddenScope()
 
 struct SameSizeAsLayoutObject : DisplayItemClient {
     virtual ~SameSizeAsLayoutObject() { } // Allocate vtable pointer.
-    void* pointers[6];
+    void* pointers[5];
+    Member<void*> members[1];
 #if ENABLE(ASSERT)
     unsigned m_debugBitfields : 2;
 #endif

@@ -2429,8 +2429,7 @@ TEST(HeapTest, LargeHeapObjects)
 TEST(HeapTest, LargeHashMap)
 {
     clearOutOldGarbage();
-
-    size_t size = (1 << 27) / sizeof(int);
+    size_t size = (1 << 27) / sizeof(Member<IntWrapper>);
     Persistent<HeapHashMap<int, Member<IntWrapper>>> map = new HeapHashMap<int, Member<IntWrapper>>();
     map->reserveCapacityForSize(size);
     EXPECT_LE(size, map->capacity());

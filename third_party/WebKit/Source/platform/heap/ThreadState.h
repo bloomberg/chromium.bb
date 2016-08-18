@@ -224,7 +224,7 @@ public:
     bool checkThread() const { return m_thread == currentThread(); }
 #endif
 
-    ThreadHeap& heap() { return *m_heap; }
+    ThreadHeap& heap() const { return *m_heap; }
 
     // When ThreadState is detaching from non-main thread its
     // heap is expected to be empty (because it is going away).

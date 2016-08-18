@@ -115,6 +115,12 @@ public:
         traceWrappers(t.get());
     }
 
+    template<typename T>
+    void traceWrappers(const WeakMember<T>& t) const
+    {
+        traceWrappers(t.get());
+    }
+
     virtual void traceWrappers(const ScopedPersistent<v8::Value>* persistent) const = 0;
     virtual void traceWrappers(const ScopedPersistent<v8::Object>* persistent) const = 0;
     virtual void markWrapper(const v8::PersistentBase<v8::Object>* persistent) const = 0;

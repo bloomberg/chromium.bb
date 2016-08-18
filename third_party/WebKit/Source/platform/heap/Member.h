@@ -13,54 +13,62 @@ namespace blink {
 
 template<typename T> class Persistent;
 
-// Members are used in classes to contain strong pointers to other oilpan heap
-// allocated objects.
-// All Member fields of a class must be traced in the class' trace method.
-// During the mark phase of the GC all live objects are marked as live and
-// all Member fields of a live object will be traced marked as live as well.
-template<typename T>
-class Member {
+enum class TracenessMemberConfiguration {
+    Traced,
+    Untraced,
+};
+
+template<typename T, TracenessMemberConfiguration tracenessConfiguration = TracenessMemberConfiguration::Traced>
+class MemberBase {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    Member() : m_raw(nullptr)
+    MemberBase() : m_raw(nullptr)
     {
+        saveCreationThreadState();
     }
 
-    Member(std::nullptr_t) : m_raw(nullptr)
+    MemberBase(std::nullptr_t) : m_raw(nullptr)
     {
+        saveCreationThreadState();
     }
 
-    Member(T* raw) : m_raw(raw)
+    MemberBase(T* raw) : m_raw(raw)
     {
+        saveCreationThreadState();
         checkPointer();
     }
 
-    explicit Member(T& raw) : m_raw(&raw)
+    explicit MemberBase(T& raw) : m_raw(&raw)
     {
+        saveCreationThreadState();
         checkPointer();
     }
 
-    Member(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1))
+    MemberBase(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1))
     {
+        saveCreationThreadState();
     }
 
     bool isHashTableDeletedValue() const { return m_raw == reinterpret_cast<T*>(-1); }
 
-    Member(const Member& other) : m_raw(other)
+    MemberBase(const MemberBase& other) : m_raw(other)
     {
+        saveCreationThreadState();
         checkPointer();
     }
 
     template<typename U>
-    Member(const Persistent<U>& other)
+    MemberBase(const Persistent<U>& other)
     {
+        saveCreationThreadState();
         m_raw = other;
         checkPointer();
     }
 
     template<typename U>
-    Member(const Member<U>& other) : m_raw(other)
+    MemberBase(const MemberBase<U>& other) : m_raw(other)
     {
+        saveCreationThreadState();
         checkPointer();
     }
 
@@ -79,7 +87,7 @@ public:
     T& operator*() const { return *m_raw; }
 
     template<typename U>
-    Member& operator=(const Persistent<U>& other)
+    MemberBase& operator=(const Persistent<U>& other)
     {
         m_raw = other;
         checkPointer();
@@ -87,7 +95,7 @@ public:
     }
 
     template<typename U>
-    Member& operator=(const Member<U>& other)
+    MemberBase& operator=(const MemberBase<U>& other)
     {
         m_raw = other;
         checkPointer();
@@ -95,20 +103,20 @@ public:
     }
 
     template<typename U>
-    Member& operator=(U* other)
+    MemberBase& operator=(U* other)
     {
         m_raw = other;
         checkPointer();
         return *this;
     }
 
-    Member& operator=(std::nullptr_t)
+    MemberBase& operator=(std::nullptr_t)
     {
         m_raw = nullptr;
         return *this;
     }
 
-    void swap(Member<T>& other)
+    void swap(MemberBase<T>& other)
     {
         std::swap(m_raw, other.m_raw);
         checkPointer();
@@ -122,7 +130,7 @@ public:
 protected:
     void checkPointer()
     {
-#if ENABLE(ASSERT) && defined(ADDRESS_SANITIZER)
+#if DCHECK_IS_ON()
         if (!m_raw)
             return;
         // HashTable can store a special value (which is not aligned to the
@@ -132,6 +140,23 @@ protected:
         if (reinterpret_cast<intptr_t>(m_raw) % allocationGranularity)
             return;
 
+        if (tracenessConfiguration != TracenessMemberConfiguration::Untraced) {
+            ThreadState* current = ThreadState::current();
+            DCHECK(current);
+            // m_creationThreadState may be null when this is used in a heap
+            // collection which initialized the Member with memset and the
+            // constructor wasn't called.
+            if (m_creationThreadState) {
+                // Member should point to objects that belong in the same ThreadHeap.
+                DCHECK_EQ(&ThreadState::fromObject(m_raw)->heap(), &m_creationThreadState->heap());
+                // Member should point to objects that belong in the same ThreadHeap.
+                DCHECK_EQ(&current->heap(), &m_creationThreadState->heap());
+            } else {
+                DCHECK_EQ(&ThreadState::fromObject(m_raw)->heap(), &current->heap());
+            }
+        }
+
+#if defined(ADDRESS_SANITIZER)
         // TODO(haraken): What we really want to check here is that the pointer
         // is a traceable object. In other words, the pointer is either of:
         //
@@ -145,13 +170,93 @@ protected:
         if (IsFullyDefined<T>::value && !IsGarbageCollectedMixin<T>::value)
             ASSERT(HeapObjectHeader::fromPayload(m_raw)->checkHeader());
 #endif
+#endif
+    }
+
+    void saveCreationThreadState()
+    {
+#if DCHECK_IS_ON()
+        if (tracenessConfiguration == TracenessMemberConfiguration::Untraced) {
+            m_creationThreadState = nullptr;
+        } else {
+            m_creationThreadState = ThreadState::current();
+            // Members should be created in an attached thread. But an empty
+            // value Member may be created on an unattached thread by a heap
+            // collection iterator.
+            DCHECK(m_creationThreadState || !m_raw);
+        }
+#endif
     }
 
     T* m_raw;
+#if DCHECK_IS_ON()
+    const ThreadState* m_creationThreadState;
+#endif
 
     template<bool x, WTF::WeakHandlingFlag y, WTF::ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
     friend class Visitor;
 
+};
+
+// Members are used in classes to contain strong pointers to other oilpan heap
+// allocated objects.
+// All Member fields of a class must be traced in the class' trace method.
+// During the mark phase of the GC all live objects are marked as live and
+// all Member fields of a live object will be traced marked as live as well.
+template<typename T>
+class Member : public MemberBase<T, TracenessMemberConfiguration::Traced> {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    typedef MemberBase<T, TracenessMemberConfiguration::Traced> Parent;
+public:
+    Member() : Parent() { }
+    Member(std::nullptr_t) : Parent(nullptr) { }
+    Member(T* raw) : Parent(raw) { }
+    Member(T& raw) : Parent(raw) { }
+    Member(WTF::HashTableDeletedValueType x) : Parent(x) { }
+
+    Member(const Member& other) : Parent(other) { }
+    template<typename U>
+    Member(const Member<U>& other) : Parent(other) { }
+    template<typename U>
+    Member(const Persistent<U>& other) : Parent(other) { }
+
+    template<typename U>
+    Member& operator=(const Persistent<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    Member& operator=(const Member<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    Member& operator=(const WeakMember<U>& other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    template<typename U>
+    Member& operator=(U* other)
+    {
+        Parent::operator=(other);
+        return *this;
+    }
+
+    Member& operator=(std::nullptr_t)
+    {
+        Parent::operator=(nullptr);
+        return *this;
+    }
+
+protected:
+    template<bool x, WTF::WeakHandlingFlag y, WTF::ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
+    friend class Visitor;
 };
 
 // WeakMember is similar to Member in that it is used to point to other oilpan
@@ -161,21 +266,22 @@ protected:
 // to a heap allocated object are weak the object will be garbage collected. At the
 // time of GC the weak pointers will automatically be set to null.
 template<typename T>
-class WeakMember : public Member<T> {
+class WeakMember : public MemberBase<T, TracenessMemberConfiguration::Traced> {
+    typedef MemberBase<T, TracenessMemberConfiguration::Traced> Parent;
 public:
-    WeakMember() : Member<T>() { }
+    WeakMember() : Parent() { }
 
-    WeakMember(std::nullptr_t) : Member<T>(nullptr) { }
+    WeakMember(std::nullptr_t) : Parent(nullptr) { }
 
-    WeakMember(T* raw) : Member<T>(raw) { }
+    WeakMember(T* raw) : Parent(raw) { }
 
-    WeakMember(WTF::HashTableDeletedValueType x) : Member<T>(x) { }
-
-    template<typename U>
-    WeakMember(const Persistent<U>& other) : Member<T>(other) { }
+    WeakMember(WTF::HashTableDeletedValueType x) : Parent(x) { }
 
     template<typename U>
-    WeakMember(const Member<U>& other) : Member<T>(other) { }
+    WeakMember(const Persistent<U>& other) : Parent(other) { }
+
+    template<typename U>
+    WeakMember(const Member<U>& other) : Parent(other) { }
 
     template<typename U>
     WeakMember& operator=(const Persistent<U>& other)
@@ -222,21 +328,22 @@ private:
 // course, it must be guaranteed that the pointing on-heap object is kept alive
 // while the raw pointer is pointing to the object.
 template<typename T>
-class UntracedMember final : public Member<T> {
+class UntracedMember final : public MemberBase<T, TracenessMemberConfiguration::Untraced> {
+    typedef MemberBase<T, TracenessMemberConfiguration::Untraced> Parent;
 public:
-    UntracedMember() : Member<T>() { }
+    UntracedMember() : Parent() { }
 
-    UntracedMember(std::nullptr_t) : Member<T>(nullptr) { }
+    UntracedMember(std::nullptr_t) : Parent(nullptr) { }
 
-    UntracedMember(T* raw) : Member<T>(raw) { }
-
-    template<typename U>
-    UntracedMember(const Persistent<U>& other) : Member<T>(other) { }
+    UntracedMember(T* raw) : Parent(raw) { }
 
     template<typename U>
-    UntracedMember(const Member<U>& other) : Member<T>(other) { }
+    UntracedMember(const Persistent<U>& other) : Parent(other) { }
 
-    UntracedMember(WTF::HashTableDeletedValueType x) : Member<T>(x) { }
+    template<typename U>
+    UntracedMember(const Member<U>& other) : Parent(other) { }
+
+    UntracedMember(WTF::HashTableDeletedValueType x) : Parent(x) { }
 
     template<typename U>
     UntracedMember& operator=(const Persistent<U>& other)
