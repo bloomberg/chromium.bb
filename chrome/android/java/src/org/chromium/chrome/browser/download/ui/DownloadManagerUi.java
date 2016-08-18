@@ -347,6 +347,11 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mActivity.startActivity(Intent.createChooser(shareIntent,
                 mActivity.getString(R.string.share_link_chooser_title)));
+
+        // TODO(twellington): ideally the intent chooser would be started with
+        //                    startActivityForResult() and the selection would only be cleared after
+        //                    receiving an OK response. See crbug.com/638916.
+        mSelectionDelegate.clearSelection();
     }
 
     private Uri getUriForItem(DownloadHistoryItemWrapper itemWrapper) {
