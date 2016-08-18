@@ -64,6 +64,7 @@ namespace blink {
 
 SVGImage::SVGImage(ImageObserver* observer)
     : Image(observer)
+    , m_hasPendingTimelineRewind(false)
 {
 }
 
@@ -352,6 +353,13 @@ void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatR
     // there may have been a previous url/fragment that needs to be reset.
     view->processUrlFragment(url);
 
+    // If the image was reset, we need to rewind the timeline back to 0. This
+    // needs to be done before painting, or else we wouldn't get the correct
+    // reset semantics (we'd paint the "last" frame rather than the one at
+    // time=0.) The reason we do this here and not in resetAnimation() is to
+    // avoid setting timers from the latter.
+    flushPendingTimelineRewind();
+
     SkPictureBuilder imagePicture(dstRect);
     {
         ClipRecorder clipRecorder(imagePicture.context(), imagePicture, DisplayItem::ClipNodeImage, enclosingIntRect(dstRect));
@@ -397,6 +405,20 @@ LayoutReplaced* SVGImage::embeddedReplacedContent() const
     return toLayoutSVGRoot(rootElement->layoutObject());
 }
 
+void SVGImage::scheduleTimelineRewind()
+{
+    m_hasPendingTimelineRewind = true;
+}
+
+void SVGImage::flushPendingTimelineRewind()
+{
+    if (!m_hasPendingTimelineRewind)
+        return;
+    if (SVGSVGElement* rootElement = svgRootElement(m_page.get()))
+        rootElement->setCurrentTime(0);
+    m_hasPendingTimelineRewind = false;
+}
+
 // FIXME: support CatchUpAnimation = CatchUp.
 void SVGImage::startAnimation(CatchUpAnimation)
 {
@@ -424,7 +446,7 @@ void SVGImage::resetAnimation()
         return;
     m_chromeClient->suspendAnimation();
     rootElement->pauseAnimations();
-    rootElement->setCurrentTime(0);
+    scheduleTimelineRewind();
 }
 
 bool SVGImage::hasAnimations() const

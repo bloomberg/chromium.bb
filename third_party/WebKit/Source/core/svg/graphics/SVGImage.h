@@ -115,6 +115,8 @@ private:
         ImageClampingMode, const KURL&);
 
     void stopAnimation();
+    void scheduleTimelineRewind();
+    void flushPendingTimelineRewind();
 
     Persistent<SVGImageChromeClient> m_chromeClient;
     Persistent<Page> m_page;
@@ -126,6 +128,7 @@ private:
     // SVGImage. SVGImageForContainer carried the final image size,
     // also called concrete object size.
     IntSize m_intrinsicSize;
+    bool m_hasPendingTimelineRewind;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);
