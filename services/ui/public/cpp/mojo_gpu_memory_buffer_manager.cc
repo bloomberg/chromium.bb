@@ -27,8 +27,8 @@ MojoGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  const gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ;
+  return MojoGpuMemoryBufferImpl::CreateFromHandle(handle, size, format, usage);
 }
 
 gfx::GpuMemoryBuffer*

@@ -26,7 +26,11 @@ class MojoGpuMemoryBufferImpl : public ui::GpuMemoryBufferImpl {
   static std::unique_ptr<gfx::GpuMemoryBuffer> Create(const gfx::Size& size,
                                                       gfx::BufferFormat format,
                                                       gfx::BufferUsage usage);
-
+  static std::unique_ptr<gfx::GpuMemoryBuffer> CreateFromHandle(
+      const gfx::GpuMemoryBufferHandle& handle,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage);
   static MojoGpuMemoryBufferImpl* FromClientBuffer(ClientBuffer buffer);
 
   const unsigned char* GetMemory() const;

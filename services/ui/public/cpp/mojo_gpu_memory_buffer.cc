@@ -27,6 +27,7 @@ MojoGpuMemoryBufferImpl::MojoGpuMemoryBufferImpl(
 // TODO(rjkroege): Support running a destructor callback as necessary.
 MojoGpuMemoryBufferImpl::~MojoGpuMemoryBufferImpl() {}
 
+// static
 std::unique_ptr<gfx::GpuMemoryBuffer> MojoGpuMemoryBufferImpl::Create(
     const gfx::Size& size,
     gfx::BufferFormat format,
@@ -49,8 +50,23 @@ std::unique_ptr<gfx::GpuMemoryBuffer> MojoGpuMemoryBufferImpl::Create(
 
   auto shared_memory =
       base::MakeUnique<base::SharedMemory>(platform_handle, readonly);
-  return base::WrapUnique<gfx::GpuMemoryBuffer>(
-      new MojoGpuMemoryBufferImpl(size, format, std::move(shared_memory)));
+  return base::MakeUnique<MojoGpuMemoryBufferImpl>(
+      size, format, std::move(shared_memory));
+}
+
+// static
+std::unique_ptr<gfx::GpuMemoryBuffer> MojoGpuMemoryBufferImpl::CreateFromHandle(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
+  DCHECK_EQ(handle.type, gfx::SHARED_MEMORY_BUFFER);
+  DCHECK(base::SharedMemory::IsHandleValid(handle.handle));
+  const bool readonly = false;
+  auto shared_memory =
+      base::MakeUnique<base::SharedMemory>(handle.handle, readonly);
+  return base::MakeUnique<MojoGpuMemoryBufferImpl>(
+      size, format, std::move(shared_memory));
 }
 
 MojoGpuMemoryBufferImpl* MojoGpuMemoryBufferImpl::FromClientBuffer(
