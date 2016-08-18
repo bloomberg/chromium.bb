@@ -143,41 +143,6 @@ bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWi
     return canAccessFrame(accessingWindow, frame->securityContext()->getSecurityOrigin(), frame->domWindow(), reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, v8::Local<v8::Context> context, const ExecutionContext* executionContext, const MainThreadWorkletGlobalScope* workletGlobalScope, SecurityReportingOption reportingOption)
-{
-    DCHECK(executionContext);
-    DOMWindow* domWindow = toDOMWindow(context);
-    if (executionContext->isMainThreadWorkletGlobalScope()) {
-        Frame* callingFrame = toMainThreadWorkletGlobalScope(executionContext)->frame();
-        domWindow = callingFrame ? callingFrame->domWindow() : nullptr;
-    }
-
-    DCHECK(workletGlobalScope);
-    const Frame* workletGlobalScopeFrame = workletGlobalScope->frame();
-    if (!workletGlobalScopeFrame || !workletGlobalScopeFrame->securityContext())
-        return false;
-
-    return domWindow && canAccessFrame(toLocalDOMWindow(domWindow), workletGlobalScopeFrame->securityContext()->getSecurityOrigin(), workletGlobalScopeFrame->domWindow(), reportingOption);
-}
-
-bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, v8::Local<v8::Context> calling, v8::Local<v8::Context> target, SecurityReportingOption reportingOption)
-{
-    ExecutionContext* targetExecutionContext = toExecutionContext(target);
-    DCHECK(targetExecutionContext);
-
-    ExecutionContext* callingExecutionContext = toExecutionContext(calling);
-    DCHECK(callingExecutionContext);
-
-    if (targetExecutionContext->isMainThreadWorkletGlobalScope())
-        return shouldAllowAccessTo(isolate, calling, callingExecutionContext, toMainThreadWorkletGlobalScope(targetExecutionContext), DoNotReportSecurityError);
-
-    if (callingExecutionContext->isMainThreadWorkletGlobalScope())
-        return shouldAllowAccessTo(isolate, target, targetExecutionContext, toMainThreadWorkletGlobalScope(callingExecutionContext), DoNotReportSecurityError);
-
-    DOMWindow* window = toDOMWindow(target);
-    return window && shouldAllowAccessTo(isolate, toLocalDOMWindow(toDOMWindow(calling)), window, DoNotReportSecurityError);
-}
-
 bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const Node* target, ExceptionState& exceptionState)
 {
     if (!target)
