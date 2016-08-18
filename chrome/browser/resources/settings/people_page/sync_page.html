@@ -183,22 +183,27 @@
 
       <template is="dom-if" if="[[syncPrefs.passphraseRequired]]">
         <div class="list-frame">
-          <div id="askCustomPassphraseMessage"
+          <div id="askCustomPassphraseMessage" class="list-item"
               hidden$="[[!syncPrefs.passphraseTypeIsCustom]]">
             [[syncPrefs.enterPassphraseBody]]
           </div>
-          <div id="askOldGooglePassphraseMessage"
+          <div id="askOldGooglePassphraseMessage" class="list-item"
               hidden$="[[syncPrefs.passphraseTypeIsCustom]]">
             [[syncPrefs.enterGooglePassphraseBody]]
           </div>
-          <paper-input id="existingPassphraseInput" type="password"
-              placeholder="$i18n{passphrasePlaceholder}"
-              error-message="$i18n{incorrectPassphraseError}">
-          </paper-input>
-          <paper-button id="submitExistingPassphrase"
-              on-tap="onSubmitExistingPassphraseTap_" class="action-button">
-            $i18n{submitPassphraseButton}
-          </paper-button>
+          <div class="list-item">
+            <paper-input id="existingPassphraseInput" type="password"
+                placeholder="$i18n{passphrasePlaceholder}"
+                error-message="$i18n{incorrectPassphraseError}">
+            </paper-input>
+            <paper-button id="submitExistingPassphrase"
+                on-tap="onSubmitExistingPassphraseTap_" class="action-button">
+              $i18n{submitPassphraseButton}
+            </paper-button>
+          </div>
+          <div class="list-item">
+            <span>$i18nRaw{passphraseRecover}</span>
+          </div>
         </div>
       </template>
     </div>

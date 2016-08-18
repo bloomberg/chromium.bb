@@ -963,6 +963,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("autofillHelpURL", autofill::kHelpURL);
   html_source->AddString("supervisedUsersUrl",
                          chrome::kLegacySupervisedUserManagementURL);
+
   std::string sync_dashboard_url =
       google_util::AppendGoogleLocaleParam(
           GURL(chrome::kSyncGoogleDashboardURL),
@@ -970,8 +971,12 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
           .spec();
   html_source->AddString("syncDashboardUrl", sync_dashboard_url);
   html_source->AddString(
-      "activityControlsUrl",
-      base::ASCIIToUTF16(chrome::kGoogleAccountActivityControlsURL));
+      "passphraseRecover",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RECOVER,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
+
+  html_source->AddString("activityControlsUrl",
+                         chrome::kGoogleAccountActivityControlsURL);
 }
 
 void AddPrintingStrings(content::WebUIDataSource* html_source) {
