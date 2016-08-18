@@ -64,6 +64,8 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     return 0;
   }
 
+  void UseNonBlockingIO() override {}
+
   int Listen(const net::IPEndPoint& address) override {
     if (used_ports_) {
       for (auto used_port : *used_ports_) {

@@ -40,6 +40,7 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
   void Close() override;
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
+  void UseNonBlockingIO() override;
   const BoundNetLog& NetLog() const override;
 
   // Socket implementation:

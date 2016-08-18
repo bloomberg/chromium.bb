@@ -39,6 +39,7 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
   void Close() override;
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
+  void UseNonBlockingIO() override;
   const BoundNetLog& NetLog() const override;
   void AllowAddressReuse() override;
   void AllowBroadcast() override;
@@ -49,12 +50,6 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
   int SetMulticastLoopbackMode(bool loopback) override;
   int SetDiffServCodePoint(DiffServCodePoint dscp) override;
   void DetachFromThread() override;
-
-#if defined(OS_WIN)
-  // Switch to use non-blocking IO. Must be called right after construction and
-  // before other calls.
-  void UseNonBlockingIO();
-#endif
 
  private:
   UDPSocket socket_;

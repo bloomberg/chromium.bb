@@ -742,6 +742,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   void Close() override;
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
+  void UseNonBlockingIO() override;
   const BoundNetLog& NetLog() const override;
 
   // DatagramClientSocket implementation.

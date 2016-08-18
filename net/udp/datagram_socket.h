@@ -34,6 +34,10 @@ class NET_EXPORT_PRIVATE DatagramSocket {
   // (similar to getsockname)
   virtual int GetLocalAddress(IPEndPoint* address) const = 0;
 
+  // Switch to use non-blocking IO. Must be called right after construction and
+  // before other calls.
+  virtual void UseNonBlockingIO() = 0;
+
   // Gets the NetLog for this socket.
   virtual const BoundNetLog& NetLog() const = 0;
 };

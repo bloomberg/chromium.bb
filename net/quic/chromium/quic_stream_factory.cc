@@ -1700,12 +1700,8 @@ bool QuicStreamFactory::HasActiveCertVerifierJob(
 int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
                                        IPEndPoint addr,
                                        NetworkHandle network) {
-  if (enable_non_blocking_io_ &&
-      client_socket_factory_ == ClientSocketFactory::GetDefaultFactory()) {
-#if defined(OS_WIN)
-    static_cast<UDPClientSocket*>(socket)->UseNonBlockingIO();
-#endif
-  }
+  if (enable_non_blocking_io_)
+    socket->UseNonBlockingIO();
 
   int rv;
   if (migrate_sessions_on_network_change_) {

@@ -170,10 +170,8 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   TestNetLog server_log;
   std::unique_ptr<UDPServerSocket> server(
       new UDPServerSocket(&server_log, NetLog::Source()));
-#if defined(OS_WIN)
   if (use_nonblocking_io)
     server->UseNonBlockingIO();
-#endif
   server->AllowAddressReuse();
   int rv = server->Listen(bind_address);
   ASSERT_THAT(rv, IsOk());
@@ -185,10 +183,8 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   std::unique_ptr<UDPClientSocket> client(
       new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
                           &client_log, NetLog::Source()));
-#if defined(OS_WIN)
   if (use_nonblocking_io)
     client->UseNonBlockingIO();
-#endif
 
   rv = client->Connect(server_address);
   EXPECT_THAT(rv, IsOk());

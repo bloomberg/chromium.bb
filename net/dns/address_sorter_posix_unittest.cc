@@ -59,6 +59,7 @@ class TestUDPClientSocket : public DatagramClientSocket {
     *address = local_endpoint_;
     return OK;
   }
+  void UseNonBlockingIO() override {}
   int ConnectUsingNetwork(NetworkChangeNotifier::NetworkHandle network,
                           const IPEndPoint& address) override {
     NOTIMPLEMENTED();

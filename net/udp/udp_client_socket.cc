@@ -113,10 +113,10 @@ const BoundNetLog& UDPClientSocket::NetLog() const {
   return socket_.NetLog();
 }
 
-#if defined(OS_WIN)
 void UDPClientSocket::UseNonBlockingIO() {
+#if defined(OS_WIN)
   socket_.UseNonBlockingIO();
-}
 #endif
+}
 
 }  // namespace net

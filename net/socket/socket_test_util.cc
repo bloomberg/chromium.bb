@@ -1345,6 +1345,8 @@ int MockUDPClientSocket::GetLocalAddress(IPEndPoint* address) const {
   return OK;
 }
 
+void MockUDPClientSocket::UseNonBlockingIO() {}
+
 const BoundNetLog& MockUDPClientSocket::NetLog() const {
   return net_log_;
 }

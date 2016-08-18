@@ -86,6 +86,8 @@ int FuzzedDatagramClientSocket::GetLocalAddress(IPEndPoint* address) const {
   return OK;
 }
 
+void FuzzedDatagramClientSocket::UseNonBlockingIO() {}
+
 const BoundNetLog& FuzzedDatagramClientSocket::NetLog() const {
   return net_log_;
 }
