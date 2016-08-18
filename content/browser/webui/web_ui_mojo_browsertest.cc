@@ -5,7 +5,6 @@
 #include <limits>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -38,6 +37,8 @@
 namespace content {
 namespace {
 
+bool g_got_message = false;
+
 base::FilePath GetFilePathForJSResource(const std::string& path) {
   base::ThreadRestrictions::ScopedAllowIO allow_io_from_test_callbacks;
 
@@ -50,29 +51,23 @@ base::FilePath GetFilePathForJSResource(const std::string& path) {
   return exe_dir.AppendASCII(binding_path);
 }
 
-bool got_message = false;
-
 // The bindings for the page are generated from a .mojom file. This code looks
 // up the generated file from disk and returns it.
 bool GetResource(const std::string& id,
                  const WebUIDataSource::GotDataCallback& callback) {
   base::ThreadRestrictions::ScopedAllowIO allow_io_from_test_callbacks;
 
-  if (id.find(".mojom") != std::string::npos) {
-    std::string contents;
+  std::string contents;
+  if (base::EndsWith(id, ".mojom", base::CompareCase::SENSITIVE)) {
     CHECK(base::ReadFileToString(GetFilePathForJSResource(id), &contents))
         << id;
-    base::RefCountedString* ref_contents = new base::RefCountedString;
-    ref_contents->data() = contents;
-    callback.Run(ref_contents);
-    return true;
+  } else {
+    base::FilePath path;
+    CHECK(base::PathService::Get(content::DIR_TEST_DATA, &path));
+    path = path.AppendASCII(id.substr(0, id.find("?")));
+    CHECK(base::ReadFileToString(path, &contents)) << path.value();
   }
 
-  base::FilePath path;
-  CHECK(base::PathService::Get(content::DIR_TEST_DATA, &path));
-  path = path.AppendASCII(id.substr(0, id.find("?")));
-  std::string contents;
-  CHECK(base::ReadFileToString(path, &contents)) << path.value();
   base::RefCountedString* ref_contents = new base::RefCountedString;
   ref_contents->data() = contents;
   callback.Run(ref_contents);
@@ -92,12 +87,12 @@ class BrowserTargetImpl : public mojom::BrowserTarget {
     closure.Run();
   }
   void Stop() override {
-    got_message = true;
+    g_got_message = true;
     run_loop_->Quit();
   }
 
  protected:
-  base::RunLoop* run_loop_;
+  base::RunLoop* const run_loop_;
 
  private:
   mojo::Binding<mojom::BrowserTarget> binding_;
@@ -109,15 +104,14 @@ class TestWebUIController : public WebUIController {
  public:
   TestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
       : WebUIController(web_ui), run_loop_(run_loop) {
-    content::WebUIDataSource* data_source =
-        WebUIDataSource::Create("mojo-web-ui");
+    WebUIDataSource* data_source = WebUIDataSource::Create("mojo-web-ui");
     data_source->SetRequestFilter(base::Bind(&GetResource));
-    content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                                  data_source);
+    WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
+                         data_source);
   }
 
  protected:
-  base::RunLoop* run_loop_;
+  base::RunLoop* const run_loop_;
   std::unique_ptr<BrowserTargetImpl> browser_target_;
 
  private:
@@ -128,10 +122,9 @@ class TestWebUIController : public WebUIController {
 // implementation at the right time.
 class PingTestWebUIController : public TestWebUIController {
  public:
-   PingTestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
-       : TestWebUIController(web_ui, run_loop) {
-   }
-   ~PingTestWebUIController() override {}
+  PingTestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
+      : TestWebUIController(web_ui, run_loop) {}
+  ~PingTestWebUIController() override {}
 
   // WebUIController overrides:
   void RenderViewCreated(RenderViewHost* render_view_host) override {
@@ -141,7 +134,8 @@ class PingTestWebUIController : public TestWebUIController {
   }
 
   void CreateHandler(mojo::InterfaceRequest<mojom::BrowserTarget> request) {
-    browser_target_.reset(new BrowserTargetImpl(run_loop_, std::move(request)));
+    browser_target_ =
+        base::MakeUnique<BrowserTargetImpl>(run_loop_, std::move(request));
   }
 
  private:
@@ -151,7 +145,7 @@ class PingTestWebUIController : public TestWebUIController {
 // WebUIControllerFactory that creates TestWebUIController.
 class TestWebUIControllerFactory : public WebUIControllerFactory {
  public:
-  TestWebUIControllerFactory() : run_loop_(NULL) {}
+  TestWebUIControllerFactory() : run_loop_(nullptr) {}
 
   void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
 
@@ -218,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
           "content/test/data/web_ui_test_mojo_bindings.mojom"))
     return;
 
-  got_message = false;
+  g_got_message = false;
   ASSERT_TRUE(embedded_test_server()->Start());
   base::RunLoop run_loop;
   factory()->set_run_loop(&run_loop);
@@ -226,18 +220,18 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
   NavigateToURL(shell(), test_url);
   // RunLoop is quit when message received from page.
   run_loop.Run();
-  EXPECT_TRUE(got_message);
+  EXPECT_TRUE(g_got_message);
 
   // Check that a second render frame in the same renderer process works
   // correctly.
   Shell* other_shell = CreateBrowser();
-  got_message = false;
+  g_got_message = false;
   base::RunLoop other_run_loop;
   factory()->set_run_loop(&other_run_loop);
   NavigateToURL(other_shell, test_url);
   // RunLoop is quit when message received from page.
   other_run_loop.Run();
-  EXPECT_TRUE(got_message);
+  EXPECT_TRUE(g_got_message);
   EXPECT_EQ(shell()->web_contents()->GetRenderProcessHost(),
             other_shell->web_contents()->GetRenderProcessHost());
 }
