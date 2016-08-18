@@ -169,7 +169,6 @@
       'WebMediaDevicesRequest.cpp',
       'WebMediaStreamRegistry.cpp',
       'WebMetaElement.cpp',
-      'WebMemoryCoordinator.cpp',
       'WebNetworkStateNotifier.cpp',
       'WebNode.cpp',
       'WebOptionElement.cpp',

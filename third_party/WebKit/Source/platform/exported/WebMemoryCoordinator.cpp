@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebMemoryCoordinator.h"
+#include "public/platform/WebMemoryCoordinator.h"
 
-#include "core/dom/MemoryCoordinator.h"
-#include "core/page/Page.h"
+#include "platform/MemoryCoordinator.h"
 
 namespace blink {
 
 void WebMemoryCoordinator::onMemoryPressure(WebMemoryPressureLevel pressureLevel)
 {
     MemoryCoordinator::instance().onMemoryPressure(pressureLevel);
+}
+
+void WebMemoryCoordinator::purgeMemory()
+{
+    MemoryCoordinator::instance().purgeMemory();
 }
 
 } // namespace blink
