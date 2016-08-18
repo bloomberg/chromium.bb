@@ -60,10 +60,6 @@ OfflinePageSuggestionsProvider::OfflinePageSuggestionsProvider(
       downloads_category_(
           category_factory->FromKnownCategory(KnownCategories::DOWNLOADS)),
       pref_service_(pref_service),
-      dismissed_recent_tab_ids_(ReadDismissedIDsFromPrefs(
-          prefs::kDismissedRecentOfflineTabSuggestions)),
-      dismissed_download_ids_(
-          ReadDismissedIDsFromPrefs(prefs::kDismissedDownloadSuggestions)),
       download_manager_ui_enabled_(download_manager_ui_enabled) {
   DCHECK(recent_tabs_enabled || downloads_enabled);
   offline_page_model_->AddObserver(this);
@@ -127,19 +123,9 @@ void OfflinePageSuggestionsProvider::DismissSuggestion(
     const std::string& suggestion_id) {
   Category category = GetCategoryFromUniqueID(suggestion_id);
   std::string offline_page_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
-  if (category == recent_tabs_category_) {
-    DCHECK_NE(CategoryStatus::NOT_PROVIDED, recent_tabs_status_);
-    dismissed_recent_tab_ids_.insert(offline_page_id);
-    StoreDismissedIDsToPrefs(prefs::kDismissedRecentOfflineTabSuggestions,
-                             dismissed_recent_tab_ids_);
-  } else if (category == downloads_category_) {
-    DCHECK_NE(CategoryStatus::NOT_PROVIDED, downloads_status_);
-    dismissed_download_ids_.insert(offline_page_id);
-    StoreDismissedIDsToPrefs(prefs::kDismissedDownloadSuggestions,
-                             dismissed_download_ids_);
-  } else {
-    NOTREACHED() << "Unknown category " << category.id();
-  }
+  std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs(category);
+  dismissed_ids.insert(offline_page_id);
+  StoreDismissedIDsToPrefs(category, dismissed_ids);
 }
 
 void OfflinePageSuggestionsProvider::FetchSuggestionImage(
@@ -161,20 +147,9 @@ OfflinePageSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category) {
   // TODO(pke): Make GetDismissedSuggestionsForDebugging asynchronous so this
   // can return proper values.
+  std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs(category);
   std::vector<ContentSuggestion> suggestions;
-  const std::set<std::string>* dismissed_ids = nullptr;
-  if (category == recent_tabs_category_) {
-    DCHECK_NE(CategoryStatus::NOT_PROVIDED, recent_tabs_status_);
-    dismissed_ids = &dismissed_recent_tab_ids_;
-  } else if (category == downloads_category_) {
-    DCHECK_NE(CategoryStatus::NOT_PROVIDED, downloads_status_);
-    dismissed_ids = &dismissed_download_ids_;
-  } else {
-    NOTREACHED() << "Unknown category " << category.id();
-    return suggestions;
-  }
-
-  for (const std::string& dismissed_id : *dismissed_ids) {
+  for (const std::string& dismissed_id : dismissed_ids) {
     ContentSuggestion suggestion(
         MakeUniqueID(category, dismissed_id),
         GURL("http://dismissed-offline-page-" + dismissed_id));
@@ -186,19 +161,7 @@ OfflinePageSuggestionsProvider::GetDismissedSuggestionsForDebugging(
 
 void OfflinePageSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
     Category category) {
-  if (category == recent_tabs_category_) {
-    DCHECK_NE(CategoryStatus::NOT_PROVIDED, recent_tabs_status_);
-    dismissed_recent_tab_ids_.clear();
-    StoreDismissedIDsToPrefs(prefs::kDismissedRecentOfflineTabSuggestions,
-                             dismissed_recent_tab_ids_);
-  } else if (category == downloads_category_) {
-    DCHECK_NE(CategoryStatus::NOT_PROVIDED, downloads_status_);
-    dismissed_download_ids_.clear();
-    StoreDismissedIDsToPrefs(prefs::kDismissedDownloadSuggestions,
-                             dismissed_download_ids_);
-  } else {
-    NOTREACHED() << "Unknown category " << category.id();
-  }
+  StoreDismissedIDsToPrefs(category, std::set<std::string>());
   FetchOfflinePages();
 }
 
@@ -219,38 +182,20 @@ void OfflinePageSuggestionsProvider::OfflinePageDeleted(
   // Because we never switch to NOT_PROVIDED dynamically, there can be no open
   // UI containing an invalidated suggestion unless the status is something
   // other than NOT_PROVIDED, so only notify invalidation in that case.
-  std::string offline_page_id = base::IntToString(offline_id);
   if (recent_tabs_status_ != CategoryStatus::NOT_PROVIDED &&
       client_id.name_space == offline_pages::kLastNNamespace) {
-    auto it = std::find(dismissed_recent_tab_ids_.begin(),
-                        dismissed_recent_tab_ids_.end(), offline_page_id);
-    if (it == dismissed_recent_tab_ids_.end()) {
-      observer()->OnSuggestionInvalidated(
-          this, recent_tabs_category_,
-          MakeUniqueID(recent_tabs_category_, offline_page_id));
-    } else {
-      dismissed_recent_tab_ids_.erase(it);
-      StoreDismissedIDsToPrefs(prefs::kDismissedRecentOfflineTabSuggestions,
-                               dismissed_recent_tab_ids_);
-    }
+    InvalidateSuggestion(recent_tabs_category_, offline_id);
   } else if (downloads_status_ != CategoryStatus::NOT_PROVIDED &&
              client_id.name_space == offline_pages::kAsyncNamespace &&
              base::IsValidGUID(client_id.id)) {
-    auto it = std::find(dismissed_download_ids_.begin(),
-                        dismissed_download_ids_.end(), offline_page_id);
-    if (it == dismissed_download_ids_.end()) {
-      observer()->OnSuggestionInvalidated(
-          this, downloads_category_,
-          MakeUniqueID(downloads_category_, offline_page_id));
-    } else {
-      dismissed_download_ids_.erase(it);
-      StoreDismissedIDsToPrefs(prefs::kDismissedDownloadSuggestions,
-                               dismissed_download_ids_);
-    }
+    InvalidateSuggestion(downloads_category_, offline_id);
   }
 }
 
 void OfflinePageSuggestionsProvider::FetchOfflinePages() {
+  // TODO(pke): When something other than GetAllPages is used here, the
+  // dismissed IDs cleanup in OnOfflinePagesLoaded needs to be changed to avoid
+  // suggestions being undismissed accidentally.
   offline_page_model_->GetAllPages(
       base::Bind(&OfflinePageSuggestionsProvider::OnOfflinePagesLoaded,
                  base::Unretained(this)));
@@ -265,23 +210,34 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
   if (need_downloads)
     NotifyStatusChanged(downloads_category_, CategoryStatus::AVAILABLE);
 
+  std::set<std::string> dismissed_recent_tab_ids =
+      ReadDismissedIDsFromPrefs(recent_tabs_category_);
+  std::set<std::string> dismissed_download_ids =
+      ReadDismissedIDsFromPrefs(downloads_category_);
+  std::set<std::string> cleaned_recent_tab_ids;
+  std::set<std::string> cleaned_download_ids;
   std::vector<const OfflinePageItem*> recent_tab_items;
   std::vector<const OfflinePageItem*> download_items;
   for (const OfflinePageItem& item : result) {
+    std::string offline_page_id = base::IntToString(item.offline_id);
     if (need_recent_tabs &&
-        item.client_id.name_space == offline_pages::kLastNNamespace &&
-        !dismissed_recent_tab_ids_.count(base::IntToString(item.offline_id))) {
-      recent_tab_items.push_back(&item);
+        item.client_id.name_space == offline_pages::kLastNNamespace) {
+      if (dismissed_recent_tab_ids.count(offline_page_id))
+        cleaned_recent_tab_ids.insert(offline_page_id);
+      else
+        recent_tab_items.push_back(&item);
     }
 
     // TODO(pke): Use kDownloadNamespace once the OfflinePageModel uses that.
     // The current logic is taken from DownloadUIAdapter::IsVisibleInUI.
-    // Note: This is also copied in OfflinePageDeleted above.
+    // Note: This is also copied in |OfflinePageDeleted| above.
     if (need_downloads &&
         item.client_id.name_space == offline_pages::kAsyncNamespace &&
-        base::IsValidGUID(item.client_id.id) &&
-        !dismissed_download_ids_.count(base::IntToString(item.offline_id))) {
-      download_items.push_back(&item);
+        base::IsValidGUID(item.client_id.id)) {
+      if (dismissed_download_ids.count(offline_page_id))
+        cleaned_download_ids.insert(offline_page_id);
+      else
+        download_items.push_back(&item);
     }
   }
 
@@ -294,11 +250,15 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
         this, recent_tabs_category_,
         GetMostRecentlyVisited(recent_tabs_category_,
                                std::move(recent_tab_items)));
+    if (cleaned_recent_tab_ids.size() != dismissed_recent_tab_ids.size())
+      StoreDismissedIDsToPrefs(recent_tabs_category_, cleaned_recent_tab_ids);
   }
   if (need_downloads) {
     observer()->OnNewSuggestions(
         this, downloads_category_,
         GetMostRecentlyVisited(downloads_category_, std::move(download_items)));
+    if (cleaned_download_ids.size() != dismissed_download_ids.size())
+      StoreDismissedIDsToPrefs(downloads_category_, cleaned_download_ids);
   }
 }
 
@@ -359,10 +319,36 @@ OfflinePageSuggestionsProvider::GetMostRecentlyVisited(
   return suggestions;
 }
 
+void OfflinePageSuggestionsProvider::InvalidateSuggestion(Category category,
+                                                          int64_t offline_id) {
+  std::string offline_page_id = base::IntToString(offline_id);
+  observer()->OnSuggestionInvalidated(this, category,
+                                      MakeUniqueID(category, offline_page_id));
+
+  std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs(category);
+  auto it =
+      std::find(dismissed_ids.begin(), dismissed_ids.end(), offline_page_id);
+  if (it != dismissed_ids.end()) {
+    dismissed_ids.erase(it);
+    StoreDismissedIDsToPrefs(category, dismissed_ids);
+  }
+}
+
+std::string OfflinePageSuggestionsProvider::GetDismissedPref(
+    Category category) const {
+  if (category == recent_tabs_category_)
+    return prefs::kDismissedRecentOfflineTabSuggestions;
+  if (category == downloads_category_)
+    return prefs::kDismissedDownloadSuggestions;
+  NOTREACHED() << "Unknown category " << category.id();
+  return std::string();
+}
+
 std::set<std::string> OfflinePageSuggestionsProvider::ReadDismissedIDsFromPrefs(
-    const std::string& pref_name) const {
+    Category category) const {
   std::set<std::string> dismissed_ids;
-  const base::ListValue* list = pref_service_->GetList(pref_name);
+  const base::ListValue* list =
+      pref_service_->GetList(GetDismissedPref(category));
   for (const std::unique_ptr<base::Value>& value : *list) {
     std::string dismissed_id;
     bool success = value->GetAsString(&dismissed_id);
@@ -373,12 +359,12 @@ std::set<std::string> OfflinePageSuggestionsProvider::ReadDismissedIDsFromPrefs(
 }
 
 void OfflinePageSuggestionsProvider::StoreDismissedIDsToPrefs(
-    const std::string& pref_name,
+    Category category,
     const std::set<std::string>& dismissed_ids) {
   base::ListValue list;
   for (const std::string& dismissed_id : dismissed_ids)
     list.AppendString(dismissed_id);
-  pref_service_->Set(pref_name, list);
+  pref_service_->Set(GetDismissedPref(category), list);
 }
 
 }  // namespace ntp_snippets

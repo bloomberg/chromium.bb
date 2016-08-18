@@ -89,12 +89,20 @@ class OfflinePageSuggestionsProvider
       std::vector<const offline_pages::OfflinePageItem*> offline_page_items)
       const;
 
-  // Reads dismissed IDs from the pref with name |pref_name|.
-  std::set<std::string> ReadDismissedIDsFromPrefs(
-      const std::string& pref_name) const;
+  // Fires the |OnSuggestionInvalidated| event for the suggestion corresponding
+  // to the given |offline_id| and clears it from the dismissed IDs list, if
+  // necessary.
+  void InvalidateSuggestion(Category category, int64_t offline_id);
 
-  // Writes |dismissed_ids| to the pref with name |pref_name|.
-  void StoreDismissedIDsToPrefs(const std::string& pref_name,
+  // Gets the preference name for storing the list of dismissed suggestion IDs
+  // for the given |category|.
+  std::string GetDismissedPref(Category category) const;
+
+  // Reads dismissed IDs for the given |category|.
+  std::set<std::string> ReadDismissedIDsFromPrefs(Category category) const;
+
+  // Writes |dismissed_ids| for the given |category|.
+  void StoreDismissedIDsToPrefs(Category category,
                                 const std::set<std::string>& dismissed_ids);
 
   CategoryStatus recent_tabs_status_;
@@ -106,9 +114,6 @@ class OfflinePageSuggestionsProvider
   const Category downloads_category_;
 
   PrefService* pref_service_;
-
-  std::set<std::string> dismissed_recent_tab_ids_;
-  std::set<std::string> dismissed_download_ids_;
 
   // Whether the Download Manager UI is enabled, in which case the More button
   // for the Downloads section can redirect there.
