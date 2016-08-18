@@ -17,6 +17,7 @@
 #include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/request_coordinator_event_logger.h"
+#include "components/offline_pages/background/request_notifier.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/scheduler.h"
 #include "url/gurl.h"
@@ -32,19 +33,8 @@ class SavePageRequest;
 class Scheduler;
 
 // Coordinates queueing and processing save page later requests.
-class RequestCoordinator : public KeyedService {
+class RequestCoordinator : public KeyedService, public RequestNotifier {
  public:
-  // Status to return for failed notifications.
-  // TODO(petewil): Can we find a better name for this enum?
-  enum class SavePageStatus {
-    SUCCESS,
-    PRERENDER_FAILURE,
-    FOREGROUND_CANCELED,
-    SAVE_FAILED,
-    EXPIRED,
-    RETRY_COUNT_EXCEEDED,
-    REMOVED,
-  };
 
   // Nested observer class.  To make sure that no events are missed, the client
   // code should first register for notifications, then |GetAllRequests|, and
@@ -54,7 +44,7 @@ class RequestCoordinator : public KeyedService {
    public:
     virtual void OnAdded(const SavePageRequest& request) = 0;
     virtual void OnCompleted(const SavePageRequest& request,
-                             SavePageStatus status) = 0;
+                             RequestNotifier::SavePageStatus status) = 0;
     virtual void OnChanged(const SavePageRequest& request) = 0;
   };
 
@@ -124,6 +114,12 @@ class RequestCoordinator : public KeyedService {
 
   void RemoveObserver(RequestCoordinator::Observer* observer);
 
+  // Implement RequestNotifier
+  void NotifyAdded(const SavePageRequest& request) override;
+  void NotifyCompleted(const SavePageRequest& request,
+                       RequestNotifier::SavePageStatus status) override;
+  void NotifyChanged(const SavePageRequest& request) override;
+
   // Returns the request queue used for requests.  Coordinator keeps ownership.
   RequestQueue* queue() { return queue_.get(); }
 
@@ -186,10 +182,6 @@ class RequestCoordinator : public KeyedService {
                             Offliner::RequestStatus status);
 
   void TryNextRequest();
-
-  void NotifyAdded(const SavePageRequest& request);
-  void NotifyCompleted(const SavePageRequest& request, SavePageStatus status);
-  void NotifyChanged(const SavePageRequest& request);
 
   // Returns the appropriate offliner to use, getting a new one from the factory
   // if needed.

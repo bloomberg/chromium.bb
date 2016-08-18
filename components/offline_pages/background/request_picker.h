@@ -15,12 +15,16 @@
 
 namespace offline_pages {
 
+class RequestNotifier;
+
 typedef bool (RequestPicker::*RequestCompareFunction)(
     const SavePageRequest* left, const SavePageRequest* right);
 
 class RequestPicker {
  public:
-  RequestPicker(RequestQueue* requestQueue, OfflinerPolicy* policy);
+  RequestPicker(RequestQueue* requestQueue,
+                OfflinerPolicy* policy,
+                RequestNotifier* notifier);
 
   ~RequestPicker();
 
@@ -63,10 +67,22 @@ class RequestPicker {
   int CompareCreationTime(const SavePageRequest* left,
                           const SavePageRequest* right);
 
-  // unowned pointer to the request queue.
+  // Split all requests into expired ones and still valid ones.
+  void SplitRequests(const std::vector<SavePageRequest>& requests,
+                     std::vector<SavePageRequest>& valid_requests,
+                     std::vector<SavePageRequest>& expired_requests);
+
+  // Callback used after requests get expired.
+  void OnRequestExpired(
+      const RequestQueue::UpdateMultipleRequestResults& results,
+      const std::vector<SavePageRequest>& requests);
+
+  // Unowned pointer to the request queue.
   RequestQueue* queue_;
-  // unowned pointer to the policy object.
+  // Unowned pointer to the policy object.
   OfflinerPolicy* policy_;
+  // Unowned pointer to the request coordinator.
+  RequestNotifier* notifier_;
   // Current conditions on the device
   std::unique_ptr<DeviceConditions> current_conditions_;
   // True if we prefer less-tried requests

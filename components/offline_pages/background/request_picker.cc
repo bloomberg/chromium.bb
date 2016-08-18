@@ -19,10 +19,12 @@ int signum(T t) {
 
 namespace offline_pages {
 
-RequestPicker::RequestPicker(
-    RequestQueue* requestQueue, OfflinerPolicy* policy)
+RequestPicker::RequestPicker(RequestQueue* requestQueue,
+                             OfflinerPolicy* policy,
+                             RequestNotifier* notifier)
     : queue_(requestQueue),
       policy_(policy),
+      notifier_(notifier),
       fewer_retries_better_(false),
       earlier_requests_better_(false),
       weak_ptr_factory_(this) {}
@@ -55,6 +57,19 @@ void RequestPicker::GetRequestResultCallback(
     return;
   }
 
+  // Get the expired requests to be removed from the queue, and the valid ones
+  // from which to pick the next request.
+  std::vector<SavePageRequest> valid_requests;
+  std::vector<SavePageRequest> expired_requests;
+  SplitRequests(requests, valid_requests, expired_requests);
+  std::vector<int64_t> expired_request_ids;
+  for (auto request : expired_requests)
+    expired_request_ids.push_back(request.request_id());
+
+  queue_->RemoveRequests(expired_request_ids,
+                         base::Bind(&RequestPicker::OnRequestExpired,
+                                    weak_ptr_factory_.GetWeakPtr()));
+
   // Pick the most deserving request for our conditions.
   const SavePageRequest* picked_request = nullptr;
 
@@ -67,11 +82,11 @@ void RequestPicker::GetRequestResultCallback(
     comparator = &RequestPicker::RecencyFirstCompareFunction;
 
   // Iterate once through the requests, keeping track of best candidate.
-  for (unsigned i = 0; i < requests.size(); ++i) {
-    if (!RequestConditionsSatisfied(requests[i]))
+  for (unsigned i = 0; i < valid_requests.size(); ++i) {
+    if (!RequestConditionsSatisfied(valid_requests[i]))
       continue;
-    if (IsNewRequestBetter(picked_request, &(requests[i]), comparator))
-      picked_request = &(requests[i]);
+    if (IsNewRequestBetter(picked_request, &(valid_requests[i]), comparator))
+      picked_request = &(valid_requests[i]);
   }
 
   // If we have a best request to try next, get the request coodinator to
@@ -221,6 +236,31 @@ int RequestPicker::CompareCreationTime(
     result *= -1;
 
   return result;
+}
+
+// Split all requests into expired ones and still valid ones.
+void RequestPicker::SplitRequests(
+    const std::vector<SavePageRequest>& requests,
+    std::vector<SavePageRequest>& valid_requests,
+    std::vector<SavePageRequest>& expired_requests) {
+  for (SavePageRequest request : requests) {
+    if (base::Time::Now() - request.creation_time() >=
+        base::TimeDelta::FromSeconds(kRequestExpirationTimeInSeconds)) {
+      expired_requests.push_back(request);
+    } else {
+      valid_requests.push_back(request);
+    }
+  }
+}
+
+// Callback used after expired requests are deleted from the queue and notifies
+// the coordinator.
+void RequestPicker::OnRequestExpired(
+    const RequestQueue::UpdateMultipleRequestResults& results,
+    const std::vector<SavePageRequest>& requests) {
+  for (auto request : requests)
+    notifier_->NotifyCompleted(request,
+                               RequestCoordinator::SavePageStatus::EXPIRED);
 }
 
 }  // namespace offline_pages

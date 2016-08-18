@@ -70,7 +70,7 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
           policy_->GetSinglePageTimeLimitInSeconds())),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
-  picker_.reset(new RequestPicker(queue_.get(), policy_.get()));
+  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), this));
 }
 
 RequestCoordinator::~RequestCoordinator() {}
