@@ -1,2 +1,1 @@
-CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 PASS: Test did not crash.

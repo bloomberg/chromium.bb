@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 314: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 This is a testharness.js-based test.
 PASS This test uses interpolation-test.js. 
 PASS SMIL: Interpolate attribute <transform> with underlying [matrix(1 2 3 4 5 6)] from add [rotate(10 20 30)] to add [rotate(30 70 150)] at (0) is [matrix(1 2 3 4 5 6) rotate(10 20 30)] 

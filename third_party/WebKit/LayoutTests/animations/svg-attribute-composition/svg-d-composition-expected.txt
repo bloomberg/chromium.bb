@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 250: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 CONSOLE ERROR: line 208: Unknown attribute, cannot get d
 CONSOLE ERROR: line 208: Unknown attribute, cannot get d
 CONSOLE ERROR: line 208: Unknown attribute, cannot get d

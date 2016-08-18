@@ -30,7 +30,6 @@
 #include "core/animation/DocumentTimeline.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
-#include "core/frame/Deprecation.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -503,7 +502,7 @@ void SVGImage::updateUseCounters(Document& document) const
 {
     if (SVGSVGElement* rootElement = svgRootElement(m_page.get())) {
         if (rootElement->timeContainer()->hasAnimations())
-            Deprecation::countDeprecation(document, UseCounter::SVGSMILAnimationInImageRegardlessOfCache);
+            UseCounter::count(document, UseCounter::SVGSMILAnimationInImageRegardlessOfCache);
     }
 }
 

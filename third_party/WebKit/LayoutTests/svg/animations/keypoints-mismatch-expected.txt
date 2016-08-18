@@ -1,3 +1,2 @@
-CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 CONSOLE ERROR: line 4: Error: <animateMotion> attribute keySplines: Invalid value, "0".
 Excellent - did not crash. See bug https://bugs.webkit.org/show_bug.cgi?id=35606

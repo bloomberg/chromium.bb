@@ -1,4 +1,3 @@
-CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 Removing animated use target indirectly from the document should not cause crash.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

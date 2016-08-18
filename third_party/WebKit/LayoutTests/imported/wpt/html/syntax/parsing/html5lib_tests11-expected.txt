@@ -1,7 +1,6 @@
 CONSOLE ERROR: line 1: Error: <svg> attribute viewBox: Unexpected end of attribute. Expected number, "".
 CONSOLE ERROR: line 1: Error: <svg> attribute viewBox: Unexpected end of attribute. Expected number, "".
 CONSOLE ERROR: line 1: Error: <svg> attribute viewBox: Unexpected end of attribute. Expected number, "".
-CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 This is a testharness.js-based test.
 PASS html5lib_tests11.html d3a8de194ffc676baf08142bcda59ba18dcde2ba 
 PASS html5lib_tests11.html 7ab36bc30d0d6bee4be899f13baed214e1ff0a74 

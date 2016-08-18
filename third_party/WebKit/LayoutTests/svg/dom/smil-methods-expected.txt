@@ -1,4 +1,3 @@
-CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 This test checks whether the methods on ElementTimeControl correctly return undefined.
 animate.beginElement(): PASS
 animate.beginElementAt(0): PASS

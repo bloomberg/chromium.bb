@@ -1,4 +1,3 @@
-CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 The instance tree of use element zoomplus:
       this = [object ShadowRoot]
            id = loupePlus this = [object SVGGElement]

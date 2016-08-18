@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 22: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 SVG 1.1 dynamic animation tests
 
 Test calcMode discrete with from-to animation on colors with alpha channel. You should see a green 100x100 rect and only PASS messages
