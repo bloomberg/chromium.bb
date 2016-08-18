@@ -12,12 +12,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "third_party/kasko/kasko_features.h"
-
-#if BUILDFLAG(ENABLE_KASKO)
-#include "base/process/process.h"
-#include "syzygy/kasko/api/crash_key.h"
-#endif  // BUILDFLAG(ENABLE_KASKO)
 
 namespace crash_reporter {
 
@@ -92,17 +86,6 @@ struct Report {
 // The list will be sorted in descending order by report creation time (newest
 // reports first).
 void GetReports(std::vector<Report>* reports);
-
-#if BUILDFLAG(ENABLE_KASKO)
-// Returns a copy of the current crash keys for Kasko.
-void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys);
-
-// Reads the annotations for the executable module for |process| and puts them
-// into |crash_keys|.
-void ReadMainModuleAnnotationsForKasko(
-    const base::Process& process,
-    std::vector<kasko::api::CrashKey>* crash_keys);
-#endif  // BUILDFLAG(ENABLE_KASKO)
 
 namespace internal {
 

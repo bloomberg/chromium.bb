@@ -72,8 +72,6 @@
         'app/chrome_watcher_client_win.h',
         'app/chrome_watcher_command_line_win.cc',
         'app/chrome_watcher_command_line_win.h',
-        'app/kasko_client.cc',
-        'app/kasko_client.h',
         'app/main_dll_loader_win.cc',
         'app/main_dll_loader_win.h',
       ],

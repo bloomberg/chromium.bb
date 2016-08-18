@@ -108,11 +108,6 @@ extern "C" __declspec(dllexport) void SetMetricsClientId(
     crash_keys::SetMetricsClientIdFromGUID(client_id);
 }
 
-// This helper is invoked by chrome to read upload settings.
-extern "C" __declspec(dllexport) bool GetUploadsEnabled() {
-  return crash_reporter::GetUploadsEnabled();
-}
-
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
     InitializeCrashReportingForProcess();
