@@ -397,7 +397,7 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
 
   // Put is asynchronous
   IndexedDBValue value("value1", std::vector<IndexedDBBlobInfo>());
-  ScopedVector<storage::BlobDataHandle> handles;
+  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
   std::unique_ptr<IndexedDBKey> key(base::MakeUnique<IndexedDBKey>("key"));
   std::vector<IndexedDBDatabase::IndexKeys> index_keys;
   scoped_refptr<MockIndexedDBCallbacks> request(

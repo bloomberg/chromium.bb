@@ -187,7 +187,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     // before posting to the IDB TaskRunner for the rest of the job.
     void OnPutWrapper(const IndexedDBHostMsg_DatabasePut_Params& params);
     void OnPut(const IndexedDBHostMsg_DatabasePut_Params& params,
-               std::vector<storage::BlobDataHandle*> handles);
+               std::vector<std::unique_ptr<storage::BlobDataHandle>> handles);
     void OnSetIndexKeys(
         const IndexedDBHostMsg_DatabaseSetIndexKeys_Params& params);
     void OnSetIndexesReady(int32_t ipc_database_id,
@@ -288,8 +288,9 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
       const IndexedDBHostMsg_FactoryDeleteDatabase_Params& p);
 
   void OnAckReceivedBlobs(const std::vector<std::string>& uuids);
-  void OnPutHelper(const IndexedDBHostMsg_DatabasePut_Params& params,
-                   std::vector<storage::BlobDataHandle*> handles);
+  void OnPutHelper(
+      const IndexedDBHostMsg_DatabasePut_Params& params,
+      std::vector<std::unique_ptr<storage::BlobDataHandle>> handles);
 
   void ResetDispatcherHosts();
   void DropBlobData(const std::string& uuid);

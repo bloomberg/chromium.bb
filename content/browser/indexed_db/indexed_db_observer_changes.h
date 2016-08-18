@@ -9,12 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "content/browser/indexed_db/indexed_db_observation.h"
 #include "content/common/content_export.h"
 

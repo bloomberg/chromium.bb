@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -379,8 +378,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
 // to the IndexedDBDispatcherHost.
 void IndexedDBDispatcherHost::OnPutHelper(
     const IndexedDBHostMsg_DatabasePut_Params& params,
-    std::vector<storage::BlobDataHandle*> handles) {
-  database_dispatcher_host_->OnPut(params, handles);
+    std::vector<std::unique_ptr<storage::BlobDataHandle>> handles) {
+  database_dispatcher_host_->OnPut(params, std::move(handles));
 }
 
 void IndexedDBDispatcherHost::OnAckReceivedBlobs(
@@ -683,24 +682,23 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGetAll(
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPutWrapper(
     const IndexedDBHostMsg_DatabasePut_Params& params) {
-  std::vector<storage::BlobDataHandle*> handles;
-  for (size_t i = 0; i < params.value.blob_or_file_info.size(); ++i) {
-    const IndexedDBMsg_BlobOrFileInfo& info = params.value.blob_or_file_info[i];
-    handles.push_back(parent_->blob_storage_context_->context()
-                          ->GetBlobDataFromUUID(info.uuid)
-                          .release());
+  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
+  for (const auto& info : params.value.blob_or_file_info) {
+    handles.push_back(
+        parent_->blob_storage_context_->context()->GetBlobDataFromUUID(
+            info.uuid));
   }
   parent_->context()->TaskRunner()->PostTask(
       FROM_HERE, base::Bind(&IndexedDBDispatcherHost::OnPutHelper, parent_,
-                            params, handles));
+                            params, base::Passed(&handles)));
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
     const IndexedDBHostMsg_DatabasePut_Params& params,
-    std::vector<storage::BlobDataHandle*> handles) {
+    std::vector<std::unique_ptr<storage::BlobDataHandle>> handles) {
   DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
 
-  ScopedVector<storage::BlobDataHandle> scoped_handles;
+  std::vector<std::unique_ptr<storage::BlobDataHandle>> scoped_handles;
   scoped_handles.swap(handles);
 
   IndexedDBConnection* connection =
@@ -719,8 +717,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  for (size_t i = 0; i < params.value.blob_or_file_info.size(); ++i) {
-    const IndexedDBMsg_BlobOrFileInfo& info = params.value.blob_or_file_info[i];
+  size_t i = 0;
+  for (const auto& info : params.value.blob_or_file_info) {
     if (info.is_file) {
       base::FilePath path;
       if (!info.file_path.empty()) {
@@ -741,6 +739,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
     } else {
       blob_info[i] = IndexedDBBlobInfo(info.uuid, info.mime_type, info.size);
     }
+    ++i;
   }
 
   // TODO(alecflett): Avoid a copy here.

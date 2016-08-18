@@ -386,7 +386,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
     transaction1.Begin();
-    ScopedVector<storage::BlobDataHandle> handles;
+    std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
     IndexedDBBackingStore::RecordIdentifier record;
     leveldb::Status s = backing_store_->PutRecord(
         &transaction1, 1, 1, m_key1, &m_value1, &handles, &record);
@@ -418,7 +418,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistencyWithBlobs) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
     transaction1.Begin();
-    ScopedVector<storage::BlobDataHandle> handles;
+    std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
     IndexedDBBackingStore::RecordIdentifier record;
     EXPECT_TRUE(backing_store_->PutRecord(&transaction1,
                                           1,
@@ -505,7 +505,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
       IndexedDBValue value3 = IndexedDBValue("value3", blob_info3);
       IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
       transaction1.Begin();
-      ScopedVector<storage::BlobDataHandle> handles;
+      std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
       IndexedDBBackingStore::RecordIdentifier record;
       EXPECT_TRUE(backing_store_->PutRecord(&transaction1,
                                             1,
@@ -599,7 +599,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
       IndexedDBValue value3 = IndexedDBValue("value3", blob_info3);
       IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
       transaction1.Begin();
-      ScopedVector<storage::BlobDataHandle> handles;
+      std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
       IndexedDBBackingStore::RecordIdentifier record;
       EXPECT_TRUE(backing_store_->PutRecord(&transaction1,
                                             1,
@@ -661,7 +661,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
 TEST_F(IndexedDBBackingStoreTest, BlobJournalInterleavedTransactions) {
   IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
   transaction1.Begin();
-  ScopedVector<storage::BlobDataHandle> handles1;
+  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles1;
   IndexedDBBackingStore::RecordIdentifier record1;
   EXPECT_TRUE(backing_store_->PutRecord(&transaction1, 1, 1, m_key3, &m_value3,
                                         &handles1, &record1).ok());
@@ -675,7 +675,7 @@ TEST_F(IndexedDBBackingStoreTest, BlobJournalInterleavedTransactions) {
 
   IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
   transaction2.Begin();
-  ScopedVector<storage::BlobDataHandle> handles2;
+  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles2;
   IndexedDBBackingStore::RecordIdentifier record2;
   EXPECT_TRUE(backing_store_->PutRecord(&transaction2, 1, 1, m_key1, &m_value1,
                                         &handles2, &record2).ok());
@@ -698,7 +698,7 @@ TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
     transaction1.Begin();
-    ScopedVector<storage::BlobDataHandle> handles;
+    std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
     IndexedDBBackingStore::RecordIdentifier record;
     EXPECT_TRUE(backing_store_->PutRecord(&transaction1,
                                           1,
@@ -779,7 +779,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
     transaction1.Begin();
-    ScopedVector<storage::BlobDataHandle> handles;
+    std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
     IndexedDBBackingStore::RecordIdentifier record;
     leveldb::Status s = backing_store_->PutRecord(&transaction1,
                                                   high_database_id,
@@ -869,7 +869,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
   IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
   transaction1.Begin();
 
-  ScopedVector<storage::BlobDataHandle> handles;
+  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
   IndexedDBBackingStore::RecordIdentifier record;
   leveldb::Status s = backing_store_->PutRecord(&transaction1,
                                                 database_id,

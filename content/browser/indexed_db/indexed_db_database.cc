@@ -7,16 +7,13 @@
 #include <math.h>
 
 #include <limits>
-#include <memory>
 #include <set>
-#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -1196,7 +1193,7 @@ struct IndexedDBDatabase::PutOperationParams {
   PutOperationParams() {}
   int64_t object_store_id;
   IndexedDBValue value;
-  ScopedVector<storage::BlobDataHandle> handles;
+  std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
   std::unique_ptr<IndexedDBKey> key;
   blink::WebIDBPutMode put_mode;
   scoped_refptr<IndexedDBCallbacks> callbacks;
@@ -1206,14 +1203,15 @@ struct IndexedDBDatabase::PutOperationParams {
   DISALLOW_COPY_AND_ASSIGN(PutOperationParams);
 };
 
-void IndexedDBDatabase::Put(int64_t transaction_id,
-                            int64_t object_store_id,
-                            IndexedDBValue* value,
-                            ScopedVector<storage::BlobDataHandle>* handles,
-                            std::unique_ptr<IndexedDBKey> key,
-                            blink::WebIDBPutMode put_mode,
-                            scoped_refptr<IndexedDBCallbacks> callbacks,
-                            const std::vector<IndexKeys>& index_keys) {
+void IndexedDBDatabase::Put(
+    int64_t transaction_id,
+    int64_t object_store_id,
+    IndexedDBValue* value,
+    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
+    std::unique_ptr<IndexedDBKey> key,
+    blink::WebIDBPutMode put_mode,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
+    const std::vector<IndexKeys>& index_keys) {
   IDB_TRACE1("IndexedDBDatabase::Put", "txn.id", transaction_id);
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
   if (!transaction)
@@ -1295,7 +1293,7 @@ void IndexedDBDatabase::PutOperation(std::unique_ptr<PutOperationParams> params,
     }
   }
 
-  ScopedVector<IndexWriter> index_writers;
+  std::vector<std::unique_ptr<IndexWriter>> index_writers;
   base::string16 error_message;
   bool obeys_constraints = false;
   bool backing_store_success = MakeIndexWriters(transaction,
@@ -1342,11 +1340,10 @@ void IndexedDBDatabase::PutOperation(std::unique_ptr<PutOperationParams> params,
   {
     IDB_TRACE1("IndexedDBDatabase::PutOperation.UpdateIndexes", "txn.id",
                transaction->id());
-    for (size_t i = 0; i < index_writers.size(); ++i) {
-      IndexWriter* index_writer = index_writers[i];
-      index_writer->WriteIndexKeys(record_identifier, backing_store_.get(),
-                                   transaction->BackingStoreTransaction(), id(),
-                                   params->object_store_id);
+    for (const auto& writer : index_writers) {
+      writer->WriteIndexKeys(record_identifier, backing_store_.get(),
+                             transaction->BackingStoreTransaction(), id(),
+                             params->object_store_id);
     }
   }
 
@@ -1418,7 +1415,7 @@ void IndexedDBDatabase::SetIndexKeys(int64_t transaction_id,
     return;
   }
 
-  ScopedVector<IndexWriter> index_writers;
+  std::vector<std::unique_ptr<IndexWriter>> index_writers;
   base::string16 error_message;
   bool obeys_constraints = false;
   DCHECK(metadata_.object_stores.find(object_store_id) !=
@@ -1447,13 +1444,10 @@ void IndexedDBDatabase::SetIndexKeys(int64_t transaction_id,
     return;
   }
 
-  for (size_t i = 0; i < index_writers.size(); ++i) {
-    IndexWriter* index_writer = index_writers[i];
-    index_writer->WriteIndexKeys(record_identifier,
-                                 backing_store_.get(),
-                                 transaction->BackingStoreTransaction(),
-                                 id(),
-                                 object_store_id);
+  for (const auto& writer : index_writers) {
+    writer->WriteIndexKeys(record_identifier, backing_store_.get(),
+                           transaction->BackingStoreTransaction(), id(),
+                           object_store_id);
   }
 }
 

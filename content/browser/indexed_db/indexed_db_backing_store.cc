@@ -1902,7 +1902,7 @@ leveldb::Status IndexedDBBackingStore::PutRecord(
     int64_t object_store_id,
     const IndexedDBKey& key,
     IndexedDBValue* value,
-    ScopedVector<storage::BlobDataHandle>* handles,
+    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
     RecordIdentifier* record_identifier) {
   IDB_TRACE("IndexedDBBackingStore::PutRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
@@ -4367,7 +4367,7 @@ void IndexedDBBackingStore::BlobChangeRecord::SetBlobInfo(
 }
 
 void IndexedDBBackingStore::BlobChangeRecord::SetHandles(
-    ScopedVector<storage::BlobDataHandle>* handles) {
+    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles) {
   handles_.clear();
   if (handles)
     handles_.swap(*handles);
@@ -4379,8 +4379,10 @@ IndexedDBBackingStore::BlobChangeRecord::Clone() const {
       new BlobChangeRecord(key_, object_store_id_));
   record->blob_info_ = blob_info_;
 
-  for (const auto* handle : handles_)
-    record->handles_.push_back(new storage::BlobDataHandle(*handle));
+  for (const auto& handle : handles_) {
+    record->handles_.push_back(
+        base::MakeUnique<storage::BlobDataHandle>(*handle));
+  }
   return record;
 }
 
@@ -4389,7 +4391,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::PutBlobInfoIfNeeded(
     int64_t object_store_id,
     const std::string& object_store_data_key,
     std::vector<IndexedDBBlobInfo>* blob_info,
-    ScopedVector<storage::BlobDataHandle>* handles) {
+    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles) {
   if (!blob_info || blob_info->empty()) {
     blob_change_map_.erase(object_store_data_key);
     incognito_blob_map_.erase(object_store_data_key);
@@ -4424,7 +4426,7 @@ void IndexedDBBackingStore::Transaction::PutBlobInfo(
     int64_t object_store_id,
     const std::string& object_store_data_key,
     std::vector<IndexedDBBlobInfo>* blob_info,
-    ScopedVector<storage::BlobDataHandle>* handles) {
+    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles) {
   DCHECK_GT(object_store_data_key.size(), 0UL);
   if (database_id_ < 0)
     database_id_ = database_id;

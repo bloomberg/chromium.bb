@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -48,13 +49,14 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
                                     int64_t database_id,
                                     int64_t object_store_id) override;
 
-  leveldb::Status PutRecord(IndexedDBBackingStore::Transaction* transaction,
-                            int64_t database_id,
-                            int64_t object_store_id,
-                            const IndexedDBKey& key,
-                            IndexedDBValue* value,
-                            ScopedVector<storage::BlobDataHandle>* handles,
-                            RecordIdentifier* record) override;
+  leveldb::Status PutRecord(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64_t database_id,
+      int64_t object_store_id,
+      const IndexedDBKey& key,
+      IndexedDBValue* value,
+      std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
+      RecordIdentifier* record) override;
 
   leveldb::Status ClearObjectStore(Transaction*,
                                    int64_t database_id,

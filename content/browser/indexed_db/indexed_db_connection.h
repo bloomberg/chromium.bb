@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CONNECTION_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CONNECTION_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

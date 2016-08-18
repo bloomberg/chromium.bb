@@ -42,14 +42,9 @@ bool IndexWriter::VerifyIndexKeys(
     base::string16* error_message) const {
   *can_add_keys = false;
   DCHECK_EQ(index_id, index_keys_.first);
-  for (size_t i = 0; i < index_keys_.second.size(); ++i) {
-    bool ok = AddingKeyAllowed(backing_store,
-                               transaction,
-                               database_id,
-                               object_store_id,
-                               index_id,
-                               (index_keys_.second)[i],
-                               primary_key,
+  for (const auto& key : index_keys_.second) {
+    bool ok = AddingKeyAllowed(backing_store, transaction, database_id,
+                               object_store_id, index_id, key, primary_key,
                                can_add_keys);
     if (!ok)
       return false;
@@ -75,14 +70,10 @@ void IndexWriter::WriteIndexKeys(
     int64_t object_store_id) const {
   int64_t index_id = index_metadata_.id;
   DCHECK_EQ(index_id, index_keys_.first);
-  for (size_t i = 0; i < index_keys_.second.size(); ++i) {
-    leveldb::Status s =
-        backing_store->PutIndexDataForRecord(transaction,
-                                             database_id,
-                                             object_store_id,
-                                             index_id,
-                                             index_keys_.second[i],
-                                             record_identifier);
+  for (const auto& key : index_keys_.second) {
+    leveldb::Status s = backing_store->PutIndexDataForRecord(
+        transaction, database_id, object_store_id, index_id, key,
+        record_identifier);
     // This should have already been verified as a valid write during
     // verify_index_keys.
     DCHECK(s.ok());
@@ -129,7 +120,7 @@ bool MakeIndexWriters(
     const IndexedDBKey& primary_key,  // makes a copy
     bool key_was_generated,
     const std::vector<IndexedDBDatabase::IndexKeys>& index_keys,
-    ScopedVector<IndexWriter>* index_writers,
+    std::vector<std::unique_ptr<IndexWriter>>* index_writers,
     base::string16* error_message,
     bool* completed) {
   *completed = false;

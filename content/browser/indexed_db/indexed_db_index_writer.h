@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
@@ -70,7 +70,7 @@ bool MakeIndexWriters(
     const IndexedDBKey& primary_key,
     bool key_was_generated,
     const std::vector<IndexedDBDatabase::IndexKeys>& index_keys,
-    ScopedVector<IndexWriter>* index_writers,
+    std::vector<std::unique_ptr<IndexWriter>>* index_writers,
     base::string16* error_message,
     bool* completed) WARN_UNUSED_RESULT;
 

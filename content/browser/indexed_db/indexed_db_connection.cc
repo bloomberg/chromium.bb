@@ -5,7 +5,6 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 
 namespace content {
 

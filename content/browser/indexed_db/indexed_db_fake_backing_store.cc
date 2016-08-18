@@ -4,8 +4,6 @@
 
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 
-#include <memory>
-
 #include "base/files/file_path.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -82,7 +80,7 @@ leveldb::Status IndexedDBFakeBackingStore::PutRecord(
     int64_t object_store_id,
     const IndexedDBKey& key,
     IndexedDBValue* value,
-    ScopedVector<storage::BlobDataHandle>* handles,
+    std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles,
     RecordIdentifier* record) {
   return leveldb::Status::OK();
 }
