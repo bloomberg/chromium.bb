@@ -211,17 +211,11 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   listener.WaitUntilSatisfied();
 }
 
-#if defined(USE_OZONE)
-// ozone bringup - http://crbug.com/401304
-#define MAYBE_TestContextMenuOnOverflowedAction \
-  DISABLED_TestContextMenuOnOverflowedAction
-#else
-#define MAYBE_TestContextMenuOnOverflowedAction \
-  TestContextMenuOnOverflowedAction
-#endif
+// TODO(jonross): determine cause of new flake, and restore previous MAYBE
+// conditions. Temporarily disabling due to number of flakes (crbug.com/639010)
 // Tests the context menus of overflowed extension actions.
 IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
-                       MAYBE_TestContextMenuOnOverflowedAction) {
+                       DISABLED_TestContextMenuOnOverflowedAction) {
   views::MenuController::TurnOffMenuSelectionHoldForTest();
 
   // Load an extension that has a home page (important for the context menu's
