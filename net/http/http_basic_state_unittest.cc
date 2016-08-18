@@ -4,6 +4,7 @@
 
 #include "net/http/http_basic_state.h"
 
+#include "base/memory/ptr_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_info.h"
@@ -15,20 +16,21 @@ namespace {
 
 TEST(HttpBasicStateTest, ConstructsProperly) {
   ClientSocketHandle* const handle = new ClientSocketHandle;
-  // Ownership of handle is passed to |state|.
-  const HttpBasicState state(handle, true);
+  // Ownership of |handle| is passed to |state|.
+  const HttpBasicState state(base::WrapUnique(handle), true);
   EXPECT_EQ(handle, state.connection());
   EXPECT_TRUE(state.using_proxy());
 }
 
 TEST(HttpBasicStateTest, UsingProxyCanBeFalse) {
-  const HttpBasicState state(new ClientSocketHandle(), false);
+  const HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), false);
   EXPECT_FALSE(state.using_proxy());
 }
 
 TEST(HttpBasicStateTest, ReleaseConnectionWorks) {
   ClientSocketHandle* const handle = new ClientSocketHandle;
-  HttpBasicState state(handle, false);
+  // Ownership of |handle| is passed to |state|.
+  HttpBasicState state(base::WrapUnique(handle), false);
   const std::unique_ptr<ClientSocketHandle> released_connection(
       state.ReleaseConnection());
   EXPECT_EQ(NULL, state.connection());
@@ -36,7 +38,7 @@ TEST(HttpBasicStateTest, ReleaseConnectionWorks) {
 }
 
 TEST(HttpBasicStateTest, InitializeWorks) {
-  HttpBasicState state(new ClientSocketHandle(), false);
+  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), false);
   const HttpRequestInfo request_info;
   EXPECT_EQ(OK,
             state.Initialize(
@@ -45,7 +47,7 @@ TEST(HttpBasicStateTest, InitializeWorks) {
 }
 
 TEST(HttpBasicStateTest, DeleteParser) {
-  HttpBasicState state(new ClientSocketHandle(), false);
+  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), false);
   const HttpRequestInfo request_info;
   state.Initialize(&request_info, LOW, BoundNetLog(), CompletionCallback());
   EXPECT_TRUE(state.parser());
@@ -55,7 +57,7 @@ TEST(HttpBasicStateTest, DeleteParser) {
 
 TEST(HttpBasicStateTest, GenerateRequestLineNoProxy) {
   const bool use_proxy = false;
-  HttpBasicState state(new ClientSocketHandle(), use_proxy);
+  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), use_proxy);
   HttpRequestInfo request_info;
   request_info.url = GURL("http://www.example.com/path?foo=bar#hoge");
   request_info.method = "PUT";
@@ -65,7 +67,7 @@ TEST(HttpBasicStateTest, GenerateRequestLineNoProxy) {
 
 TEST(HttpBasicStateTest, GenerateRequestLineWithProxy) {
   const bool use_proxy = true;
-  HttpBasicState state(new ClientSocketHandle(), use_proxy);
+  HttpBasicState state(base::MakeUnique<ClientSocketHandle>(), use_proxy);
   HttpRequestInfo request_info;
   request_info.url = GURL("http://www.example.com/path?foo=bar#hoge");
   request_info.method = "PUT";

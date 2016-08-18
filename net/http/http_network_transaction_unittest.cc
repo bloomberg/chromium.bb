@@ -14296,7 +14296,7 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
   FakeWebSocketBasicHandshakeStream(
       std::unique_ptr<ClientSocketHandle> connection,
       bool using_proxy)
-      : state_(connection.release(), using_proxy) {}
+      : state_(std::move(connection), using_proxy) {}
 
   // Fake implementation of HttpStreamBase methods.
   // This ends up being quite "real" because this object has to really send data

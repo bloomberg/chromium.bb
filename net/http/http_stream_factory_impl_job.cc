@@ -1157,7 +1157,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
           delegate_->websocket_handshake_stream_create_helper()
               ->CreateBasicStream(std::move(connection_), using_proxy));
     } else {
-      stream_.reset(new HttpBasicStream(connection_.release(), using_proxy));
+      stream_.reset(new HttpBasicStream(std::move(connection_), using_proxy));
     }
     return OK;
   }

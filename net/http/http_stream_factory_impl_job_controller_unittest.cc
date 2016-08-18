@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_basic_stream.h"
@@ -235,7 +236,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // There's no other alternative job. Thus when stream is ready, it should
   // notify Request.
   HttpStream* http_stream =
-      new HttpBasicStream(new ClientSocketHandle(), false);
+      new HttpBasicStream(base::MakeUnique<ClientSocketHandle>(), false);
   job_factory_.main_job()->SetStream(http_stream);
 
   EXPECT_CALL(request_delegate_, OnStreamReady(_, _, http_stream))
@@ -353,7 +354,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // to Request. The alternative job will mark the main job complete and gets
   // orphaned.
   HttpStream* http_stream =
-      new HttpBasicStream(new ClientSocketHandle(), false);
+      new HttpBasicStream(base::MakeUnique<ClientSocketHandle>(), false);
   job_factory_.main_job()->SetStream(http_stream);
 
   EXPECT_CALL(request_delegate_, OnStreamReady(_, _, http_stream))
@@ -412,7 +413,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
   // |alternative_job| succeeds and should report status to Request.
   HttpStream* http_stream =
-      new HttpBasicStream(new ClientSocketHandle(), false);
+      new HttpBasicStream(base::MakeUnique<ClientSocketHandle>(), false);
   job_factory_.alternative_job()->SetStream(http_stream);
 
   EXPECT_CALL(request_delegate_, OnStreamReady(_, _, http_stream))
@@ -463,7 +464,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetLoadStateAfterMainJobFailed) {
 
   // |alternative_job| succeeds and should report status to Request.
   HttpStream* http_stream =
-      new HttpBasicStream(new ClientSocketHandle(), false);
+      new HttpBasicStream(base::MakeUnique<ClientSocketHandle>(), false);
   job_factory_.alternative_job()->SetStream(http_stream);
 
   EXPECT_CALL(request_delegate_, OnStreamReady(_, _, http_stream))
