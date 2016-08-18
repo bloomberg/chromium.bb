@@ -16,6 +16,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/surface_manager.h"
 #include "media/base/video_decoder.h"
@@ -185,6 +186,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   // round-trip to the browser process, we keep allocation out of the
   // steady-state of the decoder.
   std::vector<SHMBuffer*> available_shm_segments_;
+
+  // Placeholder sync token that was created and validated after the most
+  // recent picture buffers were created.
+  gpu::SyncToken sync_token_;
 
   std::map<int32_t, PendingDecoderBuffer> bitstream_buffers_in_decoder_;
   PictureBufferMap assigned_picture_buffers_;

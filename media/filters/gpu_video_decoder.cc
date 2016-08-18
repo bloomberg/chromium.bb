@@ -496,6 +496,7 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32_t count,
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
+  sync_token_ = factories_->CreateSyncToken();
   DCHECK_EQ(count * textures_per_buffer, texture_ids.size());
   DCHECK_EQ(count * textures_per_buffer, texture_mailboxes.size());
 
@@ -596,8 +597,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
 
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   for (size_t i = 0; i < pb.texture_ids().size(); ++i) {
-    mailbox_holders[i] = gpu::MailboxHolder(
-        pb.texture_mailbox(i), gpu::SyncToken(), decoder_texture_target_);
+    mailbox_holders[i] = gpu::MailboxHolder(pb.texture_mailbox(i), sync_token_,
+                                            decoder_texture_target_);
   }
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTextures(

@@ -768,6 +768,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//gpu/command_buffer/common",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
