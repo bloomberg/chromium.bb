@@ -28,15 +28,12 @@
 
 """A class to help start/stop the PyWebSocket server as used by the layout tests."""
 
-import logging
 import os
 import sys
 import time
 
 from webkitpy.layout_tests.servers import server_base
 from webkitpy.thirdparty import mod_pywebsocket
-
-_log = logging.getLogger(__name__)
 
 
 _WS_LOG_PREFIX = 'pywebsocket.ws.log-'

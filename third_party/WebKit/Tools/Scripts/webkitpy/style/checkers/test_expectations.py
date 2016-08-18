@@ -35,9 +35,6 @@ from webkitpy.common.host import Host
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 
 
-_log = logging.getLogger(__name__)
-
-
 class TestExpectationsChecker(object):
     """Processes TestExpectations lines for validating the syntax."""
 

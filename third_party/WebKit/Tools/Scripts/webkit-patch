@@ -66,8 +66,6 @@ class ForgivingUTF8Writer(codecs.lookup('utf-8')[-1]):
 # Not having this was the cause of https://bugs.webkit.org/show_bug.cgi?id=63452.
 sys.stdout = ForgivingUTF8Writer(sys.stdout)
 
-_log = logging.getLogger("webkit-patch")
-
 
 def main():
     # This is a hack to let us enable DEBUG logging as early as possible.

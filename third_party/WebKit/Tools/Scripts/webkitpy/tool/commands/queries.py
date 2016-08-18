@@ -29,7 +29,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import fnmatch
-import logging
 import re
 
 from optparse import make_option
@@ -38,8 +37,6 @@ from webkitpy.common.system.crashlogs import CrashLogs
 from webkitpy.tool.commands.command import Command
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
 from webkitpy.layout_tests.port.factory import platform_options
-
-_log = logging.getLogger(__name__)
 
 
 class CrashLog(Command):

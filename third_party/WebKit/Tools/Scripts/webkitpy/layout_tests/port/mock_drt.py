@@ -37,7 +37,6 @@ MockDRT to crash).
 """
 
 import base64
-import logging
 import optparse
 import os
 import sys
@@ -54,8 +53,6 @@ from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.driver import DriverInput, DriverOutput
 from webkitpy.layout_tests.port.factory import PortFactory
-
-_log = logging.getLogger(__name__)
 
 
 class MockDRTPort(object):

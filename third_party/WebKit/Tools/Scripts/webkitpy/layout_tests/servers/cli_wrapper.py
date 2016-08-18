@@ -37,8 +37,6 @@ import argparse
 
 from webkitpy.common.host import Host
 
-_log = logging.getLogger(__name__)
-
 
 def main(server_constructor, input_fn=None, argv=None, **kwargs):
     input_fn = input_fn or raw_input

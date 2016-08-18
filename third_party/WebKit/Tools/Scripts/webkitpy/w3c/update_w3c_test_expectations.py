@@ -8,14 +8,10 @@ based on layout test failures in try jobs.
 This script is used as part of the w3c test auto-import process.
 """
 
-import logging
-
 from webkitpy.common.net import rietveld
 from webkitpy.common.net.buildbot import BuildBot
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.w3c.test_parser import TestParser
-
-_log = logging.getLogger(__name__)
 
 
 def main(host):

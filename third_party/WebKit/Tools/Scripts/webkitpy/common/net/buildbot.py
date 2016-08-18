@@ -33,12 +33,9 @@ import urllib2
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net.layouttestresults import LayoutTestResults
 from webkitpy.common.net.networktransaction import NetworkTransaction
-from webkitpy.common.system.logutils import get_logger
 
 
 RESULTS_URL_BASE = 'https://storage.googleapis.com/chromium-layout-test-archives'
-
-_log = get_logger(__file__)
 
 
 class Build(collections.namedtuple('Build', ('builder_name', 'build_number'))):

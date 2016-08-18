@@ -26,11 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import logging
-
-
-_log = logging.getLogger(__name__)
-
 
 class DumpReader(object):
     """Base class for breakpad dump readers."""

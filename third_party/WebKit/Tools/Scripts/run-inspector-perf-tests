@@ -29,12 +29,9 @@
 
 """Run Inspector's perf tests in perf mode."""
 
-import logging
 import sys
 
 from webkitpy.performance_tests.perftestsrunner import PerfTestsRunner
-
-_log = logging.getLogger(__name__)
 
 if '__main__' == __name__:
     logging.basicConfig(level=logging.INFO, format='%(message)s')

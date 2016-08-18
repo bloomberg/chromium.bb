@@ -26,11 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import logging
 import re
 import itertools
-
-_log = logging.getLogger(__name__)
 
 
 class ProfilerFactory(object):
