@@ -1014,10 +1014,14 @@ void ElementAnimations::UpdateActivation(UpdateActivationType type) {
       }
     }
 
-    if (is_active_ && (!was_active || force))
+    if (is_active_ && (!was_active || force)) {
       animation_host_->DidActivateElementAnimations(this);
-    else if (!is_active_ && (was_active || force))
+    } else if (!is_active_ && (was_active || force)) {
+      // Resetting last_tick_time_ here ensures that calling ::UpdateState
+      // before ::Animate doesn't start an animation.
+      last_tick_time_ = base::TimeTicks();
       animation_host_->DidDeactivateElementAnimations(this);
+    }
   }
 }
 

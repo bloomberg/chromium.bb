@@ -9804,6 +9804,57 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   host_impl_->DidFinishImplFrame();
 }
 
+// Verfify that a smooth scroll animation doesn't jump when UpdateTarget gets
+// called before the animation is started.
+TEST_F(LayerTreeHostImplTest, AnimatedScrollUpdateTargetBeforeStarting) {
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(50, 100);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  DrawFrame();
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(200);
+
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+  begin_frame_args.frame_time = start_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->UpdateAnimationState(true);
+  host_impl_->DidFinishImplFrame();
+
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)).thread);
+  // This will call ScrollOffsetAnimationCurve::UpdateTarget while the animation
+  // created above is in state ANIMATION::WAITING_FOR_TARGET_AVAILABILITY and
+  // doesn't have a start time.
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 100)).thread);
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(250);
+  // This is when the animation above gets promoted to STARTING.
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->UpdateAnimationState(true);
+  host_impl_->DidFinishImplFrame();
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(300);
+  // This is when the animation above gets ticked.
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->UpdateAnimationState(true);
+  host_impl_->DidFinishImplFrame();
+
+  LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
+  EXPECT_EQ(host_impl_->OuterViewportScrollLayer(), scrolling_layer);
+
+  // Verify no jump.
+  float y = scrolling_layer->CurrentScrollOffset().y();
+  EXPECT_TRUE(y > 1 && y < 49);
+}
+
 // Test that a smooth scroll offset animation is aborted when followed by a
 // non-smooth scroll offset animation.
 TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {

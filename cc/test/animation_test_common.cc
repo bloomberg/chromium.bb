@@ -10,6 +10,7 @@
 #include "cc/animation/animation_player.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/keyframed_animation_curve.h"
+#include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/time_util.h"
@@ -214,6 +215,28 @@ float FakeFloatTransition::GetValue(base::TimeDelta time) const {
 
 std::unique_ptr<AnimationCurve> FakeFloatTransition::Clone() const {
   return base::WrapUnique(new FakeFloatTransition(*this));
+}
+
+int AddScrollOffsetAnimationToElementAnimations(ElementAnimations* target,
+                                                gfx::ScrollOffset initial_value,
+                                                gfx::ScrollOffset target_value,
+                                                bool impl_only) {
+  std::unique_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          target_value, CubicBezierTimingFunction::CreatePreset(
+                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+  curve->SetInitialValue(initial_value);
+
+  int id = AnimationIdProvider::NextAnimationId();
+
+  std::unique_ptr<Animation> animation(Animation::Create(
+      std::move(curve), id, AnimationIdProvider::NextGroupId(),
+      TargetProperty::SCROLL_OFFSET));
+  animation->set_is_impl_only(impl_only);
+
+  target->AddAnimation(std::move(animation));
+
+  return id;
 }
 
 int AddOpacityTransitionToElementAnimations(ElementAnimations* target,

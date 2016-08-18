@@ -86,9 +86,14 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
   new_target.SetToMax(gfx::ScrollOffset());
   new_target.SetToMin(max_scroll_offset);
 
-  curve->UpdateTarget(
-      animation->TrimTimeToCurrentIteration(frame_monotonic_time).InSecondsF(),
-      new_target);
+  // TODO(ymalik): Animation::TrimTimeToCurrentIteration should probably check
+  // for run_state == Animation::WAITING_FOR_TARGET_AVAILABILITY.
+  base::TimeDelta trimmed =
+      animation->run_state() == Animation::WAITING_FOR_TARGET_AVAILABILITY
+          ? base::TimeDelta()
+          : animation->TrimTimeToCurrentIteration(frame_monotonic_time);
+
+  curve->UpdateTarget(trimmed.InSecondsF(), new_target);
 
   return true;
 }

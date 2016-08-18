@@ -20,6 +20,10 @@ class LayerImpl;
 class Layer;
 }
 
+namespace gfx {
+class ScrollOffset;
+}
+
 namespace cc {
 
 class FakeFloatAnimationCurve : public FloatAnimationCurve {
@@ -74,6 +78,11 @@ class FakeFloatTransition : public FloatAnimationCurve {
   float from_;
   float to_;
 };
+
+int AddScrollOffsetAnimationToElementAnimations(ElementAnimations* target,
+                                                gfx::ScrollOffset initial_value,
+                                                gfx::ScrollOffset target_value,
+                                                bool impl_only);
 
 int AddOpacityTransitionToElementAnimations(ElementAnimations* target,
                                             double duration,

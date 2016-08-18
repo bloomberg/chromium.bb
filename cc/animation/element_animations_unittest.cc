@@ -946,6 +946,63 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
   EXPECT_FALSE(event);
 }
 
+// This test verifies that if an animation is added after a layer is animated,
+// it doesn't get promoted to be in the RUNNING state. This prevents cases where
+// a start time gets set on an animation using the stale value of
+// last_tick_time_.
+TEST_F(ElementAnimationsTest, UpdateStateWithoutAnimate) {
+  CreateTestLayer(true, false);
+  AttachTimelinePlayerLayer();
+  CreateImplTimelineAndPlayer();
+
+  scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
+
+  auto events = host_impl_->CreateEvents();
+
+  // Add first scroll offset animation.
+  AddScrollOffsetAnimationToElementAnimations(
+      animations_impl.get(), gfx::ScrollOffset(100.f, 300.f),
+      gfx::ScrollOffset(100.f, 200.f), true);
+
+  // Calling UpdateState after Animate should promote the animation to running
+  // state.
+  animations_impl->Animate(kInitialTickTime);
+  animations_impl->UpdateState(true, events.get());
+  EXPECT_EQ(Animation::RUNNING,
+            animations_impl->GetAnimation(TargetProperty::SCROLL_OFFSET)
+                ->run_state());
+
+  animations_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(1500));
+  animations_impl->UpdateState(true, events.get());
+  EXPECT_EQ(Animation::WAITING_FOR_DELETION,
+            animations_impl->GetAnimation(TargetProperty::SCROLL_OFFSET)
+                ->run_state());
+
+  // Add second scroll offset animation.
+  AddScrollOffsetAnimationToElementAnimations(
+      animations_impl.get(), gfx::ScrollOffset(100.f, 200.f),
+      gfx::ScrollOffset(100.f, 100.f), true);
+
+  // Calling UpdateState without Animate should NOT promote the animation to
+  // running state.
+  animations_impl->UpdateState(true, events.get());
+  EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
+            animations_impl->GetAnimation(TargetProperty::SCROLL_OFFSET)
+                ->run_state());
+
+  animations_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(2000));
+  animations_impl->UpdateState(true, events.get());
+
+  EXPECT_EQ(Animation::RUNNING,
+            animations_impl->GetAnimation(TargetProperty::SCROLL_OFFSET)
+                ->run_state());
+  EXPECT_VECTOR2DF_EQ(
+      gfx::ScrollOffset(100.f, 200.f),
+      client_impl_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
+}
+
 // Ensure that when the impl animations doesn't have a value provider,
 // the main-thread animations's value provider is used to obtain the intial
 // scroll offset.
