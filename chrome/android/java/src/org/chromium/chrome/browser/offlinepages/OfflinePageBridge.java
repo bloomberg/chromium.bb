@@ -26,6 +26,7 @@ import java.util.UUID;
 @JNINamespace("offline_pages::android")
 public class OfflinePageBridge {
     public static final String BOOKMARK_NAMESPACE = "bookmark";
+    public static final String SHARE_NAMESPACE = "share";
 
     /**
      * Retrieves the OfflinePageBridge for the given profile, creating it the first time
@@ -268,6 +269,24 @@ public class OfflinePageBridge {
      */
     public void getPageByOfflineUrl(String offlineUrl, Callback<OfflinePageItem> callback) {
         nativeGetPageByOfflineUrl(mNativeOfflinePageBridge, offlineUrl, callback);
+    }
+
+    /**
+     * Get the offline page associated with the provided offline ID.
+     *
+     * @param offlineId ID of the offline page.
+     * @param callback callback to pass back the
+     * matching {@link OfflinePageItem} if found. Will pass back <code>null</code> if not.
+     */
+    public void getPageByOfflineId(final long offlineId, final Callback<OfflinePageItem> callback) {
+        runWhenLoaded(new Runnable() {
+            @Override
+            public void run() {
+                OfflinePageItem item =
+                        nativeGetPageByOfflineId(mNativeOfflinePageBridge, offlineId);
+                callback.onResult(item);
+            }
+        });
     }
 
     /**

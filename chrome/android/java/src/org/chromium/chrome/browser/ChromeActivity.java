@@ -1001,23 +1001,19 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             public void onFinishGetBitmap(Bitmap bitmap, int response) {
                 // Check whether this page is an offline page, and use its online URL if so.
                 OfflinePageItem offlinePage = currentTab.getOfflinePage();
-                String url = currentTab.getOriginalUrl();
+                String onlineUrl = currentTab.getOriginalUrl();
                 RecordHistogram.recordBooleanHistogram(
                         "OfflinePages.SharedPageWasOffline", offlinePage != null);
-                boolean canShareOfflinePage =
-                        (offlinePage != null && OfflinePageBridge.isPageSharingEnabled());
+                boolean canShareOfflinePage = OfflinePageBridge.isPageSharingEnabled();
 
                 if (canShareOfflinePage) {
                     // Share the offline page instead of the URL.
-                    OfflinePageUtils.shareOfflinePage(
-                            shareDirectly, true, mainActivity, null, url, bitmap, null, currentTab);
+                    boolean isOfflinePage = (offlinePage != null);
+                    OfflinePageUtils.shareOfflinePage(shareDirectly, true, mainActivity, null,
+                            onlineUrl, bitmap, null, currentTab, isOfflinePage);
                 } else {
-                    // If there is no entry in the offline pages DB for this tab, use the
-                    // tab's URL directly.
-                    if (url == null) url = currentTab.getUrl();
-
                     ShareHelper.share(shareDirectly, true, mainActivity, currentTab.getTitle(),
-                            null, url, null, bitmap, null);
+                            null, onlineUrl, null, bitmap, null);
                     if (shareDirectly) {
                         RecordUserAction.record("MobileMenuDirectShare");
                     } else {
