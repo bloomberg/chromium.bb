@@ -599,8 +599,8 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
 
   if (has_rows && has_cols)
 #if CONFIG_DAALA_EC
-    p = (PARTITION_TYPE)aom_read_tree_cdf(r, cm->fc->partition_cdf[ctx],
-                                          PARTITION_TYPES);
+    p = (PARTITION_TYPE)aom_read_symbol(r, cm->fc->partition_cdf[ctx],
+                                        PARTITION_TYPES);
 #else
     p = (PARTITION_TYPE)aom_read_tree(r, av1_partition_tree, probs);
 #endif
