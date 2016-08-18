@@ -49,9 +49,6 @@ if util.IsLinux():
 
 
 _NEGATIVE_FILTER = [
-    # This test is flaky since it uses setTimeout.
-    # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
-    'ChromeDriverTest.testAlert',
     # This test is too flaky on the bots, but seems to run perfectly fine
     # on developer workstations.
     'ChromeDriverTest.testEmulateNetworkConditionsNameSpeed',
@@ -732,10 +729,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testAlert(self):
     self.assertFalse(self._driver.IsAlertOpen())
-    self._driver.ExecuteScript(
-        'window.setTimeout('
-        '    function() { window.confirmed = confirm(\'HI\'); },'
-        '    0);')
+    self._driver.ExecuteScript('window.confirmed = confirm(\'HI\');')
     self.assertTrue(self._driver.IsAlertOpen())
     self.assertEquals('HI', self._driver.GetAlertMessage())
     self._driver.HandleAlert(False)

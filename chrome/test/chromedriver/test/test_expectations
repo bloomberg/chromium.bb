@@ -18,7 +18,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'AlertsTest.testShouldHandleAlertOnPageUnload',
     'AlertsTest.testShouldHandleAlertOnWindowClose',
     'AlertsTest.testShouldNotHandleAlertInAnotherWindow',
-    'AlertsTest.testSwitchingToMissingAlertInAClosedWindowThrows',
     'AuthenticatedPageLoadingTest.*',
     'AvailableLogsTest.driverLogShouldBeEnabledByDefault',
     'BasicMouseInterfaceTest.testMousePositionIsNotPreservedInActionsChain',
@@ -69,7 +68,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLong',
     'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLongX',
     'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLongY',
-    'TextHandlingTest.testShouldNotReturnLtrMarks',
     'TextPagesTest.testShouldBeAbleToLoadASimplePageOfText',
     'TextPagesTest.testShouldThrowExceptionWhenAddingCookieToAPageThatIsNotHtml',
     'TypingTest.testGenerateKeyPressEventEvenWhenElementPreventsDefault',
@@ -81,7 +79,10 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'VisibilityTest.testElementHiddenByOverflowXIsNotVisible',
     'VisibilityTest.testElementHiddenByOverflowYIsNotVisible',
     'VisibilityTest.tooSmallAWindowWithOverflowHiddenIsNotAProblem',
-    'WindowTest.*',
+    'WindowTest.testCanMaximizeTheWindowFromFrame',
+    'WindowTest.testCanMaximizeTheWindowFromIframe',
+    'WindowTest.testSetsTheSizeOfTheCurrentWindow',
+    'WindowTest.testCanMaximizeTheWindow',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=653
