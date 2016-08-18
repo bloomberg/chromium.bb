@@ -160,7 +160,7 @@ display::Display ScreenAsh::GetDisplayNearestPoint(
   // the |point|. This is correct in the only areas that matter, namely in the
   // corners between the physical screens.
   return *display::FindDisplayNearestPoint(
-      GetDisplayManager()->active_display_list(), point);
+      GetDisplayManager()->active_only_display_list(), point);
 }
 
 display::Display ScreenAsh::GetDisplayMatching(
@@ -169,7 +169,7 @@ display::Display ScreenAsh::GetDisplayMatching(
     return GetDisplayNearestPoint(match_rect.origin());
   const display::Display* matching =
       display::FindDisplayWithBiggestIntersection(
-          GetDisplayManager()->active_display_list(), match_rect);
+          GetDisplayManager()->active_only_display_list(), match_rect);
   // Fallback to the primary display if there is no matching display.
   return matching ? *matching : GetPrimaryDisplay();
 }

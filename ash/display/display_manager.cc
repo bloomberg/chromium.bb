@@ -785,11 +785,13 @@ void DisplayManager::UpdateDisplaysWith(
   }
 
   active_display_list_ = new_displays;
+  active_only_display_list_ = active_display_list_;
 
   RefreshFontParams();
   base::AutoReset<bool> resetter(&change_display_upon_host_resize_, false);
 
   int active_display_list_size = active_display_list_.size();
+  is_updating_display_list_ = true;
   // Temporarily add displays to be removed because display object
   // being removed are accessed during shutting down the root.
   active_display_list_.insert(active_display_list_.end(),
@@ -802,6 +804,7 @@ void DisplayManager::UpdateDisplaysWith(
     screen_->NotifyDisplayAdded(active_display_list_[index]);
 
   active_display_list_.resize(active_display_list_size);
+  is_updating_display_list_ = false;
 
   bool notify_primary_change =
       delegate_ ? old_primary.id() != screen_->GetPrimaryDisplay().id() : false;

@@ -6,6 +6,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/display/display_info.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_types.h"
@@ -15,6 +16,7 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
+#include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -22,6 +24,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
@@ -31,6 +34,7 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -40,6 +44,24 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+namespace {
+
+std::string ToDisplayName(int64_t id) {
+  return "x-" + base::Int64ToString(id);
+}
+
+DisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
+  DisplayInfo info(id, ToDisplayName(id), false);
+  info.SetBounds(bounds);
+  return info;
+}
+
+DisplayManager* display_manager() {
+  return Shell::GetInstance()->display_manager();
+}
+
+}  // namespace
 
 using aura::test::WindowIsAbove;
 
@@ -283,6 +305,76 @@ TEST_P(PanelLayoutManagerTextDirectionTest, AddOnePanel) {
   EXPECT_EQ(GetPanelContainer(window.get()), window->parent());
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(window.get()));
   EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(window.get()));
+}
+
+// Tests for crashes during undocking.
+// See https://crbug.com/632755
+TEST_F(PanelLayoutManagerTest, UndockTest) {
+  std::vector<DisplayInfo> info_list;
+
+  const int64_t internal_display_id =
+      test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
+
+  // Create the primary display info.
+  DisplayInfo internal_display =
+      CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 1280, 720));
+  // Create the secondary external display info. This will be docked display.
+  DisplayInfo external_display_info =
+      CreateDisplayInfo(2, gfx::Rect(0, 0, 1920, 1080));
+
+  info_list.push_back(external_display_info);
+  // Docked state.
+  display_manager()->OnNativeDisplaysChanged(info_list);
+
+  // Create a panel in the docked state
+  std::unique_ptr<aura::Window> p1_d2(
+      CreatePanelWindow(gfx::Rect(1555, 800, 50, 50)));
+
+  info_list.clear();
+  info_list.push_back(internal_display);
+
+  // Undock and bring back the native device display as primary display.
+  display_manager()->OnNativeDisplaysChanged(info_list);
+}
+
+// Tests for any crash during docking and then undocking.
+// See https://crbug.com/632755
+TEST_F(PanelLayoutManagerTest, DockUndockTest) {
+  std::vector<DisplayInfo> info_list;
+
+  const int64_t internal_display_id =
+      test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
+
+  // Create the primary display info.
+  DisplayInfo internal_display =
+      CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 1280, 720));
+
+  info_list.push_back(internal_display);
+  display_manager()->OnNativeDisplaysChanged(info_list);
+
+  // Create a panel in the undocked state.
+  std::unique_ptr<aura::Window> p1_d2(
+      CreatePanelWindow(gfx::Rect(600, 200, 50, 50)));
+
+  // Create the secondary external display info. This will be docked display.
+  DisplayInfo external_display_info =
+      CreateDisplayInfo(2, gfx::Rect(0, 0, 1920, 1080));
+
+  info_list.push_back(external_display_info);
+  // Adding external Display
+  display_manager()->OnNativeDisplaysChanged(info_list);
+
+  info_list.clear();
+  info_list.push_back(external_display_info);
+
+  // Docked state.
+  display_manager()->OnNativeDisplaysChanged(info_list);
+
+  info_list.clear();
+  info_list.push_back(internal_display);
+
+  // Undock and bring back the native device display as primary display.
+  display_manager()->OnNativeDisplaysChanged(info_list);
 }
 
 // Tests that a created panel window is successfully aligned over a hidden

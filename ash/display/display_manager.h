@@ -237,6 +237,15 @@ class ASH_EXPORT DisplayManager
   // when displays are mirrored.
   size_t GetNumDisplays() const;
 
+  // Returns only the currently active displays. This list does not include the
+  // displays that will be removed if |UpdateDisplaysWith| is currently
+  // executing.
+  // See https://crbug.com/632755
+  const display::DisplayList& active_only_display_list() const {
+    return is_updating_display_list_ ? active_only_display_list_
+                                     : active_display_list();
+  }
+
   const display::DisplayList& active_display_list() const {
     return active_display_list_;
   }
@@ -412,6 +421,15 @@ class ASH_EXPORT DisplayManager
 
   // List of current active displays.
   display::DisplayList active_display_list_;
+  // This list does not include the displays that will be removed if
+  // |UpdateDisplaysWith| is under execution.
+  // See https://crbug.com/632755
+  display::DisplayList active_only_display_list_;
+
+  // True if active_display_list is being modified and has displays that are not
+  // presently active.
+  // See https://crbug.com/632755
+  bool is_updating_display_list_;
 
   int num_connected_displays_;
 
