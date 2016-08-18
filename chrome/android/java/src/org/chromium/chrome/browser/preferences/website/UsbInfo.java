@@ -8,6 +8,9 @@ import java.io.Serializable;
 
 /**
  * USB device information for a given origin.
+ *
+ * These objects are compared only by the identity of the device, not by which site has permission
+ * to access it.
  */
 public class UsbInfo implements Serializable {
     private final String mOrigin;
@@ -41,6 +44,13 @@ public class UsbInfo implements Serializable {
      */
     public String getName() {
         return mName;
+    }
+
+    /**
+     * Returns the opaque object string that represents the device.
+     */
+    public String getObject() {
+        return mObject;
     }
 
     /**

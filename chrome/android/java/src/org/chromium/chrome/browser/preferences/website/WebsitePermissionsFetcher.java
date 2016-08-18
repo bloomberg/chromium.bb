@@ -140,6 +140,9 @@ public class WebsitePermissionsFetcher {
         } else if (category.showAutoplaySites()) {
             // Autoplay permission is per-origin.
             queue.add(new AutoplayExceptionInfoFetcher());
+        } else if (category.showUsbDevices()) {
+            // USB device permission is per-origin.
+            queue.add(new UsbInfoFetcher());
         }
         queue.add(new PermissionsAvailableCallbackRunner());
         queue.next();

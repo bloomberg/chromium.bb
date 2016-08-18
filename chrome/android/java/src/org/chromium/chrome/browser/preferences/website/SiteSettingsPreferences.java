@@ -48,8 +48,9 @@ public class SiteSettingsPreferences extends PreferenceFragment
     static final String NOTIFICATIONS_KEY = "notifications";
     static final String POPUPS_KEY = "popups";
     static final String PROTECTED_CONTENT_KEY = "protected_content";
-    static final String TRANSLATE_KEY = "translate";
     static final String STORAGE_KEY = "use_storage";
+    static final String TRANSLATE_KEY = "translate";
+    static final String USB_KEY = "usb";
 
     static final String AUTOPLAY_MUTED_VIDEOS = "AutoplayMutedVideos";
 
@@ -132,6 +133,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(POPUPS_KEY));
             getPreferenceScreen().removePreference(findPreference(STORAGE_KEY));
             getPreferenceScreen().removePreference(findPreference(TRANSLATE_KEY));
+            getPreferenceScreen().removePreference(findPreference(USB_KEY));
         } else {
             // If both Autoplay and Protected Content menus are available, they'll be tucked under
             // the Media key. Otherwise, we can remove the Media menu entry.
@@ -245,6 +247,8 @@ public class SiteSettingsPreferences extends PreferenceFragment
         if (p != null) p.setOnPreferenceClickListener(this);
         // TODO(finnur): Re-move this for Storage once it can be moved to the 'Usage' menu.
         p = findPreference(STORAGE_KEY);
+        if (p != null) p.setOnPreferenceClickListener(this);
+        p = findPreference(USB_KEY);
         if (p != null) p.setOnPreferenceClickListener(this);
     }
 

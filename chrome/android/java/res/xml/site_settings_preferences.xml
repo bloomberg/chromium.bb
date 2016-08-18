@@ -74,4 +74,10 @@
         android:key="use_storage"
         android:title="@string/website_settings_storage"
         android:icon="@drawable/settings_storage" />
+    <!-- USB -->
+    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
+        android:fragment="org.chromium.chrome.browser.preferences.website.UsbChooserPreferences"
+        android:key="usb"
+        android:title="@string/website_settings_usb"
+        android:icon="@drawable/settings_usb" />
 </PreferenceScreen>

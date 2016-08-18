@@ -45,6 +45,7 @@ public class SiteSettingsCategory {
     public static final String CATEGORY_POPUPS = "popups";
     public static final String CATEGORY_PROTECTED_MEDIA = "protected_content";
     public static final String CATEGORY_USE_STORAGE = "use_storage";
+    public static final String CATEGORY_USB = "usb";
 
     // The id of this category.
     private String mCategory;
@@ -131,6 +132,10 @@ public class SiteSettingsCategory {
         if (CATEGORY_USE_STORAGE.equals(category)) {
             return new SiteSettingsCategory(CATEGORY_USE_STORAGE, "", -1);
         }
+        if (CATEGORY_USB.equals(category)) {
+            return new SiteSettingsCategory(
+                    CATEGORY_USB, "", ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+        }
 
         return null;
     }
@@ -174,6 +179,9 @@ public class SiteSettingsCategory {
         if (contentSettingsType
                 == ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
             return fromString(CATEGORY_PROTECTED_MEDIA);
+        }
+        if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA) {
+            return fromString(CATEGORY_USB);
         }
 
         return null;
@@ -278,6 +286,13 @@ public class SiteSettingsCategory {
      */
     public boolean showStorageSites() {
         return CATEGORY_USE_STORAGE.equals(mCategory);
+    }
+
+    /**
+     * Returns whether this category is the USB category.
+     */
+    public boolean showUsbDevices() {
+        return mContentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA;
     }
 
     /**

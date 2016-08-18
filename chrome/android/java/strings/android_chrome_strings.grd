@@ -840,8 +840,14 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- USB preferences -->
+      <message name="IDS_WEBSITE_SETTINGS_USB" desc="Title for USB settings, which control which of the user's USB devices can be accessed from websites.">
+        USB
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_REVOKE_DEVICE_PERMISSION" desc="Content description for revoking a website's permission to access a device.">
         Revoke device permission
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_USB_NO_DEVICES" desc="Empty list text for a list of USB devices that sites have been granted access to.">
+        No USB devices here
       </message>
 
       <!-- Data Saver -->
