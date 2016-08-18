@@ -138,7 +138,7 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
                base_dir(), indexed_version, license_path,
                test_ruleset_pair.indexed.contents.data(),
                test_ruleset_pair.indexed.contents.size()) ==
-           RulesetService::WriteRulesetResult::SUCCESS;
+           RulesetService::IndexAndWriteRulesetResult::SUCCESS;
   }
 
   base::FilePath GetExpectedRulesetDataFilePath(
@@ -409,14 +409,78 @@ TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_HistogramsOnSuccess) {
   base::HistogramTester histogram_tester;
   IndexAndStoreAndPublishUpdatedRuleset(test_ruleset_1(), kTestContentVersion1);
   RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.IndexRuleset.WallDuration", 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.IndexRuleset.NumUnsupportedRules", 0, 1);
   histogram_tester.ExpectTotalCount(
       "SubresourceFilter.WriteRuleset.ReplaceFileError", 0);
   histogram_tester.ExpectUniqueSample(
       "SubresourceFilter.WriteRuleset.Result",
-      static_cast<int>(RulesetService::WriteRulesetResult::SUCCESS), 1);
+      static_cast<int>(RulesetService::IndexAndWriteRulesetResult::SUCCESS), 1);
 }
 
-TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_HistogramsOnFailure) {
+TEST_F(SubresourceFilteringRulesetServiceTest,
+       NewRuleset_HistogramsOnSuccessWithUnsupportedRules) {
+  base::HistogramTester histogram_tester;
+
+  // URL patterns longer than 255 characters are not supported.
+  const std::string kTooLongSuffix(1000, 'a');
+  TestRulesetPair ruleset_with_unsupported_rule;
+  ASSERT_NO_FATAL_FAILURE(
+      test_ruleset_creator()
+          ->CreateUnindexedRulesetToDisallowURLsWithPathSuffix(
+              kTooLongSuffix, &ruleset_with_unsupported_rule.unindexed));
+  IndexAndStoreAndPublishUpdatedRuleset(ruleset_with_unsupported_rule,
+                                        kTestContentVersion1);
+  RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.IndexRuleset.WallDuration", 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.IndexRuleset.NumUnsupportedRules", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.WriteRuleset.Result",
+      static_cast<int>(RulesetService::IndexAndWriteRulesetResult::SUCCESS), 1);
+}
+
+TEST_F(SubresourceFilteringRulesetServiceTest,
+       NewRuleset_HistogramsWhenCannotOpenUnindexedRulesetFile) {
+  base::HistogramTester histogram_tester;
+  UnindexedRulesetInfo ruleset_info;
+  ruleset_info.ruleset_path = base::FilePath();
+  ruleset_info.content_version = kTestContentVersion1;
+  service()->IndexAndStoreAndPublishRulesetIfNeeded(ruleset_info);
+  RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.WriteRuleset.Result",
+      static_cast<int>(RulesetService::IndexAndWriteRulesetResult::
+                           FAILED_OPENING_UNINDEXED_RULESET),
+      1);
+}
+
+TEST_F(SubresourceFilteringRulesetServiceTest,
+       NewRuleset_HistogramsOnParseFailure) {
+  const std::string kGarbage(10000, '\xff');
+  ASSERT_TRUE(base::AppendToFile(test_ruleset_1().unindexed.path,
+                                 kGarbage.data(),
+                                 static_cast<int>(kGarbage.size())));
+
+  base::HistogramTester histogram_tester;
+  IndexAndStoreAndPublishUpdatedRuleset(test_ruleset_1(), kTestContentVersion1);
+  RunUntilIdle();
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.WriteRuleset.Result",
+      static_cast<int>(RulesetService::IndexAndWriteRulesetResult::
+                           FAILED_PARSING_UNINDEXED_RULESET),
+      1);
+}
+
+TEST_F(SubresourceFilteringRulesetServiceTest,
+       NewRuleset_HistogramsOnWriteFailure) {
+  using IndexAndWriteRulesetResult = RulesetService::IndexAndWriteRulesetResult;
   // Create a file in place of where the version directory is supposed to go.
   // This makes WriteRuleset fail on all platforms, without interfering with
   // after-test clean-up.
@@ -430,7 +494,10 @@ TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_HistogramsOnFailure) {
   base::HistogramTester histogram_tester;
   IndexAndStoreAndPublishUpdatedRuleset(test_ruleset_1(), kTestContentVersion1);
   RunUntilIdle();
-
+  histogram_tester.ExpectTotalCount(
+      "SubresourceFilter.IndexRuleset.WallDuration", 1);
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.IndexRuleset.NumUnsupportedRules", 0, 1);
 #if defined(OS_WIN)
   base::File::Error expected_error = base::File::FILE_ERROR_ACCESS_DENIED;
 #else
@@ -440,8 +507,7 @@ TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_HistogramsOnFailure) {
       "SubresourceFilter.WriteRuleset.ReplaceFileError", -expected_error, 1);
   histogram_tester.ExpectUniqueSample(
       "SubresourceFilter.WriteRuleset.Result",
-      static_cast<int>(RulesetService::WriteRulesetResult::FAILED_REPLACE_FILE),
-      1);
+      static_cast<int>(IndexAndWriteRulesetResult::FAILED_REPLACE_FILE), 1);
 }
 
 TEST_F(SubresourceFilteringRulesetServiceTest,

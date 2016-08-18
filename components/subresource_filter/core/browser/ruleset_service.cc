@@ -43,6 +43,13 @@ const char kSubresourceFilterRulesetContentVersion[] =
 const char kSubresourceFilterRulesetFormatVersion[] =
     "subresource_filter.ruleset_version.format";
 
+void RecordIndexAndWriteRulesetResult(
+    RulesetService::IndexAndWriteRulesetResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SubresourceFilter.WriteRuleset.Result", static_cast<int>(result),
+      static_cast<int>(RulesetService::IndexAndWriteRulesetResult::MAX));
+}
+
 }  // namespace
 
 // UnindexedRulesetInfo ------------------------------------------------------
@@ -165,33 +172,27 @@ IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
   base::File unindexed_ruleset_file(
       unindexed_ruleset_info.ruleset_path,
       base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!unindexed_ruleset_file.IsValid())
+  if (!unindexed_ruleset_file.IsValid()) {
+    RecordIndexAndWriteRulesetResult(
+        IndexAndWriteRulesetResult::FAILED_OPENING_UNINDEXED_RULESET);
     return IndexedRulesetVersion();
-
-  CopyingFileInputStream copying_stream(std::move(unindexed_ruleset_file));
-  google::protobuf::io::CopyingInputStreamAdaptor zero_copy_stream_adaptor(
-      &copying_stream, 4096 /* buffer_size */);
-  UnindexedRulesetReader reader(&zero_copy_stream_adaptor);
+  }
 
   RulesetIndexer indexer;
-  proto::FilteringRules ruleset_chunk;
-  while (reader.ReadNextChunk(&ruleset_chunk)) {
-    for (const proto::UrlRule& rule : ruleset_chunk.url_rules())
-      indexer.AddUrlRule(rule);
+  if (!IndexRuleset(std::move(unindexed_ruleset_file), &indexer)) {
+    RecordIndexAndWriteRulesetResult(
+        IndexAndWriteRulesetResult::FAILED_PARSING_UNINDEXED_RULESET);
+    return IndexedRulesetVersion();
   }
-  indexer.Finish();
 
   IndexedRulesetVersion indexed_version(
       unindexed_ruleset_info.content_version,
       IndexedRulesetVersion::CurrentFormatVersion());
-  WriteRulesetResult result = WriteRuleset(
+  IndexAndWriteRulesetResult result = WriteRuleset(
       indexed_ruleset_base_dir, indexed_version,
       unindexed_ruleset_info.license_path, indexer.data(), indexer.size());
-  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.WriteRuleset.Result",
-                            static_cast<int>(result),
-                            static_cast<int>(WriteRulesetResult::MAX));
-
-  if (result != WriteRulesetResult::SUCCESS)
+  RecordIndexAndWriteRulesetResult(result);
+  if (result != IndexAndWriteRulesetResult::SUCCESS)
     return IndexedRulesetVersion();
 
   DCHECK(indexed_version.IsValid());
@@ -199,7 +200,35 @@ IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
 }
 
 // static
-RulesetService::WriteRulesetResult RulesetService::WriteRuleset(
+bool RulesetService::IndexRuleset(base::File unindexed_ruleset_file,
+                                  RulesetIndexer* indexer) {
+  SCOPED_UMA_HISTOGRAM_TIMER("SubresourceFilter.IndexRuleset.WallDuration");
+
+  int64_t unindexed_ruleset_size = unindexed_ruleset_file.GetLength();
+  CopyingFileInputStream copying_stream(std::move(unindexed_ruleset_file));
+  google::protobuf::io::CopyingInputStreamAdaptor zero_copy_stream_adaptor(
+      &copying_stream, 4096 /* buffer_size */);
+  UnindexedRulesetReader reader(&zero_copy_stream_adaptor);
+
+  size_t num_unsupported_rules = 0;
+  proto::FilteringRules ruleset_chunk;
+  while (reader.ReadNextChunk(&ruleset_chunk)) {
+    for (const proto::UrlRule& rule : ruleset_chunk.url_rules()) {
+      if (!indexer->AddUrlRule(rule))
+        ++num_unsupported_rules;
+    }
+  }
+  indexer->Finish();
+
+  UMA_HISTOGRAM_COUNTS_10000(
+      "SubresourceFilter.IndexRuleset.NumUnsupportedRules",
+      num_unsupported_rules);
+
+  return zero_copy_stream_adaptor.ByteCount() == unindexed_ruleset_size;
+}
+
+// static
+RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
     const base::FilePath& indexed_ruleset_base_dir,
     const IndexedRulesetVersion& indexed_version,
     const base::FilePath& license_path,
@@ -210,7 +239,7 @@ RulesetService::WriteRulesetResult RulesetService::WriteRuleset(
   base::ScopedTempDir scratch_dir;
   if (!scratch_dir.CreateUniqueTempDirUnderPath(
           indexed_ruleset_version_dir.DirName())) {
-    return WriteRulesetResult::FAILED_CREATING_SCRATCH_DIR;
+    return IndexAndWriteRulesetResult::FAILED_CREATING_SCRATCH_DIR;
   }
 
   static_assert(sizeof(uint8_t) == sizeof(char), "Expected char = byte.");
@@ -218,12 +247,12 @@ RulesetService::WriteRulesetResult RulesetService::WriteRuleset(
   if (base::WriteFile(GetRulesetDataFilePath(scratch_dir.path()),
                       reinterpret_cast<const char*>(indexed_ruleset_data),
                       data_size_in_chars) != data_size_in_chars) {
-    return WriteRulesetResult::FAILED_WRITING_RULESET_DATA;
+    return IndexAndWriteRulesetResult::FAILED_WRITING_RULESET_DATA;
   }
 
   if (base::PathExists(license_path) &&
       !base::CopyFile(license_path, GetLicenseFilePath(scratch_dir.path()))) {
-    return WriteRulesetResult::FAILED_WRITING_LICENSE;
+    return IndexAndWriteRulesetResult::FAILED_WRITING_LICENSE;
   }
 
   // Creating a temporary directory also makes sure the path (except for the
@@ -240,7 +269,7 @@ RulesetService::WriteRulesetResult RulesetService::WriteRuleset(
   // fail, to allow for error injection in unit tests.
   if (base::DirectoryExists(indexed_ruleset_version_dir) &&
       !base::DeleteFile(indexed_ruleset_version_dir, true)) {
-    return WriteRulesetResult::FAILED_DELETE_PREEXISTING;
+    return IndexAndWriteRulesetResult::FAILED_DELETE_PREEXISTING;
   }
 
   base::File::Error error;
@@ -250,11 +279,11 @@ RulesetService::WriteRulesetResult RulesetService::WriteRuleset(
     // histogram records the absolute values.
     UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.WriteRuleset.ReplaceFileError",
                               -error, -base::File::FILE_ERROR_MAX);
-    return WriteRulesetResult::FAILED_REPLACE_FILE;
+    return IndexAndWriteRulesetResult::FAILED_REPLACE_FILE;
   }
 
   scratch_dir.Take();
-  return WriteRulesetResult::SUCCESS;
+  return IndexAndWriteRulesetResult::SUCCESS;
 }
 
 void RulesetService::IndexAndStoreRuleset(

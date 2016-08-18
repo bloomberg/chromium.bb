@@ -52,12 +52,18 @@ class TestRulesetCreator {
   TestRulesetCreator();
   ~TestRulesetCreator();
 
-  // Creates a testing ruleset comprised of a single filtering rule that
-  // disallows subresource loads from URL paths having the given |suffix|.
+  // Creates both the indexed and unindexed versions of a testing ruleset that
+  // consists of single filtering rule that disallows subresource loads from URL
+  // paths having the given |suffix|.
   // Enclose call in ASSERT_NO_FATAL_FAILURE to detect errors.
   void CreateRulesetToDisallowURLsWithPathSuffix(
       base::StringPiece suffix,
       TestRulesetPair* test_ruleset_pair);
+
+  // Same as above, but only creates an unindexed ruleset.
+  void CreateUnindexedRulesetToDisallowURLsWithPathSuffix(
+      base::StringPiece suffix,
+      TestRuleset* test_unindexed_ruleset);
 
   // Returns a unique |path| that is valid for the lifetime of this instance.
   // No file at |path| will be automatically created.

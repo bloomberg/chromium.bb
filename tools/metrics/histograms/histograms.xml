@@ -57718,6 +57718,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.IndexRuleset.NumUnsupportedRules"
+    units="rules">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    The number of rules that could be not be successfully indexed and therefore
+    have been ignored. Recorded every time the RulesetService kicks off a
+    ruleset indexing process and it reaches the point where rules are getting
+    indexed.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.IndexRuleset.WallDuration" units="ms">
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    The total time it took to read and index all rules. Includes I/O time for
+    reading the unindexed rules, but not for writing the indexed ruleset.
+    Recorded every time the RulesetService kicks off a ruleset indexing process.
+  </summary>
+</histogram>
+
 <histogram name="SubresourceFilter.WriteRuleset.ReplaceFileError"
     enum="PlatformFileError">
   <owner>engedy@chromium.org</owner>
@@ -57731,10 +57751,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="SubresourceFilterWriteRulesetResult">
   <owner>engedy@chromium.org</owner>
   <summary>
-    Whether writing a version of the indexed ruleset succeeded, or failed at a
-    particular step. Recorded every time the RulesetService kicks off a ruleset
-    indexing process and it reaches the point when the ruleset is ready to be
-    written.
+    Whether indexing a version of the ruleset and writing it to disk succeeded,
+    or failed at a particular step. Recorded every time the RulesetService kicks
+    off a ruleset indexing process.
   </summary>
 </histogram>
 
@@ -94268,6 +94287,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="FailedWritingLicense"/>
   <int value="4" label="FailedReplaceFile"/>
   <int value="5" label="FailedDeletePreexisting"/>
+  <int value="6" label="FailedOpeningUnindexedRuleset"/>
+  <int value="7" label="FailedParsingUnindexedRuleset"/>
 </enum>
 
 <enum name="SuggestAppsDialogCloseReason" type="int">

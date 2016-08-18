@@ -30,6 +30,7 @@ class SequencedTaskRunner;
 
 namespace subresource_filter {
 
+class RulesetIndexer;
 class RulesetDistributor;
 
 // Encapsulates information about a version of unindexed subresource
@@ -98,6 +99,23 @@ struct IndexedRulesetVersion {
 // in time. All file operations are posted to |blocking_task_runner|.
 class RulesetService : public base::SupportsWeakPtr<RulesetService> {
  public:
+  // Enumerates the possible outcomes of indexing a ruleset and writing it to
+  // disk. Used in UMA histograms, so the order of enumerators should not be
+  // changed.
+  enum class IndexAndWriteRulesetResult {
+    SUCCESS,
+    FAILED_CREATING_SCRATCH_DIR,
+    FAILED_WRITING_RULESET_DATA,
+    FAILED_WRITING_LICENSE,
+    FAILED_REPLACE_FILE,
+    FAILED_DELETE_PREEXISTING,
+    FAILED_OPENING_UNINDEXED_RULESET,
+    FAILED_PARSING_UNINDEXED_RULESET,
+
+    // Insert new values before this line.
+    MAX,
+  };
+
   // Creates a new instance that will immediately publish the most recently
   // indexed version of the ruleset if one is available according to prefs.
   // See class comments for details of arguments.
@@ -126,24 +144,6 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
 
  private:
   friend class SubresourceFilteringRulesetServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceTest,
-                           NewRuleset_HistogramsOnSuccess);
-  FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceTest,
-                           NewRuleset_HistogramsOnFailure);
-
-  // Enumerates the possible outcomes of writing the ruleset to disk. Used in
-  // UMA histograms, so the ordering of enumerators should not be changed.
-  enum class WriteRulesetResult {
-    SUCCESS,
-    FAILED_CREATING_SCRATCH_DIR,
-    FAILED_WRITING_RULESET_DATA,
-    FAILED_WRITING_LICENSE,
-    FAILED_REPLACE_FILE,
-    FAILED_DELETE_PREEXISTING,
-
-    // Insert new values before this line.
-    MAX,
-  };
 
   using WriteRulesetCallback =
       base::Callback<void(const IndexedRulesetVersion&)>;
@@ -161,6 +161,11 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
       const base::FilePath& indexed_ruleset_base_dir,
       const UnindexedRulesetInfo& unindexed_ruleset_info);
 
+  // Reads the rules from the |unindexed_ruleset_file|, and indexes them using
+  // |indexer|. Returns whether the entire ruleset could be parsed.
+  static bool IndexRuleset(base::File unindexed_ruleset_file,
+                           RulesetIndexer* indexer);
+
   // Writes all files comprising the given |indexed_version| of the ruleset
   // into the corresponding subdirectory in |indexed_ruleset_base_dir|.
   // More specifically, it writes:
@@ -171,7 +176,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   //
   // Writing is factored out into this separate function so it can be
   // independently exercised in tests.
-  static WriteRulesetResult WriteRuleset(
+  static IndexAndWriteRulesetResult WriteRuleset(
       const base::FilePath& indexed_ruleset_base_dir,
       const IndexedRulesetVersion& indexed_version,
       const base::FilePath& license_path,

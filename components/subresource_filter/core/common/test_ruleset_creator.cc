@@ -92,6 +92,16 @@ void TestRulesetCreator::CreateRulesetToDisallowURLsWithPathSuffix(
       &test_ruleset_pair->indexed));
 }
 
+void TestRulesetCreator::CreateUnindexedRulesetToDisallowURLsWithPathSuffix(
+    base::StringPiece suffix,
+    TestRuleset* test_unindexed_ruleset) {
+  DCHECK(test_unindexed_ruleset);
+  proto::UrlRule suffix_rule = CreateSuffixRule(suffix);
+  ASSERT_NO_FATAL_FAILURE(CreateTestRulesetFromContents(
+      SerializeUnindexedRulesetWithSingleRule(suffix_rule),
+      test_unindexed_ruleset));
+}
+
 void TestRulesetCreator::GetUniqueTemporaryPath(base::FilePath* path) {
   DCHECK(path);
   ASSERT_TRUE(scoped_temp_dir_.IsValid() ||
