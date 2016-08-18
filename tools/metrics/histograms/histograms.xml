@@ -92511,6 +92511,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="18" label="Password bubble"/>
   <int value="19" label="Autofill dropdown"/>
   <int value="20" label="NTP Content Suggestions"/>
+  <int value="21" label="Re-signin infobar"/>
+  <int value="22" label="Tab switcher"/>
 </enum>
 
 <enum name="SigninAccountEquality" type="int">

@@ -181,6 +181,14 @@ void InlineLoginHandler::RecordSigninUserActionForAccessPoint(
       content::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromNTPContentSuggestions"));
       break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromReSigninInfobar"));
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromTabSwitcher"));
+      break;
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
       break;
