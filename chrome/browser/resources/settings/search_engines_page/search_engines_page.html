@@ -44,12 +44,13 @@
 
       <template is="dom-if" if="[[showExtensionsList_]]">
         <div class="label">$i18n{searchEnginesExtension}</div>
-        <div class="extension-engines">
-          <template is="dom-repeat" items="[[extensions]]">
-            <settings-omnibox-extension-entry engine="[[item]]">
+        <iron-list items="[[extensions]]" class="extension-engines" selectable>
+          <template>
+            <settings-omnibox-extension-entry engine="[[item]]"
+                tabindex$="[[tabIndex]]">
             </settings-omnibox-extension-entry>
           </template>
-        </div>
+        </iron-list>
       </template>
     </div>
   </template>

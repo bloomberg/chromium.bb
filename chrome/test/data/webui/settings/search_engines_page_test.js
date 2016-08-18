@@ -281,21 +281,23 @@ cr.define('settings_search_engines_page', function() {
               querySelectorAll('settings-search-engines-list');
           assertEquals(2, searchEnginesLists.length);
 
+          // Note: iron-list may create hidden children, so test the length
+          // if IronList.items instead of the child nodes.
           Polymer.dom.flush();
           var defaultsList = searchEnginesLists[0];
           var defaultsEntries = Polymer.dom(defaultsList.shadowRoot).
-              querySelectorAll('settings-search-engine-entry');
+              querySelector('iron-list').items;
           assertEquals(
               searchEnginesInfo.defaults.length, defaultsEntries.length);
 
           var othersList = searchEnginesLists[1];
           var othersEntries = Polymer.dom(othersList.shadowRoot).
-              querySelectorAll('settings-search-engine-entry');
+              querySelector('iron-list').items;
           assertEquals(
               searchEnginesInfo.others.length, othersEntries.length);
 
           var extensionEntries = Polymer.dom(page.shadowRoot).
-              querySelectorAll('settings-omnibox-extension-entry');
+              querySelector('iron-list').items;
           assertEquals(
               searchEnginesInfo.extensions.length, extensionEntries.length);
         });

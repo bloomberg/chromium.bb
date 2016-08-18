@@ -40,6 +40,13 @@
       [actionable] {
         @apply(--cr-actionable);
       }
+
+      [selectable] :focus {
+        @apply(--cr-selectable-focus);
+      }
+      [selectable] > * {
+        @apply(--cr-actionable);
+      }
     </style>
   </template>
 </dom-module>
