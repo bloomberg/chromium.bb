@@ -19,6 +19,40 @@ function setSdpDefaultVideoCodec(sdp, codec) {
 }
 
 /**
+ * Returns a modified version of |sdp| where the opus DTX flag has been
+ * enabled.
+ */
+function setOpusDtxEnabled(sdp) {
+  var sdpLines = splitSdpLines(sdp);
+
+  // Get default audio codec
+  var defaultCodec = getSdpDefaultAudioCodec(sdp);
+  if (defaultCodec !== 'opus') {
+    failure('setOpusDtxEnabled',
+             'Default audio codec is not set to \'opus\'.');
+  }
+
+  // Find codec ID for Opus, e.g. 111 if 'a=rtpmap:111 opus/48000/2'.
+  var codecId = findRtpmapId(sdpLines, 'opus');
+  if (codecId === null) {
+    failure('setOpusDtxEnabled', 'Unknown ID for |codec| = \'opus\'.');
+  }
+
+  // Find 'a=fmtp:111' line, where 111 is the codecId
+  var fmtLineNo = findFmtpLine(sdpLines, codecId);
+  if (fmtLineNo === null) {
+    // Add the line to the SDP.
+    newLine = 'a=fmtp:' + codecId + ' usedtx=1'
+    rtpMapLine = findRtpmapLine(sdpLines, codecId);
+    sdpLines.splice(rtpMapLine + 1, 0, newLine);
+  } else {
+    // Modify the line to enable Opus Dtx.
+    sdpLines[fmtLineNo] += ';usedtx=1'
+  }
+  return mergeSdpLines(sdpLines);
+}
+
+/**
  * Returns a modified version of |sdp| where the |codec| has been promoted to be
  * the default codec, i.e. the codec whose ID is first in the list of codecs on
  * the 'm=|type|' line, where |type| is 'audio' or 'video'.
@@ -147,6 +181,16 @@ function findRtpmapLine(sdpLines, contains) {
     }
   }
   return null;
+}
+
+/**
+ * Finds the fmtp line in |sdpLines| for the given |codecId|, and returns its
+ * line number. The line starts with 'a=fmtp:<codecId>'.
+ * @private
+ */
+function findFmtpLine(sdpLines, codecId) {
+  return findLine(sdpLines, 'a=fmtp:' + codecId);
+
 }
 
 /**
