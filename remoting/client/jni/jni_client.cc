@@ -11,11 +11,10 @@
 #include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/jni/display_updater_factory.h"
-#include "remoting/client/jni/jni_display_handler.h"
 #include "remoting/client/jni/jni_gl_display_handler.h"
 #include "remoting/client/jni/jni_pairing_secret_fetcher.h"
 #include "remoting/client/jni/jni_touch_event_data.h"
-#include "remoting/client/jni/jni_video_renderer.h"
+#include "remoting/protocol/video_renderer.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
@@ -163,11 +162,7 @@ void JniClient::Connect(
     const base::android::JavaParamRef<jstring>& pairSecret,
     const base::android::JavaParamRef<jstring>& capabilities,
     const base::android::JavaParamRef<jstring>& flags) {
-#if defined(REMOTING_ANDROID_ENABLE_OPENGL_RENDERER)
   JniGlDisplayHandler* raw_display_handler = new JniGlDisplayHandler(runtime_);
-#else
-  JniDisplayHandler* raw_display_handler = new JniDisplayHandler(runtime_);
-#endif  // defined(REMOTING_ANDROID_ENABLE_OPENGL_RENDERER)
   raw_display_handler->InitializeClient(java_client_);
   display_handler_.reset(raw_display_handler);
   ConnectToHost(raw_display_handler,

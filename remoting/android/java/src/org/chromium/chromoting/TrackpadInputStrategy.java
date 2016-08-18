@@ -62,13 +62,13 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
     }
 
     @Override
-    public DesktopView.InputFeedbackType getShortPressFeedbackType() {
-        return DesktopView.InputFeedbackType.NONE;
+    public AbstractDesktopView.InputFeedbackType getShortPressFeedbackType() {
+        return AbstractDesktopView.InputFeedbackType.NONE;
     }
 
     @Override
-    public DesktopView.InputFeedbackType getLongPressFeedbackType() {
-        return DesktopView.InputFeedbackType.SMALL_ANIMATION;
+    public AbstractDesktopView.InputFeedbackType getLongPressFeedbackType() {
+        return AbstractDesktopView.InputFeedbackType.SMALL_ANIMATION;
     }
 
     @Override

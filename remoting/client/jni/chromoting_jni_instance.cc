@@ -22,7 +22,6 @@
 #include "remoting/client/jni/display_updater_factory.h"
 #include "remoting/client/jni/jni_client.h"
 #include "remoting/client/jni/jni_pairing_secret_fetcher.h"
-#include "remoting/client/jni/jni_video_renderer.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/chromium_socket_factory.h"
 #include "remoting/protocol/client_authentication_config.h"
