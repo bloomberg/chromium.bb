@@ -36,7 +36,14 @@ class CORE_EXPORT NGBox final {
 
   NGBox firstChild() const;
 
+  // This is necessary for interop between old and new trees -- after our parent
+  // positions us, it calls this function so we can store the position on the
+  // underlying LayoutBox.
+  void positionUpdated(const NGFragment&);
+
  private:
+  bool canUseNewLayout();
+
   LayoutBox* m_layoutBox;
 };
 

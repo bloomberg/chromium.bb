@@ -29,6 +29,7 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
     NGFragment* fragment = box.layout(constraintSpace);
     // TODO(layout-ng): Take margins into account
     fragment->setOffset(LayoutUnit(), contentSize);
+    box.positionUpdated(*fragment);
     contentSize += fragment->blockSize();
     childFragments.append(fragment);
   }

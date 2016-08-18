@@ -414,6 +414,10 @@ protected:
     // FIXME: This is temporary as we move code that accesses block flow
     // member variables out of LayoutBlock and into LayoutBlockFlow.
     friend class LayoutBlockFlow;
+
+    // This is necessary for now for interoperability between the old and new
+    // layout code. Primarily for calling layoutPositionedObjects at the moment.
+    friend class NGBox;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlock, isLayoutBlock());
