@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_util.h"
@@ -588,7 +589,11 @@ void PermissionUmaUtil::RecordPermissionAction(
     g_browser_process->safe_browsing_service()
         ->ui_manager()
         ->ReportPermissionAction(requesting_origin, permission, action,
-                                 source_ui, gesture_type);
+            source_ui, gesture_type,
+            PermissionDecisionAutoBlocker::GetDismissCount(
+                requesting_origin, permission, profile),
+            PermissionDecisionAutoBlocker::GetIgnoreCount(
+                requesting_origin, permission, profile));
   }
 
   bool secure_origin = content::IsOriginSecure(requesting_origin);

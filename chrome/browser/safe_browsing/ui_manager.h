@@ -162,7 +162,9 @@ class SafeBrowsingUIManager
                               content::PermissionType permission,
                               PermissionAction action,
                               PermissionSourceUI source_ui,
-                              PermissionRequestGestureType gesture_type);
+                              PermissionRequestGestureType gesture_type,
+                              int num_prior_dismissals,
+                              int num_prior_ignores);
 
   // Add and remove observers.  These methods must be invoked on the UI thread.
   void AddObserver(Observer* observer);
@@ -190,7 +192,9 @@ class SafeBrowsingUIManager
       content::PermissionType permission,
       PermissionAction action,
       PermissionSourceUI source_ui,
-      PermissionRequestGestureType gesture_type);
+      PermissionRequestGestureType gesture_type,
+      int num_prior_dismissals,
+      int num_prior_ignores);
 
   // Updates the whitelist state.  Called on the UI thread.
   void AddToWhitelist(const UnsafeResource& resource);

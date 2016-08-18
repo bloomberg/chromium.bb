@@ -1026,16 +1026,17 @@ class RemovePasswordsTester {
 class RemovePermissionPromptCountsTest {
  public:
   explicit RemovePermissionPromptCountsTest(TestingProfile* profile)
-      : blocker_(new PermissionDecisionAutoBlocker(profile)) {}
+      : blocker_(new PermissionDecisionAutoBlocker(profile)),
+        profile_(profile) {}
 
   int GetDismissCount(const GURL& url, content::PermissionType permission) {
-    return blocker_->GetActionCountForTest(url, permission,
-        PermissionDecisionAutoBlocker::kPromptDismissCountKey);
+    return PermissionDecisionAutoBlocker::GetDismissCount(
+        url, permission, profile_);
   }
 
   int GetIgnoreCount(const GURL& url, content::PermissionType permission) {
-    return blocker_->GetActionCountForTest(url, permission,
-        PermissionDecisionAutoBlocker::kPromptIgnoreCountKey);
+    return PermissionDecisionAutoBlocker::GetIgnoreCount(
+        url, permission, profile_);
   }
 
   int RecordIgnore(const GURL& url, content::PermissionType permission) {
@@ -1049,6 +1050,7 @@ class RemovePermissionPromptCountsTest {
 
  private:
   std::unique_ptr<PermissionDecisionAutoBlocker> blocker_;
+  TestingProfile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovePermissionPromptCountsTest);
 };

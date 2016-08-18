@@ -87,6 +87,36 @@ void PermissionDecisionAutoBlocker::RemoveCountsByUrl(
   }
 }
 
+// static
+int PermissionDecisionAutoBlocker::GetDismissCount(const GURL& url,
+    content::PermissionType permission, Profile* profile) {
+  return GetActionCount(url, permission, kPromptDismissCountKey, profile);
+}
+
+// static
+int PermissionDecisionAutoBlocker::GetIgnoreCount(const GURL& url,
+    content::PermissionType permission, Profile* profile) {
+  return GetActionCount(url, permission, kPromptIgnoreCountKey, profile);
+}
+
+// static
+int PermissionDecisionAutoBlocker::GetActionCount(
+    const GURL& url,
+    content::PermissionType permission,
+    const char* key,
+    Profile* profile) {
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  std::unique_ptr<base::DictionaryValue> dict = GetOriginDict(map, url);
+
+  base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
+      dict.get(), PermissionUtil::GetPermissionString(permission));
+
+  int current_count = 0;
+  permission_dict->GetInteger(key, &current_count);
+  return current_count;
+}
+
 PermissionDecisionAutoBlocker::PermissionDecisionAutoBlocker(Profile* profile)
     : profile_(profile),
       prompt_dismissals_before_block_(kPromptDismissalsBeforeBlock) {
@@ -117,22 +147,6 @@ bool PermissionDecisionAutoBlocker::ShouldChangeDismissalToBlock(
     return false;
 
   return current_dismissal_count >= prompt_dismissals_before_block_;
-}
-
-int PermissionDecisionAutoBlocker::GetActionCountForTest(
-    const GURL& url,
-    content::PermissionType permission,
-    const char* key) {
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<base::DictionaryValue> dict = GetOriginDict(map, url);
-
-  base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
-      dict.get(), PermissionUtil::GetPermissionString(permission));
-
-  int current_count = 0;
-  permission_dict->GetInteger(key, &current_count);
-  return current_count;
 }
 
 int PermissionDecisionAutoBlocker::RecordActionInWebsiteSettings(

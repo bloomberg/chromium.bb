@@ -150,12 +150,14 @@ void PermissionReporter::SendReport(const GURL& origin,
                                     content::PermissionType permission,
                                     PermissionAction action,
                                     PermissionSourceUI source_ui,
-                                    PermissionRequestGestureType gesture_type) {
+                                    PermissionRequestGestureType gesture_type,
+                                    int num_prior_dismissals,
+                                    int num_prior_ignores) {
   if (IsReportThresholdExceeded(permission, origin))
     return;
   std::string serialized_report;
   BuildReport(origin, permission, action, source_ui, gesture_type,
-              &serialized_report);
+              num_prior_dismissals, num_prior_ignores, &serialized_report);
   permission_report_sender_->Send(GURL(kPermissionActionReportingUploadUrl),
                                   serialized_report);
 }
@@ -166,6 +168,8 @@ bool PermissionReporter::BuildReport(const GURL& origin,
                                      PermissionAction action,
                                      PermissionSourceUI source_ui,
                                      PermissionRequestGestureType gesture_type,
+                                     int num_prior_dismissals,
+                                     int num_prior_ignores,
                                      std::string* output) {
   PermissionReport report;
   report.set_origin(origin.spec());
@@ -173,6 +177,8 @@ bool PermissionReporter::BuildReport(const GURL& origin,
   report.set_action(PermissionActionForReport(action));
   report.set_source_ui(SourceUIForReport(source_ui));
   report.set_gesture(GestureTypeForReport(gesture_type));
+  report.set_num_prior_dismissals(num_prior_dismissals);
+  report.set_num_prior_ignores(num_prior_ignores);
 
   // Collect platform data.
 #if defined(OS_ANDROID)

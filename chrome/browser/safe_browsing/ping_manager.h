@@ -70,7 +70,9 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
                               content::PermissionType permission,
                               PermissionAction action,
                               PermissionSourceUI source_ui,
-                              PermissionRequestGestureType gesture_type);
+                              PermissionRequestGestureType gesture_type,
+                              int num_prior_dismissals,
+                              int num_prior_ignores);
 
  private:
   friend class PermissionReporterBrowserTest;

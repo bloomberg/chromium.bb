@@ -40,7 +40,7 @@ message PermissionReport {
   // to this report since the user last cleared their history.
   optional int32 num_prior_dismissals = 8;
 
-  // The number of ignores of a prompt for this  permission and origin prior to
+  // The number of ignores of a prompt for this permission and origin prior to
   // this report since the user last cleared their history.
   optional int32 num_prior_ignores = 9;
 

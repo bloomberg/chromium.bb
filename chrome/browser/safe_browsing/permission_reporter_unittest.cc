@@ -37,6 +37,8 @@ const PermissionAction kDummyAction = GRANTED;
 const PermissionSourceUI kDummySourceUI = PermissionSourceUI::PROMPT;
 const PermissionRequestGestureType kDummyGestureType =
     PermissionRequestGestureType::GESTURE;
+const int kDummyNumPriorDismissals = 10;
+const int kDummyNumPriorIgnores = 12;
 
 const char kDummyTrialOne[] = "trial one";
 const char kDummyGroupOne[] = "group one";
@@ -78,7 +80,8 @@ class PermissionReporterTest : public ::testing::Test {
 TEST_F(PermissionReporterTest, SendReport) {
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
                                    kDummyAction, kDummySourceUI,
-                                   kDummyGestureType);
+                                   kDummyGestureType, kDummyNumPriorDismissals,
+                                   kDummyNumPriorIgnores);
 
   PermissionReport permission_report;
   ASSERT_TRUE(
@@ -88,6 +91,9 @@ TEST_F(PermissionReporterTest, SendReport) {
   EXPECT_EQ(PermissionReport::PROMPT, permission_report.source_ui());
   EXPECT_EQ(PermissionReport::GESTURE, permission_report.gesture());
   EXPECT_EQ(kDummyOriginOne, permission_report.origin());
+  EXPECT_EQ(kDummyNumPriorDismissals,
+            permission_report.num_prior_dismissals());
+  EXPECT_EQ(kDummyNumPriorIgnores, permission_report.num_prior_ignores());
 #if defined(OS_ANDROID)
   EXPECT_EQ(PermissionReport::ANDROID_PLATFORM,
             permission_report.platform_type());
@@ -134,7 +140,8 @@ TEST_F(PermissionReporterTest, SendReportWithFieldTrials) {
 
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
                                    kDummyAction, kDummySourceUI,
-                                   kDummyGestureType);
+                                   kDummyGestureType, kDummyNumPriorDismissals,
+                                   kDummyNumPriorIgnores);
 
   PermissionReport permission_report;
   ASSERT_TRUE(
@@ -164,35 +171,35 @@ TEST_F(PermissionReporterTest, IsReportThresholdExceeded) {
   int reports_to_send = kMaximumReportsPerOriginPerPermissionPerMinute;
   while (reports_to_send--)
     permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                     kDummyAction, kDummySourceUI,
-                                     kDummyGestureType);
+        kDummyAction, kDummySourceUI, kDummyGestureType,
+        kDummyNumPriorDismissals, kDummyNumPriorIgnores);
   EXPECT_EQ(5, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction, kDummySourceUI,
-                                   kDummyGestureType);
+      kDummyAction, kDummySourceUI, kDummyGestureType,
+      kDummyNumPriorDismissals, kDummyNumPriorIgnores);
   EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionTwo,
-                                   kDummyAction, kDummySourceUI,
-                                   kDummyGestureType);
+      kDummyAction, kDummySourceUI, kDummyGestureType,
+      kDummyNumPriorDismissals, kDummyNumPriorIgnores);
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   permission_reporter_->SendReport(GURL(kDummyOriginTwo), kDummyPermissionOne,
-                                   kDummyAction, kDummySourceUI,
-                                   kDummyGestureType);
+      kDummyAction, kDummySourceUI, kDummyGestureType,
+      kDummyNumPriorDismissals, kDummyNumPriorIgnores);
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   clock_->Advance(base::TimeDelta::FromMinutes(1));
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction, kDummySourceUI,
-                                   kDummyGestureType);
+      kDummyAction, kDummySourceUI, kDummyGestureType,
+      kDummyNumPriorDismissals, kDummyNumPriorIgnores);
   EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   clock_->Advance(base::TimeDelta::FromMicroseconds(1));
   permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                   kDummyAction, kDummySourceUI,
-                                   kDummyGestureType);
+      kDummyAction, kDummySourceUI, kDummyGestureType,
+      kDummyNumPriorDismissals, kDummyNumPriorIgnores);
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
   clock_->Advance(base::TimeDelta::FromMinutes(1));
@@ -200,8 +207,8 @@ TEST_F(PermissionReporterTest, IsReportThresholdExceeded) {
   while (reports_to_send--) {
     clock_->Advance(base::TimeDelta::FromSeconds(5));
     permission_reporter_->SendReport(GURL(kDummyOriginOne), kDummyPermissionOne,
-                                     kDummyAction, kDummySourceUI,
-                                     kDummyGestureType);
+        kDummyAction, kDummySourceUI, kDummyGestureType,
+        kDummyNumPriorDismissals, kDummyNumPriorIgnores);
   }
   EXPECT_EQ(kMaximumReportsPerOriginPerPermissionPerMinute,
             mock_report_sender_->GetAndResetNumberOfReportsSent());

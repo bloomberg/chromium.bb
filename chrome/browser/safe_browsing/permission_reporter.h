@@ -52,14 +52,20 @@ class PermissionReporter {
   // The permission report includes |origin| as the origin of
   // the site requesting permission, |permission| as the type of permission
   // requested, |action| as the action taken, and |gesture_type| as to whether
-  // the action occurred after a user gesture. The report will be serialized
-  // using protobuf defined in
+  // the action occurred after a user gesture. It also includes
+  // |num_prior_dismissals| and |num_prior_ignores| the number of dismissals
+  // and ignores for this permission and origin that occurred prior to this
+  // report. The report will be serialized using protobuf defined in
   // //src/chrome/common/safe_browsing/permission_report.proto
+  //
+  // TODO(kcarattini): Move these params to a PermissionReportInfo struct.
   void SendReport(const GURL& origin,
                   content::PermissionType permission,
                   PermissionAction action,
                   PermissionSourceUI source_ui,
-                  PermissionRequestGestureType gesture_type);
+                  PermissionRequestGestureType gesture_type,
+                  int num_prior_dismissals,
+                  int num_prior_ignores);
 
  private:
   friend class PermissionReporterBrowserTest;
@@ -80,6 +86,8 @@ class PermissionReporter {
                           PermissionAction action,
                           PermissionSourceUI source_ui,
                           PermissionRequestGestureType gesture_type,
+                          int num_prior_dismissals,
+                          int num_prior_ignores,
                           std::string* output);
 
   // Returns false if the number of reports sent in the last one minute per

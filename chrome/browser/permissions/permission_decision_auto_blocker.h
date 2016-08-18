@@ -19,6 +19,18 @@ class PermissionDecisionAutoBlocker {
   static void RemoveCountsByUrl(Profile* profile,
                                 base::Callback<bool(const GURL& url)> filter);
 
+  // Returns the current number of dismisses recorded for |permission|
+  // type at |url|.
+  static int GetDismissCount(const GURL& url,
+                             content::PermissionType permission,
+                             Profile* profile);
+
+  // Returns the current number of ignores recorded for |permission|
+  // type at |url|.
+  static int GetIgnoreCount(const GURL& url,
+                            content::PermissionType permission,
+                            Profile* profile);
+
   explicit PermissionDecisionAutoBlocker(Profile* profile);
 
   // Records that an ignore of a prompt for |permission| was made.
@@ -31,8 +43,6 @@ class PermissionDecisionAutoBlocker {
 
  private:
   friend class PermissionContextBaseTests;
-  friend class PermissionDecisionAutoBlockerUnitTest;
-  friend class RemovePermissionPromptCountsTest;
 
   // Keys used for storing count data in a website setting.
   static const char kPromptDismissCountKey[];
@@ -40,9 +50,10 @@ class PermissionDecisionAutoBlocker {
 
   // Returns the current number of actions recorded under |key| for |permission|
   // type at |url|.
-  int GetActionCountForTest(const GURL& url,
+  static int GetActionCount(const GURL& url,
                             content::PermissionType permission,
-                            const char* key);
+                            const char* key,
+                            Profile* profile);
 
   // Records that the user performed an action for a prompt of type |permission|
   // on |url| to a website setting keyed by |key|. Returns the total number of

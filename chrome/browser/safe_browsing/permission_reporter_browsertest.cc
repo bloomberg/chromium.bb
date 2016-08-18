@@ -125,6 +125,8 @@ IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
   EXPECT_EQ(PermissionReport::DESKTOP_PLATFORM,
             permission_report.platform_type());
   EXPECT_EQ(PermissionReport::NO_GESTURE, permission_report.gesture());
+  EXPECT_EQ(0, permission_report.num_prior_dismissals());
+  EXPECT_EQ(0, permission_report.num_prior_ignores());
 }
 
 }  // namespace safe_browsing

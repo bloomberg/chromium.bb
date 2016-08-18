@@ -26,20 +26,20 @@ class PermissionDecisionAutoBlockerUnitTest
  protected:
   int GetDismissalCount(const GURL& url,
                         content::PermissionType permission) {
-    return PermissionDecisionAutoBlocker(profile()).GetActionCountForTest(
-        url, permission, PermissionDecisionAutoBlocker::kPromptDismissCountKey);
+    return PermissionDecisionAutoBlocker::GetDismissCount(
+        url, permission, profile());
   }
 
   int GetIgnoreCount(const GURL& url, content::PermissionType permission) {
-    return PermissionDecisionAutoBlocker(profile()).GetActionCountForTest(
-        url, permission, PermissionDecisionAutoBlocker::kPromptIgnoreCountKey);
+    return PermissionDecisionAutoBlocker::GetIgnoreCount(
+        url, permission, profile());
   }
 
   int RecordDismiss(const GURL& url, content::PermissionType permission) {
     PermissionDecisionAutoBlocker blocker(profile());
     blocker.ShouldChangeDismissalToBlock(url, permission);
-    return blocker.GetActionCountForTest(
-        url, permission, PermissionDecisionAutoBlocker::kPromptDismissCountKey);
+    return PermissionDecisionAutoBlocker::GetDismissCount(
+        url, permission, profile());
   }
 
   int RecordIgnore(const GURL& url, content::PermissionType permission) {
