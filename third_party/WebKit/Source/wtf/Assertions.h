@@ -291,13 +291,6 @@ private:
     inline bool operator!=(const thisType& a, const thisType* b) { return !(a == b); } \
     inline bool operator!=(const thisType* a, const thisType& b) { return !(a == b); }
 
-#define DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(thisType) \
-    DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(thisType) \
-    inline bool operator==(const PassRefPtr<thisType>& a, const thisType& b) { return a.get() == &b; } \
-    inline bool operator==(const thisType& a, const PassRefPtr<thisType>& b) { return &a == b.get(); } \
-    inline bool operator!=(const PassRefPtr<thisType>& a, const thisType& b) { return !(a == b); } \
-    inline bool operator!=(const thisType& a, const PassRefPtr<thisType>& b) { return !(a == b); }
-
 /* DEFINE_TYPE_CASTS */
 
 #define DEFINE_TYPE_CASTS(thisType, argumentType, argumentName, pointerPredicate, referencePredicate) \

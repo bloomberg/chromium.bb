@@ -862,7 +862,7 @@ inline ScriptWrappable* ScriptWrappable::fromNode(Node* node)
 }
 
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
-DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)
+DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Node)
 
 
 #define DEFINE_NODE_TYPE_CASTS(thisType, predicate) \

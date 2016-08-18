@@ -169,7 +169,7 @@ inline FrameTree& Frame::tree() const
 }
 
 // Allow equality comparisons of Frames by reference or pointer, interchangeably.
-DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Frame)
+DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Frame)
 
 } // namespace blink
 
