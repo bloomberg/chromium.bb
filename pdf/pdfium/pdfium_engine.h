@@ -104,8 +104,6 @@ class PDFiumEngine : public PDFEngine,
   bool GetPageSizeAndUniformity(pp::Size* size) override;
   void AppendBlankPages(int num_pages) override;
   void AppendPage(PDFEngine* engine, int index) override;
-  pp::Point GetScrollPosition() override;
-  void SetScrollPosition(const pp::Point& position) override;
   bool IsProgressiveLoad() override;
   std::string GetMetadata(const std::string& key) override;
 

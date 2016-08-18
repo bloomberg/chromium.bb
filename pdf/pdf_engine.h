@@ -282,12 +282,6 @@ class PDFEngine {
   // document at page |index|.
   virtual void AppendPage(PDFEngine* engine, int index) = 0;
 
-  // Allow client to query and reset scroll positions in document coordinates.
-  // Note that this is meant for cases where the device scale factor changes,
-  // and not for general scrolling - the engine will not repaint due to this.
-  virtual pp::Point GetScrollPosition() = 0;
-  virtual void SetScrollPosition(const pp::Point& position) = 0;
-
   virtual bool IsProgressiveLoad() = 0;
 
   virtual std::string GetMetadata(const std::string& key) = 0;

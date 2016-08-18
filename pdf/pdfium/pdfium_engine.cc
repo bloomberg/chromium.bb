@@ -1013,14 +1013,6 @@ void PDFiumEngine::AppendPage(PDFEngine* engine, int index) {
   client_->Invalidate(GetPageScreenRect(index));
 }
 
-pp::Point PDFiumEngine::GetScrollPosition() {
-  return position_;
-}
-
-void PDFiumEngine::SetScrollPosition(const pp::Point& position) {
-  position_ = position;
-}
-
 bool PDFiumEngine::IsProgressiveLoad() {
   return doc_loader_.is_partial_document();
 }
