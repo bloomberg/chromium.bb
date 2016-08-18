@@ -79042,6 +79042,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1505" label="SVGSMILBeginEndAnimationElement"/>
   <int value="1506" label="SVGSMILPausing"/>
   <int value="1507" label="SVGSMILCurrentTime"/>
+  <int value="1508" label="HTMLBodyElementOnSelectionChangeAttribute"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

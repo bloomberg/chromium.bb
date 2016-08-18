@@ -1257,7 +1257,6 @@ public:
         StarInTimingAllowOrigin = 1483,
         SVGSMILAdditiveAnimation = 1484,
         SendBeaconWithNonSimpleContentType = 1485,
-
         ChromeLoadTimesRequestTime = 1486,
         ChromeLoadTimesStartLoadTime = 1487,
         ChromeLoadTimesCommitLoadTime = 1488,
@@ -1272,7 +1271,6 @@ public:
         ChromeLoadTimesWasAlternateProtocolAvailable = 1497,
         ChromeLoadTimesConnectionInfo = 1498,
         ChromeLoadTimesUnknown = 1499,
-
         SVGViewElement = 1500,
         WebShareShare = 1501,
         AuxclickAddListenerCount = 1502,
@@ -1281,6 +1279,7 @@ public:
         SVGSMILBeginEndAnimationElement = 1505,
         SVGSMILPausing = 1506,
         SVGSMILCurrentTime = 1507,
+        HTMLBodyElementOnSelectionChangeAttribute = 1508,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

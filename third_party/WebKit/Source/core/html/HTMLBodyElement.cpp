@@ -33,6 +33,7 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 
@@ -137,6 +138,7 @@ void HTMLBodyElement::parseAttribute(const QualifiedName& name, const AtomicStri
     } else if (name == onscrollAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::scroll, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
     } else if (name == onselectionchangeAttr) {
+        UseCounter::count(document(), UseCounter::HTMLBodyElementOnSelectionChangeAttribute);
         document().setAttributeEventListener(EventTypeNames::selectionchange, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
     } else if (name == onstorageAttr) {
         document().setWindowAttributeEventListener(EventTypeNames::storage, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
