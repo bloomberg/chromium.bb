@@ -93,6 +93,7 @@ public:
     ~WorkerThreadForTest() override { }
 
     WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
+    void clearWorkerBackingThread() override { m_workerBackingThread = nullptr; }
 
     WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
 

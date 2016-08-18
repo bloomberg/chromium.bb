@@ -21,6 +21,12 @@ public:
     ~AbstractAnimationWorkletThread() override;
 
     WorkerBackingThread& workerBackingThread() override;
+    void clearWorkerBackingThread() override
+    {
+        // Do nothing.
+        // The backing thread is cleared by clearSharedBackingThread().
+    }
+
     bool shouldAttachThreadDebugger() const override { return false; }
 
     static void ensureSharedBackingThread();

@@ -109,6 +109,7 @@ public:
     static void terminateAndWaitForAllWorkers();
 
     virtual WorkerBackingThread& workerBackingThread() = 0;
+    virtual void clearWorkerBackingThread() = 0;
     ConsoleMessageStorage* consoleMessageStorage() const { return m_consoleMessageStorage.get(); }
     virtual bool shouldAttachThreadDebugger() const { return true; }
     v8::Isolate* isolate();

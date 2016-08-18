@@ -177,9 +177,6 @@ char kTSanDefaultSuppressions[] =
 "race:content::"
     "RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl\n"
 
-// http://crbug.com/345240
-"race:WTF::s_shutdown\n"
-
 // http://crbug.com/345618
 "race:WebCore::AudioDestinationNode::render\n"
 

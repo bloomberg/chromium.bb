@@ -61,6 +61,11 @@ WorkerOrWorkletGlobalScope* DedicatedWorkerThread::createWorkerGlobalScope(std::
     return DedicatedWorkerGlobalScope::create(this, std::move(startupData), m_timeOrigin);
 }
 
+void DedicatedWorkerThread::clearWorkerBackingThread()
+{
+    m_workerBackingThread = nullptr;
+}
+
 void DedicatedWorkerThread::postInitialize()
 {
     // Notify the parent object of our current active state before the event

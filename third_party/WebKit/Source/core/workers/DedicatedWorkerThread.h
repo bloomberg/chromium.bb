@@ -44,6 +44,7 @@ public:
     ~DedicatedWorkerThread() override;
 
     WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
+    void clearWorkerBackingThread() override;
     InProcessWorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
 
 protected:

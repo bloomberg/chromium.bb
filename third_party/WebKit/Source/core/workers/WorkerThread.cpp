@@ -215,6 +215,9 @@ void WorkerThread::terminateAndWait()
     // not work.
     terminateInternal(TerminationMode::Forcible);
     m_shutdownEvent->wait();
+
+    // Destruct base::Thread and join the underlying system thread.
+    clearWorkerBackingThread();
 }
 
 void WorkerThread::terminateAndWaitForAllWorkers()
@@ -232,6 +235,10 @@ void WorkerThread::terminateAndWaitForAllWorkers()
 
     for (WorkerThread* thread : threads)
         thread->m_shutdownEvent->wait();
+
+    // Destruct base::Thread and join the underlying system threads.
+    for (WorkerThread* thread : threads)
+        thread->clearWorkerBackingThread();
 }
 
 v8::Isolate* WorkerThread::isolate()

@@ -45,6 +45,7 @@ public:
     ~SharedWorkerThread() override;
 
     WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
+    void clearWorkerBackingThread() override;
 
 protected:
     WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
