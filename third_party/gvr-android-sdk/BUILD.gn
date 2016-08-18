@@ -25,19 +25,19 @@ source_set("libgvr") {
 }
 
 copy("libgvr_shared_library") {
-  if (target_cpu == "arm") {
+  if (current_cpu == "arm") {
     sources = [
       "src/ndk-beta/lib/android_arm/libgvr.so",
     ]
-  } else if (target_cpu == "arm64") {
+  } else if (current_cpu == "arm64") {
     sources = [
       "src/ndk-beta/lib/android_arm64/libgvr.so",
     ]
-  } else if (target_cpu == "x86") {
+  } else if (current_cpu == "x86") {
     sources = [
       "src/ndk-beta/lib/android_x86/libgvr.so",
     ]
-  } else if (target_cpu == "x64") {
+  } else if (current_cpu == "x64") {
     sources = [
       "src/ndk-beta/lib/android_x86_64/libgvr.so",
     ]
