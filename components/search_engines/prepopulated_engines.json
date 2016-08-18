@@ -11,7 +11,7 @@
 // The following unique IDs are available:
 //    7, 11, 12, 13, 14, 18, 19, 20, 22, 24, 26, 28, 29, 30, 32, 33, 34, 39, 37,
 //    38, 40, 41, 42, 46, 47, 48, 49, 51, 52, 58, 59, 69, 71, 72, 82, 84, 86,
-//    88, 89, 91+
+//    89, 91+
 //
 // IDs > 1000 are reserved for distribution custom engines.
 //
@@ -30,7 +30,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 92
+    "kCurrentDataVersion": 93
   },
 
   // The following engines are included in country lists and are added to the
@@ -187,6 +187,16 @@
       "suggest_url": "http://suggest.fulltext.seznam.cz/fulltext_ff?phrase={searchTerms}",
       "type": "SEARCH_ENGINE_SEZNAM",
       "id": 25
+    },
+
+    "so_360": {
+      "name": "360",
+      "keyword": "so.com",
+      "favicon_url": "https://www.so.com/favicon.ico",
+      "search_url": "https://www.so.com/s?ie={inputEncoding}&q={searchTerms}",
+      "suggest_url": "https://sug.so.360.cn/suggest?encodein={inputEncoding}&encodeout={outputEncoding}&format=opensearch&word={searchTerms}”",
+      "type": "SEARCH_ENGINE_360",
+      "id": 88
     },
 
     "sogou": {

@@ -87263,6 +87263,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="83" label="@MAIL.RU"/>
   <int value="85" label="Zoznam"/>
   <int value="87" label="Najdi.si"/>
+  <int value="88" label="360"/>
   <int value="89" label="AltaVista"/>
   <int value="90" label="Terra"/>
   <int value="99" label="Spray"/>
