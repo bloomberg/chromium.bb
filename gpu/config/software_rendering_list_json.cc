@@ -247,26 +247,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 24,
-      "description": "Accelerated 2d canvas is unstable in Linux at the moment",
-      "os": {
-        "type": "linux"
-      },
-      "exceptions": [
-        {
-          "gl_vendor": "Vivante Corporation",
-          "gl_renderer": "Vivante GC1000"
-        },
-        {
-          "gl_vendor": "ARM",
-          "gl_renderer": "Mali-4.*"
-        }
-      ],
-      "features": [
-        "accelerated_2d_canvas"
-      ]
-    },
-    {
       "id": 27,
       "description": "ATI/AMD cards with older drivers in Linux are crash-prone",
       "cr_bugs": [95934, 94973, 136240, 357314],
