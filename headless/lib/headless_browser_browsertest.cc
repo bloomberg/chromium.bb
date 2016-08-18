@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/test/browser_test.h"
+#include "headless/public/domains/network.h"
 #include "headless/public/domains/page.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
@@ -476,6 +477,117 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ReadCookiesInProtocolHandler) {
   EXPECT_TRUE(WaitForLoad(web_contents));
 
   // We should have sent the cookie this time.
+  EXPECT_EQ(1u, sent_cookies.size());
+  EXPECT_EQ("shape", sent_cookies[0].Name());
+  EXPECT_EQ("oblong", sent_cookies[0].Value());
+}
+
+namespace {
+
+class CookieSetter {
+ public:
+  CookieSetter(HeadlessBrowserTest* browser_test,
+               HeadlessWebContents* web_contents,
+               std::unique_ptr<network::SetCookieParams> set_cookie_params)
+      : browser_test_(browser_test),
+        web_contents_(web_contents),
+        devtools_client_(HeadlessDevToolsClient::Create()) {
+    web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
+    devtools_client_->GetNetwork()->GetExperimental()->SetCookie(
+        std::move(set_cookie_params),
+        base::Bind(&CookieSetter::OnSetCookieResult, base::Unretained(this)));
+  }
+
+  ~CookieSetter() {
+    web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
+  }
+
+  void OnSetCookieResult(std::unique_ptr<network::SetCookieResult> result) {
+    result_ = std::move(result);
+    browser_test_->FinishAsynchronousTest();
+  }
+
+  std::unique_ptr<network::SetCookieResult> TakeResult() {
+    return std::move(result_);
+  }
+
+ private:
+  HeadlessBrowserTest* browser_test_;  // Not owned.
+  HeadlessWebContents* web_contents_;  // Not owned.
+  std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
+
+  std::unique_ptr<network::SetCookieResult> result_;
+
+  DISALLOW_COPY_AND_ASSIGN(CookieSetter);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetCookiesWithDevTools) {
+  net::CookieList sent_cookies;
+  ProtocolHandlerMap protocol_handlers;
+  protocol_handlers[url::kHttpsScheme] =
+      base::WrapUnique(new ProtocolHandlerWithCookies(&sent_cookies));
+
+  HeadlessBrowserContext* browser_context =
+      browser()
+          ->CreateBrowserContextBuilder()
+          .SetProtocolHandlers(std::move(protocol_handlers))
+          .Build();
+
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(GURL("https://example.com/cookie.html"))
+          .Build();
+  EXPECT_TRUE(WaitForLoad(web_contents));
+
+  // The first load has no cookies.
+  EXPECT_EQ(0u, sent_cookies.size());
+
+  // Set some cookies.
+  {
+    std::unique_ptr<network::SetCookieParams> set_cookie_params =
+        network::SetCookieParams::Builder()
+            .SetUrl("https://example.com")
+            .SetName("shape")
+            .SetValue("oblong")
+            .Build();
+    CookieSetter cookie_setter(this, web_contents,
+                               std::move(set_cookie_params));
+    RunAsynchronousTest();
+    std::unique_ptr<network::SetCookieResult> result =
+        cookie_setter.TakeResult();
+    EXPECT_TRUE(result->GetSuccess());
+  }
+  {
+    // Try setting all the fields so we notice if the protocol for any of them
+    // changes.
+    std::unique_ptr<network::SetCookieParams> set_cookie_params =
+        network::SetCookieParams::Builder()
+            .SetUrl("https://other.com")
+            .SetName("shape")
+            .SetValue("trapezoid")
+            .SetDomain("other.com")
+            .SetPath("")
+            .SetSecure(true)
+            .SetHttpOnly(true)
+            .SetSameSite(network::CookieSameSite::STRICT)
+            .SetExpirationDate(0)
+            .Build();
+    CookieSetter cookie_setter(this, web_contents,
+                               std::move(set_cookie_params));
+    RunAsynchronousTest();
+    std::unique_ptr<network::SetCookieResult> result =
+        cookie_setter.TakeResult();
+    EXPECT_TRUE(result->GetSuccess());
+  }
+
+  // Reload the page.
+  EXPECT_FALSE(EvaluateScript(web_contents, "window.location.reload();")
+                   ->HasExceptionDetails());
+  EXPECT_TRUE(WaitForLoad(web_contents));
+
+  // We should have sent the matching cookies this time.
   EXPECT_EQ(1u, sent_cookies.size());
   EXPECT_EQ("shape", sent_cookies[0].Name());
   EXPECT_EQ("oblong", sent_cookies[0].Value());
