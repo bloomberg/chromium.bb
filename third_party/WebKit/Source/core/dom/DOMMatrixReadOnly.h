@@ -5,6 +5,7 @@
 #ifndef DOMMatrixReadOnly_h
 #define DOMMatrixReadOnly_h
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
 #include "platform/heap/Handle.h"
@@ -18,6 +19,7 @@ class DOMMatrix;
 class DOMMatrixReadOnly : public GarbageCollectedFinalized<DOMMatrixReadOnly>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    static DOMMatrixReadOnly* create(Vector<double>, ExceptionState&);
     virtual ~DOMMatrixReadOnly();
 
     double a() const { return m_matrix->m11(); }
@@ -62,12 +64,16 @@ public:
     DEFINE_INLINE_TRACE() { }
 
 protected:
+    DOMMatrixReadOnly() {}
     // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc
     // supports 16-byte alignment but Oilpan doesn't. So we use an std::unique_ptr
     // to allocate TransformationMatrix on PartitionAlloc.
     // TODO(oilpan): Oilpan should support 16-byte aligned allocations.
     std::unique_ptr<TransformationMatrix> m_matrix;
     bool m_is2D;
+
+private:
+    DOMMatrixReadOnly(Vector<double> sequence);
 };
 
 } // namespace blink

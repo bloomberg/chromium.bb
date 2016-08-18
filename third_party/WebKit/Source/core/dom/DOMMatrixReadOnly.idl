@@ -5,7 +5,8 @@
 // http://dev.w3.org/fxtf/geometry/#DOMMatrix
 
 [
-    // FIXME: Constructor(sequence<unrestricted double> numberSequence)
+    Constructor(sequence<unrestricted double> numberSequence),
+    RaisesException=Constructor,
     // FIXME: Exposed=(Window,Worker)
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMMatrixReadOnly {

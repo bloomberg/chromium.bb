@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Geometry Interfaces: DOMMatrixReadOnly</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+test(function() {
+    var matrix2d = new DOMMatrixReadOnly([1, 2, 3, 3.1, 2, 1]);
+    assert_true(matrix2d.is2D);
+    assert_equals(matrix2d.a, 1);
+    assert_equals(matrix2d.b, 2);
+    assert_equals(matrix2d.c, 3);
+    assert_equals(matrix2d.d, 3.1);
+    assert_equals(matrix2d.e, 2);
+    assert_equals(matrix2d.f, 1);
+}, "DOMMatrixReadOnly constructor - 2D matrix");
+
+test(function() {
+    var matrix3d = new DOMMatrixReadOnly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]);
+    assert_false(matrix3d.is2D);
+    assert_equals(matrix3d.m11, 1);
+    assert_equals(matrix3d.m12, 2);
+    assert_equals(matrix3d.m13, 3);
+    assert_equals(matrix3d.m14, 4);
+    assert_equals(matrix3d.m21, 5);
+    assert_equals(matrix3d.m22, 6);
+    assert_equals(matrix3d.m23, 7);
+    assert_equals(matrix3d.m24, 8);
+    assert_equals(matrix3d.m31, 9);
+    assert_equals(matrix3d.m32, 10.1);
+    assert_equals(matrix3d.m33, 11);
+    assert_equals(matrix3d.m34, 12);
+    assert_equals(matrix3d.m41, 13);
+    assert_equals(matrix3d.m42, 14);
+    assert_equals(matrix3d.m43, 15);
+    assert_equals(matrix3d.m44, 16.6);
+}, "DOMMatrixReadOnly constructor - 3D matrix");
+
+test(function() {
+    assert_throws(new TypeError(), function() { new DOMMatrixReadOnly(1, 2, 3, 4, 5, 6); },
+            "DOMMatrixReadOnly constructor only accepts 1 argument");
+    assert_throws(new TypeError(), function() { new DOMMatrixReadOnly("myString"); },
+            "DOMMatrixReadOnly constructor only accepts 1 number sequence");
+    assert_throws(new TypeError(), function() { new DOMMatrixReadOnly([1, 2, 3]); },
+            "DOMMatrixReadOnly constructor only accepts 1 number sequence with 6 or 16 elements.");
+}, "DOMMatrixReadOnly constructor - invalid arguments");
+</script>
+</body>
+</html>

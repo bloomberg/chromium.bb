@@ -6,6 +6,34 @@
 
 namespace blink {
 
+DOMMatrixReadOnly* DOMMatrixReadOnly::create(Vector<double> sequence, ExceptionState& exceptionState)
+{
+    if (sequence.size() != 6 && sequence.size() != 16) {
+        exceptionState.throwTypeError("An invalid number sequence is specified. The sequence must contain 6 elements for 2D matrix and 16 elements for 3D matrix.");
+        return nullptr;
+    }
+    return new DOMMatrixReadOnly(sequence);
+}
+
+DOMMatrixReadOnly::DOMMatrixReadOnly(Vector<double> sequence)
+{
+    if (sequence.size() == 6) {
+        m_matrix = TransformationMatrix::create(
+            sequence[0], sequence[1], sequence[2], sequence[3],
+            sequence[4], sequence[5]);
+        m_is2D = true;
+    } else if (sequence.size() == 16) {
+        m_matrix = TransformationMatrix::create(
+            sequence[0], sequence[1], sequence[2], sequence[3],
+            sequence[4], sequence[5], sequence[6], sequence[7],
+            sequence[8], sequence[9], sequence[10], sequence[11],
+            sequence[12], sequence[13], sequence[14], sequence[15]);
+        m_is2D = false;
+    } else {
+        NOTREACHED();
+    }
+}
+
 DOMMatrixReadOnly::~DOMMatrixReadOnly()
 {
 }
