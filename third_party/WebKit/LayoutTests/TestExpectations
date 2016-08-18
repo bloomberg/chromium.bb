@@ -46,8 +46,8 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/463358 [ Mac Linux ] fast/transforms/transformed-caret.html [ NeedsRebaseline ]
 crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ NeedsRebaseline ]
-crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Failure ]
-crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
+crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ NeedsRebaseline ]
+crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ NeedsRebaseline ]
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ NeedsRebaseline ]
