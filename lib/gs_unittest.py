@@ -124,6 +124,60 @@ class CanonicalizeURLTest(cros_test_lib.TestCase):
          'https://storage.cloud.google.com/some/file/t.gz'))
 
 
+class GsUrlToHttpTest(cros_test_lib.TestCase):
+  """Tests for the CanonicalizeURL function."""
+
+  def setUp(self):
+    self.testUrls = [
+        'gs://releases',
+        'gs://releases/',
+        'gs://releases/path',
+        'gs://releases/path/',
+        'gs://releases/path/file',
+    ]
+
+  def testPublicUrls(self):
+    """Test public https URLs."""
+    expected = [
+        'https://storage.googleapis.com/releases',
+        'https://storage.googleapis.com/releases/',
+        'https://storage.googleapis.com/releases/path',
+        'https://storage.googleapis.com/releases/path/',
+        'https://storage.googleapis.com/releases/path/file',
+    ]
+
+    for gs_url, http_url in zip(self.testUrls, expected):
+      self.assertEqual(gs.GsUrlToHttp(gs_url), http_url)
+      self.assertEqual(gs.GsUrlToHttp(gs_url, directory=True), http_url)
+
+  def testPrivateUrls(self):
+    """Test public https URLs."""
+    expected = [
+        'https://storage.cloud.google.com/releases',
+        'https://pantheon.corp.google.com/storage/browser/releases/',
+        'https://storage.cloud.google.com/releases/path',
+        'https://pantheon.corp.google.com/storage/browser/releases/path/',
+        'https://storage.cloud.google.com/releases/path/file',
+    ]
+
+    for gs_url, http_url in zip(self.testUrls, expected):
+      self.assertEqual(gs.GsUrlToHttp(gs_url, public=False), http_url)
+
+  def testPrivateDirectoryUrls(self):
+    """Test public https URLs."""
+    expected = [
+        'https://pantheon.corp.google.com/storage/browser/releases',
+        'https://pantheon.corp.google.com/storage/browser/releases/',
+        'https://pantheon.corp.google.com/storage/browser/releases/path',
+        'https://pantheon.corp.google.com/storage/browser/releases/path/',
+        'https://pantheon.corp.google.com/storage/browser/releases/path/file',
+    ]
+
+    for gs_url, http_url in zip(self.testUrls, expected):
+      self.assertEqual(
+          gs.GsUrlToHttp(gs_url, public=False, directory=True), http_url)
+
+
 class VersionTest(AbstractGSContextTest):
   """Tests GSContext.gsutil_version functionality."""
 
