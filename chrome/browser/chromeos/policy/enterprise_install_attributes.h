@@ -84,10 +84,6 @@ class EnterpriseInstallAttributes {
   // not an enterprise device.
   std::string GetDomain() const;
 
-  // Gets the user that registered the device. Returns an empty string if the
-  // device is not an enterprise device.
-  std::string GetRegistrationUser();
-
   // Gets the device id that was generated when the device was registered.
   // Returns an empty string if the device is not an enterprise device or the
   // device id was not stored in the lockbox (prior to R19).
@@ -119,9 +115,12 @@ class EnterpriseInstallAttributes {
  private:
   FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
                            DeviceLockedFromOlderVersion);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
+                           GetRegistrationUser);
   FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest, Init);
   FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
                            InitForConsumerKiosk);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest, LockCanonicalize);
   FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
                            VerifyFakeInstallAttributesCache);
 
@@ -180,6 +179,10 @@ class EnterpriseInstallAttributes {
   void OnTpmOwnerCheckCompleted(int dbus_retries_remaining,
                                 chromeos::DBusMethodCallStatus call_status,
                                 bool result);
+
+  // Gets the user that registered the device. Returns an empty string if the
+  // device is not an enterprise device.
+  std::string GetRegistrationUser() const;
 
   chromeos::CryptohomeClient* cryptohome_client_;
 

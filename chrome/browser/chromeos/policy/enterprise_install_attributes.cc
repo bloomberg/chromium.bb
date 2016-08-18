@@ -337,13 +337,6 @@ bool EnterpriseInstallAttributes::IsConsumerKioskDeviceWithAutoLaunch() {
          registration_mode_ == DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
 }
 
-std::string EnterpriseInstallAttributes::GetRegistrationUser() {
-  if (!device_locked_)
-    return std::string();
-
-  return registration_user_;
-}
-
 std::string EnterpriseInstallAttributes::GetDomain() const {
   if (!IsEnterpriseDevice())
     return std::string();
@@ -495,6 +488,13 @@ void EnterpriseInstallAttributes::DecodeInstallAttributes(
     // |registration_user_| is empty on consumer devices.
     registration_mode_ = DEVICE_MODE_CONSUMER;
   }
+}
+
+std::string EnterpriseInstallAttributes::GetRegistrationUser() const {
+  if (!device_locked_)
+    return std::string();
+
+  return registration_user_;
 }
 
 }  // namespace policy
