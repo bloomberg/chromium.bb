@@ -68,5 +68,5 @@ class UnittestStressBuilder(generic_builders.Builder):
     self._RunStage(android_stages.AndroidMetadataStage)
     self._RunStage(build_stages.BuildPackagesStage, board)
 
-    for _ in xrange(self.TEST_CYCLES):
-      self._RunStage(test_stages.UnitTestStage, board)
+    for i in xrange(self.TEST_CYCLES):
+      self._RunStage(test_stages.UnitTestStage, board, suffix=' - %d' % i)
