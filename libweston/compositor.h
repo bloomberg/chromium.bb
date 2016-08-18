@@ -1690,14 +1690,6 @@ weston_recorder_stop(struct weston_recorder *recorder);
 struct clipboard *
 clipboard_create(struct weston_seat *seat);
 
-struct text_backend;
-
-struct text_backend *
-text_backend_init(struct weston_compositor *ec);
-
-void
-text_backend_destroy(struct text_backend *text_backend);
-
 struct weston_view_animation;
 typedef	void (*weston_view_animation_done_func_t)(struct weston_view_animation *animation, void *data);
 
