@@ -18,7 +18,7 @@
 -keep @org.chromium.base.annotations.UsedByReflection class *
 
 # Keeps for method level annotations.
--keepclasseswithmembers class * {
+-keepclassmembers class * {
   @android.webkit.JavascriptInterface <methods>;
 }
 -keepclasseswithmembers class * {
