@@ -1,39 +1,35 @@
 <!DOCTYPE html>
-<title>Test that when image map areas have their shape or coordinate dynamically altered, the clickable region changes.</title>
+<title>Test that when image map areas have their shape or coordinate dynamically altered, the test region changes.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <img usemap="#m" style="height:400px; width:400px; border:1px solid red; position:absolute; left:0; right:0" >
 <map name="m">
-<area href="#" onclick="areaClicked = true; return false;">
+<area href="#">
 </map>
 <script>
 test(function() {
     var area = document.querySelector('area');
-    function checkPointInArea(shape, coords, x, y) {
+    function checkPointInArea(shape, coords, x, y, equals) {
         area.setAttribute('shape', shape);
         area.setAttribute('coords', coords);
-        areaClicked = false;
-        // TODO(siva.gunturi): Use elementFromPoint here.
-        eventSender.mouseMoveTo(x, y);
-        eventSender.mouseDown();
-        eventSender.mouseUp();
-        return areaClicked;
+        equals ? assert_equals(area, document.elementFromPoint(x, y))
+               : assert_not_equals(area, document.elementFromPoint(x, y));
     }
-    assert_true(checkPointInArea('default', '', 50, 50));
-    assert_true(checkPointInArea('default', '', 50, 50));
-    assert_true(checkPointInArea('rect', '0, 0, 100, 100', 50, 50));
-    assert_false(checkPointInArea('rect', '0, 0, 100, 100', 150, 150));
-    assert_false(checkPointInArea('rect', '200, 200, 300, 300', 50, 50));
-    assert_true(checkPointInArea('rect', '200, 200, 300, 300', 250, 250));
-    assert_true(checkPointInArea('circle', '100, 100, 50', 100, 100));
-    assert_true(checkPointInArea('circle', '100, 100, 50', 120, 100));
-    assert_false(checkPointInArea('circle', '100, 100, 50', 200, 100));
-    assert_false(checkPointInArea('circle', '300, 300, 50', 100, 100));
-    assert_true(checkPointInArea('circle', '300, 300, 50', 300, 300));
-    assert_true(checkPointInArea('circle', '300, 300, 50', 320, 300));
-    assert_true(checkPointInArea('poly', '100, 100, 200, 100, 200, 200', 150, 150));
-    assert_false(checkPointInArea('poly', '100, 100, 200, 100, 200, 200', 100, 150));
-    assert_false(checkPointInArea('poly', '100, 100, 200, 100, 200, 200', 300, 300));
-    assert_true(checkPointInArea('default', '', 300, 300));
+    checkPointInArea('default', '', 50, 50, true);
+    checkPointInArea('default', '', 50, 50, true);
+    checkPointInArea('rect', '0, 0, 100, 100', 50, 50, true);
+    checkPointInArea('rect', '0, 0, 100, 100', 150, 150, false);
+    checkPointInArea('rect', '200, 200, 300, 300', 50, 50, false);
+    checkPointInArea('rect', '200, 200, 300, 300', 250, 250, true);
+    checkPointInArea('circle', '100, 100, 50', 100, 100, true);
+    checkPointInArea('circle', '100, 100, 50', 120, 100, true);
+    checkPointInArea('circle', '100, 100, 50', 200, 100, false);
+    checkPointInArea('circle', '300, 300, 50', 100, 100, false);
+    checkPointInArea('circle', '300, 300, 50', 300, 300, true);
+    checkPointInArea('circle', '300, 300, 50', 320, 300, true);
+    checkPointInArea('poly', '100, 100, 200, 100, 200, 200', 150, 150, true);
+    checkPointInArea('poly', '100, 100, 200, 100, 200, 200', 100, 150, false);
+    checkPointInArea('poly', '100, 100, 200, 100, 200, 200', 300, 300, false);
+    checkPointInArea('default', '', 300, 300, true);
 });
 </script>
