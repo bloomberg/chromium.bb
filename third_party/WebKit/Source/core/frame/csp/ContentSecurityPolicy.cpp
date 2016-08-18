@@ -779,13 +779,22 @@ void ContentSecurityPolicy::upgradeInsecureRequests()
     m_insecureRequestPolicy |= kUpgradeInsecureRequests;
 }
 
-static String stripURLForUseInReport(Document* document, const KURL& url, RedirectStatus redirectStatus)
+static String stripURLForUseInReport(Document* document, const KURL& url, RedirectStatus redirectStatus, const String& effectiveDirective)
 {
     if (!url.isValid())
         return String();
     if (!url.isHierarchical() || url.protocolIs("file"))
         return url.protocol();
-    if (redirectStatus == RedirectStatus::NoRedirect || document->getSecurityOrigin()->canRequest(url)) {
+
+    // Until we're more careful about the way we deal with navigations in frames (and, by extension,
+    // in plugin documents), strip cross-origin 'frame-src' and 'object-src' violations down to an
+    // origin. https://crbug.com/633306
+    bool canSafelyExposeURL = document->getSecurityOrigin()->canRequest(url)
+        || (redirectStatus == RedirectStatus::NoRedirect
+            && !equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::FrameSrc)
+            && !equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::ObjectSrc));
+
+    if (canSafelyExposeURL) {
         // 'KURL::strippedForUseAsReferrer()' dumps 'String()' for non-webby URLs.
         // It's better for developers if we return the origin of those URLs rather
         // than nothing.
@@ -813,7 +822,7 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
             init.setBlockedURI("eval");
             break;
         case ContentSecurityPolicy::URLViolation:
-            init.setBlockedURI(stripURLForUseInReport(document, blockedURL, redirectStatus));
+            init.setBlockedURI(stripURLForUseInReport(document, blockedURL, redirectStatus, effectiveDirective));
             break;
         }
     }
@@ -832,7 +841,7 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     std::unique_ptr<SourceLocation> location = SourceLocation::capture(document);
     if (location->lineNumber()) {
         KURL source = KURL(ParsedURLString, location->url());
-        init.setSourceFile(stripURLForUseInReport(document, source, redirectStatus));
+        init.setSourceFile(stripURLForUseInReport(document, source, redirectStatus, effectiveDirective));
         init.setLineNumber(location->lineNumber());
         init.setColumnNumber(location->columnNumber());
     }
