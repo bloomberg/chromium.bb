@@ -22,6 +22,12 @@
       paper-input {
         width: var(--paper-input-max-width);
       }
+
+      #existingPassphraseInput {
+        /* The submit button for the existing passphrase is on the same line. */
+        -webkit-margin-end: 16px;
+        display: inline-block;
+      }
     </style>
     <div id="[[pages.SPINNER]]" class="settings-box first"
         hidden$="[[!isStatus_(pages.SPINNER, pageStatus_)]]">
