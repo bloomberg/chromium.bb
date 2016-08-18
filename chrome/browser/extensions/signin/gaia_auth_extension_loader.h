@@ -34,15 +34,6 @@ class GaiaAuthExtensionLoader : public BrowserContextKeyedAPI {
   void UnloadIfNeeded();
   void UnloadIfNeededAsync();
 
-  // Add a string data for gaia auth extension. Returns an ID that
-  // could be used to get the data. All strings are cleared when gaia auth
-  // is unloaded.
-  int AddData(const std::string& data);
-
-  // Get data for the given ID. Returns true if the data is found and
-  // its value is copied to |data|. Otherwise, returns false.
-  bool GetData(int data_id, std::string* data);
-
   static GaiaAuthExtensionLoader* Get(content::BrowserContext* context);
 
   // BrowserContextKeyedAPI implementation.

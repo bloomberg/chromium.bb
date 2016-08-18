@@ -97,21 +97,6 @@ void GaiaAuthExtensionLoader::UnloadIfNeeded() {
   }
 }
 
-int GaiaAuthExtensionLoader::AddData(const std::string& data) {
-  ++last_data_id_;
-  data_[last_data_id_] = data;
-  return last_data_id_;
-}
-
-bool GaiaAuthExtensionLoader::GetData(int data_id, std::string* data) {
-  auto it = data_.find(data_id);
-  if (it == data_.end())
-    return false;
-
-  *data = it->second;
-  return true;
-}
-
 void GaiaAuthExtensionLoader::Shutdown() {
   if (load_count_ > 0) {
     UnloadGaiaAuthExtension(browser_context_);
