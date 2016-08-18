@@ -255,7 +255,6 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
         return nullptr;
 
     UseCounter::count(document, UseCounter::LinkRelPreload);
-    ASSERT(RuntimeEnabledFeatures::linkPreloadEnabled());
     if (!href.isValid() || href.isEmpty()) {
         document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> has an invalid `href` value")));
         return nullptr;
@@ -328,10 +327,8 @@ void LinkLoader::loadLinksFromHeader(const String& headerValue, const KURL& base
         }
         if (canLoadResources != DoNotLoadResources) {
             bool errorOccurred = false;
-            if (RuntimeEnabledFeatures::linkPreloadEnabled()) {
-                ViewportDescription* viewportDescription = (viewportDescriptionWrapper && viewportDescriptionWrapper->set) ? &(viewportDescriptionWrapper->description) : nullptr;
-                preloadIfNeeded(relAttribute, url, *document, header.as(), header.mimeType(), header.media(), crossOriginAttributeValue(header.crossOrigin()), LinkCalledFromHeader, errorOccurred, viewportDescription);
-            }
+            ViewportDescription* viewportDescription = (viewportDescriptionWrapper && viewportDescriptionWrapper->set) ? &(viewportDescriptionWrapper->description) : nullptr;
+            preloadIfNeeded(relAttribute, url, *document, header.as(), header.mimeType(), header.media(), crossOriginAttributeValue(header.crossOrigin()), LinkCalledFromHeader, errorOccurred, viewportDescription);
         }
         // TODO(yoav): Add more supported headers as needed.
     }

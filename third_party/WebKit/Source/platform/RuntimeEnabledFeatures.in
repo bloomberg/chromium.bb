@@ -113,7 +113,6 @@ InstalledApp status=experimental
 IntersectionObserver status=stable
 LangAttributeAwareFormControlUI
 LayoutNG
-LinkPreload status=stable
 LinkServiceWorker status=experimental, origin_trial_feature_name=ForeignFetch
 FractionalScrollOffsets
 LoadingWithMojo
