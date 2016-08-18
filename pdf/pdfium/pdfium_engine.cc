@@ -3692,8 +3692,8 @@ FPDF_BOOL PDFiumEngine::Pause_NeedToPauseNow(IFSDK_PAUSE* param) {
 }
 
 ScopedUnsupportedFeature::ScopedUnsupportedFeature(PDFiumEngine* engine)
-    : engine_(engine), old_engine_(g_engine_for_unsupported) {
-  g_engine_for_unsupported = engine_;
+    : old_engine_(g_engine_for_unsupported) {
+  g_engine_for_unsupported = engine;
 }
 
 ScopedUnsupportedFeature::~ScopedUnsupportedFeature() {

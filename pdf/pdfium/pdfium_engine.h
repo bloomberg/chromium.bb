@@ -725,9 +725,9 @@ class ScopedUnsupportedFeature {
  public:
   explicit ScopedUnsupportedFeature(PDFiumEngine* engine);
   ~ScopedUnsupportedFeature();
+
  private:
-  PDFiumEngine* engine_;
-  PDFiumEngine* old_engine_;
+  PDFiumEngine* const old_engine_;
 };
 
 class PDFiumEngineExports : public PDFEngineExports {
