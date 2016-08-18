@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -27,6 +29,16 @@ class ExtensionTagsTest : public ExtensionBrowserTest {
 
     // Do not launch device discovery process.
     command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
+  }
+
+  // If no extension task was found, a nullptr will be returned.
+  Task* FindAndGetExtensionTask(
+      const MockWebContentsTaskManager& task_manager) {
+    auto itr = std::find_if(
+        task_manager.tasks().begin(), task_manager.tasks().end(),
+        [](Task* task) { return task->GetType() == Task::EXTENSION; });
+
+    return itr != task_manager.tasks().end() ? *itr : nullptr;
   }
 
   const std::vector<WebContentsTag*>& tracked_tags() const {
@@ -61,9 +73,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTagsTest, Basic) {
   EXPECT_EQ(1U, tracked_tags().size());
 }
 
-// Test disabled due to flakiness. See bug: http://crbug.com/519333
-IN_PROC_BROWSER_TEST_F(ExtensionTagsTest,
-                       DISABLED_PreAndPostExistingTaskProviding) {
+IN_PROC_BROWSER_TEST_F(ExtensionTagsTest, PreAndPostExistingTaskProviding) {
   // Browser tests start with a single tab.
   EXPECT_EQ(1U, tracked_tags().size());
   MockWebContentsTaskManager task_manager;
@@ -78,14 +88,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionTagsTest,
   EXPECT_EQ(2U, tracked_tags().size());
   EXPECT_TRUE(task_manager.tasks().empty());
 
+  // Start observing, pre-existing tasks will be provided.
+  task_manager.StartObserving();
+
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
 
-  // Start observing, pre-existing tasks will be provided.
-  task_manager.StartObserving();
   ASSERT_EQ(2U, task_manager.tasks().size());
-  const Task* extension_task = task_manager.tasks().back();
-  EXPECT_EQ(Task::EXTENSION, extension_task->GetType());
+  const Task* extension_task = FindAndGetExtensionTask(task_manager);
+  ASSERT_TRUE(extension_task);
 
   SkBitmap expected_bitmap =
       extensions::TestImageLoader::LoadAndGetExtensionBitmap(
@@ -110,7 +121,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTagsTest,
   ReloadExtension(extension->id());
   EXPECT_EQ(2U, tracked_tags().size());
   ASSERT_EQ(2U, task_manager.tasks().size());
-  EXPECT_EQ(Task::EXTENSION, task_manager.tasks().back()->GetType());
+  extension_task = FindAndGetExtensionTask(task_manager);
+  ASSERT_TRUE(extension_task);
 }
 
 }  // namespace task_manager
