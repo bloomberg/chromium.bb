@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Build;
 import android.os.FileObserver;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -18,6 +19,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import dalvik.system.DexFile;
 
 import org.chromium.base.FileUtils;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.webapk.shell_apk.test.dex_optimizer.IDexOptimizerService;
 
@@ -128,6 +130,7 @@ public class DexLoaderTest extends InstrumentationTestCase {
      * another app's data directory.
      */
     @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
     public void testLoadFromRemoteDataDir() {
         // Extract the dex file into another app's data directory and optimize the dex.
         String remoteDexFilePath = null;
