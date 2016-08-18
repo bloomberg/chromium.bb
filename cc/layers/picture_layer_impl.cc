@@ -767,13 +767,6 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     default_tile_width += 2 * PictureLayerTiling::kBorderTexels;
     default_tile_height += 2 * PictureLayerTiling::kBorderTexels;
 
-    // Round GPU default tile sizes to a multiple of kTileRoundUp. This
-    // helps prevent rounding errors in our CA path. crbug.com/632274
-    default_tile_width =
-        MathUtil::UncheckedRoundUp(default_tile_width, kTileRoundUp);
-    default_tile_height =
-        MathUtil::UncheckedRoundUp(default_tile_height, kTileRoundUp);
-
     default_tile_height =
         std::max(default_tile_height, kMinHeightForGpuRasteredTile);
   } else {

@@ -1300,3 +1300,13 @@ crbug.com/490015 http/tests/navigation/beacon-cross-origin-redirect-blob.html [ 
 crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simple-type.html [ Skip ]
 # This test fails with the stable release mode.
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
+
+crbug.com/632274 virtual/gpu-rasterization/fast/images/color-profile-layer.html [ NeedsRebaseline ]
+crbug.com/632274 virtual/gpu-rasterization/fast/images/color-profile-svg-fill-text.html [ NeedsRebaseline ]
+crbug.com/632274 virtual/gpu-rasterization/fast/images/color-profile-group.html [ NeedsRebaseline ]
+crbug.com/632274 virtual/gpu-rasterization/fast/images/182.html [ NeedsRebaseline ]
+crbug.com/632274 virtual/gpu-rasterization/fast/images/23-55.html [ NeedsRebaseline ]
+crbug.com/632274 virtual/gpu-rasterization/fast/images/color-profile-image-canvas-pattern.html [ NeedsRebaseline ]
+crbug.com/632274 virtual/gpu-rasterization/fast/images/55.html [ NeedsRebaseline ]
+crbug.com/632274 virtual/gpu-rasterization/fast/images/12-55.html [ NeedsRebaseline ]
+crbug.com/632274 virtual/gpu-rasterization/fast/images/2-dht.html [ NeedsRebaseline ]
