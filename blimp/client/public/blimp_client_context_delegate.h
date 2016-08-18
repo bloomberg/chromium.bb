@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "blimp/client/public/session/assignment.h"
 
+class IdentityProvider;
+
 namespace blimp {
 namespace client {
 class BlimpContents;
@@ -16,6 +18,12 @@ class BlimpContents;
 // functionality it needs from its embedder.
 class BlimpClientContextDelegate {
  public:
+  // Authentication error propagated to the embedder.
+  enum AuthError {
+    NOT_SIGNED_IN = 0,
+    OAUTH_TOKEN_FAIL,
+  };
+
   virtual ~BlimpClientContextDelegate() = default;
 
   // Attaches any required base::SupportsUserData::Data to the BlimpContents.
@@ -30,6 +38,13 @@ class BlimpClientContextDelegate {
   virtual void OnAssignmentConnectionAttempted(
       AssignmentRequestResult result,
       const Assignment& assignment) = 0;
+
+  // Create IdentityProvider for OAuth2 token retrieval, used in Authenticator.
+  virtual std::unique_ptr<IdentityProvider> CreateIdentityProvider() = 0;
+
+  // Propagate authentication error to the embedder.
+  virtual void OnAuthenticationError(
+      BlimpClientContextDelegate::AuthError error) = 0;
 
  protected:
   BlimpClientContextDelegate() = default;

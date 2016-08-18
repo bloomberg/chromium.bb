@@ -41,7 +41,7 @@ std::unique_ptr<BlimpContents> DummyBlimpClientContext::CreateBlimpContents() {
   return nullptr;
 }
 
-void DummyBlimpClientContext::Connect(const std::string& client_auth_token) {
+void DummyBlimpClientContext::Connect() {
   NOTREACHED();
 }
 

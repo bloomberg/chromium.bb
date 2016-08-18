@@ -20,6 +20,8 @@ source_set("session") {
     "client_network_components.h",
     "cross_thread_network_event_observer.cc",
     "cross_thread_network_event_observer.h",
+    "identity_source.cc",
+    "identity_source.h",
     "network_event_observer.h",
   ]
 
@@ -28,6 +30,7 @@ source_set("session") {
     "//blimp/client/public:public_headers",
     "//blimp/net",
     "//components/safe_json",
+    "//google_apis",
     "//net",
     "//url",
   ]
@@ -43,9 +46,18 @@ source_set("unit_tests") {
 
   testonly = true
 
-  sources = []
+  sources = [
+    "identity_source_unittest.cc",
+  ]
 
-  deps = []
+  deps = [
+    ":session",
+    "//base",
+    "//blimp/client/test:test",
+    "//google_apis:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 
   data = []
 
@@ -55,15 +67,11 @@ source_set("unit_tests") {
     sources += [ "assignment_source_unittest.cc" ]
 
     deps += [
-      ":session",
-      "//base",
       "//blimp/client/core:switches",
       "//blimp/common",
       "//blimp/common:test_support",
       "//components/safe_json:test_support",
       "//net:test_support",
-      "//testing/gmock",
-      "//testing/gtest",
       "//url",
     ]
 

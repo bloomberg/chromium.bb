@@ -34,6 +34,9 @@ class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
       JNIEnv* env,
       jobject jobj);
 
+  // Start authentication flow from Java.
+  void ConnectFromJava(JNIEnv* env, jobject jobj);
+
  protected:
   // BlimpClientContextImpl implementation.
   GURL GetAssignerURL() override;

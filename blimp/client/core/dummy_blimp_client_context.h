@@ -24,7 +24,7 @@ class DummyBlimpClientContext : public BlimpClientContext {
   // BlimpClientContext implementation.
   void SetDelegate(BlimpClientContextDelegate* delegate) override;
   std::unique_ptr<BlimpContents> CreateBlimpContents() override;
-  void Connect(const std::string& client_auth_token) override;
+  void Connect() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyBlimpClientContext);

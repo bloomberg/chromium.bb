@@ -39,4 +39,12 @@ public interface BlimpClientContext {
      * Java Blimp code only.
      */
     void setDelegate(BlimpClientContextDelegate delegate);
+
+    /**
+     * Start authentication flow and connection to engine.
+     * This must be called after AccountTrackerService.onSystemAccountsSeedingComplete, since the
+     * embedder may asynchronously seed account info to native layer, and revoke all OAuth2 refresh
+     * token during the request.
+     */
+    void connect();
 }

@@ -73,6 +73,12 @@ public class BlimpClientContextImpl implements BlimpClientContext {
         AboutBlimpPreferences.registerCallback(callbacks);
     }
 
+    @Override
+    public void connect() {
+        assert mNativeBlimpClientContextImplAndroid != 0;
+        nativeConnectFromJava(mNativeBlimpClientContextImplAndroid);
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeBlimpClientContextImplAndroid = 0;
@@ -91,4 +97,6 @@ public class BlimpClientContextImpl implements BlimpClientContext {
 
     private native BlimpContents nativeCreateBlimpContentsJava(
             long nativeBlimpClientContextImplAndroid);
+
+    private native void nativeConnectFromJava(long nativeBlimpClientContextImplAndroid);
 }

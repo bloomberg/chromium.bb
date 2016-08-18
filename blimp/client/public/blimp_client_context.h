@@ -54,8 +54,8 @@ class BlimpClientContext : public KeyedService {
   // Creates a new BlimpContents.
   virtual std::unique_ptr<BlimpContents> CreateBlimpContents() = 0;
 
-  // Initiates the process for connecting to the engine.
-  virtual void Connect(const std::string& client_auth_token) = 0;
+  // Start authentication flow and connection to engine.
+  virtual void Connect() = 0;
 
  protected:
   BlimpClientContext() = default;

@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_ANDROID_BLIMP_CHROME_BLIMP_CLIENT_CONTEXT_DELEGATE_H_
 #define CHROME_BROWSER_ANDROID_BLIMP_CHROME_BLIMP_CLIENT_CONTEXT_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 
+class IdentityProvider;
 class Profile;
 
 namespace blimp {
@@ -34,6 +37,9 @@ class ChromeBlimpClientContextDelegate
   void OnAssignmentConnectionAttempted(
       blimp::client::AssignmentRequestResult result,
       const blimp::client::Assignment& assignment) override;
+  std::unique_ptr<IdentityProvider> CreateIdentityProvider() override;
+  void OnAuthenticationError(
+      BlimpClientContextDelegate::AuthError error) override;
 
  private:
   // The profile this delegate is used for.

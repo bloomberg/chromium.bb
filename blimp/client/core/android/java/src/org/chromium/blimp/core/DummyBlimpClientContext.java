@@ -61,4 +61,7 @@ public class DummyBlimpClientContext implements BlimpClientContext {
     @Override
     public void setDelegate(BlimpClientContextDelegate delegate) {
     }
+
+    @Override
+    public void connect() {}
 }

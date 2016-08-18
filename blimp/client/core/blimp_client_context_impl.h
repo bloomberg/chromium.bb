@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "blimp/client/core/session/client_network_components.h"
+#include "blimp/client/core/session/identity_source.h"
 #include "blimp/client/core/session/network_event_observer.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/contents/blimp_contents.h"
@@ -42,7 +43,7 @@ class BlimpClientContextImpl : public BlimpClientContext,
   // BlimpClientContext implementation.
   void SetDelegate(BlimpClientContextDelegate* delegate) override;
   std::unique_ptr<BlimpContents> CreateBlimpContents() override;
-  void Connect(const std::string& client_auth_token) override;
+  void Connect() override;
 
   // NetworkEventObserver implementation.
   void OnConnected() override;
@@ -54,6 +55,9 @@ class BlimpClientContextImpl : public BlimpClientContext,
   virtual GURL GetAssignerURL();
 
  private:
+  // Connect to assignment source with OAuth2 token to get an assignment.
+  virtual void ConnectToAssignmentSource(const std::string& client_auth_token);
+
   // The AssignmentCallback for when an assignment is ready. This will trigger
   // a connection to the engine.
   virtual void ConnectWithAssignment(AssignmentRequestResult result,
@@ -79,6 +83,9 @@ class BlimpClientContextImpl : public BlimpClientContext,
   std::unique_ptr<ClientNetworkComponents> net_components_;
 
   std::unique_ptr<ThreadPipeManager> thread_pipe_manager_;
+
+  // Provide OAuth2 token and propagate account sign in states change.
+  std::unique_ptr<IdentitySource> identity_source_;
 
   base::WeakPtrFactory<BlimpClientContextImpl> weak_factory_;
 

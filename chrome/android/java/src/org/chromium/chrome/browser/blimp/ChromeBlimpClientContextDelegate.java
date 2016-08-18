@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.blimp;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.AccountTrackerService;
 
 /**
  * The ChromeBlimpClientContextDelegate for //chrome which provides the necessary functionality
@@ -17,7 +20,14 @@ import org.chromium.chrome.browser.profiles.Profile;
  * it, call {@link ChromeBlimpClientContextDelegate#createAndSetDelegateForContext(Profile)}.
  * When the delegate should be deleted, a call to {@link #destroy} is required.
  */
-public class ChromeBlimpClientContextDelegate implements BlimpClientContextDelegate {
+public class ChromeBlimpClientContextDelegate
+        implements BlimpClientContextDelegate,
+                   AccountTrackerService.OnSystemAccountsSeededListener {
+    /**
+     * {@link BlimpClientContext} associated with this delegate.
+     */
+    private BlimpClientContext mBlimpClientContext;
+
     /**
      * Creates a new ChromeBlimpClientContextDelegate that is owned by the caller. It automatically
      * attaches itself as the sole delegate for the BlimpClientContext attached to the given
@@ -34,6 +44,27 @@ public class ChromeBlimpClientContextDelegate implements BlimpClientContextDeleg
     }
 
     /**
+     * @return {@link BlimpClientContext} object this delegate belongs to.
+     */
+    public BlimpClientContext getBlimpClientContext() {
+        return mBlimpClientContext;
+    }
+
+    @Override
+    public void onSystemAccountsSeedingComplete() {
+        AccountTrackerService.get(ContextUtils.getApplicationContext())
+                .removeSystemAccountsSeededListener(this);
+
+        // Start authentication.
+        // Must request OAuth2 token after account seeded, or native ProfileOAuth2TokenService might
+        // revoke the refresh token during request, making token retrieval flaky.
+        mBlimpClientContext.connect();
+    }
+
+    @Override
+    public void onSystemAccountsChanged() {}
+
+    /**
      * The pointer to the ChromeBlimpClientContextDelegateAndroid JNI bridge.
      */
     private long mNativeChromeBlimpClientContextDelegateAndroid;
@@ -42,8 +73,17 @@ public class ChromeBlimpClientContextDelegate implements BlimpClientContextDeleg
         // Create native delegate object.
         mNativeChromeBlimpClientContextDelegateAndroid = nativeInit(profile);
 
+        BlimpClientContext context =
+                BlimpClientContextFactory.getBlimpClientContextForProfile(profile);
+        mBlimpClientContext = context;
+
         // Set ourselves as the Java delegate object.
-        BlimpClientContextFactory.getBlimpClientContextForProfile(profile).setDelegate(this);
+        mBlimpClientContext.setDelegate(this);
+
+        // Connect after account seeding finished, if account seeding is already done, listener will
+        // immediately get called.
+        AccountTrackerService.get(ContextUtils.getApplicationContext())
+                .addSystemAccountsSeededListener(this);
     }
 
     @CalledByNative
@@ -53,6 +93,10 @@ public class ChromeBlimpClientContextDelegate implements BlimpClientContextDeleg
 
     public void destroy() {
         assert mNativeChromeBlimpClientContextDelegateAndroid != 0;
+
+        AccountTrackerService.get(ContextUtils.getApplicationContext())
+                .removeSystemAccountsSeededListener(this);
+
         nativeDestroy(mNativeChromeBlimpClientContextDelegateAndroid);
     }
 

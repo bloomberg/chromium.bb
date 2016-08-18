@@ -80,5 +80,9 @@ GURL BlimpClientContextImplAndroid::GetAssignerURL() {
   return assigner_url;
 }
 
+void BlimpClientContextImplAndroid::ConnectFromJava(JNIEnv* env, jobject jobj) {
+  BlimpClientContextImpl::Connect();
+}
+
 }  // namespace client
 }  // namespace blimp

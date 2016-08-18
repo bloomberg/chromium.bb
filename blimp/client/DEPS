@@ -7,6 +7,7 @@ include_rules = [
   "+components/url_formatter",
   "+components/version_info",
   "-content",
+  "+google_apis/gaia",
   "+gpu",
   "+jni",
   "+net",
