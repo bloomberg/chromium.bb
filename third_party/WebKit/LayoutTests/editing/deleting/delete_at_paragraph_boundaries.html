@@ -1,0 +1,87 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>',
+                    '<p>A</p><p>^<br></p><p>B|</p><p><br></p>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        'delete',
+        [
+            '<div contenteditable>',
+                '<p>A</p><p>|<br></p><p><br></p>',
+            '</div>',
+        ].join('')),
+        'Deleting when a selection starts in a blank line created by a block with a BR placeholder in it and extends to the end of a block.');
+
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>',
+                    '<p>A</p>^<br><p>B|</p><p><br></p>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        'delete',
+        [
+            '<div contenteditable>',
+                '<p>A</p>|<br><p><br></p>',
+            '</div>',
+        ].join('')),
+        'Deleting when a selection starts in a blank line created by a BR element and extends to the end of a block.');
+
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>',
+                    '<p>A</p><p>^<br></p><p>B|C</p>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        'delete',
+        [
+            '<div contenteditable>',
+                '<p>A</p><p>|C</p>',
+            '</div>',
+        ].join('')),
+        'Deleting when a selection starts in a blank line created by a block with a BR placeholder in it and extends to a character that is not at the end of a block. This ensures that some of our "special-case" code does not run for this case');
+
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>',
+                    '<p>A</p>^<br><p>B|C</p>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        'delete',
+        [
+            '<div contenteditable>',
+                '<div><p>A</p><p>|C</p></div>',
+            '</div>',
+        ].join('')),
+        'Deleting when a selection starts in a blank line created by a BR element and extends to a character that is not at the end of a block. This ensures that some of our "special-case" code does not run for this case.');
+
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>',
+                    '<p>A</p>^<br><p>B</p>|<br>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        'delete',
+        [
+            '<div contenteditable>',
+                '<div>',
+                    '<p>A</p>|<br>',
+                '</div>',
+            '</div>',
+        ].join('')),
+        'Deleting when a selection starts in a blank line created by a BR element and extends to the end of the document.');
+</script>
