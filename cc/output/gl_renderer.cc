@@ -2918,13 +2918,6 @@ void GLRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
   swapping_overlay_resources_.push_back(std::move(pending_overlay_resources_));
   pending_overlay_resources_.clear();
 
-  // We always hold onto resources until an extra frame has swapped, to make
-  // sure we don't update the buffer while it's being scanned out.
-  if (!settings_->release_overlay_resources_after_gpu_query &&
-      swapping_overlay_resources_.size() > 2) {
-    swapping_overlay_resources_.pop_front();
-  }
-
   output_surface_->SwapBuffers(std::move(compositor_frame));
 
   swap_buffer_rect_ = gfx::Rect();
@@ -2955,10 +2948,9 @@ void GLRenderer::SwapBuffersComplete() {
       gl_->ScheduleCALayerInUseQueryCHROMIUM(textures.size(), textures.data());
     }
   } else if (swapping_overlay_resources_.size() > 1) {
-    // If a query is not needed to release the overlay buffers, we can
-    // assume that once a swap buffer is completed only the last set of
-    // submitted overlay buffers are still in use by GL/Hardware Display.
-    DCHECK_EQ(2u, swapping_overlay_resources_.size());
+    // If a query is not needed to release the overlay buffers, we can assume
+    // that once a swap buffer has completed we can remove the oldest buffers
+    // from the queue.
     swapping_overlay_resources_.pop_front();
   }
 }
