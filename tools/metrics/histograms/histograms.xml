@@ -30358,6 +30358,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Net.QuicSession.21CumulativePacketsReceived"
     units="Received in Ranges">
   <owner>rch@chromium.org</owner>
+  <obsolete>
+    Deprecated 08/2016.
+  </obsolete>
   <summary>
     This histogram summarizes information about a 21 packet sequence, indicating
     for each of the 21 possible prefixes of this pattern, how many packets were
@@ -30377,6 +30380,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Net.QuicSession.6PacketsPatternsReceived"
     units="Binay of Packets ACKed">
   <owner>rch@chromium.org</owner>
+  <obsolete>
+    Deprecated 08/2016.
+  </obsolete>
   <summary>
     Each of the 64 buckets represents a different binary pattern of 6
     consecutive packets that were received by the client.  The LSB of the bucket
@@ -30800,6 +30806,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.QuicSession.PacketReceived" units="SequenceNumber">
   <owner>rch@chromium.org</owner>
+  <obsolete>
+    Deprecated 08/2016.
+  </obsolete>
   <summary>
     Each bucket corresponds to a specific packet sequence number that was sent
     by a server to Chrome at the start of a QUIC connection. This histogram is
