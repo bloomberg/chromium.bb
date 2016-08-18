@@ -319,7 +319,7 @@ drm_fb_create_dumb(struct drm_backend *b, unsigned width, unsigned height,
 	ret = -1;
 
 	if (!b->no_addfb2) {
-		uint32_t handles[4], pitches[4], offsets[4];
+		uint32_t handles[4] = { 0 }, pitches[4] = { 0 }, offsets[4] = { 0 };
 
 		handles[0] = fb->handle;
 		pitches[0] = fb->stride;
