@@ -1362,7 +1362,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // the click handlers on the JS side. This JS performs the function of
   // suppressing these handlers on the JS side.
   NSString* suppressNextClick = @"__gCrWeb.suppressNextClick()";
-  [self evaluateJavaScript:suppressNextClick stringResultHandler:nil];
+  [self executeJavaScript:suppressNextClick completionHandler:nil];
 }
 
 // TODO(shreyasv): This code is shared with SnapshotManager. Remove this and add
@@ -1414,7 +1414,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     NSString* const kSetSuppressDialogs = [NSString
         stringWithFormat:@"__gCrWeb.setSuppressGeolocationDialogs(%d);",
                          shouldSuppressDialogs];
-    [self evaluateJavaScript:kSetSuppressDialogs stringResultHandler:nil];
+    [self executeJavaScript:kSetSuppressDialogs completionHandler:nil];
     _shouldSuppressDialogsOnWindowIDInjection = NO;
   } else {
     _shouldSuppressDialogsOnWindowIDInjection = shouldSuppressDialogs;
@@ -1766,16 +1766,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                                  base::SysUTF8ToNSString(outState)];
   NSString* combinedJS =
       [NSString stringWithFormat:@"%@%@", replaceWebViewUrlJS, popstateJS];
-  GURL urlCopy(URL);
+  GURL blockURL(URL);
   base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self evaluateJavaScript:combinedJS
-       stringResultHandler:^(NSString*, NSError*) {
-         if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
-           return;
-         base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
-         strongSelf.get()->_URLOnStartLoading = urlCopy;
-         strongSelf.get()->_lastRegisteredRequestURL = urlCopy;
-       }];
+  [self executeJavaScript:combinedJS completionHandler:^(id, NSError*) {
+    if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
+      return;
+    base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
+    strongSelf.get()->_URLOnStartLoading = blockURL;
+    strongSelf.get()->_lastRegisteredRequestURL = blockURL;
+  }];
 }
 
 // Load the current URL in a web view, first ensuring the web view is visible.
@@ -2526,7 +2525,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Script execution is an asynchronous operation which may pass sensitive
   // data to the page. executeJavaScript:completionHandler makes sure that
   // receiver page did not change by checking its window id.
-  // |[_webView evaluateJavaScript:completionHandler:]| is not used here because
+  // |[_webView executeJavaScript:completionHandler:]| is not used here because
   // it does not check that page is the same.
   [self executeJavaScript:script completionHandler:nil];
   [_injectedScriptManagers addObject:JSInjectionManagerClass];
@@ -2986,8 +2985,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                               context:(NSDictionary*)context {
   // Because hash changes don't trigger |-didFinishNavigation|, fetch favicons
   // for the new page manually.
-  [self evaluateJavaScript:@"__gCrWeb.sendFaviconsToHost();"
-       stringResultHandler:nil];
+  [self executeJavaScript:@"__gCrWeb.sendFaviconsToHost();"
+        completionHandler:nil];
 
   // Notify the observers.
   _webStateImpl->OnUrlHashChanged();
@@ -3082,16 +3081,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   NSString* replaceWebViewJS =
       [self javascriptToReplaceWebViewURL:pushURL stateObjectJSON:stateObject];
   base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self evaluateJavaScript:replaceWebViewJS
-       stringResultHandler:^(NSString*, NSError*) {
-         if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
-           return;
-         base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
-         [strongSelf optOutScrollsToTopForSubviews];
-         // Notify the observers.
-         strongSelf.get()->_webStateImpl->OnHistoryStateChanged();
-         [strongSelf didFinishNavigation];
-       }];
+  [self executeJavaScript:replaceWebViewJS completionHandler:^(id, NSError*) {
+    if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
+      return;
+    base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
+    [strongSelf optOutScrollsToTopForSubviews];
+    // Notify the observers.
+    strongSelf.get()->_webStateImpl->OnHistoryStateChanged();
+    [strongSelf didFinishNavigation];
+  }];
   return YES;
 }
 
@@ -3142,13 +3140,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   NSString* replaceStateJS = [self javascriptToReplaceWebViewURL:replaceURL
                                                  stateObjectJSON:stateObject];
   base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self evaluateJavaScript:replaceStateJS
-       stringResultHandler:^(NSString*, NSError*) {
-         if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
-           return;
-         base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
-         [strongSelf didFinishNavigation];
-       }];
+  [self executeJavaScript:replaceStateJS completionHandler:^(id, NSError*) {
+    if (!weakSelf || weakSelf.get()->_isBeingDestroyed)
+      return;
+    base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
+    [strongSelf didFinishNavigation];
+  }];
   return YES;
 }
 
@@ -4033,15 +4030,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 // window.scrollTo while user is scrolling. See crbug.com/554257
 - (void)webViewScrollViewWillBeginDragging:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  [self evaluateJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(true)"
-       stringResultHandler:nil];
+  [self executeJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(true)"
+        completionHandler:nil];
 }
 
 - (void)webViewScrollViewDidEndDragging:
             (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
                          willDecelerate:(BOOL)decelerate {
-  [self evaluateJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(false)"
-       stringResultHandler:nil];
+  [self executeJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(false)"
+        completionHandler:nil];
 }
 
 #pragma mark -
