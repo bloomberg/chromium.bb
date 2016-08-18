@@ -68,6 +68,10 @@ class CONTENT_EXPORT TextInputManager {
     TextSelection(const TextSelection& other);
     ~TextSelection();
 
+    // If text selection is valid, |text| will be populated with the selected
+    // text and the method will return true. Otherwise, it will return false.
+    bool GetSelectedText(base::string16* text) const;
+
     // The offset of the text stored in |text| relative to the start of the web
     // page.
     size_t offset;

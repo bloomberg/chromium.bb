@@ -911,6 +911,46 @@ void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
   composition_bounds_ = info->character_bounds;
 }
 
+void RenderWidgetHostViewMac::OnTextSelectionChanged(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view) {
+  DCHECK_EQ(GetTextInputManager(), text_input_manager);
+
+  // We obtain the TextSelection from focused RWH which is obtained from the
+  // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
+  // and the focused RWH will be that of the embedder which is incorrect. In
+  // this case we should use TextSelection for |this| since RWHV for guest
+  // forwards text selection information to its platform view.
+  RenderWidgetHostViewBase* focused_view =
+      is_guest_view_hack_ ? this : GetFocusedWidget()
+                                       ? GetFocusedWidget()->GetView()
+                                       : nullptr;
+
+  if (!focused_view)
+    return;
+
+  const TextInputManager::TextSelection* selection =
+      GetTextInputManager()->GetTextSelection(focused_view);
+
+  base::string16 text;
+  if (selection->GetSelectedText(&text))
+    selected_text_ = base::UTF16ToUTF8(text);
+
+  [cocoa_view_ setSelectedRange:selection->range.ToNSRange()];
+  // Updates markedRange when there is no marked text so that retrieving
+  // markedRange immediately after calling setMarkdText: returns the current
+  // caret position.
+  if (![cocoa_view_ hasMarkedText]) {
+    [cocoa_view_ setMarkedRange:selection->range.ToNSRange()];
+  }
+
+  // TODO(ekaramad): The following values are tracked by TextInputManager and
+  // should be cleaned up from this class (https://crbug.com/602427).
+  selection_text_ = selection->text;
+  selection_range_ = selection->range;
+  selection_text_offset_ = selection->offset;
+}
+
 void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
                                                 int error_code) {
   Destroy();
@@ -1017,33 +1057,6 @@ void RenderWidgetHostViewMac::StopSpeaking() {
 // RenderWidgetHostViewCocoa uses the stored selection text,
 // which implements NSServicesRequests protocol.
 //
-void RenderWidgetHostViewMac::SelectionChanged(const base::string16& text,
-                                               size_t offset,
-                                               const gfx::Range& range) {
-  if (range.is_empty() || text.empty()) {
-    selected_text_.clear();
-  } else {
-    size_t pos = range.GetMin() - offset;
-    size_t n = range.length();
-
-    DCHECK(pos + n <= text.length()) << "The text can not fully cover range.";
-    if (pos >= text.length()) {
-      DCHECK(false) << "The text can not cover range.";
-      return;
-    }
-    selected_text_ = base::UTF16ToUTF8(text.substr(pos, n));
-  }
-
-  [cocoa_view_ setSelectedRange:range.ToNSRange()];
-  // Updates markedRange when there is no marked text so that retrieving
-  // markedRange immediately after calling setMarkdText: returns the current
-  // caret position.
-  if (![cocoa_view_ hasMarkedText]) {
-    [cocoa_view_ setMarkedRange:range.ToNSRange()];
-  }
-
-  RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
-}
 
 void RenderWidgetHostViewMac::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {

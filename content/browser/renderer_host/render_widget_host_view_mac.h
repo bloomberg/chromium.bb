@@ -288,9 +288,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
-  void SelectionChanged(const base::string16& text,
-                        size_t offset,
-                        const gfx::Range& range) override;
   void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) override;
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
@@ -356,7 +353,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnImeCompositionRangeChanged(
       TextInputManager* text_input_manager,
       RenderWidgetHostViewBase* updated_view) override;
-
+  void OnTextSelectionChanged(TextInputManager* text_input_manager,
+                              RenderWidgetHostViewBase* updated_view) override;
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;
 

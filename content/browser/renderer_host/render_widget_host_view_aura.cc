@@ -3020,41 +3020,27 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
   if (!GetTextInputManager())
     return;
 
-  const TextInputManager::TextSelection* text_selection = nullptr;
-  if (is_guest_view_hack_) {
-    // We obtain the TextSelection from focused RWH which is obtained from the
-    // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
-    // and the focused RWH will be that of the embedder which is incorrect. In
-    // this case we should use TextSelection for |this| since RWHV for guest
-    // forwards text selection information to its platform view.
-    text_selection = GetTextInputManager()->GetTextSelection(this);
-  } else {
-    RenderWidgetHostImpl* focused_widget =
-        host_->delegate()->GetFocusedRenderWidgetHost(host_);
-    if (!!focused_widget && !!focused_widget->GetView()) {
-      text_selection = GetTextInputManager()->GetTextSelection(
-          focused_widget->GetView());
-    }
+  // We obtain the TextSelection from focused RWH which is obtained from the
+  // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
+  // and the focused RWH will be that of the embedder which is incorrect. In
+  // this case we should use TextSelection for |this| since RWHV for guest
+  // forwards text selection information to its platform view.
+  RenderWidgetHostViewBase* focused_view =
+      is_guest_view_hack_ ? this : GetFocusedWidget()
+                                       ? GetFocusedWidget()->GetView()
+                                       : nullptr;
+
+  if (!focused_view)
+    return;
+
+  base::string16 selected_text;
+  if (GetTextInputManager()
+          ->GetTextSelection(focused_view)
+          ->GetSelectedText(&selected_text)) {
+    // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
+    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
+    clipboard_writer.WriteText(selected_text);
   }
-
-  if (!text_selection)
-    return;
-
-  if (text_selection->text.empty() || text_selection->range.is_empty())
-    return;
-  size_t pos = text_selection->range.GetMin() - text_selection->offset;
-  size_t n = text_selection->range.length();
-
-  DCHECK(pos + n <= text_selection->text.length())
-      << "The text can not fully cover range.";
-  if (pos >= text_selection->text.length()) {
-    NOTREACHED() << "The text can not cover range.";
-    return;
-  }
-
-  // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
-  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
-  clipboard_writer.WriteText(text_selection->text.substr(pos, n));
 #endif  // defined(USE_X11) && !defined(OS_CHROMEOS)
 }
 

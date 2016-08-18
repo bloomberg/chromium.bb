@@ -64,6 +64,19 @@ RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
     text_input_manager_->Unregister(this);
 }
 
+RenderWidgetHostImpl* RenderWidgetHostViewBase::GetFocusedWidget() const {
+  RenderWidgetHostImpl* host =
+      RenderWidgetHostImpl::From(GetRenderWidgetHost());
+
+  return host && host->delegate()
+             ? host->delegate()->GetFocusedRenderWidgetHost(host)
+             : nullptr;
+}
+
+RenderWidgetHost* RenderWidgetHostViewBase::GetRenderWidgetHost() const {
+  return nullptr;
+}
+
 void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
   // Note: RenderWidgetHostInputEventRouter is an observer, and uses the
   // following notification to remove this view from its surface owners map.
@@ -121,7 +134,7 @@ void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
 // TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.
 // Also, remove the following local variables when that happens
 // (https://crbug.com/578168 and https://crbug.com/602427).
-#if defined(USE_AURA)
+#if !defined(OS_ANDROID)
   if (GetTextInputManager())
     GetTextInputManager()->SelectionChanged(this, text, offset, range);
 #else
@@ -154,7 +167,7 @@ base::string16 RenderWidgetHostViewBase::GetSelectedText() {
 // TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.
 // Also, remove the following local variables when that happens
 // (https://crbug.com/578168 and https://crbug.com/602427).
-#if defined(USE_AURA)
+#if !defined(OS_ANDROID)
   if (!GetTextInputManager())
     return base::string16();
 

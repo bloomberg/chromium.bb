@@ -69,6 +69,7 @@ class BrowserAccessibilityManager;
 class RenderWidgetHostViewBaseObserver;
 class SyntheticGesture;
 class SyntheticGestureTarget;
+class RenderWidgetHostImpl;
 class TextInputManager;
 class WebCursor;
 struct NativeWebKeyboardEvent;
@@ -84,7 +85,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
     return current_device_scale_factor_;
   }
 
+  // Returns the focused RenderWidgetHost inside this |view|'s RWH.
+  RenderWidgetHostImpl* GetFocusedWidget() const;
+
   // RenderWidgetHostView implementation.
+  RenderWidgetHost* GetRenderWidgetHost() const override;
   void SetBackgroundColor(SkColor color) override;
   void SetBackgroundColorToDefault() final;
   bool GetBackgroundOpaque() override;
@@ -413,6 +418,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // It is safer to use this method rather than directly dereferencing
   // |text_input_manager_|.
   TextInputManager* GetTextInputManager();
+
+  // Returns the the view which has a RWH and is currently accepting input
+  // events (focused).
+  RenderWidgetHostViewBase* GetFocusedAttachedSubView() const;
 
   // Whether this view is a popup and what kind of popup it is (select,
   // autofill...).

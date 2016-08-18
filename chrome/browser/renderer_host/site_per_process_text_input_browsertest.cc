@@ -642,13 +642,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   for (auto* view : views)
     send_tab_insert_text_wait_for_bounds_change(view);
 }
+#endif
 
 // This test creates a page with multiple child frames and adds an <input> to
 // each frame. Then, sequentially, each <input> is focused by sending a tab key.
 // After focusing each input, a sequence of key presses (character 'E') are sent
-// to the focused widget and then the whole text is selected using Ctrl+A. The
-// test then verifies that the selection length equals the length of the
-// sequence of 'E's.
+// to the focused widget. The test then verifies that the selection length
+// equals the length of the sequence of 'E's.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                        TrackTextSelectionForAllFrames) {
   CreateIframePage("a(b,c(a,b),d)");
@@ -680,9 +680,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
                        ui::DomCode::US_E, ui::VKEY_E, false, false, false,
                        false);
     }
-    // Send Ctrl+A to select the whole text.
-    SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('a'),
-                     ui::DomCode::US_A, ui::VKEY_A, true, false, false, false);
     observer.Wait();
   };
 
@@ -697,6 +694,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   }
 }
 
+#if defined(USE_AURA)
 // The following test verifies that when the active widget changes value, it is
 // always from nullptr to non-null or vice versa.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,

@@ -254,6 +254,8 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
     // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa_|.
     rwhv_mac_ = new RenderWidgetHostViewMac(rvh()->GetWidget(), false);
+    RenderWidgetHostImpl::From(rvh()->GetWidget())->SetView(rwhv_mac_);
+
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
   }
   void TearDown() override {
