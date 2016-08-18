@@ -17,6 +17,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/exo/display.h"
 #include "components/exo/wayland/server.h"
+#include "components/exo/wm_helper_ash.h"
+#include "components/exo/wm_helper_mus.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 
@@ -110,25 +112,33 @@ class ChromeBrowserMainExtraPartsExo::WaylandWatcher
 };
 #endif
 
-ChromeBrowserMainExtraPartsExo::ChromeBrowserMainExtraPartsExo()
-    : arc_notification_surface_manager_(new arc::ArcNotificationSurfaceManager),
-      display_(new exo::Display(arc_notification_surface_manager_.get())) {}
+ChromeBrowserMainExtraPartsExo::ChromeBrowserMainExtraPartsExo() {}
 
 ChromeBrowserMainExtraPartsExo::~ChromeBrowserMainExtraPartsExo() {}
 
 void ChromeBrowserMainExtraPartsExo::PreProfileInit() {
-  if (!chrome::ShouldOpenAshOnStartup())
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWaylandServer))
     return;
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWaylandServer)) {
-    wayland_server_ = exo::wayland::Server::Create(display_.get());
-    wayland_watcher_ =
-        base::WrapUnique(new WaylandWatcher(wayland_server_.get()));
-  }
+  arc_notification_surface_manager_ =
+      base::MakeUnique<arc::ArcNotificationSurfaceManager>();
+  if (chrome::IsRunningInMash())
+    wm_helper_ = base::MakeUnique<exo::WMHelperMus>();
+  else
+    wm_helper_ = base::MakeUnique<exo::WMHelperAsh>();
+  exo::WMHelper::SetInstance(wm_helper_.get());
+  display_ =
+      base::MakeUnique<exo::Display>(arc_notification_surface_manager_.get());
+  wayland_server_ = exo::wayland::Server::Create(display_.get());
+  wayland_watcher_ = base::MakeUnique<WaylandWatcher>(wayland_server_.get());
 }
 
 void ChromeBrowserMainExtraPartsExo::PostMainMessageLoopRun() {
   wayland_watcher_.reset();
   wayland_server_.reset();
+  if (wm_helper_) {
+    exo::WMHelper::SetInstance(nullptr);
+    wm_helper_.reset();
+  }
 }

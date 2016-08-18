@@ -5,12 +5,9 @@
 #ifndef COMPONENTS_EXO_WM_HELPER_H_
 #define COMPONENTS_EXO_WM_HELPER_H_
 
-#include "ash/common/shell_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "ui/aura/client/cursor_client_observer.h"
-#include "ui/aura/client/focus_change_observer.h"
-#include "ui/wm/public/activation_change_observer.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace ash {
 class DisplayInfo;
@@ -24,18 +21,10 @@ namespace ui {
 class EventHandler;
 }
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
-
 namespace exo {
 
 // A helper class for accessing WindowManager related features.
-class WMHelper : public aura::client::ActivationChangeObserver,
-                 public aura::client::FocusChangeObserver,
-                 public aura::client::CursorClientObserver,
-                 public ash::ShellObserver {
+class WMHelper {
  public:
   class ActivationObserver {
    public:
@@ -73,58 +62,45 @@ class WMHelper : public aura::client::ActivationChangeObserver,
     virtual ~MaximizeModeObserver() {}
   };
 
+  virtual ~WMHelper();
+
+  static void SetInstance(WMHelper* helper);
   static WMHelper* GetInstance();
 
-  const ash::DisplayInfo& GetDisplayInfo(int64_t display_id) const;
-  aura::Window* GetContainer(int container_id);
-
-  aura::Window* GetActiveWindow() const;
   void AddActivationObserver(ActivationObserver* observer);
   void RemoveActivationObserver(ActivationObserver* observer);
-
-  aura::Window* GetFocusedWindow() const;
   void AddFocusObserver(FocusObserver* observer);
   void RemoveFocusObserver(FocusObserver* observer);
-
-  ui::CursorSetType GetCursorSet() const;
   void AddCursorObserver(CursorObserver* observer);
   void RemoveCursorObserver(CursorObserver* observer);
-
-  void AddPreTargetHandler(ui::EventHandler* handler);
-  void PrependPreTargetHandler(ui::EventHandler* handler);
-  void RemovePreTargetHandler(ui::EventHandler* handler);
-
-  void AddPostTargetHandler(ui::EventHandler* handler);
-  void RemovePostTargetHandler(ui::EventHandler* handler);
-
-  bool IsMaximizeModeWindowManagerEnabled() const;
   void AddMaximizeModeObserver(MaximizeModeObserver* observer);
   void RemoveMaximizeModeObserver(MaximizeModeObserver* observer);
 
- private:
+  virtual const ash::DisplayInfo GetDisplayInfo(int64_t display_id) const = 0;
+  virtual aura::Window* GetContainer(int container_id) = 0;
+  virtual aura::Window* GetActiveWindow() const = 0;
+  virtual aura::Window* GetFocusedWindow() const = 0;
+  virtual ui::CursorSetType GetCursorSet() const = 0;
+  virtual void AddPreTargetHandler(ui::EventHandler* handler) = 0;
+  virtual void PrependPreTargetHandler(ui::EventHandler* handler) = 0;
+  virtual void RemovePreTargetHandler(ui::EventHandler* handler) = 0;
+  virtual void AddPostTargetHandler(ui::EventHandler* handler) = 0;
+  virtual void RemovePostTargetHandler(ui::EventHandler* handler) = 0;
+  virtual bool IsMaximizeModeWindowManagerEnabled() const = 0;
+
+ protected:
   WMHelper();
-  ~WMHelper() override;
 
-  friend struct base::DefaultSingletonTraits<WMHelper>;
+  void NotifyWindowActivated(aura::Window* gained_active,
+                             aura::Window* lost_active);
+  void NotifyWindowFocused(aura::Window* gained_focus,
+                           aura::Window* lost_focus);
+  void NotifyCursorVisibilityChanged(bool is_visible);
+  void NotifyCursorSetChanged(ui::CursorSetType cursor_set);
+  void NotifyMaximizeModeStarted();
+  void NotifyMaximizeModeEnded();
 
-  // Overriden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
-
-  // Overriden from aura::client::FocusChangeObserver:
-  void OnWindowFocused(aura::Window* gained_focus,
-                       aura::Window* lost_focus) override;
-
-  // Overriden from aura::client::CursorClientObserver:
-  void OnCursorVisibilityChanged(bool is_visible) override;
-  void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
-
-  // Overriden from ash::ShellObserver:
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnded() override;
-
+ private:
   base::ObserverList<ActivationObserver> activation_observers_;
   base::ObserverList<FocusObserver> focus_observers_;
   base::ObserverList<CursorObserver> cursor_observers_;

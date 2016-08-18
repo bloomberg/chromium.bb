@@ -11,6 +11,8 @@
 #include "base/macros.h"
 
 namespace exo {
+class WMHelper;
+
 namespace test {
 class ExoTestHelper;
 
@@ -27,6 +29,7 @@ class ExoTestBase : public ash::test::AshTestBase {
 
  private:
   std::unique_ptr<ExoTestHelper> exo_test_helper_;
+  std::unique_ptr<WMHelper> wm_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ExoTestBase);
 };
