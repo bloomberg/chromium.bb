@@ -38,6 +38,7 @@
 
 # https://crbug.com/575210: PlzNavigate: history navigation support
   fast/history/history-length-append-subframe-with-hash.html [ Failure ]
+  fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
   http/tests/history/cross-origin-redirect-on-back.html [ Crash ]
   http/tests/navigation/back-to-dynamic-iframe.html [ Failure Crash ]
   http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
@@ -116,7 +117,6 @@
 # Untriaged navigation
   fast/loader/document-destruction-within-unload.html [ Crash ]
   fast/loader/scroll-position-restored-on-reload-at-load-event.html [ Failure ]
-  fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html [ Crash Timeout ]
   fast/loader/subframe-removes-itself.html [ Failure ]
   http/tests/cache/smil-usecounter-in-cached-image.html [ Failure ]
   http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
