@@ -103,7 +103,7 @@ public:
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
-    void reportException(ErrorEvent*, AccessControlStatus);
+    void dispatchErrorEvent(ErrorEvent*, AccessControlStatus);
 
     virtual void addConsoleMessage(ConsoleMessage*) = 0;
     virtual void exceptionThrown(ErrorEvent*) = 0;
@@ -164,7 +164,7 @@ protected:
     virtual KURL virtualCompleteURL(const String&) const = 0;
 
 private:
-    bool dispatchErrorEvent(ErrorEvent*, AccessControlStatus);
+    bool dispatchErrorEventInternal(ErrorEvent*, AccessControlStatus);
     void runSuspendableTasks();
 
     unsigned m_circularSequentialID;

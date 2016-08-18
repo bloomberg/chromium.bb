@@ -214,7 +214,7 @@ void V8LazyEventListener::fireErrorEvent(v8::Local<v8::Context> v8Context, Execu
     else if (message->IsSharedCrossOrigin())
         accessControlStatus = SharableCrossOrigin;
 
-    executionContext->reportException(event, accessControlStatus);
+    executionContext->dispatchErrorEvent(event, accessControlStatus);
 }
 
 } // namespace blink

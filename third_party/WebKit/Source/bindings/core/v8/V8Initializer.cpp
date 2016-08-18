@@ -163,9 +163,9 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
         // other isolated worlds (which means that the error events won't fire any event listeners
         // in user's scripts).
         EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
-        context->reportException(event, accessControlStatus);
+        context->dispatchErrorEvent(event, accessControlStatus);
     } else {
-        context->reportException(event, accessControlStatus);
+        context->dispatchErrorEvent(event, accessControlStatus);
     }
 }
 
@@ -419,7 +419,7 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
         return;
 
     // Exceptions that occur in error handler should be ignored since in that case
-    // WorkerGlobalScope::reportException will send the exception to the worker object.
+    // WorkerGlobalScope::dispatchErrorEvent will send the exception to the worker object.
     if (perIsolateData->isReportingException())
         return;
 
@@ -435,7 +435,7 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
     // the error event from the v8::Message, quietly leave.
     if (!isolate->IsExecutionTerminating()) {
         V8ErrorHandler::storeExceptionOnErrorEventWrapper(scriptState, event, data, scriptState->context()->Global());
-        scriptState->getExecutionContext()->reportException(event, corsStatus);
+        scriptState->getExecutionContext()->dispatchErrorEvent(event, corsStatus);
     }
 
     perIsolateData->setReportingException(false);

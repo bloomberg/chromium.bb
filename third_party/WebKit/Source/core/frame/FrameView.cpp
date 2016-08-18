@@ -2541,7 +2541,7 @@ void FrameView::notifyResizeObservers()
     if (resizeController.skippedObservations()) {
         resizeController.clearObservations();
         ErrorEvent * error = ErrorEvent::create("ResizeObserver loop limit exceeded", SourceLocation::capture(m_frame->document()), nullptr);
-        m_frame->document()->reportException(error, NotSharableCrossOrigin);
+        m_frame->document()->dispatchErrorEvent(error, NotSharableCrossOrigin);
         // Ensure notifications will get delivered in next cycle.
         if (FrameView* frameView = m_frame->view())
             frameView->scheduleAnimation();

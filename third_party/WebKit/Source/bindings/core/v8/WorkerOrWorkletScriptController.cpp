@@ -271,7 +271,7 @@ bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCod
                 event = state.m_errorEventFromImportedScript.release();
             else
                 event = ErrorEvent::create(state.errorMessage, state.m_location->clone(), m_world.get());
-            m_globalScope->reportException(event, NotSharableCrossOrigin);
+            m_globalScope->dispatchErrorEvent(event, NotSharableCrossOrigin);
         }
         return false;
     }

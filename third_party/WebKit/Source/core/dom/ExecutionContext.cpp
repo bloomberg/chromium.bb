@@ -129,7 +129,7 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
     return !(getSecurityOrigin()->canRequestNoSuborigin(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-void ExecutionContext::reportException(ErrorEvent* errorEvent, AccessControlStatus corsStatus)
+void ExecutionContext::dispatchErrorEvent(ErrorEvent* errorEvent, AccessControlStatus corsStatus)
 {
     if (m_inDispatchErrorEvent) {
         m_pendingExceptions.append(errorEvent);
@@ -137,7 +137,7 @@ void ExecutionContext::reportException(ErrorEvent* errorEvent, AccessControlStat
     }
 
     // First report the original exception and only then all the nested ones.
-    if (!dispatchErrorEvent(errorEvent, corsStatus))
+    if (!dispatchErrorEventInternal(errorEvent, corsStatus))
         exceptionThrown(errorEvent);
 
     if (m_pendingExceptions.isEmpty())
@@ -147,7 +147,7 @@ void ExecutionContext::reportException(ErrorEvent* errorEvent, AccessControlStat
     m_pendingExceptions.clear();
 }
 
-bool ExecutionContext::dispatchErrorEvent(ErrorEvent* errorEvent, AccessControlStatus corsStatus)
+bool ExecutionContext::dispatchErrorEventInternal(ErrorEvent* errorEvent, AccessControlStatus corsStatus)
 {
     EventTarget* target = errorEventTarget();
     if (!target)

@@ -273,7 +273,7 @@ void ScriptCustomElementDefinition::fireErrorEvent(ScriptState* scriptState, con
     ErrorEvent* event = ErrorEvent::create(message, std::move(location), &scriptState->world());
     V8ErrorHandler::storeExceptionOnErrorEventWrapper(scriptState, event, exception, scriptState->context()->Global());
     ExecutionContext* executionContext = scriptState->getExecutionContext();
-    executionContext->reportException(event, NotSharableCrossOrigin);
+    executionContext->dispatchErrorEvent(event, NotSharableCrossOrigin);
 }
 
 v8::Local<v8::Object> ScriptCustomElementDefinition::constructor() const

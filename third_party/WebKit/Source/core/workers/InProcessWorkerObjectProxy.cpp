@@ -76,7 +76,7 @@ void InProcessWorkerObjectProxy::reportPendingActivity(bool hasPendingActivity)
 
 void InProcessWorkerObjectProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
 {
-    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::reportException, crossThreadUnretained(m_messagingProxy), errorMessage, passed(location->clone()), exceptionId));
+    getParentFrameTaskRunners()->get(TaskType::Internal)->postTask(BLINK_FROM_HERE, crossThreadBind(&InProcessWorkerMessagingProxy::dispatchErrorEvent, crossThreadUnretained(m_messagingProxy), errorMessage, passed(location->clone()), exceptionId));
 }
 
 void InProcessWorkerObjectProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, SourceLocation* location)

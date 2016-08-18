@@ -68,7 +68,7 @@ public:
     // These methods come from worker context thread via
     // InProcessWorkerObjectProxy and are called on the parent context thread.
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, std::unique_ptr<MessagePortChannelArray>);
-    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId);
+    void dispatchErrorEvent(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId);
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, std::unique_ptr<SourceLocation>);
     void postMessageToPageInspector(const String&);
     void confirmMessageFromWorkerObject(bool hasPendingActivity);

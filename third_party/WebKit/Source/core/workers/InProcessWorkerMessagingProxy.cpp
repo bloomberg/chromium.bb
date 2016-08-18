@@ -176,7 +176,7 @@ void InProcessWorkerMessagingProxy::postTaskToLoader(const WebTraceLocation& loc
     getExecutionContext()->postTask(location, std::move(task));
 }
 
-void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
+void InProcessWorkerMessagingProxy::dispatchErrorEvent(const String& errorMessage, std::unique_ptr<SourceLocation> location, int exceptionId)
 {
     DCHECK(isParentContextThread());
     if (!m_workerObject)
