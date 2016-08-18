@@ -266,9 +266,16 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     if (primary_plane) {
       // TODO(dcastagna): Check if we can move this optimization to
       // GLRenderer::ScheduleOverlays.
-      // Note that Chromium compositor promotes buffers to overlays (ARGB
+      // Note that Chromium compositor promotes buffers to overlays (ABGR
       // ones too) only if blending is not needed.
-      if ((fourcc_format == DRM_FORMAT_XRGB8888 ||
+      // TODO(dcastagna): this should check if the format is the same as
+      // primary_plane->format minus alpha. Changing the format of the primary
+      // plane currently works on rockchip with 3.14 kernel and won't work with
+      // newer kernels. Remove this hack as soon as we can switch the primary
+      // plane format to match overlay buffers formats.
+      if ((fourcc_format == DRM_FORMAT_XBGR8888 ||
+           fourcc_format == DRM_FORMAT_ABGR8888 ||
+           fourcc_format == DRM_FORMAT_XRGB8888 ||
            fourcc_format == DRM_FORMAT_ARGB8888) &&
           primary_display_bounds == plane.display_bounds) {
         ResetCurrentPlaneList(plane_list);
