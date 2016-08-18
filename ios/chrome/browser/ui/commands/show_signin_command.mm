@@ -14,6 +14,7 @@
 
 @synthesize operation = _operation;
 @synthesize signInSource = _signInSource;
+@synthesize signInAccessPoint = _signInAccessPoint;
 
 - (instancetype)initWithTag:(NSInteger)tag {
   NOTREACHED();
@@ -36,6 +37,26 @@
                      signInSource:(SignInSource)signInSource {
   return
       [self initWithOperation:operation signInSource:signInSource callback:nil];
+}
+
+- (instancetype)initWithOperation:(AuthenticationOperation)operation
+                signInAccessPoint:(signin_metrics::AccessPoint)signInAccessPoint
+                         callback:
+                             (ShowSigninCommandCompletionCallback)callback {
+  if ((self = [self initWithOperation:operation
+                         signInSource:SIGN_IN_SOURCE_OTHER
+                             callback:callback])) {
+    _signInAccessPoint = signInAccessPoint;
+  }
+  return self;
+}
+
+- (instancetype)initWithOperation:(AuthenticationOperation)operation
+                signInAccessPoint:
+                    (signin_metrics::AccessPoint)signInAccessPoint {
+  return [self initWithOperation:operation
+               signInAccessPoint:signInAccessPoint
+                        callback:nil];
 }
 
 - (ShowSigninCommandCompletionCallback)callback {
