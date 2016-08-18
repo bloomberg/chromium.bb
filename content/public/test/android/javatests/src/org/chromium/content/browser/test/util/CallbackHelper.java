@@ -214,7 +214,8 @@ public class CallbackHelper {
                 mLock.wait(unit.toMillis(timeout));
                 isSatisfied = criteria.isSatisfied();
             }
-            if (!isSatisfied) throw new TimeoutException("waitUntilCriteria timed out!");
+
+            if (!isSatisfied) throw new TimeoutException(criteria.getFailureReason());
         }
     }
 
