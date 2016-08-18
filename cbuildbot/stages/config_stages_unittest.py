@@ -11,6 +11,7 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import git
 
 
@@ -34,6 +35,7 @@ class CheckTemplateStageTest(generic_stages_unittest.AbstractStageTestCase):
   def ConstructStage(self):
     return config_stages.CheckTemplateStage(self._run)
 
+  @cros_test_lib.NetworkTest()
   def testBasic(self):
     stage = self.ConstructStage()
 
@@ -42,6 +44,7 @@ class CheckTemplateStageTest(generic_stages_unittest.AbstractStageTestCase):
     stage.PerformStage()
     self.assertTrue(self.update_mock.call_count == 2)
 
+  @cros_test_lib.NetworkTest()
   def testSortAndGetReleasePaths(self):
     stage = self.ConstructStage()
 
