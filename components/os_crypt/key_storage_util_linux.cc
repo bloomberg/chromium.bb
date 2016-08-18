@@ -42,6 +42,9 @@ SelectedLinuxBackend SelectBackend(const std::string& type,
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
       return SelectedLinuxBackend::BASIC_TEXT;
   }
+
+  NOTREACHED();
+  return SelectedLinuxBackend::BASIC_TEXT;
 }
 
 }  // namespace os_crypt
