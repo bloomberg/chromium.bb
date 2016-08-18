@@ -32,10 +32,6 @@ public:
         WebSecurityOrigin targetOrigin,
         WebDOMMessageEvent) {}
 
-    // Send initial drawing parameters to a child frame that is being rendered
-    // out of process.
-    virtual void initializeChildFrame() {}
-
     // A remote frame was asked to start a navigation.
     virtual void navigate(const WebURLRequest& request, bool shouldReplaceCurrentEntry) { }
     virtual void reload(WebFrameLoadType, WebClientRedirectPolicy) {}

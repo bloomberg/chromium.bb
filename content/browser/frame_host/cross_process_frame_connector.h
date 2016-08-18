@@ -92,7 +92,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
                                     const cc::SurfaceSequence& sequence);
 
   gfx::Rect ChildFrameRect();
-  float device_scale_factor() const { return device_scale_factor_; }
   void UpdateCursor(const WebCursor& cursor);
   gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point,
                                             const cc::SurfaceId& surface_id);
@@ -144,12 +143,10 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   void OnForwardInputEvent(const blink::WebInputEvent* event);
   void OnFrameRectChanged(const gfx::Rect& frame_rect);
   void OnVisibilityChanged(bool visible);
-  void OnInitializeChildFrame(float scale_factor);
   void OnSatisfySequence(const cc::SurfaceSequence& sequence);
   void OnRequireSequence(const cc::SurfaceId& id,
                          const cc::SurfaceSequence& sequence);
 
-  void SetDeviceScaleFactor(float scale_factor);
   void SetRect(const gfx::Rect& frame_rect);
 
   // The RenderFrameProxyHost that routes messages to the parent frame's
@@ -160,7 +157,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   RenderWidgetHostViewChildFrame* view_;
 
   gfx::Rect child_frame_rect_;
-  float device_scale_factor_;
 
   bool is_scroll_bubbling_;
 };

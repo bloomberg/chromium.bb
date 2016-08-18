@@ -1364,11 +1364,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
 // user right clicked.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ContextMenu, content::ContextMenuParams)
 
-// Initial drawing parameters for a child frame that has been swapped out to
-// another process.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_InitializeChildFrame,
-                    float /* scale_factor */)
-
 // Response for FrameMsg_JavaScriptExecuteRequest, sent when a reply was
 // requested. The ID is the parameter supplied to
 // FrameMsg_JavaScriptExecuteRequest. The result has the value returned by the

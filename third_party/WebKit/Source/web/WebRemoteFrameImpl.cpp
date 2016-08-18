@@ -429,12 +429,6 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::fromFrame(RemoteFrame& frame)
     return static_cast<RemoteFrameClientImpl*>(frame.client())->webFrame();
 }
 
-void WebRemoteFrameImpl::initializeFromFrame(WebLocalFrame* source) const
-{
-    DCHECK(source);
-    client()->initializeChildFrame();
-}
-
 void WebRemoteFrameImpl::setReplicatedOrigin(const WebSecurityOrigin& origin) const
 {
     DCHECK(frame());

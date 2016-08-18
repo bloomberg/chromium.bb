@@ -30,9 +30,6 @@ public:
 
     virtual WebRemoteFrame* createRemoteChild(WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, WebRemoteFrameClient*, WebFrame* opener) = 0;
 
-    // Transfer initial drawing parameters from a local frame.
-    virtual void initializeFromFrame(WebLocalFrame*) const = 0;
-
     // Set security origin replicated from another process.
     virtual void setReplicatedOrigin(const WebSecurityOrigin&) const = 0;
 

@@ -29,7 +29,6 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameProxyHost* frame_proxy_in_parent_renderer)
     : frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer),
       view_(nullptr),
-      device_scale_factor_(1),
       is_scroll_bubbling_(false) {}
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
@@ -44,8 +43,6 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardInputEvent, OnForwardInputEvent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameRectChanged, OnFrameRectChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisibilityChanged, OnVisibilityChanged)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_InitializeChildFrame,
-                        OnInitializeChildFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SatisfySequence, OnSatisfySequence)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RequireSequence, OnRequireSequence)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -74,7 +71,6 @@ void CrossProcessFrameConnector::set_view(
   // Attach ourselves to the new view and size it appropriately.
   if (view_) {
     view_->SetCrossProcessFrameConnector(this);
-    SetDeviceScaleFactor(device_scale_factor_);
     SetRect(child_frame_rect_);
   }
 }
@@ -114,11 +110,6 @@ void CrossProcessFrameConnector::OnRequireSequence(
   surface->AddDestructionDependency(sequence);
 }
 
-void CrossProcessFrameConnector::OnInitializeChildFrame(float scale_factor) {
-  if (scale_factor != device_scale_factor_)
-    SetDeviceScaleFactor(scale_factor);
-}
-
 gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
   return child_frame_rect_;
 }
@@ -146,13 +137,14 @@ gfx::Point CrossProcessFrameConnector::TransformPointToLocalCoordSpace(
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
   gfx::Point transformed_point =
-      gfx::ConvertPointToPixel(device_scale_factor_, point);
+      gfx::ConvertPointToPixel(view_->current_surface_scale_factor(), point);
   cc::SurfaceHittest hittest(nullptr, GetSurfaceManager());
   if (!hittest.TransformPointToTargetSurface(original_surface, local_surface_id,
                                              &transformed_point))
     DCHECK(false);
 
-  return gfx::ConvertPointToDIP(device_scale_factor_, transformed_point);
+  return gfx::ConvertPointToDIP(view_->current_surface_scale_factor(),
+                                transformed_point);
 }
 
 gfx::Point CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
@@ -314,16 +306,6 @@ void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {
     view_->Show();
   } else if (!visible) {
     view_->Hide();
-  }
-}
-
-void CrossProcessFrameConnector::SetDeviceScaleFactor(float scale_factor) {
-  device_scale_factor_ = scale_factor;
-  // The RenderWidgetHost is null in unit tests.
-  if (view_ && view_->GetRenderWidgetHost()) {
-    RenderWidgetHostImpl* child_widget =
-        RenderWidgetHostImpl::From(view_->GetRenderWidgetHost());
-    child_widget->NotifyScreenInfoChanged();
   }
 }
 

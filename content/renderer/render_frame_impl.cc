@@ -1657,11 +1657,6 @@ void RenderFrameImpl::OnSwapOut(
   if (is_main_frame_)
     render_view_->SetSwappedOut(true);
 
-  // Transfer settings such as initial drawing parameters to the remote frame,
-  // if one is created, that will replace this frame.
-  if (!is_main_frame_)
-    proxy->web_frame()->initializeFromFrame(frame_);
-
   RenderViewImpl* render_view = render_view_.get();
   bool is_main_frame = is_main_frame_;
   int routing_id = GetRoutingID();

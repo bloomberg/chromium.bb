@@ -439,11 +439,6 @@ void RenderFrameProxy::forwardPostMessage(
   Send(new FrameHostMsg_RouteMessageEvent(routing_id_, params));
 }
 
-void RenderFrameProxy::initializeChildFrame() {
-  Send(new FrameHostMsg_InitializeChildFrame(
-      routing_id_, render_widget_->GetOriginalDeviceScaleFactor()));
-}
-
 void RenderFrameProxy::navigate(const blink::WebURLRequest& request,
                                 bool should_replace_current_entry) {
   FrameHostMsg_OpenURL_Params params;

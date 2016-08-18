@@ -228,8 +228,10 @@ void RenderWidgetHostViewChildFrame::SetBackgroundColor(SkColor color) {
 gfx::Size RenderWidgetHostViewChildFrame::GetPhysicalBackingSize() const {
   gfx::Size size;
   if (frame_connector_) {
+    blink::WebScreenInfo screen_info;
+    host_->GetWebScreenInfo(&screen_info);
     size = gfx::ScaleToCeiledSize(frame_connector_->ChildFrameRect().size(),
-                                  frame_connector_->device_scale_factor());
+                                  screen_info.deviceScaleFactor);
   }
   return size;
 }

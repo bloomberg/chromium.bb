@@ -113,8 +113,6 @@ public:
     WebLocalFrame* createLocalChild(WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling, const WebFrameOwnerProperties&, WebFrame* opener) override;
     WebRemoteFrame* createRemoteChild(WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, WebRemoteFrameClient*, WebFrame* opener) override;
 
-    void initializeFromFrame(WebLocalFrame*) const override;
-
     void setReplicatedOrigin(const WebSecurityOrigin&) const override;
     void setReplicatedSandboxFlags(WebSandboxFlags) const override;
     void setReplicatedName(const WebString& name, const WebString& uniqueName) const override;
