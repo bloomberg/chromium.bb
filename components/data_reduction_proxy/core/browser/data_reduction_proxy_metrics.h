@@ -5,10 +5,7 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_METRICS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_METRICS_H_
 
-#include <stdint.h>
-
 #include <vector>
-
 
 namespace net {
 class ProxyConfig;
@@ -19,9 +16,9 @@ class PrefService;
 
 namespace data_reduction_proxy {
 
-typedef std::vector<long long> ContentLengthList;
-
 class DataReductionProxyConfig;
+
+typedef std::vector<long long> ContentLengthList;
 
 // A bypass delay more than this is treated as a long delay.
 const int kLongBypassDelayInSeconds = 30 * 60;
@@ -53,14 +50,6 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
     const net::URLRequest& request,
     const net::ProxyConfig& data_reduction_proxy_config,
     const DataReductionProxyConfig& config);
-
-// Returns |received_content_length| as adjusted original content length if
-// |original_content_length| has the invalid value (-1) or |request_type|
-// is not |VIA_DATA_REDUCTION_PROXY|.
-int64_t GetAdjustedOriginalContentLength(
-    DataReductionProxyRequestType request_type,
-    int64_t original_content_length,
-    int64_t received_content_length);
 
 }  // namespace data_reduction_proxy
 

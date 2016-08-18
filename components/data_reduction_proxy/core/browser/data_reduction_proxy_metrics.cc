@@ -65,17 +65,4 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   return UNKNOWN_TYPE;
 }
 
-int64_t GetAdjustedOriginalContentLength(
-    DataReductionProxyRequestType request_type,
-    int64_t original_content_length,
-    int64_t received_content_length) {
-  // Since there was no indication of the original content length, presume
-  // it is no different from the number of bytes read.
-  if (original_content_length == -1 ||
-      request_type != VIA_DATA_REDUCTION_PROXY) {
-    return received_content_length;
-  }
-  return original_content_length;
-}
-
 }  // namespace data_reduction_proxy

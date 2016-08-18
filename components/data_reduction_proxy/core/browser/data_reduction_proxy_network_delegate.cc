@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 
+#include <limits>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -97,24 +98,70 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
                        received_content_length);
 }
 
+// Scales |byte_count| by the ratio of |numerator|:|denomenator|.
+int64_t ScaleByteCountByRatio(int64_t byte_count,
+                              int64_t numerator,
+                              int64_t denomenator) {
+  DCHECK_LE(0, byte_count);
+  DCHECK_LE(0, numerator);
+  DCHECK_LT(0, denomenator);
+
+  // As an optimization, use integer arithmetic if it won't overflow.
+  if (byte_count <= std::numeric_limits<int32_t>::max() &&
+      numerator <= std::numeric_limits<int32_t>::max()) {
+    return byte_count * numerator / denomenator;
+  }
+
+  double scaled_byte_count = static_cast<double>(byte_count) *
+                             static_cast<double>(numerator) /
+                             static_cast<double>(denomenator);
+  if (scaled_byte_count >
+      static_cast<double>(std::numeric_limits<int64_t>::max())) {
+    // If this ever triggers, then byte counts can no longer be safely stored in
+    // 64-bit ints.
+    NOTREACHED();
+    return byte_count;
+  }
+  return static_cast<int64_t>(scaled_byte_count);
+}
+
+// Calculates the effective original content length of the |request|, accounting
+// for partial responses if necessary.
+int64_t CalculateEffectiveOCL(const net::URLRequest& request) {
+  int64_t original_content_length_from_header =
+      request.response_headers()->GetInt64HeaderValue(
+          "x-original-content-length");
+
+  if (original_content_length_from_header < 0)
+    return request.received_response_content_length();
+  if (request.status().is_success())
+    return original_content_length_from_header;
+
+  int64_t content_length_from_header =
+      request.response_headers()->GetContentLength();
+
+  if (content_length_from_header < 0)
+    return request.received_response_content_length();
+  if (content_length_from_header == 0)
+    return original_content_length_from_header;
+
+  return ScaleByteCountByRatio(request.received_response_content_length(),
+                               original_content_length_from_header,
+                               content_length_from_header);
+}
+
 // Given a |request| that went through the Data Reduction Proxy, this function
 // estimates how many bytes would have been received if the response had been
 // received directly from the origin using HTTP/1.1 with a content length of
 // |adjusted_original_content_length|.
-int64_t EstimateOriginalReceivedBytes(
-    const net::URLRequest& request,
-    int64_t adjusted_original_content_length) {
-  DCHECK_LE(0, adjusted_original_content_length);
-
-  if (!request.status().is_success() || request.was_cached() ||
-      !request.response_headers()) {
+int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request) {
+  if (request.was_cached() || !request.response_headers())
     return request.GetTotalReceivedBytes();
-  }
 
   // TODO(sclittle): Remove headers added by Data Reduction Proxy when computing
   // original size. http://crbug/535701.
   return request.response_headers()->raw_headers().size() +
-         adjusted_original_content_length;
+         CalculateEffectiveOCL(request);
 }
 
 }  // namespace
@@ -314,13 +361,9 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
   // Estimate how many bytes would have been used if the DataReductionProxy was
   // not used, and record the data usage.
   int64_t original_size = data_used;
-  if (request_type == VIA_DATA_REDUCTION_PROXY && request.response_headers() &&
-      !request.was_cached() && request.status().is_success()) {
-    original_size = EstimateOriginalReceivedBytes(
-        request, GetAdjustedOriginalContentLength(
-                     request_type, original_content_length,
-                     request.received_response_content_length()));
-  }
+
+  if (request_type == VIA_DATA_REDUCTION_PROXY)
+    original_size = EstimateOriginalReceivedBytes(request);
 
   std::string mime_type;
   if (request.response_headers())
