@@ -19,7 +19,7 @@
 class FileReader : public base::RefCountedThreadSafe<FileReader> {
  public:
   // Reports success or failure and the data of the file upon success.
-  typedef base::Callback<void(bool, const std::string&)> Callback;
+  typedef base::Callback<void(bool, std::unique_ptr<std::string>)> Callback;
 
   FileReader(const extensions::ExtensionResource& resource,
              const Callback& callback);

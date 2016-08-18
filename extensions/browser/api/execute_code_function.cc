@@ -42,10 +42,11 @@ ExecuteCodeFunction::ExecuteCodeFunction() {
 ExecuteCodeFunction::~ExecuteCodeFunction() {
 }
 
-void ExecuteCodeFunction::DidLoadFile(bool success, const std::string& data) {
+void ExecuteCodeFunction::DidLoadFile(bool success,
+                                      std::unique_ptr<std::string> data) {
   if (!success || !details_->file) {
-    DidLoadAndLocalizeFile(
-        resource_.relative_path().AsUTF8Unsafe(), success, data);
+    DidLoadAndLocalizeFile(resource_.relative_path().AsUTF8Unsafe(), success,
+                           std::move(data));
     return;
   }
 
@@ -63,35 +64,29 @@ void ExecuteCodeFunction::DidLoadFile(bool success, const std::string& data) {
   }
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&ExecuteCodeFunction::GetFileURLAndLocalizeCSS,
-                 this,
-                 script_type,
-                 data,
-                 extension_id,
-                 extension_path,
-                 extension_default_locale));
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ExecuteCodeFunction::GetFileURLAndLocalizeCSS, this,
+                 script_type, base::Passed(std::move(data)), extension_id,
+                 extension_path, extension_default_locale));
 }
 
 void ExecuteCodeFunction::GetFileURLAndLocalizeCSS(
     ScriptExecutor::ScriptType script_type,
-    const std::string& data,
+    std::unique_ptr<std::string> data,
     const std::string& extension_id,
     const base::FilePath& extension_path,
     const std::string& extension_default_locale) {
-  std::string localized_data = data;
   // Check if the file is CSS and needs localization.
   if ((script_type == ScriptExecutor::CSS) && !extension_id.empty() &&
-      (data.find(MessageBundle::kMessageBegin) != std::string::npos)) {
+      (data->find(MessageBundle::kMessageBegin) != std::string::npos)) {
     std::unique_ptr<SubstitutionMap> localization_messages(
         file_util::LoadMessageBundleSubstitutionMap(
             extension_path, extension_id, extension_default_locale));
 
     // We need to do message replacement on the data, so it has to be mutable.
     std::string error;
-    MessageBundle::ReplaceMessagesWithExternalDictionary(
-        *localization_messages, &localized_data, &error);
+    MessageBundle::ReplaceMessagesWithExternalDictionary(*localization_messages,
+                                                         data.get(), &error);
   }
 
   file_url_ = net::FilePathToFileURL(resource_.GetFilePath());
@@ -100,23 +95,21 @@ void ExecuteCodeFunction::GetFileURLAndLocalizeCSS(
   // is always true, because if loading had failed, we wouldn't have had
   // anything to localize.
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&ExecuteCodeFunction::DidLoadAndLocalizeFile,
-                 this,
-                 resource_.relative_path().AsUTF8Unsafe(),
-                 true,
-                 localized_data));
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&ExecuteCodeFunction::DidLoadAndLocalizeFile, this,
+                 resource_.relative_path().AsUTF8Unsafe(), true,
+                 base::Passed(std::move(data))));
 }
 
-void ExecuteCodeFunction::DidLoadAndLocalizeFile(const std::string& file,
-                                                 bool success,
-                                                 const std::string& data) {
+void ExecuteCodeFunction::DidLoadAndLocalizeFile(
+    const std::string& file,
+    bool success,
+    std::unique_ptr<std::string> data) {
   if (success) {
-    if (!base::IsStringUTF8(data)) {
+    if (!base::IsStringUTF8(*data)) {
       error_ = ErrorUtils::FormatErrorMessage(kBadFileEncodingError, file);
       SendResponse(false);
-    } else if (!Execute(data))
+    } else if (!Execute(*data))
       SendResponse(false);
   } else {
     // TODO(viettrungluu): bug: there's no particular reason the path should be
@@ -224,8 +217,10 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file) {
           resource_.extension_root(),
           resource_.relative_path(),
           &resource_id)) {
-    const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    DidLoadFile(true, rb.GetRawDataResource(resource_id).as_string());
+    base::StringPiece resource =
+        ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+    DidLoadFile(true, base::WrapUnique(
+                          new std::string(resource.data(), resource.size())));
   } else {
     scoped_refptr<FileReader> file_reader(new FileReader(
         resource_, base::Bind(&ExecuteCodeFunction::DidLoadFile, this)));

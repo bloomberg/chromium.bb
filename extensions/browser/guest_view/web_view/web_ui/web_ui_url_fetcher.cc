@@ -39,10 +39,10 @@ void WebUIURLFetcher::Start() {
 void WebUIURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   CHECK_EQ(fetcher_.get(), source);
 
-  std::string data;
+  std::unique_ptr<std::string> data(new std::string());
   bool result = false;
   if (fetcher_->GetStatus().status() == net::URLRequestStatus::SUCCESS) {
-    result = fetcher_->GetResponseAsString(&data);
+    result = fetcher_->GetResponseAsString(data.get());
     DCHECK(result);
   }
   fetcher_.reset();
@@ -50,5 +50,5 @@ void WebUIURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   // are destroyed at the end of the method.
   auto callback_cache = callback_;
   callback_.Reset();
-  callback_cache.Run(result, data);
+  callback_cache.Run(result, std::move(data));
 }

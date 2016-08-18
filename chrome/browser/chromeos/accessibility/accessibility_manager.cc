@@ -191,12 +191,12 @@ class ContentScriptLoader {
   }
 
  private:
-  void OnFileLoaded(bool success, const std::string& data) {
+  void OnFileLoaded(bool success, std::unique_ptr<std::string> data) {
     if (success) {
       RenderViewHost* render_view_host =
           RenderViewHost::FromID(render_process_id_, render_view_id_);
       if (render_view_host)
-        ExecuteScriptHelper(render_view_host, data, extension_id_);
+        ExecuteScriptHelper(render_view_host, *data, extension_id_);
     }
     Run();
   }

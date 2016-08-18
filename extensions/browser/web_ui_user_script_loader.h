@@ -43,7 +43,7 @@ class WebUIUserScriptLoader : public extensions::UserScriptLoader {
   // Called at the end of each fetch, tracking whether all fetches are done.
   void OnSingleWebUIURLFetchComplete(extensions::UserScript::File* script_file,
                                      bool success,
-                                     const std::string& data);
+                                     std::unique_ptr<std::string> data);
 
   // Called when the loads of the user scripts are done.
   void OnWebUIURLFetchComplete();

@@ -40,17 +40,17 @@ class Receiver {
   }
 
   bool succeeded() const { return succeeded_; }
-  const std::string& data() const { return data_; }
+  const std::string& data() const { return *data_; }
 
  private:
-  void DidReadFile(bool success, const std::string& data) {
+  void DidReadFile(bool success, std::unique_ptr<std::string> data) {
     succeeded_ = success;
-    data_ = data;
+    data_ = std::move(data);
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool succeeded_;
-  std::string data_;
+  std::unique_ptr<std::string> data_;
 };
 
 void RunBasicTest(const char* filename) {

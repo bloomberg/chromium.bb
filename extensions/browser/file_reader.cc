@@ -26,8 +26,8 @@ void FileReader::Start() {
 FileReader::~FileReader() {}
 
 void FileReader::ReadFileOnBackgroundThread() {
-  std::string data;
-  bool success = base::ReadFileToString(resource_.GetFilePath(), &data);
-  origin_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(callback_, success, data));
+  std::unique_ptr<std::string> data(new std::string());
+  bool success = base::ReadFileToString(resource_.GetFilePath(), data.get());
+  origin_task_runner_->PostTask(
+      FROM_HERE, base::Bind(callback_, success, base::Passed(std::move(data))));
 }

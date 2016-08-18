@@ -127,14 +127,16 @@ void WebUIUserScriptLoader::CreateWebUIURLFetchers(
 void WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete(
     extensions::UserScript::File* script_file,
     bool success,
-    const std::string& data) {
+    std::unique_ptr<std::string> data) {
   if (success) {
     // Remove BOM from |data|.
-    if (base::StartsWith(data, base::kUtf8ByteOrderMark,
+    if (base::StartsWith(*data, base::kUtf8ByteOrderMark,
                          base::CompareCase::SENSITIVE)) {
-      script_file->set_content(data.substr(strlen(base::kUtf8ByteOrderMark)));
+      script_file->set_content(data->substr(strlen(base::kUtf8ByteOrderMark)));
     } else {
-      script_file->set_content(data);
+      // TODO(lazyboy): Script files should take ownership of |data|, i.e. the
+      // content of the script.
+      script_file->set_content(*data);
     }
   }
 
