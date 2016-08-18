@@ -116,9 +116,7 @@
 
 # Untriaged navigation
   fast/loader/document-destruction-within-unload.html [ Crash ]
-  fast/loader/scroll-position-restored-on-reload-at-load-event.html [ Failure ]
   fast/loader/subframe-removes-itself.html [ Failure ]
-  http/tests/cache/smil-usecounter-in-cached-image.html [ Failure ]
   http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
   http/tests/cookies/same-site/popup-same-site.html [ Failure ]
   http/tests/loading/307-after-303-after-post.html [ Failure ]
@@ -135,10 +133,6 @@
   http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
   http/tests/navigation/response204.html [ Timeout ]
   http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
-  http/tests/navigation/scrollstate-after-http-equiv-refresh-fragment-identifier-2.html [ Timeout ]
-  http/tests/navigation/scrollstate-after-http-equiv-refresh-fragment-identifier.html [ Timeout ]
-  http/tests/navigation/scrollstate-after-http-equiv-refresh.html [ Timeout ]
-  http/tests/navigation/scrollstate-after-location-reload.html [ Timeout ]
 
 # Untriaged security
   http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
