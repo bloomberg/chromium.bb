@@ -44,6 +44,10 @@ std::unique_ptr<SurfaceOzoneCanvas> SurfaceFactoryOzone::CreateCanvasForWidget(
   return nullptr;
 }
 
+bool SurfaceFactoryOzone::LoadEGLGLES2Bindings() {
+  return false;
+}
+
 std::vector<gfx::BufferFormat> SurfaceFactoryOzone::GetScanoutFormats(
     gfx::AcceleratedWidget widget) {
   return std::vector<gfx::BufferFormat>();

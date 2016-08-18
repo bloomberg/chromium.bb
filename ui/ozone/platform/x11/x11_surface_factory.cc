@@ -147,10 +147,8 @@ scoped_refptr<gl::GLSurface> X11SurfaceFactory::CreateOffscreenGLSurface(
   return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
 }
 
-bool X11SurfaceFactory::LoadEGLGLES2Bindings(
-    AddGLLibraryCallback add_gl_library,
-    SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
-  return LoadDefaultEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address);
+bool X11SurfaceFactory::LoadEGLGLES2Bindings() {
+  return LoadDefaultEGLGLES2Bindings();
 }
 
 intptr_t X11SurfaceFactory::GetNativeDisplay() {

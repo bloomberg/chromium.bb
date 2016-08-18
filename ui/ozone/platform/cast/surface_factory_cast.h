@@ -44,9 +44,7 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
-  bool LoadEGLGLES2Bindings(
-      AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
+  bool LoadEGLGLES2Bindings() override;
 
   intptr_t GetNativeWindow();
   bool ResizeDisplay(gfx::Size viewport_size);

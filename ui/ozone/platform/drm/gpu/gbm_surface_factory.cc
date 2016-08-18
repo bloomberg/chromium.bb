@@ -103,11 +103,9 @@ intptr_t GbmSurfaceFactory::GetNativeDisplay() {
   return EGL_DEFAULT_DISPLAY;
 }
 
-bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
-    AddGLLibraryCallback add_gl_library,
-    SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
+bool GbmSurfaceFactory::LoadEGLGLES2Bindings() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return LoadDefaultEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address);
+  return LoadDefaultEGLGLES2Bindings();
 }
 
 std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(

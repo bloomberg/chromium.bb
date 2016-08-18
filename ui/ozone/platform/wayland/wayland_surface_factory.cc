@@ -172,14 +172,12 @@ intptr_t WaylandSurfaceFactory::GetNativeDisplay() {
   return reinterpret_cast<intptr_t>(connection_->display());
 }
 
-bool WaylandSurfaceFactory::LoadEGLGLES2Bindings(
-    AddGLLibraryCallback add_gl_library,
-    SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
+bool WaylandSurfaceFactory::LoadEGLGLES2Bindings() {
 #if defined(USE_WAYLAND_EGL)
   if (!connection_)
     return false;
   setenv("EGL_PLATFORM", "wayland", 0);
-  return LoadDefaultEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address);
+  return LoadDefaultEGLGLES2Bindings();
 #else
   return false;
 #endif

@@ -35,7 +35,7 @@ void WriteDataToFile(const base::FilePath& location, const SkBitmap& bitmap) {
 // TODO(altimin): Find a proper way to capture rendering output.
 class FileSurface : public SurfaceOzoneCanvas {
  public:
-  FileSurface(const base::FilePath& location) : location_(location) {}
+  explicit FileSurface(const base::FilePath& location) : location_(location) {}
   ~FileSurface() override {}
 
   // SurfaceOzoneCanvas overrides:
@@ -68,7 +68,7 @@ class FileSurface : public SurfaceOzoneCanvas {
 
 class TestPixmap : public ui::NativePixmap {
  public:
-  TestPixmap(gfx::BufferFormat format) : format_(format) {}
+  explicit TestPixmap(gfx::BufferFormat format) : format_(format) {}
 
   void* GetEGLClientBuffer() const override { return nullptr; }
   bool AreDmaBufFdsValid() const override { return false; }
@@ -115,12 +115,6 @@ std::unique_ptr<SurfaceOzoneCanvas>
 HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
   HeadlessWindow* window = window_manager_->GetWindow(widget);
   return base::WrapUnique<SurfaceOzoneCanvas>(new FileSurface(window->path()));
-}
-
-bool HeadlessSurfaceFactory::LoadEGLGLES2Bindings(
-    AddGLLibraryCallback add_gl_library,
-    SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
-  return false;
 }
 
 scoped_refptr<NativePixmap> HeadlessSurfaceFactory::CreateNativePixmap(

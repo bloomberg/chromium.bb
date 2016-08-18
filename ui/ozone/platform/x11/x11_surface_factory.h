@@ -26,9 +26,7 @@ class X11SurfaceFactory : public SurfaceFactoryOzone {
   scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
       gl::GLImplementation implementation,
       const gfx::Size& size) override;
-  bool LoadEGLGLES2Bindings(
-      AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
+  bool LoadEGLGLES2Bindings() override;
   intptr_t GetNativeDisplay() override;
 
  private:

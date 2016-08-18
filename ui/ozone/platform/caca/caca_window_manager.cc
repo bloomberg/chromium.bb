@@ -23,7 +23,7 @@ namespace {
 
 class CacaSurface : public ui::SurfaceOzoneCanvas {
  public:
-  CacaSurface(CacaWindow* window);
+  explicit CacaSurface(CacaWindow* window);
   ~CacaSurface() override;
 
   bool Initialize();
@@ -118,13 +118,6 @@ void CacaWindowManager::RemoveWindow(int window_id, CacaWindow* window) {
 
 CacaWindowManager::~CacaWindowManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-bool CacaWindowManager::LoadEGLGLES2Bindings(
-    AddGLLibraryCallback add_gl_library,
-    SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return false;
 }
 
 std::unique_ptr<ui::SurfaceOzoneCanvas>

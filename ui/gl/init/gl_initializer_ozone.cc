@@ -4,7 +4,6 @@
 
 #include "ui/gl/init/gl_initializer.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_egl_api_implementation.h"
@@ -25,11 +24,8 @@ ui::SurfaceFactoryOzone* GetSurfaceFactory() {
 }
 
 bool InitializeStaticEGLInternal() {
-  if (!GetSurfaceFactory()->LoadEGLGLES2Bindings(
-          base::Bind(&AddGLNativeLibrary),
-          base::Bind(&SetGLGetProcAddressProc))) {
+  if (!GetSurfaceFactory()->LoadEGLGLES2Bindings())
     return false;
-  }
 
   SetGLImplementation(kGLImplementationEGLGLES2);
   InitializeStaticGLBindingsGL();

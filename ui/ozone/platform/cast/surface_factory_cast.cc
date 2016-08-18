@@ -308,9 +308,7 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
   return make_scoped_refptr(new CastPixmap(this));
 }
 
-bool SurfaceFactoryCast::LoadEGLGLES2Bindings(
-    AddGLLibraryCallback add_gl_library,
-    SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
+bool SurfaceFactoryCast::LoadEGLGLES2Bindings() {
   if (state_ != kInitialized) {
     InitializeHardware();
     if (state_ != kInitialized) {
@@ -320,14 +318,14 @@ bool SurfaceFactoryCast::LoadEGLGLES2Bindings(
 
   void* lib_egl = egl_platform_->GetEglLibrary();
   void* lib_gles2 = egl_platform_->GetGles2Library();
-  GLGetProcAddressProc gl_proc = egl_platform_->GetGLProcAddressProc();
+  gl::GLGetProcAddressProc gl_proc = egl_platform_->GetGLProcAddressProc();
   if (!lib_egl || !lib_gles2 || !gl_proc) {
     return false;
   }
 
-  set_gl_get_proc_address.Run(gl_proc);
-  add_gl_library.Run(lib_egl);
-  add_gl_library.Run(lib_gles2);
+  gl::SetGLGetProcAddressProc(gl_proc);
+  gl::AddGLNativeLibrary(lib_egl);
+  gl::AddGLNativeLibrary(lib_gles2);
   return true;
 }
 

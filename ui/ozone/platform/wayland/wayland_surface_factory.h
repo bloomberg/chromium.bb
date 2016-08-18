@@ -27,9 +27,7 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
       gl::GLImplementation implementation,
       const gfx::Size& size) override;
   intptr_t GetNativeDisplay() override;
-  bool LoadEGLGLES2Bindings(
-      AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
+  bool LoadEGLGLES2Bindings() override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
   scoped_refptr<NativePixmap> CreateNativePixmap(

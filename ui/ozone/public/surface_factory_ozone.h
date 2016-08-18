@@ -61,11 +61,6 @@ class SurfaceOzoneCanvas;
 // modes (See comments bellow for descriptions).
 class OZONE_BASE_EXPORT SurfaceFactoryOzone {
  public:
-  typedef void* (*GLGetProcAddressProc)(const char* name);
-  typedef base::Callback<void(base::NativeLibrary)> AddGLLibraryCallback;
-  typedef base::Callback<void(GLGetProcAddressProc)>
-      SetGLGetProcAddressProcCallback;
-
   // Returns native platform display handle. This is used to obtain the EGL
   // display connection for the native display.
   virtual intptr_t GetNativeDisplay();
@@ -97,11 +92,8 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   virtual std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget);
 
-  // Sets up GL bindings for the native surface. Takes two callback parameters
-  // that allow Ozone to register the GL bindings.
-  virtual bool LoadEGLGLES2Bindings(
-      AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) = 0;
+  // Sets up GL bindings for the native surface.
+  virtual bool LoadEGLGLES2Bindings();
 
   // Returns all scanout formats for |widget| representing a particular display
   // controller or default display controller for kNullAcceleratedWidget.

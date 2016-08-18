@@ -5,19 +5,13 @@
 #ifndef UI_OZONE_COMMON_EGL_UTIL_H_
 #define UI_OZONE_COMMON_EGL_UTIL_H_
 
-#include "ui/ozone/public/surface_factory_ozone.h"
+#include <stdint.h>
 
 namespace ui {
 
-bool LoadDefaultEGLGLES2Bindings(
-    SurfaceFactoryOzone::AddGLLibraryCallback add_gl_library,
-    SurfaceFactoryOzone::SetGLGetProcAddressProcCallback
-        set_gl_get_proc_address);
+bool LoadDefaultEGLGLES2Bindings();
 
 bool LoadEGLGLES2Bindings(
-    SurfaceFactoryOzone::AddGLLibraryCallback add_gl_library,
-    SurfaceFactoryOzone::SetGLGetProcAddressProcCallback
-        set_gl_get_proc_address,
     const char* egl_library_name,
     const char* gles_library_name);
 

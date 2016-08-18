@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace ui {
 namespace {
@@ -16,18 +17,11 @@ const char kDefaultGlesSoname[] = "libGLESv2.so.2";
 
 }  // namespace
 
-bool LoadDefaultEGLGLES2Bindings(
-    SurfaceFactoryOzone::AddGLLibraryCallback add_gl_library,
-    SurfaceFactoryOzone::SetGLGetProcAddressProcCallback
-        set_gl_get_proc_address) {
-  return LoadEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address,
-                              kDefaultEglSoname, kDefaultGlesSoname);
+bool LoadDefaultEGLGLES2Bindings() {
+  return LoadEGLGLES2Bindings(kDefaultEglSoname, kDefaultGlesSoname);
 }
 
 bool LoadEGLGLES2Bindings(
-    SurfaceFactoryOzone::AddGLLibraryCallback add_gl_library,
-    SurfaceFactoryOzone::SetGLGetProcAddressProcCallback
-        set_gl_get_proc_address,
     const char* egl_library_name,
     const char* gles_library_name) {
   base::NativeLibraryLoadError error;
@@ -46,8 +40,8 @@ bool LoadEGLGLES2Bindings(
     return false;
   }
 
-  SurfaceFactoryOzone::GLGetProcAddressProc get_proc_address =
-      reinterpret_cast<SurfaceFactoryOzone::GLGetProcAddressProc>(
+  gl::GLGetProcAddressProc get_proc_address =
+      reinterpret_cast<gl::GLGetProcAddressProc>(
           base::GetFunctionPointerFromNativeLibrary(egl_library,
                                                     "eglGetProcAddress"));
   if (!get_proc_address) {
@@ -57,9 +51,9 @@ bool LoadEGLGLES2Bindings(
     return false;
   }
 
-  set_gl_get_proc_address.Run(get_proc_address);
-  add_gl_library.Run(egl_library);
-  add_gl_library.Run(gles_library);
+  gl::SetGLGetProcAddressProc(get_proc_address);
+  gl::AddGLNativeLibrary(egl_library);
+  gl::AddGLNativeLibrary(gles_library);
 
   return true;
 }

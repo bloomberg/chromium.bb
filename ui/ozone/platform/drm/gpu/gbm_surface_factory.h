@@ -46,9 +46,7 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
   intptr_t GetNativeDisplay() override;
   std::vector<gfx::BufferFormat> GetScanoutFormats(
       gfx::AcceleratedWidget widget) override;
-  bool LoadEGLGLES2Bindings(
-      AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
+  bool LoadEGLGLES2Bindings() override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
   scoped_refptr<ui::NativePixmap> CreateNativePixmap(
