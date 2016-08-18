@@ -55,7 +55,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'pre-flight-branch',
     CONFIG_TYPE_FACTORY,
     CONFIG_TYPE_FIRMWARE,
-    'master-toolchain',
+    'toolchain',
     'llvm-toolchain-group',
     'llvm-next-toolchain-group',
     'gcc-toolchain-group',

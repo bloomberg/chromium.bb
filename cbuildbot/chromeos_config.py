@@ -655,10 +655,23 @@ _waterfall_config_map = {
         # Firmware Builders.
         'link-depthcharge-full-firmware',
 
-        # Toolchain Builders.
-        'gcc-toolchain-group',
+        # Toolchain Builders: 4 boards {peppy,daisy,x86-alex,oak}
+        #                   x 3 toolchains {gcc,llvm,llvm-next}
+        'peppy-gcc-toolchain',
+        'peppy-llvm-toolchain',
+        'peppy-llvm-next-toolchain',
+        'daisy-gcc-toolchain',
+        'daisy-llvm-toolchain',
+        'daisy-llvm-next-toolchain',
+        'x86-alex-gcc-toolchain',
+        'x86-alex-llvm-toolchain',
+        'x86-alex-llvm-next-toolchain',
+        'oak-gcc-toolchain',
+        'oak-llvm-toolchain',
+        'oak-llvm-next-toolchain',
 
-        # LLVM
+        # Old Toolchain Builders (to be removed soon).
+        'gcc-toolchain-group',
         'llvm-toolchain-group',
         'llvm-next-toolchain-group',
     ]),
@@ -2289,6 +2302,112 @@ def GetConfig():
           'oak-toolchain-gcc', _gcc_grouped,
           boards=['oak'],
       ),
+  )
+
+  # Toolchain-specific mixins.
+
+  _gcc_builder = config_lib.BuildConfig(
+      images=['base', 'test', 'recovery'],
+      description='Full release build with next minor GCC toolchain revision',
+      gcc_githash='svn-mirror/google/gcc-4_9',
+      latest_toolchain=True,
+  )
+  _llvm_builder = config_lib.BuildConfig(
+      images=['base', 'test', 'recovery'],
+      description='Full release build with LLVM toolchain',
+      profile='llvm',
+  )
+  _llvm_next_builder = _llvm_builder.derive(
+      description='Full release build with LLVM (next) toolchain',
+      useflags=append_useflags(['llvm-next', 'clang']),
+  )
+
+  ### Toolchain builder configs: 4 boards {peppy,daisy,x86-alex,oak}
+  ###                          x 3 toolchains {gcc,llvm,llvm-next}
+  ### All of these builders should be slaves of 'master-toolchain'.
+
+  site_config.Add(
+      'peppy-gcc-toolchain',
+      _toolchain, _gcc_builder,
+      boards=['peppy'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'peppy-llvm-toolchain',
+      _toolchain, _llvm_builder,
+      boards=['peppy'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'peppy-llvm-next-toolchain',
+      _toolchain, _llvm_next_builder,
+      boards=['peppy'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'daisy-gcc-toolchain',
+      _toolchain, _gcc_builder,
+      boards=['daisy'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'daisy-llvm-toolchain',
+      _toolchain, _llvm_builder,
+      boards=['daisy'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'daisy-llvm-next-toolchain',
+      _toolchain, _llvm_next_builder,
+      boards=['daisy'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'x86-alex-gcc-toolchain',
+      _toolchain, _gcc_builder,
+      boards=['x86-alex'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'x86-alex-llvm-toolchain',
+      _toolchain, _llvm_builder,
+      boards=['x86-alex'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'x86-alex-llvm-next-toolchain',
+      _toolchain, _llvm_next_builder,
+      boards=['x86-alex'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'oak-gcc-toolchain',
+      _toolchain, _gcc_builder,
+      boards=['oak'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'oak-llvm-toolchain',
+      _toolchain, _llvm_builder,
+      boards=['oak'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'oak-llvm-next-toolchain',
+      _toolchain, _llvm_next_builder,
+      boards=['oak'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   ### Master release config.

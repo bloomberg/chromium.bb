@@ -6831,6 +6831,22 @@
         ],
         "vm_tests": []
     },
+    "daisy-gcc-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "daisy"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with next minor GCC toolchain revision",
+        "gcc_githash": "svn-mirror/google/gcc-4_9",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "latest_toolchain": true
+    },
     "daisy-incremental": {
         "_template": "incremental",
         "active_waterfall": "chromiumos",
@@ -6841,6 +6857,40 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "daisy-llvm-next-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "daisy"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with LLVM (next) toolchain",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "profile": "llvm",
+        "useflags": [
+            "clang",
+            "llvm-next"
+        ]
+    },
+    "daisy-llvm-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "daisy"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with LLVM toolchain",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "profile": "llvm"
     },
     "daisy-next-toolchain-llvm": {
         "_template": "llvm",
@@ -17089,6 +17139,56 @@
         ],
         "vm_tests": []
     },
+    "oak-gcc-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "oak"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with next minor GCC toolchain revision",
+        "gcc_githash": "svn-mirror/google/gcc-4_9",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "latest_toolchain": true
+    },
+    "oak-llvm-next-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "oak"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with LLVM (next) toolchain",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "profile": "llvm",
+        "useflags": [
+            "clang",
+            "llvm-next"
+        ]
+    },
+    "oak-llvm-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "oak"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with LLVM toolchain",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "profile": "llvm"
+    },
     "oak-next-toolchain-llvm": {
         "_template": "llvm",
         "boards": [
@@ -18838,6 +18938,56 @@
         "useflags": [
             "-chrome_internal"
         ]
+    },
+    "peppy-gcc-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "peppy"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with next minor GCC toolchain revision",
+        "gcc_githash": "svn-mirror/google/gcc-4_9",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "latest_toolchain": true
+    },
+    "peppy-llvm-next-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "peppy"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with LLVM (next) toolchain",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "profile": "llvm",
+        "useflags": [
+            "clang",
+            "llvm-next"
+        ]
+    },
+    "peppy-llvm-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "peppy"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with LLVM toolchain",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "profile": "llvm"
     },
     "peppy-next-toolchain-llvm": {
         "_template": "llvm",
@@ -28109,6 +28259,56 @@
         "useflags": [
             "-chrome_internal"
         ]
+    },
+    "x86-alex-gcc-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "x86-alex"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with next minor GCC toolchain revision",
+        "gcc_githash": "svn-mirror/google/gcc-4_9",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "latest_toolchain": true
+    },
+    "x86-alex-llvm-next-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "x86-alex"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with LLVM (next) toolchain",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "profile": "llvm",
+        "useflags": [
+            "clang",
+            "llvm-next"
+        ]
+    },
+    "x86-alex-llvm-toolchain": {
+        "_template": "toolchain",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "x86-alex"
+        ],
+        "buildslave_type": "gce_beefy",
+        "description": "Full release build with LLVM toolchain",
+        "images": [
+            "base",
+            "test",
+            "recovery"
+        ],
+        "profile": "llvm"
     },
     "x86-alex-next-toolchain-llvm": {
         "_template": "llvm",
