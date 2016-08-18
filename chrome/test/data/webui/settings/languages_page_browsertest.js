@@ -27,9 +27,6 @@ SettingsLanguagesPageBrowserTest.prototype = {
   __proto__: SettingsPageBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/advanced',
-
-  /** @override */
   preLoad: function() {
     SettingsPageBrowserTest.prototype.preLoad.call(this);
     settingsHidePagesByDefaultForTest = true;
@@ -50,6 +47,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
   suite('languages page', function() {
     testing.Test.disableAnimationsAndTransitions();
 
+    this.toggleAdvanced();
     var advanced = this.getPage('advanced');
 
     var languagesSection;

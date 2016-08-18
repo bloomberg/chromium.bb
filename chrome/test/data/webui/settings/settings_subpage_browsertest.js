@@ -41,6 +41,7 @@ SettingsSubPageBrowserTest.prototype = {
     SettingsPageBrowserTest.prototype.setUp.call(this);
     // Explicitly hide all of the pages (not strictly required but is more
     // clear than relying on undefined -> hidden).
+    this.toggleAdvanced();
     this.hideSubPages_();
   },
 
@@ -146,9 +147,6 @@ function SettingsAdvancedSubPageBrowserTest() {
 
 SettingsAdvancedSubPageBrowserTest.prototype = {
   __proto__: SettingsSubPageBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://md-settings/advanced',
 };
 
 TEST_F('SettingsAdvancedSubPageBrowserTest', 'SubPages', function() {

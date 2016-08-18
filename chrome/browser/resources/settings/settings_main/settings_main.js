@@ -88,10 +88,8 @@ Polymer({
   attached: function() {
     document.addEventListener('toggle-advanced-page', function(e) {
       this.advancedToggleExpanded_ = e.detail;
-      settings.navigateTo(this.advancedToggleExpanded_ ?
-          settings.Route.ADVANCED : settings.Route.BASIC);
+      this.currentRouteChanged(settings.getCurrentRoute());
     }.bind(this));
-
   },
 
   /** @private */

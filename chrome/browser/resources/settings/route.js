@@ -266,7 +266,8 @@ cr.define('settings', function() {
     initializeRouteFromUrlCalled_ = true;
 
     var route = getRouteForPath(window.location.pathname);
-    if (route) {
+    // Never allow direct navigation to ADVANCED.
+    if (route && route != Route.ADVANCED) {
       currentRoute_ = route;
       currentQueryParameters_ = new URLSearchParams(window.location.search);
     } else {

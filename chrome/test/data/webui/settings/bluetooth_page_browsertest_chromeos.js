@@ -19,9 +19,6 @@ SettingsBluetoothPageBrowserTest.prototype = {
   __proto__: SettingsPageBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/advanced',
-
-  /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     '../fake_chrome_event.js',
     'fake_bluetooth.js',
@@ -62,6 +59,7 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
   // comment at the top of mocha_adapter.js.
   var self = this;
 
+  self.toggleAdvanced();
   var advanced = self.getPage('advanced');
   assertTrue(!!advanced);
   advanced.set('pageVisibility.bluetooth', true);
