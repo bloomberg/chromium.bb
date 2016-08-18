@@ -378,6 +378,8 @@ class ArcBluetoothBridge
   std::unordered_map<int32_t, int32_t> last_characteristic_;
   // Monotonically increasing value to use as handle to give to Android side.
   int32_t gatt_server_attribute_next_handle_ = 0;
+  // Keeps track of all devices which initiated a GATT connection to us.
+  std::unordered_set<std::string> gatt_connection_cache_;
 
   base::ThreadChecker thread_checker_;
 

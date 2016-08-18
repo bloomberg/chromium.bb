@@ -55,6 +55,7 @@ namespace {
 constexpr int32_t kMinBtleVersion = 1;
 constexpr int32_t kMinBtleNotifyVersion = 2;
 constexpr int32_t kMinGattServerVersion = 3;
+constexpr int32_t kMinAddrChangeVersion = 4;
 constexpr uint32_t kGattReadPermission =
     BluetoothGattCharacteristic::Permission::PERMISSION_READ |
     BluetoothGattCharacteristic::Permission::PERMISSION_READ_ENCRYPTED |
@@ -263,9 +264,6 @@ void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
   if (!HasBluetoothInstance())
     return;
 
-  if (device->IsConnected())
-    return;
-
   mojo::Array<mojom::BluetoothPropertyPtr> properties =
       GetDeviceProperties(mojom::BluetoothPropertyType::ALL, device);
 
@@ -273,6 +271,9 @@ void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
       std::move(properties));
 
   if (!CheckBluetoothInstanceVersion(kMinBtleVersion))
+    return;
+
+  if (!(device->GetType() & device::BLUETOOTH_TRANSPORT_LE))
     return;
 
   mojom::BluetoothAddressPtr addr =
@@ -283,17 +284,64 @@ void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
   arc_bridge_service()->bluetooth()->instance()->OnLEDeviceFound(
       std::move(addr), rssi.value_or(mojom::kUnknownPower),
       std::move(adv_data));
+
+  if (!device->IsConnected())
+    return;
+
+  addr = mojom::BluetoothAddress::From(device->GetAddress());
+  OnGattConnectStateChanged(std::move(addr), true);
 }
 
 void ArcBluetoothBridge::DeviceChanged(BluetoothAdapter* adapter,
                                        BluetoothDevice* device) {
-  // TODO(smbarber): device properties changed; inform the container.
+  if (!(device->GetType() & device::BLUETOOTH_TRANSPORT_LE))
+    return;
+
+  auto it = gatt_connection_cache_.find(device->GetAddress());
+  bool was_connected = it != gatt_connection_cache_.end();
+  bool is_connected = device->IsConnected();
+
+  if (is_connected == was_connected)
+    return;
+
+  if (is_connected)
+    gatt_connection_cache_.insert(device->GetAddress());
+  else  // was_connected
+    gatt_connection_cache_.erase(it);
+
+  mojom::BluetoothAddressPtr addr =
+      mojom::BluetoothAddress::From(device->GetAddress());
+  OnGattConnectStateChanged(std::move(addr), is_connected);
 }
 
 void ArcBluetoothBridge::DeviceAddressChanged(BluetoothAdapter* adapter,
                                               BluetoothDevice* device,
                                               const std::string& old_address) {
-  // Must be implemented for LE Privacy/GATT client.
+  if (old_address == device->GetAddress())
+    return;
+
+  if (!(device->GetType() & device::BLUETOOTH_TRANSPORT_LE))
+    return;
+
+  auto it = gatt_connection_cache_.find(old_address);
+  if (it == gatt_connection_cache_.end())
+    return;
+
+  gatt_connection_cache_.erase(it);
+  gatt_connection_cache_.insert(device->GetAddress());
+
+  if (!HasBluetoothInstance())
+    return;
+
+  if (!CheckBluetoothInstanceVersion(kMinAddrChangeVersion))
+    return;
+
+  mojom::BluetoothAddressPtr old_addr =
+      mojom::BluetoothAddress::From(old_address);
+  mojom::BluetoothAddressPtr new_addr =
+      mojom::BluetoothAddress::From(device->GetAddress());
+  arc_bridge_service()->bluetooth()->instance()->OnLEDeviceAddressChange(
+      std::move(old_addr), std::move(new_addr));
 }
 
 void ArcBluetoothBridge::DevicePairedChanged(BluetoothAdapter* adapter,
@@ -325,6 +373,14 @@ void ArcBluetoothBridge::DeviceRemoved(BluetoothAdapter* adapter,
   mojom::BluetoothAddressPtr addr =
       mojom::BluetoothAddress::From(device->GetAddress());
   OnForgetDone(std::move(addr));
+
+  auto it = gatt_connection_cache_.find(device->GetAddress());
+  if (it == gatt_connection_cache_.end())
+    return;
+
+  addr = mojom::BluetoothAddress::From(device->GetAddress());
+  gatt_connection_cache_.erase(it);
+  OnGattConnectStateChanged(std::move(addr), false);
 }
 
 void ArcBluetoothBridge::GattServiceAdded(BluetoothAdapter* adapter,

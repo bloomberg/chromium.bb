@@ -89,6 +89,8 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
       mojo::Array<mojom::BluetoothAdvertisingDataPtr> adv_data) override;
   void OnLEConnectionStateChange(mojom::BluetoothAddressPtr remote_addr,
                                  bool connected) override;
+  void OnLEDeviceAddressChange(mojom::BluetoothAddressPtr old_addr,
+                               mojom::BluetoothAddressPtr new_addr) override;
   void OnSearchComplete(mojom::BluetoothAddressPtr remote_addr,
                         mojom::BluetoothGattStatus status) override;
   void OnGetGattDB(mojom::BluetoothAddressPtr remote_addr,

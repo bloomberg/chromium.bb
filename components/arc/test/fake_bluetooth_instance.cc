@@ -67,6 +67,10 @@ void FakeBluetoothInstance::OnLEConnectionStateChange(
     mojom::BluetoothAddressPtr remote_addr,
     bool connected) {}
 
+void FakeBluetoothInstance::OnLEDeviceAddressChange(
+    mojom::BluetoothAddressPtr old_addr,
+    mojom::BluetoothAddressPtr new_addr) {}
+
 void FakeBluetoothInstance::OnSearchComplete(
     mojom::BluetoothAddressPtr remote_addr,
     mojom::BluetoothGattStatus status) {}

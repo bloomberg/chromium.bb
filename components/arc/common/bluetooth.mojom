@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 5
+
 module arc.mojom;
 
 [Extensible]
@@ -322,6 +324,7 @@ interface BluetoothHost {
       => (BluetoothGattStatus status);
 };
 
+// Next Method ID: 17
 interface BluetoothInstance {
   Init@0(BluetoothHost host_ptr);
 
@@ -345,6 +348,8 @@ interface BluetoothInstance {
                                    array<BluetoothAdvertisingData> adv_data);
   [MinVersion=1] OnLEConnectionStateChange@8(BluetoothAddress remote_addr,
                                              bool connected);
+  [MinVersion=4] OnLEDeviceAddressChange@16(BluetoothAddress old_addr,
+                                            BluetoothAddress new_addr);
   [MinVersion=1] OnSearchComplete@9(BluetoothAddress remote_addr,
                                     BluetoothGattStatus status);
   [MinVersion=1] OnGetGattDB@10(BluetoothAddress remote_addr,
