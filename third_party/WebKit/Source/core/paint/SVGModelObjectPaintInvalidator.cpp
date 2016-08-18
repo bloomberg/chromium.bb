@@ -16,7 +16,7 @@ PaintInvalidationReason SVGModelObjectPaintInvalidator::invalidatePaintIfNeeded(
     // Disable incremental invalidation for SVG objects to prevent under-
     // invalidation. Unlike boxes, it is non-trivial (and rare) for SVG objects
     // to be able to be incrementally invalidated (e.g., on height changes).
-    if (reason == PaintInvalidationIncremental)
+    if (reason == PaintInvalidationIncremental && m_context.oldBounds != m_context.newBounds)
         reason = PaintInvalidationFull;
 
     return ObjectPaintInvalidator(m_object, m_context).invalidatePaintIfNeededWithComputedReason(reason);

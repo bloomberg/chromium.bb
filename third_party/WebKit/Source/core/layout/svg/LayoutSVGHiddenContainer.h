@@ -42,7 +42,7 @@ protected:
 private:
     // LayoutSVGHiddenContainer paints nothing.
     void paint(const PaintInfo&, const LayoutPoint&) const final { }
-    bool paintedOutputOfObjectHasNoEffect() const final { return true; }
+    bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const final { return true; }
     LayoutRect absoluteClippedOverflowRect() const final { return LayoutRect(); }
     FloatRect paintInvalidationRectInLocalSVGCoordinates() const final { return FloatRect(); }
     void absoluteQuads(Vector<FloatQuad>&) const final { }

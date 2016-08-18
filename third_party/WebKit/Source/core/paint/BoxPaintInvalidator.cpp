@@ -32,13 +32,13 @@ void BoxPaintInvalidator::boxWillBeDestroyed(const LayoutBox& box)
     previousBoxSizesMap().remove(&box);
 }
 
-// This is called when ObjectPaintInvalidator already did incremental invalidation,
-// so this function just does what is additionally needed for the LayoutBox.
-void BoxPaintInvalidator::incrementallyInvalidatePaint()
+bool BoxPaintInvalidator::incrementallyInvalidatePaint()
 {
+    bool result = ObjectPaintInvalidator(m_box, m_context).incrementallyInvalidatePaint();
+
     bool hasBoxDecorations = m_box.styleRef().hasBoxDecorations();
     if (!m_box.styleRef().hasBackground() && !hasBoxDecorations)
-        return;
+        return result;
 
     const LayoutRect& oldBounds = m_context.oldBounds;
     const LayoutRect& newBounds = m_context.newBounds;
@@ -46,9 +46,9 @@ void BoxPaintInvalidator::incrementallyInvalidatePaint()
     LayoutSize oldBorderBoxSize = computePreviousBorderBoxSize(oldBounds.size());
     LayoutSize newBorderBoxSize = m_box.size();
 
-    // If border m_box size didn't change, LayoutObject's incrementallyInvalidatePaint() is good.
+    // If border m_box size didn't change, ObjectPaintInvalidator::incrementallyInvalidatePaint() is good.
     if (oldBorderBoxSize == newBorderBoxSize)
-        return;
+        return result;
 
     // If size of the paint invalidation rect equals to size of border box, ObjectPaintInvalidator::incrementallyInvalidatePaint()
     // is good for boxes having background without box decorations.
@@ -57,7 +57,7 @@ void BoxPaintInvalidator::incrementallyInvalidatePaint()
         && m_context.newLocation == newBounds.location()
         && oldBorderBoxSize == oldBounds.size()
         && newBorderBoxSize == newBounds.size())
-        return;
+        return result;
 
     // Invalidate the right delta part and the right border of the old or new m_box which has smaller width.
     if (LayoutUnit deltaWidth = (oldBorderBoxSize.width() - newBorderBoxSize.width()).abs()) {
@@ -80,6 +80,8 @@ void BoxPaintInvalidator::incrementallyInvalidatePaint()
             std::max(oldBorderBoxSize.width(), newBorderBoxSize.width()), deltaHeight + borderHeight);
         invalidatePaintRectClippedByOldAndNewBounds(bottomDeltaRect);
     }
+
+    return true;
 }
 
 void BoxPaintInvalidator::invalidatePaintRectClippedByOldAndNewBounds(const LayoutRect& rect)
@@ -105,7 +107,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason()
 {
     PaintInvalidationReason reason = ObjectPaintInvalidator(m_box, m_context).computePaintInvalidationReason();
 
-    if (reason != PaintInvalidationDelayedFull && isFullPaintInvalidationReason(reason))
+    if (isImmediateFullPaintInvalidationReason(reason) || reason == PaintInvalidationNone)
         return reason;
 
     if (m_box.mayNeedPaintInvalidationAnimatedBackgroundImage() && !m_box.backgroundIsKnownToBeObscured())
@@ -134,6 +136,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason()
     // because the difference between oldBounds and newBounds doesn't cover all area needing invalidation.
     // FIXME: Should also consider ancestor transforms since paintInvalidationContainer. crbug.com/426111.
     if (reason == PaintInvalidationIncremental
+        && m_context.oldBounds != m_context.newBounds
         && m_context.paintInvalidationContainer != m_box
         && m_box.hasLayer() && m_box.layer()->transform()
         && !m_box.layer()->transform()->isIdentityOrTranslation())
@@ -148,7 +151,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason()
     if (!style.hasBackground() && !style.hasBoxDecorations()) {
         // We could let incremental invalidation cover non-composited scrollbars, but just
         // do a full invalidation because incremental invalidation will go away with slimming paint.
-        if (reason == PaintInvalidationIncremental && m_box.hasNonCompositedScrollbars())
+        if (reason == PaintInvalidationIncremental && m_context.oldBounds != m_context.newBounds && m_box.hasNonCompositedScrollbars())
             return PaintInvalidationBorderBoxChange;
         return reason;
     }
@@ -163,11 +166,6 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason()
 
     if (oldBorderBoxSize == newBorderBoxSize)
         return reason;
-
-    // LayoutBox::incrementallyInvalidatePaint() depends on positionFromPaintInvalidationBacking
-    // which is not available when slimmingPaintOffsetCachingEnabled.
-    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && (style.hasBoxDecorations() || style.hasBackground()))
-        return PaintInvalidationBorderBoxChange;
 
     // See another hasNonCompositedScrollbars() callsite above.
     if (m_box.hasNonCompositedScrollbars())
@@ -190,21 +188,25 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason()
     if (oldBorderBoxSize.height() != newBorderBoxSize.height() && m_box.mustInvalidateBackgroundOrBorderPaintOnHeightChange())
         return PaintInvalidationBorderBoxChange;
 
-    if (reason == PaintInvalidationNone && (style.hasBackground() || style.hasBoxDecorations()))
-        reason = PaintInvalidationIncremental;
-
     return reason;
 }
 
 PaintInvalidationReason BoxPaintInvalidator::invalidatePaintIfNeeded()
 {
-    PaintInvalidationReason reason = ObjectPaintInvalidator(m_box, m_context).invalidatePaintIfNeededWithComputedReason(computePaintInvalidationReason());
-
-    // For incremental invalidation, ObjectPaintInvalidator::incrementallyInvalidatePaint() is
-    // not enough for LayoutBox in some cases, e.g. having border, border-radius, etc.
-    // The following will do additional incremental invalidation for LayoutBox if needed.
-    if (reason == PaintInvalidationIncremental)
-        incrementallyInvalidatePaint();
+    PaintInvalidationReason reason = computePaintInvalidationReason();
+    if (reason == PaintInvalidationIncremental) {
+        if (incrementallyInvalidatePaint()) {
+            m_context.paintingLayer->setNeedsRepaint();
+            m_box.invalidateDisplayItemClients(reason);
+        } else {
+            reason = PaintInvalidationNone;
+        }
+        // Though we have done our own version of incremental invalidation, we still need to call
+        // ObjectPaintInvalidator with PaintInvalidationNone to do any other required operations.
+        reason = std::max(reason, ObjectPaintInvalidator(m_box, m_context).invalidatePaintIfNeededWithComputedReason(PaintInvalidationNone));
+    } else {
+        reason = ObjectPaintInvalidator(m_box, m_context).invalidatePaintIfNeededWithComputedReason(reason);
+    }
 
     if (PaintLayerScrollableArea* area = m_box.getScrollableArea())
         area->invalidatePaintOfScrollControlsIfNeeded(m_context);

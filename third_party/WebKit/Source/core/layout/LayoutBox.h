@@ -689,7 +689,7 @@ public:
     // break, we also need to know the break-after value of the previous in-flow sibling.
     bool needsForcedBreakBefore(EBreak previousBreakAfterValue) const;
 
-    bool paintedOutputOfObjectHasNoEffect() const override;
+    bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
     LayoutRect localOverflowRectForPaintInvalidation() const override;
     bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const override;
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants);

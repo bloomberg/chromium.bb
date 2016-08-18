@@ -28,7 +28,7 @@ public:
 private:
     PaintInvalidationReason computePaintInvalidationReason();
 
-    void incrementallyInvalidatePaint();
+    bool incrementallyInvalidatePaint();
     void invalidatePaintRectClippedByOldAndNewBounds(const LayoutRect&);
 
     bool needsToSavePreviousBoxSizes();

@@ -11,7 +11,7 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative green'",
           "rect": [108, 108, 100, 100],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='overflowParent' class='absolute green'",
@@ -28,7 +28,7 @@
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative green'",
-      "reason": "bounds change"
+      "reason": "became visible"
     }
   ]
 }

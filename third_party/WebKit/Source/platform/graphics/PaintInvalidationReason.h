@@ -48,6 +48,11 @@ inline bool isFullPaintInvalidationReason(PaintInvalidationReason reason)
     return reason >= PaintInvalidationFull;
 }
 
+inline bool isImmediateFullPaintInvalidationReason(PaintInvalidationReason reason)
+{
+    return isFullPaintInvalidationReason(reason) && reason != PaintInvalidationDelayedFull;
+}
+
 } // namespace blink
 
 #endif // PaintInvalidationReason_h

@@ -2056,7 +2056,7 @@ bool LayoutBox::needsForcedBreakBefore(EBreak previousBreakAfterValue) const
     return isForcedFragmentainerBreakValue(breakValue);
 }
 
-bool LayoutBox::paintedOutputOfObjectHasNoEffect() const
+bool LayoutBox::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const
 {
     // In case scrollbars got repositioned (which will typically happen if the box got
     // resized), we cannot skip invalidation.

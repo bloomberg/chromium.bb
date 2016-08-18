@@ -74,7 +74,7 @@ public:
     void paint(const PaintInfo&, const LayoutPoint&) const override;
 
     // Replaced objects often have contents to paint.
-    bool paintedOutputOfObjectHasNoEffect() const final { return false; }
+    bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const final { return false; }
 
     struct IntrinsicSizingInfo {
         STACK_ALLOCATED();

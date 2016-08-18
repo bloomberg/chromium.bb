@@ -19,10 +19,6 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "outline"
-    },
-    {
       "object": "LayoutBlockFlow (anonymous)",
       "reason": "forced by layout"
     },

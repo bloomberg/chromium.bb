@@ -16,7 +16,7 @@
         {
           "object": "LayoutSVGContainer g id='content'",
           "rect": [0, 100, 800, 100],
-          "reason": "bounds change"
+          "reason": "became visible"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -31,7 +31,7 @@
         {
           "object": "LayoutSVGRoot svg id='svg-root'",
           "rect": [0, 100, 800, 100],
-          "reason": "bounds change"
+          "reason": "became visible"
         }
       ]
     }
@@ -39,11 +39,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGRoot svg id='svg-root'",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGContainer g id='content'",
-      "reason": "bounds change"
+      "reason": "became visible"
     },
     {
       "object": "LayoutSVGRect rect",

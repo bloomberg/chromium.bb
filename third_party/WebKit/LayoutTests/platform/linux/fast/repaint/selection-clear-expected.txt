@@ -88,11 +88,19 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "bounds change"
+      "reason": "selection"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "bounds change"
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "location change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "location change"
     }
   ]
 }

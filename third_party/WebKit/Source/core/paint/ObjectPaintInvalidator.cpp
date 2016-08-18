@@ -30,7 +30,7 @@ void ObjectPaintInvalidator::objectWillBeDestroyed(const LayoutObject& object)
     selectionPaintInvalidationMap().remove(&object);
 }
 
-void ObjectPaintInvalidator::incrementallyInvalidatePaint()
+bool ObjectPaintInvalidator::incrementallyInvalidatePaint()
 {
     const LayoutRect& oldBounds = m_context.oldBounds;
     const LayoutRect& newBounds = m_context.newBounds;
@@ -38,6 +38,10 @@ void ObjectPaintInvalidator::incrementallyInvalidatePaint()
     DCHECK(oldBounds.location() == newBounds.location());
 
     LayoutUnit deltaRight = newBounds.maxX() - oldBounds.maxX();
+    LayoutUnit deltaBottom = newBounds.maxY() - oldBounds.maxY();
+    if (!deltaRight && !deltaBottom)
+        return false;
+
     if (deltaRight > 0) {
         LayoutRect invalidationRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height());
         m_object.invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
@@ -46,7 +50,6 @@ void ObjectPaintInvalidator::incrementallyInvalidatePaint()
         m_object.invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
     }
 
-    LayoutUnit deltaBottom = newBounds.maxY() - oldBounds.maxY();
     if (deltaBottom > 0) {
         LayoutRect invalidationRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom);
         m_object.invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
@@ -54,6 +57,8 @@ void ObjectPaintInvalidator::incrementallyInvalidatePaint()
         LayoutRect invalidationRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom);
         m_object.invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
     }
+
+    return true;
 }
 
 void ObjectPaintInvalidator::fullyInvalidatePaint(PaintInvalidationReason reason, const LayoutRect& oldBounds, const LayoutRect& newBounds)
@@ -86,10 +91,13 @@ PaintInvalidationReason ObjectPaintInvalidator::computePaintInvalidationReason()
     if (m_object.shouldDoFullPaintInvalidation())
         return m_object.fullPaintInvalidationReason();
 
+    if (m_context.oldBounds.isEmpty() && m_context.newBounds.isEmpty())
+        return PaintInvalidationNone;
+
     if (backgroundObscurationChanged)
         return PaintInvalidationBackgroundObscurationChange;
 
-    if (m_object.paintedOutputOfObjectHasNoEffect())
+    if (m_object.paintedOutputOfObjectHasNoEffectRegardlessOfSize())
         return PaintInvalidationNone;
 
     const ComputedStyle& style = m_object.styleRef();
@@ -104,14 +112,12 @@ PaintInvalidationReason ObjectPaintInvalidator::computePaintInvalidationReason()
     bool locationChanged = m_context.newLocation != m_context.oldLocation;
 
     // If the bounds are the same then we know that none of the statements below
-    // can match, so we can early out.
+    // can match, so we can early out. However, we can't return PaintInvalidationNone even if
+    // !locationChagned, but conservatively return PaintInvalidationIncremental because we are
+    // not sure whether paint invalidation is actually needed just based on information known
+    // to LayoutObject. For example, a LayoutBox may need paint invalidation if border box changes.
     if (m_context.oldBounds == m_context.newBounds)
-        return locationChanged && !m_context.oldBounds.isEmpty() ? PaintInvalidationLocationChange : PaintInvalidationNone;
-
-    // If we shifted, we don't know the exact reason so we are conservative and trigger a full invalidation. Shifting could
-    // be caused by some layout property (left / top) or some in-flow layoutObject inserted / removed before us in the tree.
-    if (m_context.newBounds.location() != m_context.oldBounds.location())
-        return PaintInvalidationBoundsChange;
+        return locationChanged ? PaintInvalidationLocationChange : PaintInvalidationIncremental;
 
     // If the size is zero on one of our bounds then we know we're going to have
     // to do a full invalidation of either old bounds or new bounds.
@@ -119,6 +125,11 @@ PaintInvalidationReason ObjectPaintInvalidator::computePaintInvalidationReason()
         return PaintInvalidationBecameVisible;
     if (m_context.newBounds.isEmpty())
         return PaintInvalidationBecameInvisible;
+
+    // If we shifted, we don't know the exact reason so we are conservative and trigger a full invalidation. Shifting could
+    // be caused by some layout property (left / top) or some in-flow layoutObject inserted / removed before us in the tree.
+    if (m_context.newBounds.location() != m_context.oldBounds.location())
+        return PaintInvalidationBoundsChange;
 
     if (locationChanged)
         return PaintInvalidationLocationChange;
@@ -131,7 +142,7 @@ void ObjectPaintInvalidator::invalidateSelectionIfNeeded(PaintInvalidationReason
     // Update selection rect when we are doing full invalidation (in case that the object is moved,
     // composite status changed, etc.) or shouldInvalidationSelection is set (in case that the
     // selection itself changed).
-    bool fullInvalidation = isFullPaintInvalidationReason(reason);
+    bool fullInvalidation = isImmediateFullPaintInvalidationReason(reason);
     if (!fullInvalidation && !m_object.shouldInvalidateSelection())
         return;
 
@@ -157,6 +168,9 @@ PaintInvalidationReason ObjectPaintInvalidator::invalidatePaintIfNeededWithCompu
     // This is because we need to update the previous selection rect regardless.
     invalidateSelectionIfNeeded(reason);
 
+    if (reason == PaintInvalidationIncremental && !incrementallyInvalidatePaint())
+        reason = PaintInvalidationNone;
+
     switch (reason) {
     case PaintInvalidationNone:
         // TODO(trchen): Currently we don't keep track of paint offset of layout objects.
@@ -170,12 +184,11 @@ PaintInvalidationReason ObjectPaintInvalidator::invalidatePaintIfNeededWithCompu
         }
         return PaintInvalidationNone;
     case PaintInvalidationIncremental:
-        incrementallyInvalidatePaint();
         break;
     case PaintInvalidationDelayedFull:
         return PaintInvalidationDelayedFull;
     default:
-        DCHECK(isFullPaintInvalidationReason(reason));
+        DCHECK(isImmediateFullPaintInvalidationReason(reason));
         fullyInvalidatePaint(reason, m_context.oldBounds, m_context.newBounds);
     }
 

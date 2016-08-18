@@ -756,7 +756,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='outer'",
@@ -792,7 +792,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='outer'",
@@ -828,7 +828,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='outer'",
@@ -864,7 +864,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='outer'",
@@ -900,7 +900,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
@@ -936,7 +936,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
@@ -972,7 +972,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutTable TABLE class='outer'",
@@ -1016,7 +1016,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutTable TABLE class='outer'",
@@ -1060,7 +1060,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow (anonymous)",
@@ -1112,11 +1112,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='outer'",
@@ -1152,7 +1152,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='outer'",
@@ -1188,7 +1188,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='outer'",
@@ -1224,7 +1224,7 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow DIV class='outer'",
@@ -1264,11 +1264,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     }
   ]
 }

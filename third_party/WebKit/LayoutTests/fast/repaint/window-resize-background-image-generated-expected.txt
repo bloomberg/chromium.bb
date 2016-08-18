@@ -63,10 +63,6 @@
     {
       "object": "LayoutBlockFlow HTML",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "became visible"
     }
   ]
 }
@@ -135,10 +131,6 @@
     {
       "object": "LayoutBlockFlow HTML",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "became visible"
     }
   ]
 }

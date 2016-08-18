@@ -16,7 +16,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 136, 100, 100],
-          "reason": "bounds change"
+          "reason": "became invisible"
         }
       ]
     }
@@ -28,7 +28,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "bounds change"
+      "reason": "became invisible"
     }
   ]
 }

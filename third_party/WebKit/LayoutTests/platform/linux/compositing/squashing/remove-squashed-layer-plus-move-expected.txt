@@ -111,11 +111,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "bounds change"
+      "reason": "location change"
     }
   ]
 }

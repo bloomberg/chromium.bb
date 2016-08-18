@@ -11,7 +11,7 @@
         {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 8, 40, 20],
-          "reason": "bounds change"
+          "reason": "became invisible"
         }
       ]
     }
@@ -19,7 +19,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "bounds change"
+      "reason": "became invisible"
     }
   ]
 }

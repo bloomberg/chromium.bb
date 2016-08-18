@@ -58,11 +58,11 @@
     },
     {
       "object": "LayoutBR BR",
-      "reason": "bounds change"
+      "reason": "location change"
     },
     {
       "object": "InlineTextBox '\n'",
-      "reason": "bounds change"
+      "reason": "location change"
     }
   ]
 }
