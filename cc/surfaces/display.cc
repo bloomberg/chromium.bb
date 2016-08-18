@@ -341,9 +341,10 @@ bool Display::DrawAndSwap() {
     stored_latency_info_.insert(stored_latency_info_.end(),
                                 frame.metadata.latency_info.begin(),
                                 frame.metadata.latency_info.end());
-    if (scheduler_)
+    if (scheduler_) {
       scheduler_->DidSwapBuffers();
-    DidSwapBuffersComplete();
+      scheduler_->DidSwapBuffersComplete();
+    }
   }
 
   client_->DisplayDidDrawAndSwap();
