@@ -93,7 +93,9 @@ Polymer({
   },
 
   unselectAllItems: function(count) {
-    this.getSelectedList_().unselectAllItems(count);
+    var selectedList = this.getSelectedList_();
+    if (selectedList)
+      selectedList.unselectAllItems(count);
   },
 
   /**
