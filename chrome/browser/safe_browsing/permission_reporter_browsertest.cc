@@ -99,6 +99,8 @@ class PermissionReporterBrowserTest : public InProcessBrowserTest {
 };
 
 // Test that permission action report will be sent if the user is opted into it.
+// TODO(kcarattini): Make this test pass with the call to Sync backends.
+// TODO(kcarattini): Address crbug/638316 to reenable this test.
 IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
                        DISABLED_PermissionActionReporting) {
   ASSERT_TRUE(embedded_test_server()->Start());

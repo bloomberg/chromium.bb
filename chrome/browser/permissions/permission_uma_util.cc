@@ -581,20 +581,26 @@ bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {
   ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
-  // Do not report if profile can't get a profile sync service due to disable
-  // sync flag.
-  if (!profile_sync_service)
+
+  // Do not report if profile can't get a profile sync service or sync cannot
+  // start.
+  if (!(profile_sync_service && profile_sync_service->CanSyncStart()))
     return false;
 
-  if (!profile_sync_service->CanSyncStart())
+  // Do not report for users with a Custom passphrase set. We need to wait for
+  // Sync to be active in order to check the passphrase, so we don't report if
+  // Sync is not active yet.
+  if (!profile_sync_service->IsSyncActive() ||
+      profile_sync_service->IsUsingSecondaryPassphrase()) {
     return false;
+  }
 
   syncer::ModelTypeSet preferred_data_types =
       profile_sync_service->GetPreferredDataTypes();
-  if (!preferred_data_types.Has(syncer::PROXY_TABS))
+  if (!(preferred_data_types.Has(syncer::PROXY_TABS) &&
+        preferred_data_types.Has(syncer::PRIORITY_PREFERENCES))) {
     return false;
-  if (!preferred_data_types.Has(syncer::PRIORITY_PREFERENCES))
-    return false;
+  }
 
   return true;
 }
