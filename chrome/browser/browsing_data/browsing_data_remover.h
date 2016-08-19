@@ -165,9 +165,9 @@ class BrowsingDataRemover : public KeyedService
 
     // Datatypes that can be deleted partially per URL / origin / domain,
     // whichever makes sense.
-    FILTERABLE_DATATYPES = (REMOVE_SITE_DATA & ~REMOVE_PLUGIN_DATA) |
-                            REMOVE_CACHE |
-                            REMOVE_DOWNLOADS,
+    FILTERABLE_DATATYPES = REMOVE_SITE_DATA |
+                           REMOVE_CACHE |
+                           REMOVE_DOWNLOADS,
 
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it
