@@ -174,7 +174,8 @@ void DataReductionProxySettings::SetLoFiModeActiveOnMainFrame(
 }
 
 bool DataReductionProxySettings::WasLoFiModeActiveOnMainFrame() const {
-  return lo_fi_mode_active_;
+  return lo_fi_mode_active_ && !params::AreLoFiPreviewsEnabledViaFlags() &&
+         !params::IsIncludedInLoFiPreviewFieldTrial();
 }
 
 bool DataReductionProxySettings::WasLoFiLoadImageRequestedBefore() {
