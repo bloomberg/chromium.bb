@@ -133,6 +133,44 @@ bool ShouldShowPermission(ContentSettingsType type) {
   return true;
 }
 
+void CheckContentStatus(SecurityStateModel::ContentStatus content_status,
+                        bool* displayed,
+                        bool* ran) {
+  switch (content_status) {
+    case SecurityStateModel::CONTENT_STATUS_DISPLAYED:
+      *displayed = true;
+      break;
+    case SecurityStateModel::CONTENT_STATUS_RAN:
+      *ran = true;
+      break;
+    case SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN:
+      *displayed = true;
+      *ran = true;
+      break;
+    case SecurityStateModel::CONTENT_STATUS_UNKNOWN:
+    case SecurityStateModel::CONTENT_STATUS_NONE:
+      break;
+  }
+}
+
+void CheckForInsecureContent(
+    const SecurityStateModel::SecurityInfo& security_info,
+    bool* displayed,
+    bool* ran) {
+  CheckContentStatus(security_info.mixed_content_status, displayed, ran);
+  // Only consider subresources with certificate errors if the main
+  // resource was loaded over HTTPS without major certificate errors. If
+  // the main resource had a certificate error, then it would not be
+  // that useful (and would potentially be confusing) to warn about
+  // subesources that had certificate errors too.
+  if (net::IsCertStatusError(security_info.cert_status) &&
+      !net::IsCertStatusMinorError(security_info.cert_status)) {
+    return;
+  }
+  CheckContentStatus(security_info.content_with_cert_errors_status, displayed,
+                     ran);
+}
+
 // Returns true if any of the given statuses match |status|.
 bool CertificateTransparencyStatusMatchAny(
     const std::vector<net::ct::SCTVerifyStatus>& sct_verify_statuses,
@@ -561,22 +599,22 @@ void WebsiteSettings::Init(
           subject_name));
     }
 
-    if (security_info.mixed_content_status !=
-        SecurityStateModel::CONTENT_STATUS_NONE) {
-      bool ran_insecure_content =
-          (security_info.mixed_content_status ==
-               SecurityStateModel::CONTENT_STATUS_RAN ||
-           security_info.mixed_content_status ==
-               SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN);
-      site_connection_status_ = ran_insecure_content
-                                    ? SITE_CONNECTION_STATUS_MIXED_SCRIPT
-                                    : SITE_CONNECTION_STATUS_MIXED_CONTENT;
+    bool ran_insecure_content = false;
+    bool displayed_insecure_content = false;
+    CheckForInsecureContent(security_info, &displayed_insecure_content,
+                            &ran_insecure_content);
+    if (ran_insecure_content || displayed_insecure_content) {
+      site_connection_status_ =
+          ran_insecure_content
+              ? SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE
+              : SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE;
       site_connection_details_.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
           site_connection_details_,
-          l10n_util::GetStringUTF16(ran_insecure_content ?
-              IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR :
-              IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
+          l10n_util::GetStringUTF16(
+              ran_insecure_content
+                  ? IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_ERROR
+                  : IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
     }
   }
 
@@ -612,7 +650,8 @@ void WebsiteSettings::Init(
     }
 
     if (ssl_version == net::SSL_CONNECTION_VERSION_SSL3 &&
-        site_connection_status_ < SITE_CONNECTION_STATUS_MIXED_CONTENT) {
+        site_connection_status_ <
+            SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE) {
       site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
     }
 
@@ -648,8 +687,10 @@ void WebsiteSettings::Init(
   // Tab.
   WebsiteSettingsUI::TabId tab_id = WebsiteSettingsUI::TAB_ID_PERMISSIONS;
   if (site_connection_status_ == SITE_CONNECTION_STATUS_ENCRYPTED_ERROR ||
-      site_connection_status_ == SITE_CONNECTION_STATUS_MIXED_CONTENT ||
-      site_connection_status_ == SITE_CONNECTION_STATUS_MIXED_SCRIPT ||
+      site_connection_status_ ==
+          SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE ||
+      site_connection_status_ ==
+          SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE ||
       site_identity_status_ == SITE_IDENTITY_STATUS_ERROR ||
       site_identity_status_ == SITE_IDENTITY_STATUS_CT_ERROR ||
       site_identity_status_ == SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN ||

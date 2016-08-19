@@ -141,6 +141,10 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
       last_chosen_object_info_.push_back(base::WrapUnique(chosen_object_info));
   }
 
+  void ResetMockUI() { mock_ui_.reset(new MockWebsiteSettingsUI()); }
+
+  void ClearWebsiteSettings() { website_settings_.reset(nullptr); }
+
   const GURL& url() const { return url_; }
   MockCertStore* cert_store() { return &cert_store_; }
   int cert_id() { return cert_id_; }
@@ -378,56 +382,155 @@ TEST_F(WebsiteSettingsTest, HTTPSConnection) {
   EXPECT_EQ(base::string16(), website_settings()->organization_name());
 }
 
-TEST_F(WebsiteSettingsTest, HTTPSPassiveMixedContent) {
-  security_info_.security_level = SecurityStateModel::NONE;
-  security_info_.scheme_is_cryptographic = true;
-  security_info_.cert_id = cert_id();
-  security_info_.cert_status = 0;
-  security_info_.security_bits = 81;  // No error if > 80.
-  security_info_.mixed_content_status =
-      SecurityStateModel::CONTENT_STATUS_DISPLAYED;
-  int status = 0;
-  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
-  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  security_info_.connection_status = status;
+TEST_F(WebsiteSettingsTest, InsecureContent) {
+  struct TestCase {
+    SecurityStateModel::SecurityLevel security_level;
+    net::CertStatus cert_status;
+    SecurityStateModel::ContentStatus mixed_content_status;
+    SecurityStateModel::ContentStatus content_with_cert_errors_status;
+    WebsiteSettings::SiteConnectionStatus expected_site_connection_status;
+    WebsiteSettings::SiteIdentityStatus expected_site_identity_status;
+    int expected_connection_icon_id;
+  };
 
-  SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
+  const TestCase kTestCases[] = {
+      // Passive mixed content.
+      {SecurityStateModel::NONE, 0,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+      // Passive mixed content with a cert error on the main resource.
+      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_WARNING_MINOR},
+      // Active and passive mixed content.
+      {SecurityStateModel::SECURITY_ERROR, 0,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
+      // Active and passive mixed content with a cert error on the main
+      // resource.
+      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_BAD},
+      // Active mixed content.
+      {SecurityStateModel::SECURITY_ERROR, 0,
+       SecurityStateModel::CONTENT_STATUS_RAN,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
+      // Active mixed content with a cert error on the main resource.
+      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+       SecurityStateModel::CONTENT_STATUS_RAN,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_BAD},
 
-  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT,
-            website_settings()->site_connection_status());
-  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
-            website_settings()->site_identity_status());
-  EXPECT_EQ(IDR_PAGEINFO_WARNING_MINOR,
-            WebsiteSettingsUI::GetConnectionIconID(
-                website_settings()->site_connection_status()));
-  EXPECT_EQ(base::string16(), website_settings()->organization_name());
-}
+      // Passive subresources with cert errors.
+      {SecurityStateModel::NONE, 0, SecurityStateModel::CONTENT_STATUS_NONE,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+      // Passive subresources with cert errors, with a cert error on the
+      // main resource also. In this case, the subresources with
+      // certificate errors are ignored: if the main resource had a cert
+      // error, it's not that useful to warn about subresources with cert
+      // errors as well.
+      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+       WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+       WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
+      // Passive and active subresources with cert errors.
+      {SecurityStateModel::SECURITY_ERROR, 0,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
+      // Passive and active subresources with cert errors, with a cert
+      // error on the main resource also.
+      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
+       WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+       WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
+      // Active subresources with cert errors.
+      {SecurityStateModel::SECURITY_ERROR, 0,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       SecurityStateModel::CONTENT_STATUS_RAN,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
+      // Active subresources with cert errors, with a cert error on the main
+      // resource also.
+      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+       SecurityStateModel::CONTENT_STATUS_NONE,
+       SecurityStateModel::CONTENT_STATUS_RAN,
+       WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
+       WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
 
-TEST_F(WebsiteSettingsTest, HTTPSActiveMixedContent) {
-  security_info_.security_level = SecurityStateModel::SECURITY_ERROR;
-  security_info_.scheme_is_cryptographic = true;
-  security_info_.cert_id = cert_id();
-  security_info_.cert_status = 0;
-  security_info_.security_bits = 81;  // No error if > 80.
-  security_info_.mixed_content_status =
-      SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN;
-  int status = 0;
-  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
-  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  security_info_.connection_status = status;
+      // Passive mixed content and subresources with cert errors.
+      {SecurityStateModel::NONE, 0,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
+      // Passive mixed content and active subresources with cert errors.
+      {SecurityStateModel::SECURITY_ERROR, 0,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+       SecurityStateModel::CONTENT_STATUS_RAN,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
+      // Active mixed content and passive subresources with cert errors.
+      {SecurityStateModel::SECURITY_ERROR, 0,
+       SecurityStateModel::CONTENT_STATUS_RAN,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
+      // Passive mixed content, active subresources with cert errors, and a cert
+      // error on the main resource.
+      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+       SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+       SecurityStateModel::CONTENT_STATUS_RAN,
+       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
+       WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_WARNING_MINOR},
+  };
 
-  SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
+  for (const auto& test : kTestCases) {
+    ResetMockUI();
+    ClearWebsiteSettings();
+    security_info_ = SecurityStateModel::SecurityInfo();
+    security_info_.security_level = test.security_level;
+    security_info_.scheme_is_cryptographic = true;
+    security_info_.cert_id = cert_id();
+    security_info_.cert_status = test.cert_status;
+    security_info_.security_bits = 81;  // No error if > 80.
+    security_info_.mixed_content_status = test.mixed_content_status;
+    security_info_.content_with_cert_errors_status =
+        test.content_with_cert_errors_status;
+    int status = 0;
+    status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
+    status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
+    security_info_.connection_status = status;
 
-  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_SCRIPT,
-            website_settings()->site_connection_status());
-  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
-            website_settings()->site_identity_status());
-  EXPECT_EQ(IDR_PAGEINFO_BAD,
-            WebsiteSettingsUI::GetConnectionIconID(
-                website_settings()->site_connection_status()));
-  EXPECT_EQ(base::string16(), website_settings()->organization_name());
+    SetDefaultUIExpectations(mock_ui());
+    EXPECT_CALL(*mock_ui(),
+                SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
+
+    EXPECT_EQ(test.expected_site_connection_status,
+              website_settings()->site_connection_status());
+    EXPECT_EQ(test.expected_site_identity_status,
+              website_settings()->site_identity_status());
+    EXPECT_EQ(test.expected_connection_icon_id,
+              WebsiteSettingsUI::GetConnectionIconID(
+                  website_settings()->site_connection_status()));
+    EXPECT_EQ(base::string16(), website_settings()->organization_name());
+  }
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
@@ -454,8 +557,9 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
-  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT,
-            website_settings()->site_connection_status());
+  EXPECT_EQ(
+      WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
+      website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT,
             website_settings()->site_identity_status());
   EXPECT_EQ(base::UTF8ToUTF16("Google Inc"),

@@ -151,12 +151,14 @@ base::string16 WebsiteSettingsUI::IdentityInfo::GetSecuritySummary() const {
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
       switch (connection_status) {
-        case WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT:
+        case WebsiteSettings::
+            SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
           return l10n_util::GetStringUTF16(
-              IDS_WEBSITE_SETTINGS_MIXED_PASSIVE_CONTENT);
-        case WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_SCRIPT:
+              IDS_WEBSITE_SETTINGS_INSECURE_PASSIVE_CONTENT);
+        case WebsiteSettings::
+            SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
           return l10n_util::GetStringUTF16(
-              IDS_WEBSITE_SETTINGS_MIXED_ACTIVE_CONTENT);
+              IDS_WEBSITE_SETTINGS_INSECURE_ACTIVE_CONTENT);
         default:
           return l10n_util::GetStringUTF16(
               IDS_WEBSITE_SETTINGS_SECURE_TRANSPORT);
@@ -350,13 +352,13 @@ int WebsiteSettingsUI::GetConnectionIconID(
     case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED:
       resource_id = IDR_PAGEINFO_GOOD;
       break;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT:
+    case WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
       resource_id = IDR_PAGEINFO_WARNING_MINOR;
       break;
     case WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED:
       resource_id = IDR_PAGEINFO_WARNING_MAJOR;
       break;
-    case WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_SCRIPT:
+    case WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
     case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED_ERROR:
       resource_id = IDR_PAGEINFO_BAD;
       break;

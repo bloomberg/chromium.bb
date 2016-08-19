@@ -36,10 +36,12 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   //
   // Status of a connection to a website.
   enum SiteConnectionStatus {
-    SITE_CONNECTION_STATUS_UNKNOWN = 0,      // No status available.
-    SITE_CONNECTION_STATUS_ENCRYPTED,        // Connection is encrypted.
-    SITE_CONNECTION_STATUS_MIXED_CONTENT,    // Non-secure passive content.
-    SITE_CONNECTION_STATUS_MIXED_SCRIPT,     // Non-secure active content.
+    SITE_CONNECTION_STATUS_UNKNOWN = 0,  // No status available.
+    SITE_CONNECTION_STATUS_ENCRYPTED,    // Connection is encrypted.
+    SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,  // Non-secure passive
+                                                          // content.
+    SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,   // Non-secure active
+                                                          // content.
     SITE_CONNECTION_STATUS_UNENCRYPTED,      // Connection is not encrypted.
     SITE_CONNECTION_STATUS_ENCRYPTED_ERROR,  // Connection error occurred.
     SITE_CONNECTION_STATUS_INTERNAL_PAGE,    // Internal site.

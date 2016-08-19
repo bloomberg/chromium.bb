@@ -374,10 +374,10 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_BROKEN_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if the website uses nominally secure transport that had authentication or other cryptpgraphic errors.">
         Your connection to this site is not private. Attackers might be trying to steal your information (for example, photos, passwords, messages and credit cards) from <ph name="DOMAIN">$1<ex>www.example.com</ex></ph>.
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_MIXED_ACTIVE_CONTENT" desc="Text that is displayed in the header of the Website Settings popup if the website uses secure transport but included script over non-secure transport.">
+      <message name="IDS_WEBSITE_SETTINGS_INSECURE_ACTIVE_CONTENT" desc="Text that is displayed in the header of the Website Settings popup if the website uses secure transport but included script over non-secure transport.">
         Your connection to this site is not private because the site loaded an insecure script.
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_MIXED_PASSIVE_CONTENT" desc="Text that is displayed in the header of the Website Settings popup if the website uses secure transport but included passive resources (e.g. images) over non-secure transport.">
+      <message name="IDS_WEBSITE_SETTINGS_INSECURE_PASSIVE_CONTENT" desc="Text that is displayed in the header of the Website Settings popup if the website uses secure transport but included passive resources (e.g. images) over non-secure transport.">
         Your connection to this site is private, but someone on the network might be able to change the look of the page.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA" desc="The label of the counts for allowed and blocked cookies and site data for the top-level origin (i.e. the origin in the Omnibox).">
