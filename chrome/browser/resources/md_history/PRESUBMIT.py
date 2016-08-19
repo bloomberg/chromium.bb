@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os.path
+import time
 
 def CheckChangeOnUpload(input_api, output_api):
   """Warn when changing md_history without vulcanizing."""
@@ -15,11 +17,15 @@ def CheckChangeOnUpload(input_api, output_api):
     return any([filename in path for path in paths])
 
   paths = [x.LocalPath() for x in input_api.change.AffectedFiles()]
-  vulcanize_changes = (_affects_file('md_history/app.vulcanized.html', paths) or
-                       _affects_file('md_history/app.crisper.js', paths))
+  earliest_vulcanize_change = min(os.path.getmtime(x) for x in
+                                  ['app.vulcanized.html', 'app.crisper.js'])
   history_changes = filter(_is_md_history_file, paths)
+  latest_history_change = 0
+  if history_changes:
+    latest_history_change = max(os.path.getmtime(os.path.split(x)[1]) for x in
+                                history_changes)
 
-  if history_changes and not vulcanize_changes:
+  if latest_history_change > earliest_vulcanize_change:
     return [output_api.PresubmitPromptWarning(
         'Vulcanize must be run when changing files in md_history. See '
         'docs/vulcanize.md.')]
