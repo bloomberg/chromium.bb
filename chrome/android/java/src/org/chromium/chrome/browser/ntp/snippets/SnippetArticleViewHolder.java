@@ -74,6 +74,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
     private final ImageView mThumbnailView;
+    private final OnCreateContextMenuListener mCreateContextMenuListener;
 
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
@@ -84,15 +85,25 @@ public class SnippetArticleViewHolder extends CardViewHolder
     private final UiConfig mUiConfig;
 
     /**
+     * Listener for when the context menu is created.
+     */
+    public interface OnCreateContextMenuListener {
+        /** Called when the context menu is created. */
+        void onCreateContextMenu();
+    }
+
+    /**
      * Constructs a SnippetCardItemView item used to display snippets
      *
      * @param parent The ViewGroup that is going to contain the newly created view.
      * @param manager The NTPManager object used to open an article
      * @param suggestionsSource The source used to retrieve the thumbnails.
      * @param uiConfig The NTP UI configuration object used to adjust the article UI.
+     * @param listener A Listener to be notified whenever a Context Menu is created.
      */
     public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager,
-            SuggestionsSource suggestionsSource, UiConfig uiConfig) {
+            SuggestionsSource suggestionsSource, UiConfig uiConfig,
+            OnCreateContextMenuListener listener) {
         super(R.layout.new_tab_page_snippets_card, parent, uiConfig);
 
         mNewTabPageManager = manager;
@@ -101,6 +112,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
         mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
         mArticleSnippetTextView = (TextView) itemView.findViewById(R.id.article_snippet);
+        mCreateContextMenuListener = listener;
 
         mPreDrawObserver = new ViewTreeObserver.OnPreDrawListener() {
             @Override
@@ -150,6 +162,8 @@ public class SnippetArticleViewHolder extends CardViewHolder
 
     @Override
     protected void createContextMenu(ContextMenu menu) {
+        mCreateContextMenuListener.onCreateContextMenu();
+
         RecordHistogram.recordSparseSlowlyHistogram(
                 "NewTabPage.Snippets.CardLongPressed", mArticle.mPosition);
         mArticle.recordAgeAndScore("NewTabPage.Snippets.CardLongPressed");

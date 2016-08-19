@@ -24,6 +24,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -235,6 +236,18 @@ public class NewTabPageView extends FrameLayout
          * @param mostVisitedItems The MostVisitedItem shown on the NTP. Used to record metrics.
          */
         void onLoadingComplete(MostVisitedItem[] mostVisitedItems);
+
+        /**
+         * Passes a {@link Callback} along to the activity to be called whenever a ContextMenu is
+         * closed.
+         */
+        void addContextMenuCloseCallback(Callback<Menu> callback);
+
+        /**
+         * Passes a {@link Callback} along to the activity to be removed from the list of Callbacks
+         * called whenever a ContextMenu is closed.
+         */
+        void removeContextMenuCloseCallback(Callback<Menu> callback);
     }
 
     /**

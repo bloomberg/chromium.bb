@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -63,7 +64,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     /** Maps suggestion categories to sections, with stable iteration ordering. */
     private final Map<Integer, SuggestionsSection> mSections = new TreeMap<>();
 
-    private class ItemTouchCallbacks extends ItemTouchHelper.Callback {
+    private class ItemTouchCallbacks extends ItemTouchHelper.Callback
+            implements SnippetArticleViewHolder.OnCreateContextMenuListener {
+        private boolean mContextMenuShowing;
+
         @Override
         public void onSwiped(ViewHolder viewHolder, int direction) {
             mRecyclerView.onItemDismissStarted(viewHolder.itemView);
@@ -94,7 +98,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             assert viewHolder instanceof NewTabPageViewHolder;
 
             int swipeFlags = 0;
-            if (((NewTabPageViewHolder) viewHolder).isDismissable()) {
+            if (((NewTabPageViewHolder) viewHolder).isDismissable() && !mContextMenuShowing) {
                 swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
             }
 
@@ -108,6 +112,19 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
             ((NewTabPageViewHolder) viewHolder).updateViewStateForDismiss(dX);
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+
+        @Override
+        public void onCreateContextMenu() {
+            mContextMenuShowing = true;
+
+            mNewTabPageManager.addContextMenuCloseCallback(new Callback<Menu>() {
+                @Override
+                public void onResult(Menu result) {
+                    mNewTabPageManager.removeContextMenuCloseCallback(this);
+                    mContextMenuShowing = false;
+                }
+            });
         }
     }
 
@@ -230,8 +247,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         }
 
         if (viewType == NewTabPageItem.VIEW_TYPE_SNIPPET) {
-            return new SnippetArticleViewHolder(
-                    mRecyclerView, mNewTabPageManager, mSuggestionsSource, mUiConfig);
+            return new SnippetArticleViewHolder(mRecyclerView, mNewTabPageManager,
+                    mSuggestionsSource, mUiConfig, mItemTouchCallbacks);
         }
 
         if (viewType == NewTabPageItem.VIEW_TYPE_SPACING) {

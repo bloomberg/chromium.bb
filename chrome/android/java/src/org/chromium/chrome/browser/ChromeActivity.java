@@ -39,7 +39,9 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseSwitches;
+import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -219,6 +221,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     // A set of views obscuring all tabs. When this set is nonempty,
     // all tab content will be hidden from the accessibility tree.
     private List<View> mViewsObscuringAllTabs = new ArrayList<>();
+
+    // Callbacks to be called when a context menu is closed.
+    private final ObserverList<Callback<Menu>> mContextMenuCloseObservers = new ObserverList<>();
 
     private static AppMenuHandlerFactory sAppMenuHandlerFactory = new AppMenuHandlerFactory() {
         @Override
@@ -1725,10 +1730,31 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * Adds a {@link Callback} that will be triggered whenever a ContextMenu is closed.
+     */
+    public void addContextMenuCloseCallback(Callback<Menu> callback) {
+        mContextMenuCloseObservers.addObserver(callback);
+    }
+
+    /**
+     * Removes a {@link Callback} from the list of callbacks that will be triggered when a
+     * ContextMenu is closed.
+     */
+    public void removeContextMenuCloseCallback(Callback<Menu> callback) {
+        mContextMenuCloseObservers.removeObserver(callback);
+    }
+
+    /**
      * @see Activity#onContextMenuClosed(Menu)
      */
     @Override
     public void onContextMenuClosed(Menu menu) {
+        for (Callback<Menu> callback : mContextMenuCloseObservers) {
+            callback.onResult(menu);
+        }
+
+        // TODO(peconn): See if we can make WebContents use the ObserverList.
+
         final Tab currentTab = getActivityTab();
         if (currentTab == null) return;
         WebContents webContents = currentTab.getWebContents();

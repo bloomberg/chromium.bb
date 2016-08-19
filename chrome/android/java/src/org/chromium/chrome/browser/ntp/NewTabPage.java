@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Point;
@@ -28,6 +27,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
@@ -107,7 +107,7 @@ public class NewTabPage
 
     private final Tab mTab;
     private final TabModelSelector mTabModelSelector;
-    private final Activity mActivity;
+    private final ChromeActivity mActivity;
 
     private final Profile mProfile;
     private final String mTitle;
@@ -550,6 +550,17 @@ public class NewTabPage
             }
             SyncSessionsMetrics.recordYoungestForeignTabAgeOnNTP();
         }
+
+        @Override
+        public void addContextMenuCloseCallback(Callback<Menu> callback) {
+            mActivity.addContextMenuCloseCallback(callback);
+
+        }
+
+        @Override
+        public void removeContextMenuCloseCallback(Callback<Menu> callback) {
+            mActivity.removeContextMenuCloseCallback(callback);
+        }
     };
 
     /**
@@ -558,7 +569,7 @@ public class NewTabPage
      * @param tab The Tab that is showing this new tab page.
      * @param tabModelSelector The TabModelSelector used to open tabs.
      */
-    public NewTabPage(Activity activity, Tab tab, TabModelSelector tabModelSelector) {
+    public NewTabPage(ChromeActivity activity, Tab tab, TabModelSelector tabModelSelector) {
         mConstructedTimeNs = System.nanoTime();
 
         mTab = tab;

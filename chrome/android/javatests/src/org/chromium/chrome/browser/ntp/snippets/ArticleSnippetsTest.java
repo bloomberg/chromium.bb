@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.graphics.BitmapFactory;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -281,6 +282,16 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
 
         @Override
         public void openUrlInNewTab(String url, boolean incognito) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void addContextMenuCloseCallback(Callback<Menu> callback) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void removeContextMenuCloseCallback(Callback<Menu> callback) {
             throw new UnsupportedOperationException();
         }
     }

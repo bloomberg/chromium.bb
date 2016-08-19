@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp;
 import android.app.Activity;
 import android.view.View;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NativePageFactory.NativePageType;
@@ -90,7 +91,7 @@ public class NativePageFactoryTest {
 
     private static class MockNativePageBuilder extends NativePageFactory.NativePageBuilder {
         @Override
-        public NativePage buildNewTabPage(Activity activity, Tab tab,
+        public NativePage buildNewTabPage(ChromeActivity activity, Tab tab,
                 TabModelSelector tabModelSelector) {
             return new MockNativePage(NativePageType.NTP);
         }
