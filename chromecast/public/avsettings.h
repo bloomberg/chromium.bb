@@ -228,7 +228,10 @@ class AvSettings {
   virtual bool GetScreenResolution(int* width, int* height) = 0;
 
   // Returns the current HDCP version multiplied by ten (so, for example, for
-  // HDCP 2.2 the return value is 22). Or 0 if HDCP is not supported.
+  // HDCP 2.2 the return value is 22). The return value should by 0 if HDCP is
+  // not supported. Or TV_PLATFORM_NO_HDCP for platforms like CastTV that
+  // support equivalent content protection without HDCP.
+  enum { TV_PLATFORM_NO_HDCP = 99 };
   virtual int GetHDCPVersion() = 0;
 
   // Supported Electro-Optical Transfer Function (EOTF) reported by the device.
