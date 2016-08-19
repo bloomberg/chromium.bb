@@ -135,42 +135,11 @@ function isClosedCaptionsButtonVisible(currentMediaElement)
     return false;
 }
 
-function testClosedCaptionsButtonVisibility(expected)
-{
-    try {
-        captionsButtonElement = mediaControlsButton(mediaElement, "toggle-closed-captions-button");
-        captionsButtonCoordinates = mediaControlsButtonCoordinates(mediaElement, "toggle-closed-captions-button");
-    } catch (exception) {
-        consoleWrite("Failed to find a closed captions button or its coordinates: " + exception);
-        if (expected)
-            failTest();
-        return;
-    }
-
-    consoleWrite("");
-    if (expected == true) {
-        consoleWrite("** Caption button should be visible and enabled.");
-        testExpected("captionsButtonCoordinates[0]", 0, ">");
-        testExpected("captionsButtonCoordinates[1]", 0, ">");
-        testExpected("captionsButtonElement.disabled", false);
-    } else {
-        consoleWrite("** Caption button should not be visible.");
-        testExpected("captionsButtonCoordinates[0]", 0, "<=");
-        testExpected("captionsButtonCoordinates[1]", 0, "<=");
-    }
-}
-
 function clickAtCoordinates(x, y)
 {
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
-}
-
-function clickCCButton()
-{
-    consoleWrite("*** Click the CC button.");
-    clickAtCoordinates(captionsButtonCoordinates[0], captionsButtonCoordinates[1]);
 }
 
 function textTrackListItemAtIndex(video, index)
@@ -186,14 +155,6 @@ function textTrackListItemAtIndex(video, index)
         if (trackListItem.firstChild.getAttribute("data-track-index") == index)
             return trackListItem;
     }
-}
-
-function selectTextTrack(video, index)
-{
-    clickCCButton();
-    var trackListItemElement = textTrackListItemAtIndex(video, index);
-    var trackListItemCoordinates = elementCoordinates(trackListItemElement);
-    clickAtCoordinates(trackListItemCoordinates[0], trackListItemCoordinates[1]);
 }
 
 function clickTextTrackAtIndex(video, index)
