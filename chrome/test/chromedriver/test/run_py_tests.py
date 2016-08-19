@@ -189,6 +189,8 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverPageLoadTimeoutTest.testPageLoadTimeoutCrossDomain',
         'ChromeDriverPageLoadTimeoutTest.'
             'testHistoryNavigationWithPageLoadTimeout',
+        # Webview shell doesn't support Alerts.
+        'ChromeDriverTest.testAlert',
     ]
 )
 
