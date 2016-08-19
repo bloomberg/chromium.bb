@@ -277,6 +277,16 @@ img {
 - Don't use data URIs in source files. Use grit instead.
     background: url( data:image/jpeg,4\/\/350|\/|3|2 );""")
 
+  def testCssNoMixinShims(self):
+    self.VerifyContentsProducesOutput("""
+:host {
+  --good-property: red;
+  --not-okay-mixin_-_not-okay-property: green;
+}""", """
+- Don't override custom properties created by Polymer's mixin shim. Set \
+mixins or documented custom properties directly.
+    --not-okay-mixin_-_not-okay-property: green;""")
+
   def testCssNoQuotesInUrl(self):
     self.VerifyContentsProducesOutput("""
 img {
