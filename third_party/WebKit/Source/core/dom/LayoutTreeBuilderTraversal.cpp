@@ -51,49 +51,61 @@ void ParentDetails::didTraverseInsertionPoint(const InsertionPoint* insertionPoi
     }
 }
 
+inline static void assertPseudoElementParent(const PseudoElement& pseudoElement)
+{
+    DCHECK(pseudoElement.parentNode());
+    DCHECK(pseudoElement.parentNode()->canParticipateInFlatTree());
+}
+
 ContainerNode* parent(const Node& node, ParentDetails* details)
 {
-    // TODO(hayato): Uncomment this once we can be sure LayoutTreeBuilderTraversal::parent() is used only for a node in a document.
+    // TODO(hayato): Uncomment this once we can be sure LayoutTreeBuilderTraversal::parent() is used only for a node which is connected.
     // DCHECK(node.isConnected());
+    if (node.isPseudoElement()) {
+        assertPseudoElementParent(toPseudoElement(node));
+        return node.parentNode();
+    }
     return FlatTreeTraversal::parent(node, details);
 }
 
 Node* nextSibling(const Node& node)
 {
     if (node.isBeforePseudoElement()) {
-        if (Node* next = FlatTreeTraversal::firstChild(*FlatTreeTraversal::parent(node)))
+        assertPseudoElementParent(toPseudoElement(node));
+        if (Node* next = FlatTreeTraversal::firstChild(*node.parentNode()))
             return next;
     } else {
+        if (node.isAfterPseudoElement())
+            return nullptr;
         if (Node* next = FlatTreeTraversal::nextSibling(node))
             return next;
-        if (node.isAfterPseudoElement())
-            return 0;
     }
 
     Node* parent = FlatTreeTraversal::parent(node);
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(PseudoIdAfter);
 
-    return 0;
+    return nullptr;
 }
 
 Node* previousSibling(const Node& node)
 {
     if (node.isAfterPseudoElement()) {
-        if (Node* previous = FlatTreeTraversal::lastChild(*FlatTreeTraversal::parent(node)))
+        assertPseudoElementParent(toPseudoElement(node));
+        if (Node* previous = FlatTreeTraversal::lastChild(*node.parentNode()))
             return previous;
     } else {
+        if (node.isBeforePseudoElement())
+            return nullptr;
         if (Node* previous = FlatTreeTraversal::previousSibling(node))
             return previous;
-        if (node.isBeforePseudoElement())
-            return 0;
     }
 
     Node* parent = FlatTreeTraversal::parent(node);
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(PseudoIdBefore);
 
-    return 0;
+    return nullptr;
 }
 
 static Node* lastChild(const Node& node)

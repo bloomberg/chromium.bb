@@ -968,6 +968,7 @@ bool Node::isStyledElement() const
 
 bool Node::canParticipateInFlatTree() const
 {
+    // TODO(hayato): Return false for pseudo elements.
     return !isShadowRoot() && !isSlotOrActiveInsertionPoint();
 }
 
@@ -2182,6 +2183,7 @@ StaticNodeList* Node::getDestinationInsertionPoints()
 
 HTMLSlotElement* Node::assignedSlot() const
 {
+    DCHECK(!isPseudoElement());
     if (ShadowRoot* root = v1ShadowRootOfParent())
         return root->ensureSlotAssignment().findSlot(*this);
     return nullptr;
