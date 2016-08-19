@@ -82,12 +82,13 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine& engine, Docum
 
 void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine, StyleResolverUpdateMode updateMode)
 {
-    StyleSheetCollection collection;
-    ActiveDocumentStyleSheetCollector collector(collection);
+    // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
+    StyleSheetCollection* collection = StyleSheetCollection::create();
+    ActiveDocumentStyleSheetCollector collector(*collection);
     collectStyleSheets(engine, collector);
 
     StyleSheetChange change;
-    analyzeStyleSheetChange(updateMode, collection, change);
+    analyzeStyleSheetChange(updateMode, collection->activeAuthorStyleSheets(), change);
 
     if (change.styleResolverUpdateType == Reconstruct) {
         engine.clearMasterResolver();
@@ -103,15 +104,16 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine, 
             styleResolver->resetAuthorStyle(treeScope());
             engine.removeFontFaceRules(change.fontFaceRulesToRemove);
             styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
-            styleResolver->lazyAppendAuthorStyleSheets(0, collection.activeAuthorStyleSheets());
+            styleResolver->lazyAppendAuthorStyleSheets(0, collection->activeAuthorStyleSheets());
         } else {
-            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection.activeAuthorStyleSheets());
+            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection->activeAuthorStyleSheets());
         }
     }
     if (change.requiresFullStyleRecalc)
         document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ActiveStylesheetsUpdate));
 
-    collection.swap(*this);
+    collection->swap(*this);
+    collection->dispose();
 }
 
 DEFINE_TRACE_WRAPPERS(DocumentStyleSheetCollection)

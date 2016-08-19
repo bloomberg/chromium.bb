@@ -34,6 +34,12 @@ StyleSheetCollection::StyleSheetCollection()
 {
 }
 
+void StyleSheetCollection::dispose()
+{
+    m_styleSheetsForStyleSheetList.clear();
+    m_activeAuthorStyleSheets.clear();
+}
+
 void StyleSheetCollection::swap(StyleSheetCollection& other)
 {
     m_styleSheetsForStyleSheetList.swap(other.m_styleSheetsForStyleSheetList);

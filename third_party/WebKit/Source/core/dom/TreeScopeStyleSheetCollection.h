@@ -80,7 +80,7 @@ protected:
             , requiresFullStyleRecalc(true) { }
     };
 
-    void analyzeStyleSheetChange(StyleResolverUpdateMode, const StyleSheetCollection&, StyleSheetChange&);
+    void analyzeStyleSheetChange(StyleResolverUpdateMode, const HeapVector<Member<CSSStyleSheet>>&, StyleSheetChange&);
 
 private:
     static StyleResolverUpdateType compareStyleSheets(const HeapVector<Member<CSSStyleSheet>>& oldStyleSheets, const HeapVector<Member<CSSStyleSheet>>& newStylesheets, HeapVector<Member<StyleSheetContents>>& addedSheets);

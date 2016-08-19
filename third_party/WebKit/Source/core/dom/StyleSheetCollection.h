@@ -44,7 +44,10 @@ public:
     friend class ActiveDocumentStyleSheetCollector;
     friend class ImportedDocumentStyleSheetCollector;
 
-    StyleSheetCollection();
+    static StyleSheetCollection* create()
+    {
+        return new StyleSheetCollection;
+    }
 
     const HeapVector<Member<CSSStyleSheet>>& activeAuthorStyleSheets() const { return m_activeAuthorStyleSheets; }
     const HeapVector<Member<StyleSheet>>& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
@@ -56,7 +59,11 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    void dispose();
+
 protected:
+    StyleSheetCollection();
+
     HeapVector<Member<StyleSheet>> m_styleSheetsForStyleSheetList;
     HeapVector<Member<CSSStyleSheet>> m_activeAuthorStyleSheets;
 };

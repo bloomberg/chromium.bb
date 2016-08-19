@@ -113,9 +113,9 @@ static bool findFontFaceRulesFromStyleSheetContents(const HeapVector<Member<Styl
     return hasFontFaceRule;
 }
 
-void TreeScopeStyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const StyleSheetCollection& newCollection, StyleSheetChange& change)
+void TreeScopeStyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const HeapVector<Member<CSSStyleSheet>>& newActiveAuthorStyleSheets, StyleSheetChange& change)
 {
-    if (activeLoadingStyleSheetLoaded(newCollection.activeAuthorStyleSheets()))
+    if (activeLoadingStyleSheetLoaded(newActiveAuthorStyleSheets))
         return;
 
     if (updateMode != AnalyzedStyleUpdate)
@@ -123,10 +123,10 @@ void TreeScopeStyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateM
 
     // Find out which stylesheets are new.
     HeapVector<Member<StyleSheetContents>> addedSheets;
-    if (m_activeAuthorStyleSheets.size() <= newCollection.activeAuthorStyleSheets().size()) {
-        change.styleResolverUpdateType = compareStyleSheets(m_activeAuthorStyleSheets, newCollection.activeAuthorStyleSheets(), addedSheets);
+    if (m_activeAuthorStyleSheets.size() <= newActiveAuthorStyleSheets.size()) {
+        change.styleResolverUpdateType = compareStyleSheets(m_activeAuthorStyleSheets, newActiveAuthorStyleSheets, addedSheets);
     } else {
-        StyleResolverUpdateType updateType = compareStyleSheets(newCollection.activeAuthorStyleSheets(), m_activeAuthorStyleSheets, addedSheets);
+        StyleResolverUpdateType updateType = compareStyleSheets(newActiveAuthorStyleSheets, m_activeAuthorStyleSheets, addedSheets);
         if (updateType != Additive) {
             change.styleResolverUpdateType = updateType;
         } else {
