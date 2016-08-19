@@ -1,7 +1,10 @@
 [
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\bootstrap\\win\\win_tools.bat"
+      "python",
+      "-u",
+      "RECIPE_PACKAGE_REPO[depot_tools]\\bootstrap\\win\\git_bootstrap.py",
+      "--verbose"
     ],
     "cwd": "RECIPE_PACKAGE_REPO[depot_tools]",
     "name": "ensure git tooling on windows",

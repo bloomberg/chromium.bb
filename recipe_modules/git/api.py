@@ -41,9 +41,10 @@ class GitApi(recipe_api.RecipeApi):
     """Ensures that depot_tools/git.bat actually exists."""
     if not self.m.platform.is_win or self.initialized_win_git:
       return
-    self.m.step(
+    self.m.python(
         'ensure git tooling on windows',
-        [self.package_repo_resource('bootstrap', 'win', 'win_tools.bat')],
+        self.package_repo_resource('bootstrap', 'win', 'git_bootstrap.py'),
+        ['--verbose'],
         infra_step=True,
         cwd=self.package_repo_resource(),
         timeout=300)
