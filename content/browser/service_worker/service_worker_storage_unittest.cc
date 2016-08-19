@@ -628,6 +628,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
                                     context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
+  live_version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_version->script_cache_map()->SetResources(resources);
   live_version->set_foreign_fetch_scopes(
@@ -933,6 +935,8 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
   records.push_back(ServiceWorkerDatabase::ResourceRecord(
       1, live_version->script_url(), 100));
   live_version->script_cache_map()->SetResources(records);
+  live_version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration->SetWaitingVersion(live_version);
   EXPECT_EQ(SERVICE_WORKER_OK,
@@ -1505,6 +1509,8 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   records.push_back(ServiceWorkerDatabase::ResourceRecord(
       10, live_version->script_url(), 100));
   live_version->script_cache_map()->SetResources(records);
+  live_version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
 
   // Writing the registration should move the old version's resources to the
   // purgeable list but keep them available.
@@ -1560,6 +1566,8 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   records1.push_back(ServiceWorkerDatabase::ResourceRecord(
       1, live_version1->script_url(), 100));
   live_version1->script_cache_map()->SetResources(records1);
+  live_version1->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version1->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration1->SetWaitingVersion(live_version1);
 
@@ -1577,6 +1585,8 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   records2.push_back(ServiceWorkerDatabase::ResourceRecord(
       2, live_version2->script_url(), 100));
   live_version2->script_cache_map()->SetResources(records2);
+  live_version2->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version2->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration2->SetWaitingVersion(live_version2);
 
@@ -1594,6 +1604,8 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   records3.push_back(ServiceWorkerDatabase::ResourceRecord(
       3, live_version3->script_url(), 100));
   live_version3->script_cache_map()->SetResources(records3);
+  live_version3->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version3->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration3->SetWaitingVersion(live_version3);
 
@@ -1655,6 +1667,8 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   records1.push_back(ServiceWorkerDatabase::ResourceRecord(
       1, live_version1->script_url(), 100));
   live_version1->script_cache_map()->SetResources(records1);
+  live_version1->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version1->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_version1->set_foreign_fetch_scopes(std::vector<GURL>(1, kScope1));
   live_registration1->SetWaitingVersion(live_version1);
@@ -1673,6 +1687,8 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   records2.push_back(ServiceWorkerDatabase::ResourceRecord(
       2, live_version2->script_url(), 100));
   live_version2->script_cache_map()->SetResources(records2);
+  live_version2->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version2->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_version2->set_foreign_fetch_scopes(std::vector<GURL>(1, kScope2));
   live_registration2->SetWaitingVersion(live_version2);
@@ -1691,6 +1707,8 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   records3.push_back(ServiceWorkerDatabase::ResourceRecord(
       3, live_version3->script_url(), 100));
   live_version3->script_cache_map()->SetResources(records3);
+  live_version3->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   live_version3->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration3->SetWaitingVersion(live_version3);
 

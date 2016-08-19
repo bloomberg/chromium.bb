@@ -171,8 +171,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
       SetBrowserClientForTesting(&test_browser_client);
 
   // Store an activated worker.
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  version_->set_has_fetch_handler(true);
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
@@ -200,8 +201,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
 
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Store a registration that is installed but not activated yet.
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
-  version_->set_has_fetch_handler(true);
   registration_->SetWaitingVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
@@ -235,7 +237,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   // Create an installing registration.
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
-  version_->set_has_fetch_handler(true);
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   registration_->SetInstallingVersion(version_);
   context()->storage()->NotifyInstallingRegistration(registration_.get());
 
@@ -260,8 +263,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   // Store a registration so the call to FindRegistrationForDocument will read
   // from the database.
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  version_->set_has_fetch_handler(true);
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
@@ -290,8 +294,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
 }
 
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  version_->set_has_fetch_handler(false);
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(), version_.get(),

@@ -62,6 +62,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
     base::RunLoop().RunUntilIdle();
 
+    version_->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     registration_->SetActiveVersion(version_);
     context()->storage()->StoreRegistration(

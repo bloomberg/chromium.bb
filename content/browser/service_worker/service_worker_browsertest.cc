@@ -497,16 +497,6 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_EQ(SERVICE_WORKER_OK, fetch_result.status);
   }
 
-  void FetchTestHelper(
-      const std::string& worker_url,
-      ServiceWorkerFetchEventResult* result,
-      ServiceWorkerResponse* response,
-      std::unique_ptr<storage::BlobDataHandle>* blob_data_handle) {
-    RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread,
-                             base::Unretained(this), worker_url));
-    FetchOnRegisteredWorker(result, response, blob_data_handle);
-  }
-
   void SetUpRegistrationOnIOThread(const std::string& worker_url) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const GURL pattern = embedded_test_server()->GetURL("/service_worker/");
@@ -559,6 +549,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
             registration_.get(), embedded_test_server()->GetURL(worker_url),
             wrapper()->context()->storage()->NewVersionId(),
             wrapper()->context()->AsWeakPtr()));
+    waiting_version->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     waiting_version->SetStatus(ServiceWorkerVersion::INSTALLED);
     registration_->SetWaitingVersion(waiting_version.get());
     registration_->ActivateWaitingVersionWhenReady();
@@ -680,7 +672,10 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                                      bool has_fetch_handler) {
     version_->FinishRequest(
         request_id, result == blink::WebServiceWorkerEventResultCompleted);
-    version_->set_has_fetch_handler(has_fetch_handler);
+    version_->set_fetch_handler_existence(
+        has_fetch_handler
+            ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
+            : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
 
     ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
     if (result == blink::WebServiceWorkerEventResultRejected)
@@ -705,6 +700,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void ActivateOnIOThread(const base::Closure& done,
                           ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    version_->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
     registration_->SetActiveVersion(version_.get());
     version_->RunAfterStartWorker(
@@ -828,6 +825,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, ReadResourceFailure) {
   RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread,
                            base::Unretained(this),
                            "/service_worker/worker.js"));
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
   // Add a non-existent resource to the version.
@@ -914,13 +913,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        InstallWithFetchHandler) {
   InstallTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
-  EXPECT_TRUE(version_->has_fetch_handler());
+  EXPECT_EQ(ServiceWorkerVersion::FetchHandlerExistence::EXISTS,
+            version_->fetch_handler_existence());
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        InstallWithoutFetchHandler) {
   InstallTestHelper("/service_worker/worker.js", SERVICE_WORKER_OK);
-  EXPECT_FALSE(version_->has_fetch_handler());
+  EXPECT_EQ(ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST,
+            version_->fetch_handler_existence());
 }
 
 // Check that ServiceWorker script requests set a "Service-Worker: script"
@@ -1070,8 +1071,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
-  FetchTestHelper("/service_worker/fetch_event.js",
-                  &result, &response, &blob_data_handle);
+  ActivateTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
+
+  FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
   EXPECT_EQ(301, response.status_code);
   EXPECT_EQ("Moved Permanently", response.status_text);
@@ -1094,10 +1096,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ServiceWorkerResponse response2;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   const base::Time start_time(base::Time::Now());
-
-  RunOnIOThread(
-      base::Bind(&self::SetUpRegistrationOnIOThread, base::Unretained(this),
-                 "/service_worker/fetch_event_response_via_cache.js"));
+  ActivateTestHelper("/service_worker/fetch_event_response_via_cache.js",
+                     SERVICE_WORKER_OK);
 
   FetchOnRegisteredWorker(&result, &response1, &blob_data_handle);
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
@@ -1121,10 +1121,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
-
-  RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread,
-                           base::Unretained(this),
-                           "/service_worker/fetch_event_rejected.js"));
+  ActivateTestHelper("/service_worker/fetch_event_rejected.js",
+                     SERVICE_WORKER_OK);
 
   ConsoleListener console_listener;
   RunOnIOThread(base::Bind(&EmbeddedWorkerInstance::AddListener,

@@ -305,6 +305,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       registration_id_(registration->id()),
       script_url_(script_url),
       scope_(registration->pattern()),
+      fetch_handler_existence_(FetchHandlerExistence::UNKNOWN),
       context_(context),
       script_cache_map_(this, context),
       ping_controller_(new PingController(this)),
@@ -348,6 +349,12 @@ void ServiceWorkerVersion::SetStatus(Status status) {
 
   TRACE_EVENT2("ServiceWorker", "ServiceWorkerVersion::SetStatus", "Script URL",
                script_url_.spec(), "New Status", VersionStatusToString(status));
+
+  // |fetch_handler_existence_| must be set before setting the status to
+  // INSTALLED,
+  // ACTIVATING or ACTIVATED.
+  DCHECK(fetch_handler_existence_ != FetchHandlerExistence::UNKNOWN ||
+         !(status == INSTALLED || status == ACTIVATING || status == ACTIVATED));
 
   status_ = status;
   if (skip_waiting_ && status_ == ACTIVATED) {

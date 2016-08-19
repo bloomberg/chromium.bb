@@ -223,6 +223,8 @@ class ServiceWorkerVersionTest : public testing::Test {
     records.push_back(
         ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
     version_->script_cache_map()->SetResources(records);
+    version_->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
 
     // Make the registration findable via storage functions.
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;

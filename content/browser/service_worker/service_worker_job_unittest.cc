@@ -657,6 +657,8 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(SERVICE_WORKER_OK, status);
 
+  version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version->SetStatus(ServiceWorkerVersion::INSTALLED);
   registration->SetWaitingVersion(version);
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
@@ -1593,13 +1595,15 @@ TEST_F(ServiceWorkerJobTest, HasFetchHandler) {
   helper->set_has_fetch_handler(true);
   RunRegisterJob(pattern, script);
   registration = FindRegistrationForPattern(pattern);
-  EXPECT_TRUE(registration->active_version()->has_fetch_handler());
+  EXPECT_EQ(ServiceWorkerVersion::FetchHandlerExistence::EXISTS,
+            registration->active_version()->fetch_handler_existence());
   RunUnregisterJob(pattern);
 
   helper->set_has_fetch_handler(false);
   RunRegisterJob(pattern, script);
   registration = FindRegistrationForPattern(pattern);
-  EXPECT_FALSE(registration->active_version()->has_fetch_handler());
+  EXPECT_EQ(ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST,
+            registration->active_version()->fetch_handler_existence());
   RunUnregisterJob(pattern);
 }
 

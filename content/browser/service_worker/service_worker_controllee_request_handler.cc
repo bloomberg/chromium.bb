@@ -33,7 +33,10 @@ bool MaybeForwardToServiceWorker(ServiceWorkerURLRequestJob* job,
                                  const ServiceWorkerVersion* version) {
   DCHECK(job);
   DCHECK(version);
-  if (version->has_fetch_handler()) {
+  DCHECK_NE(version->fetch_handler_existence(),
+            ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
+  if (version->fetch_handler_existence() ==
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
     job->ForwardToServiceWorker();
     return true;
   }
@@ -280,8 +283,13 @@ void ServiceWorkerControlleeRequestHandler::
     return;
   }
 
+  DCHECK_NE(active_version->fetch_handler_existence(),
+            ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
+
   ServiceWorkerMetrics::CountControlledPageLoad(
-      stripped_url_, active_version->has_fetch_handler(), is_main_frame_load_);
+      stripped_url_, active_version->fetch_handler_existence() ==
+                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS,
+      is_main_frame_load_);
 
   bool is_forwarded =
       MaybeForwardToServiceWorker(job_.get(), active_version.get());
@@ -310,8 +318,12 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
     return;
   }
 
+  DCHECK_NE(version->fetch_handler_existence(),
+            ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
   ServiceWorkerMetrics::CountControlledPageLoad(
-      stripped_url_, version->has_fetch_handler(), is_main_frame_load_);
+      stripped_url_, version->fetch_handler_existence() ==
+                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS,
+      is_main_frame_load_);
 
   provider_host_->AssociateRegistration(registration,
                                         false /* notify_controllerchange */);

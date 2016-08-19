@@ -394,11 +394,15 @@ void ServiceWorkerStorage::StoreRegistration(
     return;
   }
 
+  DCHECK_NE(version->fetch_handler_existence(),
+            ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
+
   ServiceWorkerDatabase::RegistrationData data;
   data.registration_id = registration->id();
   data.scope = registration->pattern();
   data.script = version->script_url();
-  data.has_fetch_handler = version->has_fetch_handler();
+  data.has_fetch_handler = version->fetch_handler_existence() ==
+                           ServiceWorkerVersion::FetchHandlerExistence::EXISTS;
   data.version_id = version->version_id();
   data.last_update_check = registration->last_update_check();
   data.is_active = (version == registration->active_version());
@@ -1243,12 +1247,15 @@ ServiceWorkerStorage::GetOrCreateRegistration(
   if (!version) {
     version = new ServiceWorkerVersion(
         registration.get(), data.script, data.version_id, context_);
+    version->set_fetch_handler_existence(
+        data.has_fetch_handler
+            ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
+            : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
     version->SetStatus(data.is_active ?
         ServiceWorkerVersion::ACTIVATED : ServiceWorkerVersion::INSTALLED);
     version->script_cache_map()->SetResources(resources);
     version->set_foreign_fetch_scopes(data.foreign_fetch_scopes);
     version->set_foreign_fetch_origins(data.foreign_fetch_origins);
-    version->set_has_fetch_handler(data.has_fetch_handler);
   }
 
   if (version->status() == ServiceWorkerVersion::ACTIVATED)

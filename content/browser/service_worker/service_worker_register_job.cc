@@ -469,7 +469,10 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
 
   SetPhase(STORE);
   DCHECK(!registration()->last_update_check().is_null());
-  new_version()->set_has_fetch_handler(has_fetch_handler);
+  new_version()->set_fetch_handler_existence(
+      has_fetch_handler
+          ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
+          : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
   context_->storage()->StoreRegistration(
       registration(),
       new_version(),

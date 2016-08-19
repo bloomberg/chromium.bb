@@ -199,6 +199,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     scoped_refptr<ServiceWorkerVersion> version_1 = new ServiceWorkerVersion(
         registration_.get(), kScript, storage()->NewVersionId(),
         context()->AsWeakPtr());
+    version_1->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     registration_->SetActiveVersion(version_1);
     version_1->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
@@ -230,6 +232,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     scoped_refptr<ServiceWorkerVersion> version_2 = new ServiceWorkerVersion(
         registration_.get(), kScript, storage()->NewVersionId(),
         context()->AsWeakPtr());
+    version_2->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     registration_->SetWaitingVersion(version_2);
     version_2->SetStatus(ServiceWorkerVersion::INSTALLED);
 

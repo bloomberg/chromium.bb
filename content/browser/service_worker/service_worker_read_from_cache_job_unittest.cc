@@ -97,6 +97,8 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     resources.push_back(main_script_);
     resources.push_back(imported_script_);
     version_->script_cache_map()->SetResources(resources);
+    version_->set_fetch_handler_existence(
+        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     ASSERT_EQ(SERVICE_WORKER_OK, StoreRegistration());
     ASSERT_TRUE(WriteResource(main_script_.resource_id));
     ASSERT_TRUE(WriteResource(imported_script_.resource_id));

@@ -90,6 +90,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
                          // timed out.
   };
 
+  // Whether the version has fetch handlers or not.
+  enum class FetchHandlerExistence {
+    UNKNOWN,  // This version is a new version and not installed yet.
+    EXISTS,
+    DOES_NOT_EXIST,
+  };
+
   class Listener {
    public:
     virtual void OnRunningStateChanged(ServiceWorkerVersion* version) {}
@@ -134,9 +141,17 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
   ServiceWorkerVersionInfo GetInfo();
   Status status() const { return status_; }
-  bool has_fetch_handler() const { return has_fetch_handler_; }
-  void set_has_fetch_handler(bool has_fetch_handler) {
-    has_fetch_handler_ = has_fetch_handler;
+
+  // This status is set to EXISTS or DOES_NOT_EXIST when the install event has
+  // been executed in a new version or when an installed version is loaded from
+  // the storage. When a new version is not installed yet, it is  UNKNOW.
+  FetchHandlerExistence fetch_handler_existence() const {
+    return fetch_handler_existence_;
+  }
+  void set_fetch_handler_existence(FetchHandlerExistence existence) {
+    DCHECK_EQ(fetch_handler_existence_, FetchHandlerExistence::UNKNOWN);
+    DCHECK_NE(existence, FetchHandlerExistence::UNKNOWN);
+    fetch_handler_existence_ = existence;
   }
 
   const std::vector<GURL>& foreign_fetch_scopes() const {
@@ -663,7 +678,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const GURL scope_;
   std::vector<GURL> foreign_fetch_scopes_;
   std::vector<url::Origin> foreign_fetch_origins_;
-  bool has_fetch_handler_ = true;
+  FetchHandlerExistence fetch_handler_existence_;
 
   Status status_ = NEW;
   std::unique_ptr<EmbeddedWorkerInstance> embedded_worker_;
