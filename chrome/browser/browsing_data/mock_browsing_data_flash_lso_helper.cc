@@ -19,11 +19,13 @@ void MockBrowsingDataFlashLSOHelper::StartFetching(
 }
 
 void MockBrowsingDataFlashLSOHelper::DeleteFlashLSOsForSite(
-    const std::string& site) {
+    const std::string& site, const base::Closure& callback) {
   std::vector<std::string>::iterator entry =
       std::find(domains_.begin(), domains_.end(), site);
   ASSERT_TRUE(entry != domains_.end());
   domains_.erase(entry);
+  if (!callback.is_null())
+    callback.Run();
 }
 
 void MockBrowsingDataFlashLSOHelper::AddFlashLSODomain(

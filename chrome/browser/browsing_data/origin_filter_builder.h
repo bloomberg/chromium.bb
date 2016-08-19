@@ -18,11 +18,11 @@
 // A class that constructs URL deletion filters (represented as GURL->bool
 // predicates) that match certain origins.
 //
-// IMPORTANT NOTE: While this class does define cookie and channel IDs filtering
-// methods, as required by the BrowsingDataFilterBuilder interface, it is not
-// suitable for deletion of those data types, as they are scoped to eTLD+1.
-// Instead, use RegistrableDomainFilterBuilder and see its documenation for
-// more details.
+// IMPORTANT NOTE: While this class does define cookie, channel ID, and plugin
+// filtering methods, as required by the BrowsingDataFilterBuilder interface,
+// it is not suitable for deletion of those data types, as they are scoped
+// to eTLD+1. Instead, use RegistrableDomainFilterBuilder and see its
+// documenation for more details.
 class OriginFilterBuilder : public BrowsingDataFilterBuilder {
  public:
   // Constructs a filter with the given |mode| - whitelist or blacklist.
@@ -58,6 +58,12 @@ class OriginFilterBuilder : public BrowsingDataFilterBuilder {
   // such as RegistrableDomainFilterBuilder.
   base::Callback<bool(const std::string& channel_id_server_id)>
       BuildChannelIDFilter() const override;
+
+  // Plugin site filter is not implemented in this subclass. Please use
+  // a BrowsingDataFilterBuilder with different scoping,
+  // such as RegistrableDomainFilterBuilder.
+  base::Callback<bool(const std::string& site)>
+      BuildPluginFilter() const override;
 
   bool operator==(const OriginFilterBuilder& other) const;
 

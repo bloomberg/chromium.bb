@@ -40,11 +40,13 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #endif
 
+class BrowsingDataFilterBuilder;
+class BrowsingDataFlashLSOHelper;
 class BrowsingDataRemoverFactory;
 class HostContentSettingsMap;
 class IOThread;
-class BrowsingDataFilterBuilder;
 class Profile;
+class WebappRegistry;
 
 namespace chrome_browser_net {
 class Predictor;
@@ -59,10 +61,6 @@ class StoragePartition;
 namespace net {
 class URLRequestContextGetter;
 }
-
-#if BUILDFLAG(ANDROID_JAVA_UI)
-class WebappRegistry;
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowsingDataRemover is responsible for removing data related to browsing:
@@ -301,6 +299,11 @@ class BrowsingDataRemover : public KeyedService
       std::unique_ptr<WebappRegistry> webapp_registry);
 #endif
 
+#if defined(ENABLE_PLUGINS)
+  void OverrideFlashLSOHelperForTesting(
+      scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper);
+#endif
+
   // Parameters of the last call are exposed to be used by tests. Removal and
   // origin type masks equal to -1 mean that no removal has ever been executed.
   // TODO(msramek): If other consumers than tests are interested in this,
@@ -384,6 +387,14 @@ class BrowsingDataRemover : public KeyedService
 #if defined(ENABLE_PLUGINS)
   // Called when plugin data has been cleared. Invokes NotifyIfDone.
   void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
+
+  // Called when the list of |sites| storing Flash LSO cookies is fetched.
+  void OnSitesWithFlashDataFetched(
+      base::Callback<bool(const std::string&)> plugin_filter,
+      const std::vector<std::string>& sites);
+
+  // Indicates that LSO cookies for one website have been deleted.
+  void OnFlashDataDeleted();
 
   // PepperFlashSettingsManager::Client implementation.
   void OnDeauthorizeFlashContentLicensesCompleted(uint32_t request_id,
@@ -509,6 +520,12 @@ class BrowsingDataRemover : public KeyedService
   // End time to delete to.
   base::Time delete_end_;
 
+  // The removal mask for the current removal operation.
+  int remove_mask_ = 0;
+
+  // From which types of origins should we remove data?
+  int origin_type_mask_ = 0;
+
   // True if Remove has been invoked.
   bool is_removing_;
 
@@ -525,6 +542,9 @@ class BrowsingDataRemover : public KeyedService
   std::unique_ptr<content::PluginDataRemover> plugin_data_remover_;
   base::WaitableEventWatcher watcher_;
 
+  // Used for per-site plugin data deletion.
+  scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
+
   // Used to deauthorize content licenses for Pepper Flash.
   std::unique_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
 #endif
@@ -539,6 +559,9 @@ class BrowsingDataRemover : public KeyedService
   bool waiting_for_clear_flash_content_licenses_ = false;
   // Non-zero if waiting for cookies to be cleared.
   int waiting_for_clear_cookies_count_ = 0;
+  // Counts the number of plugin data tasks. Should be the number of LSO cookies
+  // to be deleted, or 1 while we're fetching LSO cookies or deleting in bulk.
+  int waiting_for_clear_plugin_data_count_ = 0;
   bool waiting_for_clear_domain_reliability_monitor_ = false;
   bool waiting_for_clear_form_ = false;
   bool waiting_for_clear_history_ = false;
@@ -550,7 +573,6 @@ class BrowsingDataRemover : public KeyedService
   bool waiting_for_clear_passwords_ = false;
   bool waiting_for_clear_passwords_stats_ = false;
   bool waiting_for_clear_platform_keys_ = false;
-  bool waiting_for_clear_plugin_data_ = false;
   bool waiting_for_clear_pnacl_cache_ = false;
 #if BUILDFLAG(ANDROID_JAVA_UI)
   bool waiting_for_clear_precache_history_ = false;
@@ -563,12 +585,6 @@ class BrowsingDataRemover : public KeyedService
   bool waiting_for_clear_webrtc_logs_ = false;
 #endif
   bool waiting_for_clear_auto_sign_in_ = false;
-
-  // The removal mask for the current removal operation.
-  int remove_mask_ = 0;
-
-  // From which types of origins should we remove data?
-  int origin_type_mask_ = 0;
 
   // Observers of the global state and individual tasks.
   base::ObserverList<Observer, true> observer_list_;

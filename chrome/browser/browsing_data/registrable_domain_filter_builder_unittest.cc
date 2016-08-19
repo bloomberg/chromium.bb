@@ -497,3 +497,71 @@ TEST(RegistrableDomainFilterBuilderTest, MatchesChannelIDsBlacklist) {
   for (TestCase test_case : test_cases)
     RunTestCase(test_case, filter);
 }
+
+TEST(RegistrableDomainFilterBuilderTest, MatchesPluginSitesWhitelist) {
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
+  builder.AddRegisterableDomain(std::string(kGoogleDomain));
+  builder.AddRegisterableDomain(std::string(kLongETLDDomain));
+  builder.AddRegisterableDomain(std::string(kIPAddress));
+  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
+  builder.AddRegisterableDomain(std::string(kInternalHostname));
+  base::Callback<bool(const std::string&)> filter =
+      builder.BuildPluginFilter();
+
+  TestCase test_cases[] = {
+      // Plugin sites can be domains, ...
+      {"google.com", true},
+      {"www.google.com", true},
+      {"website.sp.nom.br", true},
+      {"www.website.sp.nom.br", true},
+      {"second-level-domain.fileserver", true},
+      {"foo.bar.second-level-domain.fileserver", true},
+
+      // ... IP addresses, or internal hostnames.
+      {"192.168.1.1", true},
+      {"fileserver", true},
+
+      // Sites not in the whitelist are not matched.
+      {"example.com", false},
+      {"192.168.1.2", false},
+      {"website.fileserver", false},
+  };
+
+  for (TestCase test_case : test_cases)
+    RunTestCase(test_case, filter);
+}
+
+TEST(RegistrableDomainFilterBuilderTest, MatchesPluginSitesBlacklist) {
+  RegistrableDomainFilterBuilder builder(
+      RegistrableDomainFilterBuilder::BLACKLIST);
+  builder.AddRegisterableDomain(std::string(kGoogleDomain));
+  builder.AddRegisterableDomain(std::string(kLongETLDDomain));
+  builder.AddRegisterableDomain(std::string(kIPAddress));
+  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
+  builder.AddRegisterableDomain(std::string(kInternalHostname));
+  base::Callback<bool(const std::string&)> filter =
+      builder.BuildPluginFilter();
+
+  TestCase test_cases[] = {
+      // Plugin sites can be domains, ...
+      {"google.com", false},
+      {"www.google.com", false},
+      {"website.sp.nom.br", false},
+      {"www.website.sp.nom.br", false},
+      {"second-level-domain.fileserver", false},
+      {"foo.bar.second-level-domain.fileserver", false},
+
+      // ... IP addresses, or internal hostnames.
+      {"192.168.1.1", false},
+      {"fileserver", false},
+
+      // Sites not in the blacklist are matched.
+      {"example.com", true},
+      {"192.168.1.2", true},
+      {"website.fileserver", true},
+  };
+
+  for (TestCase test_case : test_cases)
+    RunTestCase(test_case, filter);
+}

@@ -107,6 +107,16 @@ RegistrableDomainFilterBuilder::BuildChannelIDFilter() const {
       base::Owned(domains_and_ips), mode());
 }
 
+base::Callback<bool(const std::string& site)>
+RegistrableDomainFilterBuilder::BuildPluginFilter() const {
+  std::set<std::string>* domains_and_ips =
+      new std::set<std::string>(domain_list_);
+  return base::Bind(
+      &RegistrableDomainFilterBuilder
+          ::MatchesPluginSiteForRegisterableDomainsAndIPs,
+      base::Owned(domains_and_ips), mode());
+}
+
 bool RegistrableDomainFilterBuilder::operator==(
     const RegistrableDomainFilterBuilder& other) const {
   return domain_list_ == other.domain_list_ && mode() == other.mode();
@@ -170,5 +180,21 @@ RegistrableDomainFilterBuilder::MatchesChannelIDForRegisterableDomainsAndIPs(
     Mode mode,
     const std::string& channel_id_server_id) {
   return ((mode == WHITELIST) == (domains_and_ips->find(channel_id_server_id) !=
+                                  domains_and_ips->end()));
+}
+
+// static
+bool
+RegistrableDomainFilterBuilder::MatchesPluginSiteForRegisterableDomainsAndIPs(
+    std::set<std::string>* domains_and_ips,
+    Mode mode,
+    const std::string& site) {
+  // If |site| is a third- or lower-level domain, find the corresponding eTLD+1.
+  std::string domain_or_ip =
+      GetDomainAndRegistry(site, INCLUDE_PRIVATE_REGISTRIES);
+  if (domain_or_ip.empty())
+    domain_or_ip = site;
+
+  return ((mode == WHITELIST) == (domains_and_ips->find(domain_or_ip) !=
                                   domains_and_ips->end()));
 }

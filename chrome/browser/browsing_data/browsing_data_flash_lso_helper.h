@@ -27,7 +27,8 @@ class BrowsingDataFlashLSOHelper
       content::BrowserContext* browser_context);
 
   virtual void StartFetching(const GetSitesWithFlashDataCallback& callback) = 0;
-  virtual void DeleteFlashLSOsForSite(const std::string& site) = 0;
+  virtual void DeleteFlashLSOsForSite(const std::string& site,
+                                      const base::Closure& callback) = 0;
 
  protected:
   friend class base::RefCounted<BrowsingDataFlashLSOHelper>;

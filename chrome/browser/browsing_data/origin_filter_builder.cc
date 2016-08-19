@@ -11,14 +11,6 @@
 
 using Relation = ContentSettingsPattern::Relation;
 
-namespace {
-
-template<typename T> bool DontDeleteAnythingFilter(const T& data) {
-  return false;
-}
-
-}  // namespace
-
 OriginFilterBuilder::OriginFilterBuilder(Mode mode)
     : BrowsingDataFilterBuilder(mode) {
 }
@@ -73,7 +65,7 @@ OriginFilterBuilder::BuildCookieFilter() const {
   NOTREACHED() <<
       "Origin-based deletion is not suitable for cookies. Please use "
       "different scoping, such as RegistrableDomainFilterBuilder.";
-  return base::Bind(DontDeleteAnythingFilter<net::CanonicalCookie>);
+  return base::Callback<bool(const net::CanonicalCookie&)>();
 }
 
 base::Callback<bool(const std::string& channel_id_server_id)>
@@ -81,7 +73,15 @@ OriginFilterBuilder::BuildChannelIDFilter() const {
   NOTREACHED() <<
       "Origin-based deletion is not suitable for channel IDs. Please use "
       "different scoping, such as RegistrableDomainFilterBuilder.";
-  return base::Bind(DontDeleteAnythingFilter<std::string>);
+  return base::Callback<bool(const std::string&)>();
+}
+
+base::Callback<bool(const std::string& site)>
+OriginFilterBuilder::BuildPluginFilter() const {
+  NOTREACHED() <<
+      "Origin-based deletion is not suitable for plugins. Please use "
+      "different scoping, such as RegistrableDomainFilterBuilder.";
+  return base::Callback<bool(const std::string&)>();
 }
 
 bool OriginFilterBuilder::operator==(const OriginFilterBuilder& other) const {

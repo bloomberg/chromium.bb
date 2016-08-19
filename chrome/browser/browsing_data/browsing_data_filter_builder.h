@@ -67,6 +67,10 @@ class BrowsingDataFilterBuilder {
   virtual base::Callback<bool(const std::string& server_id)>
       BuildChannelIDFilter() const = 0;
 
+  // Builds a filter that matches the |site| of a plugin.
+  virtual base::Callback<bool(const std::string& site)>
+      BuildPluginFilter() const = 0;
+
   // A convenience method to produce an empty blacklist, a filter that matches
   // everything.
   static base::Callback<bool(const GURL&)> BuildNoopFilter();

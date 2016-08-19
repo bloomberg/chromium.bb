@@ -918,7 +918,8 @@ void CookieTreeFlashLSONode::DeleteStoredObjects() {
   CHECK_EQ(host->GetDetailedInfo().node_type,
            CookieTreeNode::DetailedInfo::TYPE_HOST);
   LocalDataContainer* container = GetModel()->data_container();
-  container->flash_lso_helper_->DeleteFlashLSOsForSite(domain_);
+  container->flash_lso_helper_->DeleteFlashLSOsForSite(
+      domain_, base::Closure());
 }
 
 CookieTreeNode::DetailedInfo CookieTreeFlashLSONode::GetDetailedInfo() const {

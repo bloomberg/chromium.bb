@@ -109,6 +109,10 @@
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #endif
 
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/browsing_data/mock_browsing_data_flash_lso_helper.h"
+#endif
+
 class MockExtensionSpecialStoragePolicy;
 
 using content::BrowserThread;
@@ -1054,6 +1058,59 @@ class RemovePermissionPromptCountsTest {
 
   DISALLOW_COPY_AND_ASSIGN(RemovePermissionPromptCountsTest);
 };
+
+#if defined(ENABLE_PLUGINS)
+// A small modification to MockBrowsingDataFlashLSOHelper so that it responds
+// immediately and does not wait for the Notify() call. Otherwise it would
+// deadlock BrowsingDataRemover::RemoveImpl.
+class TestBrowsingDataFlashLSOHelper : public MockBrowsingDataFlashLSOHelper {
+ public:
+  explicit TestBrowsingDataFlashLSOHelper(TestingProfile* profile)
+      : MockBrowsingDataFlashLSOHelper(profile) {}
+
+  void StartFetching(const GetSitesWithFlashDataCallback& callback) override {
+    MockBrowsingDataFlashLSOHelper::StartFetching(callback);
+    Notify();
+  }
+
+ private:
+  ~TestBrowsingDataFlashLSOHelper() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(TestBrowsingDataFlashLSOHelper);
+};
+
+class RemovePluginDataTester {
+ public:
+  explicit RemovePluginDataTester(TestingProfile* profile)
+      : helper_(new TestBrowsingDataFlashLSOHelper(profile)) {
+    BrowsingDataRemoverFactory::GetForBrowserContext(profile)
+        ->OverrideFlashLSOHelperForTesting(helper_);
+  }
+
+  void AddDomain(const std::string& domain) {
+    helper_->AddFlashLSODomain(domain);
+  }
+
+  const std::vector<std::string>& GetDomains() {
+    // TestBrowsingDataFlashLSOHelper is synchronous, so we can immediately
+    // return the fetched domains.
+    helper_->StartFetching(
+        base::Bind(&RemovePluginDataTester::OnSitesWithFlashDataFetched,
+                   base::Unretained(this)));
+    return domains_;
+  }
+
+ private:
+  void OnSitesWithFlashDataFetched(const std::vector<std::string>& sites) {
+    domains_ = sites;
+  }
+
+  std::vector<std::string> domains_;
+  scoped_refptr<TestBrowsingDataFlashLSOHelper> helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemovePluginDataTester);
+};
+#endif
 
 // Test Class ----------------------------------------------------------------
 
@@ -2738,6 +2795,35 @@ TEST_F(BrowsingDataRemoverTest, ClearPermissionPromptCounts) {
                      kOrigin2, content::PermissionType::NOTIFICATIONS));
   }
 }
+
+#if defined(ENABLE_PLUGINS)
+TEST_F(BrowsingDataRemoverTest, RemovePluginData) {
+  RemovePluginDataTester tester(GetProfile());
+
+  tester.AddDomain(kOrigin1.host());
+  tester.AddDomain(kOrigin2.host());
+  tester.AddDomain(kOrigin3.host());
+
+  std::vector<std::string> expected = {
+      kOrigin1.host(), kOrigin2.host(), kOrigin3.host() };
+  EXPECT_EQ(expected, tester.GetDomains());
+
+  // Delete data with a filter for the registrable domain of |kOrigin3|.
+  RegistrableDomainFilterBuilder filter_builder(
+      RegistrableDomainFilterBuilder::WHITELIST);
+  filter_builder.AddRegisterableDomain(kTestRegisterableDomain3);
+  BlockUntilOriginDataRemoved(browsing_data::ALL_TIME,
+                              BrowsingDataRemover::REMOVE_PLUGIN_DATA,
+                              filter_builder);
+
+  // Plugin data for |kOrigin3.host()| should have been removed.
+  expected.pop_back();
+  EXPECT_EQ(expected, tester.GetDomains());
+
+  // TODO(msramek): Mock PluginDataRemover and test the complete deletion
+  // of plugin data as well.
+}
+#endif
 
 class MultipleTasksObserver {
  public:

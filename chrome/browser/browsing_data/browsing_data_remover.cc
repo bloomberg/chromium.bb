@@ -90,6 +90,20 @@
 #include "components/precache/content/precache_manager.h"
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "extensions/browser/extension_prefs.h"
+#endif
+
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
+#endif
+
+#if defined(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/attestation/attestation_constants.h"
@@ -97,16 +111,6 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
-#endif
-
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/activity_log/activity_log.h"
-#include "extensions/browser/extension_prefs.h"
-#endif
-
-#if defined(ENABLE_SESSION_SERVICE)
-#include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sessions/session_service_factory.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -289,9 +293,12 @@ BrowsingDataRemover::TimeRange BrowsingDataRemover::Period(
 BrowsingDataRemover::BrowsingDataRemover(
     content::BrowserContext* browser_context)
     : profile_(Profile::FromBrowserContext(browser_context)),
-      is_removing_(false),
       remove_mask_(-1),
       origin_type_mask_(-1),
+      is_removing_(false),
+#if defined(ENABLE_PLUGINS)
+      flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(profile_)),
+#endif
 #if BUILDFLAG(ANDROID_JAVA_UI)
       webapp_registry_(new WebappRegistry()),
 #endif
@@ -785,17 +792,26 @@ void BrowsingDataRemover::RemoveImpl(
   if (remove_mask & REMOVE_PLUGIN_DATA &&
       origin_type_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
+    waiting_for_clear_plugin_data_count_ = 1;
 
-    waiting_for_clear_plugin_data_ = true;
-    DCHECK(!plugin_data_remover_);
-    plugin_data_remover_.reset(content::PluginDataRemover::Create(profile_));
-    base::WaitableEvent* event =
-        plugin_data_remover_->StartRemoving(delete_begin_);
+    if (filter_builder.IsEmptyBlacklist()) {
+      DCHECK(!plugin_data_remover_);
+      plugin_data_remover_.reset(content::PluginDataRemover::Create(profile_));
+      base::WaitableEvent* event =
+          plugin_data_remover_->StartRemoving(delete_begin_);
 
-    base::WaitableEventWatcher::EventCallback watcher_callback =
-        base::Bind(&BrowsingDataRemover::OnWaitableEventSignaled,
-                   weak_ptr_factory_.GetWeakPtr());
-    watcher_.StartWatching(event, watcher_callback);
+      base::WaitableEventWatcher::EventCallback watcher_callback =
+          base::Bind(&BrowsingDataRemover::OnWaitableEventSignaled,
+                     weak_ptr_factory_.GetWeakPtr());
+      watcher_.StartWatching(event, watcher_callback);
+    } else {
+      // TODO(msramek): Store filters from the currently executed task on the
+      // object to avoid having to copy them to callback methods.
+      flash_lso_helper_->StartFetching(base::Bind(
+          &BrowsingDataRemover::OnSitesWithFlashDataFetched,
+          weak_ptr_factory_.GetWeakPtr(),
+          filter_builder.BuildPluginFilter()));
+    }
   }
 #endif
 
@@ -1122,6 +1138,13 @@ void BrowsingDataRemover::OverrideWebappRegistryForTesting(
 }
 #endif
 
+#if defined(ENABLE_PLUGINS)
+void BrowsingDataRemover::OverrideFlashLSOHelperForTesting(
+    scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper) {
+  flash_lso_helper_ = flash_lso_helper;
+}
+#endif
+
 const base::Time& BrowsingDataRemover::GetLastUsedBeginTime() {
   return delete_begin_;
 }
@@ -1183,7 +1206,8 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_network_predictor_ &&
          !waiting_for_clear_networking_history_ &&
          !waiting_for_clear_passwords_ && !waiting_for_clear_passwords_stats_ &&
-         !waiting_for_clear_platform_keys_ && !waiting_for_clear_plugin_data_ &&
+         !waiting_for_clear_platform_keys_ &&
+         !waiting_for_clear_plugin_data_count_ &&
          !waiting_for_clear_pnacl_cache_ &&
 #if BUILDFLAG(ANDROID_JAVA_UI)
          !waiting_for_clear_precache_history_ &&
@@ -1312,9 +1336,41 @@ void BrowsingDataRemover::ClearedPnaclCache() {
 void BrowsingDataRemover::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  waiting_for_clear_plugin_data_ = false;
+
+  DCHECK_EQ(1, waiting_for_clear_plugin_data_count_);
+  waiting_for_clear_plugin_data_count_ = 0;
+
   plugin_data_remover_.reset();
   watcher_.StopWatching();
+  NotifyIfDone();
+}
+
+void BrowsingDataRemover::OnSitesWithFlashDataFetched(
+    base::Callback<bool(const std::string&)> plugin_filter,
+    const std::vector<std::string>& sites) {
+  DCHECK_EQ(1, waiting_for_clear_plugin_data_count_);
+  waiting_for_clear_plugin_data_count_ = 0;
+
+  std::vector<std::string> sites_to_delete;
+  for (const std::string& site : sites) {
+    if (plugin_filter.Run(site))
+      sites_to_delete.push_back(site);
+  }
+
+  waiting_for_clear_plugin_data_count_ = sites_to_delete.size();
+
+  for (const std::string& site : sites_to_delete) {
+    flash_lso_helper_->DeleteFlashLSOsForSite(
+        site,
+        base::Bind(&BrowsingDataRemover::OnFlashDataDeleted,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  NotifyIfDone();
+}
+
+void BrowsingDataRemover::OnFlashDataDeleted() {
+  waiting_for_clear_plugin_data_count_--;
   NotifyIfDone();
 }
 
