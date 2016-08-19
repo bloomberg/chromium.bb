@@ -693,6 +693,16 @@ TEST_F(ParserTest, Vp9CodecPrivateBadTest) {
                                              kCodecPrivateLength, NULL));
 }
 
+TEST_F(ParserTest, InvalidTruncatedChapterString) {
+  filename_ = GetTestFilePath("invalid/chapters_truncated_chapter_string.mkv");
+  ASSERT_NE(0u, filename_.length());
+  ASSERT_EQ(0, reader_.Open(filename_.c_str()));
+  mkvparser::EBMLHeader ebml_header;
+  ASSERT_EQ(0, ebml_header.Parse(&reader_, pos_));
+  ASSERT_EQ(0, mkvparser::Segment::CreateInstance(&reader_, pos_, segment_));
+  EXPECT_EQ(mkvparser::E_PARSE_FAILED, segment_->Load());
+}
+
 TEST_F(ParserTest, InvalidFixedLacingSize) {
   filename_ = GetTestFilePath("invalid/fixed_lacing_bad_lace_size.mkv");
   ASSERT_NE(0u, filename_.length());
