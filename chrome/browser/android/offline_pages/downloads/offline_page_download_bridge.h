@@ -70,7 +70,8 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
   void ItemDeleted(const std::string& guid) override;
 
  private:
-  void SavePageCallback(OfflinePageModel::SavePageResult result,
+  void SavePageCallback(const DownloadUIItem& item,
+                        OfflinePageModel::SavePageResult result,
                         int64_t offline_id);
 
   JavaObjectWeakGlobalRef weak_java_ref_;

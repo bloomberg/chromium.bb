@@ -264,11 +264,11 @@ public class SystemDownloadNotifier implements DownloadNotifier {
             } else {
                 switch (notificationInfo.type) {
                     case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
-                        mBoundService.notifyDownloadProgress(
-                                info.getDownloadGuid(), info.getFileName(),
-                                info.getPercentCompleted(), info.getTimeRemainingInMillis(),
-                                notificationInfo.startTime, info.isOffTheRecord(),
-                                notificationInfo.canDownloadWhileMetered);
+                        mBoundService.notifyDownloadProgress(info.getDownloadGuid(),
+                                info.getFileName(), info.getPercentCompleted(),
+                                info.getTimeRemainingInMillis(), notificationInfo.startTime,
+                                info.isOffTheRecord(), notificationInfo.canDownloadWhileMetered,
+                                info.isOfflinePage());
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_PAUSE:
                         mBoundService.notifyDownloadPaused(info.getDownloadGuid(), true, false);
@@ -281,7 +281,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                     case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                         final int notificationId = mBoundService.notifyDownloadSuccessful(
                                 info.getDownloadGuid(), info.getFileName(),
-                                notificationInfo.systemDownloadId);
+                                notificationInfo.systemDownloadId, info.isOfflinePage());
                         onSuccessNotificationShown(notificationInfo, notificationId);
                         stopServiceIfNeeded();
                         break;

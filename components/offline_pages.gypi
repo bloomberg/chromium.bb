@@ -104,6 +104,7 @@
         'offline_pages/downloads/download_ui_adapter.h',
         'offline_pages/downloads/download_ui_item.cc',
         'offline_pages/downloads/download_ui_item.h',
+        'offline_pages/downloads/offline_page_download_notifier.h',
       ],
     },
     {

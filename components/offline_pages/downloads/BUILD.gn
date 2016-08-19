@@ -13,6 +13,7 @@ static_library("offline_pages_ui_adapter") {
     "download_ui_adapter.h",
     "download_ui_item.cc",
     "download_ui_item.h",
+    "offline_page_download_notifier.h",
   ]
 
   deps = [

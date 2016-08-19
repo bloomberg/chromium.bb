@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/tab_android.h"
@@ -147,10 +148,17 @@ void OfflinePageDownloadBridge::StartDownload(
   client_id.name_space = offline_pages::kDownloadNamespace;
   client_id.id = base::GenerateGUID();
 
+  DownloadUIItem item;
+  item.guid = client_id.id;
+  item.url = url;
+
+  OfflinePageNotificationBridge bridge;
+  bridge.NotifyDownloadProgress(item);
+
   offline_page_model->SavePage(
       url, client_id, 0ul, std::move(archiver),
       base::Bind(&OfflinePageDownloadBridge::SavePageCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(), item));
 }
 
 void OfflinePageDownloadBridge::ItemsLoaded() {
@@ -189,8 +197,14 @@ void OfflinePageDownloadBridge::ItemUpdated(const DownloadUIItem& item) {
 }
 
 void OfflinePageDownloadBridge::SavePageCallback(
-    OfflinePageModel::SavePageResult result, int64_t offline_id) {
-  // TODO(dimich): Consider adding UMA here.
+    const DownloadUIItem& item,
+    OfflinePageModel::SavePageResult result,
+    int64_t offline_id) {
+  OfflinePageNotificationBridge notification_bridge;
+  if (result == SavePageResult::SUCCESS)
+    notification_bridge.NotifyDownloadSuccessful(item);
+  else
+    notification_bridge.NotifyDownloadFailed(item);
 }
 
 static jlong Init(JNIEnv* env,

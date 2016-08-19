@@ -20,6 +20,7 @@ struct DownloadUIItem {
  public:
   DownloadUIItem();
   explicit DownloadUIItem(const OfflinePageItem& page);
+  DownloadUIItem(const DownloadUIItem& other);
   ~DownloadUIItem();
 
   // Unique id.

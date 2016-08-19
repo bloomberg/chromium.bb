@@ -1654,6 +1654,8 @@
       'browser/android/offline_pages/request_coordinator_factory.h',
       'browser/android/offline_pages/downloads/offline_page_download_bridge.cc',
       'browser/android/offline_pages/downloads/offline_page_download_bridge.h',
+      'browser/android/offline_pages/downloads/offline_page_notification_bridge.cc',
+      'browser/android/offline_pages/downloads/offline_page_notification_bridge.h',
     ],
     'chrome_browser_browser_process_sources': [
       'browser/browser_process.cc',
@@ -2070,6 +2072,7 @@
       'android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridge.java',
       'android/java/src/org/chromium/chrome/browser/offlinepages/SavePageRequest.java',
       'android/java/src/org/chromium/chrome/browser/offlinepages/downloads/OfflinePageDownloadBridge.java',
+      'android/java/src/org/chromium/chrome/browser/offlinepages/downloads/OfflinePageNotificationBridge.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AnswersImage.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AutocompleteController.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/OmniboxPrerender.java',

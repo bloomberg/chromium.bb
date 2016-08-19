@@ -288,6 +288,10 @@ public class DownloadManagerService extends BroadcastReceiver implements
         mDownloadManagerDelegate = downloadManagerDelegate;
     }
 
+    public DownloadNotifier getDownloadNotifier() {
+        return mDownloadNotifier;
+    }
+
     @Override
     public void onDownloadCompleted(final DownloadInfo downloadInfo) {
         int status = DOWNLOAD_STATUS_COMPLETE;
@@ -1076,6 +1080,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param item Download item to resume.
      * @param hasUserGesture Whether the resumption is triggered by user gesture.
      */
+    @Override
     public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
         if (progress != null && progress.mDownloadStatus == DOWNLOAD_STATUS_IN_PROGRESS
@@ -1111,8 +1116,9 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param isOffTheRecord Whether the download is off the record.
      * @param isNotificationDismissed Whether cancel is caused by dismissing the notification.
      */
-    public void cancelDownload(String downloadGuid, boolean isOffTheRecord,
-            boolean isNotificationDismissed) {
+    @Override
+    public void cancelDownload(
+            String downloadGuid, boolean isOffTheRecord, boolean isNotificationDismissed) {
         nativeCancelDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord,
                 isNotificationDismissed);
         removeDownloadProgress(downloadGuid);
@@ -1124,6 +1130,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param downloadGuid GUID of the download.
      * @param isOffTheRecord Whether the download is off the record.
      */
+    @Override
     public void pauseDownload(String downloadGuid, boolean isOffTheRecord) {
         nativePauseDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
         DownloadProgress progress = mDownloadProgressMap.get(downloadGuid);
@@ -1136,6 +1143,17 @@ public class DownloadManagerService extends BroadcastReceiver implements
                     progress.mDownloadItem.getDownloadInfo()).setIsPaused(true).build();
             onDownloadUpdated(info);
         }
+    }
+
+    @Override
+    public void openItem(String downloadGuid) {
+        // Downloads managed by DownloadManagerService are opened through an intent to the
+        // DownloadManager.
+    }
+
+    @Override
+    public void destroyServiceDelegate() {
+        // Lifecycle of DownloadManagerService allows for this call to be ignored.
     }
 
     /**

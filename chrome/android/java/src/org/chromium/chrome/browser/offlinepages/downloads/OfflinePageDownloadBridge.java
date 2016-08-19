@@ -147,8 +147,14 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
     /**
      * See {@link #openItem(String, ComponentName)}.
      */
+    @Override
     public void openItem(String guid) {
         openItem(guid, null);
+    }
+
+    @Override
+    public void destroyServiceDelegate() {
+        destroy();
     }
 
     /**

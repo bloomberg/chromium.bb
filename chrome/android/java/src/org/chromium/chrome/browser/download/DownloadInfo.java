@@ -27,6 +27,7 @@ public final class DownloadInfo {
     private final boolean mIsResumable;
     private final boolean mIsPaused;
     private final boolean mIsOffTheRecord;
+    private final boolean mIsOfflinePage;
 
     private DownloadInfo(Builder builder) {
         mUrl = builder.mUrl;
@@ -48,6 +49,7 @@ public final class DownloadInfo {
         mIsResumable = builder.mIsResumable;
         mIsPaused = builder.mIsPaused;
         mIsOffTheRecord = builder.mIsOffTheRecord;
+        mIsOfflinePage = builder.mIsOfflinePage;
     }
 
     public String getUrl() {
@@ -129,6 +131,10 @@ public final class DownloadInfo {
         return mIsOffTheRecord;
     }
 
+    public boolean isOfflinePage() {
+        return mIsOfflinePage;
+    }
+
     /**
      * Helper class for building the DownloadInfo object.
      */
@@ -152,6 +158,7 @@ public final class DownloadInfo {
         private boolean mIsResumable = true;
         private boolean mIsPaused;
         private boolean mIsOffTheRecord;
+        private boolean mIsOfflinePage = false;
 
         public Builder setUrl(String url) {
             mUrl = url;
@@ -249,6 +256,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setIsOfflinePage(boolean isOfflinePage) {
+            mIsOfflinePage = isOfflinePage;
+            return this;
+        }
+
         public DownloadInfo build() {
             return new DownloadInfo(this);
         }
@@ -278,7 +290,8 @@ public final class DownloadInfo {
                     .setTimeRemainingInMillis(downloadInfo.getTimeRemainingInMillis())
                     .setIsResumable(downloadInfo.isResumable())
                     .setIsPaused(downloadInfo.isPaused())
-                    .setIsOffTheRecord(downloadInfo.isOffTheRecord());
+                    .setIsOffTheRecord(downloadInfo.isOffTheRecord())
+                    .setIsOfflinePage(downloadInfo.isOfflinePage());
             return builder;
         }
 
