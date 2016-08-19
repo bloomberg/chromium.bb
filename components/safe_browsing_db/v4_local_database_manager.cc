@@ -42,8 +42,8 @@ bool V4LocalDatabaseManager::IsSupported() const {
   return true;
 }
 
-safe_browsing::ThreatSource V4LocalDatabaseManager::GetThreatSource() const {
-  return safe_browsing::ThreatSource::LOCAL_PVER4;
+ThreatSource V4LocalDatabaseManager::GetThreatSource() const {
+  return ThreatSource::LOCAL_PVER4;
 }
 
 bool V4LocalDatabaseManager::ChecksAreAlwaysAsync() const {
@@ -140,8 +140,34 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
     return true;
   }
 
-  // Don't defer the resource load.
-  return true;
+  if (v4_database_) {
+    base::hash_set<FullHash> full_hashes;
+    V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
+
+    base::hash_set<UpdateListIdentifier> stores_to_look(
+        {GetUrlMalwareId(), GetUrlSocEngId()});
+    base::hash_set<HashPrefix> matched_hash_prefixes;
+    base::hash_set<UpdateListIdentifier> matched_stores;
+    MatchedHashPrefixMap matched_hash_prefix_map;
+    for (const auto& full_hash : full_hashes) {
+      v4_database_->GetStoresMatchingFullHash(full_hash, stores_to_look,
+                                              &matched_hash_prefix_map);
+      for (const auto& matched_pair : matched_hash_prefix_map) {
+        matched_stores.insert(matched_pair.first);
+        matched_hash_prefixes.insert(matched_pair.second);
+      }
+    }
+
+    DCHECK_EQ(matched_stores.empty(), matched_hash_prefixes.empty());
+
+    // TODO(vakh): Return false and fetch full hashes for the matching hash
+    // prefixes.
+    return matched_hash_prefixes.empty();
+  } else {
+    // TODO(vakh): Queue the check and process it when the database becomes
+    // ready.
+    return false;
+  }
 }
 
 void V4LocalDatabaseManager::CancelCheck(Client* client) {

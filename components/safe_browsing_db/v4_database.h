@@ -81,7 +81,7 @@ class V4Database {
   // Searches for a hash prefix matching the |full_hash| in stores in the
   // database, filtered by |stores_to_look|, and returns the identifier of the
   // store along with the matching hash prefix in |matched_hash_prefix_map|.
-  void GetStoresMatchingFullHash(
+  virtual void GetStoresMatchingFullHash(
       const FullHash& full_hash,
       const base::hash_set<UpdateListIdentifier>& stores_to_look,
       MatchedHashPrefixMap* matched_hash_prefix_map);

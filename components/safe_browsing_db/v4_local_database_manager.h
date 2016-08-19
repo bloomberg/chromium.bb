@@ -58,6 +58,12 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   bool IsCsdWhitelistKillSwitchOn() override;
 
  private:
+  friend class V4LocalDatabaseManagerTest;
+  void SetTaskRunnerForTest(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+    task_runner_ = task_runner;
+  }
+
   ~V4LocalDatabaseManager() override;
 
   // The callback called each time the protocol manager downloads updates
