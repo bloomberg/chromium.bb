@@ -26,13 +26,8 @@ Polymer({
       notify: true,
     },
 
-    /** @private {!LanguageHelper} */
-    languageHelper_: Object,
-  },
-
-  /** @override */
-  created: function() {
-     this.languageHelper_ = LanguageHelperImpl.getInstance();
+    /** @type {!LanguageHelper} */
+    languageHelper: Object,
   },
 
   /**
@@ -43,7 +38,7 @@ Polymer({
    * @private
    */
   isCheckboxChecked_: function(language, change) {
-    return this.languageHelper_.isLanguageEnabled(language.code);
+    return this.languageHelper.isLanguageEnabled(language.code);
   },
 
   /**
@@ -57,9 +52,9 @@ Polymer({
    */
   isLanguageRequired_: function(language, change) {
     // This check only applies to enabled languages.
-    if (!this.languageHelper_.isLanguageEnabled(language.code))
+    if (!this.languageHelper.isLanguageEnabled(language.code))
       return false;
-    return !this.languageHelper_.canDisableLanguage(language.code);
+    return !this.languageHelper.canDisableLanguage(language.code);
   },
 
   /**
@@ -68,7 +63,7 @@ Polymer({
    * @private
    */
   onRemoveLanguageTap_: function(e) {
-    this.languageHelper_.disableLanguage(e.model.item.language.code);
+    this.languageHelper.disableLanguage(e.model.item.language.code);
   },
 
   /**
@@ -80,8 +75,8 @@ Polymer({
   onLanguageCheckboxChange_: function(e) {
     var code = e.model.item.code;
     if (e.target.checked)
-      this.languageHelper_.enableLanguage(code);
+      this.languageHelper.enableLanguage(code);
     else
-      this.languageHelper_.disableLanguage(code);
+      this.languageHelper.disableLanguage(code);
   },
 });

@@ -14,8 +14,6 @@ GEN_INCLUDE(
 GEN_INCLUDE([ROOT_PATH +
              'chrome/test/data/webui/settings/settings_page_browsertest.js']);
 
-var languageSettings = languageSettings || {};
-
 /**
  * Test class for settings-languages-page UI.
  * @constructor
@@ -62,7 +60,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
       languagesPage = languagesSection.querySelector('settings-languages-page');
       assertTrue(!!languagesPage);
 
-      languageHelper = LanguageHelperImpl.getInstance();
+      languageHelper = languagesPage.languageHelper;
       return languageHelper.whenReady();
     }.bind(this));
 

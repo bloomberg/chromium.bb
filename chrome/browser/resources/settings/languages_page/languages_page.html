@@ -32,7 +32,9 @@
         @apply(--settings-actionable);
       }
     </style>
-    <settings-languages languages="{{languages}}"></settings-languages>
+    <settings-languages languages="{{languages}}" prefs="{{prefs}}"
+        language-helper="{{languageHelper}}">
+    </settings-languages>
     <settings-animated-pages id="pages" section="languages">
       <neon-animatable route-path="default">
         <div id="manage-languages-subpage-trigger"
@@ -193,13 +195,16 @@
             associated-control="[[$$('#manage-languages-subpage-trigger')]]"
             page-title="$i18n{manageLanguagesPageTitle}">
           <settings-manage-languages-page
-              prefs="{{prefs}}"></settings-manage-languages-page>
+              languages="{{languages}}" prefs="{{prefs}}"
+              language-helper="[[languageHelper]]">
+          </settings-manage-languages-page>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/languages/edit" no-search>
         <settings-subpage page-title="[[detailLanguage_.language.displayName]]">
           <settings-language-detail-page id="languageDetailPage"
-              prefs="{{prefs}}" detail="[[detailLanguage_]]">
+              languages="{{languages}}" prefs="{{prefs}}"
+              detail="[[detailLanguage_]]" language-helper="[[languageHelper]]">
           </settings-language-detail-page>
         </settings-subpage>
       </template>
@@ -208,7 +213,8 @@
         <settings-subpage
             associated-control="[[$$('#manage-input-methods-subpage-trigger')]]"
             page-title="$i18n{manageInputMethodsPageTitle}">
-          <settings-manage-input-methods-page>
+          <settings-manage-input-methods-page languages="{{languages}}"
+              language-helper="[[languageHelper]]">
           </settings-manage-input-methods-page>
         </settings-subpage>
       </template>

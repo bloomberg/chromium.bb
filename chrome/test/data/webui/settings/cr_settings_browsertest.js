@@ -620,24 +620,24 @@ TEST_F('CrSettingsStartupUrlsPageTest', 'StartupUrlsPage', function() {
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
-function CrSettingsLanguagesPageTest() {}
+function CrSettingsLanguagesTest() {}
 
-CrSettingsLanguagesPageTest.prototype = {
+CrSettingsLanguagesTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/languages_page/languages_page.html',
+  browsePreload: 'chrome://md-settings/languages_page/languages.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../fake_chrome_event.js',
     'fake_language_settings_private.js',
     'fake_settings_private.js',
-    'languages_page_tests.js',
+    'languages_tests.js',
   ]),
 };
 
-TEST_F('CrSettingsLanguagesPageTest', 'LanguagesPage', function() {
+TEST_F('CrSettingsLanguagesTest', 'Languages', function() {
   mocha.run();
 });
 

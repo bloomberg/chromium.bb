@@ -2,62 +2,88 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('settings_languages_page', function() {
-  suite('settings-languages-singleton', function() {
-    var languageSettingsPrivate;
-    var languageHelper;
-    var settingsPrefs;
-    var fakePrefs = [{
-      key: 'intl.app_locale',
-      type: chrome.settingsPrivate.PrefType.STRING,
-      value: 'en-US',
-    }, {
-      key: 'intl.accept_languages',
-      type: chrome.settingsPrivate.PrefType.STRING,
-      value: 'en-US,sw',
-    }, {
-      key: 'spellcheck.dictionaries',
-      type: chrome.settingsPrivate.PrefType.LIST,
-      value: ['en-US'],
-    }, {
-      key: 'translate_blocked_languages',
-      type: chrome.settingsPrivate.PrefType.LIST,
-      value: ['en-US'],
-    }];
-    if (cr.isChromeOS) {
-      fakePrefs.push({
-        key: 'settings.language.preferred_languages',
+cr.define('settings-languages', function() {
+  /**
+   * Data-binds two Polymer properties using the property-changed events and
+   * set/notifyPath API. Useful for testing components which would normally be
+   * used together.
+   * @param {!HTMLElement} el1
+   * @param {!HTMLElement} el2
+   * @param {string} property
+   */
+  function fakeDataBind(el1, el2, property) {
+    var forwardChange = function(el, event) {
+      if (event.detail.hasOwnProperty('path'))
+        el.notifyPath(event.detail.path, event.detail.value);
+      else
+        el.set(property, event.detail.value);
+    };
+    // Add the listeners symmetrically. Polymer will prevent recursion.
+    el1.addEventListener(property + '-changed', forwardChange.bind(null, el2));
+    el2.addEventListener(property + '-changed', forwardChange.bind(null, el1));
+  }
+
+  suite('settings-languages', function() {
+    function getFakePrefs() {
+      var fakePrefs = [{
+        key: 'intl.app_locale',
+        type: chrome.settingsPrivate.PrefType.STRING,
+        value: 'en-US',
+      }, {
+        key: 'intl.accept_languages',
         type: chrome.settingsPrivate.PrefType.STRING,
         value: 'en-US,sw',
-      });
-      fakePrefs.push({
-        key: 'settings.language.preload_engines',
-        type: chrome.settingsPrivate.PrefType.STRING,
-        value: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng,' +
-               '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
-      });
-      fakePrefs.push({
-        key: 'settings.language.enabled_extension_imes',
-        type: chrome.settingsPrivate.PrefType.STRING,
-        value: '',
-      });
+      }, {
+        key: 'spellcheck.dictionaries',
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: ['en-US'],
+      }, {
+        key: 'translate_blocked_languages',
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: ['en-US'],
+      }];
+      if (cr.isChromeOS) {
+        fakePrefs.push({
+          key: 'settings.language.preferred_languages',
+          type: chrome.settingsPrivate.PrefType.STRING,
+          value: 'en-US,sw',
+        });
+        fakePrefs.push({
+          key: 'settings.language.preload_engines',
+          type: chrome.settingsPrivate.PrefType.STRING,
+          value: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng,' +
+                 '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
+        });
+        fakePrefs.push({
+          key: 'settings.language.enabled_extension_imes',
+          type: chrome.settingsPrivate.PrefType.STRING,
+          value: '',
+        });
+      }
+      return fakePrefs;
     }
+
+    var languageHelper;
+    var languageSettingsPrivate;
 
     suiteSetup(function() {
       CrSettingsPrefs.deferInitialization = true;
-      settingsPrefs = document.createElement('settings-prefs');
-      assertTrue(!!settingsPrefs);
-      var fakeApi = new settings.FakeSettingsPrivate(fakePrefs);
-      settingsPrefs.initializeForTesting(fakeApi);
+    });
+
+    setup(function() {
+      var settingsPrefs = document.createElement('settings-prefs');
+      var settingsPrivate = new settings.FakeSettingsPrivate(getFakePrefs());
+      settingsPrefs.initializeForTesting(settingsPrivate);
 
       languageSettingsPrivate = new settings.FakeLanguageSettingsPrivate();
-      languageSettings.languageSettingsPrivateApiForTest =
-          languageSettingsPrivate;
-
-
       languageSettingsPrivate.setSettingsPrefs(settingsPrefs);
-      LanguageHelperImpl.instance_ = undefined;
-      languageHelper = LanguageHelperImpl.getInstance();
+      settings.languageSettingsPrivateApiForTest = languageSettingsPrivate;
+
+      languageHelper = document.createElement('settings-languages');
+
+      // Prefs would normally be data-bound to settings-languages.
+      fakeDataBind(settingsPrefs, languageHelper, 'prefs');
+
       return languageHelper.whenReady();
     });
 

@@ -20,6 +20,9 @@ Polymer({
       notify: true,
     },
 
+    /** @type {!LanguageHelper} */
+    languageHelper: Object,
+
     /**
      * List of enabled languages with the input methods to show.
      * @private {!Array<
@@ -38,11 +41,6 @@ Polymer({
         'languages.inputMethods.supported.*)',
     'enabledInputMethodsChanged_(languages.inputMethods.enabled.*)',
   ],
-
-  /** @override */
-  created: function() {
-    this.languageHelper_ = LanguageHelperImpl.getInstance();
-  },
 
   /** @private */
   availableInputMethodsChanged_: function() {
@@ -64,9 +62,9 @@ Polymer({
     // TODO(michaelpg): Show confirmation dialog for 3rd-party IMEs.
     var id = e.model.item.id;
     if (e.target.checked)
-      this.languageHelper_.addInputMethod(id);
+      this.languageHelper.addInputMethod(id);
     else
-      this.languageHelper_.removeInputMethod(id);
+      this.languageHelper.removeInputMethod(id);
   },
 
   /**
@@ -82,13 +80,13 @@ Polymer({
       return true;
 
     // Third-party IMEs can always be removed.
-    if (!this.languageHelper_.isComponentIme(targetInputMethod))
+    if (!this.languageHelper.isComponentIme(targetInputMethod))
       return true;
 
     // Can be removed as long as there is another component IME.
     return this.languages.inputMethods.enabled.some(function(inputMethod) {
       return inputMethod != targetInputMethod &&
-          this.languageHelper_.isComponentIme(inputMethod);
+          this.languageHelper.isComponentIme(inputMethod);
     }, this);
   },
 
@@ -112,7 +110,7 @@ Polymer({
       // Skip the language if we have already included it or its base language.
       if (usedLanguages.has(languageState.language.code))
         continue;
-      var baseLanguageCode = this.languageHelper_.getLanguageCodeWithoutRegion(
+      var baseLanguageCode = this.languageHelper.getLanguageCodeWithoutRegion(
           languageState.language.code);
       if (usedLanguages.has(baseLanguageCode))
         continue;
@@ -122,7 +120,7 @@ Polymer({
       var languageFamilyCodes = [languageState.language.code];
       for (var j = i + 1; j < this.languages.enabled.length; j++) {
         var otherCode = this.languages.enabled[j].language.code;
-        if (this.languageHelper_.getLanguageCodeWithoutRegion(otherCode) ==
+        if (this.languageHelper.getLanguageCodeWithoutRegion(otherCode) ==
             baseLanguageCode) {
           languageFamilyCodes.push(this.languages.enabled[j].language.code);
         }
@@ -138,7 +136,7 @@ Polymer({
       // Add the language or base language.
       var displayLanguage = languageState.language;
       if (languageFamilyCodes.length > 1) {
-        var baseLanguage = this.languageHelper_.getLanguage(baseLanguageCode);
+        var baseLanguage = this.languageHelper.getLanguage(baseLanguageCode);
         if (baseLanguage)
           displayLanguage = baseLanguage;
       }
@@ -166,7 +164,7 @@ Polymer({
     /** @type {!Array<chrome.languageSettingsPrivate.InputMethod>} */
     var combinedInputMethods = [];
     for (var languageCode of languageCodes) {
-      var inputMethods = this.languageHelper_.getInputMethodsForLanguage(
+      var inputMethods = this.languageHelper.getInputMethodsForLanguage(
           languageCode);
       // Get the language's unused input methods and mark them as used.
       var newInputMethods = inputMethods.filter(function(inputMethod) {

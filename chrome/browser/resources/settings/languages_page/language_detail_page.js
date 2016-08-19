@@ -25,19 +25,14 @@ Polymer({
      */
     languages: Object,
 
+    /** @type {!LanguageHelper} */
+    languageHelper: Object,
+
     /**
      * The language to display the details for.
      * @type {!LanguageState|undefined}
      */
     detail: Object,
-
-    /** @private {!LanguageHelper} */
-    languageHelper_: Object,
-  },
-
-  /** @override */
-  created: function() {
-     this.languageHelper_ = LanguageHelperImpl.getInstance();
   },
 
   /** @override */
@@ -69,7 +64,7 @@ Polymer({
    */
   isProspectiveUILanguage_: function(languageCode, prospectiveUILanguage) {
     assert(cr.isChromeOS || cr.isWindows);
-    return languageCode == this.languageHelper_.getProspectiveUILanguage();
+    return languageCode == this.languageHelper.getProspectiveUILanguage();
   },
 
   /**
@@ -92,7 +87,7 @@ Polymer({
    * @private
    */
   isTranslateDisabled_: function(languageCode, targetLanguageCode) {
-    return this.languageHelper_.convertLanguageCodeForTranslate(languageCode) ==
+    return this.languageHelper.convertLanguageCodeForTranslate(languageCode) ==
         targetLanguageCode;
   },
 
@@ -151,9 +146,9 @@ Polymer({
    */
   onTranslateEnabledChange_: function(e) {
     if (e.target.checked)
-      this.languageHelper_.enableTranslateLanguage(this.detail.language.code);
+      this.languageHelper.enableTranslateLanguage(this.detail.language.code);
     else
-      this.languageHelper_.disableTranslateLanguage(this.detail.language.code);
+      this.languageHelper.disableTranslateLanguage(this.detail.language.code);
   },
 
   /**
@@ -163,10 +158,10 @@ Polymer({
    */
   onUILanguageChange_: function(e) {
     if (e.target.checked) {
-      this.languageHelper_.setUILanguage(this.detail.language.code);
+      this.languageHelper.setUILanguage(this.detail.language.code);
     } else {
       // Reset the chosen UI language to the actual UI language.
-      this.languageHelper_.resetUILanguage();
+      this.languageHelper.resetUILanguage();
     }
   },
 

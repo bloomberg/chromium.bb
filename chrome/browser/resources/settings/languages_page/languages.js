@@ -3,30 +3,17 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'settings-languages' provides convenient access to
- * Chrome's language and input method settings.
- *
- * Instances of this element have a 'languages' property, which reflects the
- * current language settings. The 'languages' property is read-only, meaning
- * hosts using this element cannot change it directly. Instead, changes to
- * language settings should be made using the LanguageHelperImpl singleton.
- *
- * Use upward binding syntax to propagate changes from child to host, so that
- * changes made internally to 'languages' propagate to your host element:
- *
- *     <template>
- *       <settings-languages languages="{{languages}}">
- *       </settings-languages>
- *       <div>[[languages.someProperty]]</div>
- *     </template>
+ * @fileoverview 'settings-languages' handles Chrome's language and input
+ * method settings. The 'languages' property, which reflects the current
+ * language settings, must not be changed directly. Instead, changes to
+ * language settings should be made using the LanguageHelper APIs provided by
+ * this class via languageHelper.
  */
-
-var SettingsLanguagesSingletonElement;
-
-cr.exportPath('languageSettings');
 
 (function() {
 'use strict';
+
+cr.exportPath('settings');
 
 // Translate server treats some language codes the same.
 // See also: components/translate/core/common/translate_util.cc.
@@ -51,13 +38,11 @@ var preferredLanguagesPrefName = cr.isChromeOS ?
 
 /**
  * Singleton element that generates the languages model on start-up and
- * updates it whenever Chrome's pref store and other settings change. These
- * updates propagate to each <settings-language> instance so that their
- * 'languages' property updates like any other Polymer property.
+ * updates it whenever Chrome's pref store and other settings change.
  * @implements {LanguageHelper}
  */
-SettingsLanguagesSingletonElement = Polymer({
-  is: 'settings-languages-singleton',
+Polymer({
+  is: 'settings-languages',
 
   behaviors: [PrefsBehavior],
 
@@ -68,6 +53,7 @@ SettingsLanguagesSingletonElement = Polymer({
     languages: {
       type: Object,
       notify: true,
+      readOnly: true,
     },
 
     /**
@@ -76,6 +62,17 @@ SettingsLanguagesSingletonElement = Polymer({
     prefs: {
       type: Object,
       notify: true,
+    },
+
+    /**
+     * This element, as a LanguageHelper instance for API usage.
+     * @type {!LanguageHelper}
+     */
+    languageHelper: {
+      type: Object,
+      notify: true,
+      readOnly: true,
+      value: function() { return /** @type {!LanguageHelper} */(this); },
     },
 
     /**
@@ -94,32 +91,45 @@ SettingsLanguagesSingletonElement = Polymer({
 
     /** @type {!InputMethodPrivate} */
     inputMethodPrivate: Object,
+
+    /**
+     * Hash map of supported languages by language codes for fast lookup.
+     * @private {!Map<string, !chrome.languageSettingsPrivate.Language>}
+     */
+    supportedLanguageMap_: {
+      type: Object,
+      value: function() { return new Map(); },
+    },
+
+    /**
+     * Hash set of enabled language codes for membership testing.
+     * @private {!Set<string>}
+     */
+    enabledLanguageSet_: {
+      type: Object,
+      value: function() { return new Set(); },
+    },
+
+    /**
+     * Hash map of supported input methods by ID for fast lookup.
+     * @private {!Map<string, chrome.languageSettingsPrivate.InputMethod>}
+     */
+    supportedInputMethodMap_: {
+      type: Object,
+      value: function() { return new Map(); },
+    },
+
+    /**
+     * Hash map of input methods supported for each language.
+     * @type {!Map<string,
+     *             !Array<!chrome.languageSettingsPrivate.InputMethod>>}
+     * @private
+     */
+    languageInputMethods_: {
+      type: Object,
+      value: function() { return new Map(); },
+    },
   },
-
-  /**
-   * Hash map of supported languages by language codes for fast lookup.
-   * @private {!Map<string, !chrome.languageSettingsPrivate.Language>}
-   */
-  supportedLanguageMap_: new Map(),
-
-  /**
-   * Hash set of enabled language codes for membership testing.
-   * @private {!Set<string>}
-   */
-  enabledLanguageSet_: new Set(),
-
-  /**
-   * Hash map of supported input methods by ID for fast lookup.
-   * @private {!Map<string, chrome.languageSettingsPrivate.InputMethod>}
-   */
-  supportedInputMethodMap_: new Map(),
-
-  /**
-   * Hash map of input methods supported for each language.
-   * @type {!Map<string, !Array<!chrome.languageSettingsPrivate.InputMethod>>}
-   * @private
-   */
-  languageInputMethods_: new Map(),
 
   observers: [
     'preferredLanguagesPrefChanged_(' +
@@ -140,11 +150,11 @@ SettingsLanguagesSingletonElement = Polymer({
   /** @override */
   created: function() {
     this.languageSettingsPrivate =
-        languageSettings.languageSettingsPrivateApiForTest ||
+        settings.languageSettingsPrivateApiForTest ||
         /** @type {!LanguageSettingsPrivate} */(chrome.languageSettingsPrivate);
 
     this.inputMethodPrivate =
-        languageSettings.inputMethodPrivateApiForTest ||
+        settings.inputMethodPrivateApiForTest ||
         /** @type {!InputMethodPrivate} */(chrome.inputMethodPrivate);
 
     var promises = [];
@@ -299,7 +309,7 @@ SettingsLanguagesSingletonElement = Polymer({
     }
 
     // Initialize the Polymer languages model.
-    this.languages = model;
+    this._setLanguages(model);
   },
 
   /**
@@ -686,7 +696,7 @@ SettingsLanguagesSingletonElement = Polymer({
   },
 
   /**
-   * param {string} languageCode
+   * @param {string} languageCode
    * @return {!Array<!chrome.languageSettingsPrivate.InputMethod>}
    */
   getInputMethodsForLanguage: function(languageCode) {
@@ -727,56 +737,3 @@ SettingsLanguagesSingletonElement = Polymer({
   },
 });
 })();
-
-/**
- * A reference to the singleton under the guise of a LanguageHelper
- * implementation. This provides a limited API but implies the singleton
- * should not be used directly for data binding.
- */
-var LanguageHelperImpl = SettingsLanguagesSingletonElement;
-cr.addSingletonGetter(LanguageHelperImpl);
-
-/**
- * This element has a reference to the singleton, exposing the singleton's
- * |languages| model to the host of this element.
- */
-Polymer({
-  is: 'settings-languages',
-
-  properties: {
-    /**
-     * A reference to the languages model from the singleton, exposed as a
-     * read-only property so hosts can bind to it, but not change it.
-     * @type {LanguagesModel|undefined}
-     */
-    languages: {
-      type: Object,
-      notify: true,
-      readOnly: true,
-    },
-  },
-
-  ready: function() {
-    var singleton = /** @type {!SettingsLanguagesSingletonElement} */
-        (LanguageHelperImpl.getInstance());
-    singleton.whenReady().then(function() {
-      // Set the 'languages' property to reference the singleton's model.
-      this._setLanguages(singleton.languages);
-      // Listen for changes to the singleton's languages property, so we know
-      // when to notify hosts of changes to (our reference to) the property.
-      this.listen(singleton, 'languages-changed', 'singletonLanguagesChanged_');
-    }.bind(this));
-  },
-
-  /**
-   * Takes changes reported by the singleton and forwards them to the host,
-   * manually sending a change notification for our 'languages' property (since
-   * it's the same object as the singleton's property, but isn't bound by
-   * Polymer).
-   * @private
-   */
-  singletonLanguagesChanged_: function(e) {
-    // Forward the change notification to the host.
-    this.fire(e.type, e.detail, {bubbles: false});
-  },
-});
