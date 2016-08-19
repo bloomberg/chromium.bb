@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
 
   // Trigger a cookie jar change (user signing in to content area).
   gaia::ListedAccount signed_in_account;
-  signed_in_account.gaia_id =
+  signed_in_account.id =
       GetClient(0)->service()->signin()->GetAuthenticatedAccountId();
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;

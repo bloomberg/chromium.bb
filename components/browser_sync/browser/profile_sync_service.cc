@@ -2117,7 +2117,7 @@ void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
 
   // Iterate through list of accounts, looking for current sync account.
   for (const auto& account : accounts) {
-    if (account.gaia_id == account_id) {
+    if (account.id == account_id) {
       cookie_jar_mismatch = false;
       break;
     }
