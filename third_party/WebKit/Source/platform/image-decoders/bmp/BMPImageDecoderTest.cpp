@@ -67,6 +67,17 @@ TEST(BMPImageDecoderTest, emptyImage)
     EXPECT_TRUE(decoder->failed());
 }
 
+TEST(BMPImageDecoderTest, int32MinHeight)
+{
+    const char* bmpFile = "/LayoutTests/fast/images/resources/1xint32_min.bmp"; // 0xINT32_MIN
+    RefPtr<SharedBuffer> data = readFile(bmpFile);
+    std::unique_ptr<ImageDecoder> decoder = createDecoder();
+    // Test when not all data is received.
+    decoder->setData(data.get(), false);
+    EXPECT_FALSE(decoder->isSizeAvailable());
+    EXPECT_TRUE(decoder->failed());
+}
+
 // This test verifies that calling SharedBuffer::mergeSegmentsIntoBuffer() does
 // not break BMP decoding at a critical point: in between a call to decode the
 // size (when BMPImageDecoder stops while it may still have input data to
