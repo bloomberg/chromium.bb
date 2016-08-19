@@ -954,6 +954,10 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
 
 void ProfileChooserView::ShowViewFromMode(profiles::BubbleViewMode mode) {
   if (SigninViewController::ShouldShowModalSigninForMode(mode)) {
+    // Hides the user menu if it is currently shown. The user menu automatically
+    // closes when it loses focus; however, on Windows, the signin modals do not
+    // take away focus, thus we need to manually close the bubble.
+    Hide();
     browser_->ShowModalSigninWindow(mode, access_point_);
   } else {
     ShowView(mode, avatar_menu_.get());
