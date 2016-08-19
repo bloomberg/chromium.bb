@@ -6,7 +6,6 @@ _typemap_imports = [
   "//cc/ipc/typemaps.gni",
   "//chrome/browser/media/router/mojo/typemaps.gni",
   "//components/arc/common/typemaps.gni",
-  "//components/metrics/public/cpp/typemaps.gni",
   "//components/typemaps.gni",
   "//content/common/bluetooth/typemaps.gni",
   "//content/common/typemaps.gni",
