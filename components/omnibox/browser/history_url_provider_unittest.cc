@@ -159,8 +159,7 @@ struct TestURLInfo {
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient(bool create_history_db) {
-    set_template_url_service(
-        base::WrapUnique(new TemplateURLService(nullptr, 0)));
+    set_template_url_service(base::MakeUnique<TemplateURLService>(nullptr, 0));
     if (history_dir_.CreateUniqueTempDir()) {
       history_service_ = history::CreateHistoryService(
           history_dir_.path(), create_history_db);

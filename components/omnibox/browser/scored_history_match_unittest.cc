@@ -272,10 +272,10 @@ TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
 
 TEST_F(ScoredHistoryMatchTest, CullSearchResults) {
   std::unique_ptr<TemplateURLService> template_url_service =
-      base::WrapUnique(new TemplateURLService(
+      base::MakeUnique<TemplateURLService>(
           nullptr, base::WrapUnique(new SearchTermsData), nullptr,
           std::unique_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
-          base::Closure()));
+          base::Closure());
 
   // We use NowFromSystemTime() because MakeURLRow uses the same function
   // to calculate last visit time when building a row.

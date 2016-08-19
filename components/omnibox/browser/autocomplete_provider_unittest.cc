@@ -288,7 +288,7 @@ AutocompleteProviderTest::AutocompleteProviderTest()
     : client_(new AutocompleteProviderClientWithClosure()),
       client_owned_(false) {
   client_->set_template_url_service(
-      base::WrapUnique(new TemplateURLService(nullptr, 0)));
+      base::MakeUnique<TemplateURLService>(nullptr, 0));
 }
 
 AutocompleteProviderTest::~AutocompleteProviderTest() {

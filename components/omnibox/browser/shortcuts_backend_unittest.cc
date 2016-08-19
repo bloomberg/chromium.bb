@@ -120,7 +120,7 @@ void ShortcutsBackendTest::SetUp() {
   base::FilePath shortcuts_database_path =
       profile_dir_.path().Append(kShortcutsDatabaseName);
   backend_ = new ShortcutsBackend(
-      template_url_service_.get(), base::WrapUnique(new SearchTermsData()),
+      template_url_service_.get(), base::MakeUnique<SearchTermsData>(),
       history_service_.get(), db_thread_.task_runner(), shortcuts_database_path,
       false);
   ASSERT_TRUE(backend_.get());

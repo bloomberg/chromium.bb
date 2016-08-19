@@ -125,11 +125,11 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
 void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
-    deletion_handlers_.push_back(base::WrapUnique(new SuggestionDeletionHandler(
+    deletion_handlers_.push_back(base::MakeUnique<SuggestionDeletionHandler>(
         match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
         client_->GetRequestContext(),
         base::Bind(&BaseSearchProvider::OnDeletionComplete,
-                   base::Unretained(this)))));
+                   base::Unretained(this))));
   }
 
   TemplateURL* template_url =

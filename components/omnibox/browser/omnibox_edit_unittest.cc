@@ -217,11 +217,11 @@ class TestingOmniboxClient : public OmniboxClient {
 
 TestingOmniboxClient::TestingOmniboxClient()
     : autocomplete_classifier_(
-          base::WrapUnique(new AutocompleteController(
+          base::MakeUnique<AutocompleteController>(
               CreateAutocompleteProviderClient(),
               nullptr,
-              AutocompleteClassifier::kDefaultOmniboxProviders)),
-          base::WrapUnique(new TestingSchemeClassifier())) {}
+              AutocompleteClassifier::kDefaultOmniboxProviders),
+          base::MakeUnique<TestingSchemeClassifier>()) {}
 
 TestingOmniboxClient::~TestingOmniboxClient() {
   autocomplete_classifier_.Shutdown();
