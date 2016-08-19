@@ -342,16 +342,8 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(PassRefPtr<SkImage> image, Web
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    // Re-use the texture's existing mailbox, if there is one.
-    if (mailboxInfo.m_image->getTexture()->getCustomData()) {
-        DCHECK(mailboxInfo.m_image->getTexture()->getCustomData()->size() == sizeof(mailboxInfo.m_mailbox.name));
-        memcpy(&mailboxInfo.m_mailbox.name[0], mailboxInfo.m_image->getTexture()->getCustomData()->data(), sizeof(mailboxInfo.m_mailbox.name));
-    } else {
-        gl->GenMailboxCHROMIUM(mailboxInfo.m_mailbox.name);
-        sk_sp<SkData> mailboxNameData = SkData::MakeWithCopy(&mailboxInfo.m_mailbox.name[0], sizeof(mailboxInfo.m_mailbox.name));
-        mailboxInfo.m_image->getTexture()->setCustomData(mailboxNameData.get());
-        gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo.m_mailbox.name);
-    }
+    gl->GenMailboxCHROMIUM(mailboxInfo.m_mailbox.name);
+    gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo.m_mailbox.name);
 
     if (isHidden()) {
         // With hidden canvases, we release the SkImage immediately because
@@ -848,6 +840,10 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
                     texture->abandon();
                 } else {
                     texture->textureParamsModified();
+                    // Break the mailbox association to avoid leaking mailboxes every time skia recycles a texture.
+                    gpu::gles2::GLES2Interface* gl = contextGL();
+                    if (gl)
+                        gl->ProduceTextureDirectCHROMIUM(0, GL_TEXTURE_2D, releasedMailboxInfo->m_mailbox.name);
                 }
             }
         }
