@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadIte
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private final boolean mShowOffTheRecord;
 
     private int mFilter = DownloadFilter.FILTER_ALL;
-    private DownloadManagerUi mManager;
+    private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
     private OfflinePageDownloadBridge mOfflinePageBridge;
     private int mFilenameViewTextColor;
 
@@ -81,14 +82,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     @Override
     public void initialize(DownloadManagerUi manager) {
-        manager.addObserver(this);
-        mManager = manager;
-
-        // Get all regular and (if necessary) off the record downloads.
-        getDownloadManagerService().addDownloadHistoryAdapter(this);
-        getDownloadManagerService().getAllDownloads(false);
-        if (mShowOffTheRecord) getDownloadManagerService().getAllDownloads(true);
-
+        if (manager != null) manager.addObserver(this);
+        mSelectionDelegate = getSelectionDelegate(manager);
+        initializeDownloadBridge();
         initializeOfflinePageBridge();
     }
 
@@ -138,7 +134,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     public ViewHolder createViewHolder(ViewGroup parent) {
         View v = LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.download_item_view, parent, false);
-        ((DownloadItemView) v).setSelectionDelegate(mManager.getSelectionDelegate());
+        ((DownloadItemView) v).setSelectionDelegate(mSelectionDelegate);
         return new ItemViewHolder(v);
     }
 
@@ -218,8 +214,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         int index = findItemIndex(list, guid);
         if (index != INVALID_INDEX) {
             DownloadItemWrapper wrapper = list.remove(index);
-            if (mManager.getSelectionDelegate().isItemSelected(wrapper)) {
-                mManager.getSelectionDelegate().toggleSelectionForItem(wrapper);
+            if (mSelectionDelegate != null && mSelectionDelegate.isItemSelected(wrapper)) {
+                mSelectionDelegate.toggleSelectionForItem(wrapper);
             }
             filter(mFilter);
         }
@@ -238,8 +234,12 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             mOfflinePageBridge.destroy();
             mOfflinePageBridge = null;
         }
+    }
 
-        mManager = null;
+    /** Returns the SelectionDelegate to use for each ViewHolder. */
+    protected SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate(
+            DownloadManagerUi manager) {
+        return manager == null ? null : manager.getSelectionDelegate();
     }
 
     /** Filters the list of downloads to show only files of a specific type. */
@@ -267,7 +267,14 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         loadItems(mFilteredItems);
     }
 
-    private void initializeOfflinePageBridge() {
+    protected void initializeDownloadBridge() {
+        // Get all regular and (if necessary) off the record downloads.
+        getDownloadManagerService().addDownloadHistoryAdapter(this);
+        getDownloadManagerService().getAllDownloads(false);
+        if (mShowOffTheRecord) getDownloadManagerService().getAllDownloads(true);
+    }
+
+    protected void initializeOfflinePageBridge() {
         mOfflinePageBridge = new OfflinePageDownloadBridge(
                 Profile.getLastUsedProfile().getOriginalProfile());
 
@@ -289,8 +296,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                 int index = findItemIndex(mOfflinePageItems, guid);
                 if (index != INVALID_INDEX) {
                     DownloadHistoryItemWrapper wrapper = mOfflinePageItems.remove(index);
-                    if (mManager.getSelectionDelegate().isItemSelected(wrapper)) {
-                        mManager.getSelectionDelegate().toggleSelectionForItem(wrapper);
+                    if (mSelectionDelegate.isItemSelected(wrapper)) {
+                        mSelectionDelegate.toggleSelectionForItem(wrapper);
                     }
                     updateFilter();
                 }
@@ -332,11 +339,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         return INVALID_INDEX;
     }
 
-    private static DownloadManagerService getDownloadManagerService() {
-        return DownloadManagerService.getDownloadManagerService(
-                ContextUtils.getApplicationContext());
-    }
-
     private void setItemViewStyle(ItemViewHolder holder, DownloadHistoryItemWrapper item) {
         if (mFilenameViewTextColor == 0) {
             // The color is not explicitly set in the XML. Programmatically retrieve the original
@@ -367,4 +369,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         }
     }
 
+    private static DownloadManagerService getDownloadManagerService() {
+        return DownloadManagerService.getDownloadManagerService(
+                ContextUtils.getApplicationContext());
+    }
 }
