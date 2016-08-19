@@ -93,7 +93,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   AddSettingsPageUIHandler(new chromeos::settings::AccessibilityHandler(
       web_ui));
   AddSettingsPageUIHandler(new chromeos::settings::ChangePictureHandler());
-  AddSettingsPageUIHandler(new chromeos::settings::CupsPrintersHandler());
+  AddSettingsPageUIHandler(new chromeos::settings::CupsPrintersHandler(web_ui));
   AddSettingsPageUIHandler(new chromeos::settings::KeyboardHandler(web_ui));
   AddSettingsPageUIHandler(new chromeos::settings::PointerHandler());
   AddSettingsPageUIHandler(new chromeos::settings::InternetHandler());

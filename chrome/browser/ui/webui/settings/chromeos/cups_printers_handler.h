@@ -12,13 +12,15 @@ namespace base {
 class ListValue;
 }  // namespace base
 
+class Profile;
+
 namespace chromeos {
 namespace settings {
 
 // Chrome OS CUPS printing settings page UI handler.
 class CupsPrintersHandler : public ::settings::SettingsPageUIHandler {
  public:
-  CupsPrintersHandler();
+  explicit CupsPrintersHandler(content::WebUI* webui);
   ~CupsPrintersHandler() override;
 
   // SettingsPageUIHandler overrides:
@@ -29,12 +31,11 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler {
  private:
   // Gets all CUPS printers and return it to WebUI.
   void HandleGetCupsPrintersList(const base::ListValue* args);
-  void OnGetCupsPrintersList(const std::string callback_id,
-                             base::ListValue* printers_list);
 
   void HandleUpdateCupsPrinter(const base::ListValue* args);
   void HandleRemoveCupsPrinter(const base::ListValue* args);
 
+  Profile* profile_;
   base::WeakPtrFactory<CupsPrintersHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintersHandler);

@@ -17,6 +17,7 @@
  *   printerStatus: string,
  *   printerAddress: string,
  *   printerProtocol: string,
+ *   printerQueue: string
  * }}
  */
 var CupsPrinterInfo;

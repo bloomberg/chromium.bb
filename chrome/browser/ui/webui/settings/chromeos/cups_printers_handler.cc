@@ -7,42 +7,21 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "printing/backend/print_backend.h"
-
-namespace {
-
-// TODO(xdai): Retrieve the CUPS printers list from user preference instead.
-void EnumeratePrintersOnBlockingPoolThread(base::ListValue* printers) {
-  scoped_refptr<printing::PrintBackend> print_backend(
-      printing::PrintBackend::CreateInstance(nullptr));
-
-  printing::PrinterList printer_list;
-  print_backend->EnumeratePrinters(&printer_list);
-
-  for (const printing::PrinterBasicInfo& printer : printer_list) {
-    std::unique_ptr<base::DictionaryValue> printer_info(
-        new base::DictionaryValue);
-    printer_info->SetString("printerName", printer.printer_name);
-    printer_info->SetString("printerDescription", printer.printer_description);
-    for (const auto opt_it : printer.options) {
-      // TODO(xdai): Get "printerAddress" and "printerProtocol" from URI.
-      if (opt_it.first == "printer-make-and-model")
-        printer_info->SetString("printerModel", opt_it.second);
-    }
-    printers->Append(std::move(printer_info));
-  }
-}
-
-}  // namespace
+#include "url/third_party/mozilla/url_parse.h"
 
 namespace chromeos {
 namespace settings {
 
-CupsPrintersHandler::CupsPrintersHandler() : weak_factory_(this) {}
+CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
+    : profile_(Profile::FromWebUI(webui)), weak_factory_(this) {}
 
 CupsPrintersHandler::~CupsPrintersHandler() {}
 
@@ -61,8 +40,6 @@ void CupsPrintersHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-// TODO(xdai): Retrieve the CUPS printer list from user preference instead after
-// the CL https://codereview.chromium.org/2161933003/ is landed.
 void CupsPrintersHandler::HandleGetCupsPrintersList(
     const base::ListValue* args) {
   AllowJavascript();
@@ -71,31 +48,65 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
-  base::ListValue* printers_list = new base::ListValue;
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(&EnumeratePrintersOnBlockingPoolThread,
-                            base::Unretained(printers_list)),
-      base::Bind(&CupsPrintersHandler::OnGetCupsPrintersList,
-                 weak_factory_.GetWeakPtr(), callback_id,
-                 base::Owned(printers_list)));
-}
+  std::vector<std::unique_ptr<Printer>> printers =
+      PrinterPrefManagerFactory::GetForBrowserContext(profile_)->GetPrinters();
 
-void CupsPrintersHandler::OnGetCupsPrintersList(
-    const std::string callback_id,
-    base::ListValue* printers_list) {
-  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-  response->Set("printerList", printers_list->DeepCopy());
+  base::ListValue* printers_list = new base::ListValue;
+  for (const std::unique_ptr<Printer>& printer : printers) {
+    std::unique_ptr<base::DictionaryValue> printer_info =
+        base::MakeUnique<base::DictionaryValue>();
+    printer_info->SetString("printerId", printer->id());
+    printer_info->SetString("printerName", printer->display_name());
+    printer_info->SetString("printerDescription", printer->description());
+    printer_info->SetString("printerManufacturer", printer->manufacturer());
+    printer_info->SetString("printerModel", printer->model());
+
+    // Get protocol, ip address and queue from the printer's URI.
+    const std::string printer_uri = printer->uri();
+    url::Parsed parsed;
+    url::ParseStandardURL(printer_uri.c_str(), printer_uri.length(), &parsed);
+
+    std::string scheme;
+    std::string host;
+    std::string path;
+    if (parsed.scheme.len > 0)
+      scheme = std::string(printer_uri, parsed.scheme.begin, parsed.scheme.len);
+    if (parsed.host.len > 0)
+      host = std::string(printer_uri, parsed.host.begin, parsed.host.len);
+    if (parsed.path.len > 0)
+      path = std::string(printer_uri, parsed.path.begin, parsed.path.len);
+
+    printer_info->SetString("printerAddress", host);
+    printer_info->SetString("printerProtocol", base::ToLowerASCII(scheme));
+    if (base::ToLowerASCII(scheme) == "lpd" && !path.empty())
+      printer_info->SetString("printerQueue", path.substr(1));
+
+    printers_list->Append(std::move(printer_info));
+  }
+
+  std::unique_ptr<base::DictionaryValue> response =
+      base::MakeUnique<base::DictionaryValue>();
+  response->Set("printerList", printers_list);
   ResolveJavascriptCallback(base::StringValue(callback_id), *response);
 }
 
 void CupsPrintersHandler::HandleUpdateCupsPrinter(const base::ListValue* args) {
-  // TODO(xdai): Implement it after https://codereview.chromium.org/2161933003/
-  // is landed.
+  std::string printer_id;
+  std::string printer_name;
+  CHECK(args->GetString(0, &printer_id));
+  CHECK(args->GetString(1, &printer_name));
+
+  std::unique_ptr<Printer> printer = base::MakeUnique<Printer>(printer_id);
+  printer->set_display_name(printer_name);
+  PrinterPrefManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
+      std::move(printer));
 }
 
 void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
-  // TODO(xdai): Implement it after https://codereview.chromium.org/2161933003/
-  // is landed.
+  std::string printer_id;
+  CHECK(args->GetString(0, &printer_id));
+  PrinterPrefManagerFactory::GetForBrowserContext(profile_)->RemovePrinter(
+      printer_id);
 }
 
 }  // namespace settings
