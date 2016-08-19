@@ -769,7 +769,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
 void Combobox::PaintButtons(gfx::Canvas* canvas) {
   DCHECK(style_ == STYLE_ACTION);
 
-  gfx::ScopedRTLFlipCanvas scoped_canvas(canvas, bounds());
+  gfx::ScopedRTLFlipCanvas scoped_canvas(canvas, width());
 
   bool focused = HasFocus();
   const std::vector<const gfx::ImageSkia*>& arrow_button_images =

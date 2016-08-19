@@ -17,6 +17,7 @@
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/gfx/vector_icons.h"
 
@@ -82,7 +83,6 @@ void PaintPath(Canvas* canvas,
                const PathElement* path_elements,
                size_t dip_size,
                SkColor color) {
-  canvas->Save();
   SkPath path;
   path.setFillType(SkPath::kEvenOdd_FillType);
 
@@ -293,10 +293,8 @@ void PaintPath(Canvas* canvas,
     }
   }
 
-  if (flips_in_rtl && base::i18n::IsRTL()) {
-    canvas->Scale(-1, 1);
-    canvas->Translate(gfx::Vector2d(-static_cast<int>(canvas_size), 0));
-  }
+  gfx::ScopedRTLFlipCanvas scoped_rtl_flip_canvas(
+      canvas, static_cast<int>(canvas_size), flips_in_rtl);
 
   if (dip_size != canvas_size) {
     SkScalar scale = SkIntToScalar(dip_size) / SkIntToScalar(canvas_size);
@@ -309,7 +307,6 @@ void PaintPath(Canvas* canvas,
   DCHECK_EQ(paints.size(), paths.size());
   for (size_t i = 0; i < paths.size(); ++i)
     canvas->DrawPath(paths[i], paints[i]);
-  canvas->Restore();
 }
 
 class VectorIconSource : public CanvasImageSource {

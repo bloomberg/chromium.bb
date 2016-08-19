@@ -11,8 +11,6 @@
 
 namespace gfx {
 
-class Rect;
-
 // Saves the drawing state, and restores the state when going out of scope.
 class GFX_EXPORT ScopedCanvas {
  public:
@@ -31,12 +29,12 @@ class GFX_EXPORT ScopedCanvas {
   DISALLOW_COPY_AND_ASSIGN(ScopedCanvas);
 };
 
-// Saves the drawing state, and applies an RTL transform for the supplied rect
-// if the UI is in RTL layout. The resulting transform is such that anything
-// drawn inside the supplied rect will be flipped horizontally.
+// Saves the drawing state.  If |flip| is true, and the UI is in RTL layout,
+// applies a transform such that anything drawn inside the supplied width will
+// be flipped horizontally.
 class GFX_EXPORT ScopedRTLFlipCanvas {
  public:
-  ScopedRTLFlipCanvas(gfx::Canvas* canvas, const gfx::Rect& rect);
+  ScopedRTLFlipCanvas(gfx::Canvas* canvas, int width, bool flip = true);
   ~ScopedRTLFlipCanvas() {}
 
  private:

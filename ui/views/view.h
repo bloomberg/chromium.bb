@@ -538,13 +538,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // This method determines whether the gfx::Canvas object passed to
   // View::Paint() needs to be transformed such that anything drawn on the
   // canvas object during View::Paint() is flipped horizontally.
-  //
-  // By default, this function returns false (which is the initial value of
-  // |flip_canvas_on_paint_for_rtl_ui_|). View subclasses that need to paint on
-  // a flipped gfx::Canvas when the UI layout is right-to-left need to call
-  // EnableCanvasFlippingForRTLUI().
-  bool FlipCanvasOnPaintForRTLUI() const {
-    return flip_canvas_on_paint_for_rtl_ui_ ? base::i18n::IsRTL() : false;
+  bool flip_canvas_on_paint_for_rtl_ui() const {
+    return flip_canvas_on_paint_for_rtl_ui_;
   }
 
   // Enables or disables flipping of the gfx::Canvas during View::Paint().

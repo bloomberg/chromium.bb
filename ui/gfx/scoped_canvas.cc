@@ -10,10 +10,11 @@
 namespace gfx {
 
 ScopedRTLFlipCanvas::ScopedRTLFlipCanvas(gfx::Canvas* canvas,
-                                         const gfx::Rect& rect)
+                                         int width,
+                                         bool flip)
     : canvas_(canvas) {
-  if (base::i18n::IsRTL()) {
-    canvas->Translate(gfx::Vector2d(rect.width(), 0));
+  if (flip && base::i18n::IsRTL()) {
+    canvas->Translate(gfx::Vector2d(width, 0));
     canvas->Scale(-1, 1);
   }
 }

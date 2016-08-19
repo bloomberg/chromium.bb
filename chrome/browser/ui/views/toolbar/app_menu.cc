@@ -54,6 +54,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/background.h"
@@ -162,10 +163,10 @@ class InMenuButtonBackground : public views::Background {
     // layout is RTL and the button isn't mirroring itself.
     gfx::Rect bounds(view->GetLocalBounds());
     if (type_ == LEADING_BORDER) {
-      gfx::Rect rect = view->FlipCanvasOnPaintForRTLUI()
-          ? gfx::Rect(0, 0, 1, h)
-          : gfx::Rect(view->GetMirroredXWithWidthInView(0, 1), 0, 1, h);
-      canvas->FillRect(rect, BorderColor(view, views::Button::STATE_NORMAL));
+      gfx::ScopedRTLFlipCanvas scoped_canvas(
+          canvas, view->width(), view->flip_canvas_on_paint_for_rtl_ui());
+      canvas->FillRect(gfx::Rect(0, 0, 1, h),
+                       BorderColor(view, views::Button::STATE_NORMAL));
       bounds.Inset(gfx::Insets(0, 1, 0, 0));
     }
 

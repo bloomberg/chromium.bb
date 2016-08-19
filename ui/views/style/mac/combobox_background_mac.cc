@@ -22,7 +22,7 @@ ComboboxBackgroundMac::~ComboboxBackgroundMac() {}
 
 void ComboboxBackgroundMac::Paint(gfx::Canvas* canvas, View* view) const {
   gfx::RectF bounds(view->GetLocalBounds());
-  gfx::ScopedRTLFlipCanvas scoped_canvas(canvas, view->bounds());
+  gfx::ScopedRTLFlipCanvas scoped_canvas(canvas, view->width());
 
   // Inset the left side far enough to draw only the arrow button, and inset the
   // other three sides by half a pixel so the edge of the background doesn't

@@ -8,6 +8,7 @@
 #include "grit/ash_resources.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/native_theme_delegate.h"
@@ -85,15 +86,8 @@ void TrayPopupLabelButtonBorder::Paint(const views::View& view,
     if (first_visible_child == &view)
       return;
   }
-  if (base::i18n::IsRTL()) {
-    canvas->Save();
-    canvas->Translate(gfx::Vector2d(view.width(), 0));
-    canvas->Scale(-1, 1);
-    LabelButtonAssetBorder::Paint(view, canvas);
-    canvas->Restore();
-  } else {
-    LabelButtonAssetBorder::Paint(view, canvas);
-  }
+  gfx::ScopedRTLFlipCanvas scoped_canvas(canvas, view.width());
+  LabelButtonAssetBorder::Paint(view, canvas);
 }
 
 }  // namespace ash
