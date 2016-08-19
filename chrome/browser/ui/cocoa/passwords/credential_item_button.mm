@@ -16,7 +16,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
-constexpr CGFloat kFocusRingLineWidth = 2;
+constexpr CGFloat kFocusRingInset = 3;
 constexpr CGFloat kHorizontalPaddingBetweenAvatarAndLabel = 10;
 }  // namespace
 
@@ -74,25 +74,14 @@ constexpr CGFloat kHorizontalPaddingBetweenAvatarAndLabel = 10;
   return buttonSize;
 }
 
-- (NSFocusRingType)focusRingType {
-  // This is taken care of by the custom drawing code.
-  return NSFocusRingTypeNone;
-}
+- (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame
+                            inView:(NSView *)controlView {
+  NSRect focusRingRect =
+      NSInsetRect(cellFrame, kFocusRingInset, kFocusRingInset);
 
-- (void)drawWithFrame:(NSRect)frame inView:(NSView*)controlView {
-  [super drawInteriorWithFrame:frame inView:controlView];
-
-  // Focus ring.
-  if ([self showsFirstResponder]) {
-    NSRect focusRingRect =
-        NSInsetRect(frame, kFocusRingLineWidth, kFocusRingLineWidth);
-    // TODO(vasilii): When we are targetting 10.7, we should change this to use
-    // -drawFocusRingMaskWithFrame instead.
-    [[[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:1] set];
-    NSBezierPath* path = [NSBezierPath bezierPathWithRect:focusRingRect];
-    [path setLineWidth:kFocusRingLineWidth];
-    [path stroke];
-  }
+  [[NSBezierPath bezierPathWithRoundedRect:focusRingRect
+                                   xRadius:2
+                                   yRadius:2] fill];
 }
 
 @end

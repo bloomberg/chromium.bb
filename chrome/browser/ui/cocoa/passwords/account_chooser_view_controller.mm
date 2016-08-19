@@ -27,7 +27,8 @@
 
 namespace {
 
-// Returns height of one credential item.
+// Standard height of one credential item. It can be bigger though in case the
+// text needs more vertical space than the avatar.
 constexpr CGFloat kCredentialHeight =
     kAvatarImageSize + 2 * kVerticalAvatarMargin;
 
@@ -124,28 +125,30 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
       curX - NSWidth([cancelButton_ frame]),
       kFramePadding)];
 
-  NSSize buttonsSize = NSMakeSize(
-      kDesiredBubbleWidth,
-      std::min<CGFloat>([credentialButtons_ count], kMaxHeightAccounts) *
-          kCredentialHeight);
   base::scoped_nsobject<NSScrollView> scrollView([[NSScrollView alloc]
-      initWithFrame:NSMakeRect(0, 0, buttonsSize.width, buttonsSize.height)]);
+      initWithFrame:NSMakeRect(0, 0, kDesiredBubbleWidth, kCredentialHeight)]);
   [scrollView
       setHasVerticalScroller:[credentialButtons_ count] > kMaxHeightAccounts
                                  ? YES
                                  : NO];
   [scrollView setBorderType:NSNoBorder];
-  CGFloat buttonWidth = [scrollView contentSize].width;
+  const CGFloat buttonWidth = [scrollView contentSize].width;
   CGFloat curY = 0;
   base::scoped_nsobject<NSView> documentView([[NSView alloc]
-      initWithFrame:NSMakeRect(0, 0, buttonWidth, [credentialButtons_ count] *
-                                                      kCredentialHeight)]);
+      initWithFrame:NSZeroRect]);
   for (CredentialItemButton* button in credentialButtons_.get()) {
     [documentView addSubview:button];
-    [button setFrame:NSMakeRect(0, curY, buttonWidth, kCredentialHeight)];
+    CGFloat cellHeight = [[button cell] cellSize].height;
+    [button setFrame:NSMakeRect(0, curY, buttonWidth,
+                                cellHeight + 2 * kVerticalAvatarMargin)];
     curY = NSMaxY([button frame]);
   }
+  [documentView setFrameSize:NSMakeSize(buttonWidth, curY)];
   [scrollView setDocumentView:documentView];
+  [scrollView setFrameSize:NSMakeSize(
+      kDesiredBubbleWidth,
+      [scrollView hasVerticalScroller] ? kMaxHeightAccounts * kCredentialHeight
+                                       : curY)];
   [view addSubview:scrollView];
   [documentView scrollRectToVisible:NSMakeRect(0, curY, buttonWidth, 0)];
   curY = NSMaxY([cancelButton_ frame]) + 3 * kRelatedControlVerticalSpacing;
@@ -189,11 +192,10 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
 - (void)loadCredentialItems {
   base::scoped_nsobject<NSMutableArray> items([[NSMutableArray alloc] init]);
   PasswordDialogController* controller = self.bridge->GetDialogController();
-  NSRect rect = NSMakeRect(0, 0, kDesiredBubbleWidth, kCredentialHeight);
   for (const auto& form : controller->GetLocalForms()) {
     base::scoped_nsobject<CredentialItemButton> item(
         [[CredentialItemButton alloc]
-              initWithFrame:rect
+              initWithFrame:NSZeroRect
             backgroundColor:[NSColor textBackgroundColor]
                  hoverColor:skia::SkColorToSRGBNSColor(kButtonHoverColor)]);
     [item setPasswordForm:form.get()];
