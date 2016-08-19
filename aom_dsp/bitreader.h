@@ -131,7 +131,7 @@ static INLINE int aom_read_tree(aom_reader *r, const aom_tree_index *tree,
 #endif
 }
 
-static INLINE int aom_read_symbol(aom_reader *r, const uint16_t *cdf,
+static INLINE int aom_read_symbol(aom_reader *r, const aom_cdf_prob *cdf,
                                   int nsymbs) {
 #if CONFIG_RANS
   (void)nsymbs;
