@@ -187,18 +187,7 @@ void InitializeCrashpadImpl(bool initial_client,
     g_database =
         crashpad::CrashReportDatabase::Initialize(database_path).release();
 
-    bool enable_uploads = false;
-    if (!crash_reporter_client->ReportingIsEnforcedByPolicy(&enable_uploads)) {
-      // Breakpad provided a --disable-breakpad switch to disable crash dumping
-      // (not just uploading) here. Crashpad doesn't need it: dumping is enabled
-      // unconditionally and uploading is gated on consent, which tests/bots
-      // shouldn't have. As a precaution, uploading is also disabled on bots
-      // even if consent is present.
-      enable_uploads = crash_reporter_client->GetCollectStatsConsent() &&
-                       !crash_reporter_client->IsRunningUnattended();
-    }
-
-    SetUploadsEnabled(enable_uploads);
+    SetUploadConsent(crash_reporter_client->GetCollectStatsConsent());
   }
 }
 
@@ -215,11 +204,24 @@ void InitializeCrashpadWithEmbeddedHandler(bool initial_client,
 }
 #endif  // OS_WIN
 
-void SetUploadsEnabled(bool enable_uploads) {
-  if (g_database) {
-    crashpad::Settings* settings = g_database->GetSettings();
-    settings->SetUploadsEnabled(enable_uploads);
+void SetUploadConsent(bool consent) {
+  if (!g_database)
+    return;
+
+  bool enable_uploads = false;
+  CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
+  if (!crash_reporter_client->ReportingIsEnforcedByPolicy(&enable_uploads)) {
+    // Breakpad provided a --disable-breakpad switch to disable crash dumping
+    // (not just uploading) here. Crashpad doesn't need it: dumping is enabled
+    // unconditionally and uploading is gated on consent, which tests/bots
+    // shouldn't have. As a precaution, uploading is also disabled on bots even
+    // if consent is present.
+    enable_uploads = consent && !crash_reporter_client->IsRunningUnattended();
   }
+
+  crashpad::Settings* settings = g_database->GetSettings();
+  settings->SetUploadsEnabled(enable_uploads &&
+                              crash_reporter_client->GetCollectStatsInSample());
 }
 
 bool GetUploadsEnabled() {
@@ -291,6 +293,16 @@ void GetReports(std::vector<Report>* reports) {
 #if defined(OS_WIN)
 
 extern "C" {
+
+// This function is used in chrome_metrics_services_manager_client.cc to trigger
+// changes to the upload-enabled state. This is done when the metrics services
+// are initialized, and when the user changes their consent for uploads. See
+// crash_reporter::SetUploadConsent for effects.
+void __declspec(dllexport) __cdecl SetUploadConsentImpl(bool consent) {
+  DCHECK_EQ(consent,
+            crash_reporter::GetCrashReporterClient()->GetCollectStatsConsent());
+  crash_reporter::SetUploadConsent(consent);
+}
 
 // NOTE: This function is used by SyzyASAN to annotate crash reports. If you
 // change the name or signature of this function you will break SyzyASAN

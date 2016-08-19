@@ -55,6 +55,11 @@ class ChromeMetricsServicesManagerClient
   bool IsMetricsReportingEnabled() override;
   bool OnlyDoMetricsRecording() override;
 
+#if defined(OS_WIN)
+  // On Windows, the client controls whether Crashpad can upload crash reports.
+  void UpdateRunningServices(bool may_record, bool may_upload) override;
+#endif  // defined(OS_WIN)
+
   // Gets the MetricsStateManager, creating it if it has not already been
   // created.
   metrics::MetricsStateManager* GetMetricsStateManager();

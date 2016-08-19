@@ -363,6 +363,10 @@ bool ChromeCrashReporterClient::GetCollectStatsConsent() {
   return install_static::GetCollectStatsConsent();
 }
 
+bool ChromeCrashReporterClient::GetCollectStatsInSample() {
+  return install_static::GetCollectStatsInSample();
+}
+
 bool ChromeCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   return process_type == install_static::kRendererProcess ||

@@ -64,7 +64,7 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
 // static
 bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
 #if defined(OS_MACOSX)
-  crash_reporter::SetUploadsEnabled(consented);
+  crash_reporter::SetUploadConsent(consented);
 #endif
 
   base::FilePath consent_dir;

@@ -122,6 +122,11 @@ bool CrashReporterClient::GetCollectStatsConsent() {
   return false;
 }
 
+bool CrashReporterClient::GetCollectStatsInSample() {
+  // By default, clients don't do sampling, so everything will be "in-sample".
+  return true;
+}
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 bool CrashReporterClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
   return false;

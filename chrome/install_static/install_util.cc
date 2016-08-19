@@ -87,6 +87,14 @@ const wchar_t kBrowserCrashDumpMetricsSubKey[] = L"\\BrowserCrashDumpAttempts";
 const wchar_t kRegPathGoogleUpdate[] = L"Software\\Google\\Update";
 const wchar_t kRegGoogleUpdateVersion[] = L"version";
 
+// Registry key to store the stats/crash sampling state of Chrome. If set to 1,
+// stats and crash reports will be uploaded in line with the user's consent,
+// otherwise, uploads will be disabled. It is used to sample clients, to reduce
+// server load for metics and crashes. This is controlled by the
+// MetricsReporting feature in chrome_metrics_services_manager_client.cc and is
+// written when metrics services are started up and when consent changes.
+const wchar_t kRegValueChromeStatsSample[] = L"UsageStatsInSample";
+
 void Trace(const wchar_t* format_string, ...) {
   static const int kMaxLogBufferSize = 1024;
   static wchar_t buffer[kMaxLogBufferSize] = {};
@@ -232,6 +240,12 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path) {
     }
   }
   return true;
+}
+
+std::wstring GetChromeInstallRegistryPath() {
+  std::wstring registry_path = L"Software\\";
+  registry_path += GetChromeInstallSubDirectory();
+  return registry_path;
 }
 
 bool GetCollectStatsConsentImpl(const std::wstring& exe_path) {
@@ -410,6 +424,33 @@ bool GetCollectStatsConsent() {
 
 bool GetCollectStatsConsentForTesting(const std::wstring& exe_path) {
   return GetCollectStatsConsentImpl(exe_path);
+}
+
+bool GetCollectStatsInSample() {
+  std::wstring registry_path = GetChromeInstallRegistryPath();
+
+  DWORD out_value = 0;
+  if (!nt::QueryRegValueDWORD(nt::HKCU, registry_path.c_str(),
+                              kRegValueChromeStatsSample, &out_value)) {
+    // If reading the value failed, treat it as though sampling isn't in effect,
+    // implicitly meaning this install is in the sample.
+    return true;
+  }
+  return out_value == 1;
+}
+
+bool SetCollectStatsInSample(bool in_sample) {
+  std::wstring registry_path = GetChromeInstallRegistryPath();
+
+  HANDLE key_handle = INVALID_HANDLE_VALUE;
+  if (!nt::CreateRegKey(nt::HKCU, registry_path.c_str(), KEY_SET_VALUE,
+                        &key_handle)) {
+    nt::CloseRegKey(key_handle);
+    return false;
+  }
+
+  return nt::SetRegValueDWORD(key_handle, kRegValueChromeStatsSample,
+                              in_sample ? 1 : 0);
 }
 
 bool ReportingIsEnforcedByPolicy(bool* metrics_is_enforced_by_policy) {
@@ -678,8 +719,7 @@ std::wstring GetChromeInstallSubDirectory() {
 }
 
 std::wstring GetBrowserCrashDumpAttemptsRegistryPath() {
-  std::wstring registry_path = L"Software\\";
-  registry_path += GetChromeInstallSubDirectory();
+  std::wstring registry_path = GetChromeInstallRegistryPath();
   registry_path += kBrowserCrashDumpMetricsSubKey;
   return registry_path;
 }

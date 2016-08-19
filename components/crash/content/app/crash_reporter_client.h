@@ -138,6 +138,11 @@ class CrashReporterClient {
   // Returns true if the user has given consent to collect stats.
   virtual bool GetCollectStatsConsent();
 
+  // Returns true if the client is currently in the chosen sample that will
+  // report stats and crashes. Crashes should only be reported if this function
+  // returns true and GetCollectStatsConsent returns true.
+  virtual bool GetCollectStatsInSample();
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Returns true if crash reporting is enforced via management policies. In
   // that case, |breakpad_enabled| is set to the value enforced by policies.

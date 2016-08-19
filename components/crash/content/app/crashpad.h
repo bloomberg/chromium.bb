@@ -55,12 +55,15 @@ void InitializeCrashpadWithEmbeddedHandler(bool initial_client,
                                            const std::string& process_type);
 #endif  // OS_WIN
 
-// Enables or disables crash report upload. This is a property of the Crashpad
-// database. In a newly-created database, uploads will be disabled. This
-// function only has an effect when called in the browser process. Its effect is
-// immediate and applies to all other process types, including processes that
-// are already running.
-void SetUploadsEnabled(bool enabled);
+// Enables or disables crash report upload, taking the given consent to upload
+// into account. Consent may be ignored, uploads may not be enabled even with
+// consent, but will only be enabled without consent when policy enforces crash
+// reporting. Whether reports upload is a property of the Crashpad database. In
+// a newly-created database, uploads will be disabled. This function only has an
+// effect when called in the browser process. Its effect is immediate and
+// applies to all other process types, including processes that are already
+// running.
+void SetUploadConsent(bool consent);
 
 // Determines whether uploads are enabled or disabled. This information is only
 // available in the browser process.

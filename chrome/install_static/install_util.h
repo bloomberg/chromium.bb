@@ -34,6 +34,7 @@ extern const wchar_t kRegPathClientState[];
 extern const wchar_t kRegPathClientStateMedium[];
 extern const wchar_t kRegPathChromePolicy[];
 extern const wchar_t kRegApField[];
+// Used to retrieve consent for uploading crashes and metrics.
 extern const wchar_t kRegValueUsageStats[];
 extern const wchar_t kUninstallArgumentsField[];
 extern const wchar_t kMetricsReportingEnabled[];
@@ -77,6 +78,14 @@ bool GetCollectStatsConsent();
 // executable passed in as |exe_path|.
 // Only used by tests.
 bool GetCollectStatsConsentForTesting(const std::wstring& exe_path);
+
+// Returns true if the current executable is currently in the chosen sample that
+// will report stats and crashes.
+bool GetCollectStatsInSample();
+
+// Sets the registry value used for checking if Chrome is in the chosen sample
+// that will report stats and crashes. Returns true if writing was successful.
+bool SetCollectStatsInSample(bool in_sample);
 
 // Returns true if if usage stats reporting is controlled by a mandatory
 // policy. |metrics_is_enforced_by_policy| will be set to true accordingly.

@@ -4,6 +4,7 @@ include_rules = [
   "+chrome/app",
   "+chrome/chrome_watcher",
   "+chrome/grit",  # For generated headers
+  "+chrome/install_static",
   "+chrome/installer",
   "+chrome_elf/blacklist",
   "+chrome_elf/chrome_elf_constants.h",
