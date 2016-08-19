@@ -126,6 +126,9 @@ crbug.com/636311 [ Win10 ] svg/custom/use-clipped-hit.svg [ Pass Failure ]
 
 crbug.com/637069 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
 
+crbug.com/639196 [ Win7 ] fast/repaint/align-self-change-keeping-geometry-grid.html [ Pass Failure ]
+crbug.com/639196 [ Win7 ] fast/repaint/justify-self-change-keeping-geometry.html [ Pass Failure ]
+
 # ====== Paint team owned tests to here ======
 
 # Run these tests with under virtual/scalefactor... only.
