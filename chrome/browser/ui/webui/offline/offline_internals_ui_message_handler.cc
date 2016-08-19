@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/offline_internals_ui.h"
+#include "chrome/browser/ui/webui/offline/offline_internals_ui_message_handler.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -10,101 +10,15 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/url_constants.h"
-#include "components/offline_pages/background/request_coordinator.h"
-#include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/client_namespace_constants.h"
-#include "components/offline_pages/offline_page_model.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_controller.h"
-#include "content/public/browser/web_ui_data_source.h"
-#include "content/public/browser/web_ui_message_handler.h"
-#include "grit/browser_resources.h"
 #include "net/base/network_change_notifier.h"
 
-namespace {
-
-// Class acting as a controller of the chrome://offline-internals WebUI.
-// TODO(chili): Should split this file and move to webui/offline_internals/
-class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
- public:
-  OfflineInternalsUIMessageHandler();
-  ~OfflineInternalsUIMessageHandler() override;
-
-  // WebUIMessageHandler implementation.
-  void RegisterMessages() override;
-
- private:
-  // Deletes all the pages in the store.
-  void HandleDeleteAllPages(const base::ListValue* args);
-
-  // Delete selected list of page ids from the store.
-  void HandleDeleteSelectedPages(const base::ListValue* args);
-
-  // Load Request Queue info.
-  void HandleGetRequestQueue(const base::ListValue* args);
-
-  // Load Stored pages info.
-  void HandleGetStoredPages(const base::ListValue* args);
-
-  // Set whether to record offline page model events.
-  void HandleSetRecordPageModel(const base::ListValue* args);
-
-  // Set whether to record request queue events.
-  void HandleSetRecordRequestQueue(const base::ListValue* args);
-
-  // Load both Page Model and Request Queue event logs.
-  void HandleGetEventLogs(const base::ListValue* args);
-
-  // Load whether logs are being recorded.
-  void HandleGetLoggingState(const base::ListValue* args);
-
-  // Adds a url to the background loader queue.
-  void HandleAddToRequestQueue(const base::ListValue* args);
-
-  // Load whether device is currently offline.
-  void HandleGetNetworkStatus(const base::ListValue* args);
-
-  // Callback for async GetAllPages calls.
-  void HandleStoredPagesCallback(
-      std::string callback_id,
-      const offline_pages::MultipleOfflinePageItemResult& pages);
-
-  // Callback for async GetRequests calls.
-  void HandleRequestQueueCallback(
-      std::string callback_id,
-      offline_pages::RequestQueue::GetRequestsResult result,
-      const std::vector<offline_pages::SavePageRequest>& requests);
-
-  // Callback for DeletePage/ClearAll calls.
-  void HandleDeletedPagesCallback(std::string callback_id,
-                                  const offline_pages::DeletePageResult result);
-
-  // Turns a DeletePageResult enum into logical string.
-  std::string GetStringFromDeletePageResult(
-      offline_pages::DeletePageResult value);
-
-  // Turns a SavePageRequest::Status into logical string.
-  std::string GetStringFromSavePageStatus();
-
-  // Offline page model to call methods on.
-  offline_pages::OfflinePageModel* offline_page_model_;
-
-  // Request coordinator for background offline actions.
-  offline_pages::RequestCoordinator* request_coordinator_;
-
-  // Factory for creating references in callbacks.
-  base::WeakPtrFactory<OfflineInternalsUIMessageHandler> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(OfflineInternalsUIMessageHandler);
-};
+namespace offline_internals {
 
 OfflineInternalsUIMessageHandler::OfflineInternalsUIMessageHandler()
     : offline_page_model_(nullptr),
@@ -194,8 +108,7 @@ void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
     offline_page->SetString("id", std::to_string(page.offline_id));
     offline_page->SetString("filePath", page.GetOfflineURL().spec());
     offline_page->SetDouble("creationTime", page.creation_time.ToJsTime());
-    offline_page->SetDouble("lastAccessTime",
-                              page.last_access_time.ToJsTime());
+    offline_page->SetDouble("lastAccessTime", page.last_access_time.ToJsTime());
     offline_page->SetInteger("accessCount", page.access_count);
     offline_page->SetString("isExpired", page.IsExpired() ? "Yes" : "No");
   }
@@ -214,9 +127,7 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
       save_page_request->SetString("onlineUrl", request.url().spec());
       save_page_request->SetDouble("creationTime",
                                    request.creation_time().ToJsTime());
-      save_page_request->SetString(
-          "status",
-          GetStringFromSavePageStatus());
+      save_page_request->SetString("status", GetStringFromSavePageStatus());
       save_page_request->SetString("namespace", request.client_id().name_space);
       save_page_request->SetDouble("lastAttempt",
                                    request.last_attempt_time().ToJsTime());
@@ -272,8 +183,8 @@ void OfflineInternalsUIMessageHandler::HandleGetNetworkStatus(
 
   ResolveJavascriptCallback(
       *callback_id,
-      base::StringValue(
-          net::NetworkChangeNotifier::IsOffline() ? "Offline" : "Online"));
+      base::StringValue(net::NetworkChangeNotifier::IsOffline() ? "Offline"
+                                                                : "Online"));
 }
 
 void OfflineInternalsUIMessageHandler::HandleSetRecordRequestQueue(
@@ -329,12 +240,10 @@ void OfflineInternalsUIMessageHandler::HandleAddToRequestQueue(
 
   ResolveJavascriptCallback(
       *callback_id,
-      base::FundamentalValue(
-          request_coordinator_->SavePageLater(
-              GURL(url),
-              offline_pages::ClientId(offline_pages::kAsyncNamespace,
-                                      id_stream.str()),
-              true)));
+      base::FundamentalValue(request_coordinator_->SavePageLater(
+          GURL(url), offline_pages::ClientId(offline_pages::kAsyncNamespace,
+                                             id_stream.str()),
+          true)));
 }
 
 void OfflineInternalsUIMessageHandler::RegisterMessages() {
@@ -387,27 +296,4 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
       offline_pages::RequestCoordinatorFactory::GetForBrowserContext(profile);
 }
 
-}  // namespace
-
-OfflineInternalsUI::OfflineInternalsUI(content::WebUI* web_ui)
-    : content::WebUIController(web_ui) {
-  // chrome://offline-internals source.
-  content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(chrome::kChromeUIOfflineInternalsHost);
-
-  // Required resources.
-  html_source->SetJsonPath("strings.js");
-  html_source->AddResourcePath("offline_internals.css",
-                               IDR_OFFLINE_INTERNALS_CSS);
-  html_source->AddResourcePath("offline_internals.js",
-                               IDR_OFFLINE_INTERNALS_JS);
-  html_source->AddResourcePath("offline_internals_browser_proxy.js",
-                               IDR_OFFLINE_INTERNALS_BROWSER_PROXY_JS);
-  html_source->SetDefaultResource(IDR_OFFLINE_INTERNALS_HTML);
-
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
-
-  web_ui->AddMessageHandler(new OfflineInternalsUIMessageHandler());
-}
-
-OfflineInternalsUI::~OfflineInternalsUI() {}
+}  // namespace offline_internals

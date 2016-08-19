@@ -104,7 +104,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/offline_internals_ui.h"
+#include "chrome/browser/ui/webui/offline/offline_internals_ui.h"
 #include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
 #include "chrome/browser/ui/webui/snippets_internals_ui.h"
 #else
