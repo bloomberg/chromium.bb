@@ -1179,6 +1179,11 @@ if (enable_java_templates) {
   #     dependencies for this target. This will allow depending on an
   #     android_library target, for example.
   #
+  #   additional_jar_files: Use to package additional files into the output jar.
+  #     Pass a list of length-2 lists with format
+  #     [ [ path_to_file, path_to_put_in_jar ] ]
+  #
+  #
   #   data_deps, testonly
   #
   # Example
