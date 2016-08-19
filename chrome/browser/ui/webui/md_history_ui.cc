@@ -57,6 +57,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("foundSearchResults",
                              IDS_HISTORY_FOUND_SEARCH_RESULTS);
   source->AddLocalizedString("historyInterval", IDS_HISTORY_INTERVAL);
+  source->AddLocalizedString("historyMenuButton",
+                             IDS_MD_HISTORY_HISTORY_MENU_DESCRIPTION);
   source->AddLocalizedString("historyMenuItem",
                              IDS_MD_HISTORY_HISTORY_MENU_ITEM);
   source->AddLocalizedString("itemsSelected", IDS_MD_HISTORY_ITEMS_SELECTED);

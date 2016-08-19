@@ -129,7 +129,7 @@
       <cr-toolbar id="main-toolbar" page-name="$i18n{title}"
           clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}"
           hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]"
-          show-menu="[[hasDrawer]]"
+          show-menu="[[hasDrawer]]" menu-label="$i18n{historyMenuButton}"
           on-search-changed="onSearchChanged_">
       </cr-toolbar>
       <template is="dom-if" if="[[itemsSelected_]]">

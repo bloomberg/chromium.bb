@@ -15,6 +15,9 @@ Polymer({
     // Tooltip to display on the clear search button.
     clearLabel: String,
 
+    // Tooltip to display on the menu button.
+    menuLabel: String,
+
     // Value is proxied through to cr-toolbar-search-field. When true,
     // the search field will show a processing spinner.
     spinnerActive: Boolean,

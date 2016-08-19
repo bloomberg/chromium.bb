@@ -72,6 +72,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
       {"basicPageTitle", IDS_SETTINGS_BASIC},
       {"settings", IDS_SETTINGS_SETTINGS},
       {"restart", IDS_SETTINGS_RESTART},
+      {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

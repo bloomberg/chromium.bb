@@ -2437,7 +2437,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
     <div id="leftContent">
-      <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_">
+      <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_" title="[[menuLabel]]">
       </paper-icon-button>
       <h1>[[pageName]]</h1>
     </div>
@@ -2676,7 +2676,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
     <div id="toolbar-container">
-      <cr-toolbar id="main-toolbar" page-name="$i18n{title}" clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}" hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]" show-menu="[[hasDrawer]]" on-search-changed="onSearchChanged_">
+      <cr-toolbar id="main-toolbar" page-name="$i18n{title}" clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}" hidden$="[[itemsSelected_]]" spinner-active="[[spinnerActive]]" show-menu="[[hasDrawer]]" menu-label="$i18n{historyMenuButton}" on-search-changed="onSearchChanged_">
       </cr-toolbar>
       <template is="dom-if" if="[[itemsSelected_]]">
         <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
