@@ -1,68 +1,22 @@
 /* Copyright 2016 The Chromium Authors. All rights reserved.
-   Use of this source code is governed by a BSD-style license that can be
-   found in the LICENSE file. */
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
-:host {
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  width: 582px;
-}
-
-.oobe-icon-div {
- --iron-icon-height: 20px;
- --iron-icon-width: 20px;
- color: var(--google-blue-500);
+#header-container {
+  padding: 64px 64px 0 64px;
 }
 
 .oobe-header {
-  color: black;
-  height: 150px;
+  min-height: 84px; /* 64 title + 20 subtitle */
 }
 
-.oobe-footer {
-  position: relative;
-}
-
-.header-container {
-  padding: 50px 40px 18px;
-}
-
-.footer-container {
-  overflow-y: auto;
-  padding: 24px 40px 34px;
+#footer-container {
+  padding: 44px 64px 0 64px;
 }
 
 #oobe-bottom {
   box-shadow: 0 -1px 1px rgba(0, 0, 0, 0.14);
-  padding: 24px 40px 34px;
+  height: 80px;
+  padding: 0 24px 0 24px;
   z-index: 1;
 }
-
-::content div.oobe-body-text {
-  margin-bottom: 24px;
-}
-
-::content div.oobe-body-text p {
-  color: rgba(0, 0, 0, 0.87);
-  font-size: 14px;
-  line-height: 20px;
-  margin: 0;
-}
-
-::content h1.welcome-message {
-  color: rgba(0, 0, 0, 0.87);
-  font-size: 20px;
-  font-weight: normal;
-  margin-bottom: 0;
-}
-
-::content h1.welcome-message-hint {
-  color: rgba(0, 0, 0, 0.87);
-  font-size: 12px;
-  font-weight: normal;
-  margin-bottom: 0;
-}
-
-

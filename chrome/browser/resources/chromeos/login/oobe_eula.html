@@ -22,29 +22,28 @@
 </iron-iconset-svg>
 
 <dom-module name="oobe-eula-md">
-  <link rel="stylesheet" href="oobe_eula.css">
   <template>
+    <link rel="stylesheet" href="oobe_eula.css">
+    <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <oobe-dialog class="fit" hidden="[[!eulaLoadingScreenShown]]"
         has-buttons>
       <iron-icon icon="oobe-eula:googleg" class="oobe-icon"></iron-icon>
-      <div class="header flex layout vertical end-justified start">
-        <h1 class="welcome-message" i18n-content="termsOfServiceLoading"></h1>
+      <div class="header">
+        <h1 class="title" i18n-content="termsOfServiceLoading"></h1>
       </div>
     </oobe-dialog>
     <oobe-dialog class="fit" hidden="[[!eulaScreenShown]]"
         has-buttons>
       <iron-icon icon="oobe-eula:googleg" class="oobe-icon"></iron-icon>
-      <div class="header flex layout vertical end-justified start">
-        <h1 class="welcome-message" i18n-content="oobeEulaSectionTitle"></h1>
+      <div class="header">
+        <h1 class="title" i18n-content="oobeEulaSectionTitle"></h1>
       </div>
-      <div class="footer layout vertical">
-        <div id="cros-eula">
-          <iframe id="crosEulaFrame" name="cros-eula-frame" class="eula-frame"
-              src="chrome://terms" on-load="onFrameLoad_">
-          </iframe>
-        </div>
+      <div class="footer flex layout vertical">
+        <iframe id="crosEulaFrame" class="flex" src="chrome://terms"
+            on-load="onFrameLoad_">
+        </iframe>
       </div>
-      <div class="bottom-buttons layout horizontal">
+      <div class="bottom-buttons flex layout horizontal end-justified">
         <oobe-text-button inverse on-tap="eulaAccepted_"
             i18n-content="oobeEulaAcceptAndContinueButtonText"
             disabled="[[acceptButtonDisabled]]">

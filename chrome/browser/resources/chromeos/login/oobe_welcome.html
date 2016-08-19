@@ -19,14 +19,16 @@
 </iron-iconset-svg>
 
 <dom-module name="oobe-welcome-md">
+  <link rel="stylesheet" href="oobe_dialog_host.css">
   <link rel="stylesheet" href="oobe_welcome.css">
+  <link rel="stylesheet" href="oobe_dialog_parameters.css">
   <template>
     <oobe-card id="welcomeSection" hidden="[[!welcomeScreenShown]]">
       <div class="header flex vertical layout end-justified start">
         <h1 class="welcome-message" i18n-content="networkScreenGreeting"></h1>
       </div>
       <div class="footer flex vertical layout justified">
-        <div class="welcome-next flex vertical layout center">
+        <div class="welcome-next flex layout vertical center">
           <oobe-next-button id="welcomeNextButton"
               on-tap="onWelcomeNextButtonClicked_">
           </oobe-next-button>
@@ -51,14 +53,14 @@
     <oobe-dialog hidden="[[!languageSelectionScreenShown]]"
         has-buttons>
       <iron-icon icon="icons:language" class="oobe-icon"></iron-icon>
-      <div class="header flex layout vertical end-justified start">
-        <h1 class="welcome-message" i18n-content="languageSectionTitle"></h1>
+      <div class="header">
+        <h1 class="title" i18n-content="languageSectionTitle"></h1>
       </div>
       <div class="footer layout vertical">
         <template is="dom-if" if="[[enabled]]">
           <div id="languageDropdownContainer"
               class="flex layout horizontal justified language-selection-entry">
-            <div class="layout vertical center-justified"
+            <div class="language-selection-title layout vertical center-justified"
                 i18n-content="languageDropdownTitle">
             </div>
             <oobe-i18n-dropdown id="languageSelect" items="[[languages]]"
@@ -68,7 +70,7 @@
           </div>
           <div id="keyboardDropdownContainer"
               class="flex layout horizontal justified language-selection-entry">
-            <div class="layout vertical center-justified"
+            <div class="language-selection-title layout vertical center-justified"
                 i18n-content="keyboardDropdownTitle">
             </div>
             <oobe-i18n-dropdown id="keyboardSelect" items="[[keyboards]]"
@@ -78,7 +80,7 @@
           </div>
         </template>
       </div>
-      <div class="bottom-buttons layout horizontal">
+      <div class="bottom-buttons layout horizontal end-justified">
         <oobe-text-button inverse on-tap="closeLanguageSection_"
           i18n-content="oobeOKButtonText">
         </oobe-text-button>
@@ -87,12 +89,9 @@
     <oobe-dialog hidden="[[!accessibilityOptionsScreenShown]]"
         has-buttons>
       <iron-icon icon="icons:accessibility" class="oobe-icon"></iron-icon>
-      <div class="header flex layout vertical end-justified start">
-        <h1 class="welcome-message" i18n-content="accessibilitySectionTitle">
-        </h1>
-        <h1 class="welcome-message-hint"
-            i18n-content="accessibilitySectionHint">
-        </h1>
+      <div class="header">
+        <h1 class="title" i18n-content="accessibilitySectionTitle"></h1>
+        <div class="subtitle" i18n-content="accessibilitySectionHint"></div>
       </div>
       <div class="footer layout vertical">
         <oobe-a11y-option checked="[[a11yStatus.spokenFeedbackEnabled]]"
@@ -141,7 +140,7 @@
           </span>
         </oobe-a11y-option>
       </div>
-      <div class="bottom-buttons layout horizontal">
+      <div class="bottom-buttons layout horizontal end-justified">
         <oobe-text-button inverse on-tap="closeAccessibilitySection_"
             i18n-content="oobeOKButtonText">
         </oobe-text-button>
@@ -150,17 +149,17 @@
     <oobe-dialog id="networkSection"
         hidden="[[!networkSelectionScreenShown]]">
       <iron-icon icon="oobe-welcome:wifi" class="oobe-icon"></iron-icon>
-      <div class="header flex layout vertical end-justified start">
-        <h1 class="welcome-message" i18n-content="networkSectionTitle"></h1>
-        <h1 class="welcome-message-hint" i18n-content="networkSectionHint"></h1>
+      <div class="header">
+        <h1 class="title" i18n-content="networkSectionTitle"></h1>
+        <div class="subtitle" i18n-content="networkSectionHint"></div>
       </div>
-      <div class="footer flex layout vertical justified">
+      <div class="footer layout vertical">
         <cr-network-select id="networkSelect"
             on-network-connected="onNetworkConnected_"
             on-network-item-selected="onNetworkListNetworkItemSelected_"
             on-custom-item-selected="onNetworkListCustomItemSelected_"
             custom-items="[[_getNetworkCustomItems()]]"
-            max-height="280">
+            max-height="385">
         </cr-network-select>
       </div>
     </oobe-dialog>

@@ -1,0 +1,28 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.selected-icon {
+  --iron-icon-height: 16px;
+  --iron-icon-width: 16px;
+  color: var(--google-blue-500);
+  padding-left: 8px;
+}
+
+paper-item {
+  min-height: 32px;
+}
+
+paper-item[hr] {
+  min-height: 10px;
+}
+
+.option-name {
+  color: rgba(0, 0, 0, 0.87);
+  font: 13px Roboto, sans-serif;
+}
+
+.hr {
+  border-top: 1px solid rgba(0, 0, 0, 0.14);
+  width: 100%;
+}

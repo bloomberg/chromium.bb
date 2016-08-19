@@ -1,15 +1,6 @@
 /* Copyright 2016 The Chromium Authors. All rights reserved.
-   Use of this source code is governed by a BSD-style license that can be
-   found in the LICENSE file. */
-
-:host {
-  display: flex;
-  flex-direction: column;
-  font-size: 18px;
-  overflow: hidden;
-  position: relative;
-  width: 582px;
-}
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 #oobe-welcome-md .buttonbox {
   font-size: 32px;
@@ -22,22 +13,30 @@
 }
 
 #oobe-welcome-md .bottom-button {
-    --iron-icon-height: 32px;
-    --iron-icon-width: 32px;
+  --iron-icon-height: 32px;
+  --iron-icon-width: 32px;
 }
 
 .language-selection-entry {
   border-top: 1px solid lightgrey;
+  height: 44px;
+  padding: 0 20px;
 }
 
 .language-selection-entry:last-of-type {
   border-bottom: 1px solid lightgrey;
 }
 
+.language-selection-title {
+  color: rgba(0, 0, 0, 0.87);
+  font: 13px Roboto, sans-serif;
+}
+
 oobe-a11y-option {
   border-top: 1px solid lightgrey;
+  min-height: 56px;
 }
 
 oobe-a11y-option:last-of-type {
-  border-bottom: 1px solid lightgrey;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.14);
 }

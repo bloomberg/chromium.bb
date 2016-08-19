@@ -25,24 +25,22 @@
   with clases |footer| and |oobe-icon|.
 -->
 <dom-module name="oobe-dialog">
-  <link rel="stylesheet" href="oobe_dialog_host.css">
-  <link rel="stylesheet" href="oobe_dialog.css">
   <template>
-    <div class="oobe-header vertical layout relative">
-      <div class="header-container flex vertical layout relative">
-        <div class="oobe-icon-div">
-          <content select=".oobe-icon"></content>
-        </div>
+    <link rel="stylesheet" href="oobe_dialog_host.css">
+    <link rel="stylesheet" href="oobe_dialog.css">
+    <div id="header-container">
+      <div class="oobe-icon-div">
+        <content select=".oobe-icon"></content>
+      </div>
+      <div class="oobe-header layout vertical">
         <content select=".header"></content>
       </div>
     </div>
-    <div class="oobe-footer flex vertical layout">
-      <div class="footer-container flex vertical layout">
-        <content select=".footer"></content>
-      </div>
+    <div id="footer-container" class="flex">
+      <content select=".footer"></content>
     </div>
     <template is="dom-if" if="[[hasButtons]]">
-      <div id="oobe-bottom" class="layout horizontal end-justified">
+      <div id="oobe-bottom" class="layout horizontal center">
         <content select=".bottom-buttons"></content>
       </div>
     </template>

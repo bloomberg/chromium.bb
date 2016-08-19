@@ -3,7 +3,10 @@
  * found in the LICENSE file. */
 
 :host {
+  background-color: white;
   display: flex;
   flex-direction: column;
+  min-height: 640px;
+  min-width: 768px;
   position: relative;
 }
