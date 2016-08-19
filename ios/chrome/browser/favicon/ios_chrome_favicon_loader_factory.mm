@@ -43,9 +43,9 @@ IOSChromeFaviconLoaderFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(
-      new FaviconLoader(ios::FaviconServiceFactory::GetForBrowserState(
-          browser_state, ServiceAccessType::IMPLICIT_ACCESS)));
+  return base::MakeUnique<FaviconLoader>(
+      ios::FaviconServiceFactory::GetForBrowserState(
+          browser_state, ServiceAccessType::IMPLICIT_ACCESS));
 }
 
 web::BrowserState* IOSChromeFaviconLoaderFactory::GetBrowserStateToUse(

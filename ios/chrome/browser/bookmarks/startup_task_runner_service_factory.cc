@@ -41,8 +41,8 @@ StartupTaskRunnerServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(new bookmarks::StartupTaskRunnerService(
-      browser_state->GetIOTaskRunner()));
+  return base::MakeUnique<bookmarks::StartupTaskRunnerService>(
+      browser_state->GetIOTaskRunner());
 }
 
 }  // namespace ios

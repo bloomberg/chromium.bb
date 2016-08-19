@@ -57,8 +57,8 @@ IOSChromeMetricsServicesManagerClient::
 std::unique_ptr<rappor::RapporService>
 IOSChromeMetricsServicesManagerClient::CreateRapporService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return base::WrapUnique(new rappor::RapporService(
-      local_state_, base::Bind(&::IsOffTheRecordSessionActive)));
+  return base::MakeUnique<rappor::RapporService>(
+      local_state_, base::Bind(&::IsOffTheRecordSessionActive));
 }
 
 std::unique_ptr<variations::VariationsService>

@@ -213,14 +213,14 @@ NSString* SerializePasswordFormFillData(
   // Input elements in the form. The list does not necessarily contain
   // all elements from the form, but all elements listed here are required
   // to identify the right form to fill.
-  auto fieldList = base::WrapUnique(new base::ListValue());
+  auto fieldList = base::MakeUnique<base::ListValue>();
 
-  auto usernameField = base::WrapUnique(new base::DictionaryValue());
+  auto usernameField = base::MakeUnique<base::DictionaryValue>();
   usernameField->SetString("name", formData.username_field.name);
   usernameField->SetString("value", formData.username_field.value);
   fieldList->Append(usernameField.release());
 
-  auto passwordField = base::WrapUnique(new base::DictionaryValue());
+  auto passwordField = base::MakeUnique<base::DictionaryValue>();
   passwordField->SetString("name", formData.password_field.name);
   passwordField->SetString("value", formData.password_field.value);
   fieldList->Append(passwordField.release());

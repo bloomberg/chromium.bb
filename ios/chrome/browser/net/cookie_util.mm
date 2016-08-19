@@ -49,7 +49,7 @@ std::unique_ptr<net::CookieMonster> CreateCookieMonster(
     const CookieStoreConfig& config) {
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    return base::WrapUnique(new net::CookieMonster(nullptr, nullptr));
+    return base::MakeUnique<net::CookieMonster>(nullptr, nullptr);
   }
 
   const bool restore_old_session_cookies =
@@ -92,7 +92,7 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
         config.path, true /* restore_old_session_cookies */,
         config.crypto_delegate);
   }
-  return base::WrapUnique(new net::CookieStoreIOS(persistent_store.get()));
+  return base::MakeUnique<net::CookieStoreIOS>(persistent_store.get());
 }
 
 bool ShouldClearSessionCookies() {

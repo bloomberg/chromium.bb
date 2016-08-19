@@ -24,11 +24,11 @@ std::unique_ptr<KeyedService> BuildAutocompleteClassifier(
     web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(new AutocompleteClassifier(
+  return base::MakeUnique<AutocompleteClassifier>(
       base::WrapUnique(new AutocompleteController(
           base::WrapUnique(new AutocompleteProviderClientImpl(browser_state)),
           nullptr, AutocompleteClassifier::kDefaultOmniboxProviders)),
-      base::WrapUnique(new AutocompleteSchemeClassifierImpl)));
+      base::WrapUnique(new AutocompleteSchemeClassifierImpl));
 }
 
 }  // namespace

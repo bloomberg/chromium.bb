@@ -102,9 +102,9 @@ DomDistillerServiceFactory::BuildServiceInstanceFor(
       new DistilledPagePrefs(
           ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs()));
 
-  return base::WrapUnique(new DomDistillerKeyedService(
+  return base::MakeUnique<DomDistillerKeyedService>(
       std::move(dom_distiller_store), std::move(distiller_factory),
-      std::move(distiller_page_factory), std::move(distilled_page_prefs)));
+      std::move(distiller_page_factory), std::move(distilled_page_prefs));
 }
 
 web::BrowserState* DomDistillerServiceFactory::GetBrowserStateToUse(

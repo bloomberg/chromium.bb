@@ -97,9 +97,9 @@ void AutofillClientIOS::ConfirmSaveCreditCardLocally(
   // InfoBarService is a WebContentsUserData, it must also be alive at this
   // time.
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
-      base::WrapUnique(new AutofillSaveCardInfoBarDelegateMobile(
+      base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
           false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
-          callback))));
+          callback)));
 }
 
 void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
@@ -107,8 +107,8 @@ void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
     std::unique_ptr<base::DictionaryValue> legal_message,
     const base::Closure& callback) {
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
-      base::WrapUnique(new AutofillSaveCardInfoBarDelegateMobile(
-          true, card, std::move(legal_message), callback))));
+      base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(
+          true, card, std::move(legal_message), callback)));
 }
 
 void AutofillClientIOS::ConfirmCreditCardFillAssist(

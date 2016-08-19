@@ -73,8 +73,8 @@ TranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(
-      new TranslateAcceptLanguagesService(browser_state->GetPrefs()));
+  return base::MakeUnique<TranslateAcceptLanguagesService>(
+      browser_state->GetPrefs());
 }
 
 web::BrowserState* TranslateAcceptLanguagesFactory::GetBrowserStateToUse(

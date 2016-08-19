@@ -41,10 +41,10 @@ IOSChromeLargeIconServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
 
-  return base::WrapUnique(new favicon::LargeIconService(
+  return base::MakeUnique<favicon::LargeIconService>(
       ios::FaviconServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
-      web::WebThread::GetBlockingPool()));
+      web::WebThread::GetBlockingPool());
 }
 
 web::BrowserState* IOSChromeLargeIconServiceFactory::GetBrowserStateToUse(

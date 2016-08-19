@@ -53,13 +53,13 @@ AccountConsistencyServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(new AccountConsistencyService(
+  return base::MakeUnique<AccountConsistencyService>(
       chrome_browser_state,
       ios::AccountReconcilorFactory::GetForBrowserState(chrome_browser_state),
       ios::CookieSettingsFactory::GetForBrowserState(chrome_browser_state),
       GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state)));
+      ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state));
 }
 
 }  // namespace ios

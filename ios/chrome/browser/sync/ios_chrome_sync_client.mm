@@ -116,8 +116,8 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
     syncer::SyncableService::StartSyncFlare flare(
         ios::sync_start_util::GetFlareForSyncableService(
             browser_state_->GetStatePath()));
-    return base::WrapUnique(
-        new IOSChromeLocalSessionEventRouter(browser_state_, this, flare));
+    return base::MakeUnique<IOSChromeLocalSessionEventRouter>(browser_state_,
+                                                              this, flare);
   }
 
  private:

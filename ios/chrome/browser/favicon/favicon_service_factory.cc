@@ -52,10 +52,10 @@ std::unique_ptr<KeyedService> FaviconServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(new favicon::FaviconService(
+  return base::MakeUnique<favicon::FaviconService>(
       base::WrapUnique(new FaviconClientImpl(browser_state)),
       ios::HistoryServiceFactory::GetForBrowserState(
-          browser_state, ServiceAccessType::EXPLICIT_ACCESS)));
+          browser_state, ServiceAccessType::EXPLICIT_ACCESS));
 }
 
 }  // namespace ios

@@ -127,7 +127,7 @@ IOSChromeURLRequestContextGetter* IOSChromeURLRequestContextGetter::Create(
     const ChromeBrowserStateIOData* io_data,
     ProtocolHandlerMap* protocol_handlers) {
   return new IOSChromeURLRequestContextGetter(
-      base::WrapUnique(new FactoryForMain(io_data, protocol_handlers)));
+      base::MakeUnique<FactoryForMain>(io_data, protocol_handlers));
 }
 
 // static
@@ -136,6 +136,7 @@ IOSChromeURLRequestContextGetter::CreateForIsolatedApp(
     net::URLRequestContextGetter* main_context,
     const ChromeBrowserStateIOData* io_data,
     const base::FilePath& partition_path) {
-  return new IOSChromeURLRequestContextGetter(base::WrapUnique(
-      new FactoryForIsolatedApp(io_data, partition_path, main_context)));
+  return new IOSChromeURLRequestContextGetter(
+      base::MakeUnique<FactoryForIsolatedApp>(io_data, partition_path,
+                                              main_context));
 }

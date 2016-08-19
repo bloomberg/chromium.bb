@@ -128,13 +128,12 @@ IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
   ios::AboutSigninInternalsFactory::GetForBrowserState(browser_state);
 
   ProfileSyncService::InitParams init_params;
-  init_params.signin_wrapper =
-      base::WrapUnique(new SigninManagerWrapper(signin));
+  init_params.signin_wrapper = base::MakeUnique<SigninManagerWrapper>(signin);
   init_params.oauth2_token_service =
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client =
-      base::WrapUnique(new IOSChromeSyncClient(browser_state));
+      base::MakeUnique<IOSChromeSyncClient>(browser_state);
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
   init_params.base_directory = browser_state->GetStatePath();
   init_params.url_request_context = browser_state->GetRequestContext();
@@ -146,7 +145,7 @@ IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE);
   init_params.blocking_pool = web::WebThread::GetBlockingPool();
 
-  auto pss = base::WrapUnique(new ProfileSyncService(std::move(init_params)));
+  auto pss = base::MakeUnique<ProfileSyncService>(std::move(init_params));
 
   // Will also initialize the sync client.
   pss->Initialize();

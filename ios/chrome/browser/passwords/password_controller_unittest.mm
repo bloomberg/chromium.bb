@@ -89,7 +89,7 @@ base::scoped_nsobject<PasswordController> CreatePasswordController(
     web::WebState* web_state,
     password_manager::PasswordStore* store,
     MockPasswordManagerClient** weak_client) {
-  auto client = base::WrapUnique(new MockPasswordManagerClient(store));
+  auto client = base::MakeUnique<MockPasswordManagerClient>(store);
   if (weak_client)
     *weak_client = client.get();
   return base::scoped_nsobject<PasswordController>([[PasswordController alloc]

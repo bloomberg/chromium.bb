@@ -45,10 +45,10 @@ GaiaCookieManagerServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(new GaiaCookieManagerService(
+  return base::MakeUnique<GaiaCookieManagerService>(
       OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state),
       GaiaConstants::kChromeSource,
-      SigninClientFactory::GetForBrowserState(chrome_browser_state)));
+      SigninClientFactory::GetForBrowserState(chrome_browser_state));
 }
 
 }  // namespace ios

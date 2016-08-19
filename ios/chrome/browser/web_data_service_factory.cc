@@ -97,12 +97,12 @@ WebDataServiceFactory::~WebDataServiceFactory() {
 std::unique_ptr<KeyedService> WebDataServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   const base::FilePath& browser_state_path = context->GetStatePath();
-  return base::WrapUnique(new WebDataServiceWrapper(
+  return base::MakeUnique<WebDataServiceWrapper>(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),
       ios::sync_start_util::GetFlareForSyncableService(browser_state_path),
-      &DoNothingOnErrorCallback));
+      &DoNothingOnErrorCallback);
 }
 
 web::BrowserState* WebDataServiceFactory::GetBrowserStateToUse(

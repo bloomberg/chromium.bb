@@ -54,7 +54,7 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(new gcm::GCMProfileService(
+  return base::MakeUnique<gcm::GCMProfileService>(
       browser_state->GetPrefs(), browser_state->GetStatePath(),
       browser_state->GetRequestContext(), ::GetChannel(),
       base::WrapUnique(new ProfileIdentityProvider(
@@ -64,5 +64,5 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
       base::WrapUnique(new gcm::GCMClientFactory),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
-      blocking_task_runner));
+      blocking_task_runner);
 }

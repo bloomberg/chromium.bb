@@ -41,9 +41,9 @@ IOSChromePasswordManagerSettingMigratorServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(
-      new password_manager::PasswordManagerSettingMigratorService(
-          browser_state->GetSyncablePrefs()));
+  return base::MakeUnique<
+      password_manager::PasswordManagerSettingMigratorService>(
+      browser_state->GetSyncablePrefs());
 }
 
 web::BrowserState*

@@ -10,6 +10,6 @@
 #include "ios/chrome/common/app_group/app_group_constants.h"
 
 std::unique_ptr<ClipboardRecentContent> CreateClipboardRecentContentIOS() {
-  return base::WrapUnique(new ClipboardRecentContentIOS(
-      kChromeUIScheme, app_group::GetGroupUserDefaults()));
+  return base::MakeUnique<ClipboardRecentContentIOS>(
+      kChromeUIScheme, app_group::GetGroupUserDefaults());
 }

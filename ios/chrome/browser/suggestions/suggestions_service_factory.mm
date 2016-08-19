@@ -90,10 +90,10 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<ImageManager> thumbnail_manager(new ImageManager(
       std::move(image_fetcher), std::move(db), database_dir,
       web::WebThread::GetTaskRunnerForThread(web::WebThread::DB)));
-  return base::WrapUnique(new SuggestionsService(
+  return base::MakeUnique<SuggestionsService>(
       signin_manager, token_service, sync_service,
       browser_state->GetRequestContext(), std::move(suggestions_store),
-      std::move(thumbnail_manager), std::move(blacklist_store)));
+      std::move(thumbnail_manager), std::move(blacklist_store));
 }
 
 void SuggestionsServiceFactory::RegisterBrowserStatePrefs(

@@ -42,7 +42,7 @@ std::unique_ptr<KeyedService> BuildTemplateURLService(
     web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(new TemplateURLService(
+  return base::MakeUnique<TemplateURLService>(
       browser_state->GetPrefs(),
       base::WrapUnique(new ios::UIThreadSearchTermsData(browser_state)),
       ios::WebDataServiceFactory::GetKeywordWebDataForBrowserState(
@@ -52,7 +52,7 @@ std::unique_ptr<KeyedService> BuildTemplateURLService(
               browser_state, ServiceAccessType::EXPLICIT_ACCESS))),
       ios::GoogleURLTrackerFactory::GetForBrowserState(browser_state),
       GetApplicationContext()->GetRapporService(),
-      GetDefaultSearchProviderChangedCallback()));
+      GetDefaultSearchProviderChangedCallback());
 }
 
 }  // namespace

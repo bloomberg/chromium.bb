@@ -402,7 +402,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   sdch_policy_.reset(new net::SdchOwner(sdch_manager_.get(), main_context));
   main_context->set_sdch_manager(sdch_manager_.get());
   sdch_policy_->EnablePersistentStorage(
-      base::WrapUnique(new SdchOwnerPrefStorage(network_json_store_.get())));
+      base::MakeUnique<SdchOwnerPrefStorage>(network_json_store_.get()));
 
   lazy_params_.reset();
 }

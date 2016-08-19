@@ -67,10 +67,10 @@ std::unique_ptr<KeyedService> WebHistoryServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(new history::WebHistoryService(
+  return base::MakeUnique<history::WebHistoryService>(
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       ios::SigninManagerFactory::GetForBrowserState(browser_state),
-      browser_state->GetRequestContext()));
+      browser_state->GetRequestContext());
 }
 
 }  // namespace ios

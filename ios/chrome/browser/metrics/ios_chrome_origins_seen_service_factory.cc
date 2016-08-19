@@ -35,7 +35,7 @@ IOSChromeOriginsSeenServiceFactory::~IOSChromeOriginsSeenServiceFactory() {}
 std::unique_ptr<KeyedService>
 IOSChromeOriginsSeenServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  return base::WrapUnique(new navigation_metrics::OriginsSeenService());
+  return base::MakeUnique<navigation_metrics::OriginsSeenService>();
 }
 
 web::BrowserState* IOSChromeOriginsSeenServiceFactory::GetBrowserStateToUse(

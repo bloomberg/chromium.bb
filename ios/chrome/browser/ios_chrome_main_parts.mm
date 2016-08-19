@@ -107,7 +107,7 @@ void IOSChromeMainParts::PreCreateThreads() {
 
   // Initialize tracking synchronizer system.
   tracking_synchronizer_ = new metrics::TrackingSynchronizer(
-      base::WrapUnique(new base::DefaultTickClock()),
+      base::MakeUnique<base::DefaultTickClock>(),
       base::Bind(&metrics::IOSTrackingSynchronizerDelegate::Create));
 
   // Now the command line has been mutated based on about:flags, we can setup

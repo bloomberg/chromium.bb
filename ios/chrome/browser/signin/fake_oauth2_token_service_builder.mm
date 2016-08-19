@@ -23,5 +23,5 @@ std::unique_ptr<KeyedService> BuildFakeOAuth2TokenService(
           base::MakeUnique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
           ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
           ios::SigninErrorControllerFactory::GetForBrowserState(browser_state));
-  return base::WrapUnique(new FakeProfileOAuth2TokenService(delegate));
+  return base::MakeUnique<FakeProfileOAuth2TokenService>(delegate);
 }

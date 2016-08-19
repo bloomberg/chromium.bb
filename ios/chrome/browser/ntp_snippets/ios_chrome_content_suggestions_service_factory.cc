@@ -38,6 +38,6 @@ IOSChromeContentSuggestionsServiceFactory::
 std::unique_ptr<KeyedService>
 IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
-  return base::WrapUnique(new ntp_snippets::ContentSuggestionsService(
-      ntp_snippets::ContentSuggestionsService::State::DISABLED));
+  return base::MakeUnique<ntp_snippets::ContentSuggestionsService>(
+      ntp_snippets::ContentSuggestionsService::State::DISABLED);
 }

@@ -401,8 +401,8 @@ URLDataManagerIOSBackend::~URLDataManagerIOSBackend() {
 std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
 URLDataManagerIOSBackend::CreateProtocolHandler(BrowserState* browser_state) {
   DCHECK(browser_state);
-  return base::WrapUnique(new ChromeProtocolHandler(
-      browser_state, browser_state->IsOffTheRecord()));
+  return base::MakeUnique<ChromeProtocolHandler>(
+      browser_state, browser_state->IsOffTheRecord());
 }
 
 void URLDataManagerIOSBackend::AddDataSource(URLDataSourceIOSImpl* source) {

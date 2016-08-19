@@ -53,7 +53,7 @@ struct CookieStoreIOSTestTraits {
 
 struct InactiveCookieStoreIOSTestTraits {
   static std::unique_ptr<net::CookieStore> Create() {
-    return base::WrapUnique(new CookieStoreIOS(nullptr));
+    return base::MakeUnique<CookieStoreIOS>(nullptr);
   }
 
   static const bool is_cookie_monster = false;
@@ -205,7 +205,7 @@ class RoundTripTestCookieStore : public net::CookieStore {
 struct RoundTripTestCookieStoreTraits {
   static std::unique_ptr<net::CookieStore> Create() {
     ClearCookies();
-    return base::WrapUnique(new RoundTripTestCookieStore());
+    return base::MakeUnique<RoundTripTestCookieStore>();
   }
 
   static const bool is_cookie_monster = false;

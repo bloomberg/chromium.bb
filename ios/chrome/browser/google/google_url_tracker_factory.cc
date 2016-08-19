@@ -47,9 +47,9 @@ std::unique_ptr<KeyedService> GoogleURLTrackerFactory::BuildServiceInstanceFor(
   browser_state->GetOriginalChromeBrowserState()->GetPrefs()->ClearPref(
       prefs::kLastPromptedGoogleURL);
 
-  return base::WrapUnique(new GoogleURLTracker(
+  return base::MakeUnique<GoogleURLTracker>(
       base::WrapUnique(new GoogleURLTrackerClientImpl(browser_state)),
-      GoogleURLTracker::NORMAL_MODE));
+      GoogleURLTracker::NORMAL_MODE);
 }
 
 web::BrowserState* GoogleURLTrackerFactory::GetBrowserStateToUse(

@@ -473,8 +473,8 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
       "data", base::WrapUnique(new net::DataProtocolHandler));
 #if !defined(DISABLE_FILE_SUPPORT)
   job_factory->SetProtocolHandler(
-      "file", base::WrapUnique(
-                  new net::FileProtocolHandler(file_thread_->task_runner())));
+      "file",
+      base::MakeUnique<net::FileProtocolHandler>(file_thread_->task_runner()));
 #endif   // !defined(DISABLE_FILE_SUPPORT)
   main_context_->set_job_factory(job_factory);
 

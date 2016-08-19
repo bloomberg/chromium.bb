@@ -222,8 +222,9 @@ ApplicationContextImpl::GetMetricsServicesManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!metrics_services_manager_) {
     metrics_services_manager_.reset(
-        new metrics_services_manager::MetricsServicesManager(base::WrapUnique(
-            new IOSChromeMetricsServicesManagerClient(GetLocalState()))));
+        new metrics_services_manager::MetricsServicesManager(
+            base::MakeUnique<IOSChromeMetricsServicesManagerClient>(
+                GetLocalState())));
   }
   return metrics_services_manager_.get();
 }

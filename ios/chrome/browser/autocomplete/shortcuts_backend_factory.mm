@@ -27,7 +27,7 @@ scoped_refptr<ShortcutsBackend> CreateShortcutsBackend(
     bool suppress_db) {
   scoped_refptr<ShortcutsBackend> shortcuts_backend(new ShortcutsBackend(
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state),
-      base::WrapUnique(new ios::UIThreadSearchTermsData(browser_state)),
+      base::MakeUnique<ios::UIThreadSearchTermsData>(browser_state),
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),

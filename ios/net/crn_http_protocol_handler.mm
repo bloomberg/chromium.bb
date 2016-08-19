@@ -244,8 +244,8 @@ void HttpProtocolHandlerCore::HandleStreamEvent(NSStream* stream,
       if (!post_data_readers_.empty()) {
         // NOTE: This call will result in |post_data_readers_| being cleared,
         // which is the desired behavior.
-        net_request_->set_upload(base::WrapUnique(
-            new ElementsUploadDataStream(std::move(post_data_readers_), 0)));
+        net_request_->set_upload(base::MakeUnique<ElementsUploadDataStream>(
+            std::move(post_data_readers_), 0));
         DCHECK(post_data_readers_.empty());
       }
       net_request_->Start();
@@ -260,7 +260,7 @@ void HttpProtocolHandlerCore::HandleStreamEvent(NSStream* stream,
       if (length) {
         std::vector<char> owned_data(buffer_->data(), buffer_->data() + length);
         post_data_readers_.push_back(
-            base::WrapUnique(new UploadOwnedBytesElementReader(&owned_data)));
+            base::MakeUnique<UploadOwnedBytesElementReader>(&owned_data));
       }
       break;
     }

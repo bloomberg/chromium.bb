@@ -45,7 +45,7 @@ std::unique_ptr<KeyedService> SyncSetupServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return base::WrapUnique(new SyncSetupService(
+  return base::MakeUnique<SyncSetupService>(
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state),
-      browser_state->GetPrefs()));
+      browser_state->GetPrefs());
 }

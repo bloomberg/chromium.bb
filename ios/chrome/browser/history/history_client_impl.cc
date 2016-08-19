@@ -65,7 +65,7 @@ void HistoryClientImpl::NotifyProfileError(sql::InitStatus init_status,
 
 std::unique_ptr<history::HistoryBackendClient>
 HistoryClientImpl::CreateBackendClient() {
-  return base::WrapUnique(new HistoryBackendClientImpl(bookmark_model_));
+  return base::MakeUnique<HistoryBackendClientImpl>(bookmark_model_);
 }
 
 void HistoryClientImpl::BookmarkModelChanged() {
