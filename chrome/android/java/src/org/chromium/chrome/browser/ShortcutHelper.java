@@ -445,11 +445,6 @@ public class ShortcutHelper {
                 != null;
     }
 
-    @CalledByNative
-    private static boolean areWebApksEnabled() {
-        return ChromeWebApkHost.isEnabled();
-    }
-
     /**
      * Compresses a bitmap into a PNG and converts into a Base64 encoded string.
      * The encoded string can be decoded using {@link decodeBitmapFromString(String)}.

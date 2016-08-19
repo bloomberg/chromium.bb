@@ -10,6 +10,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -94,6 +95,11 @@ public class ChromeWebApkHost {
         if (sEnabledForTesting != null) return sEnabledForTesting;
 
         return isEnabledInPrefs();
+    }
+
+    @CalledByNative
+    private static boolean areWebApkEnabled() {
+        return ChromeWebApkHost.isEnabled();
     }
 
     /**

@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_installer.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/common/chrome_switches.h"
@@ -72,8 +73,7 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
     const base::Closure& splash_image_callback) {
   if (info.display == blink::WebDisplayModeStandalone ||
       info.display == blink::WebDisplayModeFullscreen) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    if (Java_ShortcutHelper_areWebApksEnabled(env)) {
+    if (ChromeWebApkHost::AreWebApkEnabled()) {
       InstallWebApkWithSkBitmap(browser_context, info, icon_bitmap);
       return;
     }
