@@ -4,8 +4,8 @@
 
 #include "ash/test/immersive_fullscreen_controller_test_api.h"
 
-#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller_delegate.h"
-#include "ash/wm/immersive_fullscreen_controller.h"
+#include "ash/shared/immersive_fullscreen_controller.h"
+#include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/geometry/rect.h"
 

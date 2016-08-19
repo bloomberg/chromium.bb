@@ -151,7 +151,7 @@ views::View* HeaderView::avatar_icon() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 // HeaderView,
-//   WmImmersiveFullscreenControllerDelegate overrides:
+//   ImmersiveFullscreenControllerDelegate overrides:
 
 void HeaderView::OnImmersiveRevealStarted() {
   fullscreen_visible_fraction_ = 0;

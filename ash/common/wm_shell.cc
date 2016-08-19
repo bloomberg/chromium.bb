@@ -25,6 +25,7 @@
 #include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/wm/immersive_context_ash.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
@@ -32,6 +33,7 @@
 #include "ash/common/wm_window.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/display/display.h"
 #include "ui/views/focus/focus_manager_factory.h"
@@ -171,6 +173,7 @@ void WmShell::SetShelfDelegateForTesting(
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
     : delegate_(std::move(shell_delegate)),
       focus_cycler_(new FocusCycler),
+      immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
       shelf_model_(new ShelfModel),  // Must create before ShelfDelegate.
       system_tray_notifier_(new SystemTrayNotifier),
       window_cycle_controller_(new WindowCycleController),

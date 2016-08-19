@@ -6,7 +6,7 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/wm/immersive_fullscreen_controller.h"
+#include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
@@ -15,7 +15,7 @@ namespace ash {
 
 ResizeHandleWindowTargeter::ResizeHandleWindowTargeter(
     aura::Window* window,
-    WmImmersiveFullscreenController* controller)
+    ImmersiveFullscreenController* controller)
     : window_(window), immersive_controller_(controller) {
   wm::WindowState* window_state = wm::GetWindowState(window_);
   OnPostWindowStateTypeChange(window_state, wm::WINDOW_STATE_TYPE_DEFAULT);
@@ -61,7 +61,9 @@ aura::Window* ResizeHandleWindowTargeter::FindTargetForLocatedEvent(
       // reveal the top-of-windows views. This is needed because the child
       // window may consume touch events and prevent touch-scroll gesture from
       // being generated.
-      insets = gfx::Insets(kImmersiveFullscreenTopEdgeInset, 0, 0, 0);
+      insets = gfx::Insets(
+          ImmersiveFullscreenController::kImmersiveFullscreenTopEdgeInset, 0, 0,
+          0);
     } else {
       // If the event falls very close to the inside of the frame border, then
       // target the window itself, so that the window can be resized easily.

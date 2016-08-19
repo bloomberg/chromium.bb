@@ -657,7 +657,7 @@ void WmWindowAura::HideResizeShadow() {
 }
 
 void WmWindowAura::InstallResizeHandleWindowTargeter(
-    WmImmersiveFullscreenController* immersive_fullscreen_controller) {
+    ImmersiveFullscreenController* immersive_fullscreen_controller) {
   window_->SetEventTargeter(base::MakeUnique<ResizeHandleWindowTargeter>(
       window_, immersive_fullscreen_controller));
 }

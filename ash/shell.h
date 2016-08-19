@@ -93,7 +93,6 @@ class EventTransformationHandler;
 class FirstRunHelper;
 class GPUSupport;
 class HighContrastController;
-class ImmersiveContextAsh;
 class ImmersiveHandlerFactoryAsh;
 class LinkHandlerModelFactory;
 class LocaleNotificationController;
@@ -601,7 +600,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Injected content::GPUDataManager support.
   std::unique_ptr<GPUSupport> gpu_support_;
 
-  std::unique_ptr<ImmersiveContextAsh> immersive_context_;
   std::unique_ptr<ImmersiveHandlerFactoryAsh> immersive_handler_factory_;
 
   base::SequencedWorkerPool* blocking_pool_;

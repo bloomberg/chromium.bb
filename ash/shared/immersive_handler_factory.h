@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_IMMERSIVE_HANDLER_FACTORY_H_
-#define ASH_WM_IMMERSIVE_HANDLER_FACTORY_H_
+#ifndef ASH_SHARED_IMMERSIVE_HANDLER_FACTORY_H_
+#define ASH_SHARED_IMMERSIVE_HANDLER_FACTORY_H_
 
 #include <memory>
 
@@ -36,4 +36,4 @@ class ASH_EXPORT ImmersiveHandlerFactory {
 
 }  // namespace ash
 
-#endif  // ASH_WM_IMMERSIVE_HANDLER_FACTORY_H_
+#endif  // ASH_SHARED_IMMERSIVE_HANDLER_FACTORY_H_

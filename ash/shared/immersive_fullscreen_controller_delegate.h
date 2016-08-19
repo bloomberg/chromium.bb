@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_WM_IMMERSIVE_WM_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_
-#define ASH_COMMON_WM_IMMERSIVE_WM_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_
+#ifndef ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_
+#define ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_
 
 #include <vector>
 
@@ -15,7 +15,7 @@ class Rect;
 
 namespace ash {
 
-class ASH_EXPORT WmImmersiveFullscreenControllerDelegate {
+class ASH_EXPORT ImmersiveFullscreenControllerDelegate {
  public:
   // Called when a reveal of the top-of-window views starts.
   virtual void OnImmersiveRevealStarted() = 0;
@@ -39,9 +39,9 @@ class ASH_EXPORT WmImmersiveFullscreenControllerDelegate {
   virtual std::vector<gfx::Rect> GetVisibleBoundsInScreen() const = 0;
 
  protected:
-  virtual ~WmImmersiveFullscreenControllerDelegate() {}
+  virtual ~ImmersiveFullscreenControllerDelegate() {}
 };
 
 }  // namespace ash
 
-#endif  // ASH_COMMON_WM_IMMERSIVE_WM_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_
+#endif  // ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_

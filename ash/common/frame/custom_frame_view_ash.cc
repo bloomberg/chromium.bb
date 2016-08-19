@@ -11,8 +11,6 @@
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/frame_border_hit_test.h"
 #include "ash/common/frame/header_view.h"
-#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller.h"
-#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_observer.h"
@@ -21,6 +19,8 @@
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
+#include "ash/shared/immersive_fullscreen_controller.h"
+#include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
@@ -79,7 +79,7 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
       window_state->Restore();
     if (immersive_fullscreen_controller_) {
       immersive_fullscreen_controller_->SetEnabled(
-          WmImmersiveFullscreenController::WINDOW_TYPE_OTHER, enter_fullscreen);
+          ImmersiveFullscreenController::WINDOW_TYPE_OTHER, enter_fullscreen);
     }
     return true;
   }
@@ -96,12 +96,12 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
         immersive_fullscreen_controller_ &&
         immersive_fullscreen_controller_->IsEnabled()) {
       immersive_fullscreen_controller_->SetEnabled(
-          WmImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+          ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
     }
   }
 
   wm::WindowState* window_state_;
-  std::unique_ptr<WmImmersiveFullscreenController>
+  std::unique_ptr<ImmersiveFullscreenController>
       immersive_fullscreen_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAshWindowStateDelegate);
@@ -199,7 +199,7 @@ CustomFrameViewAsh::CustomFrameViewAsh(views::Widget* frame)
 CustomFrameViewAsh::~CustomFrameViewAsh() {}
 
 void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
-    WmImmersiveFullscreenController* immersive_fullscreen_controller) {
+    ImmersiveFullscreenController* immersive_fullscreen_controller) {
   immersive_fullscreen_controller->Init(header_view_, frame_, header_view_);
 }
 

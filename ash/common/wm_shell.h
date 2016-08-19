@@ -38,6 +38,8 @@ class AccessibilityDelegate;
 class BrightnessControlDelegate;
 class DisplayInfo;
 class FocusCycler;
+class ImmersiveContextAsh;
+class ImmersiveFullscreenController;
 class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
 class MaximizeModeController;
@@ -60,7 +62,6 @@ class WindowResizer;
 class WindowSelectorController;
 class WmActivationObserver;
 class WmDisplayObserver;
-class WmImmersiveFullscreenController;
 class WmWindow;
 
 enum class TaskSwitchSource;
@@ -269,7 +270,7 @@ class ASH_EXPORT WmShell {
   virtual std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
   CreateScopedDisableInternalMouseAndKeyboard() = 0;
 
-  virtual std::unique_ptr<WmImmersiveFullscreenController>
+  virtual std::unique_ptr<ImmersiveFullscreenController>
   CreateImmersiveFullscreenController() = 0;
 
   void CreateShelfDelegate();
@@ -390,6 +391,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<FocusCycler> focus_cycler_;
+  std::unique_ptr<ImmersiveContextAsh> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;

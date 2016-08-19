@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/immersive_fullscreen_controller.h"
+#include "ash/shared/immersive_fullscreen_controller.h"
 
 #include <set>
 
-#include "ash/common/ash_constants.h"
-#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller_delegate.h"
 #include "ash/shared/immersive_context.h"
 #include "ash/shared/immersive_focus_watcher.h"
+#include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "ash/shared/immersive_gesture_handler.h"
-#include "ash/wm/immersive_handler_factory.h"
+#include "ash/shared/immersive_handler_factory.h"
 #include "base/metrics/histogram.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -55,11 +54,10 @@ const int kHeightOfDeadRegionAboveTopContainer = 10;
 
 }  // namespace
 
-// The height in pixels of the region below the top edge of the display in which
-// the mouse can trigger revealing the top-of-window views.
-// The height must be greater than 1px because the top pixel is used to trigger
-// moving the cursor between displays if the user has a vertical display layout
-// (primary display above/below secondary display).
+// static
+const int ImmersiveFullscreenController::kImmersiveFullscreenTopEdgeInset = 8;
+
+// static
 const int ImmersiveFullscreenController::kMouseRevealBoundsHeight = 3;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +81,7 @@ ImmersiveFullscreenController::~ImmersiveFullscreenController() {
 }
 
 void ImmersiveFullscreenController::Init(
-    WmImmersiveFullscreenControllerDelegate* delegate,
+    ImmersiveFullscreenControllerDelegate* delegate,
     views::Widget* widget,
     views::View* top_container) {
   delegate_ = delegate;

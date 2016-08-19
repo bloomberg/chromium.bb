@@ -19,6 +19,4 @@ const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
 const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 
-const int kImmersiveFullscreenTopEdgeInset = 8;
-
 }  // namespace ash

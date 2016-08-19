@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/immersive_handler_factory.h"
+#include "ash/shared/immersive_handler_factory.h"
 
 #include "base/logging.h"
 

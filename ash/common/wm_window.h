@@ -39,11 +39,11 @@ class Widget;
 
 namespace ash {
 
+class ImmersiveFullscreenController;
 struct ShelfItemDetails;
 class WmLayoutManager;
 class WmRootWindowController;
 class WmShell;
-class WmImmersiveFullscreenController;
 class WmTransientWindowObserver;
 class WmWindowObserver;
 enum class WmWindowProperty;
@@ -273,7 +273,7 @@ class ASH_EXPORT WmWindow {
   // Installs a resize handler on the window that makes it easier to resize
   // the window. See ResizeHandleWindowTargeter for the specifics.
   virtual void InstallResizeHandleWindowTargeter(
-      WmImmersiveFullscreenController* immersive_fullscreen_controller) = 0;
+      ImmersiveFullscreenController* immersive_fullscreen_controller) = 0;
 
   // See description in SetBoundsInScreen().
   virtual void SetBoundsInScreenBehaviorForChildren(BoundsInScreenBehavior) = 0;

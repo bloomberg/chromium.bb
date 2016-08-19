@@ -61,7 +61,6 @@
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/event_client_impl.h"
-#include "ash/wm/immersive_context_ash.h"
 #include "ash/wm/immersive_handler_factory_ash.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/overlay_event_filter.h"
@@ -704,7 +703,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   in_mus_ = init_params.in_mus;
 
-  immersive_context_ = base::MakeUnique<ImmersiveContextAsh>();
   immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryAsh>();
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

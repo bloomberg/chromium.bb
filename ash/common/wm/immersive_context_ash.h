@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_IMMERSIVE_CONTEXT_ASH_H_
-#define ASH_WM_IMMERSIVE_CONTEXT_ASH_H_
+#ifndef ASH_COMMON_WM_IMMERSIVE_CONTEXT_ASH_H_
+#define ASH_COMMON_WM_IMMERSIVE_CONTEXT_ASH_H_
 
 #include "ash/shared/immersive_context.h"
 #include "base/macros.h"
@@ -33,4 +33,4 @@ class ASH_EXPORT ImmersiveContextAsh : public ImmersiveContext {
 
 }  // namespace ash
 
-#endif  // ASH_WM_IMMERSIVE_CONTEXT_ASH_H_
+#endif  // ASH_COMMON_WM_IMMERSIVE_CONTEXT_ASH_H_

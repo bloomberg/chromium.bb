@@ -5,7 +5,7 @@
 #ifndef ASH_WM_IMMERSIVE_HANDLER_FACTORY_ASH_H_
 #define ASH_WM_IMMERSIVE_HANDLER_FACTORY_ASH_H_
 
-#include "ash/wm/immersive_handler_factory.h"
+#include "ash/shared/immersive_handler_factory.h"
 #include "base/macros.h"
 
 namespace ash {

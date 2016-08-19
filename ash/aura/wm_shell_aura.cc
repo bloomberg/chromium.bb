@@ -18,10 +18,10 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
+#include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle_event_filter_aura.h"
@@ -204,7 +204,7 @@ WmShellAura::CreateScopedDisableInternalMouseAndKeyboard() {
   return nullptr;
 }
 
-std::unique_ptr<WmImmersiveFullscreenController>
+std::unique_ptr<ImmersiveFullscreenController>
 WmShellAura::CreateImmersiveFullscreenController() {
   return base::MakeUnique<ImmersiveFullscreenController>();
 }

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/immersive_fullscreen_controller.h"
+#include "ash/shared/immersive_fullscreen_controller.h"
 
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/root_window_controller.h"
+#include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -47,7 +47,7 @@ class TestBubbleDialogDelegate : public views::BubbleDialogDelegateView {
 };
 
 class MockImmersiveFullscreenControllerDelegate
-    : public WmImmersiveFullscreenControllerDelegate {
+    : public ImmersiveFullscreenControllerDelegate {
  public:
   MockImmersiveFullscreenControllerDelegate(views::View* top_container_view)
       : top_container_view_(top_container_view),
@@ -55,7 +55,7 @@ class MockImmersiveFullscreenControllerDelegate
         visible_fraction_(1) {}
   ~MockImmersiveFullscreenControllerDelegate() override {}
 
-  // WmImmersiveFullscreenControllerDelegate overrides:
+  // ImmersiveFullscreenControllerDelegate overrides:
   void OnImmersiveRevealStarted() override {
     enabled_ = true;
     visible_fraction_ = 0;

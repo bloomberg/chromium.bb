@@ -4,8 +4,8 @@
 
 #include "ash/wm/immersive_gesture_handler_aura.h"
 
+#include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/immersive_fullscreen_controller.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"

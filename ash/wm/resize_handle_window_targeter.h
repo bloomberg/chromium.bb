@@ -13,7 +13,7 @@
 
 namespace ash {
 
-class WmImmersiveFullscreenController;
+class ImmersiveFullscreenController;
 
 // To allow easy resize, the resize handles should slightly overlap the content
 // area of non-maximized and non-fullscreen windows. For immersive fullscreen
@@ -25,7 +25,7 @@ class ResizeHandleWindowTargeter : public wm::WindowStateObserver,
                                    public aura::WindowTargeter {
  public:
   ResizeHandleWindowTargeter(aura::Window* window,
-                             WmImmersiveFullscreenController* immersive);
+                             ImmersiveFullscreenController* immersive);
   ~ResizeHandleWindowTargeter() override;
 
  private:
@@ -45,7 +45,7 @@ class ResizeHandleWindowTargeter : public wm::WindowStateObserver,
   // |immersive_controller_|.
   aura::Window* window_;
   gfx::Insets frame_border_inset_;
-  WmImmersiveFullscreenController* immersive_controller_;
+  ImmersiveFullscreenController* immersive_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeHandleWindowTargeter);
 };

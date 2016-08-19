@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
-#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller_delegate.h"
+#include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/view.h"
@@ -27,7 +27,7 @@ class FrameCaptionButtonContainerView;
 // View which paints the frame header (title, caption buttons...). It slides off
 // and on screen in immersive fullscreen.
 class ASH_EXPORT HeaderView : public views::View,
-                              public WmImmersiveFullscreenControllerDelegate,
+                              public ImmersiveFullscreenControllerDelegate,
                               public ShellObserver {
  public:
   // |target_widget| is the widget that the caption buttons act on.
@@ -77,7 +77,7 @@ class ASH_EXPORT HeaderView : public views::View,
   views::View* avatar_icon() const;
 
  private:
-  // WmImmersiveFullscreenControllerDelegate:
+  // ImmersiveFullscreenControllerDelegate:
   void OnImmersiveRevealStarted() override;
   void OnImmersiveRevealEnded() override;
   void OnImmersiveFullscreenExited() override;

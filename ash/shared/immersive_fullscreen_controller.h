@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_IMMERSIVE_FULLSCREEN_CONTROLLER_H_
-#define ASH_WM_IMMERSIVE_FULLSCREEN_CONTROLLER_H_
+#ifndef ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_H_
+#define ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_H_
 
 #include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller.h"
-#include "ash/common/wm/immersive_revealed_lock.h"
+#include "ash/shared/immersive_revealed_lock.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -37,29 +36,61 @@ class Widget;
 namespace ash {
 
 class ImmersiveFocusWatcher;
+class ImmersiveFullscreenControllerDelegate;
 class ImmersiveFullscreenControllerTestApi;
 class ImmersiveGestureHandler;
 class WmWindow;
 
 class ASH_EXPORT ImmersiveFullscreenController
-    : public WmImmersiveFullscreenController,
-      public gfx::AnimationDelegate,
+    : public gfx::AnimationDelegate,
       public views::PointerWatcher,
       public views::WidgetObserver,
       public ImmersiveRevealedLock::Delegate {
  public:
+  // The enum is used for an enumerated histogram. New items should be only
+  // added to the end.
+  enum WindowType {
+    WINDOW_TYPE_OTHER,
+    WINDOW_TYPE_BROWSER,
+    WINDOW_TYPE_HOSTED_APP,
+    WINDOW_TYPE_PACKAGED_APP,
+    WINDOW_TYPE_COUNT
+  };
+
+  // How many pixels are reserved for touch-events towards the top of an
+  // immersive-fullscreen window.
+  static const int kImmersiveFullscreenTopEdgeInset;
+
+  // The height in pixels of the region below the top edge of the display in
+  // which the mouse can trigger revealing the top-of-window views. The height
+  // must be greater than 1px because the top pixel is used to trigger moving
+  // the cursor between displays if the user has a vertical display layout
+  // (primary display above/below secondary display).
   static const int kMouseRevealBoundsHeight;
 
   ImmersiveFullscreenController();
   ~ImmersiveFullscreenController() override;
 
-  // WmImmersiveFullscreenController overrides:
-  void Init(WmImmersiveFullscreenControllerDelegate* delegate,
+  // Initializes the controller. Must be called prior to enabling immersive
+  // fullscreen via SetEnabled(). |top_container| is used to keep the
+  // top-of-window views revealed when a child of |top_container| has focus.
+  // |top_container| does not affect which mouse and touch events keep the
+  // top-of-window views revealed. |widget| is the widget to make fullscreen.
+  void Init(ImmersiveFullscreenControllerDelegate* delegate,
             views::Widget* widget,
-            views::View* top_container) override;
-  void SetEnabled(WindowType window_type, bool enable) override;
-  bool IsEnabled() const override;
-  bool IsRevealed() const override;
+            views::View* top_container);
+
+  // Enables or disables immersive fullscreen.
+  // |window_type| is the type of window which is put in immersive fullscreen.
+  // It is only used for histogramming.
+  void SetEnabled(WindowType window_type, bool enable);
+
+  // Returns true if in immersive fullscreen.
+  bool IsEnabled() const;
+
+  // Returns true if in immersive fullscreen and the top-of-window views are
+  // fully or partially visible.
+  bool IsRevealed() const;
 
   // Returns a lock which will keep the top-of-window views revealed for its
   // lifetime. Several locks can be obtained. When all of the locks are
@@ -194,7 +225,7 @@ class ASH_EXPORT ImmersiveFullscreenController
   gfx::Rect GetDisplayBoundsInScreen() const;
 
   // Not owned.
-  WmImmersiveFullscreenControllerDelegate* delegate_;
+  ImmersiveFullscreenControllerDelegate* delegate_;
   views::View* top_container_;
   views::Widget* widget_;
   // The WmWindow for |widget_|.
@@ -244,4 +275,4 @@ class ASH_EXPORT ImmersiveFullscreenController
 
 }  // namespace ash
 
-#endif  // ASH_WM_IMMERSIVE_FULLSCREEN_CONTROLLER_H_
+#endif  // ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_H_

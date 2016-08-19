@@ -726,8 +726,8 @@ void WmWindowMus::HideResizeShadow() {
 }
 
 void WmWindowMus::InstallResizeHandleWindowTargeter(
-    WmImmersiveFullscreenController* immersive_fullscreen_controller) {
-  // TODO(sky): I believe once WmImmersiveFullscreenController is ported this
+    ImmersiveFullscreenController* immersive_fullscreen_controller) {
+  // TODO(sky): I believe once ImmersiveFullscreenController is ported this
   // won't be necessary in mash, but I need to verify that:
   // http://crbug.com/548435.
 }

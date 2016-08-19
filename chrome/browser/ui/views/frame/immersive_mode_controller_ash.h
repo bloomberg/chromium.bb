@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "ash/common/wm/immersive/wm_immersive_fullscreen_controller_delegate.h"
 #include "ash/common/wm/window_state_observer.h"
-#include "ash/wm/immersive_fullscreen_controller.h"
+#include "ash/shared/immersive_fullscreen_controller.h"
+#include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -22,7 +22,7 @@ class Window;
 
 class ImmersiveModeControllerAsh
     : public ImmersiveModeController,
-      public ash::WmImmersiveFullscreenControllerDelegate,
+      public ash::ImmersiveFullscreenControllerDelegate,
       public ash::wm::WindowStateObserver,
       public content::NotificationObserver {
  public:

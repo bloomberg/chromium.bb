@@ -20,7 +20,7 @@ namespace ash {
 
 class FrameCaptionButtonContainerView;
 class HeaderView;
-class WmImmersiveFullscreenController;
+class ImmersiveFullscreenController;
 
 // A NonClientFrameView used for packaged apps, dialogs and other non-browser
 // windows. It supports immersive fullscreen. When in immersive fullscreen, the
@@ -41,7 +41,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   // CustomFrameViewAsh does not take ownership of
   // |immersive_fullscreen_controller|.
   void InitImmersiveFullscreenControllerForView(
-      WmImmersiveFullscreenController* immersive_fullscreen_controller);
+      ImmersiveFullscreenController* immersive_fullscreen_controller);
 
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.

@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/wm/immersive_revealed_lock.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/shared/immersive_revealed_lock.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/macros.h"
