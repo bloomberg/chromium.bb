@@ -8,13 +8,14 @@
 
 namespace blink {
 
-CompositorFilterOperations::CompositorFilterOperations()
-{
-}
-
-const cc::FilterOperations& CompositorFilterOperations::asFilterOperations() const
+const cc::FilterOperations& CompositorFilterOperations::asCcFilterOperations() const
 {
     return m_filterOperations;
+}
+
+cc::FilterOperations CompositorFilterOperations::releaseCcFilterOperations()
+{
+    return std::move(m_filterOperations);
 }
 
 void CompositorFilterOperations::appendGrayscaleFilter(float amount)

@@ -5,17 +5,17 @@
 #include "platform/animation/CompositorTransformOperations.h"
 
 #include "ui/gfx/transform.h"
-#include <algorithm>
 
 namespace blink {
 
-CompositorTransformOperations::CompositorTransformOperations()
-{
-}
-
-const cc::TransformOperations& CompositorTransformOperations::asTransformOperations() const
+const cc::TransformOperations& CompositorTransformOperations::asCcTransformOperations() const
 {
     return m_transformOperations;
+}
+
+cc::TransformOperations CompositorTransformOperations::releaseCcTransformOperations()
+{
+    return std::move(m_transformOperations);
 }
 
 bool CompositorTransformOperations::canBlendWith(const blink::CompositorTransformOperations& other) const

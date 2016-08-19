@@ -429,10 +429,10 @@ namespace {
 void addKeyframeToCurve(CompositorFilterAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
     const AnimatableValue* value, const TimingFunction& keyframeTimingFunction)
 {
-    std::unique_ptr<CompositorFilterOperations> ops = CompositorFilterOperations::create();
-    toCompositorFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
+    CompositorFilterOperations ops;
+    toCompositorFilterOperations(toAnimatableFilterOperations(value)->operations(), &ops);
 
-    CompositorFilterKeyframe filterKeyframe(keyframe->offset(), *ops, keyframeTimingFunction);
+    CompositorFilterKeyframe filterKeyframe(keyframe->offset(), std::move(ops), keyframeTimingFunction);
     curve.addKeyframe(filterKeyframe);
 }
 
@@ -446,10 +446,10 @@ void addKeyframeToCurve(CompositorFloatAnimationCurve& curve, Keyframe::Property
 void addKeyframeToCurve(CompositorTransformAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
     const AnimatableValue* value, const TimingFunction& keyframeTimingFunction)
 {
-    std::unique_ptr<CompositorTransformOperations> ops = CompositorTransformOperations::create();
-    toCompositorTransformOperations(toAnimatableTransform(value)->transformOperations(), ops.get());
+    CompositorTransformOperations ops;
+    toCompositorTransformOperations(toAnimatableTransform(value)->transformOperations(), &ops);
 
-    CompositorTransformKeyframe transformKeyframe(keyframe->offset(), *ops, keyframeTimingFunction);
+    CompositorTransformKeyframe transformKeyframe(keyframe->offset(), std::move(ops), keyframeTimingFunction);
     curve.addKeyframe(transformKeyframe);
 }
 

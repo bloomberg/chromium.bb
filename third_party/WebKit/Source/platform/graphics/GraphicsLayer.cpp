@@ -1153,16 +1153,16 @@ WebLayer* GraphicsLayer::platformLayer() const
 
 void GraphicsLayer::setFilters(const FilterOperations& filters)
 {
-    std::unique_ptr<CompositorFilterOperations> compositorFilters = CompositorFilterOperations::create();
-    SkiaImageFilterBuilder::buildFilterOperations(filters, compositorFilters.get());
-    m_layer->layer()->setFilters(compositorFilters->asFilterOperations());
+    CompositorFilterOperations compositorFilters;
+    SkiaImageFilterBuilder::buildFilterOperations(filters, &compositorFilters);
+    m_layer->layer()->setFilters(compositorFilters.releaseCcFilterOperations());
 }
 
 void GraphicsLayer::setBackdropFilters(const FilterOperations& filters)
 {
-    std::unique_ptr<CompositorFilterOperations> compositorFilters = CompositorFilterOperations::create();
-    SkiaImageFilterBuilder::buildFilterOperations(filters, compositorFilters.get());
-    m_layer->layer()->setBackgroundFilters(compositorFilters->asFilterOperations());
+    CompositorFilterOperations compositorFilters;
+    SkiaImageFilterBuilder::buildFilterOperations(filters, &compositorFilters);
+    m_layer->layer()->setBackgroundFilters(compositorFilters.releaseCcFilterOperations());
 }
 
 void GraphicsLayer::setFilterQuality(SkFilterQuality filterQuality)

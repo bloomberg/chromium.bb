@@ -62,13 +62,13 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
     ASSERT(m_layoutObject);
     if (!context.getPaintController().displayItemConstructionIsDisabled()) {
         FilterOperations filterOperations(layer.computeFilterOperations(m_layoutObject->styleRef()));
-        std::unique_ptr<CompositorFilterOperations> compositorFilterOperations = CompositorFilterOperations::create();
-        SkiaImageFilterBuilder::buildFilterOperations(filterOperations, compositorFilterOperations.get());
+        CompositorFilterOperations compositorFilterOperations;
+        SkiaImageFilterBuilder::buildFilterOperations(filterOperations, &compositorFilterOperations);
         // FIXME: It's possible to have empty CompositorFilterOperations here even
         // though the SkImageFilter produced above is non-null, since the
         // layer's FilterEffectBuilder can have a stale representation of
         // the layer's filter. See crbug.com/502026.
-        if (compositorFilterOperations->isEmpty())
+        if (compositorFilterOperations.isEmpty())
             return;
         LayoutRect visualBounds(rootRelativeBounds);
         if (layer.enclosingPaginationLayer()) {

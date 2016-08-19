@@ -10,9 +10,6 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/Color.h"
 #include "third_party/skia/include/core/SkScalar.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 class SkImageFilter;
 
@@ -20,14 +17,9 @@ namespace blink {
 
 // An ordered list of filter operations.
 class PLATFORM_EXPORT CompositorFilterOperations {
-    WTF_MAKE_NONCOPYABLE(CompositorFilterOperations);
 public:
-    static std::unique_ptr<CompositorFilterOperations> create()
-    {
-        return wrapUnique(new CompositorFilterOperations());
-    }
-
-    const cc::FilterOperations& asFilterOperations() const;
+    const cc::FilterOperations& asCcFilterOperations() const;
+    cc::FilterOperations releaseCcFilterOperations();
 
     void appendGrayscaleFilter(float amount);
     void appendSepiaFilter(float amount);
@@ -49,8 +41,6 @@ public:
     bool isEmpty() const;
 
 private:
-    CompositorFilterOperations();
-
     cc::FilterOperations m_filterOperations;
 };
 

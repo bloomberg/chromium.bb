@@ -41,30 +41,30 @@ namespace blink {
 TEST(AnimationTranslationUtilTest, transformsWork)
 {
     TransformOperations ops;
-    std::unique_ptr<CompositorTransformOperations> outOps = CompositorTransformOperations::create();
+    CompositorTransformOperations outOps;
 
     ops.operations().append(TranslateTransformOperation::create(Length(2, Fixed), Length(0, Fixed), TransformOperation::TranslateX));
     ops.operations().append(RotateTransformOperation::create(0.1, 0.2, 0.3, 200000.4, TransformOperation::Rotate3D));
     ops.operations().append(ScaleTransformOperation::create(50.2, 100, -4, TransformOperation::Scale3D));
-    toCompositorTransformOperations(ops, outOps.get());
+    toCompositorTransformOperations(ops, &outOps);
 
-    EXPECT_EQ(3UL, outOps->asTransformOperations().size());
+    EXPECT_EQ(3UL, outOps.asCcTransformOperations().size());
     const float err = 0.0001;
 
-    auto& op0 = outOps->asTransformOperations().at(0);
+    auto& op0 = outOps.asCcTransformOperations().at(0);
     EXPECT_EQ(cc::TransformOperation::TRANSFORM_OPERATION_TRANSLATE, op0.type);
     EXPECT_NEAR(op0.translate.x, 2.0f, err);
     EXPECT_NEAR(op0.translate.y, 0.0f, err);
     EXPECT_NEAR(op0.translate.z, 0.0f, err);
 
-    auto& op1 = outOps->asTransformOperations().at(1);
+    auto& op1 = outOps.asCcTransformOperations().at(1);
     EXPECT_EQ(cc::TransformOperation::TRANSFORM_OPERATION_ROTATE, op1.type);
     EXPECT_NEAR(op1.rotate.axis.x, 0.1f, err);
     EXPECT_NEAR(op1.rotate.axis.y, 0.2f, err);
     EXPECT_NEAR(op1.rotate.axis.z, 0.3f, err);
     EXPECT_NEAR(op1.rotate.angle, 200000.4f, 0.01f);
 
-    auto& op2 = outOps->asTransformOperations().at(2);
+    auto& op2 = outOps.asCcTransformOperations().at(2);
     EXPECT_EQ(cc::TransformOperation::TRANSFORM_OPERATION_SCALE, op2.type);
     EXPECT_NEAR(op2.scale.x, 50.2f, err);
     EXPECT_NEAR(op2.scale.y, 100.0f, err);
@@ -74,30 +74,30 @@ TEST(AnimationTranslationUtilTest, transformsWork)
 TEST(AnimationTranslationUtilTest, filtersWork)
 {
     FilterOperations ops;
-    std::unique_ptr<CompositorFilterOperations> outOps = CompositorFilterOperations::create();
+    CompositorFilterOperations outOps;
 
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.2, FilterOperation::GRAYSCALE));
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.8, FilterOperation::SEPIA));
     ops.operations().append(BasicComponentTransferFilterOperation::create(0.1, FilterOperation::OPACITY));
-    toCompositorFilterOperations(ops, outOps.get());
+    toCompositorFilterOperations(ops, &outOps);
 
-    EXPECT_EQ(4UL, outOps->asFilterOperations().size());
+    EXPECT_EQ(4UL, outOps.asCcFilterOperations().size());
     const float err = 0.0001;
 
-    auto& op0 = outOps->asFilterOperations().at(0);
+    auto& op0 = outOps.asCcFilterOperations().at(0);
     EXPECT_EQ(cc::FilterOperation::SATURATE, op0.type());
     EXPECT_NEAR(op0.amount(), 0.5f, err);
 
-    auto& op1 = outOps->asFilterOperations().at(1);
+    auto& op1 = outOps.asCcFilterOperations().at(1);
     EXPECT_EQ(cc::FilterOperation::GRAYSCALE, op1.type());
     EXPECT_NEAR(op1.amount(), 0.2f, err);
 
-    auto& op2 = outOps->asFilterOperations().at(2);
+    auto& op2 = outOps.asCcFilterOperations().at(2);
     EXPECT_EQ(cc::FilterOperation::SEPIA, op2.type());
     EXPECT_NEAR(op2.amount(), 0.8f, err);
 
-    auto& op3 = outOps->asFilterOperations().at(3);
+    auto& op3 = outOps.asCcFilterOperations().at(3);
     EXPECT_EQ(cc::FilterOperation::OPACITY, op3.type());
     EXPECT_NEAR(op3.amount(), 0.1f, err);
 }

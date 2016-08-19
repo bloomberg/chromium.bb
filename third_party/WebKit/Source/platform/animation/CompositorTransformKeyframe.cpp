@@ -8,8 +8,8 @@
 
 namespace blink {
 
-CompositorTransformKeyframe::CompositorTransformKeyframe(double time, const CompositorTransformOperations& value, const TimingFunction& timingFunction)
-    : m_transformKeyframe(cc::TransformKeyframe::Create(base::TimeDelta::FromSecondsD(time), value.asTransformOperations(), timingFunction.cloneToCC()))
+CompositorTransformKeyframe::CompositorTransformKeyframe(double time, CompositorTransformOperations value, const TimingFunction& timingFunction)
+    : m_transformKeyframe(cc::TransformKeyframe::Create(base::TimeDelta::FromSecondsD(time), value.releaseCcTransformOperations(), timingFunction.cloneToCC()))
 {
 }
 

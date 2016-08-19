@@ -18,7 +18,7 @@ class TimingFunction;
 class PLATFORM_EXPORT CompositorFilterKeyframe : public CompositorKeyframe {
     WTF_MAKE_NONCOPYABLE(CompositorFilterKeyframe);
 public:
-    CompositorFilterKeyframe(double time, const CompositorFilterOperations& value, const TimingFunction&);
+    CompositorFilterKeyframe(double time, CompositorFilterOperations value, const TimingFunction&);
     ~CompositorFilterKeyframe();
 
     std::unique_ptr<cc::FilterKeyframe> cloneToCC() const;

@@ -9,8 +9,8 @@
 
 namespace blink {
 
-CompositorFilterKeyframe::CompositorFilterKeyframe(double time, const CompositorFilterOperations& value, const TimingFunction& timingFunction)
-    : m_filterKeyframe(cc::FilterKeyframe::Create(base::TimeDelta::FromSecondsD(time), value.asFilterOperations(), timingFunction.cloneToCC()))
+CompositorFilterKeyframe::CompositorFilterKeyframe(double time, CompositorFilterOperations value, const TimingFunction& timingFunction)
+    : m_filterKeyframe(cc::FilterKeyframe::Create(base::TimeDelta::FromSecondsD(time), value.releaseCcFilterOperations(), timingFunction.cloneToCC()))
 {
 }
 

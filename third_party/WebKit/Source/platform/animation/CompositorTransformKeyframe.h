@@ -17,7 +17,7 @@ namespace blink {
 class PLATFORM_EXPORT CompositorTransformKeyframe : public CompositorKeyframe {
     WTF_MAKE_NONCOPYABLE(CompositorTransformKeyframe);
 public:
-    CompositorTransformKeyframe(double time, const CompositorTransformOperations& value, const TimingFunction&);
+    CompositorTransformKeyframe(double time, CompositorTransformOperations value, const TimingFunction&);
     ~CompositorTransformKeyframe();
 
     std::unique_ptr<cc::TransformKeyframe> cloneToCC() const;
