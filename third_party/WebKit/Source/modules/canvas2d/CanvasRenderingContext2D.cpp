@@ -757,9 +757,9 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text)
     metrics->setEmHeightAscent(0);
     metrics->setEmHeightDescent(0);
 
-    metrics->setHangingBaseline(-0.8f * ascent + baselineY);
-    metrics->setAlphabeticBaseline(baselineY);
-    metrics->setIdeographicBaseline(descent + baselineY);
+    metrics->setHangingBaseline(0.8f * ascent - baselineY);
+    metrics->setAlphabeticBaseline(-baselineY);
+    metrics->setIdeographicBaseline(-descent - baselineY);
     return metrics;
 }
 

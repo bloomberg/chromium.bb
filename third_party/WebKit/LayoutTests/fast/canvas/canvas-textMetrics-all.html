@@ -45,36 +45,36 @@ function measureMetrics(ctx)
 
     ctx.textBaseline = "top";
     var textMetrics = ctx.measureText(text);
-    var expected = [45, 9, 57, 0, 57, 0, 0, 0, -45, 95];
+    var expected = [-45, -9, -57, 0, 57, 0, 0, 0, -45, 95];
     testTextMetrics(textMetrics, expected);
 
     ctx.textBaseline = "hanging";
     var textMetrics = ctx.measureText(text);
-    expected = [36, 0, 48, 9, 48, 0, 0, 0, -36, 86];
+    expected = [-36, 0, -48, 9, 48, 0, 0, 0, -36, 86];
     testTextMetrics(textMetrics, expected);
 
     ctx.textBaseline = "middle";
     var textMetrics = ctx.measureText(text);
-    expected = [16, -20, 28, 29, 28, 0, 0, 0, -16, 66];
+    expected = [-16, 20, -28, 29, 28, 0, 0, 0, -16, 66];
     testTextMetrics(textMetrics, expected);
 
     ctx.textBaseline = "alphabetic";
     var textMetrics = ctx.measureText(text);
-    expected = [0, -36, 12, 45, 12, 0, 0, 0, 0, 50];
+    expected = [0, 36, -12, 45, 12, 0, 0, 0, 0, 50];
     testTextMetrics(textMetrics, expected);
 
     ctx.textBaseline = "ideographic";
     var textMetrics = ctx.measureText(text);
-    expected = [-12, -48, 0, 57, 0, 0, 0, 0, 12, 38];
+    expected = [12, 48, 0, 57, 0, 0, 0, 0, 12, 38];
     testTextMetrics(textMetrics, expected);
 
     ctx.textBaseline = "bottom";
     var textMetrics = ctx.measureText(text);
-    expected = [-12, -48, 0, 57, 0, 0, 0, 0, 12, 38];
+    expected = [12, 48, 0, 57, 0, 0, 0, 0, 12, 38];
     testTextMetrics(textMetrics, expected);
 }
 
-async_test(function() {
+async_test(t => {
     var canvas = document.createElement('canvas');
     canvas.width = 100;
     canvas.height = 100;
@@ -82,9 +82,8 @@ async_test(function() {
     ctx.font = '50px Libertine';
     // Kick off loading of the font
     ctx.fillText(" ", 0, 0);
-    document.fonts.addEventListener('loadingdone', function() {
+    document.fonts.addEventListener('loadingdone', t.step_func_done(function() {
         measureMetrics(ctx);
-    });
-    this.done();
+    }));
 }, "Test all attributes of TextMetrics.");
 </script>
