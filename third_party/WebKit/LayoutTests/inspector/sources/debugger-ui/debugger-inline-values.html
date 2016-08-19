@@ -42,10 +42,7 @@ function test()
             output.push(i == lineNumber ? ">" : " ");
             output.push(textEditor.line(i));
             output.push("\t");
-            for (var element of textEditor._elementToWidget.keys()) {
-                if (i === element.__lineNumber)
-                    output.push(element.deepTextContent());
-            }
+            textEditor._decorations.get(i).forEach(decoration => output.push(decoration.element.deepTextContent()));
             InspectorTest.addResult(output.join(" "));
         }
 

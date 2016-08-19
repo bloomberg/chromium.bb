@@ -71,11 +71,11 @@ function test()
 
         function dumpSwatchPositions()
         {
-            var markers = sourceFrame.textEditor.bookmarks(range);
+            var markers = sourceFrame.textEditor.bookmarks(range, WebInspector.CSSSourceFrame.SwatchBookmark);
             for (var i = 0; i < markers.length; i++) {
-                var position = markers[i].find();
-                var color = markers[i].widgetNode.firstChild.color();
-                InspectorTest.addResult("Line " + position.line + ", Column " + position.ch + ": " + color.asString(color.format()));
+                var position = markers[i].position();
+                var color = markers[i]._marker.widgetNode.firstChild.color();
+                InspectorTest.addResult("Line " + position.startLine + ", Column " + position.startColumn + ": " + color.asString(color.format()));
             }
         }
     }
