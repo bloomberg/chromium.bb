@@ -43,6 +43,9 @@ public class NewTabPageRecyclerView extends RecyclerView {
     /** View used to calculate the position of the cards' snap point. */
     private View mAboveTheFoldView;
 
+    /** Whether the RecyclerView should react to touch events. */
+    private boolean mTouchEnabled = true;
+
     /**
      * Constructor needed to inflate from XML.
      */
@@ -78,8 +81,14 @@ public class NewTabPageRecyclerView extends RecyclerView {
         return super.onInterceptTouchEvent(ev);
     }
 
+    public void setTouchEnabled(boolean enabled) {
+        mTouchEnabled = enabled;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        if (!mTouchEnabled) return false;
+
         // Action down would already have been handled in onInterceptTouchEvent
         if (ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
             mGestureDetector.onTouchEvent(ev);

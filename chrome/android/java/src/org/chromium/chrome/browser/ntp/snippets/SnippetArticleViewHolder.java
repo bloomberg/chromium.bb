@@ -74,7 +74,6 @@ public class SnippetArticleViewHolder extends CardViewHolder
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
     private final ImageView mThumbnailView;
-    private final OnCreateContextMenuListener mCreateContextMenuListener;
 
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
@@ -102,8 +101,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
      * @param listener A Listener to be notified whenever a Context Menu is created.
      */
     public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager,
-            SuggestionsSource suggestionsSource, UiConfig uiConfig,
-            OnCreateContextMenuListener listener) {
+            SuggestionsSource suggestionsSource, UiConfig uiConfig) {
         super(R.layout.new_tab_page_snippets_card, parent, uiConfig);
 
         mNewTabPageManager = manager;
@@ -112,7 +110,6 @@ public class SnippetArticleViewHolder extends CardViewHolder
         mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
         mArticleSnippetTextView = (TextView) itemView.findViewById(R.id.article_snippet);
-        mCreateContextMenuListener = listener;
 
         mPreDrawObserver = new ViewTreeObserver.OnPreDrawListener() {
             @Override
@@ -162,8 +159,6 @@ public class SnippetArticleViewHolder extends CardViewHolder
 
     @Override
     protected void createContextMenu(ContextMenu menu) {
-        mCreateContextMenuListener.onCreateContextMenu();
-
         RecordHistogram.recordSparseSlowlyHistogram(
                 "NewTabPage.Snippets.CardLongPressed", mArticle.mPosition);
         mArticle.recordAgeAndScore("NewTabPage.Snippets.CardLongPressed");
@@ -189,6 +184,20 @@ public class SnippetArticleViewHolder extends CardViewHolder
         }
 
         addContextMenuItem(menu, ID_REMOVE, R.string.remove);
+
+        // Disable touch events on the RecyclerView while the context menu is open. This is to
+        // prevent the user long pressing to get the context menu then on the same press scrolling
+        // or swiping to dismiss an item (eg. https://crbug.com/638854, 638555, 636296)
+        final NewTabPageRecyclerView recyclerView = (NewTabPageRecyclerView) itemView.getParent();
+        recyclerView.setTouchEnabled(false);
+
+        mNewTabPageManager.addContextMenuCloseCallback(new Callback<Menu>() {
+            @Override
+            public void onResult(Menu result) {
+                recyclerView.setTouchEnabled(true);
+                mNewTabPageManager.removeContextMenuCloseCallback(this);
+            }
+        });
     }
 
     /**
