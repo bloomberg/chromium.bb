@@ -238,8 +238,7 @@ bool SynchronizedMinidumpManager::ParseFiles() {
   std::vector<std::string> lines = base::SplitString(
       lockfile, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  std::unique_ptr<base::ListValue> dumps =
-      base::WrapUnique(new base::ListValue());
+  std::unique_ptr<base::ListValue> dumps = base::MakeUnique<base::ListValue>();
 
   // Validate dumps
   for (const std::string& line : lines) {
@@ -282,15 +281,14 @@ bool SynchronizedMinidumpManager::WriteFiles(const base::ListValue* dumps,
 
 bool SynchronizedMinidumpManager::InitializeFiles() {
   std::unique_ptr<base::DictionaryValue> metadata =
-      base::WrapUnique(new base::DictionaryValue());
+      base::MakeUnique<base::DictionaryValue>();
 
   base::DictionaryValue* ratelimit_fields = new base::DictionaryValue();
   metadata->Set(kLockfileRatelimitKey, base::WrapUnique(ratelimit_fields));
   ratelimit_fields->SetDouble(kLockfileRatelimitPeriodStartKey, 0.0);
   ratelimit_fields->SetInteger(kLockfileRatelimitPeriodDumpsKey, 0);
 
-  std::unique_ptr<base::ListValue> dumps =
-      base::WrapUnique(new base::ListValue());
+  std::unique_ptr<base::ListValue> dumps = base::MakeUnique<base::ListValue>();
 
   return WriteFiles(dumps.get(), metadata.get());
 }

@@ -90,9 +90,9 @@ void MultiDemuxerStreamAdaptersTest::Start() {
   frame_received_count_ = 0;
 
   for (auto* stream : demuxer_streams_) {
-    coded_frame_providers_.push_back(base::WrapUnique(
-        new DemuxerStreamAdapter(base::ThreadTaskRunnerHandle::Get(),
-                                 media_task_runner_factory_, stream)));
+    coded_frame_providers_.push_back(base::MakeUnique<DemuxerStreamAdapter>(
+        base::ThreadTaskRunnerHandle::Get(), media_task_runner_factory_,
+        stream));
   }
   running_stream_count_ = coded_frame_providers_.size();
 

@@ -39,8 +39,7 @@ std::unique_ptr<base::ListValue> ParseLockFile(const std::string& path) {
   std::vector<std::string> lines = base::SplitString(
       lockfile_string, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  std::unique_ptr<base::ListValue> dumps =
-      base::WrapUnique(new base::ListValue());
+  std::unique_ptr<base::ListValue> dumps = base::MakeUnique<base::ListValue>();
 
   // Validate dumps
   for (const std::string& line : lines) {
@@ -84,7 +83,7 @@ bool WriteMetadataFile(const std::string& path, const base::Value* metadata) {
 
 std::unique_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
   std::unique_ptr<base::Value> value(DeserializeFromJson(json_string));
-  return base::WrapUnique(new DumpInfo(value.get()));
+  return base::MakeUnique<DumpInfo>(value.get());
 }
 
 bool FetchDumps(const std::string& lockfile_path,
@@ -106,22 +105,21 @@ bool FetchDumps(const std::string& lockfile_path,
 
 bool ClearDumps(const std::string& lockfile_path) {
   std::unique_ptr<base::ListValue> dump_list =
-      base::WrapUnique(new base::ListValue());
+      base::MakeUnique<base::ListValue>();
   return WriteLockFile(lockfile_path, dump_list.get()) == 0;
 }
 
 bool CreateFiles(const std::string& lockfile_path,
                  const std::string& metadata_path) {
   std::unique_ptr<base::DictionaryValue> metadata =
-      base::WrapUnique(new base::DictionaryValue());
+      base::MakeUnique<base::DictionaryValue>();
 
   base::DictionaryValue* ratelimit_fields = new base::DictionaryValue();
   metadata->Set(kRatelimitKey, base::WrapUnique(ratelimit_fields));
   ratelimit_fields->SetDouble(kRatelimitPeriodStartKey, 0.0);
   ratelimit_fields->SetInteger(kRatelimitPeriodDumpsKey, 0);
 
-  std::unique_ptr<base::ListValue> dumps =
-      base::WrapUnique(new base::ListValue());
+  std::unique_ptr<base::ListValue> dumps = base::MakeUnique<base::ListValue>();
 
   return WriteLockFile(lockfile_path, dumps.get()) == 0 &&
          WriteMetadataFile(metadata_path, metadata.get());

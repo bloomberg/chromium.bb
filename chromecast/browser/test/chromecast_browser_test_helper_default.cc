@@ -47,7 +47,7 @@ class DefaultHelper : public ChromecastBrowserTestHelper {
 
 std::unique_ptr<ChromecastBrowserTestHelper>
 ChromecastBrowserTestHelper::Create() {
-  return base::WrapUnique(new DefaultHelper());
+  return base::MakeUnique<DefaultHelper>();
 }
 
 }  // namespace shell

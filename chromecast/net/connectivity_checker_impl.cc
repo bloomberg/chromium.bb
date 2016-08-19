@@ -73,8 +73,9 @@ void ConnectivityCheckerImpl::Initialize() {
       check_url_str.empty() ? kDefaultConnectivityCheckUrl : check_url_str));
 
   net::URLRequestContextBuilder builder;
-  builder.set_proxy_config_service(base::WrapUnique(
-      new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
+  builder.set_proxy_config_service(
+      base::MakeUnique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfig::CreateDirect()));
   builder.DisableHttpCache();
   url_request_context_ = builder.Build();
 

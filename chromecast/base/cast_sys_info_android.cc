@@ -22,7 +22,7 @@ const char kBuildTypeUser[] = "user";
 
 // static
 std::unique_ptr<CastSysInfo> CreateSysInfo() {
-  return base::WrapUnique(new CastSysInfoAndroid());
+  return base::MakeUnique<CastSysInfoAndroid>();
 }
 
 CastSysInfoAndroid::CastSysInfoAndroid()

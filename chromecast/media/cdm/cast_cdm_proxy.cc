@@ -69,7 +69,7 @@ void CdmPromiseInternal<T...>::resolve(const T&... result) {
 template <typename... T>
 std::unique_ptr<CdmPromiseInternal<T...>> BindPromiseToCurrentLoop(
     std::unique_ptr<::media::CdmPromiseTemplate<T...>> promise) {
-  return base::WrapUnique(new CdmPromiseInternal<T...>(std::move(promise)));
+  return base::MakeUnique<CdmPromiseInternal<T...>>(std::move(promise));
 }
 
 }  // namespace

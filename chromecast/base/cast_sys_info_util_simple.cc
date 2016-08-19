@@ -11,7 +11,7 @@ namespace chromecast {
 
 // static
 std::unique_ptr<CastSysInfo> CreateSysInfo() {
-  return base::WrapUnique(new CastSysInfoDummy());
+  return base::MakeUnique<CastSysInfoDummy>();
 }
 
 }  // namespace chromecast

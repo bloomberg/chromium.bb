@@ -353,8 +353,9 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 }
 
 void CastBrowserMainParts::PostMainMessageLoopStart() {
-  cast_browser_process_->SetMetricsHelper(base::WrapUnique(
-      new metrics::CastMetricsHelper(base::ThreadTaskRunnerHandle::Get())));
+  cast_browser_process_->SetMetricsHelper(
+      base::MakeUnique<metrics::CastMetricsHelper>(
+          base::ThreadTaskRunnerHandle::Get()));
 
 #if defined(OS_ANDROID)
   base::MessageLoopForUI::current()->Start();
@@ -387,7 +388,7 @@ int CastBrowserMainParts::PreCreateThreads() {
     LOG(ERROR) << "Could not find crash dump location.";
   }
   cast_browser_process_->SetCrashDumpManager(
-      base::WrapUnique(new breakpad::CrashDumpManager(crash_dumps_dir)));
+      base::MakeUnique<breakpad::CrashDumpManager>(crash_dumps_dir));
 #else
   base::FilePath home_dir;
   CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));
@@ -436,7 +437,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   url_request_context_factory_->InitializeOnUIThread(net_log_.get());
 
   cast_browser_process_->SetBrowserContext(
-      base::WrapUnique(new CastBrowserContext(url_request_context_factory_)));
+      base::MakeUnique<CastBrowserContext>(url_request_context_factory_));
   cast_browser_process_->SetMetricsServiceClient(
       metrics::CastMetricsServiceClient::Create(
           content::BrowserThread::GetBlockingPool(),
@@ -448,9 +449,10 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   if (!PlatformClientAuth::Initialize())
     LOG(ERROR) << "PlatformClientAuth::Initialize failed.";
 
-  cast_browser_process_->SetRemoteDebuggingServer(base::WrapUnique(
-      new RemoteDebuggingServer(cast_browser_process_->browser_client()
-                                    ->EnableRemoteDebuggingImmediately())));
+  cast_browser_process_->SetRemoteDebuggingServer(
+      base::MakeUnique<RemoteDebuggingServer>(
+          cast_browser_process_->browser_client()
+              ->EnableRemoteDebuggingImmediately()));
 
 #if defined(USE_AURA) && !BUILDFLAG(DISABLE_DISPLAY)
   // TODO(halliwell) move audio builds to use ozone_platform_cast, then can

@@ -96,7 +96,7 @@ class PipelineHelper {
       cdm_context_.reset(new CastCdmContextForTest());
     }
     std::unique_ptr<MediaPipelineBackendDefault> backend =
-        base::WrapUnique(new MediaPipelineBackendDefault());
+        base::MakeUnique<MediaPipelineBackendDefault>();
     pipeline_backend_ = backend.get();
     media_pipeline_.Initialize(kLoadTypeURL, std::move(backend));
 

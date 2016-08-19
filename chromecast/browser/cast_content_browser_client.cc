@@ -128,7 +128,7 @@ std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     PrefService* pref_service,
     net::URLRequestContextGetter* request_context_getter,
     media::VideoPlaneController* video_plane_controller) {
-  return base::WrapUnique(new CastServiceSimple(browser_context, pref_service));
+  return base::MakeUnique<CastServiceSimple>(browser_context, pref_service);
 }
 
 #if !defined(OS_ANDROID)
@@ -485,8 +485,8 @@ CastContentBrowserClient::CreateCdmFactory() {
     return nullptr;
 #endif  // !defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
-  return base::WrapUnique(new media::CastBrowserCdmFactory(
-      GetMediaTaskRunner(), media_resource_tracker()));
+  return base::MakeUnique<media::CastBrowserCdmFactory>(
+      GetMediaTaskRunner(), media_resource_tracker());
 }
 
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
