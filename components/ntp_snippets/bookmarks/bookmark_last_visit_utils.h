@@ -31,13 +31,13 @@ void UpdateBookmarkOnURLVisitedInMainFrame(
 // bookmark is created also counts. If no info about last visit date is present
 // and |creation_date_fallback| is true, creation date is used.
 base::Time GetLastVisitDateForBookmark(const bookmarks::BookmarkNode* node,
-                                       bool creation_date_fallback = true);
+                                       bool creation_date_fallback);
 
 // Like GetLastVisitDateForBookmark, but it returns the unix epoch if the
 // bookmark is dismissed from NTP.
 base::Time GetLastVisitDateForBookmarkIfNotDismissed(
     const bookmarks::BookmarkNode* node,
-    bool creation_date_fallback = true);
+    bool creation_date_fallback);
 
 // Marks all bookmarks with the given URL as dismissed.
 void MarkBookmarksDismissed(bookmarks::BookmarkModel* bookmark_model,
@@ -59,7 +59,8 @@ std::vector<const bookmarks::BookmarkNode*> GetRecentlyVisitedBookmarks(
     bookmarks::BookmarkModel* bookmark_model,
     int min_count,
     int max_count,
-    const base::Time& min_visit_time);
+    const base::Time& min_visit_time,
+    bool creation_date_fallback);
 
 // Returns the list of all dismissed bookmarks. Only used for debugging.
 std::vector<const bookmarks::BookmarkNode*> GetDismissedBookmarksForDebugging(

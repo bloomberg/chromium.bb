@@ -30,5 +30,8 @@ const char kDismissedRecentOfflineTabSuggestions[] =
 const char kDismissedDownloadSuggestions[] =
     "ntp_suggestions.offline_pages.downloads.dismissed_ids";
 
+const char kBookmarksFirstM54Start[] =
+    "ntp_suggestions.bookmarks.first_M54_start";
+
 }  // namespace prefs
 }  // namespace ntp_snippets

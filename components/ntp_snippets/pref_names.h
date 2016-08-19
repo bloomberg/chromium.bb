@@ -32,6 +32,9 @@ extern const char kSnippetThumbnailsRequestsDay[];
 extern const char kDismissedRecentOfflineTabSuggestions[];
 extern const char kDismissedDownloadSuggestions[];
 
+// The pref name for the time when M54 was first started on the device.
+extern const char kBookmarksFirstM54Start[];
+
 }  // namespace prefs
 }  // namespace ntp_snippets
 

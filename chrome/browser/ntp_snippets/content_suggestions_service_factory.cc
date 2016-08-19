@@ -156,7 +156,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
         BookmarkModelFactory::GetForBrowserContext(profile);
     std::unique_ptr<BookmarkSuggestionsProvider> bookmark_suggestions_provider =
         base::MakeUnique<BookmarkSuggestionsProvider>(
-            service, service->category_factory(), bookmark_model);
+            service, service->category_factory(), bookmark_model,
+            profile->GetPrefs());
     service->RegisterProvider(std::move(bookmark_suggestions_provider));
   }
 

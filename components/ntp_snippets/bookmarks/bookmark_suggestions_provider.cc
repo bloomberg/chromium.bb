@@ -12,11 +12,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/features.h"
+#include "components/ntp_snippets/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,18 +34,21 @@ namespace {
 const int kMaxBookmarks = 10;
 const int kMinBookmarks = 3;
 const int kMaxBookmarkAgeInDays = 42;
+const int kUseCreationDateFallbackForDays = 42;
 
-const char* kMaxBookmarksParamName = "max_count";
-const char* kMinBookmarksParamName = "min_count";
-const char* kMaxBookmarkAgeInDaysParamName = "max_age_in_days";
+const char* kMaxBookmarksParamName = "bookmarks_max_count";
+const char* kMinBookmarksParamName = "bookmarks_min_count";
+const char* kMaxBookmarkAgeInDaysParamName = "bookmarks_max_age_in_days";
 
 base::Time GetThresholdTime() {
   std::string age_in_days_string = variations::GetVariationParamValueByFeature(
     ntp_snippets::kBookmarkSuggestionsFeature, kMaxBookmarkAgeInDaysParamName);
   int age_in_days = 0;
-  if (!base::StringToInt(age_in_days_string, &age_in_days))
+  if (!base::StringToInt(age_in_days_string, &age_in_days)) {
+    if (!age_in_days_string.empty())
+      LOG(WARNING) << "Failed to parse bookmark age " << age_in_days_string;
     age_in_days = kMaxBookmarkAgeInDays;
-
+  }
   return base::Time::Now() - base::TimeDelta::FromDays(age_in_days);
 }
 
@@ -51,6 +58,8 @@ int GetMaxCount() {
   int max_count = 0;
   if (base::StringToInt(max_count_string, &max_count))
     return max_count;
+  if (!max_count_string.empty())
+    LOG(WARNING) << "Failed to parse max bookmarks count" << max_count_string;
 
   return kMaxBookmarks;
 }
@@ -61,6 +70,8 @@ int GetMinCount() {
   int min_count = 0;
   if (base::StringToInt(min_count_string, &min_count))
     return min_count;
+  if (!min_count_string.empty())
+    LOG(WARNING) << "Failed to parse min bookmarks count" << min_count_string;
 
   return kMinBookmarks;
 }
@@ -72,7 +83,8 @@ namespace ntp_snippets {
 BookmarkSuggestionsProvider::BookmarkSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
     CategoryFactory* category_factory,
-    bookmarks::BookmarkModel* bookmark_model)
+    bookmarks::BookmarkModel* bookmark_model,
+    PrefService* pref_service)
     : ContentSuggestionsProvider(observer, category_factory),
       category_status_(CategoryStatus::AVAILABLE_LOADING),
       provided_category_(
@@ -80,12 +92,31 @@ BookmarkSuggestionsProvider::BookmarkSuggestionsProvider(
       bookmark_model_(bookmark_model),
       fetch_requested_(false),
       end_of_list_last_visit_date_(GetThresholdTime()) {
+  base::Time first_m54_start;
+  base::Time now = base::Time::Now();
+  if (pref_service->HasPrefPath(prefs::kBookmarksFirstM54Start)) {
+    first_m54_start = base::Time::FromInternalValue(
+        pref_service->GetInt64(prefs::kBookmarksFirstM54Start));
+  } else {
+    first_m54_start = now;
+    pref_service->SetInt64(prefs::kBookmarksFirstM54Start,
+                           first_m54_start.ToInternalValue());
+  }
+  base::TimeDelta time_since_first_m54_start = now - first_m54_start;
+  creation_date_fallback_ =
+      time_since_first_m54_start.InDays() < kUseCreationDateFallbackForDays;
   bookmark_model_->AddObserver(this);
   FetchBookmarks();
 }
 
 BookmarkSuggestionsProvider::~BookmarkSuggestionsProvider() {
   bookmark_model_->RemoveObserver(this);
+}
+
+// static
+void BookmarkSuggestionsProvider::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kBookmarksFirstM54Start, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -165,13 +196,14 @@ void BookmarkSuggestionsProvider::OnWillChangeBookmarkMetaInfo(
     const BookmarkNode* node) {
   // Store the last visit date of the node that is about to change.
   node_to_change_last_visit_date_ =
-      GetLastVisitDateForBookmarkIfNotDismissed(node);
+      GetLastVisitDateForBookmarkIfNotDismissed(node, creation_date_fallback_);
 }
 
 void BookmarkSuggestionsProvider::BookmarkMetaInfoChanged(
     BookmarkModel* model,
     const BookmarkNode* node) {
-  base::Time time = GetLastVisitDateForBookmarkIfNotDismissed(node);
+  base::Time time =
+      GetLastVisitDateForBookmarkIfNotDismissed(node, creation_date_fallback_);
   if (time == node_to_change_last_visit_date_ ||
       time < end_of_list_last_visit_date_)
     return;
@@ -187,9 +219,10 @@ void BookmarkSuggestionsProvider::BookmarkNodeRemoved(
       int old_index,
       const bookmarks::BookmarkNode* node,
       const std::set<GURL>& no_longer_bookmarked) {
-  if (GetLastVisitDateForBookmarkIfNotDismissed(node) <
-      end_of_list_last_visit_date_)
+  if (GetLastVisitDateForBookmarkIfNotDismissed(node, creation_date_fallback_) <
+      end_of_list_last_visit_date_) {
     return;
+  }
 
   // Some node from our list got deleted, we should update the suggestions.
   FetchBookmarks();
@@ -203,7 +236,8 @@ ContentSuggestion BookmarkSuggestionsProvider::ConvertBookmark(
 
   suggestion.set_title(bookmark->GetTitle());
   suggestion.set_snippet_text(base::string16());
-  suggestion.set_publish_date(GetLastVisitDateForBookmark(bookmark));
+  suggestion.set_publish_date(
+      GetLastVisitDateForBookmark(bookmark, creation_date_fallback_));
   suggestion.set_publisher_name(base::UTF8ToUTF16(bookmark->url().host()));
   return suggestion;
 }
@@ -214,9 +248,9 @@ void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
   NotifyStatusChanged(CategoryStatus::AVAILABLE);
 
   base::Time threshold_time = GetThresholdTime();
-  std::vector<const BookmarkNode*> bookmarks = GetRecentlyVisitedBookmarks(
-      bookmark_model_, GetMinCount(), GetMaxCount(),
-      threshold_time);
+  std::vector<const BookmarkNode*> bookmarks =
+      GetRecentlyVisitedBookmarks(bookmark_model_, GetMinCount(), GetMaxCount(),
+                                  threshold_time, creation_date_fallback_);
 
   std::vector<ContentSuggestion> suggestions;
   for (const BookmarkNode* bookmark : bookmarks)

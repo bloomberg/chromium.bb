@@ -14,6 +14,9 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace gfx {
 class Image;
 }
@@ -26,8 +29,11 @@ class BookmarkSuggestionsProvider : public ContentSuggestionsProvider,
  public:
   BookmarkSuggestionsProvider(ContentSuggestionsProvider::Observer* observer,
                               CategoryFactory* category_factory,
-                              bookmarks::BookmarkModel* bookmark_model);
+                              bookmarks::BookmarkModel* bookmark_model,
+                              PrefService* pref_service);
   ~BookmarkSuggestionsProvider() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   // ContentSuggestionsProvider implementation.
@@ -98,6 +104,11 @@ class BookmarkSuggestionsProvider : public ContentSuggestionsProvider,
 
   base::Time node_to_change_last_visit_date_;
   base::Time end_of_list_last_visit_date_;
+
+  // TODO(jkrcal): Remove this field and the pref after M55.
+  // For six weeks after first installing M54, this is true and the
+  // fallback implemented in BookmarkLastVisitUtils is activated.
+  bool creation_date_fallback_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkSuggestionsProvider);
 };

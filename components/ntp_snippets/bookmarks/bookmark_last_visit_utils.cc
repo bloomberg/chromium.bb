@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -41,8 +42,10 @@ std::string FormatLastVisitDate(const base::Time& date) {
 }
 
 bool CompareBookmarksByLastVisitDate(const BookmarkNode* a,
-                                     const BookmarkNode* b) {
-  return GetLastVisitDateForBookmark(a) > GetLastVisitDateForBookmark(b);
+                                     const BookmarkNode* b,
+                                     bool creation_date_fallback) {
+  return GetLastVisitDateForBookmark(a, creation_date_fallback) >
+         GetLastVisitDateForBookmark(b, creation_date_fallback);
 }
 
 }  // namespace
@@ -71,9 +74,9 @@ base::Time GetLastVisitDateForBookmark(const BookmarkNode* node,
 
   std::string last_visit_date_string;
   if (!node->GetMetaInfo(kBookmarkLastVisitDateKey, &last_visit_date_string) &&
-      creation_date_fallback)
+      creation_date_fallback) {
     return node->date_added();
-
+  }
   return ParseLastVisitDate(last_visit_date_string);
 }
 
@@ -122,7 +125,8 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
     BookmarkModel* bookmark_model,
     int min_count,
     int max_count,
-    const base::Time& min_visit_time) {
+    const base::Time& min_visit_time,
+    bool creation_date_fallback) {
   // Get all the bookmark URLs.
   std::vector<BookmarkModel::URLAndTitle> bookmark_urls;
   bookmark_model->GetBookmarks(&bookmark_urls);
@@ -135,14 +139,15 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
     // Get all bookmarks for the given URL.
     std::vector<const BookmarkNode*> bookmarks_for_url;
     bookmark_model->GetNodesByURL(url_and_title.url, &bookmarks_for_url);
+    DCHECK(!bookmarks_for_url.empty());
 
     // Find the most recent node (minimal w.r.t.
     // CompareBookmarksByLastVisitDate).
-    std::vector<const BookmarkNode*>::iterator most_recent =
-        std::min_element(bookmarks_for_url.begin(), bookmarks_for_url.end(),
-                         &CompareBookmarksByLastVisitDate);
-    if (most_recent == bookmarks_for_url.end())
-      continue;
+    std::vector<const BookmarkNode*>::iterator most_recent = std::min_element(
+        bookmarks_for_url.begin(), bookmarks_for_url.end(),
+        [creation_date_fallback](const BookmarkNode* a, const BookmarkNode* b) {
+          return CompareBookmarksByLastVisitDate(a, b, creation_date_fallback);
+        });
     const BookmarkNode* node = *most_recent;
 
     // Find out if it has been _visited_ recently enough.
@@ -159,7 +164,7 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
     // Fill the list up to |min_count| but do not display more.
     max_count = min_count;
   } else {
-    // Remove the bookmarks that are not recently visited; we do no need them.
+    // Remove the bookmarks that are not recently visited; we do not need them.
     bookmarks.erase(
         std::remove_if(bookmarks.begin(), bookmarks.end(),
                        [](const RecentBookmark& bookmark) {
@@ -170,8 +175,10 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
 
   // Sort the remaining entries by date.
   std::sort(bookmarks.begin(), bookmarks.end(),
-            [](const RecentBookmark& a, const RecentBookmark& b) {
-              return CompareBookmarksByLastVisitDate(a.node, b.node);
+            [creation_date_fallback](const RecentBookmark& a,
+                                     const RecentBookmark& b) {
+              return CompareBookmarksByLastVisitDate(a.node, b.node,
+                                                     creation_date_fallback);
             });
 
   // Insert the first |max_count| items from |bookmarks| into |result|.
@@ -197,6 +204,7 @@ std::vector<const BookmarkNode*> GetDismissedBookmarksForDebugging(
           [&bookmark_model](const BookmarkModel::URLAndTitle& bookmark) {
             std::vector<const BookmarkNode*> bookmarks_for_url;
             bookmark_model->GetNodesByURL(bookmark.url, &bookmarks_for_url);
+            DCHECK(!bookmarks_for_url.empty());
 
             for (const BookmarkNode* node : bookmarks_for_url) {
               if (!IsDismissedFromNTPForBookmark(node))
