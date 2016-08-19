@@ -399,6 +399,7 @@ void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(
   GattServiceMap gatt_services_swapped;
   gatt_services_swapped.swap(gatt_services_);
   gatt_services_swapped.clear();
+  UpdateServiceUUIDs();
   if (create_gatt_connection_error_callbacks_.empty()) {
     // TODO(http://crbug.com/585897): Need to pass the error.
     DidDisconnectGatt();
