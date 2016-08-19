@@ -90,9 +90,12 @@ public final class PrefServiceBridge {
          * @param domains Important registerable domains.
          * @param exampleOrigins Example origins for each domain. These can be used to retrieve
          *                       favicons.
+         * @param importantReasons Bitfield of reasons why this domain was selected. Pass this back
+         *                         to clearBrowinsgData so we can record metrics.
          */
         @CalledByNative("ImportantSitesCallback")
-        void onImportantRegisterableDomainsReady(String[] domains, String[] exampleOrigins);
+        void onImportantRegisterableDomainsReady(
+                String[] domains, String[] exampleOrigins, int[] importantReasons);
     }
 
     /**
@@ -738,7 +741,8 @@ public final class PrefServiceBridge {
      */
     public void clearBrowsingData(
             OnClearBrowsingDataListener listener, int[] dataTypes, int timePeriod) {
-        clearBrowsingDataExcludingDomains(listener, dataTypes, timePeriod, new String[0]);
+        clearBrowsingDataExcludingDomains(listener, dataTypes, timePeriod, new String[0],
+                new int[0], new String[0], new int[0]);
     }
 
     /**
@@ -752,12 +756,18 @@ public final class PrefServiceBridge {
      * @param timePeriod The time period for which to delete the data, represented as a value from
      *      the shared enum {@link org.chromium.chrome.browser.browsing_data.TimePeriod}.
      * @param blacklistDomains A list of registerable domains that we don't clear data for.
+     * @param blacklistedDomainReasons A list of the reason metadata for the blacklisted domains.
+     * @param ignoredDomains A list of ignored domains that the user chose to not blacklist. We use
+     *                       these to remove important site entries if the user ignores them enough.
+     * @param ignoredDomainReasons A list of reason metadata for the ignored domains.
      */
     public void clearBrowsingDataExcludingDomains(OnClearBrowsingDataListener listener,
-            int[] dataTypes, int timePeriod, String[] blacklistDomains) {
+            int[] dataTypes, int timePeriod, String[] blacklistDomains,
+            int[] blacklistedDomainReasons, String[] ignoredDomains, int[] ignoredDomainReasons) {
         assert mClearBrowsingDataListener == null;
         mClearBrowsingDataListener = listener;
-        nativeClearBrowsingData(dataTypes, timePeriod, blacklistDomains);
+        nativeClearBrowsingData(dataTypes, timePeriod, blacklistDomains, blacklistedDomainReasons,
+                ignoredDomains, ignoredDomainReasons);
     }
 
     /*
@@ -1130,8 +1140,9 @@ public final class PrefServiceBridge {
     private native void nativeSetBrowsingDataDeletionPreference(int dataType, boolean value);
     private native int nativeGetBrowsingDataDeletionTimePeriod();
     private native void nativeSetBrowsingDataDeletionTimePeriod(int timePeriod);
-    private native void nativeClearBrowsingData(
-            int[] dataTypes, int timePeriod, String[] blacklistDomains);
+    private native void nativeClearBrowsingData(int[] dataTypes, int timePeriod,
+            String[] blacklistDomains, int[] blacklistedDomainReasons, String[] ignoredDomains,
+            int[] ignoredDomainReasons);
     private native void nativeRequestInfoAboutOtherFormsOfBrowsingHistory(
             OtherFormsOfBrowsingHistoryListener listener);
     private native boolean nativeCanDeleteBrowsingHistory();

@@ -120,7 +120,10 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
                         },
                         new int[]{ BrowsingDataType.COOKIES },
                         TimePeriod.ALL_TIME,
-                        new String[]{ "google.com" });
+                        new String[]{ "google.com" },
+                        new int[] { 1 },
+                        new String[0],
+                        new int[0]);
             }
         });
         CriteriaHelper.pollUiThread(new CallbackCriteria());

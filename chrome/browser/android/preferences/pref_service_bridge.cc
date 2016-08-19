@@ -608,7 +608,10 @@ static void ClearBrowsingData(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jintArray>& data_types,
     jint time_period,
-    const JavaParamRef<jobjectArray>& jexcluding_domains) {
+    const JavaParamRef<jobjectArray>& jexcluding_domains,
+    const JavaParamRef<jintArray>& jexcluding_domain_reasons,
+    const JavaParamRef<jobjectArray>& jignoring_domains,
+    const JavaParamRef<jintArray>& jignoring_domain_reasons) {
   BrowsingDataRemover* browsing_data_remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetOriginalProfile());
 
@@ -714,8 +717,15 @@ static void FetchImportantSites(JNIEnv* env,
   ScopedJavaLocalRef<jobjectArray> java_origins =
       base::android::ToJavaArrayOfStrings(env, important_domains);
 
+  // Empty reasons for now.
+  std::vector<int32_t> important_domain_reasons;
+  important_domain_reasons.resize(important_domains.size(), 0);
+  ScopedJavaLocalRef<jintArray> java_reasons =
+      base::android::ToJavaIntArray(env, important_domain_reasons);
+
   Java_ImportantSitesCallback_onImportantRegisterableDomainsReady(
-      env, java_callback, java_domains, java_origins);
+      env, java_callback.obj(), java_domains.obj(), java_origins.obj(),
+      java_reasons.obj());
 }
 
 // This value should not change during a sessions, as it's used for UMA metrics.

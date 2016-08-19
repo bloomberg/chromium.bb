@@ -37,15 +37,19 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
  * Modal dialog that shows a list of important domains to the user which they can uncheck. Used to
  * allow the user to exclude domains from being cleared by the clear browsing data function.
- * We use proper bundle construction (through the {@link #newInstance(String[], String[])} method)
- * and onActivityResult return conventions.
- * TODO(dmurph): Add UMA metrics for cancel and clear (with and without dechecking a site).
+ * We use proper bundle construction (through the {@link #newInstance(String[], int[], String[])}
+ * method) and onActivityResult return conventions.
  */
 public class ConfirmImportantSitesDialogFragment extends DialogFragment {
     private class ClearBrowsingDataAdapter extends ArrayAdapter<String>
@@ -95,7 +99,7 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
 
         private void configureChildView(int position, ViewAndFaviconHolder viewHolder) {
             String domain = mDomains[position];
-            viewHolder.checkboxView.setChecked(!mDeselectedDomains.contains(domain));
+            viewHolder.checkboxView.setChecked(mCheckedState.get(domain));
             viewHolder.checkboxView.setText(domain);
             loadFavicon(viewHolder, mFaviconURLs[position]);
         }
@@ -108,13 +112,9 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             String domain = mDomains[position];
             ViewAndFaviconHolder viewHolder = (ViewAndFaviconHolder) view.getTag();
-            if (mDeselectedDomains.contains(domain)) {
-                mDeselectedDomains.remove(domain);
-                viewHolder.checkboxView.setChecked(true);
-            } else {
-                mDeselectedDomains.add(domain);
-                viewHolder.checkboxView.setChecked(false);
-            }
+            boolean isChecked = mCheckedState.get(domain);
+            mCheckedState.put(domain, !isChecked);
+            viewHolder.checkboxView.setChecked(!isChecked);
         }
 
         private void loadFavicon(final ViewAndFaviconHolder viewHolder, final String url) {
@@ -158,15 +158,17 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
     /**
      * Constructs a new instance of the important sites dialog fragment.
      * @param importantDomains The list of important domains to display.
+     * @param importantDomainReasons The reasons for choosing each important domain.
      * @param faviconURLs The list of favicon urls that correspond to each importantDomains.
      * @return An instance of ConfirmImportantSitesDialogFragment with the bundle arguments set.
      */
     public static ConfirmImportantSitesDialogFragment newInstance(
-            String[] importantDomains, String[] faviconURLs) {
+            String[] importantDomains, int[] importantDomainReasons, String[] faviconURLs) {
         ConfirmImportantSitesDialogFragment dialogFragment =
                 new ConfirmImportantSitesDialogFragment();
         Bundle bundle = new Bundle();
         bundle.putStringArray(IMPORTANT_DOMAINS_TAG, importantDomains);
+        bundle.putIntArray(IMPORTANT_DOMAIN_REASONS_TAG, importantDomainReasons);
         bundle.putStringArray(FAVICON_URLS_TAG, faviconURLs);
         dialogFragment.setArguments(bundle);
         return dialogFragment;
@@ -177,27 +179,34 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
     /** The tag used when showing the clear browsing fragment. */
     public static final String FRAGMENT_TAG = "ConfirmImportantSitesDialogFragment";
 
-    /**
-     * The tag used to return the string array of deselected domains. These are meant to NOT be
-     * cleared.
-     */
+    /** The tag for the string array of deselected domains. These are meant to NOT be cleared. */
     public static final String DESELECTED_DOMAINS_TAG = "DeselectedDomains";
+    /** The tag for the int array of reasons the deselected domains were important. */
+    public static final String DESELECTED_DOMAIN_REASONS_TAG = "DeselectedDomainReasons";
+    /** The tag for the string array of ignored domains, which whill be cleared. */
+    public static final String IGNORED_DOMAINS_TAG = "IgnoredDomains";
+    /** The tag for the int array of reasons the ignored domains were important. */
+    public static final String IGNORED_DOMAIN_REASONS_TAG = "IgnoredDomainReasons";
 
     /** The tag used for logging. */
     public static final String TAG = "ConfirmImportantSitesDialogFragment";
 
     /** The tag used to store the important domains in the bundle. */
     private static final String IMPORTANT_DOMAINS_TAG = "ImportantDomains";
+    /** The tag used to store the important domain reasons in the bundle. */
+    private static final String IMPORTANT_DOMAIN_REASONS_TAG = "ImportantDomainReasons";
 
     /** The tag used to store the favicon urls corresponding to each important domain. */
     private static final String FAVICON_URLS_TAG = "FaviconURLs";
 
     /** Array of important registerable domains we're showing to the user. */
     private String[] mImportantDomains;
+    /** Map of the reasons the above important domains were chosen. */
+    private Map<String, Integer> mImportantDomainsReasons;
     /** Array of favicon urls to use for each important domain above. */
     private String[] mFaviconURLs;
-    /** The set of domains that the user has deselected. */
-    private Set<String> mDeselectedDomains;
+    /** The map of domains to the checked state, where true is checked. */
+    private Map<String, Boolean> mCheckedState;
     /** The alert dialog shown to the user. */
     private AlertDialog mDialog;
     /** Our adapter that we use with the list view in the dialog. */
@@ -211,7 +220,8 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
     private ListView mSitesListView;
 
     public ConfirmImportantSitesDialogFragment() {
-        mDeselectedDomains = new HashSet<>();
+        mImportantDomainsReasons = new HashMap<>();
+        mCheckedState = new HashMap<>();
     }
 
     @Override
@@ -219,11 +229,20 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
         super.setArguments(args);
         mImportantDomains = args.getStringArray(IMPORTANT_DOMAINS_TAG);
         mFaviconURLs = args.getStringArray(FAVICON_URLS_TAG);
+        int[] importantDomainReasons = args.getIntArray(IMPORTANT_DOMAIN_REASONS_TAG);
+        for (int i = 0; i < mImportantDomains.length; ++i) {
+            mImportantDomainsReasons.put(mImportantDomains[i], importantDomainReasons[i]);
+            mCheckedState.put(mImportantDomains[i], true);
+        }
     }
 
     @VisibleForTesting
     public Set<String> getDeselectedDomains() {
-        return mDeselectedDomains;
+        HashSet<String> deselected = new HashSet<>();
+        for (Entry<String, Boolean> entry : mCheckedState.entrySet()) {
+            if (!entry.getValue()) deselected.add(entry.getKey());
+        }
+        return deselected;
     }
 
     @VisibleForTesting
@@ -237,6 +256,14 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
         if (mLargeIconBridge != null) {
             mLargeIconBridge.destroy();
         }
+    }
+
+    private int[] toIntArray(List<Integer> boxedList) {
+        int[] result = new int[boxedList.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = boxedList.get(i);
+        }
+        return result;
     }
 
     @Override
@@ -267,10 +294,26 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (which == AlertDialog.BUTTON_POSITIVE) {
-                    // Return our deselected domains.
                     Intent data = new Intent();
-                    String[] deselectedDomains = mDeselectedDomains.toArray(new String[0]);
-                    data.putExtra(DESELECTED_DOMAINS_TAG, deselectedDomains);
+                    List<String> deselectedDomains = new ArrayList<>();
+                    List<Integer> deselectedDomainReasons = new ArrayList<>();
+                    List<String> ignoredDomains = new ArrayList<>();
+                    List<Integer> ignoredDomainReasons = new ArrayList<>();
+                    for (Entry<String, Boolean> entry : mCheckedState.entrySet()) {
+                        Integer reason = mImportantDomainsReasons.get(entry.getKey());
+                        if (entry.getValue()) {
+                            ignoredDomains.add(entry.getKey());
+                            ignoredDomainReasons.add(reason);
+                        } else {
+                            deselectedDomains.add(entry.getKey());
+                            deselectedDomainReasons.add(reason);
+                        }
+                    }
+                    data.putExtra(DESELECTED_DOMAINS_TAG, deselectedDomains.toArray(new String[0]));
+                    data.putExtra(
+                            DESELECTED_DOMAIN_REASONS_TAG, toIntArray(deselectedDomainReasons));
+                    data.putExtra(IGNORED_DOMAINS_TAG, ignoredDomains.toArray(new String[0]));
+                    data.putExtra(IGNORED_DOMAIN_REASONS_TAG, toIntArray(ignoredDomainReasons));
                     getTargetFragment().onActivityResult(
                             getTargetRequestCode(), Activity.RESULT_OK, data);
                 } else {

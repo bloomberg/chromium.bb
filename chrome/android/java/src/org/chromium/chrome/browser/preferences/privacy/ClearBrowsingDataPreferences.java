@@ -221,6 +221,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     // This is the sorted list of important registerable domains. If null, then we haven't finished
     // fetching them yet.
     private String[] mSortedImportantDomains;
+    // These are the reasons the above domains were chosen as important.
+    private int[] mSortedImportantDomainReasons;
     // These are full url examples of the domains above. We use them for favicons.
     private String[] mSortedExampleOrigins;
     // This is the dialog we show to the user that lets them 'uncheck' (or exclude) the above
@@ -239,8 +241,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      * Requests the browsing data corresponding to the given dialog options to be deleted.
      * @param options The dialog options whose corresponding data should be deleted.
      */
-    private final void clearBrowsingData(
-            EnumSet<DialogOption> options, @Nullable String[] blacklistedDomains) {
+    private final void clearBrowsingData(EnumSet<DialogOption> options,
+            @Nullable String[] blacklistedDomains, @Nullable int[] blacklistedDomainReasons,
+            @Nullable String[] ignoredDomains, @Nullable int[] ignoredDomainReasons) {
         showProgressDialog();
 
         int[] dataTypes = new int[options.size()];
@@ -254,8 +257,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
                 ((SpinnerPreference) findPreference(PREF_TIME_RANGE)).getSelectedOption();
         int timePeriod = ((TimePeriodSpinnerOption) spinnerSelection).getTimePeriod();
         if (blacklistedDomains != null && blacklistedDomains.length != 0) {
-            PrefServiceBridge.getInstance().clearBrowsingDataExcludingDomains(
-                    this, dataTypes, timePeriod, blacklistedDomains);
+            PrefServiceBridge.getInstance().clearBrowsingDataExcludingDomains(this, dataTypes,
+                    timePeriod, blacklistedDomains, blacklistedDomainReasons, ignoredDomains,
+                    ignoredDomainReasons);
         } else {
             PrefServiceBridge.getInstance().clearBrowsingData(this, dataTypes, timePeriod);
         }
@@ -371,7 +375,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             }
             // If sites haven't been fetched, just clear the browsing data regularly rather than
             // waiting to show the important sites dialog.
-            clearBrowsingData(getSelectedOptions(), null);
+            clearBrowsingData(getSelectedOptions(), null, null, null, null);
             return true;
         }
         return false;
@@ -544,7 +548,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      */
     private void showImportantDialogThenClear() {
         mConfirmImportantSitesDialog = ConfirmImportantSitesDialogFragment.newInstance(
-                mSortedImportantDomains, mSortedExampleOrigins);
+                mSortedImportantDomains, mSortedImportantDomainReasons, mSortedExampleOrigins);
         mConfirmImportantSitesDialog.setTargetFragment(this, IMPORTANT_SITES_DIALOG_CODE);
         mConfirmImportantSitesDialog.show(
                 getFragmentManager(), ConfirmImportantSitesDialogFragment.FRAGMENT_TAG);
@@ -577,13 +581,15 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     }
 
     @Override
-    public void onImportantRegisterableDomainsReady(String[] domains, String[] exampleOrigins) {
+    public void onImportantRegisterableDomainsReady(
+            String[] domains, String[] exampleOrigins, int[] importantReasons) {
         if (domains == null) return;
         // mMaxImportantSites is a constant on the C++ side. While 0 is valid, use 1 as the minimum
         // because histogram code assumes a min >= 1; the underflow bucket will record the 0s.
         RecordHistogram.recordLinearCountHistogram("History.ClearBrowsingData.NumImportant",
                 domains.length, 1, mMaxImportantSites + 1, mMaxImportantSites + 1);
         mSortedImportantDomains = Arrays.copyOf(domains, domains.length);
+        mSortedImportantDomainReasons = Arrays.copyOf(importantReasons, importantReasons.length);
         mSortedExampleOrigins = Arrays.copyOf(exampleOrigins, exampleOrigins.length);
     }
 
@@ -597,12 +603,21 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             // Deselected means that the user is excluding the domain from being cleared.
             String[] deselectedDomains = data.getStringArrayExtra(
                     ConfirmImportantSitesDialogFragment.DESELECTED_DOMAINS_TAG);
+            int[] deselectedDomainReasons = data.getIntArrayExtra(
+                    ConfirmImportantSitesDialogFragment.DESELECTED_DOMAIN_REASONS_TAG);
+            String[] ignoredDomains = data.getStringArrayExtra(
+                    ConfirmImportantSitesDialogFragment.IGNORED_DOMAINS_TAG);
+            int[] ignoredDomainReasons = data.getIntArrayExtra(
+                    ConfirmImportantSitesDialogFragment.IGNORED_DOMAIN_REASONS_TAG);
             if (deselectedDomains != null && mSortedImportantDomains != null) {
                 // mMaxImportantSites is a constant on the C++ side.
                 RecordHistogram.recordCustomCountHistogram(
                         "History.ClearBrowsingData.ImportantDeselectedNum",
                         deselectedDomains.length, 0, mMaxImportantSites + 1,
                         mMaxImportantSites + 1);
+                RecordHistogram.recordCustomCountHistogram(
+                        "History.ClearBrowsingData.ImportantIgnoredNum", ignoredDomains.length, 0,
+                        mMaxImportantSites + 1, mMaxImportantSites + 1);
                 // We put our max at 20 instead of 100 to reduce the number of empty buckets (as
                 // our maximum denominator is 5).
                 RecordHistogram.recordEnumeratedHistogram(
@@ -610,8 +625,14 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
                         deselectedDomains.length * IMPORTANT_SITES_PERCENTAGE_BUCKET_COUNT
                                 / mSortedImportantDomains.length,
                         IMPORTANT_SITES_PERCENTAGE_BUCKET_COUNT + 1);
+                RecordHistogram.recordEnumeratedHistogram(
+                        "History.ClearBrowsingData.ImportantIgnoredPercent",
+                        ignoredDomains.length * IMPORTANT_SITES_PERCENTAGE_BUCKET_COUNT
+                                / mSortedImportantDomains.length,
+                        IMPORTANT_SITES_PERCENTAGE_BUCKET_COUNT + 1);
             }
-            clearBrowsingData(getSelectedOptions(), deselectedDomains);
+            clearBrowsingData(getSelectedOptions(), deselectedDomains, deselectedDomainReasons,
+                    ignoredDomains, ignoredDomainReasons);
         }
     }
 }
