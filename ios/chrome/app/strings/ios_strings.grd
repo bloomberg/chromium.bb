@@ -211,7 +211,7 @@ brand. [Length: 70em]">
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to update your password for this site?
       </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD_FOR_ACCOUNT" desc="Infobar message to update a password for named account, referring to PASSWORD_MANAGER_BRAND as the  [Length:70em]">
-        Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to update the password for <ph name="USERNAME">$2<ex>don.john.lemon@example.com</ex></ph> for this site?
+        Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to update your password for <ph name="USERNAME">$2<ex>don.john.lemon@example.com</ex></ph> for this site?
       </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_SMART_LOCK_FOR_PASSWORDS" desc="The more descriptive brand name of the password manager when the user is signed in. Used in various UI elements, can be in link format.">
         Google Smart Lock for Passwords

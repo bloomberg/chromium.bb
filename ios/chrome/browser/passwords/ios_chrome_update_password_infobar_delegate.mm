@@ -68,7 +68,7 @@ base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetBranding() const {
   return l10n_util::GetStringUTF16(
       is_smart_lock_branding_enabled()
           ? IDS_IOS_PASSWORD_MANAGER_SMART_LOCK_FOR_PASSWORDS
-          : IDS_IOS_PASSWORD_MANAGER_TITLE_BRAND);
+          : IDS_IOS_SHORT_PRODUCT_NAME);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier

@@ -160,9 +160,6 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password. [Length: 60em]">
         Do you want Chromium to save your password for this site?
       </message>
-      <message name="IDS_IOS_PASSWORD_MANAGER_TITLE_BRAND" desc="The product name used in the title of the password infobar.">
-        Chromium
-      </message>
       <message name="IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE" desc="Message to inform user that Save Image failed due to insufficient privilege in Privacy Settings. Directs user to adjust Privacy Settings for Chrome. This message is displayed as the message body in an alert box with a single OK button. [Length: 120em]">
         Chromium does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.
       </message>
