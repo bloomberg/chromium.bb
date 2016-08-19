@@ -200,14 +200,25 @@ static_library("headless_lib") {
               "public/internal/value_conversions.h",
               "public/util/black_hole_protocol_handler.cc",
               "public/util/black_hole_protocol_handler.h",
+              "public/util/deterministic_dispatcher.cc",
+              "public/util/deterministic_dispatcher.h",
               "public/util/error_reporter.cc",
               "public/util/error_reporter.h",
+              "public/util/expedited_dispatcher.cc",
+              "public/util/expedited_dispatcher.h",
+              "public/util/generic_url_request_job.cc",
+              "public/util/generic_url_request_job.h",
               "public/util/in_memory_protocol_handler.cc",
               "public/util/in_memory_protocol_handler.h",
               "public/util/in_memory_request_job.cc",
               "public/util/in_memory_request_job.h",
+              "public/util/managed_dispatch_url_request_job.cc",
+              "public/util/managed_dispatch_url_request_job.h",
               "public/util/user_agent.cc",
               "public/util/user_agent.h",
+              "public/util/url_fetcher.cc",
+              "public/util/url_fetcher.h",
+              "public/util/url_request_dispatcher.h",
             ]
 
   deps = [
@@ -248,13 +259,21 @@ group("headless_tests") {
 test("headless_unittests") {
   sources = [
     "public/domains/types_unittest.cc",
+    "public/util/deterministic_dispatcher_test.cc",
     "public/util/error_reporter_unittest.cc",
+    "public/util/expedited_dispatcher_test.cc",
+    "public/util/generic_url_request_job_test.cc",
+    "public/util/testing/fake_managed_dispatch_url_request_job.cc",
+    "public/util/testing/fake_managed_dispatch_url_request_job.h",
+    "public/util/testing/generic_url_request_mocks.cc",
+    "public/util/testing/generic_url_request_mocks.h",
   ]
 
   deps = [
     ":headless_lib",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
