@@ -106,7 +106,7 @@
 	UTF-8 encoded. Cursor is the byte offset within the
 	surrounding text. Anchor is the byte offset of the
 	selection anchor within the surrounding text. If there is no selected
-	text anchor is the same as cursor.
+	text anchor, then it is the same as cursor.
       </description>
       <arg name="text" type="string"/>
       <arg name="cursor" type="uint"/>
@@ -180,12 +180,12 @@
     <request name="set_preferred_language">
       <description summary="sets preferred language">
 	Sets a specific language. This allows for example a virtual keyboard to
-	show a language specific layout. The "language" argument is a RFC-3066
+	show a language specific layout. The "language" argument is an RFC-3066
 	format language tag.
 
-	It could be used for example in a word processor to indicate language of
-	currently edited document or in an instant message application which
-	tracks languages of contacts.
+	It could be used for example in a word processor to indicate the
+	language of the currently edited document or in an instant message
+	application which tracks languages of contacts.
       </description>
       <arg name="language" type="string"/>
     </request>
@@ -217,7 +217,7 @@
 
     <event name="modifiers_map">
       <description summary="modifiers map">
-	Transfer an array of 0-terminated modifiers names. The position in
+	Transfer an array of 0-terminated modifier names. The position in
 	the array is the index of the modifier as used in the modifiers
 	bitmask in the keysym event.
       </description>
@@ -289,7 +289,7 @@
       <description summary="commit">
 	Notify when text should be inserted into the editor widget. The text to
 	commit could be either just a single character after a key press or the
-	result of some composing (pre-edit). It could be also an empty text
+	result of some composing (pre-edit). It could also be an empty text
 	when some text should be removed (see delete_surrounding_text) or when
 	the input cursor should be moved (see cursor_position).
 
@@ -343,7 +343,7 @@
 
     <event name="language">
       <description summary="language">
-	Sets the language of the input text. The "language" argument is a
+	Sets the language of the input text. The "language" argument is an
 	RFC-3066 format language tag.
       </description>
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
@@ -360,8 +360,8 @@
       <description summary="text direction">
 	Sets the text direction of input text.
 
-	It is mainly needed for showing input cursor on correct side of the
-	editor when there is no input yet done and making sure neutral
+	It is mainly needed for showing an input cursor on the correct side of
+	the editor when there is no input done yet and making sure neutral
 	direction text is laid out properly.
       </description>
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
