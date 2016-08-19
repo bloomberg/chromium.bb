@@ -79,9 +79,7 @@ class PerfTestInstance(test_instance.TestInstance):
         ' '.join(args.single_step_command) if args.single_step else None)
     self._steps = args.steps
     self._test_filter = args.test_filter
-    # TODO(perezju): Read the value from the command line option when bot
-    # recipes have been updated to supply it.
-    self._write_buildbot_json = True  # args.write_buildbot_json
+    self._write_buildbot_json = args.write_buildbot_json
 
   def SetUp(self):
     pass
