@@ -46,12 +46,30 @@ bool IsPciSupported() {
 }
 #endif  // defined(USE_LIBPCI)
 
+// Scan /sys/module/amdgpu/version.
+// Return empty string on failing.
+std::string CollectDriverVersionAMDBrahma() {
+  const base::FilePath ati_file_path("/sys/module/amdgpu/version");
+  if (!base::PathExists(ati_file_path))
+    return std::string();
+  std::string contents;
+  if (!base::ReadFileToString(ati_file_path, &contents))
+    return std::string();
+  size_t begin = contents.find_first_of("0123456789");
+  if (begin != std::string::npos) {
+    size_t end = contents.find_first_not_of("0123456789.", begin);
+    if (end == std::string::npos)
+      return contents.substr(begin);
+    else
+      return contents.substr(begin, end - begin);
+  }
+  return std::string();
+}
+
 // Scan /etc/ati/amdpcsdb.default for "ReleaseVersion".
 // Return empty string on failing.
-std::string CollectDriverVersionATI() {
-  const base::FilePath::CharType kATIFileName[] =
-      FILE_PATH_LITERAL("/etc/ati/amdpcsdb.default");
-  base::FilePath ati_file_path(kATIFileName);
+std::string CollectDriverVersionAMDCatalyst() {
+  const base::FilePath ati_file_path("/etc/ati/amdpcsdb.default");
   if (!base::PathExists(ati_file_path))
     return std::string();
   std::string contents;
@@ -209,10 +227,16 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   std::string driver_version;
   switch (gpu_info->gpu.vendor_id) {
     case kVendorIDAMD:
-      driver_version = CollectDriverVersionATI();
+      driver_version = CollectDriverVersionAMDBrahma();
       if (!driver_version.empty()) {
-        gpu_info->driver_vendor = "ATI / AMD";
+        gpu_info->driver_vendor = "ATI / AMD (Brahma)";
         gpu_info->driver_version = driver_version;
+      } else {
+        driver_version = CollectDriverVersionAMDCatalyst();
+        if (!driver_version.empty()) {
+          gpu_info->driver_vendor = "ATI / AMD (Catalyst)";
+          gpu_info->driver_version = driver_version;
+        }
       }
       break;
     case kVendorIDNVidia:
