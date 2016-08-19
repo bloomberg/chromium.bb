@@ -79,23 +79,21 @@ var FilesQuickView = Polymer({
   onOpenInNewButtonTap: function(event) {},
 
   /**
-   * @param {!Event} event
+   * Close Quick View unless the clicked target or its ancestor contains
+   * 'no-close-on-click' class.
    *
-   * @private
-   */
-  onCloseButtonTap_: function(event) {
-    this.close();
-  },
-
-  /**
    * @param {!Event} event tap event.
    *
    * @private
    */
   onContentPanelTap_: function(event) {
     var target = event.detail.sourceEvent.target;
-    if (target.classList.contains('close-on-click'))
-      this.close();
+    while (target) {
+      if (target.classList.contains('no-close-on-click'))
+        return;
+      target = target.parentElement;
+    }
+    this.close();
   },
 
   /**
@@ -116,17 +114,6 @@ var FilesQuickView = Polymer({
    */
   isVideo_: function(type) {
     return type === 'video';
-  },
-
-  /**
-   * @param {string} contentUrl
-   * @param {string} type
-   * @return {string}
-   *
-   * @private
-   */
-  videoUrl_: function(contentUrl, type) {
-    return this.isVideo_(type) ? contentUrl : "";
   },
 
   /**

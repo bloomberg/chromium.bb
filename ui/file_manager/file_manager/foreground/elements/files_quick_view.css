@@ -79,6 +79,7 @@ paper-button:focus:not(:active) {
   height: 70%;
   justify-content: center;
   margin: auto;
+  outline: none;
   position: relative;
   text-align: center;
   top: 15%;
