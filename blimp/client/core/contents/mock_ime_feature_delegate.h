@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_FEATURE_MOCK_IME_FEATURE_DELEGATE_H_
-#define BLIMP_CLIENT_FEATURE_MOCK_IME_FEATURE_DELEGATE_H_
+#ifndef BLIMP_CLIENT_CORE_CONTENTS_MOCK_IME_FEATURE_DELEGATE_H_
+#define BLIMP_CLIENT_CORE_CONTENTS_MOCK_IME_FEATURE_DELEGATE_H_
+
+#include "blimp/client/core/contents/ime_feature.h"
 
 #include <string>
 
-#include "blimp/client/feature/ime_feature.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace blimp {
@@ -26,4 +27,4 @@ class MockImeFeatureDelegate : public client::ImeFeature::Delegate {
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_FEATURE_MOCK_IME_FEATURE_DELEGATE_H_
+#endif  // BLIMP_CLIENT_CORE_CONTENTS_MOCK_IME_FEATURE_DELEGATE_H_

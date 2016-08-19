@@ -9,7 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "blimp/client/feature/ime_feature.h"
+#include "blimp/client/core/contents/ime_feature.h"
 #include "ui/base/ime/text_input_type.h"
 
 namespace blimp {

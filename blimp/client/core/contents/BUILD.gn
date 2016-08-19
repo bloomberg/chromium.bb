@@ -18,6 +18,8 @@ source_set("contents") {
     "blimp_navigation_controller_delegate.h",
     "blimp_navigation_controller_impl.cc",
     "blimp_navigation_controller_impl.h",
+    "ime_feature.cc",
+    "ime_feature.h",
     "navigation_feature.cc",
     "navigation_feature.h",
   ]
@@ -27,6 +29,7 @@ source_set("contents") {
     "//blimp/client/public:public_headers",
     "//blimp/net",
     "//net:net",
+    "//ui/base/ime:text_input_types",
     "//url",
   ]
 
@@ -57,6 +60,8 @@ source_set("test_support") {
   sources = [
     "fake_navigation_feature.cc",
     "fake_navigation_feature.h",
+    "mock_ime_feature_delegate.cc",
+    "mock_ime_feature_delegate.h",
     "mock_navigation_feature_delegate.cc",
     "mock_navigation_feature_delegate.h",
   ]

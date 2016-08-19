@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_FEATURE_IME_FEATURE_H_
-#define BLIMP_CLIENT_FEATURE_IME_FEATURE_H_
+#ifndef BLIMP_CLIENT_CORE_CONTENTS_IME_FEATURE_H_
+#define BLIMP_CLIENT_CORE_CONTENTS_IME_FEATURE_H_
 
 #include <map>
 #include <string>
@@ -82,4 +82,4 @@ class ImeFeature : public BlimpMessageProcessor {
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_FEATURE_IME_FEATURE_H_
+#endif  // BLIMP_CLIENT_CORE_CONTENTS_IME_FEATURE_H_

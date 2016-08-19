@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "blimp/client/app/android/web_input_box.h"
+
 #include "base/android/jni_string.h"
 #include "blimp/client/app/android/blimp_client_session_android.h"
-#include "blimp/client/app/android/web_input_box.h"
-#include "blimp/client/feature/ime_feature.h"
+#include "blimp/client/core/contents/ime_feature.h"
 #include "jni/WebInputBox_jni.h"
 #include "ui/base/ime/text_input_type.h"
 
