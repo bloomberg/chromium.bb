@@ -45,7 +45,7 @@ function test()
     function onTimelineRecorded(records)
     {
         var layoutRecord = InspectorTest.findFirstTimelineRecord("Layout");
-        WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, onSelectedNodeChanged);
+        WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, onSelectedNodeChanged);
         clickValueLink(layoutRecord, "Layout root");
     }
 
@@ -55,7 +55,7 @@ function test()
         // We may first get an old selected node while switching to the Elements panel.
         if (node.nodeName() === "BODY")
             return;
-        WebInspector.notifications.removeEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, onSelectedNodeChanged);
+        WebInspector.context.removeFlavorChangeListener(WebInspector.DOMNode, onSelectedNodeChanged);
         InspectorTest.addResult("Layout root node id: " + node.getAttribute("id"));
         InspectorTest.completeTest();
     }
