@@ -211,6 +211,18 @@ public class IntentUtils {
     }
 
     /**
+     * Just like {@link Intent#getParcelableArrayExtra(String)} but doesn't throw exceptions.
+     */
+    public static Parcelable[] safeGetParcelableArrayExtra(Intent intent, String name) {
+        try {
+            return intent.getParcelableArrayExtra(name);
+        } catch (Throwable t) {
+            Log.e(TAG, "getParcelableArrayExtra failed on intent " + intent);
+            return null;
+        }
+    }
+
+    /**
      * Just like {@link Intent#getStringArrayListExtra(String)} but doesn't throw exceptions.
      */
     public static ArrayList<String> safeGetStringArrayListExtra(Intent intent, String name) {
