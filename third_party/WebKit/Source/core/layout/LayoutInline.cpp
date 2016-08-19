@@ -191,6 +191,17 @@ void LayoutInline::styleDidChange(StyleDifference diff, const ComputedStyle* old
     propagateStyleToAnonymousChildren();
 }
 
+static inline bool fontDifferenceRequiresLineBox(const ComputedStyle& style,
+    const ComputedStyle& parentStyle)
+{
+    const SimpleFontData* font = style.font().primaryFont();
+    const SimpleFontData* parentFont = parentStyle.font().primaryFont();
+
+    return (font && parentFont && !font->getFontMetrics()
+        .hasIdenticalAscentDescentAndLineGap(parentFont->getFontMetrics()))
+        || parentStyle.lineHeight() != style.lineHeight();
+}
+
 void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout)
 {
     // Once we have been tainted once, just assume it will happen again. This way effects like hover highlighting that change the
@@ -205,8 +216,7 @@ void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout)
         || (parentLayoutInline && parentStyle.verticalAlign() != VerticalAlignBaseline)
         || style()->verticalAlign() != VerticalAlignBaseline
         || style()->getTextEmphasisMark() != TextEmphasisMarkNone
-        || (checkFonts && (!parentStyle.font().getFontMetrics().hasIdenticalAscentDescentAndLineGap(style()->font().getFontMetrics())
-        || parentStyle.lineHeight() != style()->lineHeight()));
+        || (checkFonts && fontDifferenceRequiresLineBox(styleRef(), parentStyle));
 
     if (!alwaysCreateLineBoxesNew && checkFonts && document().styleEngine().usesFirstLineRules()) {
         // Have to check the first line style as well.
