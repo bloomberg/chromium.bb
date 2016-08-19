@@ -780,7 +780,7 @@
                     { "name": "id", "type": "integer", "description": "Unique id of the node." },
                     { "name": "callFrame", "$ref": "Runtime.CallFrame", "description": "Function location." },
                     { "name": "hitCount", "type": "integer", "description": "Number of samples where this node was on top of the call stack." },
-                    { "name": "children", "type": "array", "items": { "type": "integer" }, "description": "Child node ids." },
+                    { "name": "children", "type": "array", "items": { "type": "integer" }, "optional": true, "description": "Child node ids." },
                     { "name": "deoptReason", "type": "string", "experimental": true, "description": "The reason of being not optimized. The function may be deoptimized or marked as don't optimize."},
                     { "name": "positionTicks", "type": "array", "items": { "$ref": "PositionTickInfo" }, "experimental": true, "description": "An array of source position ticks." }
                 ]

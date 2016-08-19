@@ -50,13 +50,7 @@ std::unique_ptr<protocol::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::
 {
     v8::HandleScope handleScope(isolate);
 
-    std::unique_ptr<protocol::Array<int>> children = protocol::Array<int>::create();
-    const int childrenCount = node->GetChildrenCount();
-    for (int i = 0; i < childrenCount; i++)
-        children->addItem(node->GetChild(i)->GetNodeId());
-
     std::unique_ptr<protocol::Array<protocol::Profiler::PositionTickInfo>> positionTicks = buildInspectorObjectForPositionTicks(node);
-
     std::unique_ptr<protocol::Runtime::CallFrame> callFrame = protocol::Runtime::CallFrame::create()
         .setFunctionName(toProtocolString(node->GetFunctionName()))
         .setScriptId(String16::fromInteger(node->GetScriptId()))
@@ -67,10 +61,17 @@ std::unique_ptr<protocol::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::
     std::unique_ptr<protocol::Profiler::CPUProfileNode> result = protocol::Profiler::CPUProfileNode::create()
         .setCallFrame(std::move(callFrame))
         .setHitCount(node->GetHitCount())
-        .setChildren(std::move(children))
         .setPositionTicks(std::move(positionTicks))
         .setDeoptReason(node->GetBailoutReason())
         .setId(node->GetNodeId()).build();
+
+    const int childrenCount = node->GetChildrenCount();
+    if (childrenCount) {
+        std::unique_ptr<protocol::Array<int>> children = protocol::Array<int>::create();
+        for (int i = 0; i < childrenCount; i++)
+            children->addItem(node->GetChild(i)->GetNodeId());
+        result->setChildren(std::move(children));
+    }
     return result;
 }
 
