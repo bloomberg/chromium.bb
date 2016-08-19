@@ -62,3 +62,32 @@ src:*LifecycleObserver.h*
 # https://crbug.com/568891
 src:*wtf/Vector.h*
 src:*wtf/PartitionAllocator.h*
+
+#############################################################################
+# Methods disabled due to perf considerations.
+
+# Skia
+
+# https://crbug.com/638064#c1
+fun:*SkPictureUtils::ApproximateBytesUsed*
+
+# https://crbug.com/638056#c1
+fun:*SkCanvas::onDrawRect*
+
+# https://crbug.com/638064
+fun:*SkCanvas::drawPicture*
+
+# https://crbug.com/638060
+fun:*SkCanvas::onDrawPicture*
+
+# https://crbug.com/638064#c2
+fun:*SkBaseDevice::accessPixels*
+
+# https://crbug.com/638056
+fun:*call_hline_blitter*
+fun:*do_scanline*
+fun:*antifilldot8*
+
+# Unclear what could be done here
+fun:*SkCanvas::drawRect*
+fun:*SkPictureGpuAnalyzer::analyzePicture*
