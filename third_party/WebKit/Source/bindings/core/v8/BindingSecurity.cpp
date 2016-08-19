@@ -63,7 +63,8 @@ bool canAccessFrameInternal(const LocalDOMWindow* accessingWindow, const Securit
 
     // Notify the loader's client if the initial document has been accessed.
     LocalFrame* targetFrame = toLocalDOMWindow(targetWindow)->frame();
-    if (targetFrame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
+    if (targetFrame
+        && targetFrame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
         targetFrame->loader().didAccessInitialDocument();
 
     return true;
@@ -79,19 +80,20 @@ bool canAccessFrame(const LocalDOMWindow* accessingWindow, const SecurityOrigin*
     return false;
 }
 
-bool canAccessFrame(const LocalDOMWindow* accessingWindow, SecurityOrigin* targetFrameOrigin, const DOMWindow* targetWindow, SecurityReportingOption reportingOption = ReportSecurityError)
+bool canAccessFrame(const LocalDOMWindow* accessingWindow, SecurityOrigin* targetFrameOrigin, const DOMWindow* targetWindow, BindingSecurity::ErrorReportOption reportingOption)
 {
     if (canAccessFrameInternal(accessingWindow, targetFrameOrigin, targetWindow))
         return true;
 
-    if (accessingWindow && targetWindow && reportingOption == ReportSecurityError)
+    if (accessingWindow && targetWindow
+        && reportingOption == BindingSecurity::ErrorReportOption::Report)
         accessingWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(accessingWindow));
     return false;
 }
 
 } // namespace
 
-bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const DOMWindow* target, ExceptionState& exceptionState)
+bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow, const DOMWindow* target, ExceptionState& exceptionState)
 {
     ASSERT(target);
     const Frame* frame = target->frame();
@@ -100,7 +102,7 @@ bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWi
     return canAccessFrame(accessingWindow, frame->securityContext()->getSecurityOrigin(), target, exceptionState);
 }
 
-bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const DOMWindow* target, SecurityReportingOption reportingOption)
+bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow, const DOMWindow* target, ErrorReportOption reportingOption)
 {
     ASSERT(target);
     const Frame* frame = target->frame();
@@ -109,7 +111,7 @@ bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWi
     return canAccessFrame(accessingWindow, frame->securityContext()->getSecurityOrigin(), target, reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const EventTarget* target, ExceptionState& exceptionState)
+bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow, const EventTarget* target, ExceptionState& exceptionState)
 {
     ASSERT(target);
     const DOMWindow* window = target->toDOMWindow();
@@ -125,7 +127,7 @@ bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWi
     return canAccessFrame(accessingWindow, frame->securityContext()->getSecurityOrigin(), window, exceptionState);
 }
 
-bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const Location* target, ExceptionState& exceptionState)
+bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow, const Location* target, ExceptionState& exceptionState)
 {
     ASSERT(target);
     const Frame* frame = target->frame();
@@ -134,7 +136,7 @@ bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWi
     return canAccessFrame(accessingWindow, frame->securityContext()->getSecurityOrigin(), frame->domWindow(), exceptionState);
 }
 
-bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const Location* target, SecurityReportingOption reportingOption)
+bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow, const Location* target, ErrorReportOption reportingOption)
 {
     ASSERT(target);
     const Frame* frame = target->frame();
@@ -143,25 +145,42 @@ bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWi
     return canAccessFrame(accessingWindow, frame->securityContext()->getSecurityOrigin(), frame->domWindow(), reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const Node* target, ExceptionState& exceptionState)
+bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow, const Node* target, ExceptionState& exceptionState)
 {
     if (!target)
         return false;
     return canAccessFrame(accessingWindow, target->document().getSecurityOrigin(), target->document().domWindow(), exceptionState);
 }
 
-bool BindingSecurity::shouldAllowAccessTo(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const Node* target, SecurityReportingOption reportingOption)
+bool BindingSecurity::shouldAllowAccessTo(const LocalDOMWindow* accessingWindow, const Node* target, ErrorReportOption reportingOption)
 {
     if (!target)
         return false;
     return canAccessFrame(accessingWindow, target->document().getSecurityOrigin(), target->document().domWindow(), reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, const LocalDOMWindow* accessingWindow, const Frame* target, SecurityReportingOption reportingOption)
+bool BindingSecurity::shouldAllowAccessToFrame(const LocalDOMWindow* accessingWindow, const Frame* target, ExceptionState& exceptionState)
+{
+    if (!target || !target->securityContext())
+        return false;
+    return canAccessFrame(accessingWindow, target->securityContext()->getSecurityOrigin(), target->domWindow(), exceptionState);
+}
+
+bool BindingSecurity::shouldAllowAccessToFrame(const LocalDOMWindow* accessingWindow, const Frame* target, ErrorReportOption reportingOption)
 {
     if (!target || !target->securityContext())
         return false;
     return canAccessFrame(accessingWindow, target->securityContext()->getSecurityOrigin(), target->domWindow(), reportingOption);
+}
+
+bool BindingSecurity::shouldAllowAccessToDetachedWindow(const LocalDOMWindow* accessingWindow, const DOMWindow* target, ExceptionState& exceptionState)
+{
+    CHECK(target && !target->frame())
+        << "This version of shouldAllowAccessToFrame() must be used only for "
+        << "detached windows.";
+    if (!target->document())
+        return false;
+    return canAccessFrame(accessingWindow, target->document()->getSecurityOrigin(), target, exceptionState);
 }
 
 } // namespace blink

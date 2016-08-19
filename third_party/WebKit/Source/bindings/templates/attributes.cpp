@@ -92,7 +92,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {# Security checks #}
     {% if not attribute.is_data_type_property %}
     {% if attribute.is_check_security_for_receiver %}
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -100,7 +100,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% endif %}
     {% endif %}
     {% if attribute.is_check_security_for_return_value %}
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), currentDOMWindow(info.GetIsolate()), {{attribute.cpp_value}}, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), {{attribute.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -296,7 +296,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
           not attribute.constructor_type %}
     {% if not attribute.is_data_type_property %}
     {% if attribute.is_check_security_for_receiver %}
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
         v8SetReturnValue(info, v8Value);
         exceptionState.throwIfNeeded();
         return;

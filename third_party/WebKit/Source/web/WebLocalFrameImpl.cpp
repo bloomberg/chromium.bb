@@ -843,7 +843,7 @@ v8::Local<v8::Context> WebLocalFrameImpl::mainWorldScriptContext() const
 
 bool WebFrame::scriptCanAccess(WebFrame* target)
 {
-    return BindingSecurity::shouldAllowAccessToFrame(mainThreadIsolate(), currentDOMWindow(mainThreadIsolate()), target->toImplBase()->frame(), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(currentDOMWindow(mainThreadIsolate()), target->toImplBase()->frame(), BindingSecurity::ErrorReportOption::DoNotReport);
 }
 
 void WebLocalFrameImpl::reload(WebFrameLoadType loadType)

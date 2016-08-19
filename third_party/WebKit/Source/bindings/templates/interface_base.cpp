@@ -99,11 +99,11 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
         return false; // the frame is gone.
 
     const DOMWindow* targetWindow = V8Window::toImpl(window);
-    return BindingSecurity::shouldAllowAccessTo(isolate, toLocalDOMWindow(toDOMWindow(accessingContext)), targetWindow, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), targetWindow, BindingSecurity::ErrorReportOption::DoNotReport);
     {% else %}{# if interface_name == 'Window' #}
     {# Not 'Window' means it\'s Location. #}
     {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
-    return BindingSecurity::shouldAllowAccessTo(v8::Isolate::GetCurrent(), toLocalDOMWindow(toDOMWindow(accessingContext)), impl, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(toDOMWindow(accessingContext)), impl, BindingSecurity::ErrorReportOption::DoNotReport);
     {% endif %}{# if interface_name == 'Window' #}
 }
 

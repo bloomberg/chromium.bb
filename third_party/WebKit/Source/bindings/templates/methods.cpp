@@ -32,7 +32,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     // of speed performance on Android Nexus 7 as of Dec 2015.  ALWAYS_INLINE
     // didn't work in this case.
     if (const DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), currentDOMWindow(info.GetIsolate()), window, exceptionState)) {
+        if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), window, exceptionState)) {
             {% if not method.returns_promise %}
             exceptionState.throwIfNeeded();
             {% endif %}
@@ -40,7 +40,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
         }
     }
     {% else %}{# interface_name == 'EventTarget' #}
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
         {% if not method.returns_promise %}
         exceptionState.throwIfNeeded();
         {% endif %}
@@ -49,7 +49,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% endif %}{# interface_name == 'EventTarget' #}
     {% endif %}
     {% if method.is_check_security_for_return_value %}
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), currentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
         {% if not method.returns_promise %}
         exceptionState.throwIfNeeded();
@@ -551,7 +551,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     v8SetReturnValue(info, methodTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
 
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), currentDOMWindow(info.GetIsolate()), impl, DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, BindingSecurity::ErrorReportOption::DoNotReport)) {
         return;
     }
 
