@@ -24,7 +24,7 @@ std::unique_ptr<net::TrustStore> CreateTrustStoreFromFile(
         net::ParsedCertificate::CreateFromCertificateCopy(trusted_root, {}));
     EXPECT_TRUE(cert);
     scoped_refptr<net::TrustAnchor> anchor =
-        net::TrustAnchor::CreateFromCertificateNoConstraints(std::move(cert));
+        net::TrustAnchor::CreateFromCertificateWithConstraints(std::move(cert));
     trust_store->AddTrustAnchor(std::move(anchor));
   }
   return trust_store;

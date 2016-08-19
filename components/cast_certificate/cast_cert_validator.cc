@@ -72,10 +72,9 @@ class CastTrustStore {
             data, N, net::ParsedCertificate::DataSource::EXTERNAL_REFERENCE,
             {});
     CHECK(cert);
-    // TODO(crbug.com/635200): Support anchor constraints, and initialize the
-    // anchor using constraints from the self-signed certificate.
+    // Enforce pathlen constraints and policies defined on the root certificate.
     scoped_refptr<net::TrustAnchor> anchor =
-        net::TrustAnchor::CreateFromCertificateNoConstraints(std::move(cert));
+        net::TrustAnchor::CreateFromCertificateWithConstraints(std::move(cert));
     store_.AddTrustAnchor(std::move(anchor));
   }
 
