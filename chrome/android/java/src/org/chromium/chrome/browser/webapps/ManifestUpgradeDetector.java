@@ -21,6 +21,15 @@ import org.chromium.chrome.browser.tab.Tab;
  */
 public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.Callback {
     /**
+     * Called when the process of checking Web Manifest update is complete.
+     */
+    interface Callback {
+        // TODO(hanxi): crbug.com/639000. Pass the icon url and icon murmur2 hash to the caller.
+        // Change the interface by using {@link FetchedManifestData} instead of {@link WebappInfo}.
+        public void onUpgradeNeededCheckFinished(boolean isUpgraded, WebappInfo newInfo);
+    }
+
+    /**
      * The names of <meta-data> in the WebAPK's AndroidManifest.xml whose values are needed to
      * determine whether a WebAPK needs to be upgraded but which are not present in
      * {@link WebappInfo}. The names must stay in sync with
@@ -72,6 +81,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
      * Fetches the WebAPK's Web Manifest from the web.
      */
     private ManifestUpgradeDetectorFetcher mFetcher;
+    private Callback mCallback;
 
     /**
      * Gets the long value from a Bundle. The long should be terminated with 'L'.
@@ -92,24 +102,30 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         return 0;
     }
 
-    public ManifestUpgradeDetector(Tab tab, WebappInfo info) {
+    public ManifestUpgradeDetector(Tab tab, WebappInfo info, Callback callback) {
         mTab = tab;
         mWebappInfo = info;
+        mCallback = callback;
+        getMetaDataFromAndroidManifest();
+    }
+
+    public String getManifestUrl() {
+        return mManifestUrl;
     }
 
     /**
      * Starts fetching the web manifest resources.
      */
-    public void start() {
-        if (mFetcher != null) return;
+    public boolean start() {
+        if (mFetcher != null) return false;
 
-        getMetaDataFromAndroidManifest();
         if (TextUtils.isEmpty(mManifestUrl)) {
-            return;
+            return false;
         }
 
         mFetcher = createFetcher(mTab, mWebappInfo.scopeUri().toString(), mManifestUrl);
         mFetcher.start(this);
+        return true;
     }
 
     /**
@@ -174,11 +190,15 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
 
         // TODO(hanxi): crbug.com/627824. Validate whether the new WebappInfo is
         // WebAPK-compatible.
-        if (requireUpgrade(fetchedData)) {
-            upgrade();
+        boolean upgradeRequired = requireUpgrade(fetchedData);
+        WebappInfo newInfo = null;
+        if (upgradeRequired) {
+            newInfo = WebappInfo.create(mWebappInfo.id(), startUrl, scopeUrl,
+                    "", name, shortName, displayMode, orientation,
+                    mWebappInfo.source(), themeColor, backgroundColor,
+                    mWebappInfo.isIconGenerated(), mWebappInfo.webApkPackageName());
         }
-
-        onComplete();
+        mCallback.onUpgradeNeededCheckFinished(upgradeRequired, newInfo);
     }
 
     /**
@@ -218,8 +238,4 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
 
         return false;
     }
-
-    protected void upgrade() {}
-
-    protected void onComplete() {}
 }

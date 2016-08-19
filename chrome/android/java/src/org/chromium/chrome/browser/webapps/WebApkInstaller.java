@@ -18,7 +18,7 @@ import java.io.File;
 
 /**
  * Java counterpart to webapk_installer.h
- * Contains functionality to install WebAPKs.
+ * Contains functionality to install / update WebAPKs.
  */
 public class WebApkInstaller {
     private static final String TAG = "WebApkInstaller";
@@ -47,6 +47,18 @@ public class WebApkInstaller {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Updates a WebAPK.
+     * @param filePath File to update.
+     * @param packageName Package name to update WebAPK at.
+     * @return True if the update was started. A "true" return value does not guarantee that the
+     *         update succeeds.
+     */
+    @CalledByNative
+    private static boolean updateAsyncFromNative(String filePath, String packageName) {
+        return false;
     }
 
     /**

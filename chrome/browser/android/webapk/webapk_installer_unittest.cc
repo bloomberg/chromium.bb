@@ -36,12 +36,15 @@ const base::FilePath::CharType kTestDataDir[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
 // URL of mock WebAPK server.
-const char* kServerUrl = "/webapkserver";
+const char* kServerUrl = "/webapkserver/";
 
 // Icon URL from Web Manifest. We use a random file in the test data directory.
 // Since WebApkInstaller does not try to decode the file as an image it is OK
 // that the file is not an image.
 const char* kIconUrl = "/simple.html";
+
+// The response format type expected from the WebAPK server.
+const char* kWebApkServerUrlResponseType = "?alt=proto";
 
 // URL of file to download from the WebAPK server. We use a random file in the
 // test data directory.
@@ -51,14 +54,22 @@ const char* kDownloadUrl = "/simple.html";
 const char* kDownloadedWebApkPackageName = "party.unicode";
 
 // WebApkInstaller subclass where
-// WebApkInstaller::StartDownloadedWebApkInstall() is stubbed out.
+// WebApkInstaller::StartInstallingDownloadedWebApk() and
+// WebApkInstaller::StartUpdateUsingDownloadedWebApk() are stubbed out.
 class TestWebApkInstaller : public WebApkInstaller {
  public:
   TestWebApkInstaller(const ShortcutInfo& shortcut_info,
                       const SkBitmap& shortcut_icon)
       : WebApkInstaller(shortcut_info, shortcut_icon) {}
 
-  bool StartDownloadedWebApkInstall(
+  bool StartInstallingDownloadedWebApk(
+      JNIEnv* env,
+      const base::android::ScopedJavaLocalRef<jstring>& file_path,
+      const base::android::ScopedJavaLocalRef<jstring>& package_name) override {
+    return true;
+  }
+
+  bool StartUpdateUsingDownloadedWebApk(
       JNIEnv* env,
       const base::android::ScopedJavaLocalRef<jstring>& file_path,
       const base::android::ScopedJavaLocalRef<jstring>& package_name) override {
@@ -69,7 +80,7 @@ class TestWebApkInstaller : public WebApkInstaller {
   DISALLOW_COPY_AND_ASSIGN(TestWebApkInstaller);
 };
 
-// Runs the WebApkInstaller installation process and blocks till done.
+// Runs the WebApkInstaller installation process/update and blocks till done.
 class WebApkInstallerRunner {
  public:
   explicit WebApkInstallerRunner(const GURL& icon_url)
@@ -78,21 +89,43 @@ class WebApkInstallerRunner {
         icon_url_(icon_url) {}
   ~WebApkInstallerRunner() {}
 
-  void Run() {
+  void RunInstallWebApk() {
+    WebApkInstaller* installer = CreateWebApkInstaller();
+
+    installer->InstallAsyncWithURLRequestContextGetter(
+        url_request_context_getter_.get(),
+        base::Bind(&WebApkInstallerRunner::OnCompleted,
+                   base::Unretained(this)));
+    Run();
+  }
+
+  void RunUpdateWebApk() {
+    const int webapk_version = 1;
+
+    WebApkInstaller* installer = CreateWebApkInstaller();
+
+    installer->UpdateAsyncWithURLRequestContextGetter(
+        url_request_context_getter_.get(),
+        base::Bind(&WebApkInstallerRunner::OnCompleted, base::Unretained(this)),
+        kDownloadedWebApkPackageName,
+        webapk_version);
+
+    Run();
+  }
+
+  WebApkInstaller* CreateWebApkInstaller() {
     ShortcutInfo info(GURL::EmptyGURL());
     info.icon_url = icon_url_;
 
     // WebApkInstaller owns itself.
     WebApkInstaller* installer = new TestWebApkInstaller(info, SkBitmap());
-
     installer->SetTimeoutMs(100);
+    return installer;
+  }
 
+  void Run() {
     base::RunLoop run_loop;
     on_completed_callback_ = run_loop.QuitClosure();
-    installer->InstallAsyncWithURLRequestContextGetter(
-        url_request_context_getter_.get(),
-        base::Bind(&WebApkInstallerRunner::OnCompleted,
-                   base::Unretained(this)));
     run_loop.Run();
   }
 
@@ -151,7 +184,7 @@ class WebApkInstallerTest : public ::testing::Test {
   void SetUp() override {
     test_server_.AddDefaultHandlers(base::FilePath(kTestDataDir));
     test_server_.RegisterRequestHandler(
-        base::Bind(&WebApkInstallerTest::HandleCreateWebApkRequest,
+        base::Bind(&WebApkInstallerTest::HandleWebApkRequest,
                    base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
 
@@ -193,11 +226,25 @@ class WebApkInstallerTest : public ::testing::Test {
         base::Bind(&BuildValidWebApkResponse, download_url));
   }
 
-  std::unique_ptr<net::test_server::HttpResponse> HandleCreateWebApkRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleWebApkRequest(
       const net::test_server::HttpRequest& request) {
-    return (request.relative_url == kServerUrl)
+    return (request.relative_url == GetServerUrlForCreateWebApk() ||
+            request.relative_url == GetServerUrlForUpdateWebApk())
                ? webapk_response_builder_.Run()
                : std::unique_ptr<net::test_server::HttpResponse>();
+  }
+
+  std::string GetServerUrlForCreateWebApk() const {
+    std::string url(kServerUrl);
+    return url.append(kWebApkServerUrlResponseType);
+  }
+
+  std::string GetServerUrlForUpdateWebApk() const {
+    std::string url(kServerUrl);
+    url.append(kDownloadedWebApkPackageName);
+    url.append("/");
+    url.append(kWebApkServerUrlResponseType);
+    return url;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -215,7 +262,7 @@ class WebApkInstallerTest : public ::testing::Test {
 // Test installation succeeding.
 TEST_F(WebApkInstallerTest, Success) {
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->Run();
+  runner->RunInstallWebApk();
   EXPECT_TRUE(runner->success());
 }
 
@@ -227,7 +274,7 @@ TEST_F(WebApkInstallerTest, IconUrlDownloadTimesOut) {
   SetIconUrl(icon_url);
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->Run();
+  runner->RunInstallWebApk();
   EXPECT_FALSE(runner->success());
 }
 
@@ -237,7 +284,7 @@ TEST_F(WebApkInstallerTest, CreateWebApkRequestTimesOut) {
   SetWebApkServerUrl(server_url);
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->Run();
+  runner->RunInstallWebApk();
   EXPECT_FALSE(runner->success());
 }
 
@@ -247,7 +294,7 @@ TEST_F(WebApkInstallerTest, WebApkDownloadTimesOut) {
   SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, download_url));
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->Run();
+  runner->RunInstallWebApk();
   EXPECT_FALSE(runner->success());
 }
 
@@ -257,7 +304,7 @@ TEST_F(WebApkInstallerTest, WebApkDownloadFails) {
   SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, download_url));
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->Run();
+  runner->RunInstallWebApk();
   EXPECT_FALSE(runner->success());
 }
 
@@ -281,6 +328,13 @@ TEST_F(WebApkInstallerTest, UnparsableCreateWebApkResponse) {
   SetWebApkResponseBuilder(base::Bind(&BuildUnparsableWebApkResponse));
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->Run();
+  runner->RunInstallWebApk();
   EXPECT_FALSE(runner->success());
+}
+
+// Test update succeeding.
+TEST_F(WebApkInstallerTest, UpdateSuccess) {
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->RunUpdateWebApk();
+  EXPECT_TRUE(runner->success());
 }

@@ -1009,6 +1009,8 @@
       'browser/android/web_contents_factory.h',
       'browser/android/webapk/manifest_upgrade_detector_fetcher.cc',
       'browser/android/webapk/manifest_upgrade_detector_fetcher.h',
+      'browser/android/webapk/webapk_update_manager.cc',
+      'browser/android/webapk/webapk_update_manager.h',
       'browser/android/webapps/add_to_homescreen_data_fetcher.cc',
       'browser/android/webapps/add_to_homescreen_data_fetcher.h',
       'browser/android/webapps/add_to_homescreen_dialog_helper.cc',
@@ -2149,6 +2151,7 @@
       'android/java/src/org/chromium/chrome/browser/webapps/AddToHomescreenDialogHelper.java',
       'android/java/src/org/chromium/chrome/browser/webapps/ManifestUpgradeDetectorFetcher.java',
       'android/java/src/org/chromium/chrome/browser/webapps/WebappRegistry.java',
+      'android/java/src/org/chromium/chrome/browser/webapps/WebApkUpdateManager.java',
     ],
     'chrome_browser_mdns_sources': [
       'browser/local_discovery/service_discovery_client_impl.cc',

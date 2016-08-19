@@ -72,6 +72,16 @@ public class ManifestUpgradeDetectorTest {
         public long backgroundColor = WEBAPK_BACKGROUND_COLOR;
     }
 
+    private static class TestCallback implements ManifestUpgradeDetector.Callback {
+        public boolean mIsUpgraded;
+        public boolean mWasCalled;
+        @Override
+        public void onUpgradeNeededCheckFinished(boolean isUpgraded, WebappInfo newInfo) {
+            mIsUpgraded = isUpgraded;
+            mWasCalled = true;
+        }
+    }
+
     /**
      * ManifestUpgradeDetector subclass which:
      * - Stubs out ManifestUpgradeDetectorFetcher.
@@ -80,12 +90,11 @@ public class ManifestUpgradeDetectorTest {
      * - Tracks whether "upgrade needed checking logic" has terminated.
      */
     private static class TestManifestUpgradeDetector extends ManifestUpgradeDetector {
-        public boolean mIsUpgraded;
-        public boolean mCompleted;
         private Data mFetchedData;
 
-        public TestManifestUpgradeDetector(Tab tab, WebappInfo info, Data fetchedData) {
-            super(tab, info);
+        public TestManifestUpgradeDetector(Tab tab, WebappInfo info, Data fetchedData,
+                ManifestUpgradeDetector.Callback callback) {
+            super(tab, info, callback);
             mFetchedData = fetchedData;
         }
 
@@ -110,16 +119,6 @@ public class ManifestUpgradeDetectorTest {
                     Mockito.any(ManifestUpgradeDetectorFetcher.Callback.class));
             return fetcher;
         }
-
-        @Override
-        protected void upgrade() {
-            mIsUpgraded = true;
-        }
-
-        @Override
-        protected void onComplete() {
-            mCompleted = true;
-        }
     }
 
     /**
@@ -138,8 +137,9 @@ public class ManifestUpgradeDetectorTest {
         mPackageManager = (RobolectricPackageManager) context.getPackageManager();
     }
 
-    private TestManifestUpgradeDetector createDetectorWithFetchedData(Data fetchedData) {
-        return createDetector(new Data(), fetchedData);
+    private TestManifestUpgradeDetector createDetectorWithFetchedData(Data fetchedData,
+            TestCallback callback) {
+        return createDetector(new Data(), fetchedData, callback);
     }
 
     /**
@@ -147,14 +147,16 @@ public class ManifestUpgradeDetectorTest {
      * @param oldData Data used to create WebAPK. Potentially different from Web Manifest data at
      *                time that the WebAPK was generated.
      * @param fetchedData Data fetched by ManifestUpgradeDetector.
+     * @param callback Callback to call when the upgrade check is complete.
      */
-    private TestManifestUpgradeDetector createDetector(Data oldData, Data fetchedData) {
+    private TestManifestUpgradeDetector createDetector(Data oldData, Data fetchedData,
+            TestCallback callback) {
         setMetaData(
                 WEBAPK_MANIFEST_URL, oldData.startUrl, oldData.iconUrl, oldData.iconMurmur2Hash);
         WebappInfo webappInfo = WebappInfo.create("", oldData.startUrl, oldData.scopeUrl, null,
                 oldData.name, oldData.shortName, oldData.displayMode, oldData.orientation, 0,
                 oldData.themeColor, oldData.backgroundColor, false, WEBAPK_PACKAGE_NAME);
-        return new TestManifestUpgradeDetector(null, webappInfo, fetchedData);
+        return new TestManifestUpgradeDetector(null, webappInfo, fetchedData, callback);
     }
 
     private void setMetaData(
@@ -177,20 +179,22 @@ public class ManifestUpgradeDetectorTest {
 
     @Test
     public void testManifestDoesNotUpgrade() {
-        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(new Data());
+        TestCallback callback = new TestCallback();
+        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(new Data(), callback);
         detector.start();
-        Assert.assertTrue(detector.mCompleted);
-        Assert.assertFalse(detector.mIsUpgraded);
+        Assert.assertTrue(callback.mWasCalled);
+        Assert.assertFalse(callback.mIsUpgraded);
     }
 
     @Test
     public void testStartUrlChangeShouldUpgrade() {
         Data fetchedData = new Data();
         fetchedData.startUrl = "/changed.html";
-        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData);
+        TestCallback callback = new TestCallback();
+        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData, callback);
         detector.start();
-        Assert.assertTrue(detector.mCompleted);
-        Assert.assertTrue(detector.mIsUpgraded);
+        Assert.assertTrue(callback.mWasCalled);
+        Assert.assertTrue(callback.mIsUpgraded);
     }
 
     /**
@@ -206,10 +210,11 @@ public class ManifestUpgradeDetectorTest {
         fetchedData.scopeUrl = "";
         Assert.assertTrue(!oldData.scopeUrl.equals(fetchedData.scopeUrl));
 
-        TestManifestUpgradeDetector detector = createDetector(oldData, fetchedData);
+        TestCallback callback = new TestCallback();
+        TestManifestUpgradeDetector detector = createDetector(oldData, fetchedData, callback);
         detector.start();
-        Assert.assertTrue(detector.mCompleted);
-        Assert.assertFalse(detector.mIsUpgraded);
+        Assert.assertTrue(callback.mWasCalled);
+        Assert.assertFalse(callback.mIsUpgraded);
     }
 
     /**
@@ -227,10 +232,11 @@ public class ManifestUpgradeDetectorTest {
         fetchedData.startUrl = "/fancy/scope/special/snowflake.html";
         fetchedData.scopeUrl = "";
 
-        TestManifestUpgradeDetector detector = createDetector(oldData, fetchedData);
+        TestCallback callback = new TestCallback();
+        TestManifestUpgradeDetector detector = createDetector(oldData, fetchedData, callback);
         detector.start();
-        Assert.assertTrue(detector.mCompleted);
-        Assert.assertTrue(detector.mIsUpgraded);
+        Assert.assertTrue(callback.mWasCalled);
+        Assert.assertTrue(callback.mIsUpgraded);
     }
 
     /**
@@ -243,11 +249,12 @@ public class ManifestUpgradeDetectorTest {
         Data fetchedData = new Data();
         fetchedData.iconMurmur2Hash = WEBAPK_ICON_MURMUR2_HASH + 1;
         fetchedData.icon = createBitmap(Color.BLUE);
-        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData);
+        TestCallback callback = new TestCallback();
+        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData, callback);
 
         detector.start();
-        Assert.assertTrue(detector.mCompleted);
-        Assert.assertTrue(detector.mIsUpgraded);
+        Assert.assertTrue(callback.mWasCalled);
+        Assert.assertTrue(callback.mIsUpgraded);
     }
 
     /**
@@ -260,10 +267,11 @@ public class ManifestUpgradeDetectorTest {
         Data fetchedData = new Data();
         fetchedData.iconUrl = "/icon2.png";
 
-        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData);
+        TestCallback callback = new TestCallback();
+        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData, callback);
         detector.start();
-        Assert.assertTrue(detector.mCompleted);
-        Assert.assertTrue(detector.mIsUpgraded);
+        Assert.assertTrue(callback.mWasCalled);
+        Assert.assertTrue(callback.mIsUpgraded);
     }
 
     /**
@@ -278,9 +286,10 @@ public class ManifestUpgradeDetectorTest {
         fetchedData.iconMurmur2Hash = 0L;
         fetchedData.icon = null;
 
-        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData);
+        TestCallback callback = new TestCallback();
+        TestManifestUpgradeDetector detector = createDetectorWithFetchedData(fetchedData, callback);
         detector.start();
-        Assert.assertTrue(detector.mCompleted);
-        Assert.assertFalse(detector.mIsUpgraded);
+        Assert.assertTrue(callback.mWasCalled);
+        Assert.assertFalse(callback.mIsUpgraded);
     }
 }

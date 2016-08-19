@@ -95,6 +95,7 @@
 #include "chrome/browser/android/warmup_manager.h"
 #include "chrome/browser/android/web_contents_factory.h"
 #include "chrome/browser/android/webapk/manifest_upgrade_detector_fetcher.h"
+#include "chrome/browser/android/webapk/webapk_update_manager.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_dialog_helper.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -354,6 +355,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"Variations", variations::android::RegisterVariations},
     {"VariationsSession", chrome::android::RegisterVariationsSession},
     {"WarmupManager", RegisterWarmupManager},
+    {"WebApkUpdateManager", WebApkUpdateManager::Register},
     {"WebappRegistry", WebappRegistry::RegisterWebappRegistry},
     {"WebContentsFactory", RegisterWebContentsFactory},
     {"WebsitePreferenceBridge", RegisterWebsitePreferenceBridge},

@@ -15,6 +15,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/net/file_downloader.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -24,11 +25,6 @@ class FilePath;
 
 namespace content {
 class BrowserContext;
-}
-
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
 }
 
 namespace webapk {
@@ -41,14 +37,19 @@ class WebApkIconHasher;
 // server, download it, and install it.
 class WebApkInstaller : public net::URLFetcherDelegate {
  public:
+  // Called when either a request for creating/updating a WebAPK has been sent
+  // to Google Play or the create/update process fails.
+  // Parameters:
+  // - whether the request succeeds.
   using FinishCallback = base::Callback<void(bool)>;
 
   WebApkInstaller(const ShortcutInfo& shortcut_info,
                   const SkBitmap& shorcut_icon);
+
   ~WebApkInstaller() override;
 
   // Talks to the Chrome WebAPK server to generate a WebAPK on the server and to
-  // Google Play to install the generated WebAPK. Calls |callback| after the
+  // Google Play to install the downloaded WebAPK. Calls |callback| after the
   // request to install the WebAPK is sent to Google Play.
   void InstallAsync(content::BrowserContext* browser_context,
                     const FinishCallback& callback);
@@ -58,6 +59,21 @@ class WebApkInstaller : public net::URLFetcherDelegate {
       net::URLRequestContextGetter* request_context_getter,
       const FinishCallback& callback);
 
+  // Talks to the Chrome WebAPK server to update a WebAPK on the server and to
+  // the Google Play server to install the downloaded WebAPK. Calls |callback|
+  // after the request to install the WebAPK is sent to the Google Play server.
+  void UpdateAsync(content::BrowserContext* browser_context,
+                   const FinishCallback& callback,
+                   const std::string& webapk_package,
+                   int webapk_version);
+
+  // Same as UpdateAsync() but uses the passed in |request_context_getter|.
+  void UpdateAsyncWithURLRequestContextGetter(
+      net::URLRequestContextGetter* request_context_getter,
+      const FinishCallback& callback,
+      const std::string& webapk_package,
+      int webapk_version);
+
   // Sets the timeout for the server requests.
   void SetTimeoutMs(int timeout_ms);
 
@@ -66,12 +82,27 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // could be started. The installation may still fail if true is returned.
   // |file_path| is the file path that the WebAPK was downloaded to.
   // |package_name| is the package name that the WebAPK should be installed at.
-  virtual bool StartDownloadedWebApkInstall(
+  virtual bool StartInstallingDownloadedWebApk(
+      JNIEnv* env,
+      const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
+      const base::android::ScopedJavaLocalRef<jstring>& java_package_name);
+
+  // Starts update using the downloaded WebAPK. Returns whether the updating
+  // could be started. The updating may still fail if true is returned.
+  // |file_path| is the file path that the WebAPK was downloaded to.
+  // |package_name| is the package name of the WebAPK.
+  virtual bool StartUpdateUsingDownloadedWebApk(
       JNIEnv* env,
       const base::android::ScopedJavaLocalRef<jstring>& java_file_path,
       const base::android::ScopedJavaLocalRef<jstring>& java_package_name);
 
  private:
+  enum TaskType {
+    UNDEFINED,
+    INSTALL,
+    UPDATE,
+  };
+
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
@@ -85,6 +116,18 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // request the WebAPK server responds with the URL of the generated WebAPK.
   // |webapk| is the proto to send to the WebAPK server.
   void SendCreateWebApkRequest(std::unique_ptr<webapk::WebApk> webapk_proto);
+
+  // Sends request to WebAPK server to update a WebAPK. During a successful
+  // request the WebAPK server responds with the URL of the generated WebAPK.
+  // |webapk| is the proto to send to the WebAPK server.
+  void SendUpdateWebApkRequest(std::unique_ptr<webapk::WebApk> webapk_proto);
+
+  // Sends a request to WebAPK server to create/update WebAPK. During a
+  // successful request the WebAPK server responds with the URL of the generated
+  // WebAPK.
+  void SendRequest(std::unique_ptr<webapk::WebApk> request_proto,
+                   net::URLFetcher::RequestType request_type,
+                   const GURL& server_url);
 
   // Called with the URL of generated WebAPK and the package name that the
   // WebAPK should be installed at.
@@ -159,6 +202,15 @@ class WebApkInstaller : public net::URLFetcherDelegate {
 
   // The number of milliseconds to wait for the WebAPK download to complete.
   int download_timeout_ms_;
+
+  // WebAPK package name.
+  std::string webapk_package_;
+
+  // WebAPK version code.
+  int webapk_version_;
+
+  // Indicates whether the installer is for installing or updating a WebAPK.
+  TaskType task_type_;
 
   // Used to get |weak_ptr_|.
   base::WeakPtrFactory<WebApkInstaller> weak_ptr_factory_;

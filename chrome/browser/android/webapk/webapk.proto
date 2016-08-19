@@ -8,19 +8,28 @@ option optimize_for = LITE_RUNTIME;
 
 package webapk;
 
-// Response to "create" request.
+// Response after creating or updating a WebAPK.
 message WebApkResponse {
   // Package name to install WebAPK at.
   optional string package_name = 1;
 
+  // Version code of the WebAPK.
+  optional string version = 2;
+
   // URL to download WebAPK.
   optional string signed_download_url = 3;
 
-  reserved 2, 4;
+  reserved 4;
 }
 
-// Sent as part of request to create a WebAPK.
+// Sent as part of request to create or update a WebAPK.
 message WebApk {
+  // Package name of the WebAPK.
+  optional string package_name = 1;
+
+  // Version code of the WebAPK.
+  optional string version = 2;
+
   // The URL of the Web App Manifest.
   optional string manifest_url = 3;
 
@@ -33,7 +42,7 @@ message WebApk {
   // The Web App Manifest.
   optional WebAppManifest manifest = 7;
 
-  reserved 1, 2, 4;
+  reserved 4;
 }
 
 // Contains data from the Web App Manifest.

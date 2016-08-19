@@ -46,10 +46,12 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
      * Starts fetching the web manifest resources.
      * @param callback Called once the Web Manifest has been downloaded.
      */
-    public void start(Callback callback) {
+    public boolean start(Callback callback) {
+        if (mTab == null || mTab.getWebContents() == null) return false;
         mCallback = callback;
         mTab.addObserver(this);
         nativeStart(mNativePointer, mTab.getWebContents());
+        return true;
     }
 
     /**
