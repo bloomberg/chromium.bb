@@ -3004,7 +3004,7 @@ void LayoutObject::imageChanged(ImageResource* image, const IntRect* rect)
     imageChanged(static_cast<WrappedImagePtr>(image), rect);
 }
 
-Element* LayoutObject::offsetParent(const Element* unclosedBase) const
+Element* LayoutObject::offsetParent(const Element* base) const
 {
     if (isDocumentElement() || isBody())
         return nullptr;
@@ -3022,9 +3022,9 @@ Element* LayoutObject::offsetParent(const Element* unclosedBase) const
         if (!node)
             continue;
 
-        // TODO(kochi): If |unclosedBase| or |node| is nested deep in shadow roots, this loop may
+        // TODO(kochi): If |base| or |node| is nested deep in shadow roots, this loop may
         // get expensive, as isUnclosedNodeOf() can take up to O(N+M) time (N and M are depths).
-        if (unclosedBase && (!node->isUnclosedNodeOf(*unclosedBase) || (node->isInShadowTree() && node->containingShadowRoot()->type() == ShadowRootType::UserAgent))) {
+        if (base && (node->isClosedShadowHiddenFrom(*base) || (node->isInShadowTree() && node->containingShadowRoot()->type() == ShadowRootType::UserAgent))) {
             // If 'position: fixed' node is found while traversing up, terminate the loop and
             // return null.
             if (ancestor->isFixedPositioned())

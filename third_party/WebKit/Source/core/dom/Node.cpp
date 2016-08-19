@@ -588,10 +588,10 @@ Node& Node::shadowIncludingRoot() const
     return *root;
 }
 
-bool Node::isUnclosedNodeOf(const Node& other) const
+bool Node::isClosedShadowHiddenFrom(const Node& other) const
 {
     if (!isInShadowTree() || treeScope() == other.treeScope())
-        return true;
+        return false;
 
     const TreeScope* scope = &treeScope();
     for (; scope->parentTreeScope(); scope = scope->parentTreeScope()) {
@@ -602,9 +602,9 @@ bool Node::isUnclosedNodeOf(const Node& other) const
 
     for (TreeScope* otherScope = &other.treeScope(); otherScope; otherScope = otherScope->parentTreeScope()) {
         if (otherScope == scope)
-            return true;
+            return false;
     }
-    return false;
+    return true;
 }
 
 bool Node::needsDistributionRecalc() const

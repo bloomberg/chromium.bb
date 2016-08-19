@@ -207,7 +207,8 @@ public:
     Node* getRootNode(const GetRootNodeOptions&) const;
     Node& treeRoot() const;
     Node& shadowIncludingRoot() const;
-    bool isUnclosedNodeOf(const Node&) const;
+    // closed-shadow-hidden is defined at https://dom.spec.whatwg.org/#concept-closed-shadow-hidden
+    bool isClosedShadowHiddenFrom(const Node&) const;
 
     void prepend(const HeapVector<NodeOrString>&, ExceptionState&);
     void append(const HeapVector<NodeOrString>&, ExceptionState&);
