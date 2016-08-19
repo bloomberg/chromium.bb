@@ -257,7 +257,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, BrowserClickClosesPopup1) {
 }
 
 // Test that the extension popup is closed when the browser window is clicked.
-IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, BrowserClickClosesPopup2) {
+#if defined(OS_WIN)
+// Flaky on Windows: http://crbug.com/639130
+#define MAYBE_BrowserClickClosesPopup2 DISABLED_BrowserClickClosesPopup2
+#else
+#define MAYBE_BrowserClickClosesPopup2 BrowserClickClosesPopup2
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
+                       MAYBE_BrowserClickClosesPopup2) {
   if (!ShouldRunPopupTest())
     return;
 
