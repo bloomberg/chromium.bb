@@ -3967,7 +3967,11 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 
   // Clear to 0 to ensure the background is transparent.
   gl_->ClearColor(0, 0, 0, 0);
+  if (is_scissor_enabled_)
+    gl_->Disable(GL_SCISSOR_TEST);
   gl_->Clear(GL_COLOR_BUFFER_BIT);
+  if (is_scissor_enabled_)
+    gl_->Enable(GL_SCISSOR_TEST);
 
   UpdateRPDQTexturesForSampling(&params);
   UpdateRPDQBlendMode(&params);
