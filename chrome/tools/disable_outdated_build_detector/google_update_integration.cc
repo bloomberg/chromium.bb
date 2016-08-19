@@ -4,49 +4,57 @@
 
 #include "chrome/tools/disable_outdated_build_detector/google_update_integration.h"
 
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/win/registry.h"
+#include <stdlib.h>
 
-uint32_t OpenClientStateKey(bool system_level,
-                            App app,
-                            base::win::RegKey* key) {
+#include <algorithm>
+
+uint32_t OpenClientStateKey(bool system_level, App app, HKEY* key) {
 #if defined(GOOGLE_CHROME_BUILD)
   constexpr wchar_t kChromeAppGuid[] =
       L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
   constexpr wchar_t kBinariesAppGuid[] =
       L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
-  base::string16 path(base::StringPrintf(
-      L"Software\\Google\\Update\\ClientState\\%ls",
-      (app == App::CHROME_BINARIES ? kBinariesAppGuid : kChromeAppGuid)));
+  // presubmit: allow wstring
+  std::wstring path(L"Software\\Google\\Update\\ClientState\\");
+  path += (app == App::CHROME_BINARIES ? kBinariesAppGuid : kChromeAppGuid);
 #else
-  base::string16 path(app == App::CHROME_BINARIES
-                          ? L"Software\\Chromium Binaries"
-                          : L"Software\\Chromium");
+  // presubmit: allow wstring
+  std::wstring path(app == App::CHROME_BINARIES ? L"Software\\Chromium Binaries"
+                                                : L"Software\\Chromium");
 #endif
-  return key->Open(system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
-                   path.c_str(),
-                   KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
+  return ::RegOpenKeyEx(system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
+                        path.c_str(), 0 /* ulOptions */,
+                        KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY, key);
 }
 
 void WriteResultInfo(bool system_level, const ResultInfo& result_info) {
-  base::win::RegKey key;
+  HKEY key = nullptr;
   uint32_t result = OpenClientStateKey(system_level, App::CHROME_BROWSER, &key);
   if (result != ERROR_SUCCESS)
     return;
-  key.WriteValue(kInstallerResult,
-                 static_cast<uint32_t>(result_info.installer_result));
-  key.WriteValue(kInstallerError,
-                 static_cast<uint32_t>(result_info.installer_error));
-  if (result_info.installer_extra_code1)
-    key.WriteValue(kInstallerExtraCode1, result_info.installer_extra_code1);
-  else
-    key.DeleteValue(kInstallerExtraCode1);
+  ::RegSetValueEx(
+      key, kInstallerResult, 0 /* Reserved */, REG_DWORD,
+      reinterpret_cast<const uint8_t*>(&result_info.installer_result),
+      sizeof(DWORD));
+  ::RegSetValueEx(
+      key, kInstallerError, 0 /* Reserved */, REG_DWORD,
+      reinterpret_cast<const uint8_t*>(&result_info.installer_error),
+      sizeof(DWORD));
+  if (result_info.installer_extra_code1) {
+    ::RegSetValueEx(
+        key, kInstallerExtraCode1, 0 /* Reserved */, REG_DWORD,
+        reinterpret_cast<const uint8_t*>(&result_info.installer_extra_code1),
+        sizeof(DWORD));
+  } else {
+    ::RegDeleteValue(key, kInstallerExtraCode1);
+  }
+  ::RegCloseKey(key);
 }
 
 // Copied from chrome/browser/google/google_brand.cc.
-bool IsOrganic(const base::string16& brand) {
-  static const wchar_t* const kBrands[] = {
+// presubmit: allow wstring
+bool IsOrganic(const std::wstring& brand) {
+  constexpr const wchar_t* kBrands[] = {
       L"CHCA", L"CHCB", L"CHCG", L"CHCH", L"CHCI", L"CHCJ", L"CHCK", L"CHCL",
       L"CHFO", L"CHFT", L"CHHS", L"CHHM", L"CHMA", L"CHMB", L"CHME", L"CHMF",
       L"CHMG", L"CHMH", L"CHMI", L"CHMQ", L"CHMV", L"CHNB", L"CHNC", L"CHNG",
@@ -55,12 +63,12 @@ bool IsOrganic(const base::string16& brand) {
       L"CHPD", L"CHPE", L"CHPF", L"CHPG", L"ECBA", L"ECBB", L"ECDA", L"ECDB",
       L"ECSA", L"ECSB", L"ECVA", L"ECVB", L"ECWA", L"ECWB", L"ECWC", L"ECWD",
       L"ECWE", L"ECWF", L"EUBB", L"EUBC", L"GGLA", L"GGLS"};
-  const wchar_t* const* end = &kBrands[arraysize(kBrands)];
+  const wchar_t* const* end = &kBrands[_countof(kBrands)];
   const wchar_t* const* found = std::find(&kBrands[0], end, brand);
   if (found != end)
     return true;
 
-  return base::StartsWith(brand, L"EUB", base::CompareCase::SENSITIVE) ||
-         base::StartsWith(brand, L"EUC", base::CompareCase::SENSITIVE) ||
-         base::StartsWith(brand, L"GGR", base::CompareCase::SENSITIVE);
+  return brand.size() > 3 && (std::equal(&brand[0], &brand[3], L"EUB") ||
+                              std::equal(&brand[0], &brand[3], L"EUC") ||
+                              std::equal(&brand[0], &brand[3], L"GGR"));
 }

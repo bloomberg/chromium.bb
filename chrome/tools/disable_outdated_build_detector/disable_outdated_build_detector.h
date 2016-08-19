@@ -5,13 +5,7 @@
 #ifndef CHROME_TOOLS_DISABLE_OUTDATED_BUILD_DETECTOR_DISABLE_OUTDATED_BUILD_DETECTOR_H_
 #define CHROME_TOOLS_DISABLE_OUTDATED_BUILD_DETECTOR_DISABLE_OUTDATED_BUILD_DETECTOR_H_
 
-#include <stdint.h>
-
 #include "chrome/tools/disable_outdated_build_detector/constants.h"
-
-namespace base {
-class CommandLine;
-}
 
 // Disables the outdated build detector for organic installs of Chrome by
 // switching the install to the AOHY non-organic brand code. Operates on
@@ -20,6 +14,6 @@ class CommandLine;
 // is written to the registry in Chrome's ClientState key in accordance with the
 // Google Update installer result API. Returns the process exit code for the
 // operation.
-ExitCode DisableOutdatedBuildDetector(const base::CommandLine& command_line);
+ExitCode DisableOutdatedBuildDetector(const wchar_t* command_line);
 
 #endif  // CHROME_TOOLS_DISABLE_OUTDATED_BUILD_DETECTOR_DISABLE_OUTDATED_BUILD_DETECTOR_H_

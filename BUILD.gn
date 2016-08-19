@@ -111,6 +111,7 @@ if (is_win) {
     ]
 
     if (target_cpu == "x86") {
+      deps += [ "//chrome/tools/disable_outdated_build_detector" ]
       if (is_clang) {
         deps += [ "//courgette(//build/toolchain/win:clang_x64)" ]
       } else {
@@ -357,7 +358,6 @@ group("both_gn_and_gyp") {
     deps += [
       "//chrome/installer/gcapi",
       "//chrome/tools/build/win/syzygy:chrome_dll_syzygy",
-      "//chrome/tools/disable_outdated_build_detector",
     ]
   }
 
@@ -707,6 +707,10 @@ group("gn_only") {
 
   if (!is_android && !is_ios && !is_chromeos) {
     deps += [ "//components/proximity_auth:proximity_auth_unittests" ]
+  }
+
+  if (is_win && target_cpu == "x86") {
+    deps += [ "//chrome/tools/disable_outdated_build_detector" ]
   }
 
   if (is_win || is_linux) {

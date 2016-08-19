@@ -5,14 +5,12 @@
 #ifndef CHROME_TOOLS_DISABLE_OUTDATED_BUILD_DETECTOR_GOOGLE_UPDATE_INTEGRATION_H_
 #define CHROME_TOOLS_DISABLE_OUTDATED_BUILD_DETECTOR_GOOGLE_UPDATE_INTEGRATION_H_
 
-#include "base/strings/string16.h"
-#include "chrome/tools/disable_outdated_build_detector/constants.h"
+#include <windows.h>
+#include <stdint.h>
 
-namespace base {
-namespace win {
-class RegKey;
-}
-}
+#include <string>
+
+#include "chrome/tools/disable_outdated_build_detector/constants.h"
 
 // A structure containing the values that comprise the Google Update installer
 // result API.
@@ -30,13 +28,15 @@ enum class App {
 
 // Opens the Google Update ClientState key in the registry for the app
 // identified by |app| at |system_level|. Returns ERROR_SUCCESS or another
-// Windows error value.
-uint32_t OpenClientStateKey(bool system_level, App app, base::win::RegKey* key);
+// Windows error value. On success, the caller is responsible for calling
+// RegCloseKey.
+uint32_t OpenClientStateKey(bool system_level, App app, HKEY* key);
 
 // Writes the data in |result_info| into Chrome's ClientState key.
 void WriteResultInfo(bool system_level, const ResultInfo& result_info);
 
 // Returns |true| if |brand| represents an organic brand code.
-bool IsOrganic(const base::string16& brand);
+// presubmit: allow wstring
+bool IsOrganic(const std::wstring& brand);
 
 #endif  // CHROME_TOOLS_DISABLE_OUTDATED_BUILD_DETECTOR_GOOGLE_UPDATE_INTEGRATION_H_

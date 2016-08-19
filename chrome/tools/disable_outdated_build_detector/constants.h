@@ -9,14 +9,14 @@
 
 namespace switches {
 
-extern const char kMultiInstall[];
-extern const char kSystemLevel[];
+extern const wchar_t kMultiInstall[];
+extern const wchar_t kSystemLevel[];
 
 }  // namespace switches
 
 namespace env {
 
-extern const char kGoogleUpdateIsMachine[];
+extern const wchar_t kGoogleUpdateIsMachine[];
 
 }  // namespace env
 

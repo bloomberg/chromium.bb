@@ -4,7 +4,6 @@
 
 #include "chrome/tools/disable_outdated_build_detector/disable_outdated_build_detector.h"
 
-#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/strings/string16.h"
 #include "base/test/test_reg_util_win.h"
@@ -23,8 +22,7 @@ class DisableOutdatedBuildDetectorTest
     : public ::testing::TestWithParam<ExecutionMode> {
  protected:
   DisableOutdatedBuildDetectorTest()
-      : command_line_(base::CommandLine::NO_PROGRAM),
-        chrome_distribution_(BrowserDistribution::GetSpecificDistribution(
+      : chrome_distribution_(BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BROWSER)),
         binaries_distribution_(BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BINARIES)),
@@ -34,7 +32,7 @@ class DisableOutdatedBuildDetectorTest
                   : HKEY_LOCAL_MACHINE) {
     registry_override_manager_.OverrideRegistry(root_);
     if (execution_mode_ == ExecutionMode::SYSTEM_LEVEL_SWITCH)
-      command_line_.AppendSwitch("system-level");
+      command_line_ = L"--system-level";
     base::Environment::Create()->SetVar(
         "GoogleUpdateIsMachine",
         execution_mode_ == ExecutionMode::IS_MACHINE_ENV ? "1" : "0");
@@ -104,7 +102,9 @@ class DisableOutdatedBuildDetectorTest
     }
   }
 
-  base::CommandLine command_line_;
+  const wchar_t* command_line() const { return command_line_.c_str(); }
+
+  std::wstring command_line_;
   BrowserDistribution* chrome_distribution_;
   BrowserDistribution* binaries_distribution_;
 
@@ -115,7 +115,7 @@ class DisableOutdatedBuildDetectorTest
 };
 
 TEST_P(DisableOutdatedBuildDetectorTest, NoChrome) {
-  EXPECT_EQ(ExitCode::NO_CHROME, DisableOutdatedBuildDetector(command_line_));
+  EXPECT_EQ(ExitCode::NO_CHROME, DisableOutdatedBuildDetector(command_line()));
 }
 
 TEST_P(DisableOutdatedBuildDetectorTest, SingleUnbrandedChrome) {
@@ -124,7 +124,7 @@ TEST_P(DisableOutdatedBuildDetectorTest, SingleUnbrandedChrome) {
 
   // Switch the brand.
   EXPECT_EQ(ExitCode::NON_ORGANIC_BRAND,
-            DisableOutdatedBuildDetector(command_line_));
+            DisableOutdatedBuildDetector(command_line()));
   ExpectResult(InstallerResult::FAILED_CUSTOM_ERROR,
                ExitCode::NON_ORGANIC_BRAND, ERROR_FILE_NOT_FOUND);
 
@@ -141,7 +141,7 @@ TEST_P(DisableOutdatedBuildDetectorTest, SingleOrganicChrome) {
 
   // Switch the brand.
   EXPECT_EQ(ExitCode::CHROME_BRAND_UPDATED,
-            DisableOutdatedBuildDetector(command_line_));
+            DisableOutdatedBuildDetector(command_line()));
   ExpectResult(InstallerResult::FAILED_CUSTOM_ERROR,
                ExitCode::CHROME_BRAND_UPDATED, 0);
 
@@ -160,7 +160,7 @@ TEST_P(DisableOutdatedBuildDetectorTest, SingleInOrganicChrome) {
 
   // Switch the brand.
   EXPECT_EQ(ExitCode::NON_ORGANIC_BRAND,
-            DisableOutdatedBuildDetector(command_line_));
+            DisableOutdatedBuildDetector(command_line()));
   ExpectResult(InstallerResult::FAILED_CUSTOM_ERROR,
                ExitCode::NON_ORGANIC_BRAND, 0);
 
@@ -177,7 +177,7 @@ TEST_P(DisableOutdatedBuildDetectorTest, MultiOrganicChrome) {
 
   // Switch the brand.
   EXPECT_EQ(ExitCode::BOTH_BRANDS_UPDATED,
-            DisableOutdatedBuildDetector(command_line_));
+            DisableOutdatedBuildDetector(command_line()));
   ExpectResult(InstallerResult::FAILED_CUSTOM_ERROR,
                ExitCode::BOTH_BRANDS_UPDATED, 0);
 
@@ -194,7 +194,7 @@ TEST_P(DisableOutdatedBuildDetectorTest, MultiInOrganicChrome) {
 
   // Switch the brand.
   EXPECT_EQ(ExitCode::NON_ORGANIC_BRAND,
-            DisableOutdatedBuildDetector(command_line_));
+            DisableOutdatedBuildDetector(command_line()));
   ExpectResult(InstallerResult::FAILED_CUSTOM_ERROR,
                ExitCode::NON_ORGANIC_BRAND, 0);
 

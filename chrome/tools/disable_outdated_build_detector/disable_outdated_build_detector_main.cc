@@ -7,32 +7,29 @@
 // disable_outdated_build_detector.h for more information.
 
 #include <windows.h>
-#include <stdint.h>
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
-#include "base/logging.h"
-#include "base/win/windows_version.h"
 #include "chrome/tools/disable_outdated_build_detector/disable_outdated_build_detector.h"
+
+namespace {
+
+bool IsVistaOrOlder() {
+  OSVERSIONINFO version_info = {sizeof(version_info)};
+  return ::GetVersionEx(&version_info) && (version_info.dwMajorVersion < 6 ||
+                                           (version_info.dwMajorVersion == 6 &&
+                                            version_info.dwMinorVersion == 0));
+}
+
+}  // namespace
 
 int WINAPI wWinMain(HINSTANCE /* instance */,
                     HINSTANCE /* unused */,
-                    wchar_t* /* command_line */,
+                    wchar_t* command_line,
                     int /* command_show */) {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+  if (!IsVistaOrOlder())
     return static_cast<int>(ExitCode::UNSUPPORTED_OS);
-
-  base::AtExitManager at_exit_manager;
-  base::CommandLine::Init(0, nullptr);
-
-  // Don't generate any log files.
-  logging::LoggingSettings logging_settings;
-  logging_settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  logging::InitLogging(logging_settings);
 
   // For reasons, wWinMain returns an int rather than a DWORD. This value
   // eventually makes its way to ExitProcess, which indeed takes an unsigned
   // int.
-  return static_cast<int>(
-      DisableOutdatedBuildDetector(*base::CommandLine::ForCurrentProcess()));
+  return static_cast<int>(DisableOutdatedBuildDetector(command_line));
 }

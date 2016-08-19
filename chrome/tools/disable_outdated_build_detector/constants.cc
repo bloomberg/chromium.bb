@@ -6,8 +6,8 @@
 
 namespace switches {
 
-const char kMultiInstall[] = "multi-install";
-const char kSystemLevel[] = "system-level";
+const wchar_t kMultiInstall[] = L"multi-install";
+const wchar_t kSystemLevel[] = L"system-level";
 
 }  // namespace switches
 
@@ -16,7 +16,7 @@ namespace env {
 // The presence of this environment variable with a value of 1 implies that the
 // tool should run as a system installation regardless of what is on the command
 // line.
-const char kGoogleUpdateIsMachine[] = "GoogleUpdateIsMachine";
+const wchar_t kGoogleUpdateIsMachine[] = L"GoogleUpdateIsMachine";
 
 }  // namespace env
 

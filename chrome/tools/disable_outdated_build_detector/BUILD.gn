@@ -6,18 +6,33 @@ import("//chrome/version.gni")
 import("//testing/test.gni")
 
 if (is_win) {
+  config("xp") {
+    # Target low-end CPUs on XP.
+    cflags = [ "/arch:IA32" ]
+    defines = [
+      "NTDDI_VERSION=0x05010200",
+      "WINVER=0x0501",
+      "_WIN32_WINNT=0x0501",
+    ]
+  }
+
   executable("disable_outdated_build_detector") {
     sources = [
       "disable_outdated_build_detector_main.cc",
     ]
 
-    configs -= [ "//build/config/win:console" ]
-    configs += [ "//build/config/win:windowed" ]
+    configs -= [
+      "//build/config/win:console",
+      "//build/config/win:winver",
+    ]
+    configs += [
+      "//build/config/win:windowed",
+      ":xp",
+    ]
 
     deps = [
       ":disable_outdated_build_detector_exe_version",
       ":lib",
-      "//base",
       "//build/win:default_exe_manifest",
     ]
   }
@@ -36,10 +51,8 @@ if (is_win) {
       "google_update_integration.cc",
       "google_update_integration.h",
     ]
-
-    public_deps = [
-      "//base",
-    ]
+    configs -= [ "//build/config/win:winver" ]
+    configs += [ ":xp" ]
   }
 
   test("disable_outdated_build_detector_unittests") {
