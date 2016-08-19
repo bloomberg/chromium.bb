@@ -8,6 +8,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_length_utils.h"
+#include "core/layout/ng/ng_margin_strut.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 
@@ -26,11 +27,13 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
   HeapVector<Member<const NGFragmentBase>> childFragments;
   LayoutUnit contentSize;
   for (NGBox box : m_boxIterator) {
+    NGBoxMargins childMargins = computeMargins(constraintSpace, *box.style());
     NGFragment* fragment = box.layout(constraintSpace);
-    // TODO(layout-ng): Take margins into account
-    fragment->setOffset(LayoutUnit(), contentSize);
+    // TODO(layout-ng): Support auto margins
+    fragment->setOffset(childMargins.inlineStart,
+                        contentSize + childMargins.blockStart);
     box.positionUpdated(*fragment);
-    contentSize += fragment->blockSize();
+    contentSize += fragment->blockSize() + childMargins.blockSum();
     childFragments.append(fragment);
   }
 

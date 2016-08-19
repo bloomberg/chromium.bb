@@ -12,8 +12,9 @@ class ComputedStyle;
 class LayoutUnit;
 class Length;
 class NGConstraintSpace;
+struct NGBoxMargins;
 
-enum class LengthResolveType { MinSize, MaxSize, ContentSize };
+enum class LengthResolveType { MinSize, MaxSize, ContentSize, MarginSize };
 
 // Convert an inline-axis length to a layout unit using the given constraint
 // space.
@@ -38,8 +39,11 @@ CORE_EXPORT LayoutUnit computeInlineSizeForFragment(const NGConstraintSpace&,
 // logical height and max logical height properties from the ComputedStyle
 // object.
 CORE_EXPORT LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace&,
-                                                   const ComputedStyle& style,
+                                                   const ComputedStyle&,
                                                    LayoutUnit contentSize);
+
+CORE_EXPORT NGBoxMargins computeMargins(const NGConstraintSpace&,
+                                        const ComputedStyle&);
 
 }  // namespace blink
 

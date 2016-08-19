@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_length_utils.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_margin_strut.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/CalculationValue.h"
 #include "platform/LayoutUnit.h"
@@ -156,6 +157,22 @@ TEST_F(NGLengthUtilsTest, testComputeBlockSizeForFragment) {
   EXPECT_EQ(LayoutUnit(240), computeBlockSizeForFragment());
 
   // TODO(layout-ng): test {min,max}-content on max-height.
+}
+
+TEST_F(NGLengthUtilsTest, testMargins) {
+  style_->setMarginTop(Length(10, Percent));
+  style_->setMarginRight(Length(52, Fixed));
+  style_->setMarginBottom(Length(Auto));
+  style_->setMarginLeft(Length(11, Percent));
+
+  NGConstraintSpace constraintSpace(constructConstraintSpace(200, 300));
+
+  NGBoxMargins margins = computeMargins(constraintSpace, *style_);
+
+  EXPECT_EQ(LayoutUnit(20), margins.blockStart);
+  EXPECT_EQ(LayoutUnit(52), margins.inlineEnd);
+  EXPECT_EQ(LayoutUnit(), margins.blockEnd);
+  EXPECT_EQ(LayoutUnit(22), margins.inlineStart);
 }
 
 }  // namespace

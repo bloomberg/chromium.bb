@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_length_utils.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_margin_strut.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LayoutUnit.h"
 #include "platform/Length.h"
@@ -24,6 +25,9 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
   if (type == LengthResolveType::MinSize && length.isAuto())
     return LayoutUnit();
 
+  if (type == LengthResolveType::MarginSize && length.isAuto())
+    return LayoutUnit();
+
   return valueForLength(length, constraintSpace.ContainerSize().inlineSize);
 }
 
@@ -32,6 +36,7 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
                               LayoutUnit contentSize,
                               LengthResolveType type) {
   DCHECK(!length.isMaxSizeNone());
+  DCHECK(type != LengthResolveType::MarginSize);
 
   if (type == LengthResolveType::MinSize && length.isAuto())
     return LayoutUnit();
@@ -98,6 +103,22 @@ LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
   }
 
   return extent;
+}
+
+NGBoxMargins computeMargins(const NGConstraintSpace& constraintSpace,
+                            const ComputedStyle& style) {
+  // Margins always get computed relative to the inline size:
+  // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
+  NGBoxMargins margins;
+  margins.inlineStart = resolveInlineLength(
+      constraintSpace, style.marginStart(), LengthResolveType::MarginSize);
+  margins.inlineEnd = resolveInlineLength(constraintSpace, style.marginEnd(),
+                                          LengthResolveType::MarginSize);
+  margins.blockStart = resolveInlineLength(
+      constraintSpace, style.marginBefore(), LengthResolveType::MarginSize);
+  margins.blockEnd = resolveInlineLength(constraintSpace, style.marginAfter(),
+                                         LengthResolveType::MarginSize);
+  return margins;
 }
 
 }  // namespace blink
