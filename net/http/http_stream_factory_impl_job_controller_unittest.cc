@@ -34,49 +34,6 @@ void DeleteHttpStreamPointer(const SSLConfig& used_ssl_config,
   delete stream;
 }
 
-class HangingProxyResolver : public ProxyResolver {
- public:
-  HangingProxyResolver() {}
-  ~HangingProxyResolver() override {}
-
-  int GetProxyForURL(const GURL& url,
-                     ProxyInfo* results,
-                     const CompletionCallback& callback,
-                     RequestHandle* request,
-                     const BoundNetLog& net_log) override {
-    return ERR_IO_PENDING;
-  }
-
-  void CancelRequest(RequestHandle request) override { NOTREACHED(); }
-
-  LoadState GetLoadState(RequestHandle request) const override {
-    NOTREACHED();
-    return LOAD_STATE_IDLE;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HangingProxyResolver);
-};
-
-class HangingProxyResolverFactory : public ProxyResolverFactory {
- public:
-  explicit HangingProxyResolverFactory(HangingProxyResolver* resolver)
-      : ProxyResolverFactory(false), resolver_(resolver) {}
-
-  // ProxyResolverFactory override.
-  int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      std::unique_ptr<ProxyResolver>* resolver,
-      const net::CompletionCallback& callback,
-      std::unique_ptr<Request>* request) override {
-    resolver->reset(new ForwardingProxyResolver(resolver_));
-    return OK;
-  }
-
- private:
-  HangingProxyResolver* resolver_;
-};
-
 class FailingProxyResolverFactory : public ProxyResolverFactory {
  public:
   FailingProxyResolverFactory() : ProxyResolverFactory(false) {}
