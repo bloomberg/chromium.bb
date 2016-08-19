@@ -456,9 +456,8 @@ DocumentMarkerVector DocumentMarkerController::markersInRange(const EphemeralRan
     DCHECK(endContainer);
     unsigned endOffset = static_cast<unsigned>(range.endPosition().computeOffsetInContainerNode());
 
-    Node* pastLastNode = range.endPosition().nodeAsRangePastLastNode();
-    for (Node* node = range.startPosition().nodeAsRangeFirstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
-        for (DocumentMarker* marker : markersFor(node)) {
+    for (Node& node : range.nodes()) {
+        for (DocumentMarker* marker : markersFor(&node)) {
             if (!markerTypes.contains(marker->type()))
                 continue;
             if (node == startContainer && marker->endOffset() <= startOffset)
@@ -723,14 +722,11 @@ bool DocumentMarkerController::setMarkersActive(Range* range, bool active)
 
     Node* startContainer = range->startContainer();
     Node* endContainer = range->endContainer();
-
-    Node* pastLastNode = range->pastLastNode();
-
     bool markerFound = false;
-    for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
+    for (Node& node : EphemeralRange(range).nodes()) {
         int startOffset = node == startContainer ? range->startOffset() : 0;
         int endOffset = node == endContainer ? range->endOffset() : INT_MAX;
-        markerFound |= setMarkersActive(node, startOffset, endOffset, active);
+        markerFound |= setMarkersActive(&node, startOffset, endOffset, active);
     }
     return markerFound;
 }

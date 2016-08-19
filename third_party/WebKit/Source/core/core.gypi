@@ -4114,6 +4114,7 @@
             'editing/EditingTestBase.h',
             'editing/EditingUtilitiesTest.cpp',
             'editing/EditorTest.cpp',
+            'editing/EphemeralRangeTest.cpp',
             'editing/FrameSelectionTest.cpp',
             'editing/GranularityStrategyTest.cpp',
             'editing/InputMethodControllerTest.cpp',

@@ -12,6 +12,42 @@ namespace blink {
 class Document;
 class Range;
 
+// We should restrict access to the unwanted version of |TraversalRange::end()| function.
+template <class Iterator>
+class TraversalRangeNodes : private TraversalRange<Iterator> {
+    STACK_ALLOCATED();
+public:
+    using StartNodeType = typename TraversalRange<Iterator>::StartNodeType;
+    TraversalRangeNodes(const StartNodeType* start, const StartNodeType* pastEndNode)
+        : TraversalRange<Iterator>(start), m_pastEndNode(pastEndNode) { }
+
+    using TraversalRange<Iterator>::begin;
+
+    Iterator end() { return Iterator(m_pastEndNode); }
+
+private:
+    const Member<const StartNodeType> m_pastEndNode;
+};
+
+// This class acts like |TraversalNextIterator| but in addition
+// it allows to set current position and checks |m_current| pointer before
+// dereferencing.
+template <class TraversalNext>
+class CheckedTraversalNextIterator : public TraversalIteratorBase<TraversalNext> {
+    STACK_ALLOCATED();
+
+    using TraversalIteratorBase<TraversalNext>::m_current;
+public:
+    using StartNodeType = typename TraversalNext::TraversalNodeType;
+    explicit CheckedTraversalNextIterator(const StartNodeType* start) : TraversalIteratorBase<TraversalNext>(const_cast<StartNodeType*>(start)) { }
+
+    void operator++()
+    {
+        DCHECK(m_current);
+        m_current = TraversalNext::next(*m_current);
+    }
+};
+
 // Unlike |Range| objects, |EphemeralRangeTemplate| objects aren't relocated.
 // You should not use |EphemeralRangeTemplate| objects after DOM modification.
 //
@@ -38,6 +74,8 @@ template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT EphemeralRangeTemplate final {
     STACK_ALLOCATED();
 public:
+    using RangeTraversal = TraversalRangeNodes<CheckedTraversalNextIterator<Strategy>>;
+
     EphemeralRangeTemplate(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end);
     EphemeralRangeTemplate(const EphemeralRangeTemplate& other);
     // |position| should be |Position::isNull()| or in-document.
@@ -64,6 +102,8 @@ public:
         return m_startPosition.isNull();
     }
     bool isNotNull() const { return !isNull(); }
+
+    RangeTraversal nodes() const;
 
     DEFINE_INLINE_TRACE()
     {

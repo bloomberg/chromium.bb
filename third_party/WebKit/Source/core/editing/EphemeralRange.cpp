@@ -119,6 +119,13 @@ bool EphemeralRangeTemplate<Strategy>::isCollapsed() const
 }
 
 template <typename Strategy>
+typename EphemeralRangeTemplate<Strategy>::RangeTraversal
+EphemeralRangeTemplate<Strategy>::nodes() const
+{
+    return RangeTraversal(m_startPosition.nodeAsRangeFirstNode(), m_endPosition.nodeAsRangePastLastNode());
+}
+
+template <typename Strategy>
 EphemeralRangeTemplate<Strategy> EphemeralRangeTemplate<Strategy>::rangeOfContents(const Node& node)
 {
     return EphemeralRangeTemplate<Strategy>(PositionTemplate<Strategy>::firstPositionInNode(&const_cast<Node&>(node)), PositionTemplate<Strategy>::lastPositionInNode(&const_cast<Node&>(node)));

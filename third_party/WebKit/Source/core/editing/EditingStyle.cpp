@@ -1400,12 +1400,12 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
         end = mostBackwardCaretPosition(selection.end());
 
         DCHECK(end.document());
-        Node* pastLast = Range::create(*end.document(), position.parentAnchoredEquivalent(), end.parentAnchoredEquivalent())->pastLastNode();
-        for (Node* n = node; n && n != pastLast; n = NodeTraversal::next(*n)) {
-            if (!n->isStyledElement())
+        const EphemeralRange caretRange(position.parentAnchoredEquivalent(), end.parentAnchoredEquivalent());
+        for (Node& n : caretRange.nodes()) {
+            if (!n.isStyledElement())
                 continue;
 
-            CSSComputedStyleDeclaration* style = CSSComputedStyleDeclaration::create(n);
+            CSSComputedStyleDeclaration* style = CSSComputedStyleDeclaration::create(&n);
             const CSSValue* unicodeBidi = style->getPropertyCSSValue(CSSPropertyUnicodeBidi);
             if (!unicodeBidi || !unicodeBidi->isPrimitiveValue())
                 continue;

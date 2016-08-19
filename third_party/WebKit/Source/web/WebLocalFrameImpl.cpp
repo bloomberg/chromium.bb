@@ -1668,6 +1668,7 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
                     node = host;
             }
         }
+        const EphemeralRange activeMatchRange(activeMatch);
         if (node) {
             for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*node)) {
                 if (!runner.isElementNode())
@@ -1676,7 +1677,7 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
                 if (element.isFocusable()) {
                     // Found a focusable parent node. Set the active match as the
                     // selection and focus to the focusable node.
-                    frame()->selection().setSelection(VisibleSelection(EphemeralRange(activeMatch)));
+                    frame()->selection().setSelection(VisibleSelection(activeMatchRange));
                     frame()->document()->setFocusedElement(&element, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
                     return;
                 }
@@ -1686,13 +1687,12 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
         // Iterate over all the nodes in the range until we find a focusable node.
         // This, for example, sets focus to the first link if you search for
         // text and text that is within one or more links.
-        node = activeMatch->firstNode();
-        for (; node && node != activeMatch->pastLastNode(); node = NodeTraversal::next(*node)) {
-            if (!node->isElementNode())
+        for (Node& runner : activeMatchRange.nodes()) {
+            if (!runner.isElementNode())
                 continue;
-            Element* element = toElement(node);
-            if (element->isFocusable()) {
-                frame()->document()->setFocusedElement(element, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
+            Element& element = toElement(runner);
+            if (element.isFocusable()) {
+                frame()->document()->setFocusedElement(&element, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
                 return;
             }
         }
@@ -1702,7 +1702,7 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
         // you'll have the last thing you found highlighted) and make sure that
         // we have nothing focused (otherwise you might have text selected but
         // a link focused, which is weird).
-        frame()->selection().setSelection(VisibleSelection(EphemeralRange(activeMatch)));
+        frame()->selection().setSelection(VisibleSelection(activeMatchRange));
         frame()->document()->clearFocusedElement();
 
         // Finally clear the active match, for two reasons:

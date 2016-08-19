@@ -54,6 +54,7 @@ class CORE_EXPORT FlatTreeTraversal {
     STATIC_ONLY(FlatTreeTraversal);
 public:
     typedef LayoutTreeBuilderTraversal::ParentDetails ParentTraversalDetails;
+    using TraversalNodeType = Node;
 
     static Node* next(const Node&);
     static Node* next(const Node&, const Node* stayWithin);
