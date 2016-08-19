@@ -55,7 +55,6 @@ crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-no
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
 crbug.com/520166 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure Pass ]
 
-crbug.com/520177 [ Android ] fast/images/style-access-during-imageChanged-crash.html [ Crash Failure Pass ]
 crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ Failure ]
 
 crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
