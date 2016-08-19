@@ -21,6 +21,10 @@ namespace IPC {
 class MessageFilter;
 }
 
+namespace shell {
+class InterfaceProvider;
+}
+
 namespace content {
 
 class ChildProcessHostDelegate;
@@ -83,13 +87,24 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
 
   // Creates the IPC channel on top of Mojo. Returns the Mojo channel token if
   // succeeded, or an empty string on failure.
+  //
+  // DEPRECATED: Don't use this. Instead implement GetRemoteInterfaces() in the
+  // delegate and use the CreateChannelMojo() version below.
   virtual std::string CreateChannelMojo(const std::string& child_token) = 0;
+
+  // Creates the IPC channel over a Mojo message pipe. The pipe connection is
+  // brokered through the shell like any other service connection.
+  virtual void CreateChannelMojo() = 0;
 
   // Returns true iff the IPC channel is currently being opened;
   virtual bool IsChannelOpening() = 0;
 
   // Adds an IPC message filter.  A reference will be kept to the filter.
   virtual void AddFilter(IPC::MessageFilter* filter) = 0;
+
+  // Returns the shell::InterfaceProvider the process host can use to bind
+  // interfaces exposed to it from the child.
+  virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
 
 #if defined(OS_POSIX)
   // See IPC::Channel::TakeClientFileDescriptor.

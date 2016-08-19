@@ -80,8 +80,10 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void ForceShutdown() override;
   std::string CreateChannel() override;
   std::string CreateChannelMojo(const std::string& child_token) override;
+  void CreateChannelMojo() override;
   bool IsChannelOpening() override;
   void AddFilter(IPC::MessageFilter* filter) override;
+  shell::InterfaceProvider* GetRemoteInterfaces() override;
 #if defined(OS_POSIX)
   base::ScopedFD TakeClientFileDescriptor() override;
 #endif

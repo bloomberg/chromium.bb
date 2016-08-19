@@ -75,7 +75,7 @@ void StartServiceInUtilityProcess(const std::string& service_name,
 // Request shell::mojom::ServiceFactory from GPU process host. Must be called on
 // IO thread.
 void RequestGpuServiceFactory(shell::mojom::ServiceFactoryRequest request) {
-  BrowserChildProcessHostDelegate* process_host =
+  GpuProcessHost* process_host =
       GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
   if (!process_host) {
     DLOG(ERROR) << "GPU process host not available.";
@@ -181,13 +181,11 @@ class MojoShellContext::InProcessServiceManagerContext
       shell::mojom::ServicePtrInfo embedder_service_proxy_info) {
     manifest_provider_ = std::move(manifest_provider);
 
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
+    base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
     std::unique_ptr<shell::NativeRunnerFactory> native_runner_factory(
-        new shell::InProcessNativeRunnerFactory(
-            BrowserThread::GetBlockingPool()));
-    catalog_.reset(new catalog::Catalog(
-        file_task_runner.get(), nullptr, manifest_provider_.get()));
+        new shell::InProcessNativeRunnerFactory(blocking_pool));
+    catalog_.reset(
+        new catalog::Catalog(blocking_pool, nullptr, manifest_provider_.get()));
     service_manager_.reset(new shell::ServiceManager(
         std::move(native_runner_factory), catalog_->TakeService()));
 
@@ -210,7 +208,6 @@ class MojoShellContext::InProcessServiceManagerContext
   DISALLOW_COPY_AND_ASSIGN(InProcessServiceManagerContext);
 };
 
-
 MojoShellContext::MojoShellContext() {
   shell::mojom::ServiceRequest request;
   if (shell::ShellIsRemote()) {
@@ -230,6 +227,8 @@ MojoShellContext::MojoShellContext() {
                                            IDR_MOJO_CONTENT_BROWSER_MANIFEST);
     manifest_provider->AddManifestResource(kGpuMojoApplicationName,
                                            IDR_MOJO_CONTENT_GPU_MANIFEST);
+    manifest_provider->AddManifestResource(kPluginMojoApplicationName,
+                                           IDR_MOJO_CONTENT_PLUGIN_MANIFEST);
     manifest_provider->AddManifestResource(kRendererMojoApplicationName,
                                            IDR_MOJO_CONTENT_RENDERER_MANIFEST);
     manifest_provider->AddManifestResource(kUtilityMojoApplicationName,

@@ -25,6 +25,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/test/test_launcher.h"
+#include "content/public/test/test_mojo_shell_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -310,7 +311,7 @@ void WindowedNotificationObserver::Observe(
 }
 
 InProcessUtilityThreadHelper::InProcessUtilityThreadHelper()
-    : child_thread_count_(0) {
+    : child_thread_count_(0), shell_context_(new TestMojoShellContext) {
   RenderProcessHost::SetRunRendererInProcess(true);
   BrowserChildProcessObserver::Add(this);
 }

@@ -1,0 +1,17 @@
+{
+  "manifest_version":  1,
+  "name": "exe:content_plugin",
+  "display_name": "Content Plugin",
+  "capabilities": {
+    "provided": {
+      "all_interfaces": [ "*" ]
+    },
+    "required": {
+      "exe:content_browser": {
+        "classes": [
+          "all_interfaces"
+        ]
+      }
+    }
+  }
+}

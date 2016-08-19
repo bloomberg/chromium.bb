@@ -10,9 +10,4 @@ bool BrowserChildProcessHostDelegate::CanShutdown() {
   return true;
 }
 
-shell::InterfaceProvider*
-BrowserChildProcessHostDelegate::GetRemoteInterfaces() {
-  return nullptr;
-}
-
 }  // namespace content

@@ -17,7 +17,6 @@
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -165,15 +164,9 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
 #endif
       started_(false),
       name_(base::ASCIIToUTF16("utility process")),
-      child_token_(mojo::edk::GenerateRandomToken()),
       weak_ptr_factory_(this) {
-  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this,
-                                                 child_token_));
-  mojo_child_connection_.reset(new MojoChildConnection(
-      kUtilityMojoApplicationName,
-      base::StringPrintf("%d_0", process_->GetData().id), child_token_,
-      MojoShellContext::GetConnectorForIOThread(),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+  process_.reset(new BrowserChildProcessHostImpl(
+      PROCESS_TYPE_UTILITY, this, kUtilityMojoApplicationName));
 }
 
 UtilityProcessHostImpl::~UtilityProcessHostImpl() {
@@ -238,7 +231,7 @@ bool UtilityProcessHostImpl::Start() {
 }
 
 shell::InterfaceProvider* UtilityProcessHostImpl::GetRemoteInterfaces() {
-  return mojo_child_connection_->GetRemoteInterfaces();
+  return process_->child_connection()->GetRemoteInterfaces();
 }
 
 void UtilityProcessHostImpl::SetName(const base::string16& name) {
@@ -262,13 +255,7 @@ bool UtilityProcessHostImpl::StartProcess() {
     return true;
 
   process_->SetName(name_);
-
-  std::string mojo_channel_token =
-      process_->GetHost()->CreateChannelMojo(child_token_);
-  if (mojo_channel_token.empty()) {
-    NotifyAndDelete(LAUNCH_RESULT_FAILURE);
-    return false;
-  }
+  process_->GetHost()->CreateChannelMojo();
 
   if (RenderProcessHost::run_renderer_in_process()) {
     DCHECK(g_utility_main_thread_factory);
@@ -278,7 +265,8 @@ bool UtilityProcessHostImpl::StartProcess() {
         g_utility_main_thread_factory(InProcessChildThreadParams(
             std::string(), BrowserThread::UnsafeGetMessageLoopForThread(
                             BrowserThread::IO)->task_runner(),
-            mojo_channel_token, mojo_child_connection_->service_token())));
+            std::string(),
+            process_->child_connection()->service_token())));
     in_process_thread_->Start();
   } else {
     const base::CommandLine& browser_command_line =
@@ -315,8 +303,6 @@ bool UtilityProcessHostImpl::StartProcess() {
 
     cmd_line->AppendSwitchASCII(switches::kProcessType,
                                 switches::kUtilityProcess);
-    cmd_line->AppendSwitchASCII(switches::kMojoChannelToken,
-                                mojo_channel_token);
     std::string locale = GetContentClient()->browser()->GetApplicationLocale();
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
@@ -355,9 +341,6 @@ bool UtilityProcessHostImpl::StartProcess() {
     if (run_elevated_)
       cmd_line->AppendSwitch(switches::kUtilityProcessRunningElevated);
 #endif
-
-    cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
-                                mojo_child_connection_->service_token());
 
     process_->Launch(
         new UtilitySandboxedProcessLauncherDelegate(exposed_dir_,
