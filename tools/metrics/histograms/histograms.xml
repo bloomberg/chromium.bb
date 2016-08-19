@@ -4803,7 +4803,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="CAPSUpdater.Step" enum="CAPSUpdaterStep">
-  <owner>cpu@chromium.org</owner>
+  <obsolete>
+    Deprecated 08/2016 with removal of Chrome Crash Service component.
+  </obsolete>
+  <owner>scottmg@chromium.org</owner>
   <summary>
     Tracks the component updater steps for the Chrome Crash Service.
   </summary>
@@ -70059,6 +70062,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="CAPSUpdaterStep" type="int">
+  <obsolete>
+    Deprecated 08/2016 with removal of Chrome Crash Service component.
+  </obsolete>
   <int value="0" label="CAPS component ready"/>
   <int value="1" label="CAPS component missing"/>
   <int value="2" label="CAPS Service failed to start"/>

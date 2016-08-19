@@ -208,7 +208,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/app/file_pre_reader_win.h"
 #include "chrome/browser/chrome_browser_main_win.h"
-#include "chrome/browser/component_updater/caps_installer_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/first_run/try_chrome_dialog_view.h"
@@ -665,7 +664,6 @@ void RegisterComponentsForUpdate() {
 #if defined(GOOGLE_CHROME_BUILD)
   RegisterSwReporterComponent(cus);
 #endif  // defined(GOOGLE_CHROME_BUILD)
-  RegisterCAPSComponent(cus);
 #endif  // defined(OS_WIN)
 }
 
