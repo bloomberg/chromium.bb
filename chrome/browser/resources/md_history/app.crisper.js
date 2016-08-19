@@ -14611,7 +14611,7 @@ Polymer({
     separatorIndexes: Array,
 
     // Whether the card is open.
-    cardOpen_: {type: Boolean, value: true},
+    opened: Boolean,
 
     searchTerm: String,
 
@@ -14663,12 +14663,22 @@ Polymer({
   },
 
   /**
-   * @param {boolean} cardOpen
+   * @param {boolean} opened
    * @return {string}
+   * @private
    */
-  getCollapseTitle_: function(cardOpen) {
-    return cardOpen ? loadTimeData.getString('collapseSessionButton') :
-                      loadTimeData.getString('expandSessionButton');
+  getCollapseIcon_: function(opened) {
+    return opened ? 'cr:expand-less' : 'cr:expand-more';
+  },
+
+  /**
+   * @param {boolean} opened
+   * @return {string}
+   * @private
+   */
+  getCollapseTitle_: function(opened) {
+    return opened ? loadTimeData.getString('collapseSessionButton') :
+                    loadTimeData.getString('expandSessionButton');
   },
 
   /**
@@ -14690,6 +14700,7 @@ Polymer({
 /**
  * @typedef {{device: string,
  *           lastUpdateTime: string,
+ *           opened: boolean,
  *           separatorIndexes: !Array<number>,
  *           timestamp: number,
  *           tabs: !Array<!ForeignSessionTab>,
@@ -14744,6 +14755,7 @@ Polymer({
 
   listeners: {
     'toggle-menu': 'onToggleMenu_',
+    'scroll': 'onListScroll_'
   },
 
   /** @override */
@@ -14790,6 +14802,7 @@ Polymer({
     return {
       device: session.name,
       lastUpdateTime: '– ' + session.modifiedTime,
+      opened: true,
       separatorIndexes: separatorIndexes,
       timestamp: session.timestamp,
       tabs: tabs,
@@ -14799,6 +14812,12 @@ Polymer({
 
   onSignInTap_: function() {
     chrome.send('startSignInFlow');
+  },
+
+  onListScroll_: function() {
+    var menu = this.$.menu.getIfExists();
+    if (menu)
+      menu.closeMenu();
   },
 
   onToggleMenu_: function(e) {
@@ -14894,9 +14913,16 @@ Polymer({
       }
     }
 
-    // Then, append any new devices.
-    for (var i = updateCount; i < sessionList.length; i++) {
-      this.push('syncedDevices_', this.createInternalDevice_(sessionList[i]));
+    if (sessionList.length >= this.syncedDevices_.length) {
+      // The list grew; append new items.
+      for (var i = updateCount; i < sessionList.length; i++) {
+        this.push('syncedDevices_', this.createInternalDevice_(sessionList[i]));
+      }
+    } else {
+      // The list shrank; remove deleted items.
+      this.splice(
+          'syncedDevices_', updateCount,
+          this.syncedDevices_.length - updateCount);
     }
   },
 

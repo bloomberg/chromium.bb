@@ -68,7 +68,8 @@
             tabs="[[syncedDevice.tabs]]"
             separator-indexes="[[syncedDevice.separatorIndexes]]"
             search-term="[[searchTerm]]"
-            session-tag="[[syncedDevice.tag]]">
+            session-tag="[[syncedDevice.tag]]"
+            opened="{{syncedDevice.opened}}">
         </history-synced-device-card>
       </template>
     </div>
@@ -89,10 +90,12 @@
 
     <template is="history-lazy-render" id="menu">
       <cr-shared-menu>
-        <paper-item class="menu-item" on-tap="onOpenAllTap_">
+        <paper-item id="menuOpenButton" class="menu-item"
+            on-tap="onOpenAllTap_">
           $i18n{openAll}
         </paper-item>
-        <paper-item class="menu-item" on-tap="onDeleteSessionTap_">
+        <paper-item id="menuDeleteButton" class="menu-item"
+            on-tap="onDeleteSessionTap_">
           $i18n{deleteSession}
         </paper-item>
       </cr-shared-menu>

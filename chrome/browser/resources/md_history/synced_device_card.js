@@ -31,7 +31,7 @@ Polymer({
     separatorIndexes: Array,
 
     // Whether the card is open.
-    cardOpen_: {type: Boolean, value: true},
+    opened: Boolean,
 
     searchTerm: String,
 
@@ -83,12 +83,22 @@ Polymer({
   },
 
   /**
-   * @param {boolean} cardOpen
+   * @param {boolean} opened
    * @return {string}
+   * @private
    */
-  getCollapseTitle_: function(cardOpen) {
-    return cardOpen ? loadTimeData.getString('collapseSessionButton') :
-                      loadTimeData.getString('expandSessionButton');
+  getCollapseIcon_: function(opened) {
+    return opened ? 'cr:expand-less' : 'cr:expand-more';
+  },
+
+  /**
+   * @param {boolean} opened
+   * @return {string}
+   * @private
+   */
+  getCollapseTitle_: function(opened) {
+    return opened ? loadTimeData.getString('collapseSessionButton') :
+                    loadTimeData.getString('expandSessionButton');
   },
 
   /**

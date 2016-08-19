@@ -190,6 +190,60 @@ cr.define('md_history.history_synced_tabs_test', function() {
         });
       });
 
+      test('delete a session', function(done) {
+        var sessionList = [
+          createSession('Nexus 5', [createWindow(['http://www.example.com'])]),
+          createSession('Pixel C', [createWindow(['http://www.badssl.com'])]),
+        ];
+
+        setForeignSessions(sessionList);
+
+        return flush().then(function() {
+          var cards = getCards(element);
+          assertEquals(2, cards.length);
+
+          MockInteractions.tap(cards[0].$['menu-button']);
+          return flush();
+        }).then(function() {
+          registerMessageCallback('deleteForeignSession', this, function(args) {
+            assertEquals('Nexus 5', args[0]);
+
+            // Simulate deleting the first device.
+            setForeignSessions([sessionList[1]]);
+
+            flush().then(function() {
+              cards = getCards(element);
+              assertEquals(1, cards.length);
+              assertEquals('http://www.badssl.com', cards[0].tabs[0].title);
+              done();
+            });
+          });
+
+          MockInteractions.tap(element.$$('#menuDeleteButton'));
+        });
+      });
+
+      test('delete a collapsed session', function() {
+        var sessionList = [
+          createSession('Nexus 5', [createWindow(['http://www.example.com'])]),
+          createSession('Pixel C', [createWindow(['http://www.badssl.com'])]),
+        ];
+
+        setForeignSessions(sessionList);
+        return flush().then(function() {
+          var cards = getCards(element);
+          MockInteractions.tap(cards[0].$['card-heading']);
+          assertFalse(cards[0].opened);
+
+          // Simulate deleting the first device.
+          setForeignSessions([sessionList[1]]);
+          return flush();
+        }).then(function() {
+          var cards = getCards(element);
+          assertTrue(cards[0].opened);
+        });
+      });
+
       test('click synced tab', function(done) {
         setForeignSessions(
             [createSession(
@@ -282,6 +336,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
       teardown(function() {
         registerMessageCallback('openForeignSession', this, undefined);
+        registerMessageCallback('deleteForeignSession', this, undefined);
       });
     });
 

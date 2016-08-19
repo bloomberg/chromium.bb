@@ -2936,6 +2936,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         @apply(--cr-actionable);
       }
 
+      [scrollable] {
+        border-color: transparent;
+        border-style: solid;
+        border-width: 1px 0;
+        overflow-y: auto;
+      }
+      [scrollable].is-scrolled {
+        border-top-color: var(--google-grey-300);
+      }
+      [scrollable].can-scroll:not(.scrolled-to-bottom) {
+        border-bottom-color: var(--google-grey-300);
+      }
+      [scrollable] :focus {
+        @apply(--cr-list-item-focus);
+        @apply(--cr-selectable-focus);
+      }
+      [scrollable] iron-list > * {
+        @apply(--cr-actionable);
+      }
+
       [selectable] :focus {
         @apply(--cr-selectable-focus);
       }
@@ -3676,10 +3696,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         cursor: pointer;
       }
 
-      #icon {
-        -webkit-margin-start: 20px;
-      }
-
       #tab-item-list {
         padding: 8px 0;
       }
@@ -3709,6 +3725,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #item-container {
         @apply(--layout-center);
         @apply(--layout-horizontal);
+        margin: 0 20px;
         min-height: var(--item-height);
       }
 
@@ -3720,7 +3737,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
     <div id="history-item-container">
-      <div class="card-title" id="card-heading" aria-expanded$="[[cardOpen_]]" aria-controls="collapse" on-tap="toggleTabCard">
+      <div class="card-title" id="card-heading" aria-expanded$="[[opened]]" aria-controls="collapse" on-tap="toggleTabCard">
         <div>
           [[device]]
           <span id="last-update-time">[[lastUpdateTime]]</span>
@@ -3729,14 +3746,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <button is="paper-icon-button-light" id="menu-button" class="icon-button" on-tap="onMenuButtonTap_" title="$i18n{moreActionsButton}">
             <iron-icon icon="cr:more-vert"></iron-icon>
           </button>
-          <button is="paper-icon-button-light" class="icon-button" title$="[[getCollapseTitle_(cardOpen_)]]">
-            <iron-icon icon="cr:expand-less" id="dropdown-indicator">
+          <button is="paper-icon-button-light" class="icon-button" title$="[[getCollapseTitle_(opened)]]">
+            <iron-icon icon="[[getCollapseIcon_(opened)]]" id="dropdown-indicator">
             </iron-icon>
           </button>
         </div>
       </div>
 
-      <iron-collapse opened="{{cardOpen_}}" id="collapse">
+      <iron-collapse opened="{{opened}}" id="collapse">
         <div id="tab-item-list">
           <template is="dom-repeat" items="[[tabs]]" as="tab" id="tab-list">
             <div id="item-container">
@@ -3809,7 +3826,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
     <div id="synced-device-list" hidden="[[!syncedDevices_.length]]">
       <template is="dom-repeat" items="[[syncedDevices_]]" as="syncedDevice">
-        <history-synced-device-card device="[[syncedDevice.device]]" last-update-time="[[syncedDevice.lastUpdateTime]]" tabs="[[syncedDevice.tabs]]" separator-indexes="[[syncedDevice.separatorIndexes]]" search-term="[[searchTerm]]" session-tag="[[syncedDevice.tag]]">
+        <history-synced-device-card device="[[syncedDevice.device]]" last-update-time="[[syncedDevice.lastUpdateTime]]" tabs="[[syncedDevice.tabs]]" separator-indexes="[[syncedDevice.separatorIndexes]]" search-term="[[searchTerm]]" session-tag="[[syncedDevice.tag]]" opened="{{syncedDevice.opened}}">
         </history-synced-device-card>
       </template>
     </div>
@@ -3828,10 +3845,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <template is="history-lazy-render" id="menu">
       <cr-shared-menu>
-        <paper-item class="menu-item" on-tap="onOpenAllTap_">
+        <paper-item id="menuOpenButton" class="menu-item" on-tap="onOpenAllTap_">
           $i18n{openAll}
         </paper-item>
-        <paper-item class="menu-item" on-tap="onDeleteSessionTap_">
+        <paper-item id="menuDeleteButton" class="menu-item" on-tap="onDeleteSessionTap_">
           $i18n{deleteSession}
         </paper-item>
       </cr-shared-menu>

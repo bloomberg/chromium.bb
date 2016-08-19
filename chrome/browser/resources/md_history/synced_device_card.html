@@ -24,10 +24,6 @@
         cursor: pointer;
       }
 
-      #icon {
-        -webkit-margin-start: 20px;
-      }
-
       #tab-item-list {
         padding: 8px 0;
       }
@@ -57,6 +53,7 @@
       #item-container {
         @apply(--layout-center);
         @apply(--layout-horizontal);
+        margin: 0 20px;
         min-height: var(--item-height);
       }
 
@@ -68,7 +65,7 @@
       }
     </style>
     <div id="history-item-container">
-      <div class="card-title" id="card-heading" aria-expanded$="[[cardOpen_]]"
+      <div class="card-title" id="card-heading" aria-expanded$="[[opened]]"
           aria-controls="collapse" on-tap="toggleTabCard">
         <div>
           [[device]]
@@ -81,14 +78,15 @@
             <iron-icon icon="cr:more-vert"></iron-icon>
           </button>
           <button is="paper-icon-button-light" class="icon-button"
-              title$="[[getCollapseTitle_(cardOpen_)]]">
-            <iron-icon icon="cr:expand-less" id="dropdown-indicator">
+              title$="[[getCollapseTitle_(opened)]]">
+            <iron-icon icon="[[getCollapseIcon_(opened)]]"
+                id="dropdown-indicator">
             </iron-icon>
           </button>
         </div>
       </div>
 
-      <iron-collapse opened="{{cardOpen_}}" id="collapse">
+      <iron-collapse opened="{{opened}}" id="collapse">
         <div id="tab-item-list">
           <template is="dom-repeat" items="[[tabs]]" as="tab" id="tab-list">
             <div id="item-container">
