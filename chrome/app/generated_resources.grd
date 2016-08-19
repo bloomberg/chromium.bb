@@ -9051,29 +9051,8 @@ I don't think this site should be blocked!
       <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE" desc="The explanation of why Safe Browsing has blocked the page.">
         Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST">$2<ex>evil.com</ex></ph>, a known malware distributor.
       </message>
-      <message name="IDS_MALWARE_V3_ADVICE_HEADING" desc="A header for the IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_ADVICE paragraph.">
-        What should you do?
-      </message>
-      <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_ADVICE" desc="The explanation of why Safe Browsing has blocked the page, with additional advice.">
-        You should come back to this website in a few hours. Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware.
-      </message>
-      <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE_ADVICE" desc="The explanation of why Safe Browsing has blocked the page, with additional advice.">
-        Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST">$2<ex>evil.com</ex></ph>, a known malware distributor. You should come back in a few hours.
-      </message>
-      <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_HISTORY" desc="The explanation of why Safe Browsing has blocked the page, with additional text about history.">
-        Even if you have visited this website before, it is not safe right now. Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware.
-      </message>
-      <message name="IDS_MALWARE_V3_EXPLANATION_PARAGRAPH_SUBRESOURCE_HISTORY" desc="The explanation of why Safe Browsing has blocked the page, with additional text about history.">
-        Even if you have visited this website before, it is not safe right now. Google Safe Browsing recently <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>detected malware<ph name="END_LINK">&lt;/a&gt;</ph> on <ph name="SITE">$1<ex>example.com</ex></ph>. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST">$2<ex>evil.com</ex></ph>, a known malware distributor.
-      </message>
       <message name="IDS_MALWARE_V3_PROCEED_PARAGRAPH" desc="The paragraph that lets the user skip the warning.">
         If you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph> before the dangerous programs have been removed.
-      </message>
-      <message name="IDS_MALWARE_V3_PROCEED_PARAGRAPH_NOT_RECOMMEND" desc="The paragraph that lets the user skip the warning, with the additional anti-recommendation string.">
-        If you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph> (not recommended) before the dangerous programs have been removed.
-      </message>
-      <message name="IDS_MALWARE_V3_PROCEED_PARAGRAPH_SOCIAL" desc="The paragraph that lets the user skip the warning, with the additional anti-recommendation string.">
-        More than 80% of people who see this warning go back to safety instead of risking malware. However, if you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph> before the dangerous programs have been removed.
       </message>
       <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE" desc="Label for the link to SafeBrowsing Privacy policy page">
         Privacy policy
@@ -9100,20 +9079,11 @@ I don't think this site should be blocked!
       <message name="IDS_PHISHING_V4_HEADING" desc="The large heading at the top of the phishing interstitial.">
         Deceptive site ahead
       </message>
-      <message name="IDS_PHISHING_V3_HEADING" desc="The large heading at the top of the phishing interstitial.">
-        Phishing attack ahead
-      </message>
       <message name="IDS_PHISHING_V4_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the malware interstitial.">
         Attackers on <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="SITE">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> may trick you into doing something dangerous like installing software or revealing your personal information (for example, passwords, phone numbers, or credit cards).
       </message>
-      <message name="IDS_PHISHING_V3_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the malware interstitial.">
-        Attackers on <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="SITE">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> might try to trick you to steal your information (for example, passwords, messages, or credit cards).
-      </message>
-      <message name="IDS_PHISHING_V3_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page.">
+      <message name="IDS_PHISHING_V4_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page.">
       Google Safe Browsing recently detected phishing on <ph name="SITE">$1<ex>example.com</ex></ph>. <ph name="BEGIN_LINK">&lt;a href="#" id="help-link"&gt;</ph>Phishing sites<ph name="END_LINK">&lt;/a&gt;</ph> pretend to be other websites to trick you.
-      </message>
-      <message name="IDS_PHISHING_V3_PROCEED_PARAGRAPH" desc="The paragraph that lets the user skip the warning.">
-        If you understand the risks to your security, you may <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_PHISHING_V4_PROCEED_AND_REPORT_PARAGRAPH" desc="The paragraph that lets the user skip the warning.">
         You can <ph name="BEGIN_ERROR_LINK">&lt;a href="#" id="report-error-link"&gt;</ph>report a detection problem<ph name="END_ERROR_LINK">&lt;/a&gt;</ph> or, if you understand the risks to your security, <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>visit this unsafe site<ph name="END_LINK">&lt;/a&gt;</ph>.
