@@ -567,7 +567,7 @@
 	service name.
 
 	The compositor shell will try to group application surfaces together
-	by their app ID.  As a best practice, it is suggested to select app
+	by their app ID. As a best practice, it is suggested to select app
 	ID's that match the basename of the application's .desktop file.
 	For example, "org.freedesktop.FooViewer" where the .desktop file is
 	"org.freedesktop.FooViewer.desktop".
@@ -884,7 +884,7 @@
 
 	If the width or height arguments are zero, it means the client
 	should decide its own window dimension. This may happen when the
-	compositor need to configure the state of the surface but doesn't
+	compositor needs to configure the state of the surface but doesn't
 	have any information about any previous or expected dimension.
 
 	The states listed in the event specify how the width/height
@@ -905,11 +905,11 @@
 	The close event is sent by the compositor when the user
 	wants the surface to be closed. This should be equivalent to
 	the user clicking the close button in client-side decorations,
-	if your application has any...
+	if your application has any.
 
-	This is only a request that the user intends to close your
+	This is only a request that the user intends to close the
 	window. The client may choose to ignore this request, or show
-	a dialog to ask the user to save their data...
+	a dialog to ask the user to save their data, etc.
       </description>
     </event>
   </interface>
