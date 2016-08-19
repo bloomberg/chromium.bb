@@ -5,12 +5,12 @@
 /**
  * @param {!MessagePort=} opt_messagePort Message port overriding the default
  *     worker port.
- * @extends {NewMetadataProvider}
+ * @extends {MetadataProvider}
  * @constructor
  * @struct
  */
 function ContentMetadataProvider(opt_messagePort) {
-  NewMetadataProvider.call(
+  MetadataProvider.call(
       this,
       ContentMetadataProvider.PROPERTY_NAMES);
 
@@ -91,7 +91,7 @@ ContentMetadataProvider.convertContentMetadata = function(metadata) {
   return item;
 };
 
-ContentMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
+ContentMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
 
 /**
  * @override

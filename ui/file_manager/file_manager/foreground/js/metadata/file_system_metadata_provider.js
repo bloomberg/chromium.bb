@@ -6,11 +6,11 @@
  * Metadata provider for FileEntry#getMetadata.
  *
  * @constructor
- * @extends {NewMetadataProvider}
+ * @extends {MetadataProvider}
  * @struct
  */
 function FileSystemMetadataProvider() {
-  NewMetadataProvider.call(this, FileSystemMetadataProvider.PROPERTY_NAMES);
+  MetadataProvider.call(this, FileSystemMetadataProvider.PROPERTY_NAMES);
 }
 
 /**
@@ -20,7 +20,7 @@ FileSystemMetadataProvider.PROPERTY_NAMES = [
   'modificationTime', 'size', 'present', 'availableOffline'
 ];
 
-FileSystemMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
+FileSystemMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
 
 /**
  * @override

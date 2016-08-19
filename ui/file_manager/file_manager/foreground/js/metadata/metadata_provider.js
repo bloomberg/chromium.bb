@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * TODO(hirono): Remove 'New' from the name after removing old MetadataProvider.
  * @param {!Array<string>} validPropertyNames
  * @constructor
  * @struct
  */
-function NewMetadataProvider(validPropertyNames) {
+function MetadataProvider(validPropertyNames) {
   /**
    * Set of valid property names. Key is the name of property and value is
    * always true.
@@ -21,7 +20,7 @@ function NewMetadataProvider(validPropertyNames) {
   }
 }
 
-NewMetadataProvider.prototype.checkPropertyNames = function(names) {
+MetadataProvider.prototype.checkPropertyNames = function(names) {
   // Check if the property name is correct or not.
   for (var i = 0; i < names.length; i++) {
     assert(this.validPropertyNames_[names[i]]);
@@ -36,4 +35,4 @@ NewMetadataProvider.prototype.checkPropertyNames = function(names) {
  *     property for property error, and should return empty MetadataItem for
  *     entry error.
  */
-NewMetadataProvider.prototype.get;
+MetadataProvider.prototype.get;

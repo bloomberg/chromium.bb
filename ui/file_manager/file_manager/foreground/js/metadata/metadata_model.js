@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 /**
- * @param {!NewMetadataProvider} rawProvider
+ * @param {!MetadataProvider} rawProvider
  * @constructor
  * @struct
  */
 function MetadataModel(rawProvider) {
   /**
-   * @private {!NewMetadataProvider}
+   * @private {!MetadataProvider}
    * @const
    */
   this.rawProvider_ = rawProvider;
@@ -41,7 +41,7 @@ MetadataModel.create = function(volumeManager) {
 };
 
 /**
- * @return {!NewMetadataProvider}
+ * @return {!MetadataProvider}
  */
 MetadataModel.prototype.getProvider = function() {
   return this.rawProvider_;

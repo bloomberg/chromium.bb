@@ -7,11 +7,11 @@
  * TODO(hirono): Rename thumbnailUrl with externalThumbnailUrl.
  *
  * @constructor
- * @extends {NewMetadataProvider}
+ * @extends {MetadataProvider}
  * @struct
  */
 function ExternalMetadataProvider() {
-  NewMetadataProvider.call(this, ExternalMetadataProvider.PROPERTY_NAMES);
+  MetadataProvider.call(this, ExternalMetadataProvider.PROPERTY_NAMES);
 }
 
 /**
@@ -38,7 +38,7 @@ ExternalMetadataProvider.PROPERTY_NAMES = [
   'thumbnailUrl'
 ];
 
-ExternalMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
+ExternalMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
 
 /**
  * @override

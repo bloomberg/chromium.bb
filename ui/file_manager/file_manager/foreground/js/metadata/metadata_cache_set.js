@@ -59,7 +59,7 @@ MetadataCacheSet.prototype.startRequests = function(requestId, requests) {
 };
 
 /**
- * Stores results from NewMetadataProvider with the request Id.
+ * Stores results from MetadataProvider with the request Id.
  * @param {number} requestId Request ID. If a newer operation has already been
  *     done, the results must be ingored.
  * @param {!Array<!Entry>} entries

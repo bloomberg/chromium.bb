@@ -88,7 +88,7 @@
 //<include src="ui/commandbutton.js">
 //<include src="ui/file_manager_dialog_base.js">
 //<include src="metadata/metadata_cache_set.js">
-//<include src="metadata/new_metadata_provider.js">
+//<include src="metadata/metadata_provider.js">
 //
 //<include src="../../../../../components/chrome_apps/webstore_widget/cws_widget/app_installer.js">
 //<include src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_webview_client.js">

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 function TestMetadataProvider() {
-  NewMetadataProvider.call(this, ['property', 'propertyA', 'propertyB']);
+  MetadataProvider.call(this, ['property', 'propertyA', 'propertyB']);
   this.requestCount = 0;
 }
 
-TestMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
+TestMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
 
 TestMetadataProvider.prototype.get = function(requests) {
   this.requestCount++;
@@ -23,10 +23,10 @@ TestMetadataProvider.prototype.get = function(requests) {
 };
 
 function TestEmptyMetadataProvider() {
-  NewMetadataProvider.call(this, ['property']);
+  MetadataProvider.call(this, ['property']);
 }
 
-TestEmptyMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
+TestEmptyMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
 
 TestEmptyMetadataProvider.prototype.get = function(requests) {
   return Promise.resolve(requests.map(function() {
@@ -35,12 +35,12 @@ TestEmptyMetadataProvider.prototype.get = function(requests) {
 };
 
 function ManualTestMetadataProvider() {
-  NewMetadataProvider.call(
+  MetadataProvider.call(
       this, ['propertyA', 'propertyB', 'propertyC']);
   this.callback = [];
 }
 
-ManualTestMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
+ManualTestMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
 
 ManualTestMetadataProvider.prototype.get = function(requests) {
   return new Promise(function(fulfill) {

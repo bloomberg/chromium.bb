@@ -8,7 +8,7 @@
  * @param {!ContentMetadataProvider} contentMetadataProvider
  * @param {!VolumeManagerCommon.VolumeInfoProvider} volumeManager
  * @constructor
- * @extends {NewMetadataProvider}
+ * @extends {MetadataProvider}
  * @struct
  */
 function MultiMetadataProvider(
@@ -16,7 +16,7 @@ function MultiMetadataProvider(
     externalMetadataProvider,
     contentMetadataProvider,
     volumeManager) {
-  NewMetadataProvider.call(
+  MetadataProvider.call(
       this,
       FileSystemMetadataProvider.PROPERTY_NAMES.concat(
           ExternalMetadataProvider.PROPERTY_NAMES).concat(
@@ -47,7 +47,7 @@ function MultiMetadataProvider(
   this.volumeManager_ = volumeManager;
 }
 
-MultiMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
+MultiMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
 
 /**
  * Obtains metadata for entries.
