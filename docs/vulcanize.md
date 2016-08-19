@@ -12,6 +12,7 @@ Vulcanization currently requires:
 - npm: >= 1.3.10 (can be found with `npm --version`)
 - vulcanize: 1.14.8 (can be found with `vulcanize --version`)
 - crisper: 2.0.1 (can be found with `npm list -g crisper`)
+- uglifyjs: 2.4.10 (can be found with `uglifyjs --version`)
 
 ## Installing required software
 
@@ -30,8 +31,8 @@ Then install the required modules:
 $ npm install -g crisper vulcanize
 ```
 
-Ultimately, all that is required to run this script is that `crisper` and
-`vulcanize` are on your `$PATH`.
+Ultimately, all that is required to run this script is that `crisper`, 'uglify'
+and `vulcanize` are on your `$PATH`.
 
 ## Combining resources with vulcanize
 

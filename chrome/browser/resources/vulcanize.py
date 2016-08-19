@@ -85,6 +85,13 @@ def _vulcanize(directory, host, html_in_file, html_out_file='vulcanized.html',
                          '--script-in-head', 'false',
                          '--html', html_out_path,
                          '--js', js_out_path])
+
+    # TODO(tsergeant): Remove when JS resources are minified by default:
+    # crbug.com/619091.
+    _run_cmd(['uglifyjs', js_out_path,
+                         '--beautify', 'indent-level=2,quote_style=3',
+                         '--comments', '/Copyright|license|LICENSE|\<\/?if/',
+                         '--output', js_out_path])
   finally:
     os.remove(tmp.name)
 
