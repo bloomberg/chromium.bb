@@ -246,13 +246,18 @@ private:
         if (!m_raw || isHashTableDeletedValue())
             return;
 
-        if (crossThreadnessConfiguration != CrossThreadPersistentConfiguration && m_creationThreadState) {
+        if (crossThreadnessConfiguration != CrossThreadPersistentConfiguration) {
             ThreadState* current = ThreadState::current();
             DCHECK(current);
+            // m_creationThreadState may be null when this is used in a heap
+            // collection which initialized the Persistent with memset and the
+            // constructor wasn't called.
+            if (m_creationThreadState) {
                 // Member should point to objects that belong in the same ThreadHeap.
                 DCHECK_EQ(&ThreadState::fromObject(m_raw)->heap(), &m_creationThreadState->heap());
                 // Member should point to objects that belong in the same ThreadHeap.
                 DCHECK_EQ(&current->heap(), &m_creationThreadState->heap());
+            }
         }
 
 #if defined(ADDRESS_SANITIZER)
@@ -272,10 +277,12 @@ private:
     void saveCreationThreadHeap()
     {
 #if DCHECK_IS_ON()
-        if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration)
+        if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
             m_creationThreadState = nullptr;
-        else
+        } else {
             m_creationThreadState = ThreadState::current();
+            DCHECK(m_creationThreadState);
+        }
 #endif
     }
 
