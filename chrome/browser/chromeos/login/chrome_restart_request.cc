@@ -314,6 +314,7 @@ void ChromeRestartRequest::Start() {
 
 void ChromeRestartRequest::RestartJob() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  VLOG(1) << "ChromeRestartRequest::RestartJob";
 
   DBusThreadManager::Get()->GetSessionManagerClient()->RestartJob(argv_);
 
