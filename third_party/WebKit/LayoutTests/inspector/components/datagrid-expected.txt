@@ -120,4 +120,26 @@ Tree:
 
 Tree:
 
+Attached a to root
+
+Tree:
+ a
+
+Added secondCol
+
+Tree:
+ a | a foo
+
+Attached b to root
+
+Tree:
+ a | a foo
+ b | b foo
+
+Removed secondCol
+
+Tree:
+ a
+ b
+
 

@@ -8,8 +8,15 @@ InspectorTest.dumpDataGrid = function(root, descentIntoCollapsed, prefix)
     if (!prefix)
         prefix = "";
     var suffix = root.selected ? " <- selected" : "";
-    if (root.data.id)
-        InspectorTest.addResult(prefix + root.data.id + suffix);
+    var columnKeys = root.dataGrid._columnsArray.map(column => column.id);
+    var outputColumns = [];
+    for (var key of columnKeys) {
+        if (key in root.data)
+            outputColumns.push(root.data[key]);
+    }
+    if (outputColumns.length)
+        InspectorTest.addResult(prefix + outputColumns.join(" | ") + suffix);
+
     if (!descentIntoCollapsed && !root.expanded)
         return;
     for (var child of root.children)

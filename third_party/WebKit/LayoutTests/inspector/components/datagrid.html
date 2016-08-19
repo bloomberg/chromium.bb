@@ -107,6 +107,22 @@ function test()
     root.removeChildren();
     dumpNodes();
 
+    var columns = [{id: "id"}];
+    var dataGrid = new WebInspector.DataGrid(columns);
+    var a = new WebInspector.DataGridNode({id: "a", secondCol: "a foo"});
+    var b = new WebInspector.DataGridNode({id: "b", secondCol: "b foo"});
+    var root = dataGrid.rootNode();
+    attach(root, a);
+    dumpNodes();
+    dataGrid.addColumn({id: "secondCol"});
+    InspectorTest.addResult("Added secondCol");
+    dumpNodes();
+    attach(root, b);
+    dumpNodes();
+    dataGrid.removeColumn("secondCol");
+    InspectorTest.addResult("Removed secondCol");
+    dumpNodes();
+
     InspectorTest.completeTest();
 }
 </script>
