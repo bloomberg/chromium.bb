@@ -2528,7 +2528,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
         return currentColorOrValidColor(style, style.tapHighlightColor());
     case CSSPropertyWebkitUserDrag:
         return CSSPrimitiveValue::create(style.userDrag());
-    case CSSPropertyWebkitUserSelect:
+    case CSSPropertyUserSelect:
         return CSSPrimitiveValue::create(style.userSelect());
     case CSSPropertyBorderBottomLeftRadius:
         return &valueForBorderRadiusCorner(style.borderBottomLeftRadius(), style);

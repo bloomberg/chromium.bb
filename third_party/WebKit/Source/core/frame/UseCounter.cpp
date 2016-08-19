@@ -364,7 +364,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyAliasWebkitTransitionTimingFunction: return 336;
     case CSSPropertyWebkitUserDrag: return 337;
     case CSSPropertyWebkitUserModify: return 338;
-    case CSSPropertyWebkitUserSelect: return 339;
+    case CSSPropertyAliasWebkitUserSelect: return 339;
     // case CSSPropertyWebkitFlowInto: return 340;
     // case CSSPropertyWebkitFlowFrom: return 341;
     // case CSSPropertyWebkitRegionFragment: return 342;
@@ -565,7 +565,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyTextSizeAdjust: return 536;
     case CSSPropertyAliasWebkitTextSizeAdjust: return 537;
     case CSSPropertyOverflowAnchor: return 538;
-
+    case CSSPropertyUserSelect: return 539;
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
     // 2. Update maximumCSSSampleId() with the new maximum value.
@@ -582,7 +582,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
 }
 
 // Make sure update_use_counter_css.py was run which updates histograms.xml.
-static int maximumCSSSampleId() { return 538; }
+static int maximumCSSSampleId() { return 539; }
 
 static EnumerationHistogram& featureObserverHistogram()
 {

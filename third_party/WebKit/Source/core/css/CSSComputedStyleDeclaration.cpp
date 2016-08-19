@@ -289,7 +289,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyTransformStyle,
     CSSPropertyWebkitUserDrag,
     CSSPropertyWebkitUserModify,
-    CSSPropertyWebkitUserSelect,
+    CSSPropertyUserSelect,
     CSSPropertyWebkitWritingMode,
     CSSPropertyWebkitAppRegion,
     CSSPropertyBufferedRendering,

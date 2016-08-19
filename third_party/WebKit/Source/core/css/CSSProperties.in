@@ -405,7 +405,7 @@ column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-transform-origin-z interpolable, converter=convertComputedLength<float>
 -webkit-user-drag
 -webkit-user-modify inherited
--webkit-user-select inherited
+user-select inherited
 white-space inherited
 widows interpolable, inherited, type_name=short
 width interpolable, initial=initialSize, converter=convertLengthSizing, typedom_types=[Length], keywords=[auto], supports_percentage
@@ -587,3 +587,4 @@ columns longhands=column-width;column-count
 -webkit-transition-duration alias_for=transition-duration
 -webkit-transition-property alias_for=transition-property
 -webkit-transition-timing-function alias_for=transition-timing-function
+-webkit-user-select alias_for=user-select

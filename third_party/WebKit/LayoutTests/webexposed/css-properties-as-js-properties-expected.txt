@@ -289,6 +289,7 @@ transitionTimingFunction
 translate
 unicodeBidi
 unicodeRange
+userSelect
 userZoom
 vectorEffect
 verticalAlign
@@ -397,7 +398,6 @@ webkitTransformOriginY
 webkitTransformOriginZ
 webkitUserDrag
 webkitUserModify
-webkitUserSelect
 webkitWritingMode
 whiteSpace
 widows

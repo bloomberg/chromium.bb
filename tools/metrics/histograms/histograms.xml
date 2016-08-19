@@ -84933,7 +84933,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="336" label="alias-webkit-transition-timing-function"/>
   <int value="337" label="webkit-user-drag"/>
   <int value="338" label="webkit-user-modify"/>
-  <int value="339" label="webkit-user-select"/>
+  <int value="339" label="alias-webkit-user-select"/>
   <int value="340" label="webkit-flow-into"/>
   <int value="341" label="webkit-flow-from"/>
   <int value="342" label="webkit-region-fragment"/>
@@ -85133,6 +85133,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="536" label="text-size-adjust"/>
   <int value="537" label="alias-webkit-text-size-adjust"/>
   <int value="538" label="overflow-anchor"/>
+  <int value="539" label="user-select"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">
