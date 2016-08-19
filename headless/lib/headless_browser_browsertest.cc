@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpProtocolHandler) {
   const std::string kResponseBody = "<p>HTTP response body</p>";
   ProtocolHandlerMap protocol_handlers;
   protocol_handlers[url::kHttpScheme] =
-      base::WrapUnique(new TestProtocolHandler(kResponseBody));
+      base::MakeUnique<TestProtocolHandler>(kResponseBody);
 
   HeadlessBrowserContext* browser_context =
       browser()
@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpsProtocolHandler) {
   const std::string kResponseBody = "<p>HTTPS response body</p>";
   ProtocolHandlerMap protocol_handlers;
   protocol_handlers[url::kHttpsScheme] =
-      base::WrapUnique(new TestProtocolHandler(kResponseBody));
+      base::MakeUnique<TestProtocolHandler>(kResponseBody);
 
   HeadlessBrowserContext* browser_context =
       browser()
@@ -452,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ReadCookiesInProtocolHandler) {
   net::CookieList sent_cookies;
   ProtocolHandlerMap protocol_handlers;
   protocol_handlers[url::kHttpsScheme] =
-      base::WrapUnique(new ProtocolHandlerWithCookies(&sent_cookies));
+      base::MakeUnique<ProtocolHandlerWithCookies>(&sent_cookies);
 
   HeadlessBrowserContext* browser_context =
       browser()

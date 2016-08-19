@@ -185,8 +185,8 @@ std::string HeadlessWebContentsImpl::GetDevToolsAgentHostId() {
 
 void HeadlessWebContentsImpl::AddObserver(Observer* observer) {
   DCHECK(observer_map_.find(observer) == observer_map_.end());
-  observer_map_[observer] = base::WrapUnique(
-      new WebContentsObserverAdapter(web_contents_.get(), observer));
+  observer_map_[observer] = base::MakeUnique<WebContentsObserverAdapter>(
+      web_contents_.get(), observer);
 }
 
 void HeadlessWebContentsImpl::RemoveObserver(Observer* observer) {

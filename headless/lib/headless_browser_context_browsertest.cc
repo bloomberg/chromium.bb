@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
   const std::string kResponseBody = "<p>HTTP response body</p>";
   ProtocolHandlerMap protocol_handlers;
   protocol_handlers[url::kHttpScheme] =
-      base::WrapUnique(new TestProtocolHandler(kResponseBody));
+      base::MakeUnique<TestProtocolHandler>(kResponseBody);
 
   // Load a page which doesn't actually exist, but which is fetched by our
   // custom protocol handler.

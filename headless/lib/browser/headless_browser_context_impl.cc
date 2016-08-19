@@ -382,9 +382,9 @@ HeadlessBrowserContext* HeadlessBrowserContext::Builder::Build() {
     // context with mojo bindings.
     if (!enable_http_and_https_if_mojo_used_) {
       options_->protocol_handlers_[url::kHttpScheme] =
-          base::WrapUnique(new BlackHoleProtocolHandler());
+          base::MakeUnique<BlackHoleProtocolHandler>();
       options_->protocol_handlers_[url::kHttpsScheme] =
-          base::WrapUnique(new BlackHoleProtocolHandler());
+          base::MakeUnique<BlackHoleProtocolHandler>();
     }
   }
 

@@ -97,10 +97,10 @@ std::unique_ptr<DevToolsHttpHandler> CreateLocalDevToolsHttpHandler(
   const net::IPEndPoint& endpoint = options->devtools_endpoint;
   std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> socket_factory(
       new TCPServerSocketFactory(endpoint));
-  return base::WrapUnique(new DevToolsHttpHandler(
+  return base::MakeUnique<DevToolsHttpHandler>(
       std::move(socket_factory), std::string(), new HeadlessDevToolsDelegate(),
       options->user_data_dir,  // TODO(altimin): Figure a proper value for this.
-      base::FilePath(), std::string(), options->user_agent));
+      base::FilePath(), std::string(), options->user_agent);
 }
 
 }  // namespace headless

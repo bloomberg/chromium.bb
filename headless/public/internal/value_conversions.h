@@ -32,22 +32,22 @@ struct FromValue {
 // partially specialize vector types.
 template <typename T>
 std::unique_ptr<base::Value> ToValueImpl(int value, T*) {
-  return base::WrapUnique(new base::FundamentalValue(value));
+  return base::MakeUnique<base::FundamentalValue>(value);
 }
 
 template <typename T>
 std::unique_ptr<base::Value> ToValueImpl(double value, T*) {
-  return base::WrapUnique(new base::FundamentalValue(value));
+  return base::MakeUnique<base::FundamentalValue>(value);
 }
 
 template <typename T>
 std::unique_ptr<base::Value> ToValueImpl(bool value, T*) {
-  return base::WrapUnique(new base::FundamentalValue(value));
+  return base::MakeUnique<base::FundamentalValue>(value);
 }
 
 template <typename T>
 std::unique_ptr<base::Value> ToValueImpl(const std::string& value, T*) {
-  return base::WrapUnique(new base::StringValue(value));
+  return base::MakeUnique<base::StringValue>(value);
 }
 
 template <typename T>
