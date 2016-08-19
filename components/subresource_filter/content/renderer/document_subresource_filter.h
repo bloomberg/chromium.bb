@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -35,10 +36,13 @@ class DocumentSubresourceFilter
   //  -- Expect |ancestor_document_urls| to be the URLs of documents loaded into
   //     nested frames, starting with the current frame and ending with the main
   //     frame. This provides the context for evaluating domain-specific rules.
+  //  -- Invoke |first_disallowed_load_callback|, if it is non-null, on the
+  //     first disallowed subresource load.
   DocumentSubresourceFilter(
       ActivationState activation_state,
       const scoped_refptr<const MemoryMappedRuleset>& ruleset,
-      const std::vector<GURL>& ancestor_document_urls);
+      const std::vector<GURL>& ancestor_document_urls,
+      const base::Closure& first_disallowed_load_callback);
   ~DocumentSubresourceFilter() override;
 
   // blink::WebDocumentSubresourceFilter:
@@ -59,6 +63,8 @@ class DocumentSubresourceFilter
   scoped_refptr<const MemoryMappedRuleset> ruleset_;
   IndexedRulesetMatcher ruleset_matcher_;
   url::Origin document_origin_;
+
+  base::Closure first_disallowed_load_callback_;
 
   size_t num_loads_total_ = 0;
   size_t num_loads_evaluated_ = 0;

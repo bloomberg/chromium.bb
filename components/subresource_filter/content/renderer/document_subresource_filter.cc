@@ -75,10 +75,12 @@ proto::ElementType ToElementType(
 DocumentSubresourceFilter::DocumentSubresourceFilter(
     ActivationState activation_state,
     const scoped_refptr<const MemoryMappedRuleset>& ruleset,
-    const std::vector<GURL>& ancestor_document_urls)
+    const std::vector<GURL>& ancestor_document_urls,
+    const base::Closure& first_disallowed_load_callback)
     : activation_state_(activation_state),
       ruleset_(ruleset),
-      ruleset_matcher_(ruleset_->data(), ruleset_->length()) {
+      ruleset_matcher_(ruleset_->data(), ruleset_->length()),
+      first_disallowed_load_callback_(first_disallowed_load_callback) {
   DCHECK_NE(activation_state_, ActivationState::DISABLED);
   DCHECK(ruleset);
 
@@ -127,6 +129,11 @@ bool DocumentSubresourceFilter::allowLoad(
           ToElementType(request_context))) {
     ++num_loads_matching_rules_;
     if (activation_state_ == ActivationState::ENABLED) {
+      if (!first_disallowed_load_callback_.is_null()) {
+        DCHECK_EQ(num_loads_disallowed_, 0u);
+        first_disallowed_load_callback_.Run();
+        first_disallowed_load_callback_.Reset();
+      }
       ++num_loads_disallowed_;
       return false;
     }

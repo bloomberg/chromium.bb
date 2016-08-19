@@ -28,7 +28,9 @@ class DocumentSubresourceFilter;
 // instance per RenderFrame, responsible for setting up the subresource filter
 // for the ongoing provisional document load in the frame when instructed to do
 // so by the driver.
-class SubresourceFilterAgent : public content::RenderFrameObserver {
+class SubresourceFilterAgent
+    : public content::RenderFrameObserver,
+      public base::SupportsWeakPtr<SubresourceFilterAgent> {
  public:
   // The |ruleset_dealer| must not be null and must outlive this instance. The
   // |render_frame| may be null in unittests.
@@ -37,21 +39,24 @@ class SubresourceFilterAgent : public content::RenderFrameObserver {
   ~SubresourceFilterAgent() override;
 
  protected:
+  // Below methods are protected virtual so they can be mocked out in tests.
+
   // Returns the URLs of documents loaded into nested frames starting with the
   // current frame and ending with the main frame. The returned array is
-  // guaranteed to have at least one element. Virtual so that it can be mocked
-  // out in tests.
+  // guaranteed to have at least one element.
   virtual std::vector<GURL> GetAncestorDocumentURLs();
 
   // Injects the provided subresource |filter| into the DocumentLoader
-  // orchestrating the most recently committed load. Virtual so that it can be
-  // mocked out in tests.
+  // orchestrating the most recently committed load.
   virtual void SetSubresourceFilterForCommittedLoad(
       std::unique_ptr<blink::WebDocumentSubresourceFilter> filter);
 
+  // Informs the browser that the first subresource load has been disallowed for
+  // the most recently committed load. Not called if all resources are allowed.
+  virtual void SignalFirstSubresourceDisallowedForCommittedLoad();
+
  private:
   void ActivateForProvisionalLoad(ActivationState activation_state);
-
   void RecordHistogramsOnLoadCommitted();
   void RecordHistogramsOnLoadFinished();
 

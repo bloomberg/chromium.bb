@@ -93,6 +93,9 @@ class ContentSubresourceFilterDriverFactory
 
   void CreateDriverForFrameHostIfNeeded(
       content::RenderFrameHost* render_frame_host);
+
+  void OnFirstSubresourceLoadDisallowed();
+
   // content::WebContentsObserver:
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
@@ -101,6 +104,8 @@ class ContentSubresourceFilterDriverFactory
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
 
   // Sends the current maximum activation state to the given |render_frame_host|
   // and prompts the user if needed.

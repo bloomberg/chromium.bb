@@ -43,6 +43,7 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
 
   MOCK_METHOD0(GetAncestorDocumentURLs, std::vector<GURL>());
   MOCK_METHOD0(OnSetSubresourceFilterForCommittedLoadCalled, void());
+  MOCK_METHOD0(SignalFirstSubresourceDisallowedForCommittedLoad, void());
   void SetSubresourceFilterForCommittedLoad(
       std::unique_ptr<blink::WebDocumentSubresourceFilter> filter) override {
     last_injected_filter_ = std::move(filter);
@@ -51,6 +52,10 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
 
   blink::WebDocumentSubresourceFilter* filter() {
     return last_injected_filter_.get();
+  }
+
+  std::unique_ptr<blink::WebDocumentSubresourceFilter> TakeFilter() {
+    return std::move(last_injected_filter_);
   }
 
  private:
@@ -72,8 +77,11 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   SubresourceFilterAgentTest() {}
 
  protected:
-  void SetUp() override {
-    agent_.reset(new SubresourceFilterAgentUnderTest(&ruleset_dealer_));
+  void SetUp() override { ResetAgent(); }
+
+  void ResetAgent() {
+    agent_.reset(new ::testing::StrictMock<SubresourceFilterAgentUnderTest>(
+        &ruleset_dealer_));
     ON_CALL(*agent(), GetAncestorDocumentURLs())
         .WillByDefault(::testing::Return(std::vector<GURL>(
             {GURL("http://inner.com/"), GURL("http://outer.com/")})));
@@ -109,8 +117,17 @@ class SubresourceFilterAgentTest : public ::testing::Test {
     EXPECT_CALL(*agent(), OnSetSubresourceFilterForCommittedLoadCalled());
   }
 
+  void ExpectSignalAboutFirstSubresourceDisallowed() {
+    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCommittedLoad());
+  }
+
   void ExpectNoSubresourceFilterGetsInjected() {
     EXPECT_CALL(*agent(), OnSetSubresourceFilterForCommittedLoadCalled())
+        .Times(0);
+  }
+
+  void ExpectNoSignalAboutFirstSubresourceDisallowed() {
+    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCommittedLoad())
         .Times(0);
   }
 
@@ -161,10 +178,12 @@ TEST_F(SubresourceFilterAgentTest,
 TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
+
   ExpectSubresourceFilterGetsInjected();
   StartLoadAndSetActivationState(ActivationState::ENABLED);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
+  ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadAllowed(kTestFirstURL, false);
   ExpectLoadAllowed(kTestSecondURL, true);
   FinishLoad();
@@ -186,6 +205,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_NewRulesetIsPickedUpAtNextLoad) {
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestSecondURLPathSuffix));
 
+  ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadAllowed(kTestFirstURL, false);
   ExpectLoadAllowed(kTestSecondURL, true);
   FinishLoad();
@@ -194,6 +214,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_NewRulesetIsPickedUpAtNextLoad) {
   StartLoadAndSetActivationState(ActivationState::ENABLED);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
+  ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadAllowed(kTestFirstURL, true);
   ExpectLoadAllowed(kTestSecondURL, false);
   FinishLoad();
@@ -228,6 +249,45 @@ TEST_F(SubresourceFilterAgentTest, DryRun_ResourcesAreEvaluatedButNotFiltered) {
   ExpectLoadAllowed(kTestFirstURL, true);
   ExpectLoadAllowed(kTestSecondURL, true);
   FinishLoad();
+}
+
+TEST_F(SubresourceFilterAgentTest,
+       SignalFirstSubresourceDisallowed_OncePerDocumentLoad) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
+  ExpectSubresourceFilterGetsInjected();
+  StartLoadAndSetActivationState(ActivationState::ENABLED);
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
+
+  ExpectSignalAboutFirstSubresourceDisallowed();
+  ExpectLoadAllowed(kTestFirstURL, false);
+  ExpectNoSignalAboutFirstSubresourceDisallowed();
+  ExpectLoadAllowed(kTestFirstURL, false);
+  ExpectLoadAllowed(kTestSecondURL, true);
+  FinishLoad();
+
+  ExpectSubresourceFilterGetsInjected();
+  StartLoadAndSetActivationState(ActivationState::ENABLED);
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
+
+  ExpectLoadAllowed(kTestSecondURL, true);
+  ExpectSignalAboutFirstSubresourceDisallowed();
+  ExpectLoadAllowed(kTestFirstURL, false);
+  FinishLoad();
+}
+
+TEST_F(SubresourceFilterAgentTest,
+       SignalFirstSubresourceDisallowed_ComesAfterAgentDestroyed) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
+  ExpectSubresourceFilterGetsInjected();
+  StartLoadAndSetActivationState(ActivationState::ENABLED);
+  ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
+
+  auto filter = agent()->TakeFilter();
+  ResetAgent();
+  EXPECT_FALSE(filter->allowLoad(GURL(kTestFirstURL),
+                                 blink::WebURLRequest::RequestContextImage));
 }
 
 TEST_F(SubresourceFilterAgentTest, Disabled_HistogramSamples) {
@@ -279,6 +339,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamples) {
   StartLoadAndSetActivationState(ActivationState::ENABLED);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
+  ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadAllowed(kTestFirstURL, false);
   ExpectLoadAllowed(kTestFirstURL, false);
   ExpectLoadAllowed(kTestSecondURL, true);
@@ -288,6 +349,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamples) {
   StartLoadAndSetActivationState(ActivationState::ENABLED);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
+  ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadAllowed(kTestFirstURL, false);
   ExpectLoadAllowed(kTestSecondURL, true);
   FinishLoad();

@@ -4,6 +4,8 @@
 
 #include "components/subresource_filter/content/renderer/document_subresource_filter.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -24,6 +26,23 @@ const char kTestAlphaDataURI[] = "data:text/plain,alpha";
 const char kTestBetaURL[] = "http://example.com/beta";
 
 const char kTestAlphaURLPathSuffix[] = "alpha";
+
+class TestCallbackReceiver {
+ public:
+  TestCallbackReceiver() = default;
+  base::Closure closure() {
+    return base::Bind(&TestCallbackReceiver::CallbackMethod,
+                      base::Unretained(this));
+  }
+  size_t callback_count() const { return callback_count_; }
+
+ private:
+  void CallbackMethod() { ++callback_count_; }
+
+  size_t callback_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCallbackReceiver);
+};
 
 }  // namespace
 
@@ -58,8 +77,10 @@ class DocumentSubresourceFilterTest : public ::testing::Test {
 TEST_F(DocumentSubresourceFilterTest, DryRun) {
   blink::WebURLRequest::RequestContext request_context =
       blink::WebURLRequest::RequestContextImage;
-  DocumentSubresourceFilter filter(ActivationState::DRYRUN, ruleset(),
-                                   std::vector<GURL>());
+  TestCallbackReceiver first_disallowed_load_callback_receiver;
+  DocumentSubresourceFilter filter(
+      ActivationState::DRYRUN, ruleset(), std::vector<GURL>(),
+      first_disallowed_load_callback_receiver.closure());
   EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
   EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
   EXPECT_TRUE(filter.allowLoad(GURL(kTestBetaURL), request_context));
@@ -67,13 +88,14 @@ TEST_F(DocumentSubresourceFilterTest, DryRun) {
   EXPECT_EQ(2u, filter.num_loads_evaluated());
   EXPECT_EQ(1u, filter.num_loads_matching_rules());
   EXPECT_EQ(0u, filter.num_loads_disallowed());
+  EXPECT_EQ(0u, first_disallowed_load_callback_receiver.callback_count());
 }
 
 TEST_F(DocumentSubresourceFilterTest, Enabled) {
   blink::WebURLRequest::RequestContext request_context =
       blink::WebURLRequest::RequestContextImage;
   DocumentSubresourceFilter filter(ActivationState::ENABLED, ruleset(),
-                                   std::vector<GURL>());
+                                   std::vector<GURL>(), base::Closure());
   EXPECT_FALSE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
   EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
   EXPECT_TRUE(filter.allowLoad(GURL(kTestBetaURL), request_context));
@@ -81,6 +103,22 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
   EXPECT_EQ(2u, filter.num_loads_evaluated());
   EXPECT_EQ(1u, filter.num_loads_matching_rules());
   EXPECT_EQ(1u, filter.num_loads_disallowed());
+}
+
+TEST_F(DocumentSubresourceFilterTest,
+       CallbackFiredExactlyOnceAfterFirstDisallowedLoad) {
+  blink::WebURLRequest::RequestContext request_context =
+      blink::WebURLRequest::RequestContextImage;
+  TestCallbackReceiver first_disallowed_load_callback_receiver;
+  DocumentSubresourceFilter filter(
+      ActivationState::ENABLED, ruleset(), std::vector<GURL>(),
+      first_disallowed_load_callback_receiver.closure());
+  EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
+  EXPECT_EQ(0u, first_disallowed_load_callback_receiver.callback_count());
+  EXPECT_FALSE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
+  EXPECT_EQ(1u, first_disallowed_load_callback_receiver.callback_count());
+  EXPECT_FALSE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
+  EXPECT_EQ(1u, first_disallowed_load_callback_receiver.callback_count());
 }
 
 }  // namespace subresource_filter

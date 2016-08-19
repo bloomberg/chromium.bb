@@ -6,10 +6,12 @@
 
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
+#include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
 
 namespace subresource_filter {
@@ -57,6 +59,10 @@ void ContentSubresourceFilterDriverFactory::CreateDriverForFrameHostIfNeeded(
     iterator_and_inserted.first->second.reset(
         new ContentSubresourceFilterDriver(render_frame_host));
   }
+}
+
+void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
+  // TODO(melandory): Handle this.
 }
 
 void ContentSubresourceFilterDriverFactory::
@@ -140,6 +146,18 @@ void ContentSubresourceFilterDriverFactory::DidStartProvisionalLoadForFrame(
   if (GetCurrentActivationScope() == ActivationScope::ALL_SITES) {
     SendActivationStateAndPromptUser(render_frame_host);
   }
+}
+
+bool ContentSubresourceFilterDriverFactory::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ContentSubresourceFilterDriverFactory, message)
+    IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DidDisallowFirstSubresource,
+                        OnFirstSubresourceLoadDisallowed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void ContentSubresourceFilterDriverFactory::SendActivationStateAndPromptUser(

@@ -31,3 +31,12 @@ IPC_MESSAGE_CONTROL1(SubresourceFilterMsg_SetRulesetForProcess,
 // If no message arrives, the default behavior is ActivationState::DISABLED.
 IPC_MESSAGE_ROUTED1(SubresourceFilterMsg_ActivateForProvisionalLoad,
                     subresource_filter::ActivationState /* activation_state */);
+
+// ----------------------------------------------------------------------------
+// Messages sent from the renderer to the browser.
+// ----------------------------------------------------------------------------
+
+// Sent to the browser the first time a subresource load is disallowed for the
+// most recently commited document load in a frame. It is used to trigger a
+// UI prompt to inform the user and allow them to turn off filtering.
+IPC_MESSAGE_ROUTED0(SubresourceFilterHostMsg_DidDisallowFirstSubresource)

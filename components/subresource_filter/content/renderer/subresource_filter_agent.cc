@@ -51,6 +51,12 @@ void SubresourceFilterAgent::SetSubresourceFilterForCommittedLoad(
   web_frame->dataSource()->setSubresourceFilter(filter.release());
 }
 
+void SubresourceFilterAgent::
+    SignalFirstSubresourceDisallowedForCommittedLoad() {
+  render_frame()->Send(new SubresourceFilterHostMsg_DidDisallowFirstSubresource(
+      render_frame()->GetRoutingID()));
+}
+
 void SubresourceFilterAgent::ActivateForProvisionalLoad(
     ActivationState activation_state) {
   activation_state_for_provisional_load_ = activation_state;
@@ -100,10 +106,14 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   if (activation_state_for_provisional_load_ != ActivationState::DISABLED &&
       ruleset_dealer_->ruleset()) {
     std::vector<GURL> ancestor_document_urls = GetAncestorDocumentURLs();
+    base::Closure first_disallowed_load_callback(
+        base::Bind(&SubresourceFilterAgent::
+                       SignalFirstSubresourceDisallowedForCommittedLoad,
+                   AsWeakPtr()));
     std::unique_ptr<DocumentSubresourceFilter> filter(
-        new DocumentSubresourceFilter(activation_state_for_provisional_load_,
-                                      ruleset_dealer_->ruleset(),
-                                      ancestor_document_urls));
+        new DocumentSubresourceFilter(
+            activation_state_for_provisional_load_, ruleset_dealer_->ruleset(),
+            ancestor_document_urls, first_disallowed_load_callback));
     filter_for_last_committed_load_ = filter->AsWeakPtr();
     SetSubresourceFilterForCommittedLoad(std::move(filter));
   }
