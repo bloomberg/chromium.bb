@@ -121,12 +121,16 @@ if (is_android) {
     # Speed up incremental compiles by compiling only changed files.
     enable_incremental_javac = false
 
-    # Speed up dexing using dx --incremental.
-    enable_incremental_dx = is_java_debug
-
     # Adds intrumentation to each function. Writes a file with the order that
     # functions are called at startup.
     use_order_profiling = false
+  }
+
+  # We need a second declare_args block to make sure we are using the overridden
+  # value of the arguments set above.
+  declare_args() {
+    # Speed up dexing using dx --incremental.
+    enable_incremental_dx = is_java_debug
   }
 
   # Neither of these should ever be used for release builds since they are
