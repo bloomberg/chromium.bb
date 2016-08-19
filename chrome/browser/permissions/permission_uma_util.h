@@ -13,13 +13,12 @@
 
 enum class PermissionRequestGestureType;
 class GURL;
+class PermissionRequest;
 class Profile;
 
 namespace content {
 enum class PermissionType;
 }  // namespace content
-
-class PermissionRequest;
 
 // This should stay in sync with the SourceUI enum in the permission report
 // protobuf (src/chrome/common/safe_browsing/permission_report.proto).
@@ -31,6 +30,38 @@ enum class PermissionSourceUI {
 
   // Always keep this at the end.
   SOURCE_UI_NUM,
+};
+
+// This should stay in sync with the PersistDecision enum in the permission
+// report message (src/chrome/common/safe_browsing/permission_report.proto).
+enum class PermissionPersistDecision {
+  UNSPECIFIED = 0,
+  PERSISTED = 1,
+  NOT_PERSISTED = 2,
+};
+
+// A bundle for the information sent in a PermissionReport.
+struct PermissionReportInfo {
+  PermissionReportInfo(
+      const GURL& origin,
+      content::PermissionType permission,
+      PermissionAction action,
+      PermissionSourceUI source_ui,
+      PermissionRequestGestureType gesture_type,
+      PermissionPersistDecision persist_decision,
+      int num_prior_dismissals,
+      int num_prior_ignores);
+
+  PermissionReportInfo(const PermissionReportInfo& other);
+
+  GURL origin;
+  content::PermissionType permission;
+  PermissionAction action;
+  PermissionSourceUI source_ui;
+  PermissionRequestGestureType gesture_type;
+  PermissionPersistDecision persist_decision;
+  int num_prior_dismissals;
+  int num_prior_ignores;
 };
 
 // Provides a convenient way of logging UMA for permission related operations.

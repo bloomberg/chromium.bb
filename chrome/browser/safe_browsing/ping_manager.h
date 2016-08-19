@@ -14,7 +14,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "components/safe_browsing_db/hit_report.h"
@@ -66,13 +65,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
           certificate_error_reporter);
 
   // Report permission action to SafeBrowsing servers.
-  void ReportPermissionAction(const GURL& origin,
-                              content::PermissionType permission,
-                              PermissionAction action,
-                              PermissionSourceUI source_ui,
-                              PermissionRequestGestureType gesture_type,
-                              int num_prior_dismissals,
-                              int num_prior_ignores);
+  void ReportPermissionAction(const PermissionReportInfo& report_info);
 
  private:
   friend class PermissionReporterBrowserTest;

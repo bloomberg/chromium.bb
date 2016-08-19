@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/util.h"
@@ -158,13 +157,7 @@ class SafeBrowsingUIManager
 
   // Report permission action to SafeBrowsing servers. Can only be called on UI
   // thread.
-  void ReportPermissionAction(const GURL& origin,
-                              content::PermissionType permission,
-                              PermissionAction action,
-                              PermissionSourceUI source_ui,
-                              PermissionRequestGestureType gesture_type,
-                              int num_prior_dismissals,
-                              int num_prior_ignores);
+  void ReportPermissionAction(const PermissionReportInfo& report_info);
 
   // Add and remove observers.  These methods must be invoked on the UI thread.
   void AddObserver(Observer* observer);
@@ -188,13 +181,7 @@ class SafeBrowsingUIManager
 
   // Report permission action to SafeBrowsing servers.
   void ReportPermissionActionOnIOThread(
-      const GURL& origin,
-      content::PermissionType permission,
-      PermissionAction action,
-      PermissionSourceUI source_ui,
-      PermissionRequestGestureType gesture_type,
-      int num_prior_dismissals,
-      int num_prior_ignores);
+      const PermissionReportInfo& report_info);
 
   // Updates the whitelist state.  Called on the UI thread.
   void AddToWhitelist(const UnsafeResource& resource);

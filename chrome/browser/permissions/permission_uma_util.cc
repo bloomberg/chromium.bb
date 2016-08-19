@@ -178,6 +178,27 @@ void RecordPermissionRequest(PermissionType permission,
 
 }  // anonymous namespace
 
+// PermissionReportInfo -------------------------------------------------------
+PermissionReportInfo::PermissionReportInfo(
+    const GURL& origin,
+    PermissionType permission,
+    PermissionAction action,
+    PermissionSourceUI source_ui,
+    PermissionRequestGestureType gesture_type,
+    PermissionPersistDecision persist_decision,
+    int num_prior_dismissals,
+    int num_prior_ignores)
+    : origin(origin), permission(permission), action(action),
+      source_ui(source_ui), gesture_type(gesture_type),
+      persist_decision(persist_decision),
+      num_prior_dismissals(num_prior_dismissals),
+      num_prior_ignores(num_prior_ignores) {}
+
+PermissionReportInfo::PermissionReportInfo(
+    const PermissionReportInfo& other) = default;
+
+// PermissionUmaUtil ----------------------------------------------------------
+
 const char PermissionUmaUtil::kPermissionsPromptShown[] =
     "Permissions.Prompt.Shown";
 const char PermissionUmaUtil::kPermissionsPromptShownGesture[] =
@@ -586,14 +607,16 @@ void PermissionUmaUtil::RecordPermissionAction(
     const GURL& requesting_origin,
     Profile* profile) {
   if (IsOptedIntoPermissionActionReporting(profile)) {
+    // TODO(kcarattini): Pass in the actual persist decision when it becomes
+    // available.
+    PermissionReportInfo report_info(requesting_origin, permission, action,
+        source_ui, gesture_type, PermissionPersistDecision::UNSPECIFIED,
+        PermissionDecisionAutoBlocker::GetDismissCount(
+            requesting_origin, permission, profile),
+        PermissionDecisionAutoBlocker::GetIgnoreCount(
+            requesting_origin, permission, profile));
     g_browser_process->safe_browsing_service()
-        ->ui_manager()
-        ->ReportPermissionAction(requesting_origin, permission, action,
-            source_ui, gesture_type,
-            PermissionDecisionAutoBlocker::GetDismissCount(
-                requesting_origin, permission, profile),
-            PermissionDecisionAutoBlocker::GetIgnoreCount(
-                requesting_origin, permission, profile));
+        ->ui_manager()->ReportPermissionAction(report_info);
   }
 
   bool secure_origin = content::IsOriginSecure(requesting_origin);

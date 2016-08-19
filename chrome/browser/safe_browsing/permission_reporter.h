@@ -10,7 +10,6 @@
 #include <unordered_map>
 
 #include "base/time/time.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "url/gurl.h"
 
@@ -49,23 +48,11 @@ class PermissionReporter {
   ~PermissionReporter();
 
   // Sends a serialized permission report to the report collection server.
-  // The permission report includes |origin| as the origin of
-  // the site requesting permission, |permission| as the type of permission
-  // requested, |action| as the action taken, and |gesture_type| as to whether
-  // the action occurred after a user gesture. It also includes
-  // |num_prior_dismissals| and |num_prior_ignores| the number of dismissals
-  // and ignores for this permission and origin that occurred prior to this
-  // report. The report will be serialized using protobuf defined in
+  // The permission report includes the origin of the site requesting the
+  // permission and other information about the permission action included in
+  // |report_info|. The report will be serialized using protobuf defined in
   // //src/chrome/common/safe_browsing/permission_report.proto
-  //
-  // TODO(kcarattini): Move these params to a PermissionReportInfo struct.
-  void SendReport(const GURL& origin,
-                  content::PermissionType permission,
-                  PermissionAction action,
-                  PermissionSourceUI source_ui,
-                  PermissionRequestGestureType gesture_type,
-                  int num_prior_dismissals,
-                  int num_prior_ignores);
+  void SendReport(const PermissionReportInfo& report_info);
 
  private:
   friend class PermissionReporterBrowserTest;
@@ -76,18 +63,10 @@ class PermissionReporter {
   PermissionReporter(std::unique_ptr<net::ReportSender> report_sender,
                      std::unique_ptr<base::Clock> clock);
 
-  // Builds and serializes a permission report with |origin| as the origin of
-  // the site requesting permission, |permission| as the type of permission
-  // requested, and |action| as the action taken. The serialized report is
-  // written into |output|. Returns true if the serialization was successful and
-  // false otherwise.
-  static bool BuildReport(const GURL& origin,
-                          content::PermissionType permission,
-                          PermissionAction action,
-                          PermissionSourceUI source_ui,
-                          PermissionRequestGestureType gesture_type,
-                          int num_prior_dismissals,
-                          int num_prior_ignores,
+  // Builds and serializes a permission report with |report_info| included.
+  // The serialized report is written into |output|. Returns true if the
+  // serialization was successful and false otherwise.
+  static bool BuildReport(const PermissionReportInfo& report_info,
                           std::string* output);
 
   // Returns false if the number of reports sent in the last one minute per

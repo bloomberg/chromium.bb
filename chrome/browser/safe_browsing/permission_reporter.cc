@@ -116,6 +116,21 @@ PermissionReport::GestureType GestureTypeForReport(
   return PermissionReport::GESTURE_TYPE_UNSPECIFIED;
 }
 
+PermissionReport::PersistDecision PersistDecisionForReport(
+    PermissionPersistDecision persist_decision) {
+  switch (persist_decision) {
+    case PermissionPersistDecision::UNSPECIFIED:
+      return PermissionReport::PERSIST_DECISION_UNSPECIFIED;
+    case PermissionPersistDecision::PERSISTED:
+      return PermissionReport::PERSISTED;
+    case PermissionPersistDecision::NOT_PERSISTED:
+      return PermissionReport::NOT_PERSISTED;
+  }
+
+  NOTREACHED();
+  return PermissionReport::PERSIST_DECISION_UNSPECIFIED;
+}
+
 }  // namespace
 
 bool PermissionAndOrigin::operator==(const PermissionAndOrigin& other) const {
@@ -146,39 +161,29 @@ PermissionReporter::PermissionReporter(
 
 PermissionReporter::~PermissionReporter() {}
 
-void PermissionReporter::SendReport(const GURL& origin,
-                                    content::PermissionType permission,
-                                    PermissionAction action,
-                                    PermissionSourceUI source_ui,
-                                    PermissionRequestGestureType gesture_type,
-                                    int num_prior_dismissals,
-                                    int num_prior_ignores) {
-  if (IsReportThresholdExceeded(permission, origin))
+void PermissionReporter::SendReport(const PermissionReportInfo& report_info) {
+  if (IsReportThresholdExceeded(report_info.permission, report_info.origin))
     return;
+
   std::string serialized_report;
-  BuildReport(origin, permission, action, source_ui, gesture_type,
-              num_prior_dismissals, num_prior_ignores, &serialized_report);
+  BuildReport(report_info, &serialized_report);
   permission_report_sender_->Send(GURL(kPermissionActionReportingUploadUrl),
                                   serialized_report);
 }
 
 // static
-bool PermissionReporter::BuildReport(const GURL& origin,
-                                     PermissionType permission,
-                                     PermissionAction action,
-                                     PermissionSourceUI source_ui,
-                                     PermissionRequestGestureType gesture_type,
-                                     int num_prior_dismissals,
-                                     int num_prior_ignores,
+bool PermissionReporter::BuildReport(const PermissionReportInfo& report_info,
                                      std::string* output) {
   PermissionReport report;
-  report.set_origin(origin.spec());
-  report.set_permission(PermissionTypeForReport(permission));
-  report.set_action(PermissionActionForReport(action));
-  report.set_source_ui(SourceUIForReport(source_ui));
-  report.set_gesture(GestureTypeForReport(gesture_type));
-  report.set_num_prior_dismissals(num_prior_dismissals);
-  report.set_num_prior_ignores(num_prior_ignores);
+  report.set_origin(report_info.origin.spec());
+  report.set_permission(PermissionTypeForReport(report_info.permission));
+  report.set_action(PermissionActionForReport(report_info.action));
+  report.set_source_ui(SourceUIForReport(report_info.source_ui));
+  report.set_gesture(GestureTypeForReport(report_info.gesture_type));
+  report.set_persisted(
+      PersistDecisionForReport(report_info.persist_decision));
+  report.set_num_prior_dismissals(report_info.num_prior_dismissals);
+  report.set_num_prior_ignores(report_info.num_prior_ignores);
 
   // Collect platform data.
 #if defined(OS_ANDROID)
