@@ -30,10 +30,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothServiceAttributeValueBlueZ {
 
   using Sequence = std::vector<BluetoothServiceAttributeValueBlueZ>;
 
+  BluetoothServiceAttributeValueBlueZ();
   BluetoothServiceAttributeValueBlueZ(Type type,
                                       size_t size,
                                       std::unique_ptr<base::Value> value);
-  BluetoothServiceAttributeValueBlueZ(std::unique_ptr<Sequence> sequence);
+  explicit BluetoothServiceAttributeValueBlueZ(
+      std::unique_ptr<Sequence> sequence);
   BluetoothServiceAttributeValueBlueZ(
       const BluetoothServiceAttributeValueBlueZ& attribute);
   BluetoothServiceAttributeValueBlueZ operator=(

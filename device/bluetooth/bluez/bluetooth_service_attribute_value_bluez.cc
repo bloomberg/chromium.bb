@@ -4,10 +4,15 @@
 
 #include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 
 namespace bluez {
+
+BluetoothServiceAttributeValueBlueZ::BluetoothServiceAttributeValueBlueZ()
+    : type_(NULLTYPE), size_(0) {}
 
 BluetoothServiceAttributeValueBlueZ::BluetoothServiceAttributeValueBlueZ(
     Type type,
