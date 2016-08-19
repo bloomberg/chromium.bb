@@ -143,8 +143,8 @@ void BattOrConnectionImpl::SendBytes(BattOrMessageType type,
   LogSerial(StringPrintf("Bytes sent: %s.", CharVectorToString(data).c_str()));
 
   pending_write_length_ = data.size();
-  io_handler_->Write(base::WrapUnique(new device::SendBuffer(
-      data, base::Bind(&BattOrConnectionImpl::OnBytesSent, AsWeakPtr()))));
+  io_handler_->Write(base::MakeUnique<device::SendBuffer>(
+      data, base::Bind(&BattOrConnectionImpl::OnBytesSent, AsWeakPtr())));
 }
 
 void BattOrConnectionImpl::ReadMessage(BattOrMessageType type) {
@@ -205,9 +205,9 @@ void BattOrConnectionImpl::BeginReadBytes(size_t max_bytes_to_read) {
   auto on_receive_buffer_filled =
       base::Bind(&BattOrConnectionImpl::OnBytesRead, AsWeakPtr());
 
-  io_handler_->Read(base::WrapUnique(new device::ReceiveBuffer(
+  io_handler_->Read(base::MakeUnique<device::ReceiveBuffer>(
       pending_read_buffer_, static_cast<uint32_t>(max_bytes_to_read),
-      on_receive_buffer_filled)));
+      on_receive_buffer_filled));
 }
 
 void BattOrConnectionImpl::OnBytesRead(int bytes_read,
