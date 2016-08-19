@@ -308,7 +308,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
   std::string encoded_request_with_minus =
       V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
           store_state_map_minus);
-  EXPECT_EQ("GhcIARACGgt6LVJ-M3J1VmlRSCICIAEoAQ==", encoded_request_with_minus);
+  EXPECT_EQ("GhkIARACGgt6LVJ-M3J1VmlRSCIEIAEgAigB", encoded_request_with_minus);
 
   // NOTE(vakh): Same process for chosing this string. I am representing it
   // in base64 encoded form because the actual state value contains non-ASCII
@@ -322,7 +322,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
   std::string encoded_request_with_underscore =
       V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto(
           store_state_map_underscore);
-  EXPECT_EQ("GhUIARACGglVMV8hMF_iUEwiAiABKAE=",
+  EXPECT_EQ("GhcIARACGglVMV8hMF_iUEwiBCABIAIoAQ==",
             encoded_request_with_underscore);
 }
 
