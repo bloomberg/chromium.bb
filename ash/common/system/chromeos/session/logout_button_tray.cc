@@ -119,7 +119,8 @@ LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
     button_ = new LogoutButton(this);
   }
   tray_container()->AddChildView(button_);
-  tray_container()->SetBorder(views::Border::NullBorder());
+  if (!ash::MaterialDesignController::IsShelfMaterial())
+    tray_container()->SetBorder(views::Border::NullBorder());
   WmShell::Get()->system_tray_notifier()->AddLogoutButtonObserver(this);
 }
 
@@ -132,7 +133,8 @@ void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
   // TrayBackgroundView::SetShelfAlignment() can lay it out correctly.
   UpdateButtonTextAndImage(login_status_, alignment);
   TrayBackgroundView::SetShelfAlignment(alignment);
-  tray_container()->SetBorder(views::Border::NullBorder());
+  if (!ash::MaterialDesignController::IsShelfMaterial())
+    tray_container()->SetBorder(views::Border::NullBorder());
 }
 
 base::string16 LogoutButtonTray::GetAccessibleNameForTray() {

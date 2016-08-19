@@ -88,10 +88,14 @@ const SkColor kTrayIconColor = SK_ColorWHITE;
 const int kMenuIconSize = 20;
 const SkColor kMenuIconColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
 
+const int kHitRegionPadding = 4;
+const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x3D);
+const int kSeparatorWidth = 1;
+
 int GetTrayConstant(TrayConstant constant) {
   const int kTrayItemHeightLegacy[] = {38, 38, kTrayItemSize};
-  const int kTraySpacing[] = {4, 4, 8};
-  const int kTrayPaddingFromEdgeOfShelf[] = {3, 3, 8};
+  const int kTraySpacing[] = {4, 4, 0};
+  const int kTrayPaddingFromEdgeOfShelf[] = {3, 3, 4};
   const int kTrayPopupItemHeight[] = {46, 46, 48};
   const int kVirtualKeyboardButtonSize[] = {39, 39, kTrayItemSize};
 

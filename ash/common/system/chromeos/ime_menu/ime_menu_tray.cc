@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
@@ -151,7 +152,8 @@ ImeMenuTray::~ImeMenuTray() {
 
 void ImeMenuTray::SetShelfAlignment(ShelfAlignment alignment) {
   TrayBackgroundView::SetShelfAlignment(alignment);
-  tray_container()->SetBorder(views::Border::NullBorder());
+  if (!ash::MaterialDesignController::IsShelfMaterial())
+    tray_container()->SetBorder(views::Border::NullBorder());
 }
 
 base::string16 ImeMenuTray::GetAccessibleNameForTray() {

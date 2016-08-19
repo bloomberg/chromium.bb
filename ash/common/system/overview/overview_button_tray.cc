@@ -114,24 +114,21 @@ void OverviewButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
 }
 
 void OverviewButtonTray::SetIconBorderForShelfAlignment() {
+  gfx::Insets insets;
   if (ash::MaterialDesignController::IsShelfMaterial()) {
     // Pad button size to align with other controls in the system tray.
     const gfx::ImageSkia image = icon_->GetImage();
     const int vertical_padding = (kTrayItemSize - image.height()) / 2;
     const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
-    icon_->SetBorder(views::Border::CreateEmptyBorder(
-        gfx::Insets(vertical_padding, horizontal_padding)));
+    insets = gfx::Insets(vertical_padding, horizontal_padding);
   } else {
-    if (IsHorizontalAlignment(shelf_alignment())) {
-      icon_->SetBorder(views::Border::CreateEmptyBorder(
-          kHorizontalShelfVerticalPadding, kHorizontalShelfHorizontalPadding,
-          kHorizontalShelfVerticalPadding, kHorizontalShelfHorizontalPadding));
-    } else {
-      icon_->SetBorder(views::Border::CreateEmptyBorder(
-          kVerticalShelfVerticalPadding, kVerticalShelfHorizontalPadding,
-          kVerticalShelfVerticalPadding, kVerticalShelfHorizontalPadding));
-    }
+    insets = IsHorizontalAlignment(shelf_alignment())
+                 ? gfx::Insets(kHorizontalShelfVerticalPadding,
+                               kHorizontalShelfHorizontalPadding)
+                 : gfx::Insets(kVerticalShelfVerticalPadding,
+                               kVerticalShelfHorizontalPadding);
   }
+  icon_->SetBorder(views::Border::CreateEmptyBorder(insets));
 }
 
 void OverviewButtonTray::UpdateIconVisibility() {

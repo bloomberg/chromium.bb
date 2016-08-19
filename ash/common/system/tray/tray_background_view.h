@@ -24,7 +24,7 @@ class WmShelf;
 // Base class for children of StatusAreaWidget: SystemTray, WebNotificationTray,
 // LogoutButtonTray, OverviewButtonTray.
 // This class handles setting and animating the background when the Launcher
-// his shown/hidden. It also inherits from ActionableView so that the tray
+// is shown/hidden. It also inherits from ActionableView so that the tray
 // items can override PerformAction when clicked on.
 class ASH_EXPORT TrayBackgroundView : public ActionableView,
                                       public ui::ImplicitAnimationObserver,
@@ -80,6 +80,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   void ChildPreferredSizeChanged(views::View* child) override;
   void GetAccessibleState(ui::AXViewState* state) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // ActionableView:
   bool PerformAction(const ui::Event& event) override;
@@ -138,12 +139,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfItemBackground(int alpha) override;
 
+  // Updates the visibility of this tray's separator.
+  void SetSeparatorVisibility(bool is_show);
+
  private:
   class TrayWidgetObserver;
-
-  // Called from Initialize after all status area trays have been created.
-  // Sets the border based on the position of the view.
-  void SetTrayBorder();
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
@@ -169,6 +169,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // This variable stores the activation override which will tint the background
   // differently if set to true.
   bool draw_background_as_active_;
+
+  // Visibility of this tray's separator which is a line of 1x32px and 4px to
+  // right of tray.
+  bool is_separator_visible_;
 
   std::unique_ptr<TrayWidgetObserver> widget_observer_;
   std::unique_ptr<TrayEventFilter> tray_event_filter_;

@@ -161,6 +161,10 @@ void WmShelf::NotifyShelfIconPositionsChanged() {
   FOR_EACH_OBSERVER(WmShelfObserver, observers_, OnShelfIconPositionsChanged());
 }
 
+StatusAreaWidget* WmShelf::GetStatusAreaWidget() const {
+  return shelf_layout_manager_->shelf_widget()->status_area_widget();
+}
+
 void WmShelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   shelf_layout_manager_->OnKeyboardBoundsChanging(bounds);
 }

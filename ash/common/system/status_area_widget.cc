@@ -4,6 +4,7 @@
 
 #include "ash/common/system/status_area_widget.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/overview/overview_button_tray.h"
@@ -103,6 +104,66 @@ void StatusAreaWidget::Shutdown() {
   overview_button_tray_ = nullptr;
 }
 
+void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
+  status_area_widget_delegate_->set_alignment(alignment);
+  if (system_tray_)
+    system_tray_->SetShelfAlignment(alignment);
+  if (web_notification_tray_)
+    web_notification_tray_->SetShelfAlignment(alignment);
+#if defined(OS_CHROMEOS)
+  if (logout_button_tray_)
+    logout_button_tray_->SetShelfAlignment(alignment);
+  if (virtual_keyboard_tray_)
+    virtual_keyboard_tray_->SetShelfAlignment(alignment);
+  if (ime_menu_tray_)
+    ime_menu_tray_->SetShelfAlignment(alignment);
+  if (palette_tray_)
+    palette_tray_->SetShelfAlignment(alignment);
+#endif
+  if (overview_button_tray_)
+    overview_button_tray_->SetShelfAlignment(alignment);
+  status_area_widget_delegate_->UpdateLayout();
+}
+
+void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
+  if (login_status_ == login_status)
+    return;
+  login_status_ = login_status;
+  if (system_tray_)
+    system_tray_->UpdateAfterLoginStatusChange(login_status);
+  if (web_notification_tray_)
+    web_notification_tray_->UpdateAfterLoginStatusChange(login_status);
+#if defined(OS_CHROMEOS)
+  if (logout_button_tray_)
+    logout_button_tray_->UpdateAfterLoginStatusChange(login_status);
+#endif
+  if (overview_button_tray_)
+    overview_button_tray_->UpdateAfterLoginStatusChange(login_status);
+}
+
+void StatusAreaWidget::OnTrayVisibilityChanged(TrayBackgroundView* tray) {
+  if (!ash::MaterialDesignController::IsShelfMaterial())
+    return;
+
+  // No separator is required between |system_tray_| and |overview_button_tray_|
+  // and no separator is required for the right most tray item.
+  if (tray == overview_button_tray_ || tray == system_tray_) {
+    tray->SetSeparatorVisibility(false);
+    return;
+  }
+#if defined(OS_CHROMEOS)
+  // If |logout_button_tray_| is visible, check if |tray| is visible and to
+  // the left of |logout_button_tray_|. If it is the case, then no separator
+  // is required between |tray| and |logout_button_tray_|. If
+  // |logout_button_tray_| is not visible, then separator should always be
+  // visible.
+  tray->SetSeparatorVisibility(!IsNextVisibleTrayToLogout(tray) &&
+                               tray != logout_button_tray_);
+#else
+  tray->SetSeparatorVisibility(true);
+#endif
+}
+
 bool StatusAreaWidget::ShouldShowShelf() const {
   if ((system_tray_ && system_tray_->ShouldShowShelf()) ||
       (web_notification_tray_ &&
@@ -188,48 +249,28 @@ void StatusAreaWidget::AddImeMenuTray() {
   ime_menu_tray_ = new ImeMenuTray(wm_shelf_);
   status_area_widget_delegate_->AddTray(ime_menu_tray_);
 }
+
+bool StatusAreaWidget::IsNextVisibleTrayToLogout(
+    TrayBackgroundView* tray) const {
+  int logout_button_index =
+      status_area_widget_delegate_->GetIndexOf(logout_button_tray_);
+  // Logout button should always exist.
+  DCHECK_NE(-1, logout_button_index);
+  if (!logout_button_tray_->visible())
+    return false;
+
+  for (int c = logout_button_index + 1;
+       c < status_area_widget_delegate_->child_count(); c++) {
+    if (status_area_widget_delegate_->child_at(c)->visible())
+      return tray == status_area_widget_delegate_->child_at(c);
+  }
+  return false;
+}
 #endif
 
 void StatusAreaWidget::AddOverviewButtonTray() {
   overview_button_tray_ = new OverviewButtonTray(wm_shelf_);
   status_area_widget_delegate_->AddTray(overview_button_tray_);
-}
-
-void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
-  status_area_widget_delegate_->set_alignment(alignment);
-  if (system_tray_)
-    system_tray_->SetShelfAlignment(alignment);
-  if (web_notification_tray_)
-    web_notification_tray_->SetShelfAlignment(alignment);
-#if defined(OS_CHROMEOS)
-  if (logout_button_tray_)
-    logout_button_tray_->SetShelfAlignment(alignment);
-  if (virtual_keyboard_tray_)
-    virtual_keyboard_tray_->SetShelfAlignment(alignment);
-  if (ime_menu_tray_)
-    ime_menu_tray_->SetShelfAlignment(alignment);
-  if (palette_tray_)
-    palette_tray_->SetShelfAlignment(alignment);
-#endif
-  if (overview_button_tray_)
-    overview_button_tray_->SetShelfAlignment(alignment);
-  status_area_widget_delegate_->UpdateLayout();
-}
-
-void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
-  if (login_status_ == login_status)
-    return;
-  login_status_ = login_status;
-  if (system_tray_)
-    system_tray_->UpdateAfterLoginStatusChange(login_status);
-  if (web_notification_tray_)
-    web_notification_tray_->UpdateAfterLoginStatusChange(login_status);
-#if defined(OS_CHROMEOS)
-  if (logout_button_tray_)
-    logout_button_tray_->UpdateAfterLoginStatusChange(login_status);
-#endif
-  if (overview_button_tray_)
-    overview_button_tray_->UpdateAfterLoginStatusChange(login_status);
 }
 
 }  // namespace ash

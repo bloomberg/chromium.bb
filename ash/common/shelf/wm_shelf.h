@@ -24,6 +24,7 @@ class Shelf;
 class ShelfLayoutManager;
 class ShelfLockingManager;
 class ShelfView;
+class StatusAreaWidget;
 class WmDimmerView;
 class WmShelfObserver;
 class WmWindow;
@@ -111,6 +112,7 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   void RemoveObserver(WmShelfObserver* observer);
 
   void NotifyShelfIconPositionsChanged();
+  StatusAreaWidget* GetStatusAreaWidget() const;
 
   void SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds);
   ShelfLockingManager* GetShelfLockingManagerForTesting();

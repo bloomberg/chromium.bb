@@ -76,6 +76,13 @@ extern const int kTrayNotificationContentsWidth;
 
 extern const int kMessageCenterBubblePadding;
 
+// Extra padding used to adjust hitting region around tray items.
+extern const int kHitRegionPadding;
+
+// Color and width of a line used to separate tray items in the shelf.
+extern const SkColor kSeparatorColor;
+extern const int kSeparatorWidth;
+
 // The size and foreground color of the icons appearing in the material design
 // system tray.
 extern const int kTrayIconSize;
