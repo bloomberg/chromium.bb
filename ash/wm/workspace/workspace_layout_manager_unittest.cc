@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shell_observer.h"
@@ -35,6 +34,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/screen.h"
@@ -1103,9 +1103,8 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
 
   void EnableNewVKMode() {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(switches::kAshUseNewVKWindowBehavior)) {
-      command_line->AppendSwitch(switches::kAshUseNewVKWindowBehavior);
-    }
+    if (!command_line->HasSwitch(::switches::kUseNewVirtualKeyboardBehavior))
+      command_line->AppendSwitch(::switches::kUseNewVirtualKeyboardBehavior);
   }
 
   const gfx::Rect& keyboard_bounds() const { return keyboard_bounds_; }

@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
@@ -22,6 +21,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "base/command_line.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -131,7 +131,7 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
   // the work area.
   bool change_work_area =
       (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kAshUseNewVKWindowBehavior) ||
+           ::switches::kUseNewVirtualKeyboardBehavior) ||
        keyboard::KeyboardController::GetInstance()->get_lock_keyboard());
   if (!change_work_area)
     return;

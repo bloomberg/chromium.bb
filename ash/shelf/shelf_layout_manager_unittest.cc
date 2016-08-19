@@ -7,7 +7,6 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accelerators/accelerator_table.h"
-#include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -36,6 +35,7 @@
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -2000,9 +2000,8 @@ class ShelfLayoutManagerKeyboardTest : public test::AshTestBase {
 
   void EnableNewVKMode() {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(switches::kAshUseNewVKWindowBehavior)) {
-      command_line->AppendSwitch(switches::kAshUseNewVKWindowBehavior);
-    }
+    if (!command_line->HasSwitch(::switches::kUseNewVirtualKeyboardBehavior))
+      command_line->AppendSwitch(::switches::kUseNewVirtualKeyboardBehavior);
   }
 
   const gfx::Rect& keyboard_bounds() const { return keyboard_bounds_; }

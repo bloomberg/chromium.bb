@@ -8,7 +8,6 @@
 #include <cmath>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -30,6 +29,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
@@ -439,7 +439,7 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   // the work area.
   bool change_work_area =
       (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kAshUseNewVKWindowBehavior) ||
+           ::switches::kUseNewVirtualKeyboardBehavior) ||
        keyboard::KeyboardController::GetInstance()->get_lock_keyboard());
 
   keyboard_bounds_ = new_bounds;
