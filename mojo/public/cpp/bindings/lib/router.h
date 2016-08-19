@@ -126,7 +126,7 @@ class Router : public MessageReceiverWithResponder {
     explicit SyncResponseInfo(bool* in_response_received);
     ~SyncResponseInfo();
 
-    std::unique_ptr<Message> response;
+    Message response;
 
     // Points to a stack-allocated variable.
     bool* response_received;
@@ -163,7 +163,7 @@ class Router : public MessageReceiverWithResponder {
   SyncResponseMap sync_responses_;
   uint64_t next_request_id_;
   bool testing_mode_;
-  std::queue<std::unique_ptr<Message>> pending_messages_;
+  std::queue<Message> pending_messages_;
   // Whether a task has been posted to trigger processing of
   // |pending_messages_|.
   bool pending_task_for_messages_;

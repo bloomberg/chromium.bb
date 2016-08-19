@@ -180,10 +180,8 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
     DCHECK(base::ContainsKey(sync_responses_, request_id));
     auto iter = sync_responses_.find(request_id);
     DCHECK_EQ(&response_received, iter->second->response_received);
-    if (response_received) {
-      std::unique_ptr<Message> response = std::move(iter->second->response);
-      ignore_result(sync_responder->Accept(response.get()));
-    }
+    if (response_received)
+      ignore_result(sync_responder->Accept(&iter->second->response));
     sync_responses_.erase(iter);
   }
 
@@ -204,9 +202,7 @@ bool Router::HandleIncomingMessage(Message* message) {
       connector_.during_sync_handle_watcher_callback();
   if (!message->has_flag(Message::kFlagIsSync) &&
       (during_sync_call || !pending_messages_.empty())) {
-    std::unique_ptr<Message> pending_message(new Message);
-    message->MoveTo(pending_message.get());
-    pending_messages_.push(std::move(pending_message));
+    pending_messages_.emplace(std::move(*message));
 
     if (!pending_task_for_messages_) {
       pending_task_for_messages_ = true;
@@ -227,10 +223,10 @@ void Router::HandleQueuedMessages() {
 
   base::WeakPtr<Router> weak_self = weak_factory_.GetWeakPtr();
   while (!pending_messages_.empty()) {
-    std::unique_ptr<Message> message(std::move(pending_messages_.front()));
+    Message message(std::move(pending_messages_.front()));
     pending_messages_.pop();
 
-    bool result = HandleMessageInternal(message.get());
+    bool result = HandleMessageInternal(&message);
     if (!weak_self)
       return;
 
@@ -270,8 +266,7 @@ bool Router::HandleMessageInternal(Message* message) {
         DCHECK(testing_mode_);
         return false;
       }
-      it->second->response.reset(new Message());
-      message->MoveTo(it->second->response.get());
+      it->second->response = std::move(*message);
       *it->second->response_received = true;
       return true;
     }

@@ -34,7 +34,19 @@ class Message {
   static const uint32_t kFlagIsSync = 1 << 2;
 
   Message();
+  Message(Message&& other);
+
   ~Message();
+
+  Message& operator=(Message&& other);
+
+  // Resets the Message to an uninitialized state. Upon reset, the Message
+  // exists as if it were default-constructed: it has no data buffer and owns no
+  // handles.
+  void Reset();
+
+  // Indicates whether this Message is uninitialized.
+  bool IsNull() const { return !buffer_; }
 
   // Initializes a Message with enough space for |capacity| bytes.
   void Initialize(size_t capacity, bool zero_initialized);
@@ -43,9 +55,6 @@ class Message {
   void InitializeFromMojoMessage(ScopedMessageHandle message,
                                  uint32_t num_bytes,
                                  std::vector<Handle>* handles);
-
-  // Transfers data and handles to |destination|.
-  void MoveTo(Message* destination);
 
   uint32_t data_num_bytes() const {
     return static_cast<uint32_t>(buffer_->size());

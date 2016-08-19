@@ -96,7 +96,7 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
     explicit SyncResponseInfo(bool* in_response_received);
     ~SyncResponseInfo();
 
-    std::unique_ptr<Message> response;
+    Message response;
 
     // Points to a stack-allocated variable.
     bool* response_received;

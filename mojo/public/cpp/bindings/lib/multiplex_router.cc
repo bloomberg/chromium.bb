@@ -255,8 +255,7 @@ struct MultiplexRouter::Task {
   // Doesn't take ownership of |message| but takes its contents.
   static std::unique_ptr<Task> CreateMessageTask(Message* message) {
     Task* task = new Task(MESSAGE);
-    task->message.reset(new Message);
-    message->MoveTo(task->message.get());
+    task->message = std::move(*message);
     return base::WrapUnique(task);
   }
   static std::unique_ptr<Task> CreateNotifyErrorTask(
@@ -271,7 +270,7 @@ struct MultiplexRouter::Task {
   bool IsMessageTask() const { return type == MESSAGE; }
   bool IsNotifyErrorTask() const { return type == NOTIFY_ERROR; }
 
-  std::unique_ptr<Message> message;
+  Message message;
   scoped_refptr<InterfaceEndpoint> endpoint_to_notify;
 
   enum Type { MESSAGE, NOTIFY_ERROR };
@@ -528,8 +527,8 @@ bool MultiplexRouter::Accept(Message* message) {
     tasks_.push_back(Task::CreateMessageTask(message));
     Task* task = tasks_.back().get();
 
-    if (task->message->has_flag(Message::kFlagIsSync)) {
-      InterfaceId id = task->message->interface_id();
+    if (task->message.has_flag(Message::kFlagIsSync)) {
+      InterfaceId id = task->message.interface_id();
       sync_message_tasks_[id].push_back(task);
       auto iter = endpoints_.find(id);
       if (iter != endpoints_.end())
@@ -626,10 +625,10 @@ void MultiplexRouter::ProcessTasks(
     tasks_.pop_front();
 
     InterfaceId id = kInvalidInterfaceId;
-    bool sync_message = task->IsMessageTask() && task->message &&
-                        task->message->has_flag(Message::kFlagIsSync);
+    bool sync_message = task->IsMessageTask() && !task->message.IsNull() &&
+                        task->message.has_flag(Message::kFlagIsSync);
     if (sync_message) {
-      id = task->message->interface_id();
+      id = task->message.interface_id();
       auto& sync_message_queue = sync_message_tasks_[id];
       DCHECK_EQ(task.get(), sync_message_queue.front());
       sync_message_queue.pop_front();
@@ -639,7 +638,7 @@ void MultiplexRouter::ProcessTasks(
         task->IsNotifyErrorTask()
             ? ProcessNotifyErrorTask(task.get(), client_call_behavior,
                                      current_task_runner)
-            : ProcessIncomingMessage(task->message.get(), client_call_behavior,
+            : ProcessIncomingMessage(&task->message, client_call_behavior,
                                      current_task_runner);
 
     if (!processed) {
@@ -673,11 +672,11 @@ bool MultiplexRouter::ProcessFirstSyncMessageForEndpoint(InterfaceId id) {
   iter->second.pop_front();
 
   DCHECK(task->IsMessageTask());
-  std::unique_ptr<Message> message(std::move(task->message));
+  Message message = std::move(task->message);
 
   // Note: after this call, |task| and |iter| may be invalidated.
   bool processed = ProcessIncomingMessage(
-      message.get(), ALLOW_DIRECT_CLIENT_CALLS_FOR_SYNC_MESSAGES, nullptr);
+      &message, ALLOW_DIRECT_CLIENT_CALLS_FOR_SYNC_MESSAGES, nullptr);
   DCHECK(processed);
 
   iter = sync_message_tasks_.find(id);
@@ -731,9 +730,10 @@ bool MultiplexRouter::ProcessIncomingMessage(
     base::SingleThreadTaskRunner* current_task_runner) {
   DCHECK(!current_task_runner || current_task_runner->BelongsToCurrentThread());
   DCHECK(!paused_);
+  DCHECK(message);
   lock_.AssertAcquired();
 
-  if (!message) {
+  if (message->IsNull()) {
     // This is a sync message and has been processed during sync handle
     // watching.
     return true;

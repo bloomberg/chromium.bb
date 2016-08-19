@@ -70,10 +70,10 @@ class ChannelAssociatedGroupController
         base::Bind(&ChannelAssociatedGroupController::OnPipeError,
                    base::Unretained(this)));
 
-    std::vector<std::unique_ptr<mojo::Message>> outgoing_messages;
+    std::vector<mojo::Message> outgoing_messages;
     std::swap(outgoing_messages, outgoing_messages_);
     for (auto& message : outgoing_messages)
-      SendMessage(message.get());
+      SendMessage(&message);
   }
 
   void CreateChannelEndpoints(mojom::ChannelAssociatedPtr* sender,
@@ -279,7 +279,7 @@ class ChannelAssociatedGroupController
       sync_watcher_.reset();
     }
 
-    uint32_t EnqueueSyncMessage(std::unique_ptr<mojo::Message> message) {
+    uint32_t EnqueueSyncMessage(mojo::Message message) {
       controller_->lock_.AssertAcquired();
       uint32_t id = GenerateSyncMessageId();
       sync_messages_.emplace(id, std::move(message));
@@ -293,12 +293,11 @@ class ChannelAssociatedGroupController
       sync_message_event_->Signal();
     }
 
-    std::unique_ptr<mojo::Message> PopSyncMessage(uint32_t id) {
+    mojo::Message PopSyncMessage(uint32_t id) {
       controller_->lock_.AssertAcquired();
       if (sync_messages_.empty() || sync_messages_.front().first != id)
-        return nullptr;
-      std::unique_ptr<mojo::Message> message =
-          std::move(sync_messages_.front().second);
+        return mojo::Message();
+      mojo::Message message = std::move(sync_messages_.front().second);
       sync_messages_.pop();
       return message;
     }
@@ -352,15 +351,14 @@ class ChannelAssociatedGroupController
         base::AutoLock locker(controller_->lock_);
         bool more_to_process = false;
         if (!sync_messages_.empty()) {
-          std::unique_ptr<mojo::Message> message(
-              std::move(sync_messages_.front().second));
+          mojo::Message message = std::move(sync_messages_.front().second);
           sync_messages_.pop();
 
           bool dispatch_succeeded;
           mojo::InterfaceEndpointClient* client = client_;
           {
             base::AutoUnlock unlocker(controller_->lock_);
-            dispatch_succeeded = client->HandleIncomingMessage(message.get());
+            dispatch_succeeded = client->HandleIncomingMessage(&message);
           }
 
           if (!sync_messages_.empty())
@@ -426,8 +424,7 @@ class ChannelAssociatedGroupController
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
     std::unique_ptr<mojo::SyncHandleWatcher> sync_watcher_;
     std::unique_ptr<MojoEvent> sync_message_event_;
-    std::queue<std::pair<uint32_t, std::unique_ptr<mojo::Message>>>
-        sync_messages_;
+    std::queue<std::pair<uint32_t, mojo::Message>> sync_messages_;
     uint32_t next_sync_message_id_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Endpoint);
@@ -470,9 +467,7 @@ class ChannelAssociatedGroupController
       DCHECK(thread_checker_.CalledOnValidThread());
       if (!connector_) {
         // Pipe may not be bound yet, so we queue the message.
-        std::unique_ptr<mojo::Message> queued_message(new mojo::Message);
-        message->MoveTo(queued_message.get());
-        outgoing_messages_.emplace_back(std::move(queued_message));
+        outgoing_messages_.emplace_back(std::move(*message));
         return true;
       }
       return connector_->Accept(message);
@@ -480,20 +475,18 @@ class ChannelAssociatedGroupController
       // We always post tasks to the master endpoint thread when called from the
       // proxy thread in order to simulate IPC::ChannelProxy::Send behavior.
       DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-      std::unique_ptr<mojo::Message> passed_message(new mojo::Message);
-      message->MoveTo(passed_message.get());
       task_runner_->PostTask(
           FROM_HERE,
           base::Bind(
               &ChannelAssociatedGroupController::SendMessageOnMasterThread,
-              this, base::Passed(&passed_message)));
+              this, base::Passed(message)));
       return true;
     }
   }
 
-  void SendMessageOnMasterThread(std::unique_ptr<mojo::Message> message) {
+  void SendMessageOnMasterThread(mojo::Message message) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!SendMessage(message.get()))
+    if (!SendMessage(&message))
       RaiseError();
   }
 
@@ -611,17 +604,13 @@ class ChannelAssociatedGroupController
       // runs or else it's programmer error.
       DCHECK(proxy_task_runner_);
 
-      std::unique_ptr<mojo::Message> passed_message(new mojo::Message);
-      message->MoveTo(passed_message.get());
-
-      if (passed_message->has_flag(mojo::Message::kFlagIsSync)) {
+      if (message->has_flag(mojo::Message::kFlagIsSync)) {
         // Sync messages may need to be handled by the endpoint if it's blocking
         // on a sync reply. We pass ownership of the message to the endpoint's
         // sync message queue. If the endpoint was blocking, it will dequeue the
         // message and dispatch it. Otherwise the posted |AcceptSyncMessage()|
         // call will dequeue the message and dispatch it.
-        uint32_t message_id =
-            endpoint->EnqueueSyncMessage(std::move(passed_message));
+        uint32_t message_id = endpoint->EnqueueSyncMessage(std::move(*message));
         proxy_task_runner_->PostTask(
             FROM_HERE,
             base::Bind(&ChannelAssociatedGroupController::AcceptSyncMessage,
@@ -632,7 +621,7 @@ class ChannelAssociatedGroupController
       proxy_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&ChannelAssociatedGroupController::AcceptOnProxyThread,
-                     this, base::Passed(&passed_message)));
+                     this, base::Passed(message)));
       return true;
     }
 
@@ -645,10 +634,10 @@ class ChannelAssociatedGroupController
     return client->HandleIncomingMessage(message);
   }
 
-  void AcceptOnProxyThread(std::unique_ptr<mojo::Message> message) {
+  void AcceptOnProxyThread(mojo::Message message) {
     DCHECK(proxy_task_runner_->BelongsToCurrentThread());
 
-    mojo::InterfaceId id = message->interface_id();
+    mojo::InterfaceId id = message.interface_id();
     DCHECK(mojo::IsValidInterfaceId(id) && !mojo::IsMasterInterfaceId(id));
 
     base::AutoLock locker(lock_);
@@ -663,12 +652,12 @@ class ChannelAssociatedGroupController
     DCHECK(endpoint->task_runner()->BelongsToCurrentThread());
 
     // Sync messages should never make their way to this method.
-    DCHECK(!message->has_flag(mojo::Message::kFlagIsSync));
+    DCHECK(!message.has_flag(mojo::Message::kFlagIsSync));
 
     bool result = false;
     {
       base::AutoUnlock unlocker(lock_);
-      result = client->HandleIncomingMessage(message.get());
+      result = client->HandleIncomingMessage(&message);
     }
 
     if (!result)
@@ -684,12 +673,11 @@ class ChannelAssociatedGroupController
       return;
 
     DCHECK(endpoint->task_runner()->BelongsToCurrentThread());
-    std::unique_ptr<mojo::Message> message =
-        endpoint->PopSyncMessage(message_id);
+    mojo::Message message = endpoint->PopSyncMessage(message_id);
 
     // The message must have already been dequeued by the endpoint waking up
     // from a sync wait. Nothing to do.
-    if (!message)
+    if (message.IsNull())
       return;
 
     mojo::InterfaceEndpointClient* client = endpoint->client();
@@ -699,7 +687,7 @@ class ChannelAssociatedGroupController
     bool result = false;
     {
       base::AutoUnlock unlocker(lock_);
-      result = client->HandleIncomingMessage(message.get());
+      result = client->HandleIncomingMessage(&message);
     }
 
     if (!result)
@@ -771,7 +759,7 @@ class ChannelAssociatedGroupController
 
   // Outgoing messages that were sent before this controller was bound to a
   // real message pipe.
-  std::vector<std::unique_ptr<mojo::Message>> outgoing_messages_;
+  std::vector<mojo::Message> outgoing_messages_;
 
   // Guards the fields below for thread-safe access.
   base::Lock lock_;

@@ -101,7 +101,7 @@ class ConnectorTest : public testing::Test {
     internal::MessageBuilder builder(1, payload_size);
     memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
 
-    builder.message()->MoveTo(message);
+    *message = std::move(*builder.message());
   }
 
  protected:

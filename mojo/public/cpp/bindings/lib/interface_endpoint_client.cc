@@ -245,10 +245,8 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
     DCHECK(base::ContainsKey(sync_responses_, request_id));
     auto iter = sync_responses_.find(request_id);
     DCHECK_EQ(&response_received, iter->second->response_received);
-    if (response_received) {
-      std::unique_ptr<Message> response = std::move(iter->second->response);
-      ignore_result(sync_responder->Accept(response.get()));
-    }
+    if (response_received)
+      ignore_result(sync_responder->Accept(&iter->second->response));
     sync_responses_.erase(iter);
   }
 
@@ -292,8 +290,7 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
       auto it = sync_responses_.find(request_id);
       if (it == sync_responses_.end())
         return false;
-      it->second->response.reset(new Message());
-      message->MoveTo(it->second->response.get());
+      it->second->response = std::move(*message);
       *it->second->response_received = true;
       return true;
     }

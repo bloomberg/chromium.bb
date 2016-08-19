@@ -34,7 +34,7 @@ class MessageSerializer : public mojo::MessageReceiverWithResponder {
  private:
   // mojo::MessageReceiverWithResponder
   bool Accept(mojo::Message* message) override {
-    message->MoveTo(&message_);
+    message_ = std::move(*message);
     return true;
   }
 
