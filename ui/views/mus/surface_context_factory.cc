@@ -39,8 +39,9 @@ void SurfaceContextFactory::CreateOutputSurface(
   ui::Window* window = compositor->window();
   NativeWidgetMus* native_widget = NativeWidgetMus::GetForWindow(window);
   ui::mojom::SurfaceType surface_type = native_widget->surface_type();
-  std::unique_ptr<cc::OutputSurface> surface(new ui::OutputSurface(
-      gpu_service_, window->RequestSurface(surface_type)));
+  std::unique_ptr<cc::OutputSurface> surface(
+      new ui::OutputSurface(gpu_service_->EstablishGpuChannelSync(),
+                            window->RequestSurface(surface_type)));
   compositor->SetOutputSurface(std::move(surface));
 }
 

@@ -116,8 +116,8 @@ void MusDemo::OnWmNewDisplay(Window* window, const display::Display& display) {
   window_ = window;
 
   // Initialize bitmap uploader for sending frames to MUS.
-  uploader_.reset(new ui::BitmapUploader(window_, gpu_service_.get()));
-  uploader_->Init();
+  uploader_.reset(new ui::BitmapUploader(window_));
+  uploader_->Init(gpu_service_.get());
 
   // Draw initial frame and start the timer to regularly draw frames.
   DrawFrame();

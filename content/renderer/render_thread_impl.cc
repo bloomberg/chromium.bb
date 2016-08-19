@@ -1818,7 +1818,9 @@ RenderThreadImpl::CreateCompositorOutputSurface(
       command_line.HasSwitch(switches::kUseMusInRenderer)) {
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);
-    return connection->CreateOutputSurface(gpu_service_.get());
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
+        EstablishGpuChannelSync();
+    return connection->CreateOutputSurface(std::move(gpu_channel_host));
   }
 #endif
 

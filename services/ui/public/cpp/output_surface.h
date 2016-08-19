@@ -12,13 +12,15 @@
 #include "services/ui/public/cpp/window_surface.h"
 #include "services/ui/public/cpp/window_surface_client.h"
 
-namespace ui {
+namespace gpu {
+class GpuChannelHost;
+}
 
-class GpuService;
+namespace ui {
 
 class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
  public:
-  OutputSurface(GpuService* gpu_service,
+  OutputSurface(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
                 std::unique_ptr<WindowSurface> surface);
   ~OutputSurface() override;
 

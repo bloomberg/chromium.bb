@@ -39,12 +39,14 @@ void RenderWidgetMusConnection::Bind(
 }
 
 std::unique_ptr<cc::OutputSurface>
-RenderWidgetMusConnection::CreateOutputSurface(ui::GpuService* gpu_service) {
+RenderWidgetMusConnection::CreateOutputSurface(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!window_surface_binding_);
 
   std::unique_ptr<cc::OutputSurface> surface(new ui::OutputSurface(
-      gpu_service, ui::WindowSurface::Create(&window_surface_binding_)));
+      std::move(gpu_channel_host),
+      ui::WindowSurface::Create(&window_surface_binding_)));
   if (compositor_mus_connection_) {
     compositor_mus_connection_->AttachSurfaceOnMainThread(
         std::move(window_surface_binding_));

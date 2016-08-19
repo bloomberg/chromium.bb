@@ -14,6 +14,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "services/ui/public/cpp/gles2_context.h"
+#include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_surface.h"
 
@@ -27,26 +28,25 @@ const uint32_t g_transparent_color = 0x00000000;
 const char kBitmapUploaderForAcceleratedWidget[] =
     "__BITMAP_UPLOADER_ACCELERATED_WIDGET__";
 
-BitmapUploader::BitmapUploader(Window* window, GpuService* gpu_service)
+BitmapUploader::BitmapUploader(Window* window)
     : window_(window),
-      gpu_service_(gpu_service),
       color_(g_transparent_color),
       width_(0),
       height_(0),
       format_(BGRA),
-      next_resource_id_(1u) {}
-
-BitmapUploader::~BitmapUploader() {
+      next_resource_id_(1u) {
 }
 
-void BitmapUploader::Init() {
+void BitmapUploader::Init(ui::GpuService* gpu_service) {
   surface_ = window_->RequestSurface(mojom::SurfaceType::DEFAULT);
   surface_->BindToThread();
   surface_->set_client(this);
 
-  gles2_context_ = GLES2Context::CreateOffscreenContext(gpu_service_);
-  // CreateOffscreenContext() may return null.
+  gles2_context_ = GLES2Context::CreateOffscreenContext(
+      gpu_service->EstablishGpuChannelSync());
 }
+
+BitmapUploader::~BitmapUploader() {}
 
 // Sets the color which is RGBA.
 void BitmapUploader::SetColor(uint32_t color) {

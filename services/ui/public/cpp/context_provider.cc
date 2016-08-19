@@ -7,15 +7,17 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/gles2_context.h"
 
 namespace ui {
 
-ContextProvider::ContextProvider(GpuService* gpu_service)
-    : gpu_service_(gpu_service) {}
+ContextProvider::ContextProvider(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host)
+    : gpu_channel_host_(std::move(gpu_channel_host)) {}
 
 bool ContextProvider::BindToCurrentThread() {
-  context_ = GLES2Context::CreateOffscreenContext(gpu_service_);
+  context_ = GLES2Context::CreateOffscreenContext(gpu_channel_host_);
   return !!context_;
 }
 

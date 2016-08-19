@@ -13,8 +13,8 @@
 #include "content/renderer/mus/compositor_mus_connection.h"
 #include "services/ui/public/cpp/window_surface.h"
 
-namespace ui {
-class GpuService;
+namespace gpu {
+class GpuChannelHost;
 }
 
 namespace content {
@@ -29,7 +29,8 @@ class CONTENT_EXPORT RenderWidgetMusConnection
   void Bind(mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request);
 
   // Create a cc output surface.
-  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(ui::GpuService* gpu);
+  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
 
   static RenderWidgetMusConnection* Get(int routing_id);
 

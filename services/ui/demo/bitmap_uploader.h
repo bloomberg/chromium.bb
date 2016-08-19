@@ -28,11 +28,10 @@ extern const char kBitmapUploaderForAcceleratedWidget[];
 // Window.
 class BitmapUploader : public WindowSurfaceClient {
  public:
-  BitmapUploader(Window* window, GpuService* gpu_service);
+  explicit BitmapUploader(Window* window);
   ~BitmapUploader() override;
 
-  void Init();
-
+  void Init(GpuService* gpu_service);
   // Sets the color which is RGBA.
   void SetColor(uint32_t color);
 
@@ -68,7 +67,6 @@ class BitmapUploader : public WindowSurfaceClient {
   // This may be null if there is an error contacting mus/initializing. We
   // assume we'll be shutting down soon and do nothing in this case.
   std::unique_ptr<GLES2Context> gles2_context_;
-  GpuService* gpu_service_;
 
   uint32_t color_;
   int width_;

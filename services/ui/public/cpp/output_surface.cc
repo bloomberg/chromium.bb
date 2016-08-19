@@ -7,16 +7,19 @@
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/window_surface.h"
 
 namespace ui {
 
-OutputSurface::OutputSurface(GpuService* gpu_service,
-                             std::unique_ptr<ui::WindowSurface> surface)
-    : cc::OutputSurface(make_scoped_refptr(new ContextProvider(gpu_service)),
-                        nullptr,
-                        nullptr),
+OutputSurface::OutputSurface(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    std::unique_ptr<ui::WindowSurface> surface)
+    : cc::OutputSurface(
+          make_scoped_refptr(new ContextProvider(std::move(gpu_channel_host))),
+          nullptr,
+          nullptr),
       surface_(std::move(surface)) {
   capabilities_.delegated_rendering = true;
 }

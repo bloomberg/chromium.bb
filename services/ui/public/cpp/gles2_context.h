@@ -14,16 +14,18 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
 namespace gpu {
+
 class CommandBufferProxyImpl;
+class GpuChannelHost;
 class TransferBuffer;
+
 namespace gles2 {
 class GLES2CmdHelper;
 }
-}
+
+}  // namespace gpu
 
 namespace ui {
-
-class GpuService;
 
 class GLES2Context {
  public:
@@ -34,11 +36,11 @@ class GLES2Context {
   gpu::ContextSupport* context_support() const { return implementation_.get(); }
 
   static std::unique_ptr<GLES2Context> CreateOffscreenContext(
-      GpuService* gpu_service);
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
 
  private:
   GLES2Context();
-  bool Initialize(GpuService* gpu_service);
+  bool Initialize(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
 
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_proxy_impl_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;

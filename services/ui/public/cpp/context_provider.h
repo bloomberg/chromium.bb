@@ -13,6 +13,10 @@
 #include "cc/output/context_provider.h"
 #include "mojo/public/cpp/system/core.h"
 
+namespace gpu {
+class GpuChannelHost;
+}
+
 namespace shell {
 class Connector;
 }
@@ -20,11 +24,10 @@ class Connector;
 namespace ui {
 
 class GLES2Context;
-class GpuService;
 
 class ContextProvider : public cc::ContextProvider {
  public:
-  explicit ContextProvider(GpuService* gpu_service);
+  explicit ContextProvider(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
@@ -44,7 +47,7 @@ class ContextProvider : public cc::ContextProvider {
 
  private:
   std::unique_ptr<GLES2Context> context_;
-  GpuService* gpu_service_;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextProvider);
 };
