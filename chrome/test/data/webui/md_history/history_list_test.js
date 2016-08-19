@@ -31,6 +31,10 @@ cr.define('md_history.history_list_test', function() {
         ];
       });
 
+      setup(function() {
+        app.queryState_.incremental = true;
+      });
+
       test('cancelling selection of multiple items', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         return flush().then(function() {
@@ -185,7 +189,7 @@ cr.define('md_history.history_list_test', function() {
           assertTrue(items[2].isCardStart);
           assertTrue(items[3].isCardEnd);
           assertTrue(items[4].isCardStart);
-          assertTrue(items[4].isCardEnd)
+          assertTrue(items[4].isCardEnd);
         });
       });
 
@@ -274,6 +278,7 @@ cr.define('md_history.history_list_test', function() {
           MockInteractions.tap(item.$.checkbox);
 
           assertEquals(1, toolbar.count);
+          app.queryState_.incremental = false;
 
           app.historyResult(
               createHistoryInfo('ample'),
@@ -461,6 +466,8 @@ cr.define('md_history.history_list_test', function() {
         registerMessageCallback('navigateToUrl', this, undefined);
         app.queryState_.queryingDisabled = true;
         app.set('queryState_.searchTerm', '');
+        // Unselect all items, clear the list.
+        element.addNewResults([], false);
         return flush();
       });
     });

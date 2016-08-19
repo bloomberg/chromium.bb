@@ -95,6 +95,10 @@ function setForeignSessions(sessionList, isTabSyncEnabled) {
  * Called when the history is deleted by someone else.
  */
 function historyDeleted() {
+  waitForAppUpgrade().then(function() {
+    /** @type {HistoryAppElement} */($('history-app'))
+        .historyDeleted();
+  });
 }
 
 /**

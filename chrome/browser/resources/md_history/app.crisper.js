@@ -14080,8 +14080,6 @@ Polymer({
       value: '',
     },
 
-    lastSearchedTerm_: String,
-
     querying: Boolean,
 
     // An array of history entries in reverse chronological order.
@@ -14136,18 +14134,19 @@ Polymer({
    * Adds the newly updated history results into historyData_. Adds new fields
    * for each result.
    * @param {!Array<!HistoryEntry>} historyResults The new history results.
+   * @param {boolean} incremental Whether the result is from loading more
+   * history, or a new search/list reload.
    */
-  addNewResults: function(historyResults) {
+  addNewResults: function(historyResults, incremental) {
     var results = historyResults.slice();
     /** @type {IronScrollThresholdElement} */(this.$['scroll-threshold'])
         .clearTriggers();
 
-    if (this.lastSearchedTerm_ != this.searchedTerm) {
+    if (!incremental) {
       this.resultLoadingDisabled_ = false;
       if (this.historyData_)
         this.splice('historyData_', 0, this.historyData_.length);
       this.fire('unselect-all');
-      this.lastSearchedTerm_ = this.searchedTerm;
     }
 
     if (this.historyData_) {
@@ -14385,7 +14384,7 @@ Polymer({
     }
 
     var list = /** @type {HistoryListElement} */(this.$['infinite-list']);
-    list.addNewResults(results);
+    list.addNewResults(results, this.queryState.incremental);
     if (info.finished)
       list.disableResultLoading();
   },
@@ -14426,6 +14425,15 @@ Polymer({
       queryState.searchTerm, queryState.groupedOffset, queryState.range,
       lastVisitTime, maxResults
     ]);
+  },
+
+  historyDeleted: function() {
+    // Do not reload the list when there are items checked.
+    if (this.getSelectedItemCount() > 0)
+      return;
+
+    // Reload the list with current search state.
+    this.queryHistory(false);
   },
 
   /** @return {number} */
@@ -15244,6 +15252,13 @@ Polymer({
     }
 
     this.set('queryResult_.sessionList', sessionList);
+  },
+
+  /**
+   * Called when browsing data is cleared.
+   */
+  historyDeleted: function() {
+    this.$.history.historyDeleted();
   },
 
   /**

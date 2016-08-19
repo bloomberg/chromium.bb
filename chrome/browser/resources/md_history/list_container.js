@@ -44,7 +44,7 @@ Polymer({
     }
 
     var list = /** @type {HistoryListElement} */(this.$['infinite-list']);
-    list.addNewResults(results);
+    list.addNewResults(results, this.queryState.incremental);
     if (info.finished)
       list.disableResultLoading();
   },
@@ -85,6 +85,15 @@ Polymer({
       queryState.searchTerm, queryState.groupedOffset, queryState.range,
       lastVisitTime, maxResults
     ]);
+  },
+
+  historyDeleted: function() {
+    // Do not reload the list when there are items checked.
+    if (this.getSelectedItemCount() > 0)
+      return;
+
+    // Reload the list with current search state.
+    this.queryHistory(false);
   },
 
   /** @return {number} */

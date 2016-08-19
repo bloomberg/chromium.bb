@@ -14,8 +14,6 @@ Polymer({
       value: '',
     },
 
-    lastSearchedTerm_: String,
-
     querying: Boolean,
 
     // An array of history entries in reverse chronological order.
@@ -70,18 +68,19 @@ Polymer({
    * Adds the newly updated history results into historyData_. Adds new fields
    * for each result.
    * @param {!Array<!HistoryEntry>} historyResults The new history results.
+   * @param {boolean} incremental Whether the result is from loading more
+   * history, or a new search/list reload.
    */
-  addNewResults: function(historyResults) {
+  addNewResults: function(historyResults, incremental) {
     var results = historyResults.slice();
     /** @type {IronScrollThresholdElement} */(this.$['scroll-threshold'])
         .clearTriggers();
 
-    if (this.lastSearchedTerm_ != this.searchedTerm) {
+    if (!incremental) {
       this.resultLoadingDisabled_ = false;
       if (this.historyData_)
         this.splice('historyData_', 0, this.historyData_.length);
       this.fire('unselect-all');
-      this.lastSearchedTerm_ = this.searchedTerm;
     }
 
     if (this.historyData_) {
