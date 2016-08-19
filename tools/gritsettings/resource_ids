@@ -222,9 +222,6 @@
   "ui/chromeos/ui_chromeos_strings.grd": {
     "messages": [24950],
   },
-  "chrome/common/extensions_api_resources.grd": {
-    "includes": [25050],
-  },
   "extensions/extensions_resources.grd": {
     "includes": [25250],
   },

@@ -156,6 +156,30 @@
     'non_compiled_schema_files': [
       '<@(main_non_compiled_schema_files)',
     ],
+
+    'non_compiled_bundle_schema_files': [
+      'app.json',
+      'browser_action.json',
+      'commands.json',
+      'declarative_content.json',
+      'file_browser_handler.json',
+      'page_action.json',
+      'privacy.json',
+      'proxy.json',
+      'tts_engine.json',
+      'tts.json',
+      'types_private.json',
+      'webstore.json',
+    ],
+
+    # On ChromeOS, input_method_private is fully compiled (as part of
+    # schema_files), and so gets added to the bundle already. On other
+    # platforms, we still need it added to the bundle.
+    # TODO(devlin): That's weird. Investigate.
+    'non_chromeos_non_compiled_bundle_schema_files': [
+      'input_method_private.json',
+    ],
+
     'schema_dependencies': [
       '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
     ],

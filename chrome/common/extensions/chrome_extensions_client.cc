@@ -24,7 +24,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/common_resources.h"
-#include "chrome/grit/extensions_api_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/url_constants.h"
@@ -255,27 +254,6 @@ base::StringPiece ChromeExtensionsClient::GetAPISchema(
 
 void ChromeExtensionsClient::RegisterAPISchemaResources(
     ExtensionAPI* api) const {
-  api->RegisterSchemaResource("accessibilityPrivate",
-                              IDR_EXTENSION_API_JSON_ACCESSIBILITYPRIVATE);
-  api->RegisterSchemaResource("app", IDR_EXTENSION_API_JSON_APP);
-  api->RegisterSchemaResource("browserAction",
-                              IDR_EXTENSION_API_JSON_BROWSERACTION);
-  api->RegisterSchemaResource("commands", IDR_EXTENSION_API_JSON_COMMANDS);
-  api->RegisterSchemaResource("declarativeContent",
-                              IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT);
-  api->RegisterSchemaResource("fileBrowserHandler",
-                              IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER);
-  api->RegisterSchemaResource("inputMethodPrivate",
-                              IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE);
-  api->RegisterSchemaResource("pageAction", IDR_EXTENSION_API_JSON_PAGEACTION);
-  api->RegisterSchemaResource("privacy", IDR_EXTENSION_API_JSON_PRIVACY);
-  api->RegisterSchemaResource("proxy", IDR_EXTENSION_API_JSON_PROXY);
-  api->RegisterSchemaResource("ttsEngine", IDR_EXTENSION_API_JSON_TTSENGINE);
-  api->RegisterSchemaResource("tts", IDR_EXTENSION_API_JSON_TTS);
-  api->RegisterSchemaResource("types", IDR_EXTENSION_API_JSON_TYPES);
-  api->RegisterSchemaResource("types.private",
-                              IDR_EXTENSION_API_JSON_TYPES_PRIVATE);
-  api->RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);
 }
 
 bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {

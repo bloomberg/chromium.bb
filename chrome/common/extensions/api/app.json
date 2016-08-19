@@ -19,6 +19,16 @@
         "type": "object",
         "properties": {},
         "additionalProperties": { "type": "any" }
+      },
+      {
+        "id": "InstallState",
+        "type": "string",
+        "enum": ["not_installed", "installed", "disabled"]
+      },
+      {
+        "id": "RunningState",
+        "type": "string",
+        "enum": ["running", "cannot_run", "ready_to_run"]
       }
     ],
     "functions": [
@@ -43,9 +53,8 @@
             "name": "callback",
             "parameters": [
               {
-                "type": "string",
-                "name": "state",
-                "enum": [ "not_installed", "installed", "disabled" ]
+                "$ref": "InstallState",
+                "name": "state"
               }
             ]
           }
@@ -57,8 +66,7 @@
         "type": "function",
         "parameters": [],
         "returns": {
-          "type": "string",
-          "enum": [ "running", "cannot_run", "ready_to_run" ]
+          "$ref": "RunningState"
         }
       },
       {

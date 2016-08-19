@@ -16,6 +16,26 @@
         "inline_doc": true
       },
       {
+        "id": "PageStateMatcherInstanceType",
+        "type": "string",
+        "enum": ["declarativeContent.PageStateMatcher"]
+      },
+      {
+        "id": "ShowPageActionInstanceType",
+        "type": "string",
+        "enum": ["declarativeContent.ShowPageAction"]
+      },
+      {
+        "id": "SetIconInstanceType",
+        "type": "string",
+        "enum": ["declarativeContent.SetIcon"]
+      },
+      {
+        "id": "RequestContentScriptInstanceType",
+        "type": "string",
+        "enum": ["declarativeContent.RequestContentScript"]
+      },
+      {
         "id": "PageStateMatcher",
         "type": "object",
         "description": "Matches the state of a web page by various criteria.",
@@ -46,7 +66,7 @@
             "optional": true
           },
           "instanceType": {
-            "type": "string", "enum": ["declarativeContent.PageStateMatcher"],
+            "$ref": "PageStateMatcherInstanceType",
             "nodoc": true
           }
         }
@@ -57,7 +77,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeContent.ShowPageAction"],
+            "$ref": "ShowPageActionInstanceType",
             "nodoc": true
           }
         }
@@ -68,7 +88,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeContent.SetIcon"],
+            "$ref": "SetIconInstanceType",
             "nodoc": true
           },
           "imageData": {
@@ -123,7 +143,7 @@
             "description": "Whether to insert the content script on about:blank and about:srcdoc. Default is false."
           },
           "instanceType": {
-            "type": "string", "enum": ["declarativeContent.RequestContentScript"],
+            "$ref": "RequestContentScriptInstanceType",
             "nodoc": true
           }
         }

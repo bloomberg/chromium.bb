@@ -8,6 +8,11 @@
     "description": "The <code>chrome.types.private</code> API contains private type declarations for Chrome.",
     "types": [
       {
+        "id": "Scope",
+        "type": "string",
+        "enum": ["regular", "regular_only", "incognito_persistent", "incognito_session_only"]
+      },
+      {
         "id": "ChromeDirectSetting",
         "type": "object",
         "js_module": "ChromeDirectSetting",
@@ -70,8 +75,7 @@
                     "type": "any"
                   },
                   "scope": {
-                    "type": "string",
-                    "enum": ["regular", "regular_only", "incognito_persistent", "incognito_session_only"],
+                    "$ref": "Scope",
                     "optional": true,
                     "description": "Where to set the setting (default: regular). One of<ul><li><var>regular</var>: setting for the regular profile (which is inherited by the incognito profile if not overridden elsewhere),</li><li><var>regular_only</var>: setting for the regular profile only (not inherited by the incognito profile),</li><li><var>incognito_persistent</var>: setting for the incognito profile that survives browser restarts (overrides regular preferences),</li><li><var>incognito_session_only</var>: setting for the incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</li></ul>"
                   }
@@ -97,8 +101,7 @@
                 "description": "Which setting to clear.",
                 "properties": {
                   "scope": {
-                    "type": "string",
-                    "enum": ["regular", "regular_only", "incognito_persistent", "incognito_session_only"],
+                    "$ref": "Scope",
                     "optional": true,
                     "description": "Where to clear the setting (default: regular). One of<ul><li><var>regular</var>: setting for the regular profile (which is inherited by the incognito profile if not overridden elsewhere),</li><li><var>regular_only</var>: setting for the regular profile only (not inherited by the incognito profile),</li><li><var>incognito_persistent</var>: setting for the incognito profile that survives browser restarts (overrides regular preferences),</li><li><var>incognito_session_only</var>: setting for the incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</li></ul>"
                   }

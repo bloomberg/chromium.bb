@@ -6,6 +6,13 @@
   {
     "namespace": "ttsEngine",
     "description": "Use the <code>chrome.ttsEngine</code> API to implement a text-to-speech(TTS) engine using an extension. If your extension registers using this API, it will receive events containing an utterance to be spoken and other parameters when any extension or Chrome App uses the <a href='tts'>tts</a> API to generate speech. Your extension can then use any available web technology to synthesize and output the speech, and send events back to the calling function to report the status.",
+    "types": [
+      {
+        "id": "VoiceGender",
+        "type": "string",
+        "enum": ["male", "female"]
+      }
+    ],
     "functions": [
       {
         "name": "sendTtsEvent",
@@ -52,10 +59,9 @@
                 "description": "The language to be used for synthesis, in the form <em>language</em>-<em>region</em>. Examples: 'en', 'en-US', 'en-GB', 'zh-CN'."
               },
               "gender": {
-                "type": "string",
+                "$ref": "VoiceGender",
                 "optional": true,
-                "description": "Gender of voice for synthesized speech.",
-                "enum": ["male", "female"]
+                "description": "Gender of voice for synthesized speech."
               },
               "rate": {
                 "type": "number",

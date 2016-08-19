@@ -8,13 +8,22 @@
     "description": "Use the <code>chrome.tts</code> API to play synthesized text-to-speech (TTS). See also the related <a href='http://developer.chrome.com/extensions/ttsEngine'>ttsEngine</a> API, which allows an extension to implement a speech engine.",
     "types": [
       {
+        "id": "EventType",
+        "type": "string",
+        "enum": ["start", "end", "word", "sentence", "marker", "interrupted", "cancelled", "error", "pause", "resume"]
+      },
+      {
+        "id": "VoiceGender",
+        "type": "string",
+        "enum": ["male", "female"]
+      },
+      {
         "id": "TtsEvent",
         "type": "object",
         "description": "An event from the TTS engine to communicate the status of an utterance.",
         "properties": {
           "type": {
-            "type": "string",
-            "enum": ["start", "end", "word", "sentence", "marker", "interrupted", "cancelled", "error", "pause", "resume"],
+            "$ref": "EventType",
             "description": "The type can be 'start' as soon as speech has started, 'word' when a word boundary is reached, 'sentence' when a sentence boundary is reached, 'marker' when an SSML mark element is reached, 'end' when the end of the utterance is reached, 'interrupted' when the utterance is stopped or interrupted before reaching the end, 'cancelled' when it's removed from the queue before ever being synthesized, or 'error' when any other error occurs. When pausing speech, a 'pause' event is fired if a particular utterance is paused in the middle, and 'resume' if an utterance resumes speech. Note that pause and resume events may not fire if speech is paused in-between utterances."
           },
           "charIndex": {
@@ -57,10 +66,9 @@
             "description": "The language that this voice supports, in the form <em>language</em>-<em>region</em>. Examples: 'en', 'en-US', 'en-GB', 'zh-CN'."
           },
           "gender": {
-            "type": "string",
+            "$ref": "VoiceGender",
             "optional": true,
-            "description": "This voice's gender.",
-            "enum": ["male", "female"]
+            "description": "This voice's gender."
           },
           "remote": {
             "type": "boolean",
@@ -119,10 +127,9 @@
                 "description": "The language to be used for synthesis, in the form <em>language</em>-<em>region</em>. Examples: 'en', 'en-US', 'en-GB', 'zh-CN'."
               },
               "gender": {
-                "type": "string",
+                "$ref": "VoiceGender",
                 "optional": true,
-                "description": "Gender of voice for synthesized speech.",
-                "enum": ["male", "female"]
+                "description": "Gender of voice for synthesized speech."
               },
               "rate": {
                 "type": "number",

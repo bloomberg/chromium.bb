@@ -8,11 +8,21 @@
     "description": "Use the <code>chrome.proxy</code> API to manage Chrome's proxy settings. This API relies on the <a href='types#ChromeSetting'>ChromeSetting prototype of the type API</a> for getting and setting the proxy configuration.",
     "types": [
       {
+        "id": "Scheme",
+        "type": "string",
+        "enum": ["http", "https", "quic", "socks4", "socks5"]
+      },
+      {
+        "id": "Mode",
+        "type": "string",
+        "enum": ["direct", "auto_detect", "pac_script", "fixed_servers", "system"]
+      },
+      {
         "id": "ProxyServer",
         "type": "object",
         "description": "An object encapsulating a single proxy server's specification.",
         "properties": {
-          "scheme": {"type": "string", "optional": true, "enum": ["http", "https", "quic", "socks4", "socks5"], "description": "The scheme (protocol) of the proxy server itself. Defaults to 'http'."},
+          "scheme": {"$ref": "Scheme", "optional": true, "description": "The scheme (protocol) of the proxy server itself. Defaults to 'http'."},
           "host": {"type": "string", "description": "The URI of the proxy server. This must be an ASCII hostname (in Punycode format). IDNA is not supported, yet."},
           "port": {"type": "integer", "optional": true, "description": "The port of the proxy server. Defaults to a port that depends on the scheme."}
         }
@@ -48,8 +58,7 @@
           "rules": {"$ref": "ProxyRules", "optional": true, "description": "The proxy rules describing this configuration. Use this for 'fixed_servers' mode."},
           "pacScript": {"$ref": "PacScript", "optional": true, "description": "The proxy auto-config (PAC) script for this configuration. Use this for 'pac_script' mode."},
           "mode": {
-            "type": "string",
-            "enum": ["direct", "auto_detect", "pac_script", "fixed_servers", "system"],
+            "$ref": "Mode",
             "description": "'direct' = Never use a proxy<br>'auto_detect' = Auto detect proxy settings<br>'pac_script' = Use specified PAC script<br>'fixed_servers' = Manually specify proxy servers<br>'system' = Use system proxy settings"
           }
         }

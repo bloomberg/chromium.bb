@@ -25,19 +25,6 @@ grit("resources") {
   ]
 }
 
-# GYP version: chrome/chrome_resources.gyp:chrome_resources
-#              (generate_extensions_api_resources action)
-if (enable_extensions) {
-  grit("extensions_api_resources") {
-    source = "extensions_api_resources.grd"
-    output_dir = "$root_gen_dir/chrome"
-    outputs = [
-      "grit/extensions_api_resources.h",
-      "extensions_api_resources.pak",
-    ]
-  }
-}
-
 buildflag_header("features") {
   header = "features.h"
   flags = [

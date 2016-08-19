@@ -211,18 +211,6 @@
         },
       ],
       'conditions': [
-        ['enable_extensions==1', {
-          'actions': [
-            {
-              # GN version: //chrome/common:extensions_api_resources
-              'action_name': 'generate_extensions_api_resources',
-              'variables': {
-                'grit_grd_file': 'common/extensions_api_resources.grd',
-              },
-              'includes': [ 'chrome_grit_action.gypi' ],
-            }
-          ],
-        }],
         ['OS != "android" and OS != "ios"', {
           'dependencies': [ 'make_file_types_protobuf' ]
         }],

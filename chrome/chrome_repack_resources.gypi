@@ -47,7 +47,6 @@
         'pak_inputs': [
           '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_renderer_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
-          '<(grit_out_dir)/extensions_api_resources.pak',
         ],
       }],
     ],
