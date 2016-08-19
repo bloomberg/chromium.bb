@@ -235,7 +235,7 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
   bool response_received = false;
   std::unique_ptr<MessageReceiver> sync_responder(responder);
   sync_responses_.insert(std::make_pair(
-      request_id, base::WrapUnique(new SyncResponseInfo(&response_received))));
+      request_id, base::MakeUnique<SyncResponseInfo>(&response_received)));
 
   base::WeakPtr<InterfaceEndpointClient> weak_self =
       weak_ptr_factory_.GetWeakPtr();

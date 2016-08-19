@@ -171,7 +171,7 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
   bool response_received = false;
   std::unique_ptr<MessageReceiver> sync_responder(responder);
   sync_responses_.insert(std::make_pair(
-      request_id, base::WrapUnique(new SyncResponseInfo(&response_received))));
+      request_id, base::MakeUnique<SyncResponseInfo>(&response_received)));
 
   base::WeakPtr<Router> weak_self = weak_factory_.GetWeakPtr();
   connector_.SyncWatch(&response_received);
