@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -25,6 +26,12 @@ import org.chromium.chrome.browser.signin.SigninAccessPoint;
  * should be enabled, etc.
  */
 public abstract class StatusItem implements NewTabPageItem {
+    /**
+     * Delegate to provide the status cards a way to interact with the rest of the system: tap
+     * handler, etc.
+     */
+    public interface ActionDelegate { void onButtonTapped(); }
+
     /**
      * ViewHolder for an item of type {@link #VIEW_TYPE_STATUS}.
      */
@@ -65,20 +72,37 @@ public abstract class StatusItem implements NewTabPageItem {
         }
     }
 
-    private static class NoSnippets extends StatusItem {
-        private final NewTabPageAdapter mNewTabPageAdapter;
+    private static class NoBookmarks extends StatusItem {
+        public NoBookmarks() {
+            super(R.string.ntp_status_card_title_no_bookmarks,
+                    R.string.ntp_status_card_no_bookmarks, 0);
+            Log.d(TAG, "Registering card for status: No Bookmarks");
+        }
 
-        public NoSnippets(NewTabPageAdapter adapter) {
-            super(R.string.ntp_status_card_title_empty,
-                    R.string.ntp_status_card_body_empty,
+        @Override
+        protected void performAction(Context context) {
+            assert false; // not reached.
+        }
+
+        @Override
+        protected boolean hasAction() {
+            return false;
+        }
+    }
+
+    private static class NoSnippets extends StatusItem {
+        private final ActionDelegate mActionDelegate;
+
+        public NoSnippets(ActionDelegate actionDelegate) {
+            super(R.string.ntp_status_card_title_no_articles, R.string.ntp_status_card_no_articles,
                     R.string.reload);
-            mNewTabPageAdapter = adapter;
+            mActionDelegate = actionDelegate;
             Log.d(TAG, "Registering card for status: No Snippets");
         }
 
         @Override
         protected void performAction(Context context) {
-            mNewTabPageAdapter.reloadSnippets();
+            mActionDelegate.onButtonTapped();
         }
     }
 
@@ -104,14 +128,16 @@ public abstract class StatusItem implements NewTabPageItem {
     private final int mDescriptionStringId;
     private final int mActionStringId;
 
-    public static StatusItem create(@CategoryStatusEnum int categoryStatus,
-            NewTabPageAdapter adapter) {
+    public static StatusItem create(
+            @CategoryStatusEnum int categoryStatus, @Nullable ActionDelegate actionDelegate) {
         switch (categoryStatus) {
-            // TODO(dgn): AVAILABLE_LOADING and INITIALIZING should show a progress indicator.
             case CategoryStatus.AVAILABLE:
             case CategoryStatus.AVAILABLE_LOADING:
             case CategoryStatus.INITIALIZING:
-                return new NoSnippets(adapter);
+                // TODO(dgn): rewrite this whole thing? Get one card and change its state instead
+                // of recreating it. It would be more flexible in terms of adapting the content
+                // to different usages.
+                return actionDelegate == null ? new NoBookmarks() : new NoSnippets(actionDelegate);
 
             case CategoryStatus.SIGNED_OUT:
                 return new SignedOut();

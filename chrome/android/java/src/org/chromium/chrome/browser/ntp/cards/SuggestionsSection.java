@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ntp.cards.StatusItem.ActionDelegate;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
@@ -23,12 +24,12 @@ public class SuggestionsSection implements ItemGroup {
     private final SectionHeader mHeader;
     private StatusItem mStatus;
     private final ProgressItem mProgressIndicator = new ProgressItem();
+    private final ActionDelegate mActionDelegate;
     private final ActionItem mMoreButton;
 
     public SuggestionsSection(int category, List<SnippetArticle> suggestions,
             @CategoryStatusEnum int status, SuggestionsCategoryInfo info,
-            NewTabPageAdapter adapter) {
-
+            final NewTabPageAdapter adapter) {
         mHeader = new SectionHeader(info.getTitle());
         // TODO(pke): Replace the condition with "info.hasMoreButton()" once all other categories
         // are supported by the C++ backend, too.
@@ -40,7 +41,20 @@ public class SuggestionsSection implements ItemGroup {
             showMoreButton = ChromeFeatureList.isEnabled("DownloadsUi");
         }
         mMoreButton = showMoreButton ? new ActionItem(category) : null;
-        setSuggestions(suggestions, status, adapter);
+
+        // TODO(dgn): Properly define strings, actions, etc. for each section and category type.
+        if (showMoreButton) {
+            mActionDelegate = null;
+        } else {
+            mActionDelegate = new ActionDelegate() {
+                @Override
+                public void onButtonTapped() {
+                    adapter.reloadSnippets();
+                }
+            };
+        }
+
+        setSuggestions(suggestions, status);
     }
 
     @Override
@@ -48,12 +62,11 @@ public class SuggestionsSection implements ItemGroup {
         List<NewTabPageItem> items = new ArrayList<>();
         items.add(mHeader);
         items.addAll(mSuggestions);
-        if (mSuggestions.isEmpty()) {
-            items.add(mStatus);
-            items.add(mProgressIndicator);
-        } else if (mMoreButton != null) {
-            items.add(mMoreButton);
-        }
+
+        if (mSuggestions.isEmpty()) items.add(mStatus);
+        if (mMoreButton != null) items.add(mMoreButton);
+        if (mSuggestions.isEmpty()) items.add(mProgressIndicator);
+
         return Collections.unmodifiableList(items);
     }
 
@@ -74,11 +87,11 @@ public class SuggestionsSection implements ItemGroup {
         return !mSuggestions.isEmpty();
     }
 
-    public void setSuggestions(List<SnippetArticle> suggestions,
-            @CategoryStatusEnum int status, NewTabPageAdapter adapter) {
+    public void setSuggestions(List<SnippetArticle> suggestions, @CategoryStatusEnum int status) {
         copyThumbnails(suggestions);
 
-        mStatus = StatusItem.create(status, adapter);
+        mStatus = StatusItem.create(status, mActionDelegate);
+
         mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
 
         mSuggestions.clear();

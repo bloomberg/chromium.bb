@@ -150,8 +150,8 @@ public class SnippetsBridge implements SuggestionsSource {
 
     @CalledByNative
     private static SuggestionsCategoryInfo createSuggestionsCategoryInfo(
-            String title, int cardLayout, boolean hasMoreButton) {
-        return new SuggestionsCategoryInfo(title, cardLayout, hasMoreButton);
+            String title, int cardLayout, boolean hasMoreButton, boolean hideIfEmpty) {
+        return new SuggestionsCategoryInfo(title, cardLayout, hasMoreButton, hideIfEmpty);
     }
 
     @CalledByNative

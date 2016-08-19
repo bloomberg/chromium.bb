@@ -25,7 +25,8 @@ class CategoryInfo {
  public:
   CategoryInfo(const base::string16& title,
                ContentSuggestionsCardLayout card_layout,
-               bool has_more_button);
+               bool has_more_button,
+               bool show_if_empty);
   CategoryInfo(CategoryInfo&&) = default;
   CategoryInfo& operator=(CategoryInfo&&) = default;
 
@@ -42,10 +43,14 @@ class CategoryInfo {
   // action, it queries the provider for more suggestions.
   bool has_more_button() const { return has_more_button_; }
 
+  // Whether this category should be shown if it offers no suggestions.
+  bool show_if_empty() const { return show_if_empty_; }
+
  private:
   base::string16 title_;
   ContentSuggestionsCardLayout card_layout_;
   bool has_more_button_;
+  bool show_if_empty_;
 
   DISALLOW_COPY_AND_ASSIGN(CategoryInfo);
 };

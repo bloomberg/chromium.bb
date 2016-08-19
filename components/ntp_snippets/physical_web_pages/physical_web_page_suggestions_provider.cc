@@ -70,7 +70,8 @@ CategoryInfo PhysicalWebPageSuggestionsProvider::GetCategoryInfo(
   // TODO(vitaliii): Use a proper string once it's been agreed on.
   return CategoryInfo(base::ASCIIToUTF16("Physical web pages"),
                       ContentSuggestionsCardLayout::MINIMAL_CARD,
-                      /* has_more_button */ true);
+                      /* has_more_button */ true,
+                      /* show_if_empty */ false);
 }
 
 void PhysicalWebPageSuggestionsProvider::DismissSuggestion(

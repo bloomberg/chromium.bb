@@ -8,10 +8,12 @@ namespace ntp_snippets {
 
 CategoryInfo::CategoryInfo(const base::string16& title,
                            ContentSuggestionsCardLayout card_layout,
-                           bool has_more_button)
+                           bool has_more_button,
+                           bool show_if_empty)
     : title_(title),
       card_layout_(card_layout),
-      has_more_button_(has_more_button) {}
+      has_more_button_(has_more_button),
+      show_if_empty_(show_if_empty) {}
 
 CategoryInfo::~CategoryInfo() {}
 

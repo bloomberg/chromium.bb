@@ -24,6 +24,7 @@ import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,6 +33,10 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class NewTabPageAdapterTest {
+    @Before
+    public void init() {
+        org.robolectric.shadows.ShadowLog.stream = System.out;
+    }
 
     private FakeSuggestionsSource mSnippetsSource = new FakeSuggestionsSource();
     private NewTabPageAdapter mNtpAdapter;
@@ -88,6 +93,23 @@ public class NewTabPageAdapterTest {
         return 3; // Header, status card and progress indicator.
     }
 
+    /**
+     * To be used with {@link #assertItemsFor(int...)}, for a section that is hidden.
+     * @return The number of items that should be used by the adapter to represent this section.
+     */
+    private int sectionHidden() {
+        return 0; // The section returns no items.
+    }
+
+    /**
+     * To be used with {@link #assertItemsFor(int...)}, for a section with button that has no
+     * suggestions and instead displays a status card.
+     * @return The number of items that should be used by the adapter to represent this section.
+     */
+    private int sectionWithStatusCardAndMoreButton() {
+        return 4; // Header, status card, More button, progress indicator.
+    }
+
     @Before
     public void setUp() {
         RecordHistogram.disableForTests();
@@ -96,8 +118,9 @@ public class NewTabPageAdapterTest {
         mSnippetsSource = new FakeSuggestionsSource();
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.INITIALIZING);
         mSnippetsSource.setInfoForCategory(
-                KnownCategories.ARTICLES, new SuggestionsCategoryInfo("Articles for you",
-                                                  ContentSuggestionsCardLayout.FULL_CARD, false));
+                KnownCategories.ARTICLES,
+                new SuggestionsCategoryInfo(
+                        "Articles for you", ContentSuggestionsCardLayout.FULL_CARD, false, true));
         mNtpAdapter = new NewTabPageAdapter(null, null, mSnippetsSource, null);
     }
 
@@ -326,6 +349,63 @@ public class NewTabPageAdapterTest {
         assertItemsFor();
     }
 
+    // TODO(dgn): Properly make this a test based on handling different CategoryInfo when we
+    // stop hardcoding things in sections.
+    @Test
+    @Feature({"Ntp"})
+    public void testSectionVisibility() {
+        mSnippetsSource.setStatusForCategory(
+                KnownCategories.BOOKMARKS, CategoryStatus.INITIALIZING);
+        mSnippetsSource.setInfoForCategory(
+                KnownCategories.BOOKMARKS,
+                new SuggestionsCategoryInfo("Recent bookmarks",
+                        ContentSuggestionsCardLayout.MINIMAL_CARD, true, false));
+
+        // Part 1: Test ARTICLES.
+
+        // The |ARTICLES| section should be shown even if we don't receive any suggestion for it.
+        mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
+        mSnippetsSource.setSuggestionsForCategory(
+                KnownCategories.ARTICLES, Collections.<SnippetArticle>emptyList());
+        assertItemsFor(sectionWithStatusCard());
+
+        // Make sure we show the articles when we load them.
+        List<SnippetArticle> articles = createDummySnippets(3);
+        mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, articles);
+        assertItemsFor(section(3));
+
+        // When we dismiss them, we should have the status card coming back.
+        int indexOfFirstItemOfArticlesGroup = 1;
+        SuggestionsSection section =
+                (SuggestionsSection) mNtpAdapter.getGroup(indexOfFirstItemOfArticlesGroup);
+        assertEquals(section.getItems().size(), section(3));
+        section.removeSuggestion(articles.get(0));
+        section.removeSuggestion(articles.get(1));
+        section.removeSuggestion(articles.get(2));
+        assertItemsFor(sectionWithStatusCard());
+
+        // Part 2: Test BOOKMARKS.
+
+        // The |BOOKMARKS| section should not be shown if we don't receive any suggestion for it.
+        mSnippetsSource.setStatusForCategory(KnownCategories.BOOKMARKS, CategoryStatus.AVAILABLE);
+        mSnippetsSource.setSuggestionsForCategory(
+                KnownCategories.BOOKMARKS, Collections.<SnippetArticle>emptyList());
+        assertItemsFor(sectionHidden(), sectionWithStatusCard());
+
+        // When we get some, make sure we show the button.
+        mSnippetsSource.setSuggestionsForCategory(KnownCategories.BOOKMARKS, articles);
+        assertItemsFor(sectionWithMoreButton(3), sectionWithStatusCard());
+
+        // When we dismiss snippets, we should still keep the button.
+        int indexOfFirstItemOfBookmarksGroup = 3;
+        section = (SuggestionsSection) mNtpAdapter.getGroup(indexOfFirstItemOfBookmarksGroup);
+        assertEquals(section.getItems().size(), sectionWithMoreButton(3));
+        section.removeSuggestion(articles.get(0));
+        section.removeSuggestion(articles.get(1));
+        section.removeSuggestion(articles.get(2));
+        assertItemsFor(sectionWithStatusCardAndMoreButton(), sectionWithStatusCard());
+    }
+
     /**
      * Tests that the more button is shown for sections that declare it.
      */
@@ -340,7 +420,7 @@ public class NewTabPageAdapterTest {
         List<SnippetArticle> bookmarks = createDummySnippets(10);
         mSnippetsSource.setInfoForCategory(KnownCategories.BOOKMARKS,
                 new SuggestionsCategoryInfo("Bookmarks", ContentSuggestionsCardLayout.MINIMAL_CARD,
-                                                   true));
+                                                   true, false));
         mSnippetsSource.setStatusForCategory(KnownCategories.BOOKMARKS, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.BOOKMARKS, bookmarks);
         assertItemsFor(sectionWithMoreButton(10), section(3));

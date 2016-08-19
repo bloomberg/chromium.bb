@@ -104,7 +104,9 @@ CategoryStatus BookmarkSuggestionsProvider::GetCategoryStatus(
 CategoryInfo BookmarkSuggestionsProvider::GetCategoryInfo(Category category) {
   return CategoryInfo(
       l10n_util::GetStringUTF16(IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER),
-      ContentSuggestionsCardLayout::MINIMAL_CARD, /* has_more_button */ true);
+      ContentSuggestionsCardLayout::MINIMAL_CARD,
+      /* has_more_button */ true,
+      /* show_if_empty */ false);
 }
 
 void BookmarkSuggestionsProvider::DismissSuggestion(

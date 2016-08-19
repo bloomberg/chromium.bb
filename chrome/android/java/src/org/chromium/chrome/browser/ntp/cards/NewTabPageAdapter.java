@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
@@ -301,10 +302,12 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             @CategoryStatusEnum int status) {
         if (!mSections.containsKey(category)) {
             SuggestionsCategoryInfo info = mSuggestionsSource.getCategoryInfo(category);
+            if (suggestions.isEmpty() && !info.showIfEmpty()) return;
+
             mSections.put(
                     category, new SuggestionsSection(category, suggestions, status, info, this));
         } else {
-            mSections.get(category).setSuggestions(suggestions, status, this);
+            mSections.get(category).setSuggestions(suggestions, status);
         }
     }
 
@@ -335,8 +338,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     public void dismissItem(ViewHolder itemViewHolder) {
-        assert itemViewHolder.getItemViewType() == NewTabPageItem.VIEW_TYPE_SNIPPET;
-
         int position = itemViewHolder.getAdapterPosition();
         SnippetArticle suggestion = (SnippetArticle) getItems().get(position);
 
@@ -371,7 +372,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     /**
      * Returns an unmodifiable list containing all items in the adapter.
      */
-    List<NewTabPageItem> getItems() {
+    public List<NewTabPageItem> getItems() {
         List<NewTabPageItem> items = new ArrayList<>();
         for (ItemGroup group : mGroups) {
             items.addAll(group.getItems());
@@ -379,7 +380,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return Collections.unmodifiableList(items);
     }
 
-    private ItemGroup getGroup(int itemPosition) {
+    @VisibleForTesting
+    ItemGroup getGroup(int itemPosition) {
         int itemsSkipped = 0;
         for (ItemGroup group : mGroups) {
             List<NewTabPageItem> items = group.getItems();

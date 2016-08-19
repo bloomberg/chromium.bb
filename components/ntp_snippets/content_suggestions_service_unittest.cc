@@ -81,7 +81,7 @@ class MockProvider : public ContentSuggestionsProvider {
 
   CategoryInfo GetCategoryInfo(Category category) {
     return CategoryInfo(base::ASCIIToUTF16("Section title"),
-                        ContentSuggestionsCardLayout::FULL_CARD, true);
+                        ContentSuggestionsCardLayout::FULL_CARD, true, true);
   }
 
   void FireSuggestionsChanged(Category category,

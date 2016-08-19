@@ -105,18 +105,21 @@ CategoryInfo OfflinePageSuggestionsProvider::GetCategoryInfo(
     return CategoryInfo(l10n_util::GetStringUTF16(
                             IDS_NTP_RECENT_TAB_SUGGESTIONS_SECTION_HEADER),
                         ContentSuggestionsCardLayout::MINIMAL_CARD,
-                        /* has_more_button */ false);
+                        /* has_more_button */ false,
+                        /* show_if_empty */ false);
   }
   if (category == downloads_category_) {
     return CategoryInfo(
         l10n_util::GetStringUTF16(IDS_NTP_DOWNLOAD_SUGGESTIONS_SECTION_HEADER),
         ContentSuggestionsCardLayout::MINIMAL_CARD,
-        /* has_more_button */ download_manager_ui_enabled_);
+        /* has_more_button */ download_manager_ui_enabled_,
+        /* show_if_empty */ false);
   }
   NOTREACHED() << "Unknown category " << category.id();
   return CategoryInfo(base::string16(),
                       ContentSuggestionsCardLayout::MINIMAL_CARD,
-                      /* has_more_button */ false);
+                      /* has_more_button */ false,
+                      /* show_if_empty */ false);
 }
 
 void OfflinePageSuggestionsProvider::DismissSuggestion(

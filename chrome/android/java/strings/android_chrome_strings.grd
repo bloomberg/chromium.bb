@@ -1299,7 +1299,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_SYNC_ERROR_UPGRADE_CLIENT" desc="Sync error string for out-of-date client. [CHAR-LIMIT=80]">
         <ph name="PRODUCT_NAME">%1$s<ex>Chrome</ex></ph> is out of date.
-      </message>    
+      </message>
       <message name="IDS_SYNC_ERROR_SERVICE_UNAVAILABLE" desc="Sync error string for service unavailable. [CHAR-LIMIT=80]">
         The service is not available; try again later.
       </message>
@@ -1972,12 +1972,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_REMOVE_ALL" desc="Context menu option to clear the list of recently closed tabs">
         Remove all
-      </message>
-      <message name="IDS_NTP_STATUS_CARD_TITLE_EMPTY" desc="Title of the card explaining the status of the ntp suggested content, when we don't have anything to show.">
-        All Read
-      </message>
-      <message name="IDS_NTP_STATUS_CARD_BODY_EMPTY" desc="Body of the card explaining the status of the ntp suggested content, when we don't have anything to show.">
-        More cards will appear when the time is right.
       </message>
       <message name="IDS_ACCESSIBILITY_NTP_OFFLINE_BADGE" desc="Content description for the badge that indicates offline availability of a most visited item on the new tab page.">
         Available offline

@@ -29,11 +29,15 @@ public class SuggestionsCategoryInfo {
      */
     private final boolean mHasMoreButton;
 
-    public SuggestionsCategoryInfo(
-            String title, @ContentSuggestionsCardLayoutEnum int cardLayout, boolean hasMoreButton) {
+    /** Whether this category should be shown if it offers no suggestions. */
+    private final boolean mShowIfEmpty;
+
+    public SuggestionsCategoryInfo(String title, @ContentSuggestionsCardLayoutEnum int cardLayout,
+            boolean hasMoreButton, boolean showIfEmpty) {
         mTitle = title;
         mCardLayout = cardLayout;
         mHasMoreButton = hasMoreButton;
+        mShowIfEmpty = showIfEmpty;
     }
 
     public String getTitle() {
@@ -47,5 +51,9 @@ public class SuggestionsCategoryInfo {
 
     public boolean hasMoreButton() {
         return mHasMoreButton;
+    }
+
+    public boolean showIfEmpty() {
+        return mShowIfEmpty;
     }
 }
