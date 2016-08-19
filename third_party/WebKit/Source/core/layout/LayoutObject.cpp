@@ -1893,11 +1893,16 @@ void LayoutObject::propagateStyleToAnonymousChildren()
     }
 }
 
+void LayoutObject::setStyleWithWritingModeOf(PassRefPtr<ComputedStyle> style, LayoutObject* parent)
+{
+    if (parent)
+        style->setWritingMode(parent->styleRef().getWritingMode());
+    setStyle(style);
+}
+
 void LayoutObject::setStyleWithWritingModeOfParent(PassRefPtr<ComputedStyle> style)
 {
-    if (parent())
-        style->setWritingMode(parent()->styleRef().getWritingMode());
-    setStyle(style);
+    setStyleWithWritingModeOf(style, parent());
 }
 
 void LayoutObject::addChildWithWritingModeOfParent(LayoutObject* newChild, LayoutObject* beforeChild)

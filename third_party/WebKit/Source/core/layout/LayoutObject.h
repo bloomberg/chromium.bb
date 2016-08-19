@@ -924,6 +924,7 @@ public:
     // and so only should be called when the style is known not to have changed (or from setStyle).
     void setStyleInternal(PassRefPtr<ComputedStyle> style) { m_style = style; }
 
+    void setStyleWithWritingModeOf(PassRefPtr<ComputedStyle>, LayoutObject* parent);
     void setStyleWithWritingModeOfParent(PassRefPtr<ComputedStyle>);
     void addChildWithWritingModeOfParent(LayoutObject* newChild, LayoutObject* beforeChild);
 

@@ -92,7 +92,7 @@ void LayoutFullScreen::willBeDestroyed()
     LayoutFlexibleBox::willBeDestroyed();
 }
 
-void LayoutFullScreen::updateStyle()
+void LayoutFullScreen::updateStyle(LayoutObject* parent)
 {
     RefPtr<ComputedStyle> fullscreenStyle = ComputedStyle::create();
 
@@ -118,7 +118,12 @@ void LayoutFullScreen::updateStyle()
 
     fullscreenStyle->setBackgroundColor(StyleColor(Color::black));
 
-    setStyleWithWritingModeOfParent(fullscreenStyle);
+    setStyleWithWritingModeOf(fullscreenStyle, parent);
+}
+
+void LayoutFullScreen::updateStyle()
+{
+    updateStyle(parent());
 }
 
 LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object, LayoutObject* parent, Document* document)
@@ -128,7 +133,7 @@ LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object, LayoutObj
     DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
 
     LayoutFullScreen* fullscreenLayoutObject = LayoutFullScreen::createAnonymous(document);
-    fullscreenLayoutObject->updateStyle();
+    fullscreenLayoutObject->updateStyle(parent);
     if (parent && !parent->isChildAllowed(fullscreenLayoutObject, fullscreenLayoutObject->styleRef())) {
         fullscreenLayoutObject->destroy();
         return nullptr;

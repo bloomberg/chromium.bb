@@ -49,6 +49,7 @@ public:
     void unwrapLayoutObject();
 
     void updateStyle();
+    void updateStyle(LayoutObject* parent);
     bool anonymousHasStylePropagationOverride() override { return true; }
 
     // Must call setStyleWithWritingModeOfParent() instead.
