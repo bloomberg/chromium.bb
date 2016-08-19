@@ -235,6 +235,11 @@ v8::Local<v8::Object> WorkerGlobalScope::associateWithWrapper(v8::Isolate*, cons
     return v8::Local<v8::Object>();
 }
 
+bool WorkerGlobalScope::hasPendingActivity() const
+{
+    return m_timers.hasInstalledTimeout();
+}
+
 bool WorkerGlobalScope::isJSExecutionForbidden() const
 {
     return m_scriptController->isExecutionForbidden();
@@ -287,7 +292,8 @@ ExecutionContext* WorkerGlobalScope::getExecutionContext() const
 }
 
 WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, std::unique_ptr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData, WorkerClients* workerClients)
-    : m_url(url)
+    : ActiveScriptWrappable(this)
+    , m_url(url)
     , m_userAgent(userAgent)
     , m_v8CacheOptions(V8CacheOptionsDefault)
     , m_scriptController(WorkerOrWorkletScriptController::create(this, thread->isolate()))

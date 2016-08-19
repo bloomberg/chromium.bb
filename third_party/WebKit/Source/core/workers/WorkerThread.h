@@ -171,9 +171,6 @@ protected:
     // out of this class.
     virtual bool isOwningBackingThread() const { return true; }
 
-    // Called on the worker thread.
-    virtual void postInitialize() { }
-
 private:
     friend class WorkerThreadTest;
     FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest, StartAndTerminateOnInitialization_TerminateWhileDebuggerTaskIsRunning);

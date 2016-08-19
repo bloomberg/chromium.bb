@@ -4280,6 +4280,7 @@
             'timing/MemoryInfoTest.cpp',
             'timing/PerformanceBaseTest.cpp',
             'timing/PerformanceObserverTest.cpp',
+            'workers/DedicatedWorkerTest.cpp',
             'workers/WorkerThreadTest.cpp',
             'workers/WorkerThreadTestHelper.h',
             'xml/parser/SharedBufferReaderTest.cpp',

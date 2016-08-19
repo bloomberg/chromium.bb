@@ -27,6 +27,7 @@
 #ifndef WorkerGlobalScope_h
 #define WorkerGlobalScope_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/CoreExport.h"
@@ -56,7 +57,7 @@ class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
 
-class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData, public SecurityContext, public WorkerOrWorkletGlobalScope, public Supplementable<WorkerGlobalScope>, public DOMWindowBase64 {
+class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData, public ActiveScriptWrappable, public SecurityContext, public WorkerOrWorkletGlobalScope, public Supplementable<WorkerGlobalScope>, public DOMWindowBase64 {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
 public:
@@ -96,6 +97,9 @@ public:
     // ScriptWrappable
     v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) final;
     v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) final;
+
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const override;
 
     // ExecutionContext
     bool isWorkerGlobalScope() const final { return true; }

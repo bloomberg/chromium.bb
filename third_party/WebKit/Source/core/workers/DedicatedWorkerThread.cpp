@@ -66,11 +66,4 @@ void DedicatedWorkerThread::clearWorkerBackingThread()
     m_workerBackingThread = nullptr;
 }
 
-void DedicatedWorkerThread::postInitialize()
-{
-    // Notify the parent object of our current active state before the event
-    // loop starts processing tasks.
-    m_workerObjectProxy.reportPendingActivity(false);
-}
-
 } // namespace blink

@@ -44,6 +44,11 @@ DOMTimer* DOMTimerCoordinator::removeTimeoutByID(int timeoutID)
     return removedTimer;
 }
 
+bool DOMTimerCoordinator::hasInstalledTimeout() const
+{
+    return !m_timers.isEmpty();
+}
+
 DEFINE_TRACE(DOMTimerCoordinator)
 {
     visitor->trace(m_timers);

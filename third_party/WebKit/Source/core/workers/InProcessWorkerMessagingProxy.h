@@ -71,9 +71,12 @@ public:
     void dispatchErrorEvent(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId);
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, std::unique_ptr<SourceLocation>);
     void postMessageToPageInspector(const String&);
-    void confirmMessageFromWorkerObject(bool hasPendingActivity);
-    void reportPendingActivity(bool hasPendingActivity);
-    void workerThreadTerminated();
+
+    // 'virtual' for testing.
+    virtual void confirmMessageFromWorkerObject();
+    virtual void pendingActivityFinished();
+    virtual void workerThreadTerminated();
+
     void workerThreadCreated();
 
     ExecutionContext* getExecutionContext() const { return m_executionContext.get(); }
@@ -93,6 +96,9 @@ protected:
     InProcessWorkerObjectProxy& workerObjectProxy() { return *m_workerObjectProxy.get(); }
 
 private:
+    friend class InProcessWorkerMessagingProxyForTest;
+    InProcessWorkerMessagingProxy(ExecutionContext*, InProcessWorkerBase*, WorkerClients*);
+
     void workerObjectDestroyedInternal();
 
     // WorkerLoaderProxyProvider
@@ -113,10 +119,7 @@ private:
     // Unconfirmed messages from the parent context thread to the worker thread.
     unsigned m_unconfirmedMessageCount;
 
-    // The latest confirmation from worker thread reported that it was still
-    // active.
-    bool m_workerThreadHadPendingActivity;
-
+    bool m_workerGlobalScopeMayHavePendingActivity;
     bool m_askedToTerminate;
 
     // Tasks are queued here until there's a thread object created.

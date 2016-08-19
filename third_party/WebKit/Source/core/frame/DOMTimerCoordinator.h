@@ -34,6 +34,8 @@ public:
     // destroy the timer.
     DOMTimer* removeTimeoutByID(int id);
 
+    bool hasInstalledTimeout() const;
+
     // Timers created during the execution of other timers, and
     // repeating timers, are throttled. Timer nesting level tracks the
     // number of linked timers or repetitions of a timer. See

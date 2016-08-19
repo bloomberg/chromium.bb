@@ -28,8 +28,6 @@
 
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -548,8 +546,6 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
         workerGlobalScope->didEvaluateWorkerScript();
         m_workerReportingProxy.didEvaluateWorkerScript(success);
     }
-
-    postInitialize();
 }
 
 void WorkerThread::prepareForShutdownOnWorkerThread()

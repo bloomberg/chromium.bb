@@ -64,6 +64,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    friend class DedicatedWorkerThreadForTest;
+
     DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, double timeOrigin, std::unique_ptr<SecurityOrigin::PrivilegeData>, WorkerClients*);
 };
 

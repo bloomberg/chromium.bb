@@ -93,7 +93,6 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
   void SetTimeDomain(TimeDomain* domain) override { NOTREACHED(); }
 
   TimeDomain* GetTimeDomain() const override {
-    NOTREACHED();
     return nullptr;
   }
 

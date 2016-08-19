@@ -27,6 +27,8 @@
 // https://html.spec.whatwg.org/#the-workerglobalscope-common-interface
 
 [
+    ActiveScriptWrappable,
+    DependentLifetime,
     Exposed=Worker,
 ] interface WorkerGlobalScope : EventTarget {
     readonly attribute WorkerGlobalScope self;
