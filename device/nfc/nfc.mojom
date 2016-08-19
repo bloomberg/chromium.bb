@@ -25,13 +25,20 @@ enum NFCRecordType {
 };
 
 enum NFCPushTarget {
+  // The target of a push operation must be the NFC tag.
   TAG,
+  // The target of a push operation must be the NFC peer (device to device).
   PEER,
+  // The target of a push operation must be either NFC tag or peer.
   ANY
 };
 
 enum NFCWatchMode {
+  // Restricts scope of the watch operation. Only Web NFC messages must be
+  // used by matching algorithm.
   WEBNFC_ONLY,
+  // Allows performing watch operation for all NFC messages. For example, NFC
+  // tags with valid NDEF messages.
   ANY
 };
 
@@ -40,30 +47,53 @@ struct NFCError {
 };
 
 struct NFCRecord {
-  NFCRecordType recordType;
-  string? mediaType;
+  // The type of NFCRecord.
+  NFCRecordType record_type;
+
+  // Represents the IANA media type of the NFCRecord data field.
+  string? media_type;
+
+  // Payload of the NFCRecord.
   array<uint8> data;
 };
 
 struct NFCMessage {
+  // The body of the NFCMessage is a collection of NFCRecord objects.
   array<NFCRecord> data;
+
+  // The |url| field is an ASCII serialized origin, optionally followed by a URL
+  // path. It represents Web NFC id, that can be used for matching Web NFC
+  // content with the filter specified by |url| field in NFCWatchOptions.
   string? url;
 };
 
 struct NFCPushOptions {
+  // The target of the push operation.
   NFCPushTarget target;
+
+  // The timeout for the push operation, in milliseconds.
   double timeout;
-  bool ignoreRead;
+
+  // If the property is true, the push operation will suspend active watchers
+  // until its completion.
+  bool ignore_read;
 };
 
 struct NFCRecordTypeFilter {
-  NFCRecordType recordType;
+  NFCRecordType record_type;
 };
 
 struct NFCWatchOptions {
+  // Defines filtering constraint for NFC messages with specified |url|.
   string? url;
-  NFCRecordTypeFilter? recordFilter;
-  string? mediaType;
+
+  // Defines filtering constraint for NFC records with specified record type.
+  NFCRecordTypeFilter? record_filter;
+
+  // Defines media type filtering constraint.
+  string? media_type;
+
+  // Defines mode of watch operation.
   NFCWatchMode mode;
 };
 
@@ -82,7 +112,7 @@ interface NFC {
   CancelPush(NFCPushTarget target) => (NFCError? error);
 
   // Starts watching for nearby NFC devices with data that matches
-  // NFCWatchOptions filtering criteria. On success, watch ID is returned.
+  // NFCWatchOptions filtering criteria. On success, watch id is returned.
   Watch(NFCWatchOptions options) => (uint32 id, NFCError? error);
 
   // Cancels watch operation with provided id.
@@ -100,5 +130,5 @@ interface NFC {
 };
 
 interface NFCClient {
-  OnWatch(array<uint32> watchIDs, NFCMessage message);
+  OnWatch(array<uint32> watch_ids, NFCMessage message);
 };

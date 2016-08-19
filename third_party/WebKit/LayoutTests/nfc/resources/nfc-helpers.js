@@ -128,13 +128,13 @@ function nfc_mocks(mojo) {
     // Compares NFCRecords that were provided / received by the mock service.
     function compareNFCRecords(providedRecord, receivedRecord) {
       assert_equals(toMojoNFCRecordType(providedRecord.recordType),
-                    receivedRecord.recordType);
+                    receivedRecord.record_type);
 
       // Compare media types without charset.
       // Charset should be compared when watch method is implemented, in order
       // to check that written and read strings are equal.
       assert_equals(providedRecord.mediaType,
-          receivedRecord.mediaType.substring(0, providedRecord.mediaType.length));
+          receivedRecord.media_type.substring(0, providedRecord.mediaType.length));
 
       assert_false(toMojoNFCRecordType(providedRecord.recordType) ==
                   nfc.NFCRecordType.EMPTY);
@@ -147,9 +147,9 @@ function nfc_mocks(mojo) {
     // received by the mock mojo service.
     function assertNFCPushOptionsEqual(provided, received) {
       if (provided.ignoreRead !== undefined)
-        assert_equals(provided.ignoreRead, !!+received.ignoreRead);
+        assert_equals(provided.ignoreRead, !!+received.ignore_read);
       else
-        assert_equals(!!+received.ignoreRead, true);
+        assert_equals(!!+received.ignore_read, true);
 
       if (provided.timeout !== undefined)
         assert_equals(provided.timeout, received.timeout);

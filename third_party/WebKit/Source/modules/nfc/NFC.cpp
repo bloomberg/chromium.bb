@@ -102,7 +102,7 @@ NFCRecordType deduceRecordTypeFromDataType(const blink::NFCRecord& record)
 
 void setMediaType(NFCRecordPtr& recordPtr, const WTF::String& recordMediaType, const WTF::String& defaultMediaType)
 {
-    recordPtr->mediaType = recordMediaType.isEmpty() ? defaultMediaType : recordMediaType;
+    recordPtr->media_type = recordMediaType.isEmpty() ? defaultMediaType : recordMediaType;
 }
 
 template <>
@@ -131,9 +131,9 @@ struct TypeConverter<NFCRecordPtr, WTF::String> {
     static NFCRecordPtr Convert(const WTF::String& string)
     {
         NFCRecordPtr record = NFCRecord::New();
-        record->recordType = NFCRecordType::TEXT;
-        record->mediaType = kPlainTextMimeType;
-        record->mediaType.append(kCharSetUTF8);
+        record->record_type = NFCRecordType::TEXT;
+        record->media_type = kPlainTextMimeType;
+        record->media_type.append(kCharSetUTF8);
         record->data = mojo::WTFArray<uint8_t>::From(string);
         return record;
     }
@@ -144,8 +144,8 @@ struct TypeConverter<NFCRecordPtr, blink::DOMArrayBuffer*> {
     static NFCRecordPtr Convert(blink::DOMArrayBuffer* buffer)
     {
         NFCRecordPtr record = NFCRecord::New();
-        record->recordType = NFCRecordType::OPAQUE_RECORD;
-        record->mediaType = kOpaqueMimeType;
+        record->record_type = NFCRecordType::OPAQUE_RECORD;
+        record->media_type = kOpaqueMimeType;
         record->data = mojo::WTFArray<uint8_t>::From(buffer);
         return record;
     }
@@ -197,20 +197,20 @@ struct TypeConverter<NFCRecordPtr, blink::NFCRecord> {
         NFCRecordPtr recordPtr = NFCRecord::New();
 
         if (record.hasRecordType())
-            recordPtr->recordType = toNFCRecordType(record.recordType());
+            recordPtr->record_type = toNFCRecordType(record.recordType());
         else
-            recordPtr->recordType = deduceRecordTypeFromDataType(record);
+            recordPtr->record_type = deduceRecordTypeFromDataType(record);
 
         // If record type is "empty", no need to set media type or data.
         // https://w3c.github.io/web-nfc/#creating-web-nfc-message
-        if (recordPtr->recordType == NFCRecordType::EMPTY)
+        if (recordPtr->record_type == NFCRecordType::EMPTY)
             return recordPtr;
 
-        switch (recordPtr->recordType) {
+        switch (recordPtr->record_type) {
         case NFCRecordType::TEXT:
         case NFCRecordType::URL:
             setMediaType(recordPtr, record.mediaType(), kPlainTextMimeType);
-            recordPtr->mediaType.append(kCharSetUTF8);
+            recordPtr->media_type.append(kCharSetUTF8);
             break;
         case NFCRecordType::JSON:
             setMediaType(recordPtr, record.mediaType(), kJsonMimeType);
@@ -303,9 +303,9 @@ struct TypeConverter<NFCPushOptionsPtr, blink::NFCPushOptions> {
             pushOptionsPtr->timeout = std::numeric_limits<double>::infinity();
 
         if (pushOptions.hasIgnoreRead())
-            pushOptionsPtr->ignoreRead = pushOptions.ignoreRead();
+            pushOptionsPtr->ignore_read = pushOptions.ignoreRead();
         else
-            pushOptionsPtr->ignoreRead = true;
+            pushOptionsPtr->ignore_read = true;
 
         return pushOptionsPtr;
     }

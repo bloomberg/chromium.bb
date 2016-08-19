@@ -10,6 +10,7 @@
 namespace content {
 
 class InterfaceRegistryAndroid;
+class RenderFrameHost;
 
 // Registrar for interfaces implemented in Java exposed by the browser. This
 // calls into Java where the services are registered with the indicated
@@ -17,7 +18,8 @@ class InterfaceRegistryAndroid;
 class InterfaceRegistrarAndroid {
  public:
   static void ExposeInterfacesToRenderer(InterfaceRegistryAndroid* registry);
-  static void ExposeInterfacesToFrame(InterfaceRegistryAndroid* registry);
+  static void ExposeInterfacesToFrame(InterfaceRegistryAndroid* registry,
+      RenderFrameHost* frame);
 };
 
 }  // namespace content

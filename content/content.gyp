@@ -510,6 +510,7 @@
             '../base/base.gyp:base',
             '../device/battery/battery.gyp:device_battery_java',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_java',
+            '../device/nfc/nfc.gyp:device_nfc_java',
             '../device/usb/usb.gyp:device_usb_java',
             '../device/vibration/vibration.gyp:device_vibration_java',
             '../media/media.gyp:media_java',

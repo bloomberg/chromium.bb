@@ -7,6 +7,7 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "content/public/browser/android/interface_registry_android.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/InterfaceRegistrar_jni.h"
 
 namespace content {
@@ -21,9 +22,16 @@ void InterfaceRegistrarAndroid::ExposeInterfacesToRenderer(
 
 // static
 void InterfaceRegistrarAndroid::ExposeInterfacesToFrame(
-  InterfaceRegistryAndroid* registry) {
+  InterfaceRegistryAndroid* registry, RenderFrameHost* frame) {
+  base::android::ScopedJavaLocalRef<jobject> java_web_contents;
+  WebContents* contents = WebContents::FromRenderFrameHost(frame);
+  if (contents)
+    java_web_contents = contents->GetJavaWebContents();
+
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_InterfaceRegistrar_exposeInterfacesToFrame(
-      env, registry->GetObj(), base::android::GetApplicationContext());
+      env, registry->GetObj(),
+      base::android::GetApplicationContext(),
+      java_web_contents);
 }
 }  // namespace content

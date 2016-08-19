@@ -103,7 +103,8 @@ import java.util.Map;
  */
 @JNINamespace("content")
 public class ContentViewCore implements AccessibilityStateChangeListener, ScreenOrientationObserver,
-                                        SystemCaptioningBridge.SystemCaptioningBridgeListener {
+                                        SystemCaptioningBridge.SystemCaptioningBridgeListener,
+                                        WindowAndroidProvider {
     private static final String TAG = "cr_ContentViewCore";
 
     // Used to avoid enabling zooming in / out if resulting zooming will
@@ -462,6 +463,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     // ResultReceiver in the InputMethodService (IME app) gets gc'ed.
     private ShowKeyboardResultReceiver mShowKeyboardResultReceiver;
 
+    // The list of observers that are notified when ContentViewCore changes its WindowAndroid.
+    private final ObserverList<WindowAndroidChangedObserver> mWindowAndroidChangedObservers;
+
     /**
      * @param webContents The {@link WebContents} to find a {@link ContentViewCore} of.
      * @return            A {@link ContentViewCore} that is connected to {@code webContents} or
@@ -495,6 +499,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mGestureStateListenersIterator = mGestureStateListeners.rewindableIterator();
 
         mContainerViewObservers = new ObserverList<ContainerViewObserver>();
+        mWindowAndroidChangedObservers = new ObserverList<WindowAndroidChangedObserver>();
     }
 
     /**
@@ -522,9 +527,20 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     /**
      * @return The WindowAndroid associated with this ContentViewCore.
      */
+    @Override
     public WindowAndroid getWindowAndroid() {
         if (mNativeContentViewCore == 0) return null;
         return nativeGetJavaWindowAndroid(mNativeContentViewCore);
+    }
+
+    @Override
+    public void addWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {
+        mWindowAndroidChangedObservers.addObserver(observer);
+    }
+
+    @Override
+    public void removeWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {
+        mWindowAndroidChangedObservers.removeObserver(observer);
     }
 
     /**
@@ -665,6 +681,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         // Clean up cached popups that may have been created with an old activity.
         mSelectPopup = null;
         mPastePopupMenu = null;
+
+        for (WindowAndroidChangedObserver observer : mWindowAndroidChangedObservers) {
+            observer.onWindowAndroidChanged(windowAndroid);
+        }
     }
 
     /**

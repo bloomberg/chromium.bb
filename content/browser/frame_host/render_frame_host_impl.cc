@@ -2499,7 +2499,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   interface_registry_android_ =
       InterfaceRegistryAndroid::Create(interface_registry_.get());
   InterfaceRegistrarAndroid::ExposeInterfacesToFrame(
-      interface_registry_android_.get());
+      interface_registry_android_.get(), this);
 #endif
 }
 
