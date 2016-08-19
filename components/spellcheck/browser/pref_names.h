@@ -8,7 +8,7 @@
 namespace spellcheck {
 namespace prefs {
 
-extern const char kEnableContinuousSpellcheck[];
+extern const char kEnableSpellcheck[];
 extern const char kSpellCheckDictionaries[];
 extern const char kSpellCheckDictionary[];
 extern const char kSpellCheckUseSpellingService[];

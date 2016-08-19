@@ -61,7 +61,7 @@ KeyedService* SpellcheckServiceFactory::BuildServiceInstanceFor(
 
   // Instantiates Metrics object for spellchecking for use.
   spellcheck->StartRecordingMetrics(
-      prefs->GetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck));
+      prefs->GetBoolean(spellcheck::prefs::kEnableSpellcheck));
 
   return spellcheck;
 }
@@ -83,7 +83,7 @@ void SpellcheckServiceFactory::RegisterProfilePrefs(
   uint32_t flags = user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
 #endif
   user_prefs->RegisterBooleanPref(
-      spellcheck::prefs::kEnableContinuousSpellcheck, true, flags);
+      spellcheck::prefs::kEnableSpellcheck, true, flags);
 }
 
 content::BrowserContext* SpellcheckServiceFactory::GetBrowserContextToUse(

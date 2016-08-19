@@ -103,7 +103,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       prefs::kAcceptLanguages,
       base::Bind(&SpellcheckService::OnAcceptLanguagesChanged,
                  base::Unretained(this)));
-  pref_change_registrar_.Add(spellcheck::prefs::kEnableContinuousSpellcheck,
+  pref_change_registrar_.Add(spellcheck::prefs::kEnableSpellcheck,
                              base::Bind(&SpellcheckService::InitForAllRenderers,
                                         base::Unretained(this)));
 
@@ -199,7 +199,7 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
   }
 
   bool enabled =
-      prefs->GetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck) &&
+      prefs->GetBoolean(spellcheck::prefs::kEnableSpellcheck) &&
       !bdict_languages.empty();
   process->Send(new SpellCheckMsg_Init(
       bdict_languages,

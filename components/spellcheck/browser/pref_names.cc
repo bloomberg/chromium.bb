@@ -8,7 +8,7 @@ namespace spellcheck {
 namespace prefs {
 
 // Boolean pref to define the default values for using spellchecker.
-const char kEnableContinuousSpellcheck[] = "browser.enable_spellchecking";
+const char kEnableSpellcheck[] = "browser.enable_spellchecking";
 
 // String which represents the dictionary name for our spell-checker.
 // This is an old preference that is being migrated to kSpellCheckDictionaries.

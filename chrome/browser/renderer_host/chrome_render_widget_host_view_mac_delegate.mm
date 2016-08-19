@@ -124,7 +124,7 @@ using content::RenderViewHost;
       DCHECK(profile);
       NSCellStateValue checkedState =
           profile->GetPrefs()->GetBoolean(
-              spellcheck::prefs::kEnableContinuousSpellcheck)
+              spellcheck::prefs::kEnableSpellcheck)
               ? NSOnState
               : NSOffState;
       [(id)item setState:checkedState];
@@ -199,8 +199,8 @@ using content::RenderViewHost;
   DCHECK(profile);
   PrefService* pref = profile->GetPrefs();
   pref->SetBoolean(
-      spellcheck::prefs::kEnableContinuousSpellcheck,
-      !pref->GetBoolean(spellcheck::prefs::kEnableContinuousSpellcheck));
+      spellcheck::prefs::kEnableSpellcheck,
+      !pref->GetBoolean(spellcheck::prefs::kEnableSpellcheck));
 }
 
 // END Spellchecking methods
