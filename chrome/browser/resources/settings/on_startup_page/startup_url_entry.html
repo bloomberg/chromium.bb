@@ -13,7 +13,7 @@
         overflow: hidden;
       }
     </style>
-    <div class="list-item underbar">
+    <div class="list-item">
       <div class="favicon-image"
           style="background-image: [[getIconSet_(model.url)]]">
       </div>
@@ -22,7 +22,8 @@
         <div class="text-elide secondary">[[model.url]]</div>
       </div>
       <paper-icon-button id="dots" icon="cr:more-vert" toggles
-          active="{{menuOpened}}"></paper-icon-button>
+          active="{{menuOpened}}" tabindex$="[[tabindex]]">
+      </paper-icon-button>
       <template is="dom-if" if="[[menuOpened]]">
         <iron-dropdown vertical-align="auto" horizontal-align="right"
             opened="{{menuOpened}}">

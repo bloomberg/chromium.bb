@@ -41,6 +41,26 @@
         @apply(--cr-actionable);
       }
 
+      [scrollable] {
+        border-color: transparent;
+        border-style: solid;
+        border-width: 1px 0;
+        overflow-y: auto;
+      }
+      [scrollable].is-scrolled {
+        border-top-color: var(--google-grey-300);
+      }
+      [scrollable].can-scroll:not(.scrolled-to-bottom) {
+        border-bottom-color: var(--google-grey-300);
+      }
+      [scrollable] :focus {
+        @apply(--cr-list-item-focus);
+        @apply(--cr-selectable-focus);
+      }
+      [scrollable] iron-list > * {
+        @apply(--cr-actionable);
+      }
+
       [selectable] :focus {
         @apply(--cr-selectable-focus);
       }

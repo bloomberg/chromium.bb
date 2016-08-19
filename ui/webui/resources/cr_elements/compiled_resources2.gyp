@@ -14,5 +14,12 @@
         'policy/compiled_resources2.gyp:*',
       ],
     },
+    {
+      'target_name': 'cr_scrollable_behavior',
+      'dependencies': [
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-list/compiled_resources2.gyp:iron-list-extracted',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ]
 }

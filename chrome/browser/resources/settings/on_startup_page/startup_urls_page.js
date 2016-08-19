@@ -10,7 +10,7 @@
 Polymer({
   is: 'settings-startup-urls-page',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [CrScrollableBehavior, WebUIListenerBehavior],
 
   properties: {
     /** @type {settings.StartupUrlsPageBrowserProxy} */
@@ -34,6 +34,7 @@ Polymer({
     this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
     this.addWebUIListener('update-startup-pages', function(startupPages) {
       this.startupPages_ = startupPages;
+      this.updateScrollableContents();
     }.bind(this));
     this.browserProxy_.loadStartupPages();
 
