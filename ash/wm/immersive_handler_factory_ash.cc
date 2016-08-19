@@ -4,9 +4,8 @@
 
 #include "ash/wm/immersive_handler_factory_ash.h"
 
-#include "ash/wm/immersive_focus_watcher.h"
-#include "ash/wm/immersive_gesture_handler.h"
-#include "base/logging.h"
+#include "ash/wm/immersive_focus_watcher_aura.h"
+#include "ash/wm/immersive_gesture_handler_aura.h"
 #include "base/memory/ptr_util.h"
 
 namespace ash {
@@ -18,13 +17,13 @@ ImmersiveHandlerFactoryAsh::~ImmersiveHandlerFactoryAsh() {}
 std::unique_ptr<ImmersiveFocusWatcher>
 ImmersiveHandlerFactoryAsh::CreateFocusWatcher(
     ImmersiveFullscreenController* controller) {
-  return base::MakeUnique<ImmersiveFocusWatcher>(controller);
+  return base::MakeUnique<ImmersiveFocusWatcherAura>(controller);
 }
 
 std::unique_ptr<ImmersiveGestureHandler>
 ImmersiveHandlerFactoryAsh::CreateGestureHandler(
     ImmersiveFullscreenController* controller) {
-  return base::MakeUnique<ImmersiveGestureHandler>(controller);
+  return base::MakeUnique<ImmersiveGestureHandlerAura>(controller);
 }
 
 }  // namespace ash

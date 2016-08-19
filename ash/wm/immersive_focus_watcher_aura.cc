@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/immersive_focus_watcher.h"
+#include "ash/wm/immersive_focus_watcher_aura.h"
 
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ui/aura/window.h"
@@ -60,7 +60,7 @@ bool IsWindowTransientChildOf(aura::Window* maybe_transient,
 // so that bubbles which are not activatable and bubbles which do not close
 // upon deactivation also keep the top-of-window views revealed for the
 // duration of their visibility.
-class ImmersiveFocusWatcher::BubbleObserver : public aura::WindowObserver {
+class ImmersiveFocusWatcherAura::BubbleObserver : public aura::WindowObserver {
  public:
   explicit BubbleObserver(ImmersiveFullscreenController* controller);
   ~BubbleObserver() override;
@@ -88,16 +88,16 @@ class ImmersiveFocusWatcher::BubbleObserver : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
 };
 
-ImmersiveFocusWatcher::BubbleObserver::BubbleObserver(
+ImmersiveFocusWatcherAura::BubbleObserver::BubbleObserver(
     ImmersiveFullscreenController* controller)
     : controller_(controller) {}
 
-ImmersiveFocusWatcher::BubbleObserver::~BubbleObserver() {
+ImmersiveFocusWatcherAura::BubbleObserver::~BubbleObserver() {
   for (aura::Window* bubble : bubbles_)
     bubble->RemoveObserver(this);
 }
 
-void ImmersiveFocusWatcher::BubbleObserver::StartObserving(
+void ImmersiveFocusWatcherAura::BubbleObserver::StartObserving(
     aura::Window* bubble) {
   if (bubbles_.insert(bubble).second) {
     bubble->AddObserver(this);
@@ -105,7 +105,7 @@ void ImmersiveFocusWatcher::BubbleObserver::StartObserving(
   }
 }
 
-void ImmersiveFocusWatcher::BubbleObserver::StopObserving(
+void ImmersiveFocusWatcherAura::BubbleObserver::StopObserving(
     aura::Window* bubble) {
   if (bubbles_.erase(bubble)) {
     bubble->RemoveObserver(this);
@@ -113,7 +113,7 @@ void ImmersiveFocusWatcher::BubbleObserver::StopObserving(
   }
 }
 
-void ImmersiveFocusWatcher::BubbleObserver::UpdateRevealedLock() {
+void ImmersiveFocusWatcherAura::BubbleObserver::UpdateRevealedLock() {
   bool has_visible_bubble = false;
   for (aura::Window* bubble : bubbles_) {
     if (bubble->IsVisible()) {
@@ -146,18 +146,18 @@ void ImmersiveFocusWatcher::BubbleObserver::UpdateRevealedLock() {
   }
 }
 
-void ImmersiveFocusWatcher::BubbleObserver::OnWindowVisibilityChanged(
+void ImmersiveFocusWatcherAura::BubbleObserver::OnWindowVisibilityChanged(
     aura::Window*,
     bool visible) {
   UpdateRevealedLock();
 }
 
-void ImmersiveFocusWatcher::BubbleObserver::OnWindowDestroying(
+void ImmersiveFocusWatcherAura::BubbleObserver::OnWindowDestroying(
     aura::Window* window) {
   StopObserving(window);
 }
 
-ImmersiveFocusWatcher::ImmersiveFocusWatcher(
+ImmersiveFocusWatcherAura::ImmersiveFocusWatcherAura(
     ImmersiveFullscreenController* controller)
     : immersive_fullscreen_controller_(controller) {
   GetWidget()->GetFocusManager()->AddFocusChangeListener(this);
@@ -166,13 +166,13 @@ ImmersiveFocusWatcher::ImmersiveFocusWatcher(
   RecreateBubbleObserver();
 }
 
-ImmersiveFocusWatcher::~ImmersiveFocusWatcher() {
+ImmersiveFocusWatcherAura::~ImmersiveFocusWatcherAura() {
   ::wm::TransientWindowManager::Get(GetWidgetWindow())->RemoveObserver(this);
   GetWidget()->GetFocusManager()->RemoveFocusChangeListener(this);
   GetWidget()->RemoveObserver(this);
 }
 
-void ImmersiveFocusWatcher::UpdateFocusRevealedLock() {
+void ImmersiveFocusWatcherAura::UpdateFocusRevealedLock() {
   views::Widget* widget = GetWidget();
   views::View* top_container =
       immersive_fullscreen_controller_->top_container();
@@ -220,19 +220,19 @@ void ImmersiveFocusWatcher::UpdateFocusRevealedLock() {
   }
 }
 
-void ImmersiveFocusWatcher::ReleaseLock() {
+void ImmersiveFocusWatcherAura::ReleaseLock() {
   lock_.reset();
 }
 
-views::Widget* ImmersiveFocusWatcher::GetWidget() {
+views::Widget* ImmersiveFocusWatcherAura::GetWidget() {
   return immersive_fullscreen_controller_->widget();
 }
 
-aura::Window* ImmersiveFocusWatcher::GetWidgetWindow() {
+aura::Window* ImmersiveFocusWatcherAura::GetWidgetWindow() {
   return GetWidget()->GetNativeWindow();
 }
 
-void ImmersiveFocusWatcher::RecreateBubbleObserver() {
+void ImmersiveFocusWatcherAura::RecreateBubbleObserver() {
   bubble_observer_.reset(new BubbleObserver(immersive_fullscreen_controller_));
   const std::vector<aura::Window*> transient_children =
       ::wm::GetTransientChildren(GetWidgetWindow());
@@ -246,21 +246,21 @@ void ImmersiveFocusWatcher::RecreateBubbleObserver() {
   }
 }
 
-void ImmersiveFocusWatcher::OnWillChangeFocus(views::View* focused_before,
-                                              views::View* focused_now) {}
+void ImmersiveFocusWatcherAura::OnWillChangeFocus(views::View* focused_before,
+                                                  views::View* focused_now) {}
 
-void ImmersiveFocusWatcher::OnDidChangeFocus(views::View* focused_before,
-                                             views::View* focused_now) {
+void ImmersiveFocusWatcherAura::OnDidChangeFocus(views::View* focused_before,
+                                                 views::View* focused_now) {
   UpdateFocusRevealedLock();
 }
 
-void ImmersiveFocusWatcher::OnWidgetActivationChanged(views::Widget* widget,
-                                                      bool active) {
+void ImmersiveFocusWatcherAura::OnWidgetActivationChanged(views::Widget* widget,
+                                                          bool active) {
   UpdateFocusRevealedLock();
 }
 
-void ImmersiveFocusWatcher::OnTransientChildAdded(aura::Window* window,
-                                                  aura::Window* transient) {
+void ImmersiveFocusWatcherAura::OnTransientChildAdded(aura::Window* window,
+                                                      aura::Window* transient) {
   views::View* anchor = GetAnchorView(transient);
   if (anchor &&
       immersive_fullscreen_controller_->top_container()->Contains(anchor)) {
@@ -271,8 +271,9 @@ void ImmersiveFocusWatcher::OnTransientChildAdded(aura::Window* window,
   }
 }
 
-void ImmersiveFocusWatcher::OnTransientChildRemoved(aura::Window* window,
-                                                    aura::Window* transient) {
+void ImmersiveFocusWatcherAura::OnTransientChildRemoved(
+    aura::Window* window,
+    aura::Window* transient) {
   bubble_observer_->StopObserving(transient);
 }
 
