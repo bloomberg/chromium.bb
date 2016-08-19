@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.nfc.NfcAdapter;
 import android.provider.Browser;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -134,6 +135,13 @@ public class InstantAppsHandlerTest extends InstrumentationTestCase {
         // Add CustomTab specific extra and check it's now enabled.
         i.putExtra("android.support.customtabs.extra.EXTRA_ENABLE_INSTANT_APPS", true);
         assertTrue(mHandler.handleIncomingIntent(getInstrumentation().getContext(), i, true));
+    }
+
+    @SmallTest
+    public void testNfcIntent() {
+        Intent i = new Intent(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        i.setData(Uri.parse("http://instantapp.com/"));
+        assertTrue(mHandler.handleIncomingIntent(getInstrumentation().getContext(), i, false));
     }
 
     static class TestInstantAppsHandler extends InstantAppsHandler {

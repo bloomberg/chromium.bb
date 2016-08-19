@@ -164,7 +164,7 @@ public class InstantAppsHandler {
                         intent, CUSTOM_APPS_INSTANT_APP_EXTRA, false))
                 || DataReductionProxySettings.isEnabledBeforeNativeLoad(context)
                 || isIntentFromChrome(context, intent)
-                || (intent.getAction() != Intent.ACTION_VIEW)) {
+                || (IntentHandler.getUrlFromIntent(intent) == null)) {
             Log.i(TAG, "Not handling with Instant Apps");
             return false;
         }
