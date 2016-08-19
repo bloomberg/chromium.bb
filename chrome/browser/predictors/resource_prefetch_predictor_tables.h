@@ -48,7 +48,9 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
                 int number_of_misses,
                 int consecutive_misses,
                 double average_position,
-                net::RequestPriority priority);
+                net::RequestPriority priority,
+                bool has_validators,
+                bool always_revalidate);
     void UpdateScore();
     bool operator==(const ResourceRow& rhs) const;
 
@@ -64,6 +66,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
     size_t consecutive_misses;
     double average_position;
     net::RequestPriority priority;
+    bool has_validators;
+    bool always_revalidate;
 
     // Not stored.
     float score;

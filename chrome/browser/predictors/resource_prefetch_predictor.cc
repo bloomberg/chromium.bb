@@ -290,21 +290,27 @@ bool ResourcePrefetchPredictor::IsHandledSubresource(
 bool ResourcePrefetchPredictor::IsHandledResourceType(
     content::ResourceType resource_type,
     const std::string& mime_type) {
-  bool handled = resource_type == content::RESOURCE_TYPE_STYLESHEET ||
-                 resource_type == content::RESOURCE_TYPE_SCRIPT ||
-                 resource_type == content::RESOURCE_TYPE_IMAGE ||
-                 resource_type == content::RESOURCE_TYPE_FONT_RESOURCE;
+  content::ResourceType actual_resource_type =
+      GetResourceType(resource_type, mime_type);
+  return actual_resource_type == content::RESOURCE_TYPE_STYLESHEET ||
+         actual_resource_type == content::RESOURCE_TYPE_SCRIPT ||
+         actual_resource_type == content::RESOURCE_TYPE_IMAGE ||
+         actual_resource_type == content::RESOURCE_TYPE_FONT_RESOURCE;
+}
+
+// static
+content::ResourceType ResourcePrefetchPredictor::GetResourceType(
+    content::ResourceType resource_type,
+    const std::string& mime_type) {
   // Restricts content::RESOURCE_TYPE_{PREFETCH,SUB_RESOURCE} to a small set of
   // mime types, because these resource types don't communicate how the
-  // resources
-  // will be used.
-  if ((resource_type == content::RESOURCE_TYPE_PREFETCH ||
-       resource_type == content::RESOURCE_TYPE_SUB_RESOURCE)) {
-    content::ResourceType resource_type_from_mime = GetResourceTypeFromMimeType(
-        mime_type, content::RESOURCE_TYPE_LAST_TYPE);
-    handled = resource_type_from_mime != content::RESOURCE_TYPE_LAST_TYPE;
+  // resources will be used.
+  if (resource_type == content::RESOURCE_TYPE_PREFETCH ||
+      resource_type == content::RESOURCE_TYPE_SUB_RESOURCE) {
+    return GetResourceTypeFromMimeType(mime_type,
+                                       content::RESOURCE_TYPE_LAST_TYPE);
   }
-  return handled;
+  return resource_type;
 }
 
 // static
@@ -348,7 +354,9 @@ content::ResourceType ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
 ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary()
     : resource_type(content::RESOURCE_TYPE_LAST_TYPE),
       priority(net::IDLE),
-      was_cached(false) {}
+      was_cached(false),
+      has_validators(false),
+      always_revalidate(false) {}
 
 ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary(
     const URLRequestSummary& other)
@@ -358,7 +366,9 @@ ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary(
       priority(other.priority),
       mime_type(other.mime_type),
       was_cached(other.was_cached),
-      redirect_url(other.redirect_url) {}
+      redirect_url(other.redirect_url),
+      has_validators(other.has_validators),
+      always_revalidate(other.always_revalidate) {}
 
 ResourcePrefetchPredictor::URLRequestSummary::~URLRequestSummary() {
 }
@@ -380,10 +390,23 @@ bool ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
                                         request.first_party_for_cookies());
   summary->navigation_id.creation_time = request.creation_time();
   summary->resource_url = request.original_url();
-  summary->resource_type = info->GetResourceType();
+  content::ResourceType resource_type_from_request = info->GetResourceType();
   summary->priority = request.priority();
   request.GetMimeType(&summary->mime_type);
   summary->was_cached = request.was_cached();
+  summary->resource_type =
+      GetResourceType(resource_type_from_request, summary->mime_type);
+
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      request.response_info().headers;
+  if (headers.get()) {
+    summary->has_validators = headers->HasValidators();
+    // RFC 2616, section 14.9.
+    summary->always_revalidate =
+        headers->HasHeaderValue("cache-control", "no-cache") ||
+        headers->HasHeaderValue("pragma", "no-cache") ||
+        headers->HasHeaderValue("vary", "*");
+  }
   return true;
 }
 
@@ -956,6 +979,8 @@ void ResourcePrefetchPredictor::LearnNavigation(
       row_to_add.number_of_hits = 1;
       row_to_add.average_position = i + 1;
       row_to_add.priority = new_resources[i].priority;
+      row_to_add.has_validators = new_resources[i].has_validators;
+      row_to_add.always_revalidate = new_resources[i].always_revalidate;
       cache_entry->second.resources.push_back(row_to_add);
       resources_seen.insert(new_resources[i].resource_url);
     }
@@ -1017,6 +1042,8 @@ void ResourcePrefetchPredictor::LearnNavigation(
       row_to_add.number_of_hits = 1;
       row_to_add.average_position = i + 1;
       row_to_add.priority = summary.priority;
+      row_to_add.has_validators = new_resources[i].has_validators;
+      row_to_add.always_revalidate = new_resources[i].always_revalidate;
       old_resources.push_back(row_to_add);
 
       // To ensure we dont add the same url twice.

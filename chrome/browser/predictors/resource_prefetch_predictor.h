@@ -90,6 +90,9 @@ class ResourcePrefetchPredictor
     bool was_cached;
     GURL redirect_url;  // Empty unless request was redirected to a valid url.
 
+    bool has_validators;
+    bool always_revalidate;
+
     // Initializes a |URLRequestSummary| from a |URLRequest| response.
     // Returns true for success.
     static bool SummarizeResponse(const net::URLRequest& request,
@@ -105,6 +108,12 @@ class ResourcePrefetchPredictor
                                   content::ResourceType resource_type);
   static bool ShouldRecordResponse(net::URLRequest* response);
   static bool ShouldRecordRedirect(net::URLRequest* response);
+
+  // Determines the resource type from the declared one, falling back to MIME
+  // type detection when it is not explicit.
+  static content::ResourceType GetResourceType(
+      content::ResourceType resource_type,
+      const std::string& mime_type);
 
   // Determines the ResourceType from the mime type, defaulting to the
   // |fallback| if the ResourceType could not be determined.

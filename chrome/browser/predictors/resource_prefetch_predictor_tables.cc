@@ -27,6 +27,13 @@ const char kHostResourceTableName[] = "resource_prefetch_predictor_host";
 const char kHostMetadataTableName[] =
     "resource_prefetch_predictor_host_metadata";
 
+const char kInsertResourceTableStatementTemplate[] =
+    "INSERT INTO %s "
+    "(main_page_url, resource_url, resource_type, number_of_hits, "
+    "number_of_misses, consecutive_misses, average_position, priority, "
+    "has_validators, always_revalidate) "
+    "VALUES (?,?,?,?,?,?,?,?,?,?)";
+
 void BindResourceRowToStatement(
     const predictors::ResourcePrefetchPredictorTables::ResourceRow& row,
     const std::string& primary_key,
@@ -39,6 +46,8 @@ void BindResourceRowToStatement(
   statement->BindInt(5, row.consecutive_misses);
   statement->BindDouble(6, row.average_position);
   statement->BindInt(7, static_cast<int>(row.priority));
+  statement->BindInt(8, static_cast<int>(row.has_validators));
+  statement->BindInt(9, static_cast<int>(row.always_revalidate));
 }
 
 bool StepAndInitializeResourceRow(
@@ -56,6 +65,10 @@ bool StepAndInitializeResourceRow(
   row->consecutive_misses = statement->ColumnInt(5);
   row->average_position = statement->ColumnDouble(6);
   row->priority = static_cast<net::RequestPriority>(statement->ColumnInt(7));
+  // static_cast<bool> creates a C4800 warning with Visual Studio.
+  row->has_validators = statement->ColumnInt(8) != 0;
+  row->always_revalidate = statement->ColumnInt(9) != 0;
+
   return true;
 }
 
@@ -73,6 +86,8 @@ ResourcePrefetchPredictorTables::ResourceRow::ResourceRow()
       consecutive_misses(0),
       average_position(0.0),
       priority(net::IDLE),
+      has_validators(false),
+      always_revalidate(false),
       score(0.0) {}
 
 ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
@@ -85,6 +100,8 @@ ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
       consecutive_misses(other.consecutive_misses),
       average_position(other.average_position),
       priority(other.priority),
+      has_validators(other.has_validators),
+      always_revalidate(other.always_revalidate),
       score(other.score) {}
 
 ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
@@ -95,7 +112,9 @@ ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
     int i_number_of_misses,
     int i_consecutive_misses,
     double i_average_position,
-    net::RequestPriority i_priority)
+    net::RequestPriority i_priority,
+    bool i_has_validators,
+    bool i_always_revalidate)
     : primary_key(i_primary_key),
       resource_url(i_resource_url),
       resource_type(i_resource_type),
@@ -103,7 +122,9 @@ ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
       number_of_misses(i_number_of_misses),
       consecutive_misses(i_consecutive_misses),
       average_position(i_average_position),
-      priority(i_priority) {
+      priority(i_priority),
+      has_validators(i_has_validators),
+      always_revalidate(i_always_revalidate) {
   UpdateScore();
 }
 
@@ -135,7 +156,8 @@ bool ResourcePrefetchPredictorTables::ResourceRow::operator==(
          number_of_misses == rhs.number_of_misses &&
          consecutive_misses == rhs.consecutive_misses &&
          average_position == rhs.average_position && priority == rhs.priority &&
-         score == rhs.score;
+         has_validators == rhs.has_validators &&
+         always_revalidate == rhs.always_revalidate && score == rhs.score;
 }
 
 bool ResourcePrefetchPredictorTables::ResourceRowSorter::operator()(
@@ -397,7 +419,7 @@ bool ResourcePrefetchPredictorTables::DropTablesIfOutdated(
   for (const char* table_name :
        {kUrlResourceTableName, kHostResourceTableName}) {
     if (db->DoesTableExist(table_name) &&
-        !db->DoesColumnExist(table_name, "priority")) {
+        !db->DoesColumnExist(table_name, "always_revalidate")) {
       success &=
           db->Execute(base::StringPrintf("DROP TABLE %s", table_name).c_str());
     }
@@ -420,6 +442,8 @@ void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
       "consecutive_misses INTEGER, "
       "average_position DOUBLE, "
       "priority INTEGER, "
+      "has_validators INTEGER, "
+      "always_revalidate INTEGER, "
       "PRIMARY KEY(main_page_url, resource_url))";
   const char* metadata_table_creator =
       "CREATE TABLE %s ( "
@@ -481,14 +505,9 @@ Statement*
 Statement*
     ResourcePrefetchPredictorTables::GetUrlResourceUpdateStatement() {
   return new Statement(DB()->GetCachedStatement(
-      SQL_FROM_HERE,
-      base::StringPrintf(
-          "INSERT INTO %s "
-          "(main_page_url, resource_url, resource_type, number_of_hits, "
-          "number_of_misses, consecutive_misses, average_position, priority) "
-          "VALUES (?,?,?,?,?,?,?,?)",
-          kUrlResourceTableName)
-          .c_str()));
+      SQL_FROM_HERE, base::StringPrintf(kInsertResourceTableStatementTemplate,
+                                        kUrlResourceTableName)
+                         .c_str()));
 }
 
 Statement*
@@ -519,14 +538,9 @@ Statement*
 Statement*
     ResourcePrefetchPredictorTables::GetHostResourceUpdateStatement() {
   return new Statement(DB()->GetCachedStatement(
-      SQL_FROM_HERE,
-      base::StringPrintf(
-          "INSERT INTO %s "
-          "(main_page_url, resource_url, resource_type, number_of_hits, "
-          "number_of_misses, consecutive_misses, average_position, priority) "
-          "VALUES (?,?,?,?,?,?,?,?)",
-          kHostResourceTableName)
-          .c_str()));
+      SQL_FROM_HERE, base::StringPrintf(kInsertResourceTableStatementTemplate,
+                                        kHostResourceTableName)
+                         .c_str()));
 }
 
 Statement*
