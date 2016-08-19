@@ -2,14 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
-
 from page_sets.system_health import platforms
 
 from telemetry.page import page
 
 
-_DUMP_WAIT_TIME = 3
+# Extra wait time after the page has loaded required by the loading metric. We
+# use it in all benchmarks to avoid divergence between benchmarks.
+# TODO(petrcermak): Switch the memory benchmarks to use it as well.
+_WAIT_TIME_AFTER_LOAD = 10
 
 
 class _MetaSystemHealthStory(type):
@@ -46,19 +47,24 @@ class SystemHealthStory(page.Page):
     self._take_memory_measurement = take_memory_measurement
 
   def _Measure(self, action_runner):
+    if self._ShouldMeasureMemory(action_runner):
+      action_runner.MeasureMemory(deterministic_mode=True)
+    else:
+      action_runner.Wait(_WAIT_TIME_AFTER_LOAD)
+
+  def _ShouldMeasureMemory(self, action_runner):
     if not self._take_memory_measurement:
-      return
-    # TODO(petrcermak): This method is essentially the same as
-    # MemoryHealthPage._TakeMemoryMeasurement() in memory_health_story.py.
-    # Consider sharing the common code.
-    action_runner.Wait(_DUMP_WAIT_TIME)
-    action_runner.ForceGarbageCollection()
-    action_runner.Wait(_DUMP_WAIT_TIME)
+      return False
+    # The check below is also performed in action_runner.MeasureMemory().
+    # However, we need to duplicate it here so that the story would wait for
+    # |_WAIT_TIME_AFTER_LOAD| seconds after load when recorded via the
+    # system_health.memory_* benchmarks.
+    # TODO(petrcermak): Make it possible (and mandatory) to record the story
+    # directly through the story set and remove this check.
     tracing_controller = action_runner.tab.browser.platform.tracing_controller
     if not tracing_controller.is_tracing_running:
-      return  # Tracing is not running, e.g., when recording a WPR archive.
-    if not action_runner.tab.browser.DumpMemory():
-      logging.error('Unable to get a memory dump for %s.', self.name)
+      return False  # Tracing is not running, e.g. when recording a WPR archive.
+    return True
 
   def _Login(self, action_runner):
     pass
