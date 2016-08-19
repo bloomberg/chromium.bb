@@ -71,5 +71,16 @@ OptionsBrowsertestBase.prototype = {
     // https://github.com/GoogleChrome/accessibility-developer-tools/issues/263
     this.accessibilityAuditConfig.auditRulesToIgnore.push(
         'duplicateId');
+
+    // Enable when failure is resolved.
+    // AX_ARIA_02: http://crbug.com/591547
+    this.accessibilityAuditConfig.ignoreSelectors(
+         'nonExistentAriaRelatedElement', '#input');
+
+    // Enable when failure is resolved.
+    // AX_ARIA_04: http://crbug.com/591550
+    this.accessibilityAuditConfig.ignoreSelectors(
+         'badAriaAttributeValue', '#input');
+
   },
 };

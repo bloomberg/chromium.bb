@@ -434,6 +434,13 @@ cr.define('options', function() {
           chrome.send('coreOptionsUserMetricsAction',
               ['Options_ManageAccounts']);
         };
+
+        if (loadTimeData.getBoolean('showQuickUnlockSettings')) {
+          $('manage-screenlock').onclick = function(event) {
+            PageManager.showPageByName('quickUnlockConfigureOverlay');
+          };
+          $('manage-screenlock').hidden = false;
+        }
       } else {
         $('import-data').onclick = function(event) {
           ImportDataOverlay.show();

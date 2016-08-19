@@ -693,7 +693,8 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://md-settings/*",
-      "chrome://settings/*"
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
     ],
     "platforms": ["chromeos"]
   },

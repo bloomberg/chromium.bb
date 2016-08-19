@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <title i18n-content="optionsPageTitle"></title>
+<if expr="chromeos">
+<link rel="import" href="chrome://settings-frame/options_polymer.html">
+</if>
 <link rel="stylesheet" href="chrome://resources/css/bubble.css">
 <link rel="stylesheet" href="chrome://resources/css/bubble_button.css">
 <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
@@ -62,6 +65,7 @@
 <link rel="stylesheet" href="chromeos/keyboard_overlay.css">
 <link rel="stylesheet" href="chromeos/note_overlay.css">
 <link rel="stylesheet" href="chromeos/pointer_overlay.css">
+<link rel="stylesheet" href="chromeos/quick_unlock_configure_overlay.css">
 <link rel="stylesheet" href="chromeos/storage_clear_drive_cache_overlay.css">
 <link rel="stylesheet" href="chromeos/storage_manager.css">
 <link rel="stylesheet" href="factory_reset_overlay.css">
@@ -140,6 +144,7 @@
   <include src="chromeos/note_overlay.html">
   <include src="chromeos/pointer_overlay.html">
   <include src="chromeos/power_overlay.html">
+  <include src="chromeos/quick_unlock_configure_overlay.html">
   <include src="chromeos/storage_manager.html">
   <include src="factory_reset_overlay.html">
 </if>

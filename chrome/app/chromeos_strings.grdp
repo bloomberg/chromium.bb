@@ -2869,6 +2869,12 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user.">
     Require password to wake from sleep
   </message>
+  <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX_WITH_QUICK_UNLOCK" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user with option of quick unlock.">
+    Require screen lock to wake from sleep.
+  </message>
+  <message name="IDS_OPTIONS_MANAGE_SCREENLOCKER" desc="The link that is clicked to manage screen lock">
+    Manage screen lock
+  </message>
   <message name="IDS_SET_WALLPAPER_BUTTON" desc="The button to set wallpaper.">
     Set wallpaper...
   </message>

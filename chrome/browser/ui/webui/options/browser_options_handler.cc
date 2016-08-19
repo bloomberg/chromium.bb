@@ -19,6 +19,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
@@ -121,6 +122,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -466,7 +468,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "displayOptions", IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_BUTTON_LABEL },
     { "enableContentProtectionAttestation",
       IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION },
-    { "enableScreenlock", IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX },
+    { "manageScreenlock", IDS_OPTIONS_MANAGE_SCREENLOCKER },
     { "factoryResetDataRestart", IDS_RELAUNCH_BUTTON },
     { "factoryResetDescription", IDS_OPTIONS_FACTORY_RESET_DESCRIPTION,
       IDS_SHORT_PRODUCT_NAME },
@@ -481,6 +483,36 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "manageAccountsButtonTitle", IDS_OPTIONS_ACCOUNTS_BUTTON_TITLE },
     { "mouseSpeed", IDS_OPTIONS_SETTINGS_MOUSE_SPEED_DESCRIPTION },
     { "noPointingDevices", IDS_OPTIONS_NO_POINTING_DEVICES },
+    { "confirm", IDS_CONFIRM },
+    { "pinKeyboardClear", IDS_PIN_KEYBOARD_CLEAR },
+    { "configurePinChoosePinTitle",
+      IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CHOOSE_PIN_TITLE },
+    { "configurePinConfirmPinTitle",
+      IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CONFIRM_PIN_TITLE },
+    { "configurePinContinueButton",
+      IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CONTINUE_BUTTON },
+    { "configurePinMismatched", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_MISMATCHED },
+    { "configurePinTooShort", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_SHORT} ,
+    { "configurePinWeakPin", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_WEAK_PIN },
+    { "lockScreenChangePinButton",
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_CHANGE_PIN_BUTTON},
+    { "lockScreenNone", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NONE },
+    { "lockScreenPasswordOnly", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PASSWORD_ONLY },
+    { "lockScreenPinOrPassword",
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PIN_OR_PASSWORD },
+    { "lockScreenSetupPinButton",
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PIN_BUTTON },
+    { "lockScreenTitle", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE },
+    { "passwordPromptEnterPassword",
+      IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD },
+    { "passwordPromptInvalidPassword",
+      IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_INVALID_PASSWORD },
+    { "passwordPromptPasswordLabel",
+      IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_PASSWORD_LABEL },
+    { "passwordPromptTitle", IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_TITLE },
+    { "pinKeyboardPlaceholderPin", IDS_PIN_KEYBOARD_HINT_TEXT_PIN },
+    { "pinKeyboardPlaceholderPinPassword",
+      IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD },
     { "powerSettingsButton",
       IDS_OPTIONS_DEVICE_GROUP_POWER_SETTINGS_BUTTON },
     { "resolveTimezoneByGeoLocation",
@@ -708,6 +740,24 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("enableStorageManager",
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableStorageManager));
+
+  values->SetBoolean("showQuickUnlockSettings",
+                     chromeos::IsQuickUnlockEnabled());
+  if (chromeos::IsQuickUnlockEnabled()) {
+    values->SetString(
+        "enableScreenlock",
+        l10n_util::GetStringUTF16(
+            IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX_WITH_QUICK_UNLOCK));
+  } else {
+    values->SetString(
+        "enableScreenlock",
+        l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX));
+  }
+  // Format numbers to be used on the pin keyboard.
+  for (int j = 0; j <= 9; ++j) {
+    values->SetString("pinKeyboard" + base::IntToString(j),
+                      base::FormatNumber(int64_t{j}));
+  }
 #endif
 }
 

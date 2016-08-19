@@ -68,6 +68,7 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/template_expressions.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
@@ -116,6 +117,32 @@ namespace {
 const char kLocalizedStringsFile[] = "strings.js";
 const char kOptionsBundleJsFile[]  = "options_bundle.js";
 
+#if defined(OS_CHROMEOS)
+constexpr char kPinKeyboardHTMLPath[] = "people_page/pin_keyboard.html";
+constexpr char kPinKeyboardJSPath[] = "people_page/pin_keyboard.js";
+constexpr char kPasswordPromptDialogHTMLPath[] =
+    "people_page/password_prompt_dialog.html";
+constexpr char kPasswordPromptDialogJSPath[] =
+    "people_page/password_prompt_dialog.js";
+constexpr char kLockStateBehaviorHTMLPath[] =
+    "people_page/lock_state_behavior.html";
+constexpr char kLockStateBehaviorJSPath[] =
+    "people_page/lock_state_behavior.js";
+constexpr char kLockScreenHTMLPath[] = "people_page/lock_screen.html";
+constexpr char kLockScreenJSPath[] = "people_page/lock_screen.js";
+constexpr char kSetupPinHTMLPath[] = "people_page/setup_pin_dialog.html";
+constexpr char kSetupPinJSPath[] = "people_page/setup_pin_dialog.js";
+constexpr char kSettingsRouteHTMLPath[] = "route.html";
+constexpr char kSettingsRouteJSPath[] = "route.js";
+constexpr char kSettingsSharedCSSHTMLPath[] = "settings_shared_css.html";
+constexpr char kSettingsVarsCSSHTMLPath[] = "settings_vars_css.html";
+constexpr char kSettingsPrefsBehaviorHTMLPath[] = "prefs/prefs_behavior.html";
+constexpr char kSettingsPrefsBehaviorJSPath[] = "prefs/prefs_behavior.js";
+constexpr char kSettingsPrefsTypesHTMLPath[] = "prefs/prefs_types.html";
+constexpr char kSettingsPrefsTypesJSPath[] = "prefs/prefs_types.js";
+constexpr char kOptionsPolymerHTMLPath[] = "options_polymer.html";
+#endif
+
 }  // namespace
 
 namespace options {
@@ -143,9 +170,13 @@ class OptionsUIHTMLSource : public content::URLDataSource {
 
  private:
   ~OptionsUIHTMLSource() override;
+  void CreateDataSourceMap();
+  void AddReplacements(base::DictionaryValue* localized_strings);
 
   // Localized strings collection.
   std::unique_ptr<base::DictionaryValue> localized_strings_;
+  std::map<std::string, int> path_to_idr_map_;
+  ui::TemplateReplacements replacements_;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsUIHTMLSource);
 };
@@ -153,7 +184,9 @@ class OptionsUIHTMLSource : public content::URLDataSource {
 OptionsUIHTMLSource::OptionsUIHTMLSource(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
+  AddReplacements(localized_strings);
   localized_strings_.reset(localized_strings);
+  CreateDataSourceMap();
 }
 
 std::string OptionsUIHTMLSource::GetSource() const {
@@ -169,6 +202,9 @@ void OptionsUIHTMLSource::StartDataRequest(
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings_.get());
 
+  std::map<std::string, int>::iterator result;
+  result = path_to_idr_map_.find(path);
+
   if (path == kLocalizedStringsFile) {
     // Return dynamically-generated strings from memory.
     std::string strings_js;
@@ -178,17 +214,30 @@ void OptionsUIHTMLSource::StartDataRequest(
     // Return (and cache) the options javascript code.
     response_bytes = ui::ResourceBundle::GetSharedInstance().
         LoadDataResourceBytes(IDR_OPTIONS_BUNDLE_JS);
+  } else if (result != path_to_idr_map_.end()) {
+    response_bytes =
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+            result->second);
   } else {
     // Return (and cache) the main options html page as the default.
     response_bytes = ui::ResourceBundle::GetSharedInstance().
         LoadDataResourceBytes(IDR_OPTIONS_HTML);
   }
 
+  // pre-process i18n strings
+  if (GetMimeType(path) == "text/html") {
+    std::string replaced = ui::ReplaceTemplateExpressions(
+        base::StringPiece(response_bytes->front_as<char>(),
+                          response_bytes->size()),
+        replacements_);
+    response_bytes = base::RefCountedString::TakeString(&replaced);
+  }
+
   callback.Run(response_bytes.get());
 }
 
 std::string OptionsUIHTMLSource::GetMimeType(const std::string& path) const {
-  if (path == kLocalizedStringsFile || path == kOptionsBundleJsFile)
+  if (base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII))
     return "application/javascript";
 
   return "text/html";
@@ -199,6 +248,48 @@ bool OptionsUIHTMLSource::ShouldDenyXFrameOptions() const {
 }
 
 OptionsUIHTMLSource::~OptionsUIHTMLSource() {}
+
+void OptionsUIHTMLSource::CreateDataSourceMap() {
+#if defined(OS_CHROMEOS)
+  path_to_idr_map_[kPinKeyboardHTMLPath] = IDR_OPTIONS_PIN_KEYBOARD_HTML;
+  path_to_idr_map_[kPinKeyboardJSPath] = IDR_OPTIONS_PIN_KEYBOARD_JS;
+  path_to_idr_map_[kPasswordPromptDialogHTMLPath] =
+      IDR_OPTIONS_PASSWORD_PROMPT_DIALOG_HTML;
+  path_to_idr_map_[kPasswordPromptDialogJSPath] =
+      IDR_OPTIONS_PASSWORD_PROMPT_DIALOG_JS;
+  path_to_idr_map_[kLockStateBehaviorHTMLPath] =
+      IDR_OPTIONS_LOCK_STATE_BEHAVIOR_HTML;
+  path_to_idr_map_[kLockStateBehaviorJSPath] =
+      IDR_OPTIONS_LOCK_STATE_BEHAVIOR_JS;
+  path_to_idr_map_[kLockScreenHTMLPath] = IDR_OPTIONS_LOCK_SCREEN_HTML;
+  path_to_idr_map_[kLockScreenJSPath] = IDR_OPTIONS_LOCK_SCREEN_JS;
+  path_to_idr_map_[kSetupPinHTMLPath] = IDR_OPTIONS_SETUP_PIN_DIALOG_HTML;
+  path_to_idr_map_[kSetupPinJSPath] = IDR_OPTIONS_SETUP_PIN_DIALOG_JS;
+  path_to_idr_map_[kSettingsRouteHTMLPath] = IDR_OPTIONS_ROUTE_HTML;
+  path_to_idr_map_[kSettingsRouteJSPath] = IDR_OPTIONS_ROUTE_JS;
+  path_to_idr_map_[kSettingsSharedCSSHTMLPath] = IDR_SETTINGS_SHARED_CSS_HTML;
+  path_to_idr_map_[kSettingsVarsCSSHTMLPath] = IDR_SETTINGS_VARS_CSS_HTML;
+  path_to_idr_map_[kSettingsPrefsBehaviorHTMLPath] =
+      IDR_SETTINGS_PREFS_BEHAVIOR_HTML;
+  path_to_idr_map_[kSettingsPrefsBehaviorJSPath] =
+      IDR_SETTINGS_PREFS_BEHAVIOR_JS;
+  path_to_idr_map_[kSettingsPrefsTypesHTMLPath] = IDR_SETTINGS_PREFS_TYPES_HTML;
+  path_to_idr_map_[kSettingsPrefsTypesJSPath] = IDR_SETTINGS_PREFS_TYPES_JS;
+  path_to_idr_map_[kOptionsPolymerHTMLPath] = IDR_OPTIONS_POLYMER_ELEMENTS_HTML;
+#endif
+}
+
+void OptionsUIHTMLSource::AddReplacements(
+    base::DictionaryValue* localized_strings) {
+  for (auto it = base::DictionaryValue::Iterator(*localized_strings);
+       !it.IsAtEnd(); it.Advance()) {
+    std::string str_value;
+    if (!it.value().GetAsString(&str_value)) {
+      continue;
+    }
+    replacements_[it.key()] = str_value;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //

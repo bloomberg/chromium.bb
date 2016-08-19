@@ -39,6 +39,7 @@
 <include src="chromeos/keyboard_overlay.js">
 <include src="chromeos/note_overlay.js">
 <include src="chromeos/pointer_overlay.js">
+<include src="chromeos/quick_unlock_configure_overlay.js">
 <include src="chromeos/storage_clear_drive_cache_overlay.js">
 <include src="chromeos/storage_manager.js">
 <include src="chromeos/third_party_ime_confirm_overlay.js">
@@ -54,6 +55,7 @@ var KeyboardOverlay = options.KeyboardOverlay;
 var NoteOverlay = options.NoteOverlay;
 var PointerOverlay = options.PointerOverlay;
 var PowerOverlay = options.PowerOverlay;
+var QuickUnlockConfigureOverlay = options.QuickUnlockConfigureOverlay;
 var StorageClearDriveCacheOverlay = options.StorageClearDriveCacheOverlay;
 var StorageManager = options.StorageManager;
 var UIAccountTweaks = uiAccountTweaks.UIAccountTweaks;

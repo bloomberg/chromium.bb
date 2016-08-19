@@ -34,7 +34,7 @@ QuickUnlockModeList ComputeActiveModes(Profile* profile) {
 
   chromeos::PinStorage* pin_storage =
       chromeos::PinStorageFactory::GetForProfile(profile);
-  if (pin_storage->IsPinSet())
+  if (pin_storage && pin_storage->IsPinSet())
     modes.push_back(quick_unlock_private::QUICK_UNLOCK_MODE_PIN);
 
   return modes;
