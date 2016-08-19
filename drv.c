@@ -274,36 +274,46 @@ drv_bo_unmap(struct bo *bo)
 struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 {
 	int ret;
+	size_t plane;
 	struct bo *bo;
 	struct drm_prime_handle prime_handle;
 
-	memset(&prime_handle, 0, sizeof(prime_handle));
-	prime_handle.fd = data->fd;
-
-	/* This function can support only single plane formats. */
-	/* If multi-plane import is desired, new function should be added. */
-	if (drv_num_planes_from_format(data->format) != 1)
-		return NULL;
-
 	bo = drv_bo_new(drv, data->width, data->height, data->format);
 
-	ret = drmIoctl(drv->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE,
-		       &prime_handle);
-
-	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_PRIME_FD_TO_HANDLE failed "
-				"(fd=%u)\n", prime_handle.fd);
-		free(bo);
+	if (!bo)
 		return NULL;
+
+	for (plane = 0; plane < bo->num_planes; plane++) {
+
+		memset(&prime_handle, 0, sizeof(prime_handle));
+		prime_handle.fd = data->fds[plane];
+
+		ret = drmIoctl(drv->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE,
+			       &prime_handle);
+
+		if (ret) {
+			fprintf(stderr, "drv: DRM_IOCTL_PRIME_FD_TO_HANDLE failed "
+				"(fd=%u)\n", prime_handle.fd);
+
+			if (plane > 0) {
+				bo->num_planes = plane;
+				drv_bo_destroy(bo);
+			} else {
+				free(bo);
+			}
+
+			return NULL;
+		}
+
+		bo->handles[plane].u32 = prime_handle.handle;
+		bo->strides[plane] = data->strides[plane];
+		bo->offsets[plane] = data->offsets[plane];
+		bo->sizes[plane] = data->sizes[plane];
+
+		pthread_mutex_lock(&drv->table_lock);
+		drv_increment_reference_count(drv, bo, plane);
+		pthread_mutex_unlock(&drv->table_lock);
 	}
-
-	bo->strides[0] = data->stride;
-	bo->sizes[0] = data->height * data->stride;
-	bo->handles[0].u32 = prime_handle.handle;
-
-	pthread_mutex_lock(&drv->table_lock);
-	drv_increment_reference_count(drv, bo, 0);
-	pthread_mutex_unlock(&drv->table_lock);
 
 	return bo;
 }

@@ -123,19 +123,21 @@ struct driver;
 struct bo;
 
 union bo_handle {
-   void *ptr;
-   int32_t s32;
-   uint32_t u32;
-   int64_t s64;
-   uint64_t u64;
+	void *ptr;
+	int32_t s32;
+	uint32_t u32;
+	int64_t s64;
+	uint64_t u64;
 };
 
 struct drv_import_fd_data {
-   int fd;
-   uint32_t width;
-   uint32_t height;
-   uint32_t stride;
-   drv_format_t format;
+	int fds[DRV_MAX_PLANES];
+	uint32_t strides[DRV_MAX_PLANES];
+	uint32_t offsets[DRV_MAX_PLANES];
+	uint32_t sizes[DRV_MAX_PLANES];
+	uint32_t width;
+	uint32_t height;
+	drv_format_t format;
 };
 
 struct driver *

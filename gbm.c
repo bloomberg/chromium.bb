@@ -170,11 +170,20 @@ gbm_bo_import(struct gbm_device *gbm, uint32_t type,
 	if (!bo)
 		return NULL;
 
-	drv_data.fd = fd_data->fd;
+	/*
+	 * Minigbm only supports importing single-plane formats at moment.
+	 * If multi-plane import is desired, the interface will have to be
+	 * modified.
+	 */
+
+	memset(&drv_data, 0, sizeof(drv_data));
+	drv_data.fds[0] = fd_data->fd;
+	drv_data.strides[0] = fd_data->stride;
+	drv_data.offsets[0] = 0;
+	drv_data.sizes[0] = fd_data->height * fd_data->stride;
 	drv_data.width = fd_data->width;
 	drv_data.height = fd_data->height;
 	drv_data.format = gbm_convert_format(fd_data->format);
-	drv_data.stride = fd_data->stride;
 
 	bo->bo = drv_bo_import(gbm->drv, &drv_data);
 
