@@ -95,24 +95,30 @@ Polymer({
   /** @private */
   overscrollChanged_: function() {
     if (!this.overscroll_ && this.boundScroll_) {
-      this.parentNode.scroller.removeEventListener('scroll', this.boundScroll_);
+      this.offsetParent.removeEventListener('scroll', this.boundScroll_);
       this.boundScroll_ = null;
     } else if (this.overscroll_ && !this.boundScroll_) {
-      this.boundScroll_ = this.scrollEventListener_.bind(this);
-      this.parentNode.scroller.addEventListener('scroll', this.boundScroll_);
+      this.boundScroll_ = this.setOverscroll_.bind(this, 0);
+      this.offsetParent.addEventListener('scroll', this.boundScroll_);
     }
   },
 
-  /** @private */
-  scrollEventListener_: function() {
-    var scroller = this.parentNode.scroller;
+  /**
+   * Sets the overscroll padding. Never forces a scroll, i.e., always leaves
+   * any currently visible overflow as-is.
+   * @param {number=} opt_minHeight The minimum overscroll height needed.
+   */
+  setOverscroll_: function(opt_minHeight) {
+    var scroller = this.offsetParent;
+    if (!scroller)
+      return;
     var overscroll = this.$.overscroll;
     var visibleBottom = scroller.scrollTop + scroller.clientHeight;
     var overscrollBottom = overscroll.offsetTop + overscroll.scrollHeight;
     // How much of the overscroll is visible (may be negative).
     var visibleOverscroll = overscroll.scrollHeight -
                             (overscrollBottom - visibleBottom);
-    this.overscroll_ = Math.max(0, visibleOverscroll);
+    this.overscroll_ = Math.max(opt_minHeight || 0, visibleOverscroll);
   },
 
   /**
@@ -160,7 +166,7 @@ Polymer({
       // Ensure any dom-if reflects the current properties.
       Polymer.dom.flush();
 
-      this.overscroll_ = this.overscrollHeight_();
+      this.setOverscroll_(this.overscrollHeight_());
     }.bind(this));
   },
 
@@ -174,19 +180,19 @@ Polymer({
    */
   overscrollHeight_: function() {
     var route = settings.getCurrentRoute();
-    if (route.isSubpage() || this.showPages_.about)
+    if (!route.section || route.isSubpage() || this.showPages_.about)
       return 0;
 
     var page = this.getPage_(route);
-    var topSection = page && page.getSection(route.section);
-    if (!topSection || !topSection.offsetParent)
+    var section = page && page.getSection(route.section);
+    if (!section || !section.offsetParent)
       return 0;
 
-    // Offset to the selected section (relative to the scrolling window).
-    let sectionTop = topSection.offsetParent.offsetTop + topSection.offsetTop;
-    // The height of the selected section and remaining content (sections).
-    let heightOfShownSections = this.$.overscroll.offsetTop - sectionTop;
-    return Math.max(0, this.parentNode.scrollHeight - heightOfShownSections);
+    // Find the distance from the section's top to the overscroll.
+    var sectionTop = section.offsetParent.offsetTop + section.offsetTop;
+    var distance = this.$.overscroll.offsetTop - sectionTop;
+
+    return Math.max(0, this.offsetParent.clientHeight - distance);
   },
 
   /** @private */
