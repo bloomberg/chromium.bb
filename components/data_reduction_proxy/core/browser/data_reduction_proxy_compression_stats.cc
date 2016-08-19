@@ -420,28 +420,54 @@ void DataReductionProxyCompressionStats::Init() {
   }
 }
 
+void DataReductionProxyCompressionStats::UpdateDataSavings(
+    const std::string& data_usage_host,
+    int64_t data_used,
+    int64_t original_size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Data is recorded at the URLRequest level, so an update should only change
+  // the original size amount by the savings amount.
+  int64_t update_to_original_size = original_size - data_used;
+  int64_t update_to_data_used = 0;
+  RecordData(update_to_data_used, update_to_original_size,
+             true /* data_saver_enabled */, UPDATE, data_usage_host,
+             std::string());
+}
+
 void DataReductionProxyCompressionStats::UpdateContentLengths(
     int64_t data_used,
     int64_t original_size,
-    bool data_reduction_proxy_enabled,
+    bool data_saver_enabled,
     DataReductionProxyRequestType request_type,
     const scoped_refptr<DataUseGroup>& data_use_group,
     const std::string& mime_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  TRACE_EVENT0("loader",
-               "DataReductionProxyCompressionStats::UpdateContentLengths")
+  std::string data_use_host;
+  if (data_use_group) {
+    data_use_host = data_use_group->GetHostname();
+  }
+
+  RecordData(data_used, original_size, data_saver_enabled, request_type,
+             data_use_host, mime_type);
+}
+
+void DataReductionProxyCompressionStats::RecordData(
+    int64_t data_used,
+    int64_t original_size,
+    bool data_saver_enabled,
+    DataReductionProxyRequestType request_type,
+    const std::string& data_use_host,
+    const std::string& mime_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("loader", "DataReductionProxyCompressionStats::RecordData")
 
   IncreaseInt64Pref(data_reduction_proxy::prefs::kHttpReceivedContentLength,
                     data_used);
   IncreaseInt64Pref(data_reduction_proxy::prefs::kHttpOriginalContentLength,
                     original_size);
 
-  std::string data_use_host;
-  if (data_use_group) {
-    data_use_host = data_use_group->GetHostname();
-  }
   RecordDataUsage(data_use_host, data_used, original_size, base::Time::Now());
-  RecordRequestSizePrefs(data_used, original_size, data_reduction_proxy_enabled,
+  RecordRequestSizePrefs(data_used, original_size, data_saver_enabled,
                          request_type, mime_type, base::Time::Now());
 }
 
@@ -685,7 +711,7 @@ void DataReductionProxyCompressionStats::TransferList(
 void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
     int64_t data_used,
     int64_t original_size,
-    bool with_data_reduction_proxy_enabled,
+    bool with_data_saver_enabled,
     DataReductionProxyRequestType request_type,
     const std::string& mime_type,
     const base::Time& now) {
@@ -971,10 +997,10 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
   unknown.UpdateForDateChange(days_since_last_update);
 
   total.Add(original_size, data_used);
-  if (with_data_reduction_proxy_enabled) {
+  if (with_data_saver_enabled) {
     proxy_enabled.Add(original_size, data_used);
     // Ignore data source cases, if exist, when
-    // "with_data_reduction_proxy_enabled == false"
+    // "with_data_saver_enabled == false"
     switch (request_type) {
       case VIA_DATA_REDUCTION_PROXY:
         via_proxy.Add(original_size, data_used);
@@ -988,6 +1014,11 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
       case LONG_BYPASS:
         long_bypass.Add(data_used);
         break;
+      case UPDATE:
+        // Don't record any request level prefs. If this is an update, this data
+        // was already recorded at the URLRequest level. Updates are generally
+        // page load level optimizations and don't correspond to request types.
+        return;
       case UNKNOWN_TYPE:
         unknown.Add(data_used);
         break;
@@ -1005,7 +1036,7 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
         original_size, data_used,
         data_reduction_proxy::prefs::kDailyHttpOriginalContentLengthApplication,
         data_reduction_proxy::prefs::kDailyHttpReceivedContentLengthApplication,
-        with_data_reduction_proxy_enabled,
+        with_data_saver_enabled,
         data_reduction_proxy::prefs::
             kDailyOriginalContentLengthWithDataReductionProxyEnabledApplication,
         data_reduction_proxy::prefs::
@@ -1020,7 +1051,7 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
         original_size, data_used,
         data_reduction_proxy::prefs::kDailyHttpOriginalContentLengthVideo,
         data_reduction_proxy::prefs::kDailyHttpReceivedContentLengthVideo,
-        with_data_reduction_proxy_enabled,
+        with_data_saver_enabled,
         data_reduction_proxy::prefs::
             kDailyOriginalContentLengthWithDataReductionProxyEnabledVideo,
         data_reduction_proxy::prefs::
@@ -1035,7 +1066,7 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
         original_size, data_used,
         data_reduction_proxy::prefs::kDailyHttpOriginalContentLengthUnknown,
         data_reduction_proxy::prefs::kDailyHttpReceivedContentLengthUnknown,
-        with_data_reduction_proxy_enabled,
+        with_data_saver_enabled,
         data_reduction_proxy::prefs::
             kDailyOriginalContentLengthWithDataReductionProxyEnabledUnknown,
         data_reduction_proxy::prefs::

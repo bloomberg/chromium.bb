@@ -22,6 +22,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_savings_recorder.h"
 #include "components/prefs/pref_member.h"
 
 class PrefService;
@@ -42,7 +43,7 @@ class PerSiteDataUsage;
 // |delay| amount of time. If |delay| is zero, the delayed pref service writes
 // directly to the PrefService and does not store the prefs in memory. All
 // prefs must be stored and read on the UI thread.
-class DataReductionProxyCompressionStats {
+class DataReductionProxyCompressionStats : public DataSavingsRecorder {
  public:
   typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<PerSiteDataUsage>>
       SiteUsageMap;
@@ -60,6 +61,11 @@ class DataReductionProxyCompressionStats {
                                      PrefService* pref_service,
                                      const base::TimeDelta& delay);
   ~DataReductionProxyCompressionStats();
+
+  // DataSavingsRecorder implementation:
+  void UpdateDataSavings(const std::string& data_usage_host,
+                         int64_t data_used,
+                         int64_t original_size) override;
 
   // Records detailed data usage broken down by connection type and domain. Also
   // records daily data savings statistics to prefs and reports data savings
@@ -223,6 +229,16 @@ class DataReductionProxyCompressionStats {
   // without the protocol.
   // Example: "http://www.finance.google.com" -> "www.finance.google.com"
   static std::string NormalizeHostname(const std::string& host);
+
+  // Records detailed data usage broken down by |host|. Also records daily data
+  // savings statistics to prefs and reports data savings UMA. |data_used| and
+  // |original_size| are measured in bytes.
+  void RecordData(int64_t data_used,
+                  int64_t original_size,
+                  bool data_saver_enabled,
+                  DataReductionProxyRequestType request_type,
+                  const std::string& data_use_host,
+                  const std::string& mime_type);
 
   DataReductionProxyService* service_;
   PrefService* pref_service_;
