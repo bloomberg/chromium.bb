@@ -104,7 +104,6 @@ def main():
                        '  license [filename]\n' \
                        '    Generate Cronet LICENSE to filename or stdout.\n')
   (flags, args) = parser.parse_args()
-  print flags
 
   if flags.gn:
     global third_party_dirs
