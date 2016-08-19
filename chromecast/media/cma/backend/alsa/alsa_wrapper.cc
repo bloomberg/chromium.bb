@@ -42,6 +42,10 @@ snd_pcm_sframes_t AlsaWrapper::PcmStatusGetDelay(const snd_pcm_status_t* obj) {
   return snd_pcm_status_get_delay(obj);
 }
 
+snd_pcm_uframes_t AlsaWrapper::PcmStatusGetAvail(const snd_pcm_status_t* obj) {
+  return snd_pcm_status_get_avail(obj);
+}
+
 ssize_t AlsaWrapper::PcmFormatSize(snd_pcm_format_t format, size_t samples) {
   return snd_pcm_format_size(format, samples);
 }

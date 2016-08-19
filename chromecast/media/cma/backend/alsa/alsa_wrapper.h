@@ -25,6 +25,7 @@ class AlsaWrapper : public ::media::AlsaWrapper {
   virtual void PcmStatusFree(snd_pcm_status_t* obj);
   virtual int PcmStatus(snd_pcm_t* handle, snd_pcm_status_t* status);
   virtual snd_pcm_sframes_t PcmStatusGetDelay(const snd_pcm_status_t* obj);
+  virtual snd_pcm_uframes_t PcmStatusGetAvail(const snd_pcm_status_t* obj);
   virtual void PcmStatusGetHtstamp(const snd_pcm_status_t* obj,
                                    snd_htimestamp_t* ptr);
   virtual snd_pcm_state_t PcmStatusGetState(const snd_pcm_status_t* obj);

@@ -76,6 +76,9 @@ const int kPreventUnderrunChunkSize = 512;
 const int kDefaultCheckCloseTimeoutMs = 2000;
 
 const int kMaxWriteSizeMs = 20;
+// The minimum amount of data that we allow in the ALSA buffer before starting
+// to skip inputs with no available data.
+const int kMinBufferedDataMs = 8;
 
 // A list of supported sample rates.
 // TODO(jyw): move this up into chromecast/public for 1) documentation and
@@ -769,7 +772,27 @@ bool StreamMixerAlsa::TryWriteFrames() {
       active_inputs.push_back(input.get());
       chunk_size = std::min(chunk_size, read_size);
     } else if (input->primary()) {
+      if (alsa_->PcmStatus(pcm_, pcm_status_) != 0) {
+        LOG(ERROR) << "Failed to get status";
+        return false;
+      }
+
+      const int min_frames_in_buffer =
+          output_samples_per_second_ * kMinBufferedDataMs / 1000;
+      int frames_in_buffer =
+          alsa_buffer_size_ - alsa_->PcmStatusGetAvail(pcm_status_);
+      DCHECK_GE(frames_in_buffer, 0);
+      if (alsa_->PcmStatusGetState(pcm_status_) == SND_PCM_STATE_XRUN ||
+          frames_in_buffer < min_frames_in_buffer) {
+        // If there has been (or soon will be) an underrun, continue without the
+        // empty primary input stream.
+        continue;
+      }
+
       // A primary input cannot provide any data, so wait until later.
+      retry_write_frames_timer_->Start(
+          FROM_HERE, base::TimeDelta::FromMilliseconds(kMinBufferedDataMs / 2),
+          base::Bind(&StreamMixerAlsa::WriteFrames, base::Unretained(this)));
       return false;
     }
   }

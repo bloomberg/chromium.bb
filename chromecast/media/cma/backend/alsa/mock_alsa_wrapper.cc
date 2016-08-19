@@ -25,6 +25,7 @@ class MockAlsaWrapper::FakeAlsaWrapper : public AlsaWrapper {
  public:
   FakeAlsaWrapper()
       : state_(SND_PCM_STATE_RUNNING),
+        avail_(0),
         fake_handle_(nullptr),
         fake_pcm_hw_params_(nullptr),
         fake_pcm_status_(nullptr) {}
@@ -82,6 +83,10 @@ class MockAlsaWrapper::FakeAlsaWrapper : public AlsaWrapper {
     return 0;
   }
 
+  snd_pcm_uframes_t PcmStatusGetAvail(const snd_pcm_status_t* obj) override {
+    return avail_;
+  }
+
   snd_pcm_state_t PcmStatusGetState(const snd_pcm_status_t* obj) override {
     return state_;
   }
@@ -90,11 +95,14 @@ class MockAlsaWrapper::FakeAlsaWrapper : public AlsaWrapper {
     return kBytesPerSample * samples;
   };
 
-  snd_pcm_state_t state() { return state_; }
+  snd_pcm_state_t state() const { return state_; }
+  void set_state(snd_pcm_state_t state) { state_ = state; }
+  void set_avail(snd_pcm_uframes_t avail) { avail_ = avail; }
   std::vector<uint8_t>& data() { return data_; }
 
  private:
   snd_pcm_state_t state_;
+  snd_pcm_uframes_t avail_;
   snd_pcm_t* fake_handle_;
   snd_pcm_hw_params_t* fake_pcm_hw_params_;
   snd_pcm_status_t* fake_pcm_status_;
@@ -127,6 +135,9 @@ MockAlsaWrapper::MockAlsaWrapper() : fake_(new FakeAlsaWrapper()) {
   ON_CALL(*this, PcmStatusGetState(_))
       .WillByDefault(
           testing::Invoke(fake_.get(), &FakeAlsaWrapper::PcmStatusGetState));
+  ON_CALL(*this, PcmStatusGetAvail(_))
+      .WillByDefault(
+          testing::Invoke(fake_.get(), &FakeAlsaWrapper::PcmStatusGetAvail));
 }
 
 MockAlsaWrapper::~MockAlsaWrapper() {
@@ -134,6 +145,14 @@ MockAlsaWrapper::~MockAlsaWrapper() {
 
 snd_pcm_state_t MockAlsaWrapper::state() {
   return fake_->state();
+}
+
+void MockAlsaWrapper::set_state(snd_pcm_state_t state) {
+  fake_->set_state(state);
+}
+
+void MockAlsaWrapper::set_avail(snd_pcm_uframes_t avail) {
+  fake_->set_avail(avail);
 }
 
 const std::vector<uint8_t>& MockAlsaWrapper::data() {
