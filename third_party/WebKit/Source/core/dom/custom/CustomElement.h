@@ -34,8 +34,8 @@ public:
 
     static bool isValidName(const AtomicString& name);
 
-    static bool shouldCreateCustomElement(Document&, const AtomicString& localName);
-    static bool shouldCreateCustomElement(Document&, const QualifiedName&);
+    static bool shouldCreateCustomElement(const AtomicString& localName);
+    static bool shouldCreateCustomElement(const QualifiedName&);
 
     static HTMLElement* createCustomElementSync(Document&, const AtomicString& localName, ExceptionState&);
     static HTMLElement* createCustomElementSync(Document&, const QualifiedName&, ExceptionState&);

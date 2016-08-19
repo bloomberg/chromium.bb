@@ -639,7 +639,7 @@ Element* Document::createElement(const AtomicString& name, ExceptionState& excep
     }
 
     if (isXHTMLDocument() || isHTMLDocument()) {
-        if (CustomElement::shouldCreateCustomElement(*this, name))
+        if (CustomElement::shouldCreateCustomElement(name))
             return CustomElement::createCustomElementSync(*this, name, exceptionState);
         return HTMLElementFactory::createHTMLElement(convertLocalName(name), *this, 0, CreatedByCreateElement);
     }
@@ -656,7 +656,7 @@ Element* Document::createElement(const AtomicString& localName, const AtomicStri
 
     Element* element;
 
-    if (CustomElement::shouldCreateCustomElement(*this, localName)) {
+    if (CustomElement::shouldCreateCustomElement(localName)) {
         element = CustomElement::createCustomElementSync(*this, localName, exceptionState);
     } else if (V0CustomElement::isValidName(localName) && registrationContext()) {
         element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, convertLocalName(localName), xhtmlNamespaceURI));
@@ -693,7 +693,7 @@ Element* Document::createElementNS(const AtomicString& namespaceURI, const Atomi
     if (qName == QualifiedName::null())
         return nullptr;
 
-    if (CustomElement::shouldCreateCustomElement(*this, qName))
+    if (CustomElement::shouldCreateCustomElement(qName))
         return CustomElement::createCustomElementSync(*this, qName, exceptionState);
     return createElement(qName, CreatedByCreateElement);
 }
@@ -705,7 +705,7 @@ Element* Document::createElementNS(const AtomicString& namespaceURI, const Atomi
         return nullptr;
 
     Element* element;
-    if (CustomElement::shouldCreateCustomElement(*this, qName))
+    if (CustomElement::shouldCreateCustomElement(qName))
         element = CustomElement::createCustomElementSync(*this, qName, exceptionState);
     else if (V0CustomElement::isValidName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(*this, qName);

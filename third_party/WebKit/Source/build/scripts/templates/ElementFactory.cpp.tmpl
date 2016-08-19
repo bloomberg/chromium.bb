@@ -90,7 +90,7 @@ static void create{{namespace}}FunctionMap()
         return function(document, {% if namespace == 'HTML' %}formElement, {% endif %}flags);
 
     {% if namespace == 'HTML' %}
-    if (CustomElement::shouldCreateCustomElement(document, localName)) {
+    if (CustomElement::shouldCreateCustomElement(localName)) {
         QualifiedName tagName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI);
         if (flags & AsynchronousCustomElements)
             return CustomElement::createCustomElementAsync(document, tagName);

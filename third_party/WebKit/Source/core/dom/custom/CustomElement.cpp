@@ -78,15 +78,15 @@ bool CustomElement::isValidName(const AtomicString& name)
     return !hyphenContainingElementNames.contains(name);
 }
 
-bool CustomElement::shouldCreateCustomElement(Document& document, const AtomicString& localName)
+bool CustomElement::shouldCreateCustomElement(const AtomicString& localName)
 {
     return RuntimeEnabledFeatures::customElementsV1Enabled()
         && isValidName(localName);
 }
 
-bool CustomElement::shouldCreateCustomElement(Document& document, const QualifiedName& tagName)
+bool CustomElement::shouldCreateCustomElement(const QualifiedName& tagName)
 {
-    return shouldCreateCustomElement(document, tagName.localName())
+    return shouldCreateCustomElement(tagName.localName())
         && tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
 }
 
@@ -106,7 +106,7 @@ HTMLElement* CustomElement::createCustomElementSync(Document& document, const At
 
 HTMLElement* CustomElement::createCustomElementSync(Document& document, const QualifiedName& tagName, ExceptionState& exceptionState)
 {
-    CHECK(shouldCreateCustomElement(document, tagName));
+    CHECK(shouldCreateCustomElement(tagName));
 
     // To create an element:
     // https://dom.spec.whatwg.org/#concept-create-element
@@ -120,7 +120,7 @@ HTMLElement* CustomElement::createCustomElementSync(Document& document, const Qu
 
 HTMLElement* CustomElement::createCustomElementSync(Document& document, const QualifiedName& tagName)
 {
-    CHECK(shouldCreateCustomElement(document, tagName));
+    CHECK(shouldCreateCustomElement(tagName));
 
     // When invoked from "create an element for a token":
     // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
@@ -135,7 +135,7 @@ HTMLElement* CustomElement::createCustomElementSync(Document& document, const Qu
 
 HTMLElement* CustomElement::createCustomElementAsync(Document& document, const QualifiedName& tagName)
 {
-    CHECK(shouldCreateCustomElement(document, tagName));
+    CHECK(shouldCreateCustomElement(tagName));
 
     // To create an element:
     // https://dom.spec.whatwg.org/#concept-create-element
@@ -149,7 +149,7 @@ HTMLElement* CustomElement::createCustomElementAsync(Document& document, const Q
 
 HTMLElement* CustomElement::createUndefinedElement(Document& document, const QualifiedName& tagName)
 {
-    DCHECK(shouldCreateCustomElement(document, tagName));
+    DCHECK(shouldCreateCustomElement(tagName));
 
     HTMLElement* element;
     if (V0CustomElement::isValidName(tagName.localName()) && document.registrationContext()) {
@@ -167,7 +167,7 @@ HTMLElement* CustomElement::createUndefinedElement(Document& document, const Qua
 
 HTMLElement* CustomElement::createFailedElement(Document& document, const QualifiedName& tagName)
 {
-    DCHECK(shouldCreateCustomElement(document, tagName));
+    DCHECK(shouldCreateCustomElement(tagName));
 
     // "create an element for a token":
     // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
