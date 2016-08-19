@@ -1386,9 +1386,9 @@ void Range::nodeWillBeRemoved(Node& node)
 
 static inline void boundaryTextInserted(RangeBoundaryPoint& boundary, Node* text, unsigned offset, unsigned length)
 {
-    boundary.markValid();
     if (boundary.container() != text)
         return;
+    boundary.markValid();
     unsigned boundaryOffset = boundary.offset();
     if (offset >= boundaryOffset)
         return;
@@ -1405,9 +1405,9 @@ void Range::didInsertText(Node* text, unsigned offset, unsigned length)
 
 static inline void boundaryTextRemoved(RangeBoundaryPoint& boundary, Node* text, unsigned offset, unsigned length)
 {
-    boundary.markValid();
     if (boundary.container() != text)
         return;
+    boundary.markValid();
     unsigned boundaryOffset = boundary.offset();
     if (offset >= boundaryOffset)
         return;
