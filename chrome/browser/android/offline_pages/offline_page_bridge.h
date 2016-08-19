@@ -109,6 +109,11 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  void GetRequestsInQueue(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_callback_obj);
+
   base::android::ScopedJavaGlobalRef<jobject> java_ref() { return java_ref_; }
 
  private:

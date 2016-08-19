@@ -2070,6 +2070,7 @@
       'android/java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsLauncher.java',
       'android/java/src/org/chromium/chrome/browser/offlinepages/BackgroundSchedulerBridge.java',
       'android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridge.java',
+      'android/java/src/org/chromium/chrome/browser/offlinepages/SavePageRequest.java',
       'android/java/src/org/chromium/chrome/browser/offlinepages/downloads/OfflinePageDownloadBridge.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AnswersImage.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AutocompleteController.java',

@@ -11,9 +11,11 @@
 #include <vector>
 
 #include "base/android/callback_android.h"
+#include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
@@ -28,6 +30,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/OfflinePageBridge_jni.h"
+#include "jni/SavePageRequest_jni.h"
 #include "net/base/filename_util.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -131,6 +134,42 @@ void SingleOfflinePageItemCallback(
   if (result)
     j_result = ToJavaOfflinePageItem(env, *result);
   base::android::RunCallbackAndroid(j_callback_obj, j_result);
+}
+
+ScopedJavaLocalRef<jobjectArray> CreateJavaSavePageRequests(
+    JNIEnv* env,
+    const std::vector<SavePageRequest>& requests) {
+  ScopedJavaLocalRef<jclass> save_page_request_clazz = base::android::GetClass(
+      env, "org/chromium/chrome/browser/offlinepages/SavePageRequest");
+  jobjectArray joa = env->NewObjectArray(
+      requests.size(), save_page_request_clazz.obj(), nullptr);
+  base::android::CheckException(env);
+
+  for (size_t i = 0; i < requests.size(); ++i) {
+    SavePageRequest request = requests[i];
+    ScopedJavaLocalRef<jstring> name_space =
+        ConvertUTF8ToJavaString(env, request.client_id().name_space);
+    ScopedJavaLocalRef<jstring> id =
+        ConvertUTF8ToJavaString(env, request.client_id().id);
+    ScopedJavaLocalRef<jstring> url =
+        ConvertUTF8ToJavaString(env, request.url().spec());
+
+    ScopedJavaLocalRef<jobject> j_save_page_request =
+        Java_SavePageRequest_create(env, (int)request.request_state(),
+                                    request.request_id(), url, name_space, id);
+    env->SetObjectArrayElement(joa, i, j_save_page_request.obj());
+  }
+
+  return ScopedJavaLocalRef<jobjectArray>(env, joa);
+}
+
+void OnGetAllRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+                          const std::vector<SavePageRequest>& all_requests) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobjectArray> j_result_obj =
+      CreateJavaSavePageRequests(env, all_requests);
+  base::android::RunCallbackAndroid(j_callback_obj, j_result_obj);
 }
 
 }  // namespace
@@ -413,6 +452,27 @@ void OfflinePageBridge::CheckMetadataConsistency(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   offline_page_model_->CheckMetadataConsistency();
+}
+
+void OfflinePageBridge::GetRequestsInQueue(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
+
+  RequestCoordinator* coordinator =
+      offline_pages::RequestCoordinatorFactory::GetInstance()
+          ->GetForBrowserContext(browser_context_);
+
+  if (!coordinator) {
+    // Callback with null to signal that results are unavailable.
+    const JavaParamRef<jobject> empty_result(nullptr);
+    base::android::RunCallbackAndroid(j_callback_obj, empty_result);
+    return;
+  }
+
+  coordinator->GetAllRequests(
+      base::Bind(&OnGetAllRequestsDone, j_callback_ref));
 }
 
 void OfflinePageBridge::NotifyIfDoneLoading() const {

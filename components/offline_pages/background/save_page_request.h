@@ -16,6 +16,7 @@ namespace offline_pages {
 // Class representing a request to save page.
 class SavePageRequest {
  public:
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages
   enum class RequestState {
     AVAILABLE = 0,     // Request can be scheduled when preconditions are met.
     PAUSED = 1,        // Request is not available until it is unpaused

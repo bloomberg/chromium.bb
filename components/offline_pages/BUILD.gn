@@ -108,6 +108,7 @@ source_set("unit_tests") {
 if (is_android) {
   java_cpp_enum("offline_page_model_enums_java") {
     sources = [
+      "background/save_page_request.h",
       "offline_page_types.h",
     ]
   }

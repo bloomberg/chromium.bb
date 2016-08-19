@@ -234,6 +234,16 @@ public class OfflinePageBridge {
         });
     }
 
+    /**
+     * Gets all the URLs in the request queue.
+     *
+     * @return A list of {@link SavePageRequest} representing all the queued requests.
+     */
+    @VisibleForTesting
+    public void getRequestsInQueue(Callback<SavePageRequest[]> callback) {
+        nativeGetRequestsInQueue(mNativeOfflinePageBridge, callback);
+    }
+
     private List<OfflinePageItem> getPagesByClientIdInternal(ClientId clientId) {
         Set<Long> ids = getOfflineIdsForClientId(clientId);
         List<OfflinePageItem> result = new ArrayList<>();
@@ -520,6 +530,10 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native long[] nativeGetOfflineIdsForClientId(
             long nativeOfflinePageBridge, String clientNamespace, String clientId);
+
+    @VisibleForTesting
+    native void nativeGetRequestsInQueue(
+            long nativeOfflinePageBridge, Callback<SavePageRequest[]> callback);
 
     @VisibleForTesting
     native OfflinePageItem nativeGetPageByOfflineId(long nativeOfflinePageBridge, long offlineId);
