@@ -32,7 +32,7 @@ private:
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
     {
         // TODO(alancutter): Just check the variables referenced instead of doing a full CSSValue resolve.
-        const CSSValue* resolvedValue = CSSVariableResolver::resolveVariableReferences(environment.state().style()->variables(), m_property, *m_variableReference);
+        const CSSValue* resolvedValue = CSSVariableResolver::resolveVariableReferences(environment.state(), m_property, *m_variableReference);
         return m_resolvedValue->equals(*resolvedValue);
     }
 
@@ -54,7 +54,7 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(const PropertySpecif
         return nullptr;
 
     if (value->isVariableReferenceValue() && !isShorthandProperty(cssProperty())) {
-        resolvedCSSValueOwner = CSSVariableResolver::resolveVariableReferences(environment.state().style()->variables(), cssProperty(), toCSSVariableReferenceValue(*value));
+        resolvedCSSValueOwner = CSSVariableResolver::resolveVariableReferences(environment.state(), cssProperty(), toCSSVariableReferenceValue(*value));
         conversionCheckers.append(ResolvedVariableChecker::create(cssProperty(), toCSSVariableReferenceValue(value), resolvedCSSValueOwner));
         value = resolvedCSSValueOwner;
     }

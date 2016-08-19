@@ -23,11 +23,10 @@ class StyleVariableData;
 class CSSVariableResolver {
 public:
     static void resolveVariableDefinitions(StyleVariableData*);
-    static const CSSValue* resolveVariableReferences(StyleResolverState&, CSSPropertyID, const CSSVariableReferenceValue&);
     static const CSSValue* resolvePendingSubstitutions(StyleResolverState&, CSSPropertyID, const CSSPendingSubstitutionValue&);
 
     // Shorthand properties are not supported.
-    static const CSSValue* resolveVariableReferences(StyleVariableData*, CSSPropertyID, const CSSVariableReferenceValue&);
+    static const CSSValue* resolveVariableReferences(const StyleResolverState&, CSSPropertyID, const CSSVariableReferenceValue&);
 
 private:
     CSSVariableResolver(StyleVariableData*);
