@@ -1,20 +1,14 @@
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-function editingTest() {
-    var selection = window.getSelection();
-    var s = document.getElementById("start");
-    selection.collapse(s, 0);
-    execMoveSelectionForwardByCharacterCommand();
-    for (i = 0; i < 2; i++) {
-        deleteCommand();
-    }
-}
-</script>
-<div contenteditable="true" id="test">
-<div>Before</div>
-  <hr>
-<span id="start">after</span>
-</div>
-<script>
-runEditingTest();
+    test(() => assert_selection(
+        '<div contenteditable><div>Before</div><hr>a|fter</div',
+        selection => {
+            selection.document.execCommand('delete');
+            selection.document.execCommand('delete');
+        },
+        '<div contenteditable><div>Before</div>|fter</div>'),
+        'Delete HR');
 </script>
