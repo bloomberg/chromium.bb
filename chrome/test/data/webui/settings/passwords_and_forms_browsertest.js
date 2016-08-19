@@ -269,8 +269,7 @@ PasswordsAndFormsBrowserTest.prototype = {
     return new Promise(function(resolve) {
       CrSettingsPrefs.deferInitialization = true;
       var prefs = document.createElement('settings-prefs');
-      document.body.appendChild(prefs);
-      prefs.initializeForTesting(new settings.FakeSettingsPrivate([
+      prefs.initialize(new settings.FakeSettingsPrivate([
         {
           key: 'autofill.enabled',
           type: chrome.settingsPrivate.PrefType.BOOLEAN,

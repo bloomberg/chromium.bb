@@ -10,12 +10,6 @@
  * property via the UI, the singleton model tries to set those preferences in
  * Chrome. Whether or not the calls to settingsPrivate.setPref succeed, 'prefs'
  * is eventually consistent with the Chrome pref store.
- *
- * Example:
- *
- *    <settings-prefs prefs="{{prefs}}"></settings-prefs>
- *    <settings-checkbox pref="{{prefs.homepage_is_newtabpage}}">
- *    </settings-checkbox>
  */
 
 (function() {
@@ -127,136 +121,6 @@
     properties: {
       /**
        * Object containing all preferences, for use by Polymer controls.
-       */
-      prefs: {
-        type: Object,
-        notify: true,
-      },
-
-      /**
-       * Singleton element created at startup which provides the prefs model.
-       * @type {!Element}
-       */
-      singleton_: {
-        type: Object,
-        value: document.createElement('settings-prefs-singleton'),
-      },
-    },
-
-    observers: [
-      'prefsChanged_(prefs.*)',
-    ],
-
-    /** @override */
-    ready: function() {
-      // Register a callback on CrSettingsPrefs.initialized immediately so prefs
-      // is set as soon as the settings API returns. This enables other elements
-      // dependent on |prefs| to add their own callbacks to
-      // CrSettingsPrefs.initialized.
-      this.startListening_();
-      if (!CrSettingsPrefs.deferInitialization)
-        this.initialize();
-    },
-
-    /**
-     * Binds this.prefs to the settings-prefs-singleton's shared prefs once
-     * preferences are initialized.
-     * @private
-     */
-    startListening_: function() {
-      CrSettingsPrefs.initialized.then(function() {
-        // Ignore changes to prevent prefsChanged_ from notifying singleton_.
-        this.runWhileIgnoringChanges_(function() {
-          this.prefs = this.singleton_.prefs;
-          this.stopListening_();
-          this.listen(
-              this.singleton_, 'prefs-changed', 'singletonPrefsChanged_');
-        });
-      }.bind(this));
-    },
-
-    /**
-     * Stops listening for changes to settings-prefs-singleton's shared
-     * prefs.
-     * @private
-     */
-    stopListening_: function() {
-      this.unlisten(
-          this.singleton_, 'prefs-changed', 'singletonPrefsChanged_');
-    },
-
-    /**
-     * Handles changes reported by singleton_ by forwarding them to the host.
-     * @private
-     */
-    singletonPrefsChanged_: function(e) {
-      // Ignore changes because we've defeated Polymer's dirty-checking.
-      this.runWhileIgnoringChanges_(function() {
-        // Forward notification to host.
-        this.fire(e.type, e.detail, {bubbles: false});
-      });
-    },
-
-    /**
-     * Forwards changes to this.prefs to settings-prefs-singleton.
-     * @private
-     */
-    prefsChanged_: function(info) {
-      // Ignore changes that came from singleton_ so we don't re-process
-      // changes made in other instances of this element.
-      if (!this.ignoreChanges_)
-        this.singleton_.fire('shared-prefs-changed', info, {bubbles: false});
-    },
-
-    /**
-     * Sets ignoreChanged_ before calling the function to suppress change
-     * events that are manually handled.
-     * @param {!function()} fn
-     * @private
-     */
-    runWhileIgnoringChanges_: function(fn) {
-      assert(!this.ignoreChanges_,
-             'Nested calls to runWhileIgnoringChanges_ are not supported');
-      this.ignoreChanges_ = true;
-      fn.call(this);
-      // We can unset ignoreChanges_ now because change notifications
-      // are synchronous.
-      this.ignoreChanges_ = false;
-    },
-
-    /** Initializes the singleton, which will fetch the prefs. */
-    initialize: function() {
-      this.singleton_.initialize();
-    },
-
-    /**
-     * Used to initialize the singleton with a fake SettingsPrivate.
-     * @param {SettingsPrivate} settingsApi Fake implementation to use.
-     */
-    initializeForTesting: function(settingsApi) {
-      this.singleton_.initialize(settingsApi);
-    },
-
-    /**
-     * Uninitializes this element to remove it from tests. Also resets
-     * settings-prefs-singleton, allowing newly created elements to
-     * re-initialize it.
-     */
-    resetForTesting: function() {
-      this.singleton_.resetForTesting();
-    },
-  });
-
-  /**
-   * Privately used element that contains, listens to and updates the shared
-   * prefs state.
-   */
-  Polymer({
-    is: 'settings-prefs-singleton',
-
-    properties: {
-      /**
-       * Object containing all preferences, for use by Polymer controls.
        * @type {Object|undefined}
        */
       prefs: {
@@ -276,14 +140,17 @@
       },
     },
 
-    // Listen for the manually fired shared-prefs-changed event, fired when
-    // a shared-prefs instance is changed by another element.
-    listeners: {
-      'shared-prefs-changed': 'sharedPrefsChanged_',
-    },
+    observers: [
+      'prefsChanged_(prefs.*)',
+    ],
 
     /** @type {SettingsPrivate} */
     settingsApi_: /** @type {SettingsPrivate} */(chrome.settingsPrivate),
+
+    created: function() {
+      if (!CrSettingsPrefs.deferInitialization)
+        this.initialize();
+    },
 
     /**
      * @param {SettingsPrivate=} opt_settingsApi SettingsPrivate implementation
@@ -306,16 +173,15 @@
     },
 
     /**
-     * Polymer callback for changes to prefs.* from a shared-prefs element.
-     * @param {!CustomEvent} e
-     * @param {!{path: string}} change
+     * @param {!{path: string}} e
      * @private
      */
-    sharedPrefsChanged_: function(e, change) {
-      if (!CrSettingsPrefs.isInitialized)
+    prefsChanged_: function(e) {
+      // |prefs| can be directly set or unset in tests.
+      if (!CrSettingsPrefs.isInitialized || e.path == 'prefs')
         return;
 
-      var key = this.getPrefKeyFromPath_(change.path);
+      var key = this.getPrefKeyFromPath_(e.path);
       var prefStoreValue = this.lastPrefValues_[key];
 
       var prefObj = /** @type {chrome.settingsPrivate.PrefObject} */(
@@ -331,9 +197,6 @@
             /* pageId */ '',
             /* callback */ this.setPrefCallback_.bind(this, key));
       }
-
-      // Package the event as a prefs-changed event for other elements.
-      this.fire('prefs-changed', change);
     },
 
     /**

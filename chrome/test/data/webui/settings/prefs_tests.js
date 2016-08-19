@@ -17,7 +17,7 @@ cr.define('settings_prefs', function() {
     suite('CrSettingsPrefs', function() {
       /**
        * Prefs instance created before each test.
-       * @type {CrSettingsPrefsElement|undefined}
+       * @type {SettingsPrefsElement|undefined}
        */
       var prefs;
 
@@ -70,13 +70,7 @@ cr.define('settings_prefs', function() {
         }
       }
 
-      /**
-       * List of CrSettingsPref elements created for testing.
-       * @type {!Array<!CrSettingsPrefs>}
-       */
-      var createdElements = [];
-
-      // Initialize <settings-prefs> elements before each test.
+      // Initialize a <settings-prefs> before each test.
       setup(function() {
         // Override chrome.settingsPrivate with FakeSettingsPrivate.
         fakeApi = new settings.FakeSettingsPrivate(
@@ -85,18 +79,8 @@ cr.define('settings_prefs', function() {
             }));
         CrSettingsPrefs.deferInitialization = true;
 
-        // Create and attach the <settings-prefs> elements. Make several of
-        // them to test that the shared state model scales correctly.
-        createdElements = [];
-        for (var i = 0; i < 100; i++) {
-          var prefsInstance = document.createElement('settings-prefs');
-          document.body.appendChild(prefsInstance);
-          createdElements.push(prefsInstance);
-          prefsInstance.initializeForTesting(fakeApi);
-        }
-        // For simplicity, only use one prefs element in the tests. Use an
-        // arbitrary index instead of the first or last element created.
-        prefs = createdElements[42];
+        prefs = document.createElement('settings-prefs');
+        prefs.initialize(fakeApi);
 
         // getAllPrefs is asynchronous, so return the prefs promise.
         return CrSettingsPrefs.initialized;
@@ -105,11 +89,7 @@ cr.define('settings_prefs', function() {
       teardown(function() {
         CrSettingsPrefs.resetForTesting();
         CrSettingsPrefs.deferInitialization = false;
-
-        // Reset each <settings-prefs>. TODO(michaelpg): make settings-prefs
-        // less dependent on testing state so we don't have to do this.
-        for (var i = 0; i < createdElements.length; i++)
-          createdElements[i].resetForTesting();
+        prefs.resetForTesting();
 
         PolymerTest.clearBody();
       });

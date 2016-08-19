@@ -16,7 +16,7 @@ cr.define('settings', function() {
   /**
    * Fake of chrome.settingsPrivate API. Use by setting
    * CrSettingsPrefs.deferInitialization to true, then passing a
-   * FakeSettingsPrivate to SettingsPrefs.initializeForTesting.
+   * FakeSettingsPrivate to settings-prefs#initialize().
    * @constructor
    * @param {Array<!settings.FakeSettingsPrivate.Pref>=} opt_initialPrefs
    * @implements {SettingsPrivate}
