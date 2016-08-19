@@ -1,11 +1,14 @@
 Why the files in this directory are considered invalid:
 
-chapters_truncated_chapter_string.mkv - File with a Chapters element that ends
-                                        with a ChapterAtom whose ChapterDisplay
-                                        element contains a truncated
-                                        ChapterString.
+chapters_truncated_chapter_string.mkv -
+  File with a Chapters element that ends with a ChapterAtom whose ChapterDisplay
+  element contains a truncated ChapterString.
 
-fixed_lacing_bad_lace_size.mkv - File containing a BlockGroup with fixed
-                                 lacing, but reports a total laced size that is
-                                 not evenly divisible by the number of laced
-                                 frames.
+chapters_truncated_chapter_string_2.mkv -
+  Nearly identical to chapters_truncated_chapter_string.mkv, but with a void
+  element and a partial cluster. Causes mkvparser to fail in a slightly
+  different manner.
+
+fixed_lacing_bad_lace_size.mkv -
+  File containing a BlockGroup with fixed lacing, but reports a total laced size
+  that is not evenly divisible by the number of laced frames.
