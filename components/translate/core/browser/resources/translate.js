@@ -259,14 +259,17 @@ cr.googleTranslate = (function() {
           // translateApiKey is predefined by translate_script.cc.
           'key': translateApiKey,
           'serverParams': serverParams,
+          'timeInfo': gtTimeInfo,
           'useSecureConnection': true
         });
         translateApiKey = undefined;
         serverParams = undefined;
+        gtTimeInfo = undefined;
       } catch (err) {
         errorCode = ERROR['INITIALIZATION_ERROR'];
         translateApiKey = undefined;
         serverParams = undefined;
+        gtTimeInfo = undefined;
         return;
       }
       // The TranslateService is not available immediately as it needs to start

@@ -61,6 +61,8 @@ TranslateScript::~TranslateScript() {
 }
 
 void TranslateScript::Request(const RequestCallback& callback) {
+  script_fetch_start_time_ = base::Time::Now().ToJsTime();
+
   DCHECK(data_.empty()) << "Do not fetch the script if it is already fetched";
   callback_list_.push_back(callback);
 
@@ -142,6 +144,9 @@ void TranslateScript::OnScriptFetchComplete(
     if (variations::GetVariationParams(kTranslateServerStudy, &params)) {
       server_params = params[kServerParams];
     }
+    base::StringAppendF(
+        &data_, "var gtTimeInfo = {'fetchStart': %f, 'fetchEnd': %f};\n",
+        script_fetch_start_time_, base::Time::Now().ToJsTime());
     base::StringAppendF(&data_, "var serverParams = '%s';\n",
                         server_params.c_str());
 

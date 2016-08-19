@@ -80,6 +80,10 @@ class TranslateScript {
   // The JS injected in the page to do the translation.
   std::string data_;
 
+  // The starting time of fetching the translate script.
+  // Number of milliseconds since the epoch.
+  double script_fetch_start_time_;
+
   // Delay after which the translate script is fetched again from the translate
   // server.
   base::TimeDelta expiration_delay_;
