@@ -177,7 +177,7 @@ $(IT).js: $(SRC) $(CPPSRC)
 		--em-config $(WASM_INSTALL_DIR)/emscripten_config_vanilla \
 		$(CFLAGS) -s TOTAL_MEMORY=268435456 \
 		-Wno-implicit-function-declaration -O2 \
-		$(shell python ../prepare_input.py --gen-emcc-embed- --config \
+		$(shell python ../prepare_input.py --gen-emcc-embed --config \
 			$(SPEC_COMPONENT) ref)
 	touch $@
 

@@ -1012,7 +1012,7 @@ PopulateFromSpecHarness() {
     # patch if necessary
     if [[ -e $i/diff ]] ; then
       echo "PATCH"
-      patch -d $i --verbose -p0 < $i/diff
+      patch -l -d $i --verbose -p0 < $i/diff
     fi
 
     echo "COMPLETE"
