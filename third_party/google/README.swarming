@@ -13,3 +13,29 @@ Local Modifications:
   - run 'python setup.py build' before 'glyco pack ...', to build *_pb.py files.
 - Removed protobuf/internal/*_test.py
 - Added README.swarming
+- Modified __init__.py files as follows:
+
+    diff --git a/__init__.py b/__init__.py
+    index e69de29..de40ea7 100644
+    --- a/__init__.py
+    +++ b/__init__.py
+    @@ -0,0 +1 @@
+    +try:
+    +  __import__('pkg_resources').declare_namespace(__name__)
+    +except ImportError:
+    +  __path__ = __import__('pkgutil').extend_path(__path__, __name__)
+
+    diff --git a/protobuf/__init__.py b/protobuf/__init__.py
+    index 6210a40..4a74785 100644
+    --- a/protobuf/__init__.py
+    +++ b/protobuf/__init__.py
+    @@ -31,9 +31,3 @@
+     # Copyright 2007 Google Inc. All Rights Reserved.
+
+     __version__ = '3.0.0'
+    -
+    -if __name__ != '__main__':
+    -  try:
+    -    __import__('pkg_resources').declare_namespace(__name__)
+    -  except ImportError:
+    -    __path__ = __import__('pkgutil').extend_path(__path__, __name__)
