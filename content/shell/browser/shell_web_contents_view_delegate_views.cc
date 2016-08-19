@@ -87,16 +87,14 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
 
   context_menu_model_.reset(new ContextMenuModel(web_contents_, params));
   context_menu_runner_.reset(new views::MenuRunner(
-      context_menu_model_.get(), views::MenuRunner::CONTEXT_MENU));
+      context_menu_model_.get(),
+      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
 
   views::Widget* widget = views::Widget::GetWidgetForNativeView(
       web_contents_->GetTopLevelNativeWindow());
-  if (context_menu_runner_->RunMenuAt(
-          widget, nullptr, gfx::Rect(screen_point, gfx::Size()),
-          views::MENU_ANCHOR_TOPRIGHT,
-          ui::MENU_SOURCE_NONE) == views::MenuRunner::MENU_DELETED) {
-    return;
-  }
+  context_menu_runner_->RunMenuAt(
+      widget, nullptr, gfx::Rect(screen_point, gfx::Size()),
+      views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_NONE);
 }
 
 }  // namespace content
