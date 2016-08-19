@@ -137,7 +137,7 @@ static INLINE int aom_read_symbol(aom_reader *r, const uint16_t *cdf,
   (void)nsymbs;
   return rans_read(r, cdf);
 #elif CONFIG_DAALA_EC
-  return daala_read_tree_cdf(r, cdf, nsymbs);
+  return daala_read_symbol(r, cdf, nsymbs);
 #else
   (void)r;
   (void)cdf;
