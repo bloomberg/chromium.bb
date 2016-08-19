@@ -55,7 +55,7 @@ inline bool matchesJPEGSignature(const char* contents)
 
 inline bool matchesPNGSignature(const char* contents)
 {
-    return !memcmp(contents, "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8);
+    return !memcmp(contents, "\x89PNG\r\n\x1A\n", 8);
 }
 
 inline bool matchesGIFSignature(const char* contents)
