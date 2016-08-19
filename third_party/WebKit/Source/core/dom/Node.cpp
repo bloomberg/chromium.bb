@@ -90,6 +90,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/Page.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -708,6 +709,9 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType, const StyleChangeReas
 
     if (isElementNode() && hasRareData())
         toElement(*this).setAnimationStyleChange(false);
+
+    if (isSVGElement())
+        toSVGElement(this)->setNeedsStyleRecalcForInstances(changeType, reason);
 }
 
 void Node::clearNeedsStyleRecalc()

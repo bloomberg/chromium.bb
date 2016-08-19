@@ -981,6 +981,16 @@ void SVGElement::invalidateInstances()
     svgRareData()->elementInstances().clear();
 }
 
+void SVGElement::setNeedsStyleRecalcForInstances(StyleChangeType changeType, const StyleChangeReasonForTracing& reason)
+{
+    const HeapHashSet<WeakMember<SVGElement>>& set = instancesForElement();
+    if (set.isEmpty())
+        return;
+
+    for (SVGElement* instance : set)
+        instance->setNeedsStyleRecalc(changeType, reason);
+}
+
 SVGElement::InstanceUpdateBlocker::InstanceUpdateBlocker(SVGElement* targetElement)
     : m_targetElement(targetElement)
 {

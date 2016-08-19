@@ -180,6 +180,7 @@ public:
     };
 
     void invalidateInstances();
+    void setNeedsStyleRecalcForInstances(StyleChangeType, const StyleChangeReasonForTracing&);
 
     DECLARE_VIRTUAL_TRACE();
 
