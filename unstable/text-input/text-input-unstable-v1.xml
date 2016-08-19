@@ -4,24 +4,24 @@
   <copyright>
     Copyright © 2012, 2013 Intel Corporation
 
-	Permission is hereby granted, free of charge, to any person obtaining a
-	copy of this software and associated documentation files (the "Software"),
-	to deal in the Software without restriction, including without limitation
-	the rights to use, copy, modify, merge, publish, distribute, sublicense,
-	and/or sell copies of the Software, and to permit persons to whom the
-	Software is furnished to do so, subject to the following conditions:
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
 
-	The above copyright notice and this permission notice (including the next
-	paragraph) shall be included in all copies or substantial portions of the
-	Software.
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
 
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
-	THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-	DEALINGS IN THE SOFTWARE.
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
   </copyright>
 
   <interface name="zwp_text_input_v1" version="1">
@@ -30,6 +30,7 @@
       methods to applications. A text-input object is created from a
       wl_text_input_manager and corresponds typically to a text entry in an
       application.
+
       Requests are used to activate/deactivate the text-input object and set
       state information like surrounding and selected text or the content type.
       The information about entered text is sent to the text-input object via
@@ -60,6 +61,7 @@
       <description summary="request activation">
 	Requests the text-input object to be activated (typically when the
 	text entry gets focus).
+
 	The seat argument is a wl_seat which maintains the focus for this
 	activation. The surface argument is a wl_surface assigned to the
 	text-input object and tracked for focus lost. The enter event
@@ -182,8 +184,8 @@
 	format language tag.
 
 	It could be used for example in a word processor to indicate language of
-	currently edited document or in an instant message application which tracks
-	languages of contacts.
+	currently edited document or in an instant message application which
+	tracks languages of contacts.
       </description>
       <arg name="language" type="string"/>
     </request>
@@ -341,8 +343,8 @@
 
     <event name="language">
       <description summary="language">
-	Sets the language of the input text. The "language" argument is a RFC-3066
-	format language tag.
+	Sets the language of the input text. The "language" argument is a
+	RFC-3066 format language tag.
       </description>
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="language" type="string"/>
