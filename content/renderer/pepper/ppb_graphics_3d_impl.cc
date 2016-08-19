@@ -249,6 +249,7 @@ bool PPB_Graphics3D_Impl::InitRaw(
 
   gpu::gles2::ContextCreationAttribHelper attrib_helper = requested_attribs;
   attrib_helper.should_use_native_gmb_for_backbuffer = use_image_chromium_;
+  attrib_helper.context_type = gpu::gles2::CONTEXT_TYPE_OPENGLES2;
 
   gpu::CommandBufferProxyImpl* share_buffer = NULL;
   if (share_context) {
