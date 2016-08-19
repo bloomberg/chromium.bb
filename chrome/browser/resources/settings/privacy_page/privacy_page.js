@@ -82,7 +82,7 @@ Polymer({
 
   /** @private */
   onDialogClosed_: function() {
-    settings.navigateTo(settings.Route.PRIVACY);
+    settings.navigateToPreviousRoute();
   },
 
 <if expr="_google_chrome and not chromeos">

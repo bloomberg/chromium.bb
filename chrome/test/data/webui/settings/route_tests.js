@@ -40,6 +40,11 @@ suite('route', function() {
     assertEquals(SITE_SETTINGS, SITE_SETTINGS_ALL.parent);
     assertEquals(3, SITE_SETTINGS_ALL.depth);
     assertTrue(SITE_SETTINGS_ALL.isSubpage());
+
+    // Test a non-subpage child of ADVANCED.
+    var CLEAR_BROWSER_DATA = ADVANCED.createChild('/clearBrowserData');
+    assertFalse(CLEAR_BROWSER_DATA.isSubpage());
+    assertEquals('', CLEAR_BROWSER_DATA.section);
   });
 
   test('no duplicate routes', function() {

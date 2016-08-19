@@ -78,7 +78,8 @@ cr.define('settings', function() {
      * @return {boolean}
      */
     isSubpage: function() {
-      return !!this.parent && this.parent.section == this.section;
+      return !!this.parent && !!this.section &&
+          this.parent.section == this.section;
     },
   };
 
@@ -128,10 +129,9 @@ cr.define('settings', function() {
   r.CERTIFICATES = r.PRIVACY.createChild('/certificates');
 
   // CLEAR_BROWSER_DATA is the only navigable dialog route. It's the only child
-  // of a section that's not a subpage. Don't add any more routes like these.
+  // of a root page that's not a section. Don't add any more routes like these.
   // If more navigable dialogs are needed, add explicit support in Route.
-  r.CLEAR_BROWSER_DATA = r.PRIVACY.createChild('/clearBrowserData');
-  r.CLEAR_BROWSER_DATA.isSubpage = function() { return false; };
+  r.CLEAR_BROWSER_DATA = r.ADVANCED.createChild('/clearBrowserData');
 
   r.SITE_SETTINGS = r.PRIVACY.createChild('/siteSettings');
   r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');
@@ -230,7 +230,6 @@ cr.define('settings', function() {
    * Returns the matching canonical route, or null if none matches.
    * @param {string} path
    * @return {?settings.Route}
-   * @private
    */
   var getRouteForPath = function(path) {
     // TODO(tommycli): Use Object.values once Closure compilation supports it.
@@ -301,7 +300,6 @@ cr.define('settings', function() {
    * @param {!settings.Route} route
    * @param {URLSearchParams=} opt_dynamicParameters Navigations to the same
    *     search parameters in a different order will still push to history.
-   * @private
    */
   var navigateTo = function(route, opt_dynamicParameters) {
     var params = opt_dynamicParameters || new URLSearchParams();
@@ -318,6 +316,21 @@ cr.define('settings', function() {
     setCurrentRoute(route, params);
   };
 
+  /**
+   * Navigates to the previous route, but will never exit Settings. If there is
+   * no previous route in the history, navigates to the immediate parent.
+   */
+  var navigateToPreviousRoute = function() {
+    var previousRoute =
+        window.history.state &&
+        assert(getRouteForPath(/** @type {string} */ (window.history.state)));
+
+    if (previousRoute)
+      window.history.back();
+    else
+      navigateTo(settings.getCurrentRoute().parent || Route.BASIC);
+  };
+
   window.addEventListener('popstate', function(event) {
     // On pop state, do not push the state onto the window.history again.
     setCurrentRoute(getRouteForPath(window.location.pathname) || Route.BASIC,
@@ -332,5 +345,6 @@ cr.define('settings', function() {
     getCurrentRoute: getCurrentRoute,
     getQueryParameters: getQueryParameters,
     navigateTo: navigateTo,
+    navigateToPreviousRoute: navigateToPreviousRoute,
   };
 });
