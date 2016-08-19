@@ -58,7 +58,11 @@ void ScriptWrappableVisitor::AbortTracing()
 void ScriptWrappableVisitor::performCleanup()
 {
     for (auto header : m_headersToUnmark) {
-        header->unmarkWrapperHeader();
+        // Dead objects residing in the marking deque may become invalid due to
+        // minor garbage collections and are therefore set to nullptr. We have
+        // to skip over such objects.
+        if (header)
+            header->unmarkWrapperHeader();
     }
 
     m_headersToUnmark.clear();
