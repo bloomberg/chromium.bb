@@ -43,7 +43,9 @@
 
 namespace media {
 
-static bool MakeDecoderContextCurrent(
+namespace {
+
+bool MakeDecoderContextCurrent(
     const base::WeakPtr<gpu::GpuCommandBufferStub> stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
@@ -57,6 +59,46 @@ static bool MakeDecoderContextCurrent(
 
   return true;
 }
+
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+std::unique_ptr<VideoEncodeAccelerator> CreateV4L2VEA() {
+  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
+  if (!device)
+    return nullptr;
+  return base::WrapUnique<VideoEncodeAccelerator>(
+      new V4L2VideoEncodeAccelerator(device));
+}
+#endif
+
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+std::unique_ptr<VideoEncodeAccelerator> CreateVaapiVEA() {
+  return base::WrapUnique<VideoEncodeAccelerator>(
+      new VaapiVideoEncodeAccelerator());
+}
+#endif
+
+#if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
+std::unique_ptr<VideoEncodeAccelerator> CreateAndroidVEA() {
+  return base::WrapUnique<VideoEncodeAccelerator>(
+      new AndroidVideoEncodeAccelerator());
+}
+#endif
+
+#if defined(OS_MACOSX)
+std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA() {
+  return base::WrapUnique<VideoEncodeAccelerator>(
+      new VTVideoEncodeAccelerator());
+}
+#endif
+
+#if defined(OS_WIN)
+std::unique_ptr<VideoEncodeAccelerator> CreateMediaFoundationVEA() {
+  return base::WrapUnique<media::VideoEncodeAccelerator>(
+      new MediaFoundationVideoEncodeAccelerator());
+}
+#endif
+
+}  // anonymous namespace
 
 GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(
     int32_t host_route_id,
@@ -81,36 +123,32 @@ bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
                                            const gfx::Size& input_visible_size,
                                            VideoCodecProfile output_profile,
                                            uint32_t initial_bitrate) {
-  DVLOG(2) << "GpuVideoEncodeAccelerator::Initialize(): "
-           << "input_format=" << input_format
+  DVLOG(1) << __FUNCTION__
+           << " input_format=" << VideoPixelFormatToString(input_format)
            << ", input_visible_size=" << input_visible_size.ToString()
-           << ", output_profile=" << output_profile
+           << ", output_profile=" << GetProfileName(output_profile)
            << ", initial_bitrate=" << initial_bitrate;
   DCHECK(!encoder_);
 
   if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::Initialize(): "
-                   "failed to add route";
+    DLOG(ERROR) << __FUNCTION__ << " failed to add route";
     return false;
   }
 
   if (input_visible_size.width() > limits::kMaxDimension ||
       input_visible_size.height() > limits::kMaxDimension ||
       input_visible_size.GetArea() > limits::kMaxCanvas) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::Initialize(): "
-                << "input_visible_size " << input_visible_size.ToString()
-                << " too large";
+    DLOG(ERROR) << __FUNCTION__ << "too large input_visible_size "
+                << input_visible_size.ToString();
     return false;
   }
 
   const gpu::GpuPreferences& gpu_preferences =
       stub_->channel()->gpu_channel_manager()->gpu_preferences();
 
-  std::vector<GpuVideoEncodeAccelerator::CreateVEAFp> create_vea_fps =
-      CreateVEAFps(gpu_preferences);
   // Try all possible encoders and use the first successful encoder.
-  for (size_t i = 0; i < create_vea_fps.size(); ++i) {
-    encoder_ = (*create_vea_fps[i])();
+  for (const auto& factory_function : GetVEAFactoryFunctions(gpu_preferences)) {
+    encoder_ = factory_function.Run();
     if (encoder_ &&
         encoder_->Initialize(input_format, input_visible_size, output_profile,
                              initial_bitrate, this)) {
@@ -120,8 +158,7 @@ bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
     }
   }
   encoder_.reset();
-  DLOG(ERROR)
-      << "GpuVideoEncodeAccelerator::Initialize(): VEA initialization failed";
+  DLOG(ERROR) << __FUNCTION__ << " VEA initialization failed";
   return false;
 }
 
@@ -178,11 +215,9 @@ gpu::VideoEncodeAcceleratorSupportedProfiles
 GpuVideoEncodeAccelerator::GetSupportedProfiles(
     const gpu::GpuPreferences& gpu_preferences) {
   VideoEncodeAccelerator::SupportedProfiles profiles;
-  std::vector<GpuVideoEncodeAccelerator::CreateVEAFp> create_vea_fps =
-      CreateVEAFps(gpu_preferences);
 
-  for (size_t i = 0; i < create_vea_fps.size(); ++i) {
-    std::unique_ptr<VideoEncodeAccelerator> encoder = (*create_vea_fps[i])();
+  for (const auto& factory_function : GetVEAFactoryFunctions(gpu_preferences)) {
+    std::unique_ptr<VideoEncodeAccelerator> encoder = factory_function.Run();
     if (!encoder)
       continue;
     VideoEncodeAccelerator::SupportedProfiles vea_profiles =
@@ -194,85 +229,35 @@ GpuVideoEncodeAccelerator::GetSupportedProfiles(
 }
 
 // static
-std::vector<GpuVideoEncodeAccelerator::CreateVEAFp>
-GpuVideoEncodeAccelerator::CreateVEAFps(
+std::vector<GpuVideoEncodeAccelerator::VEAFactoryFunction>
+GpuVideoEncodeAccelerator::GetVEAFactoryFunctions(
     const gpu::GpuPreferences& gpu_preferences) {
-  std::vector<GpuVideoEncodeAccelerator::CreateVEAFp> create_vea_fps;
+  std::vector<VEAFactoryFunction> vea_factory_functions;
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-  create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateV4L2VEA);
+  vea_factory_functions.push_back(base::Bind(&CreateV4L2VEA));
 #endif
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   if (!gpu_preferences.disable_vaapi_accelerated_video_encode)
-    create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateVaapiVEA);
+    vea_factory_functions.push_back(base::Bind(&CreateVaapiVEA));
 #endif
 #if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   if (!gpu_preferences.disable_web_rtc_hw_encoding)
-    create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateAndroidVEA);
+    vea_factory_functions.push_back(base::Bind(&CreateAndroidVEA));
 #endif
 #if defined(OS_MACOSX)
-  create_vea_fps.push_back(&GpuVideoEncodeAccelerator::CreateVTVEA);
+  vea_factory_functions.push_back(base::Bind(&CreateVTVEA));
 #endif
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(kMediaFoundationH264Encoding)) {
-    create_vea_fps.push_back(
-        &GpuVideoEncodeAccelerator::CreateMediaFoundationVEA);
-  }
+  if (base::FeatureList::IsEnabled(kMediaFoundationH264Encoding))
+    vea_factory_functions.push_back(base::Bind(&CreateMediaFoundationVEA));
 #endif
-  return create_vea_fps;
+  return vea_factory_functions;
 }
-
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-// static
-std::unique_ptr<VideoEncodeAccelerator>
-GpuVideoEncodeAccelerator::CreateV4L2VEA() {
-  std::unique_ptr<VideoEncodeAccelerator> encoder;
-  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
-  if (device)
-    encoder.reset(new V4L2VideoEncodeAccelerator(device));
-  return encoder;
-}
-#endif
-
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-// static
-std::unique_ptr<VideoEncodeAccelerator>
-GpuVideoEncodeAccelerator::CreateVaapiVEA() {
-  return base::WrapUnique<VideoEncodeAccelerator>(
-      new VaapiVideoEncodeAccelerator());
-}
-#endif
-
-#if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
-// static
-std::unique_ptr<VideoEncodeAccelerator>
-GpuVideoEncodeAccelerator::CreateAndroidVEA() {
-  return base::WrapUnique<VideoEncodeAccelerator>(
-      new AndroidVideoEncodeAccelerator());
-}
-#endif
-
-#if defined(OS_MACOSX)
-// static
-std::unique_ptr<VideoEncodeAccelerator>
-GpuVideoEncodeAccelerator::CreateVTVEA() {
-  return base::WrapUnique<VideoEncodeAccelerator>(
-      new VTVideoEncodeAccelerator());
-}
-#endif
-
-#if defined(OS_WIN)
-// static
-std::unique_ptr<media::VideoEncodeAccelerator>
-GpuVideoEncodeAccelerator::CreateMediaFoundationVEA() {
-  return base::WrapUnique<media::VideoEncodeAccelerator>(
-      new MediaFoundationVideoEncodeAccelerator());
-}
-#endif
 
 void GpuVideoEncodeAccelerator::OnEncode(
     const AcceleratedVideoEncoderMsg_Encode_Params& params) {
-  DVLOG(3) << "GpuVideoEncodeAccelerator::OnEncode: frame_id = "
-           << params.frame_id << ", buffer_size=" << params.buffer_size
+  DVLOG(3) << __FUNCTION__ << " frame_id = " << params.frame_id
+           << ", buffer_size=" << params.buffer_size
            << ", force_keyframe=" << params.force_keyframe;
   DCHECK_EQ(PIXEL_FORMAT_I420, input_format_);
 
@@ -285,8 +270,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
     return;
 
   if (params.frame_id < 0) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): invalid "
-                << "frame_id=" << params.frame_id;
+    DLOG(ERROR) << __FUNCTION__ << " invalid frame_id=" << params.frame_id;
     NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
@@ -299,15 +283,14 @@ void GpuVideoEncodeAccelerator::OnEncode(
   map_size += aligned_offset;
 
   if (!map_offset.IsValid() || !map_size.IsValid()) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode():"
-                << " invalid (buffer_offset,buffer_size)";
+    DLOG(ERROR) << __FUNCTION__ << "  invalid map_offset or map_size";
     NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
 
   if (!shm->MapAt(map_offset.ValueOrDie(), map_size.ValueOrDie())) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): "
-                << "could not map frame_id=" << params.frame_id;
+    DLOG(ERROR) << __FUNCTION__
+                << " could not map frame_id=" << params.frame_id;
     NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
@@ -319,8 +302,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
       input_visible_size_, shm_memory, params.buffer_size, params.buffer_handle,
       params.buffer_offset, params.timestamp);
   if (!frame) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): "
-                << "could not create a frame";
+    DLOG(ERROR) << __FUNCTION__ << " could not create a frame";
     NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
@@ -332,8 +314,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
 
 void GpuVideoEncodeAccelerator::OnEncode2(
     const AcceleratedVideoEncoderMsg_Encode_Params2& params) {
-  DVLOG(3) << "GpuVideoEncodeAccelerator::OnEncode2: "
-           << "frame_id = " << params.frame_id
+  DVLOG(3) << __FUNCTION__ << " frame_id = " << params.frame_id
            << ", size=" << params.size.ToString()
            << ", force_keyframe=" << params.force_keyframe
            << ", handle type=" << params.gpu_memory_buffer_handles[0].type;
@@ -345,19 +326,18 @@ void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(
     int32_t buffer_id,
     base::SharedMemoryHandle buffer_handle,
     uint32_t buffer_size) {
-  DVLOG(3) << "GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(): "
-           << "buffer_id=" << buffer_id << ", buffer_size=" << buffer_size;
+  DVLOG(3) << __FUNCTION__ << " buffer_id=" << buffer_id
+           << ", buffer_size=" << buffer_size;
   if (!encoder_)
     return;
   if (buffer_id < 0) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(): "
-                << "invalid buffer_id=" << buffer_id;
+    DLOG(ERROR) << __FUNCTION__ << " invalid buffer_id=" << buffer_id;
     NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
   if (buffer_size < output_buffer_size_) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(): "
-                << "buffer too small for buffer_id=" << buffer_id;
+    DLOG(ERROR) << __FUNCTION__
+                << " buffer too small for buffer_id=" << buffer_id;
     NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
@@ -366,15 +346,15 @@ void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(
 }
 
 void GpuVideoEncodeAccelerator::OnDestroy() {
-  DVLOG(2) << "GpuVideoEncodeAccelerator::OnDestroy()";
+  DVLOG(2) << __FUNCTION__;
   OnWillDestroyStub();
 }
 
 void GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(
     uint32_t bitrate,
     uint32_t framerate) {
-  DVLOG(2) << "GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(): "
-           << "bitrate=" << bitrate << ", framerate=" << framerate;
+  DVLOG(2) << __FUNCTION__ << " bitrate=" << bitrate
+           << ", framerate=" << framerate;
   if (!encoder_)
     return;
   encoder_->RequestEncodingParametersChange(bitrate, framerate);

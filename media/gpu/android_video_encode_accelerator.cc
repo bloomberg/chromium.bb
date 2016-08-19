@@ -140,9 +140,9 @@ bool AndroidVideoEncodeAccelerator::Initialize(
     VideoCodecProfile output_profile,
     uint32_t initial_bitrate,
     Client* client) {
-  DVLOG(3) << __PRETTY_FUNCTION__ << " format: " << format
+  DVLOG(3) << __func__ << " format: " << VideoPixelFormatToString(format)
            << ", input_visible_size: " << input_visible_size.ToString()
-           << ", output_profile: " << output_profile
+           << ", output_profile: " << GetProfileName(output_profile)
            << ", initial_bitrate: " << initial_bitrate;
   DCHECK(!media_codec_);
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -319,7 +319,7 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
   }
   scoped_refptr<VideoFrame> frame = std::get<0>(input);
 
-  uint8_t* buffer = NULL;
+  uint8_t* buffer = nullptr;
   size_t capacity = 0;
   status = media_codec_->GetInputBuffer(input_buf_index, &buffer, &capacity);
   RETURN_ON_FAILURE(status == MEDIA_CODEC_OK, "GetInputBuffer failed.",
@@ -348,7 +348,7 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
   RETURN_ON_FAILURE(converted, "Failed to I420ToNV12!", kPlatformFailureError);
 
   fake_input_timestamp_ += base::TimeDelta::FromMicroseconds(1);
-  status = media_codec_->QueueInputBuffer(input_buf_index, NULL, queued_size,
+  status = media_codec_->QueueInputBuffer(input_buf_index, nullptr, queued_size,
                                           fake_input_timestamp_);
   UMA_HISTOGRAM_TIMES("Media.AVDA.InputQueueTime",
                       base::Time::Now() - std::get<2>(input));
@@ -370,8 +370,9 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
   size_t size = 0;
   bool key_frame = false;
   do {
-    MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
-        NoWaitTimeOut(), &buf_index, &offset, &size, NULL, NULL, &key_frame);
+    MediaCodecStatus status =
+        media_codec_->DequeueOutputBuffer(NoWaitTimeOut(), &buf_index, &offset,
+                                          &size, nullptr, nullptr, &key_frame);
     switch (status) {
       case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:
         return;

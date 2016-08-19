@@ -20,7 +20,7 @@ GpuVideoEncodeAcceleratorHost::GpuVideoEncodeAcceleratorHost(
     gpu::CommandBufferProxyImpl* impl)
     : channel_(impl->channel()),
       encoder_route_id_(MSG_ROUTING_NONE),
-      client_(NULL),
+      client_(nullptr),
       impl_(impl),
       next_frame_id_(0),
       weak_this_factory_(this) {
@@ -62,7 +62,7 @@ void GpuVideoEncodeAcceleratorHost::OnChannelError() {
   if (channel_) {
     if (encoder_route_id_ != MSG_ROUTING_NONE)
       channel_->RemoveRoute(encoder_route_id_);
-    channel_ = NULL;
+    channel_ = nullptr;
   }
   PostNotifyError(FROM_HERE, kPlatformFailureError, "OnChannelError()");
 }
@@ -172,13 +172,13 @@ void GpuVideoEncodeAcceleratorHost::Destroy() {
   DCHECK(CalledOnValidThread());
   if (channel_)
     Send(new AcceleratedVideoEncoderMsg_Destroy(encoder_route_id_));
-  client_ = NULL;
+  client_ = nullptr;
   delete this;
 }
 
 void GpuVideoEncodeAcceleratorHost::OnWillDeleteImpl() {
   DCHECK(CalledOnValidThread());
-  impl_ = NULL;
+  impl_ = nullptr;
 
   // The gpu::CommandBufferProxyImpl is going away; error out this VEA.
   OnChannelError();
@@ -269,7 +269,7 @@ void GpuVideoEncodeAcceleratorHost::OnRequireBitstreamBuffers(
     const gfx::Size& input_coded_size,
     uint32_t output_buffer_size) {
   DCHECK(CalledOnValidThread());
-  DVLOG(2) << "OnRequireBitstreamBuffers(): input_count=" << input_count
+  DVLOG(2) << __FUNCTION__ << " input_count=" << input_count
            << ", input_coded_size=" << input_coded_size.ToString()
            << ", output_buffer_size=" << output_buffer_size;
   if (client_) {
@@ -280,7 +280,7 @@ void GpuVideoEncodeAcceleratorHost::OnRequireBitstreamBuffers(
 
 void GpuVideoEncodeAcceleratorHost::OnNotifyInputDone(int32_t frame_id) {
   DCHECK(CalledOnValidThread());
-  DVLOG(3) << "OnNotifyInputDone(): frame_id=" << frame_id;
+  DVLOG(3) << __FUNCTION__ << " frame_id=" << frame_id;
   // Fun-fact: std::hash_map is not spec'd to be re-entrant; since freeing a
   // frame can trigger a further encode to be kicked off and thus an .insert()
   // back into the map, we separate the frame's dtor running from the .erase()
@@ -288,15 +288,14 @@ void GpuVideoEncodeAcceleratorHost::OnNotifyInputDone(int32_t frame_id) {
   // theoretical" - Android's std::hash_map crashes if we don't do this.
   scoped_refptr<VideoFrame> frame = frame_map_[frame_id];
   if (!frame_map_.erase(frame_id)) {
-    DLOG(ERROR) << "OnNotifyInputDone(): "
-                   "invalid frame_id="
-                << frame_id;
+    DLOG(ERROR) << __FUNCTION__ << " invalid frame_id=" << frame_id;
     // See OnNotifyError for why this needs to be the last thing in this
     // function.
     OnNotifyError(kPlatformFailureError);
     return;
   }
-  frame = NULL;  // Not necessary but nice to be explicit; see fun-fact above.
+  frame =
+      nullptr;  // Not necessary but nice to be explicit; see fun-fact above.
 }
 
 void GpuVideoEncodeAcceleratorHost::OnBitstreamBufferReady(
@@ -305,10 +304,8 @@ void GpuVideoEncodeAcceleratorHost::OnBitstreamBufferReady(
     bool key_frame,
     base::TimeDelta timestamp) {
   DCHECK(CalledOnValidThread());
-  DVLOG(3) << "OnBitstreamBufferReady(): "
-              "bitstream_buffer_id="
-           << bitstream_buffer_id << ", payload_size=" << payload_size
-           << ", key_frame=" << key_frame;
+  DVLOG(3) << __FUNCTION__ << " bitstream_buffer_id=" << bitstream_buffer_id
+           << ", payload_size=" << payload_size << ", key_frame=" << key_frame;
   if (client_)
     client_->BitstreamBufferReady(bitstream_buffer_id, payload_size, key_frame,
                                   timestamp);
@@ -316,14 +313,14 @@ void GpuVideoEncodeAcceleratorHost::OnBitstreamBufferReady(
 
 void GpuVideoEncodeAcceleratorHost::OnNotifyError(Error error) {
   DCHECK(CalledOnValidThread());
-  DVLOG(2) << "OnNotifyError(): error=" << error;
+  DLOG(ERROR) << __FUNCTION__ << " error=" << error;
   if (!client_)
     return;
   weak_this_factory_.InvalidateWeakPtrs();
 
   // Client::NotifyError() may Destroy() |this|, so calling it needs to be the
   // last thing done on this stack!
-  VideoEncodeAccelerator::Client* client = NULL;
+  VideoEncodeAccelerator::Client* client = nullptr;
   std::swap(client_, client);
   client->NotifyError(error);
 }

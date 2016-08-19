@@ -74,28 +74,11 @@ class GpuVideoEncodeAccelerator
       const gpu::GpuPreferences& gpu_preferences);
 
  private:
-  typedef std::unique_ptr<VideoEncodeAccelerator> (*CreateVEAFp)();
-
-  // Return a set of VEA Create function pointers applicable to the current
-  // platform.
-  static std::vector<CreateVEAFp> CreateVEAFps(
+  // Returns a vector of VEAFactoryFunctions for the current platform.
+  using VEAFactoryFunction =
+      base::Callback<std::unique_ptr<VideoEncodeAccelerator>()>;
+  static std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
       const gpu::GpuPreferences& gpu_preferences);
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-  static std::unique_ptr<VideoEncodeAccelerator> CreateV4L2VEA();
-#endif
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  static std::unique_ptr<VideoEncodeAccelerator> CreateVaapiVEA();
-#endif
-#if defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
-  static std::unique_ptr<VideoEncodeAccelerator> CreateAndroidVEA();
-#endif
-#if defined(OS_MACOSX)
-  static std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA();
-#endif
-#if defined(OS_WIN)
-  static std::unique_ptr<media::VideoEncodeAccelerator>
-  CreateMediaFoundationVEA();
-#endif
 
   // IPC handlers, proxying VideoEncodeAccelerator for the renderer
   // process.
