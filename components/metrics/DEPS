@@ -8,6 +8,7 @@ include_rules = [
   "+components/variations",
   "+components/version_info",
   "+content/public/test",
+  "+mojo/public/cpp",
   "+third_party/zlib/google",
   "-net",
 ]

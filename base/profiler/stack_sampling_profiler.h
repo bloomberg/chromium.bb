@@ -247,8 +247,10 @@ class BASE_EXPORT StackSamplingProfiler {
   DISALLOW_COPY_AND_ASSIGN(StackSamplingProfiler);
 };
 
-// The metrics provider code wants to put Samples in a map and compare them,
-// which requires us to define a few operators.
+// These operators permit types to be compared and used in a map of Samples, as
+// done in tests and by the metrics provider code.
+BASE_EXPORT bool operator==(const StackSamplingProfiler::Module& a,
+                            const StackSamplingProfiler::Module& b);
 BASE_EXPORT bool operator==(const StackSamplingProfiler::Frame& a,
                             const StackSamplingProfiler::Frame& b);
 BASE_EXPORT bool operator<(const StackSamplingProfiler::Frame& a,
