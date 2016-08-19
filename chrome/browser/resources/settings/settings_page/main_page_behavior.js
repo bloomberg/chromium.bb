@@ -60,7 +60,7 @@ var MainPageBehaviorImpl = {
    */
   tryTransitionToSection_: function() {
     var currentRoute = settings.getCurrentRoute();
-    var currentSection = this.getSection_(currentRoute.section);
+    var currentSection = this.getSection(currentRoute.section);
 
     // If an animation is already playing, try finishing or canceling it.
     if (this.currentAnimation_) {
@@ -225,7 +225,7 @@ var MainPageBehaviorImpl = {
         function() {
           // If the current section changes while we are waiting for the page to
           // be ready, scroll to the newest requested section.
-          var section = this.getSection_(settings.getCurrentRoute().section);
+          var section = this.getSection(settings.getCurrentRoute().section);
           if (section)
             section.scrollIntoView();
         }.bind(this));
@@ -235,13 +235,12 @@ var MainPageBehaviorImpl = {
    * Helper function to get a section from the local DOM.
    * @param {string} section Section name of the element to get.
    * @return {?SettingsSectionElement}
-   * @private
    */
-  getSection_: function(section) {
+  getSection: function(section) {
     if (!section)
       return null;
     return /** @type {?SettingsSectionElement} */(
-        this.$$('[section=' + section + ']'));
+        this.$$('settings-section[section="' + section + '"]'));
   },
 
   /**

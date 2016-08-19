@@ -177,11 +177,8 @@ Polymer({
     if (route.isSubpage() || this.showPages_.about)
       return 0;
 
-    var query = 'settings-section[section="' + route.section + '"]';
-    var topSection = this.$$('settings-basic-page').$$(query);
-    if (!topSection && this.showPages_.advanced)
-      topSection = this.$$('settings-advanced-page').$$(query);
-
+    var page = this.getPage_(route);
+    var topSection = page && page.getSection(route.section);
     if (!topSection || !topSection.offsetParent)
       return 0;
 
@@ -195,6 +192,28 @@ Polymer({
   /** @private */
   toggleAdvancedPage_: function() {
     this.fire('toggle-advanced-page', !this.advancedToggleExpanded_);
+  },
+
+  /**
+   * Returns the root page (if it exists) for a route.
+   * @param {!settings.Route} route
+   * @return {(?SettingsAboutPageElement|?SettingsAdvancedPageElement|
+   *           ?SettingsBasicPageElement)}
+   */
+  getPage_: function(route) {
+    if (settings.Route.ABOUT.contains(route)) {
+      return /** @type {?SettingsAboutPageElement} */(
+          this.$$('settings-about-page'));
+    }
+    if (settings.Route.ADVANCED.contains(route)) {
+      return /** @type {?SettingsAdvancedPageElement} */(
+          this.$$('settings-advanced-page'));
+    }
+    if (settings.Route.BASIC.contains(route)) {
+      return /** @type {?SettingsBasicPageElement} */(
+          this.$$('settings-basic-page'));
+    }
+    assertNotReached();
   },
 
   /**
@@ -226,11 +245,11 @@ Polymer({
     return new Promise(function(resolve, reject) {
       setTimeout(function() {
         var whenSearchDone = settings.getSearchManager().search(
-            query, assert(this.$$('settings-basic-page')));
+            query, assert(this.getPage_(settings.Route.BASIC)));
         assert(
             whenSearchDone ===
                 settings.getSearchManager().search(
-                    query, assert(this.$$('settings-advanced-page'))));
+                    query, assert(this.getPage_(settings.Route.ADVANCED))));
 
         whenSearchDone.then(function(request) {
           resolve();
