@@ -1,66 +1,27 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src=../../media-resources/media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../../media-resources/video-test.js></script>
-        <script>
-            var loadCount = 0;
+<title>Test that video is not reloaded on showing a dialog.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
+<video></video>
+<script>
+// Make sure we don't reload a "video" element after a dialog is shown.
+// Test this by loading a movie slowly and showing a dialog when a
+// "loadstart" event handler is called. If the movie is reloaded when
+// the dialog is "dismissed", another "loadstart" event will be fired.
+async_test(function(t) {
+    var movie = findMediaFile("video", "../resources/test");
+    var video = document.querySelector("video");
 
-            if (window.testRunner) {
-                testRunner.dumpAsText();
-                testRunner.waitUntilDone();
-            }
+    video.onloadstart = t.step_func(function() {
+        video.onloadstart = t.unreached_func();
 
-            function logEvent(event)
-            {
-                consoleWrite("<br><b><em>'" + event.type + "'<" + "/em> event<" + "/b>");
-            }
+        // Showing confirm dialog.
+        confirm("I hope the movie continues to play!");
+    });
 
-            function loadstart()
-            {
-                logEvent(event);
+    video.oncanplaythrough = t.step_func_done();
 
-                if (++loadCount > 1) {
-                    consoleWrite('FAIL: loadstart fired more than once.');
-                    endTest();
-                    return;
-                }
-
-                consoleWrite("*** Showing confirm dialog...");
-                confirm('I hope the movie continues to play!');
-            }
-
-            function canplaythrough()
-            {
-                logEvent(event);
-
-                consoleWrite("");
-                endTest();
-            }
-
-            function setup()
-            {
-                logEvent(event);
-                consoleWrite("*** Setting up element...");
-
-                findMediaElement();
-                var movie = findMediaFile("video", "../resources/test");
-                video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?name=" + movie + "&throttle=100";
-            }
-
-        </script>
-    </head>
-
-    <body onload="setup()">
-        <video controls
-            oncanplaythrough="canplaythrough()"
-            onloadstart="loadstart()">
-            </video>
-        <p>Make sure we don't reload a &lt;video&gt; element after a dialog is shown.<br>
-        Test this by loading a movie slowly and showing a dialog when a 'loadstart' event <br>
-        handler is called. If the movie is reloaded when the dialog is "dismissed", another <br>
-        'loadstart' event will be fired</p>
-    </body>
-</html>
+    video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?name=" + movie + "&throttle=100";
+});
+</script>

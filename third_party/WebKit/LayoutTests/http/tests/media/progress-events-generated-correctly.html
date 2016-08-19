@@ -1,45 +1,40 @@
-<video controls></video>
-<p>Test that progress events are generated during loading of media resource.</p>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=../../media-resources/video-test.js></script>
-<script src=../../media-resources/media-file.js></script>
+<!DOCTYPE html>
+<title>Test that progress events are generated during loading of media resource.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../../media-resources/media-file.js"></script>
+<video></video>
 <script>
-    waitForEventAndFail('error');
+async_test(function(t) {
+    var video = document.querySelector('video');
+    video.onerror = t.unreached_func();
 
     // Given long enough duration, We should not reach ended playback state.
-    waitForEventAndFail('ended');
+    video.onended = t.unreached_func();
 
     // Tuned throttling should not induce player stall or suspended load.
-    waitForEventAndFail('stalled');
-    waitForEventAndFail('suspend');
-    waitForEventAndFail('waiting');
+    video.onstalled = t.unreached_func();
+    video.onsuspend = t.unreached_func();
+    video.onwaiting = t.unreached_func();
 
     var progressCount = 0;
     var lastProgressEventTime = 0;
-    function progressListener(event)
-    {
-        // Implementations can vary the frequency within tolerance, so we must protect against flaky logs.
-        // Remain silent here unless failure detected.
-        if (video.networkState != HTMLMediaElement.NETWORK_LOADING) {
-            failTest('Unexpected networkState ' + video.networkState +
-                     ' when handling \'progress\' event. Is fetch completed or suspending?');
-            return;
-        }
 
+    video.onprogress = t.step_func(function() {
+        // Implementations can vary the frequency within tolerance,
+        // so we must protect against flaky logs.
+        // Remain silent here unless failure detected.
+        assert_equals(video.networkState, HTMLMediaElement.NETWORK_LOADING);
         progressCount++;
         lastProgressEventTime = window.performance.now();
-    };
-    video.addEventListener('progress', progressListener);
+    });
 
-    function canplayListener(event)
-    {
-        // Begin video playback to mitigate flakiness due to implementations suspending loads
-        // on limited buffer capacity.
+    video.oncanplay = t.step_func(function() {
+        video.oncanplay = null;
+        // Begin video playback to mitigate flakiness due to
+        // implementations suspending load on limited buffer capacity.
         video.play();
-        video.removeEventListener('canplay', canplayListener);
-    }
-    video.addEventListener('canplay', canplayListener);
+    });
 
     var progressCountAtLastCheck = 0;
     var checkCount = 0;
@@ -47,47 +42,30 @@
     var maxProgressFiringIntervalInMS = 550;
     // Multiple 'progress' events may fire within spec's tolerance window.
     var maxProgressCountIncrease = 3;
-    function checkProgressCount()
-    {
-        checkCount++;
-
+    function checkProgressCount() {
         // Implementations can vary the frequency within tolerance, so we must protect against flakiness.
         // Keep progressCount values involved in checks here out of report unless failure detected.
-        consoleWrite('Interval ' + checkCount + ' has elapsed. Checking progress event count delta.');
         var progressCountDelta = progressCount - progressCountAtLastCheck;
-        if (progressCountDelta <= 0) {
-            failTest('progressCount (' + progressCount + ') did not increase since the last check.');
-            return;
-        }
+        assert_greater_than(progressCountDelta, 0, 'at least one progress event was fired');
+        assert_less_than_equal(progressCountDelta, maxProgressCountIncrease, 'too many progress events were not fired');
 
-        var surplusProgress = progressCountDelta - maxProgressCountIncrease;
-        if (surplusProgress > 0) {
-            failTest('Received at least ' + surplusProgress + ' too many progress event(s) since the last check.');
-            return;
-        }
-
-        if (checkCount == 3) {
-            endTest();
+        if (++checkCount == 3) {
+            t.done();
             return;
         }
 
         progressCountAtLastCheck = progressCount;
         var msSinceLastProgressEvent = window.performance.now() - lastProgressEventTime;
         var msUntilNextCheck = maxProgressFiringIntervalInMS - msSinceLastProgressEvent;
+        assert_greater_than(msUntilNextCheck, 0, 'Progress Event delay');
 
-        if (msUntilNextCheck <= 0) {
-            failTest('ProgressCheck scheduling error: msUntilNextCheck is ' + msUntilNextCheck);
-            return;
-        }
-
-        setTimeout(checkProgressCount, msUntilNextCheck);
+        setTimeout(t.step_func(checkProgressCount), msUntilNextCheck);
     }
 
-    waitForEvent('loadstart', function()
-    {
+    video.onloadstart = t.step_func(function() {
         // No 'progress' event should fire prior to 'loadstart'.
-        testExpected('progressCount', 0, '==');
-        setTimeout(checkProgressCount, maxProgressFiringIntervalInMS);
+        assert_equals(progressCount, 0, 'No progress event fired before load event');
+        setTimeout(t.step_func(checkProgressCount), maxProgressFiringIntervalInMS);
     });
 
     var mediaFile = findMediaFile('video', 'resources/test');
@@ -99,4 +77,5 @@
     var kBps = 45;
 
     video.src = 'video-throttled-load.cgi' + '?name=' + mediaFile + '&throttle=' + kBps + '&type=' + mimeType;
+});
 </script>
