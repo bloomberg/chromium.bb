@@ -14,6 +14,7 @@ namespace blink {
 
 class FrameView;
 class LayoutAPIShim;
+class LayoutViewItem;
 class Node;
 class ObjectPaintProperties;
 
@@ -198,6 +199,8 @@ public:
     {
         return m_layoutObject->offsetFromContainer(item.layoutObject());
     }
+
+    LayoutViewItem view() const;
 
     FrameView* frameView() const
     {

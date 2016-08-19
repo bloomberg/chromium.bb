@@ -138,6 +138,11 @@ private:
     const LayoutView* toView() const { return toLayoutView(layoutObject()); }
 };
 
+inline LayoutViewItem LayoutItem::view() const
+{
+    return LayoutViewItem(m_layoutObject->view());
+}
+
 } // namespace blink
 
 #endif // LayoutViewItem_h

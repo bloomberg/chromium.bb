@@ -159,8 +159,9 @@ bool LayoutView::hitTestNoLifecycleUpdate(HitTestResult& result)
 void LayoutView::clearHitTestCache()
 {
     m_hitTestCache->clear();
-    if (LayoutPart* frameLayoutObject = frame()->ownerLayoutObject())
-        frameLayoutObject->view()->clearHitTestCache();
+    LayoutPartItem frameLayoutItem = frame()->ownerLayoutItem();
+    if (!frameLayoutItem.isNull())
+        frameLayoutItem.view().clearHitTestCache();
 }
 
 void LayoutView::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit, LogicalExtentComputedValues& computedValues) const
