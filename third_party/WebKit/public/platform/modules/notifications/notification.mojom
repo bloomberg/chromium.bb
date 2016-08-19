@@ -68,7 +68,8 @@ struct Notification {
   // Vibration API. https://w3c.github.io/vibration/
   array<uint32> vibration_pattern;
 
-  // The time at which the event the notification represents took place.
+  // The time at which the event the notification represents took place,
+  // in milliseconds since the Unix epoch.
   double timestamp;
 
   // Whether default notification indicators (sound, vibration, light) should
