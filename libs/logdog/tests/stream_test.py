@@ -84,6 +84,10 @@ class StreamClientTestCase(unittest.TestCase):
 
     def interpret(self):
       data = StringIO.StringIO(self.buffer.getvalue())
+      magic = data.read(len(stream.BUTLER_MAGIC))
+      if magic != stream.BUTLER_MAGIC:
+        raise ValueError('Invalid magic value ([%s] != [%s])' % (
+            magic, stream.BUTLER_MAGIC))
       length, _ = varint.read_uvarint(data)
       header = data.read(length)
       return json.loads(header), data.read()

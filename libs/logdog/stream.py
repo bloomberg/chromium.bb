@@ -18,6 +18,13 @@ _StreamParamsBase = collections.namedtuple('_StreamParamsBase',
     ('name', 'type', 'content_type', 'tags', 'tee', 'binary_file_extension'))
 
 
+# Magic number at the beginning of a Butler stream
+#
+# See "ProtocolFrameHeaderMagic" in:
+# <luci-go>/logdog/client/butlerlib/streamproto
+BUTLER_MAGIC = 'BTLR1\x1e'
+
+
 class StreamParams(_StreamParamsBase):
   """Defines the set of parameters to apply to a new stream."""
 
@@ -222,6 +229,7 @@ class StreamClient(object):
     params_json = params.to_json()
 
     fd = self._connect_raw()
+    fd.write(BUTLER_MAGIC)
     varint.write_uvarint(fd, len(params_json))
     fd.write(params_json)
     return fd
@@ -411,6 +419,19 @@ class _UnixDomainSocketStreamClient(StreamClient):
   """A StreamClient implementation that uses a UNIX domain socket.
   """
 
+  class SocketFile(object):
+    """A write-only file-like object that writes to a UNIX socket."""
+
+    def __init__(self, fd):
+      self._fd = fd
+
+    def write(self, data):
+      self._fd.send(data)
+
+    def close(self):
+      self._fd.close()
+
+
   def __init__(self, path):
     """Initializes a new UNIX domain socket stream client.
 
@@ -429,6 +450,6 @@ class _UnixDomainSocketStreamClient(StreamClient):
   def _connect_raw(self):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.connect(self._path)
-    return sock
+    return self.SocketFile(sock)
 
 _default_registry.register_protocol('unix', _UnixDomainSocketStreamClient)
