@@ -597,6 +597,10 @@ TYPED_TEST_P(CookieStoreTest, ValidSubdomainTest) {
 // no side-effect. An invalid domain in this context is one which does
 // not match the originating domain.
 TYPED_TEST_P(CookieStoreTest, InvalidDomainTest) {
+#if defined(__IPHONE_10_0)
+  // TODO(crbug.com/639167): Reenable this test on iOS10.
+  return;
+#endif
   CookieStore* cs = this->GetCookieStore();
   GURL url_foobar("http://foo.bar.com");
 
