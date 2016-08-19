@@ -124,8 +124,7 @@ void TestWindowTree::ReleaseCapture(uint32_t change_id, uint32_t window_id) {
   change_id_ = change_id;
 }
 
-void TestWindowTree::StartPointerWatcher(bool want_moves,
-                                         uint32_t pointer_watcher_id) {}
+void TestWindowTree::StartPointerWatcher(bool want_moves) {}
 
 void TestWindowTree::StopPointerWatcher() {}
 

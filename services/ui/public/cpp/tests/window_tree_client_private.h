@@ -35,8 +35,6 @@ class WindowTreeClientPrivate {
   explicit WindowTreeClientPrivate(Window* window);
   ~WindowTreeClientPrivate();
 
-  uint32_t pointer_watcher_id();
-
   // Calls OnEmbed() on the WindowTreeClient.
   void OnEmbed(mojom::WindowTree* window_tree);
 
@@ -50,6 +48,8 @@ class WindowTreeClientPrivate {
   // Sets the WindowTree and client id.
   void SetTreeAndClientId(mojom::WindowTree* window_tree,
                           ClientSpecificId client_id);
+
+  bool HasPointerWatcher();
 
  private:
    WindowTreeClient* tree_client_impl_;

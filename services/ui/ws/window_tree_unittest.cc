@@ -322,14 +322,13 @@ TEST_F(WindowTreeTest, StartPointerWatcher) {
   ASSERT_EQ(0u, client->tracker()->changes()->size());
 
   // Create a watcher for all events excluding move events.
-  WindowTreeTestApi(tree).StartPointerWatcher(false, 111u);
+  WindowTreeTestApi(tree).StartPointerWatcher(false);
 
   // Pointer-down events are sent to the client.
   DispatchEventAndAckImmediately(pointer_down);
   ASSERT_EQ(1u, client->tracker()->changes()->size());
-  EXPECT_EQ(
-      "PointerWatcherEvent event_action=16 pointer_watcher_id=111 window=null",
-      ChangesToDescription1(*client->tracker()->changes())[0]);
+  EXPECT_EQ("PointerWatcherEvent event_action=16 window=null",
+            ChangesToDescription1(*client->tracker()->changes())[0]);
   client->tracker()->changes()->clear();
 
   // Stopping the watcher stops sending events to the client.
@@ -346,7 +345,7 @@ TEST_F(WindowTreeTest, PointerWatcherGetsWindow) {
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&client, &tree, &window));
 
-  WindowTreeTestApi(wm_tree()).StartPointerWatcher(false, 111u);
+  WindowTreeTestApi(wm_tree()).StartPointerWatcher(false);
 
   // Create and dispatch an event that targets the embedded window.
   ui::PointerEvent pointer_down = CreatePointerDownEvent(25, 25);
@@ -356,7 +355,7 @@ TEST_F(WindowTreeTest, PointerWatcherGetsWindow) {
   // event.
   ASSERT_EQ(2u, wm_client()->tracker()->changes()->size());
   EXPECT_EQ(
-      "PointerWatcherEvent event_action=16 pointer_watcher_id=111 window=" +
+      "PointerWatcherEvent event_action=16 window=" +
           ClientWindowIdToString(ClientWindowIdForWindow(wm_tree(), window)),
       ChangesToDescription1(*wm_client()->tracker()->changes())[1]);
 }
@@ -371,7 +370,7 @@ TEST_F(WindowTreeTest, StartPointerWatcherNonMatching) {
   EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&client, &tree, &window));
 
   // Create a watcher for all events excluding move events.
-  WindowTreeTestApi(tree).StartPointerWatcher(false, 111u);
+  WindowTreeTestApi(tree).StartPointerWatcher(false);
 
   // Pointer-move events are not sent to the client, since they don't match.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
@@ -389,7 +388,7 @@ TEST_F(WindowTreeTest, StartPointerWatcherSendsOnce) {
 
   // Create a watcher for all events excluding move events (which do not
   // cause focus changes).
-  WindowTreeTestApi(tree).StartPointerWatcher(false, 111u);
+  WindowTreeTestApi(tree).StartPointerWatcher(false);
 
   // Create an event inside the bounds of the client.
   ui::PointerEvent pointer_up = CreatePointerUpEvent(25, 25);
@@ -398,7 +397,7 @@ TEST_F(WindowTreeTest, StartPointerWatcherSendsOnce) {
   // watcher.
   DispatchEventAndAckImmediately(pointer_up);
   ASSERT_EQ(1u, client->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=2,1 event_action=18 pointer_watcher_id=111",
+  EXPECT_EQ("InputEvent window=2,1 event_action=18 matches_pointer_watcher",
             SingleChangeToDescription(*client->tracker()->changes()));
 }
 
@@ -411,25 +410,25 @@ TEST_F(WindowTreeTest, StartPointerWatcherWrongUser) {
   other_binding->client()->tracker()->changes()->clear();
 
   // Set pointer watchers on both the wm tree and the other user's tree.
-  WindowTreeTestApi(wm_tree()).StartPointerWatcher(false, 111u);
-  WindowTreeTestApi(other_tree).StartPointerWatcher(false, 222u);
+  WindowTreeTestApi(wm_tree()).StartPointerWatcher(false);
+  WindowTreeTestApi(other_tree).StartPointerWatcher(false);
 
   // An event is watched by the wm tree, but not by the other user's tree.
   DispatchEventAndAckImmediately(CreatePointerUpEvent(5, 5));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=0,3 event_action=18 pointer_watcher_id=111",
+  EXPECT_EQ("InputEvent window=0,3 event_action=18 matches_pointer_watcher",
             SingleChangeToDescription(*wm_client()->tracker()->changes()));
   ASSERT_EQ(0u, other_binding->client()->tracker()->changes()->size());
 }
 
 // Tests that a pointer watcher cannot watch keystrokes.
 TEST_F(WindowTreeTest, StartPointerWatcherKeyEventsDisallowed) {
-  WindowTreeTestApi(wm_tree()).StartPointerWatcher(false, 111u);
+  WindowTreeTestApi(wm_tree()).StartPointerWatcher(false);
   ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_pressed);
   EXPECT_EQ(0u, wm_client()->tracker()->changes()->size());
 
-  WindowTreeTestApi(wm_tree()).StartPointerWatcher(false, 222u);
+  WindowTreeTestApi(wm_tree()).StartPointerWatcher(false);
   ui::KeyEvent key_released(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_released);
   EXPECT_EQ(0u, wm_client()->tracker()->changes()->size());

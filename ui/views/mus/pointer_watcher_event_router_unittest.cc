@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
+#include "services/ui/public/cpp/tests/window_tree_client_private.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/views/mus/window_manager_connection.h"
@@ -51,9 +52,68 @@ class PointerWatcherEventRouterTest : public testing::Test {
         ->OnPointerEventObserved(event, nullptr);
   }
 
+  PointerWatcherEventRouter::EventTypes event_types() const {
+    return WindowManagerConnection::Get()
+        ->pointer_watcher_event_router()
+        ->event_types_;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PointerWatcherEventRouterTest);
 };
+
+TEST_F(PointerWatcherEventRouterTest, EventTypes) {
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  ScopedViewsTestHelper helper;
+  TestPointerWatcher pointer_watcher1, pointer_watcher2;
+  PointerWatcherEventRouter* pointer_watcher_event_router =
+      WindowManagerConnection::Get()->pointer_watcher_event_router();
+  ui::WindowTreeClientPrivate test_api(
+      WindowManagerConnection::Get()->client());
+  EXPECT_FALSE(test_api.HasPointerWatcher());
+
+  // Start with no moves.
+  pointer_watcher_event_router->AddPointerWatcher(&pointer_watcher1, false);
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::NON_MOVE_EVENTS,
+            event_types());
+  EXPECT_TRUE(test_api.HasPointerWatcher());
+
+  // Add moves.
+  pointer_watcher_event_router->AddPointerWatcher(&pointer_watcher2, true);
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::MOVE_EVENTS, event_types());
+  EXPECT_TRUE(test_api.HasPointerWatcher());
+
+  // Remove no-moves.
+  pointer_watcher_event_router->RemovePointerWatcher(&pointer_watcher1);
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::MOVE_EVENTS, event_types());
+  EXPECT_TRUE(test_api.HasPointerWatcher());
+
+  // Remove moves.
+  pointer_watcher_event_router->RemovePointerWatcher(&pointer_watcher2);
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::NONE, event_types());
+  EXPECT_FALSE(test_api.HasPointerWatcher());
+
+  // Add moves.
+  pointer_watcher_event_router->AddPointerWatcher(&pointer_watcher2, true);
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::MOVE_EVENTS, event_types());
+  EXPECT_TRUE(test_api.HasPointerWatcher());
+
+  // Add no moves.
+  pointer_watcher_event_router->AddPointerWatcher(&pointer_watcher1, false);
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::MOVE_EVENTS, event_types());
+  EXPECT_TRUE(test_api.HasPointerWatcher());
+
+  // Remove moves.
+  pointer_watcher_event_router->RemovePointerWatcher(&pointer_watcher2);
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::NON_MOVE_EVENTS,
+            event_types());
+  EXPECT_TRUE(test_api.HasPointerWatcher());
+
+  // Remove no-moves.
+  pointer_watcher_event_router->RemovePointerWatcher(&pointer_watcher1);
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::NONE, event_types());
+  EXPECT_FALSE(test_api.HasPointerWatcher());
+}
 
 TEST_F(PointerWatcherEventRouterTest, PointerWatcherNoMove) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);

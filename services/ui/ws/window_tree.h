@@ -377,8 +377,7 @@ class WindowTree : public mojom::WindowTree,
       override;
   void SetCapture(uint32_t change_id, Id window_id) override;
   void ReleaseCapture(uint32_t change_id, Id window_id) override;
-  void StartPointerWatcher(bool want_moves,
-                           uint32_t pointer_watcher_id) override;
+  void StartPointerWatcher(bool want_moves) override;
   void StopPointerWatcher() override;
   void SetWindowBounds(uint32_t change_id,
                        Id window_id,
@@ -498,8 +497,8 @@ class WindowTree : public mojom::WindowTree,
   // requests them.
   bool pointer_watcher_want_moves_ = false;
 
-  // The ID supplied by the client for the current pointer watcher.
-  uint32_t pointer_watcher_id_ = 0;
+  // True if StartPointerWatcher() was called.
+  bool has_pointer_watcher_ = false;
 
   // WindowManager the current event came from.
   WindowManagerState* event_source_wms_ = nullptr;

@@ -311,9 +311,8 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowInputEvent(uint32_t event_id,
                           Id window_id,
                           std::unique_ptr<ui::Event> event,
-                          uint32_t pointer_watcher_id) override;
+                          bool matches_pointer_watcher) override;
   void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                              uint32_t pointer_watcher_id,
                               uint32_t window_id) override;
   void OnWindowFocused(Id focused_window_id) override;
   void OnWindowPredefinedCursorChanged(Id window_id,
@@ -418,9 +417,6 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   mojom::WindowManagerClientAssociatedPtr window_manager_internal_client_;
 
   bool has_pointer_watcher_ = false;
-
-  // Monotonically increasing ID for pointer watchers.
-  uint32_t pointer_watcher_id_ = 0u;
 
   // The current change id for the client.
   uint32_t current_move_loop_change_ = 0u;

@@ -632,10 +632,7 @@ void WindowTreeClient::StartPointerWatcher(bool want_moves) {
   if (has_pointer_watcher_)
     StopPointerWatcher();
   has_pointer_watcher_ = true;
-  pointer_watcher_id_++;
-  if (pointer_watcher_id_ == 0)
-    pointer_watcher_id_++;
-  tree_->StartPointerWatcher(want_moves, pointer_watcher_id_);
+  tree_->StartPointerWatcher(want_moves);
 }
 
 void WindowTreeClient::StopPointerWatcher() {
@@ -981,14 +978,11 @@ void WindowTreeClient::OnWindowSharedPropertyChanged(
 void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
                                           Id window_id,
                                           std::unique_ptr<ui::Event> event,
-                                          uint32_t pointer_watcher_id) {
+                                          bool matches_pointer_watcher) {
   DCHECK(event);
   Window* window = GetWindowByServerId(window_id);  // May be null.
 
-  // Non-zero pointer_watcher_id means it matched a pointer watcher on the
-  // server.
-  if (pointer_watcher_id_ != 0 && has_pointer_watcher_ &&
-      pointer_watcher_id == pointer_watcher_id_) {
+  if (matches_pointer_watcher && has_pointer_watcher_) {
     DCHECK(event->IsPointerEvent());
     delegate_->OnPointerEventObserved(*event->AsPointerEvent(), window);
   }
@@ -1023,11 +1017,10 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
 }
 
 void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                                              uint32_t pointer_watcher_id,
                                               uint32_t window_id) {
   DCHECK(event);
   DCHECK(event->IsPointerEvent());
-  if (has_pointer_watcher_ && pointer_watcher_id == pointer_watcher_id_) {
+  if (has_pointer_watcher_) {
     Window* target_window = GetWindowByServerId(window_id);
     delegate_->OnPointerEventObserved(*event->AsPointerEvent(), target_window);
   }

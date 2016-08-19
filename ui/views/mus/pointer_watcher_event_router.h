@@ -19,6 +19,7 @@ class WindowTreeClient;
 namespace views {
 
 class PointerWatcher;
+class PointerWatcherEventRouterTest;
 
 // PointerWatcherEventRouter is responsible for maintaining the list of
 // PointerWatchers and notifying appropriately. It is expected the owner of
@@ -27,6 +28,18 @@ class PointerWatcher;
 class VIEWS_MUS_EXPORT PointerWatcherEventRouter
     : public NON_EXPORTED_BASE(ui::WindowTreeClientObserver) {
  public:
+  // Public solely for tests.
+  enum EventTypes {
+    // No PointerWatchers have been added.
+    NONE,
+
+    // Used when the only PointerWatchers added do not want moves.
+    NON_MOVE_EVENTS,
+
+    // Used when at least one PointerWatcher has been added that wants moves.
+    MOVE_EVENTS,
+  };
+
   explicit PointerWatcherEventRouter(ui::WindowTreeClient* client);
   ~PointerWatcherEventRouter() override;
 
@@ -34,12 +47,14 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               ui::Window* target);
 
-  void AddPointerWatcher(PointerWatcher* watcher, bool want_moves);
+  void AddPointerWatcher(PointerWatcher* watcher, bool wants_moves);
   void RemovePointerWatcher(PointerWatcher* watcher);
 
  private:
-  // Returns true if there is one or more watchers for this client.
-  bool HasPointerWatcher();
+  friend class PointerWatcherEventRouterTest;
+
+  // Determines EventTypes based on the number and type of PointerWatchers.
+  EventTypes DetermineEventTypes();
 
   // ui::WindowTreeClientObserver:
   void OnWindowTreeCaptureChanged(ui::Window* gained_capture,
@@ -47,8 +62,14 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter
   void OnDidDestroyClient(ui::WindowTreeClient* client) override;
 
   ui::WindowTreeClient* window_tree_client_;
-  base::ObserverList<PointerWatcher, true> pointer_watchers_;
-  bool pointer_watcher_want_moves_ = false;
+  // The true parameter to ObserverList indicates the list must be empty on
+  // destruction. Two sets of observers are maintained, one for observers not
+  // needing moves |non_move_watchers_| and |move_watchers_| for those
+  // observers wanting moves too.
+  base::ObserverList<views::PointerWatcher, true> non_move_watchers_;
+  base::ObserverList<views::PointerWatcher, true> move_watchers_;
+
+  EventTypes event_types_ = EventTypes::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(PointerWatcherEventRouter);
 };

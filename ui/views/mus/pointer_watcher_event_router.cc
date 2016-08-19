@@ -12,6 +12,21 @@
 #include "ui/views/pointer_watcher.h"
 
 namespace views {
+namespace {
+
+bool HasPointerWatcher(
+    base::ObserverList<views::PointerWatcher, true>* observer_list) {
+  if (!observer_list->might_have_observers())
+    return false;
+
+  // might_have_observers() returned true, see if there really are any
+  // observers. The only way to truly know is to use an Iterator and see if it
+  // has at least one observer.
+  base::ObserverList<PointerWatcher>::Iterator iterator(observer_list);
+  return !!iterator.GetNext();
+}
+
+}  // namespace
 
 PointerWatcherEventRouter::PointerWatcherEventRouter(
     ui::WindowTreeClient* client)
@@ -25,31 +40,51 @@ PointerWatcherEventRouter::~PointerWatcherEventRouter() {
 }
 
 void PointerWatcherEventRouter::AddPointerWatcher(PointerWatcher* watcher,
-                                                  bool want_moves) {
+                                                  bool wants_moves) {
   // Pointer watchers cannot be added multiple times.
-  DCHECK(!pointer_watchers_.HasObserver(watcher));
-  // TODO(jamescook): Support adding pointer watchers with different
-  // |want_moves| values by tracking whether the set as a whole wants moves.
-  // This will involve sending observed move events to a subset of the
-  // watchers. (crbug.com/627146)
-  DCHECK(!HasPointerWatcher() || want_moves == pointer_watcher_want_moves_);
-  pointer_watcher_want_moves_ = want_moves;
-
-  bool had_watcher = HasPointerWatcher();
-  pointer_watchers_.AddObserver(watcher);
-  if (!had_watcher) {
-    // First PointerWatcher added, start the watcher on the window server.
-    window_tree_client_->StartPointerWatcher(want_moves);
+  DCHECK(!move_watchers_.HasObserver(watcher));
+  DCHECK(!non_move_watchers_.HasObserver(watcher));
+  if (wants_moves) {
+    move_watchers_.AddObserver(watcher);
+    if (event_types_ != EventTypes::MOVE_EVENTS) {
+      event_types_ = EventTypes::MOVE_EVENTS;
+      const bool wants_moves = true;
+      window_tree_client_->StartPointerWatcher(wants_moves);
+    }
+  } else {
+    non_move_watchers_.AddObserver(watcher);
+    if (event_types_ == EventTypes::NONE) {
+      event_types_ = EventTypes::NON_MOVE_EVENTS;
+      const bool wants_moves = false;
+      window_tree_client_->StartPointerWatcher(wants_moves);
+    }
   }
 }
 
 void PointerWatcherEventRouter::RemovePointerWatcher(PointerWatcher* watcher) {
-  DCHECK(pointer_watchers_.HasObserver(watcher));
-  pointer_watchers_.RemoveObserver(watcher);
-  if (!HasPointerWatcher()) {
-    // Last PointerWatcher removed, stop the watcher on the window server.
-    window_tree_client_->StopPointerWatcher();
-    pointer_watcher_want_moves_ = false;
+  if (non_move_watchers_.HasObserver(watcher)) {
+    non_move_watchers_.RemoveObserver(watcher);
+  } else {
+    DCHECK(move_watchers_.HasObserver(watcher));
+    move_watchers_.RemoveObserver(watcher);
+  }
+  const EventTypes types = DetermineEventTypes();
+  if (types == event_types_)
+    return;
+
+  event_types_ = types;
+  switch (types) {
+    case EventTypes::NONE:
+      window_tree_client_->StopPointerWatcher();
+      break;
+    case EventTypes::NON_MOVE_EVENTS:
+      window_tree_client_->StartPointerWatcher(false);
+      break;
+    case EventTypes::MOVE_EVENTS:
+      // It isn't possible to remove an observer and transition to wanting move
+      // events. This could only happen if there is a bug in the add logic.
+      NOTREACHED();
+      break;
   }
 }
 
@@ -70,27 +105,38 @@ void PointerWatcherEventRouter::OnPointerEventObserved(
   // separately. See http://crbug.com/608547
   gfx::Point location_in_screen = event.AsLocatedEvent()->root_location();
   FOR_EACH_OBSERVER(
-      PointerWatcher, pointer_watchers_,
+      PointerWatcher, move_watchers_,
       OnPointerEventObserved(event, location_in_screen, target_widget));
+  if (event.type() != ui::ET_POINTER_MOVED) {
+    FOR_EACH_OBSERVER(
+        PointerWatcher, non_move_watchers_,
+        OnPointerEventObserved(event, location_in_screen, target_widget));
+  }
 }
 
-bool PointerWatcherEventRouter::HasPointerWatcher() {
-  // Check to see if we really have any observers left. This doesn't use
-  // base::ObserverList<>::might_have_observers() because that returns true
-  // during iteration over the list even when the last observer is removed.
-  base::ObserverList<PointerWatcher>::Iterator iterator(&pointer_watchers_);
-  return !!iterator.GetNext();
+PointerWatcherEventRouter::EventTypes
+PointerWatcherEventRouter::DetermineEventTypes() {
+  if (HasPointerWatcher(&move_watchers_))
+    return EventTypes::MOVE_EVENTS;
+
+  if (HasPointerWatcher(&non_move_watchers_))
+    return EventTypes::NON_MOVE_EVENTS;
+
+  return EventTypes::NONE;
 }
 
 void PointerWatcherEventRouter::OnWindowTreeCaptureChanged(
     ui::Window* gained_capture,
     ui::Window* lost_capture) {
-  FOR_EACH_OBSERVER(PointerWatcher, pointer_watchers_, OnMouseCaptureChanged());
+  FOR_EACH_OBSERVER(PointerWatcher, move_watchers_, OnMouseCaptureChanged());
+  FOR_EACH_OBSERVER(PointerWatcher, non_move_watchers_,
+                    OnMouseCaptureChanged());
 }
 
 void PointerWatcherEventRouter::OnDidDestroyClient(
     ui::WindowTreeClient* client) {
-  DCHECK(!pointer_watchers_.might_have_observers());
+  // We expect that all observers have been removed by this time.
+  DCHECK_EQ(event_types_, EventTypes::NONE);
   DCHECK_EQ(client, window_tree_client_);
   window_tree_client_->RemoveObserver(this);
   window_tree_client_ = nullptr;

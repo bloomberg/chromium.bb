@@ -20,10 +20,6 @@ WindowTreeClientPrivate::WindowTreeClientPrivate(Window* window)
 
 WindowTreeClientPrivate::~WindowTreeClientPrivate() {}
 
-uint32_t WindowTreeClientPrivate::pointer_watcher_id() {
-  return tree_client_impl_->pointer_watcher_id_;
-}
-
 void WindowTreeClientPrivate::OnEmbed(mojom::WindowTree* window_tree) {
   mojom::WindowDataPtr root_data(mojom::WindowData::New());
   root_data->parent_id = 0;
@@ -69,6 +65,10 @@ void WindowTreeClientPrivate::SetTreeAndClientId(mojom::WindowTree* window_tree,
                                                  ClientSpecificId client_id) {
   tree_client_impl_->tree_ = window_tree;
   tree_client_impl_->client_id_ = client_id;
+}
+
+bool WindowTreeClientPrivate::HasPointerWatcher() {
+  return tree_client_impl_->has_pointer_watcher_;
 }
 
 }  // namespace ui

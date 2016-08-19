@@ -733,7 +733,7 @@ void WindowTree::SendToPointerWatcher(const ui::Event& event,
   // Ignore the return value from IsWindowKnown() as in the case of the client
   // not knowing the window we'll send 0, which corresponds to no window.
   IsWindowKnown(target_window, &client_window_id);
-  client()->OnPointerEventObserved(ui::Event::Clone(event), pointer_watcher_id_,
+  client()->OnPointerEventObserved(ui::Event::Clone(event),
                                    client_window_id.id);
 }
 
@@ -1039,12 +1039,11 @@ void WindowTree::DispatchInputEventImpl(ServerWindow* target,
   bool matched_pointer_watcher = EventMatchesPointerWatcher(event);
   client()->OnWindowInputEvent(
       event_ack_id_, ClientWindowIdForWindow(target).id,
-      ui::Event::Clone(event),
-      matched_pointer_watcher ? pointer_watcher_id_ : 0);
+      ui::Event::Clone(event), matched_pointer_watcher);
 }
 
 bool WindowTree::EventMatchesPointerWatcher(const ui::Event& event) const {
-  if (pointer_watcher_id_ == 0)
+  if (!has_pointer_watcher_)
     return false;
   if (!event.IsPointerEvent())
     return false;
@@ -1203,20 +1202,14 @@ void WindowTree::ReleaseCapture(uint32_t change_id, Id window_id) {
                               ReleaseCapture(ClientWindowId(window_id)));
 }
 
-void WindowTree::StartPointerWatcher(bool want_moves,
-                                     uint32_t pointer_watcher_id) {
-  if (pointer_watcher_id == 0) {
-    DVLOG(1) << "StartPointerWatcher called with 0.";
-    StopPointerWatcher();
-    return;
-  }
+void WindowTree::StartPointerWatcher(bool want_moves) {
+  has_pointer_watcher_ = true;
   pointer_watcher_want_moves_ = want_moves;
-  pointer_watcher_id_ = pointer_watcher_id;
 }
 
 void WindowTree::StopPointerWatcher() {
+  has_pointer_watcher_ = false;
   pointer_watcher_want_moves_ = false;
-  pointer_watcher_id_ = 0;
 }
 
 void WindowTree::SetWindowBounds(uint32_t change_id,

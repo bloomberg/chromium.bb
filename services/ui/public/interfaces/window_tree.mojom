@@ -87,14 +87,12 @@ interface WindowTree {
   // would normally be sent to the requesting client (if the event target is
   // this window tree) OnWindowInputEvent() is called, all other matching
   // pointer events (if the target is another tree) result in
-  // OnPointerEventObserved(). The client must supply a non-zero
-  // |pointer_watcher_id|, which is reported back with matched events. There is
-  // only ever one pointer watcher active at a given time. The client should
-  // prefer |want_moves| to be false, as there's a system-wide performance/
-  // battery penalty for listening to moves.
+  // OnPointerEventObserved(). There is only ever one pointer watcher active at
+  // a given time. The client should prefer |want_moves| to be false, as there's
+  // a system-wide performance/battery penalty for listening to moves.
   //
   // See class description for details on event delivery.
-  StartPointerWatcher(bool want_moves, uint32 pointer_watcher_id);
+  StartPointerWatcher(bool want_moves);
 
   // Stops the pointer watcher for all events.
   StopPointerWatcher();
@@ -376,24 +374,22 @@ interface WindowTreeClient {
   // Invoked when an event is targeted at the specified window. The client must
   // call WindowTree::OnWindowInputEventAck() with the same |event_id| to notify
   // that the event has been processed, and with an EventResult value to notify
-  // if the event was consumed. |pointer_watcher_id| is the id supplied to
-  // StartPointerWatcher() if the event is a pointer event and the client called
-  // StartPointerWatcher(). The client will not receive farther events until the
-  // event is ack'ed.
+  // if the event was consumed. |matches_pointer_watcher| is true if the client
+  // has called StartPointerWatcher() and the event matches the type of events
+  // specified by StartPointerWatcher(). The client will not receive farther
+  // events until the event is ack'ed, regardless of the value of
+  // |matches_pointer_watcher|.
   OnWindowInputEvent(uint32 event_id,
                      uint32 window,
                      ui.mojom.Event event,
-                     uint32 pointer_watcher_id);
+                     bool matches_pointer_watcher);
 
   // Called when a pointer event that would not normally be targeted at this
-  // client is encountered and the client called StartPointerWatcher(). The
-  // |pointer_watcher_id| is the one supplied to StartPointerWatcher(). See
+  // client is encountered and the client called StartPointerWatcher(). See
   // StartPointerWatcher() for details. |window_id| is the window id of the
   // event target, or 0 if the window is not known to this client. The
   // client should not acknowledge these events.
-  OnPointerEventObserved(ui.mojom.Event event,
-                         uint32 pointer_watcher_id,
-                         uint32 window_id);
+  OnPointerEventObserved(ui.mojom.Event event, uint32 window_id);
 
   // Called in two distinct cases: when a window known to the connection gains
   // focus, or when focus moves from a window known to the connection to a

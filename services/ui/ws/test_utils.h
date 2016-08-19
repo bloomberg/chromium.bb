@@ -110,7 +110,7 @@ class WindowTreeTestApi {
     tree_->OnAcceleratorAck(tree_->event_ack_id_, result);
   }
 
-  void StartPointerWatcher(bool want_moves, uint32_t pointer_watcher_id);
+  void StartPointerWatcher(bool want_moves);
   void StopPointerWatcher();
 
  private:
@@ -404,9 +404,8 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
   void OnWindowInputEvent(uint32_t event_id,
                           uint32_t window,
                           std::unique_ptr<ui::Event> event,
-                          uint32_t event_observer_id) override;
+                          bool matches_pointer_watcher) override;
   void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                              uint32_t event_observer_id,
                               uint32_t window_id) override;
   void OnWindowFocused(uint32_t focused_window_id) override;
   void OnWindowPredefinedCursorChanged(uint32_t window_id,
