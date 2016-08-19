@@ -326,6 +326,21 @@ DesktopAutomationHandler.prototype = {
     }
 
     this.createTextEditHandlerIfNeeded_(evt.target);
+
+    // Sync the ChromeVox range to the editable, if a selection exists.
+    var anchorObject = evt.target.root.anchorObject;
+    var anchorOffset = evt.target.root.anchorOffset;
+    var focusObject = evt.target.root.focusObject;
+    var focusOffset = evt.target.root.focusOffset;
+    if (anchorObject && focusObject) {
+      var selectedRange = new cursors.Range(
+          new cursors.WrappingCursor(anchorObject, anchorOffset),
+          new cursors.WrappingCursor(focusObject, focusOffset));
+
+      // Sync ChromeVox range with selection.
+      ChromeVoxState.instance.setCurrentRange(selectedRange);
+    }
+
     // TODO(plundblad): This can currently be null for contenteditables.
     // Clean up when it can't.
     if (this.textEditHandler_)

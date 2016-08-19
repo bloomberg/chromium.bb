@@ -140,8 +140,7 @@ cursors.Cursor.prototype = {
     if (!this.node)
       return null;
 
-    if (this.node.role == RoleType.inlineTextBox ||
-        this.index == cursors.NODE_INDEX)
+    if (this.node.role == RoleType.inlineTextBox)
       return this.node.parent;
 
     return this.node;
@@ -165,25 +164,10 @@ cursors.Cursor.prototype = {
         adjustedIndex += sibling.name.length;
         sibling = sibling.previousSibling;
       }
-
-      // Work around Blink's somewhat unexpected offset calculation which
-      // requires us to consider all previous siblings of the parenting static
-      // text.
-      var parent = this.node.parent;
-      if (parent.role == RoleType.staticText) {
-        sibling = parent.previousSibling;
-        while (sibling) {
-          if (sibling.name)
-            adjustedIndex += sibling.name.length;
-          sibling = sibling.previousSibling;
-        }
-      }
     } else if (this.index_ == cursors.NODE_INDEX) {
-      if (this.index_ == cursors.NODE_INDEX) {
-        // Translate the index into a selection on the parent.
-        if (this.node.parent)
-          adjustedIndex = this.node.indexInParent;
-      }
+      // Indicies of this kind are buggy. Set it to 0 (different than the DOM
+      // index in parent convention).
+      adjustedIndex = 0;
     }
     return adjustedIndex;
   },
@@ -589,23 +573,13 @@ cursors.Range.prototype = {
     if (!startNode || !endNode)
       return;
 
-    // Find the most common root.
-    var uniqueAncestors = AutomationUtil.getUniqueAncestors(startNode, endNode);
-    var mcr = startNode.root;
-    if (uniqueAncestors) {
-      var common = uniqueAncestors.pop().parent;
-      if (common)
-        mcr = common.root;
-    }
-
-    if (!mcr || mcr.role == RoleType.desktop)
-      return;
-
-    if (mcr === startNode.root && mcr === endNode.root) {
-      var startIndex = this.start.selectionIndex_;
-
+    // Only allow selections within the same web tree.
+    if (startNode.root &&
+        startNode.root.role == RoleType.rootWebArea &&
+        startNode.root == endNode.root) {
       // We want to adjust to select the entire node for node offsets;
       // otherwise, use the plain character offset.
+      var startIndex = this.start.selectionIndex_;
       var endIndex = this.end.index == cursors.NODE_INDEX ?
           this.end.selectionIndex_ + 1 : this.end.selectionIndex_;
 

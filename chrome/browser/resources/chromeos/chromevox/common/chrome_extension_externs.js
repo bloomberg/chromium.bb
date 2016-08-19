@@ -639,6 +639,9 @@ chrome.automation.AutomationNode.prototype.markerStarts;
 /** @type {Array<number>} */
 chrome.automation.AutomationNode.prototype.markerEnds;
 
+/** @type {boolean} */
+chrome.automation.AutomationNode.prototype.ariaReadonly;
+
 /**
  * @extends {chrome.automation.AutomationNode}
  * @constructor

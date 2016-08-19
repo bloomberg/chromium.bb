@@ -193,6 +193,12 @@ AutomationPredicate.leafOrStaticText = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.object = function(node) {
+  // Editable nodes are within a text-like field and don't make sense when
+  // performing object navigation. Users should use line, word, or character
+  // navigation. Only navigate to the top level node.
+  if (node.parent && node.parent.state.editable)
+    return false;
+
   return node.state.focusable ||
       (AutomationPredicate.leafOrStaticText(node) &&
        (/\S+/.test(node.name) ||
@@ -227,7 +233,10 @@ AutomationPredicate.container = function(node) {
       node.role == RoleType.group ||
       node.role == RoleType.listItem ||
       node.role == RoleType.toolbar ||
-      node.role == RoleType.window;
+      node.role == RoleType.window ||
+      // For example, crosh.
+      (node.role == RoleType.textField && node.state.readOnly) ||
+      (node.state.editable && node.parent && !node.parent.state.editable);
 };
 
 /**

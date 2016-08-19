@@ -376,15 +376,17 @@ TEST_F('BackgroundTest', 'UseEditableState', function() {
         assertTrue(
             !ChromeVoxState.desktopAutomationHandler.editableTextHandler_);
         evt.stopPropagation();
+
+        // Focus the other text field here to make this test not racey.
+        editable.focus();
       });
 
       var editable = rootNode.find({ role: RoleType.textField });
       var nonEditable = rootNode.find({ role: RoleType.paragraph });
 
-      this.listenOnce(editable, 'focus', assertExists);
       this.listenOnce(nonEditable, 'focus', assertDoesntExist);
+      this.listenOnce(editable, 'focus', assertExists);
 
-      editable.focus();
       nonEditable.focus();
     }.bind(this));
 });
@@ -942,6 +944,7 @@ TEST_F('BackgroundTest', 'SymetricComplexHeading', function() {
 TEST_F('BackgroundTest', 'ContentEditableJumpSyncsRange', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
+    <p>start</p>
     <div contenteditable>
       <h1>Top News</h1>
       <h1>Most Popular</h1>
@@ -955,13 +958,15 @@ TEST_F('BackgroundTest', 'ContentEditableJumpSyncsRange', function() {
       };
     };
 
-    mockFeedback.call(doCmd('nextHeading'))
+    mockFeedback.call(doCmd('nextEditText'))
+        .expectSpeech('Top News')
+        .call(doCmd('nextHeading'))
         .expectSpeech('Top News')
         .call(assertRangeHasText('Top News'))
         .call(doCmd('nextHeading'))
         .expectSpeech('Most Popular')
         .call(assertRangeHasText('Most Popular'))
-        .call(doCmd('nextLine'))
+        .call(doCmd('nextHeading'))
         .expectSpeech('Sports')
         .call(assertRangeHasText('Sports'))
         .replay();
@@ -1130,5 +1135,22 @@ TEST_F('BackgroundTest', 'HeadingLevels', function() {
     for (var i = 1; i <= 6; i++)
       makeLevelAssertions(i);
     mockFeedback.replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'EditableNavigation', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <div contenteditable>this is a test</div>
+  */}, function(root) {
+    mockFeedback.call(doCmd('nextObject'))
+        .expectSpeech('this is a test')
+        .call(doCmd('nextObject'))
+        .expectSpeech(/data*/)
+        .call(doCmd('nextObject'))
+        .expectSpeech('this is a test')
+        .call(doCmd('nextWord'))
+        .expectSpeech('is', 'selected')
+        .replay();
   });
 });
