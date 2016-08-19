@@ -77,6 +77,7 @@ struct ComponentInfo {
 // All methods are safe to call ONLY from the browser's main thread.
 class ComponentUpdateService {
  public:
+  using CompletionCallback = update_client::UpdateClient::CompletionCallback;
   using Observer = update_client::UpdateClient::Observer;
 
   // Adds an observer for this class. An observer should not be added more
@@ -162,11 +163,11 @@ class OnDemandUpdater {
   // returned by GetCrxComponentID(). If an update for this component is already
   // in progress, the function returns |kInProgress|. If an update is available,
   // the update will be applied. The caller can subscribe to component update
-  // service notifications to get an indication about the outcome of the
-  // on-demand update. The function does not implement any cooldown interval.
-  // TODO(sorin): improve this API so that the result of this non-blocking
-  // call is provided by a callback.
-  virtual bool OnDemandUpdate(const std::string& id) = 0;
+  // service notifications and provide an optional callback to get the result
+  // of the call. The function does not implement any cooldown interval.
+  virtual void OnDemandUpdate(
+      const std::string& id,
+      ComponentUpdateService::CompletionCallback callback) = 0;
 };
 
 // Creates the component updater.

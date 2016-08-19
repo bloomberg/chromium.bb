@@ -642,8 +642,8 @@ std::vector<uint8_t> SupervisedUserWhitelistInstaller::GetHashFromCrxId(
 void SupervisedUserWhitelistInstaller::TriggerComponentUpdate(
     OnDemandUpdater* updater,
     const std::string& crx_id) {
-  const bool result = updater->OnDemandUpdate(crx_id);
-  DCHECK(result);
+  // TODO(sorin): use a callback to check the result (crbug.com/639189).
+  updater->OnDemandUpdate(crx_id, ComponentUpdateService::CompletionCallback());
 }
 
 }  // namespace component_updater
