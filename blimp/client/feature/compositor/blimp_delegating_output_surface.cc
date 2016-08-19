@@ -54,8 +54,7 @@ bool BlimpDelegatingOutputSurface::BindToClient(
       surface_id_allocator_->client_id(), this);
   display_->Initialize(this, surface_manager_.get(),
                        surface_id_allocator_->client_id());
-  // TODO(danakj): Do this when https://codereview.chromium.org/2238693002/ .
-  // display_->SetVisible(true);
+  display_->SetVisible(true);
   return true;
 }
 
