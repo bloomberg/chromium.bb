@@ -316,7 +316,6 @@ ChildThreadImpl::Options::Builder::InBrowserProcess(
     const InProcessChildThreadParams& params) {
   options_.browser_process_io_runner = params.io_runner();
   options_.channel_name = params.channel_name();
-  options_.in_process_ipc_token = params.ipc_token();
   options_.in_process_application_token = params.application_token();
   return *this;
 }
@@ -403,8 +402,7 @@ scoped_refptr<base::SequencedTaskRunner> ChildThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
 }
 
-void ChildThreadImpl::ConnectChannel(bool use_mojo_channel,
-                                     const std::string& ipc_token) {
+void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
   bool create_pipe_now = true;
   if (use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
@@ -414,8 +412,6 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel,
       channel_token =
           base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
               switches::kMojoChannelToken);
-    } else {
-      channel_token = ipc_token;
     }
 
     if (!channel_token.empty()) {
@@ -570,7 +566,7 @@ void ChildThreadImpl::Init(const Options& options) {
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(channel_.get());
 
-  ConnectChannel(options.use_mojo_channel, options.in_process_ipc_token);
+  ConnectChannel(options.use_mojo_channel);
 
   // This must always be done after ConnectChannel, because ConnectChannel() may
   // add a ConnectionFilter to the connection.

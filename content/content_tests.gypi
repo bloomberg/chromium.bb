@@ -140,8 +140,6 @@
       'test/net/url_request_abort_on_end_job.h',
       'test/ppapi_unittest.cc',
       'test/ppapi_unittest.h',
-      'test/render_thread_impl_browser_test_ipc_helper.cc',
-      'test/render_thread_impl_browser_test_ipc_helper.h',
       'test/test_background_sync_context.cc',
       'test/test_background_sync_context.h',
       'test/test_background_sync_manager.cc',

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MOJO_MOJO_CHILD_CONNECTION_H_
-#define CONTENT_BROWSER_MOJO_MOJO_CHILD_CONNECTION_H_
+#ifndef CONTENT_COMMON_MOJO_MOJO_CHILD_CONNECTION_H_
+#define CONTENT_COMMON_MOJO_MOJO_CHILD_CONNECTION_H_
 
 #include <memory>
 #include <string>
@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/sequenced_task_runner.h"
+#include "content/common/content_export.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
@@ -27,7 +28,7 @@ namespace content {
 // Helper class to establish a connection between the shell and a single child
 // process. Process hosts can use this when launching new processes which
 // should be registered with the shell.
-class MojoChildConnection {
+class CONTENT_EXPORT MojoChildConnection {
  public:
   // Prepares a new child connection for a child process which will be
   // identified to the shell as |application_name|. |instance_id| must be
@@ -74,4 +75,4 @@ class MojoChildConnection {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MOJO_MOJO_CHILD_CONNECTION_H_
+#endif  // CONTENT_COMMON_MOJO_MOJO_CHILD_CONNECTION_H_

@@ -19,15 +19,25 @@
 #include "cc/output/buffer_to_texture_target_map.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/in_process_child_thread_params.h"
+#include "content/common/mojo/constants.h"
+#include "content/common/mojo/mojo_child_connection.h"
 #include "content/common/resource_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_content_client_initializer.h"
+#include "content/public/test/test_mojo_shell_context.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/test/mock_render_process.h"
-#include "content/test/render_thread_impl_browser_test_ipc_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "ipc/ipc.mojom.h"
+#include "ipc/ipc_channel_mojo.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/test/scoped_ipc_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 
@@ -109,10 +119,13 @@ class RenderThreadImplForTest : public RenderThreadImpl {
       : RenderThreadImpl(params, std::move(scheduler), test_task_counter) {}
 
   ~RenderThreadImplForTest() override {}
+};
 
-  using ChildThreadImpl::OnMessageReceived;
+class DummyListener : public IPC::Listener {
+ public:
+  ~DummyListener() override {}
 
- private:
+  bool OnMessageReceived(const IPC::Message& message) override { return true; }
 };
 
 #if defined(COMPILER_MSVC)
@@ -150,14 +163,30 @@ class QuitOnTestMsgFilter : public IPC::MessageFilter {
 class RenderThreadImplBrowserTest : public testing::Test {
  public:
   void SetUp() override {
-    content_client_.reset(new ContentClient());
-    content_browser_client_.reset(new ContentBrowserClient());
     content_renderer_client_.reset(new ContentRendererClient());
-    SetContentClient(content_client_.get());
-    SetBrowserClientForTesting(content_browser_client_.get());
     SetRendererClientForTesting(content_renderer_client_.get());
 
-    test_helper_.reset(new RenderThreadImplBrowserIPCTestHelper());
+    browser_threads_.reset(
+        new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP));
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+
+    InitializeMojo();
+    ipc_support_.reset(new mojo::edk::test::ScopedIPCSupport(io_task_runner));
+    shell_context_.reset(new TestMojoShellContext);
+    child_connection_.reset(new MojoChildConnection(
+        kRendererMojoApplicationName, "test", mojo::edk::GenerateRandomToken(),
+        MojoShellConnection::GetForProcess()->GetConnector(), io_task_runner));
+
+    mojo::MessagePipe pipe;
+    IPC::mojom::ChannelBootstrapPtr channel_bootstrap;
+    child_connection_->GetRemoteInterfaces()->GetInterface(&channel_bootstrap);
+
+    dummy_listener_.reset(new DummyListener);
+    channel_ = IPC::ChannelProxy::Create(
+        IPC::ChannelMojo::CreateServerFactory(
+            channel_bootstrap.PassInterface().PassHandle(), io_task_runner),
+        dummy_listener_.get(), io_task_runner);
 
     mock_process_.reset(new MockRenderProcess);
     test_task_counter_ = make_scoped_refptr(new TestTaskCounter());
@@ -174,31 +203,35 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
     std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
         blink::scheduler::RendererScheduler::Create();
-    InitializeMojo();
     scoped_refptr<base::SingleThreadTaskRunner> test_task_counter(
         test_task_counter_.get());
     thread_ = new RenderThreadImplForTest(
-        InProcessChildThreadParams(test_helper_->GetChannelId(),
-                                   test_helper_->GetIOTaskRunner(),
-                                   test_helper_->GetMojoIpcToken(),
-                                   test_helper_->GetMojoApplicationToken()),
+        InProcessChildThreadParams("", io_task_runner,
+                                   child_connection_->service_token()),
         std::move(renderer_scheduler), test_task_counter);
     cmd->InitFromArgv(old_argv);
 
     test_msg_filter_ = make_scoped_refptr(
-        new QuitOnTestMsgFilter(test_helper_->GetMessageLoop()));
+        new QuitOnTestMsgFilter(base::MessageLoop::current()));
     thread_->AddFilter(test_msg_filter_.get());
   }
 
+  IPC::Sender* sender() { return channel_.get(); }
+
   scoped_refptr<TestTaskCounter> test_task_counter_;
-  std::unique_ptr<ContentClient> content_client_;
-  std::unique_ptr<ContentBrowserClient> content_browser_client_;
+  TestContentClientInitializer content_client_initializer_;
   std::unique_ptr<ContentRendererClient> content_renderer_client_;
-  std::unique_ptr<RenderThreadImplBrowserIPCTestHelper> test_helper_;
+
+  std::unique_ptr<TestBrowserThreadBundle> browser_threads_;
+  std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
+  std::unique_ptr<TestMojoShellContext> shell_context_;
+  std::unique_ptr<MojoChildConnection> child_connection_;
+  std::unique_ptr<DummyListener> dummy_listener_;
+  std::unique_ptr<IPC::ChannelProxy> channel_;
+
   std::unique_ptr<MockRenderProcess> mock_process_;
   scoped_refptr<QuitOnTestMsgFilter> test_msg_filter_;
   RenderThreadImplForTest* thread_;  // Owned by mock_process_.
-  std::string channel_id_;
 };
 
 void CheckRenderThreadInputHandlerManager(RenderThreadImpl* thread) {
@@ -219,8 +252,8 @@ TEST_F(RenderThreadImplBrowserTest,
 // Disabled under LeakSanitizer due to memory leaks.
 TEST_F(RenderThreadImplBrowserTest,
        WILL_LEAK(ResourceDispatchIPCTasksGoThroughScheduler)) {
-  test_helper_->Sender()->Send(new ResourceHostMsg_FollowRedirect(0));
-  test_helper_->Sender()->Send(new TestMsg_QuitRunLoop());
+  sender()->Send(new ResourceHostMsg_FollowRedirect(0));
+  sender()->Send(new TestMsg_QuitRunLoop());
 
   base::RunLoop().Run();
   EXPECT_EQ(1, test_task_counter_->NumTasksPosted());
@@ -231,7 +264,8 @@ TEST_F(RenderThreadImplBrowserTest,
        WILL_LEAK(NonResourceDispatchIPCTasksDontGoThroughScheduler)) {
   // NOTE other than not being a resource message, the actual message is
   // unimportant.
-  test_helper_->Sender()->Send(new TestMsg_QuitRunLoop());
+
+  sender()->Send(new TestMsg_QuitRunLoop());
 
   base::RunLoop().Run();
 

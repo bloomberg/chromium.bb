@@ -87,7 +87,6 @@
 #include "content/browser/memory/memory_message_filter.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_impl.h"
-#include "content/browser/mojo/mojo_child_connection.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -131,6 +130,7 @@
 #include "content/common/gpu_host_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/constants.h"
+#include "content/common/mojo/mojo_child_connection.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
@@ -889,7 +889,7 @@ bool RenderProcessHostImpl::Init() {
         g_renderer_main_thread_factory(InProcessChildThreadParams(
             channel_id,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-            std::string(), mojo_child_connection_->service_token())));
+            mojo_child_connection_->service_token())));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)

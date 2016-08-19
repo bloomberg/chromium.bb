@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/mojo/mojo_child_connection.h"
+#include "content/common/mojo/mojo_child_connection.h"
 
 #include <stdint.h>
 #include <utility>

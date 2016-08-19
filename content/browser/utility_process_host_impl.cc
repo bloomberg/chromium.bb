@@ -22,12 +22,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "content/browser/browser_child_process_host_impl.h"
-#include "content/browser/mojo/mojo_child_connection.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/constants.h"
+#include "content/common/mojo/mojo_child_connection.h"
 #include "content/common/utility_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -265,7 +265,6 @@ bool UtilityProcessHostImpl::StartProcess() {
         g_utility_main_thread_factory(InProcessChildThreadParams(
             std::string(), BrowserThread::UnsafeGetMessageLoopForThread(
                             BrowserThread::IO)->task_runner(),
-            std::string(),
             process_->child_connection()->service_token())));
     in_process_thread_->Start();
   } else {

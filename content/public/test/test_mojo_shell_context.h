@@ -13,8 +13,8 @@ namespace content {
 
 class MojoShellContext;
 
-// Helper class to expose the internal content::MojoShellContext type to unit
-// tests which might need to construct one.
+// Helper class to expose the internal content::MojoShellContext type to
+// non-browser unit tests which need to construct one.
 class TestMojoShellContext {
  public:
   TestMojoShellContext();

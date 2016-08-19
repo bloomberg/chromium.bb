@@ -32,7 +32,6 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/shader_disk_cache.h"
-#include "content/browser/mojo/mojo_child_connection.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
@@ -40,6 +39,7 @@
 #include "content/common/gpu_host_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/constants.h"
+#include "content/common/mojo/mojo_child_connection.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -589,7 +589,6 @@ bool GpuProcessHost::Init() {
     in_process_gpu_thread_.reset(g_gpu_main_thread_factory(
         InProcessChildThreadParams(
             std::string(), base::ThreadTaskRunnerHandle::Get(),
-            std::string(),
             process_->child_connection()->service_token()),
         gpu_preferences));
     base::Thread::Options options;
