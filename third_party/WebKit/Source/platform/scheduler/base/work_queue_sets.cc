@@ -61,7 +61,7 @@ void WorkQueueSets::ChangeSetIndex(WorkQueue* work_queue, size_t set_index) {
 }
 
 void WorkQueueSets::OnPushQueue(WorkQueue* work_queue) {
-  // NOTE if this funciton changes, we need to keep |WorkQueueSets::AddQueue| in
+  // NOTE if this function changes, we need to keep |WorkQueueSets::AddQueue| in
   // sync.
   DCHECK_EQ(this, work_queue->work_queue_sets());
   EnqueueOrder enqueue_order;
@@ -75,6 +75,7 @@ void WorkQueueSets::OnPushQueue(WorkQueue* work_queue) {
 }
 
 void WorkQueueSets::OnPopQueue(WorkQueue* work_queue) {
+  // Assume that |work_queue| contains the lowest enqueue_order.
   size_t set_index = work_queue->work_queue_set_index();
   DCHECK_EQ(this, work_queue->work_queue_sets());
   DCHECK_LT(set_index, enqueue_order_to_work_queue_maps_.size());
@@ -83,15 +84,41 @@ void WorkQueueSets::OnPopQueue(WorkQueue* work_queue) {
   DCHECK_EQ(enqueue_order_to_work_queue_maps_[set_index].begin()->second,
             work_queue)
       << " set_index = " << set_index;
-  // O(1) amortised.
-  enqueue_order_to_work_queue_maps_[set_index].erase(
-      enqueue_order_to_work_queue_maps_[set_index].begin());
+  EnqueueOrderToWorkQueueMap::iterator old_it =
+      enqueue_order_to_work_queue_maps_[set_index].begin();
   EnqueueOrder enqueue_order;
-  bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
-  if (!has_enqueue_order)
-    return;
-  enqueue_order_to_work_queue_maps_[set_index].insert(
-      std::make_pair(enqueue_order, work_queue));
+  if (work_queue->GetFrontTaskEnqueueOrder(&enqueue_order)) {
+    // Amortized O(1) if the new location is close to |old_it|, otherwise
+    // O(log n).
+    enqueue_order_to_work_queue_maps_[set_index].insert(
+        std::make_pair(enqueue_order, work_queue));
+  }
+  // O(1)
+  enqueue_order_to_work_queue_maps_[set_index].erase(old_it);
+}
+
+void WorkQueueSets::OnQueueHeadChanged(WorkQueue* work_queue,
+                                       EnqueueOrder erased_task_enqueue_order) {
+  size_t set_index = work_queue->work_queue_set_index();
+  DCHECK_EQ(this, work_queue->work_queue_sets());
+  DCHECK_LT(set_index, enqueue_order_to_work_queue_maps_.size());
+  DCHECK(!enqueue_order_to_work_queue_maps_[set_index].empty())
+      << " set_index = " << set_index;
+  // O(log n).
+  EnqueueOrderToWorkQueueMap::iterator old_it =
+      enqueue_order_to_work_queue_maps_[set_index].find(
+          erased_task_enqueue_order);
+  DCHECK(old_it != enqueue_order_to_work_queue_maps_[set_index].end());
+
+  EnqueueOrder enqueue_order;
+  if (work_queue->GetFrontTaskEnqueueOrder(&enqueue_order)) {
+    // Amortized O(1) if the new location is close to |old_it|, otherwise
+    // O(log n).
+    enqueue_order_to_work_queue_maps_[set_index].insert(
+        old_it, std::make_pair(enqueue_order, work_queue));
+  }
+  // O(1)
+  enqueue_order_to_work_queue_maps_[set_index].erase(old_it);
 }
 
 bool WorkQueueSets::GetOldestQueueInSet(size_t set_index,

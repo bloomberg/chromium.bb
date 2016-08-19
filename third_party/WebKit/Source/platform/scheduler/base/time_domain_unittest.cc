@@ -30,6 +30,7 @@ class MockTimeDomain : public TimeDomain {
 
   ~MockTimeDomain() override {}
 
+  using TimeDomain::CancelDelayedWork;
   using TimeDomain::ClearExpiredWakeups;
   using TimeDomain::NextScheduledRunTime;
   using TimeDomain::NextScheduledTaskQueue;
@@ -193,6 +194,83 @@ TEST_F(TimeDomainTest, ClearExpiredWakeups) {
 
   time_domain_->SetNow(run_time2);
   time_domain_->ClearExpiredWakeups();
+  ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
+}
+
+TEST_F(TimeDomainTest, CancelDelayedWork) {
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(50);
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay));
+  base::TimeTicks now = time_domain_->Now();
+  base::TimeTicks delayed_runtime = now + delay;
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), delayed_runtime, now);
+
+  base::TimeTicks next_run_time;
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(delayed_runtime, next_run_time);
+
+  time_domain_->CancelDelayedWork(task_queue_.get(), delayed_runtime);
+  EXPECT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
+}
+
+TEST_F(TimeDomainTest, CancelDelayedWorkTaskQueueDoesntMatch) {
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(50);
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay));
+  base::TimeTicks now = time_domain_->Now();
+  base::TimeTicks delayed_runtime = now + delay;
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), delayed_runtime, now);
+
+  base::TimeTicks next_run_time;
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(delayed_runtime, next_run_time);
+
+  time_domain_->CancelDelayedWork(nullptr, delayed_runtime);
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(delayed_runtime, next_run_time);
+}
+
+TEST_F(TimeDomainTest, CancelDelayedWorkTwoWakeUpsCancelFirst) {
+  base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(50);
+  base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(150);
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay1));
+  base::TimeTicks now = time_domain_->Now();
+  base::TimeTicks delayed_runtime1 = now + delay1;
+  base::TimeTicks delayed_runtime2 = now + delay2;
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), delayed_runtime1, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), delayed_runtime2, now);
+
+  base::TimeTicks next_run_time;
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(delayed_runtime1, next_run_time);
+  Mock::VerifyAndClearExpectations(time_domain_.get());
+
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay2));
+  time_domain_->CancelDelayedWork(task_queue_.get(), delayed_runtime1);
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(delayed_runtime2, next_run_time);
+}
+
+TEST_F(TimeDomainTest, CancelDelayedWorkTwoWakeUpsCancelSecond) {
+  base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(50);
+  base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(150);
+  EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay1));
+  base::TimeTicks now = time_domain_->Now();
+  base::TimeTicks delayed_runtime1 = now + delay1;
+  base::TimeTicks delayed_runtime2 = now + delay2;
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), delayed_runtime1, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), delayed_runtime2, now);
+
+  base::TimeTicks next_run_time;
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(delayed_runtime1, next_run_time);
+  Mock::VerifyAndClearExpectations(time_domain_.get());
+
+  time_domain_->CancelDelayedWork(task_queue_.get(), delayed_runtime2);
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(delayed_runtime1, next_run_time);
+
+  time_domain_->SetNow(delayed_runtime1);
+  LazyNow lazy_now = time_domain_->CreateLazyNow();
+  time_domain_->UpdateWorkQueues(false, nullptr, lazy_now);
   ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
 }
 

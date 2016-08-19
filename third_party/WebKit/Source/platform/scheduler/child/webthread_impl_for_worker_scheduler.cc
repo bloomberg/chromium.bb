@@ -86,6 +86,7 @@ void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {
   idle_task_runner_ = nullptr;
   web_scheduler_.reset();
   worker_scheduler_.reset();
+  web_task_runner_.reset();
 }
 
 std::unique_ptr<scheduler::WorkerScheduler>

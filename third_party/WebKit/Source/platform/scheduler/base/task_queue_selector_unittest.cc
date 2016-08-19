@@ -388,9 +388,10 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   task_queue->SetQueueEnabled(false);
   selector.DisableQueue(task_queue.get());
 
-  task_queue->immediate_work_queue()->PushAndSetEnqueueOrder(
-      TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(), 0, true),
-      0);
+  TaskQueueImpl::Task task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
+                           true);
+  task.set_enqueue_order(0);
+  task_queue->immediate_work_queue()->Push(std::move(task));
 
   WorkQueue* chosen_work_queue;
   EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
@@ -415,12 +416,14 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   selector.DisableQueue(task_queue2.get());
   selector.SetQueuePriority(task_queue2.get(), TaskQueue::CONTROL_PRIORITY);
 
-  task_queue->immediate_work_queue()->PushAndSetEnqueueOrder(
-      TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(), 0, true),
-      0);
-  task_queue2->immediate_work_queue()->PushAndSetEnqueueOrder(
-      TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(), 0, true),
-      0);
+  TaskQueueImpl::Task task1(FROM_HERE, test_closure_, base::TimeTicks(), 0,
+                            true);
+  TaskQueueImpl::Task task2(FROM_HERE, test_closure_, base::TimeTicks(), 1,
+                            true);
+  task1.set_enqueue_order(0);
+  task2.set_enqueue_order(1);
+  task_queue->immediate_work_queue()->Push(std::move(task1));
+  task_queue2->immediate_work_queue()->Push(std::move(task2));
 
   // Should still only see one call to OnTriedToSelectBlockedWorkQueue.
   WorkQueue* chosen_work_queue;

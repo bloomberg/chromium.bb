@@ -21,6 +21,12 @@ namespace scheduler {
 namespace internal {
 class TaskQueueImpl;
 
+// There is a WorkQueueSet for each scheduler priority and each WorkQueueSet
+// uses a EnqueueOrderToWorkQueueMap to keep track of which queue in the set has
+// the oldest task (i.e. the one that should be run next if the
+// TaskQueueSelector chooses to run a task a given priority).  The reason this
+// works is because std::map is a tree based associative container and all the
+// values are kept in sorted order.
 class BLINK_PLATFORM_EXPORT WorkQueueSets {
  public:
   WorkQueueSets(size_t num_sets, const char* name);
@@ -39,7 +45,14 @@ class BLINK_PLATFORM_EXPORT WorkQueueSets {
   void OnPushQueue(WorkQueue* work_queue);
 
   // If empty it's O(1) amortized, otherwise it's O(log num queues)
+  // Assumes |work_queue| contains the lowest enqueue order in the set.
   void OnPopQueue(WorkQueue* work_queue);
+
+  // Similar to OnPopQueue except it doesn't assume |work_queue| contains the
+  // lowest enqueue order in the set.
+  // O(log num queues)
+  void OnQueueHeadChanged(WorkQueue* work_queue,
+                          EnqueueOrder erased_task_enqueue_order);
 
   // O(1)
   bool GetOldestQueueInSet(size_t set_index, WorkQueue** out_work_queue) const;

@@ -31,8 +31,10 @@
 #include "platform/scheduler/base/work_queue_sets.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using testing::Contains;
 using testing::ElementsAre;
 using testing::ElementsAreArray;
+using testing::Not;
 using testing::_;
 using blink::scheduler::internal::EnqueueOrder;
 
@@ -1306,10 +1308,10 @@ TEST_F(TaskQueueManagerTest, SequenceNumSetWhenTaskIsPosted) {
   test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(40));
   ASSERT_THAT(run_order, ElementsAre(4, 3, 2, 1));
 
-  // The sequence numbers are a zero-based monotonically incrememting counter
+  // The sequence numbers are a one-based monotonically incrememting counter
   // which should be set when the task is posted rather than when it's enqueued
   // onto the Incoming queue.
-  EXPECT_THAT(observer.sequence_numbers(), ElementsAre(3, 2, 1, 0));
+  EXPECT_THAT(observer.sequence_numbers(), ElementsAre(4, 3, 2, 1));
 
   manager_->RemoveTaskObserver(&observer);
 }
@@ -1932,6 +1934,388 @@ TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NestedLoop) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(task_sources, ElementsAre(queue0, queue1, queue2, queue0));
   EXPECT_EQ(nullptr, manager_->currently_executing_task_queue());
+}
+
+TEST_F(TaskQueueManagerTest, NullHandleConvertsToFalse) {
+  EXPECT_FALSE(TaskQueue::TaskHandle());
+}
+
+TEST_F(TaskQueueManagerTest, PostCancellableTask) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order), base::TimeDelta());
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1));
+}
+
+TEST_F(TaskQueueManagerTest, PostCancellableTask_AndCancel_OnIncomingQueue) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order), base::TimeDelta());
+  EXPECT_TRUE(handle);
+
+  EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+  EXPECT_FALSE(runners_[0]->IsTaskPending(handle));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+}
+
+TEST_F(TaskQueueManagerTest, PostThreeTasks_AndCancelOne_OnIncomingQueue) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order), base::TimeDelta());
+
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 2, &run_order), base::TimeDelta());
+  EXPECT_TRUE(handle);
+
+  runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 3, &run_order), base::TimeDelta());
+
+  EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+  EXPECT_FALSE(runners_[0]->IsTaskPending(handle));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1, 3));
+}
+
+TEST_F(TaskQueueManagerTest, PostCancellableTask_AndCancel_OnWorkQueue) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order), base::TimeDelta());
+  EXPECT_TRUE(handle);
+
+  // Force the task onto the work queue.
+  LazyNow lazy_now(now_src_.get());
+  runners_[0]->PumpQueue(&lazy_now, true);
+
+  EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+  EXPECT_FALSE(runners_[0]->IsTaskPending(handle));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+}
+
+TEST_F(TaskQueueManagerTest, PostThreeTasks_AndCancelOne_OnWorkQueue) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order), base::TimeDelta());
+
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 2, &run_order), base::TimeDelta());
+  EXPECT_TRUE(handle);
+
+  runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 3, &run_order), base::TimeDelta());
+
+  // Force the tasks onto the work queue.
+  LazyNow lazy_now(now_src_.get());
+  runners_[0]->PumpQueue(&lazy_now, true);
+
+  EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+  EXPECT_FALSE(runners_[0]->IsTaskPending(handle));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1, 3));
+}
+
+TEST_F(TaskQueueManagerTest, PostThreeTasksOnDifferentQueues_AndCancelOne) {
+  Initialize(3u);
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order), base::TimeDelta());
+
+  TaskQueue::TaskHandle handle = runners_[1]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 2, &run_order), base::TimeDelta());
+  EXPECT_TRUE(handle);
+
+  runners_[2]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 3, &run_order), base::TimeDelta());
+
+  // Force the tasks onto the work queues.
+  LazyNow lazy_now(now_src_.get());
+  runners_[0]->PumpQueue(&lazy_now, true);
+  runners_[1]->PumpQueue(&lazy_now, true);
+  runners_[2]->PumpQueue(&lazy_now, true);
+
+  EXPECT_TRUE(runners_[1]->IsTaskPending(handle));
+  EXPECT_TRUE(runners_[1]->CancelTask(handle));
+  EXPECT_FALSE(runners_[1]->IsTaskPending(handle));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(1, 3));
+}
+
+TEST_F(TaskQueueManagerTest, TryToCancelTaskAfterItsRun) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order), base::TimeDelta());
+  EXPECT_TRUE(handle);
+
+  EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(runners_[0]->IsTaskPending(handle));
+  EXPECT_THAT(run_order, ElementsAre(1));
+
+  EXPECT_FALSE(runners_[0]->CancelTask(handle));
+}
+
+TEST_F(TaskQueueManagerTest, PostCancellableDelayedTask) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostCancellableDelayedTask(FROM_HERE,
+                                          base::Bind(&TestTask, 1, &run_order),
+                                          base::TimeDelta::FromMilliseconds(1));
+
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(run_order, ElementsAre(1));
+}
+
+TEST_F(TaskQueueManagerTest,
+       PostCancellableDelayedTask_AndCancel_OnIncomingQueue) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+      base::TimeDelta::FromMilliseconds(1));
+  EXPECT_TRUE(handle);
+
+  EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+  EXPECT_FALSE(runners_[0]->IsTaskPending(handle));
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_TRUE(run_order.empty());
+}
+
+TEST_F(TaskQueueManagerTest,
+       PostThreeDelayedTasks_AndCancelOne_OnIncomingQueue) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostCancellableDelayedTask(FROM_HERE,
+                                          base::Bind(&TestTask, 1, &run_order),
+                                          base::TimeDelta::FromMilliseconds(3));
+
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 2, &run_order),
+      base::TimeDelta::FromMilliseconds(2));
+  EXPECT_TRUE(handle);
+
+  runners_[0]->PostCancellableDelayedTask(FROM_HERE,
+                                          base::Bind(&TestTask, 3, &run_order),
+                                          base::TimeDelta::FromMilliseconds(1));
+
+  EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+  EXPECT_FALSE(runners_[0]->IsTaskPending(handle));
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(3));
+  EXPECT_THAT(run_order, ElementsAre(3, 1));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedTaskCancellationRemovesWakeup) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+      base::TimeDelta::FromMilliseconds(1));
+  EXPECT_TRUE(handle);
+
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+
+  base::TimeTicks dummy;
+  EXPECT_FALSE(manager_->real_time_domain()->NextScheduledRunTime(&dummy));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedTaskCancellationDoesntRemoveWakeupCaseA) {
+  Initialize(1u);
+
+  base::TimeTicks start_time = manager_->delegate()->NowTicks();
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostCancellableDelayedTask(FROM_HERE,
+                                          base::Bind(&TestTask, 1, &run_order),
+                                          base::TimeDelta::FromMilliseconds(1));
+
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 2, &run_order),
+      base::TimeDelta::FromMilliseconds(1));
+  EXPECT_TRUE(handle);
+
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+
+  base::TimeTicks run_time;
+  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_EQ(run_time, start_time + base::TimeDelta::FromMilliseconds(1));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedTaskCancellationDoesntRemoveWakeupCaseB) {
+  Initialize(1u);
+
+  base::TimeTicks start_time = manager_->delegate()->NowTicks();
+
+  std::vector<EnqueueOrder> run_order;
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+      base::TimeDelta::FromMilliseconds(1));
+  EXPECT_TRUE(handle);
+
+  runners_[0]->PostCancellableDelayedTask(FROM_HERE,
+                                          base::Bind(&TestTask, 2, &run_order),
+                                          base::TimeDelta::FromMilliseconds(1));
+
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+
+  base::TimeTicks run_time;
+  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_EQ(run_time, start_time + base::TimeDelta::FromMilliseconds(1));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedTaskCancellationRemovesMiddleWakeup) {
+  Initialize(1u);
+
+  base::TimeTicks start_time = manager_->delegate()->NowTicks();
+
+  std::vector<EnqueueOrder> run_order;
+  // Note the TimeDomain doesn't attempt to clear the next wakeup.
+  runners_[0]->PostCancellableDelayedTask(FROM_HERE,
+                                          base::Bind(&TestTask, 1, &run_order),
+                                          base::TimeDelta::FromMilliseconds(1));
+
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 2, &run_order),
+      base::TimeDelta::FromMilliseconds(2));
+  EXPECT_TRUE(handle);
+
+  runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+      base::TimeDelta::FromMilliseconds(10));
+
+  // But it should clear subsequent ones.
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+
+  base::TimeTicks run_time;
+  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_EQ(run_time, start_time + base::TimeDelta::FromMilliseconds(10));
+}
+
+TEST_F(TaskQueueManagerTest, PostDelayedCancellableTask_AndCancel_OnWorkQueue) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+      base::TimeDelta::FromMilliseconds(1));
+  EXPECT_TRUE(handle);
+
+  // Force the task onto the work queue.
+  now_src_->Advance(base::TimeDelta::FromMilliseconds(10));
+  LazyNow lazy_now(now_src_.get());
+  runners_[0]->PumpQueue(&lazy_now, true);
+
+  EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+  EXPECT_FALSE(runners_[0]->IsTaskPending(handle));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+}
+
+TEST_F(TaskQueueManagerTest, PostThreeDelayedTasks_AndCancelOne_OnWorkQueue) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostCancellableDelayedTask(FROM_HERE,
+                                          base::Bind(&TestTask, 1, &run_order),
+                                          base::TimeDelta::FromMilliseconds(3));
+
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 2, &run_order),
+      base::TimeDelta::FromMilliseconds(2));
+  EXPECT_TRUE(handle);
+
+  runners_[0]->PostCancellableDelayedTask(FROM_HERE,
+                                          base::Bind(&TestTask, 3, &run_order),
+                                          base::TimeDelta::FromMilliseconds(1));
+
+  // Force the tasks onto the work queue.
+  now_src_->Advance(base::TimeDelta::FromMilliseconds(10));
+  LazyNow lazy_now(now_src_.get());
+  runners_[0]->PumpQueue(&lazy_now, true);
+
+  EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
+  EXPECT_TRUE(runners_[0]->CancelTask(handle));
+  EXPECT_FALSE(runners_[0]->IsTaskPending(handle));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_THAT(run_order, ElementsAre(3, 1));
+}
+
+TEST_F(TaskQueueManagerTest, BulkPostingDelayedTasks_AndCancelOnWorkQueue) {
+  Initialize(1u);
+
+  const size_t num_iterations = 1000;
+  std::vector<EnqueueOrder> run_order;
+  std::vector<TaskQueue::TaskHandle> handles(num_iterations);
+
+  for (size_t i = 0; i < num_iterations; i++) {
+    handles[i] = runners_[0]->PostCancellableDelayedTask(
+        FROM_HERE, base::Bind(&TestTask, i, &run_order),
+        base::TimeDelta::FromMilliseconds(1000));
+
+    if (i % 4 == 0)
+      now_src_->Advance(base::TimeDelta::FromMilliseconds(1));
+  }
+
+  // Force the tasks onto the work queue.
+  now_src_->Advance(base::TimeDelta::FromMilliseconds(2000));
+  LazyNow lazy_now(now_src_.get());
+  runners_[0]->PumpQueue(&lazy_now, true);
+
+  // Cancel three timers.
+  EXPECT_TRUE(runners_[0]->CancelTask(handles[123]));
+  EXPECT_TRUE(runners_[0]->CancelTask(handles[456]));
+  EXPECT_TRUE(runners_[0]->CancelTask(handles[789]));
+
+  test_task_runner_->RunUntilIdle();
+
+  // Make sure all tasks bar the canceled ones ran.
+  EXPECT_EQ(num_iterations - 3, run_order.size());
+  EXPECT_THAT(run_order, Not(Contains(123)));
+  EXPECT_THAT(run_order, Not(Contains(456)));
+  EXPECT_THAT(run_order, Not(Contains(789)));
+}
+
+TEST_F(TaskQueueManagerTest, TryToCancelDelayedTaskAfterItsRun) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+  TaskQueue::TaskHandle handle = runners_[0]->PostCancellableDelayedTask(
+      FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+      base::TimeDelta::FromMilliseconds(1));
+  EXPECT_TRUE(handle);
+
+  EXPECT_TRUE(runners_[0]->IsTaskPending(handle));
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(2));
+  EXPECT_FALSE(runners_[0]->IsTaskPending(handle));
+  EXPECT_THAT(run_order, ElementsAre(1));
+
+  EXPECT_FALSE(runners_[0]->CancelTask(handle));
 }
 
 void OnTraceDataCollected(base::Closure quit_closure,

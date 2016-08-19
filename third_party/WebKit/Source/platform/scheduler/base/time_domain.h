@@ -24,6 +24,16 @@ class TaskQueueImpl;
 class TaskQueueManager;
 class TaskQueueManagerDelegate;
 
+// The TimeDomain's job is to keep track of moments when delayed tasks have been
+// scheduled to fire and to notify their TaskQueues via UpdateDelayedWorkQueue.
+//
+// The time domain keeps track of the next wakeup required to pump delayed tasks
+// and issues |RequestWakeup| calls to the subclass as needed.  Where possible
+// it tried to de-dupe these wakeups. Ideally it would be possible to cancel
+// them, but that's not currently supported by the base message loop.
+//
+// The clock itself is provided by subclasses of the TimeDomain and it may be
+// the real wall clock or a synthetic (virtual) time base.
 class BLINK_PLATFORM_EXPORT TimeDomain {
  public:
   class BLINK_PLATFORM_EXPORT Observer {
@@ -84,6 +94,12 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                            base::TimeTicks delayed_run_time,
                            base::TimeTicks now);
+
+  // Cancels a call to TaskQueueImpl::MoveReadyDelayedTasksToDelayedWorkQueue
+  // previously requested with ScheduleDelayedWork.  Note this only works if
+  // delayed_run_time is _not_ the next scheduled run time.
+  void CancelDelayedWork(internal::TaskQueueImpl* queue,
+                         base::TimeTicks delayed_run_time);
 
   // Registers the |queue|.
   void RegisterQueue(internal::TaskQueueImpl* queue);

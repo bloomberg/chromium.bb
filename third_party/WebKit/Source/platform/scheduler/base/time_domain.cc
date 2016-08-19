@@ -84,6 +84,43 @@ void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
     observer_->OnTimeDomainHasDelayedWork();
 }
 
+void TimeDomain::CancelDelayedWork(internal::TaskQueueImpl* queue,
+                                   base::TimeTicks delayed_run_time) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  auto iterpair = delayed_wakeup_multimap_.equal_range(delayed_run_time);
+  for (auto it = iterpair.first; it != iterpair.second; ++it) {
+    if (it->second == queue) {
+      base::TimeTicks prev_first_wakeup =
+          delayed_wakeup_multimap_.begin()->first;
+
+      // Note we only erase the entry corresponding to |queue|, there might be
+      // other queues that happen to require a wake up at |delayed_run_time|
+      // which we must respect.
+      delayed_wakeup_multimap_.erase(it);
+
+      // If |delayed_wakeup_multimap_| is now empty, there's nothing to be done.
+      // Sadly the base TaskRunner does and some OSes don't support cancellation
+      // so we can't cancel something requested with RequestWakeup.
+      if (delayed_wakeup_multimap_.empty())
+        break;
+
+      base::TimeTicks first_wakeup = delayed_wakeup_multimap_.begin()->first;
+
+      // If the first_wakeup hasn't changed we don't need to do anything, the
+      // wakeup was already requested.
+      if (first_wakeup == prev_first_wakeup)
+        break;
+
+      // The first wakeup has changed, we need to re-schedule.
+      base::TimeTicks now = Now();
+      base::TimeDelta delay = std::max(base::TimeDelta(), first_wakeup - now);
+      RequestWakeup(now, delay);
+      break;
+    }
+  }
+}
+
 void TimeDomain::RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue) {
   {
     base::AutoLock lock(newly_updatable_lock_);

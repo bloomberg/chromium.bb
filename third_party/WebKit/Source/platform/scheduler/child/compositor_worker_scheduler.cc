@@ -25,6 +25,24 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
     return task_runner_->RunsTasksOnCurrentThread();
   }
 
+  TaskQueue::TaskHandle PostCancellableDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      base::TimeDelta delay) {
+    NOTREACHED();
+    return TaskHandle();
+  }
+
+  bool CancelTask(const TaskQueue::TaskHandle& handle) {
+    NOTREACHED();
+    return false;
+  }
+
+  bool IsTaskPending(const TaskQueue::TaskHandle& handle) const {
+    NOTREACHED();
+    return false;
+  }
+
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
                        base::TimeDelta delay) override {

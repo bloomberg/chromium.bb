@@ -8,7 +8,9 @@ namespace blink {
 namespace scheduler {
 namespace internal {
 
-EnqueueOrderGenerator::EnqueueOrderGenerator() : enqueue_order_(0) {}
+// Note we set the first |enqueue_order_| to 1 so that isValid may distinguish a
+// valid EnqueueOrder from an invalid one.
+EnqueueOrderGenerator::EnqueueOrderGenerator() : enqueue_order_(1) {}
 
 EnqueueOrderGenerator::~EnqueueOrderGenerator() {}
 

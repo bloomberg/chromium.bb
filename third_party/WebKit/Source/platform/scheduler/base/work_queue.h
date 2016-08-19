@@ -19,9 +19,14 @@ namespace scheduler {
 namespace internal {
 class WorkQueueSets;
 
+// This class keeps track of immediate and delayed tasks which are due to run
+// now. It interfaces deeply with WorkQueueSets which keeps track of which queue
+// (with a given priority) contains the oldest task.
 class BLINK_PLATFORM_EXPORT WorkQueue {
  public:
-  WorkQueue(TaskQueueImpl* task_queue, const char* name);
+  WorkQueue(TaskQueueImpl* task_queue,
+            const char* name,
+            TaskQueueImpl::Task::ComparatorFn queue_comparator);
   ~WorkQueue();
 
   // Associates this work queue with the given work queue sets. This must be
@@ -51,15 +56,20 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   // the head changed.
   void Push(TaskQueueImpl::Task task);
 
-  // Pushes the task onto the |work_queue_|, sets the |enqueue_order| and
-  // informs the WorkQueueSets if the head changed.
-  void PushAndSetEnqueueOrder(TaskQueueImpl::Task task,
-                              EnqueueOrder enqueue_order);
+  // Removes a cancelled task from the |work_queue_|. Note |key| isn't required
+  // to be the original task posted, it can be a fake key constructed by
+  // TaskQueueImpl::Task::CreateFakeTaskFromHandle.
+  bool CancelTask(const TaskQueueImpl::Task& key);
+
+  // Returns true if |work_queue_| contains a task matching |key|. Note |key|
+  // isn't required to be the original task posted, it can be a fake key
+  // constructed by TaskQueueImpl::Task::CreateFakeTaskFromHandle.
+  bool IsTaskPending(const TaskQueueImpl::Task& key) const;
 
   // Swap the |work_queue_| with |incoming_queue| and informs the
   // WorkQueueSets if the head changed. Assumes |task_queue_->any_thread_lock_|
   // is locked.
-  void SwapLocked(std::queue<TaskQueueImpl::Task>& incoming_queue);
+  void SwapLocked(TaskQueueImpl::ComparatorQueue& incoming_queue);
 
   size_t Size() const { return work_queue_.size(); }
 
@@ -83,7 +93,7 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   bool ShouldRunBefore(const WorkQueue* other_queue) const;
 
  private:
-  std::queue<TaskQueueImpl::Task> work_queue_;
+  TaskQueueImpl::ComparatorQueue work_queue_;
   WorkQueueSets* work_queue_sets_;  // NOT OWNED.
   TaskQueueImpl* task_queue_;       // NOT OWNED.
   size_t work_queue_set_index_;

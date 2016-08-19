@@ -15,12 +15,20 @@ namespace internal {
 
 using EnqueueOrder = uint64_t;
 
+// A 64bit integer used to provide ordering of tasks. NOTE The scheduler assumes
+// these values will not overflow.
 class EnqueueOrderGenerator {
  public:
   EnqueueOrderGenerator();
   ~EnqueueOrderGenerator();
 
+  // Returns a monotonically increasing integer, starting from one. Can be
+  // called from any thread.
   EnqueueOrder GenerateNext();
+
+  static bool IsValidEnqueueOrder(EnqueueOrder enqueue_order) {
+    return enqueue_order != 0ull;
+  }
 
  private:
   base::Lock lock_;
