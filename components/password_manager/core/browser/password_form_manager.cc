@@ -664,10 +664,10 @@ void PasswordFormManager::OnGetPasswordStoreResults(
 }
 
 void PasswordFormManager::OnGetSiteStatistics(
-    std::unique_ptr<std::vector<std::unique_ptr<InteractionsStats>>> stats) {
+    std::vector<std::unique_ptr<InteractionsStats>> stats) {
   // On Windows the password request may be resolved after the statistics due to
   // importing from IE.
-  interactions_stats_.swap(*stats);
+  interactions_stats_.swap(stats);
 }
 
 void PasswordFormManager::ProcessUpdate() {

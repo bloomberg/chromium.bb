@@ -15,6 +15,6 @@ PasswordStoreConsumer::~PasswordStoreConsumer() {
 }
 
 void PasswordStoreConsumer::OnGetSiteStatistics(
-    std::unique_ptr<std::vector<std::unique_ptr<InteractionsStats>>> stats) {}
+    std::vector<std::unique_ptr<InteractionsStats>> stats) {}
 
 }  // namespace password_manager

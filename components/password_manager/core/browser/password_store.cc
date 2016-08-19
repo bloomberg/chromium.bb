@@ -66,12 +66,9 @@ void PasswordStore::GetLoginsRequest::NotifyConsumerWithResults(
 
 void PasswordStore::GetLoginsRequest::NotifyWithSiteStatistics(
     std::vector<std::unique_ptr<InteractionsStats>> stats) {
-  auto passed_stats(
-      base::MakeUnique<std::vector<std::unique_ptr<InteractionsStats>>>(
-          std::move(stats)));
   origin_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PasswordStoreConsumer::OnGetSiteStatistics,
-                            consumer_weak_, base::Passed(&passed_stats)));
+                            consumer_weak_, base::Passed(&stats)));
 }
 
 PasswordStore::FormDigest::FormDigest(autofill::PasswordForm::Scheme new_scheme,

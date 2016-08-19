@@ -358,10 +358,10 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleSuppressed) {
   stats.origin_domain = test_local_form().origin.GetOrigin();
   stats.username_value = test_local_form().username_value;
   stats.dismissal_count = kGreatDissmisalCount;
-  auto interactions(base::WrapUnique(
-      new std::vector<std::unique_ptr<password_manager::InteractionsStats>>));
-  interactions->push_back(
-      base::WrapUnique(new password_manager::InteractionsStats(stats)));
+  std::vector<std::unique_ptr<password_manager::InteractionsStats>>
+      interactions;
+  interactions.push_back(
+      base::MakeUnique<password_manager::InteractionsStats>(stats));
   test_form_manager->OnGetSiteStatistics(std::move(interactions));
   test_form_manager->ProvisionallySave(
       test_local_form(),
@@ -386,10 +386,10 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
   stats.origin_domain = test_local_form().origin.GetOrigin();
   stats.username_value = base::ASCIIToUTF16("not my username");
   stats.dismissal_count = kGreatDissmisalCount;
-  auto interactions(base::WrapUnique(
-      new std::vector<std::unique_ptr<password_manager::InteractionsStats>>));
-  interactions->push_back(
-      base::WrapUnique(new password_manager::InteractionsStats(stats)));
+  std::vector<std::unique_ptr<password_manager::InteractionsStats>>
+      interactions;
+  interactions.push_back(
+      base::MakeUnique<password_manager::InteractionsStats>(stats));
   test_form_manager->OnGetSiteStatistics(std::move(interactions));
   test_form_manager->ProvisionallySave(
       test_local_form(),

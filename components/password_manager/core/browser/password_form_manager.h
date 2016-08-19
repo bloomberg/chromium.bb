@@ -124,8 +124,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
   void OnGetSiteStatistics(
-      std::unique_ptr<std::vector<std::unique_ptr<InteractionsStats>>> stats)
-      override;
+      std::vector<std::unique_ptr<InteractionsStats>> stats) override;
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
