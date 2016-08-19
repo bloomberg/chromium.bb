@@ -53,7 +53,7 @@ class UpdateClientImpl : public UpdateClient {
   bool IsUpdating(const std::string& id) const override;
   void Stop() override;
   void SendUninstallPing(const std::string& id,
-                         const Version& version,
+                         const base::Version& version,
                          int reason) override;
 
  private:

@@ -199,7 +199,7 @@ struct CrxComponent {
 
   // The current version if the CRX is updated. Otherwise, "0" or "0.0" if
   // the CRX is installed.
-  Version version;
+  base::Version version;
 
   std::string fingerprint;  // Optional.
   std::string name;         // Optional.
@@ -321,7 +321,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   // other side effects regarding installs or updates done through an instance
   // of this class.
   virtual void SendUninstallPing(const std::string& id,
-                                 const Version& version,
+                                 const base::Version& version,
                                  int reason) = 0;
 
   // Returns status details about a CRX update. The function returns true in

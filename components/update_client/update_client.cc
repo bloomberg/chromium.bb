@@ -234,7 +234,7 @@ void UpdateClientImpl::Stop() {
 }
 
 void UpdateClientImpl::SendUninstallPing(const std::string& id,
-                                         const Version& version,
+                                         const base::Version& version,
                                          int reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
