@@ -257,7 +257,7 @@ class GSContext(object):
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
   DEFAULT_SLEEP_TIME = 60
 
-  GSUTIL_VERSION = '4.20'
+  GSUTIL_VERSION = '4.21'
   GSUTIL_TAR = 'gsutil_%s.tar.gz' % GSUTIL_VERSION
   GSUTIL_URL = (PUBLIC_BASE_HTTPS_URL +
                 'chromeos-mirror/gentoo/distfiles/%s' % GSUTIL_TAR)
@@ -726,7 +726,7 @@ class GSContext(object):
 
         # Now we parse the output for the current generation number.  Example:
         #   Created: gs://chromeos-throw-away-bucket/foo#1360630664537000.1
-        m = re.search(r'Created: .*#(\d+)([.](\d+))?$', result.error)
+        m = re.search(r'Created: .*#(\d+)([.](\d+))?\n', result.error)
         if m:
           return int(m.group(1))
         else:

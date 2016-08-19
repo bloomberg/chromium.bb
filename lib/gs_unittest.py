@@ -429,7 +429,7 @@ class CopyTest(AbstractGSContextTest, cros_test_lib.TempDirTestCase):
         'Copying file:///dev/null [Content-Type=application/octet-stream]...\n'
         'Uploading   %(uri)s:               0 B    \r'
         'Uploading   %(uri)s:               0 B    \r'
-        'Created: %(uri)s#%(gen)s'
+        'Created: %(uri)s#%(gen)s\n'
     ) % {'uri': self.GIVEN_REMOTE, 'gen': exp_gen}
     self.gs_mock.AddCmdResult(partial_mock.In('cp'), returncode=0, error=error)
     gen = self.Copy()
