@@ -1596,6 +1596,11 @@ void QuicStreamFactory::MigrateSessionToNewPeerAddress(
     const BoundNetLog& bound_net_log) {
   if (!allow_server_migration_)
     return;
+
+  IPEndPoint old_address;
+  session->GetDefaultSocket()->GetPeerAddress(&old_address);
+  DCHECK_EQ(old_address.GetFamily(), peer_address.GetFamily());
+
   // Specifying kInvalidNetworkHandle for the |network| parameter
   // causes the session to use the default network for the new socket.
   MigrateSession(session, peer_address,

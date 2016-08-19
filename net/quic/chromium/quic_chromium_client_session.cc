@@ -737,11 +737,31 @@ void QuicChromiumClientSession::OnClosedStream() {
 
 void QuicChromiumClientSession::OnConfigNegotiated() {
   QuicClientSessionBase::OnConfigNegotiated();
-  if (stream_factory_ && config()->HasReceivedAlternateServerAddress()) {
-    // Server has sent an alternate address to connect to.
-    stream_factory_->MigrateSessionToNewPeerAddress(
-        this, config()->ReceivedAlternateServerAddress(), net_log_);
+  if (!stream_factory_ || !config()->HasReceivedAlternateServerAddress())
+    return;
+
+  // Server has sent an alternate address to connect to.
+  IPEndPoint new_address = config()->ReceivedAlternateServerAddress();
+  IPEndPoint old_address;
+  GetDefaultSocket()->GetPeerAddress(&old_address);
+
+  // Migrate only if address families match, or if new address family is v6,
+  // since a v4 address should be reachable over a v6 network (using a
+  // v4-mapped v6 address).
+  if (old_address.GetFamily() != new_address.GetFamily() &&
+      old_address.GetFamily() == ADDRESS_FAMILY_IPV4) {
+    return;
   }
+
+  if (old_address.GetFamily() != new_address.GetFamily()) {
+    DCHECK_EQ(old_address.GetFamily(), ADDRESS_FAMILY_IPV6);
+    DCHECK_EQ(new_address.GetFamily(), ADDRESS_FAMILY_IPV4);
+    // Use a v4-mapped v6 address.
+    new_address = IPEndPoint(ConvertIPv4ToIPv4MappedIPv6(new_address.address()),
+                             new_address.port());
+  }
+
+  stream_factory_->MigrateSessionToNewPeerAddress(this, new_address, net_log_);
 }
 
 void QuicChromiumClientSession::OnCryptoHandshakeEvent(
