@@ -41,6 +41,10 @@ namespace version_info {
 enum class Channel;
 }
 
+namespace url {
+class Origin;
+}
+
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   ChromeContentBrowserClient();
@@ -213,6 +217,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void BrowserURLHandlerCreated(content::BrowserURLHandler* handler) override;
   void ClearCache(content::RenderFrameHost* rfh) override;
   void ClearCookies(content::RenderFrameHost* rfh) override;
+  void ClearSiteData(content::BrowserContext* browser_context,
+                     const url::Origin& origin,
+                     bool remove_cookies,
+                     bool remove_storage,
+                     bool remove_cache,
+                     const base::Closure& callback) override;
   base::FilePath GetDefaultDownloadDirectory() override;
   std::string GetDefaultDownloadName() override;
   base::FilePath GetShaderDiskCacheDirectory() override;

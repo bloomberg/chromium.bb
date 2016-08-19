@@ -546,6 +546,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Clears browser cookies.
   virtual void ClearCookies(RenderFrameHost* rfh) {}
 
+  // Clears |browser_context|'s data stored for the given |origin|.
+  // The datatypes to be removed are specified by |remove_cookies|,
+  // |remove_storage|, and |remove_cache|. Note that cookies should be removed
+  // for the entire eTLD+1 of |origin|. Must call |callback| when finished.
+  virtual void ClearSiteData(content::BrowserContext* browser_context,
+                             const url::Origin& origin,
+                             bool remove_cookies,
+                             bool remove_storage,
+                             bool remove_cache,
+                             const base::Closure& callback) {}
+
   // Returns the default download directory.
   // This can be called on any thread.
   virtual base::FilePath GetDefaultDownloadDirectory();

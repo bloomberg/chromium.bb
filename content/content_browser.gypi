@@ -528,6 +528,8 @@
       'browser/browser_thread_impl.h',
       'browser/browser_url_handler_impl.cc',
       'browser/browser_url_handler_impl.h',
+      'browser/browsing_data/clear_site_data_throttle.cc',
+      'browser/browsing_data/clear_site_data_throttle.h',
       'browser/browsing_instance.cc',
       'browser/browsing_instance.h',
       'browser/byte_stream.cc',

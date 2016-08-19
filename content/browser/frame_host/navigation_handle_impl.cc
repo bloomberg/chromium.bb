@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "content/browser/browsing_data/clear_site_data_throttle.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
@@ -556,7 +557,12 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   std::unique_ptr<NavigationThrottle> devtools_throttle =
       RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(this);
   if (devtools_throttle)
-    throttles_to_register.push_back(devtools_throttle.release());
+    throttles_to_register.push_back(std::move(devtools_throttle));
+
+  std::unique_ptr<NavigationThrottle> clear_site_data_throttle =
+      ClearSiteDataThrottle::CreateThrottleForNavigation(this);
+  if (clear_site_data_throttle)
+    throttles_to_register.push_back(std::move(clear_site_data_throttle));
 
   if (throttles_to_register.size() > 0) {
     throttles_.insert(throttles_.begin(), throttles_to_register.begin(),
