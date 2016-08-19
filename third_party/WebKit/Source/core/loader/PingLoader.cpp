@@ -75,7 +75,7 @@ namespace {
 class Beacon {
     STACK_ALLOCATED();
 public:
-    virtual bool serialize(ResourceRequest&, int, int&) const = 0;
+    virtual void serialize(ResourceRequest&) const = 0;
     virtual unsigned long long size() const = 0;
     virtual const AtomicString getContentType() const = 0;
 };
@@ -92,12 +92,11 @@ public:
         return m_data.charactersSizeInBytes();
     }
 
-    bool serialize(ResourceRequest& request, int, int&) const override
+    void serialize(ResourceRequest& request) const override
     {
         RefPtr<EncodedFormData> entityBody = EncodedFormData::create(m_data.utf8());
         request.setHTTPBody(entityBody);
         request.setHTTPContentType(getContentType());
-        return true;
     }
 
     const AtomicString getContentType() const { return AtomicString("text/plain;charset=UTF-8"); }
@@ -121,9 +120,10 @@ public:
         return m_data->size();
     }
 
-    bool serialize(ResourceRequest& request, int, int&) const override
+    void serialize(ResourceRequest& request) const override
     {
         DCHECK(m_data);
+
         RefPtr<EncodedFormData> entityBody = EncodedFormData::create();
         if (m_data->hasBackingFile())
             entityBody->appendFile(toFile(m_data)->path());
@@ -134,8 +134,6 @@ public:
 
         if (!m_contentType.isEmpty())
             request.setHTTPContentType(m_contentType);
-
-        return true;
     }
 
     const AtomicString getContentType() const { return m_contentType; }
@@ -157,17 +155,15 @@ public:
         return m_data->byteLength();
     }
 
-    bool serialize(ResourceRequest& request, int, int&) const override
+    void serialize(ResourceRequest& request) const override
     {
         DCHECK(m_data);
+
         RefPtr<EncodedFormData> entityBody = EncodedFormData::create(m_data->baseAddress(), m_data->byteLength());
         request.setHTTPBody(entityBody.release());
 
         // FIXME: a reasonable choice, but not in the spec; should it give a default?
-        AtomicString contentType = AtomicString("application/octet-stream");
-        request.setHTTPContentType(contentType);
-
-        return true;
+        request.setHTTPContentType(AtomicString("application/octet-stream"));
     }
 
     const AtomicString getContentType() const { return nullAtom; }
@@ -187,21 +183,13 @@ public:
 
     unsigned long long size() const override
     {
-        // FormData's size cannot be determined until serialized.
-        return 0;
+        return m_entityBody->sizeInBytes();
     }
 
-    bool serialize(ResourceRequest& request, int allowance, int& payloadLength) const override
+    void serialize(ResourceRequest& request) const override
     {
-        unsigned long long entitySize = m_entityBody->sizeInBytes();
-        if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
-            return false;
-
         request.setHTTPBody(m_entityBody.get());
         request.setHTTPContentType(m_contentType);
-
-        payloadLength = entitySize;
-        return true;
     }
 
     const AtomicString getContentType() const { return m_contentType; }
@@ -416,7 +404,7 @@ bool sendPingCommon(LocalFrame* frame, ResourceRequest& request, const AtomicStr
     return true;
 }
 
-bool sendBeaconCommon(LocalFrame* frame, int allowance, const KURL& beaconURL, const Beacon& beacon, int& payloadLength)
+bool sendBeaconCommon(LocalFrame* frame, int allowance, const KURL& url, const Beacon& beacon, int& payloadLength)
 {
     if (!frame->document())
         return false;
@@ -425,14 +413,14 @@ bool sendBeaconCommon(LocalFrame* frame, int allowance, const KURL& beaconURL, c
     if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
         return false;
 
-    ResourceRequest request(beaconURL);
+    payloadLength = entitySize;
+
+    ResourceRequest request(url);
     request.setHTTPMethod(HTTPNames::POST);
     request.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
     finishPingRequestInitialization(request, frame, WebURLRequest::RequestContextBeacon);
 
-    payloadLength = entitySize;
-    if (!beacon.serialize(request, allowance, payloadLength))
-        return false;
+    beacon.serialize(request);
 
     return sendPingCommon(frame, request, FetchInitiatorTypeNames::beacon, AllowStoredCredentials, true);
 }

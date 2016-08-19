@@ -72,6 +72,10 @@ public:
     static void loadImage(LocalFrame*, const KURL&);
     static void sendLinkAuditPing(LocalFrame*, const KURL& pingURL, const KURL& destinationURL);
     static void sendViolationReport(LocalFrame*, const KURL& reportURL, PassRefPtr<EncodedFormData> report, ViolationReportType);
+
+    // The last argument is guaranteed to be set to the size of payload if
+    // these method return true. If these method returns false, the value
+    // shouldn't be used.
     static bool sendBeacon(LocalFrame*, int, const KURL&, const String&, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, DOMArrayBufferView*, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, Blob*, int&);

@@ -78,7 +78,7 @@ bool NavigatorBeacon::canSendBeacon(ExecutionContext* context, const KURL& url, 
 
 int NavigatorBeacon::maxAllowance() const
 {
-    ASSERT(frame());
+    DCHECK(frame());
     const Settings* settings = frame()->settings();
     if (settings) {
         int maxAllowed = settings->maxBeaconTransmission();
@@ -89,15 +89,10 @@ int NavigatorBeacon::maxAllowance() const
     return m_transmittedBytes;
 }
 
-bool NavigatorBeacon::beaconResult(ExecutionContext* context, bool allowed, int sentBytes)
+void NavigatorBeacon::addTransmittedBytes(int sentBytes)
 {
-    if (allowed) {
-        ASSERT(sentBytes >= 0);
-        m_transmittedBytes += sentBytes;
-    } else {
-        UseCounter::count(context, UseCounter::SendBeaconQuotaExceeded);
-    }
-    return allowed;
+    DCHECK_GE(sentBytes, 0);
+    m_transmittedBytes += sentBytes;
 }
 
 bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator, const String& urlstring, const ArrayBufferViewOrBlobOrStringOrFormData& data, ExceptionState& exceptionState)
@@ -132,7 +127,13 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator
         allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, String(), bytes);
     }
 
-    return impl.beaconResult(context, allowed, bytes);
+    if (allowed) {
+        impl.addTransmittedBytes(bytes);
+        return true;
+    }
+
+    UseCounter::count(context, UseCounter::SendBeaconQuotaExceeded);
+    return false;
 }
 
 } // namespace blink
