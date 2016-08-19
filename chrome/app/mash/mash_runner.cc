@@ -104,9 +104,8 @@ class DefaultService : public shell::Service,
     if (name == "mojo:font_service")
       return base::WrapUnique(new font_service::FontServiceApp);
 #endif
-    if (name == "mojo:app_driver") {
-      return base::WrapUnique(new mash::app_driver::AppDriver());
-    }
+    if (name == "mojo:app_driver")
+      return base::WrapUnique(new mash::app_driver::AppDriver);
     return nullptr;
   }
 
