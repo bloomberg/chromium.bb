@@ -139,7 +139,8 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
   // If there aren't any explicitly marked web accessible resources, the
   // load should be allowed only if it is by DevTools. A close approximation is
   // checking if the extension contains a DevTools page.
-  if (!chrome_manifest_urls::GetDevToolsPage(extension).is_empty()) {
+  if (extension &&
+      !chrome_manifest_urls::GetDevToolsPage(extension).is_empty()) {
     *allowed = true;
     return true;
   }

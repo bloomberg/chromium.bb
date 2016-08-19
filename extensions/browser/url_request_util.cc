@@ -49,7 +49,8 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
     return true;
   }
 
-  if (!ui::PageTransitionIsWebTriggerable(info->GetPageTransition())) {
+  if (is_guest &&
+      !ui::PageTransitionIsWebTriggerable(info->GetPageTransition())) {
     *allowed = false;
     return true;
   }
@@ -115,6 +116,11 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
   if (!content::IsResourceTypeFrame(info->GetResourceType()) &&
       WebAccessibleResourcesInfo::HasWebAccessibleResources(extension)) {
     *allowed = true;
+    return true;
+  }
+
+  if (!ui::PageTransitionIsWebTriggerable(info->GetPageTransition())) {
+    *allowed = false;
     return true;
   }
 
