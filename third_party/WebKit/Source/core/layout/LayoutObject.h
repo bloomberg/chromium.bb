@@ -1419,6 +1419,9 @@ public:
     // Clears the IsScrollAnchorObject bit, unless any ScrollAnchor still refers to us.
     void maybeClearIsScrollAnchorObject();
 
+    bool scrollAnchorDisablingStyleChanged() { return m_bitfields.scrollAnchorDisablingStyleChanged(); }
+    void setScrollAnchorDisablingStyleChanged(bool changed) { m_bitfields.setScrollAnchorDisablingStyleChanged(changed); }
+
     void clearChildNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(false); }
 
     bool compositedScrollsWithRespectTo(const LayoutBoxModelObject& paintInvalidationContainer) const;
@@ -1740,6 +1743,7 @@ private:
             , m_previousBackgroundObscured(false)
             , m_isBackgroundAttachmentFixedObject(false)
             , m_isScrollAnchorObject(false)
+            , m_scrollAnchorDisablingStyleChanged(false)
             , m_hasBoxDecorationBackground(false)
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
@@ -1877,6 +1881,12 @@ private:
 
         ADD_BOOLEAN_BITFIELD(isBackgroundAttachmentFixedObject, IsBackgroundAttachmentFixedObject);
         ADD_BOOLEAN_BITFIELD(isScrollAnchorObject, IsScrollAnchorObject);
+
+        // Whether changes in this LayoutObject's CSS properties since the last layout should
+        // suppress any adjustments that would be made during the next layout by ScrollAnchor
+        // objects for which this LayoutObject is on the path from the anchor node to the
+        // scroller. See http://bit.ly/sanaclap for more info.
+        ADD_BOOLEAN_BITFIELD(scrollAnchorDisablingStyleChanged, ScrollAnchorDisablingStyleChanged);
 
         ADD_BOOLEAN_BITFIELD(hasBoxDecorationBackground, HasBoxDecorationBackground);
 
@@ -2040,6 +2050,8 @@ inline void LayoutObject::clearNeedsLayout()
 #if ENABLE(ASSERT)
     checkBlockPositionedObjectsNeedLayout();
 #endif
+
+    setScrollAnchorDisablingStyleChanged(false);
 }
 
 inline void LayoutObject::setChildNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)

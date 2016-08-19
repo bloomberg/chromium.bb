@@ -32,7 +32,7 @@ public:
 
     // The LayoutObject we are currently anchored to. Lazily computed during
     // save() and cached until the next call to clear().
-    LayoutObject* anchorObject() const { return m_current.m_anchorObject; }
+    LayoutObject* anchorObject() const { return m_anchorObject; }
 
     // Indicates that the next save() should compute a new anchor. (In certain
     // cases the previous anchor will be reused; see comments in restore.)
@@ -53,7 +53,7 @@ public:
     };
     // Which corner of the anchor object we are currently anchored to.
     // Only meaningful if anchorObject() is non-null.
-    Corner corner() const { return m_current.m_corner; }
+    Corner corner() const { return m_corner; }
 
     // Checks if we hold any references to the specified object.
     bool refersTo(const LayoutObject*) const;
@@ -65,6 +65,7 @@ public:
 
 private:
     void findAnchor();
+    bool computeScrollAnchorDisablingStyleChanged();
 
     enum WalkStatus {
         Skip = 0,
@@ -89,49 +90,26 @@ private:
     };
     ExamineResult examine(const LayoutObject*) const;
 
-    struct AnchorPoint {
-        AnchorPoint()
-            : m_anchorObject(nullptr)
-            , m_corner(Corner::TopLeft) {}
-
-        AnchorPoint(LayoutObject* anchorObject, Corner corner)
-            : m_anchorObject(anchorObject)
-            , m_corner(corner) {}
-
-        explicit operator bool() const { return m_anchorObject; }
-
-        void clear();
-
-        // The LayoutObject we should anchor to.
-        LayoutObject* m_anchorObject;
-
-        // Which corner of m_anchorObject's bounding box to anchor to.
-        Corner m_corner;
-
-        // Location of m_layoutObject relative to scroller at time of save().
-        LayoutPoint m_savedRelativeOffset;
-    };
-    IntSize computeAdjustment(const AnchorPoint&) const;
-    void adjust(IntSize);
+    IntSize computeAdjustment() const;
 
     // The scroller that owns and is adjusted by this ScrollAnchor.
     Member<ScrollableArea> m_scroller;
 
-    // The current anchor point. Lazily computed.
-    AnchorPoint m_current;
+    // The LayoutObject we should anchor to.
+    LayoutObject* m_anchorObject;
 
-    // The anchor point that was used for the most recent non-zero adjustment.
-    AnchorPoint m_lastAdjusted;
+    // Which corner of m_anchorObject's bounding box to anchor to.
+    Corner m_corner;
 
-    // The size of the most recent non-zero adjustment.
-    IntSize m_lastAdjustment;
+    // Location of m_layoutObject relative to scroller at time of save().
+    LayoutPoint m_savedRelativeOffset;
 
-    // True iff the last adjustment was the exact opposite of the one before it.
-    // A bounce suggests a circular interaction with a scroll event handler.
-    bool m_hasBounced;
-
-    // Number of adjustments made since the last clear().
-    int m_adjustmentCount;
+    // We suppress scroll anchoring after a style change on the anchor node or
+    // one of its ancestors, if that change might have caused the node to move.
+    // This bit tracks whether we have had a scroll-anchor-disabling style
+    // change since the last layout.  It is recomputed in save(), and used to
+    // suppress the adjustment in restore().  More at http://bit.ly/sanaclap.
+    bool m_scrollAnchorDisablingStyleChanged;
 };
 
 } // namespace blink

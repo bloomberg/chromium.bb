@@ -29,6 +29,7 @@ public:
         , m_layoutType(NoLayout)
         , m_recomputeOverflow(false)
         , m_propertySpecificDifferences(0)
+        , m_scrollAnchorDisablingPropertyChanged(false)
     { }
 
     bool hasDifference() const { return m_paintInvalidationType || m_layoutType || m_propertySpecificDifferences; }
@@ -88,6 +89,9 @@ public:
     bool textDecorationOrColorChanged() const { return m_propertySpecificDifferences & TextDecorationOrColorChanged; }
     void setTextDecorationOrColorChanged() { m_propertySpecificDifferences |= TextDecorationOrColorChanged; }
 
+    bool scrollAnchorDisablingPropertyChanged() const { return m_scrollAnchorDisablingPropertyChanged; }
+    void setScrollAnchorDisablingPropertyChanged() { m_scrollAnchorDisablingPropertyChanged = true; }
+
 private:
     enum PaintInvalidationType {
         NoPaintInvalidation = 0,
@@ -104,6 +108,7 @@ private:
     unsigned m_layoutType : 2;
     unsigned m_recomputeOverflow : 1;
     unsigned m_propertySpecificDifferences : 6;
+    unsigned m_scrollAnchorDisablingPropertyChanged : 1;
 };
 
 } // namespace blink

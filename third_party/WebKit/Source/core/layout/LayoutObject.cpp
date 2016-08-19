@@ -1853,6 +1853,9 @@ void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* old
         setNeedsPositionedMovementLayout();
     }
 
+    if (diff.scrollAnchorDisablingPropertyChanged())
+        setScrollAnchorDisablingStyleChanged(true);
+
     // Don't check for paint invalidation here; we need to wait until the layer has been
     // updated by subclasses before we know if we have to invalidate paints (in setStyle()).
 

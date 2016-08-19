@@ -522,6 +522,11 @@ StyleDifference ComputedStyle::visualInvalidationDiff(const ComputedStyle& other
 
     updatePropertySpecificDifferences(other, diff);
 
+    // TODO(skobes): Refine the criteria for ScrollAnchor-disabling properties.
+    // Some things set needsLayout but shouldn't disable scroll anchoring.
+    if (diff.needsLayout() || diff.transformChanged())
+        diff.setScrollAnchorDisablingPropertyChanged();
+
     // Cursors are not checked, since they will be set appropriately in response to mouse events,
     // so they don't need to cause any paint invalidation or layout.
 
