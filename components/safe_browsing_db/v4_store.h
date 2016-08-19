@@ -252,9 +252,17 @@ class V4Store {
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestMergeUpdatesFailsChecksum);
   friend class V4StoreTest;
 
-  // If |prefix_size| is within expected range, and |raw_hashes| is not invalid,
-  // then it sets |raw_hashes| as the value at key |prefix_size| in
-  // |additions_map|
+  // If |prefix_size| is within expected range, and |raw_hashes_length| is a
+  // multiple of prefix_size, then it sets the string of length
+  // |raw_hashes_length| starting at |raw_hashes_begin| as the value at key
+  // |prefix_size| in |additions_map|
+  static ApplyUpdateResult AddUnlumpedHashes(PrefixSize prefix_size,
+                                             const char* raw_hashes_begin,
+                                             const size_t raw_hashes_length,
+                                             HashPrefixMap* additions_map);
+
+  // An overloaded version of AddUnlumpedHashes that allows passing in a
+  // std::string object.
   static ApplyUpdateResult AddUnlumpedHashes(PrefixSize prefix_size,
                                              const std::string& raw_hashes,
                                              HashPrefixMap* additions_map);

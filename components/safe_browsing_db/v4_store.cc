@@ -211,7 +211,6 @@ void V4Store::ApplyUpdate(
     UpdatedStoreReadyCallback callback) {
   std::unique_ptr<V4Store> new_store(
       new V4Store(this->task_runner_, this->store_path_));
-
   ApplyUpdateResult apply_update_result;
   if (response->response_type() == ListUpdateResponse::PARTIAL_UPDATE) {
     apply_update_result = new_store->ProcessPartialUpdateAndWriteToDisk(
@@ -221,7 +220,8 @@ void V4Store::ApplyUpdate(
         new_store->ProcessFullUpdateAndWriteToDisk(std::move(response));
   } else {
     apply_update_result = UNEXPECTED_RESPONSE_TYPE_FAILURE;
-    NOTREACHED() << "Unexpected response type: " << response->response_type();
+    NOTREACHED() << "Failure: Unexpected response type: "
+                 << response->response_type();
   }
 
   if (apply_update_result == APPLY_UPDATE_SUCCESS) {
@@ -229,7 +229,7 @@ void V4Store::ApplyUpdate(
     callback_task_runner->PostTask(
         FROM_HERE, base::Bind(callback, base::Passed(&new_store)));
   } else {
-    DVLOG(1) << "ApplyUpdate failed: reason: " << apply_update_result
+    DVLOG(1) << "Failure: ApplyUpdate: reason: " << apply_update_result
              << "; store: " << *this;
     // new_store failed updating. Pass a nullptr to the callback.
     callback_task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
@@ -256,21 +256,24 @@ ApplyUpdateResult V4Store::UpdateHashPrefixMapFromAdditions(
       DCHECK(addition.has_rice_hashes());
 
       const RiceDeltaEncoding& rice_hashes = addition.rice_hashes();
-      std::string raw_hashes;
-      V4DecodeResult decode_result = V4RiceDecoder::DecodeBytes(
+      std::vector<uint32_t> raw_hashes;
+      V4DecodeResult decode_result = V4RiceDecoder::DecodePrefixes(
           rice_hashes.first_value(), rice_hashes.rice_parameter(),
           rice_hashes.num_entries(), rice_hashes.encoded_data(), &raw_hashes);
       RecordDecodeAdditionsResult(decode_result);
       if (decode_result != DECODE_SUCCESS) {
         return RICE_DECODING_FAILURE;
       } else {
+        char* raw_hashes_start = reinterpret_cast<char*>(raw_hashes.data());
+        size_t raw_hashes_size = sizeof(uint32_t) * raw_hashes.size();
+
         // Rice-Golomb encoding is used to send compressed compressed 4-byte
         // hash prefixes. Hash prefixes longer than 4 bytes will not be
         // compressed, and will be served in raw format instead.
         // Source: https://developers.google.com/safe-browsing/v4/compression
         const PrefixSize kPrefixSize = 4;
-        apply_update_result =
-            AddUnlumpedHashes(kPrefixSize, raw_hashes, additions_map);
+        apply_update_result = AddUnlumpedHashes(kPrefixSize, raw_hashes_start,
+                                                raw_hashes_size, additions_map);
       }
     } else {
       NOTREACHED() << "Unexpected compression_type type: " << compression_type;
@@ -288,7 +291,16 @@ ApplyUpdateResult V4Store::UpdateHashPrefixMapFromAdditions(
 
 // static
 ApplyUpdateResult V4Store::AddUnlumpedHashes(PrefixSize prefix_size,
-                                             const std::string& lumped_hashes,
+                                             const std::string& raw_hashes,
+                                             HashPrefixMap* additions_map) {
+  return AddUnlumpedHashes(prefix_size, raw_hashes.data(), raw_hashes.size(),
+                           additions_map);
+}
+
+// static
+ApplyUpdateResult V4Store::AddUnlumpedHashes(PrefixSize prefix_size,
+                                             const char* raw_hashes_begin,
+                                             const size_t raw_hashes_length,
                                              HashPrefixMap* additions_map) {
   if (prefix_size < kMinHashPrefixLength) {
     NOTREACHED();
@@ -298,11 +310,13 @@ ApplyUpdateResult V4Store::AddUnlumpedHashes(PrefixSize prefix_size,
     NOTREACHED();
     return PREFIX_SIZE_TOO_LARGE_FAILURE;
   }
-  if (lumped_hashes.size() % prefix_size != 0) {
+  if (raw_hashes_length % prefix_size != 0) {
     return ADDITIONS_SIZE_UNEXPECTED_FAILURE;
   }
+
   // TODO(vakh): Figure out a way to avoid the following copy operation.
-  (*additions_map)[prefix_size] = lumped_hashes;
+  (*additions_map)[prefix_size] =
+      std::string(raw_hashes_begin, raw_hashes_begin + raw_hashes_length);
   return APPLY_UPDATE_SUCCESS;
 }
 
@@ -468,8 +482,8 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
       std::string checksum_base64, expected_checksum_base64;
       base::Base64Encode(checksum, &checksum_base64);
       base::Base64Encode(expected_checksum, &expected_checksum_base64);
-      DVLOG(1) << "Checksum failed: calculated: " << checksum_base64
-               << "expected: " << expected_checksum_base64;
+      DVLOG(1) << "Failure: Checksum mismatch: calculated: " << checksum_base64
+               << " expected: " << expected_checksum_base64;
       return CHECKSUM_MISMATCH_FAILURE;
     }
   }
@@ -496,16 +510,12 @@ StoreReadResult V4Store::ReadFromDisk() {
   }
 
   if (file_format.magic_number() != kFileMagic) {
-    DVLOG(1) << "Unexpected magic number found in file: "
-             << file_format.magic_number();
     return UNEXPECTED_MAGIC_NUMBER_FAILURE;
   }
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("SafeBrowsing.V4StoreVersionRead",
                               file_format.version_number());
   if (file_format.version_number() != kFileVersion) {
-    DVLOG(1) << "File version incompatible: " << file_format.version_number()
-             << "; expected: " << kFileVersion;
     return FILE_VERSION_INCOMPATIBLE_FAILURE;
   }
 
@@ -532,9 +542,9 @@ StoreWriteResult V4Store::WriteToDisk(
   // should be a FULL_UPDATE.
   if (!response->has_response_type() ||
       response->response_type() != ListUpdateResponse::FULL_UPDATE) {
-    DVLOG(1) << "response->has_response_type(): "
-             << response->has_response_type();
-    DVLOG(1) << "response->response_type(): " << response->response_type();
+    DVLOG(1) << "Failure: response->has_response_type(): "
+             << response->has_response_type()
+             << " : response->response_type(): " << response->response_type();
     return INVALID_RESPONSE_TYPE_FAILURE;
   }
 

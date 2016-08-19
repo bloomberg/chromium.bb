@@ -10,6 +10,7 @@
 
 #include <ostream>
 #include <string>
+#include <vector>
 #include "base/gtest_prod_util.h"
 
 #if defined(USE_SYSTEM_PROTOBUF)
@@ -36,7 +37,7 @@ enum V4DecodeResult {
   // All bits had already been read and interpreted in the encoded string.
   DECODE_RAN_OUT_OF_BITS_FAILURE = 3,
 
-  // The num_entries argument to DecodeBytes or DecodeIntegers was negative.
+  // The num_entries argument to DecodePrefixes or DecodeIntegers was negative.
   NUM_ENTRIES_NEGATIVE_FAILURE = 4,
 
   // Rice-encoding parameter was non-positive when the number of encoded entries
@@ -65,7 +66,7 @@ class V4RiceDecoder {
   // |first_value| = 3, |num_entries| = 2 and decoding the |encoded_data| will
   // produce the offsets: [4, 18].
   static V4DecodeResult DecodeIntegers(
-      const ::google::protobuf::int32 first_value,
+      const ::google::protobuf::int64 first_value,
       const ::google::protobuf::int32 rice_parameter,
       const ::google::protobuf::int32 num_entries,
       const std::string& encoded_data,
@@ -74,12 +75,25 @@ class V4RiceDecoder {
   // Decodes the Rice-encoded string in |encoded_data| as a string of 4-byte
   // hash prefixes and stores them in |out|. The rest of the arguments are the
   // same as for |DecodeIntegers|.
-  static V4DecodeResult DecodeBytes(
-      const ::google::protobuf::int32 first_value,
+  // Important: |out| is only meant to be used as a concatenated list of sorted
+  // 4-byte hash prefixes, not as a vector of uint32_t values.
+  // This method does the following:
+  // 1. Rice-decode the |encoded_data| as a list of uint32_t values.
+  // 2. Flip the endianness (on little-endian machines) of each of these
+  //    values. This is done because when a hash prefix is represented as a
+  //    uint32_t, the bytes get reordered. This generates the hash prefix that
+  //    the server would have sent in the absence of Rice-encoding.
+  // 3. Sort the resulting list of uint32_t values.
+  // 4. Flip the endianness once again since the uint32_t are expected to be
+  //    consumed as a concatenated list of 4-byte hash prefixes, when merging
+  //    the
+  //    update with the existing state.
+  static V4DecodeResult DecodePrefixes(
+      const ::google::protobuf::int64 first_value,
       const ::google::protobuf::int32 rice_parameter,
       const ::google::protobuf::int32 num_entries,
       const std::string& encoded_data,
-      std::string* out);
+      std::vector<uint32_t>* out);
 
   virtual ~V4RiceDecoder();
 
@@ -90,8 +104,7 @@ class V4RiceDecoder {
   FRIEND_TEST_ALL_PREFIXES(V4RiceTest, TestDecoderGetNextBitsWithNoData);
   FRIEND_TEST_ALL_PREFIXES(V4RiceTest, TestDecoderGetNextValueWithNoData);
   FRIEND_TEST_ALL_PREFIXES(V4RiceTest, TestDecoderGetNextValueWithNoEntries);
-  FRIEND_TEST_ALL_PREFIXES(V4RiceTest, TestDecoderGetNextValueWithSmallValues);
-  FRIEND_TEST_ALL_PREFIXES(V4RiceTest, TestDecoderGetNextValueWithLargeValues);
+  friend class V4RiceTest;
 
   // Validate some of the parameters passed to the decode methods.
   static V4DecodeResult ValidateInput(
@@ -122,7 +135,7 @@ class V4RiceDecoder {
   V4DecodeResult GetNextBits(unsigned int num_requested_bits, uint32_t* x);
 
   // Reads |num_requested_bits| from |current_word_|.
-  void GetBitsFromCurrentWord(unsigned int num_requested_bits, uint32_t* x);
+  uint32_t GetBitsFromCurrentWord(unsigned int num_requested_bits);
 
   // The Rice parameter, which is the exponent of two for calculating 'M'. 'M'
   // is used as the base to calculate the quotient and remainder in the

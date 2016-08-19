@@ -731,7 +731,7 @@ TEST_F(V4StoreTest, TestAdditionsWithRiceEncodingSucceeds) {
   EXPECT_EQ(APPLY_UPDATE_SUCCESS, V4Store::UpdateHashPrefixMapFromAdditions(
                                       additions, &additions_map));
   EXPECT_EQ(1u, additions_map.size());
-  EXPECT_EQ(std::string("\x5\0\0\0V\x7F\xF6o\xCEo1\x81\fL\x93\xAD", 16),
+  EXPECT_EQ(std::string("\x5\0\0\0\fL\x93\xADV\x7F\xF6o\xCEo1\x81", 16),
             additions_map[4]);
 }
 

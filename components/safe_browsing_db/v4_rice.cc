@@ -2,13 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <vector>
+
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "components/safe_browsing_db/v4_rice.h"
+
+#if defined(OS_WIN)
+#include <winsock2.h>
+#elif defined(OS_POSIX)
+#include <arpa/inet.h>
+#endif
 
 using ::google::protobuf::RepeatedField;
 using ::google::protobuf::int32;
+using ::google::protobuf::int64;
+
+#if !defined(ARCH_CPU_LITTLE_ENDIAN) || (ARCH_CPU_LITTLE_ENDIAN != 1)
+#error The code below assumes little-endianness.
+#endif
 
 namespace safe_browsing {
 
@@ -16,14 +31,6 @@ namespace {
 
 const int kBitsPerByte = 8;
 const unsigned int kMaxBitIndex = kBitsPerByte * sizeof(uint32_t);
-
-void GetBytesFromUInt32(uint32_t word, char* bytes) {
-  const size_t mask = 0xFF;
-  bytes[0] = (char)(word & mask);
-  bytes[1] = (char)((word >> 8) & mask);
-  bytes[2] = (char)((word >> 16) & mask);
-  bytes[3] = (char)((word >> 24) & mask);
-}
 
 }  // namespace
 
@@ -54,7 +61,7 @@ V4DecodeResult V4RiceDecoder::ValidateInput(const int32 rice_parameter,
 }
 
 // static
-V4DecodeResult V4RiceDecoder::DecodeIntegers(const int32 first_value,
+V4DecodeResult V4RiceDecoder::DecodeIntegers(const int64 first_value,
                                              const int32 rice_parameter,
                                              const int32 num_entries,
                                              const std::string& encoded_data,
@@ -95,11 +102,11 @@ V4DecodeResult V4RiceDecoder::DecodeIntegers(const int32 first_value,
 }
 
 // static
-V4DecodeResult V4RiceDecoder::DecodeBytes(const int32 first_value,
-                                          const int32 rice_parameter,
-                                          const int32 num_entries,
-                                          const std::string& encoded_data,
-                                          std::string* out) {
+V4DecodeResult V4RiceDecoder::DecodePrefixes(const int64 first_value,
+                                             const int32 rice_parameter,
+                                             const int32 num_entries,
+                                             const std::string& encoded_data,
+                                             std::vector<uint32_t>* out) {
   DCHECK(out);
 
   V4DecodeResult result =
@@ -107,37 +114,40 @@ V4DecodeResult V4RiceDecoder::DecodeBytes(const int32 first_value,
   if (result != DECODE_SUCCESS) {
     return result;
   }
-  out->reserve((num_entries + 1) * 4);
+  out->reserve((num_entries + 1));
 
-  // Cast to unsigned since we don't look at the sign bit as a sign bit.
-  // first_value should have been an unsigned to begin with but proto don't
-  // allow that.
-  uint32_t first_value_unsigned = static_cast<uint32_t>(first_value);
-  base::CheckedNumeric<uint32_t> last_value(first_value_unsigned);
-  char bytes[4];
-  GetBytesFromUInt32(last_value.ValueOrDie(), bytes);
-  out->append(bytes, 4);
+  base::CheckedNumeric<uint32_t> last_value(first_value);
+  out->push_back(htonl(last_value.ValueOrDie()));
 
-  if (num_entries == 0) {
-    return DECODE_SUCCESS;
+  if (num_entries > 0) {
+    V4RiceDecoder decoder(rice_parameter, num_entries, encoded_data);
+    while (decoder.HasAnotherValue()) {
+      uint32_t offset;
+      result = decoder.GetNextValue(&offset);
+      if (result != DECODE_SUCCESS) {
+        return result;
+      }
+
+      last_value += offset;
+      if (!last_value.IsValid()) {
+        NOTREACHED();
+        return DECODED_INTEGER_OVERFLOW_FAILURE;
+      }
+
+      // This flipping is done so that the decoded uint32 is interpreted
+      // correcly as a string of 4 bytes.
+      out->push_back(htonl(last_value.ValueOrDie()));
+    }
   }
 
-  V4RiceDecoder decoder(rice_parameter, num_entries, encoded_data);
-  while (decoder.HasAnotherValue()) {
-    uint32_t offset;
-    result = decoder.GetNextValue(&offset);
-    if (result != DECODE_SUCCESS) {
-      return result;
-    }
+  // Flipping the bytes, as done above, destroys the sort order. Sort the
+  // values back.
+  std::sort(out->begin(), out->end());
 
-    last_value += offset;
-    if (!last_value.IsValid()) {
-      NOTREACHED();
-      return DECODED_INTEGER_OVERFLOW_FAILURE;
-    }
-
-    GetBytesFromUInt32(last_value.ValueOrDie(), bytes);
-    out->append(bytes, 4);
+  // This flipping is done so that when the vector is interpreted as a string,
+  // the bytes are in the correct order.
+  for (size_t i = 0; i < out->size(); i++) {
+    (*out)[i] = ntohl((*out)[i]);
   }
 
   return DECODE_SUCCESS;
@@ -236,32 +246,33 @@ V4DecodeResult V4RiceDecoder::GetNextBits(unsigned int num_requested_bits,
       kMaxBitIndex - current_word_bit_index_;
   if (num_bits_left_in_current_word >= num_requested_bits) {
     // All the bits that we need are in |current_word_|.
-    GetBitsFromCurrentWord(num_requested_bits, x);
+    *x = GetBitsFromCurrentWord(num_requested_bits);
   } else {
-    // |current_word_| contains fewer bits than we need so we store the current
-    // value of |current_word_| in |lower|, then read in a new |current_word_|,
-    // and then pick the remaining bits from the new value of |current_word_|.
-    uint32_t lower = current_word_;
-    // Bits we need after we read all of |current_word_|
+    // |current_word_| contains fewer bits than we need so read the remaining
+    // bits from |current_word_| into |lower|, and then call GetNextBits on the
+    // remaining number of bits, which will read in a new word into
+    // |current_word_|.
+    uint32_t lower = GetBitsFromCurrentWord(num_bits_left_in_current_word);
+
     unsigned int num_bits_from_next_word =
         num_requested_bits - num_bits_left_in_current_word;
     uint32_t upper;
-    V4DecodeResult result = GetNextWord(&current_word_);
+    V4DecodeResult result = GetNextBits(num_bits_from_next_word, &upper);
     if (result != DECODE_SUCCESS) {
       return result;
     }
-    GetBitsFromCurrentWord(num_bits_from_next_word, &upper);
-    *x = (upper << (num_requested_bits - num_bits_from_next_word)) | lower;
+    *x = (upper << num_bits_left_in_current_word) | lower;
   }
   return DECODE_SUCCESS;
 }
 
-void V4RiceDecoder::GetBitsFromCurrentWord(unsigned int num_requested_bits,
-                                           uint32_t* x) {
+uint32_t V4RiceDecoder::GetBitsFromCurrentWord(
+    unsigned int num_requested_bits) {
   uint32_t mask = 0xFFFFFFFF >> (kMaxBitIndex - num_requested_bits);
-  *x = current_word_ & mask;
+  uint32_t x = current_word_ & mask;
   current_word_ = current_word_ >> num_requested_bits;
   current_word_bit_index_ += num_requested_bits;
+  return x;
 };
 
 std::string V4RiceDecoder::DebugString() const {
