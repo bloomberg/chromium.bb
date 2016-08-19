@@ -129,7 +129,7 @@ void OriginTrialContext::addTokensFromHeader(ExecutionContext* host, const Strin
     std::unique_ptr<Vector<String>> tokens(parseHeaderValue(headerValue));
     if (!tokens)
         return;
-    addTokens(host, parseHeaderValue(headerValue).get());
+    addTokens(host, tokens.get());
 }
 
 // static
