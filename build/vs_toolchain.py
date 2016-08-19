@@ -306,8 +306,8 @@ def _GetDesiredVsToolchainHashes():
   to build with."""
   if GetVisualStudioVersion() == '2015':
     if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN_PRERELEASE', '0'))):
-      # Update 3 pre-release, May 16th.
-      return ['283cc362f57dbe240e0d21f48ae45f9d834a425a']
+      # Update 3 final with patches.
+      return ['d5dc33b15d1b2c086f2f6632e2fd15882f80dbd3']
     else:
       # Update 2.
       return ['95ddda401ec5678f15eeed01d2bee08fcbc5ee97']
