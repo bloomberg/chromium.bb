@@ -979,8 +979,6 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
   }
 
   x->skip = ctx->skip;
-  memcpy(x->zcoeff_blk[mbmi->tx_size], ctx->zcoeff_blk,
-         sizeof(ctx->zcoeff_blk[0]) * ctx->num_4x4_blk);
 
   if (!output_enabled) return;
 

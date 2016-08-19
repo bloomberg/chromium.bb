@@ -126,10 +126,6 @@ struct macroblock {
   int mv_row_min;
   int mv_row_max;
 
-  // Notes transform blocks where no coefficents are coded.
-  // Set during mode selection. Read during block encoding.
-  uint8_t zcoeff_blk[TX_SIZES][256];
-
   int skip;
 
   // note that token_costs is the cost when eob node is skipped

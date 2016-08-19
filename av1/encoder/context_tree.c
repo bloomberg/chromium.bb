@@ -23,7 +23,6 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_4x4_blk,
   int i, k;
   ctx->num_4x4_blk = num_blk;
 
-  CHECK_MEM_ERROR(cm, ctx->zcoeff_blk, aom_calloc(num_blk, sizeof(uint8_t)));
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     for (k = 0; k < 3; ++k) {
       CHECK_MEM_ERROR(cm, ctx->coeff[i][k],
@@ -44,8 +43,6 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_4x4_blk,
 
 static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
   int i, k;
-  aom_free(ctx->zcoeff_blk);
-  ctx->zcoeff_blk = 0;
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     for (k = 0; k < 3; ++k) {
       aom_free(ctx->coeff[i][k]);
