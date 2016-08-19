@@ -42,10 +42,16 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
      * Interface that the {@link Adapter} uses to interact with the items it manages.
      */
     public interface TimedItem {
+        /** @return The timestamp for this item. */
+        long getTimestamp();
+
         /**
-         * @return The timestamp of this item.
+         * Returns an ID that uniquely identifies this TimedItem and doesn't change.
+         * To avoid colliding with IDs generated for Date headers, at least one of the upper 32
+         * bits of the long should be set.
+         * @return ID that can uniquely identify the TimedItem.
          */
-        long getStartTime();
+        long getStableId();
     }
 
     private static class DateViewHolder extends RecyclerView.ViewHolder {
@@ -93,7 +99,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         private boolean mIsSorted;
 
         public ItemGroup(TimedItem item) {
-            mDate = new Date(item.getStartTime());
+            mDate = new Date(item.getTimestamp());
             mItems.add(item);
             mIsSorted = true;
         }
@@ -139,7 +145,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
                 public int compare(TimedItem lhs, TimedItem rhs) {
                     // More recent items are listed first.  Ideally we'd use Long.compare, but that
                     // is an API level 19 call for some inexplicable reason.
-                    long timeDelta = lhs.getStartTime() - rhs.getStartTime();
+                    long timeDelta = lhs.getTimestamp() - rhs.getTimestamp();
                     if (timeDelta > 0) {
                         return -1;
                     } else if (timeDelta == 0) {
@@ -192,7 +198,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         mSize = 0;
         mItems.clear();
         for (TimedItem timedItem : timedItems) {
-            Date date = new Date(timedItem.getStartTime());
+            Date date = new Date(timedItem.getTimestamp());
             boolean found = false;
             for (ItemGroup item : mItems) {
                 if (item.isSameDay(date)) {
@@ -219,6 +225,14 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         mSize = 0;
         mItems.clear();
         notifyDataSetChanged();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        if (!hasStableIds()) return RecyclerView.NO_ID;
+
+        Pair<Date, TimedItem> pair = getItemAt(position);
+        return pair.second == null ? getStableIdFromDate(pair.first) : pair.second.getStableId();
     }
 
     /**
@@ -278,6 +292,21 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         }
         assert false;
         return null;
+    }
+
+    /**
+     * Creates a long ID that identifies a particular day in history.
+     * @param date Date to process.
+     * @return Long that has the day of the year (1-365) in the lowest 16 bits and the year in the
+     *         next 16 bits over.
+     */
+    private static long getStableIdFromDate(Date date) {
+        Pair<Calendar, Calendar> pair = getCachedCalendars();
+        Calendar calendar = pair.first;
+        calendar.setTime(date);
+        long dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
+        long year = calendar.get(Calendar.YEAR);
+        return (year << 16) + dayOfYear;
     }
 
     /**

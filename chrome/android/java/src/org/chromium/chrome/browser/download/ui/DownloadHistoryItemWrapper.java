@@ -30,6 +30,18 @@ import java.util.Locale;
 abstract class DownloadHistoryItemWrapper implements TimedItem {
     private static final String TAG = "download_ui";
 
+    private Long mStableId = null;
+
+    @Override
+    public long getStableId() {
+        if (mStableId == null) {
+            // Generate a stable ID that combines the timestamp and the download ID.
+            mStableId = (long) getId().hashCode();
+            mStableId = (mStableId << 32) + (getTimestamp() & 0x0FFFFFFFF);
+        }
+        return mStableId.longValue();
+    }
+
     /** @return Item that is being wrapped. */
     abstract Object getItem();
 
@@ -99,7 +111,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public long getStartTime() {
+        public long getTimestamp() {
             return mItem.getStartTime();
         }
 
@@ -247,7 +259,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         }
 
         @Override
-        public long getStartTime() {
+        public long getTimestamp() {
             return mItem.getStartTimeMs();
         }
 

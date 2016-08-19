@@ -78,6 +78,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     DownloadHistoryAdapter(boolean showOffTheRecord, ComponentName parentComponent) {
         mShowOffTheRecord = showOffTheRecord;
         mParentComponent = parentComponent;
+        setHasStableIds(true);
     }
 
     @Override
@@ -209,16 +210,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
      */
     public void onDownloadItemRemoved(String guid, boolean isOffTheRecord) {
         if (isOffTheRecord && !mShowOffTheRecord) return;
-
-        List<DownloadItemWrapper> list = getDownloadItemList(isOffTheRecord);
-        int index = findItemIndex(list, guid);
-        if (index != INVALID_INDEX) {
-            DownloadItemWrapper wrapper = list.remove(index);
-            if (mSelectionDelegate != null && mSelectionDelegate.isItemSelected(wrapper)) {
-                mSelectionDelegate.toggleSelectionForItem(wrapper);
-            }
-            filter(mFilter);
-        }
+        if (removeItemFromList(getDownloadItemList(isOffTheRecord), guid)) filter(mFilter);
     }
 
     @Override
@@ -293,14 +285,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
             @Override
             public void onItemDeleted(String guid) {
-                int index = findItemIndex(mOfflinePageItems, guid);
-                if (index != INVALID_INDEX) {
-                    DownloadHistoryItemWrapper wrapper = mOfflinePageItems.remove(index);
-                    if (mSelectionDelegate.isItemSelected(wrapper)) {
-                        mSelectionDelegate.toggleSelectionForItem(wrapper);
-                    }
-                    updateFilter();
-                }
+                if (removeItemFromList(mOfflinePageItems, guid)) updateFilter();
             }
 
             @Override
@@ -367,6 +352,25 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             holder.mFilenameView.setPaintFlags(holder.mFilenameView.getPaintFlags()
                     & ~Paint.STRIKE_THRU_TEXT_FLAG);
         }
+    }
+
+    /**
+     * Removes the item matching the given |guid|.
+     * @param list List of the users downloads of a specific type.
+     * @param guid GUID of the download to remove.
+     * @return True if something was removed, false otherwise.
+     */
+    private <T extends DownloadHistoryItemWrapper> boolean removeItemFromList(
+            List<T> list, String guid) {
+        int index = findItemIndex(list, guid);
+        if (index != INVALID_INDEX) {
+            T wrapper = list.remove(index);
+            if (mSelectionDelegate != null && mSelectionDelegate.isItemSelected(wrapper)) {
+                mSelectionDelegate.toggleSelectionForItem(wrapper);
+            }
+            return true;
+        }
+        return false;
     }
 
     private static DownloadManagerService getDownloadManagerService() {
