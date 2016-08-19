@@ -101,13 +101,13 @@ void HTMLImport::recalcTreeState(HTMLImport* root)
     // Accidental cycle dependency of state computation is prevented
     // by invalidateCachedState() and isStateCacheValid() check.
     for (HTMLImport* i = traverseFirstPostOrder(root); i; i = traverseNextPostOrder(i)) {
-        ASSERT(!i->m_state.isValid());
+        DCHECK(!i->m_state.isValid());
         i->m_state = HTMLImportStateResolver(i).resolve();
 
         HTMLImportState newState = i->state();
         HTMLImportState oldState = snapshot.get(i);
         // Once the state reaches Ready, it shouldn't go back.
-        ASSERT(!oldState.isReady() || oldState <= newState);
+        DCHECK(!oldState.isReady() || oldState <= newState);
         if (newState != oldState)
             updated.append(i);
     }

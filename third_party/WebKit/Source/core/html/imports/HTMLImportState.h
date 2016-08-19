@@ -70,7 +70,7 @@ private:
 
 inline HTMLImportState::Value HTMLImportState::checkedValue() const
 {
-    ASSERT(isValid());
+    DCHECK(isValid());
     return m_value;
 }
 

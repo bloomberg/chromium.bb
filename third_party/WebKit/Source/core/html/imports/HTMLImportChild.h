@@ -93,7 +93,7 @@ private:
 
 inline HTMLImportChild* toHTMLImportChild(HTMLImport* import)
 {
-    ASSERT(!import || !import->isRoot());
+    DCHECK(!import || !import->isRoot());
     return static_cast<HTMLImportChild*>(import);
 }
 

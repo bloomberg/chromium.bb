@@ -75,7 +75,7 @@ void LinkImport::process()
     if (!m_owner->document().importsController()) {
         // The document should be the master.
         Document& master = m_owner->document();
-        ASSERT(master.frame());
+        DCHECK(master.frame());
         master.setImportsController(HTMLImportsController::create(master));
     }
 
@@ -104,7 +104,7 @@ void LinkImport::didFinish()
 
 void LinkImport::importChildWasDisposed(HTMLImportChild* child)
 {
-    ASSERT(m_child == child);
+    DCHECK_EQ(m_child, child);
     m_child = nullptr;
     m_owner = nullptr;
 }

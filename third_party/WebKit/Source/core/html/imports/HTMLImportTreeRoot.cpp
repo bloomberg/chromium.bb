@@ -64,7 +64,7 @@ void HTMLImportTreeRoot::stateDidChange()
 
 void HTMLImportTreeRoot::scheduleRecalcState()
 {
-    ASSERT(m_document);
+    DCHECK(m_document);
     if (m_recalcTimer.isActive() || !m_document->isActive())
         return;
     m_recalcTimer.startOneShot(0, BLINK_FROM_HERE);
@@ -89,7 +89,7 @@ HTMLImportChild* HTMLImportTreeRoot::find(const KURL& url) const
 
 void HTMLImportTreeRoot::recalcTimerFired(TimerBase*)
 {
-    ASSERT(m_document);
+    DCHECK(m_document);
     HTMLImport::recalcTreeState(this);
 }
 

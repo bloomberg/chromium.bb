@@ -84,12 +84,13 @@ HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImportL
 
 HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChildClient* client, FetchRequest request)
 {
-    ASSERT(!request.url().isEmpty() && request.url().isValid());
-    ASSERT(parent == root() || toHTMLImportChild(parent)->loader()->isFirstImport(toHTMLImportChild(parent)));
+    DCHECK(!request.url().isEmpty());
+    DCHECK(request.url().isValid());
+    DCHECK(parent == root() || toHTMLImportChild(parent)->loader()->isFirstImport(toHTMLImportChild(parent)));
 
     if (HTMLImportChild* childToShareWith = root()->find(request.url())) {
         HTMLImportLoader* loader = childToShareWith->loader();
-        ASSERT(loader);
+        DCHECK(loader);
         HTMLImportChild* child = createChild(request.url(), loader, parent, client);
         child->didShareLoader();
         return child;
@@ -116,7 +117,7 @@ Document* HTMLImportsController::master() const
 
 bool HTMLImportsController::shouldBlockScriptExecution(const Document& document) const
 {
-    ASSERT(document.importsController() == this);
+    DCHECK_EQ(document.importsController(), this);
     if (HTMLImportLoader* loader = loaderFor(document))
         return loader->shouldBlockScriptExecution();
     return root()->state().shouldBlockScriptExecution();
