@@ -144,17 +144,11 @@ DocumentWebSocketChannel::DocumentWebSocketChannel(Document* document, WebSocket
     , m_sentSizeOfTopMessage(0)
     , m_locationAtConstruction(std::move(location))
 {
-    ThreadState::current()->registerPreFinalizer(this);
 }
 
 DocumentWebSocketChannel::~DocumentWebSocketChannel()
 {
     ASSERT(!m_blobLoader);
-}
-
-void DocumentWebSocketChannel::dispose()
-{
-    m_handle.reset();
 }
 
 bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
