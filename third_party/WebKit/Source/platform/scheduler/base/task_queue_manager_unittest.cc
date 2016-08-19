@@ -73,11 +73,11 @@ class TaskQueueManagerTest : public testing::Test {
         new cc::OrderedSimpleTaskRunner(now_src_.get(), false));
     main_task_runner_ = TaskQueueManagerDelegateForTest::Create(
         test_task_runner_.get(),
-        base::WrapUnique(new TestTimeSource(now_src_.get())));
+        base::MakeUnique<TestTimeSource>(now_src_.get()));
 
-    manager_ = base::WrapUnique(
-        new TaskQueueManager(main_task_runner_, "test.scheduler",
-                             "test.scheduler", "test.scheduler.debug"));
+    manager_ = base::MakeUnique<TaskQueueManager>(
+        main_task_runner_, "test.scheduler", "test.scheduler",
+        "test.scheduler.debug");
     manager_->SetTaskTimeTracker(&test_task_time_tracker_);
 
     for (size_t i = 0; i < num_queues; i++)
@@ -88,7 +88,7 @@ class TaskQueueManagerTest : public testing::Test {
     now_src_.reset(new base::SimpleTestTickClock());
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     InitializeWithClock(num_queues,
-                        base::WrapUnique(new TestTimeSource(now_src_.get())));
+                        base::MakeUnique<TestTimeSource>(now_src_.get()));
   }
 
   void InitializeWithRealMessageLoop(size_t num_queues) {
@@ -96,10 +96,10 @@ class TaskQueueManagerTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop());
     // A null clock triggers some assertions.
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
-    manager_ = base::WrapUnique(new TaskQueueManager(
+    manager_ = base::MakeUnique<TaskQueueManager>(
         MessageLoopTaskRunner::Create(
             base::WrapUnique(new TestTimeSource(now_src_.get()))),
-        "test.scheduler", "test.scheduler", "test.scheduler.debug"));
+        "test.scheduler", "test.scheduler", "test.scheduler.debug");
     manager_->SetTaskTimeTracker(&test_task_time_tracker_);
 
     for (size_t i = 0; i < num_queues; i++)
@@ -139,10 +139,10 @@ TEST_F(TaskQueueManagerTest,
   TestCountUsesTimeSource* test_count_uses_time_source =
       new TestCountUsesTimeSource();
 
-  manager_ = base::WrapUnique(new TaskQueueManager(
+  manager_ = base::MakeUnique<TaskQueueManager>(
       MessageLoopTaskRunner::Create(
           base::WrapUnique(test_count_uses_time_source)),
-      "test.scheduler", "test.scheduler", "test.scheduler.debug"));
+      "test.scheduler", "test.scheduler", "test.scheduler.debug");
   manager_->SetWorkBatchSize(6);
   manager_->SetTaskTimeTracker(&test_task_time_tracker_);
 
@@ -171,10 +171,10 @@ TEST_F(TaskQueueManagerTest, NowNotCalledForNestedTasks) {
   TestCountUsesTimeSource* test_count_uses_time_source =
       new TestCountUsesTimeSource();
 
-  manager_ = base::WrapUnique(new TaskQueueManager(
+  manager_ = base::MakeUnique<TaskQueueManager>(
       MessageLoopTaskRunner::Create(
           base::WrapUnique(test_count_uses_time_source)),
-      "test.scheduler", "test.scheduler", "test.scheduler.debug"));
+      "test.scheduler", "test.scheduler", "test.scheduler.debug");
   manager_->SetTaskTimeTracker(&test_task_time_tracker_);
 
   runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));

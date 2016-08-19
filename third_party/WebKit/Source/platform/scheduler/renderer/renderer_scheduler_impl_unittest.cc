@@ -244,17 +244,15 @@ class RendererSchedulerImplTest : public testing::Test {
   void SetUp() override {
     if (message_loop_) {
       main_task_runner_ = SchedulerTqmDelegateImpl::Create(
-          message_loop_.get(),
-          base::WrapUnique(new TestTimeSource(clock_.get())));
+          message_loop_.get(), base::MakeUnique<TestTimeSource>(clock_.get()));
     } else {
       mock_task_runner_ = make_scoped_refptr(
           new cc::OrderedSimpleTaskRunner(clock_.get(), false));
       main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-          mock_task_runner_,
-          base::WrapUnique(new TestTimeSource(clock_.get())));
+          mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
     }
     Initialize(
-        base::WrapUnique(new RendererSchedulerImplForTest(main_task_runner_)));
+        base::MakeUnique<RendererSchedulerImplForTest>(main_task_runner_));
   }
 
   void Initialize(std::unique_ptr<RendererSchedulerImplForTest> scheduler) {
@@ -1612,7 +1610,7 @@ class RendererSchedulerImplWithMockSchedulerTest
     mock_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
+        mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
     mock_scheduler_ = new RendererSchedulerImplForTest(main_task_runner_);
     Initialize(base::WrapUnique(mock_scheduler_));
   }

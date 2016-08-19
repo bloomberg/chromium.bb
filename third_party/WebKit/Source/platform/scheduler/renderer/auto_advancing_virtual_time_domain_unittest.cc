@@ -30,11 +30,11 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
     mock_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
+        mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
 
-    manager_ = base::WrapUnique(
-        new TaskQueueManager(main_task_runner_, "test.scheduler",
-                             "test.scheduler", "test.scheduler.debug"));
+    manager_ = base::MakeUnique<TaskQueueManager>(
+        main_task_runner_, "test.scheduler", "test.scheduler",
+        "test.scheduler.debug");
     manager_->SetTaskTimeTracker(&test_task_time_tracker_);
     task_runner_ = manager_->NewTaskQueue(TaskQueue::Spec("test_task_queue"));
     initial_time_ = clock_->NowTicks();

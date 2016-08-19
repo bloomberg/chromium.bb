@@ -47,7 +47,7 @@ class ThrottlingHelperTest : public testing::Test {
     mock_task_runner_ =
         make_scoped_refptr(new cc::OrderedSimpleTaskRunner(clock_.get(), true));
     delegate_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
+        mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
     scheduler_.reset(new RendererSchedulerImpl(delegate_));
     throttling_helper_ = scheduler_->throttling_helper();
     timer_queue_ = scheduler_->NewTimerTaskRunner("test_queue");

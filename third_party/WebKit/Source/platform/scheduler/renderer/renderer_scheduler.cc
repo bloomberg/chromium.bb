@@ -37,7 +37,7 @@ std::unique_ptr<RendererScheduler> RendererScheduler::Create() {
   base::MessageLoop* message_loop = base::MessageLoop::current();
   std::unique_ptr<RendererSchedulerImpl> scheduler(
       new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
-          message_loop, base::WrapUnique(new base::DefaultTickClock()))));
+          message_loop, base::MakeUnique<base::DefaultTickClock>())));
   return base::WrapUnique<RendererScheduler>(scheduler.release());
 }
 

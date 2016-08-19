@@ -11,8 +11,8 @@ namespace blink {
 namespace scheduler {
 
 std::unique_ptr<RendererScheduler> CreateRendererSchedulerForTests() {
-  return base::WrapUnique(new scheduler::RendererSchedulerImpl(
-      scheduler::LazySchedulerMessageLoopDelegateForTests::Create()));
+  return base::MakeUnique<scheduler::RendererSchedulerImpl>(
+      scheduler::LazySchedulerMessageLoopDelegateForTests::Create());
 }
 
 void RunIdleTasksForTesting(RendererScheduler* scheduler,

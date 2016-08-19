@@ -170,7 +170,7 @@ void RendererSchedulerImpl::Shutdown() {
 }
 
 std::unique_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
-  return base::WrapUnique(new WebThreadImplForRendererScheduler(this));
+  return base::MakeUnique<WebThreadImplForRendererScheduler>(this);
 }
 
 scoped_refptr<TaskQueue> RendererSchedulerImpl::DefaultTaskRunner() {

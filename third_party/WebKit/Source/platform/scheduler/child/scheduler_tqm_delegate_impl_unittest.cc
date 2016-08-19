@@ -22,7 +22,7 @@ TEST(SchedulerTqmDelegateImplTest, TestTaskRunnerOverriding) {
   {
     scoped_refptr<SchedulerTqmDelegateImpl> delegate(
         SchedulerTqmDelegateImpl::Create(
-            &loop, base::WrapUnique(new base::DefaultTickClock())));
+            &loop, base::MakeUnique<base::DefaultTickClock>()));
     delegate->SetDefaultTaskRunner(custom_runner);
     DCHECK_EQ(custom_runner, loop.task_runner());
   }

@@ -22,7 +22,7 @@ LazySchedulerMessageLoopDelegateForTests::
     LazySchedulerMessageLoopDelegateForTests()
     : message_loop_(base::MessageLoop::current()),
       thread_id_(base::PlatformThread::CurrentId()),
-      time_source_(base::WrapUnique(new base::DefaultTickClock())) {
+      time_source_(base::MakeUnique<base::DefaultTickClock>()) {
   if (message_loop_)
     original_task_runner_ = message_loop_->task_runner();
 }

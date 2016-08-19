@@ -40,11 +40,11 @@ class TaskQueueManagerPerfTest : public testing::Test {
     num_queues_ = num_queues;
     message_loop_.reset(new base::MessageLoop());
     run_loop_.reset(new base::RunLoop());
-    manager_ = base::WrapUnique(new TaskQueueManager(
+    manager_ = base::MakeUnique<TaskQueueManager>(
         TaskQueueManagerDelegateForTest::Create(
             message_loop_->task_runner(),
             base::WrapUnique(new base::DefaultTickClock())),
-        "fake.category", "fake.category", "fake.category.debug"));
+        "fake.category", "fake.category", "fake.category.debug");
     manager_->SetTaskTimeTracker(&test_task_time_tracker_);
     for (size_t i = 0; i < num_queues; i++)
       queues_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test")));
