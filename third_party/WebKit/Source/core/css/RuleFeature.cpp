@@ -742,6 +742,8 @@ void RuleFeatureSet::clear()
     m_attributeInvalidationSets.clear();
     m_idInvalidationSets.clear();
     m_pseudoInvalidationSets.clear();
+    m_universalSiblingInvalidationSet.clear();
+    m_nthInvalidationSet.clear();
 }
 
 void RuleFeatureSet::collectInvalidationSetsForClass(InvalidationLists& invalidationLists, Element& element, const AtomicString& className) const
