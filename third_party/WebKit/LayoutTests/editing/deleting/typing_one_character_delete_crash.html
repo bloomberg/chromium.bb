@@ -1,0 +1,21 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<div><span>|</span></div>',
+            '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('insertText', false, 'x');
+            selection.document.execCommand('delete');
+        },
+        // TODO(yosin): Once visible position canonicalization is fixed,
+        // the expectation should be:
+        // '<div contenteditable>|<div><span></span></div></div>'
+        '<div contenteditable><div><span></span></div></div>'),
+        'Should not crash after typing one chracter then delete it');
+</script>
