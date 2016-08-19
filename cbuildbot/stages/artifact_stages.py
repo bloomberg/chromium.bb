@@ -418,15 +418,16 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
     buildroot = self._build_root
     board = self._current_board
 
+    # Create breakpad symbols.
     commands.GenerateBreakpadSymbols(buildroot, board, self._run.debug)
     self.board_runattrs.SetParallel('breakpad_symbols_generated', True)
 
-    steps = [self.UploadDebugTarball]
-    failed_list = os.path.join(self.archive_path, 'failed_upload_symbols.list')
-    if self._run.config.upload_symbols:
-      steps.append(lambda: self.UploadSymbols(buildroot, board, failed_list))
+    # Upload them.
+    self.UploadDebugTarball()
 
-    parallel.RunParallelSteps(steps)
+    # Upload them to crash server.
+    if self._run.config.upload_symbols:
+      self.UploadSymbols(buildroot, board)
 
   def UploadDebugTarball(self):
     """Generate and upload the debug tarball."""
@@ -437,8 +438,10 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
     logging.info('Announcing availability of debug tarball now.')
     self.board_runattrs.SetParallel('debug_tarball_generated', True)
 
-  def UploadSymbols(self, buildroot, board, failed_list):
+  def UploadSymbols(self, buildroot, board):
     """Upload generated debug symbols."""
+    failed_list = os.path.join(self.archive_path, 'failed_upload_symbols.list')
+
     if self._run.options.remote_trybot or self._run.debug:
       # For debug builds, limit ourselves to just uploading 1 symbol.
       # This way trybots and such still exercise this code.

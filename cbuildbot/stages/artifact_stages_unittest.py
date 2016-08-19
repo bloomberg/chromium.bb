@@ -295,9 +295,6 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testPerformStageWithSymbols(self):
     """Smoke test for an PerformStage when debugging is enabled"""
-    # Disable parallelism, so we can see mock call counts afterwards.
-    self.StartPatcher(parallel_unittest.ParallelMock())
-
     self._TestPerformStage()
 
     self.assertEqual(self.gen_mock.call_count, 1)
@@ -309,9 +306,6 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testPerformStageNoSymbols(self):
     """Smoke test for an PerformStage when debugging is disabled"""
-    # Disable parallelism, so we can see mock call counts afterwards.
-    self.StartPatcher(parallel_unittest.ParallelMock())
-
     extra_config = {
         'archive_build_debug': False,
         'vm_tests': False,
@@ -329,11 +323,6 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testGenerateCrashStillNotifies(self):
     """Crashes in symbol generation should still notify external events."""
-    # self.skipTest('Test skipped due to crbug.com/363339')
-
-    # Disable parallelism, so we can see mock call counts afterwards.
-    self.StartPatcher(parallel_unittest.ParallelMock())
-
     class TestError(Exception):
       """Unique test exception"""
 
