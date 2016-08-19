@@ -114,7 +114,7 @@ protected:
 
     void setNamedItemCache(NamedItemCache* cache) const
     {
-        ASSERT(!m_namedItemCache);
+        DCHECK(!m_namedItemCache);
         // Do not repeat registration for the same invalidation type.
         if (invalidationType() != InvalidateOnIdNameAttrChange)
             document().registerNodeListWithIdNameCache(this);
@@ -123,7 +123,7 @@ protected:
 
     NamedItemCache& namedItemCache() const
     {
-        ASSERT(m_namedItemCache);
+        DCHECK(m_namedItemCache);
         return *m_namedItemCache;
     }
 
@@ -143,7 +143,7 @@ private:
 
     void unregisterIdNameCacheFromDocument(Document& document) const
     {
-        ASSERT(hasValidIdNameCache());
+        DCHECK(hasValidIdNameCache());
         // Do not repeat unregistration for the same invalidation type.
         if (invalidationType() != InvalidateOnIdNameAttrChange)
             document.unregisterNodeListWithIdNameCache(this);

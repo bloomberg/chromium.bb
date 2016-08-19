@@ -145,7 +145,7 @@ void HTMLProgressElement::didElementStateChange()
 
 void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    ASSERT(!m_value);
+    DCHECK(!m_value);
 
     ProgressShadowElement* inner = ProgressShadowElement::create(document());
     inner->setShadowPseudoId(AtomicString("-webkit-progress-inner-element"));

@@ -443,7 +443,7 @@ HTMLTableElement::CellBorders HTMLTableElement::getCellBorders() const
             return SolidBorders;
         return InsetBorders;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return NoBorders;
 }
 

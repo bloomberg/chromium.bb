@@ -34,7 +34,7 @@ class LabelsNodeList final : public LiveNodeList {
 public:
     static LabelsNodeList* create(ContainerNode& ownerNode, CollectionType type)
     {
-        ASSERT_UNUSED(type, type == LabelsNodeListType);
+        DCHECK_EQ(type, LabelsNodeListType);
         return new LabelsNodeList(ownerNode);
     }
 

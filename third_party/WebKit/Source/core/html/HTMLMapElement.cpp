@@ -64,7 +64,7 @@ HTMLImageElement* HTMLMapElement::imageElement()
 {
     HTMLCollection* images = document().images();
     for (unsigned i = 0; Element* curr = images->item(i); ++i) {
-        ASSERT(isHTMLImageElement(curr));
+        DCHECK(isHTMLImageElement(curr));
 
         // The HTMLImageElement's useMap() value includes the '#' symbol at the beginning,
         // which has to be stripped off.

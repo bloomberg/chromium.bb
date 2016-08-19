@@ -161,7 +161,7 @@ Path HTMLAreaElement::getPath(const LayoutObject* containerObject) const
             }
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
 

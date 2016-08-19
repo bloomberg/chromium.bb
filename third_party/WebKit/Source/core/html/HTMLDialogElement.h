@@ -52,7 +52,7 @@ public:
     CenteringMode getCenteringMode() const { return m_centeringMode; }
     LayoutUnit centeredPosition() const
     {
-        ASSERT(m_centeringMode == Centered);
+        DCHECK_EQ(m_centeringMode, Centered);
         return m_centeredPosition;
     }
     void setCentered(LayoutUnit centeredPosition);

@@ -126,8 +126,8 @@ void HTMLEmbedElement::parametersForPlugin(Vector<String>& paramNames, Vector<St
 // moved down into HTMLPluginElement.cpp
 void HTMLEmbedElement::updateWidgetInternal()
 {
-    ASSERT(!layoutEmbeddedItem().showsUnavailablePluginIndicator());
-    ASSERT(needsWidgetUpdate());
+    DCHECK(!layoutEmbeddedItem().showsUnavailablePluginIndicator());
+    DCHECK(needsWidgetUpdate());
     setNeedsWidgetUpdate(false);
 
     if (m_url.isEmpty() && m_serviceType.isEmpty())
@@ -181,9 +181,9 @@ bool HTMLEmbedElement::layoutObjectIsNeeded(const ComputedStyle& style)
     //   fallback content.
     ContainerNode* p = parentNode();
     if (isHTMLObjectElement(p)) {
-        ASSERT(p->layoutObject());
+        DCHECK(p->layoutObject());
         if (!toHTMLObjectElement(p)->useFallbackContent()) {
-            ASSERT(!p->layoutObject()->isEmbeddedObject());
+            DCHECK(!p->layoutObject()->isEmbeddedObject());
             return false;
         }
     }

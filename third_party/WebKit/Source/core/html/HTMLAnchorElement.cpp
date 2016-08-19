@@ -177,7 +177,7 @@ bool HTMLAnchorElement::isMouseFocusable() const
 
 bool HTMLAnchorElement::isKeyboardFocusable() const
 {
-    ASSERT(document().isActive());
+    DCHECK(document().isActive());
 
     if (isFocusable() && Element::supportsFocus())
         return HTMLElement::isKeyboardFocusable();
@@ -192,9 +192,9 @@ static void appendServerMapMousePosition(StringBuilder& url, Event* event)
     if (!event->isMouseEvent())
         return;
 
-    ASSERT(event->target());
+    DCHECK(event->target());
     Node* target = event->target()->toNode();
-    ASSERT(target);
+    DCHECK(target);
     if (!isHTMLImageElement(*target))
         return;
 

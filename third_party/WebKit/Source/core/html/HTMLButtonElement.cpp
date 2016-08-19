@@ -76,7 +76,7 @@ const AtomicString& HTMLButtonElement::formControlType() const
     }
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return emptyAtom;
 }
 

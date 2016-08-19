@@ -79,7 +79,7 @@ void PluginDocumentParser::createDocumentStructure()
 {
     // FIXME: Assert we have a loader to figure out why the original null checks
     // and assert were added for the security bug in http://trac.webkit.org/changeset/87566
-    ASSERT(document());
+    DCHECK(document());
     RELEASE_ASSERT(document()->loader());
 
     LocalFrame* frame = document()->frame();
@@ -154,7 +154,7 @@ void PluginDocumentParser::finish()
 PluginView* PluginDocumentParser::pluginView() const
 {
     if (Widget* widget = toPluginDocument(document())->pluginWidget()) {
-        ASSERT_WITH_SECURITY_IMPLICATION(widget->isPluginContainer());
+        SECURITY_DCHECK(widget->isPluginContainer());
         return toPluginView(widget);
     }
     return 0;

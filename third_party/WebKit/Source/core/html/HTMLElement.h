@@ -162,7 +162,7 @@ template <> inline bool isElementOfType<const HTMLElement>(const HTMLElement&) {
 inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document, ConstructionType type = CreateHTMLElement)
     : Element(tagName, &document, type)
 {
-    ASSERT(!tagName.localName().isNull());
+    DCHECK(!tagName.localName().isNull());
 }
 
 inline bool Node::hasTagName(const HTMLQualifiedName& name) const

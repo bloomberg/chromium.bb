@@ -30,7 +30,7 @@ HTMLTagCollection::HTMLTagCollection(ContainerNode& rootNode, const AtomicString
     : TagCollection(rootNode, HTMLTagCollectionType, starAtom, localName)
     , m_loweredLocalName(localName.lower())
 {
-    ASSERT(rootNode.document().isHTMLDocument());
+    DCHECK(rootNode.document().isHTMLDocument());
 }
 
 } // namespace blink

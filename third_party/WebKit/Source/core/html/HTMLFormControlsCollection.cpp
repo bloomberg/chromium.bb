@@ -43,12 +43,12 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode& ownerNode)
     , m_cachedElement(nullptr)
     , m_cachedElementOffsetInArray(0)
 {
-    ASSERT(isHTMLFormElement(ownerNode) || isHTMLFieldSetElement(ownerNode));
+    DCHECK(isHTMLFormElement(ownerNode) || isHTMLFieldSetElement(ownerNode));
 }
 
 HTMLFormControlsCollection* HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType type)
 {
-    ASSERT_UNUSED(type, type == FormControls);
+    DCHECK_EQ(type, FormControls);
     return new HTMLFormControlsCollection(ownerNode);
 }
 
@@ -58,7 +58,7 @@ HTMLFormControlsCollection::~HTMLFormControlsCollection()
 
 const FormAssociatedElement::List& HTMLFormControlsCollection::formControlElements() const
 {
-    ASSERT(isHTMLFormElement(ownerNode()) || isHTMLFieldSetElement(ownerNode()));
+    DCHECK(isHTMLFormElement(ownerNode()) || isHTMLFieldSetElement(ownerNode()));
     if (isHTMLFormElement(ownerNode()))
         return toHTMLFormElement(ownerNode()).associatedElements();
     return toHTMLFieldSetElement(ownerNode()).associatedElements();
@@ -111,7 +111,7 @@ void HTMLFormControlsCollection::invalidateCache(Document* oldDocument) const
 
 static HTMLElement* firstNamedItem(const FormAssociatedElement::List& elementsArray, const QualifiedName& attrName, const String& name)
 {
-    ASSERT(attrName == idAttr || attrName == nameAttr);
+    DCHECK(attrName == idAttr || attrName == nameAttr);
 
     for (unsigned i = 0; i < elementsArray.size(); ++i) {
         HTMLElement* element = toHTMLElement(elementsArray[i]);
@@ -212,7 +212,7 @@ void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names)
     unsigned length = this->length();
     for (unsigned i = 0; i < length; ++i) {
         HTMLElement* element = item(i);
-        ASSERT(element);
+        DCHECK(element);
         const AtomicString& idAttribute = element->getIdAttribute();
         if (!idAttribute.isEmpty()) {
             HashSet<AtomicString>::AddResult addResult = existingNames.add(idAttribute);

@@ -14,7 +14,7 @@ class DocumentNameCollection final : public HTMLNameCollection {
 public:
     static DocumentNameCollection* create(ContainerNode& document, CollectionType type, const AtomicString& name)
     {
-        ASSERT_UNUSED(type, type == DocumentNamedItems);
+        DCHECK_EQ(type, DocumentNamedItems);
         return new DocumentNameCollection(document, name);
     }
 

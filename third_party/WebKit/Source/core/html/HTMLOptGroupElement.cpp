@@ -72,7 +72,7 @@ void HTMLOptGroupElement::parseAttribute(const QualifiedName& name, const Atomic
 void HTMLOptGroupElement::attachLayoutTree(const AttachContext& context)
 {
     if (context.resolvedStyle) {
-        ASSERT(!m_style || m_style == context.resolvedStyle);
+        DCHECK(!m_style || m_style == context.resolvedStyle);
         m_style = context.resolvedStyle;
     }
     HTMLElement::attachLayoutTree(context);

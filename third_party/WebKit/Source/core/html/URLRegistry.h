@@ -54,8 +54,8 @@ public:
     virtual void unregisterURL(const KURL&) = 0;
 
     // These are optional APIs
-    virtual URLRegistrable* lookup(const String&) { ASSERT_NOT_REACHED(); return nullptr; }
-    virtual bool contains(const String&) { ASSERT_NOT_REACHED(); return false; }
+    virtual URLRegistrable* lookup(const String&) { NOTREACHED(); return nullptr; }
+    virtual bool contains(const String&) { NOTREACHED(); return false; }
 };
 
 } // namespace blink

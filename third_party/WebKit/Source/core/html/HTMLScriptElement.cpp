@@ -170,7 +170,7 @@ bool HTMLScriptElement::hasSourceAttribute() const
 
 void HTMLScriptElement::dispatchLoadEvent()
 {
-    ASSERT(!m_loader->haveFiredLoadEvent());
+    DCHECK(!m_loader->haveFiredLoadEvent());
     dispatchEvent(Event::create(EventTypeNames::load));
 }
 

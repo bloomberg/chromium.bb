@@ -62,7 +62,7 @@ ShadowRoot* HTMLShadowElement::olderShadowRoot()
     if (!older || !older->isOpenOrV0() || older->shadowInsertionPointOfYoungerShadowRoot() != this)
         return nullptr;
 
-    ASSERT(older->isOpenOrV0());
+    DCHECK(older->isOpenOrV0());
     return older;
 }
 

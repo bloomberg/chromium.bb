@@ -180,7 +180,7 @@ bool HTMLInputElement::shouldAutocomplete() const
 bool HTMLInputElement::isValidValue(const String& value) const
 {
     if (!m_inputType->canSetStringValue()) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return false;
     }
     return !m_inputType->typeMismatchFor(value)
@@ -353,7 +353,7 @@ void HTMLInputElement::updateFocusAppearance(SelectionBehaviorOnFocus selectionB
 
 void HTMLInputElement::beginEditing()
 {
-    ASSERT(document().isActive());
+    DCHECK(document().isActive());
     if (!document().isActive())
         return;
 
@@ -365,7 +365,7 @@ void HTMLInputElement::beginEditing()
 
 void HTMLInputElement::endEditing()
 {
-    ASSERT(document().isActive());
+    DCHECK(document().isActive());
     if (!document().isActive())
         return;
 
@@ -403,7 +403,7 @@ void HTMLInputElement::setType(const AtomicString& type)
 
 void HTMLInputElement::updateTouchEventHandlerRegistry()
 {
-    ASSERT(m_inputTypeView);
+    DCHECK(m_inputTypeView);
 
     bool hasTouchEventHandler = m_inputTypeView->hasTouchEventHandler();
     if (hasTouchEventHandler == !!m_hasTouchEventHandler)
@@ -422,9 +422,9 @@ void HTMLInputElement::updateTouchEventHandlerRegistry()
 
 void HTMLInputElement::initializeTypeInParsing()
 {
-    ASSERT(m_parsingInProgress);
-    ASSERT(!m_inputType);
-    ASSERT(!m_inputTypeView);
+    DCHECK(m_parsingInProgress);
+    DCHECK(!m_inputType);
+    DCHECK(!m_inputTypeView);
 
     const AtomicString& newTypeName = InputType::normalizeTypeName(fastGetAttribute(typeAttr));
     m_inputType = InputType::create(*this, newTypeName);
@@ -444,8 +444,8 @@ void HTMLInputElement::initializeTypeInParsing()
 
 void HTMLInputElement::updateType()
 {
-    ASSERT(m_inputType);
-    ASSERT(m_inputTypeView);
+    DCHECK(m_inputType);
+    DCHECK(m_inputTypeView);
 
     const AtomicString& newTypeName = InputType::normalizeTypeName(fastGetAttribute(typeAttr));
     if (m_inputType->formControlType() == newTypeName)
@@ -489,7 +489,7 @@ void HTMLInputElement::updateType()
     m_inputTypeView->updateView();
 
     if (didRespectHeightAndWidth != m_inputType->shouldRespectHeightAndWidthAttributes()) {
-        ASSERT(elementData());
+        DCHECK(elementData());
         AttributeCollection attributes = attributesWithoutUpdate();
         if (const Attribute* height = attributes.find(heightAttr))
             HTMLTextFormControlElement::attributeChanged(heightAttr, height->value(), height->value());
@@ -661,8 +661,8 @@ void HTMLInputElement::collectStyleForPresentationAttribute(const QualifiedName&
 
 void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
-    ASSERT(m_inputType);
-    ASSERT(m_inputTypeView);
+    DCHECK(m_inputType);
+    DCHECK(m_inputTypeView);
 
     if (name == nameAttr) {
         removeFromRadioButtonGroup();
@@ -767,15 +767,15 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 void HTMLInputElement::parserDidSetAttributes()
 {
-    ASSERT(m_parsingInProgress);
+    DCHECK(m_parsingInProgress);
     initializeTypeInParsing();
 }
 
 void HTMLInputElement::finishParsingChildren()
 {
     m_parsingInProgress = false;
-    ASSERT(m_inputType);
-    ASSERT(m_inputTypeView);
+    DCHECK(m_inputType);
+    DCHECK(m_inputTypeView);
     HTMLTextFormControlElement::finishParsingChildren();
     if (!m_stateRestored) {
         bool checked = hasAttribute(checkedAttr);
@@ -1112,12 +1112,12 @@ void HTMLInputElement::setValueAsNumber(double newValue, ExceptionState& excepti
 void HTMLInputElement::setValueFromRenderer(const String& value)
 {
     // File upload controls will never use this.
-    ASSERT(type() != InputTypeNames::file);
+    DCHECK_NE(type(), InputTypeNames::file);
 
     m_suggestedValue = String();
 
     // Renderer and our event handler are responsible for sanitizing values.
-    ASSERT(value == m_inputType->sanitizeUserInputValue(value) || m_inputType->sanitizeUserInputValue(value).isEmpty());
+    DCHECK(value == m_inputType->sanitizeUserInputValue(value) || m_inputType->sanitizeUserInputValue(value).isEmpty());
 
     m_valueIfDirty = value;
     m_needsToUpdateViewValue = false;
@@ -1493,7 +1493,7 @@ void HTMLInputElement::removedFrom(ContainerNode* insertionPoint)
     if (insertionPoint->isConnected() && !form())
         removeFromRadioButtonGroup();
     HTMLTextFormControlElement::removedFrom(insertionPoint);
-    ASSERT(!isConnected());
+    DCHECK(!isConnected());
     resetListAttributeTargetObserver();
 }
 
@@ -1709,7 +1709,7 @@ void HTMLInputElement::parseMinLengthAttribute(const AtomicString& value)
 void HTMLInputElement::updateValueIfNeeded()
 {
     String newValue = sanitizeValue(m_valueIfDirty);
-    ASSERT(!m_valueIfDirty.isNull() || newValue.isNull());
+    DCHECK(!m_valueIfDirty.isNull() || newValue.isNull());
     if (newValue != m_valueIfDirty)
         setValue(newValue);
 }
@@ -1736,8 +1736,8 @@ bool HTMLInputElement::shouldAppearIndeterminate() const
 
 bool HTMLInputElement::isInRequiredRadioButtonGroup()
 {
-    // FIXME: Remove type check.
-    ASSERT(type() == InputTypeNames::radio);
+    // TODO(tkent): Remove type check.
+    DCHECK_EQ(type(), InputTypeNames::radio);
     if (RadioButtonGroupScope* scope = radioButtonGroupScope())
         return scope->isInRequiredGroup(this);
     return false;

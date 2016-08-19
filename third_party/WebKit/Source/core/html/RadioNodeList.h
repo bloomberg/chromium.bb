@@ -37,7 +37,7 @@ class RadioNodeList final : public LiveNodeList {
 public:
     static RadioNodeList* create(ContainerNode& ownerNode, CollectionType type, const AtomicString& name)
     {
-        ASSERT_UNUSED(type, type == RadioNodeListType || type == RadioImgNodeListType);
+        DCHECK(type == RadioNodeListType || type == RadioImgNodeListType);
         return new RadioNodeList(ownerNode, name, type);
     }
 

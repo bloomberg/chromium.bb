@@ -144,7 +144,7 @@ void MediaFragmentURIParser::parseFragments()
 
 void MediaFragmentURIParser::parseTimeFragment()
 {
-    ASSERT(m_timeFormat == None);
+    DCHECK_EQ(m_timeFormat, None);
 
     if (m_fragments.isEmpty())
         parseFragments();
@@ -154,8 +154,8 @@ void MediaFragmentURIParser::parseTimeFragment()
     for (unsigned i = 0; i < m_fragments.size(); ++i) {
         std::pair<String, String>& fragment = m_fragments[i];
 
-        ASSERT(fragment.first.is8Bit());
-        ASSERT(fragment.second.is8Bit());
+        DCHECK(fragment.first.is8Bit());
+        DCHECK(fragment.second.is8Bit());
 
         // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#naming-time
         // Temporal clipping is denoted by the name t, and specified as an interval with a begin

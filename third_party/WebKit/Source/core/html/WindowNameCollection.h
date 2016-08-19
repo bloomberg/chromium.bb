@@ -13,7 +13,7 @@ class WindowNameCollection final : public HTMLNameCollection {
 public:
     static WindowNameCollection* create(ContainerNode& document, CollectionType type, const AtomicString& name)
     {
-        ASSERT_UNUSED(type, type == WindowNamedItems);
+        DCHECK_EQ(type, WindowNamedItems);
         return new WindowNameCollection(document, name);
     }
 

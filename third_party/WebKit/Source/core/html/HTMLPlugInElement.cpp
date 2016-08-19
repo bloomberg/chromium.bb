@@ -84,7 +84,7 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
 HTMLPlugInElement::~HTMLPlugInElement()
 {
     DCHECK(!m_pluginWrapper); // cleared in detachLayoutTree()
-    ASSERT(!m_isDelayingLoadEvent);
+    DCHECK(!m_isDelayingLoadEvent);
 }
 
 DEFINE_TRACE(HTMLPlugInElement)
@@ -103,7 +103,7 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
             m_persistedPluginWidget->hide();
             disposeWidgetSoon(m_persistedPluginWidget.release());
         } else {
-            ASSERT(m_persistedPluginWidget->isFrameView() || m_persistedPluginWidget->isRemoteFrameView());
+            DCHECK(m_persistedPluginWidget->isFrameView() || m_persistedPluginWidget->isRemoteFrameView());
         }
     }
     m_persistedPluginWidget = widget;
@@ -234,7 +234,7 @@ void HTMLPlugInElement::requestPluginCreationWithoutLayoutObjectIfPossible()
 
 void HTMLPlugInElement::createPluginWithoutLayoutObject()
 {
-    ASSERT(document().frame()->loader().client()->canCreatePluginWithoutRenderer(m_serviceType));
+    DCHECK(document().frame()->loader().client()->canCreatePluginWithoutRenderer(m_serviceType));
 
     KURL url;
     // CSP can block src-less objects.
@@ -474,7 +474,7 @@ bool HTMLPlugInElement::allowedToLoadFrameURL(const String& url)
 // that <object> uses depending on <param> values.
 bool HTMLPlugInElement::wouldLoadAsNetscapePlugin(const String& url, const String& serviceType)
 {
-    ASSERT(document().frame());
+    DCHECK(document().frame());
     KURL completedURL;
     if (!url.isEmpty())
         completedURL = document().completeURL(url);

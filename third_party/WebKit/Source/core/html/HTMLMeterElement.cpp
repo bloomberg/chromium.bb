@@ -192,7 +192,7 @@ void HTMLMeterElement::didElementStateChange()
 
 void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    ASSERT(!m_value);
+    DCHECK(!m_value);
 
     HTMLDivElement* inner = HTMLDivElement::create(document());
     inner->setShadowPseudoId(AtomicString("-webkit-meter-inner-element"));

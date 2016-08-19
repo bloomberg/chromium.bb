@@ -32,7 +32,7 @@ using namespace HTMLNames;
 inline HTMLQuoteElement::HTMLQuoteElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
 {
-    ASSERT(hasTagName(qTag) || hasTagName(blockquoteTag));
+    DCHECK(hasTagName(qTag) || hasTagName(blockquoteTag));
 }
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLQuoteElement)

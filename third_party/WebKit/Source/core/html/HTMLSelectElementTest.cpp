@@ -138,7 +138,7 @@ TEST_F(HTMLSelectElementTest, VisibleBoundsInVisualViewport)
     document().documentElement()->setInnerHTML("<select style='position:fixed; top:12.3px; height:24px; -webkit-appearance:none;'><option>o1</select>", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
-    ASSERT(select);
+    ASSERT_NE(select, nullptr);
     IntRect bounds = select->visibleBoundsInVisualViewport();
     EXPECT_EQ(24, bounds.height());
 }
@@ -148,7 +148,7 @@ TEST_F(HTMLSelectElementTest, PopupIsVisible)
     document().documentElement()->setInnerHTML("<select><option>o1</option></select>", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
     HTMLSelectElement* select = toHTMLSelectElement(document().body()->firstChild());
-    ASSERT(select);
+    ASSERT_NE(select, nullptr);
     EXPECT_FALSE(select->popupIsVisible());
     select->showPopup();
     EXPECT_TRUE(select->popupIsVisible());

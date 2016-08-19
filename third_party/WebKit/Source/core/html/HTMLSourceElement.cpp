@@ -149,7 +149,7 @@ void HTMLSourceElement::cancelPendingErrorEvent()
 
 void HTMLSourceElement::dispatchPendingEvent(SourceEventSender* eventSender)
 {
-    ASSERT_UNUSED(eventSender, eventSender == &sourceErrorEventSender());
+    DCHECK_EQ(eventSender, &sourceErrorEventSender());
     DVLOG(SOURCE_LOG_LEVEL) << "dispatchPendingEvent - " << (void*)this;
     dispatchEvent(Event::createCancelable(EventTypeNames::error));
 }

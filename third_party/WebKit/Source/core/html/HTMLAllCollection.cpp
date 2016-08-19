@@ -33,7 +33,7 @@ namespace blink {
 
 HTMLAllCollection* HTMLAllCollection::create(ContainerNode& node, CollectionType type)
 {
-    ASSERT_UNUSED(type, type == DocAll);
+    DCHECK_EQ(type, DocAll);
     return new HTMLAllCollection(node);
 }
 

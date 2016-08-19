@@ -124,7 +124,7 @@ String HTMLElement::debugNodeName() const
 String HTMLElement::nodeName() const
 {
     // localNameUpper may intern and cache an AtomicString.
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     // FIXME: Would be nice to have an atomicstring lookup based off uppercase
     // chars that does not have to copy the string on a hit in the hash.
@@ -690,7 +690,7 @@ bool HTMLElement::translate() const
     for (const HTMLElement* element = this; element; element = Traversal<HTMLElement>::firstAncestor(*element)) {
         TranslateAttributeMode mode = element->translateAttributeMode();
         if (mode != TranslateAttributeInherit) {
-            ASSERT(mode == TranslateAttributeYes || mode == TranslateAttributeNo);
+            DCHECK(mode == TranslateAttributeYes || mode == TranslateAttributeNo);
             return mode == TranslateAttributeYes;
         }
     }
@@ -833,7 +833,7 @@ void HTMLElement::dirAttributeChanged(const AtomicString& value)
 
 void HTMLElement::adjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child)
 {
-    ASSERT(selfOrAncestorHasDirAutoAttribute());
+    DCHECK(selfOrAncestorHasDirAutoAttribute());
     TextDirection textDirection = directionality();
     if (layoutObject() && layoutObject()->style() && layoutObject()->style()->direction() != textDirection) {
         Element* elementToAdjust = this;
@@ -937,7 +937,7 @@ static RGBA32 parseColorStringWithCrazyLegacyRules(const String& colorString)
         return makeRGB(toASCIIHexValue(digitBuffer[0]), toASCIIHexValue(digitBuffer[1]), toASCIIHexValue(digitBuffer[2]));
 
     // Split the digits into three components, then search the last 8 digits of each component.
-    ASSERT(digitBuffer.size() >= 6);
+    DCHECK_GE(digitBuffer.size(), 6u);
     size_t componentLength = digitBuffer.size() / 3;
     size_t componentSearchWindowLength = min<size_t>(componentLength, 8);
     size_t redIndex = componentLength - componentSearchWindowLength;
@@ -949,11 +949,11 @@ static RGBA32 parseColorStringWithCrazyLegacyRules(const String& colorString)
         greenIndex++;
         blueIndex++;
     }
-    ASSERT(redIndex + 1 < componentLength);
-    ASSERT(greenIndex >= componentLength);
-    ASSERT(greenIndex + 1 < componentLength * 2);
-    ASSERT(blueIndex >= componentLength * 2);
-    ASSERT_WITH_SECURITY_IMPLICATION(blueIndex + 1 < digitBuffer.size());
+    DCHECK_LT(redIndex + 1, componentLength);
+    DCHECK_GE(greenIndex, componentLength);
+    DCHECK_LT(greenIndex + 1, componentLength * 2);
+    DCHECK_GE(blueIndex, componentLength * 2);
+    SECURITY_DCHECK(blueIndex + 1 < digitBuffer.size());
 
     int redValue = toASCIIHexValue(digitBuffer[redIndex], digitBuffer[redIndex + 1]);
     int greenValue = toASCIIHexValue(digitBuffer[greenIndex], digitBuffer[greenIndex + 1]);

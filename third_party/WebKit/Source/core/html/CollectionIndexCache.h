@@ -69,10 +69,14 @@ public:
 
 protected:
     ALWAYS_INLINE NodeType* cachedNode() const { return m_currentNode; }
-    ALWAYS_INLINE unsigned cachedNodeIndex() const { ASSERT(cachedNode()); return m_cachedNodeIndex; }
+    ALWAYS_INLINE unsigned cachedNodeIndex() const
+    {
+        DCHECK(cachedNode());
+        return m_cachedNodeIndex;
+    }
     ALWAYS_INLINE void setCachedNode(NodeType* node, unsigned index)
     {
-        ASSERT(node);
+        DCHECK(node);
         m_currentNode = node;
         m_cachedNodeIndex = index;
     }
@@ -118,7 +122,7 @@ inline unsigned CollectionIndexCache<Collection, NodeType>::nodeCount(const Coll
         return cachedNodeCount();
 
     nodeAt(collection, UINT_MAX);
-    ASSERT(isCachedNodeCountValid());
+    DCHECK(isCachedNodeCountValid());
 
     return cachedNodeCount();
 }
@@ -138,7 +142,7 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAt(const Collec
     }
 
     // No valid cache yet, let's find the first matching element.
-    ASSERT(!isCachedNodeCountValid());
+    DCHECK(!isCachedNodeCountValid());
     NodeType* firstNode = collection.traverseToFirst();
     if (!firstNode) {
         // The collection is empty.
@@ -152,23 +156,23 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAt(const Collec
 template <typename Collection, typename NodeType>
 inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNode(const Collection& collection, unsigned index)
 {
-    ASSERT(cachedNode()); // Cache should be valid.
+    DCHECK(cachedNode()); // Cache should be valid.
     unsigned currentIndex = cachedNodeIndex();
-    ASSERT(currentIndex > index);
+    DCHECK_GT(currentIndex, index);
 
     // Determine if we should traverse from the beginning of the collection instead of the cached node.
     bool firstIsCloser = index < currentIndex - index;
     if (firstIsCloser || !collection.canTraverseBackward()) {
         NodeType* firstNode = collection.traverseToFirst();
-        ASSERT(firstNode);
+        DCHECK(firstNode);
         setCachedNode(firstNode, 0);
         return index ? nodeAfterCachedNode(collection, index) : firstNode;
     }
 
     // Backward traversal from the cached node to the requested index.
-    ASSERT(collection.canTraverseBackward());
+    DCHECK(collection.canTraverseBackward());
     NodeType* currentNode = collection.traverseBackwardToOffset(index, *cachedNode(), currentIndex);
-    ASSERT(currentNode);
+    DCHECK(currentNode);
     setCachedNode(currentNode, currentIndex);
     return currentNode;
 }
@@ -176,15 +180,15 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNod
 template <typename Collection, typename NodeType>
 inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode(const Collection& collection, unsigned index)
 {
-    ASSERT(cachedNode()); // Cache should be valid.
+    DCHECK(cachedNode()); // Cache should be valid.
     unsigned currentIndex = cachedNodeIndex();
-    ASSERT(currentIndex < index);
+    DCHECK_LT(currentIndex, index);
 
     // Determine if we should traverse from the end of the collection instead of the cached node.
     bool lastIsCloser = isCachedNodeCountValid() && cachedNodeCount() - index < index - currentIndex;
     if (lastIsCloser && collection.canTraverseBackward()) {
         NodeType* lastItem = collection.traverseToLast();
-        ASSERT(lastItem);
+        DCHECK(lastItem);
         setCachedNode(lastItem, cachedNodeCount() - 1);
         if (index < cachedNodeCount() - 1)
             return nodeBeforeCachedNode(collection, index);

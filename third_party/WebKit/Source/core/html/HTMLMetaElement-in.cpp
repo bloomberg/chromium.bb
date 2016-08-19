@@ -124,7 +124,7 @@ void HTMLMetaElement::parseContentAttribute(const String& content, void* data, D
         }
         valueEnd = i;
 
-        ASSERT_WITH_SECURITY_IMPLICATION(i <= length);
+        SECURITY_DCHECK(i <= length);
 
         String keyString = buffer.substring(keyBegin, keyEnd - keyBegin);
         String valueString = buffer.substring(valueBegin, valueEnd - valueBegin);
@@ -384,7 +384,7 @@ static MessageLevel viewportErrorMessageLevel(ViewportErrorCode errorCode)
         return WarningMessageLevel;
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return ErrorMessageLevel;
 }
 
@@ -417,7 +417,7 @@ void HTMLMetaElement::getViewportDescriptionFromContentAttribute(const String& c
 }
 void HTMLMetaElement::processViewportContentAttribute(const String& content, ViewportDescription::Type origin)
 {
-    ASSERT(!content.isNull());
+    DCHECK(!content.isNull());
 
     if (!document().shouldOverrideLegacyDescription(origin))
         return;

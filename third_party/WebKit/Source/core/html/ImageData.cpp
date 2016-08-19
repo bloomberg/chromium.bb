@@ -100,7 +100,7 @@ bool ImageData::validateConstructorArguments(DOMUint8ClampedArray* data, unsigne
         exceptionState.throwDOMException(IndexSizeError, "The source width is zero or not a number.");
         return false;
     }
-    ASSERT(data);
+    DCHECK(data);
     unsigned length = data->length();
     if (!length) {
         exceptionState.throwDOMException(IndexSizeError, "The input data has a zero byte length.");
@@ -123,10 +123,11 @@ ImageData* ImageData::create(DOMUint8ClampedArray* data, unsigned width, Excepti
 {
     unsigned lengthInPixels = 0;
     if (!validateConstructorArguments(data, width, lengthInPixels, exceptionState)) {
-        ASSERT(exceptionState.hadException());
+        DCHECK(exceptionState.hadException());
         return nullptr;
     }
-    ASSERT(lengthInPixels && width);
+    DCHECK_GT(lengthInPixels, 0u);
+    DCHECK_GT(width, 0u);
     unsigned height = lengthInPixels / width;
     return new ImageData(IntSize(width, height), data);
 }
@@ -135,10 +136,11 @@ ImageData* ImageData::create(DOMUint8ClampedArray* data, unsigned width, unsigne
 {
     unsigned lengthInPixels = 0;
     if (!validateConstructorArguments(data, width, lengthInPixels, exceptionState)) {
-        ASSERT(exceptionState.hadException());
+        DCHECK(exceptionState.hadException());
         return nullptr;
     }
-    ASSERT(lengthInPixels && width);
+    DCHECK_GT(lengthInPixels, 0u);
+    DCHECK_GT(width, 0u);
     if (height != lengthInPixels / width) {
         exceptionState.throwDOMException(IndexSizeError, "The input data byte length is not equal to (4 * width * height).");
         return nullptr;
@@ -179,8 +181,9 @@ ImageData::ImageData(const IntSize& size, DOMUint8ClampedArray* byteArray)
     : m_size(size)
     , m_data(byteArray)
 {
-    ASSERT(size.width() >= 0 && size.height() >= 0);
-    ASSERT_WITH_SECURITY_IMPLICATION(static_cast<unsigned>(size.width() * size.height() * 4) <= m_data->length());
+    DCHECK_GE(size.width(), 0);
+    DCHECK_GE(size.height(), 0);
+    SECURITY_CHECK(static_cast<unsigned>(size.width() * size.height() * 4) <= m_data->length());
 }
 
 } // namespace blink

@@ -35,7 +35,7 @@ namespace blink {
 HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode& select)
     : HTMLCollection(select, SelectOptions, DoesNotOverrideItemAfter)
 {
-    ASSERT(isHTMLSelectElement(select));
+    DCHECK(isHTMLSelectElement(select));
 }
 
 void HTMLOptionsCollection::supportedPropertyNames(Vector<String>& names)
@@ -48,7 +48,7 @@ void HTMLOptionsCollection::supportedPropertyNames(Vector<String>& names)
     unsigned length = this->length();
     for (unsigned i = 0; i < length; ++i) {
         Element* element = item(i);
-        ASSERT(element);
+        DCHECK(element);
         const AtomicString& idAttribute = element->getIdAttribute();
         if (!idAttribute.isEmpty()) {
             HashSet<AtomicString>::AddResult addResult = existingNames.add(idAttribute);

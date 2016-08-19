@@ -35,7 +35,7 @@ class HTMLTagCollection final : public TagCollection {
 public:
     static HTMLTagCollection* create(ContainerNode& rootNode, CollectionType type, const AtomicString& localName)
     {
-        ASSERT_UNUSED(type, type == HTMLTagCollectionType);
+        DCHECK_EQ(type, HTMLTagCollectionType);
         return new HTMLTagCollection(rootNode, localName);
     }
 
@@ -57,7 +57,7 @@ inline bool HTMLTagCollection::elementMatches(const Element& testElement) const
         if (localName != testElement.localName())
             return false;
     }
-    ASSERT(m_namespaceURI == starAtom);
+    DCHECK_EQ(m_namespaceURI, starAtom);
     return true;
 }
 

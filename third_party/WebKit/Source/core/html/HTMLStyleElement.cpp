@@ -121,7 +121,7 @@ void HTMLStyleElement::dispatchPendingLoadEvents()
 
 void HTMLStyleElement::dispatchPendingEvent(StyleEventSender* eventSender)
 {
-    ASSERT_UNUSED(eventSender, eventSender == &styleLoadEventSender());
+    DCHECK_EQ(eventSender, &styleLoadEventSender());
     dispatchEvent(Event::create(m_loadedSheet ? EventTypeNames::load : EventTypeNames::error));
 }
 

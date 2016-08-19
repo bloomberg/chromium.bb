@@ -201,7 +201,7 @@ HTMLFormElement* HTMLImageElement::formOwner() const
 
 void HTMLImageElement::formRemovedFromTree(const Node& formRoot)
 {
-    ASSERT(m_form);
+    DCHECK(m_form);
     if (NodeTraversal::highestAncestorOrSelf(*this) != formRoot)
         resetFormOwner();
 }
@@ -296,7 +296,7 @@ static bool supportedImageType(const String& type)
 // http://picture.responsiveimages.org/#update-source-set
 ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     Node* parent = parentNode();
     m_source = nullptr;
     if (!parent || !isHTMLPictureElement(*parent))
@@ -689,7 +689,7 @@ void HTMLImageElement::forceReload() const
 
 ScriptPromise HTMLImageElement::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Optional<IntRect> cropRect, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
-    ASSERT(eventTarget.toLocalDOMWindow());
+    DCHECK(eventTarget.toLocalDOMWindow());
     if ((cropRect && !ImageBitmap::isSourceSizeValid(cropRect->width(), cropRect->height(), exceptionState))
         || !ImageBitmap::isSourceSizeValid(bitmapSourceSize().width(), bitmapSourceSize().height(), exceptionState))
         return ScriptPromise();
@@ -829,7 +829,7 @@ IntSize HTMLImageElement::bitmapSourceSize() const
     if (!image)
         return IntSize();
     LayoutSize lSize = image->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), 1.0f);
-    ASSERT(lSize.fraction().isZero());
+    DCHECK(lSize.fraction().isZero());
     return IntSize(lSize.width(), lSize.height());
 }
 

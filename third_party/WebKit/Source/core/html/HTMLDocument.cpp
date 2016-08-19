@@ -66,7 +66,7 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer, DocumentClassFlags e
 {
     clearXMLVersion();
     if (isSrcdocDocument() || initializer.importsController()) {
-        ASSERT(inNoQuirksMode());
+        DCHECK(inNoQuirksMode());
         lockCompatibilityMode();
     }
 }

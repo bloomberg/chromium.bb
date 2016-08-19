@@ -52,7 +52,7 @@ bool ClassList::containsInternal(const AtomicString& token) const
 
 const SpaceSplitString& ClassList::classNames() const
 {
-    ASSERT(m_element->hasClass());
+    DCHECK(m_element->hasClass());
     if (m_element->document().inQuirksMode()) {
         if (!m_classNamesForQuirksMode)
             m_classNamesForQuirksMode = wrapUnique(new SpaceSplitString(value(), SpaceSplitString::ShouldNotFoldCase));

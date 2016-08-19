@@ -449,7 +449,7 @@ bool HTMLFormControlElement::willValidate() const
         // If the following assertion fails, setNeedsWillValidateCheck() is not
         // called correctly when something which changes recalcWillValidate() result
         // is updated.
-        ASSERT(m_willValidate == recalcWillValidate());
+        DCHECK_EQ(m_willValidate, recalcWillValidate());
     }
     return m_willValidate;
 }
@@ -564,8 +564,8 @@ bool HTMLFormControlElement::reportValidity()
     bool isValid = checkValidity(&unhandledInvalidControls, CheckValidityDispatchInvalidEvent);
     if (isValid || unhandledInvalidControls.isEmpty())
         return isValid;
-    ASSERT(unhandledInvalidControls.size() == 1);
-    ASSERT(unhandledInvalidControls[0].get() == this);
+    DCHECK_EQ(unhandledInvalidControls.size(), 1u);
+    DCHECK_EQ(unhandledInvalidControls[0].get(), this);
     // Update layout now before calling isFocusable(), which has
     // !layoutObject()->needsLayout() assertion.
     document().updateStyleAndLayoutIgnorePendingStylesheets();
@@ -594,7 +594,7 @@ bool HTMLFormControlElement::isValidElement()
     } else {
         // If the following assertion fails, setNeedsValidityCheck() is not
         // called correctly when something which changes validity is updated.
-        ASSERT(m_isValid == (!willValidate() || valid()));
+        DCHECK_EQ(m_isValid, (!willValidate() || valid()));
     }
     return m_isValid;
 }

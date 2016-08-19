@@ -129,7 +129,7 @@ HTMLFormElement* FormAssociatedElement::findAssociatedForm(const HTMLElement* el
 
 void FormAssociatedElement::formRemovedFromTree(const Node& formRoot)
 {
-    ASSERT(m_form);
+    DCHECK(m_form);
     if (NodeTraversal::highestAncestorOrSelf(toHTMLElement(*this)) == formRoot)
         return;
     resetFormOwner();
@@ -315,7 +315,7 @@ const HTMLElement& toHTMLElement(const FormAssociatedElement& associatedElement)
 
 const HTMLElement* toHTMLElement(const FormAssociatedElement* associatedElement)
 {
-    ASSERT(associatedElement);
+    DCHECK(associatedElement);
     return &toHTMLElement(*associatedElement);
 }
 

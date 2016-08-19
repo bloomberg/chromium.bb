@@ -86,7 +86,7 @@ void TimeRanges::invert()
 
 void TimeRanges::intersectWith(const TimeRanges* other)
 {
-    ASSERT(other);
+    DCHECK(other);
 
     if (other == this)
         return;
@@ -101,7 +101,7 @@ void TimeRanges::intersectWith(const TimeRanges* other)
 
 void TimeRanges::unionWith(const TimeRanges* other)
 {
-    ASSERT(other);
+    DCHECK(other);
     TimeRanges* unioned = copy();
     for (size_t index = 0; index < other->m_ranges.size(); ++index) {
         const Range& range = other->m_ranges[index];
@@ -131,7 +131,7 @@ double TimeRanges::end(unsigned index, ExceptionState& exceptionState) const
 
 void TimeRanges::add(double start, double end)
 {
-    ASSERT(start <= end);
+    DCHECK_LE(start, end);
     unsigned overlappingArcIndex;
     Range addedRange(start, end);
 

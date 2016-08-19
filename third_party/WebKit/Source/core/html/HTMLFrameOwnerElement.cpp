@@ -112,7 +112,7 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperati
 
 HTMLFrameOwnerElement::UpdateSuspendScope::~UpdateSuspendScope()
 {
-    ASSERT(s_updateSuspendCount > 0);
+    DCHECK_GT(s_updateSuspendCount, 0u);
     if (s_updateSuspendCount == 1)
         performDeferredWidgetTreeOperations();
     --s_updateSuspendCount;
@@ -163,9 +163,9 @@ LayoutPart* HTMLFrameOwnerElement::layoutPart() const
 void HTMLFrameOwnerElement::setContentFrame(Frame& frame)
 {
     // Make sure we will not end up with two frames referencing the same owner element.
-    ASSERT(!m_contentFrame || m_contentFrame->owner() != this);
+    DCHECK(!m_contentFrame || m_contentFrame->owner() != this);
     // Disconnected frames should not be allowed to load.
-    ASSERT(isConnected());
+    DCHECK(isConnected());
     m_contentFrame = &frame;
 
     for (ContainerNode* node = this; node; node = node->parentOrShadowHostNode())
@@ -177,7 +177,7 @@ void HTMLFrameOwnerElement::clearContentFrame()
     if (!m_contentFrame)
         return;
 
-    ASSERT(m_contentFrame->owner() == this);
+    DCHECK_EQ(m_contentFrame->owner(), this);
     m_contentFrame = nullptr;
 
     for (ContainerNode* node = this; node; node = node->parentOrShadowHostNode())
@@ -199,7 +199,7 @@ HTMLFrameOwnerElement::~HTMLFrameOwnerElement()
 {
     // An owner must by now have been informed of detachment
     // when the frame was closed.
-    ASSERT(!m_contentFrame);
+    DCHECK(!m_contentFrame);
 }
 
 Document* HTMLFrameOwnerElement::contentDocument() const
@@ -275,8 +275,8 @@ void HTMLFrameOwnerElement::setWidget(Widget* widget)
     if (m_widget) {
         layoutPartItem.updateOnWidgetChange();
 
-        ASSERT(document().view() == layoutPartItem.frameView());
-        ASSERT(layoutPartItem.frameView());
+        DCHECK_EQ(document().view(), layoutPartItem.frameView());
+        DCHECK(layoutPartItem.frameView());
         moveWidgetToParentSoon(m_widget.get(), layoutPartItem.frameView());
     }
 

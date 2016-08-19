@@ -145,7 +145,7 @@ bool HTMLLinkElement::loadLink(const String& type, const String& as, const Strin
 LinkResource* HTMLLinkElement::linkResourceToProcess()
 {
     if (!shouldLoadLink()) {
-        ASSERT(!linkStyle() || !linkStyle()->hasSheet());
+        DCHECK(!linkStyle() || !linkStyle()->hasSheet());
         return nullptr;
     }
 
@@ -232,7 +232,7 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
     m_linkLoader->released();
 
     if (!wasConnected) {
-        ASSERT(!linkStyle() || !linkStyle()->hasSheet());
+        DCHECK(!linkStyle() || !linkStyle()->hasSheet());
         return;
     }
     document().styleEngine().removeStyleSheetCandidateNode(this);
@@ -298,13 +298,13 @@ void HTMLLinkElement::valueWasSet()
 
 bool HTMLLinkElement::sheetLoaded()
 {
-    ASSERT(linkStyle());
+    DCHECK(linkStyle());
     return linkStyle()->sheetLoaded();
 }
 
 void HTMLLinkElement::notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus errorStatus)
 {
-    ASSERT(linkStyle());
+    DCHECK(linkStyle());
     linkStyle()->notifyLoadedSheetAndAllCriticalSubresources(errorStatus);
 }
 
@@ -315,8 +315,8 @@ void HTMLLinkElement::dispatchPendingLoadEvents()
 
 void HTMLLinkElement::dispatchPendingEvent(LinkEventSender* eventSender)
 {
-    ASSERT_UNUSED(eventSender, eventSender == &linkLoadEventSender());
-    ASSERT(m_link);
+    DCHECK_EQ(eventSender, &linkLoadEventSender());
+    DCHECK(m_link);
     if (m_link->hasLoaded())
         linkLoaded();
     else
@@ -330,7 +330,7 @@ void HTMLLinkElement::scheduleEvent()
 
 void HTMLLinkElement::startLoadingDynamicSheet()
 {
-    ASSERT(linkStyle());
+    DCHECK(linkStyle());
     linkStyle()->startLoadingDynamicSheet();
 }
 
@@ -466,8 +466,8 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheet2Histogram, ("Blink.RestoredCachedStyleSheet2", StyleSheetCacheStatusCount));
 
     if (StyleSheetContents* restoredSheet = const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->restoreParsedStyleSheet(parserContext)) {
-        ASSERT(restoredSheet->isCacheableForResource());
-        ASSERT(!restoredSheet->isLoading());
+        DCHECK(restoredSheet->isCacheableForResource());
+        DCHECK(!restoredSheet->isLoading());
 
         if (m_sheet)
             clearSheet();
@@ -531,14 +531,14 @@ void LinkStyle::notifyLoadedSheetAndAllCriticalSubresources(Node::LoadedSheetErr
 
 void LinkStyle::startLoadingDynamicSheet()
 {
-    ASSERT(m_pendingSheetType < Blocking);
+    DCHECK_LT(m_pendingSheetType, Blocking);
     addPendingSheet(Blocking);
 }
 
 void LinkStyle::clearSheet()
 {
-    ASSERT(m_sheet);
-    ASSERT(m_sheet->ownerNode() == m_owner);
+    DCHECK(m_sheet);
+    DCHECK_EQ(m_sheet->ownerNode(), m_owner);
     m_sheet.release()->clearOwnerNode();
 }
 
@@ -628,7 +628,7 @@ void LinkStyle::setCrossOriginStylesheetStatus(CSSStyleSheet* sheet)
 
 void LinkStyle::process()
 {
-    ASSERT(m_owner->shouldProcessStyle());
+    DCHECK(m_owner->shouldProcessStyle());
     String type = m_owner->typeValue().lower();
     String as = m_owner->asValue().lower();
     String media = m_owner->media().lower();

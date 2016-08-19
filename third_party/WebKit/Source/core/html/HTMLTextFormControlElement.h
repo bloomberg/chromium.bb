@@ -120,7 +120,7 @@ protected:
 
     void cacheSelection(int start, int end, TextFieldSelectionDirection direction)
     {
-        ASSERT(start >= 0);
+        DCHECK_GE(start, 0);
         m_cachedSelectionStart = start;
         m_cachedSelectionEnd = end;
         m_cachedSelectionDirection = direction;

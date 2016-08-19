@@ -221,7 +221,7 @@ HTMLOptionElement* HTMLSelectElement::activeSelectionEnd() const
 void HTMLSelectElement::add(const HTMLOptionElementOrHTMLOptGroupElement& element, const HTMLElementOrLong& before, ExceptionState& exceptionState)
 {
     HTMLElement* elementToInsert;
-    ASSERT(!element.isNull());
+    DCHECK(!element.isNull());
     if (element.isHTMLOptionElement())
         elementToInsert = element.getAsHTMLOptionElement();
     else
@@ -498,7 +498,7 @@ HTMLOptionElement* HTMLSelectElement::optionAtListIndex(int listIndex) const
 // Valid means that it is enabled and visible.
 HTMLOptionElement* HTMLSelectElement::nextValidOption(int listIndex, SkipDirection direction, int skip) const
 {
-    ASSERT(direction == SkipBackwards || direction == SkipForwards);
+    DCHECK(direction == SkipBackwards || direction == SkipForwards);
     const ListItems& listItems = this->listItems();
     HTMLOptionElement* lastGoodOption = nullptr;
     int size = listItems.size();
@@ -566,7 +566,7 @@ HTMLOptionElement* HTMLSelectElement::nextSelectableOptionPageAway(HTMLOptionEle
 
 void HTMLSelectElement::selectAll()
 {
-    ASSERT(!usesMenuList());
+    DCHECK(!usesMenuList());
     if (!layoutObject() || !m_multiple)
         return;
 
@@ -627,8 +627,8 @@ void HTMLSelectElement::setActiveSelectionEnd(HTMLOptionElement* option)
 
 void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions, bool scroll)
 {
-    ASSERT(layoutObject());
-    ASSERT(layoutObject()->isListBox() || m_multiple);
+    DCHECK(layoutObject());
+    DCHECK(layoutObject()->isListBox() || m_multiple);
 
     int activeSelectionAnchorIndex = m_activeSelectionAnchor ? m_activeSelectionAnchor->index() : -1;
     int activeSelectionEndIndex = m_activeSelectionEnd ? m_activeSelectionEnd->index() : -1;
@@ -661,7 +661,7 @@ void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions, bool s
 
 void HTMLSelectElement::listBoxOnChange()
 {
-    ASSERT(!usesMenuList() || m_multiple);
+    DCHECK(!usesMenuList() || m_multiple);
 
     const ListItems& items = listItems();
 
@@ -691,7 +691,7 @@ void HTMLSelectElement::listBoxOnChange()
 
 void HTMLSelectElement::dispatchInputAndChangeEventForMenuList()
 {
-    ASSERT(usesMenuList());
+    DCHECK(usesMenuList());
 
     HTMLOptionElement* selectedOption = this->selectedOption();
     if (m_lastOnChangeOption.get() != selectedOption) {
@@ -728,6 +728,7 @@ const HTMLSelectElement::ListItems& HTMLSelectElement::listItems() const
 #if ENABLE(ASSERT)
         HeapVector<Member<HTMLElement>> items = m_listItems;
         recalcListItems();
+        // TODO(tkent): Add a stream printer for HeapVector. DCHECK requires it.
         ASSERT(items == m_listItems);
 #endif
     }
@@ -920,7 +921,7 @@ void HTMLSelectElement::scrollToOptionTask()
         return;
     // optionRemoved() makes sure m_optionToScrollTo doesn't have an option with
     // another owner.
-    ASSERT(option->ownerSelectElement() == this);
+    DCHECK_EQ(option->ownerSelectElement(), this);
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     if (!layoutObject() || !layoutObject()->isListBox())
         return;
@@ -930,7 +931,7 @@ void HTMLSelectElement::scrollToOptionTask()
 
 void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, bool optionIsSelected)
 {
-    ASSERT(option->ownerSelectElement() == this);
+    DCHECK_EQ(option->ownerSelectElement(), this);
     if (optionIsSelected)
         selectOption(option, multiple() ? 0 : DeselectOtherOptions);
     else if (!usesMenuList() || multiple())
@@ -941,7 +942,7 @@ void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, b
 
 void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsSelected)
 {
-    ASSERT(option.ownerSelectElement() == this);
+    DCHECK_EQ(option.ownerSelectElement(), this);
     setRecalcListItems();
     if (optionIsSelected) {
         selectOption(&option, multiple() ? 0 : DeselectOtherOptions);
@@ -1133,7 +1134,7 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
     selectOption(nullptr, DeselectOtherOptions);
 
     // The saved state should have at least one value and an index.
-    ASSERT(state.valueSize() >= 2);
+    DCHECK_GE(state.valueSize(), 2u);
     if (!multiple()) {
         size_t index = state[1].toUInt();
         if (index < itemsSize && isHTMLOptionElement(items[index]) && toHTMLOptionElement(items[index])->value() == state[0]) {
@@ -1364,7 +1365,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
 
 void HTMLSelectElement::updateSelectedState(HTMLOptionElement* clickedOption, bool multi, bool shift)
 {
-    ASSERT(clickedOption);
+    DCHECK(clickedOption);
     // Save the selection so it can be compared to the new selection when
     // dispatching change events during mouseup, or after autoscroll finishes.
     saveLastSelection();

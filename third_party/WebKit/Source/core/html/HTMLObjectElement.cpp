@@ -244,7 +244,7 @@ void HTMLObjectElement::reloadPluginOnAttributeChange(const QualifiedName& name)
     } else if (name == classidAttr) {
         needsInvalidation = true;
     } else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         needsInvalidation = false;
     }
     setNeedsWidgetUpdate(true);
@@ -256,8 +256,8 @@ void HTMLObjectElement::reloadPluginOnAttributeChange(const QualifiedName& name)
 // moved down into HTMLPluginElement.cpp
 void HTMLObjectElement::updateWidgetInternal()
 {
-    ASSERT(!layoutEmbeddedItem().showsUnavailablePluginIndicator());
-    ASSERT(needsWidgetUpdate());
+    DCHECK(!layoutEmbeddedItem().showsUnavailablePluginIndicator());
+    DCHECK(needsWidgetUpdate());
     setNeedsWidgetUpdate(false);
     // TODO(schenney): crbug.com/572908 This should ASSERT isFinishedParsingChildren() instead.
     if (!isFinishedParsingChildren()) {

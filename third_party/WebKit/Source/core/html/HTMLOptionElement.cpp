@@ -92,7 +92,7 @@ void HTMLOptionElement::attachLayoutTree(const AttachContext& context)
 {
     AttachContext optionContext(context);
     if (context.resolvedStyle) {
-        ASSERT(!m_style || m_style == context.resolvedStyle);
+        DCHECK(!m_style || m_style == context.resolvedStyle);
         m_style = context.resolvedStyle;
     } else if (parentComputedStyle()) {
         updateNonComputedStyle();
@@ -464,7 +464,7 @@ bool HTMLOptionElement::isDisplayNone() const
         // display:none doesn't override children's display properties in
         // ComputedStyle.
         Element* parent = parentElement();
-        ASSERT(parent);
+        DCHECK(parent);
         if (isHTMLOptGroupElement(*parent)) {
             const ComputedStyle* parentStyle = parent->computedStyle() ? parent->computedStyle() : parent->ensureComputedStyle();
             return !parentStyle || parentStyle->display() == NONE;

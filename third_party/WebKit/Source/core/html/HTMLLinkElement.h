@@ -111,7 +111,7 @@ private:
     void setCrossOriginStylesheetStatus(CSSStyleSheet*);
     void setFetchFollowingCORS()
     {
-        ASSERT(!m_fetchFollowingCORS);
+        DCHECK(!m_fetchFollowingCORS);
         m_fetchFollowingCORS = true;
     }
     void clearFetchFollowingCORS()

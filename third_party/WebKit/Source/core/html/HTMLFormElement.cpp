@@ -302,7 +302,7 @@ void HTMLFormElement::prepareForSubmission(Event* event)
     }
 
     bool skipValidation = !document().page() || noValidate();
-    ASSERT(event);
+    DCHECK(event);
     HTMLFormControlElement* submitElement = submitElementFromEvent(event);
     if (submitElement && submitElement->formNoValidate())
         skipValidation = true;
@@ -400,9 +400,9 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton)
 
 void HTMLFormElement::scheduleFormSubmission(FormSubmission* submission)
 {
-    ASSERT(submission->method() == FormSubmission::PostMethod || submission->method() == FormSubmission::GetMethod);
-    ASSERT(submission->data());
-    ASSERT(submission->form());
+    DCHECK(submission->method() == FormSubmission::PostMethod || submission->method() == FormSubmission::GetMethod);
+    DCHECK(submission->data());
+    DCHECK(submission->form());
     if (submission->action().isEmpty())
         return;
     if (document().isSandboxed(SandboxForms)) {
@@ -571,7 +571,7 @@ const FormAssociatedElement::List& HTMLFormElement::associatedElements() const
         scope = &NodeTraversal::highestAncestorOrSelf(*mutableThis);
     if (isConnected() && m_hasElementsAssociatedByFormAttribute)
         scope = &treeScope().rootNode();
-    ASSERT(scope);
+    DCHECK(scope);
     collectAssociatedElements(*scope, mutableThis->m_associatedElements);
     mutableThis->m_associatedElementsAreDirty = false;
     return m_associatedElements;
@@ -678,16 +678,16 @@ Element* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName)
     if (pastName.isEmpty() || !m_pastNamesMap)
         return 0;
     Element* element = m_pastNamesMap->get(pastName);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     if (!element)
         return 0;
-    ASSERT_WITH_SECURITY_IMPLICATION(toHTMLElement(element)->formOwner() == this);
+    SECURITY_DCHECK(toHTMLElement(element)->formOwner() == this);
     if (isHTMLImageElement(*element)) {
-        ASSERT_WITH_SECURITY_IMPLICATION(imageElements().find(element) != kNotFound);
+        SECURITY_DCHECK(imageElements().find(element) != kNotFound);
     } else if (isHTMLObjectElement(*element)) {
-        ASSERT_WITH_SECURITY_IMPLICATION(associatedElements().find(toHTMLObjectElement(element)) != kNotFound);
+        SECURITY_DCHECK(associatedElements().find(toHTMLObjectElement(element)) != kNotFound);
     } else {
-        ASSERT_WITH_SECURITY_IMPLICATION(associatedElements().find(toHTMLFormControlElement(element)) != kNotFound);
+        SECURITY_DCHECK(associatedElements().find(toHTMLFormControlElement(element)) != kNotFound);
     }
 #endif
     return element;
@@ -762,7 +762,7 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, RadioNodeLi
     // but if the first the size cannot be zero.
     HeapVector<Member<Element>> elements;
     getNamedElements(name, elements);
-    ASSERT(!elements.isEmpty());
+    DCHECK(!elements.isEmpty());
 
     bool onlyMatchImg = !elements.isEmpty() && isHTMLImageElement(*elements.first());
     if (onlyMatchImg) {

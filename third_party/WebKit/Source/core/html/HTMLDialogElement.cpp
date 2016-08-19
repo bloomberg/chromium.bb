@@ -177,7 +177,7 @@ void HTMLDialogElement::removedFrom(ContainerNode* insertionPoint)
 
 void HTMLDialogElement::setCentered(LayoutUnit centeredPosition)
 {
-    ASSERT(m_centeringMode == NeedsCentering);
+    DCHECK_EQ(m_centeringMode, NeedsCentering);
     m_centeredPosition = centeredPosition;
     m_centeringMode = Centered;
 }

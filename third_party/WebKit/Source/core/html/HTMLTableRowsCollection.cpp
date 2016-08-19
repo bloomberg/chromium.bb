@@ -127,12 +127,12 @@ HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement& table)
 HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
     : HTMLCollection(table, TableRows, OverridesItemAfter)
 {
-    ASSERT(isHTMLTableElement(table));
+    DCHECK(isHTMLTableElement(table));
 }
 
 HTMLTableRowsCollection* HTMLTableRowsCollection::create(ContainerNode& table, CollectionType type)
 {
-    ASSERT_UNUSED(type, type == TableRows);
+    DCHECK_EQ(type, TableRows);
     return new HTMLTableRowsCollection(table);
 }
 

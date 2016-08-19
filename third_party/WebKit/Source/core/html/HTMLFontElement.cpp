@@ -66,7 +66,7 @@ static bool parseFontSize(const CharacterType* characters, unsigned length, int&
     // Step 4
     if (position == end)
         return false;
-    ASSERT(position < end);
+    DCHECK_LT(position, end);
 
     // Step 5
     enum {
@@ -180,7 +180,7 @@ bool HTMLFontElement::cssValueFromFontSizeNumber(const String& s, CSSValueID& si
         size = CSSValueWebkitXxxLarge;
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return true;
 }

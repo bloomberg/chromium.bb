@@ -97,7 +97,7 @@ HTMLDetailsElement::~HTMLDetailsElement()
 
 void HTMLDetailsElement::dispatchPendingEvent(DetailsEventSender* eventSender)
 {
-    ASSERT_UNUSED(eventSender, eventSender == &detailsToggleEventSender());
+    DCHECK_EQ(eventSender, &detailsToggleEventSender());
     dispatchEvent(Event::create(EventTypeNames::toggle));
 }
 
@@ -130,7 +130,8 @@ Element* HTMLDetailsElement::findMainSummary() const
         return summary;
 
     HTMLContentElement* content = toHTMLContentElement(userAgentShadowRoot()->firstChild());
-    ASSERT(content->firstChild() && isHTMLSummaryElement(*content->firstChild()));
+    DCHECK(content->firstChild());
+    DCHECK(isHTMLSummaryElement(*content->firstChild()));
     return toElement(content->firstChild());
 }
 
@@ -147,7 +148,7 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
         detailsToggleEventSender().dispatchEventSoon(this);
 
         Element* content = ensureUserAgentShadowRoot().getElementById(ShadowElementNames::detailsContent());
-        ASSERT(content);
+        DCHECK(content);
         if (m_isOpen)
             content->removeInlineStyleProperty(CSSPropertyDisplay);
         else
@@ -156,7 +157,7 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
         // Invalidate the LayoutDetailsMarker in order to turn the arrow signifying if the
         // details element is open or closed.
         Element* summary = findMainSummary();
-        ASSERT(summary);
+        DCHECK(summary);
 
         Element* control = toHTMLSummaryElement(summary)->markerControl();
         if (control && control->layoutObject())

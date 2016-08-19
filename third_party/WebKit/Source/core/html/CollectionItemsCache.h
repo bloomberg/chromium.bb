@@ -105,7 +105,7 @@ template <typename Collection, typename NodeType>
 inline NodeType* CollectionItemsCache<Collection, NodeType>::nodeAt(const Collection& collection, unsigned index)
 {
     if (m_listValid) {
-        ASSERT(this->isCachedNodeCountValid());
+        DCHECK(this->isCachedNodeCountValid());
         return index < this->cachedNodeCount() ? m_cachedList[index] : nullptr;
     }
     return Base::nodeAt(collection, index);

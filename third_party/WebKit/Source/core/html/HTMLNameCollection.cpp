@@ -34,7 +34,7 @@ HTMLNameCollection::HTMLNameCollection(ContainerNode& document, CollectionType t
 
 HTMLNameCollection::~HTMLNameCollection()
 {
-    ASSERT(type() == WindowNamedItems || type() == DocumentNamedItems);
+    DCHECK(type() == WindowNamedItems || type() == DocumentNamedItems);
 }
 
 } // namespace blink

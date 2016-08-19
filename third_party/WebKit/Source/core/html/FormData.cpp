@@ -56,7 +56,7 @@ public:
         if (entry.isString()) {
             value.setUSVString(m_formData->decode(entry.value()));
         } else {
-            ASSERT(entry.isFile());
+            DCHECK(entry.isFile());
             value.setFile(entry.file());
         }
         return true;
@@ -144,7 +144,7 @@ void FormData::get(const String& name, FormDataEntryValue& result)
             if (entry->isString()) {
                 result.setUSVString(decode(entry->value()));
             } else {
-                ASSERT(entry->isFile());
+                DCHECK(entry->isFile());
                 result.setFile(entry->file());
             }
             return;
@@ -164,7 +164,7 @@ HeapVector<FormDataEntryValue> FormData::getAll(const String& name)
         if (entry->isString()) {
             value.setUSVString(decode(entry->value()));
         } else {
-            ASSERT(entry->isFile());
+            DCHECK(entry->isFile());
             value.setFile(entry->file());
         }
         results.append(value);
@@ -194,7 +194,7 @@ void FormData::set(const String& name, Blob* blob, const String& filename)
 
 void FormData::setEntry(const Entry* entry)
 {
-    ASSERT(entry);
+    DCHECK(entry);
     const CString encodedName = entry->name();
     bool found = false;
     size_t i = 0;
@@ -329,7 +329,7 @@ DEFINE_TRACE(FormData::Entry)
 
 File* FormData::Entry::file() const
 {
-    ASSERT(blob());
+    DCHECK(blob());
     // The spec uses the passed filename when inserting entries into the list.
     // Here, we apply the filename (if present) as an override when extracting
     // entries.

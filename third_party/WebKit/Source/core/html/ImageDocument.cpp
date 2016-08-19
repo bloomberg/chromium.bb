@@ -252,7 +252,7 @@ float ImageDocument::scale() const
     if (!view)
         return 1;
 
-    ASSERT(m_imageElement->cachedImage());
+    DCHECK(m_imageElement->cachedImage());
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), pageZoomFactor(this));
     LayoutSize windowSize = LayoutSize(view->width(), view->height());
 
@@ -267,7 +267,7 @@ void ImageDocument::resizeImageToFit(ScaleType type)
     if (!m_imageElement || m_imageElement->document() != this || (pageZoomFactor(this) > 1 && type == ScaleOnlyUnzoomedDocument))
         return;
 
-    ASSERT(m_imageElement->cachedImage());
+    DCHECK(m_imageElement->cachedImage());
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), pageZoomFactor(this));
 
     float scale = this->scale();
@@ -279,7 +279,7 @@ void ImageDocument::resizeImageToFit(ScaleType type)
 
 void ImageDocument::imageClicked(int x, int y)
 {
-    ASSERT(m_shrinkToFitMode == Desktop);
+    DCHECK_EQ(m_shrinkToFitMode, Desktop);
 
     if (!m_imageSizeIsKnown || imageFitsInWindow())
         return;
@@ -304,7 +304,7 @@ void ImageDocument::imageClicked(int x, int y)
 
 void ImageDocument::imageUpdated()
 {
-    ASSERT(m_imageElement);
+    DCHECK(m_imageElement);
 
     if (m_imageSizeIsKnown)
         return;
@@ -323,12 +323,12 @@ void ImageDocument::imageUpdated()
 
 void ImageDocument::restoreImageSize(ScaleType type)
 {
-    ASSERT(m_shrinkToFitMode == Desktop);
+    DCHECK_EQ(m_shrinkToFitMode, Desktop);
 
     if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this || (pageZoomFactor(this) < 1 && type == ScaleOnlyUnzoomedDocument))
         return;
 
-    ASSERT(m_imageElement->cachedImage());
+    DCHECK(m_imageElement->cachedImage());
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), 1.0f);
     m_imageElement->setWidth(imageSize.width());
     m_imageElement->setHeight(imageSize.height());
@@ -343,7 +343,7 @@ void ImageDocument::restoreImageSize(ScaleType type)
 
 bool ImageDocument::imageFitsInWindow() const
 {
-    ASSERT(m_shrinkToFitMode == Desktop);
+    DCHECK_EQ(m_shrinkToFitMode, Desktop);
 
     if (!m_imageElement || m_imageElement->document() != this)
         return true;
@@ -352,7 +352,7 @@ bool ImageDocument::imageFitsInWindow() const
     if (!view)
         return true;
 
-    ASSERT(m_imageElement->cachedImage());
+    DCHECK(m_imageElement->cachedImage());
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), pageZoomFactor(this));
     LayoutSize windowSize = LayoutSize(view->width(), view->height());
 

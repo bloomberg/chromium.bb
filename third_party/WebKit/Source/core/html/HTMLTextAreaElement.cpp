@@ -276,7 +276,7 @@ void HTMLTextAreaElement::handleFocusEvent(Element*, WebFocusType)
 
 void HTMLTextAreaElement::subtreeHasChanged()
 {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // The innerEditor should have either Text nodes or a placeholder break
     // element. If we see other nodes, it's a bug in editing code and we should
     // fix it.
@@ -284,8 +284,8 @@ void HTMLTextAreaElement::subtreeHasChanged()
     for (Node& node : NodeTraversal::descendantsOf(*innerEditor)) {
         if (node.isTextNode())
             continue;
-        ASSERT(isHTMLBRElement(node));
-        ASSERT(&node == innerEditor->lastChild());
+        DCHECK(isHTMLBRElement(node));
+        DCHECK_EQ(&node, innerEditor->lastChild());
     }
 #endif
     addPlaceholderBreakElementIfNecessary();
@@ -301,14 +301,14 @@ void HTMLTextAreaElement::subtreeHasChanged()
     // When typing in a textarea, childrenChanged is not called, so we need to force the directionality check.
     calculateAndAdjustDirectionality();
 
-    ASSERT(document().isActive());
+    DCHECK(document().isActive());
     document().frameHost()->chromeClient().didChangeValueInTextField(*this);
 }
 
 void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* event) const
 {
-    ASSERT(event);
-    ASSERT(layoutObject());
+    DCHECK(event);
+    DCHECK(layoutObject());
     int signedMaxLength = maxLength();
     if (signedMaxLength < 0)
         return;
@@ -328,7 +328,7 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*
     if (focused()) {
         selectionLength = computeLengthForSubmission(document().frame()->selection().selectedText());
     }
-    ASSERT(currentLength >= selectionLength);
+    DCHECK_GE(currentLength, selectionLength);
     unsigned baseLength = currentLength - selectionLength;
     unsigned appendableLength = unsignedMaxLength > baseLength ? unsignedMaxLength - baseLength : 0;
     event->setText(sanitizeUserInputValue(event->text(), appendableLength));

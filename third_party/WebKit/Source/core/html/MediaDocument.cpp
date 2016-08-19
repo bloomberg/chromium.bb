@@ -124,7 +124,7 @@ private:
 
 void MediaDocumentParser::createDocumentStructure()
 {
-    ASSERT(document());
+    DCHECK(document());
     HTMLHtmlElement* rootElement = HTMLHtmlElement::create(*document());
     document()->appendChild(rootElement);
     rootElement->insertedByParser();

@@ -63,7 +63,7 @@ DEFINE_TRACE(HTMLContentElement)
 
 void HTMLContentElement::parseSelect()
 {
-    ASSERT(m_shouldParseSelect);
+    DCHECK(m_shouldParseSelect);
 
     m_selectorList = CSSParser::parseSelector(CSSParserContext(document(), nullptr), nullptr, m_select);
     m_shouldParseSelect = false;
@@ -97,7 +97,7 @@ static inline bool includesDisallowedPseudoClass(const CSSSelector& selector)
 
 bool HTMLContentElement::validateSelect() const
 {
-    ASSERT(!m_shouldParseSelect);
+    DCHECK(!m_shouldParseSelect);
 
     if (m_select.isNull() || m_select.isEmpty())
         return true;

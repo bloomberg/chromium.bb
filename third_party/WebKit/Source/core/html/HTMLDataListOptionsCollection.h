@@ -14,7 +14,7 @@ class HTMLDataListOptionsCollection : public HTMLCollection {
 public:
     static HTMLDataListOptionsCollection* create(ContainerNode& ownerNode, CollectionType type)
     {
-        ASSERT_UNUSED(type, type == DataListOptions);
+        DCHECK_EQ(type, DataListOptions);
         return new HTMLDataListOptionsCollection(ownerNode);
     }
 
