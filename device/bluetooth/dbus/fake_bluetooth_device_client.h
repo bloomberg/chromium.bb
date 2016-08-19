@@ -277,6 +277,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   void AddInputDeviceIfNeeded(const dbus::ObjectPath& object_path,
                               Properties* properties);
 
+  // If fake device with |object_path| exists, sets its inquiry RSSI property
+  // to false and notifies that the property changed.
+  void InvalidateDeviceRSSI(const dbus::ObjectPath& object_path);
   // Updates the inquiry RSSI property of fake device with object path
   // |object_path| to |rssi|, if the fake device exists.
   void UpdateDeviceRSSI(const dbus::ObjectPath& object_path, int16_t rssi);
