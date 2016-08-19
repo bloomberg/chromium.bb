@@ -70,7 +70,7 @@ void UIDataTypeController::LoadModels(
   // Since we can't be called multiple times before Stop() is called,
   // |shared_change_processor_| must be NULL here.
   DCHECK(!shared_change_processor_.get());
-  shared_change_processor_ = new SharedChangeProcessor();
+  shared_change_processor_ = new SharedChangeProcessor(type());
 
   state_ = MODEL_STARTING;
   if (!StartModels()) {
@@ -135,7 +135,7 @@ void UIDataTypeController::Associate() {
   DCHECK(sync_client_->GetSyncService());
   local_service_ = shared_change_processor_->Connect(
       sync_client_, processor_factory_.get(),
-      sync_client_->GetSyncService()->GetUserShare(), this, type(),
+      sync_client_->GetSyncService()->GetUserShare(), this,
       weak_ptr_factory.GetWeakPtr());
   if (!local_service_.get()) {
     syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,

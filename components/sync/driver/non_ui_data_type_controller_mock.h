@@ -37,12 +37,6 @@ class NonUIDataTypeControllerMock : public NonUIDataTypeController {
                void(DataTypeController::ConfigureResult result,
                     const syncer::SyncMergeResult& local_merge_result,
                     const syncer::SyncMergeResult& syncer_merge_result));
-  MOCK_METHOD4(StartDoneImpl,
-               void(DataTypeController::ConfigureResult result,
-                    DataTypeController::State new_state,
-                    const syncer::SyncMergeResult& local_merge_result,
-                    const syncer::SyncMergeResult& syncer_merge_result));
-  MOCK_METHOD1(RecordAssociationTime, void(base::TimeDelta time));
   MOCK_METHOD1(RecordStartFailure, void(ConfigureResult result));
 
  protected:

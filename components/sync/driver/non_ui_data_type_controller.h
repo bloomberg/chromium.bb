@@ -69,23 +69,12 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
       const base::Closure& task) = 0;
 
   // Start up complete, update the state and invoke the callback.
-  // Note: this is performed on the datatype's thread.
   virtual void StartDone(DataTypeController::ConfigureResult start_result,
                          const syncer::SyncMergeResult& local_merge_result,
                          const syncer::SyncMergeResult& syncer_merge_result);
 
-  // UI thread implementation of StartDone.
-  virtual void StartDoneImpl(
-      DataTypeController::ConfigureResult start_result,
-      DataTypeController::State new_state,
-      const syncer::SyncMergeResult& local_merge_result,
-      const syncer::SyncMergeResult& syncer_merge_result);
-
   // Kick off the association process.
   virtual bool StartAssociationAsync();
-
-  // Record association time.
-  virtual void RecordAssociationTime(base::TimeDelta time);
 
   // Record causes of start failure.
   virtual void RecordStartFailure(ConfigureResult result);
@@ -108,13 +97,11 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   // NULL.  Must be called only by StartDoneImpl() or Stop() (on the
   // UI thread) and only after a call to Start() (i.e.,
   // |shared_change_processor_| must be non-NULL).
-  void ClearSharedChangeProcessor();
+  void DisconnectSharedChangeProcessor();
 
-  // Posts StopLocalService() to the datatype's thread.
-  void StopLocalServiceAsync();
-
-  // Calls local_service_->StopSyncing() and releases our references to it.
-  void StopLocalService();
+  // Posts StopLocalService() to the processor on the model type thread and then
+  // clears our reference to the processor.
+  void StopServiceAndClearProcessor();
 
   // Abort model loading and trigger the model load callback.
   void AbortModelLoad();
@@ -151,13 +138,6 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   // since we call Disconnect() before releasing the UI thread
   // reference).
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
-
-  // A weak pointer to the actual local syncable service, which performs all the
-  // real work. We do not own the object, and it is only safe to access on the
-  // DataType's thread.
-  // Lifetime: it gets set in StartAssociationWithSharedChangeProcessor(...)
-  // and released in StopLocalService().
-  base::WeakPtr<syncer::SyncableService> local_service_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
 };

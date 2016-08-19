@@ -18,6 +18,7 @@
 #include "components/sync/api/sync_error.h"
 #include "components/sync/api/sync_error_factory.h"
 #include "components/sync/api/sync_merge_result.h"
+#include "components/sync/driver/data_type_controller.h"
 #include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
@@ -53,8 +54,19 @@ class SyncClient;
 class SharedChangeProcessor
     : public base::RefCountedThreadSafe<SharedChangeProcessor> {
  public:
+  typedef base::Callback<void(
+      DataTypeController::ConfigureResult start_result,
+      const syncer::SyncMergeResult& local_merge_result,
+      const syncer::SyncMergeResult& syncer_merge_result)>
+      StartDoneCallback;
+
   // Create an uninitialized SharedChangeProcessor.
-  SharedChangeProcessor();
+  explicit SharedChangeProcessor(syncer::ModelType type);
+
+  void StartAssociation(StartDoneCallback start_done,
+                        SyncClient* const sync_client,
+                        syncer::UserShare* user_share,
+                        syncer::DataTypeErrorHandler* error_handler);
 
   // Connect to the Syncer and prepare to handle changes for |type|. Will
   // create and store a new GenericChangeProcessor and return a weak pointer to
@@ -66,7 +78,6 @@ class SharedChangeProcessor
       GenericChangeProcessorFactory* processor_factory,
       syncer::UserShare* user_share,
       syncer::DataTypeErrorHandler* error_handler,
-      syncer::ModelType type,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result);
 
   // Disconnects from the generic change processor. May be called from any
@@ -105,6 +116,9 @@ class SharedChangeProcessor
       const tracked_objects::Location& location,
       const std::string& message);
 
+  // Calls local_service_->StopSyncing() and releases our reference to it.
+  void StopLocalService();
+
   ChangeProcessor* generic_change_processor();
 
  protected:
@@ -112,6 +126,9 @@ class SharedChangeProcessor
   virtual ~SharedChangeProcessor();
 
  private:
+  // Record association time.
+  virtual void RecordAssociationTime(base::TimeDelta time);
+
   // Monitor lock for this object. All methods that interact with the change
   // processor must aquire this lock and check whether we're disconnected or
   // not. Once disconnected, all attempted changes to or loads from the change
@@ -120,8 +137,8 @@ class SharedChangeProcessor
   mutable base::Lock monitor_lock_;
   bool disconnected_;
 
-  // The sync datatype we were last connected to.
-  syncer::ModelType type_;
+  // The sync datatype we process changes for.
+  const syncer::ModelType type_;
 
   // The frontend / UI MessageLoop this object is constructed on. May also be
   // destructed and/or disconnected on this loop, see ~SharedChangeProcessor.
@@ -135,6 +152,10 @@ class SharedChangeProcessor
   GenericChangeProcessor* generic_change_processor_;
 
   syncer::DataTypeErrorHandler* error_handler_;
+
+  // The local service for this type. Only set if the DTC for the type uses
+  // SharedChangeProcessor::StartAssociation().
+  base::WeakPtr<syncer::SyncableService> local_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedChangeProcessor);
 };

@@ -5,6 +5,7 @@
 #include "components/sync/driver/shared_change_processor.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -102,7 +103,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
  protected:
   void SetUp() override {
     test_user_share_.SetUp();
-    shared_change_processor_ = new SharedChangeProcessor();
+    shared_change_processor_ = new SharedChangeProcessor(syncer::AUTOFILL);
     ASSERT_TRUE(backend_thread_.Start());
     ASSERT_TRUE(backend_thread_.task_runner()->PostTask(
         FROM_HERE,
@@ -189,8 +190,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
     DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     EXPECT_TRUE(shared_change_processor->Connect(
         this, &processor_factory_, test_user_share_.user_share(),
-        &error_handler_, syncer::AUTOFILL,
-        base::WeakPtr<syncer::SyncMergeResult>()));
+        &error_handler_, base::WeakPtr<syncer::SyncMergeResult>()));
     did_connect_ = true;
   }
 
