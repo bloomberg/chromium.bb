@@ -73,7 +73,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTagsTest, Basic) {
   EXPECT_EQ(1U, tracked_tags().size());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionTagsTest, PreAndPostExistingTaskProviding) {
+// Disabled due to flakiness, see crbug.com/519333 and crbug.com/639185.
+IN_PROC_BROWSER_TEST_F(ExtensionTagsTest,
+                       DISABLED_PreAndPostExistingTaskProviding) {
   // Browser tests start with a single tab.
   EXPECT_EQ(1U, tracked_tags().size());
   MockWebContentsTaskManager task_manager;
