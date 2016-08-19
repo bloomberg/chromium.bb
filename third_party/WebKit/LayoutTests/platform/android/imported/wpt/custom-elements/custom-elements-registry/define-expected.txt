@@ -8,6 +8,27 @@ PASS If constructor is object, should throw a TypeError
 PASS If constructor is string, should throw a TypeError 
 PASS If constructor is arrow function, should throw a TypeError 
 PASS If constructor is method, should throw a TypeError 
+FAIL If constructor is HTMLElement, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-HTMLElement" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is HTMLButtonElement, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-HTMLButtonElement" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is HTMLImageElement, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-HTMLImageElement" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is HTMLMediaElement, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-HTMLMediaElement" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is Image, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-Image" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is Audio, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-Audio" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor is Option, should throw a TypeError assert_throws: function "() => {
+        customElements.define(`test-define-constructor-${t[0]}`, t[1]);
+      }" threw object "SyntaxError: Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-Option" is not a valid custom element name" ("SyntaxError") expected object "TypeError" ("TypeError")
 PASS Element names: defining an element named a- should succeed 
 PASS Element names: defining an element named a-a should succeed 
 PASS Element names: defining an element named aa- should succeed 
@@ -88,12 +109,6 @@ PASS If constructor.prototype.disconnectedCallback is function, should succeed
 PASS If constructor.prototype.disconnectedCallback is null, should throw a TypeError 
 PASS If constructor.prototype.disconnectedCallback is object, should throw a TypeError 
 PASS If constructor.prototype.disconnectedCallback is integer, should throw a TypeError 
-PASS If constructor.prototype.adoptedCallback throws, should rethrow 
-PASS If constructor.prototype.adoptedCallback is undefined, should succeed 
-PASS If constructor.prototype.adoptedCallback is function, should succeed 
-PASS If constructor.prototype.adoptedCallback is null, should throw a TypeError 
-PASS If constructor.prototype.adoptedCallback is object, should throw a TypeError 
-PASS If constructor.prototype.adoptedCallback is integer, should throw a TypeError 
 PASS If constructor.prototype.attributeChangedCallback throws, should rethrow 
 PASS If constructor.prototype.attributeChangedCallback is undefined, should succeed 
 PASS If constructor.prototype.attributeChangedCallback is function, should succeed 
