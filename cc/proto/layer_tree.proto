@@ -10,6 +10,7 @@ import "layer.proto";
 import "layer_selection_bound.proto";
 import "property_tree.proto";
 import "size.proto";
+import "vector2df.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -41,4 +42,5 @@ message LayerTree {
   optional LayerNode root_layer = 27;
   optional LayerSelection selection = 29;
   optional PropertyTrees property_trees = 30;
+  optional Vector2dF elastic_overscroll = 31;
 }

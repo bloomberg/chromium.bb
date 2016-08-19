@@ -422,8 +422,6 @@ class CC_EXPORT LayerTreeHost {
   bool content_is_suitable_for_gpu_rasterization_;
   bool gpu_rasterization_histogram_recorded_;
 
-  gfx::Vector2dF elastic_overscroll_;
-
   // If set, then page scale animation has completed, but the client hasn't been
   // notified about it yet.
   bool did_complete_scale_animation_;

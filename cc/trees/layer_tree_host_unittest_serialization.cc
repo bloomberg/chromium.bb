@@ -258,7 +258,7 @@ class LayerTreeHostSerializationTest : public testing::Test {
         layer_tree_src->inputs_.min_page_scale_factor * 3 + 1;
     layer_tree_src->inputs_.max_page_scale_factor =
         layer_tree_src->inputs_.max_page_scale_factor * 3 + 1;
-    layer_tree_host_src_->elastic_overscroll_ = gfx::Vector2dF(3, 14);
+    layer_tree_src->elastic_overscroll_ = gfx::Vector2dF(3, 14);
     layer_tree_host_src_->has_gpu_rasterization_trigger_ =
         !layer_tree_host_src_->has_gpu_rasterization_trigger_;
     layer_tree_host_src_->content_is_suitable_for_gpu_rasterization_ =

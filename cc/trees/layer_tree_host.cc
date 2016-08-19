@@ -742,8 +742,9 @@ void LayerTreeHost::BuildPropertyTreesForTesting() {
       layer_tree_->root_layer(), layer_tree_->page_scale_layer(),
       layer_tree_->inner_viewport_scroll_layer(),
       layer_tree_->outer_viewport_scroll_layer(),
-      layer_tree_->overscroll_elasticity_layer(), elastic_overscroll_,
-      layer_tree_->page_scale_factor(), layer_tree_->device_scale_factor(),
+      layer_tree_->overscroll_elasticity_layer(),
+      layer_tree_->elastic_overscroll(), layer_tree_->page_scale_factor(),
+      layer_tree_->device_scale_factor(),
       gfx::Rect(layer_tree_->device_viewport_size()), identity_transform,
       layer_tree_->property_trees());
 }
@@ -788,8 +789,9 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
           root_layer, page_scale_layer,
           layer_tree_->inner_viewport_scroll_layer(),
           layer_tree_->outer_viewport_scroll_layer(),
-          layer_tree_->overscroll_elasticity_layer(), elastic_overscroll_,
-          layer_tree_->page_scale_factor(), layer_tree_->device_scale_factor(),
+          layer_tree_->overscroll_elasticity_layer(),
+          layer_tree_->elastic_overscroll(), layer_tree_->page_scale_factor(),
+          layer_tree_->device_scale_factor(),
           gfx::Rect(layer_tree_->device_viewport_size()), identity_transform,
           property_trees);
       TRACE_EVENT_INSTANT1("cc",
@@ -849,7 +851,8 @@ void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
   }
 
   ApplyPageScaleDeltaFromImplSide(info->page_scale_delta);
-  elastic_overscroll_ += info->elastic_overscroll_delta;
+  layer_tree_->SetElasticOverscrollFromImplSide(
+      layer_tree_->elastic_overscroll() + info->elastic_overscroll_delta);
   // TODO(ccameron): pass the elastic overscroll here so that input events
   // may be translated appropriately.
   client_->ApplyViewportDeltas(inner_viewport_scroll_delta, gfx::Vector2dF(),
@@ -1090,7 +1093,6 @@ void LayerTreeHost::ToProtobufForCommit(
                                             proto->mutable_pictures());
 
   debug_state_.ToProtobuf(proto->mutable_debug_state());
-  Vector2dFToProto(elastic_overscroll_, proto->mutable_elastic_overscroll());
   proto->set_has_gpu_rasterization_trigger(has_gpu_rasterization_trigger_);
   proto->set_content_is_suitable_for_gpu_rasterization(
       content_is_suitable_for_gpu_rasterization_);
@@ -1125,7 +1127,6 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
   client_picture_cache_->Flush();
 
   debug_state_.FromProtobuf(proto.debug_state());
-  elastic_overscroll_ = ProtoToVector2dF(proto.elastic_overscroll());
   has_gpu_rasterization_trigger_ = proto.has_gpu_rasterization_trigger();
   content_is_suitable_for_gpu_rasterization_ =
       proto.content_is_suitable_for_gpu_rasterization();

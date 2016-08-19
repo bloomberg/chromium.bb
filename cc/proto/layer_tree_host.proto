@@ -8,7 +8,6 @@ import "display_item.proto";
 import "layer.proto";
 import "layer_tree.proto";
 import "layer_tree_debug_state.proto";
-import "vector2df.proto";
 
 package cc.proto;
 
@@ -30,7 +29,6 @@ message LayerTreeHost {
   optional int32 source_frame_number = 3;
   optional int32 meta_information_sequence_number = 4;
   optional LayerTreeDebugState debug_state = 8;
-  optional Vector2dF elastic_overscroll = 18;
   optional bool has_gpu_rasterization_trigger = 19;
   optional bool content_is_suitable_for_gpu_rasterization = 20;
   optional int32 id = 23;

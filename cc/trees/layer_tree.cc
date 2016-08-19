@@ -469,6 +469,7 @@ void LayerTree::ToProtobuf(proto::LayerTree* proto) {
 
   LayerSelectionToProtobuf(inputs_.selection, proto->mutable_selection());
   property_trees_.ToProtobuf(proto->mutable_property_trees());
+  Vector2dFToProto(elastic_overscroll_, proto->mutable_elastic_overscroll());
 }
 
 void LayerTree::FromProtobuf(const proto::LayerTree& proto) {
@@ -530,6 +531,7 @@ void LayerTree::FromProtobuf(const proto::LayerTree& proto) {
       UpdateAndGetLayer(hud_layer_.get(), proto.hud_layer_id(), this));
 
   LayerSelectionFromProtobuf(&inputs_.selection, proto.selection());
+  elastic_overscroll_ = ProtoToVector2dF(proto.elastic_overscroll());
 
   // It is required to create new PropertyTrees before deserializing it.
   property_trees_ = PropertyTrees();
