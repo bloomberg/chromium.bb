@@ -6,34 +6,6 @@
 # build/android/stacktrace/java_deobfuscate.py to fix the stacktrace up for us.
 -keepnames,allowoptimization class *** { *; }
 
-# The following chart was created on Aug. 11, 2016, to decide on 3 optimization
-# passes.
-# optimization passes | time | .dex size |      dirty memory
-# -----------------------------------------------------------------
-#          1          | 0:13 |  1022588  |         97772
-#          2          | 0:17 |  1019200  |         97472
-#          3          | 0:18 |  1018472  |         97424
-#          4          | 0:21 |  1018392  |         97416
-#          5          | 0:26 |  1018360  |         97416
--optimizationpasses 3
-
-# Class merging messes up stacktraces beyond the point of them being
-# deobfuscatable. If turned on, it would give us a 1% reduction in .dex size.
--optimizations !class/merging/*
-
-# Allowing Proguard to change modifiers. This change shrinks the .dex size by
-# 3.7%.
--allowaccessmodification
-
-# Allows Proguard freedom in removing these log related calls. We ask for debug
-# and verbose logs to be stripped out in base.Log, so we are just ensuring we
-# get rid of all other debug/verbose logs.
--assumenosideeffects class android.util.Log {
-  static *** d(...);
-  static *** v(...);
-  static *** isLoggable(...);
-}
-
 # Keep the factory and its public members; it's the main entry point used by the
 # framework.
 -keep class com.android.webview.chromium.WebViewChromiumFactoryProvider {
@@ -88,8 +60,3 @@
   public void setDisabledActionModeMenuItems(int);
   public int getDisabledActionModeMenuItems();
 }
-
-# Ignore notes and warnings about the support library, which uses reflection and
-# may reference classes no longer in the SDK.
--dontnote android.support.**
--dontwarn android.support.**

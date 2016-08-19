@@ -52,6 +52,7 @@ template("chrome_public_apk_tmpl") {
       proguard_configs = _prev_proguard_configs + [
                            "//chrome/android/java/proguard.flags",
                            "//base/android/base_proguard_config.flags",
+                           "//base/android/release_proguard_config.flags",
                          ]
     }
 

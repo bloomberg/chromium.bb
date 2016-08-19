@@ -1,0 +1,32 @@
+# Allows Proguard freedom in removing these log related calls. We ask for debug
+# and verbose logs to be stripped out in base.Log, so we are just ensuring we
+# get rid of all other debug/verbose logs.
+-assumenosideeffects class android.util.Log {
+  static *** d(...);
+  static *** v(...);
+  static *** isLoggable(...);
+}
+
+# The following chart was created on July 20, 2016, to decide on 3 optimization
+# passes for Chrome.
+# optimization passes | time | .dex size | dirty memory per process
+# -----------------------------------------------------------------
+#          1          | 0:48 |  5805676  |         488972
+#          2          | 1:07 |  5777376  |         487092
+#          3          | 1:24 |  5772192  |         486596
+#          4          | 1:42 |  5771124  |         486484
+#          5          | 1:56 |  5770504  |         486432
+-optimizationpasses 3
+
+# Class merging messes up stacktraces beyond the point of them being
+# deobfuscatable. If turned on, it would give us a 2% reduction in .dex size.
+-optimizations !class/merging/*
+
+# Allowing Proguard to change modifiers. This change shrinks the .dex size by
+# ~1%, and reduces the method count by ~4%.
+-allowaccessmodification
+
+# The support library contains references to newer platform versions.
+# Don't warn about those in case this app is linking against an older
+# platform version.  We know about them, and they are safe.
+-dontwarn android.support.**

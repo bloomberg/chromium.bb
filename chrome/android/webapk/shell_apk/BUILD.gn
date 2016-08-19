@@ -111,6 +111,7 @@ android_apk("webapk") {
     proguard_configs = [
       "//chrome/android/java/proguard.flags",
       "//base/android/base_proguard_config.flags",
+      "//base/android/release_proguard_config.flags",
     ]
   }
 }
