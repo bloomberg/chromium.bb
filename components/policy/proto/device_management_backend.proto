@@ -8,6 +8,16 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
+// The wrapper message of any data and its signature.
+// Note: this should be compatible with the definition of SignedData in:
+// "third_party/chromiumos_platform_cryptohome/attestation.proto"
+message SignedData {
+  // The data to be signed.
+  optional bytes data = 1;
+  // The signature of the data field.
+  optional bytes signature = 2;
+}
+
 // Request from device to server to register device.
 message DeviceRegisterRequest {
   // Reregister device without erasing server state.  It can be used
@@ -1073,6 +1083,35 @@ message CheckAndroidManagementRequest {}
 // DPC enforcement request.
 // SC_CONFLICT HTTP code is returned if DPC enforcement is required.
 message CheckAndroidManagementResponse {}
+
+// Request to register a new device (authenticated by enterprise enrollment
+// certificate).
+// The response message will be the DeviceRegisterReponse.
+message CertificateBasedDeviceRegisterRequest {
+  // signed_request.data is CertificateBasedDeviceRegistrationData type
+  // signed_request.signature is a signature generated with device cert's
+  // private key
+  optional SignedData signed_request = 2;
+}
+
+message CertificateBasedDeviceRegistrationData {
+  enum CertificateType {
+    UNKNOWN = 0;
+    ENTERPRISE_ENROLLMENT_CERTIFICATE = 1;
+  }
+
+  optional CertificateType certificate_type = 1;
+  // device certificate in X.509 format.
+  // We use CertificateFactory.generateCertificate() call and
+  // the certificate provided must be DER-encoded and may be supplied in binary
+  // or printable (Base64) encoding. If the certificate is provided in Base64
+  // encoding, it must be bounded at the beginning by
+  // -----BEGIN CERTIFICATE-----, and must be bounded at the end by
+  // -----END CERTIFICATE-----.
+  optional bytes device_certificate = 2;
+  // regular device registration request
+  optional DeviceRegisterRequest device_register_request = 3;
+}
 
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
