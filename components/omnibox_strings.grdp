@@ -18,4 +18,7 @@
       Search or type URL
     </message>
   </if>
+  <message name="IDS_PHYSICAL_WEB_OVERFLOW" desc="The label in the omnibox dropdown indicating that multiple nearby devices are broadcasting URLs.">
+    {URL_count, plural, =1 {1 web page found} other {# web pages found}}
+  </message>
 </grit-part>

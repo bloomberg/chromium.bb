@@ -29,6 +29,8 @@ const int AutocompleteClassifier::kDefaultOmniboxProviders =
 #else
     // "URL from clipboard" can only be used on iOS.
     AutocompleteProvider::TYPE_CLIPBOARD_URL |
+    // Physical Web omnibox results are only implemented on iOS.
+    AutocompleteProvider::TYPE_PHYSICAL_WEB |
 #endif
     AutocompleteProvider::TYPE_BOOKMARK |
     AutocompleteProvider::TYPE_HISTORY_QUICK |

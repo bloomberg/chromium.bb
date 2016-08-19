@@ -166,6 +166,8 @@ message OmniboxEventProto {
     // a suggestion powered by a Chrome content provider.
     ON_DEVICE_CHROME = 13;
     CLIPBOARD_URL = 14;  // Suggestion coming from clipboard (iOS only).
+    PHYSICAL_WEB = 15;     // Suggestions triggered by URLs broadcast by nearby
+                           // devices (iOS only).
   }
 
   // The result set displayed on the completion popup
@@ -224,6 +226,9 @@ message OmniboxEventProto {
                                     // suggestions of any type.
       CALCULATOR              = 23; // A calculator answer.
       CLIPBOARD               = 24; // An URL based on the clipboard.
+      PHYSICAL_WEB            = 25; // A Physical Web nearby URL.
+      PHYSICAL_WEB_OVERFLOW   = 26; // An item representing multiple Physical
+                                    // Web nearby URLs.
     }
     optional ResultType result_type = 2;
 

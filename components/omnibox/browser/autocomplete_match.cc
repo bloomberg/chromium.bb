@@ -191,6 +191,8 @@ int AutocompleteMatch::TypeToIcon(Type type) {
       IDR_OMNIBOX_CALCULATOR,     // CALCULATOR
       IDR_OMNIBOX_HTTP,           // CLIPBOARD
       IDR_OMNIBOX_SEARCH,         // VOICE_SEARCH
+      IDR_OMNIBOX_HTTP,           // PHYSICAL_WEB
+      IDR_OMNIBOX_HTTP,           // PHYSICAL_WEB_OVERFLOW
   };
 #else
   static const int kIcons[] = {
@@ -215,6 +217,8 @@ int AutocompleteMatch::TypeToIcon(Type type) {
       IDR_OMNIBOX_CALCULATOR,     // CALCULATOR
       IDR_OMNIBOX_HTTP,           // CLIPBOARD
       IDR_OMNIBOX_SEARCH,         // VOICE_SEARCH
+      IDR_OMNIBOX_HTTP,           // PHYSICAL_WEB
+      IDR_OMNIBOX_HTTP,           // PHYSICAL_WEB_OVERFLOW
   };
 #endif
   static_assert(arraysize(kIcons) == AutocompleteMatchType::NUM_TYPES,
@@ -247,6 +251,8 @@ gfx::VectorIconId AutocompleteMatch::TypeToVectorIcon(Type type) {
       gfx::VectorIconId::OMNIBOX_CALCULATOR,     // CALCULATOR
       gfx::VectorIconId::OMNIBOX_HTTP,           // CLIPBOARD
       gfx::VectorIconId::OMNIBOX_SEARCH,         // VOICE_SEARCH
+      gfx::VectorIconId::OMNIBOX_HTTP,           // PHYSICAL_WEB
+      gfx::VectorIconId::OMNIBOX_HTTP,           // PHYSICAL_WEB_OVERFLOW
   };
   static_assert(arraysize(kIcons) == AutocompleteMatchType::NUM_TYPES,
                 "icons array must have NUM_TYPES elements");

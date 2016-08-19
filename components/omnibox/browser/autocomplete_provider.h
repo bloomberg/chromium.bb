@@ -129,6 +129,7 @@ class AutocompleteProvider
     TYPE_SHORTCUTS        = 1 << 6,
     TYPE_ZERO_SUGGEST     = 1 << 7,
     TYPE_CLIPBOARD_URL    = 1 << 8,
+    TYPE_PHYSICAL_WEB     = 1 << 9,
   };
 
   explicit AutocompleteProvider(Type type);

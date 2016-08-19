@@ -149,6 +149,11 @@ ChromeAutocompleteProviderClient::GetKeywordExtensionsDelegate(
 #endif
 }
 
+PhysicalWebDataSource*
+ChromeAutocompleteProviderClient::GetPhysicalWebDataSource() {
+  return nullptr;
+}
+
 std::string ChromeAutocompleteProviderClient::GetAcceptLanguages() const {
   return profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
 }

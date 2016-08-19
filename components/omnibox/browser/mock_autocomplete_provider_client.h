@@ -47,6 +47,9 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
       KeywordProvider* keyword_provider) override {
     return nullptr;
   }
+  PhysicalWebDataSource* GetPhysicalWebDataSource() override {
+    return nullptr;
+  }
 
   MOCK_CONST_METHOD0(GetSearchTermsData, const SearchTermsData&());
 
