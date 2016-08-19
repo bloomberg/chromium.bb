@@ -1239,6 +1239,8 @@ crbug.com/638931 [ Mac10.11 ] svg/custom/js-late-clipPath-and-object-creation.sv
 crbug.com/638931 [ Mac10.11 ] svg/custom/js-late-gradient-and-object-creation.svg [ Pass Failure ]
 crbug.com/638931 [ Mac10.11 ] svg/custom/js-late-pattern-and-object-creation.svg [ Pass Failure ]
 
+crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
+
 crbug.com/621892 css3/filters/effect-brightness-clamping-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-brightness-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-hue-rotate-hw.html [ Pass Failure ]
