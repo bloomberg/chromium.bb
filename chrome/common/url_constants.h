@@ -238,8 +238,6 @@ extern const char kChromeUIUserActionsHost[];
 extern const char kChromeUIVersionHost[];
 extern const char kChromeUIWorkersHost[];
 
-extern const char kChromeUIThemePath[];
-
 #if defined(ENABLE_PRINT_PREVIEW)
 extern const char kChromeUIPrintHost[];
 #endif  // ENABLE_PRINT_PREVIEW

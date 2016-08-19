@@ -255,8 +255,6 @@ const char kChromeUIUserActionsHost[] = "user-actions";
 const char kChromeUIVersionHost[] = "version";
 const char kChromeUIWorkersHost[] = "workers";
 
-const char kChromeUIThemePath[] = "theme";
-
 #if defined(ENABLE_PRINT_PREVIEW)
 const char kChromeUIPrintHost[] = "print";
 #endif  // ENABLE_PRINT_PREVIEW

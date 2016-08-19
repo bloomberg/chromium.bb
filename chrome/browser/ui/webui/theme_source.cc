@@ -34,9 +34,9 @@ using content::BrowserThread;
 
 namespace {
 
-std::string GetThemePath() {
-  return std::string(content::kChromeUIScheme) + "://" +
-         std::string(chrome::kChromeUIThemePath) + "/";
+GURL GetThemePath(const std::string& path) {
+  return GURL(std::string(content::kChromeUIScheme) + "://" +
+              std::string(chrome::kChromeUIThemeHost) + "/" + path);
 }
 
 // use a resource map rather than hard-coded strings.
@@ -79,7 +79,7 @@ ThemeSource::~ThemeSource() {
 }
 
 std::string ThemeSource::GetSource() const {
-  return chrome::kChromeUIThemePath;
+  return chrome::kChromeUIThemeHost;
 }
 
 void ThemeSource::StartDataRequest(
@@ -90,9 +90,7 @@ void ThemeSource::StartDataRequest(
   // Default scale factor if not specified.
   float scale_factor = 1.0f;
   std::string uncached_path;
-  webui::ParsePathAndScale(GURL(GetThemePath() + path),
-                           &uncached_path,
-                           &scale_factor);
+  webui::ParsePathAndScale(GetThemePath(path), &uncached_path, &scale_factor);
   scale_factor =
       ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(scale_factor));
 
@@ -153,7 +151,7 @@ void ThemeSource::StartDataRequest(
 
 std::string ThemeSource::GetMimeType(const std::string& path) const {
   std::string uncached_path;
-  webui::ParsePathAndScale(GURL(GetThemePath() + path), &uncached_path, NULL);
+  webui::ParsePathAndScale(GetThemePath(path), &uncached_path, NULL);
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {
@@ -166,7 +164,7 @@ std::string ThemeSource::GetMimeType(const std::string& path) const {
 base::MessageLoop* ThemeSource::MessageLoopForRequestPath(
     const std::string& path) const {
   std::string uncached_path;
-  webui::ParsePathAndScale(GURL(GetThemePath() + path), &uncached_path, NULL);
+  webui::ParsePathAndScale(GetThemePath(path), &uncached_path, NULL);
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {
