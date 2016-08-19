@@ -53,6 +53,27 @@ class BotUpdateApi(recipe_api.RecipeApi):
   def last_returned_properties(self):
       return self._last_returned_properties
 
+  # DO NOT USE.
+  # The below method will be removed after there are no more callers of
+  # tryserver.maybe_apply_issue (skbug.com/5588).
+  def apply_gerrit_ref(self, root, gerrit_no_reset=False,
+                       gerrit_rebase_patch_ref=True, **kwargs):
+    apply_gerrit_path = self.resource('apply_gerrit.py')
+    kwargs.setdefault('infra_step', True)
+    kwargs.setdefault('env', {}).setdefault('PATH', '%(PATH)s')
+    kwargs['env']['PATH'] = self.m.path.pathsep.join([
+        kwargs['env']['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
+    cmd = [
+        '--gerrit_repo', self._repository,
+        '--gerrit_ref', self._gerrit_ref or '',
+        '--root', str(root),
+    ]
+    if gerrit_no_reset:
+      cmd.append('--gerrit_no_reset')
+    if gerrit_rebase_patch_ref:
+      cmd.append('--gerrit_rebase_patch_ref')
+    return self.m.python('apply_gerrit', apply_gerrit_path, cmd, **kwargs)
+
   def ensure_checkout(self, gclient_config=None, suffix=None,
                       patch=True, update_presentation=True,
                       force=False, patch_root=None, no_shallow=False,

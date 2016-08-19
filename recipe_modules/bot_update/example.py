@@ -35,18 +35,25 @@ def RunSteps(api):
   suffix = api.properties.get('suffix')
   gerrit_no_reset = True if api.properties.get('gerrit_no_reset') else False
   gerrit_rebase_patch_ref = bool(api.properties.get('gerrit_rebase_patch_ref'))
-  api.bot_update.ensure_checkout(
-      force=force,
-      no_shallow=no_shallow,
-      patch=patch,
-      with_branch_heads=with_branch_heads,
-      output_manifest=output_manifest,
-      refs=refs, patch_oauth2=oauth2,
-      clobber=clobber,
-      root_solution_revision=root_solution_revision,
-      suffix=suffix,
-      gerrit_no_reset=gerrit_no_reset,
-      gerrit_rebase_patch_ref=gerrit_rebase_patch_ref)
+
+  if api.properties.get('test_apply_gerrit_ref'):
+    api.bot_update.apply_gerrit_ref(
+        root='/tmp/test/root',
+        gerrit_no_reset=gerrit_no_reset,
+        gerrit_rebase_patch_ref=gerrit_rebase_patch_ref)
+  else:
+    api.bot_update.ensure_checkout(
+        force=force,
+        no_shallow=no_shallow,
+        patch=patch,
+        with_branch_heads=with_branch_heads,
+        output_manifest=output_manifest,
+        refs=refs, patch_oauth2=oauth2,
+        clobber=clobber,
+        root_solution_revision=root_solution_revision,
+        suffix=suffix,
+        gerrit_no_reset=gerrit_no_reset,
+        gerrit_rebase_patch_ref=gerrit_rebase_patch_ref)
 
 
 def GenTests(api):
@@ -162,6 +169,12 @@ def GenTests(api):
       buildername='Experimental Builder',
       slavename='somehost',
       gerrit_rebase_patch_ref=True
+  )
+  yield api.test('apply_gerrit_ref') + api.properties(
+      repository='chromium',
+      gerrit_rebase_patch_ref=True,
+      gerrit_no_reset=1,
+      test_apply_gerrit_ref=True,
   )
   yield api.test('tryjob_v8') + api.properties(
       mastername='tryserver.chromium.linux',
