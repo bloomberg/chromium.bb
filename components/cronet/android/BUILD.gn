@@ -934,16 +934,45 @@ copy("cronet_package_copy_native_lib_unstripped") {
   ]
 }
 
+# Enforce that ARM Neon is not used when building for ARMv7
+if (target_cpu == "arm" && arm_version == 7 && !arm_use_neon) {
+  action("enforce_no_neon") {
+    script = "//components/cronet/tools/check_no_neon.py"
+    args = [
+      rebase_path("${android_tool_prefix}objdump", root_build_dir),
+
+      # libcronet.so may contain ARM Neon instructions from BoringSSL, but these
+      # are only used after checking whether the CPU supports NEON at runtime,
+      # so instead check base/ as it represents a large swath of code that only
+      # contains Neon instructions when Neon is enabled by default.
+      rebase_path("$root_out_dir/obj/base/base/*.o", root_build_dir),
+    ]
+    outputs = [
+      "$root_out_dir/cronet_$target_name.d",
+    ]
+    deps = [
+      "//base:base",
+    ]
+  }
+}
+
 group("cronet_package") {
-  deps = [
-    ":cronet_package_copy",
-    ":cronet_package_copy_native_lib",
-    ":cronet_package_copy_native_lib_unstripped",
-    ":generate_javadoc",
-    ":generate_licenses",
-    ":jar_cronet_api_source",
-    ":jar_cronet_other_source",
-    ":jar_cronet_sample_source",
-    ":repackage_extracted_jars",
-  ]
+  # Enforce that arm_use_neon==false when building for ARMv7 by
+  # not including any deps in cronet_package target otherwise.
+  if (!(target_cpu == "arm" && arm_version == 7) || !arm_use_neon) {
+    deps = [
+      ":cronet_package_copy",
+      ":cronet_package_copy_native_lib",
+      ":cronet_package_copy_native_lib_unstripped",
+      ":generate_javadoc",
+      ":generate_licenses",
+      ":jar_cronet_api_source",
+      ":jar_cronet_other_source",
+      ":jar_cronet_sample_source",
+      ":repackage_extracted_jars",
+    ]
+    if (current_cpu == "arm" && arm_version == 7) {
+      deps += [ ":enforce_no_neon" ]
+    }
+  }
 }

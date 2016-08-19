@@ -1050,11 +1050,11 @@
 
     'android_cronet_data_reduction_proxy_gn_release_bot_minimal_symbols': [
       'android', 'cronet', 'data_reduction_proxy', 'gn',
-      'release_bot_minimal_symbols', 'arm'
+      'release_bot_minimal_symbols', 'arm_no_neon'
     ],
 
     'android_cronet_gn_debug_static_bot': [
-      'android', 'cronet', 'gn', 'debug_static_bot', 'arm'
+      'android', 'cronet', 'gn', 'debug_static_bot', 'arm_no_neon'
     ],
 
     'android_cronet_gn_debug_static_bot_arm64': [
@@ -1066,7 +1066,7 @@
     ],
 
     'android_cronet_gn_release_bot_minimal_symbols': [
-      'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'arm'
+      'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'arm_no_neon'
     ],
 
     'android_cronet_gn_release_bot_minimal_symbols_arm64': [
@@ -1078,8 +1078,8 @@
     ],
 
     'android_cronet_gn_release_bot_minimal_symbols_clang_asan': [
-      'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'arm', 'clang',
-      'asan'
+      'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'arm_no_neon',
+      'clang', 'asan'
     ],
 
     'android_cronet_gn_release_bot_minimal_symbols_mipsel': [
@@ -2024,6 +2024,12 @@
     'arm': {
       'gn_args': 'target_cpu="arm"',
       'gyp_defines': 'target_arch=arm',
+    },
+
+    'arm_no_neon': {
+      'mixins': ['arm'],
+      'gn_args': 'arm_use_neon=false',
+      'gyp_defines': 'arm_neon=0',
     },
 
     'arm64': {
