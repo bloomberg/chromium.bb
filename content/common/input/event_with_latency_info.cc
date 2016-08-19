@@ -97,10 +97,19 @@ void Coalesce(const WebMouseWheelEvent& event_to_coalesce,
       GetUnacceleratedDelta(event->deltaY, event->accelerationRatioY) +
       GetUnacceleratedDelta(event_to_coalesce.deltaY,
                             event_to_coalesce.accelerationRatioY);
-  event->deltaX += event_to_coalesce.deltaX;
-  event->deltaY += event_to_coalesce.deltaY;
-  event->wheelTicksX += event_to_coalesce.wheelTicksX;
-  event->wheelTicksY += event_to_coalesce.wheelTicksY;
+  float old_deltaX = event->deltaX;
+  float old_deltaY = event->deltaY;
+  float old_wheelTicksX = event->wheelTicksX;
+  float old_wheelTicksY = event->wheelTicksY;
+  float old_movementX = event->movementX;
+  float old_movementY = event->movementY;
+  *event = event_to_coalesce;
+  event->deltaX += old_deltaX;
+  event->deltaY += old_deltaY;
+  event->wheelTicksX += old_wheelTicksX;
+  event->wheelTicksY += old_wheelTicksY;
+  event->movementX += old_movementX;
+  event->movementY += old_movementY;
   event->accelerationRatioX =
       GetAccelerationRatio(event->deltaX, unaccelerated_x);
   event->accelerationRatioY =

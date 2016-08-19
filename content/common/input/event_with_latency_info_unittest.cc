@@ -302,7 +302,6 @@ TEST_F(EventWithLatencyInfoTest, PinchEventCoalescing) {
 TEST_F(EventWithLatencyInfoTest, WebMouseWheelEventCoalescing) {
   MouseWheelEventWithLatencyInfo mouse_wheel_0 = CreateMouseWheel(1, 1);
   MouseWheelEventWithLatencyInfo mouse_wheel_1 = CreateMouseWheel(2, 2);
-
   // WebMouseWheelEvent objects with same values except different deltaX and
   // deltaY should coalesce.
   EXPECT_TRUE(CanCoalesce(mouse_wheel_0, mouse_wheel_1));
@@ -313,6 +312,45 @@ TEST_F(EventWithLatencyInfoTest, WebMouseWheelEventCoalescing) {
   mouse_wheel_0.event.modifiers = WebInputEvent::ControlKey;
   mouse_wheel_1.event.modifiers = WebInputEvent::ShiftKey;
   EXPECT_FALSE(CanCoalesce(mouse_wheel_0, mouse_wheel_1));
+
+  // Coalesce old and new events.
+  mouse_wheel_0 = CreateMouseWheel(1, 1);
+  mouse_wheel_0.event.x = 1;
+  mouse_wheel_0.event.y = 1;
+  mouse_wheel_1 = CreateMouseWheel(2, 2);
+  mouse_wheel_1.event.x = 2;
+  mouse_wheel_1.event.y = 2;
+  MouseWheelEventWithLatencyInfo mouse_wheel_1_copy = mouse_wheel_1;
+  EXPECT_TRUE(CanCoalesce(mouse_wheel_0, mouse_wheel_1));
+  EXPECT_EQ(mouse_wheel_0.event.modifiers, mouse_wheel_1.event.modifiers);
+  EXPECT_EQ(mouse_wheel_0.event.scrollByPage, mouse_wheel_1.event.scrollByPage);
+  EXPECT_EQ(mouse_wheel_0.event.phase, mouse_wheel_1.event.phase);
+  EXPECT_EQ(mouse_wheel_0.event.momentumPhase,
+            mouse_wheel_1.event.momentumPhase);
+  EXPECT_EQ(mouse_wheel_0.event.hasPreciseScrollingDeltas,
+            mouse_wheel_1.event.hasPreciseScrollingDeltas);
+  Coalesce(mouse_wheel_0, &mouse_wheel_1);
+
+  // Coalesced event has the position of the most recent event.
+  EXPECT_EQ(1, mouse_wheel_1.event.x);
+  EXPECT_EQ(1, mouse_wheel_1.event.y);
+
+  // deltaX/Y, wheelTicksX/Y, and movementX/Y of the coalesced event are
+  // calculated properly.
+  EXPECT_EQ(mouse_wheel_1_copy.event.deltaX + mouse_wheel_0.event.deltaX,
+            mouse_wheel_1.event.deltaX);
+  EXPECT_EQ(mouse_wheel_1_copy.event.deltaY + mouse_wheel_0.event.deltaY,
+            mouse_wheel_1.event.deltaY);
+  EXPECT_EQ(
+      mouse_wheel_1_copy.event.wheelTicksX + mouse_wheel_0.event.wheelTicksX,
+      mouse_wheel_1.event.wheelTicksX);
+  EXPECT_EQ(
+      mouse_wheel_1_copy.event.wheelTicksY + mouse_wheel_0.event.wheelTicksY,
+      mouse_wheel_1.event.wheelTicksY);
+  EXPECT_EQ(mouse_wheel_1_copy.event.movementX + mouse_wheel_0.event.movementX,
+            mouse_wheel_1.event.movementX);
+  EXPECT_EQ(mouse_wheel_1_copy.event.movementY + mouse_wheel_0.event.movementY,
+            mouse_wheel_1.event.movementY);
 }
 
 // Coalescing preserves the newer timestamp.
