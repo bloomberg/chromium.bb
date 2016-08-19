@@ -7,15 +7,11 @@
 #include <set>
 
 #include "ash/common/ash_constants.h"
-#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/immersive/wm_immersive_fullscreen_controller_delegate.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_lookup.h"
-#include "ash/common/wm_root_window_controller.h"
-#include "ash/common/wm_shell.h"
-#include "ash/common/wm_window.h"
+#include "ash/shared/immersive_context.h"
 #include "ash/wm/immersive_focus_watcher.h"
 #include "ash/wm/immersive_gesture_handler.h"
+#include "ash/wm/immersive_handler_factory.h"
 #include "base/metrics/histogram.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -57,11 +53,6 @@ const int kSwipeVerticalThresholdMultiplier = 3;
 // See ShouldIgnoreMouseEventAtLocation() for more details.
 const int kHeightOfDeadRegionAboveTopContainer = 10;
 
-// Returns the bounds of the display nearest to |window| in screen coordinates.
-gfx::Rect GetDisplayBoundsInScreen(WmWindow* window) {
-  return window->GetDisplayNearestWindow().bounds();
-}
-
 }  // namespace
 
 // The height in pixels of the region below the top edge of the display in which
@@ -98,8 +89,7 @@ void ImmersiveFullscreenController::Init(
   delegate_ = delegate;
   top_container_ = top_container;
   widget_ = widget;
-  widget_window_ = WmLookup::Get()->GetWindowForWidget(widget_);
-  widget_window_->InstallResizeHandleWindowTargeter(this);
+  ImmersiveContext::Get()->InstallResizeHandleWindowTargeter(this);
 }
 
 void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
@@ -110,17 +100,7 @@ void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
 
   EnableWindowObservers(enabled_);
 
-  wm::WindowState* window_state = widget_window_->GetWindowState();
-  // Auto hide the shelf in immersive fullscreen instead of hiding it.
-  window_state->set_shelf_mode_in_fullscreen(
-      enabled ? ash::wm::WindowState::SHELF_AUTO_HIDE_VISIBLE
-              : ash::wm::WindowState::SHELF_HIDDEN);
-
-  // Update the window's immersive mode state for the window manager.
-  window_state->set_in_immersive_fullscreen(enabled);
-
-  for (WmWindow* root_window : WmShell::Get()->GetAllRootWindows())
-    root_window->GetRootWindowController()->GetShelf()->UpdateVisibilityState();
+  ImmersiveContext::Get()->OnEnteringOrExitingImmersive(this, enabled);
 
   if (enabled_) {
     // Animate enabling immersive mode by sliding out the top-of-window views.
@@ -141,7 +121,8 @@ void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
     if (reveal_state_ == REVEALED) {
       // Reveal was unsuccessful. Reacquire the revealed locks if appropriate.
       UpdateLocatedEventRevealedLock();
-      immersive_focus_watcher_->UpdateFocusRevealedLock();
+      if (immersive_focus_watcher_)
+        immersive_focus_watcher_->UpdateFocusRevealedLock();
     }
   } else {
     // Stop cursor-at-top tracking.
@@ -329,14 +310,15 @@ void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
   observers_enabled_ = enable;
 
   if (enable) {
-    immersive_focus_watcher_.reset(new ImmersiveFocusWatcher(this));
-    immersive_gesture_handler_.reset(new ImmersiveGestureHandler(this));
+    immersive_focus_watcher_ =
+        ImmersiveHandlerFactory::Get()->CreateFocusWatcher(this);
+    immersive_gesture_handler_ =
+        ImmersiveHandlerFactory::Get()->CreateGestureHandler(this);
     widget_->AddObserver(this);
     const bool wants_moves = true;
-    WmShell::Get()->AddPointerWatcher(this, wants_moves);
-
+    ImmersiveContext::Get()->AddPointerWatcher(this, wants_moves);
   } else {
-    WmShell::Get()->RemovePointerWatcher(this);
+    ImmersiveContext::Get()->RemovePointerWatcher(this);
     widget_->RemoveObserver(this);
     immersive_gesture_handler_.reset();
     immersive_focus_watcher_.reset();
@@ -362,7 +344,7 @@ void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
 
   // Mouse hover should not initiate revealing the top-of-window views while a
   // window has mouse capture.
-  if (WmShell::Get()->GetCaptureWindow())
+  if (ImmersiveContext::Get()->DoesAnyWindowHaveCapture())
     return;
 
   if (ShouldIgnoreMouseEventAtLocation(location_in_screen))
@@ -370,7 +352,7 @@ void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
 
   // Stop the timer if the cursor left the top edge or is on a different
   // display.
-  gfx::Rect hit_bounds_in_screen = GetDisplayBoundsInScreen(widget_window_);
+  gfx::Rect hit_bounds_in_screen = GetDisplayBoundsInScreen();
   hit_bounds_in_screen.set_height(kMouseRevealBoundsHeight);
   if (!hit_bounds_in_screen.Contains(location_in_screen)) {
     top_edge_hover_timer_.Stop();
@@ -419,7 +401,7 @@ void ImmersiveFullscreenController::UpdateLocatedEventRevealedLock(
 
   // Ignore all events while a window has capture. This keeps the top-of-window
   // views revealed during a drag.
-  if (WmShell::Get()->GetCaptureWindow())
+  if (ImmersiveContext::Get()->DoesAnyWindowHaveCapture())
     return;
 
   if ((!event || event->IsMouseEvent()) &&
@@ -455,7 +437,7 @@ void ImmersiveFullscreenController::UpdateLocatedEventRevealedLock(
 }
 
 void ImmersiveFullscreenController::UpdateLocatedEventRevealedLock() {
-  if (!WmShell::Get()->IsMouseEventsEnabled()) {
+  if (!ImmersiveContext::Get()->IsMouseEventsEnabled()) {
     // If mouse events are disabled, the user's last interaction was probably
     // via touch. Do no do further processing in this case as there is no easy
     // way of retrieving the position of the user's last touch.
@@ -492,7 +474,8 @@ bool ImmersiveFullscreenController::UpdateRevealedLocksForSwipe(
       // Attempt to end the reveal. If other code is holding onto a lock, the
       // attempt will be unsuccessful.
       located_event_revealed_lock_.reset();
-      immersive_focus_watcher_->ReleaseLock();
+      if (immersive_focus_watcher_)
+        immersive_focus_watcher_->ReleaseLock();
 
       if (reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED) {
         widget_->GetFocusManager()->ClearFocus();
@@ -501,7 +484,8 @@ bool ImmersiveFullscreenController::UpdateRevealedLocksForSwipe(
 
       // Ending the reveal was unsuccessful. Reaquire the locks if appropriate.
       UpdateLocatedEventRevealedLock();
-      immersive_focus_watcher_->UpdateFocusRevealedLock();
+      if (immersive_focus_watcher_)
+        immersive_focus_watcher_->UpdateFocusRevealedLock();
     }
   }
   return false;
@@ -626,7 +610,7 @@ bool ImmersiveFullscreenController::ShouldIgnoreMouseEventAtLocation(
   // (Mouse events in this region cannot start or end a reveal). This allows a
   // user to overshoot the top of the bottom display and still reveal the
   // top-of-window views.
-  gfx::Rect dead_region = GetDisplayBoundsInScreen(widget_window_);
+  gfx::Rect dead_region = GetDisplayBoundsInScreen();
   dead_region.set_y(dead_region.y() - kHeightOfDeadRegionAboveTopContainer);
   dead_region.set_height(kHeightOfDeadRegionAboveTopContainer);
   return dead_region.Contains(location);
@@ -647,7 +631,7 @@ bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
 
   // When the top-of-window views are not fully revealed, handle gestures which
   // start in the top few pixels of the screen.
-  gfx::Rect hit_bounds_in_screen(GetDisplayBoundsInScreen(widget_window_));
+  gfx::Rect hit_bounds_in_screen(GetDisplayBoundsInScreen());
   hit_bounds_in_screen.set_height(kImmersiveFullscreenTopEdgeInset);
   if (hit_bounds_in_screen.Contains(location))
     return true;
@@ -662,6 +646,10 @@ bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
           location.y() < hit_bounds_in_screen.y() &&
           location.x() >= hit_bounds_in_screen.x() &&
           location.x() < hit_bounds_in_screen.right());
+}
+
+gfx::Rect ImmersiveFullscreenController::GetDisplayBoundsInScreen() const {
+  return ImmersiveContext::Get()->GetDisplayBoundsInScreen(widget_);
 }
 
 }  // namespace ash

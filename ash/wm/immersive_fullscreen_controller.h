@@ -190,6 +190,9 @@ class ASH_EXPORT ImmersiveFullscreenController
   // is a bezel sensor above the top container.
   bool ShouldHandleGestureEvent(const gfx::Point& location) const;
 
+  // Returns the display bounds of the screen |widget_| is on.
+  gfx::Rect GetDisplayBoundsInScreen() const;
+
   // Not owned.
   WmImmersiveFullscreenControllerDelegate* delegate_;
   views::View* top_container_;

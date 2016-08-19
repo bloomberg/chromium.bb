@@ -1,0 +1,9 @@
+include_rules = [
+  "-ash",
+  # TODO(sky): once chrome no longer needs to link against ash the files in this
+  # directory should be put in their own target and not use ash_export.
+  "+ash/ash_export.h",
+  "+ash/shared",
+  "+ui",
+  "-ui/aura",
+]
