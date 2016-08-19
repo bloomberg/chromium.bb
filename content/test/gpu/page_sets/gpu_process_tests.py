@@ -120,6 +120,41 @@ class DriverBugWorkaroundsTestsPage(gpu_test_base.PageBase):
       self._Validate(tab, "browser_process", False, self.unexpected_workaround)
       self._Validate(tab, "gpu_process", False, self.unexpected_workaround)
 
+
+class EqualBugWorkaroundsBasePage(gpu_test_base.PageBase):
+  def __init__(self, name=None, page_set=None, shared_page_state_class=None,
+               expectations=None):
+    super(EqualBugWorkaroundsBasePage, self).__init__(
+      url='chrome:gpu',
+      name=name,
+      page_set=page_set,
+      shared_page_state_class=shared_page_state_class,
+      expectations=expectations)
+
+  def Validate(self, tab, results):
+    has_gpu_process_js = 'chrome.gpuBenchmarking.hasGpuProcess()'
+    if not tab.EvaluateJavaScript(has_gpu_process_js):
+      raise page_test.Failure('No GPU process detected')
+
+    has_gpu_channel_js = 'chrome.gpuBenchmarking.hasGpuChannel()'
+    if not tab.EvaluateJavaScript(has_gpu_channel_js):
+      raise page_test.Failure('No GPU channel detected')
+
+    browser_list = tab.EvaluateJavaScript('GetDriverBugWorkarounds()')
+    gpu_list = tab.EvaluateJavaScript( \
+      'chrome.gpuBenchmarking.getGpuDriverBugWorkarounds()')
+
+    diff = set(browser_list).symmetric_difference(set(gpu_list))
+    if len(diff) > 0:
+      print 'Test failed. Printing page contents:'
+      print tab.EvaluateJavaScript('document.body.innerHTML')
+      raise page_test.Failure('Browser and GPU process list of driver bug' \
+        'workarounds are not equal: %s != %s, diff: %s' % \
+        (browser_list, gpu_list, list(diff)))
+
+    return gpu_list
+
+
 class GpuProcessTestsPage(gpu_test_base.PageBase):
   def __init__(self, url, name, story_set, expectations):
     super(GpuProcessTestsPage, self).__init__(url=url,
@@ -516,29 +551,6 @@ class ReadbackWebGLGpuProcessPage(gpu_test_base.PageBase):
           % feature_status_list)
 
 
-class EqualBugWorkaroundsInBrowserAndGpuProcessPage(gpu_test_base.PageBase):
-  def __init__(self, story_set, expectations):
-    super(EqualBugWorkaroundsInBrowserAndGpuProcessPage, self).__init__(
-      url='chrome:gpu',
-      name='GpuProcess.equal_bug_workarounds_in_browser_and_gpu_process',
-      page_set=story_set,
-      shared_page_state_class=GpuProcessSharedPageState,
-      expectations=expectations)
-
-  def Validate(self, tab, results):
-    browser_list = tab.EvaluateJavaScript('GetDriverBugWorkarounds()')
-    gpu_list = tab.EvaluateJavaScript( \
-      'chrome.gpuBenchmarking.getGpuDriverBugWorkarounds()')
-
-    diff = set(browser_list).symmetric_difference(set(gpu_list))
-    if len(diff) > 0:
-      print 'Test failed. Printing page contents:'
-      print tab.EvaluateJavaScript('document.body.innerHTML')
-      raise page_test.Failure('Browser and GPU process list of driver bug' \
-        'workarounds are not equal: %s != %s, diff: %s' % \
-        (browser_list, gpu_list, list(diff)))
-
-
 class HasTransparentVisualsShared(GpuProcessSharedPageState):
   def __init__(self, test, finder_options, story_set):
     super(HasTransparentVisualsShared, self).__init__(
@@ -587,6 +599,95 @@ class NoTransparentVisualsGpuProcessPage(DriverBugWorkaroundsTestsPage):
       super(NoTransparentVisualsGpuProcessPage, self).Validate(tab, results)
 
 
+class TransferWorkaroundSharedPageState(GpuProcessSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(TransferWorkaroundSharedPageState, self).__init__(
+      test, finder_options, story_set)
+
+  # Extra browser args need to be added here. Adding them in RunStory would be
+  # too late.
+  def WillRunStory(self, results):
+    if self.WarmUpDone():
+      options = self._finder_options.browser_options
+      options.AppendExtraBrowserArgs('--use_gpu_driver_workaround_for_testing')
+      options.AppendExtraBrowserArgs('--disable-gpu-driver-bug-workarounds')
+
+      # Inject some info to make sure the flag above is effective.
+      if sys.platform == 'darwin':
+        # Hit id 33 from kGpuDriverBugListJson.
+        options.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=Imagination')
+      else:
+        # Hit id 5 from kGpuDriverBugListJson.
+        options.AppendExtraBrowserArgs('--gpu-testing-vendor-id=0x10de')
+        options.AppendExtraBrowserArgs('--gpu-testing-device-id=0x0001')
+        # no multi gpu on Android.
+        if not options.browser_type.startswith('android'):
+          options.AppendExtraBrowserArgs('--gpu-testing-secondary-vendor-ids=')
+          options.AppendExtraBrowserArgs('--gpu-testing-secondary-device-ids=')
+
+      for workaround in self.RecordedWorkarounds():
+        options.AppendExtraBrowserArgs('--' + workaround)
+    super(TransferWorkaroundSharedPageState, self).WillRunStory(results)
+
+  # self._current_page is None in WillRunStory so do the transfer here.
+  def RunStory(self, results):
+    if self.WarmUpDone():
+      self._current_page.expected_workarounds = self.RecordedWorkarounds()
+      self.AddTestingWorkaround(self._current_page.expected_workarounds)
+    super(TransferWorkaroundSharedPageState, self).RunStory(results)
+
+  def WarmUpDone(self):
+    return self._previous_page is not None and \
+           self.RecordedWorkarounds() is not None
+
+  def RecordedWorkarounds(self):
+    return self._previous_page.recorded_workarounds
+
+  def AddTestingWorkaround(self, workarounds):
+    if workarounds is not None:
+      workarounds.append('use_gpu_driver_workaround_for_testing')
+
+
+class EqualBugWorkaroundsPage(EqualBugWorkaroundsBasePage):
+  def __init__(self, story_set, expectations):
+    super(EqualBugWorkaroundsPage, self).__init__(
+      name='GpuProcess.equal_bug_workarounds_in_browser_and_gpu_process',
+      page_set=story_set,
+      shared_page_state_class=TransferWorkaroundSharedPageState,
+      expectations=expectations)
+    self.recorded_workarounds = None
+
+  def Validate(self, tab, results):
+    gpu_list = super(EqualBugWorkaroundsPage, self).Validate(tab, results)
+    self.recorded_workarounds = gpu_list
+
+
+class OnlyOneWorkaroundPage(EqualBugWorkaroundsBasePage):
+  def __init__(self, story_set, expectations):
+    super(OnlyOneWorkaroundPage, self).__init__(
+      name='GpuProcess.only_one_workaround',
+      page_set=story_set,
+      shared_page_state_class=TransferWorkaroundSharedPageState,
+      expectations=expectations)
+    self.expected_workarounds = None
+
+  def Validate(self, tab, results):
+    # Requires EqualBugWorkaroundsPage to succeed. If it has failed then just
+    # pass to not overload the logs.
+    if self.expected_workarounds is None:
+      return
+
+    gpu_list = super(OnlyOneWorkaroundPage, self).Validate(tab, results)
+
+    diff = set(self.expected_workarounds).symmetric_difference(set(gpu_list))
+    if len(diff) > 0:
+      print 'Test failed. Printing page contents:'
+      print tab.EvaluateJavaScript('document.body.innerHTML')
+      raise page_test.Failure('GPU process and expected list of driver bug' \
+        'workarounds are not equal: %s != %s, diff: %s' % \
+        (self.expected_workarounds, gpu_list, list(diff)))
+
+
 class GpuProcessTestsStorySet(story_set_module.StorySet):
 
   """ Tests that accelerated content triggers the creation of a GPU process """
@@ -615,8 +716,9 @@ class GpuProcessTestsStorySet(story_set_module.StorySet):
                                               is_platform_android))
     self.AddStory(DriverBugWorkaroundsUponGLRendererPage(self, expectations,
                                                          is_platform_android))
-    self.AddStory(EqualBugWorkaroundsInBrowserAndGpuProcessPage(self,
-                                                                expectations))
+    self.AddStory(EqualBugWorkaroundsPage(self, expectations))
+    self.AddStory(OnlyOneWorkaroundPage(self, expectations))
+
     if not is_platform_android:
       self.AddStory(SkipGpuProcessPage(self, expectations))
       self.AddStory(HasTransparentVisualsGpuProcessPage(self, expectations))
