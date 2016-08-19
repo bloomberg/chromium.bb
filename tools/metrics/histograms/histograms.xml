@@ -38555,7 +38555,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Experimental.ParseDuration.CachePercent.0-50"
+<histogram name="PageLoad.Experimental.ParseDuration.CachedPercent.0-50"
     units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
@@ -38564,7 +38564,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Experimental.ParseDuration.CachePercent.51-100"
+<histogram name="PageLoad.Experimental.ParseDuration.CachedPercent.51-100"
     units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
