@@ -107,7 +107,8 @@ void AutoplayUmaHelper::handleUnloadEvent()
         recordVideoAutoplayMutedPlayMethodBecomesVisibleUma(false);
         m_videoMutedPlayMethodVisibilityObserver->stop();
         m_videoMutedPlayMethodVisibilityObserver = nullptr;
-        m_element->document().domWindow()->removeEventListener(EventTypeNames::unload, this, false);
+        if (m_element && m_element->document().domWindow())
+            m_element->document().domWindow()->removeEventListener(EventTypeNames::unload, this, false);
     }
 }
 
@@ -117,7 +118,8 @@ void AutoplayUmaHelper::handlePlayingEvent()
         if (!m_videoMutedPlayMethodVisibilityObserver) {
             m_videoMutedPlayMethodVisibilityObserver = new ElementVisibilityObserver(m_element, WTF::bind(&AutoplayUmaHelper::onVisibilityChangedForVideoMutedPlayMethod, wrapWeakPersistent(this)));
             m_videoMutedPlayMethodVisibilityObserver->start();
-            m_element->document().domWindow()->addEventListener(EventTypeNames::unload, this, false);
+            if (m_element && m_element->document().domWindow())
+                m_element->document().domWindow()->addEventListener(EventTypeNames::unload, this, false);
         }
     }
     m_element->removeEventListener(EventTypeNames::playing, this, false);
