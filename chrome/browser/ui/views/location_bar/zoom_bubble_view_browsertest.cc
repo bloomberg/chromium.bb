@@ -14,6 +14,11 @@
 
 typedef InProcessBrowserTest ZoomBubbleBrowserTest;
 
+#if defined(USE_ASH)
+#include "ash/test/immersive_fullscreen_controller_test_api.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
+#endif
+
 // TODO(linux_aura) http://crbug.com/163931
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 #define MAYBE_NonImmersiveFullscreen DISABLED_NonImmersiveFullscreen
@@ -74,7 +79,11 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   ImmersiveModeController* immersive_controller =
       browser_view->immersive_mode_controller();
-  immersive_controller->SetupForTest();
+  ASSERT_EQ(ImmersiveModeController::Type::ASH, immersive_controller->type());
+  ash::ImmersiveFullscreenControllerTestApi(
+      static_cast<ImmersiveModeControllerAsh*>(immersive_controller)
+          ->controller())
+      .SetupForTest();
 
   // Enter immersive fullscreen.
   {

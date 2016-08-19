@@ -59,13 +59,13 @@ class ImmersiveRevealedLockAsh : public ImmersiveRevealedLock {
 }  // namespace
 
 ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
-    : controller_(new ash::ImmersiveFullscreenController),
+    : ImmersiveModeController(Type::ASH),
+      controller_(new ash::ImmersiveFullscreenController),
       browser_view_(nullptr),
       native_window_(nullptr),
       observers_enabled_(false),
       use_tab_indicators_(false),
-      visible_fraction_(1) {
-}
+      visible_fraction_(1) {}
 
 ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() {
   EnableWindowObservers(false);
@@ -131,10 +131,6 @@ ImmersiveRevealedLock* ImmersiveModeControllerAsh::GetRevealedLock(
 void ImmersiveModeControllerAsh::OnFindBarVisibleBoundsChanged(
     const gfx::Rect& new_visible_bounds_in_screen) {
   find_bar_visible_bounds_in_screen_ = new_visible_bounds_in_screen;
-}
-
-void ImmersiveModeControllerAsh::SetupForTest() {
-  controller_->SetupForTest();
 }
 
 void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {

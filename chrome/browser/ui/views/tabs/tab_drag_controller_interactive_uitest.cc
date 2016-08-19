@@ -65,9 +65,11 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/cursor_manager_test_api.h"
+#include "ash/test/immersive_fullscreen_controller_test_api.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -2047,7 +2049,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   BrowserView* browser_view2 = BrowserView::GetBrowserViewForBrowser(browser2);
   ImmersiveModeController* immersive_controller2 =
       browser_view2->immersive_mode_controller();
-  immersive_controller2->SetupForTest();
+  ASSERT_EQ(ImmersiveModeController::Type::ASH, immersive_controller2->type());
+  ash::ImmersiveFullscreenControllerTestApi(
+      static_cast<ImmersiveModeControllerAsh*>(immersive_controller2)
+          ->controller())
+      .SetupForTest();
   chrome::ToggleFullscreenMode(browser2);
   ASSERT_TRUE(immersive_controller2->IsEnabled());
   ASSERT_FALSE(immersive_controller2->IsRevealed());

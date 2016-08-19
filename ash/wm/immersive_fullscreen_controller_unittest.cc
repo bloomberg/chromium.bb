@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/test/immersive_fullscreen_controller_test_api.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -165,7 +166,7 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
         new MockImmersiveFullscreenControllerDelegate(top_container_));
     controller_.reset(new ImmersiveFullscreenController);
     controller_->Init(delegate_.get(), widget_, top_container_);
-    controller_->SetupForTest();
+    ImmersiveFullscreenControllerTestApi(controller_.get()).SetupForTest();
 
     // The mouse is moved so that it is not over |top_container_| by
     // AshTestBase.

@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/immersive_fullscreen_controller_test_api.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -40,7 +42,10 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
     browser()->window()->Show();
 
     controller_ = browser_view()->immersive_mode_controller();
-    controller_->SetupForTest();
+    ASSERT_EQ(ImmersiveModeController::Type::ASH, controller_->type());
+    ash::ImmersiveFullscreenControllerTestApi(
+        static_cast<ImmersiveModeControllerAsh*>(controller_)->controller())
+        .SetupForTest();
   }
 
   // Returns the bounds of |view| in widget coordinates.

@@ -828,6 +828,8 @@
       'test/cursor_manager_test_api.h',
       'test/display_manager_test_api.cc',
       'test/display_manager_test_api.h',
+      'test/immersive_fullscreen_controller_test_api.cc',
+      'test/immersive_fullscreen_controller_test_api.h',
       'test/mirror_window_test_api.cc',
       'test/mirror_window_test_api.h',
       'test/overflow_bubble_view_test_api.cc',

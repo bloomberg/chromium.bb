@@ -17,7 +17,6 @@
 #include "ash/wm/immersive_focus_watcher.h"
 #include "ash/wm/immersive_gesture_handler.h"
 #include "base/metrics/histogram.h"
-#include "ui/aura/env.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -173,26 +172,6 @@ ImmersiveRevealedLock* ImmersiveFullscreenController::GetRevealedLock(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Testing interface:
-
-void ImmersiveFullscreenController::SetupForTest() {
-  DCHECK(!enabled_);
-  animations_disabled_for_test_ = true;
-
-  // Move the mouse off of the top-of-window views so that it does not keep the
-  // top-of-window views revealed.
-  std::vector<gfx::Rect> bounds_in_screen(
-      delegate_->GetVisibleBoundsInScreen());
-  DCHECK(!bounds_in_screen.empty());
-  int bottommost_in_screen = bounds_in_screen[0].bottom();
-  for (size_t i = 1; i < bounds_in_screen.size(); ++i) {
-    if (bounds_in_screen[i].bottom() > bottommost_in_screen)
-      bottommost_in_screen = bounds_in_screen[i].bottom();
-  }
-  gfx::Point cursor_pos(0, bottommost_in_screen + 100);
-  aura::Env::GetInstance()->set_last_mouse_location(cursor_pos);
-  UpdateLocatedEventRevealedLock();
-}
 
 void ImmersiveFullscreenController::OnMouseEvent(
     const ui::MouseEvent& event,

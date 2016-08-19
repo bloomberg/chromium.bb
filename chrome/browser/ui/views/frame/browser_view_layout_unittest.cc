@@ -92,7 +92,7 @@ class MockView : public views::View {
 
 class MockImmersiveModeController : public ImmersiveModeController {
  public:
-  MockImmersiveModeController() {}
+  MockImmersiveModeController() : ImmersiveModeController(Type::STUB) {}
   ~MockImmersiveModeController() override {}
 
   // ImmersiveModeController overrides:
@@ -112,7 +112,6 @@ class MockImmersiveModeController : public ImmersiveModeController {
   }
   void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds) override {}
-  void SetupForTest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockImmersiveModeController);

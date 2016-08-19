@@ -39,6 +39,12 @@ class ImmersiveModeController {
     ANIMATE_REVEAL_NO
   };
 
+  // TODO(sky): remove this, temporary while supporting both ash and mash.
+  enum class Type {
+    ASH,
+    STUB,
+  };
+
   class Observer {
    public:
     // Called when a reveal of the top-of-window views has been initiated.
@@ -51,7 +57,7 @@ class ImmersiveModeController {
     virtual ~Observer() {}
   };
 
-  ImmersiveModeController();
+  explicit ImmersiveModeController(Type type);
   virtual ~ImmersiveModeController();
 
   // Must initialize after browser view has a Widget and native window.
@@ -100,10 +106,7 @@ class ImmersiveModeController {
   virtual void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) = 0;
 
-  // Disables animations and moves the mouse so that it is not over the
-  // top-of-window views for the sake of testing. Must be called before
-  // enabling immersive fullscreen.
-  virtual void SetupForTest() = 0;
+  Type type() const { return type_; }
 
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
@@ -112,6 +115,8 @@ class ImmersiveModeController {
   base::ObserverList<Observer> observers_;
 
  private:
+  const Type type_;
+
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeController);
 };
 

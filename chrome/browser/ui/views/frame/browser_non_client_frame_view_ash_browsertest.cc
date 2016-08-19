@@ -27,9 +27,11 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/test/immersive_fullscreen_controller_test_api.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_test.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "components/signin/core/account_id/account_id.h"
 #endif  // defined(OS_CHROMEOS)
@@ -108,7 +110,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
 
-// TODO(zturner): Change this to USE_ASH after fixing the test on Windows.
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -121,7 +122,13 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
 
   ImmersiveModeController* immersive_mode_controller =
       browser_view->immersive_mode_controller();
-  immersive_mode_controller->SetupForTest();
+  ASSERT_EQ(ImmersiveModeController::Type::ASH,
+            immersive_mode_controller->type());
+
+  ash::ImmersiveFullscreenControllerTestApi(
+      static_cast<ImmersiveModeControllerAsh*>(immersive_mode_controller)
+          ->controller())
+      .SetupForTest();
 
   // Immersive fullscreen starts disabled.
   ASSERT_FALSE(widget->IsFullscreen());

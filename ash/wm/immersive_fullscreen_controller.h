@@ -73,10 +73,6 @@ class ASH_EXPORT ImmersiveFullscreenController
   ImmersiveRevealedLock* GetRevealedLock(AnimateReveal animate_reveal)
       WARN_UNUSED_RESULT;
 
-  // Disables animations and moves the mouse so that it is not over the
-  // top-of-window views for the sake of testing.
-  void SetupForTest();
-
   views::Widget* widget() { return widget_; }
   views::View* top_container() { return top_container_; }
 

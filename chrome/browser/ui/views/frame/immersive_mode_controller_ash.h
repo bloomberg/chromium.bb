@@ -29,6 +29,8 @@ class ImmersiveModeControllerAsh
   ImmersiveModeControllerAsh();
   ~ImmersiveModeControllerAsh() override;
 
+  ash::ImmersiveFullscreenController* controller() { return controller_.get(); }
+
   // ImmersiveModeController overrides:
   void Init(BrowserView* browser_view) override;
   void SetEnabled(bool enabled) override;
@@ -42,7 +44,6 @@ class ImmersiveModeControllerAsh
       WARN_UNUSED_RESULT;
   void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) override;
-  void SetupForTest() override;
 
  private:
   // Enables or disables observers for window restore and entering / exiting
