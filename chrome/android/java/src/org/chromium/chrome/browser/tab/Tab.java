@@ -110,7 +110,6 @@ import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.WindowOpenDisposition;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -1074,9 +1073,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return The theme color that should be used for this tab.
      */
     private int calculateThemeColor(boolean didWebContentsThemeColorChange) {
-        // Theme color support is currently disabled for tablets.
-        if (DeviceFormFactor.isTablet(getApplicationContext())) return getDefaultThemeColor();
-
         if (isNativePage()) return mNativePage.getThemeColor();
 
         // Start by assuming the current theme color is that one that should be used. This will

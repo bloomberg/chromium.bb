@@ -947,6 +947,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 getSnackbarManager());
     }
 
+    @Override
+    protected void initializeToolbar() {
+        super.initializeToolbar();
+        if (DeviceFormFactor.isTablet(getApplicationContext())) {
+            getToolbarManager().setShouldUpdateToolbarPrimaryColor(false);
+        }
+    }
+
     /**
      * Launch the First Run flow to set up Chrome.
      * There are two different pathways that can occur:
@@ -1486,6 +1494,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     @Override
     protected void setStatusBarColor(Tab tab, int color) {
+        if (DeviceFormFactor.isTablet(getApplicationContext())) return;
         super.setStatusBarColor(tab, isInOverviewMode() ? Color.BLACK : color);
     }
 
