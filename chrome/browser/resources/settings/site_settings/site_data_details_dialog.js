@@ -121,10 +121,14 @@ Polymer({
       site.addCookieData(root, node);
   },
 
-  /** @private */
+  /**
+   * Called when a single item has been removed.
+   * @param {!CookieRemovePacket} args The details about what to remove.
+   * @private
+   */
   onTreeItemRemoved_: function(args) {
     this.entries_ = this.site_.getCookieList();
-    if (args[0] == this.site_.data_.id || this.entries_.length == 0) {
+    if (args.id == this.site_.data_.id || this.entries_.length == 0) {
       this.$.dialog.close();
       return;
     }

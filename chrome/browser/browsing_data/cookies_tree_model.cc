@@ -1525,5 +1525,6 @@ void CookiesTreeModel::MaybeNotifyBatchesEnded() {
     FOR_EACH_OBSERVER(Observer,
                       cookies_observer_list_,
                       TreeModelEndBatch(this));
+    SetBatchExpectation(0, true);
   }
 }

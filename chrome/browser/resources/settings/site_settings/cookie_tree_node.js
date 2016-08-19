@@ -25,6 +25,20 @@ var CookieDataItem;
  */
 var CookieDataSummaryItem;
 
+/**
+ * @typedef {{id: string,
+ *            start: number,
+ *            children: !Array<CookieDetails>}}
+ */
+var CookieList;
+
+/**
+ * @typedef {{id: string,
+ *            start: !number,
+ *            count: !number}}
+ */
+var CookieRemovePacket;
+
 cr.define('settings', function() {
   'use strict';
 

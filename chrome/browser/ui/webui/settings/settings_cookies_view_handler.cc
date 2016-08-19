@@ -38,6 +38,11 @@ class FileSystemContext;
 
 namespace settings {
 
+const char kId[] = "id";
+const char kChildren[] = "children";
+const char kStart[] = "start";
+const char kCount[] = "count";
+
 CookiesViewHandler::CookiesViewHandler()
   : batch_update_(false),
     model_util_(new CookiesTreeModelUtil) {
@@ -86,13 +91,13 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
   std::unique_ptr<base::ListValue> children(new base::ListValue);
   model_util_->GetChildNodeList(parent_node, start, count, children.get());
 
-  base::ListValue args;
+  base::DictionaryValue args;
   if (parent == tree_model->GetRoot())
-    args.Append(base::Value::CreateNullValue());
+    args.Set(kId, base::Value::CreateNullValue());
   else
-    args.AppendString(model_util_->GetTreeNodeId(parent_node));
-  args.AppendInteger(start);
-  args.Append(std::move(children));
+    args.SetString(kId, model_util_->GetTreeNodeId(parent_node));
+  args.SetInteger(kStart, start);
+  args.Set(kChildren, std::move(children));
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("onTreeItemAdded"),
                          args);
@@ -110,13 +115,13 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
 
   CookiesTreeModel* tree_model = static_cast<CookiesTreeModel*>(model);
 
-  base::ListValue args;
+  base::DictionaryValue args;
   if (parent == tree_model->GetRoot())
-    args.Append(base::Value::CreateNullValue());
+    args.Set(kId, base::Value::CreateNullValue());
   else
-    args.AppendString(model_util_->GetTreeNodeId(tree_model->AsNode(parent)));
-  args.AppendInteger(start);
-  args.AppendInteger(count);
+    args.SetString(kId, model_util_->GetTreeNodeId(tree_model->AsNode(parent)));
+  args.SetInteger(kStart, start);
+  args.SetInteger(kCount, count);
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("onTreeItemRemoved"),
                          args);
@@ -177,6 +182,9 @@ void CookiesViewHandler::UpdateSearchResults(const base::ListValue* args) {
 }
 
 void CookiesViewHandler::RemoveAll(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  CHECK(args->GetString(0, &callback_id_));
+
   EnsureCookiesTreeModelCreated();
   cookies_tree_model_->DeleteAllStoredObjects();
 }
@@ -195,8 +203,11 @@ void CookiesViewHandler::Remove(const base::ListValue* args) {
 }
 
 void CookiesViewHandler::LoadChildren(const base::ListValue* args) {
+  CHECK_LT(0U, args->GetSize());
+  CHECK(args->GetString(0, &callback_id_));
+
   std::string node_path;
-  if (!args->GetString(0, &node_path))
+  if (!args->GetString(1, &node_path))
     return;
 
   EnsureCookiesTreeModelCreated();
@@ -214,19 +225,21 @@ void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
   model_util_->GetChildNodeList(parent, 0, parent->child_count(),
                                 children.get());
 
-  base::ListValue args;
+  base::DictionaryValue args;
   if (parent == cookies_tree_model_->GetRoot())
-    args.Append(base::Value::CreateNullValue());
+    args.Set(kId, base::Value::CreateNullValue());
   else
-    args.AppendString(model_util_->GetTreeNodeId(parent));
-  args.Append(std::move(children));
+    args.SetString(kId, model_util_->GetTreeNodeId(parent));
+  args.Set(kChildren, std::move(children));
 
-  CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::StringValue("loadChildren"),
-                         args);
+  ResolveJavascriptCallback(base::StringValue(callback_id_), args);
+  callback_id_ = "";
 }
 
 void CookiesViewHandler::ReloadCookies(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  CHECK(args->GetString(0, &callback_id_));
+
   cookies_tree_model_.reset();
 
   EnsureCookiesTreeModelCreated();

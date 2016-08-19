@@ -135,14 +135,17 @@ cr.define('settings', function() {
     setDefaultCaptureDevice: function(type, defaultValue) {},
 
     /**
-     * Reloads all cookies. List is returned through a JS call to loadChildren.
+     * Reloads all cookies.
+     * @return {!Promise<Array<CookieDataSummaryItem>>} Returns the full cookie
+     *     list.
      */
     reloadCookies: function() {},
 
     /**
-     * Fetches all children of a given cookie. List is returned through a JS
-     * call to loadChildren.
+     * Fetches all children of a given cookie.
      * @param {string} path The path to the parent cookie.
+     * @return {!Promise<Array<CookieDataSummaryItem>>} Returns a cookie list
+     *     for the given path.
      */
     loadCookieChildren: function(path) {},
 
@@ -151,6 +154,13 @@ cr.define('settings', function() {
      * @param {string} path The path to the parent cookie.
      */
     removeCookie: function(path) {},
+
+    /**
+     * Removes all cookies.
+     * @return {!Promise<Array<CookieDataSummaryItem>>} Returns the up to date
+     *     cookie list once deletion is complete (empty list).
+     */
+    removeAllCookies: function() {},
 
     /**
      * Initializes the protocol handler list. List is returned through JS calls
@@ -253,18 +263,24 @@ cr.define('settings', function() {
 
     /** @override */
     reloadCookies: function() {
-      chrome.send('reloadCookies');
+      return cr.sendWithPromise('reloadCookies');
     },
 
     /** @override */
     loadCookieChildren: function(path) {
-      chrome.send('loadCookie', [path]);
+      return cr.sendWithPromise('loadCookie', path);
     },
 
     /** @override */
     removeCookie: function(path) {
       chrome.send('removeCookie', [path]);
     },
+
+    /** @override */
+    removeAllCookies: function() {
+      return cr.sendWithPromise('removeAllCookies');
+    },
+
 
     initializeProtocolHandlerList: function() {
       chrome.send('initializeProtocolHandlerList');

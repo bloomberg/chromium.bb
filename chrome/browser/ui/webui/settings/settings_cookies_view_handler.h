@@ -74,6 +74,9 @@ class CookiesViewHandler : public SettingsPageUIHandler,
 
   std::unique_ptr<CookiesTreeModelUtil> model_util_;
 
+  // The callback ID for the current outstanding request.
+  std::string callback_id_;
+
   DISALLOW_COPY_AND_ASSIGN(CookiesViewHandler);
 };
 
