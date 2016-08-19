@@ -59,7 +59,7 @@ public final class FirstRunSignInProcessor {
         signinManager.onFirstRunCheckDone();
 
         boolean firstRunFlowComplete = FirstRunStatus.getFirstRunFlowComplete(activity);
-        // We skip signin and the FRE only if
+        // We skip signin and the FRE if
         // - FRE is disabled, or
         // - FRE hasn't been completed, but the user has already seen the ToS in the Setup Wizard.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
@@ -68,14 +68,15 @@ public final class FirstRunSignInProcessor {
             return;
         }
 
-        // Otherwise, force trigger the FRE if Chrome is started via Chrome icon or via intent from
-        // GSA.
-        if (!firstRunFlowComplete
-                && (TextUtils.equals(activity.getIntent().getAction(), Intent.ACTION_MAIN)
-                           || IntentHandler.determineExternalIntentSource(
-                                      activity.getPackageName(), activity.getIntent())
-                                   == ExternalAppId.GSA)) {
-            requestToFireIntentAndFinish(activity);
+        // Force trigger the FRE if Chrome is started via Chrome icon or via intent from GSA.
+        // Otherwise, skip signin.
+        if (!firstRunFlowComplete) {
+            if (TextUtils.equals(activity.getIntent().getAction(), Intent.ACTION_MAIN)
+                    || IntentHandler.determineExternalIntentSource(
+                               activity.getPackageName(), activity.getIntent())
+                            == ExternalAppId.GSA) {
+                requestToFireIntentAndFinish(activity);
+            }
             return;
         }
 
