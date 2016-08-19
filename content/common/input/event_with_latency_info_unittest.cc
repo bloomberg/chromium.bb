@@ -238,7 +238,7 @@ TEST_F(EventWithLatencyInfoTest, TouchEventCoalescing) {
 
   touch0 = CreateTouch(WebInputEvent::TouchMove, 2);
   touch0.event.dispatchType =
-      WebInputEvent::DispatchType::ListenersForcedNonBlockingPassive;
+      WebInputEvent::DispatchType::ListenersForcedNonBlockingDueToFling;
   touch1 = CreateTouch(WebInputEvent::TouchMove, 2);
   touch1.event.dispatchType =
       WebInputEvent::DispatchType::ListenersNonBlockingPassive;

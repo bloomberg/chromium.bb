@@ -70,6 +70,18 @@ class MainThreadEventQueueTest : public testing::Test,
     return queue_->events_;
   }
 
+  void set_is_flinging(bool is_flinging) {
+    queue_->set_is_flinging(is_flinging);
+  }
+
+  bool last_touch_start_forced_nonblocking_due_to_fling() {
+    return queue_->last_touch_start_forced_nonblocking_due_to_fling_;
+  }
+
+  void set_enable_fling_passive_listener_flag(bool enable_flag) {
+    queue_->enable_fling_passive_listener_flag_ = enable_flag;
+  }
+
  protected:
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
   scoped_refptr<MainThreadEventQueue> queue_;
@@ -244,6 +256,144 @@ TEST_F(MainThreadEventQueueTest, InterleavedEvents) {
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
     EXPECT_EQ(coalesced_event, *last_touch_event);
   }
+}
+
+TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
+  SyntheticWebTouchEvent kEvents[1];
+  kEvents[0].PressPoint(10, 10);
+  kEvents[0].touchStartOrFirstTouchMove = true;
+  set_is_flinging(true);
+  set_enable_fling_passive_listener_flag(true);
+
+  EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  main_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(1u, handled_events_.size());
+  EXPECT_EQ(kEvents[0].size, handled_events_.at(0)->size);
+  EXPECT_EQ(kEvents[0].type, handled_events_.at(0)->type);
+  EXPECT_TRUE(last_touch_start_forced_nonblocking_due_to_fling());
+  const WebTouchEvent* last_touch_event =
+      static_cast<const WebTouchEvent*>(handled_events_.at(0).get());
+  kEvents[0].dispatchedDuringFling = true;
+  kEvents[0].dispatchType = WebInputEvent::ListenersForcedNonBlockingDueToFling;
+  EXPECT_EQ(kEvents[0], *last_touch_event);
+
+  kEvents[0].MovePoint(0, 30, 30);
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  main_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(2u, handled_events_.size());
+  EXPECT_EQ(kEvents[0].size, handled_events_.at(1)->size);
+  EXPECT_EQ(kEvents[0].type, handled_events_.at(1)->type);
+  EXPECT_TRUE(last_touch_start_forced_nonblocking_due_to_fling());
+  last_touch_event =
+      static_cast<const WebTouchEvent*>(handled_events_.at(1).get());
+  kEvents[0].dispatchedDuringFling = true;
+  kEvents[0].dispatchType = WebInputEvent::ListenersForcedNonBlockingDueToFling;
+  EXPECT_EQ(kEvents[0], *last_touch_event);
+
+  kEvents[0].MovePoint(0, 50, 50);
+  kEvents[0].touchStartOrFirstTouchMove = false;
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  main_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(3u, handled_events_.size());
+  EXPECT_EQ(kEvents[0].size, handled_events_.at(2)->size);
+  EXPECT_EQ(kEvents[0].type, handled_events_.at(2)->type);
+  EXPECT_TRUE(kEvents[0].dispatchedDuringFling);
+  EXPECT_EQ(kEvents[0].dispatchType, WebInputEvent::Blocking);
+  last_touch_event =
+      static_cast<const WebTouchEvent*>(handled_events_.at(2).get());
+  EXPECT_EQ(kEvents[0], *last_touch_event);
+
+  kEvents[0].ReleasePoint(0);
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  main_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(4u, handled_events_.size());
+  EXPECT_EQ(kEvents[0].size, handled_events_.at(3)->size);
+  EXPECT_EQ(kEvents[0].type, handled_events_.at(3)->type);
+  EXPECT_TRUE(kEvents[0].dispatchedDuringFling);
+  EXPECT_EQ(kEvents[0].dispatchType, WebInputEvent::Blocking);
+  last_touch_event =
+      static_cast<const WebTouchEvent*>(handled_events_.at(3).get());
+  EXPECT_EQ(kEvents[0], *last_touch_event);
+}
+
+TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
+  SyntheticWebTouchEvent kEvents[1];
+  kEvents[0].PressPoint(10, 10);
+  kEvents[0].touchStartOrFirstTouchMove = true;
+  set_is_flinging(false);
+  set_enable_fling_passive_listener_flag(false);
+
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  main_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(1u, handled_events_.size());
+  EXPECT_EQ(kEvents[0].size, handled_events_.at(0)->size);
+  EXPECT_EQ(kEvents[0].type, handled_events_.at(0)->type);
+  EXPECT_FALSE(kEvents[0].dispatchedDuringFling);
+  EXPECT_EQ(kEvents[0].dispatchType, WebInputEvent::Blocking);
+  EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
+  const WebTouchEvent* last_touch_event =
+      static_cast<const WebTouchEvent*>(handled_events_.at(0).get());
+  EXPECT_EQ(kEvents[0], *last_touch_event);
+
+  set_is_flinging(true);
+  set_enable_fling_passive_listener_flag(false);
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  main_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(2u, handled_events_.size());
+  EXPECT_EQ(kEvents[0].size, handled_events_.at(1)->size);
+  EXPECT_EQ(kEvents[0].type, handled_events_.at(1)->type);
+  EXPECT_FALSE(kEvents[0].dispatchedDuringFling);
+  EXPECT_EQ(kEvents[0].dispatchType, WebInputEvent::Blocking);
+  EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
+  last_touch_event =
+      static_cast<const WebTouchEvent*>(handled_events_.at(1).get());
+  kEvents[0].dispatchedDuringFling = true;
+  EXPECT_EQ(kEvents[0], *last_touch_event);
+
+  set_is_flinging(false);
+  set_enable_fling_passive_listener_flag(true);
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  main_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(3u, handled_events_.size());
+  EXPECT_EQ(kEvents[0].size, handled_events_.at(2)->size);
+  EXPECT_EQ(kEvents[0].type, handled_events_.at(2)->type);
+  EXPECT_TRUE(kEvents[0].dispatchedDuringFling);
+  EXPECT_EQ(kEvents[0].dispatchType, WebInputEvent::Blocking);
+  EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
+  last_touch_event =
+      static_cast<const WebTouchEvent*>(handled_events_.at(2).get());
+  kEvents[0].dispatchedDuringFling = false;
+  EXPECT_EQ(kEvents[0], *last_touch_event);
+
+  kEvents[0].MovePoint(0, 30, 30);
+  HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  main_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_EQ(4u, handled_events_.size());
+  EXPECT_EQ(kEvents[0].size, handled_events_.at(3)->size);
+  EXPECT_EQ(kEvents[0].type, handled_events_.at(3)->type);
+  EXPECT_FALSE(kEvents[0].dispatchedDuringFling);
+  EXPECT_EQ(kEvents[0].dispatchType, WebInputEvent::Blocking);
+  EXPECT_FALSE(last_touch_start_forced_nonblocking_due_to_fling());
+  last_touch_event =
+      static_cast<const WebTouchEvent*>(handled_events_.at(3).get());
+  EXPECT_EQ(kEvents[0], *last_touch_event);
 }
 
 }  // namespace content

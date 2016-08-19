@@ -2714,4 +2714,28 @@ TEST_F(TouchEventQueueTest, TouchScrollNotificationOrder_SecondPosition) {
   EXPECT_EQ(4U, GetAndResetSentEventCount());
 }
 
+// Tests that if touchStartOrFirstTouchMove is correctly set up for touch
+// events.
+TEST_F(TouchEventQueueTest, TouchStartOrFirstTouchMove) {
+  PressTouchPoint(1, 1);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::TouchStart, sent_event().type);
+  EXPECT_TRUE(sent_event().touchStartOrFirstTouchMove);
+
+  MoveTouchPoint(0, 5, 5);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
+  EXPECT_TRUE(sent_event().touchStartOrFirstTouchMove);
+
+  MoveTouchPoint(0, 15, 15);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
+  EXPECT_FALSE(sent_event().touchStartOrFirstTouchMove);
+
+  ReleaseTouchPoint(0);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(WebInputEvent::TouchEnd, sent_event().type);
+  EXPECT_FALSE(sent_event().touchStartOrFirstTouchMove);
+}
+
 }  // namespace content

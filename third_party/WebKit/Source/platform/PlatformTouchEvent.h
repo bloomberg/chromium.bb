@@ -33,6 +33,7 @@ public:
         , m_dispatchType(PlatformEvent::Blocking)
         , m_causesScrollingIfUncanceled(false)
         , m_dispatchedDuringFling(false)
+        , m_touchStartOrFirstTouchMove(false)
     {
     }
 
@@ -42,7 +43,7 @@ public:
     bool cancelable() const { return m_dispatchType == PlatformEvent::Blocking; }
     bool causesScrollingIfUncanceled() const { return m_causesScrollingIfUncanceled; }
     bool dispatchedDuringFling() const { return m_dispatchedDuringFling; }
-
+    bool touchStartOrFirstTouchMove() const { return m_touchStartOrFirstTouchMove; }
     uint32_t uniqueTouchEventId() const { return m_uniqueTouchEventId; }
 
 protected:
@@ -50,7 +51,7 @@ protected:
     DispatchType m_dispatchType;
     bool m_causesScrollingIfUncanceled;
     bool m_dispatchedDuringFling;
-
+    bool m_touchStartOrFirstTouchMove;
     uint32_t m_uniqueTouchEventId;
 };
 

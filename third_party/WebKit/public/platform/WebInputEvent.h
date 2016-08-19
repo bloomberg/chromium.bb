@@ -202,8 +202,8 @@ public:
         // All listeners are passive; not cancelable.
         ListenersNonBlockingPassive,
         // This value represents a state which would have normally blocking
-        // but was forced to be non-blocking; not cancelable.
-        ListenersForcedNonBlockingPassive,
+        // but was forced to be non-blocking during fling; not cancelable.
+        ListenersForcedNonBlockingDueToFling,
     };
 
     // The rail mode for a wheel event specifies the axis on which scrolling is
@@ -624,6 +624,9 @@ public:
     // dispatched.
     bool dispatchedDuringFling;
 
+    // Whether this touch event is a touchstart or a first touchmove event per scroll.
+    bool touchStartOrFirstTouchMove;
+
     // A unique identifier for the touch event. Valid ids start at one and
     // increase monotonically. Zero means an unknown id.
     uint32_t uniqueTouchEventId;
@@ -634,6 +637,7 @@ public:
         , dispatchType(Blocking)
         , movedBeyondSlopRegion(false)
         , dispatchedDuringFling(false)
+        , touchStartOrFirstTouchMove(false)
         , uniqueTouchEventId(0)
     {
     }

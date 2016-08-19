@@ -130,8 +130,8 @@ public:
         // All listeners are passive.
         ListenersNonBlockingPassive,
         // This value represents a state which would have normally blocking
-        // but was forced to be non-blocking.
-        ListenersForcedNonBlockingPassive,
+        // but was forced to be non-blocking during fling; not cancelable.
+        ListenersForcedNonBlockingDueToFling,
     };
 
     EventType type() const { return static_cast<EventType>(m_type); }

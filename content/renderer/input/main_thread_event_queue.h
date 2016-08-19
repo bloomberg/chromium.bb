@@ -6,11 +6,13 @@
 #define CONTENT_RENDERER_INPUT_MAIN_THREAD_EVENT_QUEUE_H_
 
 #include <deque>
+#include "base/feature_list.h"
 #include "content/common/content_export.h"
 #include "content/common/input/event_with_latency_info.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/web_input_event_queue.h"
+#include "content/public/common/content_features.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/latency_info.h"
@@ -131,6 +133,8 @@ class CONTENT_EXPORT MainThreadEventQueue
   WebInputEventQueue<EventWithDispatchType> events_;
   std::unique_ptr<EventWithDispatchType> in_flight_event_;
   bool is_flinging_;
+  bool last_touch_start_forced_nonblocking_due_to_fling_;
+  bool enable_fling_passive_listener_flag_;
 
   base::Lock event_queue_lock_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

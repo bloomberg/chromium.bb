@@ -50,7 +50,7 @@ WebInputEvent::DispatchType MergeDispatchTypes(
                 "Enum not ordered correctly");
   static_assert(
       WebInputEvent::DispatchType::ListenersNonBlockingPassive <
-          WebInputEvent::DispatchType::ListenersForcedNonBlockingPassive,
+          WebInputEvent::DispatchType::ListenersForcedNonBlockingDueToFling,
       "Enum not ordered correctly");
   return static_cast<WebInputEvent::DispatchType>(
       std::min(static_cast<int>(type_1), static_cast<int>(type_2)));

@@ -35,7 +35,7 @@ enum {
   PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED,
   PASSIVE_LISTENER_UMA_ENUM_CANCELABLE,
   PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED,
-  PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING,
+  PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING,
   PASSIVE_LISTENER_UMA_ENUM_COUNT
 };
 
@@ -281,9 +281,10 @@ TEST_F(RenderWidgetUnittest, FlingOverscroll) {
 TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
   SyntheticWebTouchEvent touch;
   touch.PressPoint(10, 10);
+  touch.touchStartOrFirstTouchMove = true;
 
   EXPECT_CALL(*widget()->mock_webwidget(), handleInputEvent(_))
-      .Times(4)
+      .Times(5)
       .WillRepeatedly(
           ::testing::Return(blink::WebInputEventResult::NotHandled));
 
@@ -304,11 +305,20 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
                                        PASSIVE_LISTENER_UMA_ENUM_PASSIVE, 1);
 
   touch.dispatchType =
-      blink::WebInputEvent::DispatchType::ListenersForcedNonBlockingPassive;
+      blink::WebInputEvent::DispatchType::ListenersForcedNonBlockingDueToFling;
   widget()->SendInputEvent(touch);
   histogram_tester().ExpectBucketCount(
       EVENT_LISTENER_RESULT_HISTOGRAM,
-      PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING, 1);
+      PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING, 1);
+
+  touch.MovePoint(0, 10, 10);
+  touch.touchStartOrFirstTouchMove = true;
+  touch.dispatchType =
+      blink::WebInputEvent::DispatchType::ListenersForcedNonBlockingDueToFling;
+  widget()->SendInputEvent(touch);
+  histogram_tester().ExpectBucketCount(
+      EVENT_LISTENER_RESULT_HISTOGRAM,
+      PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING, 2);
 
   EXPECT_CALL(*widget()->mock_webwidget(), handleInputEvent(_))
       .WillOnce(
@@ -328,24 +338,32 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED, 1);
 }
 
-TEST_F(RenderWidgetUnittest, TouchStartDuringOrOutsideFlingUmaMetrics) {
+TEST_F(RenderWidgetUnittest, TouchDuringOrOutsideFlingUmaMetrics) {
   EXPECT_CALL(*widget()->mock_webwidget(), handleInputEvent(_))
-      .Times(2)
+      .Times(3)
       .WillRepeatedly(
           ::testing::Return(blink::WebInputEventResult::NotHandled));
 
   SyntheticWebTouchEvent touch;
   touch.PressPoint(10, 10);
   touch.dispatchType = blink::WebInputEvent::DispatchType::Blocking;
-  touch.dispatchedDuringFling = true;
-  widget()->SendInputEvent(touch);
-  histogram_tester().ExpectTotalCount(
-      "Event.Touch.TouchStartLatencyDuringFling", 1);
-
   touch.dispatchedDuringFling = false;
+  touch.touchStartOrFirstTouchMove = true;
   widget()->SendInputEvent(touch);
-  histogram_tester().ExpectTotalCount(
-      "Event.Touch.TouchStartLatencyOutsideFling", 1);
+  histogram_tester().ExpectTotalCount("Event.Touch.TouchLatencyOutsideFling",
+                                      1);
+
+  touch.MovePoint(0, 10, 10);
+  touch.touchStartOrFirstTouchMove = true;
+  widget()->SendInputEvent(touch);
+  histogram_tester().ExpectTotalCount("Event.Touch.TouchLatencyOutsideFling",
+                                      2);
+
+  touch.MovePoint(0, 30, 30);
+  touch.touchStartOrFirstTouchMove = false;
+  widget()->SendInputEvent(touch);
+  histogram_tester().ExpectTotalCount("Event.Touch.TouchLatencyOutsideFling",
+                                      2);
 }
 
 }  // namespace content

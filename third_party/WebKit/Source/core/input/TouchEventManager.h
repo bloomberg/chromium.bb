@@ -99,8 +99,6 @@ private:
 
     RefPtr<UserGestureToken> m_touchSequenceUserGestureToken;
     bool m_touchPressed;
-    // True if waiting on first touch move after a touch start.
-    bool m_waitingForFirstTouchMove;
     // True if a touch is active but scrolling/zooming has started.
     bool m_touchScrollStarted;
     // The touch event currently being handled or NoType if none.

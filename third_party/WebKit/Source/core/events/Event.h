@@ -215,6 +215,8 @@ public:
 
     bool preventDefaultCalledDuringPassive() const { return m_preventDefaultCalledDuringPassive; }
 
+    bool preventDefaultCalledOnUncancelableEvent() const { return m_preventDefaultCalledOnUncancelableEvent; }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -255,6 +257,8 @@ private:
     // Whether preventDefault was called when |m_handlingPassive| is
     // true. This field is reset on each call to setHandlingPassive.
     unsigned m_preventDefaultCalledDuringPassive : 1;
+    // Whether preventDefault was called on uncancelable event.
+    unsigned m_preventDefaultCalledOnUncancelableEvent : 1;
 
     unsigned short m_eventPhase;
     Member<EventTarget> m_currentTarget;

@@ -81,6 +81,7 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
     , m_wasInitialized(true)
     , m_isTrusted(false)
     , m_handlingPassive(false)
+    , m_preventDefaultCalledOnUncancelableEvent(false)
     , m_eventPhase(0)
     , m_currentTarget(nullptr)
     , m_platformTimeStamp(platformTimeStamp)
@@ -116,6 +117,7 @@ void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool 
     m_immediatePropagationStopped = false;
     m_defaultPrevented = false;
     m_isTrusted = false;
+    m_preventDefaultCalledOnUncancelableEvent = false;
 
     m_type = eventTypeArg;
     m_canBubble = canBubbleArg;
@@ -233,6 +235,8 @@ void Event::preventDefault()
 
     if (m_cancelable)
         m_defaultPrevented = true;
+    else
+        m_preventDefaultCalledOnUncancelableEvent = true;
 }
 
 void Event::setTarget(EventTarget* target)

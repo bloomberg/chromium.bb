@@ -792,10 +792,15 @@ void TouchEventQueue::SendTouchEventImmediately(
   if (dispatching_touch_)
     return;
 
+  if (touch->event.type == WebInputEvent::TouchStart)
+    touch->event.touchStartOrFirstTouchMove = true;
+
   // For touchmove events, compare touch points position from current event
   // to last sent event and update touch points state.
   if (touch->event.type == WebInputEvent::TouchMove) {
     CHECK(last_sent_touchevent_);
+    if (last_sent_touchevent_->type == WebInputEvent::TouchStart)
+      touch->event.touchStartOrFirstTouchMove = true;
     for (unsigned int i = 0; i < last_sent_touchevent_->touchesLength; ++i) {
       const WebTouchPoint& last_touch_point =
           last_sent_touchevent_->touches[i];

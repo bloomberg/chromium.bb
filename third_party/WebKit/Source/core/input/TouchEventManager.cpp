@@ -95,15 +95,6 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
     const HeapVector<TouchInfo>& touchInfos,
     bool allTouchesReleased)
 {
-    bool touchStartOrFirstTouchMove = false;
-    if (event.type() == PlatformEvent::TouchStart) {
-        m_waitingForFirstTouchMove = true;
-        touchStartOrFirstTouchMove = true;
-    } else if (event.type() == PlatformEvent::TouchMove) {
-        touchStartOrFirstTouchMove = m_waitingForFirstTouchMove;
-        m_waitingForFirstTouchMove = false;
-    }
-
     // Build up the lists to use for the |touches|, |targetTouches| and
     // |changedTouches| attributes in the JS event. See
     // http://www.w3.org/TR/touch-events/#touchevent-interface for how these
@@ -186,39 +177,39 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
             TouchEvent* touchEvent = TouchEvent::create(
                 touches, touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
                 eventName, touchEventTarget->toNode()->document().domWindow(),
-                event.getModifiers(), event.cancelable(), event.causesScrollingIfUncanceled(), touchStartOrFirstTouchMove, event.timestamp());
+                event.getModifiers(), event.cancelable(), event.causesScrollingIfUncanceled(), event.touchStartOrFirstTouchMove(), event.timestamp());
 
             DispatchEventResult domDispatchResult = touchEventTarget->dispatchEvent(touchEvent);
 
             // Only report for top level documents with a single touch on
             // touch-start or the first touch-move.
-            if (touchStartOrFirstTouchMove && touchInfos.size() == 1 && event.cancelable() && m_frame->isMainFrame()) {
+            if (event.touchStartOrFirstTouchMove() && touchInfos.size() == 1 && m_frame->isMainFrame()) {
 
                 // Record the disposition and latency of touch starts and first touch moves before and after the page is fully loaded respectively.
                 int64_t latencyInMicros = static_cast<int64_t>((monotonicallyIncreasingTime() - event.timestamp()) * 1000000.0);
-                if (m_frame->document()->isLoadCompleted()) {
-                    DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsAfterPageLoadHistogram, ("Event.Touch.TouchDispositionsAfterPageLoad", TouchEventDispatchResultTypeMax));
-                    touchDispositionsAfterPageLoadHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
+                if (event.cancelable()) {
+                    if (m_frame->document()->isLoadCompleted()) {
+                        DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsAfterPageLoadHistogram, ("Event.Touch.TouchDispositionsAfterPageLoad", TouchEventDispatchResultTypeMax));
+                        touchDispositionsAfterPageLoadHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
 
-                    DEFINE_STATIC_LOCAL(CustomCountHistogram, eventLatencyAfterPageLoadHistogram, ("Event.Touch.TouchLatencyAfterPageLoad", 1, 100000000, 50));
-                    eventLatencyAfterPageLoadHistogram.count(latencyInMicros);
-                } else {
-                    DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsBeforePageLoadHistogram, ("Event.Touch.TouchDispositionsBeforePageLoad", TouchEventDispatchResultTypeMax));
-                    touchDispositionsBeforePageLoadHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
+                        DEFINE_STATIC_LOCAL(CustomCountHistogram, eventLatencyAfterPageLoadHistogram, ("Event.Touch.TouchLatencyAfterPageLoad", 1, 100000000, 50));
+                        eventLatencyAfterPageLoadHistogram.count(latencyInMicros);
+                    } else {
+                        DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsBeforePageLoadHistogram, ("Event.Touch.TouchDispositionsBeforePageLoad", TouchEventDispatchResultTypeMax));
+                        touchDispositionsBeforePageLoadHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
 
-                    DEFINE_STATIC_LOCAL(CustomCountHistogram, eventLatencyBeforePageLoadHistogram, ("Event.Touch.TouchLatencyBeforePageLoad", 1, 100000000, 50));
-                    eventLatencyBeforePageLoadHistogram.count(latencyInMicros);
+                        DEFINE_STATIC_LOCAL(CustomCountHistogram, eventLatencyBeforePageLoadHistogram, ("Event.Touch.TouchLatencyBeforePageLoad", 1, 100000000, 50));
+                        eventLatencyBeforePageLoadHistogram.count(latencyInMicros);
+                    }
+                    // Report the touch disposition there is no active fling animation.
+                    DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsOutsideFlingHistogram, ("Event.Touch.TouchDispositionsOutsideFling2", TouchEventDispatchResultTypeMax));
+                    touchDispositionsOutsideFlingHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
                 }
 
-                // Report the touch disposition, split by whether there is an active fling animation.
-                if (event.type() == PlatformEvent::TouchStart) {
-                    if (event.dispatchedDuringFling()) {
-                        DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsDuringFlingHistogram, ("Event.Touch.TouchDispositionsDuringFling", TouchEventDispatchResultTypeMax));
-                        touchDispositionsDuringFlingHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
-                    } else {
-                        DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsOutsideFlingHistogram, ("Event.Touch.TouchDispositionsOutsideFling", TouchEventDispatchResultTypeMax));
-                        touchDispositionsOutsideFlingHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
-                    }
+                // Report the touch disposition when there is an active fling animation.
+                if (event.dispatchType() == PlatformEvent::ListenersForcedNonBlockingDueToFling) {
+                    DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsDuringFlingHistogram, ("Event.Touch.TouchDispositionsDuringFling2", TouchEventDispatchResultTypeMax));
+                    touchDispositionsDuringFlingHistogram.count(touchEvent->preventDefaultCalledOnUncancelableEvent() ? HandledTouches : UnhandledTouches);
                 }
             }
             eventResult = EventHandler::mergeEventResult(eventResult,
@@ -498,7 +489,6 @@ void TouchEventManager::clear()
     m_targetForTouchID.clear();
     m_regionForTouchID.clear();
     m_touchPressed = false;
-    m_waitingForFirstTouchMove = false;
     m_touchScrollStarted = false;
     m_currentEvent = PlatformEvent::NoType;
 }

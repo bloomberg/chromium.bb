@@ -43,6 +43,9 @@ MainThreadEventQueue::MainThreadEventQueue(
     : routing_id_(routing_id),
       client_(client),
       is_flinging_(false),
+      last_touch_start_forced_nonblocking_due_to_fling_(false),
+      enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
+          features::kPassiveEventListenersDueToFling)),
       main_task_runner_(main_task_runner) {}
 
 MainThreadEventQueue::~MainThreadEventQueue() {}
@@ -59,10 +62,6 @@ bool MainThreadEventQueue::HandleEvent(
 
   bool non_blocking = original_dispatch_type == DISPATCH_TYPE_NON_BLOCKING ||
                       ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING;
-
-  InputEventDispatchType dispatch_type =
-      non_blocking ? DISPATCH_TYPE_NON_BLOCKING : DISPATCH_TYPE_BLOCKING;
-
   bool is_wheel = event->type == blink::WebInputEvent::MouseWheel;
   bool is_touch = blink::WebInputEvent::isTouchEventType(event->type);
 
@@ -76,6 +75,21 @@ bool MainThreadEventQueue::HandleEvent(
       touch_event->dispatchType =
           blink::WebInputEvent::ListenersNonBlockingPassive;
     }
+    if (touch_event->type == blink::WebInputEvent::TouchStart)
+      last_touch_start_forced_nonblocking_due_to_fling_ = false;
+
+    if (enable_fling_passive_listener_flag_ &&
+        touch_event->touchStartOrFirstTouchMove &&
+        touch_event->dispatchType == blink::WebInputEvent::Blocking) {
+      // If the touch start is forced to be passive due to fling, its following
+      // touch move should also be passive.
+      if (is_flinging_ || last_touch_start_forced_nonblocking_due_to_fling_) {
+        touch_event->dispatchType =
+            blink::WebInputEvent::ListenersForcedNonBlockingDueToFling;
+        non_blocking = true;
+        last_touch_start_forced_nonblocking_due_to_fling_ = true;
+      }
+    }
   }
   if (is_wheel && non_blocking) {
     // Adjust the |dispatchType| on the event since the compositor
@@ -84,6 +98,8 @@ bool MainThreadEventQueue::HandleEvent(
         ->dispatchType = blink::WebInputEvent::ListenersNonBlockingPassive;
   }
 
+  InputEventDispatchType dispatch_type =
+      non_blocking ? DISPATCH_TYPE_NON_BLOCKING : DISPATCH_TYPE_BLOCKING;
   std::unique_ptr<EventWithDispatchType> event_with_dispatch_type(
       new EventWithDispatchType(std::move(event), latency, dispatch_type));
 

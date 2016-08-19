@@ -98,7 +98,7 @@ PlatformEvent::DispatchType toPlatformDispatchType(WebInputEvent::DispatchType t
         "Dispatch Types not equal");
     static_assert(PlatformEvent::DispatchType::ListenersNonBlockingPassive == static_cast<PlatformEvent::DispatchType>(WebInputEvent::DispatchType::ListenersNonBlockingPassive),
         "Dispatch Types not equal");
-    static_assert(PlatformEvent::DispatchType::ListenersForcedNonBlockingPassive == static_cast<PlatformEvent::DispatchType>(WebInputEvent::DispatchType::ListenersForcedNonBlockingPassive),
+    static_assert(PlatformEvent::DispatchType::ListenersForcedNonBlockingDueToFling == static_cast<PlatformEvent::DispatchType>(WebInputEvent::DispatchType::ListenersForcedNonBlockingDueToFling),
         "Dispatch Types not equal");
 
     return static_cast<PlatformEvent::DispatchType>(type);
@@ -483,6 +483,7 @@ PlatformTouchEventBuilder::PlatformTouchEventBuilder(Widget* widget, const WebTo
     m_timestamp = event.timeStampSeconds;
     m_causesScrollingIfUncanceled = event.movedBeyondSlopRegion;
     m_dispatchedDuringFling = event.dispatchedDuringFling;
+    m_touchStartOrFirstTouchMove = event.touchStartOrFirstTouchMove;
 
     for (unsigned i = 0; i < event.touchesLength; ++i)
         m_touchPoints.append(PlatformTouchPointBuilder(widget, event.touches[i]));

@@ -128,14 +128,14 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
     PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED,
     PASSIVE_LISTENER_UMA_ENUM_CANCELABLE,
     PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED,
-    PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING,
+    PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING,
     PASSIVE_LISTENER_UMA_ENUM_COUNT
   };
 
   int enum_value;
   switch (dispatch_type) {
-    case WebInputEvent::ListenersForcedNonBlockingPassive:
-      enum_value = PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING;
+    case WebInputEvent::ListenersForcedNonBlockingDueToFling:
+      enum_value = PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING;
       break;
     case WebInputEvent::ListenersNonBlockingPassive:
       enum_value = PASSIVE_LISTENER_UMA_ENUM_PASSIVE;
@@ -165,10 +165,11 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
       UMA_HISTOGRAM_CUSTOM_COUNTS("Event.PassiveListeners.Latency",
                                   GetEventLatencyMicros(event_timestamp, now),
                                   1, 10000000, 100);
-    } else if (enum_value == PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING) {
+    } else if (enum_value ==
+               PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING) {
       base::TimeTicks now = base::TimeTicks::Now();
       UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.PassiveListeners.ForcedNonBlockingLatency",
+          "Event.PassiveListeners.ForcedNonBlockingLatencyDueToFling",
           GetEventLatencyMicros(event_timestamp, now), 1, 10000000, 100);
     }
   }
@@ -335,21 +336,17 @@ void RenderWidgetInputHandler::HandleInputEvent(
     LogPassiveEventListenersUma(processed, touch.dispatchType,
                                 input_event.timeStampSeconds, latency_info);
 
-    if (input_event.type == WebInputEvent::TouchStart &&
-        touch.dispatchType == WebInputEvent::Blocking &&
+    // TODO(lanwei): Remove this metric for event latency outside fling in M56,
+    // once we've gathered enough data to decide if we want to ship the passive
+    // event listener for fling, see https://crbug.com/638661.
+    if (touch.dispatchType == WebInputEvent::Blocking &&
+        touch.touchStartOrFirstTouchMove &&
         base::TimeTicks::IsHighResolution()) {
       base::TimeTicks now = base::TimeTicks::Now();
-      if (touch.dispatchedDuringFling) {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Event.Touch.TouchStartLatencyDuringFling",
-            GetEventLatencyMicros(input_event.timeStampSeconds, now), 1,
-            100000000, 50);
-      } else {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Event.Touch.TouchStartLatencyOutsideFling",
-            GetEventLatencyMicros(input_event.timeStampSeconds, now), 1,
-            100000000, 50);
-      }
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Touch.TouchLatencyOutsideFling",
+          GetEventLatencyMicros(input_event.timeStampSeconds, now), 1,
+          100000000, 50);
     }
   } else if (input_event.type == WebInputEvent::MouseWheel) {
     LogPassiveEventListenersUma(
