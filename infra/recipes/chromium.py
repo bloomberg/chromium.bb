@@ -6,6 +6,7 @@ DEPS = [
   'build/chromium',
   'build/chromium_swarming',
   'build/chromium_tests',
+  'build/test_results',
   'build/test_utils',
   'recipe_engine/properties',
   'recipe_engine/step',
