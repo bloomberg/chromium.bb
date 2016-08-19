@@ -27,13 +27,13 @@
   <interface name="zwp_text_input_v1" version="1">
     <description summary="text input">
       An object used for text input. Adds support for text input and input
-      methods to applications. A text-input object is created from a
+      methods to applications. A text_input object is created from a
       wl_text_input_manager and corresponds typically to a text entry in an
       application.
 
-      Requests are used to activate/deactivate the text-input object and set
+      Requests are used to activate/deactivate the text_input object and set
       state information like surrounding and selected text or the content type.
-      The information about entered text is sent to the text-input object via
+      The information about entered text is sent to the text_input object via
       the pre-edit and commit events. Using this interface removes the need
       for applications to directly process hardware key events and compose text
       out of them.
@@ -59,12 +59,12 @@
 
     <request name="activate">
       <description summary="request activation">
-	Requests the text-input object to be activated (typically when the
+	Requests the text_input object to be activated (typically when the
 	text entry gets focus).
 
 	The seat argument is a wl_seat which maintains the focus for this
 	activation. The surface argument is a wl_surface assigned to the
-	text-input object and tracked for focus lost. The enter event
+	text_input object and tracked for focus lost. The enter event
 	is emitted on successful activation.
       </description>
       <arg name="seat" type="object" interface="wl_seat"/>
@@ -73,7 +73,7 @@
 
     <request name="deactivate">
       <description summary="request deactivation">
-	Requests the text-input object to be deactivated (typically when the
+	Requests the text_input object to be deactivated (typically when the
 	text entry lost focus). The seat argument is a wl_seat which was used
 	for activation.
       </description>
@@ -201,7 +201,7 @@
 
     <event name="enter">
       <description summary="enter event">
-	Notify the text-input object when it received focus. Typically in
+	Notify the text_input object when it received focus. Typically in
 	response to an activate request.
       </description>
       <arg name="surface" type="object" interface="wl_surface"/>
@@ -209,7 +209,7 @@
 
     <event name="leave">
       <description summary="leave event">
-	Notify the text-input object when it lost focus. Either in response
+	Notify the text_input object when it lost focus. Either in response
 	to a deactivate request or when the assigned surface lost focus or was
 	destroyed.
       </description>
@@ -371,12 +371,12 @@
 
   <interface name="zwp_text_input_manager_v1" version="1">
     <description summary="text input manager">
-      A factory for text-input objects. This object is a global singleton.
+      A factory for text_input objects. This object is a global singleton.
     </description>
 
     <request name="create_text_input">
       <description summary="create text input">
-	Creates a new text-input object.
+	Creates a new text_input object.
       </description>
       <arg name="id" type="new_id" interface="zwp_text_input_v1"/>
     </request>
