@@ -419,12 +419,11 @@ void WebPagePopupImpl::resize(const WebSize& newSizeInViewport)
 
     WebRect windowRect = windowRectInScreen();
 
-    if (windowRect.width != newSize.width
-        && windowRect.height != newSize.height) {
-        windowRect.width = newSize.width;
-        windowRect.height = newSize.height;
-        setWindowRect(windowRect);
-    }
+    // TODO(bokan): We should only call into this if the bounds actually changed
+    // but this reveals a bug in Aura. crbug.com/633140.
+    windowRect.width = newSize.width;
+    windowRect.height = newSize.height;
+    setWindowRect(windowRect);
 
     if (m_page) {
         toLocalFrame(m_page->mainFrame())->view()->resize(newSizeInViewport);
