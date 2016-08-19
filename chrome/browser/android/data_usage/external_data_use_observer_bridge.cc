@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/ExternalDataUseObserver_jni.h"
@@ -22,6 +23,12 @@
 using base::android::ConvertUTF8ToJavaString;
 
 namespace {
+
+// Name of the external data use observer synthetic field trial, enabled and
+// disabled groups.
+const char kSyntheticFieldTrial[] = "SyntheticExternalDataUseObserver";
+const char kSyntheticFieldTrialEnabledGroup[] = "Enabled";
+const char kSyntheticFieldTrialDisabledGroup[] = "Disabled";
 
 // Returns the package name of the control app from the field trial.
 const std::string GetControlAppPackageName() {
@@ -181,10 +188,25 @@ void ExternalDataUseObserverBridge::OnControlAppInstallStateChange(
 void ExternalDataUseObserverBridge::ShouldRegisterAsDataUseObserver(
     bool should_register) const {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!j_external_data_use_observer_.is_null());
+
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ExternalDataUseObserver::ShouldRegisterAsDataUseObserver,
                  external_data_use_observer_, should_register));
+
+  // Set or clear the variation id for the enabled group.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  variations::AssociateGoogleVariationID(
+      variations::GOOGLE_WEB_PROPERTIES, kSyntheticFieldTrial,
+      kSyntheticFieldTrialEnabledGroup,
+      should_register ? Java_ExternalDataUseObserver_getGoogleVariationID(
+                            env, j_external_data_use_observer_.obj())
+                      : variations::EMPTY_ID);
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      kSyntheticFieldTrial, should_register
+                                ? kSyntheticFieldTrialEnabledGroup
+                                : kSyntheticFieldTrialDisabledGroup);
 }
 
 bool RegisterExternalDataUseObserver(JNIEnv* env) {

@@ -109,6 +109,14 @@ public class ExternalDataUseObserver {
     }
 
     /**
+     * @return the google variation id.
+     */
+    @CalledByNative
+    protected int getGoogleVariationID() {
+        return 0;
+    }
+
+    /**
      * Initializes the control app manager with package name of the control app.
      * @param controlAppPackageName package name of the control app. If this is empty the default
      * control app package name from {@link getDefaultControlAppPackageName} will be used.
