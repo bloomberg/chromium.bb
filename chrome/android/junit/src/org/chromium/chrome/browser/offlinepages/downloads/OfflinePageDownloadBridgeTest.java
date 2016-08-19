@@ -20,7 +20,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
@@ -112,7 +112,7 @@ public class OfflinePageDownloadBridgeTest {
     @Feature({"OfflinePages"})
     public void testGetAllItems() {
         doNothing().when(mBridge).nativeGetAllItems(
-                anyLong(), Matchers.<List<OfflinePageDownloadItem>>any());
+                anyLong(), ArgumentMatchers.<List<OfflinePageDownloadItem>>any());
         List<OfflinePageDownloadItem> result = mBridge.getAllItems();
         verify(mBridge, times(1)).nativeGetAllItems(eq(0L), eq(result));
     }

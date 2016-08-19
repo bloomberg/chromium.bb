@@ -10,10 +10,9 @@ import static org.mockito.Mockito.verify;
 import android.app.Activity;
 import android.view.KeyEvent;
 
-import junit.framework.Assert;
-
 import org.chromium.base.BaseChromiumApplication.WindowFocusChangedListener;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;

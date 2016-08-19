@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.media.router.cast;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -161,7 +161,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
         MediaRouter.RouteInfo info = createMockRouteInfo(SINK_ID1, SINK_NAME1);
         callback.onRouteChanged(null, info);
 
-        doReturn(false).when(info).matchesSelector(any(MediaRouteSelector.class));
+        doReturn(false).when(info).matchesSelector((MediaRouteSelector) isNull());
         callback.onRouteChanged(null, info);
 
         List<MediaSink> expectedSinks = new ArrayList<MediaSink>();
@@ -233,7 +233,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
 
     private MediaRouter.RouteInfo createMockRouteInfo(String sinkId, String sinkName) {
         MediaRouter.RouteInfo route = spy(TestUtils.createMockRouteInfo(sinkId, sinkName));
-        doReturn(true).when(route).matchesSelector(any(MediaRouteSelector.class));
+        doReturn(true).when(route).matchesSelector((MediaRouteSelector) isNull());
         return route;
     }
 }

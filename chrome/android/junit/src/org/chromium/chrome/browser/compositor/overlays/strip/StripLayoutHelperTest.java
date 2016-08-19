@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.compositor.overlays.strip;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyFloat;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -86,7 +87,7 @@ public class StripLayoutHelperTest {
         final TypedArray mockTypedArray = mock(TypedArray.class);
         when(mockTypedArray.getDimension(anyInt(), anyFloat())).thenReturn(0f);
         when(mockTypedArray.getBoolean(anyInt(), anyBoolean())).thenReturn(false);
-        when(mContext.obtainStyledAttributes(any(AttributeSet.class), any(int[].class), anyInt(),
+        when(mContext.obtainStyledAttributes((AttributeSet) isNull(), any(int[].class), anyInt(),
                 anyInt())).thenReturn(mockTypedArray);
         final Configuration mockConfiguration = mock(Configuration.class);
         when(mResources.getConfiguration()).thenReturn(mockConfiguration);

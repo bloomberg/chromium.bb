@@ -7,9 +7,10 @@ package org.chromium.components.webrestrictions.browser;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -66,9 +67,8 @@ public class WebRestrictionsClientTest {
     public void testShouldProceed() {
         ShadowContentResolver.registerProvider(TEST_CONTENT_PROVIDER, mProvider);
 
-        when(mProvider.query(any(Uri.class), any(String[].class), anyString(), any(String[].class),
-                     anyString()))
-                .thenReturn(null);
+        when(mProvider.query(any(Uri.class), (String[]) isNull(), anyString(), (String[]) isNull(),
+                (String) isNull())).thenReturn(null);
         WebRestrictionsClientResult result = mTestClient.shouldProceed("http://example.com");
         verify(mProvider).query(Uri.parse("content://" + TEST_CONTENT_PROVIDER + "/authorized"),
                 null, "url = 'http://example.com'", null, null);
@@ -82,18 +82,16 @@ public class WebRestrictionsClientTest {
         when(cursor.getColumnName(1)).thenReturn("Error Int");
         when(cursor.getColumnName(2)).thenReturn("Error String");
         when(cursor.getColumnCount()).thenReturn(3);
-        when(mProvider.query(any(Uri.class), any(String[].class), anyString(), any(String[].class),
-                     anyString()))
-                .thenReturn(cursor);
+        when(mProvider.query(any(Uri.class), (String[]) isNull(), anyString(),
+                (String[]) isNull(), (String) isNull())).thenReturn(cursor);
         result = mTestClient.shouldProceed("http://example.com");
         assertThat(result.shouldProceed(), is(true));
         assertThat(result.getInt(1), is(42));
         assertThat(result.getString(2), is("No error"));
 
         when(cursor.getInt(0)).thenReturn(0);
-        when(mProvider.query(any(Uri.class), any(String[].class), anyString(), any(String[].class),
-                     anyString()))
-                .thenReturn(cursor);
+        when(mProvider.query(any(Uri.class), (String[]) isNull(), anyString(),
+                (String[]) isNull(), (String) isNull())).thenReturn(cursor);
         result = mTestClient.shouldProceed("http://example.com");
         assertThat(result.shouldProceed(), is(false));
     }

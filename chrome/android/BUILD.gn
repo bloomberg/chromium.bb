@@ -321,7 +321,7 @@ junit_binary("chrome_junit_tests") {
     "//third_party/android_tools:android_support_v7_mediarouter_java",
     "//third_party/android_tools:android_support_v7_recyclerview_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
-    "//third_party/junit:hamcrest",
+    "//third_party/hamcrest:hamcrest_java",
     "//ui/android:ui_java",
     google_play_services_library,
   ]

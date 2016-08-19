@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.media.router.cast;
 
-import org.hamcrest.Description;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,7 +74,7 @@ public class JSONTestUtils {
         }
     }
 
-    static class JSONObjectLike extends ArgumentMatcher<JSONObject> {
+    static class JSONObjectLike implements ArgumentMatcher<JSONObject> {
         private final JSONObject mExpected;
 
         public JSONObjectLike(JSONObject expected) {
@@ -83,17 +82,17 @@ public class JSONTestUtils {
         }
 
         @Override
-        public boolean matches(Object actual) {
-            return isJSONObjectEqual(mExpected, (JSONObject) actual);
+        public boolean matches(JSONObject actual) {
+            return isJSONObjectEqual(mExpected, actual);
         }
 
         @Override
-        public void describeTo(Description description) {
-            description.appendText("(JSONObject) " + mExpected.toString());
+        public String toString() {
+            return "(JSONObject) " + mExpected.toString();
         }
     }
 
-    static class JSONStringLike extends ArgumentMatcher<String> {
+    static class JSONStringLike implements ArgumentMatcher<String> {
         private JSONObject mExpected;
 
         public JSONStringLike(JSONObject expected) {
@@ -101,17 +100,17 @@ public class JSONTestUtils {
         }
 
         @Override
-        public boolean matches(Object actual) {
+        public boolean matches(String actual) {
             try {
-                return isJSONObjectEqual(mExpected, new JSONObject((String) actual));
+                return isJSONObjectEqual(mExpected, new JSONObject(actual));
             } catch (JSONException e) {
                 return false;
             }
         }
 
         @Override
-        public void describeTo(Description description) {
-            description.appendText("\"" + mExpected.toString() + "\"");
+        public String toString() {
+            return "\"" + mExpected.toString() + "\"";
         }
     }
 }

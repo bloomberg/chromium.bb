@@ -4,10 +4,11 @@
 
 package org.chromium.policy;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -96,7 +97,7 @@ public class AbstractAppRestrictionsProviderTest {
         AbstractAppRestrictionsProvider provider = spy(new DummyAppRestrictionsProvider(context));
         provider.setTaskExecutor(new TestExecutor());
         doNothing().when(provider).recordCacheLoadResultHistogram(anyBoolean());
-        doNothing().when(provider).recordStartTimeHistogram(anyInt());
+        doNothing().when(provider).recordStartTimeHistogram(anyLong());
 
         // Set up the buffer to be returned by getApplicationRestrictions.
         when(provider.getApplicationRestrictions(anyString())).thenReturn(b1);
@@ -113,7 +114,7 @@ public class AbstractAppRestrictionsProviderTest {
         Robolectric.getBackgroundThreadScheduler().advanceBy(0);
         // The AsyncTask should now have got the restrictions.
         verify(provider).getApplicationRestrictions(anyString());
-        verify(provider).recordStartTimeHistogram(anyInt());
+        verify(provider).recordStartTimeHistogram(anyLong());
 
         ShadowLooper.runUiThreadTasks();
         // The policies should now have been set.

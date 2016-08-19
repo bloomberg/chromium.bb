@@ -9,13 +9,13 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.AdditionalMatchers.or;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -39,8 +39,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import junit.framework.Assert;
-
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.ContextUtils;
@@ -48,6 +46,7 @@ import org.chromium.net.HttpNegotiateAuthenticator.GetAccountsCallback;
 import org.chromium.net.HttpNegotiateAuthenticator.RequestData;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -118,15 +117,11 @@ public class HttpNegotiateAuthenticatorTest {
 
         authenticator.getNextAuthToken(0, "test_principal", "", true);
 
-        verify(sMockAccountManager).getAuthTokenByFeatures(
-                eq(accountType),
-                eq("SPNEGO:HOSTBASED:test_principal"),
-                eq(new String[] {"SPNEGO"}),
-                any(Activity.class),
-                isNull(Bundle.class),
-                mBundleCaptor.capture(),
-                mBundleCallbackCaptor.capture(),
-                any(Handler.class));
+        verify(sMockAccountManager)
+                .getAuthTokenByFeatures(eq(accountType), eq("SPNEGO:HOSTBASED:test_principal"),
+                        eq(new String[] {"SPNEGO"}), any(Activity.class), (Bundle) isNull(),
+                        mBundleCaptor.capture(), mBundleCallbackCaptor.capture(),
+                        any(Handler.class));
 
         assertThat("There is no existing context",
                 mBundleCaptor.getValue().get(HttpNegotiateConstants.KEY_SPNEGO_CONTEXT),
@@ -195,28 +190,22 @@ public class HttpNegotiateAuthenticatorTest {
 
         // Should fail because there are no accounts
         callback.run(makeFuture(new Account[]{}));
-        verify(authenticator).nativeSetResult(
-                eq(42L),
-                eq(NetError.ERR_MISSING_AUTH_CREDENTIALS),
-                isNull(String.class));
+        verify(authenticator)
+                .nativeSetResult(
+                        eq(42L), eq(NetError.ERR_MISSING_AUTH_CREDENTIALS), (String) isNull());
 
         // Should succeed, for a single account we use it for the AccountManager#getAuthToken call.
         Account testAccount = new Account("a", type);
         callback.run(makeFuture(new Account[]{testAccount}));
-        verify(sMockAccountManager).getAuthToken(
-                eq(testAccount),
-                anyString(),
-                any(Bundle.class),
-                eq(true),
-                any(HttpNegotiateAuthenticator.GetTokenCallback.class),
-                any(Handler.class));
+        verify(sMockAccountManager)
+                .getAuthToken(eq(testAccount), (String) isNull(), (Bundle) isNull(), eq(true),
+                        any(HttpNegotiateAuthenticator.GetTokenCallback.class), any(Handler.class));
 
         // Should fail because there is more than one account
         callback.run(makeFuture(new Account[]{new Account("a", type), new Account("b", type)}));
-        verify(authenticator, times(2)).nativeSetResult(
-                eq(42L),
-                eq(NetError.ERR_MISSING_AUTH_CREDENTIALS),
-                isNull(String.class));
+        verify(authenticator, times(2))
+                .nativeSetResult(
+                        eq(42L), eq(NetError.ERR_MISSING_AUTH_CREDENTIALS), (String) isNull());
     }
 
     /**
@@ -249,13 +238,9 @@ public class HttpNegotiateAuthenticatorTest {
         receiver.onReceive(ShadowApplication.getInstance().getApplicationContext(), intent);
 
         // Verify that the auth token is properly requested from the account manager.
-        verify(sMockAccountManager).getAuthToken(
-                eq(new Account("a", type)),
-                eq("foo"),
-                isNull(Bundle.class),
-                eq(true),
-                any(HttpNegotiateAuthenticator.GetTokenCallback.class),
-                any(Handler.class));
+        verify(sMockAccountManager)
+                .getAuthToken(eq(new Account("a", type)), eq("foo"), (Bundle) isNull(), eq(true),
+                        any(HttpNegotiateAuthenticator.GetTokenCallback.class), (Handler) isNull());
     }
 
     /**
@@ -270,8 +255,8 @@ public class HttpNegotiateAuthenticatorTest {
         // Call getNextAuthToken to get the callback
         authenticator.getNextAuthToken(1234, "test_principal", "", true);
         verify(sMockAccountManager)
-                .getAuthTokenByFeatures(anyString(), anyString(), any(String[].class),
-                        any(Activity.class), any(Bundle.class), any(Bundle.class),
+                .getAuthTokenByFeatures(any(String.class), any(String.class), any(String[].class),
+                        any(Activity.class), (Bundle) isNull(), any(Bundle.class),
                         mBundleCallbackCaptor.capture(), any(Handler.class));
 
         Bundle resultBundle = new Bundle();
@@ -286,8 +271,8 @@ public class HttpNegotiateAuthenticatorTest {
         // Check that the next call to getNextAuthToken uses the correct context
         authenticator.getNextAuthToken(5678, "test_principal", "", true);
         verify(sMockAccountManager, times(2))
-                .getAuthTokenByFeatures(anyString(), anyString(), any(String[].class),
-                        any(Activity.class), any(Bundle.class), mBundleCaptor.capture(),
+                .getAuthTokenByFeatures(any(String.class), any(String.class), any(String[].class),
+                        any(Activity.class), (Bundle) isNull(), mBundleCaptor.capture(),
                         mBundleCallbackCaptor.capture(), any(Handler.class));
 
         assertThat("The spnego context is preserved between calls",
@@ -305,13 +290,14 @@ public class HttpNegotiateAuthenticatorTest {
         Robolectric.buildActivity(Activity.class).create().start().resume().visible();
         HttpNegotiateAuthenticator authenticator = createWithoutNative("Dummy_Account");
 
-        doReturn(true).when(authenticator)
-                .lacksPermission(any(Context.class), anyString(), anyBoolean());
+        doReturn(true)
+                .when(authenticator)
+                .lacksPermission(any(Context.class), any(String.class), anyBoolean());
 
         authenticator.getNextAuthToken(1234, "test_principal", "", true);
         verify(authenticator)
                 .nativeSetResult(anyLong(), eq(NetError.ERR_MISCONFIGURED_AUTH_ENVIRONMENT),
-                        isNull(String.class));
+                        (String) isNull());
     }
 
     @Test
@@ -393,22 +379,17 @@ public class HttpNegotiateAuthenticatorTest {
 
         // Call getNextAuthToken to get the callback
         authenticator.getNextAuthToken(1234, "test_principal", "", true);
-        verify(sMockAccountManager).getAuthTokenByFeatures(
-                anyString(),
-                anyString(),
-                any(String[].class),
-                any(Activity.class),
-                any(Bundle.class),
-                any(Bundle.class),
-                mBundleCallbackCaptor.capture(),
-                any(Handler.class));
+        verify(sMockAccountManager)
+                .getAuthTokenByFeatures(any(String.class), any(String.class), any(String[].class),
+                        any(Activity.class), (Bundle) isNull(), any(Bundle.class),
+                        mBundleCallbackCaptor.capture(), any(Handler.class));
 
         Bundle resultBundle = new Bundle();
         if (spnegoError != null) {
             resultBundle.putInt(HttpNegotiateConstants.KEY_SPNEGO_RESULT, spnegoError);
         }
         mBundleCallbackCaptor.getValue().run(makeFuture(resultBundle));
-        verify(authenticator).nativeSetResult(anyLong(), eq(expectedError), anyString());
+        verify(authenticator).nativeSetResult(anyLong(), eq(expectedError), (String) isNull());
     }
 
     /**
@@ -454,10 +435,12 @@ public class HttpNegotiateAuthenticatorTest {
     private HttpNegotiateAuthenticator createWithoutNative(String accountType) {
         HttpNegotiateAuthenticator authenticator =
                 spy(HttpNegotiateAuthenticator.create(accountType));
-        doNothing().when(authenticator).nativeSetResult(anyLong(), anyInt(), anyString());
+        doNothing()
+                .when(authenticator)
+                .nativeSetResult(anyLong(), anyInt(), or(any(String.class), (String) isNull()));
         doReturn(false)
                 .when(authenticator)
-                .lacksPermission(any(Context.class), anyString(), anyBoolean());
+                .lacksPermission(any(Context.class), any(String.class), anyBoolean());
         return authenticator;
     }
 }

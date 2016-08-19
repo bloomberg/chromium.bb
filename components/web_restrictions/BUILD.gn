@@ -27,7 +27,7 @@ if (is_android) {
     deps = [
       ":web_restrictions_java",
       "//base:base_java",
-      "//third_party/junit:hamcrest",
+      "//third_party/hamcrest:hamcrest_java",
     ]
   }
 

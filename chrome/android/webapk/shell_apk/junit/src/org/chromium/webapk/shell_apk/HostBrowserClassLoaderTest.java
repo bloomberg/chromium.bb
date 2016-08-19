@@ -165,7 +165,8 @@ public class HostBrowserClassLoaderTest {
      */
     public void verifyDexLoaderLoadCall(String expectedDexName) {
         Mockito.verify(mMockDexLoader)
-                .load(Mockito.any(Context.class), Mockito.eq(expectedDexName), Mockito.anyString(),
-                        Mockito.any(File.class), Mockito.any(File.class));
+                .load(Mockito.any(Context.class), Mockito.eq(expectedDexName),
+                        (String) Mockito.isNull(), Mockito.any(File.class),
+                        Mockito.any(File.class));
     }
 }

@@ -4,6 +4,7 @@
 
 package org.chromium.policy.test.annotations;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -52,7 +53,7 @@ public class PoliciesTest {
         method = SomeClass.class.getDeclaredMethod("someMethodThatDuplicates");
         Map<String, PolicyData> policies = Policies.getPolicies(method);
         assertThat(policies.size(), is(1));
-        assertThat(policies.get("Ni"), is(PolicyData.Str.class));
+        assertThat(policies.get("Ni"), is(instanceOf(PolicyData.Str.class)));
 
         // Annotations can be removed
         method = SomeClass.class.getDeclaredMethod("someMethodThatTilRecentlyHadNi");
