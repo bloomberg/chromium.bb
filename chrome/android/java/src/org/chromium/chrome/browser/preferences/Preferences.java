@@ -100,7 +100,8 @@ public class Preferences extends AppCompatActivity implements
                     .commit();
         }
 
-        if (checkPermission(Manifest.permission.NFC, Process.myPid(), Process.myUid())
+        if (ApiCompatibilityUtils.checkPermission(
+                this, Manifest.permission.NFC, Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED) {
             // Disable Android Beam on JB and later devices.
             // In ICS it does nothing - i.e. we will send a Play Store link if NFC is used.

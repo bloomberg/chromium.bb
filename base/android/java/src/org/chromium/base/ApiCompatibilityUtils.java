@@ -559,4 +559,18 @@ public class ApiCompatibilityUtils {
 
         return false;
     }
+
+    /**
+     * @see Context#checkPermission(String, int, int)
+     */
+    public static int checkPermission(Context context, String permission, int pid, int uid) {
+        try {
+            return context.checkPermission(permission, pid, uid);
+        } catch (RuntimeException e) {
+            // Some older versions of Android throw odd errors when checking for permissions, so
+            // just swallow the exception and treat it as the permission is denied.
+            // crbug.com/639099
+            return PackageManager.PERMISSION_DENIED;
+        }
+    }
 }

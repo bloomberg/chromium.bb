@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Process;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -316,7 +317,7 @@ public class AccountManagerHelper {
     }
 
     public boolean hasGetAccountsPermission() {
-        return mApplicationContext.checkPermission(
+        return ApiCompatibilityUtils.checkPermission(mApplicationContext,
                        Manifest.permission.GET_ACCOUNTS, Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED;
     }

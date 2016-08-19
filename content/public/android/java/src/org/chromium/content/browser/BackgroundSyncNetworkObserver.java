@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Process;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -52,9 +53,8 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
     }
 
     private static boolean canCreateObserver(Context ctx) {
-        return ctx.checkPermission(
-                       Manifest.permission.ACCESS_NETWORK_STATE, Process.myPid(), Process.myUid())
-                == PackageManager.PERMISSION_GRANTED;
+        return ApiCompatibilityUtils.checkPermission(ctx, Manifest.permission.ACCESS_NETWORK_STATE,
+                Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
     }
 
     @CalledByNative

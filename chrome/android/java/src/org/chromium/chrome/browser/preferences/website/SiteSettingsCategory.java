@@ -15,6 +15,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Process;
 import android.preference.Preference;
 import android.provider.Settings;
 import android.text.SpannableString;
@@ -485,7 +486,7 @@ public class SiteSettingsCategory {
     private boolean permissionOnInAndroid(String permission, Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true;
 
-        return PackageManager.PERMISSION_GRANTED == context.getPackageManager().checkPermission(
-                permission, context.getPackageName());
+        return PackageManager.PERMISSION_GRANTED == ApiCompatibilityUtils.checkPermission(
+                context, permission, Process.myPid(), Process.myUid());
     }
 }

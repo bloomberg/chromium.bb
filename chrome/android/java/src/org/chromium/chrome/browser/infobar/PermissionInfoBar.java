@@ -5,11 +5,9 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.os.Process;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SwitchCompat;
 import android.util.SparseArray;
@@ -89,21 +87,13 @@ public class PermissionInfoBar extends ConfirmInfoBar {
         mShowPersistenceToggle = showPersistenceToggle;
     }
 
-    private static boolean hasPermission(Context context, String permission) {
-        return context.checkPermission(permission, Process.myPid(), Process.myUid())
-                != PackageManager.PERMISSION_DENIED;
-    }
-
     private SparseArray<String> generatePermissionsMapping(int[] contentSettings) {
-        Context context = mWindowAndroid.getApplicationContext();
         SparseArray<String> permissionsToRequest = new SparseArray<String>();
         for (int i = 0; i < contentSettings.length; i++) {
             String permission = PrefServiceBridge.getAndroidPermissionForContentSetting(
                     contentSettings[i]);
-            if (permission != null) {
-                if (!hasPermission(context, permission)) {
-                    permissionsToRequest.append(contentSettings[i], permission);
-                }
+            if (permission != null && !mWindowAndroid.hasPermission(permission)) {
+                permissionsToRequest.append(contentSettings[i], permission);
             }
         }
         return permissionsToRequest;

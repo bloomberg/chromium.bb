@@ -20,7 +20,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Process;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.v7.widget.AppCompatTextView;
@@ -586,9 +585,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
     private boolean hasAndroidPermission(int contentSettingType) {
         String androidPermission = PrefServiceBridge.getAndroidPermissionForContentSetting(
                 contentSettingType);
-        return androidPermission == null
-                || (mContext.checkPermission(androidPermission, Process.myPid(), Process.myUid())
-                           == PackageManager.PERMISSION_GRANTED);
+        return androidPermission == null || mWindowAndroid.hasPermission(androidPermission);
     }
 
     /**
