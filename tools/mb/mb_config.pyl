@@ -241,7 +241,7 @@
       'Libfuzzer Upload Linux ASan Debug': 'gn_debug_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',
       'Libfuzzer Upload Linux UBSan': 'gn_release_libfuzzer_ubsan',
-      'Libfuzzer Upload Mac ASan': 'gn_release_libfuzzer_asan',
+      'Libfuzzer Upload Mac ASan': 'gn_release_libfuzzer_mac_asan',
       'Linux ARM': 'swarming_gn_release_bot_arm',
       'Linux deterministic': 'gn_release_bot',
       'Linux remote_run Builder': 'swarming_gn_release_bot',
@@ -1229,7 +1229,7 @@
     ],
 
     'gn_debug_libfuzzer_asan': [
-      'gn', 'debug', 'libfuzzer', 'asan', 'proprietary_codecs', 'pdf_xfa',
+      'gn', 'debug', 'libfuzzer', 'asan', 'chromeos_with_codecs', 'pdf_xfa',
       'disable_nacl',
     ],
 
@@ -1302,34 +1302,34 @@
     ],
 
     'gn_release_drmemory_drfuzz': [
-      'gn', 'release', 'drmemory', 'drfuzz', 'proprietary_codecs',
+      'gn', 'release', 'drmemory', 'drfuzz', 'chrome_with_codecs',
     ],
 
     'gn_release_drmemory_drfuzz_x86': [
-      'gn', 'release', 'drmemory', 'drfuzz', 'x86', 'proprietary_codecs',
+      'gn', 'release', 'drmemory', 'drfuzz', 'x86', 'chrome_with_codecs',
      ],
 
     'gn_release_afl_asan': [
-      'gn', 'release', 'afl', 'asan', 'proprietary_codecs', 'pdf_xfa',
+      'gn', 'release', 'afl', 'asan', 'chromeos_with_codecs', 'pdf_xfa',
+      'disable_nacl',
+    ],
+
+    'gn_release_libfuzzer_mac_asan': [
+      'gn', 'release', 'libfuzzer', 'asan', 'chrome_with_codecs', 'pdf_xfa',
       'disable_nacl',
     ],
 
     'gn_release_libfuzzer_asan': [
-      'gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs', 'pdf_xfa',
-      'disable_nacl',
-    ],
-
-    'gn_release_libfuzzer_asan': [
-      'gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs', 'pdf_xfa',
+      'gn', 'release', 'libfuzzer', 'asan', 'chromeos_with_codecs', 'pdf_xfa',
       'disable_nacl',
     ],
 
     'gn_release_libfuzzer_msan': [
-      'gn', 'release', 'libfuzzer', 'msan', 'proprietary_codecs', 'pdf_xfa',
+      'gn', 'release', 'libfuzzer', 'msan', 'chromeos_with_codecs', 'pdf_xfa',
       'disable_nacl',
     ],
     'gn_release_libfuzzer_ubsan': [
-      'gn', 'release', 'libfuzzer', 'ubsan_security', 'proprietary_codecs',
+      'gn', 'release', 'libfuzzer', 'ubsan_security', 'chromeos_with_codecs',
       'pdf_xfa', 'disable_nacl',
     ],
 
@@ -2354,6 +2354,8 @@
       'gyp_defines': 'pdf_enable_xfa=1',
     },
 
+    # Note: This is probably not what you want to use. Instead use one of the
+    # chrome_with_codecs or chromeos_with_codecs mixins.
     'proprietary_codecs': {
       'gn_args': 'proprietary_codecs=true',
       'gyp_defines': 'proprietary_codecs=1',
