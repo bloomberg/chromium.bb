@@ -317,6 +317,10 @@
                 "href": "/apps/about_apps"
               },
               {
+                "title": "Transition Overview",
+                "href": "/apps/migration"
+              },
+              {
                 "title": "Create Your First App",
                 "href": "/apps/first_app"
               },
@@ -1010,10 +1014,6 @@
               {
                 "title": "Using Google Accounts",
                 "href": "/webstore/identify_user"
-              },
-              {
-                "title": "Checking for Payment",
-                "href": "/webstore/check_for_payment"
               },
               {
                 "title": "One-Time Payments",
