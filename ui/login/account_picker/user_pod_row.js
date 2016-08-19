@@ -1537,6 +1537,18 @@ cr.define('login', function() {
       var message;
       if (!this.user.isDesktopUser) {
         this.moveActionMenuUpIfNeeded_();
+        if (!this.user.legacySupervisedUser) {
+          this.querySelector(
+              '.action-box-remove-user-warning-text').style.display = 'none';
+          this.querySelector(
+              '.action-box-remove-user-warning-table-nonsync').style.display
+              = 'none';
+          var message = loadTimeData.getString('removeNonOwnerUserWarningText');
+          var element_id = '.action-box-remove-non-owner-user-warning-text';
+          this.updateRemoveWarningDialogSetMessage_(element_id,
+                                                    this.user.profilePath,
+                                                    message);
+        }
       } else {
         this.querySelector(
           '.action-box-remove-non-owner-user-warning-text').hidden = true;
@@ -1600,6 +1612,7 @@ cr.define('login', function() {
       if (total_count)
         this.classList.remove('has-no-stats');
 
+      var elementSelector = '.action-box-remove-user-warning-text';
       var is_synced_user = this.user.emailAddress !== "";
       // Write total number if all statistics are loaded.
       if (num_stats_loaded === Object.keys(stats_elements).length) {
@@ -1608,7 +1621,8 @@ cr.define('login', function() {
           var message = loadTimeData.getString(
               is_synced_user ? 'removeUserWarningTextSyncNoStats' :
                                'removeUserWarningTextNonSyncNoStats');
-          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
+          this.updateRemoveWarningDialogSetMessage_(elementSelector,
+                                                    this.user.profilePath,
                                                     message);
         } else {
           window.updateRemoveWarningDialogSetMessage =
@@ -1625,7 +1639,8 @@ cr.define('login', function() {
           message = loadTimeData.getString(
               is_synced_user ? 'removeUserWarningTextSyncNoStats' :
                                'removeUserWarningTextNonSyncNoStats');
-          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
+          this.updateRemoveWarningDialogSetMessage_(elementSelector,
+                                                    this.user.profilePath,
                                                     message);
         } else {
           message = loadTimeData.getString(
@@ -1633,7 +1648,8 @@ cr.define('login', function() {
                                'removeUserWarningTextNonSyncCalculating');
           substitute = loadTimeData.getString(
               'removeUserWarningTextCalculating');
-          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
+          this.updateRemoveWarningDialogSetMessage_(elementSelector,
+                                                    this.user.profilePath,
                                                     message, substitute);
         }
       }
@@ -1641,19 +1657,22 @@ cr.define('login', function() {
 
     /**
      * Refresh the message in the remove user warning dialog.
+     * @param {string} elementSelector The elementSelector of warning dialog.
      * @param {string} profilePath The filepath of the URL (must be verified).
      * @param {string} message The message to be written.
      * @param {number|string=} count The number or string to replace $1 in
      * |message|. Can be omitted if $1 is not present in |message|.
      */
-    updateRemoveWarningDialogSetMessage_: function(profilePath, message,
+    updateRemoveWarningDialogSetMessage_: function(elementSelector,
+                                                   profilePath,
+                                                   message,
                                                    count) {
       if (profilePath !== this.user.profilePath)
         return;
       // Add localized messages where $1 will be replaced with
       // <span class="total-count"></span> and $2 will be replaced with
       // <span class="email"></span>.
-      var element = this.querySelector('.action-box-remove-user-warning-text');
+      var element = this.querySelector(elementSelector);
       element.textContent = '';
 
       messageParts = message.split(/(\$[12])/);
