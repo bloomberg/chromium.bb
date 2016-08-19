@@ -123,7 +123,7 @@ void SVGDocumentExtensions::startAnimations()
     for (const auto& container : timeContainers) {
         SMILTimeContainer* timeContainer = container->timeContainer();
         if (!timeContainer->isStarted())
-            timeContainer->begin();
+            timeContainer->start();
     }
 }
 

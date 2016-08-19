@@ -57,7 +57,7 @@ public:
     bool isPaused() const;
     bool isStarted() const;
 
-    void begin();
+    void start();
     void pause();
     void resume();
     void setElapsed(SMILTime);
@@ -96,7 +96,8 @@ private:
     };
 
     bool isTimelineRunning() const;
-    void scheduleAnimationFrame(SMILTime fireTime);
+    void synchronizeToDocumentTimeline();
+    void scheduleAnimationFrame(double delayTime);
     void cancelAnimationFrame();
     void wakeupTimerFired(TimerBase*);
     void scheduleAnimationPolicyTimer();
@@ -111,19 +112,20 @@ private:
     bool hasPendingSynchronization() const;
 
     void updateDocumentOrderIndexes();
-    double lastResumeTime() const { return m_resumeTime ? m_resumeTime : m_beginTime; }
 
     SVGSVGElement& ownerSVGElement() const;
     Document& document() const;
-    double currentTime() const;
 
-    double m_beginTime;
-    double m_pauseTime;
-    double m_resumeTime;
-    double m_accumulatedActiveTime;
-    double m_presetStartTime;
+    // The latest "restart" time for the time container's timeline. If the
+    // timeline has not been manipulated (seeked, paused) this will be zero.
+    double m_presentationTime;
+    // The time on the document timeline corresponding to |m_presentationTime|.
+    double m_referenceTime;
 
     FrameSchedulingState m_frameSchedulingState;
+    bool m_started; // The timeline has been started.
+    bool m_paused; // The timeline is paused.
+
     bool m_documentOrderIndexesDirty;
 
     Timer<SMILTimeContainer> m_wakeupTimer;
