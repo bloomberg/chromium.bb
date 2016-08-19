@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_LAYOUT_STORE_H_
-#define ASH_DISPLAY_DISPLAY_LAYOUT_STORE_H_
+#ifndef UI_DISPLAY_MANAGER_DISPLAY_LAYOUT_STORE_H_
+#define UI_DISPLAY_MANAGER_DISPLAY_LAYOUT_STORE_H_
 
 #include <stdint.h>
 
 #include <map>
 #include <memory>
 
-#include "ash/ash_export.h"
 #include "base/macros.h"
+#include "ui/display/display.h"
+#include "ui/display/display_export.h"
 #include "ui/display/manager/display_layout.h"
 
-namespace ash {
+namespace display {
 
-class ASH_EXPORT DisplayLayoutStore {
+class DISPLAY_EXPORT DisplayLayoutStore {
  public:
   DisplayLayoutStore();
   ~DisplayLayoutStore();
 
   void SetDefaultDisplayPlacement(const display::DisplayPlacement& placement);
 
-  // Registeres the display layout info for the specified display(s).
+  // Registers the display layout info for the specified display(s).
   void RegisterLayoutForDisplayIdList(
       const display::DisplayIdList& list,
       std::unique_ptr<display::DisplayLayout> layout);
@@ -55,6 +56,6 @@ class ASH_EXPORT DisplayLayoutStore {
   DISALLOW_COPY_AND_ASSIGN(DisplayLayoutStore);
 };
 
-}  // namespace ash
+}  // namespace display
 
-#endif  // ASH_DISPLAY_DISPLAY_LAYOUT_STORE_H_
+#endif  // UI_DISPLAY_MANAGER_DISPLAY_LAYOUT_STORE_H_

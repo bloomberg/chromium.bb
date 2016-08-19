@@ -9,7 +9,6 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/display/display_info.h"
-#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/display/extended_mouse_warp_controller.h"

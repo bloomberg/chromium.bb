@@ -108,12 +108,6 @@ const char kAshMaxWindowsToUseMaskInOverview[] = "ash-max-previews-to-use-mask";
 const char kAshMaxWindowsToUseShapeInOverview[] =
     "ash-max-previews-to-use-shape";
 
-// Specifies the layout mode and offsets for the secondary display for
-// testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
-// b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display
-// is positioned on the right with -100 offset. (above than primary)
-const char kAshSecondaryDisplayLayout[] = "ash-secondary-display-layout";
-
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 

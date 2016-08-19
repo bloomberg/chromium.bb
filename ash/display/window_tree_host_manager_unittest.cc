@@ -13,7 +13,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/screen_util.h"
@@ -37,6 +36,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_layout_store.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
@@ -1402,7 +1402,7 @@ TEST_P(WindowTreeHostManagerTest,
     return;
 
   // Set the 2nd display on the left.
-  DisplayLayoutStore* layout_store =
+  display::DisplayLayoutStore* layout_store =
       Shell::GetInstance()->display_manager()->layout_store();
   display::DisplayPlacement new_default(display::DisplayPlacement::LEFT, 0);
   layout_store->SetDefaultDisplayPlacement(new_default);

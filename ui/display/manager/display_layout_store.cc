@@ -4,23 +4,49 @@
 
 #include <stdio.h>
 
-#include "ash/common/ash_switches.h"
-#include "ash/display/display_layout_store.h"
-#include "ash/display/display_manager.h"
-#include "ash/display/display_util.h"
-#include "ash/shell.h"
+#include <string>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "ui/display/display.h"
+#include "ui/display/display_switches.h"
+#include "ui/display/manager/display_layout_store.h"
 
-namespace ash {
+namespace display {
+
+namespace {
+
+// TODO(kylechar): Move these to ui/display/chromeos/display_util.cc/h.
+bool CompareDisplayIds(int64_t id1, int64_t id2) {
+  DCHECK_NE(id1, id2);
+  // Output index is stored in the first 8 bits. See GetDisplayIdFromEDID
+  // in edid_parser.cc.
+  int index_1 = id1 & 0xFF;
+  int index_2 = id2 & 0xFF;
+  DCHECK_NE(index_1, index_2) << id1 << " and " << id2;
+  return Display::IsInternalDisplayId(id1) ||
+         (index_1 < index_2 && !Display::IsInternalDisplayId(id2));
+}
+
+std::string DisplayIdListToString(const DisplayIdList& list) {
+  std::stringstream s;
+  const char* sep = "";
+  for (int64_t id : list) {
+    s << sep << id;
+    sep = ",";
+  }
+  return s.str();
+}
+
+}  // namespace
 
 DisplayLayoutStore::DisplayLayoutStore()
     : default_display_placement_(display::DisplayPlacement::RIGHT, 0) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshSecondaryDisplayLayout)) {
+  if (command_line->HasSwitch(switches::kSecondaryDisplayLayout)) {
     std::string value =
-        command_line->GetSwitchValueASCII(switches::kAshSecondaryDisplayLayout);
+        command_line->GetSwitchValueASCII(switches::kSecondaryDisplayLayout);
     char layout;
     int offset = 0;
     if (sscanf(value.c_str(), "%c,%d", &layout, &offset) == 2) {
@@ -42,7 +68,7 @@ DisplayLayoutStore::~DisplayLayoutStore() {}
 void DisplayLayoutStore::SetDefaultDisplayPlacement(
     const display::DisplayPlacement& placement) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kAshSecondaryDisplayLayout))
+  if (!command_line->HasSwitch(switches::kSecondaryDisplayLayout))
     default_display_placement_ = placement;
 }
 
@@ -118,4 +144,4 @@ display::DisplayLayout* DisplayLayoutStore::CreateDefaultDisplayLayout(
   return iter->second.get();
 }
 
-}  // namespace ash
+}  // namespace display

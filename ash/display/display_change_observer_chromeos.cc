@@ -13,7 +13,6 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
@@ -26,6 +25,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_layout_store.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/util/display_util.h"

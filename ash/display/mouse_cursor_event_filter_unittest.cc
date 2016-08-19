@@ -4,7 +4,6 @@
 
 #include "ash/display/mouse_cursor_event_filter.h"
 
-#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"

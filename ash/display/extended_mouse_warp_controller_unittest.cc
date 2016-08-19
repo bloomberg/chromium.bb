@@ -4,7 +4,6 @@
 
 #include "ash/display/extended_mouse_warp_controller.h"
 
-#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/shell.h"

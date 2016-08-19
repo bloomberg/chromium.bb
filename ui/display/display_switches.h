@@ -12,6 +12,7 @@
 namespace switches {
 
 DISPLAY_EXPORT extern const char kForceDeviceScaleFactor[];
+DISPLAY_EXPORT extern const char kSecondaryDisplayLayout[];
 
 #if defined(OS_CHROMEOS)
 DISPLAY_EXPORT extern const char kDisableDisplayColorCalibration[];

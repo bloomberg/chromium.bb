@@ -15,7 +15,6 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/display/display_info.h"
-#include "ash/display/display_layout_store.h"
 #include "ash/display/display_util.h"
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/null_mouse_warp_controller.h"
@@ -38,6 +37,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/manager/display_layout_store.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/rect.h"
@@ -132,7 +132,7 @@ int64_t DisplayManager::kUnifiedDisplayId = -10;
 DisplayManager::DisplayManager()
     : delegate_(nullptr),
       screen_(new ScreenAsh),
-      layout_store_(new DisplayLayoutStore),
+      layout_store_(new display::DisplayLayoutStore),
       first_display_id_(display::Display::kInvalidDisplayID),
       num_connected_displays_(0),
       force_bounds_changed_(false),

@@ -10,7 +10,6 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_configuration_controller.h"
-#include "ash/display/display_layout_store.h"
 #include "ash/display/display_util.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -34,6 +33,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/manager/display_layout_store.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font_render_params.h"
@@ -2326,7 +2326,7 @@ TEST_P(DisplayManagerTest, CheckInitializationOfRotationProperty) {
 }
 
 TEST_P(DisplayManagerTest, RejectInvalidLayoutData) {
-  DisplayLayoutStore* layout_store = display_manager()->layout_store();
+  display::DisplayLayoutStore* layout_store = display_manager()->layout_store();
   int64_t id1 = 10001;
   int64_t id2 = 10002;
   ASSERT_TRUE(CompareDisplayIds(id1, id2));
@@ -2358,7 +2358,7 @@ TEST_P(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
   old_layout->placement_list.emplace_back(display::DisplayPlacement::BOTTOM, 0);
   old_layout->primary_id = id1;
 
-  DisplayLayoutStore* layout_store = display_manager()->layout_store();
+  display::DisplayLayoutStore* layout_store = display_manager()->layout_store();
   display::DisplayIdList list = test::CreateDisplayIdList2(id1, id2);
   layout_store->RegisterLayoutForDisplayIdList(list, std::move(old_layout));
   const display::DisplayLayout& stored =

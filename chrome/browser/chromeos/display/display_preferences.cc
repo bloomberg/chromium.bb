@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
 #include "ash/display/display_util.h"
@@ -26,6 +25,7 @@
 #include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_layout_store.h"
 #include "ui/gfx/geometry/insets.h"
 #include "url/url_canon.h"
 #include "url/url_util.h"
@@ -111,7 +111,8 @@ bool UserCanSaveDisplayPreference() {
 
 void LoadDisplayLayouts() {
   PrefService* local_state = g_browser_process->local_state();
-  ash::DisplayLayoutStore* layout_store = GetDisplayManager()->layout_store();
+  display::DisplayLayoutStore* layout_store =
+      GetDisplayManager()->layout_store();
 
   const base::DictionaryValue* layouts = local_state->GetDictionary(
       prefs::kSecondaryDisplays);

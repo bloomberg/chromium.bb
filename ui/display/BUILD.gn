@@ -50,6 +50,8 @@ component("display") {
     "manager/display_layout.h",
     "manager/display_layout_builder.cc",
     "manager/display_layout_builder.h",
+    "manager/display_layout_store.cc",
+    "manager/display_layout_store.h",
     "screen.cc",
     "screen.h",
     "screen_aura.cc",

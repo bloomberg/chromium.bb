@@ -548,8 +548,6 @@
       'display/display_configuration_controller.h',
       'display/display_error_observer_chromeos.cc',
       'display/display_error_observer_chromeos.h',
-      'display/display_layout_store.cc',
-      'display/display_layout_store.h',
       'display/display_manager.cc',
       'display/display_manager.h',
       'display/display_pref_util.h',

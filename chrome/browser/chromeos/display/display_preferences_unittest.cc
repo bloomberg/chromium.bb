@@ -12,7 +12,6 @@
 
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/display/json_converter.h"
@@ -37,6 +36,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/manager/display_layout_store.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/message_center/message_center.h"

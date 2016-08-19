@@ -34,6 +34,10 @@ namespace chromeos {
 class DisplayNotificationsTest;
 }
 
+namespace display {
+class DisplayLayoutStore;
+}
+
 namespace gfx {
 class Insets;
 class Rect;
@@ -41,7 +45,6 @@ class Rect;
 
 namespace ash {
 class AcceleratorControllerTest;
-class DisplayLayoutStore;
 class MouseWarpController;
 class ScreenAsh;
 
@@ -102,7 +105,7 @@ class ASH_EXPORT DisplayManager
   virtual ~DisplayManager();
 #endif
 
-  DisplayLayoutStore* layout_store() { return layout_store_.get(); }
+  display::DisplayLayoutStore* layout_store() { return layout_store_.get(); }
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
@@ -415,7 +418,7 @@ class ASH_EXPORT DisplayManager
 
   std::unique_ptr<ScreenAsh> screen_;
 
-  std::unique_ptr<DisplayLayoutStore> layout_store_;
+  std::unique_ptr<display::DisplayLayoutStore> layout_store_;
 
   int64_t first_display_id_;
 

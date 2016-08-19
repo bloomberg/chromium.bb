@@ -10,6 +10,12 @@ namespace switches {
 // Overrides the device scale factor for the browser UI and the contents.
 const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
 
+// Specifies the layout mode and offsets for the secondary display for
+// testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
+// b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display
+// is positioned on the right with -100 offset. (above than primary)
+const char kSecondaryDisplayLayout[] = "secondary-display-layout";
+
 #if defined(OS_CHROMEOS)
 const char kDisableDisplayColorCalibration[] =
     "disable-display-color-calibration";

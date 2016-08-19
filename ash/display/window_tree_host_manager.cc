@@ -13,7 +13,6 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/display/cursor_window_controller.h"
-#include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/root_window_transformers.h"
@@ -45,6 +44,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_layout_store.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
@@ -766,7 +766,7 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
   focus_activation_store_->Restore();
 
   DisplayManager* display_manager = GetDisplayManager();
-  DisplayLayoutStore* layout_store = display_manager->layout_store();
+  display::DisplayLayoutStore* layout_store = display_manager->layout_store();
   if (display_manager->num_connected_displays() > 1) {
     display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
     const display::DisplayLayout& layout =
