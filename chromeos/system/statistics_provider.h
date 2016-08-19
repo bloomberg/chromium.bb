@@ -44,10 +44,11 @@ CHROMEOS_EXPORT extern const char kFirmwareTypeValueNormal[];
 // HWID key.
 CHROMEOS_EXPORT extern const char kHardwareClassKey[];
 
-// System vendor key.
-// The value is used to check if Chrome is running on a VM or a real Chrome OS
-// device. On QEMU VMs this value is QEMU.
-CHROMEOS_EXPORT extern const char kSystemVendorKey[];
+// Key/values reporting if Chrome OS is running in a VM or not. These values are
+// read from crossystem output. See crossystem source for VM detection logic.
+CHROMEOS_EXPORT extern const char kIsVmKey[];
+CHROMEOS_EXPORT extern const char kIsVmValueTrue[];
+CHROMEOS_EXPORT extern const char kIsVmValueFalse[];
 
 // OEM customization flag that permits exiting enterprise enrollment flow in
 // OOBE when 'oem_enterprise_managed' flag is set.
@@ -110,6 +111,9 @@ class CHROMEOS_EXPORT StatisticsProvider {
 
   // Cancels any pending file operations.
   virtual void Shutdown() = 0;
+
+  // Returns true if the machine is a VM.
+  virtual bool IsRunningOnVm() = 0;
 
   // Get the Singleton instance.
   static StatisticsProvider* GetInstance();

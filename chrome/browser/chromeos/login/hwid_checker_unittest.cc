@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/sys_info.h"
+#include "base/test/scoped_command_line.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
-
+#include "chromeos/system/fake_statistics_provider.h"
+#include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 
@@ -123,5 +127,150 @@ TEST(HWIDCheckerTest, KnownHWIDs) {
   EXPECT_FALSE(IsHWIDCorrect("SAMS ALPX GAMMA DVT 9247"));
 }
 
-} // namespace chromeos
+#if defined(GOOGLE_CHROME_BUILD)
+
+// Sets a valid Chrome  OS version info so IsRunningOnChromeOS() returns true.
+void SetRunningOnChromeOS() {
+  const char kLsbRelease[] =
+      "CHROMEOS_RELEASE_NAME=Chrome OS\n"
+      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
+}
+
+// Test logic for command line "test-type" switch.
+TEST(MachineHWIDCheckerTest, TestSwitch) {
+  // GIVEN test switch is active.
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
+      ::switches::kTestType);
+
+  // THEN IsMachineHWIDCorrect() is always true.
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+  SetRunningOnChromeOS();
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+
+  system::ScopedFakeStatisticsProvider fake_statistics_provider;
+  fake_statistics_provider.SetMachineStatistic(system::kHardwareClassKey,
+                                               "INVALID_HWID");
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+  fake_statistics_provider.ClearMachineStatistic(system::kHardwareClassKey);
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+}
+
+// Test logic when not running on Chrome OS.
+TEST(MachineHWIDCheckerTest, NotOnChromeOS) {
+  // GIVEN the OS is not Chrome OS.
+  base::SysInfo::SetChromeOSVersionInfoForTest("", base::Time());
+
+  // THEN IsMachineHWIDCorrect() is always true.
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+
+  system::ScopedFakeStatisticsProvider fake_statistics_provider;
+  fake_statistics_provider.SetMachineStatistic(system::kHardwareClassKey,
+                                               "INVALID_HWID");
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+  fake_statistics_provider.ClearMachineStatistic(system::kHardwareClassKey);
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+}
+
+// Test logic when running on Chrome OS but the HWID is not present.
+TEST(MachineHWIDCheckerTest, OnCrosNoHWID) {
+  // GIVEN the OS is Chrome OS.
+  SetRunningOnChromeOS();
+
+  // GIVEN the HWID is not present.
+  system::ScopedFakeStatisticsProvider fake_statistics_provider;
+  fake_statistics_provider.ClearMachineStatistic(system::kHardwareClassKey);
+
+  // WHEN Chrome OS is running in a VM.
+  fake_statistics_provider.SetMachineStatistic(system::kIsVmKey,
+                                               system::kIsVmValueTrue);
+  // THEN IsMachineHWIDCorrect() is true.
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+  // WHEN Chrome OS is not running in a VM.
+  fake_statistics_provider.ClearMachineStatistic(system::kIsVmKey);
+  // THEN IsMachineHWIDCorrect() is always false.
+  EXPECT_FALSE(IsMachineHWIDCorrect());
+  fake_statistics_provider.SetMachineStatistic(system::kIsVmKey,
+                                               system::kIsVmValueFalse);
+  EXPECT_FALSE(IsMachineHWIDCorrect());
+}
+
+// Test logic when the HWID is valid.
+TEST(MachineHWIDCheckerTest, ValidHWID) {
+  // GIVEN the HWID is valid.
+  system::ScopedFakeStatisticsProvider fake_statistics_provider;
+  fake_statistics_provider.SetMachineStatistic(system::kHardwareClassKey,
+                                               "DELL HORIZON MAGENTA DVT 4770");
+
+  // THEN IsMachineHWIDCorrect() is always true.
+  SetRunningOnChromeOS();
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+  fake_statistics_provider.SetMachineStatistic(system::kIsVmKey,
+                                               system::kIsVmValueFalse);
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+  fake_statistics_provider.SetMachineStatistic(system::kIsVmKey,
+                                               system::kIsVmValueTrue);
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+}
+
+// Test logic when running inside a VM.
+TEST(MachineHWIDCheckerTest, InVM) {
+  // GIVEN kIsVmKey is kIsVmValueTrue.
+  system::ScopedFakeStatisticsProvider fake_statistics_provider;
+  fake_statistics_provider.SetMachineStatistic(system::kIsVmKey,
+                                               system::kIsVmValueTrue);
+
+  // GIVEN the OS is Chrome OS.
+  SetRunningOnChromeOS();
+  // THEN IsMachineHWIDCorrect() is always true.
+  fake_statistics_provider.SetMachineStatistic(system::kHardwareClassKey,
+                                               "INVALID_HWID");
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+  fake_statistics_provider.SetMachineStatistic(system::kHardwareClassKey, "");
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+  fake_statistics_provider.SetMachineStatistic(system::kHardwareClassKey,
+                                               "DELL HORIZON MAGENTA DVT 4770");
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+  fake_statistics_provider.ClearMachineStatistic(system::kHardwareClassKey);
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+}
+
+// Test logic when HWID is invalid and we're not in a VM.
+TEST(MachineHWIDCheckerTest, InvalidHWIDInVMNotTrue) {
+  // GIVEN the OS is Chrome OS.
+  SetRunningOnChromeOS();
+
+  // GIVEN the HWID is invalid.
+  system::ScopedFakeStatisticsProvider fake_statistics_provider;
+  fake_statistics_provider.SetMachineStatistic(system::kHardwareClassKey,
+                                               "INVALID_HWID");
+
+  // GIVEN kIsVmKey is anything but kIsVmValueTrue.
+  // THEN IsMachineHWIDCorrect() is always false.
+  fake_statistics_provider.SetMachineStatistic(system::kIsVmKey,
+                                               system::kIsVmValueFalse);
+  EXPECT_FALSE(IsMachineHWIDCorrect());
+  fake_statistics_provider.SetMachineStatistic(system::kIsVmKey,
+                                               "INVALID_VM_KEY");
+  EXPECT_FALSE(IsMachineHWIDCorrect());
+  fake_statistics_provider.SetMachineStatistic(system::kIsVmKey, "(error)");
+  EXPECT_FALSE(IsMachineHWIDCorrect());
+  fake_statistics_provider.SetMachineStatistic(system::kIsVmKey, "");
+  EXPECT_FALSE(IsMachineHWIDCorrect());
+  fake_statistics_provider.ClearMachineStatistic(system::kIsVmKey);
+  EXPECT_FALSE(IsMachineHWIDCorrect());
+}
+
+#else  // defined(GOOGLE_CHROME_BUILD)
+
+// Test non-Google Chromium builds.
+TEST(MachineHWIDCheckerTest, NonGoogleBuild) {
+  // GIVEN this is not a Google build.
+  // THEN IsMachineHWIDCorrect() is always true.
+  EXPECT_TRUE(IsMachineHWIDCorrect());
+}
+
+#endif  // defined(GOOGLE_CHROME_BUILD)
+}  // namespace chromeos
 

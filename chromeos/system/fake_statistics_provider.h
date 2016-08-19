@@ -28,6 +28,7 @@ class FakeStatisticsProvider : public StatisticsProvider {
                            std::string* result) override;
   bool GetMachineFlag(const std::string& name, bool* result) override;
   void Shutdown() override;
+  bool IsRunningOnVm() override;
 
   void SetMachineStatistic(const std::string& key, const std::string& value);
   void ClearMachineStatistic(const std::string& key);

@@ -38,6 +38,12 @@ bool FakeStatisticsProvider::GetMachineFlag(const std::string& name,
 void FakeStatisticsProvider::Shutdown() {
 }
 
+bool FakeStatisticsProvider::IsRunningOnVm() {
+  std::string is_vm;
+  return GetMachineStatistic(kIsVmKey, &is_vm) && is_vm == kIsVmValueTrue;
+}
+
+
 void FakeStatisticsProvider::SetMachineStatistic(const std::string& key,
                                                  const std::string& value) {
   machine_statistics_[key] = value;
