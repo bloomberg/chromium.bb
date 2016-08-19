@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -289,11 +290,16 @@ void ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHint(
     int render_process_id,
     const ResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ++navigation_hint_task_count_per_process_[render_process_id];
+  ResultCallback wrapped_callback =
+      base::Bind(&ServiceWorkerContextWrapper::DidFinishNavigationHintTaskOnUI,
+                 this, render_process_id, callback);
+
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
   if (!host ||
       !RenderProcessHostImpl::IsSuitableHost(host, host->GetBrowserContext(),
                                              document_url)) {
-    callback.Run(false);
+    wrapped_callback.Run(false);
     return;
   }
 
@@ -301,7 +307,7 @@ void ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHint(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
           &ServiceWorkerContextWrapper::DidCheckRenderProcessForNavigationHint,
-          this, document_url, type, render_process_id, callback));
+          this, document_url, type, render_process_id, wrapped_callback));
 }
 
 void ServiceWorkerContextWrapper::DidCheckRenderProcessForNavigationHint(
@@ -359,6 +365,23 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForNavigationHint(
       pattern, render_process_id);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, code == SERVICE_WORKER_OK));
+}
+
+void ServiceWorkerContextWrapper::DidFinishNavigationHintTaskOnUI(
+    int render_process_id,
+    const ResultCallback& callback,
+    bool result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!--navigation_hint_task_count_per_process_[render_process_id])
+    navigation_hint_task_count_per_process_.erase(render_process_id);
+  callback.Run(result);
+}
+
+bool ServiceWorkerContextWrapper::IsRunningNavigationHintTask(
+    int render_process_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return base::ContainsKey(navigation_hint_task_count_per_process_,
+                           render_process_id);
 }
 
 void ServiceWorkerContextWrapper::StartServiceWorker(

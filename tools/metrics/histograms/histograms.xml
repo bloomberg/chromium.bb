@@ -102847,6 +102847,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="ServiceWorker.NavigationHintPrecision"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="ServiceWorker.NavigationHintLatency">
+  <suffix name="IsRunningNavigationHintTask"
+      label="Starting a service worker for a navigation hint."/>
+  <affected-histogram name="Event.Latency.TouchToFirstScrollUpdateSwapBegin"/>
+  <affected-histogram name="Event.Latency.TouchToScrollUpdateSwapBegin"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="ServiceWorker.ShutdownStatus">
   <affected-histogram name="ServiceWorker.ActivateEventStatus"/>
   <suffix name="InShutdown" label="Browser shutdown started."/>

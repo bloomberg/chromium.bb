@@ -49,6 +49,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
@@ -62,6 +63,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -2089,7 +2091,12 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
 #endif
   }
 
-  latency_tracker_.OnFrameSwapped(latency_info);
+  const bool is_running_navigation_hint_task =
+      static_cast<ServiceWorkerContextWrapper*>(
+          GetProcess()->GetStoragePartition()->GetServiceWorkerContext())
+          ->IsRunningNavigationHintTask(GetProcess()->GetID());
+  latency_tracker_.OnFrameSwapped(latency_info,
+                                  is_running_navigation_hint_task);
 }
 
 void RenderWidgetHostImpl::DidReceiveRendererFrame() {

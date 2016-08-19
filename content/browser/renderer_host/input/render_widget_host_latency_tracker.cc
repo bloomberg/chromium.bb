@@ -96,7 +96,8 @@ void ComputeScrollLatencyHistograms(
     const LatencyInfo::LatencyComponent& gpu_swap_begin_component,
     const LatencyInfo::LatencyComponent& gpu_swap_end_component,
     int64_t latency_component_id,
-    const LatencyInfo& latency) {
+    const LatencyInfo& latency,
+    bool is_running_navigation_hint_task) {
   DCHECK(!latency.coalesced());
   if (latency.coalesced())
     return;
@@ -115,6 +116,17 @@ void ComputeScrollLatencyHistograms(
           "Event.Latency.TouchToFirstScrollUpdateSwapBegin",
           original_component, gpu_swap_begin_component);
     }
+    // TODO(horo): IsRunningNavigationHintTask UMAs are only for
+    // SpeculativeLaunchServiceWorker experimentation. So remove this UMA when
+    // the experimentation finished (crbug.com/638827).
+    if (is_running_navigation_hint_task) {
+      for (size_t i = 0; i < original_component.event_count; i++) {
+        UMA_HISTOGRAM_TOUCH_TO_SCROLL_LATENCY(
+            "Event.Latency.TouchToFirstScrollUpdateSwapBegin_"
+            "IsRunningNavigationHintTask",
+            original_component, gpu_swap_begin_component);
+      }
+    }
   } else if (!latency.FindLatency(
                  ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
                  latency_component_id, &original_component)) {
@@ -127,6 +139,17 @@ void ComputeScrollLatencyHistograms(
     UMA_HISTOGRAM_TOUCH_TO_SCROLL_LATENCY(
         "Event.Latency.TouchToScrollUpdateSwapBegin", original_component,
         gpu_swap_begin_component);
+  }
+  // TODO(horo): IsRunningNavigationHintTask UMAs are only for
+  // SpeculativeLaunchServiceWorker experimentation. So remove this UMA when
+  // the experimentation finished (crbug.com/638827).
+  if (is_running_navigation_hint_task) {
+    for (size_t i = 0; i < original_component.event_count; i++) {
+      UMA_HISTOGRAM_TOUCH_TO_SCROLL_LATENCY(
+          "Event.Latency.TouchToScrollUpdateSwapBegin_"
+          "IsRunningNavigationHintTask",
+          original_component, gpu_swap_begin_component);
+    }
   }
 
   // TODO(miletus): Add validation for making sure the following components
@@ -531,7 +554,8 @@ void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(
 }
 
 void RenderWidgetHostLatencyTracker::OnFrameSwapped(
-    const LatencyInfo& latency) {
+    const LatencyInfo& latency,
+    bool is_running_navigation_hint_task) {
   // Don't report frame latency on wheel events. Previously they were only
   // reported on touch metrics and we need to be consistent across reporting
   // metrics.
@@ -572,7 +596,7 @@ void RenderWidgetHostLatencyTracker::OnFrameSwapped(
 
   ComputeScrollLatencyHistograms(gpu_swap_begin_component,
                                  gpu_swap_end_component, latency_component_id_,
-                                 latency);
+                                 latency, is_running_navigation_hint_task);
 }
 
 }  // namespace content

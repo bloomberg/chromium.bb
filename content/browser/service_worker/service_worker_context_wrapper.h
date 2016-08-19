@@ -188,6 +188,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // Must be called from the IO thread.
   bool OriginHasForeignFetchRegistrations(const GURL& origin);
 
+  // Must be called from the UI thread.
+  bool IsRunningNavigationHintTask(int render_process_id) const;
+
  private:
   friend class BackgroundSyncManagerTest;
   friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
@@ -249,6 +252,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                                               int render_process_id,
                                               const ResultCallback& callback,
                                               ServiceWorkerStatusCode code);
+  void DidFinishNavigationHintTaskOnUI(int render_process_id,
+                                       const ResultCallback& callback,
+                                       bool result);
 
   // The core context is only for use on the IO thread.
   // Can be null before/during init, during/after shutdown, and after
@@ -269,6 +275,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // The ResourceContext associated with this context.
   ResourceContext* resource_context_;
+
+  // Must be touched on the UI thread.
+  std::map<int, int> navigation_hint_task_count_per_process_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextWrapper);
 };
