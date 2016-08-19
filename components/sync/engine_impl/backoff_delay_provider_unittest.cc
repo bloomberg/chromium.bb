@@ -8,8 +8,8 @@
 
 #include "base/time/time.h"
 #include "components/sync/base/syncer_error.h"
+#include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/engine/polling_constants.h"
-#include "components/sync/sessions/model_neutral_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -38,7 +38,7 @@ TEST_F(BackoffDelayProviderTest, GetRecommendedDelay) {
 TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
   std::unique_ptr<BackoffDelayProvider> delay(
       BackoffDelayProvider::FromDefaults());
-  sessions::ModelNeutralState state;
+  ModelNeutralState state;
   state.last_get_key_result = SYNC_SERVER_ERROR;
   EXPECT_EQ(kInitialBackoffRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
@@ -88,7 +88,7 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
 TEST_F(BackoffDelayProviderTest, GetInitialDelayWithOverride) {
   std::unique_ptr<BackoffDelayProvider> delay(
       BackoffDelayProvider::WithShortInitialRetryOverride());
-  sessions::ModelNeutralState state;
+  ModelNeutralState state;
   state.last_get_key_result = SYNC_SERVER_ERROR;
   EXPECT_EQ(kInitialBackoffShortRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());

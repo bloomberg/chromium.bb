@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 // An UpdateApplicator is used to iterate over a number of unapplied updates,
-// applying them to the client using the given syncer session.
+// applying them to the client using the given syncer cycle.
 //
 // UpdateApplicator might resemble an iterator, but it actually keeps retrying
 // failed updates until no remaining updates can be successfully applied.
@@ -18,22 +18,16 @@
 
 #include "base/macros.h"
 #include "components/sync/engine/model_safe_worker.h"
-#include "components/sync/sessions_impl/status_controller.h"
 #include "components/sync/syncable/syncable_id.h"
 
 namespace syncer {
 
-namespace sessions {
-class StatusController;
-}
+class Cryptographer;
 
 namespace syncable {
 class WriteTransaction;
 class Entry;
 }
-
-class ConflictResolver;
-class Cryptographer;
 
 class UpdateApplicator {
  public:

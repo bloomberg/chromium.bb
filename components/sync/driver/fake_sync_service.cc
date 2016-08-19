@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "components/sync/core/base_transaction.h"
 #include "components/sync/core/user_share.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 namespace sync_driver {
 
@@ -172,9 +172,8 @@ std::string FakeSyncService::GetBackendInitializationStateString() const {
   return std::string();
 }
 
-syncer::sessions::SyncSessionSnapshot FakeSyncService::GetLastSessionSnapshot()
-    const {
-  return syncer::sessions::SyncSessionSnapshot();
+syncer::SyncCycleSnapshot FakeSyncService::GetLastCycleSnapshot() const {
+  return syncer::SyncCycleSnapshot();
 }
 
 base::Value* FakeSyncService::GetTypeStatusMap() const {

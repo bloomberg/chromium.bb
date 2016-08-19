@@ -29,13 +29,10 @@ namespace syncer {
 
 class BaseTransaction;
 class JsController;
+class SyncCycleSnapshot;
 class TypeDebugInfoObserver;
 struct SyncStatus;
 struct UserShare;
-
-namespace sessions {
-class SyncSessionSnapshot;
-}  // namespace sessions
 
 }  // namespace syncer
 
@@ -295,8 +292,7 @@ class SyncService : public DataTypeEncryptionHandler {
   // Returns a human readable string describing backend initialization state.
   virtual std::string GetBackendInitializationStateString() const = 0;
 
-  virtual syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot()
-      const = 0;
+  virtual syncer::SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
 
   // Returns a ListValue indicating the status of all registered types.
   //

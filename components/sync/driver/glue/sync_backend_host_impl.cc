@@ -446,8 +446,7 @@ SyncBackendHostImpl::Status SyncBackendHostImpl::GetDetailedStatus() {
   return core_->sync_manager()->GetDetailedStatus();
 }
 
-syncer::sessions::SyncSessionSnapshot
-SyncBackendHostImpl::GetLastSessionSnapshot() const {
+syncer::SyncCycleSnapshot SyncBackendHostImpl::GetLastCycleSnapshot() const {
   return last_snapshot_;
 }
 
@@ -627,7 +626,7 @@ void SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop() {
 }
 
 void SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop(
-    const syncer::sessions::SyncSessionSnapshot& snapshot) {
+    const syncer::SyncCycleSnapshot& snapshot) {
   if (!frontend_)
     return;
   DCHECK(frontend_task_runner_->BelongsToCurrentThread());

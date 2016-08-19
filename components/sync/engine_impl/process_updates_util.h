@@ -17,16 +17,13 @@ class SyncEntity;
 
 namespace syncer {
 
-namespace sessions {
 class StatusController;
-}
+struct UpdateCounters;
 
 namespace syncable {
 class ModelNeutralWriteTransaction;
 class Directory;
 }
-
-struct UpdateCounters;
 
 typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
 
@@ -35,7 +32,7 @@ void ProcessDownloadedUpdates(syncable::Directory* dir,
                               syncable::ModelNeutralWriteTransaction* trans,
                               ModelType type,
                               const SyncEntityList& applicable_updates,
-                              sessions::StatusController* status,
+                              StatusController* status,
                               UpdateCounters* counters);
 
 // Tombstones all entries of |type| whose versions are older than

@@ -85,7 +85,7 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   Status GetDetailedStatus() override;
 
-  syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const override;
+  syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
 
   bool HasUnsyncedItems() const override;
 

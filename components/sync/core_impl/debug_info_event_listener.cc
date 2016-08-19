@@ -10,8 +10,6 @@
 
 namespace syncer {
 
-using sessions::SyncSessionSnapshot;
-
 DebugInfoEventListener::DebugInfoEventListener()
     : events_dropped_(false),
       cryptographer_has_pending_keys_(false),
@@ -21,7 +19,7 @@ DebugInfoEventListener::DebugInfoEventListener()
 DebugInfoEventListener::~DebugInfoEventListener() {}
 
 void DebugInfoEventListener::OnSyncCycleCompleted(
-    const SyncSessionSnapshot& snapshot) {
+    const SyncCycleSnapshot& snapshot) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_pb::DebugEventInfo event_info;
   sync_pb::SyncCycleCompletedEventInfo* sync_completed_event_info =

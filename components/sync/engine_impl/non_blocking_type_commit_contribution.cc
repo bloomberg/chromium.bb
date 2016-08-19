@@ -42,7 +42,7 @@ void NonBlockingTypeCommitContribution::AddToCommitMessage(
 
 syncer::SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
     const sync_pb::ClientToServerResponse& response,
-    syncer::sessions::StatusController* status) {
+    syncer::StatusController* status) {
   const sync_pb::CommitResponse& commit_response = response.commit();
 
   bool transient_error = false;

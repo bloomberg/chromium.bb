@@ -19,7 +19,6 @@
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/sync_session.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
@@ -51,7 +50,7 @@ void AddExtensionsActivityToMessage(
   //
   // We will push this list of extensions activity back into the
   // ExtensionsActivityMonitor if this commit fails.  That's why we must keep a
-  // copy of these records in the session.
+  // copy of these records in the cycle.
   activity->GetAndClearRecords(extensions_activity_buffer);
 
   const ExtensionsActivity::Records& records = *extensions_activity_buffer;

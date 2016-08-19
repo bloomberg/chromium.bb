@@ -80,9 +80,9 @@ class ModelTypeWorker : public syncer::UpdateHandler,
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
-      syncer::sessions::StatusController* status) override;
-  void ApplyUpdates(syncer::sessions::StatusController* status) override;
-  void PassiveApplyUpdates(syncer::sessions::StatusController* status) override;
+      syncer::StatusController* status) override;
+  void ApplyUpdates(syncer::StatusController* status) override;
+  void PassiveApplyUpdates(syncer::StatusController* status) override;
 
   // CommitQueue implementation.
   void EnqueueForCommit(const CommitRequestDataList& request_list) override;

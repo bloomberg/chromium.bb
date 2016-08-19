@@ -7,7 +7,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/invalidation/impl/p2p_invalidation_service.h"
 #include "components/sync/driver/invalidation_helper.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 P2PInvalidationForwarder::P2PInvalidationForwarder(
     ProfileSyncService* sync_service,
@@ -24,8 +24,7 @@ P2PInvalidationForwarder::~P2PInvalidationForwarder() {
 void P2PInvalidationForwarder::OnStateChanged() {}
 
 void P2PInvalidationForwarder::OnSyncCycleCompleted() {
-  const syncer::sessions::SyncSessionSnapshot& snap =
-      sync_service_->GetLastSessionSnapshot();
+  const syncer::SyncCycleSnapshot& snap = sync_service_->GetLastCycleSnapshot();
   bool is_notifiable_commit =
       (snap.model_neutral_state().num_successful_commits > 0);
   if (is_notifiable_commit && invalidation_service_) {

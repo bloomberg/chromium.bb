@@ -40,11 +40,11 @@
 #include "components/sync/core_impl/syncapi_internal.h"
 #include "components/sync/core_impl/syncapi_server_connection_manager.h"
 #include "components/sync/engine/polling_constants.h"
+#include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
 #include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/directory_type_debug_info_emitter.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"
@@ -57,7 +57,6 @@ class GURL;
 
 namespace syncer {
 
-using sessions::SyncSessionContext;
 using syncable::ImmutableWriteTransactionInfo;
 using syncable::SPECIFICS;
 using syncable::UNIQUE_POSITION;
@@ -305,17 +304,17 @@ void SyncManagerImpl::Init(InitArgs* args) {
       new ModelTypeRegistry(args->workers, directory(), this));
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
 
-  // Build a SyncSessionContext and store the worker in it.
-  DVLOG(1) << "Sync is bringing up SyncSessionContext.";
+  // Build a SyncCycleContext and store the worker in it.
+  DVLOG(1) << "Sync is bringing up SyncCycleContext.";
   std::vector<SyncEngineEventListener*> listeners;
   listeners.push_back(&allstatus_);
   listeners.push_back(this);
-  session_context_ = args->internal_components_factory->BuildContext(
+  cycle_context_ = args->internal_components_factory->BuildContext(
       connection_manager_.get(), directory(), args->extensions_activity,
       listeners, &debug_info_event_listener_, model_type_registry_.get(),
       args->invalidator_client_id);
   scheduler_ = args->internal_components_factory->BuildScheduler(
-      name_, session_context_.get(), args->cancelation_signal);
+      name_, cycle_context_.get(), args->cancelation_signal);
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
 
@@ -400,7 +399,7 @@ void SyncManagerImpl::StartSyncingNormally(
   // appropriately set and that it's only modified when switching to normal
   // mode.
   DCHECK(thread_checker_.CalledOnValidThread());
-  session_context_->SetRoutingInfo(routing_info);
+  cycle_context_->SetRoutingInfo(routing_info);
   scheduler_->Start(SyncScheduler::NORMAL_MODE, last_poll_time);
 }
 
@@ -481,7 +480,7 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   DCHECK(!credentials.account_id.empty());
   DCHECK(!credentials.sync_token.empty());
   DCHECK(!credentials.scope_set.empty());
-  session_context_->set_account_name(credentials.email);
+  cycle_context_->set_account_name(credentials.email);
 
   observing_network_connectivity_changes_ = true;
   if (!connection_manager_->SetAuthToken(credentials.sync_token))
@@ -511,7 +510,7 @@ void SyncManagerImpl::ShutdownOnSyncThread(ShutdownReason reason) {
   js_mutation_event_observer_.InvalidateWeakPtrs();
 
   scheduler_.reset();
-  session_context_.reset();
+  cycle_context_.reset();
 
   if (model_type_registry_)
     sync_encryption_handler_->RemoveObserver(model_type_registry_.get());
@@ -945,7 +944,7 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
   if (pre_commit_update_avoidance_node.InitByClientTagLookup(
           syncer::EXPERIMENTS, syncer::kPreCommitUpdateAvoidanceTag) ==
       BaseNode::INIT_OK) {
-    session_context_->set_server_enabled_pre_commit_update_avoidance(
+    cycle_context_->set_server_enabled_pre_commit_update_avoidance(
         pre_commit_update_avoidance_node.GetExperimentsSpecifics()
             .pre_commit_update_avoidance()
             .enabled());
@@ -1011,8 +1010,8 @@ void SyncManagerImpl::ClearServerData(const ClearServerDataCallback& callback) {
 void SyncManagerImpl::OnCookieJarChanged(bool account_mismatch,
                                          bool empty_jar) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  session_context_->set_cookie_jar_mismatch(account_mismatch);
-  session_context_->set_cookie_jar_empty(empty_jar);
+  cycle_context_->set_cookie_jar_mismatch(account_mismatch);
+  cycle_context_->set_cookie_jar_empty(empty_jar);
 }
 
 }  // namespace syncer

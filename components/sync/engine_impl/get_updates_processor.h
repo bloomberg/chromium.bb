@@ -22,18 +22,15 @@ class GetUpdatesResponse;
 
 namespace syncer {
 
-namespace sessions {
-class StatusController;
-class SyncSession;
-class SyncSessionContext;
 class DebugInfoGetter;
-}  // namespace sessions
+class GetUpdatesDelegate;
+class StatusController;
+class SyncCycle;
+class SyncCycleContext;
 
 namespace syncable {
 class Directory;
 }  // namespace syncable
-
-class GetUpdatesDelegate;
 
 // This class manages the set of per-type syncer objects.
 //
@@ -53,12 +50,11 @@ class GetUpdatesProcessor {
   // download succeeded but there are still some updates left to fetch on the
   // server, or an appropriate error value in case of failure.
   SyncerError DownloadUpdates(ModelTypeSet* request_types,
-                              sessions::SyncSession* session,
+                              SyncCycle* cycle,
                               bool create_mobile_bookmarks_folder);
 
   // Applies any downloaded and processed updates.
-  void ApplyUpdates(ModelTypeSet gu_types,
-                    sessions::StatusController* status_controller);
+  void ApplyUpdates(ModelTypeSet gu_types, StatusController* status_controller);
 
  private:
   // Populates a GetUpdates request message with per-type information.
@@ -66,24 +62,24 @@ class GetUpdatesProcessor {
                          sync_pb::ClientToServerMessage* message);
 
   // Sends the specified message to the server and stores the response in a
-  // member of the |session|'s StatusController.
+  // member of the |cycle|'s StatusController.
   SyncerError ExecuteDownloadUpdates(ModelTypeSet* request_types,
-                                     sessions::SyncSession* session,
+                                     SyncCycle* cycle,
                                      sync_pb::ClientToServerMessage* msg);
 
   // Helper function for processing responses from the server.  Defined here for
   // testing.
   SyncerError ProcessResponse(const sync_pb::GetUpdatesResponse& gu_response,
                               ModelTypeSet proto_request_types,
-                              sessions::StatusController* status);
+                              StatusController* status);
 
   // Processes a GetUpdates responses for each type.
   syncer::SyncerError ProcessGetUpdatesResponse(
       ModelTypeSet gu_types,
       const sync_pb::GetUpdatesResponse& gu_response,
-      sessions::StatusController* status_controller);
+      StatusController* status_controller);
 
-  static void CopyClientDebugInfo(sessions::DebugInfoGetter* debug_info_getter,
+  static void CopyClientDebugInfo(DebugInfoGetter* debug_info_getter,
                                   sync_pb::DebugInfo* debug_info);
 
   FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, BookmarkNudge);

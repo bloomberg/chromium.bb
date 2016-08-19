@@ -19,7 +19,7 @@
 #include "components/sync/core/sync_manager.h"
 #include "components/sync/core/sync_manager_factory.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 class GURL;
 
@@ -164,8 +164,7 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // Called from any thread to obtain current status information in detailed or
   // summarized form.
   virtual Status GetDetailedStatus() = 0;
-  virtual syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot()
-      const = 0;
+  virtual syncer::SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
 
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.

@@ -58,7 +58,7 @@ message SyncCycleCompletedEventInfo {
   optional int32 num_reflected_updates_downloaded = 9;
   optional GetUpdatesCallerInfo caller_info = 10;
 
-  // A list of all the sources that were merged into this session.
+  // A list of all the sources that were merged into this cycle.
   //
   // Some scenarios, notably mode switches and canary jobs, can spuriously add
   // back-to-back duplicate sources to this list.
@@ -88,7 +88,7 @@ message DatatypeAssociationStats {
   optional int32 num_sync_items_modified = 11;
 
   // Model versions before association. Ideally local and sync model should
-  // have same version if models were persisted properly in last session.
+  // have same version if models were persisted properly in last cycle.
   // Note: currently version is only set on bookmark model.
   optional int64 local_version_pre_association = 20;
   optional int64 sync_version_pre_association = 21;

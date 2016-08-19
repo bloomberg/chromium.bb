@@ -10,8 +10,8 @@
 
 #include "base/rand_util.h"
 #include "components/sync/base/syncer_error.h"
+#include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/engine/polling_constants.h"
-#include "components/sync/sessions/model_neutral_state.h"
 
 using base::TimeDelta;
 
@@ -64,7 +64,7 @@ TimeDelta BackoffDelayProvider::GetDelay(const base::TimeDelta& last_delay) {
 }
 
 TimeDelta BackoffDelayProvider::GetInitialDelay(
-    const sessions::ModelNeutralState& state) const {
+    const ModelNeutralState& state) const {
   // NETWORK_CONNECTION_UNAVAILABLE implies we did not receive HTTP response
   // from server because of some network error. If network is unavailable then
   // on next connection type or address change scheduler will run canary job.

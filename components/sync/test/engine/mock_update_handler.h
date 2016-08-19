@@ -26,9 +26,9 @@ class MockUpdateHandler : public UpdateHandler {
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
-      sessions::StatusController* status) override;
-  void ApplyUpdates(sessions::StatusController* status) override;
-  void PassiveApplyUpdates(sessions::StatusController* status) override;
+      StatusController* status) override;
+  void ApplyUpdates(StatusController* status) override;
+  void PassiveApplyUpdates(StatusController* status) override;
 
   // Returns the number of times ApplyUpdates() was invoked.
   int GetApplyUpdatesCount();

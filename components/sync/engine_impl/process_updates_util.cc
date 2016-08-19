@@ -13,10 +13,10 @@
 #include "base/metrics/sparse_histogram.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/data_type_histogram.h"
+#include "components/sync/engine/cycle/update_counters.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/engine_impl/syncer_util.h"
-#include "components/sync/sessions/update_counters.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 #include "components/sync/syncable/syncable_model_neutral_write_transaction.h"
@@ -24,8 +24,6 @@
 #include "components/sync/syncable/syncable_util.h"
 
 namespace syncer {
-
-using sessions::StatusController;
 
 using syncable::GET_BY_ID;
 
@@ -282,7 +280,7 @@ void ProcessDownloadedUpdates(syncable::Directory* dir,
                               syncable::ModelNeutralWriteTransaction* trans,
                               ModelType type,
                               const SyncEntityList& applicable_updates,
-                              sessions::StatusController* status,
+                              StatusController* status,
                               UpdateCounters* counters) {
   for (SyncEntityList::const_iterator update_it = applicable_updates.begin();
        update_it != applicable_updates.end(); ++update_it) {

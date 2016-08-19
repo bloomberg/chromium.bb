@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 UpdatedProgressMarkerChecker::UpdatedProgressMarkerChecker(
     ProfileSyncService* service) : SingleClientStatusChangeChecker(service) {}
@@ -25,7 +25,7 @@ bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
   //
   // There is a subtle race condition here.  While committing items, the syncer
   // will unset the IS_UNSYNCED bits in the directory.  However, the evidence of
-  // this current sync cycle won't be available from GetLastSessionSnapshot()
+  // this current sync cycle won't be available from GetLastCycleSnapshot()
   // until the sync cycle completes.  If we query this condition between the
   // commit response processing and the end of the sync cycle, we could return a
   // false positive.
@@ -35,8 +35,7 @@ bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
   // sync session complete or other significant event from the
   // ProfileSyncService.  If we're calling this right after the sync session
   // completes, then the snapshot is much more likely to be up to date.
-  const syncer::sessions::SyncSessionSnapshot& snap =
-      service()->GetLastSessionSnapshot();
+  const syncer::SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
   return snap.model_neutral_state().num_successful_commits == 0 &&
          service()->IsSyncActive() && !service()->HasUnsyncedItems();
 }

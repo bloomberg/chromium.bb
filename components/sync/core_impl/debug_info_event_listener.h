@@ -17,10 +17,10 @@
 #include "components/sync/core/data_type_debug_info_listener.h"
 #include "components/sync/core/sync_encryption_handler.h"
 #include "components/sync/core/sync_manager.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
+#include "components/sync/engine_impl/cycle/debug_info_getter.h"
 #include "components/sync/js/js_backend.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
-#include "components/sync/sessions_impl/debug_info_getter.h"
 
 namespace syncer {
 
@@ -34,15 +34,14 @@ const unsigned int kMaxEntries = MODEL_TYPE_COUNT + 10;
 // This class is not thread safe and should only be accessed on the sync thread.
 class DebugInfoEventListener : public SyncManager::Observer,
                                public SyncEncryptionHandler::Observer,
-                               public sessions::DebugInfoGetter,
+                               public DebugInfoGetter,
                                public DataTypeDebugInfoListener {
  public:
   DebugInfoEventListener();
   ~DebugInfoEventListener() override;
 
   // SyncManager::Observer implementation.
-  void OnSyncCycleCompleted(
-      const sessions::SyncSessionSnapshot& snapshot) override;
+  void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) override;
   void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_listener,

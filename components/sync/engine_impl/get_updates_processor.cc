@@ -10,12 +10,12 @@
 
 #include "base/trace_event/trace_event.h"
 #include "components/sync/engine/events/get_updates_response_event.h"
+#include "components/sync/engine_impl/cycle/status_controller.h"
+#include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/get_updates_delegate.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/engine_impl/update_handler.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/status_controller.h"
-#include "components/sync/sessions_impl/sync_session.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/nigori_handler.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
@@ -29,7 +29,7 @@ typedef std::map<ModelType, size_t> TypeToIndexMap;
 
 namespace {
 
-bool ShouldRequestEncryptionKey(sessions::SyncSessionContext* context) {
+bool ShouldRequestEncryptionKey(SyncCycleContext* context) {
   syncable::Directory* dir = context->directory();
   syncable::ReadTransaction trans(FROM_HERE, dir);
   syncable::NigoriHandler* nigori_handler = dir->GetNigoriHandler();
@@ -136,10 +136,10 @@ void PartitionContextMutationsByType(
 // like the ShouldRequestEncryptionKey() status.  This is kept separate from the
 // other of the message-building functions to make the rest of the code easier
 // to test.
-void InitDownloadUpdatesContext(sessions::SyncSession* session,
+void InitDownloadUpdatesContext(SyncCycle* cycle,
                                 bool create_mobile_bookmarks_folder,
                                 sync_pb::ClientToServerMessage* message) {
-  message->set_share(session->context()->account_name());
+  message->set_share(cycle->context()->account_name());
   message->set_message_contents(sync_pb::ClientToServerMessage::GET_UPDATES);
 
   sync_pb::GetUpdatesMessage* get_updates = message->mutable_get_updates();
@@ -151,12 +151,12 @@ void InitDownloadUpdatesContext(sessions::SyncSession* session,
 
   get_updates->set_create_mobile_bookmarks_folder(
       create_mobile_bookmarks_folder);
-  bool need_encryption_key = ShouldRequestEncryptionKey(session->context());
+  bool need_encryption_key = ShouldRequestEncryptionKey(cycle->context());
   get_updates->set_need_encryption_key(need_encryption_key);
 
   // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_notifications_enabled(
-      session->context()->notifications_enabled());
+      cycle->context()->notifications_enabled());
 }
 
 }  // namespace
@@ -169,17 +169,16 @@ GetUpdatesProcessor::~GetUpdatesProcessor() {}
 
 SyncerError GetUpdatesProcessor::DownloadUpdates(
     ModelTypeSet* request_types,
-    sessions::SyncSession* session,
+    SyncCycle* cycle,
     bool create_mobile_bookmarks_folder) {
   TRACE_EVENT0("sync", "DownloadUpdates");
 
   sync_pb::ClientToServerMessage message;
-  InitDownloadUpdatesContext(session, create_mobile_bookmarks_folder, &message);
+  InitDownloadUpdatesContext(cycle, create_mobile_bookmarks_folder, &message);
   PrepareGetUpdates(*request_types, &message);
 
-  SyncerError result = ExecuteDownloadUpdates(request_types, session, &message);
-  session->mutable_status_controller()->set_last_download_updates_result(
-      result);
+  SyncerError result = ExecuteDownloadUpdates(request_types, cycle, &message);
+  cycle->mutable_status_controller()->set_last_download_updates_result(result);
   return result;
 }
 
@@ -208,24 +207,24 @@ void GetUpdatesProcessor::PrepareGetUpdates(
 
 SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
     ModelTypeSet* request_types,
-    sessions::SyncSession* session,
+    SyncCycle* cycle,
     sync_pb::ClientToServerMessage* msg) {
   sync_pb::ClientToServerResponse update_response;
-  sessions::StatusController* status = session->mutable_status_controller();
-  bool need_encryption_key = ShouldRequestEncryptionKey(session->context());
+  StatusController* status = cycle->mutable_status_controller();
+  bool need_encryption_key = ShouldRequestEncryptionKey(cycle->context());
 
-  if (session->context()->debug_info_getter()) {
+  if (cycle->context()->debug_info_getter()) {
     sync_pb::DebugInfo* debug_info = msg->mutable_debug_info();
-    CopyClientDebugInfo(session->context()->debug_info_getter(), debug_info);
+    CopyClientDebugInfo(cycle->context()->debug_info_getter(), debug_info);
   }
 
-  session->SendProtocolEvent(
+  cycle->SendProtocolEvent(
       *(delegate_.GetNetworkRequestEvent(base::Time::Now(), *msg)));
 
   ModelTypeSet partial_failure_data_types;
 
   SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
-      msg, &update_response, session, &partial_failure_data_types);
+      msg, &update_response, cycle, &partial_failure_data_types);
 
   DVLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
       update_response);
@@ -235,7 +234,7 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
   } else if (result != SYNCER_OK) {
     GetUpdatesResponseEvent response_event(base::Time::Now(), update_response,
                                            result);
-    session->SendProtocolEvent(response_event);
+    cycle->SendProtocolEvent(response_event);
 
     // Sync authorization expires every 60 mintues, so SYNC_AUTH_ERROR will
     // appear every 60 minutes, and then sync services will refresh the
@@ -251,15 +250,15 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
   DVLOG(1) << "GetUpdates returned "
            << update_response.get_updates().entries_size() << " updates.";
 
-  if (session->context()->debug_info_getter()) {
+  if (cycle->context()->debug_info_getter()) {
     // Clear debug info now that we have successfully sent it to the server.
     DVLOG(1) << "Clearing client debug info.";
-    session->context()->debug_info_getter()->ClearDebugInfo();
+    cycle->context()->debug_info_getter()->ClearDebugInfo();
   }
 
   if (need_encryption_key ||
       update_response.get_updates().encryption_keys_size() > 0) {
-    syncable::Directory* dir = session->context()->directory();
+    syncable::Directory* dir = cycle->context()->directory();
     status->set_last_get_key_result(
         HandleGetEncryptionKeyResponse(update_response, dir));
   }
@@ -269,7 +268,7 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
 
   GetUpdatesResponseEvent response_event(base::Time::Now(), update_response,
                                          process_result);
-  session->SendProtocolEvent(response_event);
+  cycle->SendProtocolEvent(response_event);
 
   DVLOG(1) << "GetUpdates result: " << process_result;
 
@@ -279,7 +278,7 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
 SyncerError GetUpdatesProcessor::ProcessResponse(
     const sync_pb::GetUpdatesResponse& gu_response,
     ModelTypeSet request_types,
-    sessions::StatusController* status) {
+    StatusController* status) {
   status->increment_num_updates_downloaded_by(gu_response.entries_size());
 
   // The changes remaining field is used to prevent the client from looping.  If
@@ -303,7 +302,7 @@ SyncerError GetUpdatesProcessor::ProcessResponse(
 syncer::SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
     ModelTypeSet gu_types,
     const sync_pb::GetUpdatesResponse& gu_response,
-    sessions::StatusController* status_controller) {
+    StatusController* status_controller) {
   TypeSyncEntityMap updates_by_type;
   PartitionUpdatesByType(gu_response, gu_types, &updates_by_type);
   DCHECK_EQ(gu_types.Size(), updates_by_type.size());
@@ -356,15 +355,14 @@ syncer::SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
   return syncer::SYNCER_OK;
 }
 
-void GetUpdatesProcessor::ApplyUpdates(
-    ModelTypeSet gu_types,
-    sessions::StatusController* status_controller) {
+void GetUpdatesProcessor::ApplyUpdates(ModelTypeSet gu_types,
+                                       StatusController* status_controller) {
   status_controller->set_get_updates_request_types(gu_types);
   delegate_.ApplyUpdates(gu_types, status_controller, update_handler_map_);
 }
 
 void GetUpdatesProcessor::CopyClientDebugInfo(
-    sessions::DebugInfoGetter* debug_info_getter,
+    DebugInfoGetter* debug_info_getter,
     sync_pb::DebugInfo* debug_info) {
   DVLOG(1) << "Copying client debug info to send.";
   debug_info_getter->GetDebugInfo(debug_info);

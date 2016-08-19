@@ -7,9 +7,9 @@
 #include "base/trace_event/trace_event.h"
 #include "components/sync/engine/events/clear_server_data_request_event.h"
 #include "components/sync/engine/events/clear_server_data_response_event.h"
+#include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
-#include "components/sync/sessions_impl/sync_session.h"
 
 namespace syncer {
 
@@ -22,27 +22,27 @@ ClearServerData::ClearServerData(const std::string& account_name) {
 
 ClearServerData::~ClearServerData() {}
 
-SyncerError ClearServerData::SendRequest(sessions::SyncSession* session) {
-  if (session->context()->debug_info_getter()) {
+SyncerError ClearServerData::SendRequest(SyncCycle* cycle) {
+  if (cycle->context()->debug_info_getter()) {
     sync_pb::DebugInfo* debug_info = request_.mutable_debug_info();
-    session->context()->debug_info_getter()->GetDebugInfo(debug_info);
+    cycle->context()->debug_info_getter()->GetDebugInfo(debug_info);
   }
 
   DVLOG(1) << "Sending ClearServerData message.";
 
   const ClearServerDataRequestEvent request_event(base::Time::Now(), request_);
-  session->SendProtocolEvent(request_event);
+  cycle->SendProtocolEvent(request_event);
 
   sync_pb::ClientToServerResponse response;
 
   TRACE_EVENT_BEGIN0("sync", "PostClearServerData");
   const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
-      &request_, &response, session, nullptr);
+      &request_, &response, cycle, nullptr);
   TRACE_EVENT_END0("sync", "PostClearServerData");
 
   const ClearServerDataResponseEvent response_event(base::Time::Now(),
                                                     post_result, response);
-  session->SendProtocolEvent(response_event);
+  cycle->SendProtocolEvent(response_event);
 
   if (post_result != SYNCER_OK) {
     DVLOG(1) << "Post ClearServerData failed";
@@ -54,9 +54,9 @@ SyncerError ClearServerData::SendRequest(sessions::SyncSession* session) {
     return SERVER_RESPONSE_VALIDATION_FAILED;
   }
 
-  if (session->context()->debug_info_getter()) {
+  if (cycle->context()->debug_info_getter()) {
     DVLOG(1) << "Clearing client debug info.";
-    session->context()->debug_info_getter()->ClearDebugInfo();
+    cycle->context()->debug_info_getter()->ClearDebugInfo();
   }
 
   return post_result;

@@ -28,8 +28,6 @@ using base::TimeTicks;
 
 namespace syncer {
 
-using sessions::SyncSession;
-using sessions::SyncSessionSnapshot;
 using sync_pb::GetUpdatesCallerInfo;
 
 namespace {
@@ -170,7 +168,7 @@ GetUpdatesCallerInfo::GetUpdatesSource GetUpdatesFromNudgeSource(
 
 SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
                                      BackoffDelayProvider* delay_provider,
-                                     sessions::SyncSessionContext* context,
+                                     SyncCycleContext* context,
                                      Syncer* syncer)
     : name_(name),
       started_(false),
@@ -181,8 +179,8 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
       mode_(CONFIGURATION_MODE),
       delay_provider_(delay_provider),
       syncer_(syncer),
-      session_context_(context),
-      next_sync_session_job_priority_(NORMAL_PRIORITY),
+      cycle_context_(context),
+      next_sync_cycle_job_priority_(NORMAL_PRIORITY),
       weak_ptr_factory_(this),
       weak_ptr_factory_for_weak_handle_(this) {
   weak_handle_this_ =
@@ -198,14 +196,14 @@ void SyncSchedulerImpl::OnCredentialsUpdated() {
   DCHECK(CalledOnValidThread());
 
   if (HttpResponse::SYNC_AUTH_ERROR ==
-      session_context_->connection_manager()->server_status()) {
+      cycle_context_->connection_manager()->server_status()) {
     OnServerConnectionErrorFixed();
   }
 }
 
 void SyncSchedulerImpl::OnConnectionStatusChange() {
   if (HttpResponse::CONNECTION_UNAVAILABLE ==
-      session_context_->connection_manager()->server_status()) {
+      cycle_context_->connection_manager()->server_status()) {
     // Optimistically assume that the connection is fixed and try
     // connecting.
     OnServerConnectionErrorFixed();
@@ -267,13 +265,13 @@ void SyncSchedulerImpl::Start(Mode mode, base::Time last_poll_time) {
     // Update our current time before checking IsRetryRequired().
     nudge_tracker_.SetSyncCycleStartTime(base::TimeTicks::Now());
     if (nudge_tracker_.IsSyncRequired() && CanRunNudgeJobNow(NORMAL_PRIORITY)) {
-      TrySyncSessionJob();
+      TrySyncCycleJob();
     }
   }
 }
 
 ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnthrottledTypes() {
-  ModelTypeSet enabled_types = session_context_->GetEnabledTypes();
+  ModelTypeSet enabled_types = cycle_context_->GetEnabledTypes();
   ModelTypeSet enabled_protocol_types =
       Intersection(ProtocolTypes(), enabled_types);
   ModelTypeSet throttled_types = nudge_tracker_.GetThrottledTypes();
@@ -282,11 +280,10 @@ ModelTypeSet SyncSchedulerImpl::GetEnabledAndUnthrottledTypes() {
 
 void SyncSchedulerImpl::SendInitialSnapshot() {
   DCHECK(CalledOnValidThread());
-  std::unique_ptr<SyncSession> dummy(
-      SyncSession::Build(session_context_, this));
+  std::unique_ptr<SyncCycle> dummy(SyncCycle::Build(cycle_context_, this));
   SyncCycleEvent event(SyncCycleEvent::STATUS_CHANGED);
   event.snapshot = dummy->TakeSnapshot();
-  FOR_EACH_OBSERVER(SyncEngineEventListener, *session_context_->listeners(),
+  FOR_EACH_OBSERVER(SyncEngineEventListener, *cycle_context_->listeners(),
                     OnSyncCycleEvent(event));
 }
 
@@ -325,12 +322,12 @@ void SyncSchedulerImpl::ScheduleConfiguration(
   ModelSafeRoutingInfo restricted_routes;
   BuildModelSafeParams(params.types_to_download, params.routing_info,
                        &restricted_routes);
-  session_context_->SetRoutingInfo(restricted_routes);
+  cycle_context_->SetRoutingInfo(restricted_routes);
 
   // Only reconfigure if we have types to download.
   if (!params.types_to_download.Empty()) {
     pending_configure_params_.reset(new ConfigurationParams(params));
-    TrySyncSessionJob();
+    TrySyncCycleJob();
   } else {
     SDVLOG(2) << "No change in routing info, calling ready task directly.";
     params.ready_task.Run();
@@ -344,7 +341,7 @@ void SyncSchedulerImpl::ScheduleClearServerData(const ClearParams& params) {
   DCHECK(!params.report_success_task.is_null());
   CHECK(started_) << "Scheduler must be running to clear.";
   pending_clear_params_.reset(new ClearParams(params));
-  TrySyncSessionJob();
+  TrySyncCycleJob();
 }
 
 bool SyncSchedulerImpl::CanRunJobNow(JobPriority priority) {
@@ -359,7 +356,7 @@ bool SyncSchedulerImpl::CanRunJobNow(JobPriority priority) {
     return false;
   }
 
-  if (session_context_->connection_manager()->HasInvalidAuthToken()) {
+  if (cycle_context_->connection_manager()->HasInvalidAuthToken()) {
     SDVLOG(1) << "Unable to run a job because we have no valid auth token.";
     return false;
   }
@@ -375,7 +372,7 @@ bool SyncSchedulerImpl::CanRunNudgeJobNow(JobPriority priority) {
     return false;
   }
 
-  const ModelTypeSet enabled_types = session_context_->GetEnabledTypes();
+  const ModelTypeSet enabled_types = cycle_context_->GetEnabledTypes();
   if (nudge_tracker_.GetThrottledTypes().HasAll(enabled_types)) {
     SDVLOG(1) << "Not running a nudge because we're fully type throttled.";
     return false;
@@ -490,16 +487,15 @@ void SyncSchedulerImpl::SetDefaultNudgeDelay(base::TimeDelta delay_ms) {
   nudge_tracker_.SetDefaultNudgeDelay(delay_ms);
 }
 
-void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
+void SyncSchedulerImpl::DoNudgeSyncCycleJob(JobPriority priority) {
   DCHECK(CalledOnValidThread());
   DCHECK(CanRunNudgeJobNow(priority));
 
   DVLOG(2) << "Will run normal mode sync cycle with types "
-           << ModelTypeSetToString(session_context_->GetEnabledTypes());
-  std::unique_ptr<SyncSession> session(
-      SyncSession::Build(session_context_, this));
+           << ModelTypeSetToString(cycle_context_->GetEnabledTypes());
+  std::unique_ptr<SyncCycle> cycle(SyncCycle::Build(cycle_context_, this));
   bool success = syncer_->NormalSyncShare(GetEnabledAndUnthrottledTypes(),
-                                          &nudge_tracker_, session.get());
+                                          &nudge_tracker_, cycle.get());
 
   if (success) {
     // That cycle took care of any outstanding work we had.
@@ -516,11 +512,11 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
       AdjustPolling(UPDATE_INTERVAL);
     }
   } else {
-    HandleFailure(session->status_controller().model_neutral_state());
+    HandleFailure(cycle->status_controller().model_neutral_state());
   }
 }
 
-void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
+void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(mode_, CONFIGURATION_MODE);
   DCHECK(pending_configure_params_ != NULL);
@@ -532,12 +528,11 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
   }
 
   SDVLOG(2) << "Will run configure SyncShare with types "
-            << ModelTypeSetToString(session_context_->GetEnabledTypes());
-  std::unique_ptr<SyncSession> session(
-      SyncSession::Build(session_context_, this));
+            << ModelTypeSetToString(cycle_context_->GetEnabledTypes());
+  std::unique_ptr<SyncCycle> cycle(SyncCycle::Build(cycle_context_, this));
   bool success = syncer_->ConfigureSyncShare(
       pending_configure_params_->types_to_download,
-      pending_configure_params_->source, session.get());
+      pending_configure_params_->source, cycle.get());
 
   if (success) {
     SDVLOG(2) << "Configure succeeded.";
@@ -545,7 +540,7 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
     pending_configure_params_.reset();
     HandleSuccess();
   } else {
-    HandleFailure(session->status_controller().model_neutral_state());
+    HandleFailure(cycle->status_controller().model_neutral_state());
     // Sync cycle might receive response from server that causes scheduler to
     // stop and draws pending_configure_params_ invalid.
     if (started_)
@@ -553,7 +548,7 @@ void SyncSchedulerImpl::DoConfigurationSyncSessionJob(JobPriority priority) {
   }
 }
 
-void SyncSchedulerImpl::DoClearServerDataSyncSessionJob(JobPriority priority) {
+void SyncSchedulerImpl::DoClearServerDataSyncCycleJob(JobPriority priority) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(mode_, CLEAR_SERVER_DATA_MODE);
 
@@ -563,11 +558,10 @@ void SyncSchedulerImpl::DoClearServerDataSyncSessionJob(JobPriority priority) {
     return;
   }
 
-  std::unique_ptr<SyncSession> session(
-      SyncSession::Build(session_context_, this));
-  const bool success = syncer_->PostClearServerData(session.get());
+  std::unique_ptr<SyncCycle> cycle(SyncCycle::Build(cycle_context_, this));
+  const bool success = syncer_->PostClearServerData(cycle.get());
   if (!success) {
-    HandleFailure(session->status_controller().model_neutral_state());
+    HandleFailure(cycle->status_controller().model_neutral_state());
     return;
   }
 
@@ -584,7 +578,7 @@ void SyncSchedulerImpl::HandleSuccess() {
 }
 
 void SyncSchedulerImpl::HandleFailure(
-    const sessions::ModelNeutralState& model_neutral_state) {
+    const ModelNeutralState& model_neutral_state) {
   if (IsCurrentlyThrottled()) {
     SDVLOG(2) << "Was throttled during previous sync cycle.";
   } else if (!IsBackingOff()) {
@@ -606,13 +600,12 @@ void SyncSchedulerImpl::HandleFailure(
   RestartWaiting();
 }
 
-void SyncSchedulerImpl::DoPollSyncSessionJob() {
+void SyncSchedulerImpl::DoPollSyncCycleJob() {
   SDVLOG(2) << "Polling with types "
             << ModelTypeSetToString(GetEnabledAndUnthrottledTypes());
-  std::unique_ptr<SyncSession> session(
-      SyncSession::Build(session_context_, this));
+  std::unique_ptr<SyncCycle> cycle(SyncCycle::Build(cycle_context_, this));
   bool success =
-      syncer_->PollSyncShare(GetEnabledAndUnthrottledTypes(), session.get());
+      syncer_->PollSyncShare(GetEnabledAndUnthrottledTypes(), cycle.get());
 
   // Only restart the timer if the poll succeeded. Otherwise rely on normal
   // failure handling to retry with backoff.
@@ -620,7 +613,7 @@ void SyncSchedulerImpl::DoPollSyncSessionJob() {
     AdjustPolling(FORCE_RESET);
     HandleSuccess();
   } else {
-    HandleFailure(session->status_controller().model_neutral_state());
+    HandleFailure(cycle->status_controller().model_neutral_state());
   }
 }
 
@@ -642,8 +635,8 @@ void SyncSchedulerImpl::UpdateNudgeTimeRecords(ModelTypeSet types) {
 }
 
 TimeDelta SyncSchedulerImpl::GetPollInterval() {
-  return (!session_context_->notifications_enabled() ||
-          !session_context_->ShouldFetchUpdatesBeforeCommit())
+  return (!cycle_context_->notifications_enabled() ||
+          !cycle_context_->ShouldFetchUpdatesBeforeCommit())
              ? syncer_short_poll_interval_seconds_
              : syncer_long_poll_interval_seconds_;
 }
@@ -725,25 +718,25 @@ void SyncSchedulerImpl::Stop() {
     started_ = false;
 }
 
-// This is the only place where we invoke DoSyncSessionJob with canary
+// This is the only place where we invoke DoSyncCycleJob with canary
 // privileges.  Everyone else should use NORMAL_PRIORITY.
 void SyncSchedulerImpl::TryCanaryJob() {
-  next_sync_session_job_priority_ = CANARY_PRIORITY;
+  next_sync_cycle_job_priority_ = CANARY_PRIORITY;
   SDVLOG(2) << "Attempting canary job";
-  TrySyncSessionJob();
+  TrySyncCycleJob();
 }
 
-void SyncSchedulerImpl::TrySyncSessionJob() {
-  // Post call to TrySyncSessionJobImpl on current thread. Later request for
+void SyncSchedulerImpl::TrySyncCycleJob() {
+  // Post call to TrySyncCycleJobImpl on current thread. Later request for
   // access token will be here.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SyncSchedulerImpl::TrySyncSessionJobImpl,
+      FROM_HERE, base::Bind(&SyncSchedulerImpl::TrySyncCycleJobImpl,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SyncSchedulerImpl::TrySyncSessionJobImpl() {
-  JobPriority priority = next_sync_session_job_priority_;
-  next_sync_session_job_priority_ = NORMAL_PRIORITY;
+void SyncSchedulerImpl::TrySyncCycleJobImpl() {
+  JobPriority priority = next_sync_cycle_job_priority_;
+  next_sync_cycle_job_priority_ = NORMAL_PRIORITY;
 
   nudge_tracker_.SetSyncCycleStartTime(base::TimeTicks::Now());
 
@@ -751,26 +744,26 @@ void SyncSchedulerImpl::TrySyncSessionJobImpl() {
   if (mode_ == CONFIGURATION_MODE) {
     if (pending_configure_params_) {
       SDVLOG(2) << "Found pending configure job";
-      DoConfigurationSyncSessionJob(priority);
+      DoConfigurationSyncCycleJob(priority);
     }
   } else if (mode_ == CLEAR_SERVER_DATA_MODE) {
     if (pending_clear_params_) {
-      DoClearServerDataSyncSessionJob(priority);
+      DoClearServerDataSyncCycleJob(priority);
     }
   } else if (CanRunNudgeJobNow(priority)) {
     if (nudge_tracker_.IsSyncRequired()) {
       SDVLOG(2) << "Found pending nudge job";
-      DoNudgeSyncSessionJob(priority);
+      DoNudgeSyncCycleJob(priority);
     } else if (((base::TimeTicks::Now() - last_poll_reset_) >=
                 GetPollInterval())) {
       SDVLOG(2) << "Found pending poll";
-      DoPollSyncSessionJob();
+      DoPollSyncCycleJob();
     }
   } else {
     // We must be in an error state. Transitioning out of each of these
     // error states should trigger a canary job.
     DCHECK(IsCurrentlyThrottled() || IsBackingOff() ||
-           session_context_->connection_manager()->HasInvalidAuthToken());
+           cycle_context_->connection_manager()->HasInvalidAuthToken());
   }
 
   if (IsBackingOff() && !pending_wakeup_timer_.IsRunning()) {
@@ -790,11 +783,11 @@ void SyncSchedulerImpl::PollTimerCallback() {
   DCHECK(CalledOnValidThread());
   CHECK(!syncer_->IsSyncing());
 
-  TrySyncSessionJob();
+  TrySyncCycleJob();
 }
 
 void SyncSchedulerImpl::RetryTimerCallback() {
-  TrySyncSessionJob();
+  TrySyncCycleJob();
 }
 
 void SyncSchedulerImpl::Unthrottle() {
@@ -831,14 +824,14 @@ void SyncSchedulerImpl::TypeUnthrottle(base::TimeTicks unthrottle_time) {
 
   // Maybe this is a good time to run a nudge job.  Let's try it.
   if (nudge_tracker_.IsSyncRequired() && CanRunNudgeJobNow(NORMAL_PRIORITY))
-    TrySyncSessionJob();
+    TrySyncCycleJob();
 }
 
 void SyncSchedulerImpl::PerformDelayedNudge() {
   // Circumstances may have changed since we scheduled this delayed nudge.
   // We must check to see if it's OK to run the job before we do so.
   if (CanRunNudgeJobNow(NORMAL_PRIORITY))
-    TrySyncSessionJob();
+    TrySyncCycleJob();
 
   // We're not responsible for setting up any retries here.  The functions that
   // first put us into a state that prevents successful sync cycles (eg. global
@@ -852,12 +845,12 @@ void SyncSchedulerImpl::ExponentialBackoffRetry() {
 }
 
 void SyncSchedulerImpl::NotifyRetryTime(base::Time retry_time) {
-  FOR_EACH_OBSERVER(SyncEngineEventListener, *session_context_->listeners(),
+  FOR_EACH_OBSERVER(SyncEngineEventListener, *cycle_context_->listeners(),
                     OnRetryTimeChanged(retry_time));
 }
 
 void SyncSchedulerImpl::NotifyThrottledTypesChanged(ModelTypeSet types) {
-  FOR_EACH_OBSERVER(SyncEngineEventListener, *session_context_->listeners(),
+  FOR_EACH_OBSERVER(SyncEngineEventListener, *cycle_context_->listeners(),
                     OnThrottledTypesChanged(types));
 }
 
@@ -943,7 +936,7 @@ void SyncSchedulerImpl::OnSyncProtocolError(
   }
   if (IsActionableError(sync_protocol_error)) {
     SDVLOG(2) << "OnActionableError";
-    FOR_EACH_OBSERVER(SyncEngineEventListener, *session_context_->listeners(),
+    FOR_EACH_OBSERVER(SyncEngineEventListener, *cycle_context_->listeners(),
                       OnActionableError(sync_protocol_error));
   }
 }
@@ -955,13 +948,13 @@ void SyncSchedulerImpl::OnReceivedGuRetryDelay(const base::TimeDelta& delay) {
 }
 
 void SyncSchedulerImpl::OnReceivedMigrationRequest(ModelTypeSet types) {
-  FOR_EACH_OBSERVER(SyncEngineEventListener, *session_context_->listeners(),
+  FOR_EACH_OBSERVER(SyncEngineEventListener, *cycle_context_->listeners(),
                     OnMigrationRequested(types));
 }
 
 void SyncSchedulerImpl::SetNotificationsEnabled(bool notifications_enabled) {
   DCHECK(CalledOnValidThread());
-  session_context_->set_notifications_enabled(notifications_enabled);
+  cycle_context_->set_notifications_enabled(notifications_enabled);
   if (notifications_enabled)
     nudge_tracker_.OnInvalidationsEnabled();
   else

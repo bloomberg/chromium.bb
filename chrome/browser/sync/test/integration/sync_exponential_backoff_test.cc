@@ -17,7 +17,7 @@ namespace {
 
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::ModelMatchesVerifier;
-using syncer::sessions::SyncSessionSnapshot;
+using syncer::SyncCycleSnapshot;
 using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class SyncExponentialBackoffTest : public SyncTest {
@@ -35,7 +35,7 @@ class ExponentialBackoffChecker : public SingleClientStatusChangeChecker {
  public:
   explicit ExponentialBackoffChecker(ProfileSyncService* pss)
         : SingleClientStatusChangeChecker(pss) {
-    const SyncSessionSnapshot& snap = service()->GetLastSessionSnapshot();
+    const SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
     retry_verifier_.Initialize(snap);
   }
 
@@ -44,7 +44,7 @@ class ExponentialBackoffChecker : public SingleClientStatusChangeChecker {
   // Checks if backoff is complete. Called repeatedly each time PSS notifies
   // observers of a state change.
   bool IsExitConditionSatisfied() override {
-    const SyncSessionSnapshot& snap = service()->GetLastSessionSnapshot();
+    const SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
     retry_verifier_.VerifyRetryInterval(snap);
     return (retry_verifier_.done() && retry_verifier_.Succeeded());
   }
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   // Verify that recovery time is short. Without canary job recovery time would
   // be more than 5 seconds.
   base::TimeDelta recovery_time =
-      GetSyncService(0)->GetLastSessionSnapshot().sync_start_time() -
+      GetSyncService(0)->GetLastCycleSnapshot().sync_start_time() -
       network_notification_time;
   ASSERT_LE(recovery_time, base::TimeDelta::FromSeconds(2));
 }

@@ -9,8 +9,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/polling_constants.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
 
 namespace {
 // Given the current delay calculate the minimum and maximum wait times for
@@ -81,8 +81,7 @@ RetryVerifier::~RetryVerifier() {
 }
 
 // Initializes the state for verification.
-void RetryVerifier::Initialize(
-    const syncer::sessions::SyncSessionSnapshot& snap) {
+void RetryVerifier::Initialize(const syncer::SyncCycleSnapshot& snap) {
   retry_count_ = 0;
   last_sync_time_ = snap.sync_start_time();
   FillDelayTable(delay_table_, kMaxRetry);
@@ -90,8 +89,7 @@ void RetryVerifier::Initialize(
   success_ = false;
 }
 
-void RetryVerifier::VerifyRetryInterval(
-    const syncer::sessions::SyncSessionSnapshot& snap) {
+void RetryVerifier::VerifyRetryInterval(const syncer::SyncCycleSnapshot& snap) {
   DCHECK(retry_count_ < kMaxRetry);
   if (retry_count_ == 0) {
     if (snap.sync_start_time() != last_sync_time_) {

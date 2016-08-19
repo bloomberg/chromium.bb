@@ -17,8 +17,8 @@
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine_impl/conflict_resolver.h"
+#include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/syncer_types.h"
-#include "components/sync/sessions_impl/sync_session.h"
 
 namespace syncer {
 
@@ -55,8 +55,8 @@ class Syncer {
   // Returns: false if an error occurred and retries should backoff, true
   // otherwise.
   virtual bool NormalSyncShare(ModelTypeSet request_types,
-                               sessions::NudgeTracker* nudge_tracker,
-                               sessions::SyncSession* session);
+                               NudgeTracker* nudge_tracker,
+                               SyncCycle* cycle);
 
   // Performs an initial download for the |request_types|.  It is assumed that
   // the specified types have no local state, and that their associated change
@@ -68,7 +68,7 @@ class Syncer {
   virtual bool ConfigureSyncShare(
       ModelTypeSet request_types,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-      sessions::SyncSession* session);
+      SyncCycle* cycle);
 
   // Requests to download updates for the |request_types|.  For a well-behaved
   // client with a working connection to the invalidations server, this should
@@ -76,13 +76,12 @@ class Syncer {
   // in sync despite bugs or transient failures.
   // Returns: false if an error occurred and retries should backoff, true
   // otherwise.
-  virtual bool PollSyncShare(ModelTypeSet request_types,
-                             sessions::SyncSession* session);
+  virtual bool PollSyncShare(ModelTypeSet request_types, SyncCycle* cycle);
 
   // Posts a ClearServerData command.
   // Returns: false if an error occurred and retries should backoff, true
   // otherwise.
-  virtual bool PostClearServerData(sessions::SyncSession* session);
+  virtual bool PostClearServerData(SyncCycle* cycle);
 
  private:
   friend class SyncerTest;
@@ -108,7 +107,7 @@ class Syncer {
                            EntryCreatedInNewFolderMidSync);
 
   bool DownloadAndApplyUpdates(ModelTypeSet* request_types,
-                               sessions::SyncSession* session,
+                               SyncCycle* cycle,
                                GetUpdatesProcessor* get_updates_processor,
                                bool create_mobile_bookmarks_folder);
 
@@ -117,12 +116,12 @@ class Syncer {
   // encountered.  A request to exit early will be treated as an error and will
   // abort any blocking operations.
   SyncerError BuildAndPostCommits(ModelTypeSet request_types,
-                                  sessions::NudgeTracker* nudge_tracker,
-                                  sessions::SyncSession* session,
+                                  NudgeTracker* nudge_tracker,
+                                  SyncCycle* cycle,
                                   CommitProcessor* commit_processor);
 
-  void HandleCycleBegin(sessions::SyncSession* session);
-  bool HandleCycleEnd(sessions::SyncSession* session,
+  void HandleCycleBegin(SyncCycle* cycle);
+  bool HandleCycleEnd(SyncCycle* cycle,
                       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
   syncer::CancelationSignal* const cancelation_signal_;

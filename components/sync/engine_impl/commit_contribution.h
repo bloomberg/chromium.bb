@@ -8,14 +8,12 @@
 #include <stddef.h>
 
 #include "components/sync/base/syncer_error.h"
+#include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/status_controller.h"
 
 namespace syncer {
 
-namespace sessions {
 class StatusController;
-}  // namespace sessions
 
 // This class represents a set of items belonging to a particular data type that
 // have been selected from a CommitContributor and prepared for commit.
@@ -40,7 +38,7 @@ class CommitContribution {
   // called earlier.  This function should not be called more than once.
   virtual SyncerError ProcessCommitResponse(
       const sync_pb::ClientToServerResponse& response,
-      sessions::StatusController* status) = 0;
+      StatusController* status) = 0;
 
   // Cleans up any temproary state associated with the commit.  Must be called
   // before destruction.

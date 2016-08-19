@@ -21,21 +21,18 @@
 #include "base/timer/timer.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/polling_constants.h"
+#include "components/sync/engine_impl/cycle/nudge_tracker.h"
+#include "components/sync/engine_impl/cycle/sync_cycle.h"
+#include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/engine_impl/nudge_source.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
 #include "components/sync/engine_impl/syncer.h"
-#include "components/sync/sessions_impl/nudge_tracker.h"
-#include "components/sync/sessions_impl/sync_session.h"
-#include "components/sync/sessions_impl/sync_session_context.h"
 
 namespace syncer {
 
 class BackoffDelayProvider;
-
-namespace sessions {
 struct ModelNeutralState;
-}
 
 class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
  public:
@@ -43,7 +40,7 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // |ownership of |syncer| and |delay_provider|.
   SyncSchedulerImpl(const std::string& name,
                     BackoffDelayProvider* delay_provider,
-                    sessions::SyncSessionContext* context,
+                    SyncCycleContext* context,
                     Syncer* syncer);
 
   // Calls Stop().
@@ -69,7 +66,7 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   void OnCredentialsUpdated() override;
   void OnConnectionStatusChange() override;
 
-  // SyncSession::Delegate implementation.
+  // SyncCycle::Delegate implementation.
   void OnThrottled(const base::TimeDelta& throttle_duration) override;
   void OnTypesThrottled(ModelTypeSet types,
                         const base::TimeDelta& throttle_duration) override;
@@ -145,21 +142,21 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   void SetDefaultNudgeDelay(base::TimeDelta delay_ms);
 
   // Invoke the syncer to perform a nudge job.
-  void DoNudgeSyncSessionJob(JobPriority priority);
+  void DoNudgeSyncCycleJob(JobPriority priority);
 
   // Invoke the syncer to perform a configuration job.
-  void DoConfigurationSyncSessionJob(JobPriority priority);
+  void DoConfigurationSyncCycleJob(JobPriority priority);
 
-  void DoClearServerDataSyncSessionJob(JobPriority priority);
+  void DoClearServerDataSyncCycleJob(JobPriority priority);
 
-  // Helper function for Do{Nudge,Configuration,Poll}SyncSessionJob.
+  // Helper function for Do{Nudge,Configuration,Poll}SyncCycleJob.
   void HandleSuccess();
 
-  // Helper function for Do{Nudge,Configuration,Poll}SyncSessionJob.
-  void HandleFailure(const sessions::ModelNeutralState& model_neutral_state);
+  // Helper function for Do{Nudge,Configuration,Poll}SyncCycleJob.
+  void HandleFailure(const ModelNeutralState& model_neutral_state);
 
   // Invoke the Syncer to perform a poll job.
-  void DoPollSyncSessionJob();
+  void DoPollSyncCycleJob();
 
   // Helper function to calculate poll interval.
   base::TimeDelta GetPollInterval();
@@ -194,10 +191,10 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // priority.
   void TryCanaryJob();
 
-  // At the moment TrySyncSessionJob just posts call to TrySyncSessionJobImpl on
+  // At the moment TrySyncCycleJob just posts call to TrySyncCycleJobImpl on
   // current thread. In the future it will request access token here.
-  void TrySyncSessionJob();
-  void TrySyncSessionJobImpl();
+  void TrySyncCycleJob();
+  void TrySyncCycleJobImpl();
 
   // Transitions out of the THROTTLED WaitInterval then calls TryCanaryJob().
   void Unthrottle();
@@ -214,16 +211,16 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // Called when the root cause of the current connection error is fixed.
   void OnServerConnectionErrorFixed();
 
-  // Creates a session for a poll and performs the sync.
+  // Creates a cycle for a poll and performs the sync.
   void PollTimerCallback();
 
-  // Creates a session for a retry and performs the sync.
+  // Creates a cycle for a retry and performs the sync.
   void RetryTimerCallback();
 
   // Returns the set of types that are enabled and not currently throttled.
   ModelTypeSet GetEnabledAndUnthrottledTypes();
 
-  // Called as we are started to broadcast an initial session snapshot
+  // Called as we are started to broadcast an initial cycle snapshot
   // containing data like initial_sync_ended.  Important when the client starts
   // up and does not need to perform an initial sync.
   void SendInitialSnapshot();
@@ -277,12 +274,12 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   base::TimeTicks scheduled_nudge_time_;
 
   // Keeps track of work that the syncer needs to handle.
-  sessions::NudgeTracker nudge_tracker_;
+  NudgeTracker nudge_tracker_;
 
   // Invoked to run through the sync cycle.
   std::unique_ptr<Syncer> syncer_;
 
-  sessions::SyncSessionContext* session_context_;
+  SyncCycleContext* cycle_context_;
 
   // A map tracking LOCAL NudgeSource invocations of ScheduleNudge* APIs,
   // organized by datatype. Each datatype that was part of the types requested
@@ -298,17 +295,17 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   bool no_scheduling_allowed_;
 
   // TryJob might get called for multiple reasons. It should only call
-  // DoPollSyncSessionJob after some time since the last attempt.
+  // DoPollSyncCycleJob after some time since the last attempt.
   // last_poll_reset_ keeps track of when was last attempt.
   base::TimeTicks last_poll_reset_;
 
-  // next_sync_session_job_priority_ defines which priority will be used next
-  // time TrySyncSessionJobImpl is called. CANARY_PRIORITY allows syncer to run
+  // next_sync_cycle_job_priority_ defines which priority will be used next
+  // time TrySyncCycleJobImpl is called. CANARY_PRIORITY allows syncer to run
   // even if scheduler is in exponential backoff. This is needed for events that
   // have chance of resolving previous error (e.g. network connection change
   // after NETWORK_UNAVAILABLE error).
-  // It is reset back to NORMAL_PRIORITY on every call to TrySyncSessionJobImpl.
-  JobPriority next_sync_session_job_priority_;
+  // It is reset back to NORMAL_PRIORITY on every call to TrySyncCycleJobImpl.
+  JobPriority next_sync_cycle_job_priority_;
 
   // One-shot timer for scheduling GU retry according to delay set by server.
   base::OneShotTimer retry_timer_;

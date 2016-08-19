@@ -4,8 +4,6 @@ include_rules = [
   "+components/sync/core",
   "+components/sync/engine",
   "+components/sync/protocol",
-  "+components/sync/sessions",
-  "+components/sync/sessions_impl",
   "+components/sync/syncable",
   "+components/sync/test",
 ]

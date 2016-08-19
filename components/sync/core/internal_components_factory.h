@@ -19,16 +19,13 @@
 namespace syncer {
 
 class CancelationSignal;
+class DebugInfoGetter;
 class ExtensionsActivity;
 class ModelTypeRegistry;
 class ServerConnectionManager;
+class SyncCycleContext;
 class SyncEngineEventListener;
 class SyncScheduler;
-
-namespace sessions {
-class DebugInfoGetter;
-class SyncSessionContext;
-}
 
 namespace syncable {
 class Directory;
@@ -88,15 +85,15 @@ class InternalComponentsFactory {
 
   virtual std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
-      sessions::SyncSessionContext* context,
+      SyncCycleContext* context,
       CancelationSignal* cancelation_signal) = 0;
 
-  virtual std::unique_ptr<sessions::SyncSessionContext> BuildContext(
+  virtual std::unique_ptr<SyncCycleContext> BuildContext(
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
       ExtensionsActivity* extensions_activity,
       const std::vector<SyncEngineEventListener*>& listeners,
-      sessions::DebugInfoGetter* debug_info_getter,
+      DebugInfoGetter* debug_info_getter,
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id) = 0;
 

@@ -38,17 +38,16 @@ SyncerError MockUpdateHandler::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeProgressMarker& progress_marker,
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
-    sessions::StatusController* status) {
+    StatusController* status) {
   progress_marker_.CopyFrom(progress_marker);
   return syncer::SYNCER_OK;
 }
 
-void MockUpdateHandler::ApplyUpdates(sessions::StatusController* status) {
+void MockUpdateHandler::ApplyUpdates(StatusController* status) {
   apply_updates_count_++;
 }
 
-void MockUpdateHandler::PassiveApplyUpdates(
-    sessions::StatusController* status) {
+void MockUpdateHandler::PassiveApplyUpdates(StatusController* status) {
   passive_apply_updates_count_++;
 }
 

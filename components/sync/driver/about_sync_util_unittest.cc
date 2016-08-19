@@ -33,9 +33,8 @@ class SyncServiceMock : public sync_driver::FakeSyncService {
     return base::string16(base::ASCIIToUTF16("none"));
   }
 
-  syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot()
-      const override {
-    return syncer::sessions::SyncSessionSnapshot();
+  syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override {
+    return syncer::SyncCycleSnapshot();
   }
 };
 

@@ -31,8 +31,7 @@ class JsSyncManagerObserver : public SyncManager::Observer {
   void SetJsEventHandler(const WeakHandle<JsEventHandler>& event_handler);
 
   // SyncManager::Observer implementation.
-  void OnSyncCycleCompleted(
-      const sessions::SyncSessionSnapshot& snapshot) override;
+  void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) override;
   void OnConnectionStatusChange(ConnectionStatus status) override;
   void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend,

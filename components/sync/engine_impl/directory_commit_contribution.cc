@@ -10,10 +10,10 @@
 #include <algorithm>
 #include <set>
 
+#include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine_impl/commit_util.h"
 #include "components/sync/engine_impl/get_commit_ids.h"
 #include "components/sync/engine_impl/syncer_util.h"
-#include "components/sync/sessions/commit_counters.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 #include "components/sync/syncable/syncable_model_neutral_write_transaction.h"
 
@@ -75,7 +75,7 @@ void DirectoryCommitContribution::AddToCommitMessage(
 
 SyncerError DirectoryCommitContribution::ProcessCommitResponse(
     const sync_pb::ClientToServerResponse& response,
-    sessions::StatusController* status) {
+    StatusController* status) {
   DCHECK(syncing_bits_set_);
   const sync_pb::CommitResponse& commit_response = response.commit();
 

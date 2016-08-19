@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
+#include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/directory_commit_contribution.h"
-#include "components/sync/sessions_impl/directory_type_debug_info_emitter.h"
 
 namespace syncer {
 

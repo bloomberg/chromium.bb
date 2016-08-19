@@ -17,15 +17,13 @@
 
 namespace syncer {
 
-namespace sessions {
 class NudgeTracker;
-}  // namespace sessions
 
 // An event representing a 'normal mode' GetUpdate request to the server.
 class NormalGetUpdatesRequestEvent : public ProtocolEvent {
  public:
   NormalGetUpdatesRequestEvent(base::Time timestamp,
-                               const sessions::NudgeTracker& nudge_tracker,
+                               const NudgeTracker& nudge_tracker,
                                const sync_pb::ClientToServerMessage& request);
 
   ~NormalGetUpdatesRequestEvent() override;

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace syncer {
@@ -73,7 +73,7 @@ class FakeSyncService : public sync_driver::SyncService {
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) override;
   base::string16 GetLastSyncedTimeString() const override;
   std::string GetBackendInitializationStateString() const override;
-  syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const override;
+  syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
   base::Value* GetTypeStatusMap() const override;
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;

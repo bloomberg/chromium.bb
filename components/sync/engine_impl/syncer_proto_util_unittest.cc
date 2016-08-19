@@ -11,11 +11,11 @@
 #include "base/time/time.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/model_type_test_util.h"
+#include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
-#include "components/sync/sessions_impl/sync_session_context.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/test/engine/mock_connection_manager.h"
 #include "components/sync/test/engine/test_directory_setter_upper.h"
@@ -29,9 +29,7 @@ using sync_pb::SyncEntity;
 
 namespace syncer {
 
-using sessions::SyncSessionContext;
-
-class MockDelegate : public sessions::SyncSession::Delegate {
+class MockDelegate : public SyncCycle::Delegate {
  public:
   MockDelegate() {}
   ~MockDelegate() {}

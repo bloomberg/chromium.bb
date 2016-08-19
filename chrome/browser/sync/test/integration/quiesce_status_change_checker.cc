@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 namespace {
 
@@ -27,10 +27,8 @@ bool ProgressMarkersMatch(const ProfileSyncService* service1,
       Intersection(service1->GetActiveDataTypes(),
                    service2->GetActiveDataTypes());
 
-  const syncer::sessions::SyncSessionSnapshot& snap1 =
-      service1->GetLastSessionSnapshot();
-  const syncer::sessions::SyncSessionSnapshot& snap2 =
-      service2->GetLastSessionSnapshot();
+  const syncer::SyncCycleSnapshot& snap1 = service1->GetLastCycleSnapshot();
+  const syncer::SyncCycleSnapshot& snap2 = service2->GetLastCycleSnapshot();
 
   for (syncer::ModelTypeSet::Iterator type_it = common_types.First();
        type_it.Good(); type_it.Inc()) {
@@ -130,8 +128,7 @@ void ProgressMarkerWatcher::UpdateHasLatestProgressMarkers() {
   // need to check these service at startup, since not every service is
   // guaranteed to generate OnStateChanged() events while we're waiting for
   // quiescence.
-  const syncer::sessions::SyncSessionSnapshot& snap =
-      service_->GetLastSessionSnapshot();
+  const syncer::SyncCycleSnapshot& snap = service_->GetLastCycleSnapshot();
   probably_has_latest_progress_markers_ =
       snap.model_neutral_state().num_successful_commits == 0 &&
       !service_->HasUnsyncedItems();

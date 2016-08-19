@@ -24,7 +24,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/layout.h"
@@ -2021,15 +2021,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((1))));
   ASSERT_TRUE(AwaitQuiescence());
   EXPECT_TRUE(AllModelsMatch());
-  ASSERT_EQ(0,
-            GetClient(1)->GetLastSessionSnapshot().num_encryption_conflicts());
+  ASSERT_EQ(0, GetClient(1)->GetLastCycleSnapshot().num_encryption_conflicts());
 
   // Ensure everything is syncing normally by appending a final bookmark.
   ASSERT_TRUE(AddURL(1, 5, IndexedURLTitle(5), GURL(IndexedURL(5))) != NULL);
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
   EXPECT_TRUE(AllModelsMatch());
-  ASSERT_EQ(0,
-            GetClient(1)->GetLastSessionSnapshot().num_encryption_conflicts());
+  ASSERT_EQ(0, GetClient(1)->GetLastCycleSnapshot().num_encryption_conflicts());
 }
 
 // Deliberately racy rearranging of bookmarks to test that our conflict resolver

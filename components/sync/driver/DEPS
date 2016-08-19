@@ -12,7 +12,6 @@ include_rules = [
   "+components/sync/device_info",
   "+components/sync/engine",
   "+components/sync/protocol",
-  "+components/sync/sessions",
   "+components/sync/syncable",
   "+components/sync/test",
   "+components/syncable_prefs",

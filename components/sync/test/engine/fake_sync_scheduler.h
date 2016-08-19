@@ -42,7 +42,7 @@ class FakeSyncScheduler : public SyncScheduler {
   void OnCredentialsUpdated() override;
   void OnConnectionStatusChange() override;
 
-  // SyncSession::Delegate implementation.
+  // SyncCycle::Delegate implementation.
   void OnThrottled(const base::TimeDelta& throttle_duration) override;
   void OnTypesThrottled(ModelTypeSet types,
                         const base::TimeDelta& throttle_duration) override;

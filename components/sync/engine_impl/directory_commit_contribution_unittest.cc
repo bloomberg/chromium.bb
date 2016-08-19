@@ -11,7 +11,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "components/sync/base/attachment_id_proto.h"
-#include "components/sync/sessions_impl/status_controller.h"
+#include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
@@ -391,7 +391,7 @@ TEST_F(DirectoryCommitContributionTest, ProcessCommitResponse) {
     CreateSuccessfulCommitResponse(entity, entry_response);
   }
 
-  sessions::StatusController status;
+  StatusController status;
 
   // Process these in reverse order.  Just because we can.
   ext_cc->ProcessCommitResponse(response, &status);
@@ -478,7 +478,7 @@ TEST_F(DirectoryCommitContributionTest, ProcessCommitResponseWithAttachments) {
     CreateSuccessfulCommitResponse(entity, entry_response);
   }
 
-  sessions::StatusController status;
+  StatusController status;
   art_cc->ProcessCommitResponse(response, &status);
   {
     syncable::ReadTransaction trans(FROM_HERE, dir());

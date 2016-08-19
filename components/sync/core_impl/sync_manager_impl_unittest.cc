@@ -49,6 +49,7 @@
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/polling_constants.h"
+#include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
 #include "components/sync/js/js_backend.h"
 #include "components/sync/js/js_event_handler.h"
@@ -60,7 +61,6 @@
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/sync_session.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
@@ -90,7 +90,6 @@ using testing::StrictMock;
 
 namespace syncer {
 
-using sessions::SyncSessionSnapshot;
 using syncable::GET_BY_HANDLE;
 using syncable::IS_DEL;
 using syncable::IS_UNSYNCED;
@@ -894,8 +893,7 @@ class TestHttpPostProviderFactory : public HttpPostProviderFactory {
 
 class SyncManagerObserverMock : public SyncManager::Observer {
  public:
-  MOCK_METHOD1(OnSyncCycleCompleted,
-               void(const SyncSessionSnapshot&));  // NOLINT
+  MOCK_METHOD1(OnSyncCycleCompleted, void(const SyncCycleSnapshot&));  // NOLINT
   MOCK_METHOD4(OnInitializationComplete,
                void(const WeakHandle<JsBackend>&,
                     const WeakHandle<DataTypeDebugInfoListener>&,
@@ -2536,27 +2534,27 @@ class ComponentsFactory : public TestInternalComponentsFactory {
  public:
   ComponentsFactory(const Switches& switches,
                     SyncScheduler* scheduler_to_use,
-                    sessions::SyncSessionContext** session_context,
+                    SyncCycleContext** cycle_context,
                     InternalComponentsFactory::StorageOption* storage_used)
       : TestInternalComponentsFactory(
             switches,
             InternalComponentsFactory::STORAGE_IN_MEMORY,
             storage_used),
         scheduler_to_use_(scheduler_to_use),
-        session_context_(session_context) {}
+        cycle_context_(cycle_context) {}
   ~ComponentsFactory() override {}
 
   std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
-      sessions::SyncSessionContext* context,
+      SyncCycleContext* context,
       CancelationSignal* stop_handle) override {
-    *session_context_ = context;
+    *cycle_context_ = context;
     return std::move(scheduler_to_use_);
   }
 
  private:
   std::unique_ptr<SyncScheduler> scheduler_to_use_;
-  sessions::SyncSessionContext** session_context_;
+  SyncCycleContext** cycle_context_;
 };
 
 class SyncManagerTestWithMockScheduler : public SyncManagerTest {
@@ -2564,16 +2562,16 @@ class SyncManagerTestWithMockScheduler : public SyncManagerTest {
   SyncManagerTestWithMockScheduler() : scheduler_(NULL) {}
   InternalComponentsFactory* GetFactory() override {
     scheduler_ = new MockSyncScheduler();
-    return new ComponentsFactory(GetSwitches(), scheduler_, &session_context_,
+    return new ComponentsFactory(GetSwitches(), scheduler_, &cycle_context_,
                                  &storage_used_);
   }
 
   MockSyncScheduler* scheduler() { return scheduler_; }
-  sessions::SyncSessionContext* session_context() { return session_context_; }
+  SyncCycleContext* cycle_context() { return cycle_context_; }
 
  private:
   MockSyncScheduler* scheduler_;
-  sessions::SyncSessionContext* session_context_;
+  SyncCycleContext* cycle_context_;
 };
 
 // Test that the configuration params are properly created and sent to
@@ -2651,7 +2649,7 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
   }
 
   // Set the context to have the old routing info.
-  session_context()->SetRoutingInfo(old_routing_info);
+  cycle_context()->SetRoutingInfo(old_routing_info);
 
   CallbackCounter ready_task_counter, retry_task_counter;
   sync_manager_.ConfigureSyncer(

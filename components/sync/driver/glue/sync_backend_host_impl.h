@@ -27,10 +27,10 @@
 #include "components/sync/core/sync_manager.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/glue/sync_backend_host.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
+#include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/sync_protocol_error.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
-#include "components/sync/sessions/type_debug_info_observer.h"
 
 class GURL;
 
@@ -126,7 +126,7 @@ class SyncBackendHostImpl : public SyncBackendHost,
   void EnableEncryptEverything() override;
   syncer::UserShare* GetUserShare() const override;
   Status GetDetailedStatus() override;
-  syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const override;
+  syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
   bool HasUnsyncedItems() const override;
   bool IsNigoriEnabled() const override;
   syncer::PassphraseType GetPassphraseType() const override;
@@ -244,7 +244,7 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // Called from Core::OnSyncCycleCompleted to handle updating frontend
   // thread components.
   void HandleSyncCycleCompletedOnFrontendLoop(
-      const syncer::sessions::SyncSessionSnapshot& snapshot);
+      const syncer::SyncCycleSnapshot& snapshot);
 
   // Called when the syncer failed to perform a configuration and will
   // eventually retry. FinishingConfigurationOnFrontendLoop(..) will be called
@@ -365,8 +365,8 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // first set (if available).
   base::Time cached_explicit_passphrase_time_;
 
-  // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
-  syncer::sessions::SyncSessionSnapshot last_snapshot_;
+  // UI-thread cache of the last SyncCycleSnapshot received from syncapi.
+  syncer::SyncCycleSnapshot last_snapshot_;
 
   invalidation::InvalidationService* invalidator_;
   bool invalidation_handler_registered_;

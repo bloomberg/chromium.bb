@@ -10,9 +10,7 @@
 
 namespace syncer {
 
-namespace sessions {
 struct ModelNeutralState;
-}
 
 // A component used to get time delays associated with exponential backoff.
 class BackoffDelayProvider {
@@ -37,8 +35,7 @@ class BackoffDelayProvider {
 
   // Helper to calculate the initial value for exponential backoff.
   // See possible values and comments in polling_constants.h.
-  virtual base::TimeDelta GetInitialDelay(
-      const sessions::ModelNeutralState& state) const;
+  virtual base::TimeDelta GetInitialDelay(const ModelNeutralState& state) const;
 
  protected:
   BackoffDelayProvider(const base::TimeDelta& default_initial_backoff,

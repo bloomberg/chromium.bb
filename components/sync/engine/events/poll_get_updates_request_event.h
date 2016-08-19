@@ -17,9 +17,7 @@
 
 namespace syncer {
 
-namespace sessions {
 class NudgeTracker;
-}  // namespace sessions
 
 // An event representing a poll request sent to the server.
 class PollGetUpdatesRequestEvent : public ProtocolEvent {

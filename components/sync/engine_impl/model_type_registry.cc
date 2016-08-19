@@ -16,10 +16,10 @@
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/directory_commit_contributor.h"
 #include "components/sync/engine_impl/directory_update_handler.h"
 #include "components/sync/engine_impl/model_type_worker.h"
-#include "components/sync/sessions_impl/directory_type_debug_info_emitter.h"
 
 namespace syncer {
 

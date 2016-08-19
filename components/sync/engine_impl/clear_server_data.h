@@ -12,9 +12,7 @@
 
 namespace syncer {
 
-namespace sessions {
-class SyncSession;
-}
+class SyncCycle;
 
 // A ClearServerData operation.
 //
@@ -27,7 +25,7 @@ class ClearServerData {
   ~ClearServerData();
 
   // Sends the request, blocking until the request has completed.
-  SyncerError SendRequest(sessions::SyncSession* session);
+  SyncerError SendRequest(SyncCycle* cycle);
 
  private:
   sync_pb::ClientToServerMessage request_;

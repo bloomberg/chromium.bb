@@ -22,15 +22,15 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
 
   std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
-      sessions::SyncSessionContext* context,
+      SyncCycleContext* context,
       syncer::CancelationSignal* cancelation_signal) override;
 
-  std::unique_ptr<sessions::SyncSessionContext> BuildContext(
+  std::unique_ptr<SyncCycleContext> BuildContext(
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
       ExtensionsActivity* monitor,
       const std::vector<SyncEngineEventListener*>& listeners,
-      sessions::DebugInfoGetter* debug_info_getter,
+      DebugInfoGetter* debug_info_getter,
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id) override;
 

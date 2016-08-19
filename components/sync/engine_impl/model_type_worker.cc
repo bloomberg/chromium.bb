@@ -105,7 +105,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeProgressMarker& progress_marker,
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
-    syncer::sessions::StatusController* status) {
+    syncer::StatusController* status) {
   DCHECK(CalledOnValidThread());
 
   // TODO(rlarocque): Handle data type context conflicts.
@@ -169,7 +169,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   return syncer::SYNCER_OK;
 }
 
-void ModelTypeWorker::ApplyUpdates(syncer::sessions::StatusController* status) {
+void ModelTypeWorker::ApplyUpdates(syncer::StatusController* status) {
   DCHECK(CalledOnValidThread());
   // This should only ever be called after one PassiveApplyUpdates.
   DCHECK(data_type_state_.initial_sync_done());
@@ -177,8 +177,7 @@ void ModelTypeWorker::ApplyUpdates(syncer::sessions::StatusController* status) {
   ApplyPendingUpdates();
 }
 
-void ModelTypeWorker::PassiveApplyUpdates(
-    syncer::sessions::StatusController* status) {
+void ModelTypeWorker::PassiveApplyUpdates(syncer::StatusController* status) {
   // This should only be called at the end of the very first download cycle.
   DCHECK(!data_type_state_.initial_sync_done());
   // Indicate to the processor that the initial download is done. The initial

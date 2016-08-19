@@ -17,9 +17,9 @@
 #include "components/sync/core/model_type_connector.h"
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/core/sync_encryption_handler.h"
+#include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine_impl/nudge_handler.h"
-#include "components/sync/sessions/type_debug_info_observer.h"
 
 namespace syncer_v2 {
 struct DataTypeState;

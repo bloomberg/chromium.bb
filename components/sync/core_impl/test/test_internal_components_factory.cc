@@ -4,7 +4,7 @@
 
 #include "components/sync/core/test/test_internal_components_factory.h"
 
-#include "components/sync/sessions_impl/sync_session_context.h"
+#include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"
 #include "components/sync/syncable/invalid_directory_backing_store.h"
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
@@ -24,30 +24,28 @@ TestInternalComponentsFactory::~TestInternalComponentsFactory() {}
 
 std::unique_ptr<SyncScheduler> TestInternalComponentsFactory::BuildScheduler(
     const std::string& name,
-    sessions::SyncSessionContext* context,
+    SyncCycleContext* context,
     syncer::CancelationSignal* cancelation_signal) {
   return std::unique_ptr<SyncScheduler>(new FakeSyncScheduler());
 }
 
-std::unique_ptr<sessions::SyncSessionContext>
-TestInternalComponentsFactory::BuildContext(
+std::unique_ptr<SyncCycleContext> TestInternalComponentsFactory::BuildContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,
     ExtensionsActivity* monitor,
     const std::vector<SyncEngineEventListener*>& listeners,
-    sessions::DebugInfoGetter* debug_info_getter,
+    DebugInfoGetter* debug_info_getter,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidator_client_id) {
   // Tests don't wire up listeners.
   std::vector<SyncEngineEventListener*> empty_listeners;
-  return std::unique_ptr<sessions::SyncSessionContext>(
-      new sessions::SyncSessionContext(
-          connection_manager, directory, monitor, empty_listeners,
-          debug_info_getter, model_type_registry,
-          switches_.encryption_method == ENCRYPTION_KEYSTORE,
-          switches_.pre_commit_updates_policy ==
-              FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
-          invalidator_client_id));
+  return std::unique_ptr<SyncCycleContext>(new SyncCycleContext(
+      connection_manager, directory, monitor, empty_listeners,
+      debug_info_getter, model_type_registry,
+      switches_.encryption_method == ENCRYPTION_KEYSTORE,
+      switches_.pre_commit_updates_policy ==
+          FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
+      invalidator_client_id));
 }
 
 std::unique_ptr<syncable::DirectoryBackingStore>

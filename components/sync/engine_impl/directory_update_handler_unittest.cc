@@ -18,10 +18,10 @@
 #include "components/sync/base/attachment_id_proto.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/test/test_entry_factory.h"
+#include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
+#include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/directory_type_debug_info_emitter.h"
-#include "components/sync/sessions_impl/status_controller.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
@@ -69,7 +69,7 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
   // Warning: This takes the syncable directory lock.
   void UpdateSyncEntities(DirectoryUpdateHandler* handler,
                           const SyncEntityList& applicable_updates,
-                          sessions::StatusController* status);
+                          StatusController* status);
 
   // Another function to access private member functions.
   void UpdateProgressMarkers(DirectoryUpdateHandler* handler,
@@ -114,7 +114,7 @@ DirectoryUpdateHandlerProcessUpdateTest::CreateUpdate(const std::string& id,
 void DirectoryUpdateHandlerProcessUpdateTest::UpdateSyncEntities(
     DirectoryUpdateHandler* handler,
     const SyncEntityList& applicable_updates,
-    sessions::StatusController* status) {
+    StatusController* status) {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, UNITTEST, dir());
   handler->UpdateSyncEntities(&trans, applicable_updates, status);
 }
@@ -132,7 +132,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
   DirectoryTypeDebugInfoEmitter emitter(BOOKMARKS, &type_observers_);
   DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker(), &emitter);
   sync_pb::GetUpdatesResponse gu_response;
-  sessions::StatusController status;
+  StatusController status;
 
   // Add a bookmark item to the update message.
   std::string root = Id::GetRoot().GetServerId();
@@ -171,7 +171,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
   DirectoryTypeDebugInfoEmitter emitter(BOOKMARKS, &type_observers_);
   DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker(), &emitter);
   sync_pb::GetUpdatesResponse gu_response;
-  sessions::StatusController status;
+  StatusController status;
 
   // Create an update that mimics the bookmark root.
   Id server_id = Id::CreateFromServerId("xyz");
@@ -206,7 +206,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ReceiveNonBookmarkItem) {
   DirectoryTypeDebugInfoEmitter emitter(AUTOFILL, &type_observers_);
   DirectoryUpdateHandler handler(dir(), AUTOFILL, ui_worker(), &emitter);
   sync_pb::GetUpdatesResponse gu_response;
-  sessions::StatusController status;
+  StatusController status;
 
   std::string root = Id::GetRoot().GetServerId();
   Id server_id = Id::CreateFromServerId("xyz");
@@ -255,7 +255,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
   DirectoryTypeDebugInfoEmitter emitter(SYNCED_NOTIFICATIONS, &type_observers_);
   DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS, ui_worker(),
                                  &emitter);
-  sessions::StatusController status;
+  StatusController status;
 
   sync_pb::DataTypeProgressMarker progress;
   progress.set_data_type_id(
@@ -306,7 +306,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
   DirectoryTypeDebugInfoEmitter emitter(SYNCED_NOTIFICATIONS, &type_observers_);
   DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS, ui_worker(),
                                  &emitter);
-  sessions::StatusController status;
+  StatusController status;
   int field_number = GetSpecificsFieldNumberFromModelType(SYNCED_NOTIFICATIONS);
 
   sync_pb::DataTypeProgressMarker progress;
@@ -379,7 +379,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
        ProcessAndApplyUpdatesWithAttachments) {
   DirectoryTypeDebugInfoEmitter emitter(ARTICLES, &type_observers_);
   DirectoryUpdateHandler handler(dir(), ARTICLES, ui_worker(), &emitter);
-  sessions::StatusController status;
+  StatusController status;
 
   sync_pb::DataTypeProgressMarker progress;
   progress.set_data_type_id(GetSpecificsFieldNumberFromModelType(ARTICLES));
@@ -429,7 +429,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, IsInitialSyncEnded) {
   DirectoryTypeDebugInfoEmitter emitter(AUTOFILL, &type_observers_);
   DirectoryUpdateHandler handler(dir(), AUTOFILL, ui_worker(), &emitter);
-  sessions::StatusController status;
+  StatusController status;
 
   EXPECT_FALSE(handler.IsInitialSyncEnded());
 
@@ -510,15 +510,15 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   }
 
  protected:
-  void ApplyBookmarkUpdates(sessions::StatusController* status) {
+  void ApplyBookmarkUpdates(StatusController* status) {
     update_handler_map_.find(BOOKMARKS)->second->ApplyUpdates(status);
   }
 
-  void ApplyPasswordUpdates(sessions::StatusController* status) {
+  void ApplyPasswordUpdates(StatusController* status) {
     update_handler_map_.find(PASSWORDS)->second->ApplyUpdates(status);
   }
 
-  void ApplyArticlesUpdates(sessions::StatusController* status) {
+  void ApplyArticlesUpdates(StatusController* status) {
     update_handler_map_.find(ARTICLES)->second->ApplyUpdates(status);
   }
 
@@ -553,7 +553,7 @@ sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
 
 // Test update application for a few bookmark items.
 TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SimpleBookmark) {
-  sessions::StatusController status;
+  StatusController status;
 
   std::string root_server_id = Id::GetRoot().GetServerId();
   int64_t parent_handle =
@@ -599,7 +599,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, BookmarkChildrenBeforeParent) {
       "x_child_created_first", DefaultBookmarkSpecifics(), "parent");
 
   // Update application will fail.
-  sessions::StatusController status1;
+  StatusController status1;
   ApplyBookmarkUpdates(&status1);
   EXPECT_EQ(0, status1.num_updates_applied());
   EXPECT_EQ(2, status1.num_hierarchy_conflicts());
@@ -626,7 +626,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, BookmarkChildrenBeforeParent) {
       "x_child_created_second", DefaultBookmarkSpecifics(), "parent");
 
   // Update application will succeed.
-  sessions::StatusController status2;
+  StatusController status2;
   ApplyBookmarkUpdates(&status2);
   EXPECT_EQ(5, status2.num_updates_applied())
       << "All updates should have been successfully applied";
@@ -659,7 +659,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SimpleBookmarkConflict) {
     EXPECT_TRUE(e.GetIsUnsynced());
   }
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyBookmarkUpdates(&status);
 
   const UpdateCounters& counters = GetBookmarksUpdateCounters();
@@ -699,7 +699,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, HierarchyAndSimpleConflict) {
     entry.PutServerParentId(TestIdFactory::MakeServer("bogus_parent"));
   }
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyBookmarkUpdates(&status);
 
   const UpdateCounters& counters = GetBookmarksUpdateCounters();
@@ -746,7 +746,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, BookmarkFolderLoop) {
   // prevent the update from being applied and note that this is a hierarchy
   // conflict.
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyBookmarkUpdates(&status);
 
   // This should count as a hierarchy conflict.
@@ -785,7 +785,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, HierarchyConflictDeletedParent) {
   // that new item's parent no longer exists.  The update should not be applied
   // and the update applicator should indicate this is a hierarchy conflict.
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyBookmarkUpdates(&status);
   const UpdateCounters& counters = GetBookmarksUpdateCounters();
   EXPECT_EQ(1, counters.num_hierarchy_conflict_application_failures);
@@ -827,7 +827,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
   // The server's request to delete the directory must be ignored, otherwise our
   // unsynced new child would be orphaned.  This is a hierarchy conflict.
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyBookmarkUpdates(&status);
 
   // This should count as a hierarchy conflict.
@@ -852,7 +852,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, HierarchyConflictUnknownParent) {
   int64_t y_handle = entry_factory()->CreateUnappliedNewItemWithParent(
       "some_other_item", DefaultBookmarkSpecifics(), "some_item");
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyBookmarkUpdates(&status);
 
   const UpdateCounters& counters = GetBookmarksUpdateCounters();
@@ -892,7 +892,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, ItemsBothKnownAndUnknown) {
   int64_t k4_handle = entry_factory()->CreateUnappliedNewItemWithParent(
       "fourth_known_item", DefaultBookmarkSpecifics(), root_server_id);
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyBookmarkUpdates(&status);
 
   const UpdateCounters& counters = GetBookmarksUpdateCounters();
@@ -947,7 +947,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, DecryptablePassword) {
   int64_t handle =
       entry_factory()->CreateUnappliedNewItem("item", specifics, false);
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyPasswordUpdates(&status);
 
   const UpdateCounters& counters = GetPasswordsUpdateCounters();
@@ -979,7 +979,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, UndecryptableData) {
   int64_t password_handle = entry_factory()->CreateUnappliedNewItem(
       "item3", encrypted_password, false);
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyBookmarkUpdates(&status);
   ApplyPasswordUpdates(&status);
 
@@ -1035,7 +1035,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
         entry_factory()->CreateUnappliedNewItem("item1", specifics, false);
   }
   {
-    // Create a new cryptographer, independent of the one in the session.
+    // Create a new cryptographer, independent of the one in the cycle.
     Cryptographer other_cryptographer(cryptographer->encryptor());
     KeyParams params = {"localhost", "dummy", "bazqux"};
     other_cryptographer.AddKey(params);
@@ -1050,7 +1050,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
         entry_factory()->CreateUnappliedNewItem("item2", specifics, false);
   }
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyPasswordUpdates(&status);
 
   const UpdateCounters& counters = GetPasswordsUpdateCounters();
@@ -1103,7 +1103,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
   // server_attachment_id, but the local sync engine says it should have
   // local_attachment_id.
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyArticlesUpdates(&status);
 
   // See that the server won.
@@ -1149,7 +1149,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
 
   // At this point we have a (false) conflict.
 
-  sessions::StatusController status;
+  StatusController status;
   ApplyArticlesUpdates(&status);
 
   // See that the server won.

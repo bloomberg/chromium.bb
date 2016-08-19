@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/syncer_error.h"
-#include "components/sync/sessions_impl/sync_session.h"
+#include "components/sync/engine_impl/cycle/sync_cycle.h"
 
 namespace sync_pb {
 class ClientToServerMessage;
@@ -26,11 +26,8 @@ class SyncEntity;
 namespace syncer {
 
 class ServerConnectionManager;
-
-namespace sessions {
-class SyncProtocolError;
-class SyncSessionContext;
-}
+class SyncCycleContext;
+struct SyncProtocolError;
 
 namespace syncable {
 class Directory;
@@ -54,7 +51,7 @@ class SyncerProtoUtil {
   static SyncerError PostClientToServerMessage(
       sync_pb::ClientToServerMessage* msg,
       sync_pb::ClientToServerResponse* response,
-      sessions::SyncSession* session,
+      SyncCycle* cycle,
       ModelTypeSet* partial_failure_data_types);
 
   // Specifies where entity's position should be updated from the data in
@@ -130,7 +127,7 @@ class SyncerProtoUtil {
   // Post the message using the scm, and do some processing on the returned
   // headers. Decode the server response.
   static bool PostAndProcessHeaders(ServerConnectionManager* scm,
-                                    sessions::SyncSession* session,
+                                    SyncCycle* cycle,
                                     const sync_pb::ClientToServerMessage& msg,
                                     sync_pb::ClientToServerResponse* response);
 

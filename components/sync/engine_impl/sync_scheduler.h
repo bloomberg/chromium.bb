@@ -13,8 +13,8 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "components/sync/base/invalidation_interface.h"
+#include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/nudge_source.h"
-#include "components/sync/sessions_impl/sync_session.h"
 
 namespace tracked_objects {
 class Location;
@@ -56,7 +56,7 @@ struct ClearParams {
   base::Closure report_success_task;
 };
 
-class SyncScheduler : public sessions::SyncSession::Delegate {
+class SyncScheduler : public SyncCycle::Delegate {
  public:
   enum Mode {
     // In this mode, the thread only performs configuration tasks.  This is
@@ -143,7 +143,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   // can be requested through this function.
   virtual void ScheduleInitialSyncNudge(syncer::ModelType model_type) = 0;
 
-  // Change status of notifications in the SyncSessionContext.
+  // Change status of notifications in the SyncCycleContext.
   virtual void SetNotificationsEnabled(bool notifications_enabled) = 0;
 
   // Called when credentials are updated by the user.

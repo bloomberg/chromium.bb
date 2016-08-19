@@ -35,7 +35,7 @@ SyncStatus AllStatus::CreateBlankStatus() const {
 
 SyncStatus AllStatus::CalcSyncing(const SyncCycleEvent& event) const {
   SyncStatus status = CreateBlankStatus();
-  const sessions::SyncSessionSnapshot& snapshot = event.snapshot;
+  const SyncCycleSnapshot& snapshot = event.snapshot;
   status.encryption_conflicts = snapshot.num_encryption_conflicts();
   status.hierarchy_conflicts = snapshot.num_hierarchy_conflicts();
   status.server_conflicts = snapshot.num_server_conflicts();
@@ -52,7 +52,7 @@ SyncStatus AllStatus::CalcSyncing(const SyncCycleEvent& event) const {
   status.num_to_delete_entries_by_type =
       snapshot.num_to_delete_entries_by_type();
 
-  // Accumulate update count only once per session to avoid double-counting.
+  // Accumulate update count only once per cycle to avoid double-counting.
   if (event.what_happened == SyncCycleEvent::SYNC_CYCLE_ENDED) {
     status.updates_received +=
         snapshot.model_neutral_state().num_updates_downloaded_total;

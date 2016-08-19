@@ -75,11 +75,11 @@
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/driver/system_encryptor.h"
 #include "components/sync/driver/user_selectable_sync_type.h"
+#include "components/sync/engine/cycle/model_neutral_state.h"
+#include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions/model_neutral_state.h"
-#include "components/sync/sessions/type_debug_info_observer.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_data_type_controller.h"
@@ -1025,12 +1025,11 @@ void ProfileSyncService::OnBackendInitialized(
 
 void ProfileSyncService::OnSyncCycleCompleted() {
   UpdateLastSyncedTime();
-  const syncer::sessions::SyncSessionSnapshot snapshot =
-      GetLastSessionSnapshot();
+  const syncer::SyncCycleSnapshot snapshot = GetLastCycleSnapshot();
   if (IsDataTypeControllerRunning(syncer::SESSIONS) &&
       snapshot.model_neutral_state().get_updates_request_types.Has(
           syncer::SESSIONS) &&
-      !syncer::sessions::HasSyncerError(snapshot.model_neutral_state())) {
+      !syncer::HasSyncerError(snapshot.model_neutral_state())) {
     // Trigger garbage collection of old sessions now that we've downloaded
     // any new session data.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1814,11 +1813,10 @@ syncer::UserShare* ProfileSyncService::GetUserShare() const {
   return NULL;
 }
 
-syncer::sessions::SyncSessionSnapshot
-ProfileSyncService::GetLastSessionSnapshot() const {
+syncer::SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshot() const {
   if (backend_)
-    return backend_->GetLastSessionSnapshot();
-  return syncer::sessions::SyncSessionSnapshot();
+    return backend_->GetLastCycleSnapshot();
+  return syncer::SyncCycleSnapshot();
 }
 
 bool ProfileSyncService::HasUnsyncedItems() const {

@@ -10,9 +10,10 @@
 
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/engine_impl/conflict_resolver.h"
+#include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
+#include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/process_updates_util.h"
 #include "components/sync/engine_impl/update_applicator.h"
-#include "components/sync/sessions_impl/directory_type_debug_info_emitter.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 #include "components/sync/syncable/syncable_changes_version.h"
@@ -54,7 +55,7 @@ SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeProgressMarker& progress_marker,
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
-    sessions::StatusController* status) {
+    StatusController* status) {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir_);
   if (progress_marker.ByteSize() > 0) {
     SyncRecordDatatypeBin("DataUse.Sync.ProgressMarker.Bytes",
@@ -117,7 +118,7 @@ void DirectoryUpdateHandler::CreateTypeRoot(
   entry.PutUniqueServerTag(ModelTypeToRootTag(type_));
 }
 
-void DirectoryUpdateHandler::ApplyUpdates(sessions::StatusController* status) {
+void DirectoryUpdateHandler::ApplyUpdates(StatusController* status) {
   if (IsApplyUpdatesRequired()) {
     // This will invoke handlers that belong to the model and its thread, so we
     // switch to the appropriate thread before we start this work.
@@ -135,8 +136,7 @@ void DirectoryUpdateHandler::ApplyUpdates(sessions::StatusController* status) {
   PostApplyUpdates();
 }
 
-void DirectoryUpdateHandler::PassiveApplyUpdates(
-    sessions::StatusController* status) {
+void DirectoryUpdateHandler::PassiveApplyUpdates(StatusController* status) {
   if (IsApplyUpdatesRequired()) {
     // Just do the work here instead of deferring to another thread.
     ApplyUpdatesImpl(status);
@@ -148,8 +148,7 @@ void DirectoryUpdateHandler::PassiveApplyUpdates(
   PostApplyUpdates();
 }
 
-SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(
-    sessions::StatusController* status) {
+SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(StatusController* status) {
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir_);
 
   std::vector<int64_t> handles;
@@ -246,7 +245,7 @@ bool DirectoryUpdateHandler::IsApplyUpdatesRequired() {
 void DirectoryUpdateHandler::UpdateSyncEntities(
     syncable::ModelNeutralWriteTransaction* trans,
     const SyncEntityList& applicable_updates,
-    sessions::StatusController* status) {
+    StatusController* status) {
   UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
   counters->num_updates_received += applicable_updates.size();
   ProcessDownloadedUpdates(dir_, trans, type_, applicable_updates, status,

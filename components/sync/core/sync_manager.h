@@ -51,16 +51,13 @@ class InternalComponentsFactory;
 class JsBackend;
 class JsEventHandler;
 class ProtocolEvent;
+class SyncCycleSnapshot;
 class SyncEncryptionHandler;
 class SyncScheduler;
 class TypeDebugInfoObserver;
 class UnrecoverableErrorHandler;
 struct Experiments;
 struct UserShare;
-
-namespace sessions {
-class SyncSessionSnapshot;
-}  // namespace sessions
 
 // Contains everything needed to talk to and identify a user account.
 struct SyncCredentials {
@@ -182,8 +179,7 @@ class SyncManager {
    public:
     // A round-trip sync-cycle took place and the syncer has resolved any
     // conflicts that may have arisen.
-    virtual void OnSyncCycleCompleted(
-        const sessions::SyncSessionSnapshot& snapshot) = 0;
+    virtual void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) = 0;
 
     // Called when the status of the connection to the sync server has
     // changed.

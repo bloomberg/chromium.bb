@@ -15,7 +15,7 @@ namespace syncer {
 namespace {
 
 void NonPassiveApplyUpdates(ModelTypeSet gu_types,
-                            sessions::StatusController* status_controller,
+                            StatusController* status_controller,
                             UpdateHandlerMap* update_handler_map) {
   for (UpdateHandlerMap::iterator it = update_handler_map->begin();
        it != update_handler_map->end(); ++it) {
@@ -25,7 +25,7 @@ void NonPassiveApplyUpdates(ModelTypeSet gu_types,
 }
 
 void PassiveApplyUpdates(ModelTypeSet gu_types,
-                         sessions::StatusController* status_controller,
+                         StatusController* status_controller,
                          UpdateHandlerMap* update_handler_map) {
   for (UpdateHandlerMap::iterator it = update_handler_map->begin();
        it != update_handler_map->end(); ++it) {
@@ -41,7 +41,7 @@ GetUpdatesDelegate::GetUpdatesDelegate() {}
 GetUpdatesDelegate::~GetUpdatesDelegate() {}
 
 NormalGetUpdatesDelegate::NormalGetUpdatesDelegate(
-    const sessions::NudgeTracker& nudge_tracker)
+    const NudgeTracker& nudge_tracker)
     : nudge_tracker_(nudge_tracker) {}
 
 NormalGetUpdatesDelegate::~NormalGetUpdatesDelegate() {}
@@ -80,7 +80,7 @@ void NormalGetUpdatesDelegate::HelpPopulateGuMessage(
 
 void NormalGetUpdatesDelegate::ApplyUpdates(
     ModelTypeSet gu_types,
-    sessions::StatusController* status_controller,
+    StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) const {
   NonPassiveApplyUpdates(gu_types, status_controller, update_handler_map);
 }
@@ -106,7 +106,7 @@ void ConfigureGetUpdatesDelegate::HelpPopulateGuMessage(
 
 void ConfigureGetUpdatesDelegate::ApplyUpdates(
     ModelTypeSet gu_types,
-    sessions::StatusController* status_controller,
+    StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) const {
   PassiveApplyUpdates(gu_types, status_controller, update_handler_map);
 }
@@ -156,7 +156,7 @@ void PollGetUpdatesDelegate::HelpPopulateGuMessage(
 
 void PollGetUpdatesDelegate::ApplyUpdates(
     ModelTypeSet gu_types,
-    sessions::StatusController* status_controller,
+    StatusController* status_controller,
     UpdateHandlerMap* update_handler_map) const {
   NonPassiveApplyUpdates(gu_types, status_controller, update_handler_map);
 }

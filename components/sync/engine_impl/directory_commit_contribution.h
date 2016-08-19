@@ -16,15 +16,13 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine_impl/commit_contribution.h"
+#include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
+#include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/directory_type_debug_info_emitter.h"
-#include "components/sync/sessions_impl/status_controller.h"
 
 namespace syncer {
 
-namespace sessions {
 class StatusController;
-}  // namespace sessions
 
 namespace syncable {
 class Directory;
@@ -68,7 +66,7 @@ class DirectoryCommitContribution : public CommitContribution {
   // This function should not be called more than once.
   SyncerError ProcessCommitResponse(
       const sync_pb::ClientToServerResponse& response,
-      sessions::StatusController* status) override;
+      StatusController* status) override;
 
   // Cleans up any temporary state associated with the commit.  Must be called
   // before destruction.

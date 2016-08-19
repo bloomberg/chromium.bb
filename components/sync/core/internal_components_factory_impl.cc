@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "components/sync/engine_impl/backoff_delay_provider.h"
+#include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
 #include "components/sync/engine_impl/syncer.h"
-#include "components/sync/sessions_impl/sync_session_context.h"
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
 
 using base::TimeDelta;
@@ -25,7 +25,7 @@ InternalComponentsFactoryImpl::~InternalComponentsFactoryImpl() {}
 
 std::unique_ptr<SyncScheduler> InternalComponentsFactoryImpl::BuildScheduler(
     const std::string& name,
-    sessions::SyncSessionContext* context,
+    SyncCycleContext* context,
     CancelationSignal* cancelation_signal) {
   std::unique_ptr<BackoffDelayProvider> delay(
       BackoffDelayProvider::FromDefaults());
@@ -37,23 +37,21 @@ std::unique_ptr<SyncScheduler> InternalComponentsFactoryImpl::BuildScheduler(
       name, delay.release(), context, new Syncer(cancelation_signal)));
 }
 
-std::unique_ptr<sessions::SyncSessionContext>
-InternalComponentsFactoryImpl::BuildContext(
+std::unique_ptr<SyncCycleContext> InternalComponentsFactoryImpl::BuildContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,
     ExtensionsActivity* extensions_activity,
     const std::vector<SyncEngineEventListener*>& listeners,
-    sessions::DebugInfoGetter* debug_info_getter,
+    DebugInfoGetter* debug_info_getter,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidation_client_id) {
-  return std::unique_ptr<sessions::SyncSessionContext>(
-      new sessions::SyncSessionContext(
-          connection_manager, directory, extensions_activity, listeners,
-          debug_info_getter, model_type_registry,
-          switches_.encryption_method == ENCRYPTION_KEYSTORE,
-          switches_.pre_commit_updates_policy ==
-              FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
-          invalidation_client_id));
+  return std::unique_ptr<SyncCycleContext>(
+      new SyncCycleContext(connection_manager, directory, extensions_activity,
+                           listeners, debug_info_getter, model_type_registry,
+                           switches_.encryption_method == ENCRYPTION_KEYSTORE,
+                           switches_.pre_commit_updates_policy ==
+                               FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
+                           invalidation_client_id));
 }
 
 std::unique_ptr<syncable::DirectoryBackingStore>

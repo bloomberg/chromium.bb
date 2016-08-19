@@ -10,10 +10,10 @@
 
 #include "base/metrics/histogram.h"
 #include "components/sync/base/cryptographer.h"
+#include "components/sync/engine/cycle/update_counters.h"
 #include "components/sync/engine_impl/conflict_util.h"
+#include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/syncer_util.h"
-#include "components/sync/sessions/update_counters.h"
-#include "components/sync/sessions_impl/status_controller.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
@@ -23,7 +23,6 @@ using std::set;
 
 namespace syncer {
 
-using sessions::StatusController;
 using syncable::Directory;
 using syncable::Entry;
 using syncable::Id;
@@ -265,7 +264,7 @@ void ConflictResolver::ResolveConflicts(
     syncable::WriteTransaction* trans,
     const Cryptographer* cryptographer,
     const std::set<syncable::Id>& simple_conflict_ids,
-    sessions::StatusController* status,
+    StatusController* status,
     UpdateCounters* counters) {
   // Iterate over simple conflict items.
   set<Id>::const_iterator it;

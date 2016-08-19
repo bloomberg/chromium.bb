@@ -38,13 +38,10 @@ namespace syncer {
 
 class ModelTypeRegistry;
 class SyncAPIServerConnectionManager;
+class SyncCycleContext;
 class TypeDebugInfoObserver;
 class WriteNode;
 class WriteTransaction;
-
-namespace sessions {
-class SyncSessionContext;
-}
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
 // other objects in the sync API.  If multiple threads interact with the same
@@ -289,8 +286,8 @@ class SyncManagerImpl
   std::unique_ptr<ModelTypeRegistry> model_type_registry_;
 
   // A container of various bits of information used by the SyncScheduler to
-  // create SyncSessions.  Must outlive the SyncScheduler.
-  std::unique_ptr<sessions::SyncSessionContext> session_context_;
+  // create SyncCycles.  Must outlive the SyncScheduler.
+  std::unique_ptr<SyncCycleContext> cycle_context_;
 
   // The scheduler that runs the Syncer. Needs to be explicitly
   // Start()ed.

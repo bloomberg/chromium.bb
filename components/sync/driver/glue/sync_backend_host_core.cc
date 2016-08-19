@@ -20,11 +20,11 @@
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/glue/sync_backend_registrar.h"
 #include "components/sync/driver/invalidation_adapter.h"
+#include "components/sync/engine/cycle/commit_counters.h"
+#include "components/sync/engine/cycle/status_counters.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
+#include "components/sync/engine/cycle/update_counters.h"
 #include "components/sync/engine/events/protocol_event.h"
-#include "components/sync/sessions/commit_counters.h"
-#include "components/sync/sessions/status_counters.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
-#include "components/sync/sessions/update_counters.h"
 #include "url/gurl.h"
 
 // Helper macros to log with the syncer thread name; useful when there
@@ -130,7 +130,7 @@ SyncBackendHostCore::~SyncBackendHostCore() {
 }
 
 void SyncBackendHostCore::OnSyncCycleCompleted(
-    const syncer::sessions::SyncSessionSnapshot& snapshot) {
+    const syncer::SyncCycleSnapshot& snapshot) {
   if (!sync_loop_)
     return;
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());

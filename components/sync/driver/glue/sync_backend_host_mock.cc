@@ -93,9 +93,8 @@ SyncBackendHost::Status SyncBackendHostMock::GetDetailedStatus() {
   return SyncBackendHost::Status();
 }
 
-syncer::sessions::SyncSessionSnapshot
-SyncBackendHostMock::GetLastSessionSnapshot() const {
-  return syncer::sessions::SyncSessionSnapshot();
+syncer::SyncCycleSnapshot SyncBackendHostMock::GetLastCycleSnapshot() const {
+  return syncer::SyncCycleSnapshot();
 }
 
 bool SyncBackendHostMock::HasUnsyncedItems() const {

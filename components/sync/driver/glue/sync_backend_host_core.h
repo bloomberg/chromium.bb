@@ -20,7 +20,7 @@
 #include "components/sync/core/sync_encryption_handler.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
 #include "components/sync/driver/system_encryptor.h"
-#include "components/sync/sessions/type_debug_info_observer.h"
+#include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "url/gurl.h"
 
 namespace browser_sync {
@@ -106,8 +106,7 @@ class SyncBackendHostCore
   // SyncManager::Observer implementation.  The Core just acts like an air
   // traffic controller here, forwarding incoming messages to appropriate
   // landing threads.
-  void OnSyncCycleCompleted(
-      const syncer::sessions::SyncSessionSnapshot& snapshot) override;
+  void OnSyncCycleCompleted(const syncer::SyncCycleSnapshot& snapshot) override;
   void OnInitializationComplete(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&

@@ -12,16 +12,16 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "components/sync/base/model_type_test_util.h"
+#include "components/sync/engine_impl/cycle/debug_info_getter.h"
+#include "components/sync/engine_impl/cycle/mock_debug_info_getter.h"
+#include "components/sync/engine_impl/cycle/nudge_tracker.h"
+#include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/get_updates_delegate.h"
 #include "components/sync/engine_impl/update_handler.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/debug_info_getter.h"
-#include "components/sync/sessions_impl/nudge_tracker.h"
-#include "components/sync/sessions_impl/status_controller.h"
 #include "components/sync/test/engine/fake_model_worker.h"
 #include "components/sync/test/engine/mock_update_handler.h"
 #include "components/sync/test/mock_invalidation.h"
-#include "components/sync/test/sessions/mock_debug_info_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -35,8 +35,6 @@ std::unique_ptr<InvalidationInterface> BuildInvalidation(
 }
 
 }  // namespace
-
-using sessions::MockDebugInfoGetter;
 
 // A test fixture for tests exercising download updates functions.
 class GetUpdatesProcessorTest : public ::testing::Test {
@@ -99,7 +97,7 @@ class GetUpdatesProcessorTest : public ::testing::Test {
 
 // Basic test to make sure nudges are expressed properly in the request.
 TEST_F(GetUpdatesProcessorTest, BookmarkNudge) {
-  sessions::NudgeTracker nudge_tracker;
+  NudgeTracker nudge_tracker;
   nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
 
   sync_pb::ClientToServerMessage message;
@@ -138,7 +136,7 @@ TEST_F(GetUpdatesProcessorTest, BookmarkNudge) {
 
 // Basic test to ensure invalidation payloads are expressed in the request.
 TEST_F(GetUpdatesProcessorTest, NotifyMany) {
-  sessions::NudgeTracker nudge_tracker;
+  NudgeTracker nudge_tracker;
   nudge_tracker.RecordRemoteInvalidation(
       AUTOFILL, BuildInvalidation(1, "autofill_payload"));
   nudge_tracker.RecordRemoteInvalidation(
@@ -184,7 +182,7 @@ TEST_F(GetUpdatesProcessorTest, NotifyMany) {
 
 // Basic test to ensure initial sync requests are expressed in the request.
 TEST_F(GetUpdatesProcessorTest, InitialSyncRequest) {
-  sessions::NudgeTracker nudge_tracker;
+  NudgeTracker nudge_tracker;
   nudge_tracker.RecordInitialSyncRequired(AUTOFILL);
   nudge_tracker.RecordInitialSyncRequired(PREFERENCES);
 
@@ -264,7 +262,7 @@ TEST_F(GetUpdatesProcessorTest, PollTest) {
 }
 
 TEST_F(GetUpdatesProcessorTest, RetryTest) {
-  sessions::NudgeTracker nudge_tracker;
+  NudgeTracker nudge_tracker;
 
   // Schedule a retry.
   base::TimeTicks t1 = kTestStartTime;
@@ -295,7 +293,7 @@ TEST_F(GetUpdatesProcessorTest, RetryTest) {
 }
 
 TEST_F(GetUpdatesProcessorTest, NudgeWithRetryTest) {
-  sessions::NudgeTracker nudge_tracker;
+  NudgeTracker nudge_tracker;
 
   // Schedule a retry.
   base::TimeTicks t1 = kTestStartTime;
@@ -330,9 +328,9 @@ TEST_F(GetUpdatesProcessorTest, InvalidResponse) {
   // then something is very wrong.  The client should detect this.
   gu_response.clear_changes_remaining();
 
-  sessions::NudgeTracker nudge_tracker;
+  NudgeTracker nudge_tracker;
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
-  sessions::StatusController status;
+  StatusController status;
   std::unique_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
   SyncerError error =
@@ -346,9 +344,9 @@ TEST_F(GetUpdatesProcessorTest, MoreToDownloadResponse) {
   InitFakeUpdateResponse(&gu_response);
   gu_response.set_changes_remaining(1);
 
-  sessions::NudgeTracker nudge_tracker;
+  NudgeTracker nudge_tracker;
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
-  sessions::StatusController status;
+  StatusController status;
   std::unique_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
   SyncerError error =
@@ -362,9 +360,9 @@ TEST_F(GetUpdatesProcessorTest, NormalResponseTest) {
   InitFakeUpdateResponse(&gu_response);
   gu_response.set_changes_remaining(0);
 
-  sessions::NudgeTracker nudge_tracker;
+  NudgeTracker nudge_tracker;
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
-  sessions::StatusController status;
+  StatusController status;
   std::unique_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
   SyncerError error =
@@ -400,7 +398,7 @@ class GetUpdatesProcessorApplyUpdatesTest : public GetUpdatesProcessorTest {
 // Verify that a normal cycle applies updates non-passively to the specified
 // types.
 TEST_F(GetUpdatesProcessorApplyUpdatesTest, Normal) {
-  sessions::NudgeTracker nudge_tracker;
+  NudgeTracker nudge_tracker;
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
   std::unique_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
@@ -408,7 +406,7 @@ TEST_F(GetUpdatesProcessorApplyUpdatesTest, Normal) {
   EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
   EXPECT_EQ(0, GetAppliedHandler()->GetApplyUpdatesCount());
 
-  sessions::StatusController status;
+  StatusController status;
   processor->ApplyUpdates(GetGuTypes(), &status);
 
   EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
@@ -431,7 +429,7 @@ TEST_F(GetUpdatesProcessorApplyUpdatesTest, Configure) {
   EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
   EXPECT_EQ(0, GetAppliedHandler()->GetPassiveApplyUpdatesCount());
 
-  sessions::StatusController status;
+  StatusController status;
   processor->ApplyUpdates(GetGuTypes(), &status);
 
   EXPECT_EQ(0, GetNonAppliedHandler()->GetPassiveApplyUpdatesCount());
@@ -453,7 +451,7 @@ TEST_F(GetUpdatesProcessorApplyUpdatesTest, Poll) {
   EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
   EXPECT_EQ(0, GetAppliedHandler()->GetApplyUpdatesCount());
 
-  sessions::StatusController status;
+  StatusController status;
   processor->ApplyUpdates(GetGuTypes(), &status);
 
   EXPECT_EQ(0, GetNonAppliedHandler()->GetApplyUpdatesCount());
@@ -470,14 +468,14 @@ class DownloadUpdatesDebugInfoTest : public ::testing::Test {
   DownloadUpdatesDebugInfoTest() {}
   ~DownloadUpdatesDebugInfoTest() override {}
 
-  sessions::StatusController* status() { return &status_; }
+  StatusController* status() { return &status_; }
 
-  sessions::DebugInfoGetter* debug_info_getter() { return &debug_info_getter_; }
+  DebugInfoGetter* debug_info_getter() { return &debug_info_getter_; }
 
   void AddDebugEvent() { debug_info_getter_.AddDebugEvent(); }
 
  private:
-  sessions::StatusController status_;
+  StatusController status_;
   MockDebugInfoGetter debug_info_getter_;
 };
 

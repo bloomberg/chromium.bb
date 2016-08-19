@@ -17,17 +17,14 @@
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine_impl/commit_contribution.h"
+#include "components/sync/engine_impl/cycle/nudge_tracker.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/nudge_tracker.h"
 
 namespace syncer {
 
-namespace sessions {
-class StatusController;
-class SyncSession;
-}
-
 class CommitProcessor;
+class StatusController;
+class SyncCycle;
 class Syncer;
 
 // This class wraps the actions related to building and executing a single
@@ -60,9 +57,9 @@ class Commit {
                       CommitProcessor* commit_processor,
                       ExtensionsActivity* extensions_activity);
 
-  SyncerError PostAndProcessResponse(sessions::NudgeTracker* nudge_tracker,
-                                     sessions::SyncSession* session,
-                                     sessions::StatusController* status,
+  SyncerError PostAndProcessResponse(NudgeTracker* nudge_tracker,
+                                     SyncCycle* cycle,
+                                     StatusController* status,
                                      ExtensionsActivity* extensions_activity);
 
   // Cleans up state associated with this commit.  Must be called before the

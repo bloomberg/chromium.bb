@@ -14,10 +14,10 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/api/time.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
 #include "components/version_info/version_info.h"
 
 using base::DictionaryValue;
@@ -361,8 +361,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   syncer::SyncStatus full_status;
   bool is_status_valid = service->QueryDetailedSyncStatus(&full_status);
   bool sync_active = service->IsSyncActive();
-  const syncer::sessions::SyncSessionSnapshot& snapshot =
-      service->GetLastSessionSnapshot();
+  const syncer::SyncCycleSnapshot& snapshot = service->GetLastCycleSnapshot();
 
   if (is_status_valid)
     summary_string.SetValue(service->QuerySyncStatusSummaryString());

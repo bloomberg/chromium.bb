@@ -5,14 +5,14 @@
 #include "components/sync/engine/events/normal_get_updates_request_event.h"
 
 #include "base/strings/stringprintf.h"
+#include "components/sync/engine_impl/cycle/nudge_tracker.h"
 #include "components/sync/protocol/proto_value_conversions.h"
-#include "components/sync/sessions_impl/nudge_tracker.h"
 
 namespace syncer {
 
 NormalGetUpdatesRequestEvent::NormalGetUpdatesRequestEvent(
     base::Time timestamp,
-    const sessions::NudgeTracker& nudge_tracker,
+    const NudgeTracker& nudge_tracker,
     const sync_pb::ClientToServerMessage& request)
     : timestamp_(timestamp),
       nudged_types_(nudge_tracker.GetNudgedTypes()),

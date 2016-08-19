@@ -23,16 +23,13 @@ class GetUpdatesResponse;
 
 namespace syncer {
 
-namespace sessions {
+class DirectoryTypeDebugInfoEmitter;
+class ModelSafeWorker;
 class StatusController;
-}
 
 namespace syncable {
 class Directory;
 }
-
-class DirectoryTypeDebugInfoEmitter;
-class ModelSafeWorker;
 
 // This class represents the syncable::Directory's processes for requesting and
 // processing updates from the sync server.
@@ -57,9 +54,9 @@ class DirectoryUpdateHandler : public UpdateHandler {
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
-      sessions::StatusController* status) override;
-  void ApplyUpdates(sessions::StatusController* status) override;
-  void PassiveApplyUpdates(sessions::StatusController* status) override;
+      StatusController* status) override;
+  void ApplyUpdates(StatusController* status) override;
+  void PassiveApplyUpdates(StatusController* status) override;
 
  private:
   friend class DirectoryUpdateHandlerApplyUpdateTest;
@@ -77,7 +74,7 @@ class DirectoryUpdateHandler : public UpdateHandler {
   // Their types must match this update handler's type.
   void UpdateSyncEntities(syncable::ModelNeutralWriteTransaction* trans,
                           const SyncEntityList& applicable_updates,
-                          sessions::StatusController* status);
+                          StatusController* status);
 
   // Expires entries according to GC directives.
   void ExpireEntriesIfNeeded(
@@ -93,7 +90,7 @@ class DirectoryUpdateHandler : public UpdateHandler {
       const sync_pb::DataTypeProgressMarker& progress_marker) const;
 
   // Skips all checks and goes straight to applying the updates.
-  SyncerError ApplyUpdatesImpl(sessions::StatusController* status);
+  SyncerError ApplyUpdatesImpl(StatusController* status);
 
   // Creates root node for the handled model type.
   void CreateTypeRoot(syncable::ModelNeutralWriteTransaction* trans);

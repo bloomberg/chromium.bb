@@ -14,9 +14,9 @@
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/commit_processor.h"
 #include "components/sync/engine_impl/commit_util.h"
+#include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
-#include "components/sync/sessions_impl/sync_session.h"
 
 namespace syncer {
 
@@ -91,20 +91,20 @@ Commit* Commit::Init(ModelTypeSet requested_types,
 }
 
 SyncerError Commit::PostAndProcessResponse(
-    sessions::NudgeTracker* nudge_tracker,
-    sessions::SyncSession* session,
-    sessions::StatusController* status,
+    NudgeTracker* nudge_tracker,
+    SyncCycle* cycle,
+    StatusController* status,
     ExtensionsActivity* extensions_activity) {
   ModelTypeSet request_types;
   for (ContributionMap::const_iterator it = contributions_.begin();
        it != contributions_.end(); ++it) {
     request_types.Put(it->first);
   }
-  session->mutable_status_controller()->set_commit_request_types(request_types);
+  cycle->mutable_status_controller()->set_commit_request_types(request_types);
 
-  if (session->context()->debug_info_getter()) {
+  if (cycle->context()->debug_info_getter()) {
     sync_pb::DebugInfo* debug_info = message_.mutable_debug_info();
-    session->context()->debug_info_getter()->GetDebugInfo(debug_info);
+    cycle->context()->debug_info_getter()->GetDebugInfo(debug_info);
   }
 
   DVLOG(1) << "Sending commit message.";
@@ -112,16 +112,16 @@ SyncerError Commit::PostAndProcessResponse(
   CommitRequestEvent request_event(base::Time::Now(),
                                    message_.commit().entries_size(),
                                    request_types, message_);
-  session->SendProtocolEvent(request_event);
+  cycle->SendProtocolEvent(request_event);
 
   TRACE_EVENT_BEGIN0("sync", "PostCommit");
   const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
-      &message_, &response_, session, NULL);
+      &message_, &response_, cycle, NULL);
   TRACE_EVENT_END0("sync", "PostCommit");
 
   // TODO(rlarocque): Use result that includes errors captured later?
   CommitResponseEvent response_event(base::Time::Now(), post_result, response_);
-  session->SendProtocolEvent(response_event);
+  cycle->SendProtocolEvent(response_event);
 
   if (post_result != SYNCER_OK) {
     LOG(WARNING) << "Post commit failed";
@@ -142,10 +142,10 @@ SyncerError Commit::PostAndProcessResponse(
     return SERVER_RESPONSE_VALIDATION_FAILED;
   }
 
-  if (session->context()->debug_info_getter()) {
+  if (cycle->context()->debug_info_getter()) {
     // Clear debug info now that we have successfully sent it to the server.
     DVLOG(1) << "Clearing client debug info.";
-    session->context()->debug_info_getter()->ClearDebugInfo();
+    cycle->context()->debug_info_getter()->ClearDebugInfo();
   }
 
   // Let the contributors process the responses to each of their requests.
@@ -165,7 +165,7 @@ SyncerError Commit::PostAndProcessResponse(
   }
 
   // Handle bookmarks' special extensions activity stats.
-  if (session->status_controller()
+  if (cycle->status_controller()
           .model_neutral_state()
           .num_successful_bookmark_commits == 0) {
     extensions_activity->PutRecords(extensions_activity_buffer_);

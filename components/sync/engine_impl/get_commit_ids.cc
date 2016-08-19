@@ -58,7 +58,7 @@ void GetCommitIdsForType(syncable::BaseTransaction* trans,
                          syncable::Directory::Metahandles* out) {
   syncable::Directory* dir = trans->directory();
 
-  // Gather the full set of unsynced items and store it in the session. They
+  // Gather the full set of unsynced items and store it in the cycle. They
   // are not in the correct order for commit.
   std::set<int64_t> ready_unsynced_set;
   syncable::Directory::Metahandles all_unsynced_handles;

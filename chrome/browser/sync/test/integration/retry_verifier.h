@@ -11,9 +11,7 @@
 #include "base/time/time.h"
 
 namespace syncer {
-namespace sessions {
-class SyncSessionSnapshot;
-}  // namespace sessions
+class SyncCycleSnapshot;
 }  // namespace syncer
 
 // The minimum and maximum wait times for a retry. The actual retry would take
@@ -34,9 +32,8 @@ class RetryVerifier {
 
   // Initialize with the current sync session snapshot. Using the snapshot
   // we will figure out when the first retry sync happened.
-  void Initialize(const syncer::sessions::SyncSessionSnapshot& snap);
-  void VerifyRetryInterval(
-      const syncer::sessions::SyncSessionSnapshot& snap);
+  void Initialize(const syncer::SyncCycleSnapshot& snap);
+  void VerifyRetryInterval(const syncer::SyncCycleSnapshot& snap);
   bool done() const { return done_; }
   bool Succeeded() const { return done() && success_; }
 

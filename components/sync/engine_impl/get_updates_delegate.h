@@ -9,10 +9,10 @@
 
 #include "base/macros.h"
 #include "components/sync/engine/events/protocol_event.h"
+#include "components/sync/engine_impl/cycle/nudge_tracker.h"
+#include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/model_type_registry.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/nudge_tracker.h"
-#include "components/sync/sessions_impl/status_controller.h"
 
 namespace syncer {
 
@@ -33,7 +33,7 @@ class GetUpdatesDelegate {
 
   // Applies pending updates to non-control types.
   virtual void ApplyUpdates(ModelTypeSet gu_types,
-                            sessions::StatusController* status,
+                            StatusController* status,
                             UpdateHandlerMap* update_handler_map) const = 0;
 
   virtual std::unique_ptr<ProtocolEvent> GetNetworkRequestEvent(
@@ -44,8 +44,7 @@ class GetUpdatesDelegate {
 // Functionality specific to the normal GetUpdate request.
 class NormalGetUpdatesDelegate : public GetUpdatesDelegate {
  public:
-  explicit NormalGetUpdatesDelegate(
-      const sessions::NudgeTracker& nudge_tracker);
+  explicit NormalGetUpdatesDelegate(const NudgeTracker& nudge_tracker);
   ~NormalGetUpdatesDelegate() override;
 
   // Uses the member NudgeTracker to populate some fields of this GU message.
@@ -54,7 +53,7 @@ class NormalGetUpdatesDelegate : public GetUpdatesDelegate {
 
   // Applies pending updates on the appropriate data type threads.
   void ApplyUpdates(ModelTypeSet gu_types,
-                    sessions::StatusController* status,
+                    StatusController* status,
                     UpdateHandlerMap* update_handler_map) const override;
 
   std::unique_ptr<ProtocolEvent> GetNetworkRequestEvent(
@@ -62,7 +61,7 @@ class NormalGetUpdatesDelegate : public GetUpdatesDelegate {
       const sync_pb::ClientToServerMessage& request) const override;
 
  private:
-  const sessions::NudgeTracker& nudge_tracker_;
+  const NudgeTracker& nudge_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(NormalGetUpdatesDelegate);
 };
@@ -83,7 +82,7 @@ class ConfigureGetUpdatesDelegate : public GetUpdatesDelegate {
   // This is safe only if the ChangeProcessor is not listening to changes at
   // this time.
   void ApplyUpdates(ModelTypeSet gu_types,
-                    sessions::StatusController* status,
+                    StatusController* status,
                     UpdateHandlerMap* update_handler_map) const override;
 
   std::unique_ptr<ProtocolEvent> GetNetworkRequestEvent(
@@ -111,7 +110,7 @@ class PollGetUpdatesDelegate : public GetUpdatesDelegate {
 
   // Applies updates on the appropriate data type thread.
   void ApplyUpdates(ModelTypeSet gu_types,
-                    sessions::StatusController* status,
+                    StatusController* status,
                     UpdateHandlerMap* update_handler_map) const override;
 
   std::unique_ptr<ProtocolEvent> GetNetworkRequestEvent(

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_SYNC_CYCLE_EVENT_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_SYNC_CYCLE_EVENT_H_
 
-#include "components/sync/sessions/sync_session_snapshot.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 namespace syncer {
 
@@ -29,8 +29,8 @@ struct SyncCycleEvent {
 
   EventCause what_happened;
 
-  // The last session used for syncing.
-  sessions::SyncSessionSnapshot snapshot;
+  // The last cycle used for syncing.
+  SyncCycleSnapshot snapshot;
 };
 
 }  // namespace syncer

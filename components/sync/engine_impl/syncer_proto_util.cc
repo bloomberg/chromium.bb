@@ -10,13 +10,13 @@
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
+#include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/engine_impl/traffic_logger.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync/protocol/sync_protocol_error.h"
-#include "components/sync/sessions_impl/sync_session.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/syncable-inl.h"
@@ -30,7 +30,6 @@ using sync_pb::ClientToServerResponse;
 
 namespace syncer {
 
-using sessions::SyncSession;
 using syncable::BASE_VERSION;
 using syncable::CTIME;
 using syncable::ID;
@@ -328,7 +327,7 @@ void SyncerProtoUtil::SetProtocolVersion(ClientToServerMessage* msg) {
 
 // static
 bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
-                                            sessions::SyncSession* session,
+                                            SyncCycle* cycle,
                                             const ClientToServerMessage& msg,
                                             ClientToServerResponse* response) {
   ServerConnectionManager::PostBufferParams params;
@@ -364,7 +363,7 @@ base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
 SyncerError SyncerProtoUtil::PostClientToServerMessage(
     ClientToServerMessage* msg,
     ClientToServerResponse* response,
-    SyncSession* session,
+    SyncCycle* cycle,
     ModelTypeSet* partial_failure_data_types) {
   CHECK(response);
   DCHECK(!msg->get_updates().has_from_timestamp());   // Deprecated.
@@ -372,22 +371,22 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
 
   // Add must-have fields.
   SetProtocolVersion(msg);
-  AddRequestBirthday(session->context()->directory(), msg);
+  AddRequestBirthday(cycle->context()->directory(), msg);
   DCHECK(msg->has_store_birthday() || !IsBirthdayRequired(*msg));
-  AddBagOfChips(session->context()->directory(), msg);
+  AddBagOfChips(cycle->context()->directory(), msg);
   msg->set_api_key(google_apis::GetAPIKey());
-  msg->mutable_client_status()->CopyFrom(session->context()->client_status());
-  msg->set_invalidator_client_id(session->context()->invalidator_client_id());
+  msg->mutable_client_status()->CopyFrom(cycle->context()->client_status());
+  msg->set_invalidator_client_id(cycle->context()->invalidator_client_id());
 
-  syncable::Directory* dir = session->context()->directory();
+  syncable::Directory* dir = cycle->context()->directory();
 
   LogClientToServerMessage(*msg);
-  if (!PostAndProcessHeaders(session->context()->connection_manager(), session,
+  if (!PostAndProcessHeaders(cycle->context()->connection_manager(), cycle,
                              *msg, response)) {
     // There was an error establishing communication with the server.
     // We can not proceed beyond this point.
     const HttpResponse::ServerConnectionCode server_status =
-        session->context()->connection_manager()->server_status();
+        cycle->context()->connection_manager()->server_status();
 
     DCHECK_NE(server_status, HttpResponse::NONE);
     DCHECK_NE(server_status, HttpResponse::SERVER_CONNECTION_OK);
@@ -403,23 +402,23 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
       GetProtocolErrorFromResponse(*response, dir);
 
   // Inform the delegate of the error we got.
-  session->delegate()->OnSyncProtocolError(sync_protocol_error);
+  cycle->delegate()->OnSyncProtocolError(sync_protocol_error);
 
   // Update our state for any other commands we've received.
   if (response->has_client_command()) {
     const sync_pb::ClientCommand& command = response->client_command();
     if (command.has_max_commit_batch_size()) {
-      session->context()->set_max_commit_batch_size(
+      cycle->context()->set_max_commit_batch_size(
           command.max_commit_batch_size());
     }
 
     if (command.has_set_sync_long_poll_interval()) {
-      session->delegate()->OnReceivedLongPollIntervalUpdate(
+      cycle->delegate()->OnReceivedLongPollIntervalUpdate(
           base::TimeDelta::FromSeconds(command.set_sync_long_poll_interval()));
     }
 
     if (command.has_set_sync_poll_interval()) {
-      session->delegate()->OnReceivedShortPollIntervalUpdate(
+      cycle->delegate()->OnReceivedShortPollIntervalUpdate(
           base::TimeDelta::FromSeconds(command.set_sync_poll_interval()));
     }
 
@@ -427,16 +426,16 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
       std::map<ModelType, base::TimeDelta> delay_map;
       delay_map[SESSIONS] =
           base::TimeDelta::FromSeconds(command.sessions_commit_delay_seconds());
-      session->delegate()->OnReceivedCustomNudgeDelays(delay_map);
+      cycle->delegate()->OnReceivedCustomNudgeDelays(delay_map);
     }
 
     if (command.has_client_invalidation_hint_buffer_size()) {
-      session->delegate()->OnReceivedClientInvalidationHintBufferSize(
+      cycle->delegate()->OnReceivedClientInvalidationHintBufferSize(
           command.client_invalidation_hint_buffer_size());
     }
 
     if (command.has_gu_retry_delay_seconds()) {
-      session->delegate()->OnReceivedGuRetryDelay(
+      cycle->delegate()->OnReceivedGuRetryDelay(
           base::TimeDelta::FromSeconds(command.gu_retry_delay_seconds()));
     }
 
@@ -453,7 +452,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
               command.custom_nudge_delays(i).delay_ms());
         }
       }
-      session->delegate()->OnReceivedCustomNudgeDelays(delay_map);
+      cycle->delegate()->OnReceivedCustomNudgeDelays(delay_map);
     }
   }
 
@@ -470,10 +469,10 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     case THROTTLED:
       if (sync_protocol_error.error_data_types.Empty()) {
         DLOG(WARNING) << "Client fully throttled by syncer.";
-        session->delegate()->OnThrottled(GetThrottleDelay(*response));
+        cycle->delegate()->OnThrottled(GetThrottleDelay(*response));
       } else {
         DLOG(WARNING) << "Some types throttled by syncer.";
-        session->delegate()->OnTypesThrottled(
+        cycle->delegate()->OnTypesThrottled(
             sync_protocol_error.error_data_types, GetThrottleDelay(*response));
       }
       return SERVER_RETURN_THROTTLED;
@@ -482,7 +481,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     case MIGRATION_DONE:
       LOG_IF(ERROR, 0 >= response->migrated_data_type_id_size())
           << "MIGRATION_DONE but no types specified.";
-      session->delegate()->OnReceivedMigrationRequest(
+      cycle->delegate()->OnReceivedMigrationRequest(
           GetTypesToMigrate(*response));
       return SERVER_RETURN_MIGRATION_DONE;
     case CLEAR_PENDING:
@@ -495,7 +494,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
       // This only happens when partial throttling during GetUpdates.
       if (!sync_protocol_error.error_data_types.Empty()) {
         DLOG(WARNING) << "Some types throttled by syncer during GetUpdates.";
-        session->delegate()->OnTypesThrottled(
+        cycle->delegate()->OnTypesThrottled(
             sync_protocol_error.error_data_types, GetThrottleDelay(*response));
       }
       if (partial_failure_data_types != NULL) {

@@ -15,9 +15,9 @@
 #include "base/values.h"
 #include "components/sync/driver/protocol_event_observer.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/js/js_controller.h"
 #include "components/sync/js/js_event_handler.h"
-#include "components/sync/sessions/type_debug_info_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class ProfileSyncService;

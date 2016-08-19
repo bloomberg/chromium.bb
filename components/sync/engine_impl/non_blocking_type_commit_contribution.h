@@ -34,7 +34,7 @@ class NonBlockingTypeCommitContribution : public syncer::CommitContribution {
   void AddToCommitMessage(sync_pb::ClientToServerMessage* msg) override;
   syncer::SyncerError ProcessCommitResponse(
       const sync_pb::ClientToServerResponse& response,
-      syncer::sessions::StatusController* status) override;
+      syncer::StatusController* status) override;
   void CleanUp() override;
   size_t GetNumEntries() const override;
 

@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 class Profile;
 class ProfileSyncService;
@@ -108,7 +108,7 @@ class ProfileSyncServiceHarness {
   bool DisableSyncForAllDatatypes();
 
   // Returns a snapshot of the current sync session.
-  syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const;
+  syncer::SyncCycleSnapshot GetLastCycleSnapshot() const;
 
   // Check if |type| is being synced.
   bool IsTypePreferred(syncer::ModelType type);

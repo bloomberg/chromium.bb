@@ -12,11 +12,11 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/core/connection_status.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_test_util.h"
 #include "components/sync/protocol/sync_protocol_error.h"
-#include "components/sync/sessions/sync_session_snapshot.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -62,12 +62,12 @@ TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
-  sessions::SyncSessionSnapshot snapshot(
-      sessions::ModelNeutralState(), ProgressMarkerMap(), false, 5, 2, 7, false,
-      0, base::Time::Now(), base::Time::Now(),
-      std::vector<int>(MODEL_TYPE_COUNT, 0),
-      std::vector<int>(MODEL_TYPE_COUNT, 0),
-      sync_pb::GetUpdatesCallerInfo::UNKNOWN);
+  SyncCycleSnapshot snapshot(ModelNeutralState(), ProgressMarkerMap(), false, 5,
+                             2, 7, false, 0, base::Time::Now(),
+                             base::Time::Now(),
+                             std::vector<int>(MODEL_TYPE_COUNT, 0),
+                             std::vector<int>(MODEL_TYPE_COUNT, 0),
+                             sync_pb::GetUpdatesCallerInfo::UNKNOWN);
   base::DictionaryValue expected_details;
   expected_details.Set("snapshot", snapshot.ToValue());
 

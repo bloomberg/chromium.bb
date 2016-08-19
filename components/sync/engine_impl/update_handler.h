@@ -19,11 +19,8 @@ typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
 
 namespace syncer {
 
-namespace sessions {
-class StatusController;
-}
-
 class ModelSafeWorker;
+class StatusController;
 
 // This class represents an entity that can request, receive, and apply updates
 // from the sync server.
@@ -59,15 +56,15 @@ class UpdateHandler {
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
-      sessions::StatusController* status) = 0;
+      StatusController* status) = 0;
 
   // Called at the end of a non-configure GetUpdates loop to apply any unapplied
   // updates.
-  virtual void ApplyUpdates(sessions::StatusController* status) = 0;
+  virtual void ApplyUpdates(StatusController* status) = 0;
 
   // Called at the end of a configure GetUpdates loop to perform any required
   // post-initial-download update application.
-  virtual void PassiveApplyUpdates(sessions::StatusController* status) = 0;
+  virtual void PassiveApplyUpdates(StatusController* status) = 0;
 };
 
 }  // namespace syncer

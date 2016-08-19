@@ -17,9 +17,9 @@
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/engine_impl/commit_contribution.h"
+#include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions_impl/status_controller.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "components/sync/test/engine/mock_model_type_processor.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
@@ -37,7 +37,7 @@ using syncer::Cryptographer;
 using syncer::CommitContribution;
 using syncer::KeyParams;
 using syncer::Nigori;
-using syncer::sessions::StatusController;
+using syncer::StatusController;
 
 // Tests the ModelTypeWorker.
 //

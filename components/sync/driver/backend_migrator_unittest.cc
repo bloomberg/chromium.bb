@@ -27,7 +27,7 @@ using sync_driver::DataTypeManagerMock;
 
 namespace browser_sync {
 
-using syncer::sessions::SyncSessionSnapshot;
+using syncer::SyncCycleSnapshot;
 
 class SyncBackendMigratorTest : public testing::Test {
  public:

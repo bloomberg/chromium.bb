@@ -35,8 +35,13 @@
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
+#include "components/sync/engine/cycle/commit_counters.h"
+#include "components/sync/engine/cycle/status_counters.h"
+#include "components/sync/engine/cycle/update_counters.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
+#include "components/sync/engine_impl/cycle/mock_debug_info_getter.h"
+#include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/engine_impl/get_commit_ids.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
@@ -45,10 +50,6 @@
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/sessions/commit_counters.h"
-#include "components/sync/sessions/status_counters.h"
-#include "components/sync/sessions/update_counters.h"
-#include "components/sync/sessions_impl/sync_session_context.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/nigori_util.h"
 #include "components/sync/syncable/syncable_delete_journal.h"
@@ -62,7 +63,6 @@
 #include "components/sync/test/engine/test_id_factory.h"
 #include "components/sync/test/engine/test_syncable_utils.h"
 #include "components/sync/test/fake_sync_encryption_handler.h"
-#include "components/sync/test/sessions/mock_debug_info_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,11 +95,6 @@ using syncable::GET_BY_CLIENT_TAG;
 using syncable::GET_BY_SERVER_TAG;
 using syncable::GET_TYPE_ROOT;
 using syncable::UNITTEST;
-
-using sessions::MockDebugInfoGetter;
-using sessions::StatusController;
-using sessions::SyncSessionContext;
-using sessions::SyncSession;
 
 namespace {
 
@@ -185,7 +180,7 @@ void TypeDebugInfoCache::OnStatusCountersUpdated(
 }  // namespace
 
 class SyncerTest : public testing::Test,
-                   public SyncSession::Delegate,
+                   public SyncCycle::Delegate,
                    public SyncEngineEventListener {
  protected:
   SyncerTest()
@@ -193,7 +188,7 @@ class SyncerTest : public testing::Test,
         syncer_(NULL),
         last_client_invalidation_hint_buffer_size_(10) {}
 
-  // SyncSession::Delegate implementation.
+  // SyncCycle::Delegate implementation.
   void OnThrottled(const base::TimeDelta& throttle_duration) override {
     FAIL() << "Should not get silenced.";
   }
@@ -255,25 +250,23 @@ class SyncerTest : public testing::Test,
   void OnThrottledTypesChanged(ModelTypeSet throttled_types) override {}
   void OnMigrationRequested(ModelTypeSet types) override {}
 
-  void ResetSession() {
-    session_.reset(SyncSession::Build(context_.get(), this));
-  }
+  void ResetCycle() { cycle_.reset(SyncCycle::Build(context_.get(), this)); }
 
   bool SyncShareNudge() {
-    ResetSession();
+    ResetCycle();
 
     // Pretend we've seen a local change, to make the nudge_tracker look normal.
     nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
 
     return syncer_->NormalSyncShare(context_->GetEnabledTypes(),
-                                    &nudge_tracker_, session_.get());
+                                    &nudge_tracker_, cycle_.get());
   }
 
   bool SyncShareConfigure() {
-    ResetSession();
+    ResetCycle();
     return syncer_->ConfigureSyncShare(
         context_->GetEnabledTypes(),
-        sync_pb::GetUpdatesCallerInfo::RECONFIGURATION, session_.get());
+        sync_pb::GetUpdatesCallerInfo::RECONFIGURATION, cycle_.get());
   }
 
   void SetUp() override {
@@ -299,7 +292,7 @@ class SyncerTest : public testing::Test,
     model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(
         &debug_info_cache_);
 
-    context_.reset(new SyncSessionContext(
+    context_.reset(new SyncCycleContext(
         mock_server_.get(), directory(), extensions_activity_.get(), listeners,
         debug_info_getter_.get(), model_type_registry_.get(),
         true,   // enable keystore encryption
@@ -545,7 +538,7 @@ class SyncerTest : public testing::Test,
     return directory()->GetCryptographer(trans);
   }
 
-  // Configures SyncSessionContext and NudgeTracker so Syncer won't call
+  // Configures SyncCycleContext and NudgeTracker so Syncer won't call
   // GetUpdates prior to Commit. This method can be used to ensure a Commit is
   // not preceeded by GetUpdates.
   void ConfigureNoGetUpdatesRequired() {
@@ -577,12 +570,12 @@ class SyncerTest : public testing::Test,
 
   Syncer* syncer_;
 
-  std::unique_ptr<SyncSession> session_;
+  std::unique_ptr<SyncCycle> cycle_;
   TypeDebugInfoCache debug_info_cache_;
   MockNudgeHandler mock_nudge_handler_;
   std::unique_ptr<ModelTypeRegistry> model_type_registry_;
   std::unique_ptr<SyncSchedulerImpl> scheduler_;
-  std::unique_ptr<SyncSessionContext> context_;
+  std::unique_ptr<SyncCycleContext> context_;
   base::TimeDelta last_short_poll_interval_received_;
   base::TimeDelta last_long_poll_interval_received_;
   base::TimeDelta last_sessions_commit_delay_;
@@ -591,7 +584,7 @@ class SyncerTest : public testing::Test,
   std::vector<scoped_refptr<ModelSafeWorker>> workers_;
 
   ModelTypeSet enabled_datatypes_;
-  sessions::NudgeTracker nudge_tracker_;
+  NudgeTracker nudge_tracker_;
   std::unique_ptr<MockDebugInfoGetter> debug_info_getter_;
 
  private:
@@ -633,10 +626,10 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   // Now sync without enabling bookmarks.
   mock_server_->ExpectGetUpdatesRequestTypes(
       Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)));
-  ResetSession();
+  ResetCycle();
   syncer_->NormalSyncShare(
       Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)),
-      &nudge_tracker_, session_.get());
+      &nudge_tracker_, cycle_.get());
 
   {
     // Nothing should have been committed as bookmarks is throttled.
@@ -706,10 +699,10 @@ TEST_F(SyncerTest, DataUseHistogramsTest) {
   // Now sync without enabling bookmarks.
   mock_server_->ExpectGetUpdatesRequestTypes(
       Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)));
-  ResetSession();
+  ResetCycle();
   syncer_->NormalSyncShare(
       Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)),
-      &nudge_tracker_, session_.get());
+      &nudge_tracker_, cycle_.get());
 
   {
     // Nothing should have been committed as bookmarks is throttled.
@@ -887,7 +880,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
   }
   EXPECT_TRUE(SyncShareNudge());
   {
-    const StatusController& status_controller = session_->status_controller();
+    const StatusController& status_controller = cycle_->status_controller();
     // Expect success.
     EXPECT_EQ(SYNCER_OK, status_controller.model_neutral_state().commit_result);
     // None should be unsynced anymore.
@@ -2733,7 +2726,7 @@ TEST_F(SyncerTest, UnappliedUpdateDuringCommit) {
     entry.PutIsDel(false);
   }
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(1, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(1, cycle_->status_controller().TotalNumConflictingItems());
 }
 
 // Original problem synopsis:
@@ -2990,8 +2983,8 @@ TEST_F(SyncerTest, ConflictWithImplicitParent) {
   EXPECT_TRUE(SyncShareNudge());
   // Since the hierarchy isn't really changed (the type has flat hierarchy)
   // this conflict must be discarded.
-  EXPECT_EQ(0, session_->status_controller().num_local_overwrites());
-  EXPECT_EQ(0, session_->status_controller().num_server_overwrites());
+  EXPECT_EQ(0, cycle_->status_controller().num_local_overwrites());
+  EXPECT_EQ(0, cycle_->status_controller().num_server_overwrites());
 }
 
 TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {
@@ -3141,7 +3134,7 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_PostBufferFail) {
 
   EXPECT_EQ(1U, mock_server_->commit_messages().size());
   EXPECT_EQ(SYNC_SERVER_ERROR,
-            session_->status_controller().model_neutral_state().commit_result);
+            cycle_->status_controller().model_neutral_state().commit_result);
   EXPECT_EQ(items_to_commit - kDefaultMaxCommitBatchSize,
             directory()->unsynced_entity_count());
 }
@@ -4986,7 +4979,7 @@ TEST_F(SyncerTest, GetKeySuccess) {
 
   SyncShareConfigure();
 
-  EXPECT_EQ(SYNCER_OK, session_->status_controller().last_get_key_result());
+  EXPECT_EQ(SYNCER_OK, cycle_->status_controller().last_get_key_result());
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     EXPECT_FALSE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
@@ -5002,7 +4995,7 @@ TEST_F(SyncerTest, GetKeyEmpty) {
   mock_server_->SetKeystoreKey(std::string());
   SyncShareConfigure();
 
-  EXPECT_NE(SYNCER_OK, session_->status_controller().last_get_key_result());
+  EXPECT_NE(SYNCER_OK, cycle_->status_controller().last_get_key_result());
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
@@ -5434,7 +5427,7 @@ TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
   EXPECT_TRUE(SyncShareNudge());
 
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // Delete, begin committing the delete, then undelete while committing.
@@ -5448,7 +5441,7 @@ TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
   // that both the delete and following undelete were committed.  We haven't
   // downloaded any updates, though, so the SERVER fields will be the same
   // as they were at the start of the cycle.
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 
   {
@@ -5474,7 +5467,7 @@ TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
   update->set_originator_client_item_id(local_id_.GetServerId());
 
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
 }
@@ -5485,7 +5478,7 @@ TEST_F(SyncerUndeletionTest, UndeleteBeforeCommit) {
   EXPECT_TRUE(SyncShareNudge());
 
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // Delete and undelete, then sync to pick up the result.
@@ -5496,7 +5489,7 @@ TEST_F(SyncerUndeletionTest, UndeleteBeforeCommit) {
   EXPECT_TRUE(SyncShareNudge());
 
   // The item ought to have committed successfully.
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
   {
@@ -5511,7 +5504,7 @@ TEST_F(SyncerUndeletionTest, UndeleteBeforeCommit) {
   update->set_originator_cache_guid(local_cache_guid());
   update->set_originator_client_item_id(local_id_.GetServerId());
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
 }
@@ -5522,7 +5515,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterCommitButBeforeGetUpdates) {
   EXPECT_TRUE(SyncShareNudge());
 
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // Delete and commit.
@@ -5531,7 +5524,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterCommitButBeforeGetUpdates) {
   EXPECT_TRUE(SyncShareNudge());
 
   // The item ought to have committed successfully.
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndDeleted();
 
@@ -5543,7 +5536,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterCommitButBeforeGetUpdates) {
   // deletion update.  The undeletion should prevail.
   mock_server_->AddUpdateFromLastCommit();
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
 }
@@ -5554,7 +5547,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterDeleteAndGetUpdates) {
   EXPECT_TRUE(SyncShareNudge());
 
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   sync_pb::SyncEntity* update = mock_server_->AddUpdateFromLastCommit();
@@ -5562,7 +5555,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterDeleteAndGetUpdates) {
   update->set_originator_client_item_id(local_id_.GetServerId());
   EXPECT_TRUE(SyncShareNudge());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // Delete and commit.
@@ -5571,7 +5564,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterDeleteAndGetUpdates) {
   EXPECT_TRUE(SyncShareNudge());
 
   // The item ought to have committed successfully.
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndDeleted();
 
@@ -5579,7 +5572,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterDeleteAndGetUpdates) {
   // deletion update.  Should be consistent.
   mock_server_->AddUpdateFromLastCommit();
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndDeleted();
 
@@ -5590,7 +5583,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterDeleteAndGetUpdates) {
   // Now, encounter a GetUpdates corresponding to the just-committed
   // deletion update.  The undeletion should prevail.
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
 }
@@ -5602,7 +5595,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletes) {
   EXPECT_TRUE(SyncShareNudge());
 
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // Add a delete from the server.
@@ -5611,7 +5604,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletes) {
   update1->set_originator_client_item_id(local_id_.GetServerId());
   EXPECT_TRUE(SyncShareNudge());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // Some other client deletes the item.
@@ -5623,7 +5616,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletes) {
   EXPECT_TRUE(SyncShareNudge());
 
   // The update ought to have applied successfully.
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndDeleted();
 
@@ -5631,7 +5624,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletes) {
   Undelete();
   ExpectUnsyncedUndeletion();
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
 
@@ -5641,7 +5634,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletes) {
   update2->set_originator_cache_guid(local_cache_guid());
   update2->set_originator_client_item_id(local_id_.GetServerId());
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
 }
@@ -5652,7 +5645,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletesImmediately) {
   EXPECT_TRUE(SyncShareNudge());
 
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // Some other client deletes the item before we get a chance
@@ -5665,7 +5658,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletesImmediately) {
   EXPECT_TRUE(SyncShareNudge());
 
   // The update ought to have applied successfully.
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndDeleted();
 
@@ -5673,7 +5666,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletesImmediately) {
   Undelete();
   ExpectUnsyncedUndeletion();
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
 
@@ -5683,7 +5676,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletesImmediately) {
   update->set_originator_cache_guid(local_cache_guid());
   update->set_originator_client_item_id(local_id_.GetServerId());
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
 }
@@ -5694,7 +5687,7 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletes) {
   EXPECT_TRUE(SyncShareNudge());
 
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // Get the updates of our just-committed entry.
@@ -5703,7 +5696,7 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletes) {
   update->set_originator_client_item_id(local_id_.GetServerId());
   EXPECT_TRUE(SyncShareNudge());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // We delete the item.
@@ -5712,7 +5705,7 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletes) {
   EXPECT_TRUE(SyncShareNudge());
 
   // The update ought to have applied successfully.
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndDeleted();
 
@@ -5720,7 +5713,7 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletes) {
   // deletion update.
   mock_server_->AddUpdateFromLastCommit();
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndDeleted();
 
@@ -5734,7 +5727,7 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletes) {
   }
   mock_server_->SetLastUpdateClientTag(client_tag_);
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
 }
@@ -5745,7 +5738,7 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletesImmediately) {
   EXPECT_TRUE(SyncShareNudge());
 
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // Get the updates of our just-committed entry.
@@ -5758,7 +5751,7 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletesImmediately) {
   }
   EXPECT_TRUE(SyncShareNudge());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   ExpectSyncedAndCreated();
 
   // We delete the item.
@@ -5767,7 +5760,7 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletesImmediately) {
   EXPECT_TRUE(SyncShareNudge());
 
   // The update ought to have applied successfully.
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndDeleted();
 
@@ -5782,7 +5775,7 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletesImmediately) {
   }
   mock_server_->SetLastUpdateClientTag(client_tag_);
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
+  EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
 }
