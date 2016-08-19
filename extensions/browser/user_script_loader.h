@@ -58,7 +58,7 @@ class UserScriptLoader : public content::NotificationObserver {
   ~UserScriptLoader() override;
 
   // Add |scripts| to the set of scripts managed by this loader.
-  void AddScripts(const UserScriptList& scripts);
+  void AddScripts(std::unique_ptr<UserScriptList> scripts);
 
   // Add |scripts| to the set of scripts managed by this loader.
   // The fetch of the content of the script starts URL request
@@ -66,7 +66,7 @@ class UserScriptLoader : public content::NotificationObserver {
   // |render_process_id, render_frame_id|.
   // TODO(hanxi): The renderer information doesn't really belong in this base
   // class, but it's not an easy fix.
-  virtual void AddScripts(const UserScriptList& scripts,
+  virtual void AddScripts(std::unique_ptr<UserScriptList> scripts,
                           int render_process_id,
                           int render_frame_id);
 
@@ -150,7 +150,7 @@ class UserScriptLoader : public content::NotificationObserver {
   // The mutually-exclusive information about sets of scripts that were added or
   // removed since the last script load. These maps are keyed by script ids.
   // Note that we only need HostID information for removal.
-  std::map<int, UserScript> added_scripts_map_;
+  std::map<int, std::unique_ptr<UserScript>> added_scripts_map_;
   std::set<UserScriptIDPair> removed_script_hosts_;
 
   // Indicates whether the the collection of scripts should be cleared before

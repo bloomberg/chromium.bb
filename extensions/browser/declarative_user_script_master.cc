@@ -4,6 +4,7 @@
 
 #include "extensions/browser/declarative_user_script_master.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_user_script_loader.h"
 #include "extensions/browser/user_script_loader.h"
@@ -31,20 +32,24 @@ DeclarativeUserScriptMaster::DeclarativeUserScriptMaster(
 DeclarativeUserScriptMaster::~DeclarativeUserScriptMaster() {
 }
 
-void DeclarativeUserScriptMaster::AddScript(const UserScript& script) {
-  loader_->AddScripts(UserScriptList(1, script));
+void DeclarativeUserScriptMaster::AddScript(
+    std::unique_ptr<UserScript> script) {
+  std::unique_ptr<UserScriptList> scripts(new UserScriptList());
+  scripts->push_back(std::move(script));
+  loader_->AddScripts(std::move(scripts));
 }
 
-void DeclarativeUserScriptMaster::AddScripts(const UserScriptList& scripts,
-                                             int render_process_id,
-                                             int render_view_id) {
-  loader_->AddScripts(scripts, render_process_id, render_view_id);
+void DeclarativeUserScriptMaster::AddScripts(
+    std::unique_ptr<UserScriptList> scripts,
+    int render_process_id,
+    int render_view_id) {
+  loader_->AddScripts(std::move(scripts), render_process_id, render_view_id);
 }
 
-void DeclarativeUserScriptMaster::RemoveScript(const UserScript& script) {
-  std::set<UserScriptIDPair> set;
-  set.insert(UserScriptIDPair(script.id(), script.host_id()));
-  loader_->RemoveScripts(set);
+void DeclarativeUserScriptMaster::RemoveScript(const UserScriptIDPair& script) {
+  std::set<UserScriptIDPair> scripts;
+  scripts.insert(script);
+  RemoveScripts(scripts);
 }
 
 void DeclarativeUserScriptMaster::RemoveScripts(

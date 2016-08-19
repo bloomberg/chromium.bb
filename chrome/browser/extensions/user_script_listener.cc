@@ -206,13 +206,10 @@ void UserScriptListener::CollectURLPatterns(const Extension* extension,
                                             URLPatterns* patterns) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const UserScriptList& scripts =
-      ContentScriptsInfo::GetContentScripts(extension);
-  for (UserScriptList::const_iterator iter = scripts.begin();
-       iter != scripts.end(); ++iter) {
-    patterns->insert(patterns->end(),
-                     (*iter).url_patterns().begin(),
-                     (*iter).url_patterns().end());
+  for (const std::unique_ptr<UserScript>& script :
+       ContentScriptsInfo::GetContentScripts(extension)) {
+    patterns->insert(patterns->end(), script->url_patterns().begin(),
+                     script->url_patterns().end());
   }
 }
 

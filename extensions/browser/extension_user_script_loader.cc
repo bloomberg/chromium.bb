@@ -128,19 +128,22 @@ void LoadUserScripts(UserScriptList* user_scripts,
                      const ExtensionUserScriptLoader::HostsInfo& hosts_info,
                      const std::set<int>& added_script_ids,
                      const scoped_refptr<ContentVerifier>& verifier) {
-  for (UserScript& script : *user_scripts) {
-    if (added_script_ids.count(script.id()) == 0)
+  for (const std::unique_ptr<UserScript>& script : *user_scripts) {
+    if (added_script_ids.count(script->id()) == 0)
       continue;
-    for (UserScript::File& script_file : script.js_scripts()) {
-      if (script_file.GetContent().empty())
-        LoadScriptContent(script.host_id(), &script_file, nullptr, verifier);
+    for (const std::unique_ptr<UserScript::File>& script_file :
+         script->js_scripts()) {
+      if (script_file->GetContent().empty())
+        LoadScriptContent(script->host_id(), script_file.get(), nullptr,
+                          verifier);
     }
-    if (script.css_scripts().size() > 0) {
+    if (script->css_scripts().size() > 0) {
       std::unique_ptr<SubstitutionMap> localization_messages(
-          GetLocalizationMessages(hosts_info, script.host_id()));
-      for (UserScript::File& script_file : script.css_scripts()) {
-        if (script_file.GetContent().empty()) {
-          LoadScriptContent(script.host_id(), &script_file,
+          GetLocalizationMessages(hosts_info, script->host_id()));
+      for (const std::unique_ptr<UserScript::File>& script_file :
+           script->css_scripts()) {
+        if (script_file->GetContent().empty()) {
+          LoadScriptContent(script->host_id(), script_file.get(),
                             localization_messages.get(), verifier);
         }
       }
@@ -193,8 +196,8 @@ void ExtensionUserScriptLoader::LoadScriptsForTest(
     UserScriptList* user_scripts) {
   HostsInfo info;
   std::set<int> added_script_ids;
-  for (UserScript& script : *user_scripts)
-    added_script_ids.insert(script.id());
+  for (const std::unique_ptr<UserScript>& script : *user_scripts)
+    added_script_ids.insert(script->id());
 
   LoadUserScripts(user_scripts, info, added_script_ids,
                   nullptr /* no verifier for testing */);

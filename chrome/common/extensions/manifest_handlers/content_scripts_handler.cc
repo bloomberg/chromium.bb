@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -74,11 +75,12 @@ bool LoadGlobsHelper(const base::DictionaryValue* content_script,
 
 // Helper method that loads a UserScript object from a dictionary in the
 // content_script list of the manifest.
-bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
-                                  int definition_index,
-                                  Extension* extension,
-                                  base::string16* error,
-                                  UserScript* result) {
+std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
+    const base::DictionaryValue* content_script,
+    int definition_index,
+    Extension* extension,
+    base::string16* error) {
+  std::unique_ptr<UserScript> result(new UserScript());
   // run_at
   if (content_script->HasKey(keys::kRunAt)) {
     std::string run_location;
@@ -86,7 +88,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidRunAt,
           base::IntToString(definition_index));
-      return false;
+      return std::unique_ptr<UserScript>();
     }
 
     if (run_location == values::kRunAtDocumentStart) {
@@ -99,7 +101,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidRunAt,
           base::IntToString(definition_index));
-      return false;
+      return std::unique_ptr<UserScript>();
     }
   }
 
@@ -109,7 +111,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
     if (!content_script->GetBoolean(keys::kAllFrames, &all_frames)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidAllFrames, base::IntToString(definition_index));
-      return false;
+      return std::unique_ptr<UserScript>();
     }
     result->set_match_all_frames(all_frames);
   }
@@ -121,7 +123,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
                                     &match_about_blank)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidMatchAboutBlank, base::IntToString(definition_index));
-      return false;
+      return std::unique_ptr<UserScript>();
     }
     result->set_match_about_blank(match_about_blank);
   }
@@ -132,14 +134,14 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidMatches,
         base::IntToString(definition_index));
-    return false;
+    return std::unique_ptr<UserScript>();
   }
 
   if (matches->GetSize() == 0) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidMatchCount,
         base::IntToString(definition_index));
-    return false;
+    return std::unique_ptr<UserScript>();
   }
   for (size_t j = 0; j < matches->GetSize(); ++j) {
     std::string match_str;
@@ -147,7 +149,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidMatch, base::IntToString(definition_index),
           base::SizeTToString(j), errors::kExpectString);
-      return false;
+      return std::unique_ptr<UserScript>();
     }
 
     URLPattern pattern(UserScript::ValidUserScriptSchemes(
@@ -159,7 +161,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
           errors::kInvalidMatch, base::IntToString(definition_index),
           base::SizeTToString(j),
           URLPattern::GetParseResultString(parse_result));
-      return false;
+      return std::unique_ptr<UserScript>();
     }
 
     // TODO(aboxhall): check for webstore
@@ -192,7 +194,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidExcludeMatches,
           base::IntToString(definition_index));
-      return false;
+      return std::unique_ptr<UserScript>();
     }
 
     for (size_t j = 0; j < exclude_matches->GetSize(); ++j) {
@@ -201,7 +203,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidExcludeMatch, base::IntToString(definition_index),
             base::SizeTToString(j), errors::kExpectString);
-        return false;
+        return std::unique_ptr<UserScript>();
       }
 
       int valid_schemes = UserScript::ValidUserScriptSchemes(
@@ -214,7 +216,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
             errors::kInvalidExcludeMatch, base::IntToString(definition_index),
             base::SizeTToString(j),
             URLPattern::GetParseResultString(parse_result));
-        return false;
+        return std::unique_ptr<UserScript>();
       }
 
       result->add_exclude_url_pattern(pattern);
@@ -223,13 +225,13 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
 
   // include/exclude globs (mostly for Greasemonkey compatibility)
   if (!LoadGlobsHelper(content_script, definition_index, keys::kIncludeGlobs,
-                       error, &UserScript::add_glob, result)) {
-      return false;
+                       error, &UserScript::add_glob, result.get())) {
+    return std::unique_ptr<UserScript>();
   }
 
   if (!LoadGlobsHelper(content_script, definition_index, keys::kExcludeGlobs,
-                       error, &UserScript::add_exclude_glob, result)) {
-      return false;
+                       error, &UserScript::add_exclude_glob, result.get())) {
+    return std::unique_ptr<UserScript>();
   }
 
   // js and css keys
@@ -239,7 +241,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidJsList,
         base::IntToString(definition_index));
-    return false;
+    return std::unique_ptr<UserScript>();
   }
 
   const base::ListValue* css = NULL;
@@ -248,7 +250,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
     *error = ErrorUtils::
         FormatErrorMessageUTF16(errors::kInvalidCssList,
         base::IntToString(definition_index));
-    return false;
+    return std::unique_ptr<UserScript>();
   }
 
   // The manifest needs to have at least one js or css user script definition.
@@ -256,10 +258,11 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kMissingFile,
         base::IntToString(definition_index));
-    return false;
+    return std::unique_ptr<UserScript>();
   }
 
   if (js) {
+    result->js_scripts().reserve(js->GetSize());
     for (size_t script_index = 0; script_index < js->GetSize();
          ++script_index) {
       const base::Value* value;
@@ -268,16 +271,17 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidJs, base::IntToString(definition_index),
             base::SizeTToString(script_index));
-        return false;
+        return std::unique_ptr<UserScript>();
       }
       GURL url = extension->GetResourceURL(relative);
       ExtensionResource resource = extension->GetResource(relative);
-      result->js_scripts().push_back(UserScript::File(
+      result->js_scripts().push_back(base::MakeUnique<UserScript::File>(
           resource.extension_root(), resource.relative_path(), url));
     }
   }
 
   if (css) {
+    result->css_scripts().reserve(css->GetSize());
     for (size_t script_index = 0; script_index < css->GetSize();
          ++script_index) {
       const base::Value* value;
@@ -286,16 +290,15 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidCss, base::IntToString(definition_index),
             base::SizeTToString(script_index));
-        return false;
+        return std::unique_ptr<UserScript>();
       }
       GURL url = extension->GetResourceURL(relative);
       ExtensionResource resource = extension->GetResource(relative);
-      result->css_scripts().push_back(UserScript::File(
+      result->css_scripts().push_back(base::MakeUnique<UserScript::File>(
           resource.extension_root(), resource.relative_path(), url));
     }
   }
-
-  return true;
+  return result;
 }
 
 // Returns false and sets the error if script file can't be loaded,
@@ -350,10 +353,9 @@ const UserScriptList& ContentScriptsInfo::GetContentScripts(
 // static
 bool ContentScriptsInfo::ExtensionHasScriptAtURL(const Extension* extension,
                                                  const GURL& url) {
-  const UserScriptList& content_scripts = GetContentScripts(extension);
-  for (UserScriptList::const_iterator iter = content_scripts.begin();
-      iter != content_scripts.end(); ++iter) {
-    if (iter->MatchesURL(url))
+  for (const std::unique_ptr<UserScript>& script :
+       GetContentScripts(extension)) {
+    if (script->MatchesURL(url))
       return true;
   }
   return false;
@@ -362,16 +364,11 @@ bool ContentScriptsInfo::ExtensionHasScriptAtURL(const Extension* extension,
 // static
 URLPatternSet ContentScriptsInfo::GetScriptableHosts(
     const Extension* extension) {
-  const UserScriptList& content_scripts = GetContentScripts(extension);
   URLPatternSet scriptable_hosts;
-  for (UserScriptList::const_iterator content_script =
-           content_scripts.begin();
-       content_script != content_scripts.end();
-       ++content_script) {
-    URLPatternSet::const_iterator pattern =
-        content_script->url_patterns().begin();
-    for (; pattern != content_script->url_patterns().end(); ++pattern)
-      scriptable_hosts.AddPattern(*pattern);
+  for (const std::unique_ptr<UserScript>& script :
+       GetContentScripts(extension)) {
+    for (const URLPattern& pattern : script->url_patterns())
+      scriptable_hosts.AddPattern(pattern);
   }
   return scriptable_hosts;
 }
@@ -406,23 +403,19 @@ bool ContentScriptsHandler::Parse(Extension* extension, base::string16* error) {
       return false;
     }
 
-    UserScript user_script;
-    if (!LoadUserScriptFromDictionary(script_dict,
-                                      i,
-                                      extension,
-                                      error,
-                                      &user_script)) {
+    std::unique_ptr<UserScript> user_script =
+        LoadUserScriptFromDictionary(script_dict, i, extension, error);
+    if (!user_script)
       return false;  // Failed to parse script context definition.
-    }
 
-    user_script.set_host_id(HostID(HostID::EXTENSIONS, extension->id()));
+    user_script->set_host_id(HostID(HostID::EXTENSIONS, extension->id()));
     if (extension->converted_from_user_script()) {
-      user_script.set_emulate_greasemonkey(true);
+      user_script->set_emulate_greasemonkey(true);
       // Greasemonkey matches all frames.
-      user_script.set_match_all_frames(true);
+      user_script->set_match_all_frames(true);
     }
-    user_script.set_id(UserScript::GenerateUserScriptID());
-    content_scripts_info->content_scripts.push_back(user_script);
+    user_script->set_id(UserScript::GenerateUserScriptID());
+    content_scripts_info->content_scripts.push_back(std::move(user_script));
   }
   extension->SetManifestData(keys::kContentScripts,
                              content_scripts_info.release());
@@ -447,25 +440,23 @@ bool ContentScriptsHandler::Validate(
 
   const UserScriptList& content_scripts =
       ContentScriptsInfo::GetContentScripts(extension);
-  for (size_t i = 0; i < content_scripts.size(); ++i) {
-    const UserScript& script = content_scripts[i];
-
-    for (size_t j = 0; j < script.js_scripts().size(); j++) {
-      const UserScript::File& js_script = script.js_scripts()[j];
+  for (const std::unique_ptr<UserScript>& script : content_scripts) {
+    for (const std::unique_ptr<UserScript::File>& js_script :
+         script->js_scripts()) {
       const base::FilePath& path = ExtensionResource::GetFilePath(
-          js_script.extension_root(), js_script.relative_path(),
+          js_script->extension_root(), js_script->relative_path(),
           symlink_policy);
-      if (!IsScriptValid(path, js_script.relative_path(),
+      if (!IsScriptValid(path, js_script->relative_path(),
                          IDS_EXTENSION_LOAD_JAVASCRIPT_FAILED, error))
         return false;
     }
 
-    for (size_t j = 0; j < script.css_scripts().size(); j++) {
-      const UserScript::File& css_script = script.css_scripts()[j];
+    for (const std::unique_ptr<UserScript::File>& css_script :
+         script->css_scripts()) {
       const base::FilePath& path = ExtensionResource::GetFilePath(
-          css_script.extension_root(), css_script.relative_path(),
+          css_script->extension_root(), css_script->relative_path(),
           symlink_policy);
-      if (!IsScriptValid(path, css_script.relative_path(),
+      if (!IsScriptValid(path, css_script->relative_path(),
                          IDS_EXTENSION_LOAD_CSS_FAILED, error))
         return false;
     }

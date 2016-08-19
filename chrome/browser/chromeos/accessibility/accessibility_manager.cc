@@ -265,14 +265,14 @@ void InjectChromeVoxContentScript(
 
   const extensions::UserScriptList& content_scripts =
       extensions::ContentScriptsInfo::GetContentScripts(extension);
-  for (size_t i = 0; i < content_scripts.size(); i++) {
-    const extensions::UserScript& script = content_scripts[i];
-    if (web_contents && !script.MatchesURL(content_url))
+  for (const std::unique_ptr<extensions::UserScript>& script :
+       content_scripts) {
+    if (web_contents && !script->MatchesURL(content_url))
       continue;
-    for (size_t j = 0; j < script.js_scripts().size(); ++j) {
-      const extensions::UserScript::File& file = script.js_scripts()[j];
-      extensions::ExtensionResource resource = extension->GetResource(
-          file.relative_path());
+    for (const std::unique_ptr<extensions::UserScript::File>& file :
+         script->js_scripts()) {
+      extensions::ExtensionResource resource =
+          extension->GetResource(file->relative_path());
       loader->AppendScript(resource);
     }
   }

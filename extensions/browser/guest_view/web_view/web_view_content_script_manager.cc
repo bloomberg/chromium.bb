@@ -46,7 +46,7 @@ void WebViewContentScriptManager::AddContentScripts(
     content::RenderFrameHost* render_frame_host,
     int view_instance_id,
     const HostID& host_id,
-    const UserScriptList& scripts) {
+    std::unique_ptr<UserScriptList> scripts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DeclarativeUserScriptMaster* master =
@@ -72,8 +72,8 @@ void WebViewContentScriptManager::AddContentScripts(
   // Step 2: updates the guest_content_script_map_.
   ContentScriptMap& map = iter->second;
   std::set<UserScriptIDPair> to_delete;
-  for (const UserScript& script : scripts) {
-    auto map_iter = map.find(script.name());
+  for (const std::unique_ptr<UserScript>& script : *scripts) {
+    auto map_iter = map.find(script->name());
     // If a content script has the same name as the new one, remove the old
     // script first, and insert the new one.
     if (map_iter != map.end()) {
@@ -81,9 +81,10 @@ void WebViewContentScriptManager::AddContentScripts(
       map.erase(map_iter);
     }
     map.insert(std::pair<std::string, UserScriptIDPair>(
-        script.name(), UserScriptIDPair(script.id(), script.host_id())));
-    ids_to_add.insert(script.id());
+        script->name(), UserScriptIDPair(script->id(), script->host_id())));
+    ids_to_add.insert(script->id());
   }
+
   if (!to_delete.empty())
     master->RemoveScripts(to_delete);
 
@@ -95,7 +96,7 @@ void WebViewContentScriptManager::AddContentScripts(
     user_script_loader_observer_.Add(loader);
 
   // Step 4: adds new scripts to the master.
-  master->AddScripts(scripts, embedder_process_id,
+  master->AddScripts(std::move(scripts), embedder_process_id,
                      render_frame_host->GetRoutingID());
 
   // Step 5: creates an entry in |webview_host_id_map_| for the given

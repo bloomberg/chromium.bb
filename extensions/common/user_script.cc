@@ -82,7 +82,11 @@ UserScript::File::File(const base::FilePath& extension_root,
 
 UserScript::File::File() {}
 
-UserScript::File::File(const File& other) = default;
+// File content is not copied.
+UserScript::File::File(const File& other)
+    : extension_root_(other.extension_root_),
+      relative_path_(other.relative_path_),
+      url_(other.url_) {}
 
 UserScript::File::~File() {}
 
@@ -95,9 +99,41 @@ UserScript::UserScript()
       match_about_blank_(false),
       incognito_enabled_(false) {}
 
-UserScript::UserScript(const UserScript& other) = default;
-
 UserScript::~UserScript() {
+}
+
+// static.
+std::unique_ptr<UserScript> UserScript::CopyMetadataFrom(
+    const UserScript& other) {
+  std::unique_ptr<UserScript> script(new UserScript());
+  script->run_location_ = other.run_location_;
+  script->name_space_ = other.name_space_;
+  script->name_ = other.name_;
+  script->description_ = other.description_;
+  script->version_ = other.version_;
+  script->globs_ = other.globs_;
+  script->exclude_globs_ = other.exclude_globs_;
+  script->url_set_ = other.url_set_;
+  script->exclude_url_set_ = other.exclude_url_set_;
+
+  // Note: File content is not copied.
+  for (const std::unique_ptr<File>& file : other.js_scripts()) {
+    std::unique_ptr<File> file_copy(new File(*file));
+    script->js_scripts_.push_back(std::move(file_copy));
+  }
+  for (const std::unique_ptr<File>& file : other.css_scripts()) {
+    std::unique_ptr<File> file_copy(new File(*file));
+    script->css_scripts_.push_back(std::move(file_copy));
+  }
+  script->host_id_ = other.host_id_;
+  script->consumer_instance_type_ = other.consumer_instance_type_;
+  script->user_script_id_ = other.user_script_id_;
+  script->emulate_greasemonkey_ = other.emulate_greasemonkey_;
+  script->match_all_frames_ = other.match_all_frames_;
+  script->match_about_blank_ = other.match_about_blank_;
+  script->incognito_enabled_ = other.incognito_enabled_;
+
+  return script;
 }
 
 void UserScript::add_url_pattern(const URLPattern& pattern) {
@@ -193,10 +229,8 @@ void UserScript::PickleURLPatternSet(base::Pickle* pickle,
 void UserScript::PickleScripts(base::Pickle* pickle,
                                const FileList& scripts) const {
   pickle->WriteUInt32(scripts.size());
-  for (FileList::const_iterator file = scripts.begin();
-       file != scripts.end(); ++file) {
+  for (const std::unique_ptr<File>& file : scripts)
     file->Pickle(pickle);
-  }
 }
 
 void UserScript::Unpickle(const base::Pickle& pickle,
@@ -282,9 +316,9 @@ void UserScript::UnpickleScripts(const base::Pickle& pickle,
   CHECK(iter->ReadUInt32(&num_files));
   scripts->clear();
   for (uint32_t i = 0; i < num_files; ++i) {
-    File file;
-    file.Unpickle(pickle, iter);
-    scripts->push_back(file);
+    std::unique_ptr<File> file(new File());
+    file->Unpickle(pickle, iter);
+    scripts->push_back(std::move(file));
   }
 }
 
@@ -295,13 +329,6 @@ UserScriptIDPair::UserScriptIDPair(int id) : id(id), host_id(HostID()) {}
 
 bool operator<(const UserScriptIDPair& a, const UserScriptIDPair& b) {
   return a.id < b.id;
-}
-
-bool operator<(const UserScript& script1, const UserScript& script2) {
-  // The only kind of script that should be compared is the kind that has its
-  // IDs initialized to a meaningful value.
-  DCHECK(script1.id() != -1 && script2.id() != -1);
-  return script1.id() < script2.id();
 }
 
 }  // namespace extensions

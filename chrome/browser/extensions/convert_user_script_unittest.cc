@@ -64,7 +64,7 @@ TEST_F(ExtensionFromUserScript, Basic) {
 
   ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension.get()).size());
   const UserScript& script =
-      ContentScriptsInfo::GetContentScripts(extension.get())[0];
+      *ContentScriptsInfo::GetContentScripts(extension.get())[0];
   EXPECT_EQ(UserScript::DOCUMENT_IDLE, script.run_location());
   ASSERT_EQ(2u, script.globs().size());
   EXPECT_EQ("http://www.google.com/*", script.globs().at(0));
@@ -81,7 +81,7 @@ TEST_F(ExtensionFromUserScript, Basic) {
 
   // Make sure the files actually exist on disk.
   EXPECT_TRUE(base::PathExists(
-      extension->path().Append(script.js_scripts()[0].relative_path())));
+      extension->path().Append(script.js_scripts()[0]->relative_path())));
   EXPECT_TRUE(base::PathExists(
       extension->path().Append(kManifestFilename)));
 }
@@ -117,7 +117,7 @@ TEST_F(ExtensionFromUserScript, NoMetadata) {
 
   ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension.get()).size());
   const UserScript& script =
-      ContentScriptsInfo::GetContentScripts(extension.get())[0];
+      *ContentScriptsInfo::GetContentScripts(extension.get())[0];
   ASSERT_EQ(1u, script.globs().size());
   EXPECT_EQ("*", script.globs()[0]);
   EXPECT_EQ(0u, script.exclude_globs().size());
@@ -130,7 +130,7 @@ TEST_F(ExtensionFromUserScript, NoMetadata) {
 
   // Make sure the files actually exist on disk.
   EXPECT_TRUE(base::PathExists(
-      extension->path().Append(script.js_scripts()[0].relative_path())));
+      extension->path().Append(script.js_scripts()[0]->relative_path())));
   EXPECT_TRUE(base::PathExists(
       extension->path().Append(kManifestFilename)));
 }
@@ -184,7 +184,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentStart) {
   // Validate run location.
   ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension.get()).size());
   const UserScript& script =
-      ContentScriptsInfo::GetContentScripts(extension.get())[0];
+      *ContentScriptsInfo::GetContentScripts(extension.get())[0];
   EXPECT_EQ(UserScript::DOCUMENT_START, script.run_location());
 }
 
@@ -219,7 +219,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentEnd) {
   // Validate run location.
   ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension.get()).size());
   const UserScript& script =
-      ContentScriptsInfo::GetContentScripts(extension.get())[0];
+      *ContentScriptsInfo::GetContentScripts(extension.get())[0];
   EXPECT_EQ(UserScript::DOCUMENT_END, script.run_location());
 }
 
@@ -255,7 +255,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentIdle) {
   // Validate run location.
   ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension.get()).size());
   const UserScript& script =
-      ContentScriptsInfo::GetContentScripts(extension.get())[0];
+      *ContentScriptsInfo::GetContentScripts(extension.get())[0];
   EXPECT_EQ(UserScript::DOCUMENT_IDLE, script.run_location());
 }
 

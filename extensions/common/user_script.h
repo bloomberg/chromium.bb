@@ -73,7 +73,7 @@ class UserScript {
     RUN_LOCATION_LAST  // Leave this as the last item.
   };
 
-  // Holds actual script file info.
+  // Holds script file info.
   class File {
    public:
     File(const base::FilePath& extension_root,
@@ -126,7 +126,7 @@ class UserScript {
     std::string content_;
   };
 
-  typedef std::vector<File> FileList;
+  using FileList = std::vector<std::unique_ptr<File>>;
 
   // Type of a API consumer instance that user scripts will be injected on.
   enum ConsumerInstanceType { TAB, WEBVIEW };
@@ -134,8 +134,10 @@ class UserScript {
   // Constructor. Default the run location to document end, which is like
   // Greasemonkey and probably more useful for typical scripts.
   UserScript();
-  UserScript(const UserScript& other);
   ~UserScript();
+
+  // Peforms a copy of all fields except file contents.
+  static std::unique_ptr<UserScript> CopyMetadataFrom(const UserScript& other);
 
   const std::string& name_space() const { return name_space_; }
   void set_name_space(const std::string& name_space) {
@@ -217,6 +219,9 @@ class UserScript {
   int id() const { return user_script_id_; }
   void set_id(int id) { user_script_id_ = id; }
 
+  // TODO(lazyboy): Incognito information is extension specific, it doesn't
+  // belong here. We should be able to determine this in the renderer/ where it
+  // is used.
   bool is_incognito_enabled() const { return incognito_enabled_; }
   void set_incognito_enabled(bool enabled) { incognito_enabled_ = enabled; }
 
@@ -224,11 +229,11 @@ class UserScript {
   // otherwise.
   bool MatchesURL(const GURL& url) const;
 
-  // Serialize the UserScript into a pickle. The content of the scripts and
+  // Serializes the UserScript into a pickle. The content of the scripts and
   // paths to UserScript::Files will not be serialized!
   void Pickle(base::Pickle* pickle) const;
 
-  // Deserialize the script from a pickle. Note that this always succeeds
+  // Deserializes the script from a pickle. Note that this always succeeds
   // because presumably we were the one that pickled it, and we did it
   // correctly.
   void Unpickle(const base::Pickle& pickle, base::PickleIterator* iter);
@@ -315,6 +320,8 @@ class UserScript {
 
   // True if the script should be injected into an incognito tab.
   bool incognito_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserScript);
 };
 
 // Information we need while removing scripts from a UserScriptLoader.
@@ -326,12 +333,9 @@ struct UserScriptIDPair {
   HostID host_id;
 };
 
-// For storing UserScripts with unique IDs in sets.
-bool operator<(const UserScript& script1, const UserScript& script2);
-
 bool operator<(const UserScriptIDPair& a, const UserScriptIDPair& b);
 
-typedef std::vector<UserScript> UserScriptList;
+using UserScriptList = std::vector<std::unique_ptr<UserScript>>;
 
 }  // namespace extensions
 

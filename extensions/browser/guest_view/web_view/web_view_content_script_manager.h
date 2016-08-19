@@ -44,7 +44,7 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data,
                          content::RenderFrameHost* render_frame_host,
                          int view_instance_id,
                          const HostID& host_id,
-                         const UserScriptList& user_scripts);
+                         std::unique_ptr<UserScriptList> user_scripts);
 
   // Removes all content scripts for the WebView identified by
   // |embedder_process_id| and |view_instance_id|.

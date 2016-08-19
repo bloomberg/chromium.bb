@@ -104,10 +104,7 @@ class RequestContentScript : public ContentAction {
                   const Extension* extension,
                   const ScriptData& script_data);
 
-  void AddScript() {
-    DCHECK(master_);
-    master_->AddScript(script_);
-  }
+  void AddScript();
 
   void InstructRenderProcessToInject(content::WebContents* contents,
                                      const Extension* extension) const;

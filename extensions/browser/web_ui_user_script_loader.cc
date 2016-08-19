@@ -49,16 +49,16 @@ WebUIUserScriptLoader::~WebUIUserScriptLoader() {
 }
 
 void WebUIUserScriptLoader::AddScripts(
-    const extensions::UserScriptList& scripts,
+    std::unique_ptr<extensions::UserScriptList> scripts,
     int render_process_id,
     int render_frame_id) {
   UserScriptRenderInfo info(render_process_id, render_frame_id);
-  for (const extensions::UserScript& script : scripts) {
+  for (const std::unique_ptr<extensions::UserScript>& script : *scripts) {
     script_render_info_map_.insert(
-        std::pair<int, UserScriptRenderInfo>(script.id(), info));
+        std::pair<int, UserScriptRenderInfo>(script->id(), info));
   }
 
-  extensions::UserScriptLoader::AddScripts(scripts);
+  extensions::UserScriptLoader::AddScripts(std::move(scripts));
 }
 
 void WebUIUserScriptLoader::LoadScripts(
@@ -66,6 +66,7 @@ void WebUIUserScriptLoader::LoadScripts(
     const std::set<HostID>& changed_hosts,
     const std::set<int>& added_script_ids,
     LoadScriptsCallback callback) {
+  DCHECK(!user_scripts_cache_) << "Loading scripts in flight.";
   user_scripts_cache_.swap(user_scripts);
   scripts_loaded_callback_ = callback;
 
@@ -75,11 +76,12 @@ void WebUIUserScriptLoader::LoadScripts(
   // fetch tasks.
   DCHECK_EQ(0u, complete_fetchers_);
 
-  for (extensions::UserScript& script : *user_scripts_cache_) {
-    if (added_script_ids.count(script.id()) == 0)
+  for (const std::unique_ptr<extensions::UserScript>& script :
+       *user_scripts_cache_) {
+    if (added_script_ids.count(script->id()) == 0)
       continue;
 
-    auto iter = script_render_info_map_.find(script.id());
+    auto iter = script_render_info_map_.find(script->id());
     DCHECK(iter != script_render_info_map_.end());
     int render_process_id = iter->second.render_process_id;
     int render_frame_id = iter->second.render_frame_id;
@@ -88,12 +90,12 @@ void WebUIUserScriptLoader::LoadScripts(
         content::RenderProcessHost::FromID(render_process_id)
             ->GetBrowserContext();
 
-    CreateWebUIURLFetchers(&script.js_scripts(), browser_context,
+    CreateWebUIURLFetchers(script->js_scripts(), browser_context,
                            render_process_id, render_frame_id);
-    CreateWebUIURLFetchers(&script.css_scripts(), browser_context,
+    CreateWebUIURLFetchers(script->css_scripts(), browser_context,
                            render_process_id, render_frame_id);
 
-    script_render_info_map_.erase(script.id());
+    script_render_info_map_.erase(script->id());
   }
 
   // If no fetch is needed, call OnWebUIURLFetchComplete directly.
@@ -106,19 +108,24 @@ void WebUIUserScriptLoader::LoadScripts(
 }
 
 void WebUIUserScriptLoader::CreateWebUIURLFetchers(
-    extensions::UserScript::FileList* script_files,
+    const extensions::UserScript::FileList& script_files,
     content::BrowserContext* browser_context,
     int render_process_id,
     int render_frame_id) {
-  for (extensions::UserScript::File& file : *script_files) {
-    if (file.GetContent().empty()) {
+  for (const std::unique_ptr<extensions::UserScript::File>& script_file :
+       script_files) {
+    if (script_file->GetContent().empty()) {
       // The WebUIUserScriptLoader owns these WebUIURLFetchers. Once the
       // loader is destroyed, all the fetchers will be destroyed. Therefore,
       // we are sure it is safe to use base::Unretained(this) here.
+      // |user_scripts_cache_| retains ownership of the scripts while they are
+      // being loaded, so passing a raw pointer to |script_file| below to
+      // WebUIUserScriptLoader is also safe.
       std::unique_ptr<WebUIURLFetcher> fetcher(new WebUIURLFetcher(
-          browser_context, render_process_id, render_frame_id, file.url(),
+          browser_context, render_process_id, render_frame_id,
+          script_file->url(),
           base::Bind(&WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete,
-                     base::Unretained(this), &file)));
+                     base::Unretained(this), script_file.get())));
       fetchers_.push_back(std::move(fetcher));
     }
   }
@@ -154,4 +161,5 @@ void WebUIUserScriptLoader::OnWebUIURLFetchComplete() {
       base::Bind(&SerializeOnFileThread, base::Passed(&user_scripts_cache_),
                  scripts_loaded_callback_));
   scripts_loaded_callback_.Reset();
+  user_scripts_cache_.reset();
 }

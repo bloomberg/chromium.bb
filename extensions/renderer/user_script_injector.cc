@@ -101,7 +101,7 @@ UserScriptInjector::~UserScriptInjector() {
 
 void UserScriptInjector::OnUserScriptsUpdated(
     const std::set<HostID>& changed_hosts,
-    const std::vector<std::unique_ptr<UserScript>>& scripts) {
+    const UserScriptList& scripts) {
   // If the host causing this injection changed, then this injection
   // will be removed, and there's no guarantee the backing script still exists.
   if (changed_hosts.count(host_id_) > 0) {
@@ -204,10 +204,8 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
 
   const UserScript::FileList& js_scripts = script_->js_scripts();
   sources.reserve(js_scripts.size());
-  for (UserScript::FileList::const_iterator iter = js_scripts.begin();
-       iter != js_scripts.end();
-       ++iter) {
-    base::StringPiece script_content = iter->GetContent();
+  for (const std::unique_ptr<UserScript::File>& file : js_scripts) {
+    base::StringPiece script_content = file->GetContent();
     blink::WebString source;
     if (script_->emulate_greasemonkey()) {
       // We add this dumb function wrapper for user scripts to emulate what
@@ -227,7 +225,7 @@ std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(
       source = blink::WebString::fromUTF8(script_content.data(),
                                           script_content.length());
     }
-    sources.push_back(blink::WebScriptSource(source, iter->url()));
+    sources.push_back(blink::WebScriptSource(source, file->url()));
   }
 
   // Emulate Greasemonkey API for scripts that were converted to extension
@@ -248,10 +246,11 @@ std::vector<blink::WebString> UserScriptInjector::GetCssSources(
 
   const UserScript::FileList& css_scripts = script_->css_scripts();
   sources.reserve(css_scripts.size());
-  for (UserScript::FileList::const_iterator iter = css_scripts.begin();
-       iter != css_scripts.end();
-       ++iter) {
-    base::StringPiece css_content = iter->GetContent();
+  for (const std::unique_ptr<UserScript::File>& file : script_->css_scripts()) {
+    // TODO(lazyboy): |css_content| string is copied into blink::WebString for
+    // every frame in the current renderer process. Avoid the copy, possibly by
+    // only performing the copy once.
+    base::StringPiece css_content = file->GetContent();
     sources.push_back(
         blink::WebString::fromUTF8(css_content.data(), css_content.length()));
   }
@@ -267,9 +266,7 @@ void UserScriptInjector::GetRunInfo(
   if (ShouldInjectJs(run_location)) {
     const UserScript::FileList& js_scripts = script_->js_scripts();
     scripts_run_info->num_js += js_scripts.size();
-    for (UserScript::FileList::const_iterator iter = js_scripts.begin();
-         iter != js_scripts.end();
-         ++iter) {
+    for (const std::unique_ptr<UserScript::File>& iter : js_scripts) {
       scripts_run_info->executing_scripts[host_id_.id()].insert(
           iter->url().path());
     }

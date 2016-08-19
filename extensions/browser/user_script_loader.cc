@@ -31,10 +31,10 @@ namespace {
 #if DCHECK_IS_ON()
 bool AreScriptsUnique(const UserScriptList& scripts) {
   std::set<int> script_ids;
-  for (const UserScript& script : scripts) {
-    if (script_ids.count(script.id()))
+  for (const std::unique_ptr<UserScript>& script : scripts) {
+    if (script_ids.count(script->id()))
       return false;
-    script_ids.insert(script.id());
+    script_ids.insert(script->id());
   }
   return true;
 }
@@ -173,26 +173,26 @@ UserScriptLoader::~UserScriptLoader() {
   FOR_EACH_OBSERVER(Observer, observers_, OnUserScriptLoaderDestroyed(this));
 }
 
-void UserScriptLoader::AddScripts(const UserScriptList& scripts) {
+void UserScriptLoader::AddScripts(std::unique_ptr<UserScriptList> scripts) {
 #if DCHECK_IS_ON()
   // |scripts| with non-unique IDs will work, but that would indicate we are
   // doing something wrong somewhere, so DCHECK that.
-  DCHECK(AreScriptsUnique(scripts))
+  DCHECK(AreScriptsUnique(*scripts))
       << "AddScripts() expects scripts with unique IDs.";
 #endif  // DCHECK_IS_ON()
-  for (const UserScript& user_script : scripts) {
-    int id = user_script.id();
+  for (std::unique_ptr<UserScript>& user_script : *scripts) {
+    int id = user_script->id();
     removed_script_hosts_.erase(UserScriptIDPair(id));
     if (added_scripts_map_.count(id) == 0)
-      added_scripts_map_[id] = user_script;
+      added_scripts_map_[id] = std::move(user_script);
   }
   AttemptLoad();
 }
 
-void UserScriptLoader::AddScripts(const UserScriptList& scripts,
+void UserScriptLoader::AddScripts(std::unique_ptr<UserScriptList> scripts,
                                   int render_process_id,
                                   int render_frame_id) {
-  AddScripts(scripts);
+  AddScripts(std::move(scripts));
 }
 
 void UserScriptLoader::RemoveScripts(
@@ -259,7 +259,7 @@ void UserScriptLoader::StartLoad() {
   } else {
     for (UserScriptList::iterator it = user_scripts_->begin();
          it != user_scripts_->end();) {
-      UserScriptIDPair id_pair(it->id());
+      UserScriptIDPair id_pair(it->get()->id());
       if (removed_script_hosts_.count(id_pair) > 0u)
         it = user_scripts_->erase(it);
       else
@@ -269,15 +269,15 @@ void UserScriptLoader::StartLoad() {
 
   std::set<int> added_script_ids;
   user_scripts_->reserve(user_scripts_->size() + added_scripts_map_.size());
-  for (const auto& id_and_script : added_scripts_map_) {
-    const UserScript& script = id_and_script.second;
-    added_script_ids.insert(script.id());
+  for (auto& id_and_script : added_scripts_map_) {
+    std::unique_ptr<UserScript>& script = id_and_script.second;
+    added_script_ids.insert(script->id());
     // Expand |changed_hosts_| for OnScriptsLoaded, which will use it in
     // its IPC message. This must be done before we clear |added_scripts_map_|
     // and |removed_script_hosts_| below.
-    changed_hosts_.insert(script.host_id());
-    // Put script from |added_scripts_map_| into |user_scripts_|.
-    user_scripts_->push_back(added_scripts_map_[script.id()]);
+    changed_hosts_.insert(script->host_id());
+    // Move script from |added_scripts_map_| into |user_scripts_|.
+    user_scripts_->push_back(std::move(script));
   }
   for (const UserScriptIDPair& id_pair : removed_script_hosts_)
     changed_hosts_.insert(id_pair.host_id);
@@ -297,19 +297,21 @@ std::unique_ptr<base::SharedMemory> UserScriptLoader::Serialize(
     const UserScriptList& scripts) {
   base::Pickle pickle;
   pickle.WriteUInt32(scripts.size());
-  for (const UserScript& script : scripts) {
+  for (const std::unique_ptr<UserScript>& script : scripts) {
     // TODO(aa): This can be replaced by sending content script metadata to
     // renderers along with other extension data in ExtensionMsg_Loaded.
     // See crbug.com/70516.
-    script.Pickle(&pickle);
+    script->Pickle(&pickle);
     // Write scripts as 'data' so that we can read it out in the slave without
     // allocating a new string.
-    for (const UserScript::File& script_file : script.js_scripts()) {
-      base::StringPiece contents = script_file.GetContent();
+    for (const std::unique_ptr<UserScript::File>& js_file :
+         script->js_scripts()) {
+      base::StringPiece contents = js_file->GetContent();
       pickle.WriteData(contents.data(), contents.length());
     }
-    for (const UserScript::File& script_file : script.css_scripts()) {
-      base::StringPiece contents = script_file.GetContent();
+    for (const std::unique_ptr<UserScript::File>& css_file :
+         script->css_scripts()) {
+      base::StringPiece contents = css_file->GetContent();
       pickle.WriteData(contents.data(), contents.length());
     }
   }

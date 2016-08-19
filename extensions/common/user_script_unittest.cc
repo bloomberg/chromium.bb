@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "extensions/common/user_script.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -173,15 +174,15 @@ TEST(ExtensionUserScriptTest, Pickle) {
   ASSERT_EQ(URLPattern::PARSE_SUCCESS, exclude2.Parse("https://*/*"));
 
   UserScript script1;
-  script1.js_scripts().push_back(UserScript::File(
+  script1.js_scripts().push_back(base::MakeUnique<UserScript::File>(
       base::FilePath(FILE_PATH_LITERAL("c:\\foo\\")),
       base::FilePath(FILE_PATH_LITERAL("foo.user.js")),
       GURL("chrome-extension://abc/foo.user.js")));
-  script1.css_scripts().push_back(UserScript::File(
+  script1.css_scripts().push_back(base::MakeUnique<UserScript::File>(
       base::FilePath(FILE_PATH_LITERAL("c:\\foo\\")),
       base::FilePath(FILE_PATH_LITERAL("foo.user.css")),
       GURL("chrome-extension://abc/foo.user.css")));
-  script1.css_scripts().push_back(UserScript::File(
+  script1.css_scripts().push_back(base::MakeUnique<UserScript::File>(
       base::FilePath(FILE_PATH_LITERAL("c:\\foo\\")),
       base::FilePath(FILE_PATH_LITERAL("foo2.user.css")),
       GURL("chrome-extension://abc/foo2.user.css")));
@@ -206,11 +207,11 @@ TEST(ExtensionUserScriptTest, Pickle) {
   script2.Unpickle(pickle, &iter);
 
   EXPECT_EQ(1U, script2.js_scripts().size());
-  EXPECT_EQ(script1.js_scripts()[0].url(), script2.js_scripts()[0].url());
+  EXPECT_EQ(script1.js_scripts()[0]->url(), script2.js_scripts()[0]->url());
 
   EXPECT_EQ(2U, script2.css_scripts().size());
   for (size_t i = 0; i < script2.js_scripts().size(); ++i) {
-    EXPECT_EQ(script1.css_scripts()[i].url(), script2.css_scripts()[i].url());
+    EXPECT_EQ(script1.css_scripts()[i]->url(), script2.css_scripts()[i]->url());
   }
 
   ASSERT_EQ(script1.globs().size(), script2.globs().size());

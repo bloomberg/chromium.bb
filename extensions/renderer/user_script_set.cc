@@ -125,14 +125,14 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
       const char* body = NULL;
       int body_length = 0;
       CHECK(iter.ReadData(&body, &body_length));
-      script->js_scripts()[j].set_external_content(
+      script->js_scripts()[j]->set_external_content(
           base::StringPiece(body, body_length));
     }
     for (size_t j = 0; j < script->css_scripts().size(); ++j) {
       const char* body = NULL;
       int body_length = 0;
       CHECK(iter.ReadData(&body, &body_length));
-      script->css_scripts()[j].set_external_content(
+      script->css_scripts()[j]->set_external_content(
           base::StringPiece(body, body_length));
     }
 

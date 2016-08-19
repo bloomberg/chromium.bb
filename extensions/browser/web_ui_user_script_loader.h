@@ -32,7 +32,7 @@ class WebUIUserScriptLoader : public extensions::UserScriptLoader {
   using UserScriptRenderInfoMap = std::map<int, UserScriptRenderInfo>;
 
   // UserScriptLoader:
-  void AddScripts(const extensions::UserScriptList& scripts,
+  void AddScripts(std::unique_ptr<extensions::UserScriptList> scripts,
                   int render_process_id,
                   int render_frame_id) override;
   void LoadScripts(std::unique_ptr<extensions::UserScriptList> user_scripts,
@@ -49,10 +49,11 @@ class WebUIUserScriptLoader : public extensions::UserScriptLoader {
   void OnWebUIURLFetchComplete();
 
   // Creates WebUiURLFetchers for the given |script_files|.
-  void CreateWebUIURLFetchers(extensions::UserScript::FileList* script_files,
-                              content::BrowserContext* browser_context,
-                              int render_process_id,
-                              int render_frame_id);
+  void CreateWebUIURLFetchers(
+      const extensions::UserScript::FileList& script_files,
+      content::BrowserContext* browser_context,
+      int render_process_id,
+      int render_frame_id);
 
   // Caches the render info of script from WebUI when AddScripts is called.
   // When starting to load the script, we look up this map to retrieve the

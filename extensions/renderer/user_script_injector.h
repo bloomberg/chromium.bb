@@ -33,9 +33,8 @@ class UserScriptInjector : public ScriptInjector,
 
  private:
   // UserScriptSet::Observer implementation.
-  void OnUserScriptsUpdated(
-      const std::set<HostID>& changed_hosts,
-      const std::vector<std::unique_ptr<UserScript>>& scripts) override;
+  void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,
+                            const UserScriptList& scripts) override;
 
   // ScriptInjector implementation.
   UserScript::InjectionType script_type() const override;
