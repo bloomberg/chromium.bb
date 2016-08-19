@@ -285,7 +285,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
 
         @Override
         public String getMimeType() {
-            return null;
+            return "text/plain";
         }
 
         @Override
