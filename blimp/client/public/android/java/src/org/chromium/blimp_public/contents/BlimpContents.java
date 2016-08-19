@@ -29,9 +29,8 @@ public interface BlimpContents {
     void removeObserver(BlimpContentsObserver observer);
 
     /**
-     * For BlimpContents that are owned by Java, i.e. created by the
-     * {@link org.chromium.blimp.core.BlimpContentsFactory}, this must be called before this
-     * BlimpContents is garbage collected.
+     * For BlimpContents that are owned by Java, this must be called before this BlimpContents is
+     * garbage collected.
      */
     void destroy();
 }

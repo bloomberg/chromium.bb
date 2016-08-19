@@ -5,7 +5,6 @@
 #include "blimp/client/core/contents/android/blimp_contents_jni_registrar.h"
 
 #include "base/android/jni_registrar.h"
-#include "blimp/client/core/contents/android/blimp_contents_factory.h"
 #include "blimp/client/core/contents/android/blimp_contents_impl_android.h"
 #include "blimp/client/core/contents/android/blimp_contents_observer_proxy.h"
 #include "blimp/client/core/contents/android/blimp_navigation_controller_impl_android.h"
@@ -15,7 +14,6 @@ namespace client {
 namespace {
 
 base::android::RegistrationMethod kBlimpRegistrationMethods[] = {
-    {"BlimpContentsFactory", RegisterBlimpContentsFactoryJni},
     {"BlimpContentsImplAndroid", BlimpContentsImplAndroid::RegisterJni},
     {"BlimpContentsObserverProxy", BlimpContentsObserverProxy::RegisterJni},
     {"BlimpNavigationControllerImplAndroid",

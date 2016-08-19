@@ -37,8 +37,6 @@ source_set("contents") {
 
   if (is_android) {
     sources += [
-      "android/blimp_contents_factory.cc",
-      "android/blimp_contents_factory.h",
       "android/blimp_contents_impl_android.cc",
       "android/blimp_contents_impl_android.h",
       "android/blimp_contents_jni_registrar.cc",
@@ -106,7 +104,6 @@ if (is_android) {
     visibility = [ "//blimp/client/*" ]
 
     java_files = [
-      "android/java/src/org/chromium/blimp/core/contents/BlimpContentsFactory.java",
       "android/java/src/org/chromium/blimp/core/contents/BlimpContentsImpl.java",
       "android/java/src/org/chromium/blimp/core/contents/BlimpContentsObserverProxy.java",
       "android/java/src/org/chromium/blimp/core/contents/BlimpNavigationControllerImpl.java",
@@ -122,7 +119,6 @@ if (is_android) {
     visibility = [ ":*" ]
 
     sources = [
-      "android/java/src/org/chromium/blimp/core/contents/BlimpContentsFactory.java",
       "android/java/src/org/chromium/blimp/core/contents/BlimpContentsImpl.java",
       "android/java/src/org/chromium/blimp/core/contents/BlimpContentsObserverProxy.java",
       "android/java/src/org/chromium/blimp/core/contents/BlimpNavigationControllerImpl.java",
