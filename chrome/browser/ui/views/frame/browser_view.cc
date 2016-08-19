@@ -237,15 +237,9 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
   SkColor separator_color =
       tp->GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    BrowserView::Paint1pxHorizontalLine(
-        canvas, separator_color,
-        gfx::Rect(0, 0, view->width(),
-                  views::NonClientFrameView::kClientEdgeThickness),
-        true);
-  } else {
+  // In material mode the toolbar bottom stroke serves as our top stroke.
+  if (!ui::MaterialDesignController::IsModeMaterial())
     PaintHorizontalBorder(canvas, view, true, separator_color);
-  }
 
   // For the bottom separator, increase the luminance. Either double it or halve
   // the distance to 1.0, whichever is less of a difference.
