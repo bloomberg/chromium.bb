@@ -65,5 +65,5 @@
         android:nextFocusForward="@+id/menu_button"
         android:src="@drawable/ic_get_app_white_24dp"
         android:visibility="gone"
-        android:contentDescription="@string/contextmenu_save_offline" />
+        android:contentDescription="@string/download_page" />
 </merge>
