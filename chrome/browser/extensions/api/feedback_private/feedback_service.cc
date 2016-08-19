@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/network_change_notifier.h"
 
 using content::BrowserThread;
 using extensions::api::feedback_private::SystemInformation;
@@ -134,9 +135,12 @@ void FeedbackService::CompleteSendFeedback(
     // filled - the object will manage sending of the actual report.
     feedback_data->OnFeedbackPageDataComplete();
 
+    // Sending the feedback will be delayed if the user is offline.
+    const bool result = !net::NetworkChangeNotifier::IsOffline();
+
     // TODO(rkc): Change this once we have FeedbackData/Util refactored to
     // report the status of the report being sent.
-    callback.Run(true);
+    callback.Run(result);
   }
 }
 

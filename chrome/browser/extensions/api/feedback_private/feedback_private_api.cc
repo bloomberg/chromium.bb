@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feedback/tracing_manager.h"
@@ -301,6 +302,14 @@ void FeedbackPrivateSendFeedbackFunction::OnCompleted(
       success ? feedback_private::STATUS_SUCCESS :
                 feedback_private::STATUS_DELAYED);
   SendResponse(true);
+
+  if (!success) {
+    // Sending the feedback has been delayed as the user is offline. Show a
+    // message box to indicate that.
+    chrome::ShowWarningMessageBox(
+        nullptr, l10n_util::GetStringUTF16(IDS_FEEDBACK_OFFLINE_DIALOG_TITLE),
+        l10n_util::GetStringUTF16(IDS_FEEDBACK_OFFLINE_DIALOG_TEXT));
+  }
 }
 
 AsyncExtensionFunction::ResponseAction

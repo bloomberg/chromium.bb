@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="data.js">
+
 /**
  * @type {number}
  * @const
@@ -175,9 +177,17 @@ class FeedbackRequest {
     }
 
     /** @const */ var ID = this.id_;
+    /** @const */ var FLOW = this.feedbackInfo_.flow;
     chrome.feedbackPrivate.sendFeedback(this.feedbackInfo_,
         function(result) {
-          console.log('Feedback: Report sent for request with ID ' + ID);
+          if (result == ReportStatus.SUCCESS) {
+            console.log('Feedback: Report sent for request with ID ' + ID);
+            if (FLOW != FeedbackFlow.LOGIN)
+              window.open(FEEDBACK_LANDING_PAGE, '_blank');
+          } else {
+            console.log('Feedback: Report for request with ID ' + ID +
+                ' will be sent later.');
+          }
         });
   }
 

@@ -5690,7 +5690,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_PASSIVE_DOCUMENT_EVENT_LISTENERS_DESCRIPTION" desc="Description for the flag to adjust the default behaviour for document level passive touch listeners.">
         Forces touchstart, and touchmove event listeners on document level targets (which haven't requested otherwise) to be treated as passive.
-      </message>      
+      </message>
       <message name="IDS_FLAGS_PASSIVE_DOCUMENT_EVENT_LISTENERS_NAME" desc="Name for the flag to adjust the default behaviour for document level passive listeners.">
         Document Level Event Listeners Passive Default
       </message>
@@ -7724,6 +7724,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX" desc="Checkbox for including system performance data on the bug report dialog box">
           Send performance trace data
+        </message>
+        <message name="IDS_FEEDBACK_OFFLINE_DIALOG_TITLE" desc="The title of the message box displayed when the user attempts to send a report while offline">
+          Feedback Report
+        </message>
+        <message name="IDS_FEEDBACK_OFFLINE_DIALOG_TEXT" desc="The content of the message box displayed when the user attempts to send a report while offline">
+          Thank you for your feedback. You are offline now, and your report will be sent later.
         </message>
         <if expr="not chromeos">
           <message name="IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">

@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @type {string}
- * @const
- */
-var FEEDBACK_LANDING_PAGE =
-    'https://support.google.com/chrome/go/feedback_confirmation';
-
 /**
  * @type {string}
  * @const
@@ -56,16 +50,6 @@ var SYSINFO_WINDOW_ID = 'sysinfo_window';
  * @const
  */
 var STATS_WINDOW_ID = 'stats_window';
-
-/**
- * Feedback flow defined in feedback_private.idl.
- * @enum {string}
- */
-var FeedbackFlow = {
-  REGULAR: 'regular',  // Flow in a regular user session.
-  LOGIN: 'login',       // Flow on the login screen.
-  SHOW_SRT_PROMPT: 'showSrtPrompt'  // Prompt user to try Software Removal Tool
-};
 
 /**
  * SRT Prompt Result defined in feedback_private.idl.
@@ -217,8 +201,6 @@ function sendReport() {
   // this window right away. The FeedbackRequest object that represents this
   // report will take care of sending the report in the background.
   sendFeedbackReport(useSystemInfo);
-  if (feedbackInfo.flow != FeedbackFlow.LOGIN)
-    window.open(FEEDBACK_LANDING_PAGE, '_blank');
   window.close();
   return true;
 }
