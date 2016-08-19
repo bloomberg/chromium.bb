@@ -620,7 +620,7 @@ void ChromeDownloadManagerDelegate::PromptUserForDownloadPath(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ANDROID_JAVA_UI)
   chrome::android::ChromeDownloadManagerOverwriteInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(download->GetWebContents()),
+      InfoBarService::FromWebContents(download->GetWebContents()), download,
       suggested_path, callback);
 #else
   DownloadFilePicker::ShowFilePicker(download, suggested_path, callback);

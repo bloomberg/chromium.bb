@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/android/path_utils.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -32,6 +33,16 @@ void DeleteExistingDownloadFile(
                                    base::Bind(callback, download_path));
 }
 
+void CreateNewFileDone(
+    const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback,
+    const base::FilePath& target_path, bool verified) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (verified)
+    callback.Run(target_path);
+  else
+    callback.Run(base::FilePath());
+}
+
 }  // namespace
 
 namespace chrome {
@@ -39,25 +50,37 @@ namespace android {
 
 ChromeDownloadManagerOverwriteInfoBarDelegate::
     ~ChromeDownloadManagerOverwriteInfoBarDelegate() {
+  if (download_item_)
+    download_item_->RemoveObserver(this);
 }
 
 // static
 void ChromeDownloadManagerOverwriteInfoBarDelegate::Create(
     InfoBarService* infobar_service,
+    content::DownloadItem* download_item,
     const base::FilePath& suggested_path,
     const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
   infobar_service->AddInfoBar(DownloadOverwriteInfoBar::CreateInfoBar(
       base::WrapUnique(new ChromeDownloadManagerOverwriteInfoBarDelegate(
-          suggested_path, callback))));
+          download_item, suggested_path, callback))));
+}
+
+void ChromeDownloadManagerOverwriteInfoBarDelegate::OnDownloadDestroyed(
+    content::DownloadItem* download_item) {
+  DCHECK_EQ(download_item, download_item_);
+  download_item_ = nullptr;
 }
 
 ChromeDownloadManagerOverwriteInfoBarDelegate::
     ChromeDownloadManagerOverwriteInfoBarDelegate(
+        content::DownloadItem* download_item,
         const base::FilePath& suggested_download_path,
         const DownloadTargetDeterminerDelegate::FileSelectedCallback&
             file_selected_callback)
-    : suggested_download_path_(suggested_download_path),
+    : download_item_(download_item),
+      suggested_download_path_(suggested_download_path),
       file_selected_callback_(file_selected_callback) {
+  download_item_->AddObserver(this);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -74,11 +97,20 @@ bool ChromeDownloadManagerOverwriteInfoBarDelegate::OverwriteExistingFile() {
 }
 
 bool ChromeDownloadManagerOverwriteInfoBarDelegate::CreateNewFile() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &ChromeDownloadManagerOverwriteInfoBarDelegate::CreateNewFileInternal,
-          suggested_download_path_, file_selected_callback_));
+  if (!download_item_)
+    return true;
+
+  base::FilePath download_dir;
+  if (!base::android::GetDownloadsDirectory(&download_dir))
+    return true;
+
+  DownloadPathReservationTracker::GetReservedPath(
+      download_item_,
+      suggested_download_path_,
+      download_dir,
+      true,
+      DownloadPathReservationTracker::UNIQUIFY,
+      base::Bind(&CreateNewFileDone, file_selected_callback_));
   return true;
 }
 
@@ -99,21 +131,6 @@ void ChromeDownloadManagerOverwriteInfoBarDelegate::InfoBarDismissed() {
   file_selected_callback_.Run(base::FilePath());
   DownloadController::RecordDownloadCancelReason(
       DownloadController::CANCEL_REASON_OVERWRITE_INFOBAR_DISMISSED);
-}
-
-void ChromeDownloadManagerOverwriteInfoBarDelegate::CreateNewFileInternal(
-    const base::FilePath& suggested_download_path,
-    const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-  int uniquifier = base::GetUniquePathNumber(suggested_download_path,
-                                             base::FilePath::StringType());
-  base::FilePath new_path = suggested_download_path;
-  if (uniquifier > 0) {
-    new_path = suggested_download_path.InsertBeforeExtensionASCII(
-        base::StringPrintf(" (%d)", uniquifier));
-  }
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(callback, new_path));
 }
 
 }  // namespace android

@@ -10,8 +10,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chrome/browser/android/download/download_overwrite_infobar_delegate.h"
+#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner_delegate.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "content/public/browser/download_item.h"
 
 using base::android::ScopedJavaGlobalRef;
 
@@ -22,18 +24,24 @@ namespace android {
 
 // An infobar delegate that starts from the given file path.
 class ChromeDownloadManagerOverwriteInfoBarDelegate
-    : public DownloadOverwriteInfoBarDelegate {
+    : public DownloadOverwriteInfoBarDelegate,
+      public content::DownloadItem::Observer {
  public:
   ~ChromeDownloadManagerOverwriteInfoBarDelegate() override;
 
   static void Create(
       InfoBarService* infobar_service,
+      content::DownloadItem* download_item,
       const base::FilePath& suggested_download_path,
       const DownloadTargetDeterminerDelegate::FileSelectedCallback&
           file_selected_callback);
 
+  // content::DownloadItem::Observer
+  void OnDownloadDestroyed(content::DownloadItem* download_item) override;
+
  private:
   ChromeDownloadManagerOverwriteInfoBarDelegate(
+      content::DownloadItem* download_item,
       const base::FilePath& suggested_path,
       const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback);
 
@@ -46,11 +54,9 @@ class ChromeDownloadManagerOverwriteInfoBarDelegate
   std::string GetDirFullPath() const override;
   void InfoBarDismissed() override;
 
-  // Called on the FILE thread to create a new file.  Calls |callback| on the UI
-  // thread when finished.
-  static void CreateNewFileInternal(
-      const base::FilePath& suggested_download_path,
-      const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback);
+  // The download item that is requesting the infobar. Could get deleted while
+  // the infobar is showing.
+  content::DownloadItem* download_item_;
 
   // The suggested download path from download target determiner. This is used
   // to show users the file name and the directory that will be used.
