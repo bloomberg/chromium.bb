@@ -354,9 +354,7 @@ String StylePropertySerializer::commonShorthandChecks(const StylePropertyShortha
     if (hasImportant && hasNonImportant)
         return emptyString();
 
-    // TODO(timloh): This should be isCSSWideKeyword()
-    if (longhands[0]->isInitialValue() || longhands[0]->isInheritedValue()
-        || longhands[0]->isPendingSubstitutionValue()) {
+    if (longhands[0]->isCSSWideKeyword() || longhands[0]->isPendingSubstitutionValue()) {
         bool success = true;
         for (int i = 1; i < longhandCount; i++) {
             if (!longhands[i]->equals(*longhands[0])) {
@@ -384,8 +382,7 @@ String StylePropertySerializer::commonShorthandChecks(const StylePropertyShortha
         }
         if (!allowInitial && value.isInitialValue())
             return emptyString();
-        // TODO(timloh): This should also check unset
-        if (value.isInheritedValue() || value.isPendingSubstitutionValue())
+        if (value.isInheritedValue() || value.isUnsetValue() || value.isPendingSubstitutionValue())
             return emptyString();
         if (value.isVariableReferenceValue())
             return emptyString();
