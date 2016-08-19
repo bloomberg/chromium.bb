@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 
 @class BrowserWindowController;
-@class CrTrackingArea;
 @class DropdownAnimation;
 
 namespace fullscreen_mac {
@@ -41,42 +40,22 @@ enum SlidingStyle {
   // Our parent controller.
   BrowserWindowController* browserController_;  // weak
 
-  // The content view for the window.  This is nil when not in presentation
-  // mode.
-  NSView* contentView_;  // weak
-
-  // YES while this controller is in the process of setting up for fullscreen.
-  BOOL settingUp_;
-
   // Whether or not we are in fullscreen mode.
   BOOL inFullscreenMode_;
-
-  // The tracking area associated with the floating dropdown bar.  This tracking
-  // area is attached to |contentView_|, because when the dropdown is completely
-  // hidden, we still need to keep a 1px tall tracking area visible.  Attaching
-  // to the content view allows us to do this.  |trackingArea_| can be nil if
-  // not in presentation mode or during animations.
-  base::scoped_nsobject<CrTrackingArea> trackingArea_;
 
   // Pointer to the currently running animation.  Is nil if no animation is
   // running.
   base::scoped_nsobject<DropdownAnimation> currentAnimation_;
 
-  // Timers for scheduled showing/hiding of the bar (which are always done with
-  // animation).
-  base::scoped_nsobject<NSTimer> showTimer_;
+  // Timer for scheduled hiding of the toolbar when it had been revealed for
+  // tabstrip changes.
   base::scoped_nsobject<NSTimer> hideTimer_;
 
-  // Holds the current bounds of |trackingArea_|, even if |trackingArea_| is
-  // currently nil.  Used to restore the tracking area when an animation
-  // completes.
-  NSRect trackingAreaBounds_;
-
-  // Tracks the currently requested system fullscreen mode, used to show or hide
-  // the menubar.  This should be |kFullScreenModeNormal| when the window is not
-  // main or not fullscreen, |kFullScreenModeHideAll| while the overlay is
-  // hidden, and |kFullScreenModeHideDock| while the overlay is shown.  If the
-  // window is not on the primary screen, this should always be
+  // Tracks the currently requested system fullscreen mode, used to show or
+  // hide the menubar.  This should be |kFullScreenModeNormal| when the window
+  // is not main or not fullscreen, |kFullScreenModeHideAll| while the overlay
+  // is hidden, and |kFullScreenModeHideDock| while the overlay is shown.  If
+  // the window is not on the primary screen, this should always be
   // |kFullScreenModeNormal|.  This value can get out of sync with the correct
   // state if we miss a notification (which can happen when a window is closed).
   // Used to track the current state and make sure we properly restore the menu
@@ -115,8 +94,7 @@ enum SlidingStyle {
 // window.  If |-setupFullscreenToolbarForContentView:showDropdown:| is called,
 // it must be balanced with a call to |-exitFullscreenMode| before the
 // controller is released.
-- (void)setupFullscreenToolbarForContentView:(NSView*)contentView
-                                showDropdown:(BOOL)showDropdown;
+- (void)setupFullscreenToolbarWithDropdown:(BOOL)showDropdown;
 - (void)exitFullscreenMode;
 
 // Returns the amount by which the floating bar should be offset downwards (to
@@ -125,17 +103,13 @@ enum SlidingStyle {
 // otherwise.
 - (CGFloat)floatingBarVerticalOffset;
 
-// Informs the controller that the overlay's frame has changed.  The controller
-// uses this information to update its tracking areas.
-- (void)overlayFrameChanged:(NSRect)frame;
-
-// Informs the controller that the overlay should be shown/hidden, possibly with
-// animation, possibly after a delay (only applicable for the animated case).
-- (void)ensureOverlayShownWithAnimation:(BOOL)animate delay:(BOOL)delay;
-- (void)ensureOverlayHiddenWithAnimation:(BOOL)animate delay:(BOOL)delay;
+// Informs the controller that the overlay should be shown/hidden, possibly
+// with animation.
+- (void)ensureOverlayShownWithAnimation:(BOOL)animate;
+- (void)ensureOverlayHiddenWithAnimation:(BOOL)animate;
 
 // Cancels any running animation and timers.
-- (void)cancelAnimationAndTimers;
+- (void)cancelAnimationAndTimer;
 
 // Animates the toolbar dropping down to show changes to the tab strip.
 - (void)revealToolbarForTabStripChanges;
@@ -145,8 +119,10 @@ enum SlidingStyle {
 // Ranges from 0 to -22.
 - (CGFloat)menubarOffset;
 
-// Returns true if the window is the main window.
-- (BOOL)isMainWindow;
+// Returns YES if the mouse is on the window's screen. This is used to check
+// if the menubar events belong to window's screen since the menubar would
+// only be revealed if the mouse is there.
+- (BOOL)isMouseOnScreen;
 
 // Returns true if the browser is in the process of entering/exiting
 // fullscreen.

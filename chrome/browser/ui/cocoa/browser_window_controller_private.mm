@@ -460,10 +460,8 @@ willPositionSheet:(NSWindow*)sheet
   BOOL showDropdown =
       !fullscreenForTab && !kioskMode && ([self floatingBarHasFocus]);
 
-  NSView* contentView = [[self window] contentView];
   [fullscreenToolbarController_
-      setupFullscreenToolbarForContentView:contentView
-                              showDropdown:showDropdown];
+      setupFullscreenToolbarWithDropdown:showDropdown];
 }
 
 - (void)adjustUIForExitingFullscreenAndStopOmniboxSliding {
@@ -610,7 +608,7 @@ willPositionSheet:(NSWindow*)sheet
   if (enteringAppKitFullscreen_)
     return;
 
-  [self hideOverlayIfPossibleWithAnimation:NO delay:NO];
+  [self hideOverlayIfPossibleWithAnimation:NO];
 
   switch (exclusiveAccessController_->bubble_type()) {
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
@@ -855,9 +853,9 @@ willPositionSheet:(NSWindow*)sheet
   barVisibilityUpdatesEnabled_ = YES;
 
   if ([barVisibilityLocks_ count])
-    [fullscreenToolbarController_ ensureOverlayShownWithAnimation:NO delay:NO];
+    [fullscreenToolbarController_ ensureOverlayShownWithAnimation:NO];
   else
-    [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:NO delay:NO];
+    [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:NO];
 }
 
 - (void)disableBarVisibilityUpdates {
@@ -866,14 +864,14 @@ willPositionSheet:(NSWindow*)sheet
     return;
 
   barVisibilityUpdatesEnabled_ = NO;
-  [fullscreenToolbarController_ cancelAnimationAndTimers];
+  [fullscreenToolbarController_ cancelAnimationAndTimer];
 }
 
-- (void)hideOverlayIfPossibleWithAnimation:(BOOL)animation delay:(BOOL)delay {
+- (void)hideOverlayIfPossibleWithAnimation:(BOOL)animation {
   if (!barVisibilityUpdatesEnabled_ || [barVisibilityLocks_ count])
     return;
-  [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:animation
-                                                           delay:delay];
+
+  [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:animation];
 }
 
 - (CGFloat)toolbarDividerOpacity {
@@ -1011,11 +1009,8 @@ willPositionSheet:(NSWindow*)sheet
 
   [self layoutTabContentArea:output.contentAreaFrame];
 
-  if (!NSIsEmptyRect(output.fullscreenBackingBarFrame)) {
+  if (!NSIsEmptyRect(output.fullscreenBackingBarFrame))
     [floatingBarBackingView_ setFrame:output.fullscreenBackingBarFrame];
-    [fullscreenToolbarController_
-        overlayFrameChanged:output.fullscreenBackingBarFrame];
-  }
 
   [findBarCocoaController_
       positionFindBarViewAtMaxY:output.findBarMaxY

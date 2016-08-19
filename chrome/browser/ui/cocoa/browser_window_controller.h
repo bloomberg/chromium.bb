@@ -568,18 +568,12 @@ class Command;
 // focus). This is required for the floating bar in presentation mode, but
 // should also be called when not in presentation mode; see the comments for
 // |barVisibilityLocks_| for more details. Double locks/releases by the same
-// owner are ignored. If |animate:| is YES, then an animation may be performed,
-// possibly after a small delay if |delay:| is YES. If |animate:| is NO,
-// |delay:| will be ignored. In the case of multiple calls, later calls have
-// precedence with the rule that |animate:NO| has precedence over |animate:YES|,
-// and |delay:NO| has precedence over |delay:YES|.
+// owner are ignored. If |animate:| is YES, then an animation may be
+// performed. In the case of multiple calls, later calls have precedence with
+// the rule that |animate:NO| has precedence over |animate:YES|.
 - (BOOL)isBarVisibilityLockedForOwner:(id)owner;
-- (void)lockBarVisibilityForOwner:(id)owner
-                    withAnimation:(BOOL)animate
-                            delay:(BOOL)delay;
-- (void)releaseBarVisibilityForOwner:(id)owner
-                       withAnimation:(BOOL)animate
-                               delay:(BOOL)delay;
+- (void)lockBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate;
+- (void)releaseBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate;
 
 // Returns YES if any of the views in the floating bar currently has focus.
 - (BOOL)floatingBarHasFocus;

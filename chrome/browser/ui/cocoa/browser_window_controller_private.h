@@ -94,8 +94,8 @@ class WebContents;
 - (void)disableBarVisibilityUpdates;
 
 // If there are no visibility locks and bar visibity updates are enabled, hides
-// the bar with |animation| and |delay|.  Otherwise, does nothing.
-- (void)hideOverlayIfPossibleWithAnimation:(BOOL)animation delay:(BOOL)delay;
+// the bar with |animation|.  Otherwise, does nothing.
+- (void)hideOverlayIfPossibleWithAnimation:(BOOL)animation;
 
 // The opacity for the toolbar divider; 0 means that it shouldn't be shown.
 - (CGFloat)toolbarDividerOpacity;

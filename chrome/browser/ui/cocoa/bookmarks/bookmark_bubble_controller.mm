@@ -180,7 +180,8 @@ using bookmarks::BookmarkNode;
 
 - (void)close {
   [[BrowserWindowController browserWindowControllerForWindow:self.parentWindow]
-      releaseBarVisibilityForOwner:self withAnimation:YES delay:NO];
+      releaseBarVisibilityForOwner:self
+                     withAnimation:YES];
 
   [super close];
 }

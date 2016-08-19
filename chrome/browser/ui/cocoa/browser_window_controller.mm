@@ -1984,24 +1984,19 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return [barVisibilityLocks_ containsObject:owner];
 }
 
-- (void)lockBarVisibilityForOwner:(id)owner
-                    withAnimation:(BOOL)animate
-                            delay:(BOOL)delay {
+- (void)lockBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
   if (![self isBarVisibilityLockedForOwner:owner]) {
     [barVisibilityLocks_ addObject:owner];
 
     // If enabled, show the overlay if necessary (and if the fullscreen
     // toolbar is hidden).
     if (barVisibilityUpdatesEnabled_) {
-      [fullscreenToolbarController_ ensureOverlayShownWithAnimation:animate
-                                                              delay:delay];
+      [fullscreenToolbarController_ ensureOverlayShownWithAnimation:animate];
     }
   }
 }
 
-- (void)releaseBarVisibilityForOwner:(id)owner
-                       withAnimation:(BOOL)animate
-                               delay:(BOOL)delay {
+- (void)releaseBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
   if ([self isBarVisibilityLockedForOwner:owner]) {
     [barVisibilityLocks_ removeObject:owner];
 
@@ -2009,8 +2004,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
     // toolbar is hidden).
     if (barVisibilityUpdatesEnabled_ &&
         ![barVisibilityLocks_ count]) {
-      [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:animate
-                                                               delay:delay];
+      [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:animate];
     }
   }
 }

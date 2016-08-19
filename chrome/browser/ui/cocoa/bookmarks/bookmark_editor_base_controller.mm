@@ -285,7 +285,8 @@ class BookmarkEditorBaseControllerBridge
   // Lock down floating bar when in full-screen mode.  Don't animate
   // otherwise the pane will be misplaced.
   [[BrowserWindowController browserWindowControllerForWindow:parentWindow_]
-   lockBarVisibilityForOwner:self withAnimation:NO delay:NO];
+      lockBarVisibilityForOwner:self
+                  withAnimation:NO];
   [NSApp beginSheet:[self window]
      modalForWindow:parentWindow_
       modalDelegate:self
@@ -332,7 +333,8 @@ NSString* const kOkEnabledName = @"okEnabled";
         contextInfo:(void*)contextInfo {
   [sheet close];
   [[BrowserWindowController browserWindowControllerForWindow:parentWindow_]
-   releaseBarVisibilityForOwner:self withAnimation:YES delay:NO];
+      releaseBarVisibilityForOwner:self
+                     withAnimation:YES];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {

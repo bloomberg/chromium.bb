@@ -2886,9 +2886,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       ![self isAnimatingToState:BookmarkBar::DETACHED]) {
     BrowserWindowController* browserController =
         [BrowserWindowController browserWindowControllerForView:[self view]];
-    [browserController lockBarVisibilityForOwner:child
-                                   withAnimation:NO
-                                           delay:NO];
+    [browserController lockBarVisibilityForOwner:child withAnimation:NO];
   }
 }
 
@@ -2897,9 +2895,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // mode.
   BrowserWindowController* browserController =
       [BrowserWindowController browserWindowControllerForView:[self view]];
-  [browserController releaseBarVisibilityForOwner:child
-                                    withAnimation:NO
-                                            delay:NO];
+  [browserController releaseBarVisibilityForOwner:child withAnimation:NO];
 }
 
 // Add a new folder controller as triggered by the given folder button.
@@ -2911,9 +2907,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       [BrowserWindowController browserWindowControllerForView:[self view]];
   // Confirm we're not re-locking with ourself as an owner before locking.
   DCHECK([browserController isBarVisibilityLockedForOwner:self] == NO);
-  [browserController lockBarVisibilityForOwner:self
-                                 withAnimation:NO
-                                         delay:NO];
+  [browserController lockBarVisibilityForOwner:self withAnimation:NO];
 
   if (folderController_)
     [self closeAllBookmarkFolders];
@@ -2932,9 +2926,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self watchForExitEvent:YES];
 
   // No longer need to hold the lock; the folderController_ now owns it.
-  [browserController releaseBarVisibilityForOwner:self
-                                    withAnimation:NO
-                                            delay:NO];
+  [browserController releaseBarVisibilityForOwner:self withAnimation:NO];
 }
 
 - (void)openAll:(const BookmarkNode*)node
