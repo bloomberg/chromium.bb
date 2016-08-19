@@ -98,11 +98,11 @@ class MockFormSaver : public StubFormSaver {
 
 // Invokes the password store consumer with a copy of all forms.
 ACTION_P4(InvokeConsumer, form1, form2, form3, form4) {
-  ScopedVector<PasswordForm> result;
-  result.push_back(base::WrapUnique(new PasswordForm(form1)));
-  result.push_back(base::WrapUnique(new PasswordForm(form2)));
-  result.push_back(base::WrapUnique(new PasswordForm(form3)));
-  result.push_back(base::WrapUnique(new PasswordForm(form4)));
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  result.push_back(base::MakeUnique<PasswordForm>(form1));
+  result.push_back(base::MakeUnique<PasswordForm>(form2));
+  result.push_back(base::MakeUnique<PasswordForm>(form3));
+  result.push_back(base::MakeUnique<PasswordForm>(form4));
   arg0->OnGetPasswordStoreResults(std::move(result));
 }
 
@@ -223,7 +223,7 @@ MATCHER_P(CheckFieldPropertiesMasksUpload,
   return true;
 }
 
-void ClearVector(ScopedVector<PasswordForm>* results) {
+void ClearVector(std::vector<std::unique_ptr<PasswordForm>>* results) {
   results->clear();
 }
 
@@ -305,14 +305,14 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 class MockStoreResultFilter : public CredentialsFilter {
  public:
   MOCK_CONST_METHOD1(FilterResultsPtr,
-                     void(ScopedVector<autofill::PasswordForm>* results));
+                     void(std::vector<std::unique_ptr<PasswordForm>>* results));
 
   // This method is not relevant here.
   MOCK_CONST_METHOD1(ShouldSave, bool(const autofill::PasswordForm& form));
 
   // GMock cannot handle move-only arguments.
-  ScopedVector<autofill::PasswordForm> FilterResults(
-      ScopedVector<autofill::PasswordForm> results) const override {
+  std::vector<std::unique_ptr<PasswordForm>> FilterResults(
+      std::vector<std::unique_ptr<PasswordForm>> results) const override {
     FilterResultsPtr(&results);
     return results;
   }
@@ -455,16 +455,17 @@ class PasswordFormManagerTest : public testing::Test {
   void SimulateMatchingPhase(PasswordFormManager* p,
                              ResultOfSimulatedMatchingMask result) {
     if (result == RESULT_NO_MATCH) {
-      p->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+      p->OnGetPasswordStoreResults(
+          std::vector<std::unique_ptr<PasswordForm>>());
       return;
     }
 
-    ScopedVector<PasswordForm> result_form;
+    std::vector<std::unique_ptr<PasswordForm>> result_form;
     if (result & RESULT_SAVED_MATCH) {
-      result_form.push_back(new PasswordForm(saved_match_));
+      result_form.push_back(base::MakeUnique<PasswordForm>(saved_match_));
     }
     if (result & RESULT_PSL_MATCH) {
-      result_form.push_back(new PasswordForm(psl_saved_match_));
+      result_form.push_back(base::MakeUnique<PasswordForm>(psl_saved_match_));
     }
     p->OnGetPasswordStoreResults(std::move(result_form));
   }
@@ -484,7 +485,7 @@ class PasswordFormManagerTest : public testing::Test {
     PasswordFormManager form_manager(
         password_manager(), client(), client()->driver(), form,
         base::MakeUnique<NiceMock<MockFormSaver>>());
-    ScopedVector<PasswordForm> result;
+    std::vector<std::unique_ptr<PasswordForm>> result;
     result.push_back(CreateSavedMatch(false));
     result[0]->generation_upload_status = status;
     result[0]->times_used = times_used;
@@ -691,7 +692,7 @@ class PasswordFormManagerTest : public testing::Test {
         password_manager(), client(), client()->driver(), form,
         base::MakeUnique<NiceMock<MockFormSaver>>());
 
-    ScopedVector<PasswordForm> result;
+    std::vector<std::unique_ptr<PasswordForm>> result;
     form_manager.OnGetPasswordStoreResults(std::move(result));
 
     autofill::ServerFieldTypeSet expected_available_field_types;
@@ -733,9 +734,9 @@ class PasswordFormManagerTest : public testing::Test {
   PasswordForm* observed_form() { return &observed_form_; }
   PasswordForm* saved_match() { return &saved_match_; }
   PasswordForm* psl_saved_match() { return &psl_saved_match_; }
-  PasswordForm* CreateSavedMatch(bool blacklisted) {
+  std::unique_ptr<PasswordForm> CreateSavedMatch(bool blacklisted) {
     // Owned by the caller of this method.
-    PasswordForm* match = new PasswordForm(saved_match_);
+    auto match = base::MakeUnique<PasswordForm>(saved_match_);
     match->blacklisted_by_user = blacklisted;
     return match;
   }
@@ -900,13 +901,13 @@ TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
   blacklisted_match2.username_element = ASCIIToUTF16("Element");
   blacklisted_match2.blacklisted_by_user = true;
 
-  ScopedVector<PasswordForm> result;
-  result.push_back(new PasswordForm(blacklisted_psl));
-  result.push_back(new PasswordForm(blacklisted_not_match));
-  result.push_back(new PasswordForm(blacklisted_not_match2));
-  result.push_back(new PasswordForm(blacklisted_match));
-  result.push_back(new PasswordForm(blacklisted_match2));
-  result.push_back(new PasswordForm(*saved_match()));
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  result.push_back(base::MakeUnique<PasswordForm>(blacklisted_psl));
+  result.push_back(base::MakeUnique<PasswordForm>(blacklisted_not_match));
+  result.push_back(base::MakeUnique<PasswordForm>(blacklisted_not_match2));
+  result.push_back(base::MakeUnique<PasswordForm>(blacklisted_match));
+  result.push_back(base::MakeUnique<PasswordForm>(blacklisted_match2));
+  result.push_back(base::MakeUnique<PasswordForm>(*saved_match()));
   form_manager.OnGetPasswordStoreResults(std::move(result));
   EXPECT_TRUE(form_manager.IsBlacklisted());
   EXPECT_THAT(
@@ -927,9 +928,9 @@ TEST_F(PasswordFormManagerTest, AutofillBlacklisted) {
   blacklisted.blacklisted_by_user = true;
   blacklisted.username_value.clear();
 
-  ScopedVector<PasswordForm> result;
-  result.push_back(new PasswordForm(saved_form));
-  result.push_back(new PasswordForm(blacklisted));
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  result.push_back(base::MakeUnique<PasswordForm>(saved_form));
+  result.push_back(base::MakeUnique<PasswordForm>(blacklisted));
 
   autofill::PasswordFormFillData fill_data;
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
@@ -1140,8 +1141,8 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult_Paths) {
   PasswordForm saved_form = observed;
   saved_form.origin = GURL("https://accounts.google.com/a/OtherLoginAuth");
   saved_form.action = GURL("https://accounts.google.com/a/OtherLogin");
-  ScopedVector<PasswordForm> result;
-  result.push_back(new PasswordForm(saved_form));
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  result.push_back(base::MakeUnique<PasswordForm>(saved_form));
   form_manager.OnGetPasswordStoreResults(std::move(result));
 
   // Different paths for action / origin are okay.
@@ -1160,8 +1161,8 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult_IgnoredCredentials) {
   client()->FilterAllResults();
 
   PasswordForm saved_form = observed;
-  ScopedVector<PasswordForm> result;
-  result.push_back(new PasswordForm(saved_form));
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  result.push_back(base::MakeUnique<PasswordForm>(saved_form));
   form_manager.OnGetPasswordStoreResults(std::move(result));
 
   // Results should be ignored if the client requests it.
@@ -1222,8 +1223,8 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
   PasswordForm saved_form = *saved_match();
   ASSERT_FALSE(saved_form.other_possible_usernames.empty());
 
-  ScopedVector<PasswordForm> result;
-  result.push_back(new PasswordForm(saved_form));
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  result.push_back(base::MakeUnique<PasswordForm>(saved_form));
   form_manager()->OnGetPasswordStoreResults(std::move(result));
 
   // The saved match has the right username already.
@@ -1258,8 +1259,8 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_OtherUsername) {
   PasswordForm saved_form = *saved_match();
   ASSERT_FALSE(saved_form.other_possible_usernames.empty());
 
-  ScopedVector<PasswordForm> result;
-  result.push_back(new PasswordForm(saved_form));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> result;
+  result.push_back(base::MakeUnique<PasswordForm>(saved_form));
   form_manager()->OnGetPasswordStoreResults(std::move(result));
 
   // The saved match has the right username already.
@@ -1294,7 +1295,8 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage_NoCredentials) {
   // "not blacklisted" message.
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
-  form_manager()->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+  form_manager()->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
 }
 
 TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage_Credentials) {
@@ -1303,7 +1305,7 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage_Credentials) {
   // should be called to send the "not blacklisted" message.
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
 }
@@ -1321,7 +1323,7 @@ TEST_F(PasswordFormManagerTest,
                                    base::MakeUnique<MockFormSaver>());
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
   form_manager.OnGetPasswordStoreResults(std::move(simulated_results));
 }
@@ -1332,7 +1334,7 @@ TEST_F(PasswordFormManagerTest,
   // password store, but they are blacklisted. AllowPasswordGenerationForForm
   // is still called.
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(CreateSavedMatch(true));
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
 }
@@ -1340,26 +1342,28 @@ TEST_F(PasswordFormManagerTest,
 TEST_F(PasswordFormManagerTest, TestBestCredentialsByEachUsernameAreIncluded) {
   // Simulate having several matches, with 3 different usernames. Some of the
   // matches are PSL matches. One match for each username should be chosen.
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   // Add a best scoring match. It should be in |best_matches| and chosen as a
   // prefferred match.
-  simulated_results.push_back(new PasswordForm(*saved_match()));
+  simulated_results.push_back(base::MakeUnique<PasswordForm>(*saved_match()));
   // Add a match saved on another form, it has lower score. It should not be in
   // |best_matches|.
-  simulated_results.push_back(new PasswordForm(*saved_match()));
+  simulated_results.push_back(base::MakeUnique<PasswordForm>(*saved_match()));
   simulated_results[1]->password_element = ASCIIToUTF16("signup_password");
   simulated_results[1]->username_element = ASCIIToUTF16("signup_username");
   // Add a match saved on another form with a different username. It should be
   // in |best_matches|.
-  simulated_results.push_back(new PasswordForm(*saved_match()));
+  simulated_results.push_back(base::MakeUnique<PasswordForm>(*saved_match()));
   auto username1 = simulated_results[0]->username_value + ASCIIToUTF16("1");
   simulated_results[2]->username_value = username1;
   simulated_results[2]->password_element = ASCIIToUTF16("signup_password");
   simulated_results[2]->username_element = ASCIIToUTF16("signup_username");
   // Add a PSL match, it should not be in |best_matches|.
-  simulated_results.push_back(new PasswordForm(*psl_saved_match()));
+  simulated_results.push_back(
+      base::MakeUnique<PasswordForm>(*psl_saved_match()));
   // Add a PSL match with a different username. It should be in |best_matches|.
-  simulated_results.push_back(new PasswordForm(*psl_saved_match()));
+  simulated_results.push_back(
+      base::MakeUnique<PasswordForm>(*psl_saved_match()));
   auto username2 = simulated_results[0]->username_value + ASCIIToUTF16("2");
   simulated_results[4]->username_value = username2;
 
@@ -1388,7 +1392,7 @@ TEST_F(PasswordFormManagerTest,
   // well are generated. They should now be sent to Autofill().
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
 
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
   simulated_results.push_back(CreateSavedMatch(false));
   simulated_results[0]->username_value = ASCIIToUTF16("other@gmail.com");
@@ -1408,7 +1412,8 @@ TEST_F(PasswordFormManagerTest,
 TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   const base::string16 kUsernameOther = ASCIIToUTF16("other username");
 
-  form_manager()->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+  form_manager()->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
 
   PasswordForm credentials(*observed_form());
   credentials.other_possible_usernames.push_back(ASCIIToUTF16("543-43-1234"));
@@ -1438,7 +1443,8 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernamesDuplicates) {
   const base::string16 kUsernameDuplicate = ASCIIToUTF16("duplicate");
   const base::string16 kUsernameRandom = ASCIIToUTF16("random");
 
-  form_manager()->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+  form_manager()->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
 
   PasswordForm credentials(*observed_form());
   credentials.other_possible_usernames.push_back(ASCIIToUTF16("511-32-9830"));
@@ -1504,7 +1510,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   obsolete_form.action = encountered_form.action;
 
   // Feed the incomplete credentials to the manager.
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(std::move(incomplete_form));
   form_manager.OnGetPasswordStoreResults(std::move(simulated_results));
 
@@ -1528,7 +1534,7 @@ TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
   // Second candidate has the same signon realm as the form, but has a different
   // origin and action. Public suffix match is the most important criterion so
   // the second candidate should be selected.
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
   simulated_results.push_back(CreateSavedMatch(false));
   simulated_results[0]->is_public_suffix_match = true;
@@ -1567,8 +1573,8 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreAutofilled) {
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
       .WillOnce(SaveArg<0>(&fill_data));
 
-  ScopedVector<PasswordForm> simulated_results;
-  simulated_results.push_back(new PasswordForm(android_login));
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
+  simulated_results.push_back(base::MakeUnique<PasswordForm>(android_login));
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
   EXPECT_TRUE(fill_data.additional_logins.empty());
   EXPECT_FALSE(fill_data.wait_for_username);
@@ -1616,22 +1622,25 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreProtected) {
   // from Android: the first has the same username as the web-based credential,
   // so it should be suppressed, but the second has a different username, so it
   // should be shown.
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
   simulated_results[0]->username_value = ASCIIToUTF16(kTestUsername1);
   simulated_results[0]->password_value = ASCIIToUTF16(kTestWebPassword);
-  simulated_results.push_back(new PasswordForm);
+  simulated_results.push_back(base::MakeUnique<PasswordForm>());
   simulated_results[1]->signon_realm = "android://hash@com.google.android";
   simulated_results[1]->origin = GURL("android://hash@com.google.android/");
   simulated_results[1]->username_value = ASCIIToUTF16(kTestUsername1);
   simulated_results[1]->password_value = ASCIIToUTF16(kTestAndroidPassword1);
-  simulated_results.push_back(new PasswordForm(*simulated_results[1]));
+  simulated_results.push_back(
+      base::MakeUnique<PasswordForm>(*simulated_results[1]));
   simulated_results[2]->username_value = ASCIIToUTF16(kTestUsername2);
   simulated_results[2]->password_value = ASCIIToUTF16(kTestAndroidPassword2);
 
-  ScopedVector<PasswordForm> expected_matches;
-  expected_matches.push_back(new PasswordForm(*simulated_results[0]));
-  expected_matches.push_back(new PasswordForm(*simulated_results[2]));
+  std::vector<std::unique_ptr<PasswordForm>> expected_matches;
+  expected_matches.push_back(
+      base::MakeUnique<PasswordForm>(*simulated_results[0]));
+  expected_matches.push_back(
+      base::MakeUnique<PasswordForm>(*simulated_results[2]));
 
   autofill::PasswordFormFillData fill_data;
   EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
@@ -1641,11 +1650,12 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreProtected) {
   EXPECT_FALSE(fill_data.wait_for_username);
   EXPECT_EQ(1u, fill_data.additional_logins.size());
 
-  std::vector<PasswordForm*> actual_matches;
+  std::vector<std::unique_ptr<PasswordForm>> actual_matches;
   for (const auto& username_match_pair : form_manager()->best_matches())
-    actual_matches.push_back(username_match_pair.second.get());
+    actual_matches.push_back(
+        base::MakeUnique<PasswordForm>(*username_match_pair.second));
   EXPECT_THAT(actual_matches,
-              UnorderedPasswordFormElementsAre(expected_matches.get()));
+              UnorderedPasswordFormElementsAre(&expected_matches));
 }
 
 TEST_F(PasswordFormManagerTest, InvalidActionURLsDoNotMatch) {
@@ -1773,9 +1783,9 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
   second.password_value = ASCIIToUTF16("second");
   second.preferred = false;
 
-  ScopedVector<PasswordForm> result;
-  result.push_back(new PasswordForm(first));
-  result.push_back(new PasswordForm(second));
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  result.push_back(base::MakeUnique<PasswordForm>(first));
+  result.push_back(base::MakeUnique<PasswordForm>(second));
   form_manager()->OnGetPasswordStoreResults(std::move(result));
 
   // We always take the first credential with a particular username, regardless
@@ -1885,7 +1895,8 @@ TEST_F(PasswordFormManagerTest, UploadPasswordForm) {
 TEST_F(PasswordFormManagerTest, CorrectlySavePasswordWithoutUsernameFields) {
   EXPECT_CALL(*client()->mock_driver(), AllowPasswordGenerationForForm(_));
 
-  form_manager()->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+  form_manager()->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
 
   PasswordForm login(*observed_form());
   login.username_element.clear();
@@ -1931,14 +1942,14 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
   // Suddenly, the frame and its driver disappear.
   client()->KillDriver();
 
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(std::move(form));
   form_manager.OnGetPasswordStoreResults(std::move(simulated_results));
 }
 
 TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
   // Check that preferred_match() is always a member of best_matches().
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   std::unique_ptr<PasswordForm> form(new PasswordForm(*observed_form()));
   form->username_value = ASCIIToUTF16("username");
   form->password_value = ASCIIToUTF16("password1");
@@ -2067,7 +2078,7 @@ TEST_F(PasswordFormManagerTest, TestSuggestingPasswordChangeForms) {
   PasswordFormManager manager_creds(
       password_manager(), client(), client()->driver(),
       observed_change_password_form, base::MakeUnique<MockFormSaver>());
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
 
   autofill::PasswordFormFillData fill_data;
@@ -2243,7 +2254,7 @@ TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
   PasswordForm submitted_form(*generated_form);
   submitted_form.password_value = ASCIIToUTF16("password3");
 
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(std::move(generated_form));
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
 
@@ -2270,7 +2281,7 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
 
   PasswordForm submitted_form(*generated_form);
 
-  ScopedVector<PasswordForm> simulated_results;
+  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
   simulated_results.push_back(std::move(generated_form));
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
 
@@ -2295,7 +2306,7 @@ TEST_F(PasswordFormManagerTest,
   // First response from the store, should be ignored.
   std::unique_ptr<PasswordForm> saved_form(new PasswordForm(*saved_match()));
   saved_form->username_value = ASCIIToUTF16("a@gmail.com");
-  ScopedVector<PasswordForm> results;
+  std::vector<std::unique_ptr<PasswordForm>> results;
   results.push_back(std::move(saved_form));
   // Expect the additional call for GetLogins after the first response arrives.
   EXPECT_CALL(
@@ -2349,7 +2360,7 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_DriverBeforeMatching) {
 
   // Password store responds.
   std::unique_ptr<PasswordForm> match(new PasswordForm(*saved_match()));
-  ScopedVector<PasswordForm> result_form;
+  std::vector<std::unique_ptr<PasswordForm>> result_form;
   result_form.push_back(std::move(match));
   form_manager()->OnGetPasswordStoreResults(std::move(result_form));
 }
@@ -2371,7 +2382,8 @@ TEST_F(PasswordFormManagerTest, UpdateFormManagers_IsCalled) {
   password_manager()->OnPasswordFormsParsed(client()->mock_driver(), observed);
   // Make sure that the additional PFM is in POST_MATCHING phase.
   ASSERT_TRUE(consumer);
-  consumer->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+  consumer->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
 
   // Now prepare |form_manager()| for saving.
   SimulateMatchingPhase(form_manager(), RESULT_NO_MATCH);
@@ -2582,7 +2594,8 @@ TEST_F(PasswordFormManagerTest, DontFetchStatistics) {
   // Because |form_manager()| is currently waiting for a PasswordStore response,
   // the response needs to be faked in order to be able to re-request another
   // one below.
-  form_manager()->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+  form_manager()->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
   EXPECT_CALL(
       *mock_store(),
       GetLogins(PasswordStore::FormDigest(*observed_form()), form_manager()));
@@ -2806,7 +2819,7 @@ TEST_F(PasswordFormManagerTest, FormClassifierVoteUpload) {
     else
       form_manager.SaveGenerationFieldDetectedByClassifier(base::string16());
 
-    ScopedVector<PasswordForm> result;
+    std::vector<std::unique_ptr<PasswordForm>> result;
     form_manager.OnGetPasswordStoreResults(std::move(result));
 
     autofill::FormStructure form_structure(submitted_form.form_data);
@@ -2836,7 +2849,7 @@ TEST_F(PasswordFormManagerTest, FieldPropertiesMasksUpload) {
   PasswordFormManager form_manager(password_manager(), client(),
                                    client()->driver(), form,
                                    base::MakeUnique<NiceMock<MockFormSaver>>());
-  ScopedVector<PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
   form_manager.OnGetPasswordStoreResults(std::move(result));
 
   DCHECK_EQ(3U, form.form_data.fields.size());
@@ -2905,9 +2918,9 @@ TEST_F(PasswordFormManagerTest, FederatedCredentialsFiltered) {
   federated.federation_origin =
       url::Origin(GURL("https://accounts.google.com"));
 
-  ScopedVector<PasswordForm> results;
-  results.push_back(new PasswordForm(federated));
-  results.push_back(new PasswordForm(*saved_match()));
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.push_back(base::MakeUnique<PasswordForm>(federated));
+  results.push_back(base::MakeUnique<PasswordForm>(*saved_match()));
   form_manager()->OnGetPasswordStoreResults(std::move(results));
 
   EXPECT_EQ(1u, form_manager()->federated_matches().size());
@@ -2931,7 +2944,7 @@ TEST_F(PasswordFormManagerTest, ProbablyAccountCreationUpload) {
   form_to_save.password_value = saved_match()->password_value;
   form_to_save.does_look_like_signup_form = true;
 
-  ScopedVector<PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
   form_manager.OnGetPasswordStoreResults(std::move(result));
 
   autofill::FormStructure pending_structure(form_to_save.form_data);

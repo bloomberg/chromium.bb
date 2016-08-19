@@ -65,7 +65,7 @@ void ManagePasswordsTest::SetupPendingPassword() {
       new password_manager::PasswordFormManager(
           nullptr, &client, driver.AsWeakPtr(), *test_form(),
           base::WrapUnique(new password_manager::StubFormSaver)));
-  ScopedVector<autofill::PasswordForm> best_matches;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> best_matches;
   test_form_manager->OnGetPasswordStoreResults(std::move(best_matches));
   GetController()->OnPasswordSubmitted(std::move(test_form_manager));
 }

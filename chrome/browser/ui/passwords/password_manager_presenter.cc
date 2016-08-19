@@ -31,7 +31,6 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/import/password_importer.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
@@ -361,9 +360,8 @@ void PasswordManagerPresenter::PasswordListPopulater::Populate() {
 }
 
 void PasswordManagerPresenter::PasswordListPopulater::OnGetPasswordStoreResults(
-    ScopedVector<autofill::PasswordForm> results) {
-  page_->password_list_ =
-      password_manager_util::ConvertScopedVector(std::move(results));
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  page_->password_list_ = std::move(results);
   page_->SortEntriesAndHideDuplicates(&page_->password_list_,
                                       &page_->password_duplicates_,
                                       PasswordEntryType::SAVED);
@@ -386,9 +384,9 @@ void PasswordManagerPresenter::PasswordExceptionListPopulater::Populate() {
 }
 
 void PasswordManagerPresenter::PasswordExceptionListPopulater::
-    OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
-  page_->password_exception_list_ =
-      password_manager_util::ConvertScopedVector(std::move(results));
+    OnGetPasswordStoreResults(
+        std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  page_->password_exception_list_ = std::move(results);
   page_->SortEntriesAndHideDuplicates(&page_->password_exception_list_,
                                       &page_->password_exception_duplicates_,
                                       PasswordEntryType::BLACKLISTED);

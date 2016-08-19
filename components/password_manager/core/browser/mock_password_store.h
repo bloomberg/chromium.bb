@@ -48,14 +48,14 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(
       DisableAutoSignInForOriginsImpl,
       PasswordStoreChangeList(const base::Callback<bool(const GURL&)>&));
-  ScopedVector<autofill::PasswordForm> FillMatchingLogins(
+  std::vector<std::unique_ptr<autofill::PasswordForm>> FillMatchingLogins(
       const PasswordStore::FormDigest& form) override {
-    return ScopedVector<autofill::PasswordForm>();
+    return std::vector<std::unique_ptr<autofill::PasswordForm>>();
   }
   MOCK_METHOD1(FillAutofillableLogins,
-               bool(ScopedVector<autofill::PasswordForm>*));
+               bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
   MOCK_METHOD1(FillBlacklistLogins,
-               bool(ScopedVector<autofill::PasswordForm>*));
+               bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
   // GMock doesn't allow to return noncopyable types.
   std::vector<std::unique_ptr<InteractionsStats>> GetSiteStatsImpl(

@@ -32,7 +32,7 @@ void UpdateLogin(password_manager::PasswordStore* store,
 
 // Returns all logins from |store| matching a fake signon realm used only by
 // PasswordsSyncPerfTest.
-ScopedVector<autofill::PasswordForm> GetLogins(
+std::vector<std::unique_ptr<autofill::PasswordForm>> GetLogins(
     password_manager::PasswordStore* store);
 
 // Removes the login held in |form| from the password store |store|.  This

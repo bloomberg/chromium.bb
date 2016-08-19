@@ -22,8 +22,8 @@ class CredentialsFilter {
 
   // Removes from |results| all forms which should be ignored for any password
   // manager-related purposes, and returns the rest.
-  virtual ScopedVector<autofill::PasswordForm> FilterResults(
-      ScopedVector<autofill::PasswordForm> results) const = 0;
+  virtual std::vector<std::unique_ptr<autofill::PasswordForm>> FilterResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) const = 0;
 
   // Should |form| be offered to be saved?
   virtual bool ShouldSave(const autofill::PasswordForm& form) const = 0;

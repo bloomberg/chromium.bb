@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -177,25 +178,27 @@ PasswordStoreChangeList PasswordStoreX::DisableAutoSignInForOriginsImpl(
 
 namespace {
 
-struct LoginLessThan {
-  bool operator()(const PasswordForm* a, const PasswordForm* b) {
-    return a->origin < b->origin;
-  }
-};
-
 // Sorts |list| by origin, like the ORDER BY clause in login_database.cc.
-void SortLoginsByOrigin(std::vector<autofill::PasswordForm*>* list) {
-  std::sort(list->begin(), list->end(), LoginLessThan());
+void SortLoginsByOrigin(std::vector<std::unique_ptr<PasswordForm>>* list) {
+  std::sort(list->begin(), list->end(),
+            [](const std::unique_ptr<PasswordForm>& a,
+               const std::unique_ptr<PasswordForm>& b) {
+              return a->origin < b->origin;
+            });
 }
 
 }  // anonymous namespace
 
-ScopedVector<autofill::PasswordForm> PasswordStoreX::FillMatchingLogins(
+std::vector<std::unique_ptr<PasswordForm>> PasswordStoreX::FillMatchingLogins(
     const FormDigest& form) {
   CheckMigration();
-  ScopedVector<autofill::PasswordForm> matched_forms;
-  if (use_native_backend() && backend_->GetLogins(form, &matched_forms)) {
-    SortLoginsByOrigin(&matched_forms.get());
+  ScopedVector<autofill::PasswordForm> matched_forms_scopedvector;
+  if (use_native_backend() &&
+      backend_->GetLogins(form, &matched_forms_scopedvector)) {
+    std::vector<std::unique_ptr<PasswordForm>> matched_forms =
+        password_manager_util::ConvertScopedVector(
+            std::move(matched_forms_scopedvector));
+    SortLoginsByOrigin(&matched_forms);
     // The native backend may succeed and return no data even while locked, if
     // the query did not match anything stored. So we continue to allow fallback
     // until we perform a write operation, or until a read returns actual data.
@@ -205,14 +208,18 @@ ScopedVector<autofill::PasswordForm> PasswordStoreX::FillMatchingLogins(
   }
   if (allow_default_store())
     return PasswordStoreDefault::FillMatchingLogins(form);
-  return ScopedVector<autofill::PasswordForm>();
+  return std::vector<std::unique_ptr<PasswordForm>>();
 }
 
 bool PasswordStoreX::FillAutofillableLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   CheckMigration();
-  if (use_native_backend() && backend_->GetAutofillableLogins(forms)) {
-    SortLoginsByOrigin(&forms->get());
+  ScopedVector<autofill::PasswordForm> forms_scopedvector;
+  if (use_native_backend() &&
+      backend_->GetAutofillableLogins(&forms_scopedvector)) {
+    *forms = password_manager_util::ConvertScopedVector(
+        std::move(forms_scopedvector));
+    SortLoginsByOrigin(forms);
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
     if (!forms->empty())
       allow_fallback_ = false;
@@ -224,11 +231,15 @@ bool PasswordStoreX::FillAutofillableLogins(
 }
 
 bool PasswordStoreX::FillBlacklistLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   CheckMigration();
-  if (use_native_backend() && backend_->GetBlacklistLogins(forms)) {
+  ScopedVector<autofill::PasswordForm> forms_scopedvector;
+  if (use_native_backend() &&
+      backend_->GetBlacklistLogins(&forms_scopedvector)) {
+    *forms = password_manager_util::ConvertScopedVector(
+        std::move(forms_scopedvector));
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
-    SortLoginsByOrigin(&forms->get());
+    SortLoginsByOrigin(forms);
     if (!forms->empty())
       allow_fallback_ = false;
     return true;
@@ -273,13 +284,14 @@ bool PasswordStoreX::allow_default_store() {
 
 ssize_t PasswordStoreX::MigrateLogins() {
   DCHECK(backend_.get());
-  ScopedVector<autofill::PasswordForm> forms;
-  ScopedVector<autofill::PasswordForm> blacklist_forms;
+  std::vector<std::unique_ptr<PasswordForm>> forms;
+  std::vector<std::unique_ptr<PasswordForm>> blacklist_forms;
   bool ok = PasswordStoreDefault::FillAutofillableLogins(&forms) &&
             PasswordStoreDefault::FillBlacklistLogins(&blacklist_forms);
-  forms.reserve(forms.size() + blacklist_forms.size());
-  forms.insert(forms.end(), blacklist_forms.begin(), blacklist_forms.end());
-  blacklist_forms.weak_clear();
+  const size_t autofillable_forms_count = forms.size();
+  forms.resize(autofillable_forms_count + blacklist_forms.size());
+  std::move(blacklist_forms.begin(), blacklist_forms.end(),
+            forms.begin() + autofillable_forms_count);
   if (ok) {
     // We add all the passwords (and blacklist entries) to the native backend
     // before attempting to remove any from the login database, to make sure we

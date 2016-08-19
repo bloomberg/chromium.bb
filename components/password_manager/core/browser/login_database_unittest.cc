@@ -129,7 +129,7 @@ class LoginDatabaseTest : public testing::Test {
   LoginDatabase& db() { return *db_; }
 
   void TestNonHTMLFormPSLMatching(const PasswordForm::Scheme& scheme) {
-    ScopedVector<autofill::PasswordForm> result;
+    std::vector<std::unique_ptr<PasswordForm>> result;
 
     base::Time now = base::Time::Now();
 
@@ -182,7 +182,7 @@ class LoginDatabaseTest : public testing::Test {
   // retrieved from the database.
   void TestRetrievingIPAddress(const PasswordForm::Scheme& scheme) {
     SCOPED_TRACE(testing::Message() << "scheme = " << scheme);
-    ScopedVector<autofill::PasswordForm> result;
+    std::vector<std::unique_ptr<PasswordForm>> result;
 
     base::Time now = base::Time::Now();
     std::string origin("http://56.7.8.90");
@@ -210,7 +210,7 @@ class LoginDatabaseTest : public testing::Test {
 };
 
 TEST_F(LoginDatabaseTest, Logins) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -310,7 +310,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -362,7 +362,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
 }
 
 TEST_F(LoginDatabaseTest, TestFederatedMatching) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Example password form.
   PasswordForm form;
@@ -427,7 +427,7 @@ TEST_F(LoginDatabaseTest, TestIPAddressMatches_other) {
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -472,7 +472,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
 }
 
 TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Example password form.
   PasswordForm form;
@@ -519,7 +519,7 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
 // instead of GetUniqueStatement, since REGEXP is in use. See
 // http://crbug.com/248608.
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -602,7 +602,7 @@ PasswordForm GetFormWithNewSignonRealm(PasswordForm form,
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -736,7 +736,7 @@ static bool AddTimestampedLogin(LoginDatabase* db,
 }
 
 TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -760,10 +760,13 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   EXPECT_EQ(4U, result.size());
   result.clear();
 
+  // TODO(crbug.com/555132) Replace |result_scopedvector| back with |result|.
+  ScopedVector<PasswordForm> result_scopedvector;
   // Get everything from today's date and on.
-  EXPECT_TRUE(db().GetLoginsCreatedBetween(now, base::Time(), &result));
-  EXPECT_EQ(2U, result.size());
-  result.clear();
+  EXPECT_TRUE(
+      db().GetLoginsCreatedBetween(now, base::Time(), &result_scopedvector));
+  EXPECT_EQ(2U, result_scopedvector.size());
+  result_scopedvector.clear();
 
   // Delete everything from today's date and on.
   db().RemoveLoginsCreatedBetween(now, base::Time());
@@ -782,7 +785,7 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
 }
 
 TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   base::Time now = base::Time::Now();
   base::TimeDelta one_day = base::TimeDelta::FromDays(1);
@@ -802,12 +805,15 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   EXPECT_EQ(4U, result.size());
   result.clear();
 
+  // TODO(crbug.com/555132) Replace |result_scopedvector| back with |result|.
+  ScopedVector<PasswordForm> result_scopedvector;
   // Get everything from today's date and on.
-  EXPECT_TRUE(db().GetLoginsSyncedBetween(now, base::Time(), &result));
-  ASSERT_EQ(2U, result.size());
-  EXPECT_EQ("http://3.com", result[0]->signon_realm);
-  EXPECT_EQ("http://4.com", result[1]->signon_realm);
-  result.clear();
+  EXPECT_TRUE(
+      db().GetLoginsSyncedBetween(now, base::Time(), &result_scopedvector));
+  ASSERT_EQ(2U, result_scopedvector.size());
+  EXPECT_EQ("http://3.com", result_scopedvector[0]->signon_realm);
+  EXPECT_EQ("http://4.com", result_scopedvector[1]->signon_realm);
+  result_scopedvector.clear();
 
   // Delete everything from today's date and on.
   db().RemoveLoginsSyncedBetween(now, base::Time());
@@ -828,7 +834,7 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
 }
 
 TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
-  ScopedVector<autofill::PasswordForm> result;
+  ScopedVector<PasswordForm> result;
 
   GURL origin("https://example.com");
   EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo1", origin));
@@ -847,7 +853,7 @@ TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
 }
 
 TEST_F(LoginDatabaseTest, DisableAutoSignInForOrigin) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   GURL origin1("https://google.com");
   GURL origin2("https://chrome.com");
@@ -859,13 +865,13 @@ TEST_F(LoginDatabaseTest, DisableAutoSignInForOrigin) {
   EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo4", origin4));
 
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
-  for (const auto* form : result)
+  for (const auto& form : result)
     EXPECT_FALSE(form->skip_zero_click);
 
   EXPECT_TRUE(db().DisableAutoSignInForOrigin(origin1));
   EXPECT_TRUE(db().DisableAutoSignInForOrigin(origin3));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
-  for (const auto* form : result) {
+  for (const auto& form : result) {
     if (form->origin == origin1 || form->origin == origin3)
       EXPECT_TRUE(form->skip_zero_click);
     else
@@ -874,7 +880,7 @@ TEST_F(LoginDatabaseTest, DisableAutoSignInForOrigin) {
 }
 
 TEST_F(LoginDatabaseTest, BlacklistedLogins) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
 
   // Verify the database is empty.
   EXPECT_TRUE(db().GetBlacklistLogins(&result));
@@ -933,7 +939,7 @@ TEST_F(LoginDatabaseTest, VectorSerialization) {
 }
 
 TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(0U, result.size());
@@ -1031,7 +1037,7 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
   EXPECT_EQ(AddChangeForForm(complete_form), db().AddLogin(complete_form));
 
   // Make sure both passwords exist.
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(2U, result.size());
   result.clear();
@@ -1117,7 +1123,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.skip_zero_click = true;
   EXPECT_EQ(UpdateChangeForForm(form), db().UpdateLogin(form));
 
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
@@ -1438,7 +1444,7 @@ TEST_F(LoginDatabaseTest, ClearPasswordValues) {
   form.password_value = ASCIIToUTF16("12345");
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
-  ScopedVector<autofill::PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
   ASSERT_EQ(1U, result.size());
   PasswordForm expected_form = form;
@@ -1573,7 +1579,7 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
     list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
     EXPECT_EQ(list, db.AddLogin(form));
 
-    ScopedVector<autofill::PasswordForm> result;
+    std::vector<std::unique_ptr<PasswordForm>> result;
     EXPECT_TRUE(db.GetLogins(PasswordStore::FormDigest(form), &result));
     ASSERT_EQ(1U, result.size());
     EXPECT_EQ(form, *result[0]);

@@ -87,12 +87,12 @@ void AffiliatedMatchHelper::GetAffiliatedWebRealms(
 }
 
 void AffiliatedMatchHelper::InjectAffiliatedWebRealms(
-    ScopedVector<autofill::PasswordForm> forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
     const PasswordFormsCallback& result_callback) {
   std::vector<autofill::PasswordForm*> android_credentials;
-  for (auto* form : forms) {
+  for (const auto& form : forms) {
     if (IsValidAndroidCredential(PasswordStore::FormDigest(*form)))
-      android_credentials.push_back(form);
+      android_credentials.push_back(form.get());
   }
   base::Closure on_get_all_realms(
       base::Bind(result_callback, base::Passed(&forms)));
@@ -217,8 +217,8 @@ void AffiliatedMatchHelper::OnLoginsChanged(
 }
 
 void AffiliatedMatchHelper::OnGetPasswordStoreResults(
-    ScopedVector<autofill::PasswordForm> results) {
-  for (autofill::PasswordForm* form : results) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  for (const auto& form : results) {
     FacetURI facet_uri;
     if (IsAndroidApplicationCredential(*form, &facet_uri))
       affiliation_service_->Prefetch(facet_uri, base::Time::Max());

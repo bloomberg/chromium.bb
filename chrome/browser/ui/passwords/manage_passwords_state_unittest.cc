@@ -61,7 +61,7 @@ class ManagePasswordsStateTest : public testing::Test {
     return test_local_federated_form_;
   }
   autofill::PasswordForm& test_federated_form() { return test_federated_form_; }
-  ScopedVector<autofill::PasswordForm>& test_stored_forms() {
+  std::vector<std::unique_ptr<autofill::PasswordForm>>& test_stored_forms() {
     return test_stored_forms_;
   }
   ManagePasswordsState& passwords_data() { return passwords_data_; }
@@ -101,7 +101,7 @@ class ManagePasswordsStateTest : public testing::Test {
   autofill::PasswordForm test_submitted_form_;
   autofill::PasswordForm test_local_federated_form_;
   autofill::PasswordForm test_federated_form_;
-  ScopedVector<autofill::PasswordForm> test_stored_forms_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> test_stored_forms_;
 };
 
 std::unique_ptr<password_manager::PasswordFormManager>
@@ -123,7 +123,7 @@ ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
           base::WrapUnique(new password_manager::StubFormSaver)));
   if (include_federated) {
     test_stored_forms_.push_back(
-        new autofill::PasswordForm(test_local_federated_form()));
+        base::MakeUnique<autofill::PasswordForm>(test_local_federated_form()));
   }
   test_form_manager->OnGetPasswordStoreResults(std::move(test_stored_forms_));
   EXPECT_EQ(include_federated ? 1u : 0u,
@@ -265,7 +265,8 @@ TEST_F(ManagePasswordsStateTest, DefaultState) {
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordSubmitted) {
-  test_stored_forms().push_back(new autofill::PasswordForm(test_local_form()));
+  test_stored_forms().push_back(
+      base::MakeUnique<autofill::PasswordForm>(test_local_form()));
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   test_form_manager->ProvisionallySave(
@@ -286,7 +287,8 @@ TEST_F(ManagePasswordsStateTest, PasswordSubmitted) {
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordSaved) {
-  test_stored_forms().push_back(new autofill::PasswordForm(test_local_form()));
+  test_stored_forms().push_back(
+      base::MakeUnique<autofill::PasswordForm>(test_local_form()));
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   test_form_manager->ProvisionallySave(
@@ -588,7 +590,8 @@ TEST_F(ManagePasswordsStateTest, PasswordUpdateAddBlacklisted) {
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmitted) {
-  test_stored_forms().push_back(new autofill::PasswordForm(test_local_form()));
+  test_stored_forms().push_back(
+      base::MakeUnique<autofill::PasswordForm>(test_local_form()));
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   test_form_manager->ProvisionallySave(
@@ -614,7 +617,8 @@ TEST_F(ManagePasswordsStateTest, AndroidPasswordUpdateSubmitted) {
   android_form.origin = GURL(android_form.signon_realm);
   android_form.username_value = test_submitted_form().username_value;
   android_form.password_value = base::ASCIIToUTF16("old pass");
-  test_stored_forms().push_back(new autofill::PasswordForm(android_form));
+  test_stored_forms().push_back(
+      base::MakeUnique<autofill::PasswordForm>(android_form));
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
   test_form_manager->ProvisionallySave(
@@ -636,7 +640,8 @@ TEST_F(ManagePasswordsStateTest, AndroidPasswordUpdateSubmitted) {
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmittedWithFederations) {
-  test_stored_forms().push_back(new autofill::PasswordForm(test_local_form()));
+  test_stored_forms().push_back(
+      base::MakeUnique<autofill::PasswordForm>(test_local_form()));
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManagerWithFederation());
   test_form_manager->ProvisionallySave(

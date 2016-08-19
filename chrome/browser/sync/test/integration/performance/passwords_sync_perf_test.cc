@@ -51,9 +51,9 @@ void PasswordsSyncPerfTest::AddLogins(int profile, int num_logins) {
 }
 
 void PasswordsSyncPerfTest::UpdateLogins(int profile) {
-  ScopedVector<autofill::PasswordForm> logins =
+  std::vector<std::unique_ptr<autofill::PasswordForm>> logins =
       passwords_helper::GetLogins(GetPasswordStore(profile));
-  for (autofill::PasswordForm* login : logins) {
+  for (auto& login : logins) {
     login->password_value = base::ASCIIToUTF16(NextPassword());
     UpdateLogin(GetPasswordStore(profile), *login);
   }

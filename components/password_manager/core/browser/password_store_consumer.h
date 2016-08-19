@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "base/task/cancelable_task_tracker.h"
 
 namespace autofill {
@@ -31,7 +30,7 @@ class PasswordStoreConsumer {
   // Called when the GetLogins() request is finished, with the associated
   // |results|.
   virtual void OnGetPasswordStoreResults(
-      ScopedVector<autofill::PasswordForm> results) = 0;
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) = 0;
 
   // TODO(crbug.com/561749): The argument's type would ideally be just
   // std::vector<std::unique_ptr<InteractionsStats>>, but currently it is not

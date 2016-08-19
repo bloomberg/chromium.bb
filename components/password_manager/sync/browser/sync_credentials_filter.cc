@@ -49,8 +49,8 @@ SyncCredentialsFilter::SyncCredentialsFilter(
 
 SyncCredentialsFilter::~SyncCredentialsFilter() {}
 
-ScopedVector<PasswordForm> SyncCredentialsFilter::FilterResults(
-    ScopedVector<PasswordForm> results) const {
+std::vector<std::unique_ptr<PasswordForm>> SyncCredentialsFilter::FilterResults(
+    std::vector<std::unique_ptr<PasswordForm>> results) const {
   const AutofillForSyncCredentialsState autofill_sync_state =
       GetAutofillForSyncCredentialsState();
 
@@ -63,7 +63,9 @@ ScopedVector<PasswordForm> SyncCredentialsFilter::FilterResults(
 
   auto begin_of_removed =
       std::partition(results.begin(), results.end(),
-                     [this](PasswordForm* form) { return ShouldSave(*form); });
+                     [this](const std::unique_ptr<PasswordForm>& form) {
+                       return ShouldSave(*form);
+                     });
 
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.SyncCredentialFiltered",
                         begin_of_removed != results.end());

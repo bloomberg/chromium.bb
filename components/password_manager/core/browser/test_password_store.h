@@ -44,7 +44,7 @@ class TestPasswordStore : public PasswordStore {
       const autofill::PasswordForm& form) override;
   PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
-  ScopedVector<autofill::PasswordForm> FillMatchingLogins(
+  std::vector<std::unique_ptr<autofill::PasswordForm>> FillMatchingLogins(
       const FormDigest& form) override;
 
   // Unused portions of PasswordStore interface
@@ -65,9 +65,9 @@ class TestPasswordStore : public PasswordStore {
   bool RemoveStatisticsCreatedBetweenImpl(base::Time delete_begin,
                                           base::Time delete_end) override;
   bool FillAutofillableLogins(
-      ScopedVector<autofill::PasswordForm>* forms) override;
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
   bool FillBlacklistLogins(
-      ScopedVector<autofill::PasswordForm>* forms) override;
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
   void AddSiteStatsImpl(const InteractionsStats& stats) override;
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
   std::vector<std::unique_ptr<InteractionsStats>> GetSiteStatsImpl(

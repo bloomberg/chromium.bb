@@ -54,11 +54,12 @@ namespace {
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
-               void(const std::vector<PasswordForm*>&));
+               void(const std::vector<std::unique_ptr<PasswordForm>>&));
 
   // GMock cannot mock methods with move-only args.
-  void OnGetPasswordStoreResults(ScopedVector<PasswordForm> results) override {
-    OnGetPasswordStoreResultsConstRef(results.get());
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>> results) override {
+    OnGetPasswordStoreResultsConstRef(results);
   }
 };
 
@@ -264,14 +265,13 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
       true,
       1,
   };
-  ScopedVector<autofill::PasswordForm> expected_forms;
+  std::vector<std::unique_ptr<PasswordForm>> expected_forms;
   expected_forms.push_back(
       CreatePasswordFormFromDataForTesting(expected_form_data));
 
   // The IE7 password should be returned.
-  EXPECT_CALL(consumer,
-              OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(expected_forms.get())));
+  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
+                            UnorderedPasswordFormElementsAre(&expected_forms)));
 
   store_->GetLogins(form, &consumer);
   base::MessageLoop::current()->Run();
@@ -365,14 +365,14 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
       true,
       1,
   };
-  ScopedVector<autofill::PasswordForm> expected_forms;
+  std::vector<std::unique_ptr<PasswordForm>> expected_forms;
   expected_forms.push_back(
       CreatePasswordFormFromDataForTesting(expected_form_data));
 
   // The IE7 password should be returned.
   EXPECT_CALL(password_consumer,
               OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(expected_forms.get())));
+                  UnorderedPasswordFormElementsAre(&expected_forms)));
 
   store_->GetLogins(form, &password_consumer);
 

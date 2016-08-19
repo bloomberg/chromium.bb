@@ -49,7 +49,8 @@ void ProfileStatisticsAggregator::BookmarkModelHelper::BookmarkModelLoaded(
 }
 
 void ProfileStatisticsAggregator::PasswordStoreConsumerHelper::
-    OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
+    OnGetPasswordStoreResults(
+        std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   parent_->StatisticsCallbackSuccess(
       profiles::kProfileStatisticsPasswords, results.size());
 }

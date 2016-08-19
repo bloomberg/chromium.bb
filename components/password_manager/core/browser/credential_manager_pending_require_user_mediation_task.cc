@@ -37,9 +37,10 @@ void CredentialManagerPendingRequireUserMediationTask::AddOrigin(
 }
 
 void CredentialManagerPendingRequireUserMediationTask::
-    OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
+    OnGetPasswordStoreResults(
+        std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   PasswordStore* store = delegate_->GetPasswordStore();
-  for (autofill::PasswordForm* form : results) {
+  for (const auto& form : results) {
     std::string form_registrable_domain =
         net::registry_controlled_domains::GetDomainAndRegistry(
             form->origin,

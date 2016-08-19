@@ -65,11 +65,12 @@ const char kTestUnrelatedAndroidRealm[] =
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
-               void(const std::vector<PasswordForm*>&));
+               void(const std::vector<std::unique_ptr<PasswordForm>>&));
 
   // GMock cannot mock methods with move-only args.
-  void OnGetPasswordStoreResults(ScopedVector<PasswordForm> results) override {
-    OnGetPasswordStoreResultsConstRef(results.get());
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>> results) override {
+    OnGetPasswordStoreResultsConstRef(results);
   }
 };
 
@@ -153,35 +154,36 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   // We should not get back the older saved password though.
   const PasswordStore::FormDigest www_google = {
       PasswordForm::SCHEME_HTML, "https://www.google.com", GURL()};
-  std::vector<PasswordForm*> www_google_expected;
-  www_google_expected.push_back(all_forms[2]);
+  std::vector<std::unique_ptr<PasswordForm>> www_google_expected;
+  www_google_expected.push_back(base::MakeUnique<PasswordForm>(*all_forms[2]));
 
   // We should still get the accounts.google.com login even though it's older
   // than our cutoff - this is the new location of all Google login forms.
   const PasswordStore::FormDigest accounts_google = {
       PasswordForm::SCHEME_HTML, "https://accounts.google.com", GURL()};
-  std::vector<PasswordForm*> accounts_google_expected;
-  accounts_google_expected.push_back(all_forms[3]);
+  std::vector<std::unique_ptr<PasswordForm>> accounts_google_expected;
+  accounts_google_expected.push_back(
+      base::MakeUnique<PasswordForm>(*all_forms[3]));
 
   // Same thing for a generic saved login.
   const PasswordStore::FormDigest bar_example = {
       PasswordForm::SCHEME_HTML, "http://bar.example.com", GURL()};
-  std::vector<PasswordForm*> bar_example_expected;
-  bar_example_expected.push_back(all_forms[4]);
+  std::vector<std::unique_ptr<PasswordForm>> bar_example_expected;
+  bar_example_expected.push_back(base::MakeUnique<PasswordForm>(*all_forms[4]));
 
   MockPasswordStoreConsumer consumer;
   testing::InSequence s;
   EXPECT_CALL(consumer,
               OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(www_google_expected)))
+                  UnorderedPasswordFormElementsAre(&www_google_expected)))
       .RetiresOnSaturation();
   EXPECT_CALL(consumer,
               OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(accounts_google_expected)))
+                  UnorderedPasswordFormElementsAre(&accounts_google_expected)))
       .RetiresOnSaturation();
   EXPECT_CALL(consumer,
               OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(bar_example_expected)))
+                  UnorderedPasswordFormElementsAre(&bar_example_expected)))
       .RetiresOnSaturation();
 
   store->GetLogins(www_google, &consumer);
@@ -313,11 +315,11 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   base::RunLoop().RunUntilIdle();
 
   MockPasswordStoreConsumer mock_consumer;
-  ScopedVector<autofill::PasswordForm> expected_forms;
+  std::vector<std::unique_ptr<PasswordForm>> expected_forms;
   expected_forms.push_back(std::move(new_form));
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(expected_forms.get())));
+                  UnorderedPasswordFormElementsAre(&expected_forms)));
   store->GetAutofillableLogins(&mock_consumer);
   base::RunLoop().RunUntilIdle();
 
@@ -413,10 +415,12 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
       PasswordForm::SCHEME_HTML, kTestWebRealm1, GURL(kTestWebOrigin1)};
 
   MockPasswordStoreConsumer mock_consumer;
-  ScopedVector<PasswordForm> expected_results;
-  expected_results.push_back(new PasswordForm(*all_credentials[0]));
-  expected_results.push_back(new PasswordForm(*all_credentials[1]));
-  for (PasswordForm* result : expected_results) {
+  std::vector<std::unique_ptr<PasswordForm>> expected_results;
+  expected_results.push_back(
+      base::MakeUnique<PasswordForm>(*all_credentials[0]));
+  expected_results.push_back(
+      base::MakeUnique<PasswordForm>(*all_credentials[1]));
+  for (const auto& result : expected_results) {
     if (result->signon_realm != observed_form.signon_realm)
       result->is_public_suffix_match = true;
   }
@@ -427,7 +431,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
 
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(expected_results.get())));
+                  UnorderedPasswordFormElementsAre(&expected_results)));
   store->GetLogins(observed_form, &mock_consumer);
   store->ShutdownOnUIThread();
   base::RunLoop().RunUntilIdle();
@@ -517,14 +521,19 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
       PasswordForm::SCHEME_HTML, kTestWebRealm1, GURL(kTestWebOrigin1)};
 
   MockPasswordStoreConsumer mock_consumer;
-  ScopedVector<PasswordForm> expected_results;
-  expected_results.push_back(new PasswordForm(*all_credentials[0]));
-  expected_results.push_back(new PasswordForm(*all_credentials[1]));
-  expected_results.push_back(new PasswordForm(*all_credentials[2]));
-  expected_results.push_back(new PasswordForm(*all_credentials[3]));
-  expected_results.push_back(new PasswordForm(*all_credentials[5]));
+  std::vector<std::unique_ptr<PasswordForm>> expected_results;
+  expected_results.push_back(
+      base::MakeUnique<PasswordForm>(*all_credentials[0]));
+  expected_results.push_back(
+      base::MakeUnique<PasswordForm>(*all_credentials[1]));
+  expected_results.push_back(
+      base::MakeUnique<PasswordForm>(*all_credentials[2]));
+  expected_results.push_back(
+      base::MakeUnique<PasswordForm>(*all_credentials[3]));
+  expected_results.push_back(
+      base::MakeUnique<PasswordForm>(*all_credentials[5]));
 
-  for (PasswordForm* result : expected_results) {
+  for (const auto& result : expected_results) {
     if (result->signon_realm != observed_form.signon_realm &&
         !IsValidAndroidFacetURI(result->signon_realm))
       result->is_public_suffix_match = true;
@@ -541,7 +550,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
 
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(expected_results.get())));
+                  UnorderedPasswordFormElementsAre(&expected_results)));
 
   store->GetLogins(observed_form, &mock_consumer);
   store->ShutdownOnUIThread();
@@ -703,10 +712,11 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
       // Calculate how the correctly updated test data set should look like.
       size_t expected_number_of_propageted_updates =
           propagation_enabled ? kExpectedNumberOfPropagatedUpdates : 0u;
-      ScopedVector<PasswordForm> expected_credentials_after_update;
+      std::vector<std::unique_ptr<PasswordForm>>
+          expected_credentials_after_update;
       for (size_t i = 0; i < all_credentials.size(); ++i) {
         expected_credentials_after_update.push_back(
-            new autofill::PasswordForm(*all_credentials[i]));
+            base::MakeUnique<PasswordForm>(*all_credentials[i]));
         if (i < 1 + expected_number_of_propageted_updates) {
           expected_credentials_after_update.back()->password_value =
               base::WideToUTF16(kTestNewPassword);
@@ -748,10 +758,9 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
       store->RemoveObserver(&mock_observer);
 
       MockPasswordStoreConsumer mock_consumer;
-      EXPECT_CALL(
-          mock_consumer,
-          OnGetPasswordStoreResultsConstRef(UnorderedPasswordFormElementsAre(
-              expected_credentials_after_update.get())));
+      EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(
+                                     UnorderedPasswordFormElementsAre(
+                                         &expected_credentials_after_update)));
       store->GetAutofillableLogins(&mock_consumer);
       store->ShutdownOnUIThread();
       base::RunLoop().RunUntilIdle();
@@ -801,9 +810,11 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
     }
 
     MockPasswordStoreConsumer mock_consumer;
-    ScopedVector<PasswordForm> expected_results;
-    for (size_t i = 0; i < arraysize(kTestCredentials); ++i)
-      expected_results.push_back(new PasswordForm(*all_credentials[i]));
+    std::vector<std::unique_ptr<PasswordForm>> expected_results;
+    for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
+      expected_results.push_back(
+          base::MakeUnique<PasswordForm>(*all_credentials[i]));
+    }
 
     MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
     store->SetAffiliatedMatchHelper(base::WrapUnique(mock_helper));
@@ -818,7 +829,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
 
     EXPECT_CALL(mock_consumer,
                 OnGetPasswordStoreResultsConstRef(
-                    UnorderedPasswordFormElementsAre(expected_results.get())));
+                    UnorderedPasswordFormElementsAre(&expected_results)));
     if (blacklisted)
       store->GetBlacklistLoginsWithAffiliatedRealms(&mock_consumer);
     else

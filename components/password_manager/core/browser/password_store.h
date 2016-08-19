@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -235,7 +234,7 @@ class PasswordStore : protected PasswordStoreSync,
     // Note that if this method is not called before destruction, the consumer
     // will not be notified.
     void NotifyConsumerWithResults(
-        ScopedVector<autofill::PasswordForm> results);
+        std::vector<std::unique_ptr<autofill::PasswordForm>> results);
 
     void NotifyWithSiteStatistics(
         std::vector<std::unique_ptr<InteractionsStats>> stats);
@@ -315,8 +314,8 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Finds and returns all PasswordForms with the same signon_realm as |form|,
   // or with a signon_realm that is a PSL-match to that of |form|.
-  virtual ScopedVector<autofill::PasswordForm> FillMatchingLogins(
-      const FormDigest& form) = 0;
+  virtual std::vector<std::unique_ptr<autofill::PasswordForm>>
+  FillMatchingLogins(const FormDigest& form) = 0;
 
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
@@ -418,7 +417,7 @@ class PasswordStore : protected PasswordStoreSync,
   // realms for Android credentials.
   void NotifyLoginsWithAffiliatedRealms(
       std::unique_ptr<GetLoginsRequest> request,
-      ScopedVector<autofill::PasswordForm> obtained_forms);
+      std::vector<std::unique_ptr<autofill::PasswordForm>> obtained_forms);
 
   // Extended version of GetLoginsImpl that also returns credentials stored for
   // the specified affiliated Android applications. That is, it finds all
@@ -434,8 +433,9 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Retrieves and fills in |affiliated_web_realm| values for Android
   // credentials in |forms|. Called on the main thread.
-  void InjectAffiliatedWebRealms(ScopedVector<autofill::PasswordForm> forms,
-                                 std::unique_ptr<GetLoginsRequest> request);
+  void InjectAffiliatedWebRealms(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
+      std::unique_ptr<GetLoginsRequest> request);
 
   // Schedules GetLoginsWithAffiliationsImpl() to be run on the DB thread.
   void ScheduleGetLoginsWithAffiliations(

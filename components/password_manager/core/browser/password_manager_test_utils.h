@@ -62,14 +62,16 @@ std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromDataForTesting(
 // Checks whether the PasswordForms pointed to in |actual_values| are in some
 // permutation pairwise equal to those in |expectations|. Returns true in case
 // of a perfect match; otherwise returns false and writes details of mismatches
-// in human readable format to |mismatches_output| unless it is null.
+// in human readable format to |mismatch_output| unless it is null.
+// Note: |expectations| should be a const ref, but needs to be a const pointer,
+// because GMock tried to copy the reference by value.
 bool ContainsEqualPasswordFormsUnordered(
-    const std::vector<autofill::PasswordForm*>& expectations,
-    const std::vector<autofill::PasswordForm*>& actual_values,
-    std::ostream* mismatches_output);
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& expectations,
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& actual_values,
+    std::ostream* mismatch_output);
 
 MATCHER_P(UnorderedPasswordFormElementsAre, expectations, "") {
-  return ContainsEqualPasswordFormsUnordered(expectations, arg,
+  return ContainsEqualPasswordFormsUnordered(*expectations, arg,
                                              result_listener->stream());
 }
 

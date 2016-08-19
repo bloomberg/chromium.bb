@@ -42,7 +42,7 @@ void FindDuplicates(
 // Removes Android username-only credentials from |android_credentials|.
 // Transforms federated credentials into non zero-click ones.
 void TrimUsernameOnlyCredentials(
-    ScopedVector<autofill::PasswordForm>* android_credentials);
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* android_credentials);
 
 // TODO(crbug.com/555132): Remove this when the migration from ScopedVector is
 // finished for PasswordForm.

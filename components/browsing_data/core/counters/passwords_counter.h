@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_BROWSING_DATA_CORE_COUNTERS_PASSWORDS_COUNTER_H_
 #define COMPONENTS_BROWSING_DATA_CORE_COUNTERS_PASSWORDS_COUNTER_H_
 
+#include <memory>
+#include <vector>
+
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -27,7 +30,7 @@ class PasswordsCounter : public browsing_data::BrowsingDataCounter,
   // Counting is done asynchronously in a request to PasswordStore.
   // This callback returns the results, which are subsequently reported.
   void OnGetPasswordStoreResults(
-      ScopedVector<autofill::PasswordForm> results) override;
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
   // Called when the contents of the password store change. Triggers new
   // counting.

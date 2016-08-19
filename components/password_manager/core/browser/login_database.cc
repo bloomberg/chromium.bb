@@ -28,6 +28,7 @@
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -1029,7 +1030,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
 
 bool LoginDatabase::GetLogins(
     const PasswordStore::FormDigest& form,
-    ScopedVector<autofill::PasswordForm>* forms) const {
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const {
   DCHECK(forms);
   const GURL signon_realm(form.signon_realm);
   std::string registered_domain = GetRegistryControlledDomain(signon_realm);
@@ -1093,9 +1094,17 @@ bool LoginDatabase::GetLogins(
                               PSL_DOMAIN_MATCH_COUNT);
   }
 
-  return StatementToForms(
+  ScopedVector<autofill::PasswordForm> forms_scopedvector;
+  bool success = StatementToForms(
       &s, should_PSL_matching_apply || should_federated_apply ? &form : nullptr,
-      forms);
+      &forms_scopedvector);
+  if (success) {
+    *forms = password_manager_util::ConvertScopedVector(
+        std::move(forms_scopedvector));
+    return true;
+  }
+  forms->clear();
+  return false;
 }
 
 bool LoginDatabase::GetLoginsCreatedBetween(
@@ -1130,25 +1139,33 @@ bool LoginDatabase::GetLoginsSyncedBetween(
 }
 
 bool LoginDatabase::GetAutofillableLogins(
-    ScopedVector<autofill::PasswordForm>* forms) const {
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const {
   return GetAllLoginsWithBlacklistSetting(false, forms);
 }
 
 bool LoginDatabase::GetBlacklistLogins(
-    ScopedVector<autofill::PasswordForm>* forms) const {
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const {
   return GetAllLoginsWithBlacklistSetting(true, forms);
 }
 
 bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
     bool blacklisted,
-    ScopedVector<autofill::PasswordForm>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
   DCHECK(forms);
   DCHECK(!blacklisted_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, blacklisted_statement_.c_str()));
   s.BindInt(0, blacklisted ? 1 : 0);
 
-  return StatementToForms(&s, nullptr, forms);
+  ScopedVector<autofill::PasswordForm> forms_scopedvector;
+  bool success = StatementToForms(&s, nullptr, &forms_scopedvector);
+  if (success) {
+    *forms = password_manager_util::ConvertScopedVector(
+        std::move(forms_scopedvector));
+    return true;
+  }
+  forms->clear();
+  return false;
 }
 
 bool LoginDatabase::DeleteAndRecreateDatabaseFile() {

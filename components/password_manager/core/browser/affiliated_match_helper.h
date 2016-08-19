@@ -14,7 +14,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -54,7 +53,8 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   typedef base::Callback<void(const std::vector<std::string>&)>
       AffiliatedRealmsCallback;
 
-  typedef base::Callback<void(ScopedVector<autofill::PasswordForm>)>
+  typedef base::Callback<void(
+      std::vector<std::unique_ptr<autofill::PasswordForm>>)>
       PasswordFormsCallback;
 
   // The |password_store| must outlive |this|. Both arguments must be non-NULL,
@@ -91,7 +91,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // NOTE: This will not issue an on-demand network request. If a request to
   // cache fails, no web realm will be injected into corresponding form.
   virtual void InjectAffiliatedWebRealms(
-      ScopedVector<autofill::PasswordForm> forms,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
       const PasswordFormsCallback& result_callback);
 
   // Removes cached affiliation data that is no longer needed.
@@ -151,7 +151,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
-      ScopedVector<autofill::PasswordForm> results) override;
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
   PasswordStore* const password_store_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_waiting_;

@@ -98,7 +98,7 @@ class PasswordStoreConsumerVerifier
     : public password_manager::PasswordStoreConsumer {
  public:
   void OnGetPasswordStoreResults(
-      ScopedVector<autofill::PasswordForm> results) override {
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override {
     password_entries_.swap(results);
     run_loop_.Quit();
   }
@@ -107,13 +107,14 @@ class PasswordStoreConsumerVerifier
     run_loop_.Run();
   }
 
-  const std::vector<autofill::PasswordForm*>& GetPasswords() const {
-    return password_entries_.get();
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetPasswords()
+      const {
+    return password_entries_;
   }
 
  private:
   base::RunLoop run_loop_;
-  ScopedVector<autofill::PasswordForm> password_entries_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_entries_;
 };
 
 static base::FilePath GetFirstNonSigninProfile(

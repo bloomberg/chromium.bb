@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOGIN_DATABASE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOGIN_DATABASE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -88,8 +89,8 @@ class LoginDatabase {
   // Gets a list of credentials matching |form|, including blacklisted matches
   // and federated credentials.
   bool GetLogins(const PasswordStore::FormDigest& form,
-                 ScopedVector<autofill::PasswordForm>* forms) const
-      WARN_UNUSED_RESULT;
+                 std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+      const WARN_UNUSED_RESULT;
 
   // Gets all logins created from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
@@ -108,12 +109,13 @@ class LoginDatabase {
       WARN_UNUSED_RESULT;
 
   // Gets the complete list of not blacklisted credentials.
-  bool GetAutofillableLogins(ScopedVector<autofill::PasswordForm>* forms) const
+  bool GetAutofillableLogins(
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const
       WARN_UNUSED_RESULT;
 
   // Gets the complete list of blacklisted credentials.
-  bool GetBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms) const
-      WARN_UNUSED_RESULT;
+  bool GetBlacklistLogins(std::vector<std::unique_ptr<autofill::PasswordForm>>*
+                              forms) const WARN_UNUSED_RESULT;
 
   // Gets the list of auto-sign-inable credentials.
   bool GetAutoSignInLogins(ScopedVector<autofill::PasswordForm>* forms) const
@@ -185,7 +187,7 @@ class LoginDatabase {
   // result.
   bool GetAllLoginsWithBlacklistSetting(
       bool blacklisted,
-      ScopedVector<autofill::PasswordForm>* forms) const;
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const;
 
   // Overwrites |forms| with credentials retrieved from |statement|. If
   // |matched_form| is not null, filters out all results but those PSL-matching

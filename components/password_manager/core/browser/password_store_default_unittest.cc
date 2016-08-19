@@ -39,11 +39,12 @@ namespace {
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
-               void(const std::vector<PasswordForm*>&));
+               void(const std::vector<std::unique_ptr<PasswordForm>>&));
 
   // GMock cannot mock methods with move-only args.
-  void OnGetPasswordStoreResults(ScopedVector<PasswordForm> results) override {
-    OnGetPasswordStoreResultsConstRef(results.get());
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>> results) override {
+    OnGetPasswordStoreResultsConstRef(results);
   }
 };
 
@@ -171,7 +172,7 @@ TEST(PasswordStoreDefaultTest, NonASCIIData) {
   };
 
   // Build the expected forms vector and add the forms to the store.
-  ScopedVector<PasswordForm> expected_forms;
+  std::vector<std::unique_ptr<PasswordForm>> expected_forms;
   for (unsigned int i = 0; i < arraysize(form_data); ++i) {
     expected_forms.push_back(
         CreatePasswordFormFromDataForTesting(form_data[i]));
@@ -183,9 +184,10 @@ TEST(PasswordStoreDefaultTest, NonASCIIData) {
   MockPasswordStoreConsumer consumer;
 
   // We expect to get the same data back, even though it's not all ASCII.
-  EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(
-                            password_manager::UnorderedPasswordFormElementsAre(
-                                expected_forms.get())));
+  EXPECT_CALL(
+      consumer,
+      OnGetPasswordStoreResultsConstRef(
+          password_manager::UnorderedPasswordFormElementsAre(&expected_forms)));
   store->GetAutofillableLogins(&consumer);
 
   base::RunLoop().RunUntilIdle();

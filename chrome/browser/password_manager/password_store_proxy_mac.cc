@@ -202,18 +202,18 @@ bool PasswordStoreProxyMac::RemoveStatisticsCreatedBetweenImpl(
                                                           delete_end);
 }
 
-ScopedVector<autofill::PasswordForm> PasswordStoreProxyMac::FillMatchingLogins(
-    const FormDigest& form) {
+std::vector<std::unique_ptr<autofill::PasswordForm>>
+PasswordStoreProxyMac::FillMatchingLogins(const FormDigest& form) {
   return GetBackend()->FillMatchingLogins(form);
 }
 
 bool PasswordStoreProxyMac::FillAutofillableLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   return GetBackend()->FillAutofillableLogins(forms);
 }
 
 bool PasswordStoreProxyMac::FillBlacklistLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   return GetBackend()->FillBlacklistLogins(forms);
 }
 

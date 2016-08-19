@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
@@ -69,16 +70,16 @@ CredentialManagerPendingRequestTask::~CredentialManagerPendingRequestTask() =
     default;
 
 void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
-    ScopedVector<autofill::PasswordForm> results) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   if (delegate_->GetOrigin() != origin_) {
     delegate_->SendCredential(send_callback_, CredentialInfo());
     return;
   }
 
   ScopedVector<autofill::PasswordForm> local_results;
-  ScopedVector<autofill::PasswordForm> affiliated_results;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> affiliated_results;
   ScopedVector<autofill::PasswordForm> federated_results;
-  for (auto*& form : results) {
+  for (auto& form : results) {
     // Ensure that the form we're looking at matches the password and
     // federation filters provided.
     if (!((form->federation_origin.unique() && include_passwords_) ||
@@ -92,14 +93,12 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     // GURL definition: scheme, host, and port.
     // So we can't compare them directly.
     if (form->origin.GetOrigin() == origin_.GetOrigin()) {
-      local_results.push_back(form);
-      form = nullptr;
+      local_results.push_back(form.release());
     } else if (affiliated_realms_.count(form->signon_realm) &&
                AffiliatedMatchHelper::IsValidAndroidCredential(
                    PasswordStore::FormDigest(*form))) {
       form->is_affiliation_based_match = true;
-      affiliated_results.push_back(form);
-      form = nullptr;
+      affiliated_results.push_back(std::move(form));
     }
 
     // TODO(mkwst): We're debating whether or not federations ought to be
@@ -112,9 +111,11 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
 
   if (!affiliated_results.empty()) {
     password_manager_util::TrimUsernameOnlyCredentials(&affiliated_results);
-    local_results.insert(local_results.end(), affiliated_results.begin(),
-                         affiliated_results.end());
-    affiliated_results.weak_clear();
+    size_t local_count = local_results.size();
+    local_results.resize(local_count + affiliated_results.size());
+    for (auto& affiliated : affiliated_results) {
+      local_results[local_count++] = affiliated.release();
+    }
   }
 
   // Remove empty usernames from the list.

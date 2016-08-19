@@ -53,7 +53,7 @@ class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
       const AffiliatedRealmsCallback& result_callback) override;
 
   void InjectAffiliatedWebRealms(
-      ScopedVector<autofill::PasswordForm> forms,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
       const PasswordFormsCallback& result_callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(MockAffiliatedMatchHelper);

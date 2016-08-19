@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_manager_util.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,26 +32,27 @@ autofill::PasswordForm GetTestAndroidCredentials(const char* signon_realm) {
 using password_manager::UnorderedPasswordFormElementsAre;
 
 TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
-  ScopedVector<autofill::PasswordForm> forms, expected_forms;
-  forms.push_back(
-      new autofill::PasswordForm(GetTestAndroidCredentials(kTestAndroidRealm)));
-  expected_forms.push_back(
-      new autofill::PasswordForm(GetTestAndroidCredentials(kTestAndroidRealm)));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> expected_forms;
+  forms.push_back(base::MakeUnique<autofill::PasswordForm>(
+      GetTestAndroidCredentials(kTestAndroidRealm)));
+  expected_forms.push_back(base::MakeUnique<autofill::PasswordForm>(
+      GetTestAndroidCredentials(kTestAndroidRealm)));
 
   autofill::PasswordForm username_only;
   username_only.scheme = autofill::PasswordForm::SCHEME_USERNAME_ONLY;
   username_only.signon_realm = kTestAndroidRealm;
   username_only.username_value = base::ASCIIToUTF16(kTestUsername2);
-  forms.push_back(new autofill::PasswordForm(username_only));
+  forms.push_back(base::MakeUnique<autofill::PasswordForm>(username_only));
 
   username_only.federation_origin = url::Origin(GURL(kTestFederationURL));
   username_only.skip_zero_click = false;
-  forms.push_back(new autofill::PasswordForm(username_only));
+  forms.push_back(base::MakeUnique<autofill::PasswordForm>(username_only));
   username_only.skip_zero_click = true;
-  expected_forms.push_back(new autofill::PasswordForm(username_only));
+  expected_forms.push_back(
+      base::MakeUnique<autofill::PasswordForm>(username_only));
 
   password_manager_util::TrimUsernameOnlyCredentials(&forms);
 
-  EXPECT_THAT(forms.get(),
-              UnorderedPasswordFormElementsAre(expected_forms.get()));
+  EXPECT_THAT(forms, UnorderedPasswordFormElementsAre(&expected_forms));
 }

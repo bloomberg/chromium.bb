@@ -5,10 +5,17 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_SYNC_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_SYNC_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+
+namespace autofill {
+struct PasswordForm;
+}
 
 namespace password_manager {
 
@@ -23,11 +30,13 @@ class PasswordStoreSync {
   // Overwrites |forms| with all stored non-blacklisted credentials. Returns
   // true on success.
   virtual bool FillAutofillableLogins(
-      ScopedVector<autofill::PasswordForm>* forms) WARN_UNUSED_RESULT = 0;
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+      WARN_UNUSED_RESULT = 0;
 
   // Overwrites |forms| with all stored blacklisted credentials. Returns true on
   // success.
-  virtual bool FillBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms)
+  virtual bool FillBlacklistLogins(
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
       WARN_UNUSED_RESULT = 0;
 
   // Synchronous implementation to add the given login.

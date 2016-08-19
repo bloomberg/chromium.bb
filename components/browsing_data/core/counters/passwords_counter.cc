@@ -35,12 +35,13 @@ void PasswordsCounter::Count() {
 }
 
 void PasswordsCounter::OnGetPasswordStoreResults(
-    ScopedVector<autofill::PasswordForm> results) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   base::Time start = GetPeriodStart();
-  ReportResult(std::count_if(results.begin(), results.end(),
-                             [start](const autofill::PasswordForm* form) {
-                               return form->date_created >= start;
-                             }));
+  ReportResult(std::count_if(
+      results.begin(), results.end(),
+      [start](const std::unique_ptr<autofill::PasswordForm>& form) {
+        return form->date_created >= start;
+      }));
 }
 
 void PasswordsCounter::OnLoginsChanged(

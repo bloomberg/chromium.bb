@@ -61,19 +61,25 @@ void FindDuplicates(
 }
 
 void TrimUsernameOnlyCredentials(
-    ScopedVector<autofill::PasswordForm>* android_credentials) {
-  ScopedVector<autofill::PasswordForm> result;
-  for (auto*& form : *android_credentials) {
-    if (form->scheme == autofill::PasswordForm::SCHEME_USERNAME_ONLY) {
-      if (form->federation_origin.unique())
-        continue;
-      else
-        form->skip_zero_click = true;
-    }
-    result.push_back(form);
-    form = nullptr;
-  }
-  android_credentials->swap(result);
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* android_credentials) {
+  // Remove username-only credentials which are not federated.
+  android_credentials->erase(
+      std::remove_if(
+          android_credentials->begin(), android_credentials->end(),
+          [](const std::unique_ptr<autofill::PasswordForm>& form) {
+            return form->scheme ==
+                       autofill::PasswordForm::SCHEME_USERNAME_ONLY &&
+                   form->federation_origin.unique();
+          }),
+      android_credentials->end());
+
+  // Set "skip_zero_click" on federated credentials.
+  std::for_each(
+      android_credentials->begin(), android_credentials->end(),
+      [](const std::unique_ptr<autofill::PasswordForm>& form) {
+        if (form->scheme == autofill::PasswordForm::SCHEME_USERNAME_ONLY)
+          form->skip_zero_click = true;
+      });
 }
 
 std::vector<std::unique_ptr<autofill::PasswordForm>> ConvertScopedVector(

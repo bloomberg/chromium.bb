@@ -70,8 +70,8 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
 };
 
 bool IsFormFiltered(const CredentialsFilter* filter, const PasswordForm& form) {
-  ScopedVector<PasswordForm> vector;
-  vector.push_back(new PasswordForm(form));
+  std::vector<std::unique_ptr<PasswordForm>> vector;
+  vector.push_back(base::MakeUnique<PasswordForm>(form));
   vector = filter->FilterResults(std::move(vector));
   return vector.empty();
 }
@@ -128,9 +128,9 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
         &password_manager_, &client_, driver_.AsWeakPtr(), pending,
         base::MakeUnique<StubFormSaver>());
 
-    ScopedVector<PasswordForm> saved_forms;
+    std::vector<std::unique_ptr<PasswordForm>> saved_forms;
     if (login_state == LoginState::EXISTING) {
-      saved_forms.push_back(new PasswordForm(pending));
+      saved_forms.push_back(base::MakeUnique<PasswordForm>(pending));
     }
     form_manager->OnGetPasswordStoreResults(std::move(saved_forms));
 
@@ -368,9 +368,11 @@ TEST_F(CredentialsFilterTest, ShouldFilterOneForm) {
           features::kProtectSyncCredentialOnReauth.name,
       std::string());
 
-  ScopedVector<autofill::PasswordForm> results;
-  results.push_back(new PasswordForm(SimpleGaiaForm("test1@gmail.com")));
-  results.push_back(new PasswordForm(SimpleGaiaForm("test2@gmail.com")));
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.push_back(
+      base::MakeUnique<PasswordForm>(SimpleGaiaForm("test1@gmail.com")));
+  results.push_back(
+      base::MakeUnique<PasswordForm>(SimpleGaiaForm("test2@gmail.com")));
 
   FakeSigninAs("test1@gmail.com");
 

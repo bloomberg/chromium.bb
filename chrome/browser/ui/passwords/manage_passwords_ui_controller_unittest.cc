@@ -175,7 +175,7 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<password_manager::PasswordFormManager>
   CreateFormManagerWithBestMatches(
       const autofill::PasswordForm& observed_form,
-      ScopedVector<autofill::PasswordForm> best_matches);
+      std::vector<std::unique_ptr<autofill::PasswordForm>> best_matches);
 
   std::unique_ptr<password_manager::PasswordFormManager> CreateFormManager();
 
@@ -235,7 +235,7 @@ void ManagePasswordsUIControllerTest::ExpectIconAndControllerStateIs(
 std::unique_ptr<password_manager::PasswordFormManager>
 ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
     const autofill::PasswordForm& observed_form,
-    ScopedVector<autofill::PasswordForm> best_matches) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>> best_matches) {
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           &password_manager_, &client_, driver_.AsWeakPtr(), observed_form,
@@ -246,8 +246,9 @@ ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
 
 std::unique_ptr<password_manager::PasswordFormManager>
 ManagePasswordsUIControllerTest::CreateFormManager() {
-  ScopedVector<autofill::PasswordForm> stored_forms;
-  stored_forms.push_back(new autofill::PasswordForm(test_local_form()));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> stored_forms;
+  stored_forms.push_back(
+      base::MakeUnique<autofill::PasswordForm>(test_local_form()));
   return CreateFormManagerWithBestMatches(test_local_form(),
                                           std::move(stored_forms));
 }
@@ -335,8 +336,8 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedFormPasswordSubmitted) {
   blacklisted.origin = test_local_form().origin;
   blacklisted.signon_realm = blacklisted.origin.spec();
   blacklisted.blacklisted_by_user = true;
-  ScopedVector<autofill::PasswordForm> stored_forms;
-  stored_forms.push_back(new autofill::PasswordForm(blacklisted));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> stored_forms;
+  stored_forms.push_back(base::MakeUnique<autofill::PasswordForm>(blacklisted));
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager =
       CreateFormManagerWithBestMatches(test_local_form(),
                                        std::move(stored_forms));

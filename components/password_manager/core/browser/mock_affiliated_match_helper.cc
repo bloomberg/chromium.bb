@@ -55,7 +55,7 @@ void MockAffiliatedMatchHelper::GetAffiliatedWebRealms(
 }
 
 void MockAffiliatedMatchHelper::InjectAffiliatedWebRealms(
-    ScopedVector<autofill::PasswordForm> forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
     const PasswordFormsCallback& result_callback) {
   std::vector<std::string> affiliated_web_realms =
       OnInjectAffiliatedWebRealmsCalled();

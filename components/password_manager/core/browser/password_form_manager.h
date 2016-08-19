@@ -122,7 +122,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
-      ScopedVector<autofill::PasswordForm> results) override;
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
   void OnGetSiteStatistics(
       std::unique_ptr<std::vector<std::unique_ptr<InteractionsStats>>> stats)
       override;
@@ -341,7 +341,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Determines if we need to autofill given the results of the query.
   // Takes ownership of the elements in |result|.
-  void OnRequestDone(ScopedVector<autofill::PasswordForm> result);
+  void OnRequestDone(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> result);
 
   // Helper for Save in the case that best_matches.size() == 0, meaning
   // we have no prior record of this form/username/password and the user

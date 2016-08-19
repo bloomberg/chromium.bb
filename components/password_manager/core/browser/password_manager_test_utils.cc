@@ -60,16 +60,21 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
 }
 
 bool ContainsEqualPasswordFormsUnordered(
-    const std::vector<PasswordForm*>& expectations,
-    const std::vector<PasswordForm*>& actual_values,
+    const std::vector<std::unique_ptr<PasswordForm>>& expectations,
+    const std::vector<std::unique_ptr<PasswordForm>>& actual_values,
     std::ostream* mismatch_output) {
-  std::vector<PasswordForm*> remaining_expectations(expectations.begin(),
-                                                    expectations.end());
+  std::vector<PasswordForm*> remaining_expectations(expectations.size());
+  std::transform(
+      expectations.begin(), expectations.end(), remaining_expectations.begin(),
+      [](const std::unique_ptr<PasswordForm>& form) { return form.get(); });
+
   bool had_mismatched_actual_form = false;
-  for (const PasswordForm* actual : actual_values) {
+  for (const auto& actual : actual_values) {
     auto it_matching_expectation = std::find_if(
         remaining_expectations.begin(), remaining_expectations.end(),
-        [actual](PasswordForm* expected) { return *expected == *actual; });
+        [&actual](const PasswordForm* expected) {
+          return *expected == *actual;
+        });
     if (it_matching_expectation != remaining_expectations.end()) {
       // Erase the matched expectation by moving the last element to its place.
       *it_matching_expectation = remaining_expectations.back();

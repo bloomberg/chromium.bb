@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -272,8 +273,9 @@ class AffiliatedMatchHelperTest : public testing::Test {
     return last_result_realms_;
   }
 
-  ScopedVector<autofill::PasswordForm> InjectAffiliatedWebRealms(
-      ScopedVector<autofill::PasswordForm> forms) {
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+  InjectAffiliatedWebRealms(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> forms) {
     expecting_result_callback_ = true;
     match_helper()->InjectAffiliatedWebRealms(
         std::move(forms),
@@ -306,7 +308,8 @@ class AffiliatedMatchHelperTest : public testing::Test {
     last_result_realms_ = affiliated_realms;
   }
 
-  void OnFormsCallback(ScopedVector<autofill::PasswordForm> forms) {
+  void OnFormsCallback(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> forms) {
     EXPECT_TRUE(expecting_result_callback_);
     expecting_result_callback_ = false;
     last_result_forms_.swap(forms);
@@ -334,7 +337,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> waiting_task_runner_;
   base::MessageLoop message_loop_;
   std::vector<std::string> last_result_realms_;
-  ScopedVector<autofill::PasswordForm> last_result_forms_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> last_result_forms_;
   bool expecting_result_callback_;
 
   scoped_refptr<TestPasswordStore> password_store_;
@@ -443,21 +446,21 @@ TEST_F(AffiliatedMatchHelperTest,
 // Verifies that InjectAffiliatedWebRealms() injects the realms of web sites
 // affiliated with the given Android application into password forms, if any.
 TEST_F(AffiliatedMatchHelperTest, InjectAffiliatedWebRealms) {
-  ScopedVector<autofill::PasswordForm> forms;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
 
-  forms.push_back(new autofill::PasswordForm(
+  forms.push_back(base::MakeUnique<autofill::PasswordForm>(
       GetTestAndroidCredentials(kTestAndroidRealmAlpha3)));
   mock_affiliation_service()->ExpectCallToGetAffiliationsAndSucceedWithResult(
       FacetURI::FromCanonicalSpec(kTestAndroidFacetURIAlpha3),
       StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassAlpha());
 
-  forms.push_back(new autofill::PasswordForm(
+  forms.push_back(base::MakeUnique<autofill::PasswordForm>(
       GetTestAndroidCredentials(kTestAndroidRealmBeta2)));
   mock_affiliation_service()->ExpectCallToGetAffiliationsAndSucceedWithResult(
       FacetURI::FromCanonicalSpec(kTestAndroidFacetURIBeta2),
       StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassBeta());
 
-  forms.push_back(new autofill::PasswordForm(
+  forms.push_back(base::MakeUnique<autofill::PasswordForm>(
       GetTestAndroidCredentials(kTestAndroidRealmGamma)));
   mock_affiliation_service()->ExpectCallToGetAffiliationsAndEmulateFailure(
       FacetURI::FromCanonicalSpec(kTestAndroidFacetURIGamma),
@@ -469,10 +472,10 @@ TEST_F(AffiliatedMatchHelperTest, InjectAffiliatedWebRealms) {
   web_form.scheme = digest.scheme;
   web_form.signon_realm = digest.signon_realm;
   web_form.origin = digest.origin;
-  forms.push_back(new autofill::PasswordForm(web_form));
+  forms.push_back(base::MakeUnique<autofill::PasswordForm>(web_form));
 
   size_t expected_form_count = forms.size();
-  ScopedVector<autofill::PasswordForm> results(
+  std::vector<std::unique_ptr<autofill::PasswordForm>> results(
       InjectAffiliatedWebRealms(std::move(forms)));
   ASSERT_EQ(expected_form_count, results.size());
   EXPECT_THAT(results[0]->affiliated_web_realm,

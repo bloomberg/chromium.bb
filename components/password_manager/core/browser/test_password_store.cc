@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
@@ -81,15 +82,16 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginImpl(
   return changes;
 }
 
-ScopedVector<autofill::PasswordForm> TestPasswordStore::FillMatchingLogins(
-    const FormDigest& form) {
-  ScopedVector<autofill::PasswordForm> matched_forms;
+std::vector<std::unique_ptr<autofill::PasswordForm>>
+TestPasswordStore::FillMatchingLogins(const FormDigest& form) {
+  std::vector<std::unique_ptr<autofill::PasswordForm>> matched_forms;
   for (const auto& elements : stored_passwords_) {
     if (elements.first == form.signon_realm ||
         (form.scheme == autofill::PasswordForm::SCHEME_HTML &&
          password_manager::IsFederatedMatch(elements.first, form.origin))) {
       for (const auto& stored_form : elements.second)
-        matched_forms.push_back(new autofill::PasswordForm(stored_form));
+        matched_forms.push_back(
+            base::MakeUnique<autofill::PasswordForm>(stored_form));
     }
   }
   return matched_forms;
@@ -130,22 +132,22 @@ bool TestPasswordStore::RemoveStatisticsCreatedBetweenImpl(
 }
 
 bool TestPasswordStore::FillAutofillableLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   for (const auto& forms_for_realm : stored_passwords_) {
     for (const autofill::PasswordForm& form : forms_for_realm.second) {
       if (!form.blacklisted_by_user)
-        forms->push_back(new autofill::PasswordForm(form));
+        forms->push_back(base::MakeUnique<autofill::PasswordForm>(form));
     }
   }
   return true;
 }
 
 bool TestPasswordStore::FillBlacklistLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   for (const auto& forms_for_realm : stored_passwords_) {
     for (const autofill::PasswordForm& form : forms_for_realm.second) {
       if (form.blacklisted_by_user)
-        forms->push_back(new autofill::PasswordForm(form));
+        forms->push_back(base::MakeUnique<autofill::PasswordForm>(form));
     }
   }
   return true;

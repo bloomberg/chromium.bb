@@ -94,21 +94,17 @@ bool IsProbablyNotUsername(const base::string16& s) {
 // Splits federated matches from |store_results| into a separate vector and
 // returns that.
 std::vector<std::unique_ptr<autofill::PasswordForm>> SplitFederatedMatches(
-    ScopedVector<PasswordForm>* store_results) {
+    std::vector<std::unique_ptr<PasswordForm>>* store_results) {
   auto first_federated =
       std::partition(store_results->begin(), store_results->end(),
-                     [](const PasswordForm* form) {
+                     [](const std::unique_ptr<PasswordForm>& form) {
                        return form->federation_origin.unique();
                      });
 
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_matches;
-  federated_matches.reserve(store_results->end() - first_federated);
-  for (auto federated = first_federated; federated != store_results->end();
-       ++federated) {
-    federated_matches.push_back(base::WrapUnique(*federated));
-    *federated = nullptr;
-  }
-  store_results->weak_erase(first_federated, store_results->end());
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_matches(
+      store_results->end() - first_federated);
+  std::move(first_federated, store_results->end(), federated_matches.begin());
+  store_results->erase(first_federated, store_results->end());
   return federated_matches;
 }
 
@@ -484,7 +480,7 @@ void PasswordFormManager::SetSubmittedForm(const autofill::PasswordForm& form) {
 }
 
 void PasswordFormManager::OnRequestDone(
-    ScopedVector<PasswordForm> logins_result) {
+    std::vector<std::unique_ptr<PasswordForm>> logins_result) {
   preferred_match_ = nullptr;
   best_matches_.clear();
   blacklisted_matches_.clear();
@@ -502,13 +498,14 @@ void PasswordFormManager::OnRequestDone(
       client_->GetStoreResultFilter()->FilterResults(std::move(logins_result));
 
   // Deal with blacklisted forms.
-  auto begin_blacklisted = std::partition(
-      logins_result.begin(), logins_result.end(),
-      [](PasswordForm* form) { return !form->blacklisted_by_user; });
+  auto begin_blacklisted =
+      std::partition(logins_result.begin(), logins_result.end(),
+                     [](const std::unique_ptr<PasswordForm>& form) {
+                       return !form->blacklisted_by_user;
+                     });
   for (auto it = begin_blacklisted; it != logins_result.end(); ++it) {
     if (IsBlacklistMatch(**it)) {
-      blacklisted_matches_.push_back(base::WrapUnique(*it));
-      *it = nullptr;
+      blacklisted_matches_.push_back(std::move(*it));
     }
   }
   logins_result.erase(begin_blacklisted, logins_result.end());
@@ -520,7 +517,7 @@ void PasswordFormManager::OnRequestDone(
   credential_scores.reserve(logins_result.size());
   uint32_t best_score = 0;
   std::map<base::string16, uint32_t> best_scores;
-  for (const PasswordForm* login : logins_result) {
+  for (const auto& login : logins_result) {
     uint32_t current_score = ScoreResult(*login);
     best_score = std::max(best_score, current_score);
     best_scores[login->username_value] =
@@ -530,9 +527,7 @@ void PasswordFormManager::OnRequestDone(
 
   // Fill |best_matches_| with the best-scoring credentials for each username.
   for (size_t i = 0; i < logins_result.size(); ++i) {
-    // Take ownership of the PasswordForm from the ScopedVector.
-    std::unique_ptr<PasswordForm> login(logins_result[i]);
-    logins_result[i] = nullptr;
+    std::unique_ptr<PasswordForm> login(std::move(logins_result[i]));
     DCHECK(!login->blacklisted_by_user);
     const base::string16& username = login->username_value;
 
@@ -633,7 +628,7 @@ void PasswordFormManager::ProcessLoginPrompt() {
 }
 
 void PasswordFormManager::OnGetPasswordStoreResults(
-    ScopedVector<PasswordForm> results) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
 
   if (need_to_refetch_) {

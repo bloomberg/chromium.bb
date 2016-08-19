@@ -120,7 +120,7 @@ class PasswordManagerPresenter
 
     // Send the password store's reply back to the handler.
     void OnGetPasswordStoreResults(
-        ScopedVector<autofill::PasswordForm> results) override;
+        std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
   };
 
   // A short class to mediate requests to the password store for exceptions.
@@ -133,7 +133,7 @@ class PasswordManagerPresenter
 
     // Send the password store's reply back to the handler.
     void OnGetPasswordStoreResults(
-        ScopedVector<autofill::PasswordForm> results) override;
+        std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
   };
 
   // Password store consumer for populating the password list and exceptions.

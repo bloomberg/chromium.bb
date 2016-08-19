@@ -171,22 +171,22 @@ bool PasswordStoreDefault::RemoveStatisticsCreatedBetweenImpl(
          login_db_->stats_table().RemoveStatsBetween(delete_begin, delete_end);
 }
 
-ScopedVector<autofill::PasswordForm> PasswordStoreDefault::FillMatchingLogins(
-    const FormDigest& form) {
-  ScopedVector<autofill::PasswordForm> matched_forms;
+std::vector<std::unique_ptr<PasswordForm>>
+PasswordStoreDefault::FillMatchingLogins(const FormDigest& form) {
+  std::vector<std::unique_ptr<PasswordForm>> matched_forms;
   if (login_db_ && !login_db_->GetLogins(form, &matched_forms))
-    return ScopedVector<autofill::PasswordForm>();
+    return std::vector<std::unique_ptr<PasswordForm>>();
   return matched_forms;
 }
 
 bool PasswordStoreDefault::FillAutofillableLogins(
-    ScopedVector<PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_ && login_db_->GetAutofillableLogins(forms);
 }
 
 bool PasswordStoreDefault::FillBlacklistLogins(
-    ScopedVector<PasswordForm>* forms) {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_ && login_db_->GetBlacklistLogins(forms);
 }

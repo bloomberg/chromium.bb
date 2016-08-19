@@ -42,14 +42,14 @@ namespace {
 class MockStoreResultFilter : public CredentialsFilter {
  public:
   MOCK_CONST_METHOD1(FilterResultsPtr,
-                     void(ScopedVector<autofill::PasswordForm>* results));
+                     void(std::vector<std::unique_ptr<PasswordForm>>* results));
   MOCK_CONST_METHOD1(ShouldSave, bool(const autofill::PasswordForm& form));
   MOCK_CONST_METHOD1(ReportFormLoginSuccess,
                      void(const PasswordFormManager& form_manager));
 
   // GMock cannot handle move-only arguments.
-  ScopedVector<autofill::PasswordForm> FilterResults(
-      ScopedVector<autofill::PasswordForm> results) const override {
+  std::vector<std::unique_ptr<PasswordForm>> FilterResults(
+      std::vector<std::unique_ptr<PasswordForm>> results) const override {
     FilterResultsPtr(&results);
     return results;
   }
@@ -112,13 +112,13 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 
 // Invokes the password store consumer with a single copy of |form|.
 ACTION_P(InvokeConsumer, form) {
-  ScopedVector<PasswordForm> result;
-  result.push_back(base::WrapUnique(new PasswordForm(form)));
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  result.push_back(base::MakeUnique<PasswordForm>(form));
   arg0->OnGetPasswordStoreResults(std::move(result));
 }
 
 ACTION(InvokeEmptyConsumerWithForms) {
-  arg0->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+  arg0->OnGetPasswordStoreResults(std::vector<std::unique_ptr<PasswordForm>>());
 }
 
 ACTION_P(SaveToScopedPtr, scoped) { scoped->reset(arg0); }
@@ -340,7 +340,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   // When the password store already contains credentials for a given form, new
   // credentials get still added, as long as they differ in username from the
   // stored ones.
-  ScopedVector<PasswordForm> result;
+  std::vector<std::unique_ptr<PasswordForm>> result;
   PasswordForm existing_different(MakeSimpleForm());
   existing_different.username_value = ASCIIToUTF16("google2");
 
@@ -1109,7 +1109,8 @@ TEST_F(PasswordManagerTest, SaveFormFetchedAfterSubmit) {
   // Emulate fetching password form from PasswordStore after submission but
   // before post-navigation load.
   ASSERT_TRUE(form_manager);
-  form_manager->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+  form_manager->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
 
   std::unique_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_,
@@ -1458,7 +1459,8 @@ TEST_F(PasswordManagerTest, UpdateFormManagers) {
   // The first GetLogins should have fired, but to unblock the second, we need
   // to first send a response from the store (to be ignored).
   ASSERT_TRUE(consumer);
-  consumer->OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+  consumer->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
   EXPECT_CALL(*store_, GetLogins(_, _));
   manager()->UpdateFormManagers();
 }

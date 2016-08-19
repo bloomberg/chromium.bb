@@ -12,9 +12,9 @@
 
 namespace password_manager {
 
-ScopedVector<autofill::PasswordForm>
+std::vector<std::unique_ptr<autofill::PasswordForm>>
 StubPasswordManagerClient::PassThroughCredentialsFilter::FilterResults(
-    ScopedVector<autofill::PasswordForm> results) const {
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) const {
   return results;
 }
 
