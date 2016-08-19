@@ -478,10 +478,15 @@ void UserMediaClientImpl::FinalizeEnumerateDevices(
   for (size_t i = 0; i  < request->audio_input_devices.size(); ++i) {
     const MediaStreamDevice& device = request->audio_input_devices[i].device;
     DCHECK_EQ(device.type, MEDIA_DEVICE_AUDIO_CAPTURE);
+
+    // We add an arbitrary character to the device ID in order to avoid the same
+    // group ID for the input and output devices that share the same ID but are
+    // not in the same physical device. This may happen with the default and
+    // communication devices.
     std::string group_id = base::UintToString(base::Hash(
-        !device.matched_output_device_id.empty() ?
-            device.matched_output_device_id :
-            device.id));
+        device.matched_output_device_id.empty() ?
+            device.id + "i" :
+            device.matched_output_device_id));
     devices[i].initialize(
         blink::WebString::fromUTF8(device.id),
         blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput,
