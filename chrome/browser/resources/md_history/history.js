@@ -107,7 +107,9 @@ function historyDeleted() {
  */
 function updateSignInState(isUserSignedIn) {
   waitForAppUpgrade().then(function() {
-    /** @type {HistoryAppElement} */($('history-app'))
-        .updateSignInState(isUserSignedIn);
+    if ($('history-app')) {
+      /** @type {HistoryAppElement} */($('history-app'))
+          .updateSignInState(isUserSignedIn);
+    }
   });
 }

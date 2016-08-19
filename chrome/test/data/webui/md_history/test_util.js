@@ -16,6 +16,32 @@ function flush() {
 }
 
 /**
+ * Replace the current primary element of the test with a new element. Useful
+ * as an alternative to PolymerTest.clearBody() which preserves styling.
+ * @param {Element} element
+ */
+function replaceBody(element) {
+  var body = document.body;
+  var currentBody =
+      body.querySelector('history-app') || body.querySelector('.test-body');
+  body.removeChild(currentBody);
+
+  element.classList.add('test-body');
+  body.appendChild(element);
+}
+
+/**
+ * Replace the document body with a new instance of <history-app>.
+ * @return {HistoryAppElement} The app which was created.
+ */
+function replaceApp() {
+  var app = document.createElement('history-app');
+  app.id = 'history-app';
+  replaceBody(app);
+  return app;
+}
+
+/**
  * Create a fake history result with the given timestamp.
  * @param {number|string} timestamp Timestamp of the entry, as a number in ms or
  * a string which can be parsed by Date.parse().

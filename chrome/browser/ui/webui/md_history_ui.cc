@@ -165,6 +165,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                           IDR_MD_HISTORY_SEARCHED_LABEL_JS);
   source->AddResourcePath("shared_style.html",
                           IDR_MD_HISTORY_SHARED_STYLE_HTML);
+  source->AddResourcePath("shared_vars.html",
+                          IDR_MD_HISTORY_SHARED_VARS_HTML);
   source->AddResourcePath("side_bar.html", IDR_MD_HISTORY_SIDE_BAR_HTML);
   source->AddResourcePath("side_bar.js", IDR_MD_HISTORY_SIDE_BAR_JS);
   source->AddResourcePath("synced_device_card.html",

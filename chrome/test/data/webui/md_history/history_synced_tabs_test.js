@@ -27,40 +27,35 @@ cr.define('md_history.history_synced_tabs_test', function() {
     };
   }
 
+  function getCards(manager) {
+    return polymerSelectAll(manager, 'history-synced-device-card');
+  }
+
+  function numWindowSeparators(card) {
+    return polymerSelectAll(card, ':not([hidden])#window-separator').length;
+  }
+
+  function assertNoSyncedTabsMessageShown(manager, stringID) {
+    assertFalse(manager.$['no-synced-tabs'].hidden);
+    var message = loadTimeData.getString(stringID);
+    assertNotEquals(
+        -1,
+        manager.$['no-synced-tabs'].textContent.indexOf(message));
+  }
+
   function registerTests() {
-    suite('synced-tabs', function() {
-      var app;
+    suite('<history-synced-device-manager>', function() {
       var element;
 
-      var numWindowSeparators = function(card) {
-        return Polymer.dom(card.root).
-            querySelectorAll(':not([hidden])#window-separator').length;
+      var setForeignSessions = function(sessions) {
+        element.sessionList = sessions;
       };
 
-      var getCards = function() {
-        return Polymer.dom(element.root).
-            querySelectorAll('history-synced-device-card');
-      };
-
-      var assertNoSyncedTabsMessageShown = function(stringID) {
-        assertFalse(element.$['no-synced-tabs'].hidden);
-        var message = loadTimeData.getString(stringID);
-        assertNotEquals(
-            -1,
-            element.$['no-synced-tabs'].textContent.indexOf(message));
-      };
-
-      suiteSetup(function() {
-        app = $('history-app');
-        // Not rendered until selected.
-        assertEquals(null, app.$$('#synced-devices'));
-
-        app.selectedPage_ = 'syncedTabs';
-        assertEquals('syncedTabs', app.$['content-side-bar'].$.menu.selected);
-        return flush().then(function() {
-          element = app.$$('#synced-devices');
-          assertTrue(!!element);
-        });
+      setup(function() {
+        element = document.createElement('history-synced-device-manager');
+        element.updateSignInState(true);
+        element.searchTerm = '';
+        replaceBody(element);
       });
 
       test('single card, single window', function() {
@@ -70,7 +65,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
               [createWindow(['http://www.google.com', 'http://example.com'])]
           )
         ];
-        setForeignSessions(sessionList, true);
+        setForeignSessions(sessionList);
 
         return flush().then(function() {
           var card = element.$$('history-synced-device-card');
@@ -97,10 +92,10 @@ cr.define('md_history.history_synced_tabs_test', function() {
               ]
           ),
         ];
-        setForeignSessions(sessionList, true);
+        setForeignSessions(sessionList);
 
         return flush().then(function() {
-          var cards = getCards();
+          var cards = getCards(element);
           assertEquals(2, cards.length);
 
           // Ensure separators between windows are added appropriately.
@@ -118,7 +113,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
         var session2 =
             createSession('Nexus 5', [createWindow(['http://www.google.com'])]);
 
-        setForeignSessions([session1, session2], true);
+        setForeignSessions([session1, session2]);
 
         return flush().then(function() {
           var session1updated = createSession('Chromebook', [
@@ -127,12 +122,12 @@ cr.define('md_history.history_synced_tabs_test', function() {
           ]);
           session1updated.timestamp = 1234;
 
-          setForeignSessions([session1updated, session2], true);
+          setForeignSessions([session1updated, session2]);
 
           return flush();
         }).then(function() {
           // There should only be two cards.
-          var cards = getCards();
+          var cards = getCards(element);
           assertEquals(2, cards.length);
 
           // There are now 2 windows in the first device.
@@ -162,10 +157,10 @@ cr.define('md_history.history_synced_tabs_test', function() {
               ]
           ),
         ];
-        setForeignSessions(sessionList, true);
+        setForeignSessions(sessionList);
 
         return flush().then(function() {
-          var cards = getCards();
+          var cards = getCards(element);
           assertEquals(2, cards.length);
 
           // Ensure separators between windows are added appropriately.
@@ -175,7 +170,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
           return flush();
         }).then(function() {
-          var cards = getCards();
+          var cards = getCards(element);
 
           assertEquals(0, numWindowSeparators(cards[0]));
           assertEquals(1, cards[0].tabs.length);
@@ -198,8 +193,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
       test('click synced tab', function(done) {
         setForeignSessions(
             [createSession(
-                'Chromebook', [createWindow(['https://example.com'])])],
-            true);
+                'Chromebook', [createWindow(['https://example.com'])])]);
 
         registerMessageCallback('openForeignSession', this, function(args) {
           assertEquals('Chromebook', args[0], 'sessionTag is correct');
@@ -213,17 +207,17 @@ cr.define('md_history.history_synced_tabs_test', function() {
         });
 
         flush().then(function() {
-          var cards = getCards();
+          var cards = getCards(element);
           var anchor = cards[0].root.querySelector('a');
           MockInteractions.tap(anchor, {emulateTouch: true});
         });
       });
 
       test('show sign in promo', function() {
-        updateSignInState(false);
+        element.updateSignInState(false);
         return flush().then(function() {
           assertFalse(element.$['sign-in-guide'].hidden);
-          updateSignInState(true);
+          element.updateSignInState(true);
           return flush();
         }).then(function() {
           assertTrue(element.$['sign-in-guide'].hidden);
@@ -237,24 +231,24 @@ cr.define('md_history.history_synced_tabs_test', function() {
         return flush().then(function() {
           assertTrue(element.$['no-synced-tabs'].hidden);
 
-          var cards = getCards();
+          var cards = getCards(element);
           assertEquals(0, cards.length);
 
-          updateSignInState(true);
+          element.updateSignInState(true);
 
           return flush();
         }).then(function() {
           // When user signs in, first show loading message.
-          assertNoSyncedTabsMessageShown('loading');
+          assertNoSyncedTabsMessageShown(element, 'loading');
 
           var sessionList = [];
-          setForeignSessions(sessionList, true);
+          setForeignSessions(sessionList);
           return flush();
         }).then(function() {
-          cards = getCards();
+          cards = getCards(element);
           assertEquals(0, cards.length);
           // If no synced tabs are fetched, show 'no synced tabs'.
-          assertNoSyncedTabsMessageShown('noSyncedResults');
+          assertNoSyncedTabsMessageShown(element, 'noSyncedResults');
 
           sessionList = [
             createSession(
@@ -262,20 +256,48 @@ cr.define('md_history.history_synced_tabs_test', function() {
                 [createWindow(['http://www.google.com', 'http://example.com'])]
             )
           ];
-          setForeignSessions(sessionList, true);
+          setForeignSessions(sessionList);
 
           return flush();
         }).then(function() {
-          cards = getCards();
+          cards = getCards(element);
           assertEquals(1, cards.length);
           // If there are any synced tabs, hide the 'no synced tabs' message.
           assertTrue(element.$['no-synced-tabs'].hidden);
 
-          updateSignInState(false);
+          element.updateSignInState(false);
           return flush();
         }).then(function() {
           // When user signs out, don't show the message.
           assertTrue(element.$['no-synced-tabs'].hidden);
+        });
+      });
+
+      test('hide sign in promo in guest mode', function() {
+        element.guestSession_ = true;
+        return flush().then(function() {
+          assertTrue(element.$['sign-in-guide'].hidden);
+        });
+      });
+
+      teardown(function() {
+        registerMessageCallback('openForeignSession', this, undefined);
+      });
+    });
+
+    suite('<history-synced-device-manager> integration', function() {
+      var element;
+
+      setup(function() {
+        var app = replaceApp();
+        // Not rendered until selected.
+        assertEquals(null, app.$$('#synced-devices'));
+
+        app.selectedPage_ = 'syncedTabs';
+        assertEquals('syncedTabs', app.$['content-side-bar'].$.menu.selected);
+        return flush().then(function() {
+          element = app.$$('#synced-devices');
+          assertTrue(!!element);
         });
       });
 
@@ -291,7 +313,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
         setForeignSessions(sessionList, true);
 
         return flush().then(function() {
-          var cards = getCards();
+          var cards = getCards(element);
           assertEquals(1, cards.length);
           assertTrue(element.$['no-synced-tabs'].hidden);
 
@@ -300,25 +322,11 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
           return flush();
         }).then(function() {
-          cards = getCards();
+          cards = getCards(element);
           assertEquals(0, cards.length);
           // If tab sync is disabled, show 'no synced tabs'.
-          assertNoSyncedTabsMessageShown('noSyncedResults');
+          assertNoSyncedTabsMessageShown(element, 'noSyncedResults');
         });
-      });
-
-      test('hide sign in promo in guest mode', function() {
-        element.guestSession_ = true;
-        return flush().then(function() {
-          assertTrue(element.$['sign-in-guide'].hidden);
-        });
-      });
-
-      teardown(function() {
-        element.syncedDevices = [];
-        element.searchTerm = '';
-        element.guestSession_ = false;
-        registerMessageCallback('openForeignSession', this, undefined);
       });
     });
   }

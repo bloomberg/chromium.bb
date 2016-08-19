@@ -2459,42 +2459,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </defs>
   </svg>
 </iron-iconset-svg>
+<style is="custom-style">
+  :root {
+    --card-border-color: rgba(0, 0, 0, 0.14);
+    --card-box-shadow: {
+      box-shadow: 0 2px 2px rgba(0, 0, 0, .05),
+                  0 1px 4px rgba(0, 0, 0, .08),
+                  0 1px 1px rgba(0, 0, 0, .2);;
+    };
+    --card-container-filter: {
+      filter: drop-shadow(0 2px 1px rgba(0, 0, 0, .05))
+              drop-shadow(0 1px 0px rgba(0, 0, 0, .08))
+              drop-shadow(0 1px 1px rgba(0, 0, 0, .2));
+    };
+    --card-first-last-item-padding: 8px;
+    --card-max-width: 960px;
+    --card-min-width: 550px;
+    --card-padding-between: 20px;
+    --card-padding-side: 24px;
+    --card-sizing: {
+      margin: 0 auto;
+      max-width: var(--card-max-width);
+      min-width: var(--card-min-width);
+      padding: 0 var(--card-padding-side);
+      width: calc(100% - 2 * var(--card-padding-side));
+    };
+    --first-card-padding-top: 24px;
+    --item-height: 44px;
+    --primary-text-color: #333;
+    --secondary-text-color: #757575;
+    --side-bar-width: 256px;
+    --toolbar-grouped-height: 101px;
+    --toolbar-height: 56px;
+  }
+</style>
 <dom-module id="shared-style" assetpath="chrome://history/">
   <template>
     <style>
-      :root {
-        --card-border-color: rgba(0, 0, 0, 0.14);
-        --card-box-shadow: {
-          box-shadow: 0 2px 2px rgba(0, 0, 0, .05),
-                      0 1px 4px rgba(0, 0, 0, .08),
-                      0 1px 1px rgba(0, 0, 0, .2);;
-        };
-        --card-container-filter: {
-          filter: drop-shadow(0 2px 1px rgba(0, 0, 0, .05))
-                  drop-shadow(0 1px 0px rgba(0, 0, 0, .08))
-                  drop-shadow(0 1px 1px rgba(0, 0, 0, .2));
-        };
-        --card-first-last-item-padding: 8px;
-        --card-max-width: 960px;
-        --card-min-width: 550px;
-        --card-padding-between: 20px;
-        --card-padding-side: 24px;
-        --card-sizing: {
-          margin: 0 auto;
-          max-width: var(--card-max-width);
-          min-width: var(--card-min-width);
-          padding: 0 var(--card-padding-side);
-          width: calc(100% - 2 * var(--card-padding-side));
-        };
-        --first-card-padding-top: 24px;
-        --item-height: 44px;
-        --primary-text-color: #333;
-        --secondary-text-color: #757575;
-        --side-bar-width: 256px;
-        --toolbar-grouped-height: 101px;
-        --toolbar-height: 56px;
-      }
-
       [hidden] {
         display: none !important;
       }
@@ -2889,6 +2890,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       cursor: pointer;
     };
     --cr-focused-item-color: var(--google-grey-300);
+    --cr-selectable-focus: {
+      background-color: var(--cr-focused-item-color);
+      outline: none;
+    }
     --cr-separator-line: 1px solid rgba(0, 0, 0, 0.06);
   }
 </style>
@@ -2896,6 +2901,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <dom-module id="cr-shared-style" assetpath="chrome://resources/cr_elements/">
   <template>
     <style>
+      /* Chrome spinners should be blue. */
+      paper-spinner {
+        --paper-spinner-layer-1-color: var(--google-blue-500);
+        --paper-spinner-layer-2-color: var(--google-blue-500);
+        --paper-spinner-layer-3-color: var(--google-blue-500);
+        --paper-spinner-layer-4-color: var(--google-blue-500);
+      }
+
       .action-button {
         background: var(--google-blue-500);
         color: white;
@@ -2920,6 +2933,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       [actionable] {
+        @apply(--cr-actionable);
+      }
+
+      [selectable] :focus {
+        @apply(--cr-selectable-focus);
+      }
+      [selectable] > * {
         @apply(--cr-actionable);
       }
     </style>
