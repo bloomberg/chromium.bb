@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.customtabs.CustomTabsIntent;
-import android.test.InstrumentationTestCase;
 import android.test.mock.MockContext;
 import android.test.mock.MockPackageManager;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -24,6 +23,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Instrumentation tests for {@link ExternalNavigationHandler}.
  */
-public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
+public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
 
     // Expectations
     private static final int IGNORE = 0x0;
@@ -109,6 +109,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         RecordHistogram.disableForTests();
         mDelegate.mQueryIntentOverride = null;
         ChromeWebApkHost.initForTesting(false);  // disabled by default
+        loadNativeLibraryNoBrowserProcess();
     }
 
     @SmallTest

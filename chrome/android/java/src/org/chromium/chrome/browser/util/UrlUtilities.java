@@ -27,37 +27,20 @@ public class UrlUtilities {
     private static final String TAG = "UrlUtilities";
 
     /**
-     * URI schemes that ContentView can handle.
-     */
-    private static final HashSet<String> ACCEPTED_SCHEMES = CollectionUtil.newHashSet(
-            "about", "data", "file", "http", "https", "inline", "javascript");
-
-    /**
-     * URI schemes that Chrome can download.
-     */
-    private static final HashSet<String> DOWNLOADABLE_SCHEMES = CollectionUtil.newHashSet(
-            "data", "filesystem", "http", "https", "blob", "file");
-
-    /**
      * URI schemes that are internal to Chrome.
      */
     private static final HashSet<String> INTERNAL_SCHEMES = CollectionUtil.newHashSet(
             "chrome", "chrome-native", "about");
 
-    /**
-     * URI schemes that can be handled in Intent fallback navigation.
-     */
-    private static final HashSet<String> FALLBACK_VALID_SCHEMES = CollectionUtil.newHashSet(
-            "http", "https");
-
-    /**
-     * @param uri A URI.
-     *
-     * @return True if the URI's scheme is one that ContentView can handle.
-     */
-    public static boolean isAcceptedScheme(URI uri) {
-        return ACCEPTED_SCHEMES.contains(uri.getScheme());
-    }
+    // Patterns used in validateIntentUrl.
+    private static final Pattern DNS_HOSTNAME_PATTERN =
+            Pattern.compile("^[\\w\\.-]*$");
+    private static final Pattern JAVA_PACKAGE_NAME_PATTERN =
+            Pattern.compile("^[\\w\\.-]*$");
+    private static final Pattern ANDROID_COMPONENT_NAME_PATTERN =
+            Pattern.compile("^[\\w\\./-]*$");
+    private static final Pattern URL_SCHEME_PATTERN =
+            Pattern.compile("^[a-zA-Z]+$");
 
     /**
      * @param uri A URI.
@@ -65,20 +48,7 @@ public class UrlUtilities {
      * @return True if the URI's scheme is one that ContentView can handle.
      */
     public static boolean isAcceptedScheme(String uri) {
-        try {
-            return isAcceptedScheme(new URI(uri));
-        } catch (URISyntaxException e) {
-            return false;
-        }
-    }
-
-    /**
-     * @param uri A URI.
-     *
-     * @return True if the URI is valid for Intent fallback navigation.
-     */
-    public static boolean isValidForIntentFallbackNavigation(URI uri) {
-        return FALLBACK_VALID_SCHEMES.contains(uri.getScheme());
+        return nativeIsAcceptedScheme(uri);
     }
 
     /**
@@ -87,20 +57,7 @@ public class UrlUtilities {
      * @return True if the URI is valid for Intent fallback navigation.
      */
     public static boolean isValidForIntentFallbackNavigation(String uri) {
-        try {
-            return isValidForIntentFallbackNavigation(new URI(uri));
-        } catch (URISyntaxException e) {
-            return false;
-        }
-    }
-
-    /**
-     * @param uri A URI.
-     *
-     * @return True if the URI's scheme is one that Chrome can download.
-     */
-    public static boolean isDownloadableScheme(URI uri) {
-        return DOWNLOADABLE_SCHEMES.contains(uri.getScheme());
+        return nativeIsValidForIntentFallbackNavigation(uri);
     }
 
     /**
@@ -109,11 +66,7 @@ public class UrlUtilities {
      * @return True if the URI's scheme is one that Chrome can download.
      */
     public static boolean isDownloadableScheme(String uri) {
-        try {
-            return isDownloadableScheme(new URI(uri));
-        } catch (URISyntaxException e) {
-            return false;
-        }
+        return nativeIsDownloadable(uri);
     }
 
     /**
@@ -230,16 +183,6 @@ public class UrlUtilities {
         if (TextUtils.equals(url, url2)) return false;
         return nativeUrlsFragmentsDiffer(url, url2);
     }
-
-    // Patterns used in validateIntentUrl.
-    private static final Pattern DNS_HOSTNAME_PATTERN =
-            Pattern.compile("^[\\w\\.-]*$");
-    private static final Pattern JAVA_PACKAGE_NAME_PATTERN =
-            Pattern.compile("^[\\w\\.-]*$");
-    private static final Pattern ANDROID_COMPONENT_NAME_PATTERN =
-            Pattern.compile("^[\\w\\./-]*$");
-    private static final Pattern URL_SCHEME_PATTERN =
-            Pattern.compile("^[a-zA-Z]+$");
 
     /**
      * @param url An Android intent:// URL to validate.
@@ -389,6 +332,9 @@ public class UrlUtilities {
         return true;
     }
 
+    private static native boolean nativeIsDownloadable(String url);
+    private static native boolean nativeIsValidForIntentFallbackNavigation(String url);
+    private static native boolean nativeIsAcceptedScheme(String url);
     private static native boolean nativeSameDomainOrHost(String primaryUrl, String secondaryUrl,
             boolean includePrivateRegistries);
     private static native boolean nativeSameHost(String primaryUrl, String secondaryUrl);

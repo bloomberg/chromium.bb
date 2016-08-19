@@ -19,8 +19,32 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-GURL ConvertJavaStringToGURL(JNIEnv*env, jstring url) {
+static const char* const g_supported_schemes[] = { "about", "data", "file",
+    "http", "https", "inline", "javascript", nullptr };
+
+static const char* const g_downloadable_schemes[] = {
+    "data", "blob", "file", "filesystem", "http", "https", nullptr };
+
+static const char* const g_fallback_valid_schemes[] = {
+    "http", "https", nullptr };
+
+GURL ConvertJavaStringToGURL(JNIEnv* env, jstring url) {
   return url ? GURL(ConvertJavaStringToUTF8(env, url)) : GURL();
+}
+
+bool CheckSchemeBelongsToList(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& url,
+    const char* const* scheme_list) {
+  GURL gurl = ConvertJavaStringToGURL(env, url);
+  if (gurl.is_valid()) {
+    for (size_t i = 0; scheme_list[i]; i++) {
+      if (gurl.scheme() == scheme_list[i]) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 net::registry_controlled_domains::PrivateRegistryFilter GetRegistryFilter(
@@ -158,6 +182,26 @@ static jboolean UrlsFragmentsDiffer(JNIEnv* env,
     return true;
   return gurl.ref() != gurl2.ref();
 }
+
+static jboolean IsAcceptedScheme(JNIEnv* env,
+                                 const JavaParamRef<jclass>& clazz,
+                                 const JavaParamRef<jstring>& url) {
+  return CheckSchemeBelongsToList(env, url, g_supported_schemes);
+}
+
+static jboolean IsValidForIntentFallbackNavigation(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url) {
+  return CheckSchemeBelongsToList(env, url, g_fallback_valid_schemes);
+}
+
+static jboolean IsDownloadable(JNIEnv* env,
+                               const JavaParamRef<jclass>& clazz,
+                               const JavaParamRef<jstring>& url) {
+  return CheckSchemeBelongsToList(env, url, g_downloadable_schemes);
+}
+
 
 // Register native methods
 bool RegisterUrlUtilities(JNIEnv* env) {
