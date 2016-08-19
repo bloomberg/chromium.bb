@@ -11,8 +11,12 @@ deployed with your code.
 
 from __future__ import print_function
 
+import ssl
+
 from functools import wraps
 from collections import namedtuple
+
+from chromite.lib import cros_logging as logging
 
 try:
   from infra_libs import ts_mon
@@ -159,4 +163,14 @@ def SecondsDistribution(name):
   return ts_mon.CumulativeDistributionMetric(name, bucketer=b)
 
 
-flush = ts_mon.flush if ts_mon else lambda: None
+def Flush():
+  """Flushes metrics, but warns on transient errors."""
+  if not ts_mon:
+    return
+
+  try:
+    ts_mon.flush()
+  except ssl.SSLError as e:
+    logging.warning('Caught transient network error while flushing: %s', e)
+  except Exception as e:
+    logging.error('Caught exception while flushing: %s', e)

@@ -27,7 +27,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     # things like Process.join(10) won't sleep.
     time_mock = self.PatchObject(ts_mon_config, 'time')
     time_mock.time.side_effect = itertools.count(0)
-    self.flush_mock = self.PatchObject(ts_mon_config.metrics, 'flush')
+    self.flush_mock = self.PatchObject(ts_mon_config.metrics, 'Flush')
     self.PatchObject(ts_mon_config, 'SetupTsMonGlobalState')
     self.mock_metric = self.PatchObject(metrics, 'Boolean')
 
@@ -42,7 +42,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     ts_mon_config.SetupTsMonGlobalState.assert_called_once_with(
         '', auto_flush=False)
     ts_mon_config.time.time.assert_not_called()
-    ts_mon_config.metrics.flush.assert_not_called()
+    ts_mon_config.metrics.Flush.assert_not_called()
 
   def testConsumeOneMetric(self):
     """Tests that sending one metric calls flush once."""
@@ -56,7 +56,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.assertEqual(2, ts_mon_config.time.time.call_count)
     ts_mon_config.time.sleep.assert_called_once_with(
         ts_mon_config.FLUSH_INTERVAL - 1)
-    ts_mon_config.metrics.flush.assert_called_once_with()
+    ts_mon_config.metrics.Flush.assert_called_once_with()
     self.mock_metric.return_value.mock_name.assert_called_once_with(
         'arg1', kwarg1='value')
 
@@ -74,7 +74,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.assertEqual(3, ts_mon_config.time.time.call_count)
     ts_mon_config.time.sleep.assert_called_once_with(
         ts_mon_config.FLUSH_INTERVAL - 2)
-    ts_mon_config.metrics.flush.assert_called_once_with()
+    ts_mon_config.metrics.Flush.assert_called_once_with()
     self.mock_metric.return_value.mock_name1.assert_called_once_with(
         'arg1', kwarg1='value')
     self.mock_metric.return_value.mock_name2.assert_called_once_with(
@@ -123,4 +123,4 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.assertEqual(2, ts_mon_config.time.time.call_count)
     ts_mon_config.time.sleep.assert_called_once_with(
         ts_mon_config.FLUSH_INTERVAL - 1)
-    ts_mon_config.metrics.flush.assert_called_once_with()
+    ts_mon_config.metrics.Flush.assert_called_once_with()

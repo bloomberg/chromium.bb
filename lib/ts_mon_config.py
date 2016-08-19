@@ -75,7 +75,7 @@ def SetupTsMonGlobalState(service_name,
   # use task-number=PID to trigger shorter retention policies under
   # chrome-infra@, and used by a Monarch precomputation to group across the
   # task number.
-  # Furthermore, we assume they manually call ts_mon.flush(), because the
+  # Furthermore, we assume they manually call ts_mon.Flush(), because the
   # ts_mon thread will drop messages if the process exits before it flushes.
   if short_lived:
     auto_flush = False
@@ -149,18 +149,18 @@ def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
 
 
 def _WaitToFlush(last_flush):
-  """Sleeps until the next time we can call metrics.flush(), then flushes.
+  """Sleeps until the next time we can call metrics.Flush(), then flushes.
 
   Args:
     last_flush: timestamp of the last flush
   """
   time_delta = time.time() - last_flush
   time.sleep(max(0, FLUSH_INTERVAL - time_delta))
-  metrics.flush()
+  metrics.Flush()
 
 
 def _FlushIfReady(pending, last_flush):
-  """Call metrics.flush() if we are ready and have pending metrics.
+  """Call metrics.Flush() if we are ready and have pending metrics.
 
   This allows us to only call flush every FLUSH_INTERVAL seconds.
 
@@ -173,7 +173,7 @@ def _FlushIfReady(pending, last_flush):
   if time_delta > FLUSH_INTERVAL and pending:
     last_flush = now
     time_delta = 0
-    metrics.flush()
+    metrics.Flush()
     pending = False
   else:
     pending = True
