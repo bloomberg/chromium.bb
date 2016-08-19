@@ -62,6 +62,11 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
       parsed_command_line().GetSwitchValueASCII(switches::kPasswordStore));
   // Forward the product name
   OSCrypt::SetProductName(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME));
+  // OSCrypt may target keyring, which requires calls from the main thread.
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI));
+  OSCrypt::SetMainThreadRunner(main_thread_runner);
 #endif
 
   ChromeBrowserMainPartsPosix::PreProfileInit();

@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
@@ -30,6 +32,12 @@ class OSCrypt {
   // Some password stores may prompt the user for permission and show the
   // application name.
   static void SetProductName(const std::string& product_name);
+
+  // The gnome-keyring implementation requires calls from the main thread.
+  // TODO(crbug/466975): Libsecret and KWallet don't need this. We can remove
+  // this when we stop supporting keyring.
+  static void SetMainThreadRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner);
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
   // Encrypt a string16. The output (second argument) is really an array of

@@ -226,6 +226,15 @@ void OSCrypt::SetProductName(const std::string& product_name) {
   KeyStorageLinux::SetProductName(product_name);
 }
 
+// static
+void OSCrypt::SetMainThreadRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner) {
+  // Setting the task runner makes no sense after initializing.
+  DCHECK(!g_cache.Get().is_key_storage_cached);
+
+  KeyStorageLinux::SetMainThreadRunner(main_thread_runner);
+}
+
 void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
                                  std::string* (*get_password_v11_mock)()) {
   // Save the real implementation to restore it later.
