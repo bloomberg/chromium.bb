@@ -788,7 +788,7 @@ class UI : public views::WidgetDelegateView,
     } else {
       selected_view()->GetForwardMenuItems(&entries);
     }
-    return base::WrapUnique(new NavMenuModel(entries, this));
+    return base::MakeUnique<NavMenuModel>(entries, this);
   }
 
   // NavMenuModel::Delegate:
@@ -862,7 +862,7 @@ void Browser::RemoveWindow(views::Widget* window) {
 std::unique_ptr<navigation::View> Browser::CreateView() {
   navigation::mojom::ViewFactoryPtr factory;
   connector()->ConnectToInterface("exe:navigation", &factory);
-  return base::WrapUnique(new navigation::View(std::move(factory)));
+  return base::MakeUnique<navigation::View>(std::move(factory));
 }
 
 void Browser::OnStart(const shell::Identity& identity) {

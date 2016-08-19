@@ -206,8 +206,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
   }
 
   void InsertInstance(const shell::Identity& identity, uint32_t pid) {
-    instances_.push_back(
-        base::WrapUnique(new InstanceInfo(identity, pid)));
+    instances_.push_back(base::MakeUnique<InstanceInfo>(identity, pid));
   }
 
   void OnGotCatalogEntries(std::vector<catalog::mojom::EntryPtr> entries) {
