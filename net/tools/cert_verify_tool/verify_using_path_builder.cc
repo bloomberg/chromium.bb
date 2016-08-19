@@ -86,19 +86,32 @@ std::string FingerPrintParsedCertificate(const net::ParsedCertificate* cert) {
   return base::HexEncode(hash.data(), hash.size());
 }
 
-std::string SubjectToString(const net::der::Input& subject_tlv) {
-  net::RDNSequence subject, issuer;
-  if (!net::ParseName(subject_tlv, &subject))
-    return std::string();
+std::string SubjectToString(const net::RDNSequence& parsed_subject) {
   std::string subject_str;
-  if (!net::ConvertToRFC2253(subject, &subject_str))
+  if (!net::ConvertToRFC2253(parsed_subject, &subject_str))
     return std::string();
   return subject_str;
 }
 
 // Returns a textual representation of the Subject of |cert|.
 std::string SubjectFromParsedCertificate(const net::ParsedCertificate* cert) {
-  return SubjectToString(cert->tbs().subject_tlv);
+  net::RDNSequence parsed_subject;
+  if (!net::ParseName(cert->tbs().subject_tlv, &parsed_subject))
+    return std::string();
+  return SubjectToString(parsed_subject);
+}
+
+// Returns a textual representation of the Subject of |trust_anchor|.
+std::string SubjectFromTrustAnchor(const net::TrustAnchor* trust_anchor) {
+  // If the cert is present, display the original subject from that rather than
+  // the normalized subject.
+  if (trust_anchor->cert())
+    return SubjectFromParsedCertificate(trust_anchor->cert().get());
+
+  net::RDNSequence parsed_subject;
+  if (!net::ParseNameValue(trust_anchor->normalized_subject(), &parsed_subject))
+    return std::string();
+  return SubjectToString(parsed_subject);
 }
 
 }  // namespace
@@ -204,7 +217,7 @@ bool VerifyUsingPathBuilder(
             FingerPrintParsedCertificate(trust_anchor->cert().get());
       }
       std::cout << " " << trust_anchor_cert_fingerprint << " "
-                << SubjectToString(trust_anchor->normalized_subject()) << "\n";
+                << SubjectFromTrustAnchor(trust_anchor.get()) << "\n";
     }
   }
 
