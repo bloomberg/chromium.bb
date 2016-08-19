@@ -2915,6 +2915,7 @@ void HTMLMediaElement::timeChanged()
                 // changes paused to true and fires a simple event named pause at the media element.
                 m_paused = true;
                 scheduleEvent(EventTypeNames::pause);
+                scheduleRejectPlayPromises(AbortError);
             }
             // Queue a task to fire a simple event named ended at the media element.
             scheduleEvent(EventTypeNames::ended);
