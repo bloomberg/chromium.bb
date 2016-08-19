@@ -29,6 +29,7 @@
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/device_event_log/device_event_log.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -458,8 +459,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
       const GetScreenBrightnessPercentCallback& callback,
       dbus::Response* response) {
     if (!response) {
-      POWER_LOG(ERROR) << "Error calling "
-                       << power_manager::kGetScreenBrightnessPercentMethod;
+      if (!system::StatisticsProvider::GetInstance()->IsRunningOnVm()) {
+        POWER_LOG(ERROR) << "Error calling "
+                         << power_manager::kGetScreenBrightnessPercentMethod;
+      }
       return;
     }
     dbus::MessageReader reader(response);
