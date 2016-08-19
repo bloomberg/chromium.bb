@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
 
@@ -40,21 +41,31 @@ const int kReporterFailureExitCode = INT_MAX;
 const int kDaysBetweenSuccessfulSwReporterRuns = 7;
 const int kDaysBetweenSwReporterRunsForPendingPrompt = 1;
 
-// To test SRT Fetches.
-const int kSRTFetcherID = 47;
+// Parameters used to invoke the sw_reporter component.
+struct SwReporterInvocation {
+  base::CommandLine command_line;
+
+  SwReporterInvocation();
+
+  static SwReporterInvocation FromFilePath(const base::FilePath& exe_path);
+  static SwReporterInvocation FromCommandLine(
+      const base::CommandLine& command_line);
+
+  bool operator==(const SwReporterInvocation& other) const;
+};
 
 // Tries to run the sw_reporter component, and then schedule the next try. If
 // called multiple times, then multiple sequences of trying to run will happen,
 // yet only one reporter will run per specified period (either
 // |kDaysBetweenSuccessfulSwReporterRuns| or
 // |kDaysBetweenSwReporterRunsForPendingPrompt|) will actually happen.
-// |exe_path| is the full path to the SwReporter to execute and |version| is its
-// version. The task runners are provided to allow tests to provide their own.
-void RunSwReporter(
-    const base::FilePath& exe_path,
-    const base::Version& version,
-    const scoped_refptr<base::TaskRunner>& main_thread_task_runner,
-    const scoped_refptr<base::TaskRunner>& blocking_task_runner);
+// |invocation| is the details of the SwReporter to execute, and |version| is
+// its version. The task runners are provided to allow tests to provide their
+// own.
+void RunSwReporter(const SwReporterInvocation& invocation,
+                   const base::Version& version,
+                   scoped_refptr<base::TaskRunner> main_thread_task_runner,
+                   scoped_refptr<base::TaskRunner> blocking_task_runner);
 
 // Returns true iff Local State is successfully accessed and indicates the most
 // recent Reporter run terminated with an exit code indicating the presence of
@@ -67,11 +78,30 @@ bool ReporterFoundUws();
 // run the cleaner, rather than checking if they've run it at all.
 bool UserHasRunCleaner();
 
-// Test mocks for launching the reporter and showing the prompt
-typedef base::Callback<int(const base::FilePath& exe_path)> ReporterLauncher;
-typedef base::Callback<void(Browser*, const std::string&)> PromptTrigger;
-void SetReporterLauncherForTesting(const ReporterLauncher& reporter_launcher);
-void SetPromptTriggerForTesting(const PromptTrigger& prompt_trigger);
+// Mocks and callbacks for the unit tests.
+class SwReporterTestingDelegate {
+ public:
+  virtual ~SwReporterTestingDelegate() {}
+
+  // Test mock for launching the reporter.
+  virtual int LaunchReporter(const SwReporterInvocation& invocation) = 0;
+
+  // Test mock for showing the prompt.
+  virtual void TriggerPrompt(Browser* browser,
+                             const std::string& reporter_version) = 0;
+
+  // Callback to let the tests know the reporter is ready to launch.
+  virtual void NotifyLaunchReady() = 0;
+
+  // Callback to let the tests know the reporter has finished running.
+  virtual void NotifyReporterDone() = 0;
+};
+
+// Set a delegate for testing. The implementation will not take ownership of
+// |delegate| - it must remain valid until this function is called again to
+// reset the delegate. If |delegate| is nullptr, any previous delegate is
+// cleared.
+void SetSwReporterTestingDelegate(SwReporterTestingDelegate* delegate);
 
 }  // namespace safe_browsing
 
