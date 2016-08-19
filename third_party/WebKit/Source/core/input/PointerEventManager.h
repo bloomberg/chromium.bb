@@ -35,7 +35,6 @@ public:
     WebInputEventResult sendMousePointerEvent(
         Node* target, const AtomicString& type,
         int clickCount, const PlatformMouseEvent&,
-        Node* relatedTarget,
         Node* lastNodeUnderMouse,
         Node** newNodeUnderMouse);
 

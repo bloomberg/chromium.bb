@@ -120,7 +120,7 @@ protected:
 TEST_F(GetNavigationPolicyTest, LeftClick)
 {
     int modifiers = 0;
-    WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
+    WebMouseEvent::Button button = WebMouseEvent::Button::Left;
     bool asPopup = false;
     EXPECT_EQ(WebNavigationPolicyNewForegroundTab,
         getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
@@ -129,7 +129,7 @@ TEST_F(GetNavigationPolicyTest, LeftClick)
 TEST_F(GetNavigationPolicyTest, LeftClickPopup)
 {
     int modifiers = 0;
-    WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
+    WebMouseEvent::Button button = WebMouseEvent::Button::Left;
     bool asPopup = true;
     EXPECT_EQ(WebNavigationPolicyNewPopup,
         getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
@@ -138,7 +138,7 @@ TEST_F(GetNavigationPolicyTest, LeftClickPopup)
 TEST_F(GetNavigationPolicyTest, ShiftLeftClick)
 {
     int modifiers = WebInputEvent::ShiftKey;
-    WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
+    WebMouseEvent::Button button = WebMouseEvent::Button::Left;
     bool asPopup = false;
     EXPECT_EQ(WebNavigationPolicyNewWindow,
         getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
@@ -147,7 +147,7 @@ TEST_F(GetNavigationPolicyTest, ShiftLeftClick)
 TEST_F(GetNavigationPolicyTest, ShiftLeftClickPopup)
 {
     int modifiers = WebInputEvent::ShiftKey;
-    WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
+    WebMouseEvent::Button button = WebMouseEvent::Button::Left;
     bool asPopup = true;
     EXPECT_EQ(WebNavigationPolicyNewPopup,
         getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
@@ -160,7 +160,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClick)
 #else
     int modifiers = WebInputEvent::ControlKey;
 #endif
-    WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
+    WebMouseEvent::Button button = WebMouseEvent::Button::Left;
     bool asPopup = false;
     EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
         getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
@@ -173,7 +173,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClickPopup)
 #else
     int modifiers = WebInputEvent::ControlKey;
 #endif
-    WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
+    WebMouseEvent::Button button = WebMouseEvent::Button::Left;
     bool asPopup = true;
     EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
         getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
@@ -187,7 +187,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClick)
     int modifiers = WebInputEvent::ControlKey;
 #endif
     modifiers |= WebInputEvent::ShiftKey;
-    WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
+    WebMouseEvent::Button button = WebMouseEvent::Button::Left;
     bool asPopup = false;
     EXPECT_EQ(WebNavigationPolicyNewForegroundTab,
         getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
@@ -201,7 +201,7 @@ TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClickPopup)
     int modifiers = WebInputEvent::ControlKey;
 #endif
     modifiers |= WebInputEvent::ShiftKey;
-    WebMouseEvent::Button button = WebMouseEvent::ButtonLeft;
+    WebMouseEvent::Button button = WebMouseEvent::Button::Left;
     bool asPopup = true;
     EXPECT_EQ(WebNavigationPolicyNewForegroundTab,
         getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
@@ -211,7 +211,7 @@ TEST_F(GetNavigationPolicyTest, MiddleClick)
 {
     int modifiers = 0;
     bool asPopup = false;
-    WebMouseEvent::Button button = WebMouseEvent::ButtonMiddle;
+    WebMouseEvent::Button button = WebMouseEvent::Button::Middle;
     EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
         getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }
@@ -220,7 +220,7 @@ TEST_F(GetNavigationPolicyTest, MiddleClickPopup)
 {
     int modifiers = 0;
     bool asPopup = true;
-    WebMouseEvent::Button button = WebMouseEvent::ButtonMiddle;
+    WebMouseEvent::Button button = WebMouseEvent::Button::Middle;
     EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
         getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
 }

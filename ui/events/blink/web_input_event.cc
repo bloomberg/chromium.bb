@@ -142,7 +142,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
   blink::WebMouseWheelEvent webkit_event;
 
   webkit_event.type = blink::WebInputEvent::MouseWheel;
-  webkit_event.button = blink::WebMouseEvent::ButtonNone;
+  webkit_event.button = blink::WebMouseEvent::Button::NoButton;
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds = EventTimeStampToSeconds(event.time_stamp());
   webkit_event.hasPreciseScrollingDeltas = true;
@@ -411,7 +411,7 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
 
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds = EventTimeStampToSeconds(event.time_stamp());
-  webkit_event.button = blink::WebMouseEvent::ButtonNone;
+  webkit_event.button = blink::WebMouseEvent::Button::NoButton;
   int button_flags = event.flags();
   if (event.type() == ET_MOUSE_PRESSED || event.type() == ET_MOUSE_RELEASED) {
     // We want to use changed_button_flags() for mouse pressed & released.
@@ -421,11 +421,11 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
       button_flags = event.changed_button_flags();
   }
   if (button_flags & EF_LEFT_MOUSE_BUTTON)
-    webkit_event.button = blink::WebMouseEvent::ButtonLeft;
+    webkit_event.button = blink::WebMouseEvent::Button::Left;
   if (button_flags & EF_MIDDLE_MOUSE_BUTTON)
-    webkit_event.button = blink::WebMouseEvent::ButtonMiddle;
+    webkit_event.button = blink::WebMouseEvent::Button::Middle;
   if (button_flags & EF_RIGHT_MOUSE_BUTTON)
-    webkit_event.button = blink::WebMouseEvent::ButtonRight;
+    webkit_event.button = blink::WebMouseEvent::Button::Right;
 
   switch (event.type()) {
     case ET_MOUSE_PRESSED:
@@ -461,7 +461,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
   blink::WebMouseWheelEvent webkit_event;
 
   webkit_event.type = blink::WebInputEvent::MouseWheel;
-  webkit_event.button = blink::WebMouseEvent::ButtonNone;
+  webkit_event.button = blink::WebMouseEvent::Button::NoButton;
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
   webkit_event.timeStampSeconds = EventTimeStampToSeconds(event.time_stamp());
 

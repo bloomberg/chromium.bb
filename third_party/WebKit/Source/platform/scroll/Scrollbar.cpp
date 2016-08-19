@@ -457,7 +457,7 @@ void Scrollbar::mouseUp(const PlatformMouseEvent& mouseEvent)
 void Scrollbar::mouseDown(const PlatformMouseEvent& evt)
 {
     // Early exit for right click
-    if (evt.button() == RightButton)
+    if (evt.pointerProperties().button == WebPointerProperties::Button::Right)
         return;
 
     setPressedPart(theme().hitTest(*this, evt.position()));

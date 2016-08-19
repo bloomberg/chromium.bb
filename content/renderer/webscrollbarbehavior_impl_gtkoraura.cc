@@ -11,14 +11,14 @@
 namespace content {
 
 bool WebScrollbarBehaviorImpl::shouldCenterOnThumb(
-      blink::WebScrollbarBehavior::Button mouseButton,
+      blink::WebPointerProperties::Button mouseButton,
       bool shiftKeyPressed,
       bool altKeyPressed) {
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (mouseButton == blink::WebScrollbarBehavior::ButtonMiddle)
+  if (mouseButton == blink::WebPointerProperties::Button::Middle)
     return true;
 #endif
-  return (mouseButton == blink::WebScrollbarBehavior::ButtonLeft) &&
+  return (mouseButton == blink::WebPointerProperties::Button::Left) &&
       shiftKeyPressed;
 }
 

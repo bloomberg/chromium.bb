@@ -256,7 +256,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonLeft, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::Left, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type);
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
@@ -276,7 +276,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonLeft, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::Left, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseUp, webkit_event.type);
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
@@ -296,7 +296,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonMiddle, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::Middle, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type);
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
@@ -316,7 +316,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonMiddle, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::Middle, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseUp, webkit_event.type);
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
@@ -336,7 +336,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonRight, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::Right, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type);
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
@@ -356,7 +356,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonRight, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::Right, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseUp, webkit_event.type);
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
@@ -375,7 +375,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonNone, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::NoButton, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseMove, webkit_event.type);
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
@@ -395,7 +395,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonLeft, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::Left, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseMove, webkit_event.type);
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
@@ -415,7 +415,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonLeft, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::Left, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type);
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
@@ -484,7 +484,7 @@ TEST(WebInputEventTest, TestMakeWebMouseWheelEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonNone, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::NoButton, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseWheel, webkit_event.type);
     EXPECT_FLOAT_EQ(ui_event.x_offset() / 53.0f, webkit_event.wheelTicksX);
     EXPECT_FLOAT_EQ(ui_event.y_offset() / 53.0f, webkit_event.wheelTicksY);
@@ -511,7 +511,7 @@ TEST(WebInputEventTest, TestMakeWebMouseWheelEvent) {
               webkit_event.modifiers);
     EXPECT_FLOAT_EQ(EventTimeStampToSeconds(timestamp),
                     webkit_event.timeStampSeconds);
-    EXPECT_EQ(blink::WebMouseEvent::ButtonNone, webkit_event.button);
+    EXPECT_EQ(blink::WebMouseEvent::Button::NoButton, webkit_event.button);
     EXPECT_EQ(blink::WebInputEvent::MouseWheel, webkit_event.type);
     EXPECT_FLOAT_EQ(ui_event.y_offset() / 53.0f, webkit_event.wheelTicksX);
     EXPECT_FLOAT_EQ(0, webkit_event.wheelTicksY);

@@ -917,7 +917,7 @@ void WebFrameWidgetImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEv
     // If the hit node is a plugin but a scrollbar is over it don't start mouse
     // capture because it will interfere with the scrollbar receiving events.
     IntPoint point(event.x, event.y);
-    if (event.button == WebMouseEvent::ButtonLeft) {
+    if (event.button == WebMouseEvent::Button::Left) {
         point = m_localRoot->frameView()->rootFrameToContents(point);
         HitTestResult result(m_localRoot->frame()->eventHandler().hitTestResultAtPoint(point));
         result.setToShadowHostIfInUserAgentShadowRoot();
@@ -931,16 +931,16 @@ void WebFrameWidgetImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEv
 
     PageWidgetEventHandler::handleMouseDown(mainFrame, event);
 
-    if (event.button == WebMouseEvent::ButtonLeft && m_mouseCaptureNode)
+    if (event.button == WebMouseEvent::Button::Left && m_mouseCaptureNode)
         m_mouseCaptureGestureToken = mainFrame.eventHandler().takeLastMouseDownGestureToken();
 
     // Dispatch the contextmenu event regardless of if the click was swallowed.
     if (!page()->settings().showContextMenuOnMouseUp()) {
 #if OS(MACOSX)
-        if (event.button == WebMouseEvent::ButtonRight || (event.button == WebMouseEvent::ButtonLeft && event.modifiers & WebMouseEvent::ControlKey))
+        if (event.button == WebMouseEvent::Button::Right || (event.button == WebMouseEvent::Button::Left && event.modifiers & WebMouseEvent::ControlKey))
             mouseContextMenu(event);
 #else
-        if (event.button == WebMouseEvent::ButtonRight)
+        if (event.button == WebMouseEvent::Button::Right)
             mouseContextMenu(event);
 #endif
     }
@@ -988,7 +988,7 @@ void WebFrameWidgetImpl::handleMouseUp(LocalFrame& mainFrame, const WebMouseEven
     if (page()->settings().showContextMenuOnMouseUp()) {
         // Dispatch the contextmenu event regardless of if the click was swallowed.
         // On Mac/Linux, we handle it on mouse down, not up.
-        if (event.button == WebMouseEvent::ButtonRight)
+        if (event.button == WebMouseEvent::Button::Right)
             mouseContextMenu(event);
     }
 }

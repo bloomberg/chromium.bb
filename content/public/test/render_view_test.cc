@@ -450,7 +450,7 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
 void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
   WebMouseEvent mouse_event;
   mouse_event.type = WebInputEvent::MouseDown;
-  mouse_event.button = WebMouseEvent::ButtonLeft;
+  mouse_event.button = WebMouseEvent::Button::Left;
   mouse_event.x = point.x();
   mouse_event.y = point.y();
   mouse_event.clickCount = 1;
@@ -476,7 +476,7 @@ bool RenderViewTest::SimulateElementRightClick(const std::string& element_id) {
 void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
   WebMouseEvent mouse_event;
   mouse_event.type = WebInputEvent::MouseDown;
-  mouse_event.button = WebMouseEvent::ButtonRight;
+  mouse_event.button = WebMouseEvent::Button::Right;
   mouse_event.x = point.x();
   mouse_event.y = point.y();
   mouse_event.clickCount = 1;

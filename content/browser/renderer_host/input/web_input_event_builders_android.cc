@@ -137,7 +137,7 @@ WebMouseEvent WebMouseEventBuilder::Build(
   if (type == WebInputEvent::MouseDown || type == WebInputEvent::MouseUp)
     result.button = button;
   else
-    result.button = WebMouseEvent::ButtonNone;
+    result.button = WebMouseEvent::Button::NoButton;
 
   return result;
 }
@@ -156,7 +156,7 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(float ticks_x,
   result.windowX = window_x;
   result.windowY = window_y;
   result.timeStampSeconds = time_sec;
-  result.button = WebMouseEvent::ButtonNone;
+  result.button = WebMouseEvent::Button::NoButton;
   result.hasPreciseScrollingDeltas = true;
   result.deltaX = ticks_x * tick_multiplier;
   result.deltaY = ticks_y * tick_multiplier;

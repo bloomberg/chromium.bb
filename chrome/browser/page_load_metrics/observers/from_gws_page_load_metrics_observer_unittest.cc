@@ -40,7 +40,7 @@ class FromGWSPageLoadMetricsObserverTest
   void SimulateMouseEvent() {
     blink::WebMouseEvent mouse_event;
     mouse_event.type = blink::WebInputEvent::MouseDown;
-    mouse_event.button = blink::WebMouseEvent::ButtonLeft;
+    mouse_event.button = blink::WebMouseEvent::Button::Left;
     mouse_event.x = 7;
     mouse_event.y = 7;
     mouse_event.clickCount = 1;

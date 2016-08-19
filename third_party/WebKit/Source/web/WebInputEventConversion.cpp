@@ -106,7 +106,7 @@ PlatformEvent::DispatchType toPlatformDispatchType(WebInputEvent::DispatchType t
 
 unsigned toPlatformModifierFrom(WebMouseEvent::Button button)
 {
-    if (button == WebMouseEvent::ButtonNone)
+    if (button == WebMouseEvent::Button::NoButton)
         return 0;
 
     unsigned webMouseButtonToPlatformModifier[] = {
@@ -115,7 +115,7 @@ unsigned toPlatformModifierFrom(WebMouseEvent::Button button)
         PlatformEvent::RightButtonDown
     };
 
-    return webMouseButtonToPlatformModifier[button];
+    return webMouseButtonToPlatformModifier[static_cast<int>(button)];
 }
 
 ScrollGranularity toPlatformScrollGranularity(WebGestureEvent::ScrollUnits units)
@@ -177,7 +177,6 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
     m_position = widget->convertFromRootFrame(flooredIntPoint(convertHitPointToRootFrame(widget, IntPoint(e.x, e.y))));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_movementDelta = IntPoint(scaleDeltaToWindow(widget, e.movementX), scaleDeltaToWindow(widget, e.movementY));
-    m_button = static_cast<MouseButton>(e.button);
     m_modifiers = e.modifiers;
 
     m_timestamp = e.timeStampSeconds;
@@ -543,30 +542,31 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutIte
     updateWebMouseEventFromCoreMouseEvent(event, widget, layoutItem, *this);
 
     switch (event.button()) {
-    case LeftButton:
-        button = WebMouseEvent::ButtonLeft;
+    case short(WebPointerProperties::Button::Left):
+        button = WebMouseEvent::Button::Left;
         break;
-    case MiddleButton:
-        button = WebMouseEvent::ButtonMiddle;
+    case short(WebPointerProperties::Button::Middle):
+        button = WebMouseEvent::Button::Middle;
         break;
-    case RightButton:
-        button = WebMouseEvent::ButtonRight;
+    case short(WebPointerProperties::Button::Right):
+        button = WebMouseEvent::Button::Right;
         break;
     }
     if (event.buttonDown()) {
         switch (event.button()) {
-        case LeftButton:
+        case short(WebPointerProperties::Button::Left):
             modifiers |= WebInputEvent::LeftButtonDown;
             break;
-        case MiddleButton:
+        case short(WebPointerProperties::Button::Middle):
             modifiers |= WebInputEvent::MiddleButtonDown;
             break;
-        case RightButton:
+        case short(WebPointerProperties::Button::Right):
             modifiers |= WebInputEvent::RightButtonDown;
             break;
         }
-    } else
-        button = WebMouseEvent::ButtonNone;
+    } else {
+        button = WebMouseEvent::Button::NoButton;
+    }
     movementX = event.movementX();
     movementY = event.movementY();
     clickCount = event.detail();
@@ -613,7 +613,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutIte
     windowX = pointInRootFrame.x();
     windowY = pointInRootFrame.y();
 
-    button = WebMouseEvent::ButtonLeft;
+    button = WebMouseEvent::Button::Left;
     modifiers |= WebInputEvent::LeftButtonDown;
     clickCount = (type == MouseDown || type == MouseUp);
 

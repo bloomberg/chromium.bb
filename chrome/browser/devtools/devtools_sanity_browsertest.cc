@@ -1337,7 +1337,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
     DispatchInPageAndWait("waitForEvent", "mousemove");
   }
 
-  SimulateMouseClickAt(web_contents, 0, blink::WebPointerProperties::ButtonLeft,
+  SimulateMouseClickAt(web_contents, 0,
+                       blink::WebPointerProperties::Button::Left,
                        gfx::Point(30, 60));
   DispatchInPageAndWait("waitForEvent", "click");
 

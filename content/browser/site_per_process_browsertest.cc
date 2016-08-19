@@ -135,7 +135,7 @@ void NavigateNamedFrame(const ToRenderFrameHost& caller_frame,
 void SimulateMouseClick(RenderWidgetHost* rwh, int x, int y) {
   blink::WebMouseEvent mouse_event;
   mouse_event.type = blink::WebInputEvent::MouseDown;
-  mouse_event.button = blink::WebPointerProperties::ButtonLeft;
+  mouse_event.button = blink::WebPointerProperties::Button::Left;
   mouse_event.x = x;
   mouse_event.y = y;
   rwh->ForwardMouseEvent(mouse_event);
@@ -250,7 +250,7 @@ void SurfaceHitTestTestHelper(
   // Target input event to child frame.
   blink::WebMouseEvent child_event;
   child_event.type = blink::WebInputEvent::MouseDown;
-  child_event.button = blink::WebPointerProperties::ButtonLeft;
+  child_event.button = blink::WebPointerProperties::Button::Left;
   child_event.x = 75;
   child_event.y = 75;
   child_event.clickCount = 1;
@@ -269,7 +269,7 @@ void SurfaceHitTestTestHelper(
   // Target input event to main frame.
   blink::WebMouseEvent main_event;
   main_event.type = blink::WebInputEvent::MouseDown;
-  main_event.button = blink::WebPointerProperties::ButtonLeft;
+  main_event.button = blink::WebPointerProperties::Button::Left;
   main_event.x = 1;
   main_event.y = 1;
   main_event.clickCount = 1;
@@ -1247,7 +1247,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Target input event to nested frame.
   blink::WebMouseEvent nested_event;
   nested_event.type = blink::WebInputEvent::MouseDown;
-  nested_event.button = blink::WebPointerProperties::ButtonLeft;
+  nested_event.button = blink::WebPointerProperties::Button::Left;
   nested_event.x = 125;
   nested_event.y = 125;
   nested_event.clickCount = 1;
@@ -1312,7 +1312,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Target input event to child frame.
   blink::WebMouseEvent child_event;
   child_event.type = blink::WebInputEvent::MouseDown;
-  child_event.button = blink::WebPointerProperties::ButtonLeft;
+  child_event.button = blink::WebPointerProperties::Button::Left;
   child_event.x = 75;
   child_event.y = 75;
   child_event.clickCount = 1;
@@ -5410,7 +5410,7 @@ void CreateContextMenuTestHelper(
   // Target right-click event to child frame.
   blink::WebMouseEvent click_event;
   click_event.type = blink::WebInputEvent::MouseDown;
-  click_event.button = blink::WebPointerProperties::ButtonRight;
+  click_event.button = blink::WebPointerProperties::Button::Right;
   click_event.x = point.x();
   click_event.y = point.y();
   click_event.clickCount = 1;
@@ -5565,7 +5565,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PopupMenuTest) {
   // Target left-click event to child frame.
   blink::WebMouseEvent click_event;
   click_event.type = blink::WebInputEvent::MouseDown;
-  click_event.button = blink::WebPointerProperties::ButtonLeft;
+  click_event.button = blink::WebPointerProperties::Button::Left;
   click_event.x = 15;
   click_event.y = 15;
   click_event.clickCount = 1;
@@ -5640,7 +5640,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
   // Target left-click event to child frame.
   blink::WebMouseEvent click_event;
   click_event.type = blink::WebInputEvent::MouseDown;
-  click_event.button = blink::WebPointerProperties::ButtonLeft;
+  click_event.button = blink::WebPointerProperties::Button::Left;
   click_event.x = 15;
   click_event.y = 15;
   click_event.clickCount = 1;
@@ -5690,7 +5690,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
     run_loop.Run();
   }
 
-  click_event.button = blink::WebPointerProperties::ButtonLeft;
+  click_event.button = blink::WebPointerProperties::Button::Left;
   click_event.x = 15;
   click_event.y = 15;
   click_event.clickCount = 1;

@@ -73,13 +73,13 @@ std::unique_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(
   web_event->modifiers = EventFlagsToWebEventModifiers(event.flags());
   web_event->timeStampSeconds = ui::EventTimeStampToSeconds(event.time_stamp());
 
-  web_event->button = blink::WebMouseEvent::ButtonNone;
+  web_event->button = blink::WebMouseEvent::Button::NoButton;
   if (event.flags() & ui::EF_LEFT_MOUSE_BUTTON)
-    web_event->button = blink::WebMouseEvent::ButtonLeft;
+    web_event->button = blink::WebMouseEvent::Button::Left;
   if (event.flags() & ui::EF_MIDDLE_MOUSE_BUTTON)
-    web_event->button = blink::WebMouseEvent::ButtonMiddle;
+    web_event->button = blink::WebMouseEvent::Button::Middle;
   if (event.flags() & ui::EF_RIGHT_MOUSE_BUTTON)
-    web_event->button = blink::WebMouseEvent::ButtonRight;
+    web_event->button = blink::WebMouseEvent::Button::Right;
 
   switch (event.type()) {
     case ui::ET_POINTER_DOWN:
@@ -140,7 +140,7 @@ std::unique_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
   std::unique_ptr<blink::WebMouseWheelEvent> web_event(
       new blink::WebMouseWheelEvent);
   web_event->type = blink::WebInputEvent::MouseWheel;
-  web_event->button = blink::WebMouseEvent::ButtonNone;
+  web_event->button = blink::WebMouseEvent::Button::NoButton;
   web_event->modifiers = EventFlagsToWebEventModifiers(event.flags());
   web_event->timeStampSeconds = ui::EventTimeStampToSeconds(event.time_stamp());
 

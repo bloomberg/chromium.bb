@@ -1141,7 +1141,7 @@ EventDispatchHandlingState* HTMLInputElement::preDispatchEventHandler(Event* eve
     }
     if (event->type() != EventTypeNames::click)
         return nullptr;
-    if (!event->isMouseEvent() || toMouseEvent(event)->button() != LeftButton)
+    if (!event->isMouseEvent() || toMouseEvent(event)->button() != static_cast<short>(WebPointerProperties::Button::Left))
         return nullptr;
     return m_inputTypeView->willDispatchClick();
 }
@@ -1155,7 +1155,7 @@ void HTMLInputElement::postDispatchEventHandler(Event* event, EventDispatchHandl
 
 void HTMLInputElement::defaultEventHandler(Event* evt)
 {
-    if (evt->isMouseEvent() && evt->type() == EventTypeNames::click && toMouseEvent(evt)->button() == LeftButton) {
+    if (evt->isMouseEvent() && evt->type() == EventTypeNames::click && toMouseEvent(evt)->button() == static_cast<short>(WebPointerProperties::Button::Left)) {
         m_inputTypeView->handleClickEvent(toMouseEvent(evt));
         if (evt->defaultHandled())
             return;

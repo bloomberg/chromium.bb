@@ -504,11 +504,6 @@ STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveCurrentData, HTMLMediaElement::
 STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveFutureData, HTMLMediaElement::kHaveFutureData);
 STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveEnoughData, HTMLMediaElement::kHaveEnoughData);
 
-STATIC_ASSERT_ENUM(WebMouseEvent::ButtonNone, NoButton);
-STATIC_ASSERT_ENUM(WebMouseEvent::ButtonLeft, LeftButton);
-STATIC_ASSERT_ENUM(WebMouseEvent::ButtonMiddle, MiddleButton);
-STATIC_ASSERT_ENUM(WebMouseEvent::ButtonRight, RightButton);
-
 #if OS(MACOSX)
 STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseNone, PlatformWheelEventPhaseNone);
 STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseBegan, PlatformWheelEventPhaseBegan);
@@ -551,11 +546,6 @@ STATIC_ASSERT_ENUM(WebScrollbar::AllParts, AllParts);
 STATIC_ASSERT_ENUM(WebScrollbar::ScrollbarOverlayStyleDefault, ScrollbarOverlayStyleDefault);
 STATIC_ASSERT_ENUM(WebScrollbar::ScrollbarOverlayStyleDark, ScrollbarOverlayStyleDark);
 STATIC_ASSERT_ENUM(WebScrollbar::ScrollbarOverlayStyleLight, ScrollbarOverlayStyleLight);
-
-STATIC_ASSERT_ENUM(WebScrollbarBehavior::ButtonNone, NoButton);
-STATIC_ASSERT_ENUM(WebScrollbarBehavior::ButtonLeft, LeftButton);
-STATIC_ASSERT_ENUM(WebScrollbarBehavior::ButtonMiddle, MiddleButton);
-STATIC_ASSERT_ENUM(WebScrollbarBehavior::ButtonRight, RightButton);
 
 STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorMac, EditingMacBehavior);
 STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorWin, EditingWindowsBehavior);

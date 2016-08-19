@@ -442,7 +442,7 @@ void RemoteDesktopBrowserTest::SimulateStringInput(const std::string& input) {
 }
 
 void RemoteDesktopBrowserTest::SimulateMouseLeftClickAt(int x, int y) {
-  SimulateMouseClickAt(0, blink::WebMouseEvent::ButtonLeft, x, y);
+  SimulateMouseClickAt(0, blink::WebMouseEvent::Button::Left, x, y);
 }
 
 void RemoteDesktopBrowserTest::SimulateMouseClickAt(

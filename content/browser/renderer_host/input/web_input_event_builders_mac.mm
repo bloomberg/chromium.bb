@@ -336,37 +336,37 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
   switch (type) {
     case NSMouseExited:
       result.type = blink::WebInputEvent::MouseLeave;
-      result.button = blink::WebMouseEvent::ButtonNone;
+      result.button = blink::WebMouseEvent::Button::NoButton;
       break;
     case NSLeftMouseDown:
       result.type = blink::WebInputEvent::MouseDown;
       result.clickCount = [event clickCount];
-      result.button = blink::WebMouseEvent::ButtonLeft;
+      result.button = blink::WebMouseEvent::Button::Left;
       break;
     case NSOtherMouseDown:
       result.type = blink::WebInputEvent::MouseDown;
       result.clickCount = [event clickCount];
-      result.button = blink::WebMouseEvent::ButtonMiddle;
+      result.button = blink::WebMouseEvent::Button::Middle;
       break;
     case NSRightMouseDown:
       result.type = blink::WebInputEvent::MouseDown;
       result.clickCount = [event clickCount];
-      result.button = blink::WebMouseEvent::ButtonRight;
+      result.button = blink::WebMouseEvent::Button::Right;
       break;
     case NSLeftMouseUp:
       result.type = blink::WebInputEvent::MouseUp;
       result.clickCount = [event clickCount];
-      result.button = blink::WebMouseEvent::ButtonLeft;
+      result.button = blink::WebMouseEvent::Button::Left;
       break;
     case NSOtherMouseUp:
       result.type = blink::WebInputEvent::MouseUp;
       result.clickCount = [event clickCount];
-      result.button = blink::WebMouseEvent::ButtonMiddle;
+      result.button = blink::WebMouseEvent::Button::Middle;
       break;
     case NSRightMouseUp:
       result.type = blink::WebInputEvent::MouseUp;
       result.clickCount = [event clickCount];
-      result.button = blink::WebMouseEvent::ButtonRight;
+      result.button = blink::WebMouseEvent::Button::Right;
       break;
     case NSMouseMoved:
     case NSMouseEntered:
@@ -374,15 +374,15 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(NSEvent* event, NSView* view) {
       break;
     case NSLeftMouseDragged:
       result.type = blink::WebInputEvent::MouseMove;
-      result.button = blink::WebMouseEvent::ButtonLeft;
+      result.button = blink::WebMouseEvent::Button::Left;
       break;
     case NSOtherMouseDragged:
       result.type = blink::WebInputEvent::MouseMove;
-      result.button = blink::WebMouseEvent::ButtonMiddle;
+      result.button = blink::WebMouseEvent::Button::Middle;
       break;
     case NSRightMouseDragged:
       result.type = blink::WebInputEvent::MouseMove;
-      result.button = blink::WebMouseEvent::ButtonRight;
+      result.button = blink::WebMouseEvent::Button::Right;
       break;
     default:
       NOTIMPLEMENTED();
@@ -424,7 +424,7 @@ blink::WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   blink::WebMouseWheelEvent result;
 
   result.type = blink::WebInputEvent::MouseWheel;
-  result.button = blink::WebMouseEvent::ButtonNone;
+  result.button = blink::WebMouseEvent::Button::NoButton;
 
   result.modifiers = ModifiersFromEvent(event);
 

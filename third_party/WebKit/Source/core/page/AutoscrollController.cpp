@@ -194,7 +194,7 @@ void AutoscrollController::handleMouseReleaseForPanScrolling(LocalFrame* frame, 
         return;
     switch (m_autoscrollType) {
     case AutoscrollForPan:
-        if (mouseEvent.button() == MiddleButton)
+        if (mouseEvent.pointerProperties().button == WebPointerProperties::Button::Middle)
             m_autoscrollType = AutoscrollForPanCanStop;
         break;
     case AutoscrollForPanCanStop:

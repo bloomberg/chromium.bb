@@ -591,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerSpeculativeLaunchTest, MouseDown) {
       0);
   content::SimulateMouseClickAt(
       browser()->tab_strip_model()->GetActiveWebContents(), 0,
-      blink::WebMouseEvent::ButtonLeft, gfx::Point(0, 0));
+      blink::WebMouseEvent::Button::Left, gfx::Point(0, 0));
   EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
 
   // The service worker must be started by a navigation hint.

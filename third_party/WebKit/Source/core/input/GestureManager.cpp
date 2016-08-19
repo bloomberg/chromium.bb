@@ -144,7 +144,7 @@ WebInputEventResult GestureManager::handleGestureTap(const GestureEventWithHitTe
 
     if (!m_suppressMouseEventsFromGestures) {
         PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
-            NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
+            WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
             static_cast<PlatformEvent::Modifiers>(modifiers),
             PlatformMouseEvent::FromTouch, gestureEvent.timestamp(), WebPointerProperties::PointerType::Mouse);
         m_frame->eventHandler().dispatchMouseEvent(EventTypeNames::mousemove, currentHitTest.innerNode(), 0, fakeMouseMove);
@@ -176,7 +176,7 @@ WebInputEventResult GestureManager::handleGestureTap(const GestureEventWithHitTe
     m_frame->eventHandler().setClickNode(tappedNonTextNode);
 
     PlatformMouseEvent fakeMouseDown(gestureEvent.position(), gestureEvent.globalPosition(),
-        LeftButton, PlatformEvent::MousePressed, gestureEvent.tapCount(),
+        WebPointerProperties::Button::Left, PlatformEvent::MousePressed, gestureEvent.tapCount(),
         static_cast<PlatformEvent::Modifiers>(modifiers | PlatformEvent::LeftButtonDown),
         PlatformMouseEvent::FromTouch, gestureEvent.timestamp(), WebPointerProperties::PointerType::Mouse);
 
@@ -209,7 +209,7 @@ WebInputEventResult GestureManager::handleGestureTap(const GestureEventWithHitTe
     }
 
     PlatformMouseEvent fakeMouseUp(gestureEvent.position(), gestureEvent.globalPosition(),
-        LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
+        WebPointerProperties::Button::Left, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
         static_cast<PlatformEvent::Modifiers>(modifiers),
         PlatformMouseEvent::FromTouch, gestureEvent.timestamp(), WebPointerProperties::PointerType::Mouse);
     WebInputEventResult mouseUpEventResult = m_suppressMouseEventsFromGestures
@@ -293,7 +293,7 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(const Gesture
     if (!m_suppressMouseEventsFromGestures) {
         // Send MouseMoved event prior to handling (https://crbug.com/485290).
         PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
-            NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
+            WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
             static_cast<PlatformEvent::Modifiers>(modifiers),
             PlatformMouseEvent::FromTouch, gestureEvent.timestamp(), WebPointerProperties::PointerType::Mouse);
         m_frame->eventHandler().dispatchMouseEvent(
@@ -306,7 +306,7 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(const Gesture
 
     // To simulate right-click behavior, we send a right mouse down and then context menu event.
     // TODO(crbug.com/579564): Maybe we should not send mouse down at all
-    PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), RightButton, eventType, 1,
+    PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), WebPointerProperties::Button::Right, eventType, 1,
         static_cast<PlatformEvent::Modifiers>(modifiers | PlatformEvent::RightButtonDown),
         PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
     if (!m_suppressMouseEventsFromGestures) {
