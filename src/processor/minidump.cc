@@ -197,6 +197,21 @@ static inline void Swap(MDSystemTime* system_time) {
   Swap(&system_time->milliseconds);
 }
 
+static inline void Swap(MDXStateFeature* xstate_feature) {
+  Swap(&xstate_feature->offset);
+  Swap(&xstate_feature->size);
+}
+
+static inline void Swap(MDXStateConfigFeatureMscInfo* xstate_feature_info) {
+  Swap(&xstate_feature_info->size_of_info);
+  Swap(&xstate_feature_info->context_size);
+  Swap(&xstate_feature_info->enabled_features);
+
+  for (size_t i = 0; i < MD_MAXIMUM_XSTATE_FEATURES; i++) {
+    Swap(&xstate_feature_info->features[i]);
+  }
+}
+
 static inline void Swap(uint16_t* data, size_t size_in_bytes) {
   size_t data_length = size_in_bytes / sizeof(data[0]);
   for (size_t i = 0; i < data_length; i++) {
@@ -3508,20 +3523,44 @@ MinidumpMiscInfo::MinidumpMiscInfo(Minidump* minidump)
 bool MinidumpMiscInfo::Read(uint32_t expected_size) {
   valid_ = false;
 
+  size_t padding = 0;
   if (expected_size != MD_MISCINFO_SIZE &&
       expected_size != MD_MISCINFO2_SIZE &&
       expected_size != MD_MISCINFO3_SIZE &&
-      expected_size != MD_MISCINFO4_SIZE) {
-    BPLOG(ERROR) << "MinidumpMiscInfo size mismatch, " << expected_size
-                 << " != " << MD_MISCINFO_SIZE << ", " << MD_MISCINFO2_SIZE
-                 << ", " << MD_MISCINFO3_SIZE << ", " << MD_MISCINFO4_SIZE
-                 << ")";
-    return false;
+      expected_size != MD_MISCINFO4_SIZE &&
+      expected_size != MD_MISCINFO5_SIZE) {
+    if (expected_size > MD_MISCINFO5_SIZE) {
+      // Only read the part of the misc info structure we know how to handle
+      BPLOG(INFO) << "MinidumpMiscInfo size larger than expected "
+                  << expected_size << ", skipping over the unknown part";
+      padding = expected_size - MD_MISCINFO5_SIZE;
+      expected_size = MD_MISCINFO5_SIZE;
+    } else {
+      BPLOG(ERROR) << "MinidumpMiscInfo size mismatch, " << expected_size
+                  << " != " << MD_MISCINFO_SIZE << ", " << MD_MISCINFO2_SIZE
+                  << ", " << MD_MISCINFO3_SIZE << ", " << MD_MISCINFO4_SIZE
+                  << ", " << MD_MISCINFO5_SIZE << ")";
+      return false;
+    }
   }
 
   if (!minidump_->ReadBytes(&misc_info_, expected_size)) {
     BPLOG(ERROR) << "MinidumpMiscInfo cannot read miscellaneous info";
     return false;
+  }
+
+  if (padding != 0) {
+    off_t saved_position = minidump_->Tell();
+    if (saved_position == -1) {
+      BPLOG(ERROR) << "MinidumpMiscInfo could not tell the current position";
+      return false;
+    }
+
+    if (!minidump_->SeekSet(saved_position + padding)) {
+      BPLOG(ERROR) << "MinidumpMiscInfo could not seek past the miscellaneous "
+                   << "info structure";
+      return false;
+    }
   }
 
   if (minidump_->swap()) {
@@ -3553,9 +3592,14 @@ bool MinidumpMiscInfo::Read(uint32_t expected_size) {
       // Do not swap UTF-16 strings.  The swap is done as part of the
       // conversion to UTF-8 (code follows below).
     }
+    if (misc_info_.size_of_info > MD_MISCINFO4_SIZE) {
+      // Swap version 5 fields
+      Swap(&misc_info_.xstate_data);
+      Swap(&misc_info_.process_cookie);
+    }
   }
 
-  if (expected_size != misc_info_.size_of_info) {
+  if (expected_size + padding != misc_info_.size_of_info) {
     BPLOG(ERROR) << "MinidumpMiscInfo size mismatch, " <<
                     expected_size << " != " << misc_info_.size_of_info;
     return false;
@@ -3703,6 +3747,35 @@ void MinidumpMiscInfo::Print() {
     } else {
       printf("  build_string                 = (invalid)\n");
       printf("  dbg_bld_str                  = (invalid)\n");
+    }
+  }
+  if (misc_info_.size_of_info > MD_MISCINFO4_SIZE) {
+    // Print version 5 fields
+    if (misc_info_.flags1 & MD_MISCINFO_FLAGS1_PROCESS_COOKIE) {
+      printf("  xstate_data.size_of_info     = %d\n",
+             misc_info_.xstate_data.size_of_info);
+      printf("  xstate_data.context_size     = %d\n",
+             misc_info_.xstate_data.context_size);
+      printf("  xstate_data.enabled_features = 0x%" PRIx64 "\n",
+             misc_info_.xstate_data.enabled_features);
+      for (size_t i = 0; i < MD_MAXIMUM_XSTATE_FEATURES; i++) {
+        if (misc_info_.xstate_data.enabled_features & (1 << i)) {
+          printf("  xstate_data.features[%02zu]     = { %d, %d }\n", i,
+                 misc_info_.xstate_data.features[i].offset,
+                 misc_info_.xstate_data.features[i].size);
+        }
+      }
+      if (misc_info_.xstate_data.enabled_features == 0) {
+        printf("  xstate_data.features[]       = (empty)\n");
+      }
+      printf("  process_cookie               = %d\n",
+             misc_info_.process_cookie);
+    } else {
+      printf("  xstate_data.size_of_info     = (invalid)\n");
+      printf("  xstate_data.context_size     = (invalid)\n");
+      printf("  xstate_data.enabled_features = (invalid)\n");
+      printf("  xstate_data.features[]       = (invalid)\n");
+      printf("  process_cookie               = (invalid)\n");
     }
   }
   printf("\n");

@@ -721,6 +721,41 @@ typedef struct {
 /* MAX_PATH from windef.h */
 #define MD_MAX_PATH 260
 
+/* For MDXStateConfigFeatureMscInfo.features */
+typedef struct {
+  uint32_t offset;
+  uint32_t size;
+} MDXStateFeature;
+
+/* For MDXStateConfigFeatureMscInfo.enabled_features from winnt.h */
+typedef enum {
+  MD_XSTATE_LEGACY_FLOATING_POINT = 0, /* XSTATE_LEGACY_FLOATING_POINT */
+  MD_XSTATE_LEGACY_SSE            = 1, /* XSTATE_LEGACY_SSE */
+  MD_XSTATE_GSSE                  = 2, /* XSTATE_GSSE */
+  MD_XSTATE_AVX                   = MD_XSTATE_GSSE, /* XSTATE_AVX */
+  MD_XSTATE_MPX_BNDREGS           = 3, /* XSTATE_MPX_BNDREGS */
+  MD_XSTATE_MPX_BNDCSR            = 4, /* XSTATE_MPX_BNDCSR */
+  MD_XSTATE_AVX512_KMASK          = 5, /* XSTATE_AVX512_KMASK */
+  MD_XSTATE_AVX512_ZMM_H          = 6, /* XSTATE_AVX512_ZMM_H */
+  MD_XSTATE_AVX512_ZMM            = 7, /* XSTATE_AVX512_ZMM */
+  MD_XSTATE_IPT                   = 8, /* XSTATE_IPT */
+  MD_XSTATE_LWP                   = 62 /* XSTATE_LWP */
+} MDXStateFeatureFlag;
+
+/* MAXIMUM_XSTATE_FEATURES from winnt.h */
+#define MD_MAXIMUM_XSTATE_FEATURES 64
+
+/* For MDRawMiscInfo.xstate_data */
+typedef struct {
+  uint32_t size_of_info;
+  uint32_t context_size;
+  /* An entry in the features array is valid only if the corresponding bit in
+   * the enabled_features flag is set. */
+  uint64_t enabled_features;
+  MDXStateFeature features[MD_MAXIMUM_XSTATE_FEATURES];
+} MDXStateConfigFeatureMscInfo;
+
+
 /* The miscellaneous information stream contains a variety
  * of small pieces of information.  A member is valid if
  * it's within the available size and its corresponding
@@ -781,9 +816,22 @@ typedef struct {
    * MD_MISCINFO_FLAGS1_BUILDSTRING. */
   uint16_t build_string[MD_MAX_PATH];  /* UTF-16-encoded, 0-terminated */
   uint16_t dbg_bld_str[40];            /* UTF-16-encoded, 0-terminated */
+
+  /* The following fields are not present in MINIDUMP_MISC_INFO_4 but are
+   * in MINIDUMP_MISC_INFO_5.  When this struct is populated, these values
+   * may not be set.  Use flags1 and size_of_info to determine whether these
+   * values are present. */
+
+  /* The following field has its own flags for establishing the validity of
+   * the structure's contents.*/
+  MDXStateConfigFeatureMscInfo xstate_data;
+
+  /* The following field is only valid if flags1 contains
+   * MD_MISCINFO_FLAGS1_PROCESS_COOKIE. */
+  uint32_t process_cookie;
 } MDRawMiscInfo;  /* MINIDUMP_MISC_INFO, MINIDUMP_MISC_INFO_2,
                    * MINIDUMP_MISC_INFO_3, MINIDUMP_MISC_INFO_4,
-                   * MINIDUMP_MISC_INFO_N */
+                   * MINIDUMP_MISC_INFO_5, MINIDUMP_MISC_INFO_N */
 
 static const size_t MD_MISCINFO_SIZE =
     offsetof(MDRawMiscInfo, processor_max_mhz);
@@ -791,7 +839,14 @@ static const size_t MD_MISCINFO2_SIZE =
     offsetof(MDRawMiscInfo, process_integrity_level);
 static const size_t MD_MISCINFO3_SIZE =
     offsetof(MDRawMiscInfo, build_string[0]);
-static const size_t MD_MISCINFO4_SIZE = sizeof(MDRawMiscInfo);
+static const size_t MD_MISCINFO4_SIZE =
+    offsetof(MDRawMiscInfo, xstate_data);
+/* Version 5 of the MDRawMiscInfo structure is not a multiple of 8 in size and
+ * yet it contains some 8-bytes sized fields. This causes many compilers to
+ * round the structure size up to a multiple of 8 by adding padding at the end.
+ * The following hack is thus required for matching the proper on-disk size. */
+static const size_t MD_MISCINFO5_SIZE =
+    offsetof(MDRawMiscInfo, process_cookie) + sizeof(uint32_t);
 
 /* For (MDRawMiscInfo).flags1.  These values indicate which fields in the
  * MDRawMiscInfoStructure are valid. */
@@ -812,6 +867,8 @@ typedef enum {
       /* MINIDUMP_MISC3_PROTECTED_PROCESS */
   MD_MISCINFO_FLAGS1_BUILDSTRING           = 0x00000100,
       /* MINIDUMP_MISC4_BUILDSTRING */
+  MD_MISCINFO_FLAGS1_PROCESS_COOKIE        = 0x00000200,
+      /* MINIDUMP_MISC5_PROCESS_COOKIE */
 } MDMiscInfoFlags1;
 
 /*
