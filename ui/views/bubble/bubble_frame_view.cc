@@ -211,12 +211,7 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
 }
 
 void BubbleFrameView::ResetWindowControls() {
-#if defined(OS_MACOSX)
-  // On Mac, close buttons are never shown.
-  close_->SetVisible(false);
-#else
   close_->SetVisible(GetWidget()->widget_delegate()->ShouldShowCloseButton());
-#endif
 }
 
 void BubbleFrameView::UpdateWindowIcon() {
