@@ -71037,6 +71037,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     to base::HistogramBase::Sample.
   </summary>
   <int value="-2132740958" label="gl"/>
+  <int value="-2112894028" label="haw"/>
   <int value="-2092490813" label="fa"/>
   <int value="-2084324285" label="iw"/>
   <int value="-2070680532" label="hi"/>
@@ -71044,6 +71045,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-2042178987" label="si"/>
   <int value="-2041104386" label="mi"/>
   <int value="-2014954614" label="so"/>
+  <int value="-2005166181" label="ja-Latn"/>
   <int value="-1999171202" label="lv"/>
   <int value="-1994870905" label="lt"/>
   <int value="-1855113037" label="vi"/>
@@ -71053,28 +71055,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-1760672594" label="mr"/>
   <int value="-1696927720" label="la"/>
   <int value="-1690250140" label="ja"/>
+  <int value="-1566592213" label="hi-Latn"/>
   <int value="-1532548885" label="pa"/>
+  <int value="-1515310228" label="ps"/>
   <int value="-1284862637" label="ru"/>
   <int value="-1273588087" label="kn"/>
+  <int value="-1211529228" label="gd"/>
+  <int value="-1117024738" label="zh-Latn"/>
+  <int value="-1100371650" label="sn"/>
   <int value="-1048980531" label="ur"/>
   <int value="-1042449480" label="cy"/>
   <int value="-1033645590" label="fil"/>
   <int value="-1025520269" label="az"/>
+  <int value="-1010619188" label="ru-Latn"/>
   <int value="-1000295094" label="no"/>
   <int value="-887258309" label="hu"/>
   <int value="-862298602" label="st"/>
+  <int value="-851607677" label="sm"/>
+  <int value="-838275151" label="xh"/>
   <int value="-750267977" label="bg"/>
   <int value="-742603342" label="ca"/>
+  <int value="-740941224" label="ku"/>
   <int value="-734032818" label="km"/>
+  <int value="-717751759" label="lb"/>
   <int value="-659007214" label="el"/>
   <int value="-647197922" label="ceb"/>
   <int value="-645438410" label="my"/>
   <int value="-644560085" label="su"/>
   <int value="-598481752" label="et"/>
+  <int value="-442590807" label="sd"/>
+  <int value="-441493751" label="el-Latn"/>
   <int value="-426630965" label="ga"/>
   <int value="-415677801" label="it"/>
   <int value="-403118581" label="sw"/>
+  <int value="-349113427" label="am"/>
   <int value="-342591258" label="sq"/>
+  <int value="-226066958" label="bg-Latn"/>
   <int value="-219674420" label="ta"/>
   <int value="-181870943" label="bn"/>
   <int value="-110306666" label="sr"/>
@@ -71122,7 +71138,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1552733612" label="da"/>
   <int value="1638257274" label="sk"/>
   <int value="1670494558" label="ko"/>
+  <int value="1704087523" label="ky"/>
   <int value="1704315002" label="fr"/>
+  <int value="1717583602" label="co"/>
+  <int value="1754979806" label="fy"/>
   <int value="1853848431" label="tr"/>
   <int value="2039992295" label="ig"/>
   <int value="2087142539" label="mn"/>
