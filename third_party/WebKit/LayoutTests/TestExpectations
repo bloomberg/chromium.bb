@@ -1309,10 +1309,10 @@ crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.ht
 
 crbug.com/638850 [ Mac10.10 ] svg/custom/repaint-on-constant-size-change.svg [ Pass Failure ]
 
-crbug.com/639179 [ Win7 Mac10.11 Linux Debug ] compositing/reflections/nested-reflection-transformed.html [ Skip ]
-crbug.com/639179 [ Win7 Mac10.11 Linux Debug ] compositing/reflections/nested-reflection-transformed2.html [ Skip ]
-crbug.com/639179 [ Win7 Mac10.11 Linux Debug ] compositing/reflections/reflection-in-composited.html [ Skip ]
-crbug.com/639179 [ Win7 Mac10.11 Linux Debug ] css3/filters/filter-repaint-shadow-rotated.html [ Skip ]
-crbug.com/639179 [ Win7 Mac10.11 Linux Debug ] fast/css/transformed-mask.html [ Skip ]
-crbug.com/639179 [ Win7 Mac10.11 Linux Debug ] fast/reflections/opacity-reflection-transform.html [ Skip ]
-crbug.com/639179 [ Win7 Mac10.11 Linux Debug ] fast/repaint/reflection-repaint-test.html [ Skip ]
+crbug.com/639179 [ Win7 Debug ] compositing/reflections/nested-reflection-transformed.html [ Skip ]
+crbug.com/639179 [ Win7 Debug ] compositing/reflections/nested-reflection-transformed2.html [ Skip ]
+crbug.com/639179 [ Win7 Debug ] compositing/reflections/reflection-in-composited.html [ Skip ]
+crbug.com/639179 [ Win7 Debug ] css3/filters/filter-repaint-shadow-rotated.html [ Skip ]
+crbug.com/639179 [ Win7 Debug ] fast/css/transformed-mask.html [ Skip ]
+crbug.com/639179 [ Win7 Debug ] fast/reflections/opacity-reflection-transform.html [ Skip ]
+crbug.com/639179 [ Win7 Debug ] fast/repaint/reflection-repaint-test.html [ Skip ]
