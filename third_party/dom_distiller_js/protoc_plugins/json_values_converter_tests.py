@@ -16,15 +16,17 @@ import sys
 def CompareFiles(file1, file2):
   return file(file1, 'r').read() == file(file2, 'r').read()
 
+
 def TouchStamp(stamp_path):
   dir_name = os.path.dirname(stamp_path)
   if not os.path.isdir(dir_name):
-    os.makedirs()
+    os.makedirs(dir_name)
 
   with open(stamp_path, 'a'):
     os.utime(stamp_path, None)
 
-def main(argv):
+
+def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--stamp',
                       help='Path to touch on success.')
@@ -43,4 +45,4 @@ def main(argv):
   return not passed
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())

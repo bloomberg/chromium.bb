@@ -1031,7 +1031,7 @@ class Foo {
 def TouchStamp(stamp_path):
   dir_name = os.path.dirname(stamp_path)
   if not os.path.isdir(dir_name):
-    os.makedirs()
+    os.makedirs(dir_name)
 
   with open(stamp_path, 'a'):
     os.utime(stamp_path, None)

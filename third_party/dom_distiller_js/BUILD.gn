@@ -16,7 +16,6 @@ group("proto") {
 protoc_plugin_files = [
   "protoc_plugins/json_values_converter.bat",
   "protoc_plugins/util/__init__.py",
-  "protoc_plugins/util/plugin.py",
   "protoc_plugins/util/plugin_protos.py",
   "protoc_plugins/util/types.py",
   "protoc_plugins/util/writer.py",

@@ -4,6 +4,7 @@
 
 import contextlib
 
+
 class CodeWriter(object):
   """Helper class for code indentation."""
   def __init__(self):
