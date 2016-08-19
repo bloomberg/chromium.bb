@@ -20,7 +20,7 @@ enum PowerLineFrequency {
 };
 
 // Represents access to a video capture device available on the machine.
-// Note: Instead of offering an explicit Stop() method, the VideoCaptureDevice
+// Note: Instead of offering an explicit Stop() method, the device
 // is stopped automatically when the corresponding message pipe is closed.
 interface VideoCaptureDevice {
   Start(VideoCaptureFormat requested_format,

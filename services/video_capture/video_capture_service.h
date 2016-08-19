@@ -9,16 +9,18 @@
 
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/video_capture/public/interfaces/video_capture_device_factory.mojom.h"
-#include "services/video_capture/video_capture_device_factory_impl.h"
+#include "services/video_capture/public/interfaces/video_capture_service.mojom.h"
 
 namespace video_capture {
 
-// Exposes a single internal instance of VideoCaptureDeviceFactoryImpl
-// through a Mojo Shell Service.
+class VideoCaptureDeviceFactoryImpl;
+class FakeVideoCaptureDeviceFactoryConfiguratorImpl;
+
+// Implementation of mojom::VideoCaptureService as a Mojo Shell Service.
 class VideoCaptureService
     : public shell::Service,
-      public shell::InterfaceFactory<mojom::VideoCaptureDeviceFactory> {
+      public shell::InterfaceFactory<mojom::VideoCaptureService>,
+      public mojom::VideoCaptureService {
  public:
   VideoCaptureService();
   ~VideoCaptureService() override;
@@ -27,13 +29,25 @@ class VideoCaptureService
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry) override;
 
-  // shell::InterfaceFactory<mojom::VideoCaptureDeviceFactory>:
+  // shell::InterfaceFactory<mojom::VideoCaptureService>:
   void Create(const shell::Identity& remote_identity,
-              mojom::VideoCaptureDeviceFactoryRequest request) override;
+              mojom::VideoCaptureServiceRequest request) override;
+
+  // mojom::VideoCaptureService
+  void ConnectToDeviceFactory(
+      mojom::VideoCaptureDeviceFactoryRequest request) override;
+  void ConnectToFakeDeviceFactory(
+      mojom::VideoCaptureDeviceFactoryRequest request) override;
 
  private:
-  mojo::BindingSet<mojom::VideoCaptureDeviceFactory> bindings_;
-  VideoCaptureDeviceFactoryImpl device_factory_;
+  void LazyInitializeDeviceFactory();
+  void LazyInitializeFakeDeviceFactory();
+
+  mojo::BindingSet<mojom::VideoCaptureService> bindings_;
+  mojo::BindingSet<mojom::VideoCaptureDeviceFactory> factory_bindings_;
+  mojo::BindingSet<mojom::VideoCaptureDeviceFactory> fake_factory_bindings_;
+  std::unique_ptr<VideoCaptureDeviceFactoryImpl> device_factory_;
+  std::unique_ptr<VideoCaptureDeviceFactoryImpl> fake_device_factory_;
 };
 
 }  // namespace video_capture

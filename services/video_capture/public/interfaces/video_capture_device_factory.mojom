@@ -27,6 +27,12 @@ enum VideoCaptureTransportType {
   OTHER_TRANSPORT
 };
 
+enum DeviceAccessResultCode {
+  NOT_INITIALIZED,
+  SUCCESS,
+  ERROR_DEVICE_NOT_FOUND
+};
+
 struct VideoCaptureDeviceDescriptor {
   string display_name;
   string device_id;
@@ -51,6 +57,8 @@ interface VideoCaptureDeviceFactory {
   GetSupportedFormats(VideoCaptureDeviceDescriptor device_descriptor)
       => (array<VideoCaptureFormat> supported_formats);
 
+  // Provides exclusive access to the device identified by |device_descriptor|.
   CreateDevice(VideoCaptureDeviceDescriptor device_descriptor,
-               VideoCaptureDevice& device_request);
+                    VideoCaptureDevice& device_request)
+      => (DeviceAccessResultCode result_code);
 };

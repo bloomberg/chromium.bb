@@ -32,8 +32,6 @@ service_manifest("manifest") {
 
 source_set("lib") {
   sources = [
-    "video_capture_device_client_impl.cc",
-    "video_capture_device_client_impl.h",
     "video_capture_device_factory_impl.cc",
     "video_capture_device_factory_impl.h",
     "video_capture_device_impl.cc",

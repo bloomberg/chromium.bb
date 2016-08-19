@@ -10,6 +10,7 @@ mojom("interfaces") {
     "video_capture_device_client.mojom",
     "video_capture_device_factory.mojom",
     "video_capture_format.mojom",
+    "video_capture_service.mojom",
   ]
 
   deps = [

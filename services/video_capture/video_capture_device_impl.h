@@ -9,10 +9,11 @@
 
 namespace video_capture {
 
-// Implementation of the VideoCaptureDevice Mojo interface.
+// Implementation of mojom::VideoCaptureDeviceProxy backed by a given instance
+// of media::VideoCaptureDevice.
 class VideoCaptureDeviceImpl : public mojom::VideoCaptureDevice {
  public:
-  // mojom::VideoCaptureDevice:
+  // mojom::VideoCaptureDeviceProxy:
   void Start(mojom::VideoCaptureFormatPtr requested_format,
              mojom::ResolutionChangePolicy resolution_change_policy,
              mojom::PowerLineFrequency power_line_frequency,
