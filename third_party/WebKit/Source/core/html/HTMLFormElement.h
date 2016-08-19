@@ -150,6 +150,11 @@ private:
     // Do not access m_imageElements directly. Use imageElements() instead.
     HeapVector<Member<HTMLImageElement>> m_imageElements;
 
+    // https://html.spec.whatwg.org/multipage/forms.html#planned-navigation
+    // Unlike the specification, we use this only for web-exposed submit()
+    // function in 'submit' event handler.
+    Member<FormSubmission> m_plannedNavigation;
+
     bool m_isSubmitting = false;
     bool m_inUserJSSubmitEvent = false;
 
@@ -158,7 +163,6 @@ private:
     bool m_hasElementsAssociatedByParser : 1;
     bool m_hasElementsAssociatedByFormAttribute : 1;
     bool m_didFinishParsingChildren : 1;
-    bool m_shouldSubmit : 1;
     bool m_isInResetFunction : 1;
     bool m_wasDemoted : 1;
 };

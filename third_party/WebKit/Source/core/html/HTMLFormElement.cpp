@@ -70,7 +70,6 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_hasElementsAssociatedByParser(false)
     , m_hasElementsAssociatedByFormAttribute(false)
     , m_didFinishParsingChildren(false)
-    , m_shouldSubmit(false)
     , m_isInResetFunction(false)
     , m_wasDemoted(false)
 {
@@ -92,6 +91,7 @@ DEFINE_TRACE(HTMLFormElement)
     visitor->trace(m_radioButtonGroupScope);
     visitor->trace(m_associatedElements);
     visitor->trace(m_imageElements);
+    visitor->trace(m_plannedNavigation);
     HTMLElement::trace(visitor);
 }
 
@@ -312,16 +312,21 @@ void HTMLFormElement::prepareForSubmission(Event* event)
     if (!skipValidation && !validateInteractively())
         return;
 
+    bool shouldSubmit;
     {
         AutoReset<bool> submitEventHandlerScope(&m_inUserJSSubmitEvent, true);
-        m_shouldSubmit = false;
         frame->loader().client()->dispatchWillSendSubmitEvent(this);
-        if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)) == DispatchEventResult::NotCanceled)
-            m_shouldSubmit = true;
+        shouldSubmit = dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)) == DispatchEventResult::NotCanceled;
     }
-
-    if (m_shouldSubmit)
+    if (shouldSubmit) {
+        m_plannedNavigation = nullptr;
         submit(event, true);
+    }
+    if (!m_plannedNavigation)
+        return;
+    AutoReset<bool> submitScope(&m_isSubmitting, true);
+    scheduleFormSubmission(m_plannedNavigation);
+    m_plannedNavigation = nullptr;
 }
 
 void HTMLFormElement::submitFromJavaScript()
@@ -349,10 +354,8 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton)
     if (!isConnected())
         UseCounter::count(document(), UseCounter::FormSubmissionNotInDocumentTree);
 
-    if (m_isSubmitting || m_inUserJSSubmitEvent) {
-        m_shouldSubmit = true;
+    if (m_isSubmitting)
         return;
-    }
 
     // Delay dispatching 'close' to dialog until done submitting.
     EventQueueScope scopeForDialogClose;
@@ -381,6 +384,10 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton)
     FormSubmission* formSubmission = FormSubmission::create(this, m_attributes, event);
     if (formSubmission->method() == FormSubmission::DialogMethod) {
         submitDialog(formSubmission);
+    } else if (m_inUserJSSubmitEvent) {
+        // Need to postpone the submission in order to make this cancelable by
+        // another submission request.
+        m_plannedNavigation = formSubmission;
     } else {
         // This runs JavaScript code if action attribute value is javascript:
         // protocol.
@@ -389,8 +396,6 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton)
 
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(false);
-
-    m_shouldSubmit = false;
 }
 
 void HTMLFormElement::scheduleFormSubmission(FormSubmission* submission)

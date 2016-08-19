@@ -3,7 +3,7 @@ Test that form submit within onsubmit event handlers are not delayed and sends t
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-FAIL event.target.contentWindow.location.search should be ?query=AAA. Was ?query=BBB.
+PASS event.target.contentWindow.location.search is "?query=AAA"
 PASS event.target.contentWindow.location.search is "?query1=BBB"
 PASS successfullyParsed is true
 
