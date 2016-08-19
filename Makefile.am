@@ -525,6 +525,7 @@ if BUILD_SIMPLE_CLIENTS
 demo_clients +=					\
 	weston-simple-shm			\
 	weston-simple-damage			\
+	weston-simple-idle			\
 	weston-simple-touch			\
 	weston-presentation-shm			\
 	weston-multi-resource
@@ -550,6 +551,15 @@ nodist_weston_simple_damage_SOURCES =		\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h
 weston_simple_damage_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
 weston_simple_damage_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
+
+weston_simple_idle_SOURCES = clients/simple-idle.c
+nodist_weston_simple_idle_SOURCES =		\
+	protocol/xdg-shell-unstable-v6-protocol.c		\
+	protocol/xdg-shell-unstable-v6-client-protocol.h	\
+	protocol/idle-inhibit-unstable-v1-protocol.c	\
+	protocol/idle-inhibit-unstable-v1-client-protocol.h
+weston_simple_idle_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
+weston_simple_idle_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
 
 weston_simple_touch_SOURCES = 			\
 	clients/simple-touch.c			\
@@ -849,7 +859,9 @@ BUILT_SOURCES +=					\
 	protocol/ivi-hmi-controller-protocol.c		\
 	protocol/ivi-hmi-controller-client-protocol.h	\
 	protocol/ivi-application-protocol.c		\
-	protocol/ivi-application-client-protocol.h
+	protocol/ivi-application-client-protocol.h	\
+	protocol/idle-inhibit-unstable-v1-protocol.c \
+	protocol/idle-inhibit-unstable-v1-client-protocol.h
 
 westondatadir = $(datadir)/weston
 dist_westondata_DATA =				\
