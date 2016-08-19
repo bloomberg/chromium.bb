@@ -615,6 +615,9 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
     return OK;
   }
 
+  if (was_alternative_service_recently_broken_)
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectAfterBroken", rv == OK);
+
   if (rv != OK)
     return rv;
 

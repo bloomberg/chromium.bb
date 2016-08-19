@@ -30526,6 +30526,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.ConnectAfterBroken" enum="BooleanSuccess">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    True if a QUIC connection connected successfully after having been broken.
+    Only emitted after a QUIC connection attempt to a server that was previous
+    marked as broken.
+  </summary>
+</histogram>
+
 <histogram
     name="Net.QuicSession.ConnectionClose.HandshakeFailureBlackHole.QuicError"
     enum="QuicErrorCodes">
