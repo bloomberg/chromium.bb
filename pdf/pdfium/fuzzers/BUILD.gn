@@ -36,6 +36,13 @@ fuzzer_test("pdf_jpx_fuzzer") {
   seed_corpus = "corpora/pdf_jpx"
 }
 
+fuzzer_test("pdf_psengine_fuzzer") {
+  sources = []
+  deps = [
+    "//third_party/pdfium/testing/libfuzzer:pdf_psengine_fuzzer",
+  ]
+}
+
 if (pdf_enable_xfa) {
   fuzzer_test("pdf_codec_bmp_fuzzer") {
     sources = []
