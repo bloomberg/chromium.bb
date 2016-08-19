@@ -935,10 +935,6 @@ def UncompressFile(infile, outfile):
   RunCommand(cmd, log_stdout_to_file=outfile)
 
 
-class TarOfOpenFileError(Exception):
-  """Exception raised when a file being tarred is opened for write."""
-
-
 def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
                   inputs=None, extra_args=None, **kwargs):
   """Create a tarball.  Executes 'tar' on the commandline.
@@ -961,33 +957,6 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
   if inputs is None:
     inputs = ['.']
 
-  # TODO(dgarrett): Cleanup temp debugging for crbug.com/547055.
-  cmd = ['lsof']
-  # Copy the inputs, with the directories sorted to the beginning. lsof recurses
-  # into directories with +D, you can't use +D after a normal file name. I'm
-  # sure there is a better way to manage this.
-  cmd_files = [os.path.join(cwd, i) for i in inputs]
-  cmd_files.sort(key=os.path.isdir, reverse=True)
-
-  for f in cmd_files:
-    if os.path.isdir(f):
-      cmd.append('+D')
-    cmd.append(f)
-
-  # Build command of the form:
-  #   lsof +D sub +D sub2 file1 file2
-  result = RunCommand(
-      cmd, cwd=cwd,
-      combine_stdout_stderr=True, capture_output=True, error_code_ok=True)
-
-  # Search for any files open for write or update:
-  # cat     117977 dgarrett    1w   REG  252,1        0 1835299 sub2/subfile
-  if re.search(r'^(\S+\s+){3}\d+[uw]', result.output, re.MULTILINE):
-    raise TarOfOpenFileError(
-        'ERROR: Found open file before tar (crbug.com/547055):\n%s' %
-        result.output)
-  # End TODO.
-
   if extra_args is None:
     extra_args = []
   kwargs.setdefault('debug_level', logging.DEBUG)
@@ -998,25 +967,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
          ['--sparse', '-I', comp, '-cf', target] +
          list(inputs))
   rc_func = SudoRunCommand if sudo else RunCommand
-  try:
-    return rc_func(cmd, cwd=cwd, **kwargs)
-  except RunCommandError as e:
-    # TODO(dgarrett): Cleanup temp debugging for crbug.com/547055
-    #
-    # In the condition we are watching for, tar output contains:
-    #  tar: <filename>: file changed as we read it
-    m = re.search(
-        r'tar: (.*): file changed as we read it',
-        e.result.output + e.result.error)
-
-    if m:
-      modified_file = m.group(1)
-      print('ERROR: crbug.com/547055 lsof for file: "%s"' % modified_file)
-      RunCommand(['lsof', modified_file], cwd=cwd, mute_output=False,
-                 error_code_ok=True)
-
-    raise
-    # End TODO.
+  return rc_func(cmd, cwd=cwd, **kwargs)
 
 
 def GroupByKey(input_iter, key):

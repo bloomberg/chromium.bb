@@ -1909,17 +1909,3 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
     """Create a tarfile."""
     cros_build_lib.CreateTarball(self.target, self.inputDir,
                                  inputs=self.inputsWithDirs)
-
-  def testWriting(self):
-    """Create a tarfile."""
-    with self.assertRaises(cros_build_lib.TarOfOpenFileError):
-      with open(os.path.join(self.inputDir, self.inputs[0]), 'a'):
-        cros_build_lib.CreateTarball(self.target, self.inputDir,
-                                     inputs=self.inputs)
-
-  def testWritingWithDirs(self):
-    """Create a tarfile."""
-    with self.assertRaises(cros_build_lib.TarOfOpenFileError):
-      with open(os.path.join(self.inputDir, self.inputs[3]), 'w'):
-        cros_build_lib.CreateTarball(self.target, self.inputDir,
-                                     inputs=self.inputsWithDirs)
