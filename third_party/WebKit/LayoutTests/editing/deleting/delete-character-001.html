@@ -1,36 +1,11 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-
-function editingTest() {
-    for (i = 0; i < 2; i++) {
-        moveSelectionForwardByCharacterCommand();    
-    }
-    deleteCommand();
-}
-
+    test(() => assert_selection(
+        '<div contenteditable>fo|o   bar    baz</div>',
+        'delete',
+        '<div contenteditable>f|o   bar    baz</div>'),
+        'Delete a character');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body>
-<div contenteditable id="root" class="editing">
-<span id="test">foo   bar    baz</span>
-</div>
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
