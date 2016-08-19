@@ -143,6 +143,11 @@ void CastRenderer::Initialize(
 
   client_ = client;
   init_cb.Run(::media::PIPELINE_OK);
+
+  if (video_stream) {
+    // Force compositor to treat video as opaque (needed for overlay codepath).
+    OnVideoOpacityChange(true);
+  }
 }
 
 void CastRenderer::SetCdm(::media::CdmContext* cdm_context,
@@ -239,6 +244,7 @@ void CastRenderer::OnVideoNaturalSizeChange(const gfx::Size& size) {
 
 void CastRenderer::OnVideoOpacityChange(bool opaque) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(opaque);
   client_->OnVideoOpacityChange(opaque);
 }
 
