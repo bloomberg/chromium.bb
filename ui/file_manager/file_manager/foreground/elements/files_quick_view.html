@@ -37,7 +37,7 @@
               </div>
               <template is="dom-if" if="[[!contentUrl]]">
                 <div generic-thumbnail="image"></div>
-                <div class="no-preivew" i18n-content="QUICK_VIEW_NO_PREVIEW_AVAILABLE"></div>
+                <div class="no-preivew">[[noPreviewText]]</div>
               </template>
             </template>
             <!-- Video -->
@@ -48,7 +48,7 @@
                   <files-safe-media type="image" id="video-poster" src="[[videoPoster]]"></files-safe-media>
                 </div>
                 <div hidden="[[videoPoster]]" generic-thumbnail="video"></div>
-                <div class="no-preview" i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>
+                <div class="no-preview">[[noPlaybackText]]</div>
               </template>
             </template>
             <!-- Audio -->
@@ -61,13 +61,13 @@
             <template is="dom-if" if="[[isAudio_(type)]]">
               <template is="dom-if" if="[[!contentUrl]]">
                 <div generic-thumbnail="audio"></div>
-                <div class="no-preivew" i18n-content="QUICK_VIEW_NO_PLAYBACK_AVAILABLE"></div>
+                <div class="no-preivew">[[noPlaybackText]]</div>
               </template>
             </template>
             <!-- TODO(oka): Support folder icon -->
             <div hidden="[[!isUnsupported_(type)]]">
               <div generic-thumbnail></div>
-              <div class="no-preview" i18n-content="QUICK_VIEW_NO_PREVIEW_AVAILABLE"></div>
+              <div class="no-preview">[[noPreviewText]]</div>
             </div>
             </div> <!-- innerContentPanel -->
           </div> <!-- contentPanel -->

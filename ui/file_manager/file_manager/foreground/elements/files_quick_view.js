@@ -21,7 +21,11 @@ var FilesQuickView = Polymer({
       value: true,
       type: Boolean,
       notify: true,
-    }
+    },
+    // Text shown when no playback is available.
+    noPlaybackText: String,
+    // Text shown when no preview is available.
+    noPreviewText: String,
   },
 
   listeners: {
