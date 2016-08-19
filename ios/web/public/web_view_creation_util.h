@@ -6,6 +6,7 @@
 #define IOS_WEB_PUBLIC_WEB_VIEW_CREATION_UTIL_H_
 
 #import <CoreGraphics/CoreGraphics.h>
+#import <Foundation/Foundation.h>
 
 @class WKWebView;
 
@@ -21,7 +22,8 @@ class BrowserState;
 // 2) web::BrowsingDataPartition is synchronized.
 //
 // Note: Callers are responsible for releasing the returned WKWebView.
-WKWebView* CreateWKWebView(CGRect frame, BrowserState* browser_state);
+WKWebView* CreateWKWebView(CGRect frame,
+                           BrowserState* browser_state) NS_RETURNS_RETAINED;
 
 }  // web
 

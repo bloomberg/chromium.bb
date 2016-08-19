@@ -6,6 +6,7 @@
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_CHROME_BROWSER_PROVIDER_H_
 
 #include <CoreGraphics/CoreGraphics.h>
+#import <Foundation/Foundation.h>
 #include <stddef.h>
 
 #include <memory>
@@ -76,7 +77,7 @@ class ChromeBrowserProvider {
   // object is retained.
   virtual InfoBarViewPlaceholder CreateInfoBarView(
       CGRect frame,
-      InfoBarViewDelegate* delegate);
+      InfoBarViewDelegate* delegate) NS_RETURNS_RETAINED;
   // Returns an instance of a signin resources provider.
   virtual SigninResourcesProvider* GetSigninResourcesProvider();
   // Returns an instance of a Chrome identity service.

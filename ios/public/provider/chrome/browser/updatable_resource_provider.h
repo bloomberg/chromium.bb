@@ -96,7 +96,7 @@ class UpdatableResourceProvider {
   // |delegate| may be nil.
   virtual id<UpdatableResourceBridge> CreateUpdatableResource(
       NSString* resource_identifier,
-      id<UpdatableResourceDelegate> delegate);
+      id<UpdatableResourceDelegate> delegate) NS_RETURNS_RETAINED;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UpdatableResourceProvider);

@@ -25,7 +25,7 @@ class BrowserState;
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
                            BrowserState* browser_state,
-                           BOOL use_desktop_user_agent);
+                           BOOL use_desktop_user_agent) NS_RETURNS_RETAINED;
 
 // Creates and returns a new WKWebView for displaying regular web content.
 // The preconditions for the creation of a WKWebView are the same as the
@@ -33,7 +33,7 @@ WKWebView* CreateWKWebView(CGRect frame,
 // Note: Callers are responsible for releasing the returned WKWebView.
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
-                           BrowserState* browser_state);
+                           BrowserState* browser_state) NS_RETURNS_RETAINED;
 
 }  // namespace web
 
