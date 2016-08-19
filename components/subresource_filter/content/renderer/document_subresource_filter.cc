@@ -114,10 +114,14 @@ bool DocumentSubresourceFilter::allowLoad(
                resourceUrl.string().utf8());
 
   ++num_loads_total_;
+
   if (filtering_disabled_for_document_)
     return true;
-  ++num_loads_evaluated_;
 
+  if (resourceUrl.protocolIs(url::kDataScheme))
+    return true;
+
+  ++num_loads_evaluated_;
   if (ruleset_matcher_.ShouldDisallowResourceLoad(
           GURL(resourceUrl), document_origin_,
           ToElementType(request_context))) {

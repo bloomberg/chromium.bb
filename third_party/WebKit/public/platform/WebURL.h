@@ -31,6 +31,7 @@
 #ifndef WebURL_h
 #define WebURL_h
 
+#include "WebCommon.h"
 #include "WebString.h"
 #include "url/third_party/mozilla/url_parse.h"
 
@@ -92,6 +93,8 @@ public:
     {
         return m_string.isEmpty();
     }
+
+    BLINK_PLATFORM_EXPORT bool protocolIs(const char* protocol) const;
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebURL(const KURL&);

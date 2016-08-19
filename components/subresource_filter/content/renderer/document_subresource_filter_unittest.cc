@@ -19,9 +19,11 @@ namespace subresource_filter {
 
 namespace {
 
-const char kTestFirstURL[] = "http://example.com/alpha";
-const char kTestSecondURL[] = "http://example.com/beta";
-const char kTestFirstURLPathSuffix[] = "alpha";
+const char kTestAlphaURL[] = "http://example.com/alpha";
+const char kTestAlphaDataURI[] = "data:text/plain,alpha";
+const char kTestBetaURL[] = "http://example.com/beta";
+
+const char kTestAlphaURLPathSuffix[] = "alpha";
 
 }  // namespace
 
@@ -32,7 +34,7 @@ class DocumentSubresourceFilterTest : public ::testing::Test {
  protected:
   void SetUp() override {
     ASSERT_NO_FATAL_FAILURE(
-        SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
+        SetTestRulesetToDisallowURLsWithPathSuffix(kTestAlphaURLPathSuffix));
   }
 
   void SetTestRulesetToDisallowURLsWithPathSuffix(base::StringPiece suffix) {
@@ -58,9 +60,10 @@ TEST_F(DocumentSubresourceFilterTest, DryRun) {
       blink::WebURLRequest::RequestContextImage;
   DocumentSubresourceFilter filter(ActivationState::DRYRUN, ruleset(),
                                    std::vector<GURL>());
-  EXPECT_TRUE(filter.allowLoad(GURL(kTestFirstURL), request_context));
-  EXPECT_TRUE(filter.allowLoad(GURL(kTestSecondURL), request_context));
-  EXPECT_EQ(2u, filter.num_loads_total());
+  EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
+  EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
+  EXPECT_TRUE(filter.allowLoad(GURL(kTestBetaURL), request_context));
+  EXPECT_EQ(3u, filter.num_loads_total());
   EXPECT_EQ(2u, filter.num_loads_evaluated());
   EXPECT_EQ(1u, filter.num_loads_matching_rules());
   EXPECT_EQ(0u, filter.num_loads_disallowed());
@@ -71,9 +74,10 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
       blink::WebURLRequest::RequestContextImage;
   DocumentSubresourceFilter filter(ActivationState::ENABLED, ruleset(),
                                    std::vector<GURL>());
-  EXPECT_FALSE(filter.allowLoad(GURL(kTestFirstURL), request_context));
-  EXPECT_TRUE(filter.allowLoad(GURL(kTestSecondURL), request_context));
-  EXPECT_EQ(2u, filter.num_loads_total());
+  EXPECT_FALSE(filter.allowLoad(GURL(kTestAlphaURL), request_context));
+  EXPECT_TRUE(filter.allowLoad(GURL(kTestAlphaDataURI), request_context));
+  EXPECT_TRUE(filter.allowLoad(GURL(kTestBetaURL), request_context));
+  EXPECT_EQ(3u, filter.num_loads_total());
   EXPECT_EQ(2u, filter.num_loads_evaluated());
   EXPECT_EQ(1u, filter.num_loads_matching_rules());
   EXPECT_EQ(1u, filter.num_loads_disallowed());
