@@ -93,6 +93,16 @@ class TrivialFullscreenVideoPage(page_module.Page):
     action_runner.PressKey("Return")
 
 
+class TrivialGifPage(page_module.Page):
+
+  def __init__(self, page_set, shared_page_state_class):
+    super(TrivialGifPage, self).__init__(
+        url='file://trivial_sites/trivial_gif.html',
+        page_set=page_set,
+        name=self.__class__.__name__ + shared_page_state_class.__name__,
+        shared_page_state_class=shared_page_state_class)
+
+
 class MacGpuTrivialPagesStorySet(story.StorySet):
 
   def __init__(self):
@@ -107,6 +117,7 @@ class MacGpuTrivialPagesStorySet(story.StorySet):
         self, shared_page_state.SharedPageState))
     self.AddStory(TrivialFullscreenVideoPage(
         self, shared_page_state.SharedPageState))
+    self.AddStory(TrivialGifPage(self, shared_page_state.SharedPageState))
 
     self.AddStory(TrivialScrollingPage(self, _NoOverlaysSharedPageState))
     self.AddStory(TrivialBlinkingCursorPage(self, _NoOverlaysSharedPageState))
@@ -114,6 +125,7 @@ class MacGpuTrivialPagesStorySet(story.StorySet):
     self.AddStory(TrivialWebGLPage(self, _NoOverlaysSharedPageState))
     self.AddStory(TrivialBlurAnimationPage(self, _NoOverlaysSharedPageState))
     self.AddStory(TrivialFullscreenVideoPage(self, _NoOverlaysSharedPageState))
+    self.AddStory(TrivialGifPage(self, _NoOverlaysSharedPageState))
 
     self.AddStory(TrivialScrollingPage(self, _NoGpuSharedPageState))
     self.AddStory(TrivialBlinkingCursorPage(self, _NoGpuSharedPageState))
@@ -121,6 +133,7 @@ class MacGpuTrivialPagesStorySet(story.StorySet):
     self.AddStory(TrivialWebGLPage(self, _NoWebGLImageChromiumSharedPageState))
     self.AddStory(TrivialBlurAnimationPage(self, _NoGpuSharedPageState))
     self.AddStory(TrivialFullscreenVideoPage(self, _NoGpuSharedPageState))
+    self.AddStory(TrivialGifPage(self, _NoGpuSharedPageState))
 
   @property
   def allow_mixed_story_states(self):
