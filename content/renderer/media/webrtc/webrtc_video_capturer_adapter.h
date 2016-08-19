@@ -15,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_pool.h"
 #include "third_party/webrtc/media/base/videocapturer.h"
 
 namespace content {
@@ -56,7 +57,7 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
   const bool is_screencast_;
   bool running_;
 
-  class MediaVideoFrameFactory;
+  media::VideoFramePool scaled_frame_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCapturerAdapter);
 };
