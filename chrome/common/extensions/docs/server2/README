@@ -1,3 +1,6 @@
+TODO(devlin): MD docs seem to be the new hotness; this should probably be
+converted.
+
 --------
 Overview
 
@@ -78,18 +81,35 @@ Once you have access:
 
 1. Increment the version in app.yaml so we can roll back if the update breaks.
 
-2. Run build_server.py. This copies some depenencies from /third_party into the
+2. Land your patch in chromium. Resync/pull.
+
+3. Run build_server.py. This copies some depenencies from /third_party into the
    server directory so that they get uploaded to App Engine.
 
-3. Run appcfg.py (supplied with the App Engine SDK) to upload the server code:
+4. Run appcfg.py (supplied with the App Engine SDK) to upload the server code:
 
     appcfg.py update .
 
-4. When prompted for your credentials, enter the information for the account
+5. When prompted for your credentials, enter the information for the account
    that has access to the production app.
 
-5. Go to http://www.appspot.com, select the docs project, click "versions" in
-   the sidebar, and make the version you just deployed the "default" version.
+Note: Steps 1 - 5 can be completed (mostly) synchronously. However, once the
+version is pushed, the docserver will need to repopulate its cache, which runs
+from a cron job. (Theoretically, this job runs a few times a day - in practice,
+it has been observered to be late.)
+
+6. Go to http://www.appspot.com, select the docs project, click "versions" in
+   the sidebar. CHECK THE VERSION YOU DEPLOYED WORKS. You can do this by
+   clicking the version with the "popout" link, which should send you to a link
+   like "https://3-50-3-dot-chrome-apps-doc.appspot.com". This should work, and
+   you should be able to see documentation by going to /extensions,
+   /extensions/webRequest, /extensions/contentScripts, etc. If you see a
+   "Not found" error, this means the version does not work. Likely, this is
+   because the cache hasn't been fully updated.
+
+   If the newly-deployed version works, migrate traffic to the new version. This
+   happens nearly instantly, so you should immediately double-check the live
+   site at developer.chrome.com/extensions.
 
    If you get an error about too many versions when deploying, go into this
    view and delete the version which was deployed the longest time ago.  Then
