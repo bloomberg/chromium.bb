@@ -158,7 +158,7 @@ AccountId EPKPChallengeKeyBase::GetAccountId() const {
   return user->GetAccountId();
 }
 
-bool EPKPChallengeKeyBase::IsUserManaged() const {
+bool EPKPChallengeKeyBase::IsUserAffiliated() const {
   const user_manager::User* const user =
       user_manager::UserManager::Get()->FindUser(GetAccountId());
 
@@ -329,8 +329,7 @@ void EPKPChallengeMachineKey::Run(
     return;
   }
 
-  // Check if the user domain is the same as the enrolled enterprise domain.
-  if (!IsUserManaged()) {
+  if (!IsUserAffiliated()) {
     callback_.Run(false, kUserNotManaged);
     return;
   }
@@ -451,8 +450,7 @@ void EPKPChallengeUserKey::Run(scoped_refptr<UIThreadExtensionFunction> caller,
   }
 
   if (IsEnterpriseDevice()) {
-    // Check if the user domain is the same as the enrolled enterprise domain.
-    if (!IsUserManaged()) {
+    if (!IsUserAffiliated()) {
       callback_.Run(false, kUserNotManaged);
       return;
     }

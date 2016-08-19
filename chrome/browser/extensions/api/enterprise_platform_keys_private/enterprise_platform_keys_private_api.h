@@ -86,8 +86,9 @@ class EPKPChallengeKeyBase {
   // Returns true if the extension is white-listed in the user policy.
   bool IsExtensionWhitelisted() const;
 
-  // Returns true if the user is enterprise managed.
-  bool IsUserManaged() const;
+  // Returns true if the user is managed and is affiliated with the domain the
+  // device is enrolled to.
+  bool IsUserAffiliated() const;
 
   // Returns the enterprise domain the device is enrolled to.
   std::string GetEnterpriseDomain() const;
