@@ -191,6 +191,10 @@ class MojoShellConnectionImpl::IOThreadContext
     factory_bindings_.CloseAllBindings();
     service_context_.reset();
 
+    ClearConnectionFiltersOnIOThread();
+  }
+
+  void ClearConnectionFiltersOnIOThread() {
     base::AutoLock lock(lock_);
     connection_filters_.clear();
   }
@@ -252,6 +256,7 @@ class MojoShellConnectionImpl::IOThreadContext
   }
 
   bool OnStop() override {
+    ClearConnectionFiltersOnIOThread();
     callback_task_runner_->PostTask(FROM_HERE, stop_callback_);
     return true;
   }

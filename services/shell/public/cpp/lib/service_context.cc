@@ -28,6 +28,8 @@ ServiceContext::ServiceContext(shell::Service* service,
       binding_(this, std::move(request)),
       connector_(std::move(connector)) {
   DCHECK(binding_.is_bound());
+  binding_.set_connection_error_handler(
+      base::Bind(&ServiceContext::OnConnectionError, base::Unretained(this)));
   if (!connector_) {
     connector_ = Connector::Create(&pending_connector_request_);
   } else {
@@ -54,10 +56,6 @@ void ServiceContext::OnStart(const shell::Identity& identity,
     initialize_handler_.Run();
 
   callback.Run(std::move(pending_connector_request_));
-
-  DCHECK(binding_.is_bound());
-  binding_.set_connection_error_handler(
-      base::Bind(&ServiceContext::OnConnectionError, base::Unretained(this)));
 
   service_->OnStart(identity_);
 }

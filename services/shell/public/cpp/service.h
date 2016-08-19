@@ -28,7 +28,7 @@ class Service {
   // Called once a bidirectional connection with the Service Manager has been
   // established.
   // |identity| is the identity of the service instance.
-  // Called exactly once before any other method.
+  // Called exactly once before any calls to OnConnect().
   virtual void OnStart(const Identity& identity);
 
   // Called when a connection to this service is brokered by the Service
@@ -48,6 +48,9 @@ class Service {
   // When used in conjunction with ApplicationRunner, returning true here quits
   // the message loop created by ApplicationRunner, which results in the service
   // quitting.
+  // No calls to either OnStart() nor OnConnect() may be received after this is
+  // called. It is however possible for this to be called without OnStart() ever
+  // having been called.
   virtual bool OnStop();
 
   Connector* connector();
