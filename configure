@@ -265,6 +265,7 @@ EXPERIMENT_LIST="
     rans
     daala_ec
     parallel_deblocking
+    cb4x4
 "
 CONFIG_LIST="
     dependency_tracking
