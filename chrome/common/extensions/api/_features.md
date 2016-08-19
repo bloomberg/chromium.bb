@@ -1,0 +1,268 @@
+# Extension Features Files
+
+[TOC]
+
+## Summary
+
+The Extension features files specify the different requirements for extension
+feature availability.
+
+An **extension feature** can be any component of extension capabilities. Most
+notably, this includes extension APIs, but there are also more structural or
+behavioral features, such as web accessible resources or event pages.
+
+## Files
+
+There are four different feature files used:
+* [\_api\_features](https://chromium.googlesource.com/chromium/src/+/master/chrome/common/extensions/api/_api_features.json):
+Specifies the requirements for API availability. If an extension doesn't satisfy
+the requirements, the API will not be accessible in the extension's code.
+* [\_permission\_features](https://chromium.googlesource.com/chromium/src/+/master/chrome/common/extensions/api/_permission_features.json):
+Specifies the requirements for permission availability. If an extension doesn't
+satisfy the requirements, the permission will not be granted and the extension
+will have an install warning.
+* [\_manifest\_features](https://chromium.googlesource.com/chromium/src/+/master/chrome/common/extensions/api/_manifest_features.json):
+Specifies the requirements for manifest entry availability. If an extension
+doesn't satisfy the requirements, the extension will fail to load with an error.
+* [\_behavior\_features](https://chromium.googlesource.com/chromium/src/+/master/chrome/common/extensions/api/_behavior_features.json):
+Specifies the requirements for miscellaneous extension behaviors. This should
+typically not be used.
+
+Note that these files may be present under chrome/common/extensions/api, as well
+as under extensions/common/api and extensions/shell/common/api.
+
+## Grammar
+
+The feature files are written in JSON. Each file contains a single JSON object
+with properties for each feature.
+
+```
+{
+  "feature1": <definition>,
+  "feature2": <definition>,
+  ...
+}
+```
+
+### Simple and Complex Features
+
+Most features are known as "simple" features. These are features whose
+definition is a single object that contains the properties describing the
+criteria for availability. A simple feature might look like this:
+```
+"feature1": {
+  "dependencies": ["permission:feature1"],
+  "contexts": ["blessed_extension"]
+}
+```
+`feature1` has a single definition, which says for it to be available, a
+permission must be present and it must be executed from a blessed context.
+(These concepts are covered more later in this document.)
+
+Features can also be "complex". A complex feature has a list of objects to
+specify multiple groups of possible properties. A complex feature could look
+like this:
+```
+"feature1": [{
+  "dependencies": ["permission:feature1"],
+  "contexts": ["blessed_extension"]
+}, {
+  "dependencies": ["permission:otherPermission"],
+  "contexts": ["blessed_extension", "unblessed_extension"]
+}]
+```
+
+With complex features, if either of the definitions are matched, the feature
+is available (in other words, the feature definitions are logically OR'd
+together). Complex features should frequently be avoided, as it makes the
+logic more involved and slower.
+
+### Inheritance
+
+By default, features inherit from parents. A feature's ancestry is specified by
+its name, where a child feature is the parent's name followed by a '.' and the
+child's name. That is, `feature1.child` is the child of `feature1`. Inheritance
+can carry for multiple levels (e.g. `feature1.child.child`), but this is rarely
+(if ever) useful.
+
+A child feature inherits all the properties of its parent, but can choose to
+override them or add additional properties. Take the example:
+```
+"feature1": {
+  "dependencies": ["permission:feature1"],
+  "contexts": ["blessed_extension"]
+},
+"feature1.child": {
+  "contexts": ["unblessed_extension"],
+  "extension_types": ["extension"]
+}
+```
+
+In this case, `feature1.child` will effectively have the properties
+```
+"dependencies": ["permission:feature1"], # inherited from feature1
+"contexts": ["unblessed_extension"],     # inherited value overridden by child
+"extension_types": ["extension]          # specified by child
+```
+
+If you don't want a child to inherit any features from the parent, add the
+property `"noparent": true`. This is useful if, for instance, you have a
+prefixed API name that isn't dependent on the prefix, such as app.window
+(which is fully separate from the app API).
+
+If the parent of a feature is a complex feature, the feature system needs to
+know which parent to inherit from. To do this, add the property
+`"default_parent": true` to one of the feature definitions in the parent
+feature.
+
+## Properties
+
+The following properties are supported in the feature system.
+
+### blacklist
+
+The `blacklist` property specifies a list of ID hashes for extensions that
+cannot access a feature. See _api_features.json for how to generate these
+hashes.
+
+Accepted values are lists of id hashes.
+
+### channel
+
+The `channel` property specifies a maximum channel for the feature availability.
+That is, specifying `dev` means that the feature is available on `dev`,
+`canary`, and `trunk`.
+
+Accepted values are a single string from `trunk`, `canary`, `dev`, `beta`, and
+`stable`.
+
+### command\_line\_switch
+
+The `command_line_switch` property specifies a command line switch that must be
+present for the feature to be available.
+
+Accepted values are a single string for the command line switch (without the
+preceeding '--').
+
+### component\_extensions\_auto\_granted
+
+The `component_extensions_auto_granted` specifies whether or not component
+extensions should be automatically granted access to the feature. By default,
+this is `true`.
+
+The only accepted value is the bool `false` (since true is the default).
+
+### contexts
+
+The `contexts` property specifies which JavaScript contexts can access the
+feature. All API features must specify at least one context, and only API
+features can specify contexts.
+
+Accepted values are a list of strings from `blessed_extension`,
+`blessed_web_page`, `content_script`, `extension_service_worker`,
+`web_page`, `webui`, and `unblessed_extension`.
+
+### default\_parent
+
+The `default_parent` property specifies a feature definition from a complex
+feature to be used as the parent for any children. See also Inheritance.
+
+The only accepted value is the bool `true`.
+
+### dependencies
+
+The `dependencies` property specifies which other features must be present in
+order to access this feature. This is useful so that you don't have to
+re-specify all the same properties on an API feature and a permission feature.
+
+A common practice is to put as many restrictions as possible in the
+permission or manifest feature so that we warn at extension load, and put
+relatively limited properties in an API feature with a dependency on the
+manifest or permission feature.
+
+To specify a dependent feature, use the prefix the feature name with the type
+of feature it is, followed by a colon. For example, in order to specify a
+dependency on a permission feature `foo`, we would add the dependency entry
+`permission:foo`.
+
+Accepted values are lists of strings specifying the dependent features.
+
+### extension\_types
+
+The `extension_types` properties specifies the different classes of extensions
+that can use the feature.  It is very common for certain features to only be
+allowed in certain extension classes, rather than available to all types.
+
+Accepted values are lists of strings from `extension`, `hosted_app`,
+`legacy_packaged_app`, `platform_app`, `shared_module`, and `theme`.
+
+### location
+
+The `location` property specifies the required install location of the
+extension.
+
+Accepted values are a single string from `component`, `external_component`, and
+`policy`.
+
+### internal
+
+The `internal` property specifies whether or not a feature is considered
+internal to Chromium. Internal features are not exposed to extensions, and can
+only be used from Chromium code.
+
+The only accepted value is the bool `true`.
+
+### matches
+
+The `matches` property specifies url patterns which should be allowed to access
+the feature. Only API features may specify `matches`, and `matches` only make
+sense with a context of either `webui` or `web_page`.
+
+Accepted values are a list of strings specifying the match patterns.
+
+### max\_manifest\_version
+
+The `max_manifest_version` property specifies the maximum manifest version to be
+allowed to access a feature. Extensions with a greater manifest version cannot
+access the feature.
+
+The only accepted value is `1`, as currently the highest possible manifest
+version is `2`.
+
+### min\_manifest\_version
+
+The `min_manifest_version` property specifies the minimum manifest version to be
+allowed to access a feature. Extensions with a lesser manifest version cannot
+access the feature.
+
+The only accepted value is `2`, as this is currently the highest possible
+manifest version.
+
+### noparent
+
+The `noparent` property specifies that a feature should not inherit any
+properties from a derived parent. See also Inheritance.
+
+The only accepted value is the bool `true`.
+
+### platforms
+
+The `platforms` property specifies the properties the feature should be
+available on.
+
+The accepted values are lists of strings from `chromeos`, `mac`, `linux`, and
+`win`.
+
+### whitelist
+
+The `whitelist` property specifies a list of ID hashes for extensions that
+are the only extensions allowed to access a feature.
+
+Accepted values are lists of id hashes.
+
+## Still to come
+
+TODO(devlin): Move documentation for how to create ID hashes, possibly move
+documentation for feature contexts, add documentation for extension types, and
+add documentation for the compilation process. Probably also more on
+requirements for individual features.
