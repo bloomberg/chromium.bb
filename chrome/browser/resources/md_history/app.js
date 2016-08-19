@@ -93,6 +93,22 @@ Polymer({
     }
   },
 
+  onFirstRender: function() {
+    // requestAnimationFrame allows measurement immediately before the next
+    // repaint, but after the first page of <iron-list> items has stamped.
+    requestAnimationFrame(function() {
+      chrome.send(
+          'metricsHandler:recordTime',
+          ['History.ResultsRenderedTime', window.performance.now()]);
+    });
+
+    // Focus the search field on load. Done here to ensure the history page
+    // is rendered before we try to take focus.
+    if (!this.hasDrawer_) {
+      this.focusToolbarSearchField();
+    }
+  },
+
   /** @private */
   onMenuTap_: function() {
     var drawer = this.$$('#drawer');
@@ -143,6 +159,13 @@ Polymer({
   },
 
   /**
+   * Focuses the search bar in the toolbar.
+   */
+  focusToolbarSearchField: function() {
+    this.$.toolbar.showSearchField();
+  },
+
+  /**
    * Fired when the user presses 'More from this site'.
    * @param {{detail: {domain: string}}} e
    */
@@ -190,7 +213,7 @@ Polymer({
    */
   onCommand_: function(e) {
     if (e.command.id == 'find-command' || e.command.id == 'slash-command')
-      this.$.toolbar.showSearchField();
+      this.focusToolbarSearchField();
     if (e.command.id == 'delete-command')
       this.deleteSelected();
   },

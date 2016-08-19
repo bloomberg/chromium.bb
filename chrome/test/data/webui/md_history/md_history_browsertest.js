@@ -84,6 +84,11 @@ TEST_F('MaterialHistoryBrowserTest', 'HistoryToolbarTest', function() {
   mocha.run();
 });
 
+TEST_F('MaterialHistoryBrowserTest', 'HistoryToolbarFocusTest', function() {
+  md_history.history_toolbar_focus_test.registerTests();
+  mocha.run();
+});
+
 TEST_F('MaterialHistoryBrowserTest', 'HistoryOverflowMenuTest', function() {
   md_history.history_overflow_menu_test.registerTests();
   mocha.run();

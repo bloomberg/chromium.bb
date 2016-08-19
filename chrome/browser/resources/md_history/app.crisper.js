@@ -8573,6 +8573,14 @@ Polymer({
       window.location.href = window.location.href.split('#')[0] + '?' + window.location.hash.substr(1);
     }
   },
+  onFirstRender: function() {
+    requestAnimationFrame(function() {
+      chrome.send('metricsHandler:recordTime', [ 'History.ResultsRenderedTime', window.performance.now() ]);
+    });
+    if (!this.hasDrawer_) {
+      this.focusToolbarSearchField();
+    }
+  },
   onMenuTap_: function() {
     var drawer = this.$$('#drawer');
     if (drawer) drawer.toggle();
@@ -8596,6 +8604,9 @@ Polymer({
     this.set('queryResult_.results', results);
     var listContainer = this.$['history'];
     listContainer.historyResult(info, results);
+  },
+  focusToolbarSearchField: function() {
+    this.$.toolbar.showSearchField();
   },
   searchDomain_: function(e) {
     this.$.toolbar.setSearchTerm(e.detail.domain);
@@ -8624,7 +8635,7 @@ Polymer({
     this.$.toolbar.setSearchTerm(searchQuery || '');
   },
   onCommand_: function(e) {
-    if (e.command.id == 'find-command' || e.command.id == 'slash-command') this.$.toolbar.showSearchField();
+    if (e.command.id == 'find-command' || e.command.id == 'slash-command') this.focusToolbarSearchField();
     if (e.command.id == 'delete-command') this.deleteSelected();
   },
   setForeignSessions: function(sessionList, isTabSyncEnabled) {

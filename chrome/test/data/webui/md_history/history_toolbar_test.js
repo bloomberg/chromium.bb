@@ -54,6 +54,7 @@ cr.define('md_history.history_toolbar_test', function() {
 
       test('shortcuts to open search field', function() {
         var field = toolbar.$['main-toolbar'].getSearchField();
+        field.blur();
         assertFalse(field.showingSearch);
 
         MockInteractions.pressAndReleaseKeyOn(
@@ -96,6 +97,57 @@ cr.define('md_history.history_toolbar_test', function() {
       });
     });
   }
+  return {
+    registerTests: registerTests
+  };
+});
+
+
+cr.define('md_history.history_toolbar_focus_test', function() {
+  function registerTests() {
+    suite('history-toolbar', function() {
+      var app;
+      var element;
+      var toolbar;
+      var TEST_HISTORY_RESULTS =
+          [createHistoryEntry('2016-03-15', 'https://google.com')];
+      ;
+
+      setup(function() {
+        app = replaceApp();
+
+        element = app.$['history'].$['infinite-list'];
+        toolbar = app.$['toolbar'];
+      });
+
+      test('search bar is focused on load in wide mode', function() {
+        window.resultsRendered = false;
+        app.hasDrawer_ = false;
+
+        historyResult(createHistoryInfo(), []);
+        return flush().then(() => {
+          // Ensure the search bar is focused on load.
+          assertTrue(
+              app.$.toolbar.$['main-toolbar']
+                  .getSearchField()
+                  .isSearchFocused());
+        });
+      });
+
+      test('search bar is not focused on load in narrow mode', function() {
+        app.hasDrawer_ = true;
+
+        historyResult(createHistoryInfo(), []);
+        // Ensure the search bar is focused on load.
+        assertFalse(
+            $('history-app')
+                .$.toolbar.$['main-toolbar']
+                .getSearchField()
+                .isSearchFocused());
+      });
+    });
+  };
+
   return {
     registerTests: registerTests
   };

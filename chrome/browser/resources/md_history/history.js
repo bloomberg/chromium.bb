@@ -38,19 +38,13 @@ function waitForAppUpgrade() {
  */
 function historyResult(info, results) {
   waitForAppUpgrade().then(function() {
-    /** @type {HistoryAppElement} */($('history-app'))
-        .historyResult(info, results);
+    var app = /** @type {HistoryAppElement} */($('history-app'));
+    app.historyResult(info, results);
     document.body.classList.remove('loading');
 
     if (!resultsRendered) {
       resultsRendered = true;
-      // requestAnimationFrame allows measurement immediately before the next
-      // repaint, but after the first page of <iron-list> items has stamped.
-      requestAnimationFrame(function() {
-        chrome.send(
-            'metricsHandler:recordTime',
-            ['History.ResultsRenderedTime', window.performance.now()]);
-      });
+      app.onFirstRender();
     }
   });
 }
