@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -1298,6 +1299,167 @@ TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
   result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
+
+class GLES2ReadPixelsAsyncTest : public GLES2DecoderManualInitTest {
+ public:
+  void SetUp() override {
+    InitState init;
+    init.extensions = "GL_ARB_sync";
+    init.gl_version = "opengl es 3.0";
+    init.has_alpha = true;
+    init.request_alpha = true;
+    init.bind_generates_resource = true;
+    InitDecoder(init);
+  }
+
+  void SetupReadPixelsAsyncExpectation(GLsizei width, GLsizei height) {
+    const size_t kBufferSize = width * height * 4;
+    EXPECT_CALL(*gl_, GetError())
+        .WillRepeatedly(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_,
+                ReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, _))
+        .Times(1);
+    EXPECT_CALL(*gl_, GenBuffersARB(1, _))
+        .WillOnce(SetArgPointee<1>(kServiceBufferId))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, kServiceBufferId))
+        .Times(1);
+    EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0)).Times(1);
+    EXPECT_CALL(*gl_, BufferData(GL_PIXEL_PACK_BUFFER_ARB, kBufferSize, NULL,
+                                 GL_STREAM_READ))
+        .Times(1);
+    GLsync sync = reinterpret_cast<GLsync>(kServiceSyncId);
+    EXPECT_CALL(*gl_, FenceSync(0x9117, 0)).WillOnce(Return(sync));
+    EXPECT_CALL(*gl_, IsSync(sync)).WillRepeatedly(Return(GL_TRUE));
+    EXPECT_CALL(*gl_, Flush()).Times(1);
+  }
+
+  void FinishReadPixelsAndCheckResult(GLsizei width,
+                                      GLsizei height,
+                                      char* pixels) {
+    EXPECT_TRUE(decoder_->HasMoreIdleWork());
+
+    const size_t kBufferSize = width * height * 4;
+    auto buffer = base::MakeUnique<char[]>(kBufferSize);
+    for (size_t i = 0; i < kBufferSize; ++i)
+      buffer[i] = i;
+
+    GLsync sync = reinterpret_cast<GLsync>(kServiceSyncId);
+    EXPECT_CALL(*gl_, ClientWaitSync(sync, 0, 0))
+        .WillOnce(Return(GL_CONDITION_SATISFIED));
+    EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, kServiceBufferId))
+        .Times(1);
+    EXPECT_CALL(*gl_, MapBufferRange(GL_PIXEL_PACK_BUFFER_ARB, 0, kBufferSize,
+                                     GL_MAP_READ_BIT))
+        .WillOnce(Return(buffer.get()))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, UnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB)).Times(1);
+    EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0)).Times(1);
+    EXPECT_CALL(*gl_, DeleteBuffersARB(1, _)).Times(1);
+    EXPECT_CALL(*gl_, DeleteSync(sync)).Times(1);
+    decoder_->PerformIdleWork();
+    EXPECT_FALSE(decoder_->HasMoreIdleWork());
+    EXPECT_EQ(0, memcmp(pixels, buffer.get(), kBufferSize));
+  }
+};
+
+TEST_P(GLES2ReadPixelsAsyncTest, ReadPixelsAsync) {
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_offset = kSharedMemoryOffset;
+  uint32_t pixels_shm_id = kSharedMemoryId;
+  uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
+  char* pixels = reinterpret_cast<char*>(result + 1);
+
+  SetupReadPixelsAsyncExpectation(kWidth, kHeight);
+
+  ReadPixels cmd;
+  cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels_shm_id,
+           pixels_shm_offset, result_shm_id, result_shm_offset, true);
+  result->success = 0;
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_TRUE(decoder_->HasMoreIdleWork());
+
+  GLsync sync = reinterpret_cast<GLsync>(kServiceSyncId);
+  EXPECT_CALL(*gl_, ClientWaitSync(sync, 0, 0))
+      .WillOnce(Return(GL_TIMEOUT_EXPIRED));
+  decoder_->PerformIdleWork();
+
+  FinishReadPixelsAndCheckResult(kWidth, kHeight, pixels);
+}
+
+TEST_P(GLES2ReadPixelsAsyncTest, ReadPixelsAsyncModifyCommand) {
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_offset = kSharedMemoryOffset;
+  uint32_t pixels_shm_id = kSharedMemoryId;
+  uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
+  char* pixels = reinterpret_cast<char*>(result + 1);
+
+  SetupReadPixelsAsyncExpectation(kWidth, kHeight);
+
+  ReadPixels cmd;
+  cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels_shm_id,
+           pixels_shm_offset, result_shm_id, result_shm_offset, true);
+  result->success = 0;
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_TRUE(decoder_->HasMoreIdleWork());
+
+  // Change command after ReadPixels issued, but before we finish the read,
+  // should have no impact.
+  cmd.Init(1, 2, 6, 7, GL_RGB, GL_UNSIGNED_SHORT, pixels_shm_id,
+           pixels_shm_offset, result_shm_id, result_shm_offset, false);
+
+  FinishReadPixelsAndCheckResult(kWidth, kHeight, pixels);
+}
+
+TEST_P(GLES2ReadPixelsAsyncTest, ReadPixelsAsyncChangePackAlignment) {
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  const GLsizei kWidth = 1;
+  const GLsizei kHeight = 4;
+  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_offset = kSharedMemoryOffset;
+  uint32_t pixels_shm_id = kSharedMemoryId;
+  uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
+  char* pixels = reinterpret_cast<char*>(result + 1);
+
+  SetupReadPixelsAsyncExpectation(kWidth, kHeight);
+
+  {
+    ReadPixels cmd;
+    cmd.Init(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels_shm_id,
+             pixels_shm_offset, result_shm_id, result_shm_offset, true);
+    result->success = 0;
+
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  }
+  EXPECT_TRUE(decoder_->HasMoreIdleWork());
+
+  // Changing the pack alignment after the ReadPixels is issued but before we
+  // finish the read should have no impact.
+  {
+    PixelStorei cmd;
+    cmd.Init(GL_PACK_ALIGNMENT, 8);
+
+    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, 8)).Times(1);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  }
+
+  FinishReadPixelsAndCheckResult(kWidth, kHeight, pixels);
+}
+
+INSTANTIATE_TEST_CASE_P(Service, GLES2ReadPixelsAsyncTest, ::testing::Bool());
 
 // Check that if a renderbuffer is attached and GL returns
 // GL_FRAMEBUFFER_COMPLETE that the buffer is cleared and state is restored.

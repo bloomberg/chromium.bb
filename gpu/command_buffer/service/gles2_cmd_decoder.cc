@@ -370,23 +370,6 @@ class ScopedResolvedFrameBufferBinder {
   DISALLOW_COPY_AND_ASSIGN(ScopedResolvedFrameBufferBinder);
 };
 
-// When an instance of this class is created, it uses copyTexImage2D to copy the
-// contents of the framebuffer into a texture. This texture is then bound to a
-// new framebuffer. When the instance is destroyed, the original texture and
-// framebuffer are restored.
-class ScopedFrameBufferReadPixelHelper {
- public:
-  ScopedFrameBufferReadPixelHelper(ContextState* state,
-                                   GLES2DecoderImpl* decoder);
-  ~ScopedFrameBufferReadPixelHelper();
-
- private:
-  GLuint temp_texture_id_ = 0;
-  GLuint temp_fbo_id_ = 0;
-  std::unique_ptr<ScopedFrameBufferBinder> fbo_binder_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedFrameBufferReadPixelHelper);
-};
-
 // Encapsulates an OpenGL texture.
 class BackTexture {
  public:
@@ -728,7 +711,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
  private:
   friend class ScopedFrameBufferBinder;
-  friend class ScopedFrameBufferReadPixelHelper;
   friend class ScopedResolvedFrameBufferBinder;
   friend class BackFramebuffer;
   friend class BackRenderbuffer;
@@ -2043,7 +2025,17 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
 
   void ProcessPendingReadPixels(bool did_finish);
-  void FinishReadPixels(const cmds::ReadPixels& c, GLuint buffer);
+  void FinishReadPixels(GLsizei width,
+                        GLsizei height,
+                        GLsizei format,
+                        GLsizei type,
+                        uint32_t pixels_shm_id,
+                        uint32_t pixels_shm_offset,
+                        uint32_t result_shm_id,
+                        uint32_t result_shm_offset,
+                        GLint pack_alignment,
+                        GLenum read_format,
+                        GLuint buffer);
 
   // Checks to see if the inserted fence has completed.
   void ProcessDescheduleUntilFinished();
@@ -2514,41 +2506,6 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
   if (decoder_->state_.enable_flags.scissor_test) {
     decoder_->state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
   }
-}
-
-ScopedFrameBufferReadPixelHelper::ScopedFrameBufferReadPixelHelper(
-    ContextState* state,
-    GLES2DecoderImpl* decoder) {
-  DCHECK_EQ(static_cast<unsigned>(GL_FRAMEBUFFER_COMPLETE),
-            glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
-
-  const Framebuffer::Attachment* attachment =
-      decoder->GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT)
-          ->GetReadBufferAttachment();
-  GLsizei width = attachment->width();
-  GLsizei height = attachment->height();
-
-  glGenTextures(1, &temp_texture_id_);
-  glGenFramebuffersEXT(1, &temp_fbo_id_);
-  {
-    ScopedTextureBinder binder(state, temp_texture_id_, GL_TEXTURE_2D);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, width, height, 0);
-
-    fbo_binder_.reset(new ScopedFrameBufferBinder(decoder, temp_fbo_id_));
-  }
-
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                            temp_texture_id_, 0);
-}
-
-ScopedFrameBufferReadPixelHelper::~ScopedFrameBufferReadPixelHelper() {
-  fbo_binder_.reset();
-  glDeleteTextures(1, &temp_texture_id_);
-  glDeleteFramebuffersEXT(1, &temp_fbo_id_);
 }
 
 BackTexture::BackTexture(GLES2DecoderImpl* decoder)
@@ -10353,20 +10310,24 @@ static void WriteAlphaData(void* pixels,
   }
 }
 
-void GLES2DecoderImpl::FinishReadPixels(
-    const cmds::ReadPixels& c,
-    GLuint buffer) {
+void GLES2DecoderImpl::FinishReadPixels(GLsizei width,
+                                        GLsizei height,
+                                        GLsizei format,
+                                        GLsizei type,
+                                        uint32_t pixels_shm_id,
+                                        uint32_t pixels_shm_offset,
+                                        uint32_t result_shm_id,
+                                        uint32_t result_shm_offset,
+                                        GLint pack_alignment,
+                                        GLenum read_format,
+                                        GLuint buffer) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::FinishReadPixels");
-  GLsizei width = c.width;
-  GLsizei height = c.height;
-  GLenum format = c.format;
-  GLenum type = c.type;
   typedef cmds::ReadPixels::Result Result;
   uint32_t pixels_size;
   Result* result = NULL;
-  if (c.result_shm_id != 0) {
-    result = GetSharedMemoryAs<Result*>(
-        c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  if (result_shm_id != 0) {
+    result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
+                                        sizeof(*result));
     if (!result) {
       if (buffer != 0) {
         glDeleteBuffersARB(1, &buffer);
@@ -10374,11 +10335,10 @@ void GLES2DecoderImpl::FinishReadPixels(
       return;
     }
   }
-  GLES2Util::ComputeImageDataSizes(
-      width, height, 1, format, type, state_.pack_alignment, &pixels_size,
-      NULL, NULL);
-  void* pixels = GetSharedMemoryAs<void*>(
-      c.pixels_shm_id, c.pixels_shm_offset, pixels_size);
+  GLES2Util::ComputeImageDataSizes(width, height, 1, format, type,
+                                   pack_alignment, &pixels_size, NULL, NULL);
+  void* pixels =
+      GetSharedMemoryAs<void*>(pixels_shm_id, pixels_shm_offset, pixels_size);
   if (!pixels) {
     if (buffer != 0) {
       glDeleteBuffersARB(1, &buffer);
@@ -10411,7 +10371,6 @@ void GLES2DecoderImpl::FinishReadPixels(
     result->success = 1;
   }
 
-  GLenum read_format = GetBoundReadFrameBufferInternalFormat();
   uint32_t channels_exist = GLES2Util::GetChannelsForFormat(read_format);
   if ((channels_exist & 0x0008) == 0 &&
       workarounds().clear_alpha_in_readpixels) {
@@ -10421,7 +10380,7 @@ void GLES2DecoderImpl::FinishReadPixels(
     uint32_t unpadded_row_size;
     uint32_t padded_row_size;
     if (!GLES2Util::ComputeImageDataSizes(
-            width, 2, 1, format, type, state_.pack_alignment, &temp_size,
+            width, 2, 1, format, type, pack_alignment, &temp_size,
             &unpadded_row_size, &padded_row_size)) {
       return;
     }
@@ -10685,7 +10644,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glReadPixels");
 
   ScopedResolvedFrameBufferBinder binder(this, false, true);
-  std::unique_ptr<ScopedFrameBufferReadPixelHelper> helper;
+  GLenum read_format = GetBoundReadFrameBufferInternalFormat();
 
   gfx::Rect rect(x, y, width, height);  // Safe before we checked above.
   gfx::Rect max_rect(max_size);
@@ -10738,8 +10697,11 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         // sent to GL.
         glReadPixels(x, y, width, height, format, type, 0);
         pending_readpixel_fences_.push(FenceCallback());
-        WaitForReadPixels(base::Bind(&GLES2DecoderImpl::FinishReadPixels,
-                                     base::AsWeakPtr(this), c, buffer));
+        WaitForReadPixels(base::Bind(
+            &GLES2DecoderImpl::FinishReadPixels, base::AsWeakPtr(this), width,
+            height, format, type, pixels_shm_id, pixels_shm_offset,
+            result_shm_id, result_shm_offset, state_.pack_alignment,
+            read_format, buffer));
         glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
         return error::kNoError;
       } else {
@@ -10789,7 +10751,9 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         result->row_length = static_cast<uint32_t>(rect.width());
         result->num_rows = static_cast<uint32_t>(rect.height());
       }
-      FinishReadPixels(c, 0);
+      FinishReadPixels(width, height, format, type, pixels_shm_id,
+                       pixels_shm_offset, result_shm_id, result_shm_offset,
+                       state_.pack_alignment, read_format, 0);
     }
   }
 
