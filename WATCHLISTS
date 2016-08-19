@@ -1789,7 +1789,6 @@
     'midi': ['toyoshim+midi@chromium.org'],
     'mojo': ['aa@chromium.org',
              'abarth@chromium.org',
-             'ben+mojo@chromium.org',
              'darin@chromium.org',
              'qsr+mojo@chromium.org',
              'viettrungluu+watch@chromium.org',
