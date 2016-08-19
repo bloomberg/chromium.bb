@@ -217,6 +217,11 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
                                     uint8_t active_configuration) {
   DCHECK(CalledOnValidThread());
 
+  if (ContainsKey(devices_by_path_, device_path)) {
+    USB_LOG(ERROR) << "Got duplicate add event for path: " << device_path;
+    return;
+  }
+
   // Devices that appear during initial enumeration are gathered into the first
   // result returned by GetDevices() and prevent device add/remove notifications
   // from being sent.
@@ -250,20 +255,20 @@ void UsbServiceLinux::DeviceReady(scoped_refptr<UsbDeviceLinux> device,
   // If |device| was disconnected while descriptors were being read then it
   // will have been removed from |devices_by_path_|.
   auto it = devices_by_path_.find(device->device_path());
-  if (it != devices_by_path_.end()) {
-    if (success) {
-      DCHECK(!base::ContainsKey(devices(), device->guid()));
-      devices()[device->guid()] = device;
+  if (it == devices_by_path_.end()) {
+    success = false;
+  } else if (success) {
+    DCHECK(!base::ContainsKey(devices(), device->guid()));
+    devices()[device->guid()] = device;
 
-      USB_LOG(USER) << "USB device added: path=" << device->device_path()
-                    << " vendor=" << device->vendor_id() << " \""
-                    << device->manufacturer_string()
-                    << "\", product=" << device->product_id() << " \""
-                    << device->product_string() << "\", serial=\""
-                    << device->serial_number() << "\", guid=" << device->guid();
-    } else {
-      devices_by_path_.erase(it);
-    }
+    USB_LOG(USER) << "USB device added: path=" << device->device_path()
+                  << " vendor=" << device->vendor_id() << " \""
+                  << device->manufacturer_string()
+                  << "\", product=" << device->product_id() << " \""
+                  << device->product_string() << "\", serial=\""
+                  << device->serial_number() << "\", guid=" << device->guid();
+  } else {
+    devices_by_path_.erase(it);
   }
 
   if (enumeration_became_ready) {
