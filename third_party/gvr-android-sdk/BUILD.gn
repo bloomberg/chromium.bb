@@ -4,6 +4,11 @@
 
 import("//build/config/android/rules.gni")
 
+gvr_arch = current_cpu
+if (gvr_arch == "x64") {
+  gvr_arch = "x86_64"
+}
+
 android_aar_prebuilt("gvr_common_java") {
   aar_path = "src/ndk-beta/lib/common_library.aar"
   jar_excluded_patterns = [ "*/protobuf/*" ]
@@ -18,30 +23,16 @@ android_aar_prebuilt("gvr_controller_java") {
 }
 
 source_set("libgvr") {
-  deps = [
-    ":libgvr_shared_library",
+  data_deps = [
+    ":libgvr_copy",
   ]
-  libs = [ "$root_out_dir/libgvr.so" ]
+  libs = [ "${root_out_dir}/libgvr.so" ]
 }
 
-copy("libgvr_shared_library") {
-  if (target_cpu == "arm") {
-    sources = [
-      "src/ndk-beta/lib/android_arm/libgvr.so",
-    ]
-  } else if (target_cpu == "arm64") {
-    sources = [
-      "src/ndk-beta/lib/android_arm64/libgvr.so",
-    ]
-  } else if (target_cpu == "x86") {
-    sources = [
-      "src/ndk-beta/lib/android_x86/libgvr.so",
-    ]
-  } else if (target_cpu == "x64") {
-    sources = [
-      "src/ndk-beta/lib/android_x86_64/libgvr.so",
-    ]
-  }
+copy("libgvr_copy") {
+  sources = [
+    "src/ndk-beta/lib/android_${gvr_arch}/libgvr.so",
+  ]
   outputs = [
     "${root_out_dir}/libgvr.so",
   ]

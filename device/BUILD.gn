@@ -63,8 +63,6 @@ test("device_unittests") {
     "nfc/nfc_chromeos_unittest.cc",
     "nfc/nfc_ndef_record_unittest.cc",
     "test/run_all_unittests.cc",
-    "vr/vr_device_manager_unittest.cc",
-    "vr/vr_service_impl_unittest.cc",
   ]
 
   deps = [
@@ -78,9 +76,6 @@ test("device_unittests") {
     "//device/geolocation:unittests",
     "//device/nfc",
     "//device/power_save_blocker",
-    "//device/vr",
-    "//device/vr:fakes",
-    "//device/vr:mojo_bindings",
     "//mojo/common",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
@@ -223,6 +218,19 @@ test("device_unittests") {
       "bluetooth/bluetooth_classic_win_fake.h",
       "bluetooth/bluetooth_low_energy_win_fake.cc",
       "bluetooth/bluetooth_low_energy_win_fake.h",
+    ]
+  }
+
+  if (enable_webvr) {
+    sources += [
+      "vr/vr_device_manager_unittest.cc",
+      "vr/vr_service_impl_unittest.cc",
+    ]
+
+    deps += [
+      "//device/vr",
+      "//device/vr:fakes",
+      "//device/vr:mojo_bindings",
     ]
   }
 }

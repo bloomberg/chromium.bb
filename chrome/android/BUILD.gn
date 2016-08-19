@@ -541,6 +541,10 @@ template("chrome_public_apk_tmpl_shared") {
       ":chrome_public_apk_resources",
       "//base:base_java",
     ]
+
+    if (enable_webvr && !is_java_debug) {
+      proguard_configs = [ "//third_party/gvr-android-sdk/proguard/base.flags" ]
+    }
   }
 }
 
