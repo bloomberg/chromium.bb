@@ -11,9 +11,27 @@
 #include "base/values.h"
 #include "net/log/net_log.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace net {
 
 namespace {
+
+// Returns a human readable integer from a NetworkHandle.
+int HumanReadableNetworkHandle(NetworkChangeNotifier::NetworkHandle network) {
+#if defined(OS_ANDROID)
+  // On Marshmallow, demunge the NetID to undo munging done in java
+  // Network.getNetworkHandle() by shifting away 0xfacade from
+  // http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/net/Network.java#385
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_MARSHMALLOW) {
+    return network >> 32;
+  }
+#endif
+  return network;
+}
 
 // Return a dictionary of values that provide information about a
 // network-specific change. This also includes relevant current state
@@ -22,18 +40,21 @@ std::unique_ptr<base::Value> NetworkSpecificNetLogCallback(
     NetworkChangeNotifier::NetworkHandle network,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("changed_network_handle", network);
+  dict->SetInteger("changed_network_handle",
+                   HumanReadableNetworkHandle(network));
   dict->SetString(
       "changed_network_type",
       NetworkChangeNotifier::ConnectionTypeToString(
           NetworkChangeNotifier::GetNetworkConnectionType(network)));
-  dict->SetInteger("default_active_network_handle",
-                   NetworkChangeNotifier::GetDefaultNetwork());
+  dict->SetInteger(
+      "default_active_network_handle",
+      HumanReadableNetworkHandle(NetworkChangeNotifier::GetDefaultNetwork()));
   NetworkChangeNotifier::NetworkList networks;
   NetworkChangeNotifier::GetConnectedNetworks(&networks);
   for (NetworkChangeNotifier::NetworkHandle active_network : networks) {
     dict->SetString(
-        "current_active_networks." + base::IntToString(active_network),
+        "current_active_networks." +
+            base::IntToString(HumanReadableNetworkHandle(active_network)),
         NetworkChangeNotifier::ConnectionTypeToString(
             NetworkChangeNotifier::GetNetworkConnectionType(active_network)));
   }
