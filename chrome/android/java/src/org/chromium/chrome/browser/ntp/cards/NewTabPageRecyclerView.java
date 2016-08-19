@@ -218,7 +218,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
         refreshBottomSpacing();
     }
 
-    private NewTabPageAdapter getNewTabPageAdapter() {
+    public NewTabPageAdapter getNewTabPageAdapter() {
         return (NewTabPageAdapter) getAdapter();
     }
 
@@ -271,7 +271,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * Finds the above the fold view.
      * @return The View for above the fold or null, if it is not present.
      */
-    private NewTabPageLayout findAboveTheFoldView() {
+    public NewTabPageLayout findAboveTheFoldView() {
         ViewHolder viewHolder =
                 findViewHolderForAdapterPosition(getNewTabPageAdapter().getAboveTheFoldPosition());
         if (viewHolder == null) return null;

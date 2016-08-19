@@ -74,9 +74,4 @@ public class DisplayStyleObserverAdapter
     public void onViewDetachedFromWindow(View v) {
         mIsViewAttached = false;
     }
-
-    @UiConfig.DisplayStyle
-    public int getDisplayStyle() {
-        return mCurrentDisplayStyle;
-    }
 }
