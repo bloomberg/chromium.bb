@@ -74,7 +74,7 @@ __gCrWeb.autofill.MAX_DATA_LENGTH = 1024;
  *
  * @const {number}
  */
-__gCrWeb.autofill.MAX_PARSEABLE_FIELDS = 100;
+__gCrWeb.autofill.MAX_PARSEABLE_FIELDS = 200;
 
 /**
  * A bit field mask to extract data from WebFormControlElement for
