@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/test/fuzzed_data_provider.h"
 #include "net/base/address_list.h"
-#include "net/base/fuzzed_data_provider.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/host_resolver.h"
@@ -27,7 +27,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Use a test NetLog, to exercise logging code.
   net::TestNetLog test_net_log;
 
-  net::FuzzedDataProvider data_provider(data, size);
+  base::FuzzedDataProvider data_provider(data, size);
 
   // Determine if the DNS lookup returns synchronously or asynchronously,
   // succeeds or fails, and returns an IPv4 or IPv6 address.

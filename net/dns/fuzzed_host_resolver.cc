@@ -14,9 +14,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/fuzzed_data_provider.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/address_list.h"
-#include "net/base/fuzzed_data_provider.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -29,19 +29,19 @@ namespace net {
 namespace {
 
 // Returns a fuzzed non-zero port number.
-uint16_t FuzzPort(FuzzedDataProvider* data_provider) {
+uint16_t FuzzPort(base::FuzzedDataProvider* data_provider) {
   return data_provider->ConsumeUint16();
 }
 
 // Returns a fuzzed IPv4 address.  Can return invalid / reserved addresses.
-IPAddress FuzzIPv4Address(FuzzedDataProvider* data_provider) {
+IPAddress FuzzIPv4Address(base::FuzzedDataProvider* data_provider) {
   return IPAddress(data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
                    data_provider->ConsumeUint8(),
                    data_provider->ConsumeUint8());
 }
 
 // Returns a fuzzed IPv6 address.  Can return invalid / reserved addresses.
-IPAddress FuzzIPv6Address(FuzzedDataProvider* data_provider) {
+IPAddress FuzzIPv6Address(base::FuzzedDataProvider* data_provider) {
   return IPAddress(data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
                    data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
                    data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
@@ -55,7 +55,7 @@ IPAddress FuzzIPv6Address(FuzzedDataProvider* data_provider) {
 
 // Returns a fuzzed address, which can be either IPv4 or IPv6.  Can return
 // invalid / reserved addresses.
-IPAddress FuzzIPAddress(FuzzedDataProvider* data_provider) {
+IPAddress FuzzIPAddress(base::FuzzedDataProvider* data_provider) {
   if (data_provider->ConsumeBool())
     return FuzzIPv4Address(data_provider);
   return FuzzIPv6Address(data_provider);
@@ -69,7 +69,7 @@ class FuzzedHostResolverProc : public HostResolverProc {
   // happen if a request is issued but the code never waits for the result
   // before the test ends.
   explicit FuzzedHostResolverProc(
-      base::WeakPtr<FuzzedDataProvider> data_provider)
+      base::WeakPtr<base::FuzzedDataProvider> data_provider)
       : HostResolverProc(nullptr),
         data_provider_(data_provider),
         network_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
@@ -127,7 +127,7 @@ class FuzzedHostResolverProc : public HostResolverProc {
  private:
   ~FuzzedHostResolverProc() override {}
 
-  base::WeakPtr<FuzzedDataProvider> data_provider_;
+  base::WeakPtr<base::FuzzedDataProvider> data_provider_;
 
   // Just used for thread-safety checks.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
@@ -139,7 +139,7 @@ class FuzzedHostResolverProc : public HostResolverProc {
 
 FuzzedHostResolver::FuzzedHostResolver(const Options& options,
                                        NetLog* net_log,
-                                       FuzzedDataProvider* data_provider)
+                                       base::FuzzedDataProvider* data_provider)
     : HostResolverImpl(options, net_log, base::ThreadTaskRunnerHandle::Get()),
       data_provider_(data_provider),
       socket_factory_(data_provider),
@@ -217,7 +217,7 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
 
   std::unique_ptr<DnsClient> dns_client = DnsClient::CreateClientForTesting(
       net_log_, &socket_factory_,
-      base::Bind(&FuzzedDataProvider::ConsumeInt32InRange,
+      base::Bind(&base::FuzzedDataProvider::ConsumeInt32InRange,
                  base::Unretained(data_provider_)));
   dns_client->SetConfig(config);
   SetDnsClient(std::move(dns_client));

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/fuzzed_data_provider.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -123,7 +124,8 @@ class FailingSSLClientSocket : public SSLClientSocket {
 
 }  // namespace
 
-FuzzedSocketFactory::FuzzedSocketFactory(FuzzedDataProvider* data_provider)
+FuzzedSocketFactory::FuzzedSocketFactory(
+    base::FuzzedDataProvider* data_provider)
     : data_provider_(data_provider) {}
 
 FuzzedSocketFactory::~FuzzedSocketFactory() {}

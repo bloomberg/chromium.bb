@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/bindings/core/v8/generated.gni")
 import("//third_party/WebKit/Source/bindings/modules/modules.gni")
@@ -1113,4 +1114,15 @@ action_foreach("make_core_generated_bison") {
   ]
 
   deps = make_core_generated_deps
+}
+
+# Fuzzer for blink::TextResourceDecoder.
+fuzzer_test("text_resource_decoder_fuzzer") {
+  sources = [
+    "html/parser/TextResourceDecoderFuzzer.cpp",
+  ]
+  deps = [
+    ":core",
+    "../platform:test_support",
+  ]
 }

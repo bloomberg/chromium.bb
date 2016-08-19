@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/fuzzed_data_provider.h"
+#include "base/test/fuzzed_data_provider.h"
 
 #include <algorithm>
 #include <limits>
 
 #include "base/logging.h"
 
-namespace net {
+namespace base {
 
 FuzzedDataProvider::FuzzedDataProvider(const uint8_t* data, size_t size)
     : remaining_data_(reinterpret_cast<const char*>(data), size) {}
 
 FuzzedDataProvider::~FuzzedDataProvider() {}
 
-base::StringPiece FuzzedDataProvider::ConsumeBytes(size_t num_bytes) {
+StringPiece FuzzedDataProvider::ConsumeBytes(size_t num_bytes) {
   num_bytes = std::min(num_bytes, remaining_data_.length());
-  base::StringPiece result(remaining_data_.data(), num_bytes);
+  StringPiece result(remaining_data_.data(), num_bytes);
   remaining_data_ = remaining_data_.substr(num_bytes);
   return result;
 }
 
-base::StringPiece FuzzedDataProvider::ConsumeRemainingBytes() {
+StringPiece FuzzedDataProvider::ConsumeRemainingBytes() {
   return ConsumeBytes(remaining_data_.length());
 }
 
@@ -73,4 +73,4 @@ uint16_t FuzzedDataProvider::ConsumeUint16() {
   return ConsumeUint32InRange(0, 0xFFFF);
 }
 
-}  // namespace net
+}  // namespace base

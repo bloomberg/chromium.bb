@@ -1387,6 +1387,8 @@
       'testing/FakeGraphicsLayerClient.h',
       'testing/FontTestHelpers.cpp',
       'testing/FontTestHelpers.h',
+      'testing/FuzzedDataProvider.cpp',
+      'testing/FuzzedDataProvider.h',
       'testing/GeometryPrinters.cpp',
       'testing/GeometryPrinters.h',
       'testing/HistogramTester.cpp',

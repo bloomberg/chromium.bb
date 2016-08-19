@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/run_loop.h"
-#include "net/base/fuzzed_data_provider.h"
+#include "base/test/fuzzed_data_provider.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/url_request.h"
@@ -40,7 +40,7 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
   }
 
   int CreateAndReadFromDataURLRequest(const uint8_t* data, size_t size) {
-    net::FuzzedDataProvider provider(data, size);
+    base::FuzzedDataProvider provider(data, size);
     read_lengths_.clear();
 
     // Allocate an IOBuffer with fuzzed size.

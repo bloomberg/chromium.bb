@@ -79,8 +79,7 @@ public:
     bool sawError() const { return m_sawError; }
     size_t checkForBOM(const char*, size_t);
 
-private:
-
+protected:
     // TextResourceDecoder does three kind of encoding detection:
     // 1. By BOM,
     // 2. By Content if |m_contentType| is not |PlainTextContext|
@@ -103,6 +102,7 @@ private:
 
     TextResourceDecoder(const String& mimeType, const WTF::TextEncoding& defaultEncoding, EncodingDetectionOption);
 
+private:
     enum ContentType { PlainTextContent, HTMLContent, XMLContent, CSSContent }; // PlainText only checks for BOM.
     static ContentType determineContentType(const String& mimeType);
     static const WTF::TextEncoding& defaultEncoding(ContentType, const WTF::TextEncoding& defaultEncoding);

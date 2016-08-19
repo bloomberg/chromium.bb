@@ -16,9 +16,12 @@
 #include "net/log/net_log.h"
 #include "net/socket/stream_socket.h"
 
+namespace base {
+class FuzzedDataProvider;
+}
+
 namespace net {
 
-class FuzzedDataProvider;
 class IPEndPoint;
 class IOBuffer;
 
@@ -38,7 +41,7 @@ class FuzzedSocket : public StreamSocket {
  public:
   // |data_provider| is used as to determine behavior of the FuzzedSocket. It
   // must remain valid until after the FuzzedSocket is destroyed.
-  FuzzedSocket(FuzzedDataProvider* data_provider, net::NetLog* net_log);
+  FuzzedSocket(base::FuzzedDataProvider* data_provider, net::NetLog* net_log);
   ~FuzzedSocket() override;
 
   // If set to true, the socket will fuzz the result of the Connect() call.
@@ -92,7 +95,7 @@ class FuzzedSocket : public StreamSocket {
   void OnWriteComplete(const CompletionCallback& callback, int result);
   void OnConnectComplete(const CompletionCallback& callback, int result);
 
-  FuzzedDataProvider* data_provider_;
+  base::FuzzedDataProvider* data_provider_;
 
   // If true, the result of the Connect() call is fuzzed - it can succeed or
   // fail with a variety of connection errors, and it can complete synchronously

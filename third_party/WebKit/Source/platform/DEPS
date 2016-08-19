@@ -3,6 +3,7 @@ include_rules = [
     # directories and files instead of writing 'base/'.
     "+base/bind.h",
     "+base/files",
+    "+base/test/fuzzed_data_provider.h",
     "+base/guid.h",
     "+base/json",
     "+base/location.h",

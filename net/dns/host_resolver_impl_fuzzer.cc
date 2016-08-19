@@ -11,9 +11,9 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/test/fuzzed_data_provider.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
-#include "net/base/fuzzed_data_provider.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/dns/fuzzed_host_resolver.h"
@@ -33,7 +33,7 @@ net::AddressFamily kAddressFamilies[] = {
 class DnsRequest {
  public:
   DnsRequest(net::HostResolver* host_resolver,
-             net::FuzzedDataProvider* data_provider,
+             base::FuzzedDataProvider* data_provider,
              std::vector<std::unique_ptr<DnsRequest>>* dns_requests)
       : host_resolver_(host_resolver),
         data_provider_(data_provider),
@@ -46,7 +46,7 @@ class DnsRequest {
   // doesn't complete synchronously, adds it to |dns_requests|.
   static void CreateRequest(
       net::HostResolver* host_resolver,
-      net::FuzzedDataProvider* data_provider,
+      base::FuzzedDataProvider* data_provider,
       std::vector<std::unique_ptr<DnsRequest>>* dns_requests) {
     std::unique_ptr<DnsRequest> dns_request(
         new DnsRequest(host_resolver, data_provider, dns_requests));
@@ -58,7 +58,7 @@ class DnsRequest {
   // If |dns_requests| is non-empty, waits for a randomly chosen one of the
   // requests to complete and removes it from |dns_requests|.
   static void WaitForRequestComplete(
-      net::FuzzedDataProvider* data_provider,
+      base::FuzzedDataProvider* data_provider,
       std::vector<std::unique_ptr<DnsRequest>>* dns_requests) {
     if (dns_requests->empty())
       return;
@@ -77,7 +77,7 @@ class DnsRequest {
   // complete, just removes it from the list.
   static void CancelRequest(
       net::HostResolver* host_resolver,
-      net::FuzzedDataProvider* data_provider,
+      base::FuzzedDataProvider* data_provider,
       std::vector<std::unique_ptr<DnsRequest>>* dns_requests) {
     if (dns_requests->empty())
       return;
@@ -174,7 +174,7 @@ class DnsRequest {
   }
 
   net::HostResolver* host_resolver_;
-  net::FuzzedDataProvider* data_provider_;
+  base::FuzzedDataProvider* data_provider_;
   std::vector<std::unique_ptr<DnsRequest>>* dns_requests_;
 
   std::unique_ptr<net::HostResolver::Request> request_;
@@ -198,7 +198,7 @@ class DnsRequest {
 //     async resolver while lookups are active as a result of the change.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   {
-    net::FuzzedDataProvider data_provider(data, size);
+    base::FuzzedDataProvider data_provider(data, size);
     net::TestNetLog net_log;
 
     net::HostResolver::Options options;

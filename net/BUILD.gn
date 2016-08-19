@@ -1665,15 +1665,15 @@ source_set("net_fuzzer_test_support") {
   testonly = true
 
   sources = [
-    "base/fuzzed_data_provider.cc",
-    "base/fuzzed_data_provider.h",
-    "base/fuzzer_test_support.cc",
     "socket/fuzzed_socket.cc",
     "socket/fuzzed_socket.h",
     "socket/fuzzed_socket_factory.cc",
     "socket/fuzzed_socket_factory.h",
     "udp/fuzzed_datagram_client_socket.cc",
     "udp/fuzzed_datagram_client_socket.h",
+  ]
+  public_deps = [
+    "//base/test:test_support",
   ]
   deps = [
     "//base",

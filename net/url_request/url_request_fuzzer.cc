@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
-#include "net/base/fuzzed_data_provider.h"
+#include "base/test/fuzzed_data_provider.h"
 #include "net/base/request_priority.h"
 #include "net/socket/fuzzed_socket_factory.h"
 #include "net/url_request/url_request.h"
@@ -26,7 +26,7 @@
 // QUIC, DNS failures (they all currently resolve to localhost), IPv6 DNS
 // results, URLs with IPs instead of hostnames (v4 and v6), etc.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  net::FuzzedDataProvider data_provider(data, size);
+  base::FuzzedDataProvider data_provider(data, size);
   net::TestURLRequestContext url_request_context(true);
   net::FuzzedSocketFactory fuzzed_socket_factory(&data_provider);
   url_request_context.set_client_socket_factory(&fuzzed_socket_factory);

@@ -16,6 +16,10 @@
 #include "net/dns/host_resolver_impl.h"
 #include "net/socket/fuzzed_socket_factory.h"
 
+namespace base {
+class FuzzedDataProvider;
+}
+
 namespace net {
 
 class AddressList;
@@ -46,7 +50,7 @@ class FuzzedHostResolver : public HostResolverImpl {
   // |data_provider| and |net_log| must outlive the FuzzedHostResolver.
   FuzzedHostResolver(const Options& options,
                      NetLog* net_log,
-                     FuzzedDataProvider* data_provider);
+                     base::FuzzedDataProvider* data_provider);
   ~FuzzedHostResolver() override;
 
   // Enable / disable the async resolver. When enabled, installs a
@@ -59,7 +63,7 @@ class FuzzedHostResolver : public HostResolverImpl {
   bool IsIPv6Reachable(const BoundNetLog& net_log) override;
   void RunLoopbackProbeJob() override;
 
-  FuzzedDataProvider* data_provider_;
+  base::FuzzedDataProvider* data_provider_;
 
   // Used for UDP and TCP sockets if the async resolver is enabled.
   FuzzedSocketFactory socket_factory_;
@@ -69,7 +73,7 @@ class FuzzedHostResolver : public HostResolverImpl {
 
   NetLog* net_log_;
 
-  base::WeakPtrFactory<FuzzedDataProvider> data_provider_weak_factory_;
+  base::WeakPtrFactory<base::FuzzedDataProvider> data_provider_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FuzzedHostResolver);
 };

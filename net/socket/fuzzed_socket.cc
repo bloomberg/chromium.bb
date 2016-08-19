@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/test/fuzzed_data_provider.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/fuzzed_data_provider.h"
 #include "net/base/io_buffer.h"
 
 namespace net {
@@ -32,7 +32,7 @@ const Error kReadWriteErrors[] = {ERR_CONNECTION_CLOSED, ERR_FAILED,
 
 }  // namespace
 
-FuzzedSocket::FuzzedSocket(FuzzedDataProvider* data_provider,
+FuzzedSocket::FuzzedSocket(base::FuzzedDataProvider* data_provider,
                            net::NetLog* net_log)
     : data_provider_(data_provider),
       bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),

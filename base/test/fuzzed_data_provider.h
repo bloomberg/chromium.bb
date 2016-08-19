@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_FUZZED_DATA_PROVIDER_H
-#define NET_BASE_FUZZED_DATA_PROVIDER_H
+#ifndef BASE_TEST_FUZZED_DATA_PROVIDER_H_
+#define BASE_TEST_FUZZED_DATA_PROVIDER_H_
 
 #include <stdint.h>
 
+#include "base/base_export.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 
-namespace net {
+namespace base {
 
 // Utility class to break up fuzzer input for multiple consumers. Whenever run
 // on the same input, provides the same output, as long as its methods are
@@ -26,12 +27,12 @@ class FuzzedDataProvider {
   // |num_bytes| of data remain, returns a shorter StringPiece containing all
   // of the data that's left. The data pointed at by the returned StringPiece
   // must not be used after the FuzzedDataProvider is destroyed.
-  base::StringPiece ConsumeBytes(size_t num_bytes);
+  StringPiece ConsumeBytes(size_t num_bytes);
 
   // Returns a StringPiece containing all remaining bytes of the input data.
   // The data pointed at by the returned StringPiece must not be used after the
   // FuzzedDataProvider is destroyed.
-  base::StringPiece ConsumeRemainingBytes();
+  StringPiece ConsumeRemainingBytes();
 
   // Returns a number in the range [min, max] by consuming bytes from the input
   // data. The value might not be uniformly distributed in the given range. If
@@ -64,11 +65,11 @@ class FuzzedDataProvider {
   size_t remaining_bytes() { return remaining_data_.length(); }
 
  private:
-  base::StringPiece remaining_data_;
+  StringPiece remaining_data_;
 
   DISALLOW_COPY_AND_ASSIGN(FuzzedDataProvider);
 };
 
-}  // namespace net
+}  // namespace base
 
-#endif  // NET_BASE_FUZZED_DATA_PROVIDER_H
+#endif  // BASE_TEST_FUZZED_DATA_PROVIDER_H_

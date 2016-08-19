@@ -15,9 +15,12 @@
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log.h"
 
+namespace base {
+class FuzzedDataProvider;
+}
+
 namespace net {
 
-class FuzzedDataProvider;
 class IOBuffer;
 
 // Datagram ClientSocket implementation for use with fuzzers. Can fail to
@@ -26,7 +29,7 @@ class IOBuffer;
 class FuzzedDatagramClientSocket : public DatagramClientSocket {
  public:
   // |data_provider| must outlive the created socket.
-  explicit FuzzedDatagramClientSocket(FuzzedDataProvider* data_provider);
+  explicit FuzzedDatagramClientSocket(base::FuzzedDataProvider* data_provider);
   ~FuzzedDatagramClientSocket() override;
 
   // DatagramClientSocket implementation:
@@ -57,7 +60,7 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
   void OnReadComplete(const net::CompletionCallback& callback, int result);
   void OnWriteComplete(const net::CompletionCallback& callback, int result);
 
-  FuzzedDataProvider* data_provider_;
+  base::FuzzedDataProvider* data_provider_;
 
   bool connected_ = false;
   bool read_pending_ = false;

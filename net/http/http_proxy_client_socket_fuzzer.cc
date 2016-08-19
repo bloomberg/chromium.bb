@@ -12,9 +12,9 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/fuzzed_data_provider.h"
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
-#include "net/base/fuzzed_data_provider.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_cache.h"
@@ -36,7 +36,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Use a test NetLog, to exercise logging code.
   net::TestNetLog test_net_log;
 
-  net::FuzzedDataProvider data_provider(data, size);
+  base::FuzzedDataProvider data_provider(data, size);
 
   net::TestCompletionCallback callback;
   std::unique_ptr<net::FuzzedSocket> fuzzed_socket(
