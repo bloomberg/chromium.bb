@@ -95,7 +95,7 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
   bool GetCharset(std::string* charset) override;
 
   // URLFetcher::FetchResultListener implementation:
-  void OnStartError(net::Error error) override;
+  void OnFetchStartError(net::Error error) override;
   void OnFetchComplete(const GURL& final_url,
                        int http_response_code,
                        scoped_refptr<net::HttpResponseHeaders> response_headers,

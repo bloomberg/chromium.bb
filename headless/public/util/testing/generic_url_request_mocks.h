@@ -44,7 +44,11 @@ class MockGenericURLRequestJobDelegate : public GenericURLRequestJob::Delegate {
                               const std::string& mime_type,
                               int http_response_code) override;
 
+  void SetShouldBlock(bool should_block) { should_block_ = should_block; }
+
  private:
+  bool should_block_;
+
   DISALLOW_COPY_AND_ASSIGN(MockGenericURLRequestJobDelegate);
 };
 

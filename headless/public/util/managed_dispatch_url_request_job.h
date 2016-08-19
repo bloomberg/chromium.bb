@@ -27,9 +27,11 @@ class ManagedDispatchURLRequestJob : public net::URLRequestJob {
 
   // Tells the net::URLRequestJob that the data has been fetched and is ready to
   // be consumed.
+  // Virtual for FakeManagedDispatchURLRequestJob.
   virtual void OnHeadersComplete();
 
   // Tells the net::URLRequestJob that the fetch failed.
+  // Virtual for FakeManagedDispatchURLRequestJob.
   virtual void OnStartError(net::Error error);
 
  protected:

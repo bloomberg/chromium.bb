@@ -13,14 +13,17 @@ class URLRequestJob;
 namespace headless {
 
 // MockGenericURLRequestJobDelegate
-MockGenericURLRequestJobDelegate::MockGenericURLRequestJobDelegate() {}
+MockGenericURLRequestJobDelegate::MockGenericURLRequestJobDelegate()
+    : should_block_(false) {}
 MockGenericURLRequestJobDelegate::~MockGenericURLRequestJobDelegate() {}
 
 bool MockGenericURLRequestJobDelegate::BlockOrRewriteRequest(
     const GURL& url,
     const std::string& referrer,
     GenericURLRequestJob::RewriteCallback callback) {
-  return false;
+  if (should_block_)
+    callback(GenericURLRequestJob::RewriteResult::kDeny, GURL());
+  return should_block_;
 }
 
 const GenericURLRequestJob::HttpResponse*

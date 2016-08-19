@@ -35,7 +35,7 @@ class URLFetcher {
     ResultListener() {}
 
     // Informs the listener that the fetch failed.
-    virtual void OnStartError(net::Error error) = 0;
+    virtual void OnFetchStartError(net::Error error) = 0;
 
     // Informs the listener that the fetch succeeded and returns the HTTP
     // headers and the body.  NOTE |body| must be owned by the caller and remain

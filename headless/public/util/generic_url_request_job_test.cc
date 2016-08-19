@@ -343,4 +343,20 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
   EXPECT_THAT(fetch_request_, MatchesJson(expected_request_json));
 }
 
+TEST_F(GenericURLRequestJobTest, DelegateBlocksLoading) {
+  std::string reply =
+      "{\"url\":\"https://example.com\","
+      " \"http_response_code\":200,"
+      " \"data\":\"Reply\","
+      " \"headers\":{\"Content-Type\":\"text/html; charset=UTF-8\"}}";
+
+  job_delegate_.SetShouldBlock(true);
+
+  std::unique_ptr<net::URLRequest> request(
+      CreateAndCompleteJob(GURL("https://example.com"), reply));
+
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request->status().error());
+}
+
 }  // namespace headless
