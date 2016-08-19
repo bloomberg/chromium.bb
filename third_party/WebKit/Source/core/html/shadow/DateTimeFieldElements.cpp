@@ -159,13 +159,13 @@ DateTimeHour11FieldElement::DateTimeHour11FieldElement(Document& document, Field
 
 DateTimeHour11FieldElement* DateTimeHour11FieldElement::create(Document& document, FieldOwner& fieldOwner, const Range& hour23Range, const Step& step)
 {
-    ASSERT(hour23Range.minimum >= 0);
-    ASSERT(hour23Range.maximum <= 23);
-    ASSERT(hour23Range.minimum <= hour23Range.maximum);
+    DCHECK_GE(hour23Range.minimum,  0);
+    DCHECK_LE(hour23Range.maximum, 23);
+    DCHECK_LE(hour23Range.minimum, hour23Range.maximum);
     Range range(0, 11);
-    if (hour23Range.maximum < 12)
+    if (hour23Range.maximum < 12) {
         range = hour23Range;
-    else if (hour23Range.minimum >= 12) {
+    } else if (hour23Range.minimum >= 12) {
         range.minimum = hour23Range.minimum - 12;
         range.maximum = hour23Range.maximum - 12;
     }
@@ -200,13 +200,13 @@ DateTimeHour12FieldElement::DateTimeHour12FieldElement(Document& document, Field
 
 DateTimeHour12FieldElement* DateTimeHour12FieldElement::create(Document& document, FieldOwner& fieldOwner, const Range& hour23Range, const Step& step)
 {
-    ASSERT(hour23Range.minimum >= 0);
-    ASSERT(hour23Range.maximum <= 23);
-    ASSERT(hour23Range.minimum <= hour23Range.maximum);
+    DCHECK_GE(hour23Range.minimum, 0);
+    DCHECK_LE(hour23Range.maximum, 23);
+    DCHECK_LE(hour23Range.minimum, hour23Range.maximum);
     Range range(1, 12);
-    if (hour23Range.maximum < 12)
+    if (hour23Range.maximum < 12) {
         range = hour23Range;
-    else if (hour23Range.minimum >= 12) {
+    } else if (hour23Range.minimum >= 12) {
         range.minimum = hour23Range.minimum - 12;
         range.maximum = hour23Range.maximum - 12;
     }
@@ -243,9 +243,9 @@ DateTimeHour23FieldElement::DateTimeHour23FieldElement(Document& document, Field
 
 DateTimeHour23FieldElement* DateTimeHour23FieldElement::create(Document& document, FieldOwner& fieldOwner, const Range& hour23Range, const Step& step)
 {
-    ASSERT(hour23Range.minimum >= 0);
-    ASSERT(hour23Range.maximum <= 23);
-    ASSERT(hour23Range.minimum <= hour23Range.maximum);
+    DCHECK_GE(hour23Range.minimum, 0);
+    DCHECK_LE(hour23Range.maximum, 23);
+    DCHECK_LE(hour23Range.minimum, hour23Range.maximum);
     DateTimeHour23FieldElement* field = new DateTimeHour23FieldElement(document, fieldOwner, hour23Range, step);
     field->initialize();
     return field;
@@ -279,9 +279,9 @@ DateTimeHour24FieldElement::DateTimeHour24FieldElement(Document& document, Field
 
 DateTimeHour24FieldElement* DateTimeHour24FieldElement::create(Document& document, FieldOwner& fieldOwner, const Range& hour23Range, const Step& step)
 {
-    ASSERT(hour23Range.minimum >= 0);
-    ASSERT(hour23Range.maximum <= 23);
-    ASSERT(hour23Range.minimum <= hour23Range.maximum);
+    DCHECK_GE(hour23Range.minimum, 0);
+    DCHECK_LE(hour23Range.maximum, 23);
+    DCHECK_LE(hour23Range.minimum, hour23Range.maximum);
     Range range(hour23Range.minimum ? hour23Range.minimum : 24, hour23Range.maximum ? hour23Range.maximum : 24);
     if (range.minimum > range.maximum) {
         range.minimum = 1;
@@ -500,7 +500,7 @@ void DateTimeSymbolicMonthFieldElement::populateDateTimeFieldsState(DateTimeFiel
 {
     if (!hasValue())
         dateTimeFieldsState.setMonth(DateTimeFieldsState::emptyValue);
-    ASSERT(valueAsInteger() < static_cast<int>(symbolsSize()));
+    DCHECK_LT(valueAsInteger(), static_cast<int>(symbolsSize()));
     dateTimeFieldsState.setMonth(valueAsInteger() + 1);
 }
 
@@ -573,8 +573,8 @@ DateTimeYearFieldElement::DateTimeYearFieldElement(Document& document, FieldOwne
     , m_minIsSpecified(parameters.minIsSpecified)
     , m_maxIsSpecified(parameters.maxIsSpecified)
 {
-    ASSERT(parameters.minimumYear >= DateComponents::minimumYear());
-    ASSERT(parameters.maximumYear <= DateComponents::maximumYear());
+    DCHECK_GE(parameters.minimumYear, DateComponents::minimumYear());
+    DCHECK_LE(parameters.maximumYear, DateComponents::maximumYear());
 }
 
 DateTimeYearFieldElement* DateTimeYearFieldElement::create(Document& document, FieldOwner& fieldOwner, const DateTimeYearFieldElement::Parameters& parameters)

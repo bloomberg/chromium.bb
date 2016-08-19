@@ -31,9 +31,9 @@
 
 #include "core/html/shadow/SliderThumbElement.h"
 
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/events/MouseEvent.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/StepRange.h"
@@ -50,7 +50,7 @@ using namespace HTMLNames;
 
 inline static bool hasVerticalAppearance(HTMLInputElement* input)
 {
-    ASSERT(input->layoutObject());
+    DCHECK(input->layoutObject());
     const ComputedStyle& sliderStyle = input->layoutObject()->styleRef();
 
     return sliderStyle.appearance() == SliderVerticalPart;
@@ -215,10 +215,12 @@ void SliderThumbElement::defaultEventHandler(Event* event)
     if (eventType == EventTypeNames::mousedown && isLeftButton) {
         startDragging();
         return;
-    } else if (eventType == EventTypeNames::mouseup && isLeftButton) {
+    }
+    if (eventType == EventTypeNames::mouseup && isLeftButton) {
         stopDragging();
         return;
-    } else if (eventType == EventTypeNames::mousemove) {
+    }
+    if (eventType == EventTypeNames::mousemove) {
         if (m_inDragMode)
             setPositionFromPoint(mouseEvent->absoluteLocation());
         return;

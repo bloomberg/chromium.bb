@@ -220,7 +220,7 @@ void DateTimeFieldElement::updateVisibleValue(EventBehavior eventBehavior)
 {
     Text* const textNode = toText(firstChild());
     const String newVisibleValue = visibleValue();
-    ASSERT(newVisibleValue.length() > 0);
+    DCHECK_GT(newVisibleValue.length(), 0u);
 
     if (textNode->wholeText() == newVisibleValue)
         return;
