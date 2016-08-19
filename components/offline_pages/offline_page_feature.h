@@ -15,6 +15,7 @@ extern const base::Feature kOffliningRecentPagesFeature;
 extern const base::Feature kOfflinePagesBackgroundLoadingFeature;
 extern const base::Feature kOfflinePagesCTFeature;
 extern const base::Feature kOfflinePagesSharingFeature;
+extern const base::Feature kBackgroundLoaderForDownloadsFeature;
 
 // Returns true if offline pages, as result of one or more offline features
 // being enabled, is enabled.
@@ -34,6 +35,8 @@ bool IsOfflinePagesCTEnabled();
 
 // Returns true if offline page sharing is enabled.
 bool IsOfflinePagesSharingEnabled();
+
+bool IsBackgroundLoaderForDownloadsEnabled();
 
 }  // namespace offline_pages
 

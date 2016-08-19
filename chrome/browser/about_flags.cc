@@ -1723,6 +1723,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"offline-pages-sharing", IDS_FLAGS_OFFLINE_PAGES_SHARING_NAME,
      IDS_FLAGS_OFFLINE_PAGES_SHARING_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOfflinePagesSharingFeature)},
+    {"background-loader-for-downloads",
+     IDS_FLAGS_BACKGROUND_LOADER_FOR_DOWNLOADS_NAME,
+     IDS_FLAGS_BACKGROUND_LOADER_FOR_DOWNLOADS_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         offline_pages::kBackgroundLoaderForDownloadsFeature)},
 #endif  // defined(OS_ANDROID)
     {"disallow-doc-written-script-loads",
      IDS_FLAGS_DISALLOW_DOC_WRITTEN_SCRIPTS_UI_NAME,

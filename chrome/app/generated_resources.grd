@@ -14733,6 +14733,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_OFFLINE_PAGES_SHARING_DESCRIPTION" desc="Description for the flag to enable offline pages sharing.">
         Enables the saved offline pages to be shared via other applications.
       </message>
+      <message name="IDS_FLAGS_BACKGROUND_LOADER_FOR_DOWNLOADS_NAME" desc="Name for the flag to enable downloads to load pages in the background.">
+        Enables downloads to also download a page later.
+      </message>
+      <message name="IDS_FLAGS_BACKGROUND_LOADER_FOR_DOWNLOADS_DESCRIPTION" desc="Description for the flag to enable offline pages for downloads.">
+        Enables downloading and saving pages automatically in the background, viewable from Downloads.
+      </message>
       <message name="IDS_FLAGS_NTP_POPULAR_SITES_NAME" desc="Name for the flag to enable showing non-personalized popular suggestions on the New Tab Page, when no personal suggestions are available yet.">
         Show popular sites on the New Tab page
       </message>
