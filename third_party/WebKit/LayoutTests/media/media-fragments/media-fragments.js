@@ -1,4 +1,5 @@
-
+    var video = null;
+    var consoleDiv = null;
     var currentTest = null;
     var fragmentEndTime;
     var testData = 
@@ -74,6 +75,126 @@
         TC0093 : { start: null, end: null, valid: false, description: "Incorrect percent encoding", fragment: "t=10%26", comment: "UA knows that this is an invalid media fragment, so it will play the entire media resource."},
         TC0094 : { start: null, end: null, valid: false, description: "Trailing comma", fragment: "t=3,7,", comment: "UA knows that this is an invalid media fragment, so it will play the entire media resource."}
     };
+
+    logConsole();
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    function logConsole()
+    {
+        if (!consoleDiv && document.body) {
+            consoleDiv = document.createElement('div');
+            document.body.appendChild(consoleDiv);
+        }
+        return consoleDiv;
+    }
+
+    function testExpected(testFuncString, expected, comparison)
+    {
+        try {
+            var observed = eval(testFuncString);
+        } catch (ex) {
+            consoleWrite(ex);
+            return;
+        }
+
+        if (comparison === undefined)
+            comparison = '==';
+
+        var success = false;
+        switch (comparison)
+        {
+            case '<':   success = observed <  expected; break;
+            case '<=': success = observed <= expected; break;
+            case '>':   success = observed >  expected; break;
+            case '>=': success = observed >= expected; break;
+            case '!=':  success = observed != expected; break;
+            case '==': success = observed == expected; break;
+            case '===': success = observed === expected; break;
+        }
+
+        reportExpected(success, testFuncString, comparison, expected, observed)
+    }
+
+    var testNumber = 0;
+
+    function reportExpected(success, testFuncString, comparison, expected, observed)
+    {
+        testNumber++;
+
+        var msg = "Test " + testNumber;
+
+        msg = "EXPECTED (<em>" + testFuncString + " </em>" + comparison + " '<em>" + expected + "</em>')";
+
+        if (!success)
+            msg +=  ", OBSERVED '<em>" + observed + "</em>'";
+
+        logResult(success, msg);
+    }
+
+    function run(testFuncString)
+    {
+        consoleWrite("RUN(" + testFuncString + ")");
+        try {
+            eval(testFuncString);
+        } catch (ex) {
+            consoleWrite(ex);
+        }
+    }
+
+    function waitForEventOnce(eventName, func, endit, doNotLog)
+    {
+        waitForEvent(eventName, func, endit, true, null, doNotLog)
+    }
+
+    function waitForEvent(eventName, func, endit, oneTimeOnly, doNotLog)
+    {
+        function _eventCallback(event)
+        {
+            if (oneTimeOnly)
+                video.removeEventListener(eventName, _eventCallback, true);
+
+            if (!doNotLog)
+              consoleWrite("EVENT(" + eventName + ")");
+
+            if (func)
+                func(event);
+
+            if (endit)
+                endTest();
+        }
+
+        video.addEventListener(eventName, _eventCallback, true);
+    }
+
+    var testEnded = false;
+
+    function endTest()
+    {
+        consoleWrite("END OF TEST");
+        testEnded = true;
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
+
+    function logResult(success, text)
+    {
+        if (success)
+            consoleWrite(text + " <span style='color:green'>OK</span>");
+        else
+            consoleWrite(text + " <span style='color:red'>FAIL</span>");
+    }
+
+    function consoleWrite(text)
+    {
+        if (testEnded)
+            return;
+        var span = document.createElement("span");
+        logConsole().appendChild(span);
+        span.innerHTML = text + '<br>';
+    }
 
     function pause()
     {
