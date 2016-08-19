@@ -336,8 +336,9 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   EXPECT_EQ(nullptr, toolbar_actions_bar->popup_owner());
 }
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_WIN)
 // ozone bringup - http://crbug.com/401304
+// flaky on Windows - http://crbug.com/638692
 #define MAYBE_ActivateOverflowedToolbarActionWithKeyboard \
   DISABLED_ActivateOverflowedToolbarActionWithKeyboard
 #else
